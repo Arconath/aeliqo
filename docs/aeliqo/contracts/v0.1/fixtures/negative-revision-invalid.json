@@ -1,0 +1,17 @@
+{
+  "contractVersion": "0.1",
+  "workspaceId": "ws-demo",
+  "requestId": "req-42",
+  "baseRevision": -1,
+  "outputSurface": "workspace",
+  "mode": "operations",
+  "operations": [
+    {
+      "op": "configure",
+      "nodeId": "comparison",
+      "props": {
+        "title": "Value comparison"
+      }
+    }
+  ]
+}

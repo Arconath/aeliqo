@@ -1,0 +1,96 @@
+/* Candidate only: reconcile with the PoC; explicit opt-in via data-aeliqo-root. */
+@layer aeliqo.tokens {
+  [data-aeliqo-root] {
+    color-scheme: light;
+    --aeliqo-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --aeliqo-font-mono: ui-monospace, SFMono-Regular, Consolas, monospace;
+    --aeliqo-text-xs: 0.75rem;
+    --aeliqo-text-sm: 0.875rem;
+    --aeliqo-text-md: 1rem;
+    --aeliqo-text-lg: 1.125rem;
+    --aeliqo-text-xl: 1.5rem;
+    --aeliqo-leading-ui: 1.4;
+    --aeliqo-leading-body: 1.65;
+    --aeliqo-space-1: 0.25rem;
+    --aeliqo-space-2: 0.5rem;
+    --aeliqo-space-3: 0.75rem;
+    --aeliqo-space-4: 1rem;
+    --aeliqo-space-5: 1.5rem;
+    --aeliqo-space-6: 2rem;
+    --aeliqo-space-7: 3rem;
+    --aeliqo-radius-sm: 0.375rem;
+    --aeliqo-radius-md: 0.625rem;
+    --aeliqo-radius-lg: 0.875rem;
+    --aeliqo-radius-pill: 999px;
+    --aeliqo-surface-canvas: #f7f8fa;
+    --aeliqo-surface: #ffffff;
+    --aeliqo-surface-muted: #eef1f5;
+    --aeliqo-text: #17202e;
+    --aeliqo-text-muted: #4e5b6e;
+    --aeliqo-border: #c5ccd6;
+    --aeliqo-accent: #315bd6;
+    --aeliqo-on-accent: #ffffff;
+    --aeliqo-danger: #b32637;
+    --aeliqo-success: #176b44;
+    --aeliqo-focus: #315bd6;
+    --aeliqo-focus-width: 2px;
+    --aeliqo-focus-offset: 3px;
+    --aeliqo-shadow-popover: 0 8px 28px rgb(17 24 39 / 0.14);
+    --aeliqo-control-min-block: 2.5rem;
+    --aeliqo-control-padding-inline: 0.75rem;
+    --aeliqo-row-padding-block: 0.625rem;
+    --aeliqo-motion-fast: 120ms;
+    --aeliqo-motion-standard: 180ms;
+    --aeliqo-motion-layout: 220ms;
+    --aeliqo-ease-enter: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --aeliqo-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+    --aeliqo-content-measure: 72ch;
+  }
+  [data-aeliqo-root][data-theme="dark"] {
+    color-scheme: dark;
+    --aeliqo-surface-canvas: #11151c;
+    --aeliqo-surface: #191f29;
+    --aeliqo-surface-muted: #242d3a;
+    --aeliqo-text: #f0f3f8;
+    --aeliqo-text-muted: #b4bfce;
+    --aeliqo-border: #64738a;
+    --aeliqo-accent: #9bb6ff;
+    --aeliqo-on-accent: #142447;
+    --aeliqo-danger: #ffabb5;
+    --aeliqo-success: #86dbb1;
+    --aeliqo-focus: #b4c8ff;
+    --aeliqo-shadow-popover: 0 10px 32px rgb(0 0 0 / 0.35);
+  }
+  [data-aeliqo-root][data-density="compact"] {
+    --aeliqo-row-padding-block: 0.375rem;
+    --aeliqo-control-padding-inline: 0.625rem;
+  }
+  [data-aeliqo-root][data-motion="none"] {
+    --aeliqo-motion-fast: 0ms;
+    --aeliqo-motion-standard: 0ms;
+    --aeliqo-motion-layout: 0ms;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-aeliqo-root] {
+      --aeliqo-motion-fast: 0ms;
+      --aeliqo-motion-standard: 0ms;
+      --aeliqo-motion-layout: 0ms;
+    }
+  }
+  @media (pointer: coarse) {
+    [data-aeliqo-root] { --aeliqo-control-min-block: 2.75rem; }
+  }
+  @media (forced-colors: active) {
+    [data-aeliqo-root] {
+      --aeliqo-surface-canvas: Canvas;
+      --aeliqo-surface: Canvas;
+      --aeliqo-text: CanvasText;
+      --aeliqo-text-muted: CanvasText;
+      --aeliqo-border: ButtonText;
+      --aeliqo-accent: Highlight;
+      --aeliqo-on-accent: HighlightText;
+      --aeliqo-focus: Highlight;
+      --aeliqo-shadow-popover: none;
+    }
+  }
+}

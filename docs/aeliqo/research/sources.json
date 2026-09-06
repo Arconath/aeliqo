@@ -1,0 +1,226 @@
+[
+  {
+    "id": "R01",
+    "title": "OpenAI — Build skills",
+    "url": "https://developers.openai.com/codex/build-skills",
+    "accessed": "2026-09-06",
+    "supports": "Repo-local .agents/skills discovery, front matter, implicit matching and duplicate-name behavior."
+  },
+  {
+    "id": "R02",
+    "title": "OpenAI — Codex MCP",
+    "url": "https://developers.openai.com/codex/mcp",
+    "accessed": "2026-09-06",
+    "supports": "STDIO/Streamable HTTP, scoped configuration and server instructions; host-specific behavior."
+  },
+  {
+    "id": "R03",
+    "title": "OpenAI — AGENTS.md",
+    "url": "https://developers.openai.com/codex/agent-configuration/agents-md",
+    "accessed": "2026-09-06",
+    "supports": "Scoped instruction discovery for development sessions."
+  },
+  {
+    "id": "R04",
+    "title": "MCP — Tools, revision 2026-07-28",
+    "url": "https://modelcontextprotocol.io/specification/2026-07-28/server/tools",
+    "accessed": "2026-09-06",
+    "supports": "Tools are discoverable/model-controlled; protocol does not prescribe a universal UX."
+  },
+  {
+    "id": "R05",
+    "title": "Chrome — WebMCP",
+    "url": "https://developer.chrome.com/docs/ai/webmcp",
+    "accessed": "2026-09-06",
+    "supports": "Experimental/proposed API, origin trial/local testing and browser requirements."
+  },
+  {
+    "id": "R06",
+    "title": "JSON Schema — draft 2020-12",
+    "url": "https://json-schema.org/draft/2020-12",
+    "accessed": "2026-09-06",
+    "supports": "Schema dialect reference; not a business-semantic validator."
+  },
+  {
+    "id": "R07",
+    "title": "Ajv — Standalone validation",
+    "url": "https://ajv.js.org/standalone.html",
+    "accessed": "2026-09-06",
+    "supports": "Build-time generated validators; implementation must configure and test actual generated output."
+  },
+  {
+    "id": "R08",
+    "title": "React — useSyncExternalStore",
+    "url": "https://react.dev/reference/react/useSyncExternalStore",
+    "accessed": "2026-09-06",
+    "supports": "Stable external snapshots/subscription and transition caveats."
+  },
+  {
+    "id": "R09",
+    "title": "D3 — Getting started",
+    "url": "https://d3js.org/getting-started",
+    "accessed": "2026-09-06",
+    "supports": "Modular visualization and React/DOM ownership considerations."
+  },
+  {
+    "id": "R10",
+    "title": "Ark UI",
+    "url": "https://ark-ui.com/",
+    "accessed": "2026-09-06",
+    "supports": "Headless behavior/component foundation candidate, not proof of our own accessibility."
+  },
+  {
+    "id": "R11",
+    "title": "TanStack Virtual — Introduction",
+    "url": "https://tanstack.com/virtual/latest/docs/introduction",
+    "accessed": "2026-09-06",
+    "supports": "Headless virtualization; does not ship our markup/design."
+  },
+  {
+    "id": "R12",
+    "title": "TC39 — ECMA-402 NumberFormat",
+    "url": "https://tc39.es/ecma402/#numberformat-objects",
+    "accessed": "2026-09-06",
+    "supports": "Formatting API; no application FX-data service provided by number formatting."
+  },
+  {
+    "id": "R13",
+    "title": "MDN — CSS container queries",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Containment/Container_queries",
+    "accessed": "2026-09-06",
+    "supports": "Container-relative CSS responsiveness and containment behavior."
+  },
+  {
+    "id": "R14",
+    "title": "web.dev — Optimize INP",
+    "url": "https://web.dev/articles/optimize-inp",
+    "accessed": "2026-09-06",
+    "supports": "p75 200 ms guidance and interaction-latency decomposition; not per-component certification."
+  },
+  {
+    "id": "R15",
+    "title": "W3C — WCAG 2.2 quick reference",
+    "url": "https://www.w3.org/WAI/WCAG22/quickref/",
+    "accessed": "2026-09-06",
+    "supports": "Accessibility requirements; manual review and actual conformance remain necessary."
+  },
+  {
+    "id": "R16",
+    "title": "Playwright — Accessibility testing",
+    "url": "https://playwright.dev/docs/accessibility-testing",
+    "accessed": "2026-09-06",
+    "supports": "Automated checks and limitations versus full accessibility evaluation."
+  },
+  {
+    "id": "R17",
+    "title": "fast-check — Model based testing",
+    "url": "https://fast-check.dev/docs/advanced/model-based-testing/",
+    "accessed": "2026-09-06",
+    "supports": "Command/model testing approach for stateful sequences."
+  },
+  {
+    "id": "R18",
+    "title": "Astro — Starlight",
+    "url": "https://starlight.astro.build/",
+    "accessed": "2026-09-06",
+    "supports": "Documentation-site foundation candidate."
+  },
+  {
+    "id": "R19",
+    "title": "json-render — Documentation",
+    "url": "https://json-render.dev/docs",
+    "accessed": "2026-09-06",
+    "supports": "Catalog/registry/spec-based UI overlap."
+  },
+  {
+    "id": "R20",
+    "title": "Tambo — Generative user interfaces",
+    "url": "https://docs.tambo.co/concepts/generative-interfaces",
+    "accessed": "2026-09-06",
+    "supports": "Registered generative component/interface overlap."
+  },
+  {
+    "id": "R21",
+    "title": "AG Grid — AI Toolkit",
+    "url": "https://www.ag-grid.com/javascript-data-grid/ai-toolkit/",
+    "accessed": "2026-09-06",
+    "supports": "AI/grid-state integration overlap."
+  },
+  {
+    "id": "R22",
+    "title": "MUI X — AI Assistant",
+    "url": "https://mui.com/x/react-data-grid/ai-assistant/",
+    "accessed": "2026-09-06",
+    "supports": "Prompt-driven grid operations overlap."
+  },
+  {
+    "id": "R23",
+    "title": "A2UI — Catalogs",
+    "url": "https://a2ui.org/concepts/catalogs/",
+    "accessed": "2026-09-06",
+    "supports": "Declarative UI catalogs/interchange design."
+  },
+  {
+    "id": "R24",
+    "title": "CopilotKit — AG-UI",
+    "url": "https://www.copilotkit.ai/ag-ui",
+    "accessed": "2026-09-06",
+    "supports": "Agent/frontend interaction and state protocol positioning."
+  },
+  {
+    "id": "R25",
+    "title": "WebMCP Auto-UI — Architecture",
+    "url": "https://jeanbaptiste.github.io/webmcp-auto-ui/guide/architecture/",
+    "accessed": "2026-09-06",
+    "supports": "Agent/canvas/registry architecture overlap; not independently benchmarked."
+  },
+  {
+    "id": "R26",
+    "title": "Apache Software Foundation — License 2.0",
+    "url": "https://www.apache.org/licenses/LICENSE-2.0",
+    "accessed": "2026-09-06",
+    "supports": "Copyright/patent/notice/license terms; existing code compatibility needs review."
+  },
+  {
+    "id": "R27",
+    "title": "MUI X — Licensing",
+    "url": "https://mui.com/x/introduction/licensing/",
+    "accessed": "2026-09-06",
+    "supports": "Open-core community/commercial packaging example."
+  },
+  {
+    "id": "R28",
+    "title": "AG Grid — License and pricing",
+    "url": "https://www.ag-grid.com/license-pricing/",
+    "accessed": "2026-09-06",
+    "supports": "Community/enterprise commercial packaging example; no prices copied as fixed truth."
+  },
+  {
+    "id": "R29",
+    "title": "Vega-Lite — Overview",
+    "url": "https://vega.github.io/vega-lite/docs/",
+    "accessed": "2026-09-06",
+    "supports": "Established compositional visualization grammar."
+  },
+  {
+    "id": "R30",
+    "title": "OpenAI — Using skills to accelerate OSS maintenance",
+    "url": "https://developers.openai.com/blog/skills-agents-sdk",
+    "accessed": "2026-09-06",
+    "supports": "Repo policy + local skills + verification workflow; not an automation guarantee."
+  },
+  {
+    "id": "R31",
+    "title": "React — Preserving and resetting state",
+    "url": "https://react.dev/learn/preserving-and-resetting-state",
+    "accessed": "2026-09-06",
+    "supports": "State tied to render-tree position; keys not universal reparenting preservation."
+  },
+  {
+    "id": "R32",
+    "title": "MCP — Streamable HTTP, revision 2026-07-28",
+    "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/streamable-http",
+    "accessed": "2026-09-06",
+    "supports": "Transport revision reference; pin SDK/client compatibility rather than assume universal support."
+  }
+]

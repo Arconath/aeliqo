@@ -1,0 +1,1 @@
+{"name":"@aeliqo/byok","version":"0.2.0","private":true,"type":"module","exports":{".":"./src/index.ts","./openai":"./src/openai.ts"},"dependencies":{"@aeliqo/core":"workspace:*","zod":"^3.25.76"}}

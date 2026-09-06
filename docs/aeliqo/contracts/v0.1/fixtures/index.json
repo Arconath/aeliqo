@@ -1,0 +1,125 @@
+{
+  "status": "structural-fixtures",
+  "cases": [
+    {
+      "file": "fixtures/dataset-valid.json",
+      "schema": "dataset.schema.json",
+      "expectedValid": true,
+      "reason": "A complete synthetic descriptor; referenced fields still need semantic resolution."
+    },
+    {
+      "file": "fixtures/manifest-valid.json",
+      "schema": "component-manifest.schema.json",
+      "expectedValid": true,
+      "reason": "Manifest resolves a trusted loader key, not executable source."
+    },
+    {
+      "file": "fixtures/workspace-valid.json",
+      "schema": "workspace.schema.json",
+      "expectedValid": true,
+      "reason": "Valid shape; reference ownership checked at semantic phase."
+    },
+    {
+      "file": "fixtures/apply-valid.json",
+      "schema": "apply.schema.json",
+      "expectedValid": true,
+      "reason": "One versioned properties operation."
+    },
+    {
+      "file": "fixtures/receipt-completed.json",
+      "schema": "receipt.schema.json",
+      "expectedValid": true,
+      "reason": "Committed, acknowledged and ready status axes."
+    },
+    {
+      "file": "fixtures/query-filter.json",
+      "schema": "query.schema.json",
+      "expectedValid": true,
+      "reason": "Decimal predicate is an exact string interpreted by field semantics."
+    },
+    {
+      "file": "fixtures/intent-valid.json",
+      "schema": "apply.schema.json",
+      "expectedValid": true,
+      "reason": "Registry must resolve the task and selected metrics."
+    },
+    {
+      "file": "fixtures/receipt-disconnected.json",
+      "schema": "receipt.schema.json",
+      "expectedValid": true,
+      "reason": "Commit exists but requested output has not been acknowledged."
+    },
+    {
+      "file": "fixtures/dataset-version-invalid.json",
+      "schema": "dataset.schema.json",
+      "expectedValid": false,
+      "reason": "Unknown contract version rejected."
+    },
+    {
+      "file": "fixtures/currency-code-invalid.json",
+      "schema": "dataset.schema.json",
+      "expectedValid": false,
+      "reason": "Structural currency code shape is uppercase; real code validity remains semantic."
+    },
+    {
+      "file": "fixtures/actor-injection-invalid.json",
+      "schema": "apply.schema.json",
+      "expectedValid": false,
+      "reason": "Authority must come from authenticated context, not payload."
+    },
+    {
+      "file": "fixtures/eval-operation-invalid.json",
+      "schema": "apply.schema.json",
+      "expectedValid": false,
+      "reason": "No executable operation."
+    },
+    {
+      "file": "fixtures/empty-batch-invalid.json",
+      "schema": "apply.schema.json",
+      "expectedValid": false,
+      "reason": "No-op batch not accepted as a mutation."
+    },
+    {
+      "file": "fixtures/negative-revision-invalid.json",
+      "schema": "apply.schema.json",
+      "expectedValid": false,
+      "reason": "Revision must be nonnegative."
+    },
+    {
+      "file": "fixtures/false-completion-invalid.json",
+      "schema": "receipt.schema.json",
+      "expectedValid": false,
+      "reason": "Completed workspace change cannot have disconnected render."
+    },
+    {
+      "file": "fixtures/pending-data-completion-invalid.json",
+      "schema": "receipt.schema.json",
+      "expectedValid": false,
+      "reason": "Pending data does not satisfy completed output."
+    },
+    {
+      "file": "fixtures/ack-missing-renderer-invalid.json",
+      "schema": "receipt.schema.json",
+      "expectedValid": false,
+      "reason": "Render acknowledgement must identify renderer."
+    },
+    {
+      "file": "fixtures/remote-module-invalid.json",
+      "schema": "component-manifest.schema.json",
+      "expectedValid": false,
+      "reason": "Remote module URLs are not manifest loader keys."
+    },
+    {
+      "file": "fixtures/unbounded-query-invalid.json",
+      "schema": "query.schema.json",
+      "expectedValid": false,
+      "reason": "Tool query row request is bounded."
+    },
+    {
+      "file": "fixtures/raw-html-layout-invalid.json",
+      "schema": "workspace.schema.json",
+      "expectedValid": false,
+      "reason": "Layout grammar is registered structural nodes, not HTML."
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+[
+  {
+    "timestamp": "2026-09-06T09:44:37.858Z",
+    "intent": "Inspect current workspace before showing the model trend",
+    "request": {
+      "name": "workspace_inspect",
+      "arguments": {},
+      "intent": "Inspect current workspace before showing the model trend"
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"revision\":4,\"nodes\":{\"baseline\":{\"id\":\"baseline\",\"component\":\"Metric\",\"datasetId\":\"models\",\"metric\":\"outputPrice\",\"title\":\"Average output price\"},\"mcp-ranking\":{\"id\":\"mcp-ranking\",\"component\":\"Ranking\",\"datasetId\":\"models\",\"title\":\"Low output price · large context\",\"metric\":\"outputPrice\",\"direction\":\"asc\",\"limit\":8,\"span\":5,\"filters\":[{\"field\":\"outputPrice\",\"operator\":\"lte\",\"value\":10},{\"field\":\"contextWindow\",\"operator\":\"gte\",\"value\":1000000}]},\"mcp-scatter\":{\"id\":\"mcp-scatter\",\"component\":\"Scatter\",\"datasetId\":\"models\",\"title\":\"Output price × context window\",\"metric\":\"contextWindow\",\"xMetric\":\"outputPrice\",\"seriesBy\":\"provider\",\"span\":7,\"filters\":[{\"field\":\"outputPrice\",\"operator\":\"lte\",\"value\":10},{\"field\":\"contextWindow\",\"operator\":\"gte\",\"value\":1000000}]},\"mcp-provider\":{\"id\":\"mcp-provider\",\"component\":\"Detail\",\"datasetId\":\"providers\",\"title\":\"Provider for selected model\",\"columns\":[\"name\",\"website\",\"description\",\"modelCount\",\"meanOutputPrice\",\"capabilityCoverage\"],\"span\":12}},\"order\":[\"baseline\",\"mcp-ranking\",\"mcp-scatter\",\"mcp-provider\"],\"bindings\":{\"mcp-ranking-to-scatter\":{\"id\":\"mcp-ranking-to-scatter\",\"source\":\"mcp-ranking\",\"target\":\"mcp-scatter\",\"entity\":\"Model\"},\"mcp-ranking-to-provider\":{\"id\":\"mcp-ranking-to-provider\",\"source\":\"mcp-ranking\",\"target\":\"mcp-provider\",\"entity\":\"Provider\",\"relationship\":\"provider\"}},\"selections\":{\"mcp-ranking\":\"gemini-3-5-flash-lite\"}}"
+        }
+      ]
+    },
+    "transportAndExecutionMs": 6.856625000000349
+  },
+  {
+    "timestamp": "2026-09-06T09:44:43.386Z",
+    "intent": "Confirm the available 90-day model workload trend data",
+    "request": {
+      "name": "data_query",
+      "arguments": {
+        "datasetId": "usage",
+        "metric": "requests",
+        "direction": "desc",
+        "limit": 8
+      },
+      "intent": "Confirm the available 90-day model workload trend data"
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"datasetId\":\"usage\",\"total\":720,\"records\":[{\"id\":\"grok-4-3-2026-08-31\",\"name\":\"Grok 4.3 · 2026-08-31\",\"date\":\"2026-08-31\",\"modelId\":\"grok-4-3\",\"model\":\"Grok 4.3\",\"organizationId\":\"xai\",\"organization\":\"xAI / SpaceXAI\",\"requests\":3512,\"inputTokens\":4073920,\"outputTokens\":1123840,\"spend\":7.902,\"latency\":1258,\"dataKind\":\"SYNTHETIC · not observed usage\",\"source\":\"Deterministic synthetic workload fixture; not observed usage, popularity, availability or historical pricing.\",\"snapshotVersion\":\"synthetic-usage-v1\"},{\"id\":\"grok-4-3-2026-09-06\",\"name\":\"Grok 4.3 · 2026-09-06\",\"date\":\"2026-09-06\",\"modelId\":\"grok-4-3\",\"model\":\"Grok 4.3\",\"organizationId\":\"xai\",\"organization\":\"xAI / SpaceXAI\",\"requests\":3436,\"inputTokens\":3985760,\"outputTokens\":1099520,\"spend\":7.731,\"latency\":1360,\"dataKind\":\"SYNTHETIC · not observed usage\",\"source\":\"Deterministic synthetic workload fixture; not observed usage, popularity, availability or historical pricing.\",\"snapshotVersion\":\"synthetic-usage-v1\"},{\"id\":\"grok-4-3-2026-08-24\",\"name\":\"Grok 4.3 · 2026-08-24\",\"date\":\"2026-08-24\",\"modelId\":\"grok-4-3\",\"model\":\"Grok 4.3\",\"organizationId\":\"xai\",\"organization\":\"xAI / SpaceXAI\",\"requests\":3418,\"inputTokens\":3964880,\"outputTokens\":1093760,\"spend\":7.6905,\"latency\":1299,\"dataKind\":\"SYNTHETIC · not observed usage\",\"source\":\"Deterministic synthetic workload fixture; not observed usage, popularity, availability or historical pricing.\",\"snapshotVersion\":\"synthetic-usage-v1\"},{\"id\":\"grok-4-3-2026-08-30\",\"name\":\"Grok 4.3 · 2026-08-30\",\"date\":\"2026-08-30\",\"modelId\":\"grok-4-3\",\"model\":\"Grok 4.3\",\"organizationId\":\"xai\",\"organization\":\"xAI / SpaceXAI\",\"requests\":3346,\"inputTokens\":3881360,\"outputTokens\":1070720,\"spend\":7.5285,\"latency\":1241,\"dataKind\":\"SYNTHETIC · not observed usage\",\"source\":\"Deterministic synthetic workload fixture; not observed usage, popularity, availability or historical pricing.\",\"snapshotVersion\":\"synthetic-usage-v1\"},{\"id\":\"grok-4-3-2026-08-17\",\"name\":\"Grok 4.3 · 2026-08-17\",\"date\":\"2026-08-17\",\"modelId\":\"grok-4-3\",\"model\":\"Grok 4.3\",\"organizationId\":\"xai\",\"organization\":\"xAI / SpaceXAI\",\"requests\":3325,\"inputTokens\":3857000,\"outputTokens\":1064000,\"spend\":7.48125,\"latency\":1340,\"dataKind\":\"SYNTHETIC · not observed usage\",\"source\":\"Deterministic synthetic workload fixture; not observed usage, popularity, availability or historical pricing.\",\"snapshotVersion\":\"synthetic-usage-v1\"},{\"id\":\"grok-4-3-2026-09-05\",\"name\":\"Grok 4.3 · 2026-09-05\",\"date\":\"2026-09-05\",\"modelId\":\"grok-4-3\",\"model\":\"Grok 4.3\",\"organizationId\":\"xai\",\"organization\":\"xAI / SpaceXAI\",\"requests\":3267,\"inputTokens\":3789720,\"outputTokens\":1045440,\"spend\":7.35075,\"latency\":1343,\"dataKind\":\"SYNTHETIC · not observed usage\",\"source\":\"Deterministic synthetic workload fixture; not observed usage, popularity, availability or historical pricing.\",\"snapshotVersion\":\"synthetic-usage-v1\"},{\"id\":\"grok-4-3-2026-08-23\",\"name\":\"Grok 4.3 · 2026-08-23\",\"date\":\"2026-08-23\",\"modelId\":\"grok-4-3\",\"model\":\"Grok 4.3\",\"organizationId\":\"xai\",\"organization\":\"xAI / SpaceXAI\",\"requests\":3257,\"inputTokens\":3778120,\"outputTokens\":1042240,\"spend\":7.32825,\"latency\":1282,\"dataKind\":\"SYNTHETIC · not observed usage\",\"source\":\"Deterministic synthetic workload fixture; not observed usage, popularity, availability or historical pricing.\",\"snapshotVersion\":\"synthetic-usage-v1\"},{\"id\":\"grok-4-6-2026-09-01\",\"name\":\"Grok 4.6 · 2026-09-01\",\"date\":\"2026-09-01\",\"modelId\":\"grok-4-6\",\"model\":\"Grok 4.6\",\"organizationId\":\"xai\",\"organization\":\"xAI / SpaceXAI\",\"requests\":3238,\"inputTokens\":3497040,\"outputTokens\":971400,\"spend\":12.82248,\"latency\":1134,\"dataKind\":\"SYNTHETIC · not observed usage\",\"source\":\"Deterministic synthetic workload fixture; not observed usage, popularity, availability or historical pricing.\",\"snapshotVersion\":\"synthetic-usage-v1\"}]}"
+        }
+      ]
+    },
+    "transportAndExecutionMs": 4.18329199999971
+  },
+  {
+    "timestamp": "2026-09-06T09:44:55.324Z",
+    "intent": "Show the model trend over the available 90-day time series",
+    "request": {
+      "name": "workspace_apply",
+      "arguments": {
+        "version": 1,
+        "baseRevision": 4,
+        "operations": [
+          {
+            "type": "remove",
+            "id": "mcp-ranking"
+          },
+          {
+            "type": "remove",
+            "id": "mcp-scatter"
+          },
+          {
+            "type": "remove",
+            "id": "mcp-provider"
+          },
+          {
+            "type": "mount",
+            "node": {
+              "id": "mcp-model-trend",
+              "component": "Trend",
+              "datasetId": "usage",
+              "metric": "requests",
+              "timeField": "date",
+              "seriesBy": "model",
+              "title": "Model trend · synthetic workload over 90 days",
+              "limit": 720,
+              "span": 12
+            }
+          }
+        ]
+      },
+      "intent": "Show the model trend over the available 90-day time series"
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"ok\":true,\"revision\":5}"
+        }
+      ]
+    },
+    "transportAndExecutionMs": 3.847125000000233
+  },
+  {
+    "timestamp": "2026-09-06T09:45:01.259Z",
+    "intent": "Verify the model trend workspace",
+    "request": {
+      "name": "workspace_inspect",
+      "arguments": {},
+      "intent": "Verify the model trend workspace"
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"revision\":5,\"nodes\":{\"baseline\":{\"id\":\"baseline\",\"component\":\"Metric\",\"datasetId\":\"models\",\"metric\":\"outputPrice\",\"title\":\"Average output price\"},\"mcp-model-trend\":{\"id\":\"mcp-model-trend\",\"component\":\"Trend\",\"datasetId\":\"usage\",\"title\":\"Model trend · synthetic workload over 90 days\",\"metric\":\"requests\",\"timeField\":\"date\",\"limit\":720,\"seriesBy\":\"model\",\"span\":12}},\"order\":[\"baseline\",\"mcp-model-trend\"],\"bindings\":{},\"selections\":{}}"
+        }
+      ]
+    },
+    "transportAndExecutionMs": 1.519624999997177
+  }
+]

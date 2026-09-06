@@ -1,0 +1,46 @@
+{
+  "status": "targets_not_measured",
+  "baselineRequired": true,
+  "targets": [
+    {
+      "id": "headless-core-gzip",
+      "target": 25,
+      "unit": "KiB",
+      "scope": "Production browser headless core plus its browser dependencies"
+    },
+    {
+      "id": "components-only-agent-dependencies",
+      "target": 0,
+      "unit": "bytes",
+      "scope": "No provider/MCP server SDK in components-only entry"
+    },
+    {
+      "id": "small-prepared-metadata-commit-p95",
+      "target": 4,
+      "unit": "ms",
+      "scope": "20-100 nodes, at most 10 prepared ops, baseline device recorded; excludes network/LLM/data fetch/module download"
+    },
+    {
+      "id": "warm-visible-update-p95",
+      "target": 100,
+      "unit": "ms",
+      "scope": "Preloaded supported component, ready bounded data; includes commit/render/layout/paint observation"
+    },
+    {
+      "id": "field-inp-p75",
+      "target": 200,
+      "unit": "ms",
+      "scope": "Real example-app field metric; mobile/desktop cohorts separated, not a guarantee"
+    }
+  ],
+  "workloads": [
+    "100k logical table rows",
+    "50k raw time-series points",
+    "16 linked views",
+    "resize with active draft",
+    "500 mount/unmount stress cycles",
+    "disconnect/reconnect",
+    "concurrent human and agent operations"
+  ],
+  "measurements": []
+}

@@ -1,0 +1,29 @@
+# Local implementation map — 6 September 2026
+
+This map describes current code. The original PoC proof remains historical; candidate schemas in this documentation kit are specifications, not the running wire contracts.
+
+## Ownership
+
+Aeliqo remains in the existing pnpm workspace, using installed dependencies. The enclosing Project Git repository ignores products; Aeliqo has no independent Git metadata here. Changes are on disk, with parent/platform work preserved. Five packages remain private. No license was selected, repository initialized, provider key activated or package published.
+
+## Implementation and evidence map
+
+| Area | Current implementation | Verification |
+|---|---|---|
+| Semantics | model.ts, semantics.ts, temporal.ts: sum/mean/none and explicit ratio-of-sums; finite/null handling, grain and unit checks; supported currency codes; ISO month/date/offset instants; explicit data population/freshness | Semantic fixtures cover weighted ratios, mismatched currency/grain, zero/missing pairs, duplicate identities, fanout, partial/stale records and timezone independence |
+| Runtime | Normalized immutable state, revision conflicts, targeted subscriptions, atomic operations, bounded human undo/redo, pins, explicit filter versus selection bindings | Core and React tests cover stale edits, human precedence, linked filters, selection cleanup, source/target data changes and subscription cleanup |
+| Persistence | serializeWorkspace/restoreWorkspace save validated composition into a versioned document, restore into a new runtime against application-owned data | Round trips, rejected unknown version/component/operation, no raw records or credentials; storage I/O belongs to the host |
+| Extensibility | Trusted ComponentRegistry with schema metadata and validation; bounded JSON config; React renderer registration | Revenue and incident component registrations use the same operation path; invalid/executable config and missing/throwing renderer are rejected or fail presentation |
+| React | Twelve catalog components plus Workspace retained; Metric/Table/Filter/Ranking/Trend/Detail/Comparison offer direct props and import subpaths; other semantic views accept store/node without requiring the Workspace renderer or AI | SSR/hydration, filtering, ratio rendering/sorting, loading/empty/error/partial states, keyboard, IME, draft continuity, targeted updates and temporal Trend tests; see component completion matrix for per-surface limits |
+| Receipts | Core presentation.ts is shared by every adapter; version 0.2 operation/render/data axes; exact visible revision and valid ready data required for presented | Disconnection, cancellation, replays, ID collisions, invalid snapshots, renderer failures, disposal and subscription errors tested |
+| MCP / BYOK | Explicit secret-bearing pairing URL binds one workspace/renderer; exact revision receipts; BYOK explicit chat/workspace policies | Official SDK stdio MCP and real companion HTTP browser tests; deterministic provider validates UI outcomes. Chat mode cannot mutate |
+| WebMCP | Optional experimental adapter into same asynchronous dispatcher | Fake-host parity and absence tests; original native proof is historical, not a fresh run |
+| Docs | Lazy searchable Documentation tab, seven topics, responsive navigation, actual compiled examples and source previews | Example tests, mobile/tablet/desktop browser checks and screenshots |
+| Packaging | Five locally built private ESM/declaration/CSS artifacts and tarballs; install consumer uses actual artifact exports | Offline consumer install, NodeNext type checks, SSR, optional adapter imports, Vite standalone tree-shaking report |
+| Performance | Node targeted operation benchmark plus production browser CDP trace and heap measurements | Reproducible scripts and generated artifacts; no invented cross-device latency claim |
+
+## Scope and remaining external evidence
+
+The promoted foundational workflows are implemented locally. W2/W3 long-tail components and W4 hypothetical commercial features remain demand-gated by the catalog; they are not unfinished authorized implementation. The host still owns data authorization, persistence I/O and business actions. Dates are not silently grouped, currencies are not converted, and filter links require the same dataset.
+
+No fresh paid-provider execution, native WebMCP host run, external developer usability study, commercial pilot or public release is claimed. Those require actual credentials/host/customer/owner evidence. See exec-plan.md for the latest integrated checks and exact acceptance status.

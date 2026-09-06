@@ -1,0 +1,15 @@
+import { Metric } from '@aeliqo/react/metric';
+import type { DeltaProps } from '@aeliqo/react/delta';
+import type { RecordListProps } from '@aeliqo/react/record-list';
+import type { SelectionSummaryProps } from '@aeliqo/react/selection-summary';
+import type { OverviewProps } from '@aeliqo/react/overview';
+export type SummarySliceProps = DeltaProps | RecordListProps | SelectionSummaryProps | OverviewProps;
+import type { FilterProps } from '@aeliqo/react/filter';
+import type { RankingProps } from '@aeliqo/react/ranking';
+import type { TrendProps } from '@aeliqo/react/trend';
+import type { DetailProps } from '@aeliqo/react/detail';
+import type { ComparisonProps } from '@aeliqo/react/comparison';
+export type ConsumerComparisonProps = ComparisonProps;
+export type ConsumerSemanticProps = RankingProps | TrendProps | DetailProps;
+export type ConsumerFilterProps = FilterProps;
+export const example = <Metric value={42} label="Active records" />;

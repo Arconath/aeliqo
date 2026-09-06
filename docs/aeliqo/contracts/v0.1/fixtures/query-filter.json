@@ -1,0 +1,22 @@
+{
+  "select": [
+    "inputPrice"
+  ],
+  "where": {
+    "kind": "and",
+    "items": [
+      {
+        "kind": "compare",
+        "field": "inputPrice",
+        "operator": "lt",
+        "value": "2.0"
+      },
+      {
+        "kind": "isNull",
+        "field": "inputPrice",
+        "negated": true
+      }
+    ]
+  },
+  "limit": 20
+}

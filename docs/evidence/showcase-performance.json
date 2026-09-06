@@ -1,0 +1,17 @@
+{
+  "environment": "Production Vite preview in Playwright Chromium",
+  "workload": "Price/performance workspace transformed into capability landscape",
+  "capabilityValidationMs": 0.19999998807907104,
+  "capabilityExecutionMs": 0.4000000059604645,
+  "coreWorkspaceMutationMs": 0.5999999940395355,
+  "reactUpdateObservedMs": 2,
+  "componentsUpdated": [
+    "smart-matrix",
+    "smart-ranking",
+    "smart-inspection"
+  ],
+  "externalAgentMs": null,
+  "transportMs": null,
+  "reactMeasurement": "Elapsed time from semantic plan dispatch until affected component effects committed; includes browser scheduling and excludes paint.",
+  "agentLatency": "Direct showcase plan; external agent latency not applicable and remains separately reported as null."
+}

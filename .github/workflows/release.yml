@@ -1,0 +1,60 @@
+name: Publish Aeliqo image
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: r640-heavy-build
+  cancel-in-progress: false
+jobs:
+  policy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require owner-dispatched main with successful validation
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SOURCE_SHA: ${{ github.sha }}
+          REF: ${{ github.ref }}
+          ACTOR: ${{ github.actor }}
+          TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          set -eu
+          test "$GH_REPO" = Arconath/aeliqo
+          test "$EVENT" = workflow_dispatch
+          test "$REF" = refs/heads/main
+          test "$ACTOR" = hermawan22
+          test "$TRIGGERING_ACTOR" = hermawan22
+          gh api --method GET "repos/$GH_REPO/actions/workflows/quality.yml/runs" -f head_sha="$SOURCE_SHA" -f branch=main -f event=push -f status=success --jq '.workflow_runs' > "$RUNNER_TEMP/validation-runs.json"
+          jq -e --arg sha "$SOURCE_SHA" 'any(.[]; .head_sha == $sha and .head_branch == "main" and .event == "push" and .conclusion == "success")' "$RUNNER_TEMP/validation-runs.json"
+  build:
+    needs: policy
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.actor == 'hermawan22' && github.triggering_actor == 'hermawan22'
+    runs-on:
+      group: arconath-jit
+      labels: r640-trusted
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Verify rootless BuildKit and publish web image
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_ACTOR: ${{ github.actor }}
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          scripts/ci/check-runner-contract.sh --runtime=buildkit
+          scripts/ci/publish-image.sh
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-image
+          path: out/ci-release/
+          if-no-files-found: error
+          retention-days: 7
