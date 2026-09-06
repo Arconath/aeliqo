@@ -11,13 +11,19 @@ COPY tsconfig.json vite.config.ts eslint.config.js ./
 RUN pnpm install --frozen-lockfile
 RUN pnpm build
 
-FROM nginxinc/nginx-unprivileged:1.28-alpine@sha256:7377697a821c131a924a7105fafbe7414db4e9fcc77a6f08f776f33f141ec3f8
+FROM golang:1.26.6-alpine@sha256:3889b425f035be855a72fb4755265311293b6d414521f0a519d819df32222d83 AS server-build
 
 ARG SOURCE_REVISION=unknown
+WORKDIR /src
+COPY deploy/server.go ./server.go
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w -X main.revision=${SOURCE_REVISION}" -o /aeliqo-server ./server.go
+
+FROM scratch
+
 LABEL org.opencontainers.image.source="https://github.com/Arconath/aeliqo"
-USER root
-COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /src/dist /usr/share/nginx/html
-RUN printf '{"product":"aeliqo","revision":"%s"}\n' "$SOURCE_REVISION" > /usr/share/nginx/html/version.json
-USER 101
+COPY --from=server-build /aeliqo-server /aeliqo-server
+COPY --from=build /src/dist /srv/aeliqo
+WORKDIR /srv/aeliqo
+USER 101:101
 EXPOSE 8080
+ENTRYPOINT ["/aeliqo-server"]
