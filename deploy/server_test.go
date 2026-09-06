@@ -20,6 +20,8 @@ func TestServeUntilSignalDrainsActiveRequest(t *testing.T) {
 		<-releaseRequest
 		_, _ = io.WriteString(w, "complete")
 	})}
+	shutdownStarted := make(chan struct{})
+	server.RegisterOnShutdown(func() { close(shutdownStarted) })
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatal(err)
@@ -52,6 +54,16 @@ func TestServeUntilSignalDrainsActiveRequest(t *testing.T) {
 	signals <- syscall.SIGTERM
 	for ready.Load() {
 		time.Sleep(time.Millisecond)
+	}
+	select {
+	case <-shutdownStarted:
+	case <-time.After(time.Second):
+		t.Fatal("server shutdown did not start")
+	}
+	select {
+	case <-responseDone:
+		t.Fatal("active request ended before graceful shutdown released it")
+	default:
 	}
 	close(releaseRequest)
 	<-responseDone
