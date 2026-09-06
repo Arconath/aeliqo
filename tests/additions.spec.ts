@@ -1,9 +1,9 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { availablePort } from "../scripts/browser-test-port";
-test("additive summary components support keyboard selection, narrow RTL and accessible scope", async ({ page }) => {
+test("additive summary components support keyboard selection, narrow RTL and accessible scope", async ({ page }, testInfo) => {
   const port = await availablePort();
-  await page.goto(`/?aeliqoBridgePort=${port}`);
+  await page.goto(`/playground/?aeliqoBridgePort=${port}`);
   await page.getByRole("tab", { name: "Documentation", exact: true }).click();
   await page.locator('a[href="#docs-components"]').click();
   const delta = page.getByRole("region", { name: "Standalone Delta example", exact: true });
@@ -23,7 +23,7 @@ test("additive summary components support keyboard selection, narrow RTL and acc
   await page.setViewportSize({ width: 360, height: 900 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await overview.locator('.docs-preview').evaluate(element => { element.setAttribute("dir", "rtl"); element.setAttribute("data-aeliqo-theme", "dark"); });
-  await overview.screenshot({ path: "test-results/additions-overview-narrow-rtl.png" });
+  await overview.screenshot({ path: testInfo.outputPath("additions-overview-narrow-rtl.png") });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const accessibility = await new AxeBuilder({ page }).include('[aria-label="Standalone Delta example"]').include('[aria-label="Standalone RecordList example"]').include('[aria-label="Standalone SelectionSummary example"]').include('[aria-label="Standalone Overview example"]').analyze();
   expect(accessibility.violations).toEqual([]);

@@ -1,4 +1,32 @@
-import type { DataPort, DataRecord, DataSnapshot, Dataset, MetricField } from './model';
+import type { DataPort, DataRecord, DataSnapshot, Dataset, MetricField, WorkspaceInteraction } from './model';
+import { parseTemporalValue } from './temporal';
+
+/** A projection cannot strengthen the population claims of its input. */
+export function deriveSnapshot(source: DataSnapshot, records: readonly DataRecord[]): DataSnapshot {
+  const rest = { ...source };
+  delete rest.totalCount;
+  const complete = (source.scope === 'entire-dataset' || source.scope === 'filtered-result') && (source.totalCount === undefined || source.totalCount === source.records.length);
+  return {
+    ...rest,
+    records,
+    scope: complete ? 'filtered-result' : source.scope,
+    ...(complete && source.status === 'ready' ? { totalCount: records.length } : {}),
+  };
+}
+
+/** Apply only input ports supplied by explicit compatible links. */
+export function filterInteractionSnapshot(dataset: Dataset, source: DataSnapshot, inputs: readonly (WorkspaceInteraction | null)[]): DataSnapshot {
+  const active = inputs.filter((input): input is WorkspaceInteraction => input !== null &&
+    (input.kind === 'range' ? input.range !== null : input.value !== null || input.valueType === 'null'));
+  if (!active.length) return source;
+  const records = source.records.filter(record => active.every(input => {
+    if (input.kind === 'group') return record[input.field] === input.value;
+    const field = dataset.timeFields.find(field => field.key === input.field);
+    const timestamp = field && parseTemporalValue(record[input.field], field);
+    return timestamp != null && input.range !== null && timestamp >= input.range.start && timestamp <= input.range.end;
+  }));
+  return deriveSnapshot(source, records);
+}
 
 function requireMeaning(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);

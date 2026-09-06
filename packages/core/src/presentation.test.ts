@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import { createCapabilityDispatcher, createWorkspace, defineDataset, receiptSchema, type DataPort, type DataSnapshot } from "./index";
 
 function fixture() {
-  const dataset = defineDataset({ id: "events", label: "Events", entity: "Event", identity: "id", labelField: "name", dimensions: [{ key: "name", label: "Name" }], metrics: [], timeFields: [] });
-  let snapshot: DataSnapshot = { status: "ready", scope: "entire-dataset", records: [{ id: "one", name: "One" }] };
+  const dataset = defineDataset({ id: "events", label: "Events", entity: "Event", identity: "id", labelField: "name", dimensions: [{ key: "name", label: "Name" }, { key: "group", label: "Group" }], metrics: [{ key: "count", label: "Count", aggregation: "sum" }], timeFields: [{ key: "at", label: "At", temporal: "date" }] });
+  let snapshot: DataSnapshot = { status: "ready", scope: "entire-dataset", records: [{ id: "one", name: "One", group: "A", count: 1, at: "2026-09-01" }] };
   const listeners = new Set<() => void>();
   const port: DataPort = { listDatasets: () => [dataset], getDataset: () => dataset, getSnapshot: () => snapshot, subscribe: (_id, fn) => { listeners.add(fn); return () => { listeners.delete(fn); }; } };
   const store = createWorkspace({ dataPort: port });
@@ -12,6 +12,39 @@ function fixture() {
   return { store, dispatcher, request, listeners, port, update(next: DataSnapshot) { snapshot = next; for (const fn of [...listeners]) fn(); } };
 }
 describe("shared operation receipts", () => {
+  it.each([
+    ["ready", { status: "ready" as const, records: [{ id: "one", name: "One", group: "A", count: 1, at: "2026-09-01" }] }, "ready", "presented"],
+    ["partial", { status: "ready" as const, scope: "loaded-page" as const, totalCount: 2, records: [{ id: "one", name: "One", group: "A", count: 1, at: "2026-09-01" }] }, "partial", "pending"],
+    ["error", { status: "error" as const, error: "Unavailable", records: [] }, "failed", "failed"],
+  ] as const)("tracks source, linked receiver, and %s data for range receipts", (_label, next, dataStatus, outcome) => {
+    const { dispatcher, store, update } = fixture();
+    expect(store.apply({ version: 1, baseRevision: 0, operations: [
+      { type: "mount", node: { id: "source", component: "Trend", datasetId: "events", metric: "count", timeField: "at" } },
+      { type: "mount", node: { id: "target", component: "EventTimeline", datasetId: "events", timeField: "at" } },
+      { type: "connect", binding: { id: "range", mode: "range", source: "source", target: "target", entity: "Event" } },
+    ] }).ok).toBe(true);
+    update(next);
+    const renderer = dispatcher.presentation.connect("renderer");
+    dispatcher.dispatch("workspace_apply", { version: 1, baseRevision: 1, operations: [
+      { type: "interact", id: "source", payload: { kind: "range", field: "at", range: { start: Date.UTC(2026, 8, 1), end: Date.UTC(2026, 8, 2) } } },
+    ] }, { requestId: `range-${_label}` });
+    renderer.acknowledge(2);
+    expect(dispatcher.presentation.inspect(`range-${_label}`)).toMatchObject({ changedNodeIds: ["source", "target"], data: { status: dataStatus }, outcome });
+  });
+  it("tracks group interaction sources and linked receivers in receipts", () => {
+    const { dispatcher, store } = fixture();
+    expect(store.apply({ version: 1, baseRevision: 0, operations: [
+      { type: "mount", node: { id: "source", component: "MetricBreakdown", datasetId: "events", metric: "count", dimension: "group" } },
+      { type: "mount", node: { id: "target", component: "MetricBreakdown", datasetId: "events", metric: "count", dimension: "group" } },
+      { type: "connect", binding: { id: "group", mode: "group", source: "source", target: "target", entity: "Event" } },
+    ] }).ok).toBe(true);
+    const renderer = dispatcher.presentation.connect("renderer");
+    dispatcher.dispatch("workspace_apply", { version: 1, baseRevision: 1, operations: [
+      { type: "interact", id: "source", payload: { kind: "group", field: "group", value: "A" } },
+    ] }, { requestId: "group" });
+    renderer.acknowledge(2);
+    expect(dispatcher.presentation.inspect("group")).toMatchObject({ changedNodeIds: ["source", "target"], data: { status: "ready" }, outcome: "presented" });
+  });
   it("reports invalid snapshots and thrown application reads as data failures after commit", () => {
     const {dispatcher,request,update,port,store}=fixture();
     update({status:"ready",records:[{id:"duplicate",name:"A"},{id:"duplicate",name:"B"}]});

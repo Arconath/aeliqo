@@ -9,8 +9,8 @@ async function readBody(request:IncomingMessage):Promise<unknown> {
   for await(const chunk of request) { body+=String(chunk);if(Buffer.byteLength(body)>8192)throw new Error('Request exceeds 8KB'); }
   return JSON.parse(body) as unknown;
 }
-export function createCompanion(options:{port?:number;bridgePort?:number;allowedOrigins?:readonly string[];provider?:ProviderAdapter;apiKey?:string;model?:string}={}) {
-  const mcp=createAeliqoServer({port:options.bridgePort,allowedOrigins:options.allowedOrigins});
+export function createCompanion(options:{port?:number;bridgePort?:number;allowedOrigins?:readonly string[];provider?:ProviderAdapter;apiKey?:string;model?:string;workspaceId?:string;rendererId?:string;byokTimeoutMs?:number}={}) {
+  const mcp=createAeliqoServer({port:options.bridgePort,allowedOrigins:options.allowedOrigins,workspaceId:options.workspaceId,rendererId:options.rendererId});
   const allowedOrigins=options.allowedOrigins ? new Set(options.allowedOrigins) : origins;
   const model=options.model??process.env.OPENAI_MODEL??'gpt-5.4-mini';
   const apiKey=options.apiKey??process.env.OPENAI_API_KEY;
@@ -25,17 +25,22 @@ export function createCompanion(options:{port?:number;bridgePort?:number;allowed
     response.setHeader('Vary','Origin');
     if(request.method==='OPTIONS') {response.setHeader('Access-Control-Allow-Methods','GET, POST');response.setHeader('Access-Control-Allow-Headers','Content-Type, Authorization');response.writeHead(204);response.end();return;}
     if(!mcp.bridge.authorize(request.headers.authorization?.replace(/^Bearer /,''))) {send(401,{error:'Pairing credential required'});return;}
-    if(request.method==='GET'&&request.url==='/status') {send(200,{providerConfigured:Boolean(provider),model,busy,workspaceConnected:mcp.bridge.connected});return;}
+    if(request.method==='GET'&&request.url==='/status') {send(200,{providerConfigured:Boolean(provider),model,busy,workspaceConnected:mcp.bridge.connected,...mcp.bridge.identity});return;}
     if(request.method!=='POST'||request.url!=='/byok') {send(404,{error:'Unknown endpoint'});return;}
     if(request.headers['content-type']!=='application/json') {send(415,{error:'Expected application/json'});return;}
     if(busy) {send(409,{error:'An intent is already running'});return;}
     if(!provider) {send(503,{error:'Set OPENAI_API_KEY in the companion environment, then restart'});return;}
+    const client=new AbortController();
+    const abortClient=()=>client.abort(new Error('BYOK client disconnected'));
+    request.once('aborted',abortClient);
+    response.once('close',()=>{if(!response.writableEnded)abortClient();});
     try {
       const {intent}=z.object({intent:z.string().trim().min(1).max(4000)}).strict().parse(await readBody(request));
       if(busy){send(409,{error:'An intent is already running'});return;}
       busy=true;
       try {
-        const result=await runAgent(provider,intent,(name,input)=>mcp.bridge.request(name,input,'BYOK'),{signal:controller.signal,output:'workspace'});
+        const signal=AbortSignal.any([controller.signal,mcp.bridge.revocationSignal,client.signal,AbortSignal.timeout(Math.max(1000,Math.min(options.byokTimeoutMs??60000,120000)))]);
+        const result=await runAgent(provider,intent,(name,input)=>mcp.bridge.request(name,input,'BYOK',{signal}),{signal,output:'workspace'});
         send(200,result);
       } finally {busy=false;}
     } catch(error){send(400,{error:error instanceof Error?error.message:'Intent failed'});}

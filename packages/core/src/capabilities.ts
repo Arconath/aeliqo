@@ -1,7 +1,12 @@
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { notifyObserver } from "./observers";
-import { createPresentationTracker, type PresentationTracker, type WorkspaceReceipt } from "./presentation";
+import { suggestViews, viewTasks, type ViewSuggestion } from "./suggestions";
+import {
+  createPresentationTracker,
+  type PresentationTracker,
+  type WorkspaceReceipt,
+} from "./presentation";
 import { validateSnapshot, snapshotWarnings } from "./semantics";
 import {
   compareMetricRecords,
@@ -32,14 +37,31 @@ export const filterSchema = z
   })
   .strict();
 function jsonValue(depth: number): z.ZodType<import("./model").JsonValue> {
-  const scalar = z.union([z.null(), z.boolean(), z.number().finite(), z.string().max(2000)]);
-  return depth === 0 ? scalar : z.union([scalar, z.array(jsonValue(depth - 1)).max(30), z.record(id, jsonValue(depth - 1)).refine(value => Object.keys(value).length <= 30)]);
+  const scalar = z.union([
+    z.null(),
+    z.boolean(),
+    z.number().finite(),
+    z.string().max(2000),
+  ]);
+  return depth === 0
+    ? scalar
+    : z.union([
+        scalar,
+        z.array(jsonValue(depth - 1)).max(30),
+        z
+          .record(id, jsonValue(depth - 1))
+          .refine((value) => Object.keys(value).length <= 30),
+      ]);
 }
 const fields = {
-  component: z.string().min(1).max(100).regex(/^[A-Za-z][A-Za-z0-9_.:-]*$/),
+  component: z
+    .string()
+    .min(1)
+    .max(100)
+    .regex(/^[A-Za-z][A-Za-z0-9_.:-]*$/),
   datasetId: id,
   title: z.string().max(160).optional(),
-  pinned:z.boolean().optional(),
+  pinned: z.boolean().optional(),
   metric: id.optional(),
   xMetric: id.optional(),
   dimension: id.optional(),
@@ -54,7 +76,10 @@ const fields = {
   height: z.number().int().min(240).max(900).optional(),
   density: z.enum(["comfortable", "compact"]).optional(),
   filters: z.array(filterSchema).max(10).optional(),
-  config: z.record(id, jsonValue(3)).refine(value => Object.keys(value).length <= 30).optional(),
+  config: z
+    .record(id, jsonValue(3))
+    .refine((value) => Object.keys(value).length <= 30)
+    .optional(),
 };
 export const patchSchema = z
   .object({
@@ -63,8 +88,16 @@ export const patchSchema = z
     operations: z
       .array(
         z.discriminatedUnion("type", [
-          z.object({ type: z.literal("move"), id, index: z.number().int().min(0) }).strict(),
-          z.object({ type: z.literal("pin"), id, pinned:z.boolean() }).strict(),
+          z
+            .object({
+              type: z.literal("move"),
+              id,
+              index: z.number().int().min(0),
+            })
+            .strict(),
+          z
+            .object({ type: z.literal("pin"), id, pinned: z.boolean() })
+            .strict(),
           z.object({ type: z.literal("undo") }).strict(),
           z.object({ type: z.literal("redo") }).strict(),
           z
@@ -79,7 +112,29 @@ export const patchSchema = z
               type: z.literal("configure"),
               id,
               patch: z.object(fields).partial().strict(),
-              unset: z.array(z.enum(["title", "metric", "xMetric", "dimension", "timeField", "direction", "limit", "filters", "columns", "compareIds", "seriesBy", "relationship", "span", "height", "density", "config"])).max(17).optional(),
+              unset: z
+                .array(
+                  z.enum([
+                    "title",
+                    "metric",
+                    "xMetric",
+                    "dimension",
+                    "timeField",
+                    "direction",
+                    "limit",
+                    "filters",
+                    "columns",
+                    "compareIds",
+                    "seriesBy",
+                    "relationship",
+                    "span",
+                    "height",
+                    "density",
+                    "config",
+                  ]),
+                )
+                .max(17)
+                .optional(),
             })
             .strict(),
           z
@@ -92,7 +147,9 @@ export const patchSchema = z
                   target: id,
                   entity: id,
                   relationship: id.optional(),
-                  mode:z.enum(["selection","filter"]).optional(),
+                  mode: z
+                    .enum(["selection", "filter", "range", "group"])
+                    .optional(),
                 })
                 .strict(),
             })
@@ -103,6 +160,37 @@ export const patchSchema = z
               type: z.literal("select"),
               id,
               recordId: z.string().min(1).max(100).nullable(),
+            })
+            .strict(),
+          z
+            .object({
+              type: z.literal("interact"),
+              id,
+              payload: z.discriminatedUnion("kind", [
+                z
+                  .object({
+                    kind: z.literal("range"),
+                    field: id,
+                    range: z
+                      .object({
+                        start: z.number().finite(),
+                        end: z.number().finite(),
+                      })
+                      .strict()
+                      .nullable(),
+                  })
+                  .strict(),
+                z
+                  .object({
+                    kind: z.literal("group"),
+                    field: id,
+                    valueType: z.enum(["null", "string", "number"]).optional(),
+                    value: z
+                      .union([z.string().max(160), z.number().finite()])
+                      .nullable(),
+                  })
+                  .strict(),
+              ]),
             })
             .strict(),
         ]),
@@ -121,9 +209,15 @@ export const querySchema = z
   })
   .strict();
 export const searchSchema = z
-  .object({ query: z.string().max(100).optional() })
+  .object({
+    query: z.string().max(100).optional(),
+    datasetId: id.optional(),
+    task: z.enum(viewTasks).optional(),
+  })
   .strict();
-export const inspectSchema = z.object({ requestId: z.string().min(1).max(100).optional() }).strict();
+export const inspectSchema = z
+  .object({ requestId: z.string().min(1).max(100).optional() })
+  .strict();
 export type CapabilityName =
   "workspace_inspect" | "catalog_search" | "data_query" | "workspace_apply";
 export type OperationSource = "direct" | "MCP" | "BYOK" | "WebMCP";
@@ -153,10 +247,14 @@ export type CapabilityInputs = {
   [Name in CapabilityName]: z.infer<CapabilitySchemas[Name]>;
 };
 export interface CapabilityResults {
-  workspace_inspect: WorkspaceState & { receipt?: WorkspaceReceipt; receiptStatus?: "unknown-or-expired" };
+  workspace_inspect: WorkspaceState & {
+    receipt?: WorkspaceReceipt;
+    receiptStatus?: "unknown-or-expired";
+  };
   catalog_search: {
     datasets: readonly Dataset[];
     components: readonly Capability[];
+    suggestions?: readonly ViewSuggestion[];
   };
   data_query: {
     datasetId: string;
@@ -179,7 +277,9 @@ export interface CapabilityContract<
     store: WorkspaceStore,
     input: CapabilityInputs[Name],
     context?: DispatchContext,
-  ): Name extends "workspace_apply" ? { readonly ok: true; readonly revision: number } : CapabilityResults[Name];
+  ): Name extends "workspace_apply"
+    ? { readonly ok: true; readonly revision: number }
+    : CapabilityResults[Name];
 }
 function defineCapability<Name extends CapabilityName>(
   definition: Omit<CapabilityContract<Name>, "jsonSchema">,
@@ -202,20 +302,31 @@ export const capabilityContracts = [
   defineCapability({
     id: "catalog_search",
     description:
-      "Discover datasets, fields, relationships and trusted components. Query matches any whitespace-separated keyword. Use an empty query to discover all. No executable UI is accepted.",
+      "Discover datasets, fields, relationships and trusted components. Query matches any whitespace-separated keyword. Use an empty query to discover all. Pass a known datasetId with a declared task to receive deterministic view suggestions that require explicit acceptance. No executable UI is accepted.",
     inputSchema: searchSchema,
-    execute: (store, { query }) => {
-      const terms = query?.toLowerCase().trim().split(/\s+/).filter(Boolean) ?? [];
-      const matches = (value: unknown) => !terms.length || terms.some(term => JSON.stringify(value).toLowerCase().includes(term));
+    execute: (store, { query, datasetId, task }) => {
+      const terms =
+        query?.toLowerCase().trim().split(/\s+/).filter(Boolean) ?? [];
+      const matches = (value: unknown) =>
+        !terms.length ||
+        terms.some((term) =>
+          JSON.stringify(value).toLowerCase().includes(term),
+        );
+      let suggestions: readonly ViewSuggestion[] | undefined;
+      if (task) {
+        const dataset = datasetId && store.dataPort.getDataset(datasetId);
+        if (!dataset)
+          throw new Error("Task suggestions require a known datasetId");
+        suggestions = suggestViews(dataset, task, store.registry);
+      }
       return {
+        ...(suggestions ? { suggestions } : {}),
         datasets: store.dataPort
           .listDatasets()
-          .filter((dataset) =>
-            matches(dataset),
-          ),
-        components: store.registry.list().filter((component) =>
-          matches(component),
-        ),
+          .filter((dataset) => matches(dataset)),
+        components: store.registry
+          .list()
+          .filter((component) => matches(component)),
       };
     },
   }),
@@ -237,10 +348,17 @@ export const capabilityContracts = [
       if (snapshot.status !== "ready")
         throw new Error(snapshot.error ?? "Dataset is loading");
       validateSnapshot(dataset, snapshot, store.dataPort);
-      const records = [...filterRecords(snapshot.records, query.filters, dataset)];
+      const records = [
+        ...filterRecords(snapshot.records, query.filters, dataset),
+      ];
       if (query.metric)
         records.sort((a, b) =>
-          compareMetricRecords(a, b, dataset.metrics.find(metric => metric.key === query.metric)!, query.direction),
+          compareMetricRecords(
+            a,
+            b,
+            dataset.metrics.find((metric) => metric.key === query.metric)!,
+            query.direction,
+          ),
         );
       return {
         datasetId: dataset.id,
@@ -258,7 +376,10 @@ export const capabilityContracts = [
       "Change the visible workspace with an atomic semantic patch. For display intents, follow data_query with this tool and verify with workspace_inspect. Scatter uses xMetric + metric; Distribution uses metric; Matrix uses metric columns; Relationship uses a declared relationship. Configure columns, seriesBy, span (1–12), height, density, filters and limit. Move changes reading order. Bindings carry compatible semantic selections. No executable UI is accepted and unsupported evidence must remain explicit.",
     inputSchema: patchSchema,
     execute: (store, request, context) => {
-      const applied = store.apply(request, {actor: context?.source && context.source !== "direct" ? "agent" : "human"});
+      const applied = store.apply(request, {
+        actor:
+          context?.source && context.source !== "direct" ? "agent" : "human",
+      });
       if (!applied.ok) throw new Error(applied.error);
       return applied;
     },
@@ -271,7 +392,12 @@ export interface CapabilityDispatcher {
     input: unknown,
     context?: DispatchContext,
   ): CapabilityResults[Name];
-  dispatchAsync<Name extends CapabilityName>(name: Name, input: unknown, context?: DispatchContext, options?: { signal?: AbortSignal; timeoutMs?: number }): Promise<CapabilityResults[Name]>;
+  dispatchAsync<Name extends CapabilityName>(
+    name: Name,
+    input: unknown,
+    context?: DispatchContext,
+    options?: { signal?: AbortSignal; timeoutMs?: number },
+  ): Promise<CapabilityResults[Name]>;
 }
 /** One executor for every protocol. Request replay is bounded to the most recent 100 successful requests. */
 export function createCapabilityDispatcher(
@@ -283,9 +409,12 @@ export function createCapabilityDispatcher(
   } = {},
 ): CapabilityDispatcher {
   const now = options.now ?? (() => Date.now());
-  const emit = (event: CapabilityEvent) => notifyObserver(() => options.onEvent?.(event));
+  const emit = (event: CapabilityEvent) =>
+    notifyObserver(() => options.onEvent?.(event));
   const completed = new Map<string, { fingerprint: string; result: unknown }>();
-  const presentation = createPresentationTracker(store, { workspaceId: options.workspaceId });
+  const presentation = createPresentationTracker(store, {
+    workspaceId: options.workspaceId,
+  });
   let sequence = 0;
   const inFlight = new Set<string>();
   const dispatcher: CapabilityDispatcher = {
@@ -301,7 +430,8 @@ export function createCapabilityDispatcher(
       let operations: readonly Operation[] = [];
       let reservedId: string | undefined;
       try {
-        if (presentation.disposed) throw new Error("Capability dispatcher is disposed");
+        if (presentation.disposed)
+          throw new Error("Capability dispatcher is disposed");
         // The lookup discriminant ties this schema and handler to the requested result type.
         const contract = capabilityContracts.find(
           (item) => item.id === name,
@@ -326,27 +456,39 @@ export function createCapabilityDispatcher(
             validationMs: validated - started,
             executionMs: 0,
             operations: [],
-            revision: name === "workspace_apply"
-              ? (cached.result as CapabilityResults["workspace_apply"]).revision
-              : store.getState().revision,
+            revision:
+              name === "workspace_apply"
+                ? (cached.result as CapabilityResults["workspace_apply"])
+                    .revision
+                : store.getState().revision,
             ok: true,
             replayed: true,
           });
-          return (name === "workspace_apply"
-            ? presentation.inspect(context.requestId!) ?? cached.result
-            : cached.result) as CapabilityResults[Name];
+          return (
+            name === "workspace_apply"
+              ? (presentation.inspect(context.requestId!) ?? cached.result)
+              : cached.result
+          ) as CapabilityResults[Name];
         }
         if (name === "workspace_apply")
           operations = (parsed as CapabilityInputs["workspace_apply"])
             .operations;
         if (name === "workspace_apply") {
           if (context.requestId) {
-            if (inFlight.has(context.requestId) || presentation.inspect(context.requestId))
+            if (
+              inFlight.has(context.requestId) ||
+              presentation.inspect(context.requestId)
+            )
               throw new Error("Request id was already used or is in progress");
             reservedId = context.requestId;
           } else {
-            do { reservedId = `local-${++sequence}`; }
-            while (completed.has(reservedId) || inFlight.has(reservedId) || presentation.inspect(reservedId));
+            do {
+              reservedId = `local-${++sequence}`;
+            } while (
+              completed.has(reservedId) ||
+              inFlight.has(reservedId) ||
+              presentation.inspect(reservedId)
+            );
           }
           inFlight.add(reservedId);
         }
@@ -355,12 +497,22 @@ export function createCapabilityDispatcher(
         let result = executed as CapabilityResults[Name];
         if (name === "workspace_apply") {
           const requestId = reservedId!;
-          result = presentation.record(requestId, before, (executed as { revision: number }).revision) as CapabilityResults[Name];
+          result = presentation.record(
+            requestId,
+            before,
+            (executed as { revision: number }).revision,
+          ) as CapabilityResults[Name];
         } else if (name === "workspace_inspect") {
-          const requestId = (parsed as CapabilityInputs["workspace_inspect"]).requestId;
+          const requestId = (parsed as CapabilityInputs["workspace_inspect"])
+            .requestId;
           if (requestId) {
             const receipt = presentation.inspect(requestId);
-            result = { ...store.getState(), ...(receipt ? { receipt } : { receiptStatus: "unknown-or-expired" as const }) } as CapabilityResults[Name];
+            result = {
+              ...store.getState(),
+              ...(receipt
+                ? { receipt }
+                : { receiptStatus: "unknown-or-expired" as const }),
+            } as CapabilityResults[Name];
           }
         }
         const completedId = reservedId ?? context.requestId;
@@ -376,9 +528,10 @@ export function createCapabilityDispatcher(
           validationMs: validated - started,
           executionMs: now() - validated,
           operations,
-          revision: name === "workspace_apply"
-            ? (result as CapabilityResults["workspace_apply"]).revision
-            : store.getState().revision,
+          revision:
+            name === "workspace_apply"
+              ? (result as CapabilityResults["workspace_apply"]).revision
+              : store.getState().revision,
           ok: true,
         });
         return result;
@@ -405,11 +558,25 @@ export function createCapabilityDispatcher(
       waitOptions?.signal?.throwIfAborted();
       const result = dispatcher.dispatch(name, input, context);
       if (name !== "workspace_apply") return result;
-      if (presentation.disposed && !presentation.inspect((result as WorkspaceReceipt).requestId)) {
+      if (
+        presentation.disposed &&
+        !presentation.inspect((result as WorkspaceReceipt).requestId)
+      ) {
         const receipt = result as WorkspaceReceipt;
-        return (receipt.outcome === "presented" ? receipt : {...receipt,render:{status:"disconnected",revision:receipt.revision},outcome:"pending"}) as typeof result;
+        return (
+          receipt.outcome === "presented"
+            ? receipt
+            : {
+                ...receipt,
+                render: { status: "disconnected", revision: receipt.revision },
+                outcome: "pending",
+              }
+        ) as typeof result;
       }
-      return await presentation.wait((result as WorkspaceReceipt).requestId, waitOptions) as typeof result;
+      return (await presentation.wait(
+        (result as WorkspaceReceipt).requestId,
+        waitOptions,
+      )) as typeof result;
     },
   };
   return dispatcher;

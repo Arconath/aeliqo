@@ -1,10 +1,10 @@
-# Aeliqo · POC v2
+# Aeliqo
 
-A headless TypeScript UI core, framework-owned React components and one shared capability layer projected into MCP, BYOK and experimental WebMCP. This upgrades the original POC in place.
+Smart semantic React components and adaptive workspaces backed by a headless TypeScript core. Aeliqo keeps application data and user state under application control while exposing the same validated capability layer to manual use, MCP, BYOK, and experimental WebMCP.
 
-The production-quality continuation is tracked in the [local implementation audit](docs/aeliqo/current-state.md), [execution record](docs/aeliqo/exec-plan.md), and [completion audit](docs/aeliqo/completion-audit.md). The public playground is deployed at [aeliqo.com](https://aeliqo.com) from an immutable, scanned image; package publication remains a separate release decision. The historical PoC proof below does not by itself establish those release facts.
+Release status and artifact identities are tracked in the [execution record](docs/aeliqo/exec-plan.md). The public site is deployed at [aeliqo.com](https://aeliqo.com) from an immutable, scanned image. Historical PoC audits remain available as regression evidence and do not establish current release facts.
 
-**Frozen proof verdict: strongly proven for its defined POC scope.** That dated proof used eleven trusted catalog components. The current runtime exposes sixteen catalog components plus Workspace, with a per-surface evidence matrix rather than one blanket quality claim. Live Codex→MCP→browser and native in-app-browser WebMCP worked in the frozen proof. Deterministic BYOK parity has fresh local evidence; live OpenAI execution remains unverified. See [the executed proof report](docs/PROOF.md).
+The current milestone prepares the first public framework release. The earlier POC remains a dated regression baseline: it proved eleven trusted catalog components and the shared control paths under its recorded conditions. Current release evidence and unresolved external gates are tracked in [the execution record](docs/aeliqo/exec-plan.md); historical evidence remains in [the proof report](docs/PROOF.md).
 
 ## Run
 
@@ -15,12 +15,12 @@ corepack pnpm install
 pnpm dev
 ```
 
-Open [the playground](http://127.0.0.1:5173). Direct UI works with no companion, keys or agent.
+Open [the product site](http://127.0.0.1:5173) or [the playground](http://127.0.0.1:5173/playground/). Direct UI works with no companion, keys or agent.
 
 - **Showcase:** start with Metric + Explorer, then choose any of eight semantic tasks. The workspace incrementally becomes distributions, correlations, relationship maps, matrices, rankings and linked inspection without generated UI code.
 - **Primitives / Explorer:** explicit `Ranking`, `Scatter` and compound use of the same semantic model. Explorer switches between Ranking and Table locally.
 - **Proof Lab:** semantic needs, matched contracts, datasets, relationships, operations, adaptation modes, component updates and separate local/agent timings.
-- **Documentation:** searchable guides, eleven compiled standalone component examples, the full implemented inventory, source previews, semantics, workspace controls, agent integration and support boundaries.
+- **Documentation:** routed public guides, compiled standalone and smart-investigation examples, source previews, semantics, workspace controls, agent integration, and explicit support boundaries.
 - **Test isolated update:** reconfigure only the baseline. Unrelated block counters stay unchanged.
 
 The curated snapshot contains 8 models and a connected Provider, Model, Pricing, Capability, Modality, ModelLimit, Benchmark, BenchmarkResult, Release and Availability graph. It is representative, not exhaustive or a latest-only comparison. Source URLs, retrieval date and version are included. Coding benchmark results are explicitly synthetic same-methodology fixtures. A single price snapshot cannot establish a historical price trend.
@@ -39,23 +39,24 @@ Example requests to Codex through native WebMCP:
 
 The native proof for this release used: “Show every model and its company in a table, with company details following the selected model.” WebMCP mounted a model Table and Provider Detail, connected them with the declared `provider` relationship, and acknowledged revision 1. Selecting GPT-5.4 mini advanced the workspace to revision 2 and resolved Provider Detail to OpenAI.
 
-For display requests the agent applies configuration, then inspects and observes the result. `data_query` alone never changes the dashboard. Native WebMCP tool results are JSON strings: parse them before reading `revision`. Refresh discovery after a page reload. This in-memory POC resets workspace state on reload.
+For display requests the agent applies configuration, then inspects and observes the result. `data_query` alone never changes the dashboard. Native WebMCP tool results are JSON strings: parse them before reading `revision`. Refresh discovery after a page reload. The public in-memory demo resets workspace state on reload.
 
-An MCP client should launch this **stdio** command with the repository as working directory:
+An MCP client can launch the public **stdio** executable after installation:
 
 ```json
 {
   "mcpServers": {
     "aeliqo": {
-      "command": "node",
-      "args": ["--import", "tsx", "apps/companion/src/cli.ts"],
-      "cwd": "/absolute/path/to/aeliqo"
+      "command": "npx",
+      "args": ["--yes", "@aeliqo/mcp"]
     }
   }
 }
 ```
 
-Client configuration formats vary; the command, arguments and absolute working directory are the launch contract. `pnpm companion` starts the same local process manually. It owns WebSocket port **4318** and HTTP port **4319**. Open its diagnostic pairing URL to explicitly bind one workspace and renderer. The secret fragment is removed from browser history after parsing. A different renderer cannot replace that target; restarting/revoking pairing requires a fresh URL. Both development port 5173 and production preview port 4173 are allowed. The existing MCP-only `pnpm mcp` command remains available.
+Until registry publication is approved, run the same executable from the verified `@aeliqo/mcp` tarball with `npm exec --package ./aeliqo-mcp-0.2.0.tgz aeliqo-mcp`. The internal `pnpm companion` development command additionally provides the loopback BYOK endpoint; external self-hosted BYOK applications import `runAgent` and `createOpenAIProvider` from `@aeliqo/byok` on their server. A copy-ready local server is in [`apps/companion/examples/byok-local-server.ts`](apps/companion/examples/byok-local-server.ts). It composes only public packages, binds to loopback, validates one explicit local origin and bearer credential, and bounds request size, concurrency, turns, and time. The complete [local agent integration recipe](docs/aeliqo/recipes/local-agent-integration.md) covers MCP configuration, BYOK startup, data authorization, and the evidence boundary. It is a local/self-hosted recipe, not a remote multi-user service.
+
+The MCP executable prints a diagnostic pairing URL that carries the non-secret expected workspace and optional renderer identity; the pairing credential stays in the URL fragment and is removed from browser history after parsing. A different renderer cannot replace that target. Client cancellation reaches pending bridge work, and revoke/restart requires a fresh credential.
 
 Ask the external agent:
 
@@ -63,12 +64,12 @@ Ask the external agent:
 
 The capabilities are defined once in core:
 
-| Capability | Meaning |
-| --- | --- |
-| `workspace_inspect` | Read revision, nodes, bindings and selections |
-| `catalog_search` | Discover semantic data, relationships and trusted components |
-| `data_query` | Bounded reads, declared-field filters, metric ordering |
-| `workspace_apply` | Validated, atomic, revision-checked semantic operations |
+| Capability          | Meaning                                                      |
+| ------------------- | ------------------------------------------------------------ |
+| `workspace_inspect` | Read revision, nodes, bindings and selections                |
+| `catalog_search`    | Discover semantic data, relationships and trusted components |
+| `data_query`        | Bounded reads, declared-field filters, metric ordering       |
+| `workspace_apply`   | Validated, atomic, revision-checked semantic operations      |
 
 Agents inspect the revision, then apply `mount`, `remove`, `configure`, `connect`, `disconnect` or `select`. A model-to-organization binding uses `relationship: "organization"` and target `entity: "Organization"`. No arbitrary code, HTML, JSX or CSS is accepted. MCP only reports success after the browser core acknowledges application. Timeouts are ambiguous: inspect before retrying. Acknowledgement is not a browser-paint guarantee.
 
@@ -98,21 +99,27 @@ Trend retains explicitly missing observations as gaps. Missing endpoints remain 
 
 ```tsx
 const node = {
-  id: 'ranking', component: 'Ranking' as const,
-  datasetId: 'models', metric: 'outputPrice', direction: 'asc' as const,
+  id: "ranking",
+  component: "Ranking" as const,
+  datasetId: "models",
+  metric: "outputPrice",
+  direction: "asc" as const,
 };
 const store = createWorkspace({ dataPort, nodes: [node] });
 <Ranking store={store} node={node} />;
 
 const scatter = {
-  id: 'value', component: 'Scatter' as const,
-  datasetId: 'models', xMetric: 'outputPrice', metric: 'contextWindow',
-  seriesBy: 'provider',
+  id: "value",
+  component: "Scatter" as const,
+  datasetId: "models",
+  xMetric: "outputPrice",
+  metric: "contextWindow",
+  seriesBy: "provider",
 };
 <Scatter store={store} node={scatter} />;
 ```
 
-Import core/React from `@aeliqo/core` and `@aeliqo/react`, plus `@aeliqo/react/styles.css`. Metric, Table, Filter, Ranking, Trend, Detail and Comparison have direct props and matching package subpaths. Scatter, Distribution, Relationship, Matrix and Explorer use the semantic store/node API; Workspace composes all registered renderers. Trusted extensions register their schema and React renderer without adding a central component union. `pnpm check:packages` builds private ESM/types/CSS tarballs, installs a consumer, checks SSR/types and measures standalone imports. Public npm publication and license selection remain pending owner decisions. Theme tokens are scoped with `.aeliqo-theme` or `data-aeliqo-theme`; importing CSS does not restyle the host root.
+Import core/React from `@aeliqo/core` and `@aeliqo/react`, plus `@aeliqo/react/styles.css`. Twenty catalog components have direct props and isolated package subpaths; the same implementations accept semantic store/node bindings and render inside Workspace. This includes MetricBreakdown, EventTimeline, TimeInvestigation, and QualityPanel for data investigation. Trusted extensions register their schema and React renderer without adding domain logic to core. `pnpm check:packages` builds clean ESM/types/CSS tarballs, installs external consumers from those tarballs plus registry dependencies, verifies React 18.3/19 and the documented Next.js matrix, and measures standalone imports. Apache-2.0 is approved; registry publication and its post-publish smoke checks remain release actions. Theme tokens are scoped with `.aeliqo-theme` or `data-aeliqo-theme`; importing CSS does not restyle the host root.
 
 ## Verify and reproduce evidence
 

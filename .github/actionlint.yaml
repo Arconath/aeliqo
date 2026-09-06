@@ -1,0 +1,8 @@
+self-hosted-runner:
+  labels:
+    - r640-trusted
+paths:
+  .github/workflows/quality.yml:
+    ignore:
+      # The readiness retry loop deliberately does not read its counter.
+      - '^shellcheck reported issue in this script: SC2034:warning:4:1: attempt appears unused\. Verify use \(or export if used externally\)$'

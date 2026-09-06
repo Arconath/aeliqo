@@ -1,0 +1,33 @@
+name: Bug report
+description: Report a reproducible Aeliqo defect
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Never include provider keys, pairing URLs, or private data.
+  - type: input
+    id: version
+    attributes:
+      label: Aeliqo version
+      placeholder: "@aeliqo/react 0.2.0"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include the dataset contract, component props or workspace operations needed to reproduce the issue.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Runtime
+      placeholder: "React 19, browser and version, Node.js version"

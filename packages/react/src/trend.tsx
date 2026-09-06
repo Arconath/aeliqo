@@ -1,15 +1,44 @@
 import { useId, useMemo } from "react";
 import { scaleLinear } from "d3-scale";
 import { line } from "d3-shape";
-import { aggregateMetric, parseTemporalValue, formatTemporalValue, formatMetric, type Dataset, type DataSnapshot, type WorkspaceNode, type Field, type DataRecord, type MetricField } from "@aeliqo/core";
-import { Card, DataState, safeSnapshot, DataWarnings, ready, useData, type SemanticProps } from "./shared";
+import {
+  aggregateMetric,
+  parseTemporalValue,
+  formatTemporalValue,
+  formatMetric,
+  type Dataset,
+  type DataSnapshot,
+  type WorkspaceNode,
+  type Field,
+  type DataRecord,
+  type MetricField,
+  type TemporalRange,
+} from "@aeliqo/core";
+import {
+  Card,
+  DataState,
+  safeSnapshot,
+  DataWarnings,
+  interact,
+  ready,
+  useData,
+  useInteraction,
+  type SemanticProps,
+} from "./shared";
 function trendPoints(
   records: readonly DataRecord[],
   timeField: Field,
   metric: MetricField,
 ) {
-  const populated = records.filter(record => record[timeField.key] != null);
-  const displayField = !timeField.temporal && populated.length > 0 && populated.every(record => /^\d{4}-\d{2}$/.test(String(record[timeField.key]))) ? { ...timeField, temporal: "month" as const } : timeField;
+  const populated = records.filter((record) => record[timeField.key] != null);
+  const displayField =
+    !timeField.temporal &&
+    populated.length > 0 &&
+    populated.every((record) =>
+      /^\d{4}-\d{2}$/.test(String(record[timeField.key])),
+    )
+      ? { ...timeField, temporal: "month" as const }
+      : timeField;
   const groups = new Map<number, DataRecord[]>();
   for (const record of records) {
     const key = parseTemporalValue(record[timeField.key], timeField);
@@ -20,7 +49,11 @@ function trendPoints(
   }
   return [...groups]
     .sort(([a], [b]) => a - b)
-    .map(([timestamp, group]) => ({ timestamp, time: formatTemporalValue(timestamp, displayField), value: aggregateMetric(group, metric) }));
+    .map(([timestamp, group]) => ({
+      timestamp,
+      time: formatTemporalValue(timestamp, displayField),
+      value: aggregateMetric(group, metric),
+    }));
 }
 
 type TrendPoint = ReturnType<typeof trendPoints>[number];
@@ -47,7 +80,8 @@ function sampleTrendPoints(
       if (index + 1 < points.length) mandatory.add(index + 1);
     } else {
       if (minimum === -1 || value < points[minimum]!.value!) minimum = index;
-      if (maximumValue === -1 || value > points[maximumValue]!.value!) maximumValue = index;
+      if (maximumValue === -1 || value > points[maximumValue]!.value!)
+        maximumValue = index;
     }
   }
   if (minimum !== -1) mandatory.add(minimum);
@@ -58,14 +92,19 @@ function sampleTrendPoints(
   const bucketSize = Math.ceil(points.length / bucketCount);
   const sampled = new Set(mandatory);
   for (let start = 0; start < points.length; start += bucketSize) {
-    const bucket = points.slice(start, Math.min(points.length, start + bucketSize));
+    const bucket = points.slice(
+      start,
+      Math.min(points.length, start + bucketSize),
+    );
     let bucketMinimum = -1;
     let bucketMaximum = -1;
     for (let index = 0; index < bucket.length; index++) {
       const value = bucket[index]!.value;
       if (value === null) continue;
-      if (bucketMinimum === -1 || value < bucket[bucketMinimum]!.value!) bucketMinimum = index;
-      if (bucketMaximum === -1 || value > bucket[bucketMaximum]!.value!) bucketMaximum = index;
+      if (bucketMinimum === -1 || value < bucket[bucketMinimum]!.value!)
+        bucketMinimum = index;
+      if (bucketMaximum === -1 || value > bucket[bucketMaximum]!.value!)
+        bucketMaximum = index;
     }
     if (bucketMinimum !== -1) sampled.add(start + bucketMinimum);
     if (bucketMaximum !== -1) sampled.add(start + bucketMaximum);
@@ -73,24 +112,81 @@ function sampleTrendPoints(
   return [...sampled].sort((a, b) => a - b).map((index) => points[index]!);
 }
 export interface TrendProps {
-  dataset: Dataset; snapshot: DataSnapshot; metric: string; timeField: string;
-  seriesBy?: string; title?: string;
+  dataset: Dataset;
+  snapshot: DataSnapshot;
+  metric: string;
+  timeField: string;
+  seriesBy?: string;
+  title?: string;
+  range?: TemporalRange | null;
+  onRangeChange?: (range: TemporalRange | null) => void;
 }
 export function Trend(props: TrendProps | SemanticProps) {
-  return "store" in props ? <SemanticTrend {...props} /> : <StandaloneTrend {...props} />;
+  return "store" in props ? (
+    <SemanticTrend {...props} />
+  ) : (
+    <StandaloneTrend {...props} />
+  );
 }
 function SemanticTrend(props: SemanticProps) {
   const { data, metric, dataset } = useData(props);
-  return <TrendView data={data} metric={metric} dataset={dataset} node={props.node} />;
+  const current = useInteraction(props.store, props.node.id, "range");
+  return (
+    <TrendView
+      data={data}
+      metric={metric}
+      dataset={dataset}
+      node={props.node}
+      range={current?.kind === "range" && current.field === props.node.timeField ? current.range : null}
+      onRangeChange={
+        props.node.timeField
+          ? (range) =>
+              interact(props.store, props.node, {
+                kind: "range",
+                field: props.node.timeField!,
+                range,
+              })
+          : undefined
+      }
+    />
+  );
 }
 function StandaloneTrend(props: TrendProps) {
-  const data = useMemo(() => safeSnapshot(props.dataset, props.snapshot), [props.dataset, props.snapshot]);
-  return <TrendView data={data} metric={props.dataset.metrics.find(field => field.key === props.metric)} dataset={props.dataset} node={props} />;
+  const data = useMemo(
+    () => safeSnapshot(props.dataset, props.snapshot),
+    [props.dataset, props.snapshot],
+  );
+  return (
+    <TrendView
+      data={data}
+      metric={props.dataset.metrics.find((field) => field.key === props.metric)}
+      dataset={props.dataset}
+      node={props}
+      range={props.range}
+      onRangeChange={props.onRangeChange}
+    />
+  );
 }
-function TrendView({ data, metric, dataset, node }: { data: DataSnapshot; metric?: MetricField; dataset?: Dataset; node: Partial<WorkspaceNode> }) {
+function TrendView({
+  data,
+  metric,
+  dataset,
+  node,
+  range,
+  onRangeChange,
+}: {
+  data: DataSnapshot;
+  metric?: MetricField;
+  dataset?: Dataset;
+  node: Partial<WorkspaceNode>;
+  range?: TemporalRange | null;
+  onRangeChange?: (range: TemporalRange | null) => void;
+}) {
   const descriptionId = useId();
   const chart = useMemo(() => {
-    const timeField = dataset?.timeFields.find(field => field.key === node.timeField);
+    const timeField = dataset?.timeFields.find(
+      (field) => field.key === node.timeField,
+    );
     if (!metric || !timeField) return null;
     const groups = new Map<string, DataRecord[]>();
     for (const record of data.records) {
@@ -114,10 +210,7 @@ function TrendView({ data, metric, dataset, node }: { data: DataSnapshot; metric
     const x = scaleLinear()
       .domain([
         points[0]!.timestamp,
-        Math.max(
-          points.at(-1)!.timestamp,
-          points[0]!.timestamp + 1,
-        ),
+        Math.max(points.at(-1)!.timestamp, points[0]!.timestamp + 1),
       ])
       .range([42, 520]);
     const values = points.flatMap((point) =>
@@ -127,7 +220,10 @@ function TrendView({ data, metric, dataset, node }: { data: DataSnapshot; metric
       .domain([Math.min(0, ...values), Math.max(1e-6, ...values)])
       .nice()
       .range([160, 15]);
-    const displayLimit = Math.max(8, Math.floor(MAX_DISPLAY_POINTS / series.length));
+    const displayLimit = Math.max(
+      8,
+      Math.floor(MAX_DISPLAY_POINTS / series.length),
+    );
     const displaySeries = series.map((item) => {
       const displayPoints = sampleTrendPoints(item.points, displayLimit);
       return {
@@ -150,11 +246,22 @@ function TrendView({ data, metric, dataset, node }: { data: DataSnapshot; metric
     });
     return {
       points,
-      displayPoints: displaySeries.reduce((total, item) => total + item.displayPoints.length, 0),
+      displayPoints: displaySeries.reduce(
+        (total, item) => total + item.displayPoints.length,
+        0,
+      ),
       periods: new Set(points.map((point) => point.time)).size,
       hasMeasurements: values.length > 0,
-      exactMinimum: values.reduce<number | null>((minimum, value) => minimum === null || value < minimum ? value : minimum, null),
-      exactMaximum: values.reduce<number | null>((maximum, value) => maximum === null || value > maximum ? value : maximum, null),
+      exactMinimum: values.reduce<number | null>(
+        (minimum, value) =>
+          minimum === null || value < minimum ? value : minimum,
+        null,
+      ),
+      exactMaximum: values.reduce<number | null>(
+        (maximum, value) =>
+          maximum === null || value > maximum ? value : maximum,
+        null,
+      ),
       exactMissing: points.length - values.length,
       series: displaySeries,
       x,
@@ -169,7 +276,22 @@ function TrendView({ data, metric, dataset, node }: { data: DataSnapshot; metric
       badge="Trend"
     >
       {!ready(data) || !chart || !metric ? (
-        <DataState data={data.status === "ready" && (!metric || !dataset?.timeFields.some(field => field.key === node.timeField)) ? { status: "error", records: [], error: "Choose a declared metric and time field for this trend." } : data} />
+        <DataState
+          data={
+            data.status === "ready" &&
+            (!metric ||
+              !dataset?.timeFields.some(
+                (field) => field.key === node.timeField,
+              ))
+              ? {
+                  status: "error",
+                  records: [],
+                  error:
+                    "Choose a declared metric and time field for this trend.",
+                }
+              : data
+          }
+        />
       ) : (
         <>
           {!chart.hasMeasurements ? (
@@ -251,16 +373,31 @@ function TrendView({ data, metric, dataset, node }: { data: DataSnapshot; metric
                   >
                     {point.time}
                   </text>
-              ))}
+                ))}
             </svg>
           )}
-          {chart.series.some((series) => series.points.length && !series.displayPoints.length) && (
+          {chart.series.some(
+            (series) => series.points.length && !series.displayPoints.length,
+          ) && (
             <p className="aeliqo-caveat" role="status">
-              Visual line omitted because preserving every data gap would exceed the geometry limit. Exact summary remains available.
+              Visual line omitted because preserving every data gap would exceed
+              the geometry limit. Exact summary remains available.
             </p>
           )}
           <p id={descriptionId} className="aeliqo-sr-only">
-            Exact summary for {chart.points.length} aggregated points: minimum {chart.exactMinimum === null ? "not available" : formatMetric(chart.exactMinimum, metric)}, maximum {chart.exactMaximum === null ? "not available" : formatMetric(chart.exactMaximum, metric)}, latest {chart.points.at(-1)?.value == null ? "not available" : formatMetric(chart.points.at(-1)?.value, metric)}, and {chart.exactMissing} missing measurements.
+            Exact summary for {chart.points.length} aggregated points: minimum{" "}
+            {chart.exactMinimum === null
+              ? "not available"
+              : formatMetric(chart.exactMinimum, metric)}
+            , maximum{" "}
+            {chart.exactMaximum === null
+              ? "not available"
+              : formatMetric(chart.exactMaximum, metric)}
+            , latest{" "}
+            {chart.points.at(-1)?.value == null
+              ? "not available"
+              : formatMetric(chart.points.at(-1)?.value, metric)}
+            , and {chart.exactMissing} missing measurements.
           </p>
           {node.seriesBy && (
             <ul className="aeliqo-trend-legend">
@@ -297,9 +434,78 @@ function TrendView({ data, metric, dataset, node }: { data: DataSnapshot; metric
           </p>
           {chart.displayPoints < chart.points.length && (
             <p className="aeliqo-hint" role="status">
-              Visual sample: {chart.displayPoints} of {chart.points.length} aggregated points drawn. Exact summaries use all points.
+              Visual sample: {chart.displayPoints} of {chart.points.length}{" "}
+              aggregated points drawn. Exact summaries use all points.
             </p>
           )}
+          {onRangeChange &&
+            chart.points.length > 1 &&
+            (() => {
+              const unique = [
+                ...new Map(
+                  chart.points.map((point) => [point.timestamp, point.time]),
+                ).entries(),
+              ];
+              const active = range ?? {
+                start: unique[0]![0],
+                end: unique.at(-1)![0],
+              };
+              const stride = Math.max(1, Math.ceil(unique.length / 200));
+              const displayed = new Map(unique.filter((_, index) => index % stride === 0 || index === unique.length - 1));
+              for (const timestamp of [active.start, active.end]) {
+                if (!displayed.has(timestamp)) displayed.set(timestamp, formatTemporalValue(timestamp, { temporal: "instant" }));
+              }
+              const options = [...displayed].sort(([left], [right]) => left - right);
+              return (
+                <fieldset className="aeliqo-timeline-range">
+                  <legend>Select time range</legend>
+                  <label>
+                    Start{" "}
+                    <select
+                      value={active.start}
+                      onChange={(event) => {
+                        const start = Number(event.currentTarget.value);
+                        onRangeChange({
+                          start: Math.min(start, active.end),
+                          end: active.end,
+                        });
+                      }}
+                    >
+                      {options.map(([value, label]) => (
+                        <option key={`trend-start-${value}`} value={value}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    End{" "}
+                    <select
+                      value={active.end}
+                      onChange={(event) => {
+                        const end = Number(event.currentTarget.value);
+                        onRangeChange({
+                          start: active.start,
+                          end: Math.max(end, active.start),
+                        });
+                      }}
+                    >
+                      {options.map(([value, label]) => (
+                        <option key={`trend-end-${value}`} value={value}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  {stride > 1 && <p>Range choices show sampled observation times. Current endpoints are retained exactly.</p>}
+                  {range && (
+                    <button type="button" onClick={() => onRangeChange(null)}>
+                      Clear range
+                    </button>
+                  )}
+                </fieldset>
+              );
+            })()}
         </>
       )}
       <DataWarnings data={data} />

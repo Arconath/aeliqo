@@ -207,9 +207,11 @@ it("MCP, deterministic BYOK and simulated current WebMCP converge on the same gr
   }
   expect(outcomes[1]).toEqual(outcomes[0]);
   expect(outcomes[2]).toEqual(outcomes[0]);
-  mkdirSync("docs/evidence", { recursive: true });
-  writeFileSync(
-    "docs/evidence/protocol-parity.json",
-    JSON.stringify({ intent, evidence }, null, 2) + "\n",
-  );
+  if (process.env.AELIQO_RECORD_EVIDENCE === "1") {
+    mkdirSync("docs/evidence", { recursive: true });
+    writeFileSync(
+      "docs/evidence/protocol-parity.json",
+      JSON.stringify({ intent, evidence }, null, 2) + "\n",
+    );
+  }
 });

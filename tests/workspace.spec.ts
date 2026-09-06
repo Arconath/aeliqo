@@ -21,10 +21,11 @@ test.beforeEach(async ({ page }) => {
 
 test("showcase morphs, links semantic selections and isolates unrelated updates", async ({
   page,
-}) => {
+  browserName,
+}, testInfo) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto("/");
+  await page.goto("/playground/");
   await expect(page.getByRole("heading", { name: "Minimal starting workspace" })).toBeVisible();
   await page.getByRole("tab", { name: "Showcase", exact: true }).focus();
   await page.keyboard.press("ArrowRight");
@@ -74,29 +75,19 @@ test("showcase morphs, links semantic selections and isolates unrelated updates"
   expect(timing.componentsUpdated).toEqual(
     expect.arrayContaining(["smart-matrix", "smart-ranking", "smart-inspection"]),
   );
-  writeFileSync(
-    "docs/evidence/showcase-performance.json",
-    JSON.stringify(
-      {
-        environment: "Production Vite preview in Playwright Chromium",
-        workload: "Price/performance workspace transformed into capability landscape",
-        ...timing,
-        reactMeasurement: "Elapsed time from semantic plan dispatch until affected component effects committed; includes browser scheduling and excludes paint.",
-        agentLatency: "Direct showcase plan; external agent latency not applicable and remains separately reported as null.",
-      },
-      null,
-      2,
-    ) + "\n",
-  );
   await page.getByRole("tab", { name: "Showcase", exact: true }).click();
   const retainedRanking = page.locator('[data-node-id="smart-ranking"]');
+  // Returning from Proof Lab remounts the block. Wait for its first measured
+  // adaptation commit before measuring renders caused by the isolated update.
+  await expect(retainedRanking.locator(".aeliqo-view-explanation")).toContainText("Presentation:");
   const selectedCount = await retainedRanking.getAttribute("data-render-count");
+  const baselineCount = await baseline.getAttribute("data-render-count");
   await page.getByRole("button", { name: "Test isolated update" }).click();
+  await expect(baseline).not.toHaveAttribute("data-render-count", baselineCount!);
   expect(await retainedRanking.getAttribute("data-render-count")).toBe(selectedCount);
-  expect(await baseline.getAttribute("data-render-count")).not.toBe(initial);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({
-    path: "test-results/investigation-desktop.png",
+    path: testInfo.outputPath("investigation-desktop.png"),
     fullPage: true,
   });
   await page.getByRole("tab", { name: "Primitives", exact: true }).click();
@@ -126,7 +117,7 @@ test("showcase morphs, links semantic selections and isolates unrelated updates"
   ).toBe(true);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({
-    path: "test-results/investigation-mobile.png",
+    path: testInfo.outputPath("investigation-mobile.png"),
     fullPage: true,
   });
   await page.getByRole("tab", {name:"Proof Lab",exact:true}).click();
@@ -134,14 +125,31 @@ test("showcase morphs, links semantic selections and isolates unrelated updates"
   await directLog.locator("summary").click();
   await expect(directLog.locator("pre")).toContainText('"type": "select"');
   await expect(directLog.locator("pre")).toContainText('"source": "direct"');
-  await page.screenshot({path:"test-results/proof-lab.png",fullPage:true});
+  await page.screenshot({path:testInfo.outputPath("proof-lab.png"),fullPage:true});
   expect(errors).toEqual([]);
+  // This artifact describes Chromium; record only after every scenario assertion passes.
+  if (process.env.AELIQO_RECORD_EVIDENCE === "1" && browserName === "chromium") {
+    writeFileSync(
+      "docs/evidence/showcase-performance.json",
+      JSON.stringify(
+        {
+          environment: "Production Vite preview in Playwright Chromium",
+          workload: "Price/performance workspace transformed into capability landscape",
+          ...timing,
+          reactMeasurement: "Elapsed time from semantic plan dispatch until affected component effects committed; includes browser scheduling and excludes paint.",
+          agentLatency: "Direct showcase plan; external agent latency not applicable and remains separately reported as null.",
+        },
+        null,
+        2,
+      ) + "\n",
+    );
+  }
 });
 
 test("official MCP client mutates the live production browser and receives acknowledged revision", async ({
   page,
   baseURL,
-}) => {
+}, testInfo) => {
   const transport = new StdioClientTransport({
     command: process.execPath,
     args: ["--import", "tsx", "tests/fixtures/mcp-stdio.ts", baseURL!],
@@ -172,18 +180,19 @@ test("official MCP client mutates the live production browser and receives ackno
       upgrade.end();
     });
     expect(deniedStatus).toBe(401);
-    await page.goto(`/?aeliqoBridgePort=${port}#aeliqoPairToken=${token}`);
+    await page.goto(`/playground/?aeliqoBridgePort=${port}#aeliqoPairToken=${token}`);
     await expect(
       page.getByText("MCP bridge connected", { exact: true }),
     ).toBeVisible();
-    const secondTab = await page.context().newPage();
+    const secondContext = await page.context().browser()!.newContext();
+    const secondTab = await secondContext.newPage();
     const rejectedPairing = new Promise<void>(resolve => {
       secondTab.on("websocket", socket => socket.on("close", () => resolve()));
     });
-    await secondTab.goto(`/?aeliqoBridgePort=${port}#aeliqoPairToken=${token}`);
+    await secondTab.goto(`/playground/?aeliqoBridgePort=${port}#aeliqoPairToken=${token}`);
     await rejectedPairing;
     await expect(secondTab.getByText("MCP bridge offline", {exact:true})).toBeVisible();
-    await secondTab.close();
+    await secondContext.close();
     const catalog = await client.callTool({
       name: "catalog_search",
       arguments: {},
@@ -307,7 +316,7 @@ test("official MCP client mutates the live production browser and receives ackno
     expect(await page.locator('[data-node-id="baseline"]').getAttribute('data-render-count')).toBe(count);
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({
-      path: "test-results/mcp-live-browser.png",
+      path: testInfo.outputPath("mcp-live-browser.png"),
       fullPage: true,
     });
   } finally {
@@ -317,7 +326,7 @@ test("official MCP client mutates the live production browser and receives ackno
 
 test("accessible overview and investigation", async ({ page }) => {
   const { default: AxeBuilder } = await import("@axe-core/playwright");
-  await page.goto("/");
+  await page.goto("/playground/");
   const overview = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
     .analyze();
@@ -345,7 +354,7 @@ test("accessible overview and investigation", async ({ page }) => {
   ).toEqual([]);
 });
 
-test('deterministic BYOK tool loop reaches the production browser through companion HTTP and acknowledgement',async({page,baseURL})=>{
+test('deterministic BYOK tool loop reaches the production browser through companion HTTP and acknowledgement',async({page,baseURL},testInfo)=>{
  const {createCompanion}=await import('../apps/companion/src/server');
  const {createScriptedProvider}=await import('../packages/byok/src/index');
  const scripted=createScriptedProvider([
@@ -365,7 +374,7 @@ test('deterministic BYOK tool loop reaches the production browser through compan
   {calls:[],text:'Deterministic BYOK fixture completed; no live model was called.'}
  ]);
  const toolResults: {id:string;result:unknown}[] = [];
- const companion=createCompanion({port:0,bridgePort:0,allowedOrigins:[baseURL!],provider:{
+ const companion=createCompanion({port:0,bridgePort:0,allowedOrigins:[baseURL!],workspaceId:'operations',rendererId:'operations-tab',provider:{
    ...scripted,
    next: async input => {toolResults.push(...input.results);return scripted.next(input);},
  }});
@@ -373,7 +382,7 @@ test('deterministic BYOK tool loop reaches the production browser through compan
   const denied = await fetch(`http://127.0.0.1:${companion.port}/status`, {headers:{Origin:'https://untrusted.example'}});
   expect(denied.status).toBe(403);
   expect(denied.headers.get('Access-Control-Allow-Origin')).toBeNull();
-  await page.goto(`/?aeliqoBridgePort=${companion.mcp.bridge.port}&aeliqoCompanionPort=${companion.port}#aeliqoPairToken=${companion.mcp.bridge.pairingToken}`);await expect(page.getByText('MCP bridge connected',{exact:true})).toBeVisible();
+  await page.goto(`/playground/?aeliqoBridgePort=${companion.mcp.bridge.port}&aeliqoCompanionPort=${companion.port}&aeliqoWorkspaceId=operations&aeliqoRendererId=operations-tab#aeliqoPairToken=${companion.mcp.bridge.pairingToken}`);await expect(page.getByText('MCP bridge connected',{exact:true})).toBeVisible();
   const baseline=await page.locator('[data-node-id="baseline"]').getAttribute('data-render-count');
   await expect(page.getByRole('button',{name:'Run with BYOK',exact:true})).toBeEnabled();
   await page.getByRole('button',{name:'Run with BYOK',exact:true}).click();
@@ -386,6 +395,6 @@ test('deterministic BYOK tool loop reaches the production browser through compan
   await expect(page.locator('[data-node-id="byok-org"]').getByRole('heading',{name:'Google / Google DeepMind'})).toBeVisible();
   expect(await page.locator('[data-node-id="baseline"]').getAttribute('data-render-count')).toBe(baseline);
   await page.getByRole('tab',{name:'Proof Lab',exact:true}).click();await expect(page.getByText('BYOK · workspace_apply',{exact:true})).toBeVisible();
-  await page.screenshot({path:'test-results/byok-deterministic-proof.png',fullPage:true});
+  await page.screenshot({path:testInfo.outputPath('byok-deterministic-proof.png'),fullPage:true});
  }finally{await companion.close();}
 });

@@ -25,13 +25,29 @@ describe('compiled documentation experience', () => {
   it('shows honest integration and licensing support', () => {
     history.replaceState(null, '', '#docs-reference');
     render(<Documentation />);
-    expect(screen.getByText(/license undecided/)).toBeTruthy();
-    expect(screen.getByText(/Not a full Next.js/)).toBeTruthy();
+    expect(screen.getByText(/Apache-2.0 approved/)).toBeTruthy();
+    expect(screen.getByText(/Next.js 15.5.25/)).toBeTruthy();
   });
-  it('renders all eleven compiled direct APIs on the component page', () => {
+  it('renders the compiled direct APIs and smart investigation components', () => {
     history.replaceState(null, '', '#docs-components');
     render(<Documentation />);
-    for (const name of ['Standalone Metric', 'Selectable Table', 'Controlled Filter', 'Standalone Ranking', 'Standalone Trend', 'Standalone Detail', 'Standalone Comparison', 'Standalone Delta', 'Standalone RecordList', 'Standalone SelectionSummary', 'Standalone Overview']) expect(screen.getByRole('region', { name: `${name} example` })).toBeTruthy();
-    expect(screen.getByText(/seventeenth implemented UI surface/)).toBeTruthy();
+    for (const name of ['Standalone Metric', 'Selectable Table', 'Controlled Filter', 'Standalone Ranking', 'Standalone Trend', 'Standalone Detail', 'Standalone Comparison', 'Standalone Delta', 'Standalone RecordList', 'Standalone SelectionSummary', 'Standalone Overview', 'Standalone Scatter', 'Standalone Distribution', 'Standalone Relationship', 'Standalone Matrix', 'Standalone Explorer', 'Smart MetricBreakdown', 'Smart EventTimeline', 'Smart TimeInvestigation', 'Smart QualityPanel']) expect(screen.getByRole('region', { name: `${name} example` })).toBeTruthy();
+    expect(screen.getByText(/Every released component is being verified/)).toBeTruthy();
+  });
+  it('renders a manual operational Workspace and documents React, Next, and local BYOK boundaries', () => {
+    history.replaceState(null, '', '#docs-workspace');
+    render(<Documentation />);
+    expect(screen.getByRole('region', { name: 'Operational Workspace without an agent example' })).toBeTruthy();
+    expect(screen.getByText(/no agent is connected/i)).toBeTruthy();
+    cleanup();
+    history.replaceState(null, '', '#docs-start');
+    render(<Documentation />);
+    expect(screen.getByText('React quickstart')).toBeTruthy();
+    expect(screen.getByText('Next.js App Router')).toBeTruthy();
+    cleanup();
+    history.replaceState(null, '', '#docs-agents');
+    render(<Documentation />);
+    expect(screen.getByText('Local BYOK backend recipe')).toBeTruthy();
+    expect(screen.getByText(/not a hosted multi-user inference service/)).toBeTruthy();
   });
 });

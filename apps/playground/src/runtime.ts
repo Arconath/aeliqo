@@ -7,6 +7,7 @@ import {
 import { dataPort } from "./data";
 import { proof } from "./proof-store";
 import { composeShowcase, showcaseScenarios } from "./showcase";
+import { playgroundEndpoints } from "./endpoints";
 export const overview: WorkspaceNode[] = [
   {
     id: "baseline",
@@ -30,6 +31,7 @@ export const store = createWorkspace({ dataPort, nodes: overview });
 export const dispatcher = createCapabilityDispatcher(store, {
   onEvent: proof.event,
   now: () => performance.now(),
+  workspaceId: playgroundEndpoints.workspaceId,
 });
 export const explicit: WorkspaceNode = {
   id: "explicit",

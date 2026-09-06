@@ -2,8 +2,16 @@
   "name": "@aeliqo/core",
   "version": "0.2.0",
   "private": true,
+  "license": "Apache-2.0",
+  "description": "Framework-agnostic semantic data, workspace, and capability contracts for Aeliqo.",
+  "keywords": ["aeliqo", "semantic-ui", "workspace", "typescript"],
+  "homepage": "https://github.com/Arconath/aeliqo#readme",
+  "repository": { "type": "git", "url": "git+https://github.com/Arconath/aeliqo.git", "directory": "packages/core" },
+  "bugs": { "url": "https://github.com/Arconath/aeliqo/issues" },
   "type": "module",
   "exports": "./src/index.ts",
+  "sideEffects": false,
+  "engines": { "node": ">=22.12" },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run"

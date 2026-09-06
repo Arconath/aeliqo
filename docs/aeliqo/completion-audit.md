@@ -1,4 +1,6 @@
-# Aeliqo local completion audit — 6 September 2026
+# Historical Aeliqo local completion audit — 6 September 2026
+
+> This audit predates the public-release implementation. Use `exec-plan.md` for the current release verdict.
 
 ## Scope
 
@@ -62,20 +64,20 @@ An OSS license, public repository, npm publication, external onboarding, indepen
 
 ## Coverage
 
-| Requirement | Status | Evidence boundary |
-| --- | --- | --- |
-| Rename active product and archive old Aeliqo | Satisfied | Filesystem, parent manifests, portfolio source, archive fingerprint and Git history |
-| Semantic reuse and data correctness | Satisfied locally | Core semantic/temporal/relation tests and two unrelated domain fixtures |
-| Level 1, Level 2, and Level 3 architecture | Satisfied locally | Sixteen catalog components plus Workspace; direct and semantic authoring paths |
-| Data, component, interaction, and workspace smartness | Satisfied locally | Component, workspace, linked-data, persistence, and browser scenarios |
-| Shared MCP/BYOK/WebMCP contracts | Satisfied locally | Shared dispatcher, parity tests, companion/MCP browser path, deterministic BYOK |
-| Broad 118-need catalog | Not applicable as a delivery count | It is explicitly a planning and admission map |
-| Full candidate grammar and all future layouts/predicates | Unmet by design | Broader than the executable bounded POC; requires admitted use cases |
-| Package and CSS isolation | Satisfied locally | Tarball consumer, SSR/types/import graph, scoped-theme tests |
-| Performance targets | Satisfied for admitted local workloads | B02 100k×20 Table and B03 50k-point Trend sampling measured in one production Chromium environment; resize/brush and other devices remain untested |
-| Native WebMCP, live paid provider, external users | Unknown | Required external host, credential, and participants absent |
-| Production playground deployment | Satisfied | Exact hosted validation/release, immutable digest, GitOps, two ready replicas, and apex/www checks |
-| Public OSS/package release | Not applicable | Requires separate owner license and publication decisions |
+| Requirement                                              | Status                                 | Evidence boundary                                                                                                                                  |
+| -------------------------------------------------------- | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rename active product and archive old Aeliqo             | Satisfied                              | Filesystem, parent manifests, portfolio source, archive fingerprint and Git history                                                                |
+| Semantic reuse and data correctness                      | Satisfied locally                      | Core semantic/temporal/relation tests and two unrelated domain fixtures                                                                            |
+| Level 1, Level 2, and Level 3 architecture               | Satisfied locally                      | Sixteen catalog components plus Workspace; direct and semantic authoring paths                                                                     |
+| Data, component, interaction, and workspace smartness    | Satisfied locally                      | Component, workspace, linked-data, persistence, and browser scenarios                                                                              |
+| Shared MCP/BYOK/WebMCP contracts                         | Satisfied locally                      | Shared dispatcher, parity tests, companion/MCP browser path, deterministic BYOK                                                                    |
+| Broad 118-need catalog                                   | Not applicable as a delivery count     | It is explicitly a planning and admission map                                                                                                      |
+| Full candidate grammar and all future layouts/predicates | Unmet by design                        | Broader than the executable bounded POC; requires admitted use cases                                                                               |
+| Package and CSS isolation                                | Satisfied locally                      | Tarball consumer, SSR/types/import graph, scoped-theme tests                                                                                       |
+| Performance targets                                      | Satisfied for admitted local workloads | B02 100k×20 Table and B03 50k-point Trend sampling measured in one production Chromium environment; resize/brush and other devices remain untested |
+| Native WebMCP, live paid provider, external users        | Unknown                                | Required external host, credential, and participants absent                                                                                        |
+| Production playground deployment                         | Satisfied                              | Exact hosted validation/release, immutable digest, GitOps, two ready replicas, and apex/www checks                                                 |
+| Public OSS/package release                               | Not applicable                         | Requires separate owner license and publication decisions                                                                                          |
 
 ## Remediation outcome
 

@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 
-test("scoped themes coexist without styling host and remain usable in RTL forced colors", async ({ page }) => {
+test("scoped themes coexist without styling host and remain usable in RTL forced colors", async ({ page }, testInfo) => {
   const { metric, filter } = JSON.parse(execFileSync(process.execPath, ["--import", "tsx", "--input-type=module", "-e", `
     import { createRequire } from 'node:module';
     import { Metric } from './packages/react/src/metric.tsx';
@@ -24,7 +24,7 @@ test("scoped themes coexist without styling host and remain usable in RTL forced
   await expect(page.locator("#nested-light > .aeliqo-card")).toHaveCSS("background-color", "rgb(255, 255, 255)");
   await page.getByLabel("Field", { exact: true }).focus();
   await expect(page.getByLabel("Field", { exact: true })).toHaveCSS("outline-style", "solid");
-  await page.screenshot({ path: "test-results/themes-coexist.png", fullPage: true });
+  await page.screenshot({ path: testInfo.outputPath("themes-coexist.png"), fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator("#light").evaluate(element => { element.setAttribute("dir", "rtl"); (element as HTMLElement).style.zoom = "2"; });
   await expect(page.locator("#light > .aeliqo-card")).toHaveCSS("direction", "rtl");
@@ -34,5 +34,5 @@ test("scoped themes coexist without styling host and remain usable in RTL forced
   await expect(page.locator("#host")).toHaveCSS("transition-duration", "1s");
   await page.getByLabel("Field", { exact: true }).focus();
   await expect(page.getByLabel("Field", { exact: true })).toHaveCSS("outline-style", "solid");
-  await page.screenshot({ path: "test-results/themes-rtl-200percent-forced-colors.png", fullPage: true });
+  await page.screenshot({ path: testInfo.outputPath("themes-rtl-200percent-forced-colors.png"), fullPage: true });
 });

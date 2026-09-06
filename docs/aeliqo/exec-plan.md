@@ -1,58 +1,85 @@
-# Aeliqo execution record — 6 September 2026
+# Aeliqo public framework release execution record
 
-## Completion discipline
+## Candidate status — 7 September 2026
 
-The user explicitly required the entire authorized local plan, not a passing slice. Continue after milestones; isolate test ports rather than stopping at a collision. Reconcile every gate against implementation and fresh evidence before completion. This rule is also recorded in the repository AGENTS.md.
+The active milestone is a public React framework release. The earlier POC remains a historical regression baseline in `docs/POC.md` and `docs/PROOF.md`; it is no longer the product target. No proof source or Proof Lab route was removed.
 
-The original request explicitly excludes blindly building the whole catalog, hypothetical Pro features and unnecessary infrastructure. The roadmap promotes foundational task workflows, not every W1 utility as a separate exported product (23-component-waves.md). External pilot, paid-provider, native-host and public-release evidence must remain separate from local fixture evidence.
+Implementation is active again following `release-plan-audit-2026-09-07.md`, which supersedes the earlier overly broad local-completion verdict. The owner has explicitly authorized worldwide publication and selected Apache-2.0. Existing evidence below is historical until regenerated from the final candidate. Source starts at `cfaea334fc8d98c73e9af121a2154656c5944933` plus the existing working tree.
 
-## Delivery gates
+## Audit closure and publication work
 
-| Gate | Delivered | Status |
-|---|---|---|
-| G0 — Reconcile | Existing architecture, source, original proof, package ownership and platform changes preserved; implementation map updated | Complete locally |
-| G1 — Contracts and semantics | Explicit ratio-of-sums, null/zero, currency/unit/grain checks, partial/stale scope, duplicate identity/fanout checks, month/date/offset instant policy, trusted extensible registry and bounded JSON config | Complete locally |
-| G2 — Foundational component workflows | Metric/Table/Filter/Ranking/Trend/Detail/Comparison direct props, compiled documentation examples and local package subpaths; remaining five catalog components use semantic store/node, plus Workspace as the thirteenth UI surface. Shared semantics/state tests and targeted browser checks are recorded in component-specs/completion-matrix.md; no blanket per-component browser or full framework certification claim | Complete for bounded local foundations; wider catalog promotion remains evidence-gated |
-| G3 — Runtime and control paths | Human pins/history, explicit linked filters versus selections, validated presentation persistence, stale revision protection, paired workspace/renderer, shared exact-revision receipts, explicit BYOK chat/workspace outcomes | Complete locally |
-| G4 — Docs and measurement | Searchable lazy docs, compiled preview/source examples, responsive layouts, domain extension fixtures, browser script/layout/paint/heap trace, targeted Node benchmark and consumer import graph | Complete locally |
-| G5-local — Artifacts and release hygiene | Five private ESM/types/CSS packages and tarballs, actual consumer installation, NodeNext declarations, SSR and import isolation, support/migration/OSS boundaries | Complete locally |
-| External validation | Real paid-provider run, fresh native WebMCP host observation, external developer onboarding, customer/pilot evidence | Not claimed; requires real external evidence |
-| Public release | Choose an OSS license and repository/release ownership, authorize publication | Not performed; five packages remain private |
+| Deliverable | Owner | Status / acceptance |
+| --- | --- | --- |
+| Typed group identities, partial scope, linear grouping | Components | In progress; tarball and semantic regression fixtures |
+| Dense timeline and explicit event inputs | Components | In progress; bounded output, keyboard inspection, no causal claims |
+| Linked range/group records and source inspection | Core | In progress; compatible links only, state/refresh/persistence tests |
+| Explainable stable adaptation and task suggestions | Core | In progress; deterministic reasons, deliberate application, resize boundary tests |
+| Clean contracts/validation structure and compatibility | Core | In progress; meaningful module boundaries, no speculative infrastructure |
+| MCP cancellation and external consumer topology/BYOK recipe | Agent integration | In progress; protocol cancellation and runnable external recipe |
+| Complete docs, non-AI playground and progressive homepage | Docs | In progress; all 20 references, React/Next examples, browser checks |
+| Installed-artifact performance and browser CI | Packaging | In progress; hash-linked workload evidence and regression investigation |
+| Apache-2.0, package metadata, OSS hygiene | Packaging | Owner approved license; prepare checked public artifacts |
+| Real agent/provider/native host evidence | Release | Inspect available runtime/credentials safely; do not fabricate external results |
+| Independent final review and integrated gate reconciliation | Release | Pending candidate completion |
+| Commit, hosted validation, registry publication, public source, website rollout | Release | Authorized; execute only with reviewed artifacts and required account access |
+| Registry/live smoke, source-package-website identities and rollback | Release | Pending publication |
+| Pilot/support and equivalent-task comparison readiness | Release | Prepare executable materials; external paid commitments require real customers |
 
-Metric, Table, Filter, Ranking, Trend, Detail, Comparison, Delta, RecordList, SelectionSummary, and Overview offer direct props and retain compatible store/node authoring. Scatter, Distribution, Relationship, Matrix, and Explorer retain semantic store/node authoring and do not require enabling an agent. Workspace is the seventeenth implemented UI surface. Storage I/O, authorized data access and business mutations remain application-owned. Same-dataset filter links and explicit cross-dataset selection relationships are supported; arbitrary joins, currency conversion, exact-money accounting and timezone calendar grouping are not silently invented.
+| Milestone | Delivered state | Fresh evidence |
+| --- | --- | --- |
+| M0 — alignment and baseline | Root instructions now target the public release; this file owns acceptance A–F and the historical proof remains intact | Baseline before changes: 156 tests, 9 Chromium workflows, build/boundaries/typecheck/lint, p50 0.0058 ms and p95 0.0120 ms core patch |
+| M1 — installable packages | Five-package allowlist; clean ESM/declarations/CSS exports; 20 component subpaths plus Workspace; exact internal versions; no source aliases; public `aeliqo-mcp` executable | `pnpm check:packages`: React 18.3.1/19.2.8 and Next 15.5.25/16.3.4 consumers pass from tarballs outside the monorepo |
+| M2 — existing catalog | Scatter, Distribution, Relationship, Matrix, and Explorer now share one direct/semantic/Workspace renderer without losing Pareto, outlier, graph, matrix, or compound behavior | Direct SSR/component tests, Workspace tests, package exports, and browser workflows |
+| M3 — smart investigation | MetricBreakdown, EventTimeline, TimeInvestigation, QualityPanel; typed range/group operations and links; deterministic adaptation reasons; persisted interactions | Additive/ratio validation, range/group propagation, cycle/stale rejection, keyboard controls, and non-AI documentation fixtures |
+| M4 — agent paths | One dispatcher and four capabilities; explicit workspace/renderer pairing; two-context isolation; revoke/cancel/reconnect/stale-token behavior; backend-only BYOK; honest WebMCP evidence state | MCP/BYOK/browser/companion/WebMCP adapter tests plus production-browser deterministic agent flows |
+| M5 — public website | Product homepage, routed docs, playground, changelog with unreleased work only, and separate Proof Lab | Production build, responsive screenshots, axe checks, keyboard flows, and route checks |
+| Release identity | Workflow verifies once and publishes those exact tarballs in dependency order from a protected GitHub-hosted OIDC job | Workflow syntax/actionlint pass; public mode fails closed until license and public metadata are approved |
 
-## Verification
+## Acceptance A–F reconciliation
 
-The integrated command runs typecheck, lint, package boundaries, every unit/integration/parity test, a production build, eight browser scenarios and the core operation benchmark. Package checks additionally build and install the real local tarballs, inspect declarations, SSR and retained imports. Fresh exact totals are recorded below after the final run.
+| Acceptance | Status | Evidence and boundary |
+| --- | --- | --- |
+| A — installable package | Complete locally | Actual `npm pack` contents, declarations, CSS, peers, metadata, secret scan, external temp consumers, runtime linked selection, SSR/hydration, and isolated imports are recorded in `artifacts/package-evidence.json` |
+| B — coherent public API | Complete locally | Twenty components have direct props and isolated subpaths; compounds reuse primitives; Workspace uses the same renderers; core has no AI Landscape domain dependency |
+| C — MCP/BYOK/WebMCP/no-AI | Complete locally for implementation and deterministic evidence | MCP is primary, BYOK server-side is secondary, WebMCP reports adapter/host evidence separately and stays experimental, manual UI requires no agent |
+| D — framework website | Complete locally | `/`, `/docs/`, `/playground/`, `/changelog/`, and `/playground/proof-lab/` use the existing Vite/deployment stack |
+| E — correctness/performance | Complete for local gates | 100k Table, 50k Trend, targeted updates, cleanup, mount/unmount, semantic null/ratio/grain/provenance, cross-browser interaction, and separate Chromium script/layout/paint evidence |
+| F — identity/publish/rollback | Prepared, publication pending | Allowlisted exact-tarball workflow, SHA-256 evidence, clean-source gate, existing immutable website deployment/rollback path; registry and live post-publish smoke require authorization |
 
-The eight browser scenarios cover:
-- searchable responsive docs at 360/768/1280 pixels;
-- 100k-row Table and 50k-point Trend scale, keyboard and cleanup behavior;
-- independently scoped light/dark themes, host isolation, RTL, zoom and forced colors;
-- focus/draft preservation during resize, composition-safe Filter submission, keyboard pin/history and reduced motion;
-- semantic Showcase composition and targeted updates;
-- official SDK MCP through stdio into a paired production browser, exact presentation receipt and rejection of a second tab;
-- automated accessibility checks of overview/investigation;
-- actual companion HTTP deterministic BYOK execution asserting valid presented tool outcomes.
+## Final local verification
 
-The occupied-port runner also passed all eight while 4173/4318/4319 were held by test-owned listeners. It closed only those listeners; active user services were preserved.
+- `pnpm check`: typecheck, lint, five dependency boundaries, **178/178** unit/integration tests, production build, **11/11 Chromium** workflows, and core benchmark.
+- Firefox: **11/11** browser workflows passed.
+- WebKit: **11/11** browser workflows passed.
+- `pnpm check:packages`: external tarball consumers passed for React 18.3.1 and 19.2.8; Next App Router passed for Next 15.5.25 + React 18.3.1 and Next 16.3.4 + React 19.2.8, including build, SSR, hydration, and client interaction.
+- The external non-AI consumer executes primitive, compound, Workspace, scoped theme, and manual linked selection assertions in both React matrices.
+- Standalone Metric bundle: **7,023 bytes** excluding React; five retained modules; no Workspace, D3, MCP, BYOK, or WebMCP implementation.
+- Core 50-node/1,000-patch benchmark: **0.0059 ms p50**, **0.0116 ms p95**, 1,100 targeted notifications, zero unrelated notifications. This measures Node core operations, not React or browser paint.
+- `pnpm proof:stress`: 10 historical intent compositions passed with the original catalog hash preserved through an explicit compatibility projection that omits only the newly added Trend range ports.
+- Occupied-default-port runner: all 10 workflows in that run passed without stopping user services.
+- `go test deploy/server.go deploy/server_test.go`, workflow actionlint/YAML parsing, and `git diff --check` passed.
 
-Independent review found false presentation of invalid snapshots or missing renderers, request-ID collision, post-disposal commit ambiguity, transitive pin bypass and ambiguous relationship selection. Each was corrected and covered by regressions. Subsequent review found no additional critical issue in the examined scope.
+Chromium CDP evidence records script, layout, paint-event CPU time, heap, and DOM counts separately. React `actualDuration` is treated as render work and `commitTime` as a timestamp; neither is labeled browser paint.
 
-A new strict temporal parser initially rejected legacy monthly values; the integrated test exposed it. ISO month compatibility and explicit month semantics were restored without changing the old expected chart. Cross-dataset switching now requires disconnecting the old link or declaring a relationship; its old implicit-link fixture was updated to explicitly disconnect.
+## Current local tarball identity
 
-## Evidence interpretation
+All five packages are version `0.2.0` and intentionally private in the default candidate build.
 
-- docs/evidence/browser-workspace-quality.json records production-browser ScriptDuration, LayoutDuration, Paint trace-event CPU time and before/after heap/DOM counts. One scenario is not a leak proof or universal latency budget.
-- artifacts/package-evidence.json records the installed standalone Metric consumer graph. React is external; no retained Workspace/createWorkspace, D3, MCP or provider implementation is allowed.
-- pnpm proof:stress passed ten intent compositions while verifying the original eleven-component catalog subset unchanged. Filter is a post-freeze addition, not a retroactive change to historical proof.
-- Original native WebMCP and external Codex proof remain historical. Fake-host tests and the deterministic BYOK provider are labeled accordingly.
-- Aeliqo has no independent Git metadata here; the parent ignores products. Edits and artifacts exist on disk, with no new repository, commit or publication fabricated.
+| Package | SHA-256 |
+| --- | --- |
+| `@aeliqo/core` | `df8005bc5a620dfe9469fce6b7de8f53550552897bf6f50a2612e290197c5dfa` |
+| `@aeliqo/react` | `ac8f76d757c0121c33745dca00b91205903cbe594047611374daa080f2d04c43` |
+| `@aeliqo/mcp` | `0ded22c81102d2e6121b8e36d016c15f02842f93fc5486b867c970c2fa12ee20` |
+| `@aeliqo/byok` | `336f262204139fdad59430a8d9f8ffe21d179253753255b752ef40d9f877b49a` |
+| `@aeliqo/webmcp-experimental` | `40fa5a8887e9ab319a8efbf4fdf6b6155e04b5d891b80a93349447c641974e38` |
 
-## Final check results
+These hashes must be regenerated from a clean committed candidate before publication.
 
-Additive summary slice (after the integrated baseline below): Delta, RecordList, SelectionSummary and Overview are implemented as direct and semantic components; the current inventory is sixteen catalog components plus Workspace, with eleven direct subpaths. See `component-specs/additive-summary-slice.md` for contracts and limitations. The slice passed 155 unit/integration tests, typecheck, lint, boundaries, eleven-component tarball SSR, the new keyboard/RTL/axe browser scenario, and the unchanged historical freeze proof. Earlier integrated totals below describe their original run, not this larger inventory.
+## Open release gates
 
-Final integrated totals: **156/156 unit and integration tests**, all five package boundaries, typecheck, lint, production build, **9/9 production-browser scenarios**, and the core benchmark passed in one fresh `pnpm check`. The benchmark measured 1,000 warm patches across 50 nodes at **0.0125 ms p50 / 0.0151 ms p95**, with 1,100 targeted and zero unrelated notifications. All five installed packages are version **0.2.0**; eleven direct components render through their real tarball SSR imports. The latest package evidence records a **7,008-byte** standalone Metric bundle excluding React, five retained modules and no unwanted runtime/protocol exports.
-
-The separate occupied-default-port run passed **8/8** browser scenarios. `pnpm proof:stress` passed **10** historical-catalog composition scenarios with the frozen catalog hash unchanged. The production JavaScript entry and shared renderer chunk total **424.76 kB raw / 128.12 kB gzip**; documentation remains a separate lazy chunk. B02 has production-browser evidence for a 100k-row × 20-column virtualized Table with semantic filter/sort, keyboard navigation, and active-row announcements. B03 has 50k-point evidence for bounded gap-safe SVG geometry plus exact accessible summaries; resize and brush remain untested because the current Trend contract does not expose brushing. These are measured local artifacts, not public performance guarantees. The production playground release is accepted at source `da9142ade2db617f283ef6e9eb6fff4539f26ef3` and image digest `sha256:88bcc3f05749cb57cbcac531a8f84e726ca615754a7bd4d8e294164bd0e9fd38`. Its server marks readiness unavailable for a five-second routing drain, then gives active requests up to twenty seconds to finish inside a thirty-second termination grace period. Production drills verified configuration rollback from 2→3→2 replicas and binary rollback to the previous accepted digest followed by restoration of the current digest. Public package, license, provider, and external-user decisions remain open.
+- The owner must select the Aeliqo OSS license, confirm ownership/notices, and change all five source manifests to approved public metadata. The locked production dependency inventory contains only MIT, ISC, and BSD entries; see `dependency-license-audit.md`.
+- The owner must confirm `@aeliqo` npm namespace access, version/dist-tag, repository visibility required for provenance, and configure the trusted publisher for `npm-release.yml`.
+- A real paid-provider BYOK run needs an authorized credential and cost owner. Deterministic provider behavior passes locally.
+- Native WebMCP host verification is not current. Adapter tests pass and support remains experimental.
+- Manual screen-reader review, external developer onboarding, registry-install smoke, live website smoke, and the proposed commercial pilots require people or systems outside this local workspace.
+- No package was published, no license was invented, no version/tag was created, and no website was deployed in this implementation pass.

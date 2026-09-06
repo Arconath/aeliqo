@@ -8,6 +8,14 @@ function portParameter(name: string, fallback: number): number {
   return Number(value);
 }
 
+function identityParameter(name: string, fallback?: string): string | undefined {
+  const value = new URLSearchParams(window.location.search).get(name) ?? fallback;
+  if (value === undefined) return undefined;
+  if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,99}$/.test(value))
+    throw new Error(`Invalid workspace identity: ${name}`);
+  return value;
+}
+
 const fragment = new URLSearchParams(window.location.hash.slice(1));
 const pairingToken = fragment.get("aeliqoPairToken") ?? undefined;
 if (pairingToken) {
@@ -15,10 +23,12 @@ if (pairingToken) {
   const remaining = fragment.toString();
   history.replaceState(null, "", `${location.pathname}${location.search}${remaining ? `#${remaining}` : ""}`);
 }
-const rendererId = crypto.randomUUID();
+const workspaceId = identityParameter("aeliqoWorkspaceId", "workspace")!;
+const rendererId = identityParameter("aeliqoRendererId") ?? crypto.randomUUID();
 
 export const playgroundEndpoints = {
   pairingToken,
+  workspaceId,
   rendererId,
   bridgeUrl: `ws://127.0.0.1:${portParameter("aeliqoBridgePort", 4318)}`,
   companionUrl: `http://127.0.0.1:${portParameter("aeliqoCompanionPort", 4319)}`,

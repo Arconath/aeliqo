@@ -31,9 +31,16 @@ export class WorkspaceBridge {
   private readonly wss: WebSocketServer;
   private socket: WebSocket | undefined;
   readonly pairingToken = randomBytes(32).toString("hex");
-  readonly workspaceId = "workspace";
+  readonly workspaceId: string;
   private rendererId: string | undefined;
   private revoked = false;
+  private readonly revocation = new AbortController();
+
+  get revocationSignal(): AbortSignal { return this.revocation.signal; }
+
+  get identity(): { workspaceId: string; rendererId?: string } {
+    return { workspaceId: this.workspaceId, rendererId: this.rendererId };
+  }
 
   authorize(token: string | undefined): boolean {
     if (this.revoked || !token) return false;
@@ -43,7 +50,9 @@ export class WorkspaceBridge {
   }
 
   revoke(): void {
+    if (this.revoked) return;
     this.revoked = true;
+    this.revocation.abort(new Error("Workspace pairing revoked"));
     this.rejectPending("Workspace pairing revoked; outcome may be unknown");
     for (const socket of this.wss.clients) socket.close(1008, "Pairing revoked");
   }
@@ -54,6 +63,7 @@ export class WorkspaceBridge {
       reject: (reason: Error) => void;
       timer: ReturnType<typeof setTimeout>;
       method: BridgeRequest["method"];
+      stopAbort?: () => void;
     }
   >();
 
@@ -61,7 +71,12 @@ export class WorkspaceBridge {
     port = 4318,
     private readonly timeoutMs = 5000,
     origins?: readonly string[],
+    identity: { workspaceId?: string; rendererId?: string } = {},
   ) {
+    this.workspaceId = identity.workspaceId ?? "workspace";
+    this.rendererId = identity.rendererId;
+    pairingSchema.shape.workspaceId.parse(this.workspaceId);
+    if (this.rendererId !== undefined) pairingSchema.shape.rendererId.parse(this.rendererId);
     const allowedOrigins = localOrigins(origins);
     this.wss = new WebSocketServer({
       host: "127.0.0.1",
@@ -106,12 +121,14 @@ export class WorkspaceBridge {
           const pending = this.pending.get(response.id);
           if (!pending) return;
           clearTimeout(pending.timer);
+          pending.stopAbort?.();
           this.pending.delete(response.id);
           if (response.ok) {
             if (pending.method === "workspace_apply") {
               const receipt = receiptSchema.safeParse(response.result);
-              if (!receipt.success || receipt.data.workspaceId !== this.workspaceId ||
-                (receipt.data.render.status === "acknowledged" && receipt.data.render.rendererId !== this.rendererId)) {
+              if (!receipt.success || receipt.data.requestId !== response.id ||
+                receipt.data.workspaceId !== this.workspaceId ||
+                (receipt.data.render.rendererId !== undefined && receipt.data.render.rendererId !== this.rendererId)) {
                 pending.reject(new Error("Untrusted workspace receipt target or renderer"));
                 socket.close(1008, "Invalid receipt target");
                 return;
@@ -151,7 +168,9 @@ export class WorkspaceBridge {
     method: BridgeRequest["method"],
     params: unknown,
     source: "MCP" | "BYOK" = "MCP",
+    options: { signal?: AbortSignal } = {},
   ): Promise<unknown> {
+    options.signal?.throwIfAborted();
     const socket = this.socket;
     if (this.revoked || !socket || socket.readyState !== WebSocket.OPEN || !this.rendererId)
       throw new Error(
@@ -160,6 +179,7 @@ export class WorkspaceBridge {
     const request = requestSchema.parse({ id: randomUUID(), target: {workspaceId:this.workspaceId,rendererId:this.rendererId}, method, params, source });
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
+        stopAbort?.();
         this.pending.delete(request.id);
         reject(
           new Error(
@@ -167,10 +187,20 @@ export class WorkspaceBridge {
           ),
         );
       }, this.timeoutMs);
-      this.pending.set(request.id, { resolve, reject, timer, method });
+      const abort = () => {
+        const pending = this.pending.get(request.id);
+        if (!pending) return;
+        clearTimeout(pending.timer);
+        this.pending.delete(request.id);
+        reject(options.signal?.reason instanceof Error ? options.signal.reason : new Error("Workspace request cancelled"));
+      };
+      options.signal?.addEventListener("abort", abort, { once: true });
+      const stopAbort = options.signal ? () => options.signal?.removeEventListener("abort", abort) : undefined;
+      this.pending.set(request.id, { resolve, reject, timer, method, stopAbort });
       socket.send(JSON.stringify(request), (error) => {
         if (error) {
           clearTimeout(timer);
+          stopAbort?.();
           this.pending.delete(request.id);
           reject(error);
         }
@@ -181,6 +211,7 @@ export class WorkspaceBridge {
   private rejectPending(message: string): void {
     for (const request of this.pending.values()) {
       clearTimeout(request.timer);
+      request.stopAbort?.();
       request.reject(new Error(message));
     }
     this.pending.clear();

@@ -2,7 +2,7 @@
 
 ## Decision: useful OSS first, additive commercial value
 
-Core must be desirable without cloud or agent subscription. Proposed license for new eligible core code is Apache-2.0, subject to existing ownership/dependency compatibility and explicit approval before relicensing. Apache-2.0 permits broad reuse and includes copyright/patent terms and notice obligations; it is not an anti-fork license. This is a product licensing recommendation, not a legal opinion on the unseen PoC. [R26]
+Core must be desirable without cloud or agent subscription. The owner selected Apache-2.0 for the repository and five public packages on 7 September 2026. Apache-2.0 permits broad reuse and includes copyright/patent terms and notice obligations; it is not an anti-fork license. Repository ownership and dependency evidence is recorded separately and remains an engineering inventory rather than legal advice. [R26]
 
 ## Public versus private
 

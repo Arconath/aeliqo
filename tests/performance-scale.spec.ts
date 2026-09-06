@@ -23,12 +23,12 @@ test("B02 and B03 keep production Table and Trend output bounded", async ({ page
   await page.goto("/performance.html");
   await page.waitForFunction(() => "__AELIQO_SCALE__" in window);
   const browserVersion = await page.context().browser()!.version();
-  const session = await page.context().newCDPSession(page);
-  await session.send("Performance.enable");
-  await session.send("HeapProfiler.enable");
+  const session = browserName === "chromium" ? await page.context().newCDPSession(page) : undefined;
+  await session?.send("Performance.enable");
+  await session?.send("HeapProfiler.enable");
 
   const runSeries = async (kind: ScaleKind) => {
-    const before = await session.send("Performance.getMetrics");
+    const before = await session?.send("Performance.getMetrics");
     const events: { name: string; dur?: number }[] = [];
     const collectTrace = (event: { value: unknown[] }) => {
       for (const raw of event.value) {
@@ -40,8 +40,8 @@ test("B02 and B03 keep production Table and Trend output bounded", async ({ page
           });
       }
     };
-    session.on("Tracing.dataCollected", collectTrace);
-    await session.send("Tracing.start", {
+    session?.on("Tracing.dataCollected", collectTrace);
+    await session?.send("Tracing.start", {
       categories: "devtools.timeline,blink.user_timing",
       transferMode: "ReportEvents",
     });
@@ -52,15 +52,17 @@ test("B02 and B03 keep production Table and Trend output bounded", async ({ page
       warm.push(await page.evaluate((target) => window.__AELIQO_SCALE__.render(target), kind));
       await page.evaluate(() => window.__AELIQO_SCALE__.unmount());
     }
-    const tracingComplete = new Promise<void>((resolve) =>
-      session.once("Tracing.tracingComplete", () => resolve()),
-    );
-    await session.send("Tracing.end");
-    await tracingComplete;
-    session.off("Tracing.dataCollected", collectTrace);
-    const after = await session.send("Performance.getMetrics");
-    const start = Object.fromEntries(before.metrics.map((metric) => [metric.name, metric.value]));
-    const end = Object.fromEntries(after.metrics.map((metric) => [metric.name, metric.value]));
+    if (session) {
+      const tracingComplete = new Promise<void>((resolve) =>
+        session.once("Tracing.tracingComplete", () => resolve()),
+      );
+      await session.send("Tracing.end");
+      await tracingComplete;
+      session.off("Tracing.dataCollected", collectTrace);
+    }
+    const after = await session?.send("Performance.getMetrics");
+    const start = Object.fromEntries((before?.metrics ?? []).map((metric) => [metric.name, metric.value]));
+    const end = Object.fromEntries((after?.metrics ?? []).map((metric) => [metric.name, metric.value]));
     const duration = (name: string) =>
       events
         .filter((event) => event.name === name)
@@ -75,9 +77,9 @@ test("B02 and B03 keep production Table and Trend output bounded", async ({ page
         p95: percentile(observable, 0.95),
       },
       phaseTotalsMs: {
-        script: (end.ScriptDuration! - start.ScriptDuration!) * 1000,
-        layout: (end.LayoutDuration! - start.LayoutDuration!) * 1000,
-        paintEventCpu: duration("Paint"),
+        script: session ? (end.ScriptDuration! - start.ScriptDuration!) * 1000 : null,
+        layout: session ? (end.LayoutDuration! - start.LayoutDuration!) * 1000 : null,
+        paintEventCpu: session ? duration("Paint") : null,
       },
       paintEvents: events.filter((event) => event.name === "Paint").length,
     };
@@ -108,20 +110,22 @@ test("B02 and B03 keep production Table and Trend output bounded", async ({ page
   );
   await page.evaluate(() => window.__AELIQO_SCALE__.unmount());
 
-  await session.send("HeapProfiler.collectGarbage");
+  await session?.send("HeapProfiler.collectGarbage");
   const heapSamples: number[] = [];
   for (let cycle = 0; cycle < 25; cycle++) {
     const kind: ScaleKind = cycle % 2 ? "table" : "trend";
     await page.evaluate((target) => window.__AELIQO_SCALE__.render(target), kind);
     expect(await page.evaluate(() => window.__AELIQO_SCALE__.unmount())).toBe(0);
     if ((cycle + 1) % 5 === 0) {
-      await session.send("HeapProfiler.collectGarbage");
-      const metrics = await session.send("Performance.getMetrics");
-      heapSamples.push(metrics.metrics.find((metric) => metric.name === "JSHeapUsedSize")!.value);
+      await session?.send("HeapProfiler.collectGarbage");
+      const metrics = await session?.send("Performance.getMetrics");
+      const heap = metrics?.metrics.find((metric) => metric.name === "JSHeapUsedSize")?.value;
+      if (heap !== undefined) heapSamples.push(heap);
     }
   }
-  const retainedGrowthBytes = heapSamples.at(-1)! - heapSamples[0]!;
-  expect(retainedGrowthBytes).toBeLessThan(8 * 1024 * 1024);
+  const retainedGrowthBytes = heapSamples.length > 1 ? heapSamples.at(-1)! - heapSamples[0]! : null;
+  if (retainedGrowthBytes !== null)
+    expect(retainedGrowthBytes).toBeLessThan(8 * 1024 * 1024);
 
   const fixture = await page.evaluate(() => ({
     preparationMs: window.__AELIQO_SCALE__.preparationMs,
@@ -141,7 +145,7 @@ test("B02 and B03 keep production Table and Trend output bounded", async ({ page
   const lockfileHash = createHash("sha256")
     .update(readFileSync("pnpm-lock.yaml"))
     .digest("hex");
-  if (process.env.AELIQO_RECORD_EVIDENCE === "1") {
+  if (process.env.AELIQO_RECORD_EVIDENCE === "1" && session) {
     writeFileSync(
       "docs/evidence/performance-scale.json",
       JSON.stringify(
@@ -190,5 +194,5 @@ test("B02 and B03 keep production Table and Trend output bounded", async ({ page
       ) + "\n",
     );
   }
-  await session.detach();
+  await session?.detach();
 });

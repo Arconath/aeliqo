@@ -26,9 +26,11 @@ interface CompanionStatus {
   model: string;
   busy: boolean;
   workspaceConnected: boolean;
+  workspaceId: string;
+  rendererId?: string;
 }
-function App() {
-  const [tab, setTab] = useState("Showcase");
+function Playground({ initialTab = "Showcase" }: { initialTab?: string }) {
+  const [tab, setTab] = useState(initialTab);
   const [activeScenario, setActiveScenario] = useState<string | null>(null);
   const [mcp, setMcp] = useState("disconnected");
   const [webmcp, setWebmcp] = useState("Checking browser support");
@@ -170,27 +172,26 @@ function App() {
   return (
     <div className="shell aeliqo-theme" data-aeliqo-theme="light">
       <aside className="sidebar">
-        <a className="brand" href="#">
-          <span className="brand-mark">S</span> smart
-          <span className="brand-light">ui</span>
+        <a className="brand" href="/">
+          <span className="brand-mark">A</span> Aeliqo
         </a>
         <div className="sidebar-caption">RESEARCH WORKSPACE</div>
         <div className="nav-active">
           <span>◫</span> AI landscape
         </div>
         <div className="sidebar-bottom">
-          <span className="avatar">v2</span>
+          <span className="avatar">0.2</span>
           <div>
-            Framework proof<small>Curated data · Local runtime</small>
+            Framework playground<small>Curated data · Local runtime</small>
           </div>
         </div>
       </aside>
       <main>
         <header className="topbar">
           <div>
-            Aeliqo <span>/</span> AI landscape
+            <a href="/">Aeliqo</a> <span>/</span> <a href="/docs/">Docs</a> <span>/</span> AI landscape
           </div>
-          <span className="sandbox">POC v2 · Deterministic snapshot</span>
+          <span className="sandbox">Playground · Deterministic snapshot</span>
         </header>
         <div className="page">
           <div className="heading">
@@ -384,7 +385,9 @@ function App() {
                 <strong>MCP</strong>
                 <span>
                   {mcp === "connected"
-                    ? "Connected to this workspace"
+                    ? companion
+                      ? `Connected · ${companion.workspaceId} · ${companion.rendererId ?? "renderer pending"}`
+                      : "Connected to this workspace"
                     : "Start an MCP client or companion"}
                 </span>
               </p>
@@ -435,7 +438,7 @@ function App() {
           </p>
           <footer>
             <span>
-              <b>aeliqo</b> / Framework proof of concept v2
+              <b>aeliqo</b> / Public framework release candidate
             </span>
             <span>
               Curated sources · Application-owned data · No live ingestion
@@ -446,8 +449,9 @@ function App() {
     </div>
   );
 }
+
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    <Playground initialTab={window.location.pathname.includes("proof-lab") ? "Proof Lab" : "Showcase"} />
   </React.StrictMode>,
 );

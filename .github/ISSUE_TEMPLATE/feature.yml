@@ -1,0 +1,23 @@
+name: Capability request
+description: Propose a semantic component or framework capability
+title: "[Capability]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: task
+    attributes:
+      label: User task
+      description: Describe the decision or investigation the user needs to complete.
+    validations:
+      required: true
+  - type: textarea
+    id: semantics
+    attributes:
+      label: Data semantics and interactions
+      description: List required entity, metric, dimension, time, relation, selection, and partial-data behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Existing components tried

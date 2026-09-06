@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { WebSocket } from "ws";
@@ -11,8 +11,8 @@ const openApps: App[] = [];
 afterEach(async () => {
   await Promise.all(openApps.splice(0).map((app) => app.close()));
 });
-async function setup(timeoutMs = 1000) {
-  const app = createAeliqoServer({ port: 0, timeoutMs });
+async function setup(timeoutMs = 1000, identity: {workspaceId?:string;rendererId?:string} = {}) {
+  const app = createAeliqoServer({ port: 0, timeoutMs, ...identity });
   openApps.push(app);
   await app.bridge.ready;
   const [clientTransport, serverTransport] =
@@ -56,6 +56,20 @@ const patch = {
 };
 
 describe("MCP live bridge", () => {
+  it("isolates independently configured workspace identities", async () => {
+    const {app:first} = await setup(1000,{workspaceId:"operations",rendererId:"operations-tab"});
+    const {app:second} = await setup(1000,{workspaceId:"finance",rendererId:"finance-tab"});
+    expect(first.bridge.identity).toEqual({workspaceId:"operations",rendererId:"operations-tab"});
+    expect(second.bridge.identity).toEqual({workspaceId:"finance",rendererId:"finance-tab"});
+    await expect(connect(first,{token:first.bridge.pairingToken,workspaceId:"finance",rendererId:"operations-tab"})).rejects.toThrow("1008");
+    await expect(connect(first,{token:second.bridge.pairingToken,workspaceId:"operations",rendererId:"operations-tab"})).rejects.toThrow("1008");
+    const firstBrowser=await connect(first,{token:first.bridge.pairingToken,workspaceId:"operations",rendererId:"operations-tab"});
+    const secondBrowser=await connect(second,{token:second.bridge.pairingToken,workspaceId:"finance",rendererId:"finance-tab"});
+    expect(first.bridge.connected).toBe(true);
+    expect(second.bridge.connected).toBe(true);
+    firstBrowser.close();secondBrowser.close();
+  });
+
   it("pins one credential, workspace and renderer across reconnect and revocation", async () => {
     const {app} = await setup();
     const identity = {token:app.bridge.pairingToken,workspaceId:"workspace",rendererId:"test-renderer"};
@@ -88,6 +102,54 @@ describe("MCP live bridge", () => {
     const other = await connect(second);
     other.once("message",()=>other.close());
     await expect(second.bridge.request("workspace_apply",patch)).rejects.toThrow("disconnected before acknowledgement");
+  });
+  it("rejects stale or internally inconsistent receipts and cancels pending requests", async () => {
+    const {app}=await setup();
+    const browser=await connect(app);
+    browser.once("message",raw=>{
+      const request=JSON.parse(raw.toString()) as {id:string};
+      browser.send(JSON.stringify({id:request.id,ok:true,result:{contractVersion:"0.2",requestId:"stale-request",workspaceId:"workspace",ok:true,revision:1,operation:"committed",render:{status:"acknowledged",rendererId:"test-renderer",revision:1,evidence:"renderer-ack",visible:true},data:{status:"ready"},outcome:"presented",changedNodeIds:["ranking"]}}));
+    });
+    await expect(app.bridge.request("workspace_apply",patch)).rejects.toThrow("receipt target");
+
+    const {app:cancelApp}=await setup();
+    const waitingBrowser=await connect(cancelApp);
+    waitingBrowser.once("message",()=>undefined);
+    const controller=new AbortController();
+    const pending=cancelApp.bridge.request("workspace_apply",patch,"MCP",{signal:controller.signal});
+    controller.abort(new Error("caller cancelled"));
+    await expect(pending).rejects.toThrow("caller cancelled");
+    waitingBrowser.close();
+  });
+  it("propagates MCP client cancellation to the pending browser request", async () => {
+    const { app, client } = await setup();
+    let bridgeSignal: AbortSignal | undefined;
+    const started = new Promise<void>((resolve) => {
+      vi.spyOn(app.bridge, "request").mockImplementation(
+        async (_method, _params, _source, options) => {
+          bridgeSignal = options?.signal;
+          resolve();
+          return await new Promise((_done, reject) =>
+            options?.signal?.addEventListener(
+              "abort",
+              () => reject(options.signal?.reason),
+              { once: true },
+            ),
+          );
+        },
+      );
+    });
+    const controller = new AbortController();
+    const pending = client.callTool(
+      { name: "workspace_inspect", arguments: {} },
+      undefined,
+      { signal: controller.signal },
+    );
+    await started;
+    expect(bridgeSignal?.aborted).toBe(false);
+    controller.abort();
+    await expect(pending).rejects.toThrow();
+    await expect.poll(() => bridgeSignal?.aborted).toBe(true);
   });
   it("exposes only semantic tools and rejects writes when no workspace is connected", async () => {
     const { client } = await setup();

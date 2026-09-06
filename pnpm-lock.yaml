@@ -65,9 +65,6 @@ importers:
 
   apps/companion:
     dependencies:
-      '@modelcontextprotocol/sdk':
-        specifier: ^1.17.5
-        version: 1.30.0(zod@3.25.76)
       '@aeliqo/byok':
         specifier: workspace:*
         version: link:../../packages/byok
@@ -77,6 +74,9 @@ importers:
       '@aeliqo/mcp':
         specifier: workspace:*
         version: link:../../packages/mcp
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.17.5
+        version: 1.30.0(zod@3.25.76)
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -122,12 +122,12 @@ importers:
 
   packages/mcp:
     dependencies:
-      '@modelcontextprotocol/sdk':
-        specifier: ^1.17.5
-        version: 1.30.0(zod@3.25.76)
       '@aeliqo/core':
         specifier: workspace:*
         version: link:../core
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.17.5
+        version: 1.30.0(zod@3.25.76)
       ws:
         specifier: ^8.18.3
         version: 8.21.3
@@ -151,10 +151,10 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0
       react:
-        specifier: ^19.0.0
+        specifier: '>=18.3.0 <20'
         version: 19.2.8
       react-dom:
-        specifier: ^19.0.0
+        specifier: '>=18.3.0 <20'
         version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/d3-scale':

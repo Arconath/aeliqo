@@ -6,7 +6,7 @@ export interface ProviderAdapter {
   readonly name: string;
   next(input: { intent: string; tools: typeof capabilityContracts; state?: unknown; results: readonly ToolResult[]; signal?: AbortSignal }): Promise<ProviderTurn>;
 }
-export type Dispatch = (name: CapabilityName, input: unknown) => unknown | Promise<unknown>;
+export type Dispatch = (name: CapabilityName, input: unknown, options?: { signal?: AbortSignal }) => unknown | Promise<unknown>;
 export async function runAgent(provider: ProviderAdapter, intent: string, dispatch: Dispatch, options: { maxTurns?: number; signal?: AbortSignal; output?: 'chat' | 'workspace' } = {}) {
   if (!intent.trim() || intent.length > 4000) throw new Error('Intent must contain 1–4000 characters');
   const start = performance.now();
@@ -40,7 +40,10 @@ export async function runAgent(provider: ProviderAdapter, intent: string, dispat
         const contract = tools.find(contract => contract.id === call.name);
         if (!contract) throw new Error('Unknown capability');
         const input = contract.inputSchema.parse(call.arguments);
-        const result = await dispatch(contract.id, input);
+        const result = options.signal
+          ? await dispatch(contract.id, input, { signal: options.signal })
+          : await dispatch(contract.id, input);
+        options.signal?.throwIfAborted();
         if (contract.id === 'workspace_apply' && options.output === 'workspace') {
           receipt = receiptSchema.parse(result);
           mutationFailed = false;

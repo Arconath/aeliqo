@@ -5,3 +5,5 @@ export * from "./semantics";
 export * from "./registry";
 export * from "./persistence";
 export * from "./temporal";
+export { nodeDatasetIds } from "./node-validation";
+export * from "./suggestions";

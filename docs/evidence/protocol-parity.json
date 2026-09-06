@@ -149,8 +149,8 @@
         {
           "capability": "workspace_inspect",
           "source": "MCP",
-          "validationMs": 0.016875000000027285,
-          "executionMs": 0.013499999999964984,
+          "validationMs": 0.017875000000003638,
+          "executionMs": 0.020167000000014923,
           "operations": [],
           "revision": 0,
           "ok": true
@@ -158,8 +158,8 @@
         {
           "capability": "catalog_search",
           "source": "MCP",
-          "validationMs": 0.007083000000022821,
-          "executionMs": 0.05095899999997755,
+          "validationMs": 0.0061249999999972715,
+          "executionMs": 0.06675000000001319,
           "operations": [],
           "revision": 0,
           "ok": true
@@ -167,8 +167,8 @@
         {
           "capability": "data_query",
           "source": "MCP",
-          "validationMs": 0.07945799999998826,
-          "executionMs": 0.29820799999998826,
+          "validationMs": 0.07029099999999744,
+          "executionMs": 0.4016669999999749,
           "operations": [],
           "revision": 0,
           "ok": true
@@ -176,8 +176,8 @@
         {
           "capability": "workspace_apply",
           "source": "MCP",
-          "validationMs": 0.18412499999999454,
-          "executionMs": 0.8909170000000017,
+          "validationMs": 0.18679199999996854,
+          "executionMs": 1.1023330000000442,
           "operations": [
             {
               "type": "mount",
@@ -360,7 +360,8 @@
         },
         "selections": {
           "ranking": "gemini-3-5-flash-lite"
-        }
+        },
+        "interactions": {}
       },
       "outcome": {
         "rankingMetric": "outputPrice",
@@ -521,8 +522,8 @@
         {
           "capability": "workspace_inspect",
           "source": "BYOK",
-          "validationMs": 0.002583000000015545,
-          "executionMs": 0.0034589999999639076,
+          "validationMs": 0.0032920000000444816,
+          "executionMs": 0.004082999999980075,
           "operations": [],
           "revision": 0,
           "ok": true
@@ -530,8 +531,8 @@
         {
           "capability": "catalog_search",
           "source": "BYOK",
-          "validationMs": 0.002916000000027452,
-          "executionMs": 0.006249999999965894,
+          "validationMs": 0.0016669999999976426,
+          "executionMs": 0.008583000000044194,
           "operations": [],
           "revision": 0,
           "ok": true
@@ -539,8 +540,8 @@
         {
           "capability": "data_query",
           "source": "BYOK",
-          "validationMs": 0.013540999999975156,
-          "executionMs": 0.04570900000004485,
+          "validationMs": 0.017707999999970525,
+          "executionMs": 0.056500000000028194,
           "operations": [],
           "revision": 0,
           "ok": true
@@ -548,8 +549,8 @@
         {
           "capability": "workspace_apply",
           "source": "BYOK",
-          "validationMs": 0.07066699999995762,
-          "executionMs": 0.438666000000012,
+          "validationMs": 0.10620799999998098,
+          "executionMs": 0.16379200000000083,
           "operations": [
             {
               "type": "mount",
@@ -732,7 +733,8 @@
         },
         "selections": {
           "ranking": "gemini-3-5-flash-lite"
-        }
+        },
+        "interactions": {}
       },
       "outcome": {
         "rankingMetric": "outputPrice",
@@ -893,8 +895,8 @@
         {
           "capability": "workspace_inspect",
           "source": "WebMCP",
-          "validationMs": 0.005791000000044733,
-          "executionMs": 0.003999999999962256,
+          "validationMs": 0.004042000000026746,
+          "executionMs": 0.0036249999999995453,
           "operations": [],
           "revision": 0,
           "ok": true
@@ -902,8 +904,8 @@
         {
           "capability": "catalog_search",
           "source": "WebMCP",
-          "validationMs": 0.005832999999995536,
-          "executionMs": 0.007958999999971184,
+          "validationMs": 0.003459000000020751,
+          "executionMs": 0.008082999999999174,
           "operations": [],
           "revision": 0,
           "ok": true
@@ -911,8 +913,8 @@
         {
           "capability": "data_query",
           "source": "WebMCP",
-          "validationMs": 0.022790999999983796,
-          "executionMs": 0.030583999999976186,
+          "validationMs": 0.018416000000001986,
+          "executionMs": 0.02920899999998028,
           "operations": [],
           "revision": 0,
           "ok": true
@@ -920,8 +922,8 @@
         {
           "capability": "workspace_apply",
           "source": "WebMCP",
-          "validationMs": 0.08249999999998181,
-          "executionMs": 0.30425000000002456,
+          "validationMs": 0.08125000000001137,
+          "executionMs": 0.12879199999997581,
           "operations": [
             {
               "type": "mount",
@@ -1104,7 +1106,8 @@
         },
         "selections": {
           "ranking": "gemini-3-5-flash-lite"
-        }
+        },
+        "interactions": {}
       },
       "outcome": {
         "rankingMetric": "outputPrice",

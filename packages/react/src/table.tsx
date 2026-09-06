@@ -99,12 +99,12 @@ function TableView({ data, dataset, node, selected, onSelect }: { data: DataSnap
             data-virtualized={virtual}
             style={{ maxHeight: height }}
             onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
-            tabIndex={virtual ? 0 : undefined}
-            role={virtual ? "region" : undefined}
+            tabIndex={0}
+            role="region"
             aria-label={
               virtual
                 ? `${node.title ?? dataset.label} — use arrow keys, Home or End to navigate; Enter selects`
-                : undefined
+                : `${node.title ?? dataset.label} — scrollable records`
             }
             aria-describedby={virtual ? activeStatusId : undefined}
             onKeyDown={(event) => {

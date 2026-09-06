@@ -1,0 +1,108 @@
+name: Aeliqo npm release
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the reviewed package allowlist after the license and npm ownership gates are complete
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      AELIQO_PUBLIC_RELEASE: ${{ inputs.publish && '1' || '0' }}
+      AELIQO_ENFORCE_PACKAGE_PERF: ${{ inputs.publish && '1' || '0' }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+        with:
+          version: 10.30.3
+          run_install: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.22.0
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium firefox webkit
+      - run: pnpm check
+      - run: pnpm check:packages
+      - name: Upload reviewed tarballs and evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-npm-candidate-${{ github.sha }}
+          if-no-files-found: error
+          path: |
+            artifacts/tarballs/*.tgz
+            artifacts/package-evidence.json
+            docs/aeliqo/package-release-evidence.md
+
+  publish:
+    if: ${{ inputs.publish }}
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: npm-release
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.22.0
+          registry-url: https://registry.npmjs.org
+      - run: npm install --global npm@11.5.1
+      - name: Download the verified candidate
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: aeliqo-npm-candidate-${{ github.sha }}
+          path: candidate
+      - name: Verify candidate identity, hashes, and public metadata
+        env:
+          EVIDENCE: candidate/artifacts/package-evidence.json
+        run: |
+          set -eu
+          node -e '
+            const evidence = require("./" + process.env.EVIDENCE);
+            const expected = ["@aeliqo/core", "@aeliqo/react", "@aeliqo/mcp", "@aeliqo/byok", "@aeliqo/webmcp-experimental"];
+            if (evidence.sourceCommit !== process.env.GITHUB_SHA) throw Error("candidate source commit mismatch");
+            if (!evidence.sourceTree?.clean) throw Error("candidate was not built from a clean source tree");
+            if (!evidence.artifactPolicy?.publicRelease || evidence.artifactPolicy?.private) throw Error("candidate was not built in owner-approved public mode");
+            if (JSON.stringify([...evidence.allowlist].sort()) !== JSON.stringify([...expected].sort())) throw Error("candidate allowlist mismatch");
+            if (JSON.stringify(Object.keys(evidence.packages).sort()) !== JSON.stringify([...expected].sort())) throw Error("candidate package set mismatch");
+          '
+          for name in core react mcp byok webmcp-experimental; do
+            package_name="@aeliqo/$name"
+            filename="$(node -e 'const e=require("./"+process.env.EVIDENCE); process.stdout.write(e.packages[process.argv[1]].filename)' "$package_name")"
+            expected_hash="$(node -e 'const e=require("./"+process.env.EVIDENCE); process.stdout.write(e.packages[process.argv[1]].sha256)' "$package_name")"
+            tarball="candidate/artifacts/tarballs/$filename"
+            test -f "$tarball"
+            test "$(sha256sum "$tarball" | cut -d ' ' -f 1)" = "$expected_hash"
+            tar -xOf "$tarball" package/package.json > "$RUNNER_TEMP/$name-package.json"
+            PACKAGE_NAME="$package_name" MANIFEST="$RUNNER_TEMP/$name-package.json" node -e '
+              const manifest = require(process.env.MANIFEST);
+              if (manifest.name !== process.env.PACKAGE_NAME || manifest.private !== false || !manifest.license) throw Error("tarball lacks owner-approved public metadata");
+              if (process.env.PACKAGE_NAME === "@aeliqo/mcp" && manifest.bin?.["aeliqo-mcp"] !== "./src/cli.js") throw Error("MCP executable is missing");
+            '
+            tar -tf "$tarball" | grep -qx "package/LICENSE"
+            tar -tf "$tarball" | grep -qx "package/NOTICE"
+          done
+      - name: Publish allowlisted packages with provenance
+        env:
+          EVIDENCE: candidate/artifacts/package-evidence.json
+        run: |
+          set -eu
+          for name in core react mcp byok webmcp-experimental; do
+            package_name="@aeliqo/$name"
+            filename="$(node -e 'const e=require("./"+process.env.EVIDENCE); process.stdout.write(e.packages[process.argv[1]].filename)' "$package_name")"
+            npm publish "candidate/artifacts/tarballs/$filename" --access public --provenance
+          done

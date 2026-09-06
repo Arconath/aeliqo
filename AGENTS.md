@@ -2,7 +2,7 @@
 
 ## Mission
 
-This repository is a proof of concept for the Aeliqo Framework.
+This repository is preparing the first public release of the Aeliqo Framework. The completed proof-of-concept material is retained as historical and regression evidence; new work targets an installable, documented, production-usable React framework.
 
 The framework provides its own ready-to-use semantic UI components and allows them to adapt intelligently at the:
 
@@ -11,9 +11,7 @@ The framework provides its own ready-to-use semantic UI components and allows th
 3. interaction level;
 4. workspace level.
 
-The POC must prove the architecture with the smallest complete implementation.
-
-Do not expand breadth until the core thesis is proven.
+The release must preserve the proven architecture while making its smallest useful product surface safe to install and operate outside this repository. Expand the catalog only through task-grounded component contracts with complete package, documentation, accessibility, and performance evidence.
 
 ## Product Model
 
@@ -185,9 +183,9 @@ Do not implement separate business or workspace logic for:
 
 All adapters must converge on the same Capability Dispatcher and Workspace Operations.
 
-## AI Landscape Proof Dataset
+## AI Landscape Example Dataset
 
-The POC uses a curated deterministic AI-landscape snapshot.
+The playground uses a curated deterministic AI-landscape snapshot. It is application-owned example data and must never become a framework dependency.
 
 Primary entities:
 

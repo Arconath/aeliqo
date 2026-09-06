@@ -1,1 +1,16 @@
-{"name":"@aeliqo/webmcp-experimental","version":"0.2.0","private":true,"type":"module","exports":"./src/index.ts","dependencies":{"@aeliqo/core":"workspace:*"}}
+{
+  "name": "@aeliqo/webmcp-experimental",
+  "version": "0.2.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "description": "Experimental WebMCP projection of Aeliqo capability contracts.",
+  "keywords": ["aeliqo", "webmcp", "experimental", "workspace"],
+  "homepage": "https://github.com/Arconath/aeliqo#readme",
+  "repository": { "type": "git", "url": "git+https://github.com/Arconath/aeliqo.git", "directory": "packages/webmcp-experimental" },
+  "bugs": { "url": "https://github.com/Arconath/aeliqo/issues" },
+  "type": "module",
+  "exports": "./src/index.ts",
+  "sideEffects": false,
+  "engines": { "node": ">=22.12" },
+  "dependencies": { "@aeliqo/core": "workspace:*" }
+}

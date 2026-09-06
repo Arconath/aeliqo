@@ -2,11 +2,20 @@
   "name": "@aeliqo/mcp",
   "version": "0.2.0",
   "private": true,
+  "license": "Apache-2.0",
+  "description": "MCP server and authorized browser bridge for Aeliqo workspaces.",
+  "keywords": ["aeliqo", "mcp", "model-context-protocol", "workspace"],
+  "homepage": "https://github.com/Arconath/aeliqo#readme",
+  "repository": { "type": "git", "url": "git+https://github.com/Arconath/aeliqo.git", "directory": "packages/mcp" },
+  "bugs": { "url": "https://github.com/Arconath/aeliqo/issues" },
   "type": "module",
   "exports": {
     ".": "./src/server.ts",
     "./browser": "./src/browser.ts"
   },
+  "bin": { "aeliqo-mcp": "./src/cli.ts" },
+  "sideEffects": false,
+  "engines": { "node": ">=22.12" },
   "scripts": {
     "start": "tsx src/cli.ts"
   },

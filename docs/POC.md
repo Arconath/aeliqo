@@ -1,4 +1,6 @@
-# Aeliqo Framework POC v2
+# Aeliqo Framework POC v2 — historical proof baseline
+
+> This document records the completed proof milestone and remains a regression source. The active milestone is the public framework release tracked in `docs/aeliqo/exec-plan.md`.
 
 ## Purpose
 

@@ -709,6 +709,7 @@ describe("semantic React components", () => {
       width: 320,
       visibleRecords: 2,
       totalRecords: 2,
+      reason: "container_narrow",
     });
     act(() => resize?.(600));
     expect(

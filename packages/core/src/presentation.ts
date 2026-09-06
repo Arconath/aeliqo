@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { DataSnapshot, WorkspaceState, WorkspaceStore } from "./model";
 import { validateSnapshot } from "./semantics";
 import { notifyObserver } from "./observers";
+import { nodeDatasetIds } from "./node-validation";
 
 /** Runtime receipt schema shared by every adapter. Acknowledgement is not proof of human attention. */
 export const receiptSchema = z.object({
@@ -134,7 +135,7 @@ export function createPresentationTracker(store: WorkspaceStore, options: { work
       const existing = entries.get(requestId);
       if (existing) return refresh(existing);
       const after = store.getState();
-      const ids = new Set([...before.order, ...after.order].filter(id => before.nodes[id] !== after.nodes[id] || before.order.indexOf(id) !== after.order.indexOf(id) || before.selections[id] !== after.selections[id]));
+      const ids = new Set([...before.order, ...after.order].filter(id => before.nodes[id] !== after.nodes[id] || before.order.indexOf(id) !== after.order.indexOf(id) || before.selections[id] !== after.selections[id] || before.interactions[id] !== after.interactions[id]));
       for (const id of new Set([...Object.keys(before.bindings), ...Object.keys(after.bindings)])) {
         if (before.bindings[id] === after.bindings[id]) continue;
         for (const binding of [before.bindings[id], after.bindings[id]]) if (binding) { ids.add(binding.source); ids.add(binding.target); }
@@ -146,7 +147,7 @@ export function createPresentationTracker(store: WorkspaceStore, options: { work
           for (const binding of Object.values(bindings)) if (ids.has(binding.source)) ids.add(binding.target);
         }
       }
-      const datasets = [...new Set([...ids].flatMap(id => after.nodes[id] ? [after.nodes[id]!.datasetId] : []))];
+      const datasets = [...new Set([...ids].flatMap(id => after.nodes[id] ? nodeDatasetIds(after.nodes[id]!) : []))];
       const entry: Entry = { datasets, receipt: freezeReceipt({ contractVersion: "0.2", requestId, workspaceId, ok: true, revision, operation: "committed", render: { status: renderer ? "pending" : "disconnected", revision }, data: { status: "pending" }, outcome: "pending", changedNodeIds: [...ids] }) };
       entries.set(requestId, entry);
       if (after.revision !== revision) entry.receipt = freezeReceipt({ ...entry.receipt, render: { status: "failed", revision, reason: "Revision superseded before renderer acknowledgement" } });

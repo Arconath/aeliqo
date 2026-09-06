@@ -36,3 +36,15 @@ it('uses Responses tool outputs and shared JSON schemas; keeps authorization out
   expect(requests[0]?.tools).toEqual(capabilityContracts.map(tool=>({type:'function',name:tool.id,description:tool.description,parameters:tool.jsonSchema,strict:false})));
   expect(requests[1]?.input).toContainEqual({type:'function_call_output',call_id:'c1',output:'{"revision":0}'});
 });
+it('propagates cancellation into an in-flight capability dispatch',async()=>{
+  const controller=new AbortController();
+  let dispatchSignal:AbortSignal|undefined;
+  const dispatch=vi.fn((_name:unknown,_input:unknown,options?:{signal?:AbortSignal})=>new Promise((_resolve,reject)=>{
+    dispatchSignal=options?.signal;
+    options?.signal?.addEventListener('abort',()=>reject(options.signal?.reason),{once:true});
+  }));
+  const running=runAgent(createScriptedProvider([{calls:[{id:'inspect',name:'workspace_inspect',arguments:{}}]}]),'Inspect',dispatch,{signal:controller.signal});
+  await vi.waitFor(()=>expect(dispatchSignal).toBe(controller.signal));
+  controller.abort(new Error('pairing revoked'));
+  await expect(running).rejects.toThrow('pairing revoked');
+});

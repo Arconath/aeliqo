@@ -1,10 +1,10 @@
 {
   "environment": "Production Vite preview in Playwright Chromium",
   "workload": "Price/performance workspace transformed into capability landscape",
-  "capabilityValidationMs": 0.09999999403953552,
-  "capabilityExecutionMs": 0.19999998807907104,
-  "coreWorkspaceMutationMs": 0.29999998211860657,
-  "reactUpdateObservedMs": 1.699999988079071,
+  "capabilityValidationMs": 0,
+  "capabilityExecutionMs": 1,
+  "coreWorkspaceMutationMs": 1,
+  "reactUpdateObservedMs": 3,
   "componentsUpdated": [
     "smart-matrix",
     "smart-ranking",

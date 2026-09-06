@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "profiles": {
+    "darwin-arm64-node24-chromium153": {
+      "acceptedAt": "2026-09-06T18:59:16.463Z",
+      "packageSha256": {
+        "@aeliqo/core": "5615085e45f07e1f6e85f9298e72bc0851e92e05c67d252e81a12b5d0e7ce33b",
+        "@aeliqo/react": "ba31de41a286971d885da59c2d27600bdffc4557ddaebbce4cace77adf1e6145",
+        "@aeliqo/mcp": "79241bb1091855f55c2f47c9720dd42f44acac2354f8616c170112e76311a444",
+        "@aeliqo/byok": "c4100a9844c50c4c9100fbb2d0cb759765a1d376e484648a7ba624ad14fee176",
+        "@aeliqo/webmcp-experimental": "d146ca3fbc2b9e26329534f8fafbff2b59e6d7e7c3c0107a70d3dbef4570dc87"
+      },
+      "metrics": {
+        "tableObservableMedianMs": 64.59999999403954,
+        "tableObservableP95Ms": 65.40000000596046,
+        "trendObservableMedianMs": 99.09999999403954,
+        "trendObservableP95Ms": 105.30000001192093
+      }
+    }
+  }
+}

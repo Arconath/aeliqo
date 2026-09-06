@@ -2,31 +2,40 @@
 
 The playground Documentation tab renders compiled examples from `apps/playground/src/documentation-examples.tsx`. Its source view imports that exact module as text; it is not a separate illustrative implementation.
 
-| Entry | Required inputs | Optional inputs | Evidence scope |
-| --- | --- | --- | --- |
-| Metric | `value`, `label` | `metric` formatter declaration | Explicit value, null/nonfinite unavailable marker, React SSR |
-| Table | `dataset`, `snapshot` | `selectedId`, `onSelect`, `columns`, `title` | Stable identity selection; snapshot failure/partial/stale disclosure |
-| Filter | `dataset`, `filters`, `onChange` | `title` | Controlled committed filters; local draft; finite numeric validation |
-| Ranking | `dataset`, `snapshot`, `metric` | `direction`, `limit`, `dimension`, `title`, `selectedId`, `onSelect`, `onAdaptation` | Deterministic sorting/density; controlled stable-identity selection |
-| Trend | `dataset`, `snapshot`, `metric`, `timeField` | `seriesBy`, `title` | Explicit temporal parsing; semantic aggregation and missing gaps |
-| Detail | `dataset`, `snapshot` | `selectedId`, `columns`, `title` | Selected entity projection; explicit empty selection prompt |
-| Comparison | `dataset`, `snapshot`, `metrics`, `selectedIds` | `onSelectionChange`, `title` | Controlled comparison of 2–8 identities; separate metric rows preserve units |
+| Entry             | Required inputs                                     | Optional inputs                                                                      | Evidence scope                                                               |
+| ----------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| Metric            | `value`, `label`                                    | `metric` formatter declaration                                                       | Explicit value, null/nonfinite unavailable marker, React SSR                 |
+| Table             | `dataset`, `snapshot`                               | `selectedId`, `onSelect`, `columns`, `title`                                         | Stable identity selection; snapshot failure/partial/stale disclosure         |
+| Filter            | `dataset`, `filters`, `onChange`                    | `title`                                                                              | Controlled committed filters; local draft; finite numeric validation         |
+| Ranking           | `dataset`, `snapshot`, `metric`                     | `direction`, `limit`, `dimension`, `title`, `selectedId`, `onSelect`, `onAdaptation` | Deterministic sorting/density; controlled stable-identity selection          |
+| Trend             | `dataset`, `snapshot`, `metric`, `timeField`        | `seriesBy`, `title`                                                                  | Explicit temporal parsing; semantic aggregation and missing gaps             |
+| Detail            | `dataset`, `snapshot`                               | `selectedId`, `columns`, `title`                                                     | Selected entity projection; explicit empty selection prompt                  |
+| Comparison        | `dataset`, `snapshot`, `metrics`, `selectedIds`     | `onSelectionChange`, `title`                                                         | Controlled comparison of 2–8 identities; separate metric rows preserve units |
+| Scatter           | `dataset`, `snapshot`, `xMetric`, `metric`          | grouping, selection, limit, title, adaptation callback                               | Two-metric projection and keyboard selection                                 |
+| Distribution      | `dataset`, `snapshot`, `metric`                     | limit, title, adaptation callback                                                    | Bounded histogram geometry and snapshot-scope disclosure                     |
+| Relationship      | both declared datasets/snapshots and `relationship` | selection, limit, title                                                              | Explicit relation only; missing target remains visible                       |
+| Matrix            | `dataset`, `snapshot`, `columns`                    | selection, limit, title, adaptation callback                                         | Declared feature columns; missing differs from false                         |
+| Explorer          | `dataset`, `snapshot`, `metric`                     | columns, filters, selection, limit, title                                            | Shared ranking/table/detail state without an agent                           |
+| MetricBreakdown   | `dataset`, `snapshot`, `metric`, `dimension`        | controlled group, title                                                              | Additive sum or ratio-of-sums grouping and record drill                      |
+| EventTimeline     | `dataset`, `snapshot`, `timeField`                  | label, selection, controlled range, title                                            | Explicit events, typed inclusive range, no causal claim                      |
+| TimeInvestigation | dataset/snapshot, metric/time, labeled baseline     | mode, title                                                                          | Reuses Delta, Trend, EventTimeline, and Table                                |
+| QualityPanel      | `dataset`, `snapshot`                               | title                                                                                | Provenance, coverage, missingness, freshness, and known limits               |
 
 Existing semantic `store`/`node` props continue to route through the same component implementation. Source APIs remain authoritative while this 0.x local proof evolves.
 
-All five local package manifests use version **0.2.0**. They remain private artifacts; this version does not imply publication or an approved license. Comparison's semantic form uses `node.compareIds` and metric `node.columns`; each metric is displayed independently across entities. Fewer than two selected identities prompts for comparison selection. Counts, ratios and currencies do not combine into a mixed-unit total.
+All five local package manifests use version **0.2.0** and retain an accidental-publication guard. The explicit release build emits owner-approved Apache-2.0 public artifacts. Comparison's semantic form uses `node.compareIds` and metric `node.columns`; each metric is displayed independently across entities. Fewer than two selected identities prompts for comparison selection. Counts, ratios and currencies do not combine into a mixed-unit total.
 
-| Semantic view | Contract / user task | Interaction and adaptation |
-| --- | --- | --- |
-| Ranking | Dataset plus metric; ordered entity comparison | Keyboard selection; missing values last; compact bars retain text |
-| Trend | Metric plus declared time field; period comparison | UTC month/date/instant geometry; missing observations remain gaps; responsive ticks |
-| Detail | Dataset and semantic selected identity | Explicit related entity resolution; accessible definition list; no arbitrary relation fanout |
-| Scatter | Two distinct metrics; trade-off exploration | Shared selection, keyboard point list and compact annotations |
-| Distribution | One metric; inspect range and spread | SVG histogram with text summary; container-dependent bin density |
-| Relationship | Explicit dataset relationship | Selectable source entities and responsive relationship metadata |
-| Matrix | Declared metric columns; feature comparison | Semantic table, selection, compact labels; missing differs from false |
-| Comparison | Dataset plus metric; summary beside ranking | Reuses Metric and Ranking implementations |
-| Explorer | Dataset plus metric; collection and inspection | Reuses Ranking/Table and Detail, with local representation selection |
+| Semantic view | Contract / user task                               | Interaction and adaptation                                                                   |
+| ------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Ranking       | Dataset plus metric; ordered entity comparison     | Keyboard selection; missing values last; compact bars retain text                            |
+| Trend         | Metric plus declared time field; period comparison | UTC month/date/instant geometry; missing observations remain gaps; responsive ticks          |
+| Detail        | Dataset and semantic selected identity             | Explicit related entity resolution; accessible definition list; no arbitrary relation fanout |
+| Scatter       | Two distinct metrics; trade-off exploration        | Shared selection, keyboard point list and compact annotations                                |
+| Distribution  | One metric; inspect range and spread               | SVG histogram with text summary; container-dependent bin density                             |
+| Relationship  | Explicit dataset relationship                      | Selectable source entities and responsive relationship metadata                              |
+| Matrix        | Declared metric columns; feature comparison        | Semantic table, selection, compact labels; missing differs from false                        |
+| Comparison    | Dataset plus metric; summary beside ranking        | Reuses Metric and Ranking implementations                                                    |
+| Explorer      | Dataset plus metric; collection and inspection     | Reuses Ranking/Table and Detail, with local representation selection                         |
 
 All semantic views use the shared DataPort snapshot path and dataset contract. Loading, empty and error presentation is shared; partial and stale warnings remain visible where relevant. Workspace props include trusted renderer registration for custom capabilities. Primitive examples, compound examples and Showcase use these same implementations; no agent-generated rendering code is accepted.
 
@@ -58,6 +67,6 @@ Bindings with `mode: "filter"` explicitly connect a compatible filter producer t
 
 ## Local distribution and support
 
-`pnpm check:packages` builds private ESM/declaration artifacts, packs and installs them into a consumer, runs NodeNext type checks and React SSR for all eleven direct components, and records standalone Metric bundle isolation in `artifacts/package-evidence.json`. Third-party dependencies are linked from the existing installation offline. This is not fresh-registry-install or full Next.js evidence. See [the completion matrix](completion-matrix.md) for all seventeen implemented UI surfaces and their distinct evidence boundaries.
+`pnpm check:packages` builds private ESM/declaration artifacts, packs and installs them in consumers outside the monorepo, executes primitive/compound/Workspace/theme/linked-selection assertions, checks React 18.3 and 19 plus the stated Next.js App Router pairs, and records standalone Metric bundle isolation in `artifacts/package-evidence.json`. Third-party dependencies come from the npm registry; only Aeliqo comes from the packed tarballs. See [the completion matrix](completion-matrix.md) for all twenty components plus Workspace and their evidence boundaries.
 
 Package names and versions are provisional; no public npm install is promised. The production playground has been promoted from an immutable scanned image, while license selection, package publication, independent developer onboarding, and commercial demand remain separate gates. WebMCP remains experimental; deterministic BYOK tests do not establish a successful real-provider run.
