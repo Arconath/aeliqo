@@ -13,13 +13,12 @@ case "${1:-static}" in
     ;;
   static)
     test "$(find .github/workflows -maxdepth 1 -type f -name '*.yml' -print | wc -l | tr -d ' ')" = 2
-    ! rg -n 'self-hosted|arconath-jit|r640-trusted' .github/workflows/quality.yml
-    rg -F 'group: arconath-jit' .github/workflows/release.yml >/dev/null
-    rg -F 'labels: r640-trusted' .github/workflows/release.yml >/dev/null
-    rg -F 'github.triggering_actor == '\''hermawan22'\''' .github/workflows/release.yml >/dev/null
-    rg -F 'head_sha="$SOURCE_SHA"' .github/workflows/release.yml >/dev/null
-    ! rg -n 'kubectl|kubeconfig|KUBECONFIG|secrets\.' .github/workflows
+    ! grep -En 'self-hosted|arconath-jit|r640-trusted' .github/workflows/quality.yml
+    grep -F 'group: arconath-jit' .github/workflows/release.yml >/dev/null
+    grep -F 'labels: r640-trusted' .github/workflows/release.yml >/dev/null
+    grep -F 'github.triggering_actor == '\''hermawan22'\''' .github/workflows/release.yml >/dev/null
+    grep -F 'head_sha="$SOURCE_SHA"' .github/workflows/release.yml >/dev/null
+    ! grep -En 'kubectl|kubeconfig|KUBECONFIG|secrets\.' .github/workflows/*.yml
     ;;
   *) exit 2 ;;
 esac
-
