@@ -16,6 +16,22 @@
         "trendObservableMedianMs": 99.09999999403954,
         "trendObservableP95Ms": 105.30000001192093
       }
+    },
+    "linux-x64-node22-chromium153": {
+      "acceptedAt": "2026-09-06T19:25:00.000Z",
+      "packageSha256": {
+        "@aeliqo/core": "48a09abf57cafca5a997b18399d489e904612f893f7a782e6d43ada1d17c6085",
+        "@aeliqo/react": "7987ef3975312770dba4f2ed7d1458e7fc8d076b762744177feb9a77899114af",
+        "@aeliqo/mcp": "4b60df9f6851ca6f2eab1fc8a9e744bf12b266ac746a8d36701eb0709e4c112f",
+        "@aeliqo/byok": "6ade3d79d4a56dcac3c45c2ed9244c8e2267cebda7f7b0f123291270a6484eeb",
+        "@aeliqo/webmcp-experimental": "8b2997facaad9bc241119a6ddc05e83981d28fa6219879197552796966320eb9"
+      },
+      "metrics": {
+        "tableObservableMedianMs": 34.199999999953434,
+        "tableObservableP95Ms": 65.79999999998836,
+        "trendObservableMedianMs": 101.20000000001164,
+        "trendObservableP95Ms": 103.29999999998836
+      }
     }
   }
 }

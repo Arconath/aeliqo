@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-09-07T02:24:30+07:00",
+  "client": "Codex CLI 0.153.4",
+  "package": "@aeliqo/mcp 0.2.0 candidate tarball",
+  "topology": {
+    "transport": "stdio plus authorized loopback browser bridge",
+    "workspaceId": "operations",
+    "rendererId": "operations-main",
+    "pairing": "ephemeral URL opened locally; fragment credential omitted from evidence"
+  },
+  "intent": "Inspect the workspace, add one QualityPanel to the primary dataset while preserving existing views, and verify the resulting receipt.",
+  "observations": {
+    "workspaceInspected": true,
+    "catalogInspected": true,
+    "initialInvalidOperationRejected": true,
+    "modelRecoveredUsingSchemaError": true,
+    "componentMounted": "QualityPanel",
+    "datasetId": "models",
+    "existingViewsPreserved": true,
+    "revision": 1,
+    "receiptRequestId": "58762ac5-6f2a-457b-b8dd-3b429ff66066",
+    "receiptOutcome": "presented",
+    "rendererAcknowledged": true,
+    "rendererVisible": true,
+    "dataStatus": "ready"
+  },
+  "limitations": [
+    "One observed external-agent run does not establish universal routing reliability.",
+    "Renderer acknowledgement is not a browser GPU paint measurement.",
+    "The candidate was installed from a local tarball; registry installation is verified separately after publication."
+  ]
+}
