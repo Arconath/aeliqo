@@ -1,21 +1,31 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"log"
 	"mime"
+	"net"
 	"net/http"
 	"os"
+	"os/signal"
 	"path"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
+	"syscall"
 	"time"
 )
 
 const root = "/srv/aeliqo"
 
 var revision = "unknown"
+
+const (
+	drainDelay      = 5 * time.Second
+	shutdownTimeout = 20 * time.Second
+)
 
 func securityHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -75,10 +85,43 @@ func serveStatic(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, file)
 }
 
+func serveUntilSignal(server *http.Server, listener net.Listener, ready *atomic.Bool, signals <-chan os.Signal, drainFor, shutdownAfter time.Duration) error {
+	serveError := make(chan error, 1)
+	ready.Store(true)
+	go func() { serveError <- server.Serve(listener) }()
+
+	select {
+	case err := <-serveError:
+		return err
+	case <-signals:
+		ready.Store(false)
+	}
+
+	if drainFor > 0 {
+		timer := time.NewTimer(drainFor)
+		<-timer.C
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), shutdownAfter)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
+		return err
+	}
+	return <-serveError
+}
+
 func main() {
+	var ready atomic.Bool
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) { jsonResponse(w, map[string]string{"status": "ok"}) })
-	mux.HandleFunc("/readyz", func(w http.ResponseWriter, _ *http.Request) { jsonResponse(w, map[string]string{"status": "ready"}) })
+	mux.HandleFunc("/readyz", func(w http.ResponseWriter, _ *http.Request) {
+		if !ready.Load() {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusServiceUnavailable)
+			jsonResponse(w, map[string]string{"status": "draining"})
+			return
+		}
+		jsonResponse(w, map[string]string{"status": "ready"})
+	})
 	mux.HandleFunc("/version", func(w http.ResponseWriter, _ *http.Request) {
 		jsonResponse(w, map[string]string{"product": "aeliqo", "revision": revision})
 	})
@@ -92,8 +135,15 @@ func main() {
 		WriteTimeout:      30 * time.Second,
 		IdleTimeout:       60 * time.Second,
 	}
+	listener, err := net.Listen("tcp", server.Addr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	shutdownSignal := make(chan os.Signal, 1)
+	signal.Notify(shutdownSignal, syscall.SIGINT, syscall.SIGTERM)
+	defer signal.Stop(shutdownSignal)
 	log.Print("Aeliqo static server listening on :8080")
-	if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+	if err := serveUntilSignal(server, listener, &ready, shutdownSignal, drainDelay, shutdownTimeout); !errors.Is(err, http.ErrServerClosed) {
 		log.Fatal(err)
 	}
 }

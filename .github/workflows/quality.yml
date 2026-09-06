@@ -27,6 +27,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: scripts/ci/check-runner-contract.sh
+      - run: go test ./deploy/server.go ./deploy/server_test.go
       - run: pnpm check
       - run: pnpm check:packages
       - run: pnpm proof:stress
