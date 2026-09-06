@@ -149,8 +149,8 @@
         {
           "capability": "workspace_inspect",
           "source": "MCP",
-          "validationMs": 0.021708000000046468,
-          "executionMs": 0.016041999999970358,
+          "validationMs": 0.016875000000027285,
+          "executionMs": 0.013499999999964984,
           "operations": [],
           "revision": 0,
           "ok": true
@@ -158,8 +158,8 @@
         {
           "capability": "catalog_search",
           "source": "MCP",
-          "validationMs": 0.0050420000000030996,
-          "executionMs": 0.04716600000000426,
+          "validationMs": 0.007083000000022821,
+          "executionMs": 0.05095899999997755,
           "operations": [],
           "revision": 0,
           "ok": true
@@ -167,8 +167,8 @@
         {
           "capability": "data_query",
           "source": "MCP",
-          "validationMs": 0.09683300000000372,
-          "executionMs": 0.325458000000026,
+          "validationMs": 0.07945799999998826,
+          "executionMs": 0.29820799999998826,
           "operations": [],
           "revision": 0,
           "ok": true
@@ -176,8 +176,8 @@
         {
           "capability": "workspace_apply",
           "source": "MCP",
-          "validationMs": 0.25083399999999756,
-          "executionMs": 1.0357500000000073,
+          "validationMs": 0.18412499999999454,
+          "executionMs": 0.8909170000000017,
           "operations": [
             {
               "type": "mount",
@@ -521,8 +521,8 @@
         {
           "capability": "workspace_inspect",
           "source": "BYOK",
-          "validationMs": 0.00333299999999781,
-          "executionMs": 0.0036249999999995453,
+          "validationMs": 0.002583000000015545,
+          "executionMs": 0.0034589999999639076,
           "operations": [],
           "revision": 0,
           "ok": true
@@ -530,8 +530,8 @@
         {
           "capability": "catalog_search",
           "source": "BYOK",
-          "validationMs": 0.0016669999999976426,
-          "executionMs": 0.006416999999999007,
+          "validationMs": 0.002916000000027452,
+          "executionMs": 0.006249999999965894,
           "operations": [],
           "revision": 0,
           "ok": true
@@ -539,8 +539,8 @@
         {
           "capability": "data_query",
           "source": "BYOK",
-          "validationMs": 0.01445899999998801,
-          "executionMs": 0.0478750000000332,
+          "validationMs": 0.013540999999975156,
+          "executionMs": 0.04570900000004485,
           "operations": [],
           "revision": 0,
           "ok": true
@@ -548,8 +548,8 @@
         {
           "capability": "workspace_apply",
           "source": "BYOK",
-          "validationMs": 0.06912499999998545,
-          "executionMs": 0.4421249999999759,
+          "validationMs": 0.07066699999995762,
+          "executionMs": 0.438666000000012,
           "operations": [
             {
               "type": "mount",
@@ -893,8 +893,8 @@
         {
           "capability": "workspace_inspect",
           "source": "WebMCP",
-          "validationMs": 0.004124999999987722,
-          "executionMs": 0.003207999999972344,
+          "validationMs": 0.005791000000044733,
+          "executionMs": 0.003999999999962256,
           "operations": [],
           "revision": 0,
           "ok": true
@@ -902,8 +902,8 @@
         {
           "capability": "catalog_search",
           "source": "WebMCP",
-          "validationMs": 0.0034579999999664324,
-          "executionMs": 0.006709000000000742,
+          "validationMs": 0.005832999999995536,
+          "executionMs": 0.007958999999971184,
           "operations": [],
           "revision": 0,
           "ok": true
@@ -911,8 +911,8 @@
         {
           "capability": "data_query",
           "source": "WebMCP",
-          "validationMs": 0.01762500000000955,
-          "executionMs": 0.02733299999999872,
+          "validationMs": 0.022790999999983796,
+          "executionMs": 0.030583999999976186,
           "operations": [],
           "revision": 0,
           "ok": true
@@ -920,8 +920,8 @@
         {
           "capability": "workspace_apply",
           "source": "WebMCP",
-          "validationMs": 0.07337499999999864,
-          "executionMs": 0.2881250000000364,
+          "validationMs": 0.08249999999998181,
+          "executionMs": 0.30425000000002456,
           "operations": [
             {
               "type": "mount",
