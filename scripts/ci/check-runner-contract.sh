@@ -12,7 +12,10 @@ case "${1:-static}" in
     buildctl debug workers >/dev/null
     ;;
   static)
-    test "$(find .github/workflows -maxdepth 1 -type f -name '*.yml' -print | wc -l | tr -d ' ')" = 2
+    test "$(find .github/workflows -maxdepth 1 -type f -name '*.yml' -print | wc -l | tr -d ' ')" = 3
+    test -f .github/workflows/quality.yml
+    test -f .github/workflows/release.yml
+    test -f .github/workflows/npm-release.yml
     ! grep -En 'self-hosted|arconath-jit|r640-trusted' .github/workflows/quality.yml
     grep -F 'group: arconath-jit' .github/workflows/release.yml >/dev/null
     grep -F 'labels: r640-trusted' .github/workflows/release.yml >/dev/null
