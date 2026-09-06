@@ -25,7 +25,7 @@ describe('compiled documentation experience', () => {
   it('shows honest integration and licensing support', () => {
     history.replaceState(null, '', '#docs-reference');
     render(<Documentation />);
-    expect(screen.getByText(/Apache-2.0 approved/)).toBeTruthy();
+    expect(screen.getByText(/version 0\.2\.0 is published to npm/)).toBeTruthy();
     expect(screen.getByText(/Next.js 15.5.25/)).toBeTruthy();
   });
   it('renders the compiled direct APIs and smart investigation components', () => {
