@@ -4,7 +4,7 @@
 
 This audit covers the active local Aeliqo framework in `products/aeliqo`, the parent workspace identity records, the archived legacy Systems Doctor repository, and the Arconath portfolio-site source. The requirements are the repository `AGENTS.md`, `docs/POC.md`, `docs/ARCHITECTURE.md`, `docs/QUALITY.md`, `docs/DECISIONS.md`, the current Aeliqo documentation kit, and the user's instruction to finish the authorized local work rather than stop at an intermediate milestone.
 
-Source, executable tests, generated package consumers, browser observations, and archive fingerprints outrank prose claims. The archived repository is inspected only for identity and preservation. Public publishing, production deployment, paid-provider credentials, a native WebMCP host, external users, and commercial customers are outside the available local evidence.
+Source, executable tests, generated package consumers, browser observations, archive fingerprints, hosted CI, immutable release artifacts, GitOps state, cluster observations, and public route checks outrank prose claims. The archived repository is inspected only for identity and preservation. Public package publishing, paid-provider credentials, a native WebMCP host, external users, and commercial customers remain outside the available evidence.
 
 ## Findings
 
@@ -54,9 +54,11 @@ MCP, BYOK, and experimental WebMCP project `workspace_inspect`, `catalog_search`
 
 This establishes the architecture with local fixtures and browser scenarios. It is not evidence that every conceivable component or business domain is smart.
 
-### F9 — Release and market quality remain external decisions — unknown or not applicable
+### F9 — Production playground delivery — satisfied
 
-Local private packages, declarations, CSS, package isolation, consumer SSR, tests, and builds can be verified. An OSS license, public repository, npm publication, production deployment, external onboarding, independent usability study, paid pilot, and commercial validation were not authorized or observable. They cannot be converted into a passing local check.
+Hosted validation run `34039201738` passed for exact source revision `41f29540bf534a23ad08b7fbb865e008f9f16105`. Owner-dispatched trusted release run `34039363988` published immutable image digest `sha256:e758c1f6548a7543fdd7a69ae7a1255c438a6e35457cfefc2b4acc4551fd4060`; its CycloneDX 1.7 SBOM reported two components and zero HIGH/CRITICAL vulnerabilities. Flux applied GitOps revision `7385ef18ec2ca09008402be70322681bace6bdf9`. Two non-root, read-only replicas are ready with zero restarts, and the apex and www routes pass home, health, readiness, exact revision, SPA fallback, missing-asset, and security-header checks.
+
+An OSS license, public repository, npm publication, external onboarding, independent usability study, paid pilot, and commercial validation remain separate decisions and are not implied by the production playground.
 
 ## Coverage
 
@@ -64,7 +66,7 @@ Local private packages, declarations, CSS, package isolation, consumer SSR, test
 | --- | --- | --- |
 | Rename active product and archive old Aeliqo | Satisfied | Filesystem, parent manifests, portfolio source, archive fingerprint and Git history |
 | Semantic reuse and data correctness | Satisfied locally | Core semantic/temporal/relation tests and two unrelated domain fixtures |
-| Level 1, Level 2, and Level 3 architecture | Satisfied locally | Twelve catalog components plus Workspace; direct and semantic authoring paths |
+| Level 1, Level 2, and Level 3 architecture | Satisfied locally | Sixteen catalog components plus Workspace; direct and semantic authoring paths |
 | Data, component, interaction, and workspace smartness | Satisfied locally | Component, workspace, linked-data, persistence, and browser scenarios |
 | Shared MCP/BYOK/WebMCP contracts | Satisfied locally | Shared dispatcher, parity tests, companion/MCP browser path, deterministic BYOK |
 | Broad 118-need catalog | Not applicable as a delivery count | It is explicitly a planning and admission map |
@@ -72,7 +74,8 @@ Local private packages, declarations, CSS, package isolation, consumer SSR, test
 | Package and CSS isolation | Satisfied locally | Tarball consumer, SSR/types/import graph, scoped-theme tests |
 | Performance targets | Satisfied for admitted local workloads | B02 100k×20 Table and B03 50k-point Trend sampling measured in one production Chromium environment; resize/brush and other devices remain untested |
 | Native WebMCP, live paid provider, external users | Unknown | Required external host, credential, and participants absent |
-| Public OSS release and production deployment | Not applicable | Requires owner license/promotion/publication decisions |
+| Production playground deployment | Satisfied | Exact hosted validation/release, immutable digest, GitOps, two ready replicas, and apex/www checks |
+| Public OSS/package release | Not applicable | Requires separate owner license and publication decisions |
 
 ## Remediation outcome
 
@@ -80,4 +83,4 @@ Authorized local remediation completed the identity migration, archive preservat
 
 The final integrated `pnpm check` passed 156/156 unit and integration tests, all dependency boundaries, production build, 9/9 production-browser scenarios, and the core operation benchmark. `pnpm check:packages` built and installed five private 0.2.0 tarballs, type-checked their NodeNext declarations, server-rendered all eleven direct components, and retained no unwanted modules in the standalone Metric graph. `pnpm proof:stress` passed ten scenarios with the frozen catalog hash unchanged. The Arconath site independently passed 5/5 tests, lint, typecheck, production build, its build contract, and a production-dependency audit with zero known vulnerabilities.
 
-Local B02/B03 evidence records a 100,000-row × 20-column Table at 23 DOM rows and a 50,000-point Trend at 793 visual points with exact full-data summaries. Gap continuity is preserved; when an 800-point geometry budget cannot preserve every gap, the line is withheld with an explanation. The recorded Apple M4 Pro/Chromium samples were Table 34.0 ms median / 35.7 ms p95 and Trend 65.4 / 65.5 ms, with 10,504 bytes retained growth after forced GC across 25 alternating lifecycles. Resize/brush, other devices/browsers, native WebMCP, live provider, external-user, commercial, license, publication, and production evidence remain explicitly outside these local results.
+Local B02/B03 evidence records a 100,000-row × 20-column Table at 23 DOM rows and a 50,000-point Trend at 793 visual points with exact full-data summaries. Gap continuity is preserved; when an 800-point geometry budget cannot preserve every gap, the line is withheld with an explanation. The recorded Apple M4 Pro/Chromium samples were Table 34.0 ms median / 35.7 ms p95 and Trend 65.4 / 65.5 ms, with 10,504 bytes retained growth after forced GC across 25 alternating lifecycles. Resize/brush, other devices/browsers, native WebMCP, live provider, external-user, commercial, license, and package-publication evidence remain explicitly outside these results. Production delivery evidence is recorded by platform GitOps and `platform-infrastructure/evidence/aeliqo-runtime.json`.

@@ -2,7 +2,7 @@
 
 A headless TypeScript UI core, framework-owned React components and one shared capability layer projected into MCP, BYOK and experimental WebMCP. This upgrades the original POC in place.
 
-The production-quality continuation is tracked in the [local implementation audit](docs/aeliqo/current-state.md) and [execution record](docs/aeliqo/exec-plan.md). The PoC proof below does not establish package-release or production readiness.
+The production-quality continuation is tracked in the [local implementation audit](docs/aeliqo/current-state.md), [execution record](docs/aeliqo/exec-plan.md), and [completion audit](docs/aeliqo/completion-audit.md). The public playground is deployed at [aeliqo.com](https://aeliqo.com) from an immutable, scanned image; package publication remains a separate release decision. The historical PoC proof below does not by itself establish those release facts.
 
 **Frozen proof verdict: strongly proven for its defined POC scope.** That dated proof used eleven trusted catalog components. The current runtime exposes sixteen catalog components plus Workspace, with a per-surface evidence matrix rather than one blanket quality claim. Live Codex→MCP→browser and native in-app-browser WebMCP worked in the frozen proof. Deterministic BYOK parity has fresh local evidence; live OpenAI execution remains unverified. See [the executed proof report](docs/PROOF.md).
 
