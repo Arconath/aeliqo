@@ -4,7 +4,7 @@ Smart semantic React components and adaptive workspaces backed by a headless Typ
 
 Release status and artifact identities are tracked in the [execution record](docs/aeliqo/exec-plan.md). The public site is deployed at [aeliqo.com](https://aeliqo.com) from an immutable, scanned image. Historical PoC audits remain available as regression evidence and do not establish current release facts.
 
-The current milestone prepares the first public framework release. The earlier POC remains a dated regression baseline: it proved eleven trusted catalog components and the shared control paths under its recorded conditions. Current release evidence and unresolved external gates are tracked in [the execution record](docs/aeliqo/exec-plan.md); historical evidence remains in [the proof report](docs/PROOF.md).
+Version 0.2.0 is the first public framework release. The earlier POC remains a dated regression baseline: it proved eleven trusted catalog components and the shared control paths under its recorded conditions. Current release evidence and known limitations are tracked in [the execution record](docs/aeliqo/exec-plan.md); historical evidence remains in [the proof report](docs/PROOF.md).
 
 ## Run
 
@@ -54,7 +54,7 @@ An MCP client can launch the public **stdio** executable after installation:
 }
 ```
 
-Until registry publication is approved, run the same executable from the verified `@aeliqo/mcp` tarball with `npm exec --package ./aeliqo-mcp-0.2.0.tgz aeliqo-mcp`. The internal `pnpm companion` development command additionally provides the loopback BYOK endpoint; external self-hosted BYOK applications import `runAgent` and `createOpenAIProvider` from `@aeliqo/byok` on their server. A copy-ready local server is in [`apps/companion/examples/byok-local-server.ts`](apps/companion/examples/byok-local-server.ts). It composes only public packages, binds to loopback, validates one explicit local origin and bearer credential, and bounds request size, concurrency, turns, and time. The complete [local agent integration recipe](docs/aeliqo/recipes/local-agent-integration.md) covers MCP configuration, BYOK startup, data authorization, and the evidence boundary. It is a local/self-hosted recipe, not a remote multi-user service.
+The internal `pnpm companion` development command additionally provides the loopback BYOK endpoint; external self-hosted BYOK applications import `runAgent` and `createOpenAIProvider` from `@aeliqo/byok` on their server. A copy-ready local server is in [`apps/companion/examples/byok-local-server.ts`](apps/companion/examples/byok-local-server.ts). It composes only public packages, binds to loopback, validates one explicit local origin and bearer credential, and bounds request size, concurrency, turns, and time. The complete [local agent integration recipe](docs/aeliqo/recipes/local-agent-integration.md) covers MCP configuration, BYOK startup, data authorization, and the evidence boundary. It is a local/self-hosted recipe, not a remote multi-user service.
 
 The MCP executable prints a diagnostic pairing URL that carries the non-secret expected workspace and optional renderer identity; the pairing credential stays in the URL fragment and is removed from browser history after parsing. A different renderer cannot replace that target. Client cancellation reaches pending bridge work, and revoke/restart requires a fresh credential.
 
@@ -119,7 +119,7 @@ const scatter = {
 <Scatter store={store} node={scatter} />;
 ```
 
-Import core/React from `@aeliqo/core` and `@aeliqo/react`, plus `@aeliqo/react/styles.css`. Twenty catalog components have direct props and isolated package subpaths; the same implementations accept semantic store/node bindings and render inside Workspace. This includes MetricBreakdown, EventTimeline, TimeInvestigation, and QualityPanel for data investigation. Trusted extensions register their schema and React renderer without adding domain logic to core. `pnpm check:packages` builds clean ESM/types/CSS tarballs, installs external consumers from those tarballs plus registry dependencies, verifies React 18.3/19 and the documented Next.js matrix, and measures standalone imports. Apache-2.0 is approved; registry publication and its post-publish smoke checks remain release actions. Theme tokens are scoped with `.aeliqo-theme` or `data-aeliqo-theme`; importing CSS does not restyle the host root.
+Import core/React from `@aeliqo/core` and `@aeliqo/react`, plus `@aeliqo/react/styles.css`. Twenty catalog components have direct props and isolated package subpaths; the same implementations accept semantic store/node bindings and render inside Workspace. This includes MetricBreakdown, EventTimeline, TimeInvestigation, and QualityPanel for data investigation. Trusted extensions register their schema and React renderer without adding domain logic to core. `pnpm check:packages` builds clean ESM/types/CSS tarballs, installs external consumers from those tarballs plus registry dependencies, verifies React 18.3/19 and the documented Next.js matrix, and measures standalone imports. Version 0.2.0 is published under Apache-2.0, and `pnpm smoke:registry` verifies imports, SSR, adapters, and the published package boundary. Theme tokens are scoped with `.aeliqo-theme` or `data-aeliqo-theme`; importing CSS does not restyle the host root.
 
 ## Verify and reproduce evidence
 
@@ -128,6 +128,7 @@ pnpm exec playwright install chromium
 pnpm check
 pnpm test:parity
 pnpm proof:stress
+pnpm smoke:registry
 ```
 
 `pnpm check` runs typecheck, lint, dependency checks, unit/integration/parity tests, production build, browser tests and the core benchmark. `pnpm check:packages` verifies actual local package consumers. `pnpm proof:stress` verifies the historical catalog subset unchanged and records ten intents; Filter was added after that frozen proof. Browser tests choose isolated preview/bridge/HTTP ports. `pnpm exec tsx scripts/browser-test-collision.ts` verifies they work while the old default ports are occupied. Existing services are not stopped. Screenshots and traces are regenerated in artifacts/test-results; build composition is in `dist/bundle-report.json`.

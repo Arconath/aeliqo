@@ -45,16 +45,15 @@ The package peer range is React and React DOM `>=18.3.0 <20`. The exact rows abo
 
 The distributed stylesheet now uses compatible flex alignment values; rerun the clean package matrix on the final source candidate to refresh the artifact hashes and confirm the earlier Next 15 Autoprefixer warnings are gone.
 
-The manual `npm-release.yml` workflow uses a GitHub-hosted runner, OIDC permission, a protected `npm-release` environment, provenance, and the same five-package allowlist. Its verification path runs the complete cross-browser quality suite before producing package evidence. With `publish: false`, generated artifacts retain `private: true`. With `publish: true`, the verify job emits Apache-2.0 public metadata, requires a matching accepted performance profile, and uploads the reviewed tarballs with their evidence.
+The manual `npm-release.yml` workflow uses a GitHub-hosted runner, OIDC permission, a protected `npm-release` environment, provenance, and the same five-package allowlist. Its verification path runs the complete cross-browser quality suite before producing package evidence. With `publish: false`, generated artifacts retain `private: true`. With `publish: true`, the verify job emits Apache-2.0 public metadata, requires a matching accepted performance profile, and uploads the reviewed tarballs with their evidence. Version 0.2.0 was published interactively from the reviewed tarballs after npm WebAuthn authentication; the registry identities and external consumer result are recorded in `docs/evidence/registry-release-0.2.0.json`.
 
 The protected publish job does not check out source, install repository dependencies, or rebuild packages. It downloads that exact verify-job artifact, checks the source commit, clean-tree record, allowlist, public metadata, embedded license, MCP executable, and each SHA-256 against the evidence, then publishes the named tarball bytes in dependency order.
 
 An external MCP client can launch the package with `npx --yes @aeliqo/mcp` or the installed `aeliqo-mcp` executable. `AELIQO_BRIDGE_PORT` selects the loopback bridge port; `0` requests an ephemeral port. `AELIQO_WORKSPACE_ID` and `AELIQO_RENDERER_ID` set the explicit pairing identity. The companion application remains internal.
 
-## Remaining publication gates
+## Post-publication follow-up
 
-- Confirm npm scope/name ownership and choose the release dist-tag. Version `0.2.0` is the current candidate.
-- Run the complete quality workflow from a clean committed source revision.
+- Configure npm trusted publishing for future releases after the initial package identities exist; keep the interactive 2FA path as the break-glass procedure.
 - Review the dependency/ownership inventory in `docs/aeliqo/dependency-license-audit.md`; it is engineering evidence rather than legal advice.
-- Bootstrap and accept the GitHub-hosted installed-artifact performance profile before a protected publish run.
-- After publication, repeat the consumer matrix from registry package specifications and record registry integrity and live website smoke evidence.
+- Keep registry integrity and package smoke evidence tied to the exact source commit and tarball hashes.
+- Complete the separate website rollout and live smoke evidence before calling the public site candidate complete.

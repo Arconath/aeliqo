@@ -12,6 +12,7 @@
     "build": "vite build",
     "build:packages": "tsx scripts/package-build.ts",
     "check:packages": "pnpm build:packages && tsx scripts/package-check.ts",
+    "smoke:registry": "tsx scripts/registry-smoke.ts",
     "preview": "vite preview --host 127.0.0.1",
     "mcp": "tsx packages/mcp/src/cli.ts",
     "check": "pnpm typecheck && pnpm lint && pnpm check:boundaries && pnpm test && pnpm build && pnpm test:browser && pnpm perf",
