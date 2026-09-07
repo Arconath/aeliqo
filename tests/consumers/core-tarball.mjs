@@ -1,11 +1,12 @@
 /**
  * Build and consume the actual @aeliqo/core package outside the workspace.
  *
- * This is a bounded T03/T05 package-boundary check. It proves the four public
- * document parsers, generated schema files, task structure and experience
- * constraint passes, the installed package graph and a small core bundle. It
- * does not certify the full planner, the complete product, universal browser
- * performance, or a universal secret/code scanner.
+ * This is a bounded T03/T04/T05 package-boundary check. It proves the four
+ * public document parsers, generated schema files, task structure, experience
+ * constraint and semantic meaning passes, the installed package graph and a
+ * small core bundle. It does not certify query execution, the full planner,
+ * the complete product, universal browser performance, or a universal
+ * secret/code scanner.
  */
 import assert from "node:assert/strict";
 import {createHash} from "node:crypto";
@@ -436,15 +437,39 @@ const t05Fixtures = {
   wideningRestrictionInput,
   operationRevisionRestrictionInput,
 };
+const semanticCatalogInput = {
+  version: "1",
+  revision: "catalog-1",
+  functionRegistryDigest: "core-standard-1",
+  entities: [{
+    id: "employees",
+    label: "Employees",
+    identity: ["employee.id"],
+    rowGrain: ["employee.id"],
+    fields: [
+      {id: "employee.id", label: "Employee ID", type: {value: "text", nullable: false}, role: "identity"},
+      {id: "numerator", label: "Numerator", type: {value: "integer", nullable: false, unit: {dimension: "count", symbol: "day"}}, role: "measure"},
+      {id: "denominator", label: "Denominator", type: {value: "integer", nullable: false, unit: {dimension: "count", symbol: "day"}}, role: "measure"},
+      {id: "usd", label: "US Dollars", type: {value: "integer", nullable: false, unit: {dimension: "currency", symbol: "USD"}}, role: "measure"},
+      {id: "cents", label: "Cents", type: {value: "integer", nullable: false, unit: {dimension: "currency", symbol: "cent"}}, role: "measure"},
+    ],
+  }],
+  relationships: [],
+  meanings: [],
+  capabilities: [],
+};
+const t04Fixtures = {semanticCatalogInput};
 
 await writeFile(join(consumerDirectory, "consumer-types.ts"), `
 import {
   parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract,
   validateTaskStructure, resolveExperienceConstraints,
+  createStandardFunctionRegistry, createTypedAuthoring,
 } from '@aeliqo/core';
 import type {
   Catalog, Task, Result, Experience, Outcome, TaskStructure,
-  ExperienceRestriction, ExperienceConstraints,
+  ExperienceRestriction, ExperienceConstraints, TypedAuthoring, TypedExpression,
+  FunctionRegistry, MeaningDefinition, MeaningBundle,
 } from '@aeliqo/core';
 declare const catalog: Catalog;
 declare const task: Task;
@@ -453,6 +478,8 @@ declare const experience: Experience;
 declare const taskStructure: TaskStructure;
 declare const restriction: ExperienceRestriction;
 declare const constraints: ExperienceConstraints;
+const semanticCatalog = ${JSON.stringify(semanticCatalogInput)} as const satisfies Catalog;
+declare const authoring: TypedAuthoring<typeof semanticCatalog>;
 function unwrap<T>(outcome: Outcome<T>): T {
   if (!outcome.ok) throw new Error('unreachable in type-only consumer fixture');
   return outcome.value;
@@ -464,8 +491,27 @@ const typedExperience: Experience = unwrap(parseExperience({}));
 const typedStructure: TaskStructure = taskStructure;
 const typedRestriction: ExperienceRestriction = restriction;
 const typedConstraints: ExperienceConstraints = constraints;
+const typedRegistry: Outcome<FunctionRegistry> = createStandardFunctionRegistry();
+const typedNumerator: Outcome<TypedExpression> = authoring.field('employees', 'numerator');
+const typedDenominator: Outcome<TypedExpression> = authoring.field('employees', 'denominator');
+const typedRatio: Outcome<TypedExpression> = authoring.ratioOfSums({
+  numerator: typedNumerator,
+  denominator: typedDenominator,
+  zeroDenominator: 'null',
+});
+const typedMeaning: Outcome<MeaningDefinition> = authoring.defineMetric({
+  id: 'employee.rate', label: 'Employee rate', description: 'A same-unit ratio.', expression: typedRatio,
+  aggregation: 'ratio-of-sums',
+});
+const typedBundle: Outcome<MeaningBundle> = authoring.bundle([]);
+// @ts-expect-error Entity IDs are derived from the const catalog for autocomplete.
+authoring.field('unknown-entity', 'numerator');
+// @ts-expect-error Field IDs are derived from the selected entity for autocomplete.
+authoring.field('employees', 'unknown-field');
+// @ts-expect-error Ratio-of-sums requires an explicit zero-denominator policy.
+authoring.ratioOfSums({numerator: typedNumerator, denominator: typedDenominator});
 void [catalog, task, result, experience, typedCatalog, typedTask, typedResult, typedExperience];
-void [typedStructure, typedRestriction, typedConstraints];
+void [typedStructure, typedRestriction, typedConstraints, typedRegistry, typedNumerator, typedDenominator, typedRatio, typedMeaning, typedBundle];
 void parseContract('catalog', catalog);
 void parseContract('task', task);
 void parseContract('result', result);
@@ -503,6 +549,7 @@ run([join(consumerDirectory, "node_modules/.bin/tsc"), "--project", "tsconfig.js
 
 const fixtureSource = JSON.stringify(documents);
 const t05FixtureSource = JSON.stringify(t05Fixtures);
+const t04FixtureSource = JSON.stringify(t04Fixtures);
 await writeFile(join(consumerDirectory, "consumer.mjs"), `
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -510,9 +557,11 @@ import {readFile} from 'node:fs/promises';
 import {
   parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract,
   validateTaskStructure, resolveExperienceConstraints,
+  checkExpression, createStandardFunctionRegistry, createTypedAuthoring, authorizeMeaningActivation,
 } from '@aeliqo/core';
 const documents = ${fixtureSource};
 const t05 = ${t05FixtureSource};
+const t04 = ${t04FixtureSource};
 function unwrap(outcome) {
   assert.equal(outcome.ok, true);
   return outcome.value;
@@ -579,6 +628,70 @@ const operationConflict = resolveExperienceConstraints(
 );
 assert.equal(operationConflict.ok, false);
 if (!operationConflict.ok) assert(operationConflict.diagnostics.some((diagnostic) => diagnostic.code === 'experience.operation-conflict'));
+const semanticCatalog = t04.semanticCatalogInput;
+const standardRegistry = unwrap(createStandardFunctionRegistry());
+assert.equal(standardRegistry.digest, 'core-standard-1');
+const authoring = unwrap(createTypedAuthoring({catalog: semanticCatalog, registry: standardRegistry}));
+const numerator = unwrap(authoring.field('employees', 'numerator'));
+const denominator = unwrap(authoring.field('employees', 'denominator'));
+const ratio = unwrap(authoring.ratioOfSums({numerator, denominator, zeroDenominator: 'null'}));
+assert.equal(ratio.operation, 'ratio-of-sums');
+assert.equal(ratio.aggregation, 'ratio-of-sums');
+assert.equal(ratio.type.unit, undefined);
+const sameUnitMeaning = unwrap(authoring.defineMetric({
+  id: 'employee.rate',
+  label: 'Employee rate',
+  description: 'A same-unit ratio.',
+  expression: ratio,
+  aggregation: 'ratio-of-sums',
+}));
+assert.equal(sameUnitMeaning.origin, 'manual');
+assert.equal(sameUnitMeaning.lifecycle, 'draft');
+assert.equal(sameUnitMeaning.authority, 'hypothesis');
+const unknownVersion = checkExpression({
+  kind: 'call',
+  function: {id: 'core.add', revision: '999'},
+  arguments: [numerator.expression, denominator.expression],
+}, {catalog: semanticCatalog, registry: standardRegistry, entityId: 'employees'});
+assert.equal(unknownVersion.ok, false);
+if (!unknownVersion.ok) assert(unknownVersion.diagnostics.some((diagnostic) => diagnostic.code === 'semantic.function-version'));
+const invalidCurrency = checkExpression({
+  kind: 'call',
+  function: {id: 'core.add', revision: '1'},
+  arguments: [{kind: 'field', ref: 'usd'}, {kind: 'field', ref: 'cents'}],
+}, {catalog: semanticCatalog, registry: standardRegistry, entityId: 'employees'});
+assert.equal(invalidCurrency.ok, false);
+if (!invalidCurrency.ok) assert(invalidCurrency.diagnostics.some((diagnostic) => diagnostic.code === 'semantic.unit-mismatch'));
+const idempotentBundle = unwrap(authoring.bundle([sameUnitMeaning, sameUnitMeaning]));
+assert.equal(idempotentBundle.meanings.length, 1);
+const conflictingBundle = authoring.bundle([sameUnitMeaning, {...sameUnitMeaning, label: 'Conflicting employee rate'}]);
+assert.equal(conflictingBundle.ok, false);
+if (!conflictingBundle.ok) assert(conflictingBundle.diagnostics.some((diagnostic) => diagnostic.code === 'semantic.definition-conflict'));
+const duplicateAggregationDimensions = authoring.defineMetric({
+  id: 'employee.rate.duplicate-grain',
+  label: 'Duplicate grain rate',
+  description: 'A deliberately duplicated aggregation grain.',
+  expression: ratio,
+  aggregation: 'ratio-of-sums',
+  aggregationDimensions: ['employee.id', 'employee.id'],
+});
+assert.equal(duplicateAggregationDimensions.ok, false);
+if (!duplicateAggregationDimensions.ok) assert(duplicateAggregationDimensions.diagnostics.some((diagnostic) => diagnostic.code === 'semantic.aggregation-grain'));
+const activation = authorizeMeaningActivation(sameUnitMeaning, {
+  policyRevision: 'policy-1',
+  allowlistedDefinitions: [sameUnitMeaning],
+  allowlistedRefs: [{id: sameUnitMeaning.id, revision: sameUnitMeaning.revision}],
+});
+assert.equal(activation.ok, false);
+if (!activation.ok) assert(activation.diagnostics.some((diagnostic) => diagnostic.code === 'semantic.activation-lifecycle'));
+const forgedActiveMeaning = {...sameUnitMeaning, label: 'Forged employee rate', lifecycle: 'active', authority: 'approved'};
+const forgedActivation = authorizeMeaningActivation(forgedActiveMeaning, {
+  policyRevision: 'policy-1',
+  allowlistedDefinitions: [sameUnitMeaning],
+  allowlistedRefs: [{id: sameUnitMeaning.id, revision: sameUnitMeaning.revision}],
+});
+assert.equal(forgedActivation.ok, false);
+if (!forgedActivation.ok) assert(forgedActivation.diagnostics.some((diagnostic) => diagnostic.code === 'semantic.activation-denied'));
 const require = createRequire(import.meta.url);
 for (const name of ${JSON.stringify(expectedSchemas)}) {
   const path = require.resolve('@aeliqo/core/schemas/' + name + '.schema.json');
@@ -589,6 +702,7 @@ const runtimeSchema = await import('@aeliqo/core/schema');
 assert(Object.keys(runtimeSchema).length > 0);
 console.log('Installed @aeliqo/core parsers, schema exports, and round trips pass.');
 console.log('Installed @aeliqo/core task structure and experience constraint passes pass.');
+console.log('Installed @aeliqo/core semantic checker and typed authoring passes pass.');
 `);
 const consumerOutput = run([process.execPath, "consumer.mjs"], consumerDirectory);
 const parserProbe = join(consumerDirectory, "no-codegen.mjs");
@@ -599,13 +713,21 @@ globalThis.eval = () => { throw new Error('eval used by core parser'); };
 const core = await import('@aeliqo/core');
 const documents = ${fixtureSource};
 const t05 = ${t05FixtureSource};
+const t04 = ${t04FixtureSource};
 assert.equal(core.parseCatalog(documents.catalog).ok, true);
 assert.equal(core.parseTask(documents.task).ok, true);
 assert.equal(core.parseResult(documents.result).ok, true);
 assert.equal(core.parseExperience(documents.experience).ok, true);
 assert.equal(core.validateTaskStructure(t05.namedOutputTaskInput).ok, true);
 assert.equal(core.resolveExperienceConstraints(t05.noPresetExperienceInput, t05.taskInput).ok, true);
-console.log('No dynamic code generation during core import and parser calls.');
+const registry = core.createStandardFunctionRegistry();
+assert.equal(registry.ok, true);
+if (registry.ok) {
+  const authoring = core.createTypedAuthoring({catalog: t04.semanticCatalogInput, registry: registry.value});
+  assert.equal(authoring.ok, true);
+  if (authoring.ok) assert.equal(authoring.value.field('employees', 'numerator').ok, true);
+}
+console.log('No dynamic code generation during core, parser, and semantic authoring calls.');
 `);
 const parserProbeOutput = run([
   process.execPath,
@@ -618,12 +740,20 @@ await writeFile(join(consumerDirectory, "bundle-entry.js"), `
 import {
   parseCatalog, parseTask, parseResult, parseExperience,
   validateTaskStructure, resolveExperienceConstraints,
+  createStandardFunctionRegistry, createTypedAuthoring,
 } from '@aeliqo/core';
 const documents = ${fixtureSource};
 const t05 = ${t05FixtureSource};
+const t04 = ${t04FixtureSource};
+const semanticRegistry = createStandardFunctionRegistry();
+const semanticAuthoring = semanticRegistry.ok
+  ? createTypedAuthoring({catalog: t04.semanticCatalogInput, registry: semanticRegistry.value})
+  : semanticRegistry;
+const semanticField = semanticAuthoring.ok ? semanticAuthoring.value.field('employees', 'numerator') : semanticAuthoring;
 const parsed = [
   parseCatalog(documents.catalog), parseTask(documents.task), parseResult(documents.result), parseExperience(documents.experience),
   validateTaskStructure(t05.namedOutputTaskInput), resolveExperienceConstraints(t05.noPresetExperienceInput, t05.taskInput),
+  semanticRegistry, semanticAuthoring, semanticField,
 ];
 globalThis.__aeliqoParsed = parsed;
 export {parsed};
@@ -666,7 +796,7 @@ for (const path of bundleFiles) {
   bundleMetrics.push({file: relative(join(consumerDirectory, "dist"), path), bytes: bytes.length, gzipBytes: gzipSync(bytes).length});
 }
 const initialGzipBytes = bundleMetrics.reduce((sum, item) => sum + item.gzipBytes, 0);
-assert(initialGzipBytes <= 70 * 1024, `Core parser lazy entry exceeds 70 KiB gzip: ${initialGzipBytes}`);
+assert(initialGzipBytes <= 70 * 1024, `Core consumer entry exceeds 70 KiB gzip: ${initialGzipBytes}`);
 
 const sourceAfter = await sourceDigest();
 assert.equal(sourceAfter, sourceBefore, "Core source changed during consumer verification");
@@ -674,7 +804,7 @@ const report = {
   sourceDigestBefore: sourceBefore,
   sourceDigestAfter: sourceAfter,
   sourceChangedDuringRun: sourceBefore !== sourceAfter,
-  scope: "@aeliqo/core 0.1.0 installed tarball; four document parsers/round trips; TaskStructure and ExperienceConstraints passes; generated schemas; Vite core graph and 70 KiB gzip budget. Planner/full product/browser certification are outside this check.",
+  scope: "@aeliqo/core 0.1.0 installed tarball; four document parsers/round trips; TaskStructure, ExperienceConstraints, semantic checker and typed authoring passes; generated schemas; Vite core graph and 70 KiB gzip budget. Query execution/full planner/product/browser certification are outside this check.",
   artifact: {name: packedManifest.name, version: packedManifest.version, path: tarballPath, sha256: tarballSha256, integrity: tarballIntegrity},
   consumer: {directory: consumerDirectory, lockPath: join(runDirectory, "consumer-package-lock.json"), lockSha256: hash(lockBytes)},
   schemas: expectedSchemas.map((name) => `schemas/${name}.schema.json`),
@@ -695,5 +825,5 @@ const report = {
   passed: true,
 };
 await writeFile(join(runDirectory, "report.json"), JSON.stringify(report, null, 2) + "\n");
-console.log("Installed @aeliqo/core types, parsers, schemas, no-codegen probe, and Vite graph pass.");
+console.log("Installed @aeliqo/core types, parsers, semantic authoring, schemas, no-codegen probe, and Vite graph pass.");
 console.log(`Evidence: ${join(runDirectory, "report.json")}`);
