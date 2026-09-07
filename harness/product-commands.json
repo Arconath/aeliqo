@@ -40,7 +40,23 @@
         "test:platform:consumers"
       ],
       "timeoutSeconds": 300
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:contracts"
+      ],
+      "timeoutSeconds": 120
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:core:consumers"
+      ],
+      "timeoutSeconds": 300
     }
   ],
-  "note": "Real scoped M0 commands. Full product lint, security, performance and boundary commands remain required; missing kinds deliberately keep the integrated product gate blocked."
+  "note": "Real scoped M0 and T03 commands. Full product lint, security, performance and boundary commands remain required; missing kinds deliberately keep the integrated product gate blocked."
 }

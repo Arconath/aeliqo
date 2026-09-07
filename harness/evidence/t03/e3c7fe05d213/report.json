@@ -1,0 +1,80 @@
+{
+  "sourceDigestBefore": "5c749560451a315c906540e53d52dca4825a4567085af0dababa8f869483fca5",
+  "sourceDigestAfter": "5c749560451a315c906540e53d52dca4825a4567085af0dababa8f869483fca5",
+  "sourceChangedDuringRun": false,
+  "scope": "@aeliqo/core 0.1.0 installed tarball; four document parsers/round trips; generated schemas; Vite parser graph and 70 KiB gzip budget. Planner/full product/browser certification are outside this check.",
+  "artifact": {
+    "name": "@aeliqo/core",
+    "version": "0.1.0",
+    "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/core-consumers/run-LujqLo/aeliqo-core-0.1.0.tgz",
+    "sha256": "6b46892928acb788665a8cc884a804328f71082fbdb738b20e2dc82f18aba938",
+    "integrity": "sha512-mRSyTCmO+Bn2MIiL3dji2p5+UbPvfDl698d+WawEW2zBYdDTedXs9qQSoLlHLah0CAlo6GDemN7LQFJq4h4MAQ=="
+  },
+  "consumer": {
+    "directory": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-do2qF6",
+    "lockPath": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/core-consumers/run-LujqLo/consumer-package-lock.json",
+    "lockSha256": "537b9816c678781910383f5d521a71eccd0fbfe7728160a274c8ca64085869cf"
+  },
+  "schemas": [
+    "schemas/catalog.schema.json",
+    "schemas/task.schema.json",
+    "schemas/result.schema.json",
+    "schemas/experience.schema.json",
+    "schemas/expression.schema.json",
+    "schemas/query.schema.json",
+    "schemas/interaction.schema.json",
+    "schemas/result-event.schema.json",
+    "schemas/environment.schema.json",
+    "schemas/presentation-plan.schema.json",
+    "schemas/task-proposal.schema.json",
+    "schemas/meaning-draft.schema.json",
+    "schemas/binding-outcome.schema.json",
+    "schemas/model-evaluation.schema.json"
+  ],
+  "consumerOutput": "Installed @aeliqo/core parsers, schema exports, and round trips pass.",
+  "parserProbeOutput": "No dynamic code generation during core import and parser calls.",
+  "bundle": {
+    "initialGzipBytes": 14561,
+    "files": [
+      {
+        "file": "assets/index-aDTGcfpb.js",
+        "bytes": 46336,
+        "gzipBytes": 14561
+      }
+    ],
+    "modules": [
+      "\u0000vite/modulepreload-polyfill.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-do2qF6/node_modules/@aeliqo/core/dist/contracts/limits.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-do2qF6/node_modules/zod/v4/core/util.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-do2qF6/node_modules/zod/v4/core/core.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-do2qF6/node_modules/zod/v4/core/errors.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-do2qF6/node_modules/zod/v4/core/parse.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-do2qF6/node_modules/zod/v4/core/regexes.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-do2qF6/node_modules/zod/v4/core/checks.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-do2qF6/node_modules/zod/v4/core/versions.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-do2qF6/node_modules/zod/v4/core/schemas.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-do2qF6/node_modules/zod/v4/core/api.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-do2qF6/node_modules/zod/v4/mini/schemas.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-do2qF6/node_modules/zod/v4/mini/iso.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-do2qF6/node_modules/@aeliqo/core/dist/contracts/schemas.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-do2qF6/node_modules/@aeliqo/core/dist/diagnostics/wire.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-do2qF6/node_modules/@aeliqo/core/dist/contracts/ingress.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-do2qF6/node_modules/@aeliqo/core/dist/contracts/parse.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-do2qF6/bundle-entry.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-do2qF6/index.html"
+    ],
+    "moduleGraphScope": "installed package parser graph; no universal dependency/security certification"
+  },
+  "environment": {
+    "node": "v24.20.0",
+    "npm": "11.19.0",
+    "pnpm": "11.24.0",
+    "typescript": "7.0.2",
+    "vite": "8.2.2",
+    "zod": "4.5.4",
+    "os": "darwin",
+    "release": "25.6.0",
+    "arch": "arm64"
+  },
+  "passed": true
+}

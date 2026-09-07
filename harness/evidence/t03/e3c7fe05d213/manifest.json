@@ -1,0 +1,77 @@
+{
+  "sourceDigest": "e3c7fe05d213fb6a08949f4da323eeaaa8a548a5cee2b9dca7670c7973082160",
+  "files": [
+    {
+      "path": "00.log",
+      "sha256": "e9b1edbd8a64c0d4553bd97b5118c04843b74960e6dc38b0c8f55476b3decae5"
+    },
+    {
+      "path": "01.log",
+      "sha256": "3d55eeb6b8b3165f472cc6da5379531390e285f352c9f29f06e631901808b8b4"
+    },
+    {
+      "path": "02.log",
+      "sha256": "602359ff1034a6209cb470ea8d06ae1d2d37dabba71272d736a2cd142e2e8034"
+    },
+    {
+      "path": "03.log",
+      "sha256": "7668640b1d5628ad26524b01aca4ad3d8c93d3aaba9f34ed34ab59208a2b034a"
+    },
+    {
+      "path": "04.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "consumer-package-lock.json",
+      "sha256": "537b9816c678781910383f5d521a71eccd0fbfe7728160a274c8ca64085869cf"
+    },
+    {
+      "path": "kit-reference/independent-semantics-composition.log",
+      "sha256": "3fb8a04819b4768b3740eeacb8c44324d6ea75245a840d3835186174afa9fbb7"
+    },
+    {
+      "path": "kit-reference/kit-consistency.log",
+      "sha256": "725fab5dbed8c577c123c70608c387451ea9df5c359945fe8c9b861a44f2796a"
+    },
+    {
+      "path": "kit-reference/product-ready-expected-block.log",
+      "sha256": "afd890d8754e2af2508e971a22d3aa782b771a50b38996326798f68fef27d4dc"
+    },
+    {
+      "path": "kit-reference/product-release-expected-block.log",
+      "sha256": "55b8833f76e65df48655f49547268d125cd96cc8a4edfc4793cd5d27b07c1f85"
+    },
+    {
+      "path": "kit-reference/publisher-dry-run.log",
+      "sha256": "7e18a34973ddf2c19c635cd2881dc7fc31c4732fcb054320663dd26a2789b6ef"
+    },
+    {
+      "path": "kit-reference/python-harness.log",
+      "sha256": "b0de54582a5032840ca97f82d3f019d5e945d5b8c917badda91edefc02ff4bec"
+    },
+    {
+      "path": "kit-reference/reference-search-measurements.log",
+      "sha256": "e5fad23f7b1b2fcbbffcd9aaca9c5e877d3b3451496c126f232eba39cc57b53d"
+    },
+    {
+      "path": "kit-reference/strict-ts-and-node-guards.log",
+      "sha256": "98f01b1da0f38c89ec93c64b15cb2f6e6e6c9203baac1e173841903259353c6a"
+    },
+    {
+      "path": "kit-reference/summary.json",
+      "sha256": "61d87a953f624c26eed8db76a7d68e0943ccfa886c8f8aa4fe4b2fb251ff84c6"
+    },
+    {
+      "path": "report.json",
+      "sha256": "218b01cc3380444d8ee9d2c75e7bf0c46aec73eb0bd3788f68f58bf692054069"
+    },
+    {
+      "path": "review.json",
+      "sha256": "e9ed30abf367321e08f2bea00311f7d564160cca88635736d3f8c23d91320ea6"
+    },
+    {
+      "path": "summary.json",
+      "sha256": "92d09ee3b13af54b17d015951382d5141dcdb4a66b84c0d3d62186a62dd6d116"
+    }
+  ]
+}

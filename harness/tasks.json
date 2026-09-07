@@ -102,17 +102,34 @@
         "T02"
       ],
       "paths": [
-        "contracts",
-        "packages/core/src/contracts",
-        "packages/core/src/diagnostics"
+        "packages/core",
+        "tests/contracts",
+        "tests/consumers/core-tarball.mjs"
       ],
       "acceptance": [
         "One schema source generates types/wire validators; versions, limits and error paths round-trip.",
         "Replace reference sketches with canonical generated validators, including tagged unknown/exact/approximate states and negative type/wire tests."
       ],
-      "status": "planned",
+      "status": "done",
       "stage": "ready",
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t03/e3c7fe05d213/manifest.json",
+          "sha256": "3ef1e71639b0e9a39e5c735b5ffc7324cac8cd1da2991bcc5af4bab0b05c7f5e"
+        }
+      ],
+      "notes": "Canonical production schemas and readonly types, bounded shape-only ingress, strict versions/duplicates/limits, JSON Schema parity and installed package accepted. Semantic compilation and effect authority remain subsequent tasks.",
+      "review": {
+        "status": "approved",
+        "author": "integration orchestrator (core/root); platform_proof (wire suite); release_inventory (consumer)",
+        "reviewer": "preflight_diagnosis (core and ingress); release_inventory (parent integration/tests); integration orchestrator (worker consumer/tests)",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t03/e3c7fe05d213/review.json",
+            "sha256": "e9ed30abf367321e08f2bea00311f7d564160cca88635736d3f8c23d91320ea6"
+          }
+        ]
+      }
     },
     {
       "id": "T04",

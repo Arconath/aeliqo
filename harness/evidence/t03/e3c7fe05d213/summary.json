@@ -1,0 +1,50 @@
+{
+  "sourceDigest": "e3c7fe05d213fb6a08949f4da323eeaaa8a548a5cee2b9dca7670c7973082160",
+  "sourceAfter": "e3c7fe05d213fb6a08949f4da323eeaaa8a548a5cee2b9dca7670c7973082160",
+  "sourceChangedDuringRun": false,
+  "commands": [
+    {
+      "argv": [
+        "pnpm",
+        "test:contracts"
+      ],
+      "exitCode": 0,
+      "log": "00.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "typecheck"
+      ],
+      "exitCode": 0,
+      "log": "01.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "test:core:consumers"
+      ],
+      "exitCode": 0,
+      "log": "02.log"
+    },
+    {
+      "argv": [
+        "python3",
+        "scripts/validate_all.py"
+      ],
+      "exitCode": 0,
+      "log": "03.log"
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0,
+      "log": "04.log"
+    }
+  ],
+  "completedAt": "2026-09-07T19:58:27.629822+00:00",
+  "scope": "T03 production canonical schema, bounded ingress, declarations, JSON Schema parity, installed pure parser package. Semantic compilation, planner, full product and release remain separate."
+}

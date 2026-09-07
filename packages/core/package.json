@@ -1,0 +1,31 @@
+{
+  "name": "@aeliqo/core",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Pure Aeliqo semantic UI contracts and compilation",
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "schemas",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./schema": {
+      "types": "./dist/contracts/schemas.d.ts",
+      "import": "./dist/contracts/schemas.js"
+    },
+    "./schemas/*": "./schemas/*"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/generate-schemas.mjs"
+  },
+  "dependencies": {
+    "zod": "4.5.4"
+  }
+}

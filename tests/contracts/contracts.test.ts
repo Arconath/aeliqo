@@ -36,6 +36,27 @@ import {
 
 type AnyRecord = Record<string, any>;
 
+describe('JSON text key uniqueness', () => {
+  it('rejects duplicate and escaped duplicate keys before schema parsing', () => {
+    for (const input of [
+      '{"version":"2","version":"1"}',
+      '{"version":"2","\\u0076ersion":"1"}',
+      '{"nested":{"key":1,"key":2}}',
+      '[{"key":1,"key":2}]',
+    ]) {
+      const result = parseCatalog(input);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.diagnostics[0].code).toBe('wire.duplicate-key');
+    }
+  });
+  it('allows repeated keys in separate objects and punctuation inside strings', () => {
+    const value = structuredClone(catalog) as AnyRecord;
+    value.entities[0].label = 'A \\"quoted\\" label: { } [ ]';
+    value.entities.push({...value.entities[0], id: 'another-entity'});
+    expect(parseCatalog(JSON.stringify(value)).ok).toBe(true);
+  });
+});
+
 const clone = <T>(value: T): T => structuredClone(value);
 
 function parse(kind: string, input: unknown): any {
@@ -59,11 +80,6 @@ function diagnostics(outcome: { ok: boolean; diagnostics?: readonly unknown[] })
 function firstDiagnostic(outcome: { ok: boolean; diagnostics?: readonly AnyRecord[] }): AnyRecord {
   expectRejected(outcome);
   return outcome.diagnostics?.[0] ?? {};
-}
-
-function limit(name: string, fallback: number): number {
-  const value = (WIRE_LIMITS as unknown as AnyRecord)[name];
-  return typeof value === 'number' && Number.isSafeInteger(value) && value > 0 ? value : fallback;
 }
 
 function deepExpression(depth: number): AnyRecord {
@@ -358,25 +374,28 @@ describe('bounded and hostile ingress', () => {
     }
   });
 
-  it('enforces expression depth and node budgets', () => {
-    const maxDepth = limit('depth', 32);
-    expectRejected(parse('expression', deepExpression(maxDepth + 2)));
-
-    const maxNodes = limit('nodes', 256);
-    const tooManyArguments = {
-      kind: 'call',
-      function: { id: 'math.identity', revision: '1' },
-      arguments: Array.from({ length: maxNodes + 1 }, () => expression),
-    };
-    expectRejected(parse('expression', tooManyArguments));
+  it('enforces depth and total-node budgets independently of array limits', () => {
+    const deep = parse('expression', deepExpression(WIRE_LIMITS.depth + 2));
+    expectRejected(deep);
+    expect(firstDiagnostic(deep).code).toBe('wire.depth');
+    const boundedArrayLength = WIRE_LIMITS.array - 1;
+    const groups = Math.ceil(WIRE_LIMITS.nodes / boundedArrayLength);
+    const wide = {...interaction, payload: {kind: 'extension', schema: {id: 'test', revision: '1'},
+      value: Array.from({length: groups}, () => Array(boundedArrayLength).fill(null))}};
+    const outcome = parse('interaction', wide);
+    expectRejected(outcome);
+    expect(firstDiagnostic(outcome).code).toBe('wire.nodes');
   });
 
   it('enforces a byte limit before accepting oversized JSON text', () => {
-    const maxBytes = limit('bytes', 256 * 1024);
-    const oversized = `"${'x'.repeat(Math.min(maxBytes + 1, 4_000_000))}"`;
-    const outcome = parse('task', oversized);
-    expectRejected(outcome);
-    expect(String(firstDiagnostic(outcome).code)).toMatch(/bytes|text|json|shape|parse/i);
+    for (const oversized of [
+      `"${'x'.repeat(WIRE_LIMITS.bytes + 1)}"`,
+      `"${'界'.repeat(Math.floor(WIRE_LIMITS.bytes / 3) + 1)}"`,
+    ]) {
+      const outcome = parse('task', oversized);
+      expectRejected(outcome);
+      expect(firstDiagnostic(outcome).code).toBe('wire.bytes');
+    }
   });
 
   it('rejects non-plain objects', () => {

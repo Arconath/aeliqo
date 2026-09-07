@@ -1,0 +1,25 @@
+{
+  "status": "approved",
+  "sourceDigest": "e3c7fe05d213fb6a08949f4da323eeaaa8a548a5cee2b9dca7670c7973082160",
+  "author": "integration orchestrator (core/root); platform_proof (wire suite); release_inventory (consumer)",
+  "reviewer": "preflight_diagnosis (core and ingress); release_inventory (parent integration/tests); integration orchestrator (worker consumer/tests)",
+  "scope": "T03 canonical shape validation, bounded ingress and installed parser package; no semantic/effect authority certification",
+  "resolved": [
+    "Invalid empty prefixItems generated for empty tuple",
+    "Unexecuted installed consumer fixture and tree-shaken parser calls",
+    "Duplicate JSON text keys, including escaped equivalents",
+    "Byte and node tests now hit distinct limits with exact diagnostics",
+    "All14 schema exports and installed Zod dependency metadata checked"
+  ],
+  "independentChecks": [
+    "Core review and duplicate-key scanner fuzz without throws",
+    "43 contract tests, negative TypeScript and all14 JSONSchema nested-mutation parity",
+    "Installed tarball, declarations, round trips, no-codegen under enforced prohibition and Vite allowed graph",
+    "Root integration and package dependency/license claims reviewed"
+  ],
+  "limits": [
+    "Shape validity does not establish business truth, binding or grants",
+    "Unused lazy compiler exists in dependency source; parsing performs no dynamic code generation",
+    "Full planner, catalog, agent, publication and deployment remain separate tasks"
+  ]
+}

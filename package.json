@@ -14,7 +14,10 @@
     "test:platform": "vitest run --config tests/platform/vitest.config.mjs",
     "test:platform:browser": "pnpm build:platform && playwright test --config tests/platform/playwright.config.mjs",
     "test:platform:consumers": "node tests/consumers/platform-tarballs.mjs",
-    "test:next-platform": "pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/next-platform-fixture build && playwright test --config tests/next-platform/playwright.config.mjs"
+    "test:next-platform": "pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/next-platform-fixture build && playwright test --config tests/next-platform/playwright.config.mjs",
+    "build:core": "pnpm --filter @aeliqo/core build",
+    "test:contracts": "pnpm build:core && vitest run --config tests/contracts/vitest.config.mjs && tsc -p tests/contracts/tsconfig.json --noEmit",
+    "test:core:consumers": "node tests/consumers/core-tarball.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
@@ -25,6 +28,8 @@
     "@types/node": "24.13.3",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.7",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
     "lit": "3.3.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",

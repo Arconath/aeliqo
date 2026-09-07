@@ -131,7 +131,9 @@ await clearCompiledOutput(distDirectory, /(?:\.js|\.d\.ts|\.js\.map|\.d\.ts\.map
 await clearCompiledOutput(schemaDirectory, /\.schema\.json$/);
 run(["pnpm", "build"], coreDirectory);
 
-const expectedSchemas = ["catalog", "task", "result", "experience"];
+const expectedSchemas = ["catalog", "task", "result", "experience", "expression", "query",
+  "interaction", "result-event", "environment", "presentation-plan", "task-proposal",
+  "meaning-draft", "binding-outcome", "model-evaluation"];
 for (const name of expectedSchemas) {
   const schemaPath = join(schemaDirectory, `${name}.schema.json`);
   assert(await fileExists(schemaPath), `Missing generated schema: ${schemaPath}`);
@@ -179,7 +181,11 @@ const corePackageEntries = Object.keys(lock.packages).filter((key) => /(?:^|\/)n
 assert.deepEqual(corePackageEntries, ["node_modules/@aeliqo/core"], "Expected exactly one installed @aeliqo/core package");
 assert.equal(lock.packages["node_modules/zod"].version, "4.5.4");
 assert.match(lock.packages["node_modules/zod"].integrity, /^sha512-/);
-assert.equal(JSON.parse(await readFile(join(consumerDirectory, "node_modules/zod/package.json"), "utf8")).license, "MIT");
+const installedZod = JSON.parse(await readFile(join(consumerDirectory, "node_modules/zod/package.json"), "utf8"));
+assert.equal(installedZod.license, "MIT");
+for (const field of ["dependencies", "optionalDependencies", "peerDependencies"]) {
+  assert.deepEqual(Object.keys(installedZod[field] ?? {}), [], `Unexpected Zod ${field}`);
+}
 for (const [name, version] of Object.entries({typescript: "7.0.2", vite: "8.2.2"})) {
   assert.equal(lock.packages[`node_modules/${name}`].version, version);
   assert.match(lock.packages[`node_modules/${name}`].integrity, /^sha512-/);
@@ -338,7 +344,7 @@ for (const [kind, input] of Object.entries(documents)) {
 assert.equal(parseCatalog({...documents.catalog, unexpected: true}).ok, false);
 assert.equal(parseContract('task', {...documents.task, unexpected: true}).ok, false);
 const require = createRequire(import.meta.url);
-for (const name of ['catalog', 'task', 'result', 'experience']) {
+for (const name of ${JSON.stringify(expectedSchemas)}) {
   const path = require.resolve('@aeliqo/core/schemas/' + name + '.schema.json');
   const schema = JSON.parse(await readFile(path, 'utf8'));
   assert.equal(typeof schema, 'object');
