@@ -1,4 +1,4 @@
-import {css, html, LitElement, nothing} from "lit";
+import {css, html, LitElement, noChange, nothing} from "lit";
 import type {PropertyValues} from "lit";
 import {AeliqoInputEvent} from "../events.js";
 
@@ -15,7 +15,7 @@ export class AeliqoInputElement extends LitElement {
     label: {type: String},
     value: {type: String, reflect: true},
     defaultValue: {attribute: "default-value", type: String},
-    name: {type: String},
+    name: {type: String, reflect: true},
     hint: {type: String},
     error: {type: String},
     required: {type: Boolean, reflect: true},
@@ -37,6 +37,8 @@ export class AeliqoInputElement extends LitElement {
 
   private formDisabled = false;
   private composing = false;
+  private lastComposingProposal: string | undefined;
+  private suppressTrailingCompositionInput: string | undefined;
   private pendingSelection: {readonly start: number; readonly end: number} | undefined;
   private hydratedDraft: string | undefined;
   private readonly internals: ElementInternals | undefined;
@@ -97,7 +99,7 @@ export class AeliqoInputElement extends LitElement {
         <span class="label-text">${this.label}</span>
         <input
           part="input"
-          .value=${this.value}
+          .value=${this.composing ? noChange : this.value}
           name=""
           ?required=${this.required}
           ?disabled=${disabled}
@@ -105,6 +107,7 @@ export class AeliqoInputElement extends LitElement {
           aria-invalid=${this.error ? "true" : nothing}
           aria-describedby=${describedBy || nothing}
           @input=${this.handleInput}
+          @keydown=${this.handleKeyDown}
           @compositionstart=${this.handleCompositionStart}
           @compositionend=${this.handleCompositionEnd}
         />
@@ -142,6 +145,18 @@ export class AeliqoInputElement extends LitElement {
       return;
     }
 
+    if (!this.composing && this.suppressTrailingCompositionInput !== undefined) {
+      const expected = this.suppressTrailingCompositionInput;
+      this.suppressTrailingCompositionInput = undefined;
+      if (input.value === expected || input.value === this.value) {
+        this.syncNativeInput();
+        return;
+      }
+    }
+
+    if (this.composing) {
+      this.lastComposingProposal = input.value;
+    }
     this.dispatchEvent(new AeliqoInputEvent({value: input.value, source: "user"}));
     // The host decides whether a proposal is accepted. Reconcile immediately
     // after dispatch so a rejected controlled edit cannot become form data.
@@ -152,12 +167,67 @@ export class AeliqoInputElement extends LitElement {
 
   private readonly handleCompositionStart = (): void => {
     this.composing = true;
+    this.lastComposingProposal = undefined;
+    this.suppressTrailingCompositionInput = undefined;
   };
 
   private readonly handleCompositionEnd = (): void => {
+    const input = this.getNativeInput();
+    const finalValue = input?.value;
+    const alreadyProposed = finalValue !== undefined && this.lastComposingProposal === finalValue;
     this.composing = false;
+    this.lastComposingProposal = undefined;
+    if (finalValue !== undefined) {
+      this.suppressTrailingCompositionInput = finalValue;
+      if (!alreadyProposed) {
+        this.dispatchEvent(new AeliqoInputEvent({value: finalValue, source: "user"}));
+      }
+    }
     this.syncNativeInput();
   };
+
+  private readonly handleKeyDown = (event: KeyboardEvent): void => {
+    if (
+      event.key !== "Enter" ||
+      event.repeat ||
+      event.isComposing ||
+      this.composing ||
+      this.disabled ||
+      this.formDisabled ||
+      this.readOnly
+    ) {
+      return;
+    }
+
+    const form = this.internals?.form;
+    if (form === null || form === undefined) {
+      return;
+    }
+
+    event.preventDefault();
+    const submitter = this.getDefaultSubmitter(form);
+    if (submitter === undefined) {
+      form.requestSubmit();
+    } else {
+      form.requestSubmit(submitter);
+    }
+  };
+
+  private getDefaultSubmitter(form: HTMLFormElement): HTMLButtonElement | HTMLInputElement | undefined {
+    for (const control of Array.from(form.elements)) {
+      if (control instanceof HTMLButtonElement && control.type === "submit" && !control.disabled) {
+        return control;
+      }
+      if (
+        control instanceof HTMLInputElement &&
+        (control.type === "submit" || control.type === "image") &&
+        !control.disabled
+      ) {
+        return control;
+      }
+    }
+    return undefined;
+  }
 
   private getNativeInput(): HTMLInputElement | undefined {
     const root = this.renderRoot;
@@ -180,7 +250,7 @@ export class AeliqoInputElement extends LitElement {
       start: input.selectionStart,
       end: input.selectionEnd,
     };
-    if (input.value !== this.value) {
+    if (!this.composing && input.value !== this.value) {
       input.value = this.value;
     }
     input.name = "";
