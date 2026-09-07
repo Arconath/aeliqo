@@ -1,0 +1,22 @@
+START: Moving VoiceOver cursor to keyboard cursor. Insertion at end of text.
+NEXT: The value is controlled by the host.
+NEXT: Submit button
+NEXT: Reset button
+NEXT: People group
+NEXT: Weekly activity
+NEXT: A small, accessible trend example.
+NEXT: Unit: 
+NEXT: events
+NEXT: Weekly activity A small, accessible trend example. image
+NEXT: View data table collapsed disclosure triangle, group
+ACTION: View data table expanded disclosure triangle, group
+TABLE: Weekly activity (events) table 2 columns, 4 rows
+INTO: In Weekly activity (events) table Label Label row 1 of 4 column 1 of 2
+CELL: Value Value column 2 of 2
+CELL: row 2 of 4 Mon Label Mon column 1 of 2
+CELL: Value 3 column 2 of 2
+CELL: row 3 of 4 Tue Label Tue column 1 of 2
+CELL: Value 5 column 2 of 2
+CELL: row 4 of 4 Wed Label Wed column 1 of 2
+CELL: Value 4 column 2 of 2
+

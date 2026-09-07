@@ -6,7 +6,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
-EXCLUDED_PARTS = {'.git', 'node_modules', '__pycache__', '.pytest_cache', 'artifacts', 'dist', 'coverage'}
+EXCLUDED_PARTS = {'.git', 'node_modules', '__pycache__', '.pytest_cache', 'artifacts', 'dist', 'coverage', '.next', 'test-results', 'playwright-report'}
 
 def load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding='utf-8'))
@@ -44,15 +44,22 @@ def export_files(root: Path) -> list[Path]:
             continue
         if path.is_symlink():
             raise ValueError(f'Refusing symlink: {relative}')
-        if not path.is_file():
+        if not path.is_file() or path.name.endswith('.tsbuildinfo'):
             continue
-        if path.name.startswith('.env') and path.name != '.env.example':
+        lower_name = path.name.lower()
+        if lower_name.startswith('.env') and path.name != '.env.example':
             continue
+        # Recognized local-only configuration/credential names are never exportable.
+        # Refuse instead of silently producing an incomplete portable source tree.
+        if (lower_name in {'.npmrc', '.netrc', '.pypirc', 'credentials.json',
+                           'id_rsa', 'id_dsa', 'id_ecdsa', 'id_ed25519'}
+                or lower_name.endswith('.local.json')):
+            raise ValueError(f'Refusing local credential/configuration file: {relative}')
         if relative.as_posix() == '.codex/config.toml':
             continue
         if relative.parts[:2] == ('.codex', 'agents') and path.suffix == '.toml':
             continue
-        if path.suffix in {'.pem', '.key', '.p12', '.pfx'}:
+        if path.suffix.lower() in {'.pem', '.key', '.p12', '.pfx'}:
             raise ValueError(f'Refusing credential-like file: {relative}')
         selected.append(path)
     return selected

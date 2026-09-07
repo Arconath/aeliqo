@@ -1,0 +1,65 @@
+{
+  "sourceDigest": "cbfff536b5c0cd63f9188100a7fad1ccc694aad72dc0e547ab29f669150e3481",
+  "sourceAfter": "cbfff536b5c0cd63f9188100a7fad1ccc694aad72dc0e547ab29f669150e3481",
+  "completedAt": "2026-09-07T19:26:24.854780+00:00",
+  "commands": [
+    {
+      "argv": [
+        "pnpm",
+        "typecheck"
+      ],
+      "exitCode": 0,
+      "log": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-m0-reviewed-k5tfu2me/00.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "test:platform"
+      ],
+      "exitCode": 0,
+      "log": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-m0-reviewed-k5tfu2me/01.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "test:platform:browser"
+      ],
+      "exitCode": 0,
+      "log": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-m0-reviewed-k5tfu2me/02.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "test:platform:consumers"
+      ],
+      "exitCode": 0,
+      "log": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-m0-reviewed-k5tfu2me/03.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "test:next-platform"
+      ],
+      "exitCode": 0,
+      "log": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-m0-reviewed-k5tfu2me/04.log"
+    },
+    {
+      "argv": [
+        "python3",
+        "scripts/validate_all.py"
+      ],
+      "exitCode": 0,
+      "log": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-m0-reviewed-k5tfu2me/05.log"
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0,
+      "log": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-m0-reviewed-k5tfu2me/06.log"
+    }
+  ],
+  "scope": "T02 scoped platform feasibility. Native VoiceOver transcript stored separately. Full catalog and manual release AT remain unclaimed."
+}

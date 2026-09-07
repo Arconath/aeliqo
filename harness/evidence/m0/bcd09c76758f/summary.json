@@ -1,0 +1,65 @@
+{
+  "sourceDigest": "bcd09c76758f604bd849511a07bb92c7547b63f16d0e3be6cfa483f6ec548189",
+  "sourceAfter": "bcd09c76758f604bd849511a07bb92c7547b63f16d0e3be6cfa483f6ec548189",
+  "completedAt": "2026-09-07T19:11:08.492740+00:00",
+  "commands": [
+    {
+      "argv": [
+        "pnpm",
+        "typecheck"
+      ],
+      "exitCode": 0,
+      "log": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-m0-final-67plvxnd/00.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "test:platform"
+      ],
+      "exitCode": 0,
+      "log": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-m0-final-67plvxnd/01.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "test:platform:browser"
+      ],
+      "exitCode": 0,
+      "log": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-m0-final-67plvxnd/02.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "test:platform:consumers"
+      ],
+      "exitCode": 0,
+      "log": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-m0-final-67plvxnd/03.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "test:next-platform"
+      ],
+      "exitCode": 0,
+      "log": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-m0-final-67plvxnd/04.log"
+    },
+    {
+      "argv": [
+        "python3",
+        "scripts/validate_all.py"
+      ],
+      "exitCode": 0,
+      "log": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-m0-final-67plvxnd/05.log"
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0,
+      "log": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-m0-final-67plvxnd/06.log"
+    }
+  ],
+  "scope": "M0 engineering checks; manual assistive technology and full catalog not certified"
+}

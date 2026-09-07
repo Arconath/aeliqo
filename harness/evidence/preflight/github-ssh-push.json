@@ -1,0 +1,18 @@
+{
+  "operation": "atomic new rewrite branch and recovery tag",
+  "sourceCommit": "748e32b",
+  "result": "success",
+  "authentication": "existing owner-configured SSH key, authenticated GitHub account hermawan22",
+  "globalConfigChanged": false,
+  "branch": "rewrite/v0.1.0-master-foundation",
+  "tag": "archive/pre-rewrite-0.1.0-75540de",
+  "mainChanged": false,
+  "productionChanged": false,
+  "verifiedRemoteBranchSha": "748e32b8d9ede7dcf1e551c9bb165d2e71807ad4",
+  "ci": {
+    "runId": 34151663904,
+    "conclusion": "success",
+    "scope": "Specification and harness checks (not product readiness)",
+    "url": "https://github.com/Arconath/aeliqo/actions/runs/34151663904"
+  }
+}

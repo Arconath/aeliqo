@@ -15,7 +15,10 @@ declarative-shadow-root hydration.
 The fixture uses Lit's `globalThis.litNonce` hook before importing the elements
 and a nonce-based style policy. Server-rendered static styles need matching
 response-header hashes or a host-provided nonce policy, as described in the
-web package README. Next.js has no dedicated fixture here; the browser-free
-server import and generic `renderAeliqo` API are the reusable boundary to wire
-into a Next server entry, but that integration remains an explicit follow-up
-gate.
+web package README. The separate
+[`next-platform`](../next-platform/README.md) fixture exercises a real production
+Next App Router build and hydration using that server boundary. These scoped
+engineering checks do not replace the full browser and manual assistive-technology
+release matrix.
+
+A scoped native VoiceOver procedure is documented in [VOICEOVER.md](../../tests/platform/VOICEOVER.md).

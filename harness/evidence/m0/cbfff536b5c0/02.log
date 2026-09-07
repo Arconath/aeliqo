@@ -1,0 +1,36 @@
+$ pnpm build:platform && playwright test --config tests/platform/playwright.config.mjs
+$ pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/react build
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+[WebServer] (node:41629) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 10 tests using 1 worker
+
+(node:41641) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 2:25:54 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   1 tests/platform/platform.spec.ts:6:5 › vanilla embedding keeps controlled events, forms, focus and style isolation (686ms)
+[WebServer] 2:25:54 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   2 tests/platform/platform.spec.ts:94:5 › a rejected controlled edit cannot become native form data (114ms)
+[WebServer] 2:25:54 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   3 tests/platform/platform.spec.ts:120:5 › property-only names remain form-associated (95ms)
+[WebServer] 2:25:54 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   4 tests/platform/platform.spec.ts:155:5 › IME composition preserves drafts across host updates and commits once (64ms)
+[WebServer] 2:25:54 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   5 tests/platform/platform.spec.ts:406:5 › Enter semantics match native implicit submission across the platform table (794ms)
+[WebServer] 2:25:55 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   6 tests/platform/platform.spec.ts:427:5 › readonly required empty inputs also match native direct requestSubmit (67ms)
+[WebServer] 2:25:55 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   7 tests/platform/platform.spec.ts:471:5 › Enter bridge honors outer cancellation and default submitter click cancellation (210ms)
+[WebServer] 2:25:56 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   8 tests/platform/platform.spec.ts:529:5 › strict script CSP blocks injected inline code while the fixture remains interactive (85ms)
+[WebServer] 2:25:56 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 2:25:56 AM [vite] (client) [console.warn] Feature flags __VUE_OPTIONS_API__, __VUE_PROD_DEVTOOLS__, __VUE_PROD_HYDRATION_MISMATCH_DETAILS__ are not explicitly defined. You are running the esm-bundler build of Vue, which expects these compile-time feature flags to be globally injected via the bundler config in order to get better tree-shaking in the production bundle.
+[WebServer] 
+[WebServer] For more details, see https://link.vuejs.org/feature-flags.
+[WebServer] 2:25:56 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   9 tests/platform/platform.spec.ts:540:5 › React and Vue consume the same registered web elements (275ms)
+  ✓  10 tests/platform/platform.spec.ts:556:5 › SSR declarative shadow content upgrades and hydrates without duplication (111ms)
+
+  10 passed (3.8s)

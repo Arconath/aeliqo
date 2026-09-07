@@ -1,0 +1,11 @@
+{
+  "status": "blocked",
+  "scope": "M0 actual screen-reader output; full manual release review remains separate",
+  "observations": [
+    "Chrome native accessibility tree exposed labeled input, People table, chart description and expandable exact data table.",
+    "VoiceOver was enabled temporarily through native Settings; AppleScript control was disabled and not changed.",
+    "VoiceOver app output could not be retrieved through available native app interface (timeouts).",
+    "VoiceOver was returned to off, confirmed in native Settings; temporary windows/tab closed."
+  ],
+  "pending": "Owner approval requested asynchronously for temporary VoiceOver AppleScript control and output inspection. No acceptance claim from failed attempt."
+}

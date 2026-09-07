@@ -1,0 +1,9 @@
+kit-consistency: pass (exit 0)
+python-harness: pass (exit 0)
+independent-semantics-composition: pass (exit 0)
+strict-ts-and-node-guards: pass (exit 0)
+reference-search-measurements: pass (exit 0)
+publisher-dry-run: pass (exit 0)
+product-ready-expected-block: pass (exit 1)
+product-release-expected-block: pass (exit 1)
+Kit/reference validation pass. Product readiness is not asserted.

@@ -1,0 +1,10 @@
+$ vitest run --config tests/platform/vitest.config.mjs
+
+ RUN  v5.0.0 /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo
+
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  02:25:50
+   Duration  150ms (import 54%, transform 35%, tests 9%, worker 2%)
+

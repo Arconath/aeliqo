@@ -1,0 +1,8 @@
+TABLE RIGHT: row 3 of 3 Name Grace column 1 of 2
+TABLE RIGHT: Role Researcher column 2 of 2
+OUT: Out of table
+CHART RIGHT: end of People group
+CHART RIGHT: Weekly activity
+CHART RIGHT: A small, accessible trend example.
+CHART RIGHT: Unit: 
+

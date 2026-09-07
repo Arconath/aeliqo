@@ -31,5 +31,32 @@ jobs:
           print('These checks do not certify the product, package publication, or deployment.')
           CHECK
 
-# M0 must pin Node/TypeScript/pnpm and add scripts/test_reference.py plus real
-# product commands. This foundation job has not been run on GitHub from this master kit.
+  platform:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24.20.0'
+      - name: Install pinned package manager and dependencies
+        run: |
+          npm install --global pnpm@11.24.0
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium
+      - name: Build and check shared web platform
+        run: |
+          pnpm build:platform
+          pnpm typecheck
+          pnpm test:platform
+          pnpm test:platform:browser
+      - name: Verify external installed packages
+        run: pnpm test:platform:consumers
+      - name: Verify production Next SSR and hydration
+        run: pnpm test:next-platform
+      - name: Check reference contracts with pinned compiler
+        run: python3 scripts/test_reference.py

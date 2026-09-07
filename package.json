@@ -8,7 +8,13 @@
     "check": "python3 scripts/gate.py ci",
     "release:check": "python3 scripts/gate.py release",
     "kit:test": "python3 scripts/validate_all.py",
-    "kit:reference": "python3 scripts/test_reference.py"
+    "kit:reference": "python3 scripts/test_reference.py",
+    "typecheck": "pnpm build:platform && tsc --project tsconfig.json",
+    "build:platform": "pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/react build",
+    "test:platform": "vitest run --config tests/platform/vitest.config.mjs",
+    "test:platform:browser": "pnpm build:platform && playwright test --config tests/platform/playwright.config.mjs",
+    "test:platform:consumers": "node tests/consumers/platform-tarballs.mjs",
+    "test:next-platform": "pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/next-platform-fixture build && playwright test --config tests/next-platform/playwright.config.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

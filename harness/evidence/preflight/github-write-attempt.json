@@ -1,0 +1,9 @@
+{
+  "operation": "atomic new rewrite branch and recovery tag",
+  "sourceCommit": "748e32b",
+  "result": "rejected",
+  "reason": "OAuth App lacks workflow scope to create/update .github/workflows/specification.yml",
+  "remoteMutations": false,
+  "nextRequirement": "GitHub credential authorized for workflow updates; do not remove CI to bypass scope",
+  "localRecoveryTag": "archive/pre-rewrite-0.1.0-75540de"
+}

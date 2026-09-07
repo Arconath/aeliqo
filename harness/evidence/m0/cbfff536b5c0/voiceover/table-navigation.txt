@@ -1,0 +1,7 @@
+TABLE GROUP: end of People group
+INTO: People table 2 columns, 3 rows
+RIGHT: Name column 1 of 2
+RIGHT: Role Role column 2 of 2
+RIGHT: row 2 of 3 Name Ada column 1 of 2
+RIGHT: Role Engineer column 2 of 2
+

@@ -1,9 +1,38 @@
 # Execution checkpoint — active 0.1.0 rewrite
 
-Branch rewrite/v0.1.0-master-foundation; foundation commit c3171998b27bc56a45d1c8dede6fccc2b3c61db2 has historical parent origin/main 75540de0de5f6dfc7fc383afdd3f8325e590cfd9. Local recovery tag archive/pre-rewrite-0.1.0-75540de. Aeliqo now owns an independent .git; workspace parent changes untouched. No remote writes/publication/deployment.
+Independent repository, branch `rewrite/v0.1.0-master-foundation`; foundation
+c317199 retains historical origin/main75540de. Recovery tag
+archive/pre-rewrite-0.1.0-75540de is local and remote. Main and production remain
+unchanged. Owner SSH authentication resolved the earlier HTTPS workflow-scope
+rejection. No npm publication or deployment has occurred.
 
-Actual parent Astra medium and three child Luna max settings verified from local session metadata. Four runtime slots including parent, 12 logical CPUs / 24 GiB RAM. No global config changes. Active writer: platform_proof owns packages/web, packages/react, examples/platform, tests/platform in /tmp/aeliqo-m0-platform on codex/m0-platform-proof. Parent owns root/config/contracts/lockfile/task state. Read-only workers: preflight_diagnosis review, release_inventory inventory. No recursive delegation.
+Actual parent Astra medium and three Luna max worker/reviewer settings were
+verified from local runtime metadata. Four slots including parent. Root owns
+contracts, configuration, lockfile, integration and task state. Workers use
+isolated worktrees and do not delegate recursively. Global configuration and
+skills were preserved.
 
-T00 observation inventory complete. T42 publication blocked on npm E401 namespace rights and historical target availability; fresh GitOps exact-ref read complete. T01 complete and independently reviewed: macOS temp root test fixture normalization without weakening symlink refusal; local TypeScript 7.0.2 discovery and reporting. Node24.20.0 pnpm11.24.0 Python3.14.7. Latest kit run: 163 Python tests plus strict TS/Node and other reference checks pass, source unchanged during run. Immutable copy harness/evidence/preflight/reference-validation. Product gates remain BLOCKED. M0 platform proof underway, not accepted. All 71 components and 43 task acceptance remain mandatory.
+T00 observation inventory and T01 toolchain are complete. T02 scoped platform
+feasibility is now accepted: shared Lit input/table/chart, thin React, vanilla/Vue,
+Next App Router production SSR/hydration, exact installed tarballs, native forms,
+IME/caret, CSP and actual Chrome/VoiceOver output. Independent reviews closed
+findings including Enter/default/image submitter behavior and duplicated input
+hint naming. Current immutable evidence is harness/evidence/m0/cbfff536b5c0.
+The earlier bcd09c76758f run and its blocked AT attempt remain historical evidence.
+Temporary owner-authorized VoiceOver scripting was restored to0; VoiceOver quit
+and process absence verified. No full catalog/manual release AT claim is made.
 
-Next: collect independent harness review and inventory, commit validated tooling slice; integrate M0 root browser/toolchain and worker code; run real platform SSR/browser/consumer checks. Continue task DAG into canonical production contracts and early T39. Do not restart foundation or autoaccept visual/manual evidence.
+Final M0 checks: typecheck/build,3SSR tests,10Chromium tests, isolated consumers,
+1productionNext browser test,166Python harness tests,37independent semantic
+experiments and57reference guards pass with stable source digest. Root product
+commands and hosted CI now execute the actual platform checks. Missing full
+lint/security/performance/boundary commands deliberately keep the product gate
+blocked. Export rejects recognized local credential/configuration files.
+
+T42 publication remains blocked on npm namespace access/history (E401), not source
+implementation. T03 canonical production schemas is next; no core package has been
+claimed complete. A bounded Zod Mini4.5.4 probe is prepared outside the repository;
+its canonical-source decision and real ingress/types/JSONSchema tests must be
+implemented and independently reviewed. Continue through task DAG and early T39.
+All71catalog components and remaining task acceptance stay mandatory. Do not stop
+at the feasibility spike or import reference guards as the production SDK.

@@ -72,10 +72,26 @@
       "acceptance": [
         "Vanilla, React/Next, Vue embedding, SSR/hydration, forms, shadow accessibility, CSP and style isolation pass or architecture ADR revised."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "Exclusive Luna Max writer /tmp/aeliqo-m0-platform; parent owns root configs/integration. Feasibility code/tests underway; no platform acceptance yet."
+      "evidence": [
+        {
+          "path": "harness/evidence/m0/cbfff536b5c0/manifest.json",
+          "sha256": "38d635887520be3b6a08b4a2297caffde8d5f9321c896d1bb862651e112ee813"
+        }
+      ],
+      "notes": "Scoped production feasibility accepted with real web/React/Vue, Next SSR/hydration, controlled native forms, CSP, packages and actual VoiceOver output. Full71-component, cross-browser and human manual release matrix remain later gates.",
+      "review": {
+        "status": "approved",
+        "author": "platform_proof / integration orchestrator",
+        "reviewer": "preflight_diagnosis / release_inventory",
+        "artifacts": [
+          {
+            "path": "harness/evidence/m0/cbfff536b5c0/review.json",
+            "sha256": "a171aad0ebb649a066daeaa194af1256ebb32e4c731c5ae6f46d353a3143da18"
+          }
+        ]
+      }
     },
     {
       "id": "T03",

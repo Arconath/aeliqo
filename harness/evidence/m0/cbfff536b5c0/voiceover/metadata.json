@@ -1,0 +1,42 @@
+{
+  "status": "passed-scoped-feasibility",
+  "sourceDigest": "cbfff536b5c0cd63f9188100a7fad1ccc694aad72dc0e547ab29f669150e3481",
+  "sourceCommit": "f177020",
+  "environment": {
+    "macOS": "26.6.2",
+    "build": "25G83",
+    "Chrome": "152.0.7977.76",
+    "VoiceOver": "10"
+  },
+  "ownerAuthorization": "Explicit approval for temporary VoiceOver AppleScript testing in this task.",
+  "initial": {
+    "VoiceOver": "off",
+    "AppleScriptControl": 0
+  },
+  "restored": {
+    "VoiceOver": "quit; process absent",
+    "AppleScriptControl": 0,
+    "verified": "Native Utility checkbox0 and process absence; test tab and utility closed."
+  },
+  "buildLinkage": "Corrected input and chart checks followed pnpm build:platform at f177020 and an explicit Chrome page reload. Table implementation bytes were unchanged across the earlier table reading.",
+  "componentFiles": [
+    {
+      "path": "packages/web/src/elements/aeliqo-chart.ts",
+      "sha256": "98f63fab8498dd0f22a1462c5e70419fa083553f067239e43e14a42924bfe660"
+    },
+    {
+      "path": "packages/web/src/elements/aeliqo-input.ts",
+      "sha256": "6543b2293d5e5448f6f4fdd8ad2b2f5afc5bd39b9e0264470ae99acddd4195a7"
+    },
+    {
+      "path": "packages/web/src/elements/aeliqo-table.ts",
+      "sha256": "017ea3cb0abf1567732e1b730827be959af5e6d60d09bdd56abd5b15e20f1b3b"
+    },
+    {
+      "path": "packages/web/src/elements/index.ts",
+      "sha256": "8c47f3680107b56b0ad2749c9e389a727107d0106694cc85b9364db90ec7fa97"
+    }
+  ],
+  "scope": "Scripted actual native VoiceOver/Chrome navigation and output. Not the full human manual release AT matrix or all catalog components.",
+  "failedAttempt": "../bcd09c76758f/assistive-technology.json remains historical blocked evidence."
+}

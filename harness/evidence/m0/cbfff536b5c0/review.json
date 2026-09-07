@@ -1,0 +1,24 @@
+{
+  "status": "approved",
+  "author": "platform_proof and integration orchestrator",
+  "reviewer": "preflight_diagnosis and release_inventory (independent of respective authors)",
+  "sourceDigest": "cbfff536b5c0cd63f9188100a7fad1ccc694aad72dc0e547ab29f669150e3481",
+  "scope": "T02 input/table/chart platform feasibility plus parent CI, package, Next and harness integration.",
+  "resolved": [
+    "FormData property name reflection",
+    "Controlled rejection, IME draft and caret preservation",
+    "Native Enter parity including disabled and image/external submitters, readonly, cancellation",
+    "Original SSR input node retention",
+    "VoiceOver exact label and separate description",
+    "Clean-install ledger build prerequisites",
+    "Recognized local credential exclusion and environment-case handling"
+  ],
+  "independentChecks": [
+    "10 platform browser cases and3SSR tests pass",
+    "Image/default submitter differential cases reproduced in Chromium, Firefox, WebKit; not claimed as full cross-browser matrix",
+    "Exact accessible name/description assertions verified",
+    "Raw native VoiceOver transcripts reviewed",
+    "Fresh-copy package scripts and recognized credential regressions checked"
+  ],
+  "limits": "No full catalog, universal accessibility, model, publication, deployment or release-readiness claim."
+}

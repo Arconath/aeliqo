@@ -1,5 +1,46 @@
 {
   "schemaVersion": 1,
-  "commands": [],
-  "note": "M0 must populate real reproducible argv commands for typecheck, lint, unit, browser, packages, security, performance and boundaries. Empty list is intentionally a failing production gate."
+  "commands": [
+    {
+      "kind": "typecheck",
+      "argv": [
+        "pnpm",
+        "typecheck"
+      ],
+      "timeoutSeconds": 120
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:platform"
+      ],
+      "timeoutSeconds": 120
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:platform:browser"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:next-platform"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:platform:consumers"
+      ],
+      "timeoutSeconds": 300
+    }
+  ],
+  "note": "Real scoped M0 commands. Full product lint, security, performance and boundary commands remain required; missing kinds deliberately keep the integrated product gate blocked."
 }

@@ -1,0 +1,36 @@
+$ pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/next-platform-fixture build && playwright test --config tests/next-platform/playwright.config.mjs
+$ tsc -p tsconfig.json
+$ next build
+▲ Next.js 16.3.4 (Turbopack)
+✓ Running next.config.mjs took 8ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 276ms
+  Running TypeScript ...
+  Finished TypeScript in 153ms ...
+  Collecting page data using 4 workers ...
+  Generating static pages using 4 workers (0/2) ...
+✓ Generating static pages using 4 workers (2/2) in 187ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+└ ○ /_not-found
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+[WebServer] (node:32293) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] $ next start --hostname 127.0.0.1 --port 4174
+[WebServer] (node:32312) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:32339) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/next-platform/next.spec.ts:3:5 › Next App Router serves real shadow content and hydrates a controlled form (152ms)
+
+  1 passed (1.4s)

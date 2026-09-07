@@ -51,6 +51,26 @@ class PathTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp); (root/'private.pem').write_text('not-a-real-key')
             with self.assertRaises(ValueError): export_files(root)
+    def test_local_credentials_are_rejected_at_any_export_depth(self):
+        for name in ['.npmrc', '.netrc', '.pypirc', 'settings.local.json',
+                     'credentials.json', 'id_rsa', 'id_ed25519', 'PRIVATE.PEM',
+                     'PRIVATE.KEY', 'PRIVATE.P12', 'PRIVATE.PFX']:
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as temp:
+                root=Path(temp); directory=root/'examples'/'consumer';directory.mkdir(parents=True)
+                (directory/name).write_text('synthetic-sensitive-fixture')
+                with self.assertRaises(ValueError): export_files(root)
+
+    def test_environment_case_variants_are_not_exported(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp); (root/'.ENV.local').write_text('synthetic-fixture')
+            (root/'.env.example').write_text('PLACEHOLDER=')
+            (root/'README.md').write_text('public')
+            self.assertEqual([p.name for p in export_files(root)], ['.env.example','README.md'])
+        for name in ['.ENV.example', '.Env.Example']:
+            with tempfile.TemporaryDirectory() as temp:
+                root=Path(temp); (root/name).write_text('synthetic-private-fixture')
+                self.assertEqual(export_files(root), [])
+
     def test_digest_changes_with_source(self):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp); (root/'packages').mkdir(); file=root/'packages/a.ts'; file.write_text('one')

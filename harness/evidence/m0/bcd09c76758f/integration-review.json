@@ -1,0 +1,9 @@
+{
+  "status": "approved",
+  "author": "/root",
+  "reviewer": "/root/release_inventory",
+  "sourceDigest": "bcd09c76758f604bd849511a07bb92c7547b63f16d0e3be6cfa483f6ec548189",
+  "scope": "Parent package scripts, hosted CI, Next and consumer fixtures, export/digest helpers; native input implementation reviewed separately.",
+  "checks": "Fresh-install typecheck and 10 browser tests reproduced; credential/path regressions verified; final exact-case PathTests 9/9.",
+  "limitations": "Recognized credential patterns are not a universal secret scanner; no publication/deployment/AT approval."
+}
