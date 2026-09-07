@@ -112,7 +112,7 @@ export const aeliqoThemeStyles: CSSResult = css`
  * side effect and does not mutate `document.documentElement`.
  */
 export const aeliqoStandaloneThemeStyles: CSSResult = css`
-  :where([data-aeliqo-theme]) {
+  :where([data-aeliqo-theme]:not([data-aeliqo-theme="inherit"])) {
     ${unsafeCSS(baseDeclarations)}
     ${unsafeCSS(sharedRules)}
     color-scheme: light;
@@ -124,7 +124,7 @@ export const aeliqoStandaloneThemeStyles: CSSResult = css`
   }
 
   @media (prefers-color-scheme: dark) {
-    :where([data-aeliqo-theme]:not([data-aeliqo-theme="light"]):not([data-aeliqo-theme="dark"])) {
+    :where([data-aeliqo-theme]:not([data-aeliqo-theme="light"]):not([data-aeliqo-theme="dark"]):not([data-aeliqo-theme="inherit"])) {
       ${unsafeCSS(darkDeclarations)}
       color-scheme: dark;
     }

@@ -68,6 +68,12 @@ describe("owned token baseline", () => {
     expect(aeliqoThemeStyles.cssText).not.toContain("--aeliqo-chart-color:");
     expect(aeliqoStandaloneThemeStyles.cssText).not.toContain("--aeliqo-input-color:");
     expect(aeliqoStandaloneThemeStyles.cssText).toContain(
+      '[data-aeliqo-theme]:not([data-aeliqo-theme="inherit"])',
+    );
+    expect(aeliqoStandaloneThemeStyles.cssText).toContain(
+      '[data-aeliqo-theme="inherit"]',
+    );
+    expect(aeliqoStandaloneThemeStyles.cssText).toContain(
       "[data-aeliqo-theme][dir=\"rtl\"]",
     );
     expect(aeliqoStandaloneThemeStyles.cssText).not.toContain(':where([dir="rtl"])');
