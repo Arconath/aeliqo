@@ -19,7 +19,9 @@
     "test:contracts": "pnpm build:core && vitest run --config tests/contracts/vitest.config.mjs && tsc -p tests/contracts/tsconfig.json --noEmit",
     "test:core:consumers": "node tests/consumers/core-tarball.mjs",
     "test:task-experience": "pnpm build:core && vitest run --config tests/task-experience/vitest.config.mjs && tsc -p tests/task-experience/tsconfig.json",
-    "test:semantics": "pnpm build:core && vitest run --config tests/semantics/vitest.config.mjs"
+    "test:semantics": "pnpm build:core && vitest run --config tests/semantics/vitest.config.mjs",
+    "build:runtime": "pnpm build:core && pnpm --filter @aeliqo/runtime build",
+    "test:data-stream": "pnpm build:runtime && vitest run --config tests/runtime-data/vitest.config.mjs && tsc -p tests/runtime-data/tsconfig.json"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

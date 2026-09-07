@@ -1,0 +1,11 @@
+{
+  "name": "@aeliqo/runtime",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "files": ["dist", "README.md", "LICENSE"],
+  "exports": {"./data": {"types": "./dist/data/index.d.ts", "import": "./dist/data/index.js"}},
+  "scripts": {"build": "tsc -p tsconfig.json"},
+  "dependencies": {"@aeliqo/core": "workspace:*"}
+}

@@ -133,6 +133,12 @@ importers:
         specifier: '>=19.2.0 <20.0.0'
         version: 19.2.8(react@19.2.8)
 
+  packages/runtime:
+    dependencies:
+      '@aeliqo/core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/web:
     dependencies:
       '@lit-labs/ssr':
