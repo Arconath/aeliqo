@@ -1,4 +1,5 @@
 import {readFileSync} from "node:fs";
+import {execFileSync} from "node:child_process";
 import {resolve} from "node:path";
 import {fileURLToPath} from "node:url";
 import {describe, expect, it} from "vitest";
@@ -28,6 +29,29 @@ function hasTextInfo(locale: string): locale is string {
   return typeof candidate.getTextInfo === "function";
 }
 
+function requiredToken(map: object, name: string): string {
+  const value = (map as Record<string, unknown>)[name];
+  if (typeof value !== "string") throw new Error(`Missing token ${name}`);
+  return value;
+}
+
+function relativeLuminance(hex: string): number {
+  if (!/^#[0-9a-f]{6}$/i.test(hex)) throw new Error(`Expected an opaque hex color: ${hex}`);
+  const channels = [0, 2, 4].map((offset) => Number.parseInt(hex.slice(offset + 1, offset + 3), 16) / 255);
+  const linear = channels.map((channel) =>
+    channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,
+  );
+  return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+}
+
+function contrastRatio(foreground: string, background: string): number {
+  const foregroundLuminance = relativeLuminance(foreground);
+  const backgroundLuminance = relativeLuminance(background);
+  const lighter = Math.max(foregroundLuminance, backgroundLuminance);
+  const darker = Math.min(foregroundLuminance, backgroundLuminance);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
 describe("owned token baseline", () => {
   it("keeps generated semantic maps complete and non-empty", () => {
     const maps = [AELIQO_LIGHT_TOKENS, AELIQO_DARK_TOKENS, AELIQO_SHARED_TOKENS];
@@ -51,15 +75,71 @@ describe("owned token baseline", () => {
       readonly $extensions?: {readonly aeliqo?: {readonly sourceOfTruth?: string}};
       readonly light?: {readonly text?: {$value?: {readonly hex?: string}}};
       readonly dark?: {readonly text?: {$value?: {readonly hex?: string}}};
+      readonly visualization?: {
+        readonly light?: Record<string, {$value?: {readonly hex?: string}}>;
+        readonly dark?: Record<string, {$value?: {readonly hex?: string}}>;
+      };
     };
 
     expect(source.$extensions?.aeliqo?.sourceOfTruth).toBe("design/tokens.json");
+    expect(() =>
+      execFileSync(process.execPath, [resolve(root, "design/generate-web-tokens.mjs"), "--check"], {
+        cwd: root,
+        stdio: "pipe",
+      }),
+    ).not.toThrow();
     expect(source.light?.text?.$value?.hex).toBe(
       AELIQO_LIGHT_TOKENS["--aeliqo-color-text"],
     );
     expect(source.dark?.text?.$value?.hex).toBe(
       AELIQO_DARK_TOKENS["--aeliqo-color-text"],
     );
+
+    const paletteNames = ["series1", "series2", "series3", "series4", "reference"];
+    for (const [mode, tokens] of [
+      ["light", AELIQO_LIGHT_TOKENS],
+      ["dark", AELIQO_DARK_TOKENS],
+    ] as const) {
+      const palette = source.visualization?.[mode];
+      for (const name of paletteNames) {
+        expect(palette?.[name]?.$value?.hex).toBe(
+          requiredToken(tokens, "--aeliqo-visualization-" + name),
+        );
+      }
+    }
+  });
+
+  it("keeps chart encodings and semantic states readable in both themes", () => {
+    const chartTokens = [
+      "--aeliqo-visualization-series1",
+      "--aeliqo-visualization-series2",
+      "--aeliqo-visualization-series3",
+      "--aeliqo-visualization-series4",
+      "--aeliqo-visualization-reference",
+    ];
+    const textTokens = [
+      "--aeliqo-color-text",
+      "--aeliqo-color-muted",
+      "--aeliqo-color-danger",
+    ];
+    const controlTokens = ["--aeliqo-color-focus", "--aeliqo-color-border"];
+    const themes = [
+      ["light", AELIQO_LIGHT_TOKENS],
+      ["dark", AELIQO_DARK_TOKENS],
+    ] as const;
+
+    for (const [theme, tokens] of themes) {
+      const canvas = requiredToken(tokens, "--aeliqo-color-canvas");
+      for (const name of chartTokens) {
+        expect(contrastRatio(requiredToken(tokens, name), canvas), `${theme} ${name}`).toBeGreaterThanOrEqual(3);
+      }
+      for (const name of textTokens) {
+        expect(contrastRatio(requiredToken(tokens, name), canvas), `${theme} ${name}`).toBeGreaterThanOrEqual(4.5);
+      }
+      for (const name of controlTokens) {
+        expect(contrastRatio(requiredToken(tokens, name), canvas), `${theme} ${name}`).toBeGreaterThanOrEqual(3);
+      }
+    }
   });
 
   it("keeps legacy custom properties out of theme defaults", () => {

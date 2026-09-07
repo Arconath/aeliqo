@@ -9,8 +9,9 @@ import {
 const declarations = (values: Readonly<Record<string, string>>): string =>
   Object.entries(values).map(([name, value]) => `${name}: ${value};`).join("\n");
 
-const baseDeclarations = `${declarations(AELIQO_LIGHT_TOKENS)}\n${declarations(AELIQO_SHARED_TOKENS)}`;
-const darkDeclarations = `${declarations(AELIQO_DARK_TOKENS)}\n${declarations(AELIQO_SHARED_TOKENS)}`;
+// Shared defaults come first so theme-specific values, including palettes, win.
+const baseDeclarations = `${declarations(AELIQO_SHARED_TOKENS)}\n${declarations(AELIQO_LIGHT_TOKENS)}`;
+const darkDeclarations = `${declarations(AELIQO_SHARED_TOKENS)}\n${declarations(AELIQO_DARK_TOKENS)}`;
 
 const forcedColorDeclarations = `
   --aeliqo-color-canvas: Canvas;
@@ -25,8 +26,11 @@ const forcedColorDeclarations = `
   --aeliqo-color-warning: Highlight;
   --aeliqo-color-info: Highlight;
   --aeliqo-color-focus: Highlight;
-  --aeliqo-chart-line: Highlight;
-  --aeliqo-chart-point: Canvas;
+  --aeliqo-visualization-series1: Highlight;
+  --aeliqo-visualization-series2: Highlight;
+  --aeliqo-visualization-series3: Highlight;
+  --aeliqo-visualization-series4: Highlight;
+  --aeliqo-visualization-reference: ButtonText;
 `;
 
 const inheritedThemeDeclarations = Object.keys({...AELIQO_LIGHT_TOKENS, ...AELIQO_SHARED_TOKENS})

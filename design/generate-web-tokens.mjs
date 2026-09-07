@@ -8,6 +8,7 @@ const designDirectory = dirname(fileURLToPath(import.meta.url));
 const sourcePath = join(designDirectory, "tokens.json");
 const outputPath = join(designDirectory, "..", "packages", "web", "src", "styles", "tokens.ts");
 const source = JSON.parse(await readFile(sourcePath, "utf8"));
+const checkOnly = process.argv.includes("--check");
 
 const kebab = (value) => value
   .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
@@ -54,8 +55,11 @@ const dark = {};
 const shared = {};
 flatten(source.light, ["color"], light);
 flatten(source.dark, ["color"], dark);
+// Visualization colors are theme-specific but keep a stable public namespace.
+flatten(source.visualization?.light ?? {}, ["visualization"], light);
+flatten(source.visualization?.dark ?? {}, ["visualization"], dark);
 for (const [group, value] of Object.entries(source)) {
-  if (["$description", "$extensions", "light", "dark"].includes(group)) continue;
+  if (["$description", "$extensions", "light", "dark", "visualization"].includes(group)) continue;
   flatten({[group]: value}, [], shared);
 }
 
@@ -84,4 +88,18 @@ export function getAeliqoToken(mode: AeliqoThemeMode, name: AeliqoTokenName): st
   return AELIQO_THEME_TOKENS[mode][name] ?? AELIQO_SHARED_TOKENS[name] ?? "";
 }
 `;
-await writeFile(outputPath, output);
+if (checkOnly) {
+  let current;
+  try {
+    current = await readFile(outputPath, "utf8");
+  } catch (error) {
+    if (error?.code === "ENOENT") current = undefined;
+    else throw error;
+  }
+  if (current !== output) {
+    console.error(`Generated token file is stale: ${outputPath}`);
+    process.exitCode = 1;
+  }
+} else {
+  await writeFile(outputPath, output);
+}

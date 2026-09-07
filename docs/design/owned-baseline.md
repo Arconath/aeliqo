@@ -4,7 +4,7 @@ Status: T12 implementation reference for the 0.1.0 rewrite. The token source and
 
 ## Source and scope
 
-[`design/tokens.json`](../../design/tokens.json) is the canonical DTCG-compatible token document. It contains semantic light and dark roles plus shared type, spacing, control, focus, motion, elevation, visualization and locale values. `design/generate-web-tokens.mjs` generates the typed package map at [`packages/web/src/styles/tokens.ts`](../../packages/web/src/styles/tokens.ts). Run the generator after changing the JSON source and review the generated diff.
+[`design/tokens.json`](../../design/tokens.json) is the canonical DTCG-compatible token document. It contains semantic light and dark roles, theme-specific visualization palettes, and shared type, spacing, control, focus, motion, elevation and locale values. `design/generate-web-tokens.mjs` generates the typed package map at [`packages/web/src/styles/tokens.ts`](../../packages/web/src/styles/tokens.ts). Run the generator after changing the JSON source and review the generated diff; CI can run `node design/generate-web-tokens.mjs --check` to fail on stale generated output.
 
 The package baseline is opt-in and component scoped. A Lit element prepends `aeliqoThemeStyles` to its own `static styles` array. The exported stylesheet only targets `:host`, so importing it does not reset the consumer document or mutate `document.documentElement`. Applications that want one chosen container to own the variables can opt into `aeliqoStandaloneThemeStyles` with a `data-aeliqo-theme` attribute.
 
