@@ -35,6 +35,17 @@ Implementation and candidate verification are complete for the 0.2.0 package rel
 | M5 — public website | Product homepage, routed docs, playground, changelog, and separate Proof Lab in source | Production image is live; public routes and security headers were smoke-tested |
 | Release identity | Workflow verifies once; the reviewed tarballs were published in dependency order after npm WebAuthn authentication | Final hosted quality, image, GitOps, and registry identities are recorded in the release evidence files and GitHub Actions history |
 
+## Design refresh — 7 September 2026
+
+| Page / concern | Delivered state | Acceptance |
+| --- | --- | --- |
+| Shared site chrome | Uses the content-footer logo asset, keeps the home route as the initial page, and exposes only Docs, Playground, and Blog in the primary navigation | No separate Landing Page menu item remains; favicon and header/footer use the same logo asset |
+| Home | Matches the supplied home composition with intent-to-dashboard visual proof, feature cards, code preview, and install command | Installation command is visible on `/` as `npm install @aeliqo/core @aeliqo/react` |
+| Docs | Matches the supplied documentation layout with grouped navigation, content preview, source example, and inspector rail | Existing documentation search, hash navigation, copy actions, and component examples remain available |
+| Playground | Matches the supplied three-column dark workspace while retaining the existing semantic runtime and protocol controls | Showcase, direct operations, MCP/WebMCP status, and Proof Lab remain wired to the existing runtime |
+| Blog and About | Matches the supplied featured-content and content-footer layouts | Static authored content remains truthful and About keeps the content-footer information architecture |
+| Cleanup | Removed superseded public-shell CSS and added scoped changelog styling | `pnpm typecheck`, `pnpm lint`, `pnpm test` (**194/194**), `pnpm build`, `pnpm check:boundaries`, `pnpm test:browser` (**36/36** across Chromium, Firefox, and WebKit), and `git diff --check` pass |
+
 ## Acceptance A–F reconciliation
 
 | Acceptance | Status | Evidence and boundary |

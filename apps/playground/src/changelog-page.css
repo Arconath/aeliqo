@@ -1,0 +1,81 @@
+.changelog-page {
+  background:
+    radial-gradient(circle at 72% 8%, rgba(48, 76, 183, 0.15), transparent 35%),
+    var(--design-bg);
+}
+
+.changelog-content {
+  width: min(900px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 82px 0 104px;
+}
+
+.changelog-content .design-eyebrow {
+  margin: 0 0 18px;
+  color: var(--design-cyan);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.2em;
+}
+
+.changelog-content h1 {
+  margin: 0 0 62px;
+  color: var(--design-text);
+  font-size: clamp(42px, 7vw, 78px);
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  line-height: 0.98;
+}
+
+.changelog-content article {
+  border-top: 1px solid var(--design-border);
+  padding: 28px 0 34px;
+}
+
+.changelog-content article header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  color: var(--design-text);
+  font-size: 14px;
+}
+
+.changelog-content article header span,
+.changelog-content article p,
+.changelog-content article li,
+.changelog-content > p:last-child {
+  color: var(--design-muted);
+  line-height: 1.7;
+}
+
+.changelog-content article p {
+  max-width: 760px;
+  margin: 22px 0 14px;
+}
+
+.changelog-content article ul {
+  margin: 0;
+  padding-left: 22px;
+}
+
+.changelog-content > p:last-child {
+  margin: 0;
+  font-size: 13px;
+}
+
+@media (max-width: 620px) {
+  .changelog-content {
+    width: calc(100% - 36px);
+    padding: 56px 0 72px;
+  }
+
+  .changelog-content h1 {
+    margin-bottom: 42px;
+  }
+
+  .changelog-content article header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+}

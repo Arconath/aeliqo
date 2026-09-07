@@ -1,0 +1,126 @@
+.aeliqo-design-site {
+  --design-bg: #050a18;
+  --design-bg-raised: #0a1225;
+  --design-surface: #0e172b;
+  --design-surface-strong: #111c33;
+  --design-border: rgba(135, 164, 239, 0.18);
+  --design-border-strong: rgba(92, 126, 235, 0.48);
+  --design-text: #f6f8ff;
+  --design-muted: #9eacc9;
+  --design-subtle: #7180a3;
+  --design-accent: #52678f;
+  --design-accent-bright: #8ea4cf;
+  --design-cyan: #6fa6c0;
+  min-height: 100vh;
+  background: var(--design-bg);
+  color: var(--design-text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  isolation: isolate;
+}
+
+.aeliqo-design-site[data-site-theme="light"] {
+  --design-bg: #f3f6ff;
+  --design-bg-raised: #eaf0ff;
+  --design-surface: #ffffff;
+  --design-surface-strong: #f7f9ff;
+  --design-border: rgba(49, 79, 157, 0.18);
+  --design-border-strong: rgba(51, 89, 213, 0.42);
+  --design-text: #101a38;
+  --design-muted: #526181;
+  --design-subtle: #7080a4;
+  --design-accent: #52678f;
+  --design-accent-bright: #6f84aa;
+  --design-cyan: #4e8ca8;
+}
+
+.site-header {
+  position: relative;
+  z-index: 20;
+  min-height: 72px;
+  padding: 0 clamp(24px, 8vw, 148px);
+  display: flex;
+  align-items: center;
+  gap: 48px;
+  border-bottom: 1px solid var(--design-border);
+  background: color-mix(in srgb, var(--design-bg) 88%, transparent);
+  backdrop-filter: blur(18px);
+}
+
+.site-header-compact { min-height: 64px; padding-inline: 28px; }
+.site-brand { color: inherit; text-decoration: none; flex: 0 0 auto; }
+.aeliqo-logo { display: inline-flex; align-items: center; gap: 9px; }
+.aeliqo-logo-mark { width: 31px; height: 31px; flex: 0 0 auto; filter: drop-shadow(0 0 10px rgba(69, 104, 255, 0.25)); }
+.aeliqo-logo-word { font-size: 20px; font-weight: 700; letter-spacing: -0.035em; }
+.aeliqo-logo-compact .aeliqo-logo-mark { width: 29px; height: 29px; }
+
+.site-nav { display: flex; align-items: center; gap: 31px; margin-inline: auto; }
+.site-nav a, .github-link { position: relative; color: var(--design-muted); text-decoration: none; font-size: 13px; font-weight: 500; transition: color 160ms ease; }
+.site-nav a:hover, .github-link:hover, .site-nav a.is-active { color: var(--design-text); }
+.site-nav a.is-active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -23px; height: 2px; background: linear-gradient(90deg, var(--design-cyan), var(--design-accent-bright)); box-shadow: 0 0 10px rgba(83, 121, 255, 0.8); }
+.site-header-actions { display: flex; align-items: center; gap: 18px; flex: 0 0 auto; }
+.github-link { display: inline-flex; align-items: center; gap: 8px; color: var(--design-text); }
+.github-link svg { width: 18px; height: 18px; }
+.site-header-divider { width: 1px; height: 22px; background: var(--design-border-strong); }
+.theme-toggle { display: inline-flex; align-items: center; gap: 2px; padding: 3px; min-width: 67px; border: 1px solid var(--design-border-strong); border-radius: 999px; background: color-mix(in srgb, var(--design-surface) 82%, transparent); color: var(--design-muted); }
+.theme-toggle span { display: grid; place-items: center; width: 27px; height: 25px; border-radius: 999px; }
+.theme-toggle svg { width: 15px; height: 15px; }
+.theme-toggle span.is-selected { color: var(--design-text); background: #eef2ff; box-shadow: 0 0 16px rgba(104, 137, 255, 0.35); }
+
+.site-footer { width: min(1240px, calc(100% - 48px)); margin: 0 auto; padding: 64px 0 42px; display: grid; grid-template-columns: 1.5fr 1fr auto; align-items: end; gap: 32px; border-top: 1px solid var(--design-border); color: var(--design-muted); }
+.site-footer-brand p { margin: 14px 0 0; font-size: 13px; }
+.site-footer-links { display: flex; flex-wrap: wrap; gap: 18px; }
+.site-footer a { color: inherit; text-decoration: none; font-size: 13px; }
+.site-footer a:hover { color: var(--design-text); }
+.site-footer-meta { margin: 0; font-size: 12px; text-align: right; }
+
+.aeliqo-design-site :is(a, button, input, select, textarea):focus-visible { outline: 2px solid var(--design-cyan); outline-offset: 4px; }
+.aeliqo-design-site button { font: inherit; cursor: pointer; }
+
+@media (max-width: 780px) {
+  .site-header { min-height: 64px; padding: 0 18px; gap: 18px; }
+  .site-nav { gap: 15px; }
+  .site-nav a { font-size: 12px; }
+  .site-nav a.is-active::after { bottom: -20px; }
+  .github-link span, .site-header-divider { display: none; }
+  .site-header-actions { gap: 10px; }
+  .theme-toggle { min-width: 58px; }
+  .theme-toggle span { width: 23px; height: 23px; }
+  .aeliqo-logo-word { font-size: 18px; }
+  .site-footer { width: calc(100% - 36px); grid-template-columns: 1fr; align-items: start; gap: 26px; padding: 42px 0 30px; }
+  .site-footer-meta { text-align: left; }
+}
+
+@media (max-width: 420px) {
+  .site-header {
+    gap: 10px;
+    padding-inline: 12px;
+  }
+
+  .aeliqo-logo-word {
+    font-size: 17px;
+  }
+
+  .site-nav {
+    gap: 10px;
+  }
+
+  .site-nav a {
+    font-size: 11px;
+  }
+
+  .site-header-actions {
+    gap: 4px;
+  }
+
+  .theme-toggle {
+    min-width: 52px;
+  }
+
+  .theme-toggle span {
+    width: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aeliqo-design-site *, .aeliqo-design-site *::before, .aeliqo-design-site *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+}

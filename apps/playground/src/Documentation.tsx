@@ -3,6 +3,7 @@ import { DeltaExample, RecordListExample, SelectionSummaryExample, OverviewExamp
 import { MetricExample, TableExample, FilterExample, RankingExample, TrendExample, DetailExample, ComparisonExample, RatioExample, PartialExample } from './documentation-examples';
 import { MetricBreakdownExample, EventTimelineExample, TimeInvestigationExample, QualityPanelExample, ScatterExample, DistributionExample, RelationshipExample, MatrixExample, ExplorerExample, OperationalWorkspaceExample } from './documentation-examples';
 import exampleSource from './documentation-examples.tsx?raw';
+import { AeliqoLogo, SiteFrame } from './site-chrome';
 import './documentation.css';
 
 const pages = [
@@ -15,19 +16,140 @@ const pages = [
   { id: 'reference', title: 'Support & migration', group: 'Reference', terms: 'API version license OSS release Next.js compatibility' },
 ] as const;
 type PageId = typeof pages[number]['id'];
+
+type DocumentationProps = {
+  readonly embedded?: boolean;
+};
+
+type DocumentationNavItem = {
+  readonly id: PageId;
+  readonly label: string;
+  readonly primary?: boolean;
+};
+
+const navigationGroups: readonly { readonly title: string; readonly items: readonly DocumentationNavItem[] }[] = [
+  {
+    title: 'Getting started',
+    items: [
+      { id: 'start', label: 'Start here', primary: true },
+      { id: 'start', label: 'Installation' },
+      { id: 'start', label: 'Quickstart' },
+      { id: 'start', label: 'Framework notes' },
+    ],
+  },
+  {
+    title: 'Foundations',
+    items: [
+      { id: 'data', label: 'Data that keeps its meaning', primary: true },
+      { id: 'quality', label: 'Accessibility & customization', primary: true },
+    ],
+  },
+  {
+    title: 'Semantic components',
+    items: [
+      { id: 'components', label: 'Component reference', primary: true },
+      { id: 'components', label: 'Metric' },
+      { id: 'components', label: 'Table' },
+      { id: 'components', label: 'Explorer' },
+      { id: 'components', label: 'Investigation components' },
+    ],
+  },
+  {
+    title: 'Adaptive workspaces',
+    items: [
+      { id: 'workspace', label: 'Compose a workspace', primary: true },
+      { id: 'workspace', label: 'Selection and links' },
+    ],
+  },
+  {
+    title: 'Integrations',
+    items: [
+      { id: 'agents', label: 'Connect an agent', primary: true },
+      { id: 'agents', label: 'MCP, BYOK & WebMCP' },
+    ],
+  },
+  {
+    title: 'Reference',
+    items: [
+      { id: 'reference', label: 'Support & migration', primary: true },
+    ],
+  },
+] as const;
+
+function navigationHref(item: DocumentationNavItem): string {
+  if (item.primary) return `#docs-${item.id}`;
+  const slug = item.label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return `#docs-${item.id}-${slug}`;
+}
+
+const pageSummaries: Record<PageId, string> = {
+  start: 'Start with one useful component, then add shared semantics and workspace coordination as your product grows.',
+  components: 'Explore the semantic primitives and compound components that power explicit, data-aware, and workspace usage.',
+  data: 'Describe units, ratios, scope, and freshness once so every view keeps the same meaning.',
+  workspace: 'Compose connected views incrementally while your application keeps ownership of its source records.',
+  agents: 'Connect trusted capability calls through explicit MCP, BYOK, or experimental WebMCP boundaries.',
+  quality: 'Keep adaptive interfaces readable, accessible, and predictable across input methods and container sizes.',
+  reference: 'Review supported packages, tested integrations, licensing, and migration boundaries for the current release.',
+};
+
+type TocItem = { readonly id: string; readonly label: string };
+
+const tocByPage: Record<PageId, readonly TocItem[]> = {
+  start: [
+    { id: 'docs-overview', label: 'Overview' },
+    { id: 'docs-preview', label: 'Live preview' },
+    { id: 'docs-install', label: 'Install / Import' },
+    { id: 'docs-quickstart', label: 'Quickstart' },
+  ],
+  components: [
+    { id: 'docs-overview', label: 'Overview' },
+    { id: 'docs-preview', label: 'Live preview' },
+    { id: 'docs-examples', label: 'Examples' },
+    { id: 'docs-api', label: 'API reference' },
+  ],
+  data: [
+    { id: 'docs-overview', label: 'Overview' },
+    { id: 'docs-preview', label: 'Live preview' },
+    { id: 'docs-semantic-contract', label: 'Semantic contract' },
+    { id: 'docs-scope', label: 'Scope and freshness' },
+  ],
+  workspace: [
+    { id: 'docs-overview', label: 'Overview' },
+    { id: 'docs-preview', label: 'Live preview' },
+    { id: 'docs-workspace-contract', label: 'Workspace contract' },
+  ],
+  agents: [
+    { id: 'docs-overview', label: 'Overview' },
+    { id: 'docs-install', label: 'Install / Import' },
+    { id: 'docs-capabilities', label: 'Semantic capabilities' },
+    { id: 'docs-api', label: 'Integration reference' },
+  ],
+  quality: [
+    { id: 'docs-overview', label: 'Overview' },
+    { id: 'docs-accessibility', label: 'Accessibility' },
+    { id: 'docs-adaptive', label: 'Adaptive behavior' },
+    { id: 'docs-performance', label: 'Performance' },
+  ],
+  reference: [
+    { id: 'docs-overview', label: 'Overview' },
+    { id: 'docs-api', label: 'API reference' },
+    { id: 'docs-migration', label: 'Migration' },
+  ],
+};
+
 function Example({ title, children }: { title: string; children: ReactNode }) {
   const [code, setCode] = useState(false);
   const [copied, setCopied] = useState('');
   return <section className="docs-example" aria-label={`${title} example`}>
     <header><strong>{title}</strong><button type="button" aria-pressed={code} onClick={() => setCode(!code)}>{code ? 'Show preview' : 'Show source'}</button></header>
-    {code ? <><p className="docs-caption">Actual compiled example module, including shared fixtures and imports.</p><button type="button" onClick={() => { if (!navigator.clipboard) { setCopied('Copy unavailable; select the source below.'); return; } void navigator.clipboard.writeText(exampleSource).then(() => setCopied('Source copied.'), () => setCopied('Copy unavailable; select the source below.')); }}>Copy source</button><span role="status">{copied}</span><pre tabIndex={0}><code>{exampleSource}</code></pre></> : <div className="docs-preview">{children}</div>}
+    {code ? <><div className="docs-source-toolbar"><p className="docs-caption">Actual compiled example module, including shared fixtures and imports.</p><div><button type="button" onClick={() => { if (typeof navigator === 'undefined' || !navigator.clipboard) { setCopied('Copy unavailable; select the source below.'); return; } void navigator.clipboard.writeText(exampleSource).then(() => setCopied('Source copied.'), () => setCopied('Copy unavailable; select the source below.')); }}>Copy source</button><span role="status" aria-live="polite">{copied}</span></div></div><pre tabIndex={0}><code>{exampleSource}</code></pre></> : <div className="docs-preview">{children}</div>}
   </section>;
 }
 function Page({ id }: { id: PageId }) {
   if (id === 'start') return <>
     <p className="docs-lead">Start with one useful component. Add shared data meaning and workspace coordination when your application needs them.</p>
     <Example title="Your first Metric"><MetricExample /></Example>
-    <h3>Install Aeliqo 0.2.0</h3><p>The first public release is available from npm. Install only the surfaces your application needs.</p>
+    <h3 id="docs-install">Install Aeliqo 0.2.0</h3><p>The first public release is available from npm. Install only the surfaces your application needs.</p>
     <pre><code>{'npm install @aeliqo/core @aeliqo/react'}</code></pre>
     <p>The release contains five allowlisted packages: core contracts, React components, MCP, server-side BYOK, and experimental WebMCP. The package check also installs the published names into consumers outside the workspace and verifies declarations, server rendering, CSS, and isolated imports.</p>
     <h3>Bring the visual styles</h3><pre><code>{'import "@aeliqo/react/styles.css";\nimport { Metric } from "@aeliqo/react/metric";\n\n<Metric value={42} label="Active records" />'}</code></pre>
@@ -88,7 +210,7 @@ function Page({ id }: { id: PageId }) {
     <p className="docs-lead">Keep the interface understandable when data, container size, or input method changes.</p>
     <h3>Keyboard and accessible meaning</h3><p>Use visible labels, stable row identity and text equivalents for chart values. Do not make a tooltip the only way to learn an important value. Exercise filtering, selection, error states and focus using a keyboard. A passing automated check does not replace an external usability session.</p>
     <h3>Theme the component boundary</h3><p>Styles use <code>--aeliqo-*</code> variables. A local scope can override surface, text, border and accent values. Use <code>data-theme="dark"</code> for the supplied dark palette. Validate contrast after overrides; RTL and reduced motion deserve their own checks.</p>
-    <pre><code>{'.my-panel {\n  --aeliqo-accent: #117568;\n  --aeliqo-radius: 12px;\n}'}</code></pre>
+    <pre><code>{'.my-panel {\n  --aeliqo-accent: #52678f;\n  --aeliqo-radius: 12px;\n}'}</code></pre>
     <h3>Measure the actual import</h3><p><code>pnpm check:packages</code> records the standalone Metric bundle, excluding React, and rejects retained workspace, D3 or protocol implementations. <code>pnpm perf</code> measures the core workload. These are configuration-specific measurements, not universal latency guarantees.</p>
     <h3>Extend through trusted application code</h3><p>Keep custom components and renderers in developer-owned modules. Validate any exposed configuration and register only capabilities the renderer actually implements. An agent-supplied module URL or callback string is never a trusted extension. Consult the current source contract before adopting an extension API; the broader catalog blueprint is not an implementation promise.</p>
   </>;
@@ -107,16 +229,101 @@ function Page({ id }: { id: PageId }) {
     <p>Do not mix candidate 0.1 JSON schemas from the blueprint with the executing version-1 workspace operation format. The current TypeScript model and capability runtime validation describe the implemented contract.</p>
   </>;
 }
-export function Documentation() {
-  const [active, setActive] = useState<PageId>(() => { const id = typeof location === 'undefined' ? '' : location.hash.replace('#docs-', ''); return pages.some(page => page.id === id) ? id as PageId : 'start'; });
+function DocsRail({ active }: { readonly active: PageId }) {
+  const toc = tocByPage[active];
+  return <aside className="docs-rail" aria-label="On this page">
+    <details className="docs-toc-disclosure" open>
+      <summary>On this page</summary>
+      <nav aria-label="On this page navigation"><ol className="docs-toc">{toc.map((item, index) => <li key={item.id}><a href={`#${item.id}`} aria-current={index === 0 ? 'location' : undefined}>{item.label}</a></li>)}</ol></nav>
+    </details>
+    <section className="docs-rail-card docs-inspector-card" aria-labelledby="docs-inspector-title">
+      <div className="docs-rail-card-icon"><AeliqoLogo compact /></div>
+      <h2 id="docs-inspector-title">Aeliqo Inspector</h2>
+      <p>See how Aeliqo keeps data meaning, component behavior, and interaction contracts together.</p>
+      <dl className="docs-inspector-list">
+        <div><dt>Surface</dt><dd>Semantic component</dd></div>
+        <div><dt>Behavior</dt><dd>Explicit and adaptive</dd></div>
+        <div><dt>Evidence</dt><dd>Compiled example</dd></div>
+      </dl>
+      <a className="docs-rail-action" href="/playground/">Open in Playground <span aria-hidden="true">→</span></a>
+    </section>
+    <section className="docs-rail-card docs-help-card" aria-labelledby="docs-help-title">
+      <h2 id="docs-help-title">Need help?</h2>
+      <p>Check the source examples and support notes before connecting an application-owned integration.</p>
+      <a href="https://github.com/aeliqo/aeliqo" target="_blank" rel="noreferrer">View on GitHub <span aria-hidden="true">→</span></a>
+    </section>
+  </aside>;
+}
+
+export function Documentation({ embedded }: DocumentationProps = {}) {
+  const [active, setActive] = useState<PageId>(() => {
+    const id = typeof window === 'undefined' ? '' : window.location.hash.replace('#docs-', '');
+    return pages.some(page => page.id === id) ? id as PageId : 'start';
+  });
   const [query, setQuery] = useState('');
+  const [actionStatus, setActionStatus] = useState('');
   const page = pages.find(item => item.id === active)!;
   const filtered = pages.filter(item => `${item.title} ${item.terms}`.toLowerCase().includes(query.toLowerCase().trim()));
+  const visiblePageIds = new Set(filtered.map(item => item.id));
   const navigate = (id: PageId) => { setActive(id); history.replaceState(null, '', `#docs-${id}`); };
   const position = pages.findIndex(item => item.id === active);
-  return <div className="docs-shell">
-    <aside className="docs-sidebar"><p className="docs-eyebrow">Aeliqo / Developer guide</p><label htmlFor="docs-search">Find a topic</label><input id="docs-search" type="search" placeholder="Try currency, Table, or MCP" value={query} onChange={event => setQuery(event.target.value)} />
-      <nav aria-label="Documentation topics">{filtered.map(item => <a key={item.id} href={`#docs-${item.id}`} aria-current={active === item.id ? 'page' : undefined} onClick={event => { event.preventDefault(); navigate(item.id); }}><small>{item.group}</small>{item.title}</a>)}</nav>{!filtered.length && <p role="status">No matching topics. Try a component or integration name.</p>}<p className="docs-caption">Aeliqo 0.2.0<br />Apache-2.0</p></aside>
-    <article className="docs-article" aria-label={page.title}><header><p className="docs-eyebrow">{page.group} <span>Aeliqo 0.2.0</span></p><h2>{page.title}</h2></header><Page key={active} id={active} /><footer className="docs-pagination">{position > 0 && <button onClick={() => navigate(pages[position - 1]!.id)}>← {pages[position - 1]!.title}</button>}{position < pages.length - 1 && <button onClick={() => navigate(pages[position + 1]!.id)}>{pages[position + 1]!.title} →</button>}</footer></article>
+  const standalone = embedded === undefined
+    ? (typeof window === 'undefined' || window.location.pathname.replace(/\/+$/, '') === '/docs')
+    : !embedded;
+  const copyPageContext = () => {
+    const context = `Aeliqo documentation: ${page.title}\n${pageSummaries[active]}\nAnchor: #docs-${active}`;
+    if (typeof navigator === 'undefined' || !navigator.clipboard) {
+      setActionStatus('Copy unavailable; select the page text instead.');
+      return;
+    }
+    void navigator.clipboard.writeText(context).then(() => setActionStatus('Page context copied.'), () => setActionStatus('Copy unavailable; select the page text instead.'));
+  };
+  const content = <div className="docs-page">
+    <div className="docs-shell">
+      <aside className="docs-sidebar">
+        <details className="docs-nav-disclosure" open>
+          <summary>Documentation navigation</summary>
+          <div className="docs-nav-body">
+            <p className="docs-eyebrow">Aeliqo / Developer guide</p>
+            <label htmlFor="docs-search">Find a topic</label>
+            <input id="docs-search" type="search" placeholder="Try currency, Table, or MCP" value={query} onChange={event => setQuery(event.target.value)} />
+            <nav aria-label="Documentation topics">
+              {navigationGroups.map(group => {
+                const items = group.items.filter(item => visiblePageIds.has(item.id));
+                if (!items.length) return null;
+                return <section className="docs-nav-group" key={group.title}><h2>{group.title}</h2><ul>{items.map(item => <li key={`${item.id}-${item.label}`}><a className={item.primary && active === item.id ? 'is-active' : undefined} href={navigationHref(item)} aria-current={item.primary && active === item.id ? 'page' : undefined} onClick={event => { event.preventDefault(); navigate(item.id); }}>{item.label}</a></li>)}</ul></section>;
+              })}
+            </nav>
+            {!filtered.length && <p role="status">No matching topics. Try a component or integration name.</p>}
+            <p className="docs-caption">Aeliqo 0.2.0<br />Apache-2.0</p>
+          </div>
+        </details>
+      </aside>
+      <article className="docs-article" aria-label={page.title}>
+        <header className="docs-page-header">
+          <nav className="docs-breadcrumb" aria-label="Breadcrumb"><a href="/docs/">Docs</a><span aria-hidden="true">›</span><span>{page.group}</span><span aria-hidden="true">›</span><span aria-current="page">{page.title}</span></nav>
+          <div className="docs-heading-row">
+            <div>
+              <p className="docs-eyebrow">{page.group} <span>Aeliqo 0.2.0</span></p>
+              <h1>{page.title} <span className="docs-status">Stable</span></h1>
+              <p className="docs-page-summary">{pageSummaries[active]}</p>
+              <div className="docs-tag-list" aria-label="Documentation attributes"><span>React-first</span><span>Type-safe</span><span>Accessible</span><span>Open source</span></div>
+            </div>
+            <div className="docs-heading-actions">
+              <button type="button" className="docs-secondary-action" onClick={copyPageContext}>Copy for agent</button>
+              <a className="docs-primary-action" href="/playground/">Open in Playground <span aria-hidden="true">→</span></a>
+              {actionStatus && <span className="docs-action-status" role="status" aria-live="polite">{actionStatus}</span>}
+            </div>
+          </div>
+        </header>
+        <div className="docs-article-body">
+          {tocByPage[active].map(item => <span className="docs-anchor" id={item.id} key={item.id} aria-hidden="true" />)}
+          <Page key={active} id={active} />
+        </div>
+        <footer className="docs-pagination">{position > 0 && <button type="button" onClick={() => navigate(pages[position - 1]!.id)}>← {pages[position - 1]!.title}</button>}{position < pages.length - 1 && <button type="button" onClick={() => navigate(pages[position + 1]!.id)}>{pages[position + 1]!.title} →</button>}</footer>
+      </article>
+      <DocsRail active={active} />
+    </div>
   </div>;
+  return standalone ? <SiteFrame active="docs" footer>{content}</SiteFrame> : content;
 }
