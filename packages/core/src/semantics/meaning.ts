@@ -12,6 +12,10 @@ import type {CatalogIndex, MeaningActivationPolicy, MeaningActivationReceipt, Me
 export interface MeaningValidationContext extends MeaningBundleContext {
   readonly index?: CatalogIndex;
   readonly entityId?: string;
+  /** Internal flag used by the iterative closure walker. */
+  readonly skipDependencyClosure?: boolean;
+  /** Internal immutable index reused by the closure walker. */
+  readonly availableDefinitions?: ReadonlyMap<string, MeaningDefinition>;
 }
 
 const authorityRank: Record<MeaningDefinition['authority'], number> = {
@@ -56,7 +60,10 @@ export function validateMeaning(input: unknown, context: MeaningValidationContex
     const issue = parsed.error.issues[0];
     return semanticFailure('semantic.shape', 'Meaning does not match the canonical meaning contract.', issue?.path.filter((part): part is string | number => typeof part !== 'symbol'));
   }
-  const meaning = parsed.data as MeaningDefinition;
+  return validateMeaningValue(parsed.data as MeaningDefinition, context);
+}
+
+function validateMeaningValue(meaning: MeaningDefinition, context: MeaningValidationContext): Outcome<MeaningDefinition> {
   if (context.registry.digest !== context.catalog.functionRegistryDigest)
     return semanticFailure('semantic.stale-registry', 'The supplied function registry does not match the catalog registry pin.', ['functionRegistryDigest']);
   const indexOutcome = context.index === undefined ? createCatalogIndex(context.catalog) : {ok: true as const, value: context.index};
@@ -75,14 +82,20 @@ export function validateMeaning(input: unknown, context: MeaningValidationContex
 
   if (new Set(meaning.dependencies.map(versionKey)).size !== meaning.dependencies.length)
     return semanticFailure('semantic.duplicate-dependency', 'Meaning dependencies must be unique.', ['dependencies']);
-  const available = new Map<string, MeaningDefinition>();
-  for (const candidate of context.catalog.meanings) available.set(versionKey(candidate), candidate);
-  for (const candidate of definitions) {
-    const identity = versionKey(candidate);
-    const prior = available.get(identity);
-    if (prior !== undefined && stableJSON(prior) !== stableJSON(candidate))
-      return semanticFailure('semantic.definition-conflict', `Meaning ${candidate.id}@${candidate.revision} conflicts with an existing definition.`, ['definitions']);
-    if (prior === undefined) available.set(identity, candidate);
+  let available: ReadonlyMap<string, MeaningDefinition>;
+  if (context.availableDefinitions !== undefined) {
+    available = context.availableDefinitions;
+  } else {
+    const indexed = new Map<string, MeaningDefinition>();
+    for (const candidate of context.catalog.meanings) indexed.set(versionKey(candidate), candidate);
+    for (const candidate of definitions) {
+      const identity = versionKey(candidate);
+      const prior = indexed.get(identity);
+      if (prior !== undefined && stableJSON(prior) !== stableJSON(candidate))
+        return semanticFailure('semantic.definition-conflict', `Meaning ${candidate.id}@${candidate.revision} conflicts with an existing definition.`, ['definitions']);
+      if (prior === undefined) indexed.set(identity, candidate);
+    }
+    available = indexed;
   }
   const existing = available.get(versionKey(meaning));
   if (existing !== undefined && stableJSON(existing) !== stableJSON(meaning))
@@ -97,22 +110,29 @@ export function validateMeaning(input: unknown, context: MeaningValidationContex
       return semanticFailure('semantic.stale-registry', `Meaning dependency ${dependencyMeaning.id}@${dependencyMeaning.revision} pins a different function registry digest.`, ['dependencies', indexOfDependency]);
   }
 
+  if (!context.skipDependencyClosure) {
+    const closure = validateDependencyClosure([{meaning, path: []}], available, context);
+    if (!closure.ok) return closure;
+  }
+
   if (meaning.implementation.kind === 'host-capability') {
     if (context.policy?.allowHostCapabilities === false)
       return semanticFailure('semantic.host-capability-denied', 'Host-backed meanings are not allowed by this policy.', ['implementation', 'capability']);
     if (index.resolveCapability(meaning.implementation.capability) === undefined)
       return semanticFailure('semantic.unknown-capability', `Capability ${versionKey(meaning.implementation.capability)} is not declared.`, ['implementation', 'capability']);
   } else {
+    const expressionDependencies = collectDefinitionRefs(meaning.implementation.expression);
+    const expressionDefinitions = expressionDependencies.length === 0 ? [] : definitions;
     const checked = checkExpression(meaning.implementation.expression, {
       catalog: context.catalog,
       index,
       registry: context.registry,
-      definitions,
+      definitions: expressionDefinitions,
       ...(context.entityId === undefined ? {} : {entityId: context.entityId}),
       expectedType: meaning.output,
     });
     if (!checked.ok) return checked;
-    for (const dependency of collectDefinitionRefs(checked.value.expression)) {
+    for (const dependency of expressionDependencies) {
       if (!meaning.dependencies.some((candidate) => versionKey(candidate) === versionKey(dependency)))
         return semanticFailure('semantic.unlisted-dependency', `Expression references ${versionKey(dependency)} without listing it as a dependency.`, ['implementation', 'expression']);
     }
@@ -136,15 +156,18 @@ export function validateMeaning(input: unknown, context: MeaningValidationContex
 }
 
 export function validateMeaningBundle(input: unknown, context: MeaningBundleContext): Outcome<MeaningBundle> {
-  if (!isRecord(input)) return semanticFailure('semantic.bundle-shape', 'Meaning bundle must be a plain object.');
-  if (typeof input.catalogRevision !== 'string' || input.catalogRevision.length === 0)
+  const inspectedBundle = inspectWire(input);
+  if (!inspectedBundle.ok) return inspectedBundle;
+  if (!isRecord(inspectedBundle.value)) return semanticFailure('semantic.bundle-shape', 'Meaning bundle must be a plain object.');
+  const bundle = inspectedBundle.value;
+  if (typeof bundle.catalogRevision !== 'string' || bundle.catalogRevision.length === 0)
     return semanticFailure('semantic.bundle-catalog', 'Meaning bundle must pin a catalog revision.', ['catalogRevision']);
-  if (typeof input.functionRegistryDigest !== 'string' || input.functionRegistryDigest.length === 0)
+  if (typeof bundle.functionRegistryDigest !== 'string' || bundle.functionRegistryDigest.length === 0)
     return semanticFailure('semantic.bundle-registry', 'Meaning bundle must pin a function registry digest.', ['functionRegistryDigest']);
-  if (!Array.isArray(input.meanings)) return semanticFailure('semantic.bundle-meanings', 'Meaning bundle meanings must be an array.', ['meanings']);
-  if (input.catalogRevision !== context.catalog.revision)
+  if (!Array.isArray(bundle.meanings)) return semanticFailure('semantic.bundle-meanings', 'Meaning bundle meanings must be an array.', ['meanings']);
+  if (bundle.catalogRevision !== context.catalog.revision)
     return semanticFailure('semantic.stale-catalog', 'Meaning bundle was authored against a different catalog revision.', ['catalogRevision']);
-  if (input.functionRegistryDigest !== context.registry.digest)
+  if (bundle.functionRegistryDigest !== context.registry.digest)
     return semanticFailure('semantic.stale-registry', 'Meaning bundle pins a different function registry digest.', ['functionRegistryDigest']);
   if (context.registry.digest !== context.catalog.functionRegistryDigest)
     return semanticFailure('semantic.stale-registry', 'The supplied function registry does not match the catalog registry pin.', ['functionRegistryDigest']);
@@ -162,10 +185,8 @@ export function validateMeaningBundle(input: unknown, context: MeaningBundleCont
   // independent of declaration order and cycles are reported as cycles.
   const suppliedMeanings: MeaningDefinition[] = [];
   const suppliedByIdentity = new Map<string, MeaningDefinition>();
-  for (let index = 0; index < input.meanings.length; index += 1) {
-    const inspected = inspectWire(input.meanings[index]);
-    if (!inspected.ok) return prependOutcomePath(['meanings', index], inspected);
-    const parsed = z.safeParse(meaningSchema, inspected.value);
+  for (let index = 0; index < bundle.meanings.length; index += 1) {
+    const parsed = z.safeParse(meaningSchema, bundle.meanings[index]);
     if (!parsed.success) {
       const issue = parsed.error.issues[0];
       return semanticFailure('semantic.shape', 'Meaning does not match the canonical meaning contract.', ['meanings', index, ...(issue?.path.filter((part): part is string | number => typeof part !== 'symbol') ?? [])]);
@@ -178,13 +199,24 @@ export function validateMeaningBundle(input: unknown, context: MeaningBundleCont
     if (prior === undefined) suppliedByIdentity.set(identity, candidate);
     suppliedMeanings.push(candidate);
   }
+  const allDefinitions = new Map(inheritedMeanings);
+  for (let index = 0; index < suppliedMeanings.length; index += 1) {
+    const candidate = suppliedMeanings[index]!;
+    const identity = versionKey(candidate);
+    const prior = allDefinitions.get(identity);
+    if (prior !== undefined && stableJSON(prior) !== stableJSON(candidate))
+      return semanticFailure('semantic.definition-conflict', `Meaning ${candidate.id}@${candidate.revision} conflicts with an inherited definition.`, ['meanings', index]);
+    if (prior === undefined) allDefinitions.set(identity, candidate);
+  }
   const bundleMeanings: MeaningDefinition[] = [];
   const seen = new Map<string, MeaningDefinition>();
   for (let index = 0; index < suppliedMeanings.length; index += 1) {
-    const validated = validateMeaning(suppliedMeanings[index], {
+    const validated = validateMeaningValue(suppliedMeanings[index]!, {
       ...context,
       index: indexOutcome.value,
       definitions: [...(context.definitions ?? []), ...suppliedMeanings],
+      availableDefinitions: allDefinitions,
+      skipDependencyClosure: true,
     });
     if (!validated.ok) return prependOutcomePath(['meanings', index], validated);
     const identity = versionKey(validated.value);
@@ -202,28 +234,124 @@ export function validateMeaningBundle(input: unknown, context: MeaningBundleCont
 
   const byIdentity = new Map<string, MeaningDefinition>();
   for (const meaning of [...(context.definitions ?? []), ...context.catalog.meanings, ...bundleMeanings]) byIdentity.set(versionKey(meaning), meaning);
+  const closure = validateDependencyClosure(
+    bundleMeanings.map((meaning, index) => ({meaning, path: ['meanings', index] as const})),
+    byIdentity,
+    {...context, definitions: [...byIdentity.values()], availableDefinitions: byIdentity, skipDependencyClosure: true},
+  );
+  if (!closure.ok) return closure;
+  return {ok: true, value: {catalogRevision: bundle.catalogRevision, functionRegistryDigest: bundle.functionRegistryDigest, meanings: bundleMeanings}};
+}
+
+interface ClosureRoot {
+  readonly meaning: MeaningDefinition;
+  readonly path: readonly (string | number)[];
+}
+
+interface PathNode {
+  readonly parent: PathNode | undefined;
+  readonly segment: string | number;
+}
+
+interface ClosureFrame {
+  meaning: MeaningDefinition;
+  readonly path: PathNode | undefined;
+  nextDependency: number;
+  entered: boolean;
+}
+
+/** Validate the reachable definition graph without recursive calls or stack growth. */
+function validateDependencyClosure(
+  roots: readonly ClosureRoot[],
+  seed: ReadonlyMap<string, MeaningDefinition>,
+  context: MeaningValidationContext,
+): Outcome<void> {
+  const available = new Map(seed);
+  for (const root of roots) {
+    const identity = versionKey(root.meaning);
+    const prior = available.get(identity);
+    if (prior === undefined) available.set(identity, root.meaning);
+    else if (stableJSON(prior) !== stableJSON(root.meaning))
+      return semanticFailure('semantic.definition-conflict', `Meaning ${identity} conflicts with an existing definition.`, root.path);
+  }
+  const definitions = [...available.values()];
   const visiting = new Set<string>();
   const visited = new Set<string>();
-  const visit = (meaning: MeaningDefinition, path: readonly (string | number)[]): Outcome<void> => {
-    const identity = versionKey(meaning);
-    if (visiting.has(identity)) return semanticFailure('semantic.cycle', `Meaning dependency cycle includes ${identity}.`, path);
-    if (visited.has(identity)) return {ok: true, value: undefined};
-    visiting.add(identity);
-    for (let index = 0; index < meaning.dependencies.length; index += 1) {
-      const dependency = byIdentity.get(versionKey(meaning.dependencies[index]!));
-      if (dependency === undefined) return semanticFailure('semantic.unknown-dependency', `Meaning dependency ${versionKey(meaning.dependencies[index]!)} is not available.`, [...path, 'dependencies', index]);
-      const result = visit(dependency, [...path, 'dependencies', index]);
-      if (!result.ok) return result;
-    }
-    visiting.delete(identity);
-    visited.add(identity);
-    return {ok: true, value: undefined};
+  const stack: ClosureFrame[] = [];
+
+  const push = (meaning: MeaningDefinition, path: PathNode | undefined) => {
+    stack.push({meaning, path, nextDependency: 0, entered: false});
   };
-  for (let index = 0; index < bundleMeanings.length; index += 1) {
-    const result = visit(bundleMeanings[index]!, ['meanings', index]);
-    if (!result.ok) return result;
+
+  for (const root of roots) {
+    const rootIdentity = versionKey(root.meaning);
+    if (visited.has(rootIdentity)) continue;
+    push(root.meaning, pathFromArray(root.path));
+    while (stack.length > 0) {
+      const frame = stack[stack.length - 1]!;
+      const identity = versionKey(frame.meaning);
+      if (!frame.entered) {
+        if (visited.has(identity)) {
+          stack.pop();
+          continue;
+        }
+        if (visiting.has(identity))
+          return semanticFailure('semantic.cycle', `Meaning dependency cycle includes ${identity}.`, materializePath(frame.path));
+        visiting.add(identity);
+        const validated = validateMeaningValue(frame.meaning, {
+          ...context,
+          definitions,
+          availableDefinitions: available,
+          skipDependencyClosure: true,
+        });
+        if (!validated.ok) return prependOutcomePath(materializePath(frame.path), validated);
+        frame.meaning = validated.value;
+        frame.entered = true;
+      }
+
+      if (frame.nextDependency >= frame.meaning.dependencies.length) {
+        visiting.delete(identity);
+        visited.add(identity);
+        stack.pop();
+        continue;
+      }
+
+      const dependencyIndex = frame.nextDependency;
+      frame.nextDependency += 1;
+      const dependency = frame.meaning.dependencies[dependencyIndex]!;
+      const dependencyIdentity = versionKey(dependency);
+      const child = available.get(dependencyIdentity);
+      const childPath = appendPath(frame.path, 'dependencies', dependencyIndex);
+      if (child === undefined)
+        return semanticFailure('semantic.unknown-dependency', `Meaning dependency ${dependencyIdentity} is not available.`, materializePath(childPath));
+      if (child.functionRegistryDigest !== context.registry.digest)
+        return semanticFailure('semantic.stale-registry', `Meaning dependency ${child.id}@${child.revision} pins a different function registry digest.`, materializePath(childPath));
+      if (visiting.has(dependencyIdentity))
+        return semanticFailure('semantic.cycle', `Meaning dependency cycle includes ${dependencyIdentity}.`, materializePath(childPath));
+      if (visited.has(dependencyIdentity)) continue;
+      push(child, childPath);
+    }
   }
-  return {ok: true, value: {catalogRevision: input.catalogRevision, functionRegistryDigest: input.functionRegistryDigest, meanings: bundleMeanings}};
+  return {ok: true, value: undefined};
+}
+
+function pathFromArray(path: readonly (string | number)[]): PathNode | undefined {
+  let result: PathNode | undefined;
+  for (const segment of path) result = {parent: result, segment};
+  return result;
+}
+
+function appendPath(path: PathNode | undefined, ...segments: readonly (string | number)[]): PathNode | undefined {
+  let result = path;
+  for (const segment of segments) result = {parent: result, segment};
+  return result;
+}
+
+function materializePath(path: PathNode | undefined): readonly (string | number)[] {
+  const result: (string | number)[] = [];
+  for (let current = path; current !== undefined; current = current.parent) result.push(current.segment);
+  result.reverse();
+  return result;
 }
 
 function validatePolicy(meaning: MeaningDefinition, policy: SemanticPolicy | undefined): Outcome<void> {

@@ -1,5 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import type {Catalog, Expression, MeaningDefinition, SemanticType} from '../../packages/core/src/contracts/types.js';
+import {WIRE_LIMITS} from '../../packages/core/src/contracts/limits.js';
 import {createCatalogIndex} from '../../packages/core/src/semantics/catalog.js';
 import {authorizeMeaningActivation, validateMeaning, validateMeaningBundle} from '../../packages/core/src/semantics/meaning.js';
 import {sameTemporal, sameUnit} from '../../packages/core/src/semantics/type-utils.js';
@@ -106,6 +107,22 @@ describe('typed semantic expressions', () => {
     expect(count.ok).toBe(true);
     expect(count.ok && count.value.type.value).toBe('integer');
     expect(count.ok && count.value.type.nullable).toBe(false);
+  });
+
+  it('honours non-null result metadata for numeric registered functions', () => {
+    const nonNull: FunctionSignature = {
+      ref: {id: 'test.non-null', revision: '1'}, parameters: [{constraint: {kind: 'numeric'}}], output: {kind: 'numeric'},
+      contexts: ['row'], nullPolicy: 'propagate', nullResult: 'non-null', aggregation: {kind: 'none', dimensions: []},
+      operation: 'other', deterministic: true, cost: {maxNodes: 8}, realization: 'local',
+    };
+    const registryOutcome = createFunctionRegistry({digest: 'non-null-registry', signatures: [nonNull]});
+    expect(registryOutcome.ok).toBe(true);
+    if (!registryOutcome.ok) return;
+    const catalog = makeCatalog({functionRegistryDigest: registryOutcome.value.digest});
+    const nullable: Expression = {kind: 'literal', value: null, type: {value: 'integer', nullable: true}};
+    const result = checkExpression({kind: 'call', function: nonNull.ref, arguments: [nullable]}, {catalog, registry: registryOutcome.value});
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.value.type.nullable).toBe(false);
   });
 
   it('allows only a proven dimensionless literal to broadcast in scalar multiplication', () => {
@@ -358,6 +375,38 @@ describe('typed semantic expressions', () => {
     const staleResult = validateMeaningBundle({catalogRevision: catalog.revision, functionRegistryDigest: registry.digest, meanings: [stale]}, {catalog, registry});
     expect(staleResult.ok).toBe(false);
     expect(staleResult.ok ? '' : staleResult.diagnostics[0]?.code).toBe('semantic.stale-registry');
+  });
+
+  it('validates standalone and inherited dependency closure with bounded bundle ingress', () => {
+    const registry = standard();
+    const makeMeaning = (id: string, dependencies: readonly {id: string; revision: string}[], digest = registry.digest): MeaningDefinition => ({
+      id, revision: '1', label: id, explanation: id, output: {value: 'integer', nullable: false},
+      implementation: {kind: 'expression', expression: {kind: 'literal', value: 1, type: {value: 'integer', nullable: false}}}, dependencies,
+      functionRegistryDigest: digest, origin: 'manual', lifecycle: 'draft', scope: 'session', authority: 'hypothesis', aggregation: 'none', aggregationDimensions: [], missingPolicy: 'propagate',
+    });
+    const catalog = makeCatalog();
+    const cycleA = makeMeaning('standalone-a', [{id: 'standalone-b', revision: '1'}]);
+    const cycleB = makeMeaning('standalone-b', [{id: 'standalone-a', revision: '1'}]);
+    const standalone = validateMeaning(cycleA, {catalog, registry, definitions: [cycleA, cycleB]});
+    expect(standalone.ok).toBe(false);
+    expect(standalone.ok ? '' : standalone.diagnostics[0]?.code).toBe('semantic.cycle');
+
+    const staleLeaf = makeMeaning('inherited-c', [], 'old-registry');
+    const inheritedMiddle = makeMeaning('inherited-b', [{id: 'inherited-c', revision: '1'}]);
+    const suppliedRoot = makeMeaning('supplied-a', [{id: 'inherited-b', revision: '1'}]);
+    const transitive = validateMeaningBundle(
+      {catalogRevision: catalog.revision, functionRegistryDigest: registry.digest, meanings: [suppliedRoot]},
+      {catalog: makeCatalog({meanings: [inheritedMiddle, staleLeaf]}), registry},
+    );
+    expect(transitive.ok).toBe(false);
+    expect(transitive.ok ? '' : transitive.diagnostics[0]?.code).toBe('semantic.stale-registry');
+
+    const oversized = validateMeaningBundle(
+      {catalogRevision: catalog.revision, functionRegistryDigest: registry.digest, meanings: [], unknownPayload: 'x'.repeat(WIRE_LIMITS.bytes + 1)} as unknown,
+      {catalog, registry},
+    );
+    expect(oversized.ok).toBe(false);
+    expect(oversized.ok ? '' : oversized.diagnostics[0]?.code.startsWith('wire.')).toBe(true);
   });
 
   it('uses collision-safe identity for versioned functions', () => {

@@ -330,7 +330,8 @@ function outputType(
   }
   if (output.kind === 'same-as' || output.kind === 'nullable-same-as') {
     const source = args[output.argument]?.type ?? {value: 'float', nullable: true};
-    return {ok: true, value: output.kind === 'nullable-same-as' ? {...source, nullable: true} : source};
+    const nullable = output.kind === 'nullable-same-as' ? true : source.nullable;
+    return {ok: true, value: {...source, nullable: nullResult === 'non-null' ? false : nullable}};
   }
   const first = args[0]?.type;
   const second = args[1]?.type;
@@ -353,7 +354,8 @@ function outputType(
     ...(inferredUnit === undefined ? {} : {unit: inferredUnit}),
     ...(forceFloat ? {forceFloat: true} : {}),
   };
-  return {ok: true, value: numericOutput(args, options)};
+  const result = numericOutput(args, options);
+  return {ok: true, value: nullResult === 'non-null' ? {...result, nullable: false} : result};
 }
 
 function isExplicitOutput(output: FunctionOutput): boolean {
