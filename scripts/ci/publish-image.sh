@@ -7,10 +7,20 @@ cd "$(git rev-parse --show-toplevel)"
 test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
 tag="${SOURCE_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
 image=ghcr.io/arconath/aeliqo-web
+created_docker_config=false
+if [[ -z "${DOCKER_CONFIG:-}" ]]; then
+  DOCKER_CONFIG="$(mktemp -d "$RUNNER_TEMP/registry.XXXXXX")"
+  created_docker_config=true
+else
+  mkdir -p "$DOCKER_CONFIG"
+fi
 export DOCKER_CONFIG
-DOCKER_CONFIG="$(mktemp -d "$RUNNER_TEMP/registry.XXXXXX")"
 trivy_dir="$(mktemp -d "$RUNNER_TEMP/trivy.XXXXXX")"
-trap 'rm -rf "$DOCKER_CONFIG" "$trivy_dir"' EXIT
+if [[ "$created_docker_config" == true ]]; then
+  trap 'rm -rf "$DOCKER_CONFIG" "$trivy_dir"' EXIT
+else
+  trap 'rm -rf "$trivy_dir"' EXIT
+fi
 python3 - <<'PY'
 import base64, json, os
 from pathlib import Path

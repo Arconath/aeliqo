@@ -47,6 +47,8 @@ jobs:
           GH_ACTOR: ${{ github.actor }}
           SOURCE_SHA: ${{ github.sha }}
         run: |
+          docker_config="$(mktemp -d "$RUNNER_TEMP/docker-config.XXXXXX")"
+          export DOCKER_CONFIG="$docker_config"
           docker buildx create --driver docker-container --use
           docker buildx inspect --bootstrap
           scripts/ci/check-runner-contract.sh --runtime=hosted
