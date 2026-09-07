@@ -1,0 +1,29 @@
+{
+  "observedAt": "2026-09-08",
+  "runtimeVersion": "codex-cli 0.153.4",
+  "orchestrator": {
+    "model": "gpt-6-astra",
+    "effort": "medium",
+    "evidence": "current session turn_context metadata"
+  },
+  "worker": {
+    "model": "gpt-5.6-luna",
+    "effort": "max",
+    "evidence": "local model catalog and accepted explicit spawn arguments",
+    "effectiveChildMetadata": "Verified three actual child turn_context records: model gpt-5.6-luna, effort max"
+  },
+  "runtimeSlotsIncludingParent": 4,
+  "hardware": {
+    "logicalCpus": 12,
+    "memoryGiB": 24
+  },
+  "spawnApiKeys": [
+    "task_name",
+    "model",
+    "reasoning_effort",
+    "fork_turns",
+    "message"
+  ],
+  "globalConfigurationChanged": false,
+  "note": "Uses live collaboration spawn API; TOML generator is not applied or asserted compatible."
+}

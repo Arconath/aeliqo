@@ -63,24 +63,31 @@ class PathTests(unittest.TestCase):
 class BootstrapTests(unittest.TestCase):
     def test_dry_run_no_directory(self):
         with tempfile.TemporaryDirectory() as temp,contextlib.redirect_stdout(io.StringIO()):
-            target=Path(temp)/'new'; count=copy_kit(ROOT,target)
+            target=Path(temp).resolve()/'new'; count=copy_kit(ROOT,target)
             self.assertGreater(count,50); self.assertFalse(target.exists())
     def test_existing_data_never_overwritten(self):
         with tempfile.TemporaryDirectory() as temp:
-            target=Path(temp); (target/'important').write_text('keep')
+            target=Path(temp).resolve(); (target/'important').write_text('keep')
             with self.assertRaises(ValueError): copy_kit(ROOT,target,True)
             self.assertEqual((target/'important').read_text(),'keep')
     def test_source_nested_target_refused(self):
         with self.assertRaises(ValueError): copy_kit(ROOT,ROOT/'nested')
     def test_apply_to_empty_directory(self):
         with tempfile.TemporaryDirectory() as temp,contextlib.redirect_stdout(io.StringIO()):
-            target=Path(temp)/'new'; count=copy_kit(ROOT,target,True)
+            target=Path(temp).resolve()/'new'; count=copy_kit(ROOT,target,True)
             self.assertEqual((target/'AGENTS.md').read_bytes(),(ROOT/'AGENTS.md').read_bytes())
             self.assertEqual(len(export_files(target)),count)
     def test_symlink_destination_refused(self):
         with tempfile.TemporaryDirectory() as temp:
-            root=Path(temp); (root/'real').mkdir(); (root/'link').symlink_to(root/'real')
+            root=Path(temp).resolve(); (root/'real').mkdir(); (root/'link').symlink_to(root/'real')
             with self.assertRaises(ValueError): copy_kit(ROOT,root/'link',True)
+
+    def test_symlink_parent_refused(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve(); (root/'real').mkdir(); (root/'link').symlink_to(root/'real')
+            with self.assertRaisesRegex(ValueError, 'symlink'):
+                copy_kit(ROOT,root/'link'/'new',True)
+            self.assertFalse((root/'real'/'new').exists())
 
 class PublisherTests(unittest.TestCase):
     def test_safe_target(self): validate_target('Arconath/aeliqo','rewrite/v0.1.0-foundation')

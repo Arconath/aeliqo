@@ -1,0 +1,57 @@
+{
+  "observedAt": "2026-09-08",
+  "reviewer": "independent Luna Max release_inventory",
+  "sourceMain": "75540de0de5f6dfc7fc383afdd3f8325e590cfd9",
+  "gitHubPermissions": {
+    "admin": true,
+    "push": true
+  },
+  "npm": {
+    "target": "0.1.0",
+    "legacyPublished": {
+      "@aeliqo/core": "0.2.0",
+      "@aeliqo/react": "0.2.0",
+      "@aeliqo/mcp": "0.2.0",
+      "@aeliqo/byok": "0.2.0",
+      "@aeliqo/webmcp-experimental": "0.2.0"
+    },
+    "newNamesNotFound": [
+      "@aeliqo/runtime",
+      "@aeliqo/web",
+      "@aeliqo/agent",
+      "@aeliqo/devtools",
+      "@aeliqo/testkit"
+    ],
+    "currentExactCollisionObserved": false,
+    "historicalTargetAvailability": "unknown",
+    "namespaceAuthorization": "unverified: npm whoami and npm access return E401",
+    "publishReady": false
+  },
+  "gitops": {
+    "checkout": "dirty older independent branch; untouched",
+    "remoteMain": "12772e1f7ef45fae9552386eadea87f6d5b90f3",
+    "localTrackingMain": "cf3ac1829bb38a09ee1b93289bc5dea6b111efc7",
+    "recordedNamespace": "apps-aeliqo",
+    "recordedDeployment": "aeliqo-web",
+    "recordedReplicas": 2,
+    "recordedImage": "ghcr.io/arconath/aeliqo-web@sha256:6008a8c894229f6e4b25c62e36cdb3980efdf4e20a2e626284f341dc5fa523da",
+    "recordedSource": "c483b515c4e3fa57261852b1fad6f904ca6b0124",
+    "recordedVerification": "2026-09-06T21:04:29Z",
+    "freshLiveVerification": false,
+    "freshRemoteRead": "Runtime manifest and release evidence read by GitHub API at exact remote main 12772e1f7ef45fae9552386eadea87f6d5b90f3; no working tree changed"
+  },
+  "mutations": {
+    "remote": false,
+    "registry": false,
+    "production": false
+  },
+  "commands": [
+    "git ls-remote origin HEAD refs/heads/main",
+    "gh api repos/Arconath/aeliqo",
+    "git show origin/main:packages/<name>/package.json",
+    "npm view <name> version versions dist-tags --json",
+    "npm view <name>@0.1.0 version --json",
+    "npm whoami --registry=https://registry.npmjs.org",
+    "npm access list packages @aeliqo --json --registry=https://registry.npmjs.org"
+  ]
+}

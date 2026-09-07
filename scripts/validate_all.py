@@ -4,10 +4,12 @@ from __future__ import annotations
 import datetime,json,platform,subprocess,sys,shutil
 from pathlib import Path
 from common import ROOT,sha256,candidate_digest
+from toolchain import local_tool
 
 def version(tool):
-    if not shutil.which(tool):return 'unavailable'
-    try:return subprocess.check_output([tool,'--version'],text=True,timeout=10).strip()
+    executable=local_tool(ROOT,tool) if tool=='tsc' else shutil.which(tool)
+    if not executable:return 'unavailable'
+    try:return subprocess.check_output([executable,'--version'],text=True,timeout=10).strip()
     except (OSError,subprocess.SubprocessError):return 'unavailable'
 
 def main()->int:
@@ -41,7 +43,7 @@ def main()->int:
     summary={'kitRevision':json.loads((ROOT/'KIT-REVISION.json').read_text())['kitRevision'],'timestamp':datetime.datetime.now(datetime.timezone.utc).isoformat(),
        'scope':'kit/harness/reference experiments only','productImplemented':False,'productReady':False,
        'candidateDigest':after,'sourceChangedDuringRun':before!=after,
-       'environment':{'python':sys.version,'node':version('node'),'typescript':version('tsc'),'platform':platform.platform()},
+       'environment':{'python':sys.version,'node':version('node'),'typescript':version('tsc'),'pnpm':version('pnpm'),'platform':platform.platform()},
        'status':'pass' if ok else 'incomplete','checks':results,
        'notTested':['production runtime','actual DOM/SSR/hydration','manual assistive technology','actual UI latency/pixels','real model/MCP/native WebMCP','npm publication','deployment']}
     (directory/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')

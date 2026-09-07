@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "images": [
+    {
+      "component": "web",
+      "repository": "ghcr.io/arconath/aeliqo-web",
+      "tag": "75540de0de5f6dfc7fc383afdd3f8325e590cfd9-34095510913-1",
+      "digest": "sha256:1d2b7016ad7985f34feb0845889147678c7bbed61745bad54a856bf9c409e91c",
+      "revision": "75540de0de5f6dfc7fc383afdd3f8325e590cfd9",
+      "sbom": {
+        "sha256": "a3fc1d356ea6abc2774a8a0551bb9c4814690a6c87d6bd32f81bf792aae8fe40",
+        "format": "CycloneDX 1.7",
+        "components": 2,
+        "vulnerabilitiesReported": 0
+      }
+    }
+  ],
+  "buildRun": "https://github.com/Arconath/aeliqo/actions/runs/34095510913",
+  "mainValidationRun": "https://github.com/Arconath/aeliqo/actions/runs/34095003818",
+  "scan": {
+    "scanner": "Trivy 0.74.0",
+    "severityGate": [
+      "HIGH",
+      "CRITICAL"
+    ],
+    "exitCode": 0,
+    "perImageScans": 1
+  },
+  "deploymentVerified": true,
+  "deploymentVerifiedAt": "2026-09-07T07:39:04Z",
+  "acceptedScope": "Immutable delivery of the stateless public Aeliqo framework playground",
+  "runtimeEvidence": "platform-infrastructure/evidence/aeliqo-runtime.json",
+  "acceptance": {
+    "replicasReady": null,
+    "apexVerified": true,
+    "wwwVerified": true,
+    "revisionIdentityVerified": true,
+    "securityHeadersVerified": true,
+    "internalServiceVerified": false
+  },
+  "configurationRollbackVerified": true,
+  "differentBinaryRollbackVerified": true,
+  "limitations": [
+    "Framework package publication remains separate from the production playground image."
+  ],
+  "gracefulShutdown": {
+    "sigtermHandled": true,
+    "readinessDuringDrainStatus": 503,
+    "drainDelaySeconds": 5,
+    "shutdownTimeoutSeconds": 20,
+    "terminationGracePeriodSeconds": 30,
+    "activeRequestDrainTestPassed": true
+  },
+  "rollbackEvidence": {
+    "configuration": {
+      "forwardPullRequest": "https://github.com/Arconath/platform-apps/pull/78",
+      "forwardMergeRevision": "848e0c6bef046187537a81bf973f89d22e522bdd",
+      "forwardObservedState": "3/3 ready",
+      "rollbackPullRequest": "https://github.com/Arconath/platform-apps/pull/79",
+      "rollbackMergeRevision": "9773a023e272b76528eb797ec5cfc616b35165ef",
+      "restoredObservedState": "2/2 ready"
+    },
+    "binary": {
+      "rollbackPullRequest": "https://github.com/Arconath/platform-apps/pull/80",
+      "rollbackMergeRevision": "02ef8315ea80081ed04bdb3de05ce3f5d18279da",
+      "rollbackRevision": "41f29540bf534a23ad08b7fbb865e008f9f16105",
+      "rollbackObservedState": "2/2 ready and public version matched",
+      "forwardPullRequest": "https://github.com/Arconath/platform-apps/pull/81",
+      "forwardMergeRevision": "fd576c92b270a924dfd1023ec60b357e5994ee0a",
+      "restoredRevision": "da9142ade2db617f283ef6e9eb6fff4539f26ef3",
+      "restoredObservedState": "2/2 ready and public version matched"
+    }
+  }
+}

@@ -15,9 +15,15 @@
       "acceptance": [
         "Evidence distinguishes observations, claims and unavailable credentials; old service stays live."
       ],
-      "status": "planned",
+      "status": "done",
       "stage": "ready",
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/preflight/inventory.json",
+          "sha256": "a3d8e97ec842f907ebcc0314ddc302cd4f821c460940bd46e9d511d3c9fbedc1"
+        }
+      ],
+      "notes": "Observation inventory complete; credentials/history/live uncertainty explicit. Independent release_inventory review. Main/production unchanged."
     },
     {
       "id": "T01",
@@ -35,9 +41,19 @@
       "acceptance": [
         "Actual model IDs/efforts, useful concurrency and dependency/license versions verified; no global skill changes."
       ],
-      "status": "planned",
+      "status": "done",
       "stage": "ready",
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/preflight/validated-2eac5c5c2255/summary.json",
+          "sha256": "3c725b7af5073e305c5385cb626fdb13a4c6154badf0a47a10725f7eab3c6897"
+        },
+        {
+          "path": "harness/evidence/preflight/runtime.json",
+          "sha256": "47d511a8c221acc99d19f4e1ba249908e49137e26a8cd19d3bb6a8ccd8af573e"
+        }
+      ],
+      "notes": "Actual parent/children settings and four-slot capacity verified; exact local toolchain pinned, installed, independently reviewed. Product renderer evidence is T02."
     },
     {
       "id": "T02",
@@ -56,9 +72,10 @@
       "acceptance": [
         "Vanilla, React/Next, Vue embedding, SSR/hydration, forms, shadow accessibility, CSP and style isolation pass or architecture ADR revised."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "Exclusive Luna Max writer /tmp/aeliqo-m0-platform; parent owns root configs/integration. Feasibility code/tests underway; no platform acceptance yet."
     },
     {
       "id": "T03",
@@ -690,7 +707,7 @@
         "Separate review and external onboarding evidence; all P0/P1 issues closed, tradeoffs/limitations documented.",
         "Quality command/design/acceptance changes invalidate previous evidence; readiness must not require production publication.",
         "Master/chapter37 containment, chapter39 decision coverage, production implementation, and actual tests are reconciled. No zero-hallucination claim or source/document drift.",
-        "Review edition 1.1 developer-authored meaning DX and S65–S67 evidence, including code-only operation and canonical parity; do not claim documentation checks prove runtime correctness."
+        "Review edition 1.1 developer-authored meaning DX and S65\u2013S67 evidence, including code-only operation and canonical parity; do not claim documentation checks prove runtime correctness."
       ],
       "status": "planned",
       "stage": "ready",
@@ -914,9 +931,15 @@
         "Record actual namespace/package history/collision checks and lower-semver reset migration. Unknown registry access is a recorded publish blocker, not available.",
         "Exact target0.1.0 retained; previously published identities not overwritten/unpublished to reset; staging tags/rollback/cleanup allowlist documented."
       ],
-      "status": "planned",
+      "status": "blocked",
       "stage": "ready",
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/preflight/inventory.json",
+          "sha256": "a3d8e97ec842f907ebcc0314ddc302cd4f821c460940bd46e9d511d3c9fbedc1"
+        }
+      ],
+      "notes": "No current exact collision seen, but historical 0.1.0 use and namespace rights unverified; npm E401. Does not block source implementation."
     }
   ]
 }

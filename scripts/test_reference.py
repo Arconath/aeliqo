@@ -3,16 +3,16 @@
 from __future__ import annotations
 import shutil,subprocess,sys,json
 from pathlib import Path
+from toolchain import local_tool
 ROOT=Path(__file__).resolve().parents[1]
 def main()->int:
-    missing=[tool for tool in ('node','tsc') if not shutil.which(tool)]
+    tsc=local_tool(ROOT,'tsc')
+    missing=[tool for tool,available in (('node',shutil.which('node')),('tsc',tsc)) if not available]
     if missing:
         print('REFERENCE CHECK BLOCKED: required local tools missing: '+', '.join(missing),file=sys.stderr);return 2
     dest=ROOT/'artifacts/reference-build';dest.mkdir(parents=True,exist_ok=True)
     (dest/'package.json').write_text('{"type":"module"}\n')
-    args=['tsc','--strict','--exactOptionalPropertyTypes','--noUncheckedIndexedAccess','--target','ES2022','--module','ES2022','--moduleResolution','bundler','--lib','ES2022','--outDir',str(dest)]
-    sources=['contracts/reference.ts','contracts/reference-guards.ts','contracts/examples.ts','contracts/negative-tests.ts','contracts/agent-boundary.ts']
-    run=subprocess.run(args+sources,cwd=ROOT,check=False,timeout=90)
+    run=subprocess.run([tsc,'--project','tsconfig.reference.json'],cwd=ROOT,check=False,timeout=90)
     if run.returncode:return run.returncode
     run=subprocess.run(['node','--test','tests/reference/guards.test.mjs'],cwd=ROOT,check=False,timeout=90)
     return run.returncode

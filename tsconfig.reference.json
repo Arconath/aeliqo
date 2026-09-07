@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "lib": [
+      "ES2022"
+    ],
+    "types": [],
+    "outDir": "artifacts/reference-build",
+    "rootDir": "contracts"
+  },
+  "files": [
+    "contracts/reference.ts",
+    "contracts/reference-guards.ts",
+    "contracts/examples.ts",
+    "contracts/negative-tests.ts",
+    "contracts/agent-boundary.ts"
+  ]
+}

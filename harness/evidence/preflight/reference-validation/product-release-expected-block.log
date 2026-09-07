@@ -1,8 +1,7 @@
-RELEASE BLOCKED: 184 unmet conditions
+RELEASE BLOCKED: 183 unmet conditions
 - Missing real product commands: boundaries, browser, lint, packages, performance, security, typecheck, unit
-- T00: invalid artifact string indices must be integers, not 'str'
-- T00: independent reviewer/author evidence missing
-- T01: review, not done
+- T00: planned, not done
+- T01: planned, not done
 - T02: planned, not done
 - T03: planned, not done
 - T04: planned, not done
@@ -23,4 +22,5 @@ RELEASE BLOCKED: 184 unmet conditions
 - T19: planned, not done
 - T20: planned, not done
 - T21: planned, not done
-- ... and 160 more
+- T22: planned, not done
+- ... and 159 more

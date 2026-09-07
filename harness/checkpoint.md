@@ -1,11 +1,9 @@
-# Execution checkpoint — 0.1.0 master foundation
+# Execution checkpoint — active 0.1.0 rewrite
 
-Product status: no v0.1.0 runtime task is implemented. All 43 product tasks remain planned. This edition consolidates prior review findings and the final weak-model/0.1.0 reset decisions in docs/types/harness; it is not a completed framework.
+Branch rewrite/v0.1.0-master-foundation; foundation commit c3171998b27bc56a45d1c8dede6fccc2b3c61db2 has historical parent origin/main 75540de0de5f6dfc7fc383afdd3f8325e590cfd9. Local recovery tag archive/pre-rewrite-0.1.0-75540de. Aeliqo now owns an independent .git; workspace parent changes untouched. No remote writes/publication/deployment.
 
-First implementation task: T00. Later early production vertical proof: T39, before catalogue-wide implementation. Real agent generalization/evidence: T40. Release scope remains 71 components.
+Actual parent Astra medium and three child Luna max settings verified from local session metadata. Four runtime slots including parent, 12 logical CPUs / 24 GiB RAM. No global config changes. Active writer: platform_proof owns packages/web, packages/react, examples/platform, tests/platform in /tmp/aeliqo-m0-platform on codex/m0-platform-proof. Parent owns root/config/contracts/lockfile/task state. Read-only workers: preflight_diagnosis review, release_inventory inventory. No recursive delegation.
 
-Next: verify local tools/models/worktree; run `python3 scripts/verify_integrity.py` before edits and `python3 scripts/validate_all.py`; follow PROMPT-START.md. Current validation evidence is `validation/current/summary.json`. Do not reuse baseline logs as current product evidence.
+T00 observation inventory complete. T42 publication blocked on npm E401 namespace rights and historical target availability; fresh GitOps exact-ref read complete. T01 complete and independently reviewed: macOS temp root test fixture normalization without weakening symlink refusal; local TypeScript 7.0.2 discovery and reporting. Node24.20.0 pnpm11.24.0 Python3.14.7. Latest kit run: 163 Python tests plus strict TS/Node and other reference checks pass, source unchanged during run. Immutable copy harness/evidence/preflight/reference-validation. Product gates remain BLOCKED. M0 platform proof underway, not accepted. All 71 components and 43 task acceptance remain mandatory.
 
-No new remote/GitHub/npm/live mutation was performed by this master preparation. Historical main read was 75540de0de5f6dfc7fc383afdd3f8325e590cfd9; re-read before writing. Earlier connector write got 403; publisher uses authorized local git/gh on a NEW branch only.
-
-Record actual commit, worktree/path owners, task/status, real test artifacts, decisions, blockers and exact next commands here after each integration slice. Do not paste full transcripts or private reasoning.
+Next: collect independent harness review and inventory, commit validated tooling slice; integrate M0 root browser/toolchain and worker code; run real platform SSR/browser/consumer checks. Continue task DAG into canonical production contracts and early T39. Do not restart foundation or autoaccept visual/manual evidence.

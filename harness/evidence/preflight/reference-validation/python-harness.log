@@ -159,10 +159,8 @@ test_scheduler_rejects_unsafe_paths (test_r2.OwnershipAndTaskTests.test_schedule
 test_sibling_prefix_not_ownership (test_r2.OwnershipAndTaskTests.test_sibling_prefix_not_ownership) ... ok
 test_symlink_escape_refused (test_r2.OwnershipAndTaskTests.test_symlink_escape_refused) ... ok
 test_whole_package_explicit_lease_valid (test_r2.OwnershipAndTaskTests.test_whole_package_explicit_lease_valid) ... ok
-test_global_compiler_cannot_satisfy_missing_install (test_toolchain.LocalToolTests.test_global_compiler_cannot_satisfy_missing_install) ... ok
-test_project_executable_is_selected (test_toolchain.LocalToolTests.test_project_executable_is_selected) ... ok
 
 ----------------------------------------------------------------------
-Ran 163 tests in 2.278s
+Ran 161 tests in 0.961s
 
 OK
