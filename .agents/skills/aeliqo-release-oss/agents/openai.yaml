@@ -1,6 +1,0 @@
-interface:
-  display_name: "Prepare evidence-based OSS releases"
-  short_description: "Prepare evidence-based OSS releases"
-  default_prompt: "Use $aeliqo-release-oss for the current Aeliqo repository task. Inspect existing code, implement the relevant slice, and report verified evidence."
-policy:
-  allow_implicit_invocation: true

@@ -1,0 +1,215 @@
+{
+  "date": "2026-09-07",
+  "sources": [
+    {
+      "id": "V01",
+      "title": "OpenAI Structured Outputs",
+      "url": "https://developers.openai.com/api/docs/guides/structured-outputs",
+      "checked": "web-open",
+      "designImplication": "Schema-conforming output tetap dapat salah. Pisahkan syntax, meaning dan task evaluation."
+    },
+    {
+      "id": "V02",
+      "title": "OWASP LLM Prompt Injection Prevention",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html",
+      "checked": "web-open",
+      "designImplication": "Untrusted text dan excessive agency memerlukan pertahanan berlapis; system prompt bukan authorization."
+    },
+    {
+      "id": "V03",
+      "title": "MCP specification",
+      "url": "https://modelcontextprotocol.io/specification/latest",
+      "checked": "web-open",
+      "designImplication": "Halaman latest redirect ke 2026-07-28 pada pemeriksaan ini. Pin/negotiate supported protocol; route protokol bukan reasoning model."
+    },
+    {
+      "id": "V04",
+      "title": "W3C Reflow",
+      "url": "https://www.w3.org/WAI/WCAG22/Understanding/reflow.html",
+      "checked": "web-open",
+      "designImplication": "Ada pengecualian terbatas untuk bagian yang membutuhkan layout dua dimensi; bukan semua mobile menjadi cards."
+    },
+    {
+      "id": "V05",
+      "title": "W3C WAI-ARIA patterns",
+      "url": "https://www.w3.org/WAI/ARIA/apg/patterns/",
+      "checked": "web-open",
+      "designImplication": "Referensi behavior kontrol dan navigasi; mengikuti pattern tidak otomatis membuktikan full accessibility."
+    },
+    {
+      "id": "V06",
+      "title": "Lit SSR",
+      "url": "https://lit.dev/docs/ssr/overview/",
+      "checked": "web-open",
+      "designImplication": "Lit SSR merupakan Labs experimental; production feasibility gate memeriksa integration dan limitations nyata."
+    },
+    {
+      "id": "V07",
+      "title": "Web Vitals",
+      "url": "https://web.dev/articles/vitals",
+      "checked": "web-open",
+      "designImplication": "Whole-page field metrics berbeda dari library microbenchmark. Ukur keduanya dengan scope yang benar."
+    },
+    {
+      "id": "V08",
+      "title": "Playwright snapshots",
+      "url": "https://playwright.dev/docs/test-snapshots",
+      "checked": "web-open",
+      "designImplication": "Visual baselines bergantung environment. Pin font/browser/OS/DPR dan review perbedaan."
+    },
+    {
+      "id": "V09",
+      "title": "npm unpublish policy",
+      "url": "https://docs.npmjs.com/policies/unpublish/",
+      "checked": "web-open",
+      "designImplication": "Published name+version tidak bisa digunakan ulang setelah unpublish. Hapus bukan cara reset namespace history."
+    },
+    {
+      "id": "V10",
+      "title": "npm dist-tag",
+      "url": "https://docs.npmjs.com/cli/v11/commands/npm-dist-tag/",
+      "checked": "web-open",
+      "designImplication": "Default install mengikuti latest tag. Promotion reset 0.1.0 harus disengaja, tidak implied semver upgrade."
+    },
+    {
+      "id": "V11",
+      "title": "Semantic Versioning",
+      "url": "https://semver.org/",
+      "checked": "web-open",
+      "designImplication": "Urutan versi numerik tetap berlaku; product reset tidak membuat 0.1.0 lebih tinggi dari 0.2.0."
+    },
+    {
+      "id": "V12",
+      "title": "OpenAPI specification",
+      "url": "https://spec.openapis.org/oas/latest.html",
+      "checked": "web-open",
+      "designImplication": "HTTP schema/operation description membantu tooling; tidak mengimplementasikan query atau business semantics."
+    },
+    {
+      "id": "V13",
+      "title": "Standard Schema",
+      "url": "https://standardschema.dev/",
+      "checked": "web-open",
+      "designImplication": "Validation interoperability dibedakan dari JSON Schema/introspection. Importer perlu capability yang sesuai."
+    },
+    {
+      "id": "V14",
+      "title": "Chrome WebMCP imperative API",
+      "url": "https://developer.chrome.com/docs/ai/webmcp/imperative-api",
+      "checked": "web-open",
+      "designImplication": "Dokumen memakai document.modelContext dan lifecycle registration/cancel. Support native harus diuji; masih berubah."
+    },
+    {
+      "id": "V15",
+      "title": "Substrait specification",
+      "url": "https://substrait.io/spec/specification/",
+      "checked": "web-open",
+      "designImplication": "Prior art logical relational plans terpisah engine. Tidak mewajibkan Aeliqo mengadopsi seluruh format."
+    },
+    {
+      "id": "V16",
+      "title": "PostgreSQL transaction isolation",
+      "url": "https://www.postgresql.org/docs/current/transaction-iso.html",
+      "checked": "web-open",
+      "designImplication": "Snapshot/isolation ditentukan backend. Multiquery Task tidak membuat snapshot global sendiri."
+    },
+    {
+      "id": "V17",
+      "title": "Draco research",
+      "url": "https://dig.cmu.edu/publications/2018-draco.html",
+      "checked": "web-open",
+      "designImplication": "Hard/soft constraints untuk visualization design merupakan prior art, bukan jaminan optimal UX."
+    },
+    {
+      "id": "V18",
+      "title": "Vega-Lite composition",
+      "url": "https://vega.github.io/vega-lite/docs/composition.html",
+      "checked": "web-open",
+      "designImplication": "Layer/facet/concat/repeat mendukung composability. Domain sharing perlu kesesuaian semantic."
+    },
+    {
+      "id": "V19",
+      "title": "Lit React integration",
+      "url": "https://lit.dev/docs/frameworks/react/",
+      "checked": "web-open",
+      "designImplication": "React binding dapat membungkus shared web elements. Tetap uji properties/events/lifecycle/SSR."
+    },
+    {
+      "id": "V20",
+      "title": "Optimize long tasks",
+      "url": "https://web.dev/articles/optimize-long-tasks",
+      "checked": "web-open",
+      "designImplication": "Yield/break long work supaya input responsif; worker bukan default untuk operasi kecil."
+    },
+    {
+      "id": "V21",
+      "title": "PostgreSQL row security",
+      "url": "https://www.postgresql.org/docs/current/ddl-rowsecurity.html",
+      "checked": "web-open",
+      "designImplication": "Host enforcement permission berbeda dari frontend filter. Gunakan existing app authority."
+    },
+    {
+      "id": "V22",
+      "title": "Apache License 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0",
+      "checked": "web-open",
+      "designImplication": "Sumber lisensi public kit; business packaging/trademark/contracts perlu review terpisah."
+    },
+    {
+      "id": "V23",
+      "title": "A2UI overview",
+      "url": "https://a2ui.org/concepts/overview/",
+      "checked": "web-open",
+      "designImplication": "Agent-to-UI declarative architecture memiliki prior art. Aeliqo membuktikan owned semantics/query/adaptive task value, bukan klaim tanpa kompetitor."
+    },
+    {
+      "id": "V24",
+      "title": "Tambo",
+      "url": "https://tambo.co/",
+      "checked": "web-open",
+      "designImplication": "Registered-component agent UI sudah ada. Perbandingan adoption/meaning/query/performance harus berbasis equivalent task."
+    },
+    {
+      "id": "V25",
+      "title": "OpenAI subagents",
+      "url": "https://developers.openai.com/codex/subagents",
+      "checked": "web-open",
+      "designImplication": "Model/effort dan delegation tersedia menurut client. Pilihan pengguna Astra Medium/Luna Max tetap perlu actual local verification."
+    },
+    {
+      "id": "V26",
+      "title": "OpenAI configuration reference",
+      "url": "https://developers.openai.com/codex/config-reference",
+      "checked": "web-open",
+      "designImplication": "Config keys bergantung versi. Generator tidak membuktikan konfigurasi efektif session; jangan copy key yang belum diverifikasi."
+    },
+    {
+      "id": "V27",
+      "title": "OpenAI AGENTS.md",
+      "url": "https://developers.openai.com/codex/guides/agents-md",
+      "checked": "web-open",
+      "designImplication": "Instruction discovery hierarchical; gunakan root index singkat dan task docs progresif, bukan master penuh per agent."
+    },
+    {
+      "id": "V28",
+      "title": "OpenAI harness engineering",
+      "url": "https://openai.com/index/harness-engineering/",
+      "checked": "web-open",
+      "designImplication": "Repository knowledge dan mechanical boundaries mendukung workflow agent. Tidak menggantikan actual tests dan review."
+    },
+    {
+      "id": "V29",
+      "title": "Node release schedule",
+      "url": "https://nodejs.org/en/about/previous-releases",
+      "checked": "web-open",
+      "designImplication": "Gunakan supported LTS yang dipin dan diuji, bukan dependency patch yang diarang pada kit."
+    },
+    {
+      "id": "V30",
+      "title": "DTCG format",
+      "url": "https://www.designtokens.org/tr/2025.10/format/",
+      "checked": "web-open",
+      "designImplication": "Token interchange community specification; Aeliqo Experience Profile bukan W3C Recommendation."
+    }
+  ]
+}

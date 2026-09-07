@@ -1,6 +1,0 @@
-interface:
-  display_name: "Preserve data meaning"
-  short_description: "Preserve data meaning"
-  default_prompt: "Use $aeliqo-data-semantics for the current Aeliqo repository task. Inspect existing code, implement the relevant slice, and report verified evidence."
-policy:
-  allow_implicit_invocation: true

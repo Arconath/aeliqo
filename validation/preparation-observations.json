@@ -1,0 +1,23 @@
+{
+  "date": "2026-09-07",
+  "github": {
+    "readMain": "75540de0de5f6dfc7fc383afdd3f8325e590cfd9",
+    "writeAttempt": "create_tree",
+    "outcome": "403 Resource not accessible by integration",
+    "remoteBranchChanged": false
+  },
+  "inputArtifact": {
+    "name": "aeliqo-v0.10-r2-implementation-kit.zip",
+    "sha256": "e70be3430aa8d23152c5d7a0b6b8cb5b8cebd6fa372156debaa066dc48eff91b"
+  },
+  "npm": {
+    "@aeliqo/core": {
+      "status": "unverified",
+      "error": "<urlopen error [Errno -3] Temporary failure in name resolution>"
+    },
+    "@aeliqo/react": {
+      "status": "unverified",
+      "error": "<urlopen error [Errno -3] Temporary failure in name resolution>"
+    }
+  }
+}

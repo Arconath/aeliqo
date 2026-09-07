@@ -1,7 +1,3 @@
 Aeliqo
 Copyright 2026 Aeliqo contributors
-
-This product includes software developed by Aeliqo contributors.
-
-Third-party runtime dependencies are distributed as separate npm packages.
-Their license texts and attribution requirements remain with those packages.
+This implementation kit is licensed under Apache-2.0. Third-party standards retain their respective copyrights; source links are provided, not republished documentation.

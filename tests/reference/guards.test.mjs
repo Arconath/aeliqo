@@ -1,0 +1,72 @@
+/** Tests compiled reference guards, not the future product. Run with scripts/test_reference.py. */
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import * as g from '../../artifacts/reference-build/reference-guards.js';
+import {dataTask,formTask,viewTask} from '../../artifacts/reference-build/examples.js';
+const ref={id:'r',revision:'1',outputId:'ranking',queryDigest:'q',scopeDigest:'s'};
+const pre={scopeDigest:'s',policyRevision:'1',taskRevision:'1',regionRevision:'1',catalogRevision:'1',experienceRevision:'1',functionRegistryDigest:'f',results:[ref]};
+const node=(id,children=[])=>({id,role:'collection',representation:{id:'table',revision:'1'},result:ref,config:{schema:{id:'table-config',revision:'1'},values:{}},children});
+const fails=(fn,code)=>assert.throws(fn,e=>e instanceof g.ContractFault && (!code||e.code===code));
+const clone=x=>JSON.parse(JSON.stringify(x));
+
+test('unknown SSR measurement is representable',()=>assert.deepEqual(g.measurement({state:'unknown'}),{state:'unknown'}));
+test('zero-size hidden container is real, not unknown',()=>assert.deepEqual(g.measurement({state:'known',value:0}),{state:'known',value:0}));
+test('known measurement needs a number',()=>fails(()=>g.measurement({state:'known'}),'NUMBER'));
+test('negative measurement refused',()=>fails(()=>g.measurement({state:'known',value:-1}),'MEASUREMENT'));
+test('NaN and infinity refused',()=>{for(const n of [NaN,Infinity,-Infinity])fails(()=>g.measurement({state:'known',value:n}),'NUMBER');});
+test('unknown state does not carry a fictional width',()=>fails(()=>g.measurement({state:'unknown',value:1440}),'UNKNOWN_FIELD'));
+test('count unknown distinct from exact zero',()=>assert.notDeepEqual(g.populationCount({kind:'unknown'}),g.populationCount({kind:'exact',value:0,populationDigest:'p'})));
+test('exact count missing value refused',()=>fails(()=>g.populationCount({kind:'exact',populationDigest:'p'})));
+test('unsafe integer count refused',()=>fails(()=>g.populationCount({kind:'exact',value:2**53,populationDigest:'p'}),'COUNT'));
+test('negative and fractional exact counts refused',()=>{for(const n of [-1,1.5])fails(()=>g.populationCount({kind:'exact',value:n,populationDigest:'p'}),'COUNT');});
+test('estimated count missing method refused',()=>fails(()=>g.populationCount({kind:'estimated',value:10,populationDigest:'p'})));
+test('estimate may honestly state unquantified uncertainty',()=>assert.equal(g.populationCount({kind:'estimated',value:10,populationDigest:'p',method:'declared-estimator',uncertainty:{kind:'unquantified',reason:'No certified bound'}}).kind,'estimated'));
+test('approximate precision requires evidence',()=>fails(()=>g.precision({kind:'approximate'})));
+test('inverted uncertainty interval refused',()=>fails(()=>g.uncertainty({kind:'quantified',lower:3,upper:1,interpretation:'range'}),'UNCERTAINTY'));
+test('precision exact is independent of sample population',()=>assert.deepEqual(g.precision({kind:'exact'}),{kind:'exact'}));
+test('selection keys are stable strings',()=>g.validateSelection({kind:'selection',selection:{mode:'ids',entity:'Employee',keys:['1'],result:ref}}));
+test('selection rejects row-index numeric keys',()=>fails(()=>g.validateSelection({kind:'selection',selection:{mode:'ids',entity:'Employee',keys:[1],result:ref}})));
+test('clear is explicit, empty selection ID list refused',()=>{g.validateSelection({kind:'selection',selection:{mode:'clear'}});fails(()=>g.validateSelection({kind:'selection',selection:{mode:'ids',entity:'Employee',keys:[],result:ref}}));});
+test('duplicate selection keys refused',()=>fails(()=>g.validateSelection({kind:'selection',selection:{mode:'ids',entity:'Employee',keys:['x','x'],result:ref}}),'EVENT'));
+test('selection cannot self-label human approval',()=>fails(()=>g.validateSelection({kind:'selection',actor:'human',selection:{mode:'clear'}}),'UNKNOWN_FIELD'));
+test('result reference is version and scope bound',()=>fails(()=>g.resultRef({id:'r'})));
+test('function call without immutable revision refused',()=>fails(()=>g.validateExpression({kind:'call',function:{id:'sum'},arguments:[]})));
+test('versioned function call accepted structurally',()=>g.validateExpression({kind:'call',function:{id:'sum',revision:'1'},arguments:[{kind:'field',ref:'x'}]}));
+test('raw executable expression kind refused',()=>fails(()=>g.validateExpression({kind:'javascript',source:'alert(1)'}),'EXPRESSION'));
+test('integer literal must not be nonfinite',()=>fails(()=>g.validateExpression({kind:'literal',value:Infinity,type:{value:'integer',nullable:false}}),'TYPE'));
+test('nonnullable null refused',()=>fails(()=>g.validateExpression({kind:'literal',value:null,type:{value:'integer',nullable:false}}),'TYPE'));
+test('unsafe decimal syntax refused',()=>fails(()=>g.validateExpression({kind:'literal',value:{decimal:'NaN'},type:{value:'decimal',nullable:false}}),'TYPE'));
+test('deep expression bounded before recursion',()=>{let x={kind:'field',ref:'x'};for(let i=0;i<40;i++)x={kind:'call',function:{id:'f',revision:'1'},arguments:[x]};fails(()=>g.validateExpression(x,200,32),'BUDGET');});
+test('wide expression bounded',()=>fails(()=>g.validateExpression({kind:'call',function:{id:'f',revision:'1'},arguments:Array.from({length:300},()=>({kind:'field',ref:'x'}))},256),'SHAPE'));
+test('multioutput task topologically ordered',()=>assert.deepEqual(g.outputOrder(dataTask.outputs),['ranking','trend']));
+test('queryless form/presentation examples do not have outputs',()=>{assert.equal(formTask.kind,'form');assert.equal(viewTask.kind,'presentation');assert.equal('outputs' in formTask,false);assert.equal('outputs' in viewTask,false);});
+test('missing output dependency refused',()=>{const x=clone(dataTask.outputs);x[1].dependsOn=['missing'];fails(()=>g.outputOrder(x),'DEPENDENCY');});
+test('duplicate output ID refused',()=>fails(()=>g.outputOrder([dataTask.outputs[0],dataTask.outputs[0]]),'DUPLICATE'));
+test('live cohort must be explicit dependency',()=>{const x=clone(dataTask.outputs);x[1].dependsOn=[];fails(()=>g.outputOrder(x),'DEPENDENCY');});
+test('dependency cycle refused',()=>{const x=clone(dataTask.outputs);x[0].dependsOn=['trend'];fails(()=>g.outputOrder(x),'CYCLE');});
+test('output budget cannot silently truncate',()=>fails(()=>g.outputOrder(dataTask.outputs,1),'BUDGET'));
+test('containment tree accepted',()=>g.validateTree('root',[node('root',['a','b']),node('a'),node('b')]));
+test('two parents for a node refused',()=>fails(()=>g.validateTree('root',[node('root',['a','b']),node('a',['b']),node('b')]),'PARENT'));
+test('orphan containment refused',()=>fails(()=>g.validateTree('root',[node('root'),node('a')]),'ORPHAN'));
+test('cycle through root refused',()=>fails(()=>g.validateTree('root',[node('root',['a']),node('a',['root'])]),'CYCLE'));
+test('same read set can commit',()=>assert.equal(g.canCommit(pre,clone(pre)),true));
+for(const key of ['scopeDigest','policyRevision','taskRevision','regionRevision','catalogRevision','experienceRevision','functionRegistryDigest'])
+ test(`changed ${key} rejects stale proposal`,()=>assert.equal(g.canCommit(pre,{...pre,[key]:'new'}),false));
+test('changed result revision rejects commit',()=>assert.equal(g.canCommit(pre,{...pre,results:[{...ref,revision:'2'}]}),false));
+test('same result revision but different query is not reusable',()=>assert.equal(g.canCommit(pre,{...pre,results:[{...ref,queryDigest:'other'}]}),false));
+test('unrelated extra result does not invalidate the read set',()=>assert.equal(g.canCommit(pre,{...pre,results:[ref,{...ref,id:'other'}]}),true));
+const need={id:'inspect',operation:{id:'inspect-record',revision:'1'},outputId:'ranking',fields:['name'],required:true};
+const cover={needId:'inspect',nodeIds:['a'],operations:[need.operation]};
+test('coverage requires actual registered operation',()=>g.validateCoverage([need],[cover],[node('a')],new Map([['table@1',[need.operation]]])));
+test('self-reported coverage is not evidence',()=>fails(()=>g.validateCoverage([need],[cover],[node('a')],new Map()),'COVERAGE'));
+test('coverage cannot cite a missing view',()=>fails(()=>g.validateCoverage([need],[{...cover,nodeIds:['missing']}],[node('a')],new Map([['table@1',[need.operation]]])),'COVERAGE'));
+test('coverage must bind correct output',()=>fails(()=>g.validateCoverage([{...need,outputId:'trend'}],[cover],[node('a')],new Map([['table@1',[need.operation]]])),'COVERAGE'));
+test('100 seeded output DAG permutations retain dependency order',()=>{
+ for(let seed=1;seed<=100;seed++) {
+  const size=2+(seed%40);const outputs=Array.from({length:size},(_,i)=>({id:`n${i}`,kind:'query',query:{...dataTask.outputs[0].query,population:{kind:'all-authorized'}},dependsOn:i?[`n${Math.floor((i-1)/2)}`]:[],delivery:'eager'}));
+  const input=[...outputs].sort((a,b)=>((Number(a.id.slice(1))*seed)%17)-((Number(b.id.slice(1))*seed)%17));
+  const order=g.outputOrder(input);assert.equal(new Set(order).size,size);
+  for(const output of outputs)for(const dep of output.dependsOn)assert.ok(order.indexOf(dep)<order.indexOf(output.id));
+ }
+});
+test('100 result permutations preserve matching preconditions',()=>{for(let n=1;n<=100;n++){const rs=Array.from({length:n},(_,i)=>({...ref,id:`r${i}`}));assert.equal(g.canCommit({...pre,results:rs},{...pre,results:[...rs].reverse()}),true);}});

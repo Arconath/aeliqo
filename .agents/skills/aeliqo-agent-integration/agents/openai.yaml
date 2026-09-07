@@ -1,6 +1,0 @@
-interface:
-  display_name: "Integrate agent tools and UI outcomes"
-  short_description: "Integrate agent tools and UI outcomes"
-  default_prompt: "Use $aeliqo-agent-integration for the current Aeliqo repository task. Inspect existing code, implement the relevant slice, and report verified evidence."
-policy:
-  allow_implicit_invocation: true

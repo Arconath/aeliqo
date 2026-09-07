@@ -1,6 +1,0 @@
-interface:
-  display_name: "Maintain adaptive workspace integrity"
-  short_description: "Maintain adaptive workspace integrity"
-  default_prompt: "Use $aeliqo-workspace-interaction for the current Aeliqo repository task. Inspect existing code, implement the relevant slice, and report verified evidence."
-policy:
-  allow_implicit_invocation: true

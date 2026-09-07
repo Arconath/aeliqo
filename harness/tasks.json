@@ -1,0 +1,922 @@
+{
+  "schemaVersion": 1,
+  "target": "0.1.0",
+  "tasks": [
+    {
+      "id": "T00",
+      "phase": "M0",
+      "title": "Inventory current source, registry, GitOps and rollback",
+      "ownerRole": "release",
+      "dependsOn": [],
+      "paths": [
+        "docs",
+        "harness"
+      ],
+      "acceptance": [
+        "Evidence distinguishes observations, claims and unavailable credentials; old service stays live."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T01",
+      "phase": "M0",
+      "title": "Verify local agent/runtime and locked toolchain",
+      "ownerRole": "integration",
+      "dependsOn": [
+        "T00"
+      ],
+      "paths": [
+        "harness",
+        "scripts",
+        ".codex"
+      ],
+      "acceptance": [
+        "Actual model IDs/efforts, useful concurrency and dependency/license versions verified; no global skill changes."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T02",
+      "phase": "M0",
+      "title": "Prove shared web rendering and SSR boundary",
+      "ownerRole": "platform",
+      "dependsOn": [
+        "T01"
+      ],
+      "paths": [
+        "packages/web",
+        "packages/react",
+        "examples",
+        "tests/platform"
+      ],
+      "acceptance": [
+        "Vanilla, React/Next, Vue embedding, SSR/hydration, forms, shadow accessibility, CSP and style isolation pass or architecture ADR revised."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T03",
+      "phase": "M1",
+      "title": "Implement canonical schemas, IDs and errors",
+      "ownerRole": "contracts",
+      "dependsOn": [
+        "T02"
+      ],
+      "paths": [
+        "contracts",
+        "packages/core/src/contracts",
+        "packages/core/src/diagnostics"
+      ],
+      "acceptance": [
+        "One schema source generates types/wire validators; versions, limits and error paths round-trip.",
+        "Replace reference sketches with canonical generated validators, including tagged unknown/exact/approximate states and negative type/wire tests."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T04",
+      "phase": "M1",
+      "title": "Implement semantic types and expression checker",
+      "ownerRole": "semantics",
+      "dependsOn": [
+        "T03"
+      ],
+      "paths": [
+        "packages/core/src/expressions",
+        "packages/core/src/semantics",
+        "tests/semantics"
+      ],
+      "acceptance": [
+        "Grain, units, null, aggregation, authority/scope and cyclic definition tests reject invalid meanings.",
+        "Pin function/definition versions; ratio-of-sums versus mean-of-rates is selected by declared meaning, not a blanket math rule.",
+        "Implement developer typed code/config authoring over canonical meaning; reuse schema references and reject invalid refs/units/grain. No dependency on Studio or model SDK."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T05",
+      "phase": "M1",
+      "title": "Define task and experience contracts",
+      "ownerRole": "contracts",
+      "dependsOn": [
+        "T03"
+      ],
+      "paths": [
+        "packages/core/src/contracts/task",
+        "packages/core/src/contracts/experience"
+      ],
+      "acceptance": [
+        "Task operations/parameters and hard-constraint intersection have deterministic validation.",
+        "Task supports named outputs, fixed/live populations and queryless presentation/form kinds. Separate three graph kinds."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T06",
+      "phase": "M2",
+      "title": "Implement in-process ADC and generic HTTP client/host",
+      "ownerRole": "data",
+      "dependsOn": [
+        "T04",
+        "T05"
+      ],
+      "paths": [
+        "examples/reference-host",
+        "packages/runtime/src/data"
+      ],
+      "acceptance": [
+        "Scoped discovery/plan/execute streaming contract, abort, revisions and structured unsupported capability work.",
+        "Register reviewed code-owned meaning bundles through the local data/catalog path without model calls or end-user reauthoring; authorize activation, make identical registration idempotent, and reject conflicting ID/revision contents."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T07",
+      "phase": "M2",
+      "title": "Implement bounded relational planner",
+      "ownerRole": "query",
+      "dependsOn": [
+        "T06"
+      ],
+      "paths": [
+        "packages/core/src/query"
+      ],
+      "acceptance": [
+        "Fanout-safe joins, group/filter/project/aggregate/order/topK/time operators have an independent numerical oracle."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T08",
+      "phase": "M2",
+      "title": "Implement host execution and capability negotiation",
+      "ownerRole": "data",
+      "dependsOn": [
+        "T07"
+      ],
+      "paths": [
+        "packages/runtime/src/data",
+        "examples/reference-host"
+      ],
+      "acceptance": [
+        "Local and HTTP parity; unsupported query fails explicitly; no download-all fallback or vendor SDK in core."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T09",
+      "phase": "M2",
+      "title": "Implement results, cache and stream lifecycle",
+      "ownerRole": "runtime",
+      "dependsOn": [
+        "T07"
+      ],
+      "paths": [
+        "packages/runtime/src/results",
+        "packages/core/src/contracts/result"
+      ],
+      "acceptance": [
+        "Principal-scoped immutable handles, completeness, backpressure, cancellation and stale-result ordering proven.",
+        "Results distinguish count value/scope, precision, completeness, inference evidence and consistency."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T10",
+      "phase": "M3",
+      "title": "Implement region store and transactional commands",
+      "ownerRole": "runtime",
+      "dependsOn": [
+        "T05",
+        "T09"
+      ],
+      "paths": [
+        "packages/runtime/src/persistence",
+        "packages/runtime/src/regions",
+        "packages/runtime/src/scheduling",
+        "packages/runtime/src/tasks"
+      ],
+      "acceptance": [
+        "Atomic per-region commits, stable IDs, histories and separate data revision with targeted notifications.",
+        "Commit verifies authorization scope and entire dependency read set, not just region revision."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T11",
+      "phase": "M3",
+      "title": "Implement interaction graph and action boundary",
+      "ownerRole": "interaction",
+      "dependsOn": [
+        "T10"
+      ],
+      "paths": [
+        "packages/runtime/src/interaction",
+        "packages/runtime/src/actions"
+      ],
+      "acceptance": [
+        "Typed causal events converge; selection/filter/range and host action preview/confirm/recheck do not cross authority.",
+        "Trusted actor derives from host context; typed event schema cannot self-assign human privilege."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T12",
+      "phase": "M3",
+      "title": "Implement tokens, locale and owned design baseline",
+      "ownerRole": "design",
+      "dependsOn": [
+        "T02",
+        "T05"
+      ],
+      "paths": [
+        "design",
+        "docs/design",
+        "packages/web/src/styles"
+      ],
+      "acceptance": [
+        "DTCG-compatible tokens, named parts, default visual system and accessible baseline approved as testable reference."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T13",
+      "phase": "M4",
+      "title": "Implement foundation primitive family",
+      "ownerRole": "components",
+      "dependsOn": [
+        "T11",
+        "T12",
+        "T39"
+      ],
+      "paths": [
+        "packages/web/src/foundation"
+      ],
+      "acceptance": [
+        "Every required foundation inventory entry works standalone and in grammar; no decorative fake controls."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T14",
+      "phase": "M4",
+      "title": "Implement input primitive family",
+      "ownerRole": "components",
+      "dependsOn": [
+        "T11",
+        "T12",
+        "T39"
+      ],
+      "paths": [
+        "packages/web/src/input"
+      ],
+      "acceptance": [
+        "Every input entry proves native forms, IME/draft/focus, locale and async validation."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T15",
+      "phase": "M4",
+      "title": "Implement navigation and feedback families",
+      "ownerRole": "components",
+      "dependsOn": [
+        "T11",
+        "T12",
+        "T39"
+      ],
+      "paths": [
+        "packages/web/src/navigation",
+        "packages/web/src/feedback"
+      ],
+      "acceptance": [
+        "Every navigation/feedback entry passes focus/dismissal, keyboard and nonmodal/modal distinction."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T16",
+      "phase": "M4",
+      "title": "Implement data collection and table family",
+      "ownerRole": "components",
+      "dependsOn": [
+        "T11",
+        "T12",
+        "T39"
+      ],
+      "paths": [
+        "packages/web/src/data"
+      ],
+      "acceptance": [
+        "Every data entry and bounded virtual table preserve identity, precise scope and accessible reading."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T17",
+      "phase": "M5",
+      "title": "Implement PlotSpec and shared D3 geometry",
+      "ownerRole": "visualization",
+      "dependsOn": [
+        "T12",
+        "T09",
+        "T39"
+      ],
+      "paths": [
+        "packages/core/src/contracts/plot",
+        "packages/web/src/plot"
+      ],
+      "acceptance": [
+        "Same spec/geometry feeds SVG and bounded Canvas; axes, units, gaps and accessible exact values proven."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T18",
+      "phase": "M5",
+      "title": "Implement all required 2D views",
+      "ownerRole": "visualization",
+      "dependsOn": [
+        "T17",
+        "T16"
+      ],
+      "paths": [
+        "packages/web/src/visualization"
+      ],
+      "acceptance": [
+        "Every visualization inventory entry passes adversarial semantics, interaction, pixel and performance matrix."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T19",
+      "phase": "M5",
+      "title": "Implement deterministic presentation compiler",
+      "ownerRole": "planner",
+      "dependsOn": [
+        "T05",
+        "T09",
+        "T13",
+        "T16",
+        "T17",
+        "T39"
+      ],
+      "paths": [
+        "packages/core/src/presentation"
+      ],
+      "acceptance": [
+        "Bounded candidate search, task-operation coverage, explicit preferences, incompatibility reports and incremental incumbency work.",
+        "Patterns are candidate shortcuts, not a mandatory gate. Distinguish search budget exhaustion from proven invalidity."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T20",
+      "phase": "M5",
+      "title": "Implement adaptive composition/runtime projection",
+      "ownerRole": "platform",
+      "dependsOn": [
+        "T19",
+        "T15"
+      ],
+      "paths": [
+        "packages/runtime/src/presentation",
+        "packages/runtime/src/renderer",
+        "packages/web/src/region"
+      ],
+      "acceptance": [
+        "Wide/narrow/zoom/resize transitions preserve task, focus, draft, selection and navigation; no model call on resize."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T21",
+      "phase": "M5",
+      "title": "Implement all required compound components",
+      "ownerRole": "components",
+      "dependsOn": [
+        "T14",
+        "T15",
+        "T16",
+        "T18",
+        "T20"
+      ],
+      "paths": [
+        "packages/web/src/compound"
+      ],
+      "acceptance": [
+        "Every compound is a typed macro/recipe over shared primitives, not a duplicate runtime."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T22",
+      "phase": "M6",
+      "title": "Implement agent capability dispatcher and task binding",
+      "ownerRole": "agents",
+      "dependsOn": [
+        "T07",
+        "T10",
+        "T19",
+        "T41"
+      ],
+      "paths": [
+        "packages/agent/src/capabilities",
+        "packages/agent/src/session"
+      ],
+      "acceptance": [
+        "Manual/tool parity, schema limits, bounded turns, untrusted metadata treatment and recovery receipts proven.",
+        "AI may propose bounded expression/query/view graphs; shared validation; evaluate and visible presentation are different operations."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T23",
+      "phase": "M6",
+      "title": "Implement manual and AI-assisted meaning authoring",
+      "ownerRole": "semantics",
+      "dependsOn": [
+        "T04",
+        "T22"
+      ],
+      "paths": [
+        "packages/runtime/src/meaning",
+        "packages/agent/src/meaning"
+      ],
+      "acceptance": [
+        "Both paths generate same typed definition; draft/activation/scope/approval and low-risk hypothesis policy work.",
+        "Studio/manual and AI-assisted authoring share code definitions/evaluator; code-owned entries are read-only or proposed diffs, not silent repo overwrites. Preserve origin, version/scope, and no implicit shadowing."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T24",
+      "phase": "M6",
+      "title": "Implement MCP, BYOK and optional WebMCP projections",
+      "ownerRole": "agents",
+      "dependsOn": [
+        "T22",
+        "T23"
+      ],
+      "paths": [
+        "packages/agent/src/mcp",
+        "packages/agent/src/byok",
+        "packages/agent/src/webmcp"
+      ],
+      "acceptance": [
+        "Same executor; real supported MCP/BYOK flow, feature-detected WebMCP with honest native versus simulated evidence."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T25",
+      "phase": "M7",
+      "title": "Complete React wrappers and vanilla/Vue integration recipes",
+      "ownerRole": "platform",
+      "dependsOn": [
+        "T21",
+        "T24"
+      ],
+      "paths": [
+        "packages/react",
+        "examples"
+      ],
+      "acceptance": [
+        "Thin wrappers only; all release consumers install actual tarballs outside workspace and preserve events/SSR.",
+        "Compile developer meaning registration quickstart from built tarballs; useful negative type examples and schema reuse; manual path has zero model/Studio requirement and no chart/layout coupling."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T26",
+      "phase": "M7",
+      "title": "Build OSS local Studio and DevTools",
+      "ownerRole": "studio",
+      "dependsOn": [
+        "T21",
+        "T23",
+        "T24"
+      ],
+      "paths": [
+        "packages/devtools",
+        "apps/studio"
+      ],
+      "acceptance": [
+        "Data/meaning/experience/inspect flows functional; valid code/file export; no separate source of truth or required cloud."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T27",
+      "phase": "M7",
+      "title": "Build real product site, docs, blog and playground",
+      "ownerRole": "docs",
+      "dependsOn": [
+        "T21",
+        "T24",
+        "T25"
+      ],
+      "paths": [
+        "apps/site",
+        "apps/playground",
+        "docs/public"
+      ],
+      "acceptance": [
+        "Clean coherent routes, source-copy examples, honest support status, actual end-to-end demos, app-shell ownership.",
+        "All chapter38 routes, real per-component snippets, source/agent disclosure, responsive inspector and actual preview behavior pass browser/DX checks."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T28",
+      "phase": "M8",
+      "title": "Enforce security, tenant isolation and lifecycle robustness",
+      "ownerRole": "security",
+      "dependsOn": [
+        "T24",
+        "T26"
+      ],
+      "paths": [
+        "tests/security",
+        "packages/testkit"
+      ],
+      "acceptance": [
+        "Permissions enforced at execution, metadata/data minimization, cache/cursor isolation, injection/cancel/revoke tests."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T29",
+      "phase": "M8",
+      "title": "Run full component/pixel/accessibility matrix",
+      "ownerRole": "quality",
+      "dependsOn": [
+        "T25",
+        "T26",
+        "T27"
+      ],
+      "paths": [
+        "tests/browser",
+        "tests/visual",
+        "tests/accessibility"
+      ],
+      "acceptance": [
+        "Every required component done with evidence; pinned screenshot baselines and real manual assistive-tech review."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T30",
+      "phase": "M8",
+      "title": "Enforce performance and bundle budgets",
+      "ownerRole": "performance",
+      "dependsOn": [
+        "T25",
+        "T26",
+        "T27"
+      ],
+      "paths": [
+        "tests/performance",
+        "scripts/performance"
+      ],
+      "acceptance": [
+        "Documented actual hardware/browser workloads; p50/p95, bytes, geometry, DOM, memory and cleanup budgets pass.",
+        "Measure cold/warm and user-perceived latency, network, model, DOM/layout/paint separately; no reference-model benchmark claimed as product."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T31",
+      "phase": "M8",
+      "title": "Run cross-domain unseen-intent and task coverage suite",
+      "ownerRole": "quality",
+      "dependsOn": [
+        "T24",
+        "T26",
+        "T27",
+        "T40"
+      ],
+      "paths": [
+        "tests/scenarios",
+        "fixtures"
+      ],
+      "acceptance": [
+        "HR raw data plus non-HR and non-dashboard tasks work without prompt-specific endpoint or resolver cases."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T32",
+      "phase": "M8",
+      "title": "Independent architecture, DX and usability review",
+      "ownerRole": "review",
+      "dependsOn": [
+        "T28",
+        "T29",
+        "T30",
+        "T31"
+      ],
+      "paths": [
+        ".github/workflows",
+        "docs/reviews",
+        "harness/evidence",
+        "harness/product-commands.json"
+      ],
+      "acceptance": [
+        "Separate review and external onboarding evidence; all P0/P1 issues closed, tradeoffs/limitations documented.",
+        "Quality command/design/acceptance changes invalidate previous evidence; readiness must not require production publication.",
+        "Master/chapter37 containment, chapter39 decision coverage, production implementation, and actual tests are reconciled. No zero-hallucination claim or source/document drift.",
+        "Review edition 1.1 developer-authored meaning DX and S65–S67 evidence, including code-only operation and canonical parity; do not claim documentation checks prove runtime correctness."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T33",
+      "phase": "M9",
+      "title": "Build audited release-candidate tarballs and compatibility report",
+      "ownerRole": "release",
+      "dependsOn": [
+        "T32"
+      ],
+      "paths": [
+        "scripts/release",
+        "docs/releases"
+      ],
+      "acceptance": [
+        "Unused RC version, frozen dependencies, licenses, SBOM, exact artifact hashes and isolated consumers pass."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T34",
+      "phase": "M9",
+      "title": "Rehearse staging deployment and rollback",
+      "ownerRole": "release",
+      "dependsOn": [
+        "T33"
+      ],
+      "paths": [
+        "deploy",
+        "docs/releases"
+      ],
+      "acceptance": [
+        "Existing GitOps topology inspected; candidate digest canary, cache/version skew and rollback rehearsed without live outage."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T35",
+      "phase": "M9",
+      "title": "Prepare OSS governance and commercial boundary materials",
+      "ownerRole": "product",
+      "dependsOn": [
+        "T27",
+        "T32"
+      ],
+      "paths": [
+        "docs/business",
+        "docs/public"
+      ],
+      "acceptance": [
+        "All promised OSS capabilities usable offline; commercial hypotheses not represented as proven sales."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T36",
+      "phase": "M10",
+      "title": "Publish unused stable 0.1.0 packages and source release",
+      "ownerRole": "release",
+      "dependsOn": [
+        "T33",
+        "T34",
+        "T35",
+        "T42"
+      ],
+      "paths": [
+        "harness/evidence",
+        "docs/releases"
+      ],
+      "acceptance": [
+        "Approved exact stable bytes published in dependency order; latest moves only after complete registry smoke."
+      ],
+      "status": "planned",
+      "stage": "release",
+      "evidence": []
+    },
+    {
+      "id": "T37",
+      "phase": "M10",
+      "title": "Promote website and verify live identities/rollback",
+      "ownerRole": "release",
+      "dependsOn": [
+        "T36"
+      ],
+      "paths": [
+        "deploy",
+        "harness/evidence",
+        "docs/releases"
+      ],
+      "acceptance": [
+        "Reviewed immutable digest promoted by existing GitOps; live routes, docs/npm identity and rollback work."
+      ],
+      "status": "planned",
+      "stage": "release",
+      "evidence": []
+    },
+    {
+      "id": "T38",
+      "phase": "M10",
+      "title": "Close delivery with independent source-to-live reconciliation",
+      "ownerRole": "review",
+      "dependsOn": [
+        "T37"
+      ],
+      "paths": [
+        "harness",
+        "docs/releases"
+      ],
+      "acceptance": [
+        "No planned required tasks/components; evidence binds actual source/build/registry/deployment and human/provider limitations."
+      ],
+      "status": "planned",
+      "stage": "release",
+      "evidence": []
+    },
+    {
+      "id": "T39",
+      "phase": "M3-Early",
+      "title": "Early raw-data to compositional interactive UI proof",
+      "ownerRole": "orchestrator + independent reviewer",
+      "dependsOn": [
+        "T02",
+        "T04",
+        "T05",
+        "T07",
+        "T09",
+        "T10",
+        "T11",
+        "T12"
+      ],
+      "paths": [
+        "examples/vertical-slice",
+        "tests/vertical-slice",
+        "packages/core/src/presentation",
+        "packages/web/src/region"
+      ],
+      "acceptance": [
+        "Real raw HR fixture through reusable query evaluator, named ranking/trend outputs and queryless view change to actual shared web components.",
+        "No-preset composition and fixed cohort follow-up; do not add HR-specific core branches.",
+        "Unknown SSR environment, typed selection and stale proposal refusal exercised in actual browser.",
+        "No model required for deterministic slice; production code is extended later, not thrown away for a demo."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T40",
+      "phase": "M6-Eval",
+      "title": "Real reasoning generalization, evidence and autonomy evaluation",
+      "ownerRole": "agent evaluation + independent reviewer",
+      "dependsOn": [
+        "T24",
+        "T39"
+      ],
+      "paths": [
+        "tests/agent-evaluation",
+        "fixtures/evaluation",
+        "docs/evaluation"
+      ],
+      "acceptance": [
+        "Actual authorized provider and MCP runs on held-out paraphrase/composition/schema domains with recorded versions/budgets; no synthetic substitute.",
+        "Evaluate separately from present; no compulsory nested LLM calls; stale user state wins.",
+        "Independent arithmetic, population, explanation grounding and claim evidence checks including mix-shift counterexample.",
+        "Ablations: explicit tasks, fixed templates, governed AI proposals; report correctness, task completion, cost/latency separately.",
+        "Unavailable credentials remain BLOCKED; does not block independent component implementation.",
+        "Run weak/strong model configurations with independent effect permissions and repeated invalid/valid-but-wrong tasks; never derive privilege from evaluation score."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T41",
+      "phase": "M3",
+      "title": "Implement model-failure containment and independent effect grants",
+      "ownerRole": "runtime-security",
+      "dependsOn": [
+        "T03",
+        "T05",
+        "T10",
+        "T11"
+      ],
+      "paths": [
+        "packages/runtime/src/agents",
+        "packages/core/src/contracts/agent",
+        "tests/agents/containment"
+      ],
+      "acceptance": [
+        "Formal bound/needs-choice/needs-meaning/unsupported/denied/invalid/stale outcomes; trusted independent grants; malformed inputs fail safely.",
+        "Valid-but-wrong intent is evaluated as residual risk, not magically detected. No model-quality privilege escalation.",
+        "Bounded repair/no-progress, scoped numerical narrative checks, authorized fallback and revoked-data clearing; port reference counterexamples to real runtime."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    },
+    {
+      "id": "T42",
+      "phase": "M0",
+      "title": "Validate exact 0.1.0 reset and safe legacy replacement",
+      "ownerRole": "release",
+      "dependsOn": [
+        "T00"
+      ],
+      "paths": [
+        "harness/release-preflight.json",
+        "docs/18-release-migration.md",
+        "tests/release/version-reset"
+      ],
+      "acceptance": [
+        "Record actual namespace/package history/collision checks and lower-semver reset migration. Unknown registry access is a recorded publish blocker, not available.",
+        "Exact target0.1.0 retained; previously published identities not overwritten/unpublished to reset; staging tags/rollback/cleanup allowlist documented."
+      ],
+      "status": "planned",
+      "stage": "ready",
+      "evidence": []
+    }
+  ]
+}

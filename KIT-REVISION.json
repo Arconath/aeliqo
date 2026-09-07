@@ -1,0 +1,18 @@
+{
+  "kitRevision": "0.1.0-master1.1",
+  "productTarget": "0.1.0",
+  "date": "2026-09-08",
+  "status": "master-specification-and-reference-harness",
+  "supersedes": [
+    "v0.10 kit",
+    "v0.10 R2 kit",
+    "intermediate revalidation reports",
+    "generated infographic architecture claims",
+    "0.1.0-master1 specification edition 1"
+  ],
+  "productImplemented": false,
+  "remoteMutationsPerformed": false,
+  "referenceOnly": true,
+  "specificationEdition": "1.1",
+  "revisionScope": "Developer-authored meaning DX clarification; product version unchanged"
+}

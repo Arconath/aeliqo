@@ -1,0 +1,207 @@
+{
+  "date": "2026-09-07",
+  "reviewScope": "Master consolidation architecture review",
+  "method": "Primary-source web retrieval. Source mechanisms do not prove Aeliqo implementation or performance. Recheck volatile APIs at M0 and release.",
+  "sources": [
+    {
+      "id": "R01",
+      "title": "A2UI catalogs",
+      "url": "https://a2ui.org/concepts/catalogs/",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Catalog-constrained declarative UI is existing prior art. Aeliqo must prove additional semantics, query and task-preserving interaction value rather than claiming all agent UI is new."
+    },
+    {
+      "id": "R02",
+      "title": "json-render documentation",
+      "url": "https://json-render.dev/docs",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Schema/catalog-driven generated UI exists. Aeliqo owns complete components and the governed data-to-experience boundary; do not claim zero competitors."
+    },
+    {
+      "id": "R03",
+      "title": "Tambo generative components",
+      "url": "https://docs.tambo.co/concepts/generative-interfaces/generative-components",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Registered generative components and interactable application surfaces are prior art; compare equivalent tasks rather than feature names."
+    },
+    {
+      "id": "R04",
+      "title": "Vega-Lite composition",
+      "url": "https://vega.github.io/vega-lite/docs/composition.html",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Layer/facet/concat/repeat are established compositional mechanisms. Combined domains still need semantic checks."
+    },
+    {
+      "id": "R05",
+      "title": "Vega-Lite parameters",
+      "url": "https://vega.github.io/vega-lite/docs/parameter.html",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Selections, filter transforms and scale-domain changes are distinct; Aeliqo should not conflate view extent with query population."
+    },
+    {
+      "id": "R06",
+      "title": "Draco constraints API",
+      "url": "https://dig.cmu.edu/draco2/api/draco.html",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Hard/soft constraints support validation and ranking, but do not prove a universal best UX or empirically optimal Aeliqo scores."
+    },
+    {
+      "id": "R07",
+      "title": "Substrait specification",
+      "url": "https://substrait.io/spec/specification/",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Engine-independent compute plans are prior art. Use a small Aeliqo logical subset without importing an entire federation engine into the browser."
+    },
+    {
+      "id": "R08",
+      "title": "OpenAPI specification",
+      "url": "https://spec.openapis.org/oas/latest.html",
+      "checkedOn": "2026-09-07",
+      "designImplication": "API descriptions enumerate shape/operations; parsing one does not create backend aggregation, permissions, domain semantics or pagination correctness."
+    },
+    {
+      "id": "R09",
+      "title": "Standard Schema",
+      "url": "https://standardschema.dev/",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Validation interoperability and JSON Schema conversion are distinct contracts; inspectable metadata must actually exist."
+    },
+    {
+      "id": "R10",
+      "title": "Structured Outputs",
+      "url": "https://developers.openai.com/api/docs/guides/structured-outputs",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Schema conformity does not eliminate mistakes. Validate semantic meaning and task outcomes beyond parser success."
+    },
+    {
+      "id": "R11",
+      "title": "MCP architecture 2026-07-28",
+      "url": "https://modelcontextprotocol.io/docs/2026-07-28/learn/architecture",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Protocol context/tool exchange is distinct from model reasoning. Negotiate supported protocol versions; no mandatory nested model invocation for external-agent calls."
+    },
+    {
+      "id": "R12",
+      "title": "Chrome WebMCP imperative API",
+      "url": "https://developer.chrome.com/docs/ai/webmcp/imperative-api",
+      "checkedOn": "2026-09-07",
+      "designImplication": "The fetched documentation uses document.modelContext.registerTool with abort-aware lifecycle. Experimental native support must be tested, not inferred from a simulated host."
+    },
+    {
+      "id": "R13",
+      "title": "Lit SSR overview",
+      "url": "https://lit.dev/docs/ssr/overview/",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Lit SSR is experimental Labs functionality. Early production consumer proof is mandatory; missing SSR/browser validation is not a pass."
+    },
+    {
+      "id": "R14",
+      "title": "Lit React integration",
+      "url": "https://lit.dev/docs/frameworks/react/",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Thin property/event wrappers can reuse custom elements; actual controlled values, SSR, refs and cleanup remain Aeliqo tests."
+    },
+    {
+      "id": "R15",
+      "title": "WCAG 2.2 Reflow understanding",
+      "url": "https://www.w3.org/WAI/WCAG22/Understanding/reflow.html",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Essential two-dimensional content has a bounded reflow exception. Do not hide comparison relationships merely to avoid horizontal scroll."
+    },
+    {
+      "id": "R16",
+      "title": "WAI-ARIA APG patterns",
+      "url": "https://www.w3.org/WAI/ARIA/apg/patterns/",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Reference keyboard/focus/semantic control patterns. Automated tests do not replace real assistive-technology review."
+    },
+    {
+      "id": "R17",
+      "title": "Web Vitals",
+      "url": "https://web.dev/articles/vitals",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Whole-page field metrics and percentile thresholds differ from library planner benchmarks. Measure both honestly."
+    },
+    {
+      "id": "R18",
+      "title": "Optimize long tasks",
+      "url": "https://web.dev/articles/optimize-long-tasks",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Break/yield expensive work; avoid blocking interaction. Worker or scheduler abstraction must be justified by measured workloads."
+    },
+    {
+      "id": "R19",
+      "title": "Playwright visual snapshots",
+      "url": "https://playwright.dev/docs/test-snapshots",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Screenshot baselines vary by OS/browser/fonts and environment; pin/reference each environment and review meaningful diffs."
+    },
+    {
+      "id": "R20",
+      "title": "DTCG format 2025.10",
+      "url": "https://www.designtokens.org/tr/2025.10/format/",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Token interchange is a community specification; using it is not claiming Aeliqo is a W3C industry standard."
+    },
+    {
+      "id": "R21",
+      "title": "PostgreSQL transaction isolation",
+      "url": "https://www.postgresql.org/docs/18/transaction-iso.html",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Snapshot consistency depends on transaction/isolation semantics; multiple reads cannot claim a global snapshot by default."
+    },
+    {
+      "id": "R22",
+      "title": "PostgreSQL row security",
+      "url": "https://www.postgresql.org/docs/current/ddl-rowsecurity.html",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Host-enforced row policy is distinct from client UI filtering. Aeliqo discovery and execution must honor actual application authority."
+    },
+    {
+      "id": "R23",
+      "title": "OWASP LLM prompt injection prevention",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Treat source text as untrusted data, enforce capability/egress bounds and review side effects; a system prompt alone is not access control."
+    },
+    {
+      "id": "R24",
+      "title": "npm unpublish policy",
+      "url": "https://docs.npmjs.com/policies/unpublish/",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Published name/version pairs cannot be overwritten or reused after unpublishing. Release new unused versions and migrate explicitly."
+    },
+    {
+      "id": "R25",
+      "title": "npm trusted publishing",
+      "url": "https://docs.npmjs.com/trusted-publishers/",
+      "checkedOn": "2026-09-07",
+      "designImplication": "OIDC-based publication requires supported account/CI configuration. Do not invent current project credentials or publisher setup."
+    },
+    {
+      "id": "R26",
+      "title": "OpenAI subagents",
+      "url": "https://developers.openai.com/codex/subagents",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Subagents can have model/effort and role controls. Verify actual local Astra Medium/Luna Max availability and effective settings."
+    },
+    {
+      "id": "R27",
+      "title": "OpenAI configuration reference",
+      "url": "https://developers.openai.com/codex/config-reference",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Fetched config documents agents.default_subagent_model, default_subagent_reasoning_effort and max_concurrent_threads_per_session. Client-specific support still must be verified."
+    },
+    {
+      "id": "R28",
+      "title": "OpenAI harness engineering",
+      "url": "https://openai.com/index/harness-engineering/",
+      "checkedOn": "2026-09-07",
+      "designImplication": "Use repository documentation, concise entry instructions, mechanical boundaries and observable tests; avoid giant repeated context dumps."
+    }
+  ],
+  "limitations": [
+    "npm registry access from execution container failed EAI_AGAIN; no new dependency lockfile or installed renderer proof.",
+    "No provider secrets, model execution, native WebMCP or remote mutations were used in this kit validation."
+  ]
+}

@@ -1,0 +1,608 @@
+{
+  "schemaVersion": 1,
+  "scenarios": [
+    {
+      "id": "S01",
+      "title": "Employee table, then selected detail",
+      "task": "T16",
+      "assertion": "Identity-based data rendering and no data invented.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S02",
+      "title": "Attendance ranking from raw schedule and observations",
+      "task": "T07",
+      "assertion": "Count employee-days with explicit approved-leave policy; no raw-log duplicate count.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S03",
+      "title": "Fixed top-five population, then weekly trend",
+      "task": "T31",
+      "assertion": "Select population over full requested period before weekly trend; independent exact totals.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S04",
+      "title": "Department ratio rollup",
+      "task": "T07",
+      "assertion": "Ratio of sums, not mean of employee percentages; missing pairs remain disclosed.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S05",
+      "title": "AI-assisted derived meaning",
+      "task": "T23",
+      "assertion": "Validated draft and activation policy; same AST as manual path.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S06",
+      "title": "Manual meaning builder/code round trip",
+      "task": "T23",
+      "assertion": "No string eval; dependencies/version/scope preserved.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S07",
+      "title": "Unknown business meaning",
+      "task": "T23",
+      "assertion": "Definition flow or declared temporary hypothesis, never silent organizational truth.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S08",
+      "title": "Desktop exact comparison to 320px/400% zoom",
+      "task": "T20",
+      "assertion": "Task-equivalent comparison remains possible; essential two-axis scroll permitted.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S09",
+      "title": "Resize during IME/draft/drag",
+      "task": "T20",
+      "assertion": "Defer unsafe structure transitions; preserve focused owner and draft.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S10",
+      "title": "Explicit table preference on narrow region",
+      "task": "T19",
+      "assertion": "Respect valid choice; report constraint conflict rather than silently swap.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S11",
+      "title": "Large paginated population",
+      "task": "T16",
+      "assertion": "Bounded DOM, stable cursors, global versus page counts distinguished.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S12",
+      "title": "Unrelated node patch",
+      "task": "T10",
+      "assertion": "Unrelated result/view subscriptions do not recompute unnecessarily.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S13",
+      "title": "Out-of-order remote responses",
+      "task": "T09",
+      "assertion": "Old response cannot replace current result or resurrect closed region.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S14",
+      "title": "Consumer unmount and reconnect storm",
+      "task": "T09",
+      "assertion": "Abort, listeners, caches, streams and workers released within policy.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S15",
+      "title": "Join fanout",
+      "task": "T07",
+      "assertion": "Pre-aggregate or reject many-to-many fanout; no multiplied money/count.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S16",
+      "title": "Missing dates, timezone/DST and calendar periods",
+      "task": "T07",
+      "assertion": "No last-known-value substitution; calendar months distinct from 90 days.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S17",
+      "title": "Partial/approximate result",
+      "task": "T09",
+      "assertion": "Scope/error bounds presented; no global claim from sample or page.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S18",
+      "title": "Units and exact decimal money",
+      "task": "T04",
+      "assertion": "Reject incompatible units/currencies; stable exact decimal calculation.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S19",
+      "title": "Cross-tenant catalog/cache/cursor isolation",
+      "task": "T28",
+      "assertion": "No unauthorized metadata, counts, record IDs, result handles or stale access.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S20",
+      "title": "Prompt injection in records/schema labels",
+      "task": "T28",
+      "assertion": "Treat content as data; no arbitrary code, endpoint or credential egress.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S21",
+      "title": "Business action preview/confirm/revoke",
+      "task": "T11",
+      "assertion": "Recheck entity revision and authority at execution; no action from layout change.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S22",
+      "title": "MCP versus direct versus BYOK parity",
+      "task": "T24",
+      "assertion": "Equivalent command produces same authorized state/receipt; real provider run labeled.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S23",
+      "title": "Native WebMCP absent",
+      "task": "T24",
+      "assertion": "Manual/other transports work; no fabricated availability.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S24",
+      "title": "Native WebMCP actual host",
+      "task": "T24",
+      "assertion": "Only real-host evidence allows native support claim; otherwise experimental/unverified.",
+      "status": "planned",
+      "nativeHostRequired": true,
+      "stage": "ready"
+    },
+    {
+      "id": "S25",
+      "title": "Vanilla zero-React consumer",
+      "task": "T25",
+      "assertion": "Actual packed/published-style tarball imports and interactive UI without React; stable registry verification is a later release gate.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S26",
+      "title": "React/Next server render and hydration",
+      "task": "T25",
+      "assertion": "No model or browser globals during SSR, meaningful content and correct event/property mapping.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S27",
+      "title": "Vue embedding of shared web component",
+      "task": "T25",
+      "assertion": "Same renderer, no second business logic or component implementation.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S28",
+      "title": "Keyboard and screen reader matrix",
+      "task": "T29",
+      "assertion": "Real human review with browser/AT versions; automated axe alone insufficient.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S29",
+      "title": "RTL, locale, long labels and forced colors",
+      "task": "T29",
+      "assertion": "No clipping or color-only meaning; logical navigation remains coherent.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S30",
+      "title": "Search and product comparison in app region",
+      "task": "T31",
+      "assertion": "Non-dashboard task preserves application navigation and region boundaries.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S31",
+      "title": "Host-owned record edit form",
+      "task": "T31",
+      "assertion": "App action contract, draft/errors and explicit save; data mutation separate from view state.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S32",
+      "title": "Unsupported source query",
+      "task": "T08",
+      "assertion": "Typed unsupported capability and useful alternatives; no full-dataset hidden fetch.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S33",
+      "title": "Renderer throw/missing renderer",
+      "task": "T20",
+      "assertion": "Failed projection cannot produce a presented/completed receipt.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S34",
+      "title": "Atomic region update concurrency",
+      "task": "T10",
+      "assertion": "Expected revisions, idempotency and conflict repair; no mixed partial presentation.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S35",
+      "title": "Component inventory contract matrix",
+      "task": "T29",
+      "assertion": "Every release entry has standalone/semantic/region and applicable states evidence.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S36",
+      "title": "Pre-release artifact skew and rollback rehearsal",
+      "task": "T34",
+      "assertion": "No npm overwrite; pinned old consumer works; deploy rollback does not require package deletion.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S37",
+      "title": "Shared semantic definition revision",
+      "task": "T23",
+      "assertion": "Affected results invalidate intentionally; no uncontrolled loss of drafts or saved task meaning.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S38",
+      "title": "Unseen domain/schema import",
+      "task": "T31",
+      "assertion": "Same contracts, new fields/metrics; no core domain enum or prompt phrase branch.",
+      "status": "planned",
+      "nativeHostRequired": false,
+      "stage": "ready"
+    },
+    {
+      "id": "S39",
+      "title": "Novel bounded composition without exact preset",
+      "task": "T39",
+      "assertion": "Combine existing capabilities without domain-specific pattern or core edits; required operations remain covered.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S40",
+      "title": "Multigrain named outputs",
+      "task": "T39",
+      "assertion": "Ranking, weekly values and source detail have explicit dependencies and separate row grain.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S41",
+      "title": "Presentation-only and form task",
+      "task": "T05",
+      "assertion": "No dummy query; reuse versioned results or form schema and keep writes separate.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S42",
+      "title": "Evaluate without publishing every intermediate view",
+      "task": "T40",
+      "assertion": "Agent can investigate within budget while preserving incumbent UI; only intended results commit.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S43",
+      "title": "Every dependency revision and principal scope",
+      "task": "T10",
+      "assertion": "Changed policy/catalog/profile/function/result/task epoch invalidates old proposal; unrelated new result need not.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S44",
+      "title": "Unknown SSR and precision metadata states",
+      "task": "T03",
+      "assertion": "Known width requires value; estimated counts and approximate values require method and uncertainty.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S45",
+      "title": "Claim grounding and changing population mix",
+      "task": "T40",
+      "assertion": "Correct totals do not permit incorrect all-groups/causal explanations; preserve evidence references.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S46",
+      "title": "Structured AI composition proposal",
+      "task": "T22",
+      "assertion": "Registered nodes can be proposed; executable code, unknown schema and forged actor rejected.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S47",
+      "title": "Typed selection versus filter/range/page/draft",
+      "task": "T11",
+      "assertion": "Separate payload schemas and compatible links, no arbitrary Json accepted as verified interaction.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S48",
+      "title": "Canonical task ownership",
+      "task": "T01",
+      "assertion": "Leases cover actual src paths, no traversal or sibling-prefix collision; changing acceptance invalidates evidence.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S49",
+      "title": "Budget exhaustion without false impossibility",
+      "task": "T19",
+      "assertion": "Bounded candidate generation reports exhaustion distinctly and reuses valid incumbent/fallback.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S50",
+      "title": "Live versus fixed cohort on filter change",
+      "task": "T31",
+      "assertion": "Recompute membership only if task declares live population; stable cohort retains explicit lineage.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S51",
+      "title": "Aggregate-only permission and model egress",
+      "task": "T28",
+      "assertion": "Server-approved aggregate visibility does not grant raw-detail or model data sharing rights.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S52",
+      "title": "Post-publish registry and live identity",
+      "task": "T37",
+      "assertion": "Stable new package versions and immutable deployed image independently verified; prior consumer stays available.",
+      "status": "planned",
+      "stage": "release",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S53",
+      "title": "Hallucinated metric and renderer",
+      "task": "T41",
+      "assertion": "Unknown metric/view never produces a fabricated result or arbitrary renderer; correct gap with prior authorized state retained.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S54",
+      "title": "Valid-but-wrong meaning",
+      "task": "T40",
+      "assertion": "Known metric selected for wrong latent intent is measured as semantic failure, not claimed prevented by schema; material known ambiguity gets a concise choice.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S55",
+      "title": "Model score cannot authorize effect",
+      "task": "T41",
+      "assertion": "Changing model name or test score grants no read, UI, meaning, egress or business-write permission.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S56",
+      "title": "Action needs host grant and confirmation",
+      "task": "T41",
+      "assertion": "experience.commit does not imply action.execute; forgedhuman/approval and stale confirmation fail every route.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S57",
+      "title": "Weak model unavailable or looping",
+      "task": "T41",
+      "assertion": "Timeout/malformed repeated outputs preserve authorized state and manual controls; runtime-owned source-scoped fingerprints stop no-progress retries.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S58",
+      "title": "Revocation invalidates old UI fallback",
+      "task": "T28",
+      "assertion": "Retaining previous UI on AI failure cannot retain data whose authorization was revoked.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S59",
+      "title": "Narrative title grounding",
+      "task": "T40",
+      "assertion": "Numbers, titles and tooltips cite compatible result/time/unit; adding a source ID does not verify unsupported prose or causality.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S60",
+      "title": "Low-risk default and meaning activation",
+      "task": "T23",
+      "assertion": "Known default disclosed; AI/manual same typeddefinition; session activation cannot silently overwrite organization meaning.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S61",
+      "title": "Exact 0.1.0 identity collision",
+      "task": "T42",
+      "assertion": "Used name/version blocks publication; unavailable registry remains unknown. Unpublish does not free version.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S62",
+      "title": "Lower semver release reset",
+      "task": "T36",
+      "assertion": "0.1.0 is staged deliberately and documented as reset, not automatic upgrade from0.2/0.10; existing consumers and rollback preserved.",
+      "status": "planned",
+      "stage": "release",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S63",
+      "title": "Real docs and playground UI",
+      "task": "T27",
+      "assertion": "Component routes and snippet copies are specific and compiled; live preview uses actual package; agent inspector is secondary and keys server-side.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S64",
+      "title": "Master traceability and extension boundary",
+      "task": "T32",
+      "assertion": "All discussion decisions map to current docs/tasks; generated images ignored; no-preset composition and new domain require no prompt-specific core branch.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S65",
+      "title": "Developer code-defined meaning bootstrap",
+      "task": "T06",
+      "assertion": "Typed code/config reuses existing catalog, registers an authorized reviewed default without model/Studio, and end users reuse it without reauthoring or repeated approval.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S66",
+      "title": "Code-owned definition validation and ownership",
+      "task": "T23",
+      "assertion": "Invalid references/units/grain rejected; same ID/revision with changed content rejected; exact repeat idempotent; Studio only reads/proposes diff, AI/session meanings cannot silently shadow repo definitions.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    },
+    {
+      "id": "S67",
+      "title": "Developer meaning DX and authoring parity",
+      "task": "T25",
+      "assertion": "External built-package example compiles with typed errors and schema reuse; code/Studio equivalent definitions share evaluator/results across views, no manual-path model calls or required Studio imports.",
+      "status": "planned",
+      "stage": "ready",
+      "nativeHostRequired": false
+    }
+  ]
+}

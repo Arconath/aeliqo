@@ -1,9 +1,0 @@
-{
-  "contractVersion": "0.1",
-  "workspaceId": "ws-demo",
-  "requestId": "req-42",
-  "baseRevision": 11,
-  "outputSurface": "workspace",
-  "mode": "operations",
-  "operations": []
-}

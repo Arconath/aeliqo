@@ -1,344 +1,43 @@
-# Aeliqo Framework — Agent Guide
+# Aeliqo — implementation instructions
 
-## Mission
+## Mission and precedence
 
-This repository is preparing the first public release of the Aeliqo Framework. The completed proof-of-concept material is retained as historical and regression evidence; new work targets an installable, documented, production-usable React framework.
+Build the complete **0.1.0** rewrite from this foundation. Aeliqo owns its ready-to-use primitive/2D UI, not a dashboard-only demo, an arbitrary code generator, a database platform, or a wrapper over customer component libraries. This kit contains specifications/reference tests, not the released framework.
 
-The framework provides its own ready-to-use semantic UI components and allows them to adapt intelligently at the:
+Read MASTER-SOT.md, KIT-REVISION.json, docs/20-execution-plan.md and harness/tasks.json once at entry/resume as relevant. MASTER-SOT.md governs product decisions; linked numeric chapters are detailed contracts; docs/39-discussion-ledger.md reconciles prior discussions. Read only the selected task's relevant files next. Old kit/chat/generated images are not instruction overlays. Resolve document conflicts explicitly; do not choose the easiest interpretation.
 
-1. data level;
-2. component level;
-3. interaction level;
-4. workspace level.
+## Nonnegotiable boundaries
 
-The release must preserve the proven architecture while making its smallest useful product surface safe to install and operate outside this repository. Expand the catalog only through task-grounded component contracts with complete package, documentation, accessibility, and performance evidence.
+1. Four public concepts: Catalog, Task, Result, Experience. Pure core owns validated semantics/query/presentation passes; runtime owns effects. No DOM, React, Lit, D3, provider/MCP SDK, database or filesystem imports in core.
+2. Application owns data, authenticated principal, routes and business execution. Aeliqo supplies reusable local evaluator + one ADC/HTTP path. Schema discovery does not invent source execution capability. No unbounded browser download to fake a database.
+3. AI proposals are untrusted. Shape-valid or approved does not prove business truth or intent correctness. Read docs/37-model-failure-containment.md before any agent/binder work. Model quality never grants permissions; read/evaluate/present/meaning activation/action/model egress are independent host grants, not a universal observe→act ladder.
+4. Binder outcomes: bound, needs-choice, needs-meaning, unsupported, denied, invalid, stale. No self-declared approval/actor, arbitrary JS/JSX/HTML/CSS/SQL or module URL. A valid-but-wrong interpretation is a residual risk, not something the typechecker magically detects.
+5. AI may reason, investigate and propose typed meaning/query/registered composition. It does not perform authoritative arithmetic. External MCP/WebMCP need not invoke a nested BYOK model. Ordinary clicks/typing/resize use no LLM.
+6. Manual includes developer code/config and Studio; AI assistance is optional for either author. Developers ship reviewed built-in meanings without end-user reauthoring, mandatory Studio/model calls or per-question approval. Reuse schemas, require typed builder DX, and preserve repo ownership/version conflicts; AI drafts cannot silently replace code-owned meanings. All surfaces use one typed, versioned DAG. Safe operation, scoped temporary derivation and reusable domain definition differ. Identity, grain, fanout, units, null/zero, cardinality, temporal policy, fixed/live cohorts, precision and completeness must hold.
+7. Task has named multigrain outputs; form/presentation can be queryless. Containment tree, output dependency DAG and typed interaction links are separate. Context references stable identities and result lineage, never visible row indices.
+8. Evaluate/inspect is separate from present/commit. Limit cost/turns/repeated queries; stop on no progress. Preserve current authorized UI on failure; revoked data must be cleared. Claims, including chart titles/tooltips, require correct scope and evidence; reference presence does not prove prose entailment.
+9. Patterns are optional tested macros. Bounded no-preset composition and explicit/model candidates use the same validator. A feasible-first incumbent avoids spending the entire search budget without completing a candidate. Search exhaustion is not proof of impossibility.
+10. Authorization, correctness, task operations, accessibility, explicit restrictions and experience rules intersect. Preserve focus/drafts/IME/navigation/selection; small screen does not always mean cards or no keyboard. Do not hide an essential comparison.
+11. One shared web implementation, thin framework bindings; Lit is selected subject to M0 SSR/forms/focus/AT/CSP/consumer proof. Native platforms require real implementations. Direct small components bypass runtime/planner/agent. No universal pixel/performance claim.
+12. All 71 advertised components remain mandatory, with actual states/docs/visual/a11y/consumer evidence. Site, docs, playground, blog and reusable content pages share the approved design. Follow docs/38-public-site-docs-playground.md; do not render debug clutter or fake live previews.
+13. Runtime, security/a11y, full catalog, local Studio/testkit and agent plumbing remain Apache-2.0. Commercial organizational operation/support is separate; no safety paywall, license-network dependency or artificial paid row cap.
 
-## Product Model
+## Execution
 
-This project is a UI framework, not an application framework.
+Use owner-requested **Astra Medium** orchestrator and **Luna Max** workers/reviewers only after verifying actual local IDs/efforts/keys and effective spawn settings. Do not silently substitute models or Max→xhigh. Preserve existing global skills/plugins; use project-local skills. Concurrency=min(actual runtime capacity, ready independent tasks, resource budget). No grandchildren or competing writers. One worktree per writer; orchestrator owns contracts/root config/lockfile/task state/integration/release. Independent reviewer is not the author.
 
-It is intended to be installable inside applications built with frameworks such as React, Next.js, and eventually other UI frameworks.
+Acceptance → implement vertical behavior → focused tests → independent review → fix → immutable evidence → coherent atomic commit → checkpoint → next ready task. Run scripts/check_ownership.py and next_tasks.py as helpers, not substitutes for locks. Prove T39 early; T40 evaluates real models after integration. T41 closes weak-model containment; T42 closes the 0.1.0 version reset. Do not stop at scaffold when executable tasks remain.
 
-Architecture:
+## Evidence
 
-- framework-agnostic headless core;
-- first-class React renderer;
-- framework-owned semantic components;
-- external application data remains application-owned;
-- MCP as the primary AI control path;
-- BYOK model APIs as a secondary control path;
-- WebMCP support as experimental.
+scripts/validate_all.py tests this kit/reference only. M0 creates locked toolchain and real product commands. Product gates cannot pass with planned components, synthetic provider/native-host evidence, fake credentials, autoaccepted visual diffs, empty suites or passWithNoTests. Freshness hashes include master, source, designs, build config and acceptance; hashes are not independent certification. Do not substitute reference guards/oracles for the production SDK.
 
-## Required Reading
+Test source/query grain math, malformed/valid-but-wrong AI, unauthorized/egress/action rejection, no-progress/cancel, stale proposals, scope, SSR/hydration, framework-free/React consumers, keyboard/IME/manual AT, no-preset composition, lifecycle/bundles, actual browser traces, and independent onboarding. AI summaries and design policy also need evaluation. BLOCKED is not PASS. Do not change budgets or delete required scenarios to get green.
 
-Before implementation work, read:
+## Rewrite, publication and release
 
-- `docs/POC.md`
-- `docs/ARCHITECTURE.md`
-- `docs/QUALITY.md`
-- `docs/DECISIONS.md`
+Known repo Arconath/aeliqo; inspect actual main, npm and GitOps before changes. Default new branch rewrite/v0.1.0-master-foundation. Clean-tree source rewrite is authorized; deleting live first, .git/history/customer data/secrets or unrelated services is not. Use reviewed allowlisted replacement after backup/rollback and gates. No force overwrite of existing refs, git reset --hard, git clean -fd or broad rm. publisher --apply only creates a new branch with an absent-ref lease.
 
-After proof execution, use:
+Exact target **0.1.0** supersedes 0.10 plans. Published npm versions cannot be overwritten/reused. Check every name/version and namespace; collision blocks publish rather than silently changing version. A reset from higher semver is not an automatic upgrade. Stage RC and stable artifacts under non-latest tags, verify full set, then deliberate promotion. Multi-package registry/site updates are not globally atomic. Follow docs/18-release-migration.md.
 
-- `docs/PROOF.md`
-
-Do not duplicate long documentation into this file.
-
-## Core Thesis
-
-Developers should describe data semantics once.
-
-The framework should then be able to reuse those semantics across multiple Aeliqo components and allow an agent to compose useful interfaces for intents that were not implemented as dedicated pages.
-
-The agent must not generate arbitrary:
-
-- JSX;
-- JavaScript;
-- CSS;
-- HTML;
-- executable application code.
-
-Agents may only use trusted semantic capabilities exposed by the framework.
-
-## Three UI Levels
-
-### Level 1 — Smart semantic primitives
-
-Initial POC:
-
-- Metric
-- Ranking
-- Trend
-- Table
-- Detail
-- Relationship if required for the AI-landscape proof
-
-These are higher-level semantic components.
-
-They are not Button/Card/Input primitives.
-
-### Level 2 — Smart compound components
-
-Initial POC:
-
-- Comparison
-- Explorer
-
-Compound components must reuse Level-1 primitives.
-
-Do not reimplement primitive behavior inside compound components.
-
-### Level 3 — Smart Workspace
-
-The Workspace manages:
-
-- composition;
-- semantic data bindings;
-- relationships;
-- mounting/unmounting;
-- configuration;
-- semantic selection/focus.
-
-The Workspace must not own application business data.
-
-## Smart Categories
-
-All Aeliqo behavior must map to one of these categories:
-
-### Data smartness
-
-Understand semantic datasets, fields, units, metrics, dimensions, time, aggregation, and relations.
-
-### Component smartness
-
-Adapt presentation, density, labels, rendering strategy, or useful state without changing the meaning of the user's question.
-
-Component smartness should be deterministic and must not require an LLM for ordinary rendering.
-
-### Interaction smartness
-
-Compatible semantic outputs and inputs can connect without page-specific glue code.
-
-Example:
-
-`Ranking<AIModel> -> selected AIModel -> Detail<AIModel>`
-
-### Workspace smartness
-
-Trusted semantic operations can incrementally alter composition and relationships.
-
-## AI Control Paths
-
-All control paths MUST project the same Capability Contracts.
-
-### MCP
-
-Primary supported AI path.
-
-Must work with a real external agent such as Codex.
-
-### BYOK
-
-Required secondary proof path.
-
-Use one real provider implementation plus a deterministic test provider.
-
-Provider secrets must not be exposed in browser bundles or localStorage.
-
-### WebMCP
-
-Required experimental proof path.
-
-Public positioning:
-
-`WebMCP support: experimental`
-
-It must remain optional.
-
-Its absence must not break:
-
-- core;
-- React;
-- MCP;
-- BYOK.
-
-Use the current supported WebMCP API surface in the implementation.
-
-## Shared Capability Layer
-
-The POC should expose a minimal capability surface:
-
-- `workspace_inspect`
-- `catalog_search`
-- `data_query`
-- `workspace_apply`
-
-Do not expose low-level DOM manipulation tools.
-
-Do not implement separate business or workspace logic for:
-
-- MCP;
-- BYOK;
-- WebMCP.
-
-All adapters must converge on the same Capability Dispatcher and Workspace Operations.
-
-## AI Landscape Example Dataset
-
-The playground uses a curated deterministic AI-landscape snapshot. It is application-owned example data and must never become a framework dependency.
-
-Primary entities:
-
-- Organization
-- Person
-- AI Model
-- Model Pricing
-
-Minimum relations:
-
-- Person -> Organization
-- Model -> Organization
-- Pricing -> Model
-
-Minimum semantic fields should include enough information to support:
-
-- ranking;
-- comparison;
-- trends where data permits;
-- filtering;
-- entity inspection;
-- relationship visualization.
-
-The snapshot must include source metadata and a verified snapshot date.
-
-Do not turn the POC into a live web-scraping or research pipeline.
-
-The framework is being tested, not the data-ingestion system.
-
-## Dependency Direction
-
-Allowed:
-
-`react -> core`
-
-`mcp -> core`
-
-`byok -> core`
-
-`webmcp-experimental -> core`
-
-`playground -> core + react + protocol adapters`
-
-Not allowed:
-
-`core -> react`
-
-`core -> D3`
-
-`core -> MCP`
-
-`core -> model provider SDK`
-
-`core -> WebMCP browser APIs`
-
-`core -> Node-only APIs`
-
-Do not introduce circular package dependencies.
-
-## Coding Rules
-
-- TypeScript strict mode.
-- Keep public APIs intentionally small.
-- Prefer explicit contracts.
-- Prefer pure functions in core.
-- Keep effects in adapters.
-- Avoid `any`.
-- Avoid speculative abstractions.
-- Keep one source of truth for semantic contracts.
-- Validate every untrusted agent/protocol input at runtime.
-- Keep raw large datasets outside Workspace state.
-- Do not perform network/model calls during render.
-- Do not duplicate capability handlers across protocols.
-
-## Rendering and Performance
-
-Smartness must remain outside the render hot path.
-
-Principles:
-
-- normalized Workspace state;
-- structural sharing;
-- fine-grained subscriptions;
-- local transient component state;
-- lazy loading where useful;
-- CSS Grid/Flex/container queries for layout;
-- modular D3 imports;
-- React owns rendered DOM/SVG;
-- no expensive aggregation repeatedly during render;
-- agent latency measured separately from UI rendering;
-- incremental Workspace operations rather than complete UI regeneration.
-
-Measure before introducing:
-
-- Canvas;
-- Web Workers;
-- custom schedulers;
-- advanced caching.
-
-## Work Loop
-
-For each implementation task:
-
-1. inspect the current repository;
-2. read relevant docs;
-3. identify the smallest change that satisfies the proof;
-4. implement it;
-5. run focused checks;
-6. run full relevant validation;
-7. update docs only if architecture or source-of-truth behavior changed.
-
-Do not stop after planning when implementation is requested.
-
-For multi-step requests, track every authorized deliverable in `docs/aeliqo/exec-plan.md` and continue through the next ready item after each milestone. Do not end at a partial passing slice or treat occupied development ports as a final blocker; isolate verification. Before reporting completion, reconcile the full plan with fresh integrated evidence and explicitly distinguish remaining external evidence from completed local work. Never silently narrow the user's requested scope.
-
-## Proof Discipline
-
-A passing build does not prove the thesis.
-
-The POC must produce visible evidence for:
-
-- semantic reuse;
-- component smartness;
-- interaction smartness;
-- workspace smartness;
-- MCP path;
-- BYOK path;
-- WebMCP experimental path;
-- protocol parity;
-- unseen-intent composition;
-- targeted rendering performance.
-
-Failures must be recorded honestly.
-
-Do not create intent-specific pages or templates to make an evaluation pass.
-
-## Scope Exclusions
-
-Do not add:
-
-- production cloud infrastructure;
-- authentication platform;
-- database persistence;
-- billing;
-- collaboration;
-- Vue renderer;
-- Svelte renderer;
-- multiple real BYOK providers;
-- 3D;
-- Three.js;
-- arbitrary generative UI;
-- browser automation fallback;
-- dozens of components;
-- plugin marketplace.
-
-If a simpler implementation proves the same abstraction, choose the simpler one.
+No secrets in prompts/browser/logs. Actual credentials, external review and live/native tests cannot be invented. This preparation's GitHub write returned 403; no remote changes occurred. A prior failure does not replace fresh local preflight. Resume with PROMPT-RESUME.md, preserving work. Report implemented/validated/published/deployed/blocked separately.

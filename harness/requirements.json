@@ -1,0 +1,544 @@
+{
+  "schemaVersion": 1,
+  "requirements": [
+    {
+      "id": "R01",
+      "requirement": "Entire data-to-pixel lifecycle",
+      "doc": "docs/01-architecture.md",
+      "tasks": [
+        "T03",
+        "T06",
+        "T07",
+        "T09",
+        "T19",
+        "T20"
+      ],
+      "scenarios": [
+        "S01",
+        "S02",
+        "S03"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R02",
+      "requirement": "Opinionated DX and designer standard",
+      "doc": "docs/09-experience-dx.md",
+      "tasks": [
+        "T12",
+        "T26",
+        "T32",
+        "T25"
+      ],
+      "scenarios": [
+        "S08",
+        "S29",
+        "S35",
+        "S67"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R03",
+      "requirement": "One agnostic data contract, no vendor adapter explosion",
+      "doc": "docs/02-data-contract.md",
+      "tasks": [
+        "T06",
+        "T08"
+      ],
+      "scenarios": [
+        "S25",
+        "S32",
+        "S38"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R04",
+      "requirement": "Shared renderer, no per-framework component fork",
+      "doc": "docs/08-rendering-stack.md",
+      "tasks": [
+        "T02",
+        "T25"
+      ],
+      "scenarios": [
+        "S25",
+        "S26",
+        "S27"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R05",
+      "requirement": "Safe automatic plus developer-code/Studio manual and AI-assisted derived meaning",
+      "doc": "docs/03-semantics-derived.md",
+      "tasks": [
+        "T04",
+        "T23",
+        "T06",
+        "T25"
+      ],
+      "scenarios": [
+        "S05",
+        "S06",
+        "S07",
+        "S37",
+        "S65",
+        "S66",
+        "S67"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R06",
+      "requirement": "Raw-data query correctness and scale",
+      "doc": "docs/04-intent-query.md",
+      "tasks": [
+        "T07",
+        "T08"
+      ],
+      "scenarios": [
+        "S02",
+        "S03",
+        "S04",
+        "S15",
+        "S16"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R07",
+      "requirement": "Task-aware UI intelligence",
+      "doc": "docs/06-presentation-compiler.md",
+      "tasks": [
+        "T19",
+        "T20"
+      ],
+      "scenarios": [
+        "S08",
+        "S10",
+        "S30"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R08",
+      "requirement": "Container, small screen, zoom and explicit choices",
+      "doc": "docs/06-presentation-compiler.md",
+      "tasks": [
+        "T20",
+        "T29"
+      ],
+      "scenarios": [
+        "S08",
+        "S09",
+        "S10"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R09",
+      "requirement": "Complete usable owned primitives and 2D components",
+      "doc": "docs/29-component-contracts.md",
+      "tasks": [
+        "T13",
+        "T14",
+        "T15",
+        "T16",
+        "T18",
+        "T21"
+      ],
+      "scenarios": [
+        "S35"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R10",
+      "requirement": "Pixel precision, theming and production quality",
+      "doc": "docs/08-rendering-stack.md",
+      "tasks": [
+        "T12",
+        "T29"
+      ],
+      "scenarios": [
+        "S29",
+        "S35"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R11",
+      "requirement": "Accessibility and user state",
+      "doc": "docs/10-interaction-a11y.md",
+      "tasks": [
+        "T11",
+        "T29"
+      ],
+      "scenarios": [
+        "S09",
+        "S28",
+        "S29"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R12",
+      "requirement": "Performance/bundles/resources",
+      "doc": "docs/12-performance.md",
+      "tasks": [
+        "T30"
+      ],
+      "scenarios": [
+        "S11",
+        "S12",
+        "S14"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R13",
+      "requirement": "Enterprise permissions and audit hooks without paid safety tax",
+      "doc": "docs/13-security-enterprise.md",
+      "tasks": [
+        "T28"
+      ],
+      "scenarios": [
+        "S19",
+        "S20",
+        "S21"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R14",
+      "requirement": "MCP, WebMCP, BYOK shared smart capabilities",
+      "doc": "docs/14-agents-protocols.md",
+      "tasks": [
+        "T22",
+        "T24"
+      ],
+      "scenarios": [
+        "S22",
+        "S23",
+        "S24"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R15",
+      "requirement": "Not dashboard-only; app-region integration",
+      "doc": "docs/09-experience-dx.md",
+      "tasks": [
+        "T25",
+        "T31"
+      ],
+      "scenarios": [
+        "S30",
+        "S31"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R16",
+      "requirement": "Maintainable code/package/project structure",
+      "doc": "docs/17-project-structure.md",
+      "tasks": [
+        "T03",
+        "T25",
+        "T32"
+      ],
+      "scenarios": [
+        "S25",
+        "S35"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R17",
+      "requirement": "OSS to sustainable business boundary",
+      "doc": "docs/15-oss-business.md",
+      "tasks": [
+        "T35"
+      ],
+      "scenarios": [
+        "S25"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R18",
+      "requirement": "Blank-tree rewrite with historical rollback",
+      "doc": "docs/18-release-migration.md",
+      "tasks": [
+        "T00",
+        "T34"
+      ],
+      "scenarios": [
+        "S36"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R19",
+      "requirement": "New npm 0.1.0, never overwrite old versions",
+      "doc": "docs/18-release-migration.md",
+      "tasks": [
+        "T33",
+        "T36"
+      ],
+      "scenarios": [
+        "S36"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R20",
+      "requirement": "Atomic Git commits and safe GitHub publication",
+      "doc": "docs/19-harness.md",
+      "tasks": [
+        "T00",
+        "T38"
+      ],
+      "scenarios": [
+        "S34",
+        "S36"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R21",
+      "requirement": "Astra medium orchestration and maximum useful Luna max delegation",
+      "doc": "docs/19-harness.md",
+      "tasks": [
+        "T01"
+      ],
+      "scenarios": [
+        "S38"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R22",
+      "requirement": "Executable prompts, AGENTS, skills and harness",
+      "doc": "docs/19-harness.md",
+      "tasks": [
+        "T01",
+        "T32"
+      ],
+      "scenarios": [
+        "S35"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R23",
+      "requirement": "Real source-backed research, no fictional evidence",
+      "doc": "docs/24-research-sources.md",
+      "tasks": [
+        "T00",
+        "T32",
+        "T38"
+      ],
+      "scenarios": [
+        "S22",
+        "S24",
+        "S28",
+        "S36"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R24",
+      "requirement": "All scope gates and full completion, not just scaffold",
+      "doc": "docs/20-execution-plan.md",
+      "tasks": [
+        "T32",
+        "T38"
+      ],
+      "scenarios": [
+        "S35",
+        "S36"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R25",
+      "requirement": "Results/stream/cache identity and recovery",
+      "doc": "docs/05-results-lifecycle.md",
+      "tasks": [
+        "T09",
+        "T10"
+      ],
+      "scenarios": [
+        "S13",
+        "S14",
+        "S17",
+        "S34"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R26",
+      "requirement": "No arbitrary generated code; domain boundaries user governed",
+      "doc": "docs/07-ui-grammar.md",
+      "tasks": [
+        "T04",
+        "T11",
+        "T23",
+        "T28"
+      ],
+      "scenarios": [
+        "S07",
+        "S20",
+        "S21"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R27",
+      "requirement": "General composition, not compulsory templates",
+      "doc": "docs/06-presentation-compiler.md",
+      "tasks": [
+        "T19",
+        "T39"
+      ],
+      "scenarios": [
+        "S39",
+        "S49"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R28",
+      "requirement": "Multigrain task outputs, queryless paths and fixed/live lineage",
+      "doc": "docs/31-contract-closure.md",
+      "tasks": [
+        "T05",
+        "T09",
+        "T39"
+      ],
+      "scenarios": [
+        "S40",
+        "S41",
+        "S50"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R29",
+      "requirement": "Reasoning, evidence-grounded explanation and explicit visible commits",
+      "doc": "docs/30-smartness-operational.md",
+      "tasks": [
+        "T22",
+        "T40"
+      ],
+      "scenarios": [
+        "S42",
+        "S45",
+        "S46"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R30",
+      "requirement": "Real input/version/quality evidence consistency",
+      "doc": "docs/35-audit-resolution.md",
+      "tasks": [
+        "T01",
+        "T03",
+        "T32"
+      ],
+      "scenarios": [
+        "S43",
+        "S44",
+        "S47",
+        "S48",
+        "S52"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R31",
+      "requirement": "End-to-end smartness evaluation and honest performance",
+      "doc": "docs/32-evaluation-plan.md",
+      "tasks": [
+        "T30",
+        "T39",
+        "T40"
+      ],
+      "scenarios": [
+        "S38",
+        "S39",
+        "S45",
+        "S51"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R32",
+      "requirement": "Weak models remain bounded; semantic residual risk explicit",
+      "doc": "docs/37-model-failure-containment.md",
+      "tasks": [
+        "T41",
+        "T40",
+        "T28"
+      ],
+      "scenarios": [
+        "S53",
+        "S54",
+        "S55",
+        "S56",
+        "S57",
+        "S58",
+        "S59",
+        "S60"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R33",
+      "requirement": "Owner target0.1.0 with safe clean-tree/registry migration",
+      "doc": "docs/18-release-migration.md",
+      "tasks": [
+        "T42",
+        "T36",
+        "T37"
+      ],
+      "scenarios": [
+        "S61",
+        "S62",
+        "S52"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R34",
+      "requirement": "One master SoT and all feedback reconciled",
+      "doc": "docs/39-discussion-ledger.md",
+      "tasks": [
+        "T32"
+      ],
+      "scenarios": [
+        "S64"
+      ],
+      "status": "specified-not-implemented"
+    },
+    {
+      "id": "R35",
+      "requirement": "Beautiful working home/docs/playground and designer DX",
+      "doc": "docs/38-public-site-docs-playground.md",
+      "tasks": [
+        "T27",
+        "T29",
+        "T25"
+      ],
+      "scenarios": [
+        "S63",
+        "S29",
+        "S35"
+      ],
+      "status": "specified-not-implemented"
+    }
+  ]
+}

@@ -1,7 +1,5 @@
-# Code of conduct
+# Community conduct
 
-Participation in Aeliqo spaces requires respectful, constructive collaboration. Harassment, threats, discriminatory conduct, deliberate disclosure of private information, and sustained disruption are not accepted.
+Participate respectfully. Discuss technical decisions with evidence and constructive criticism. Harassment, discrimination, threats, doxxing and disclosure of private data are not acceptable. Respect contributor boundaries and attribution.
 
-Report conduct concerns privately to the repository owner through GitHub. Maintainers may edit or remove contributions, limit participation, or ban accounts when needed to protect the community. Enforcement decisions should be proportionate, documented privately, and avoid exposing reporters or affected people.
-
-This policy applies to repository discussions, issues, pull requests, project events, and public interactions made while representing Aeliqo.
+Repository owners may moderate content and participation. Enforcement must consider context and be proportionate. Report concerns privately through a reporting channel the owner has actually enabled; never publish personal or sensitive incident details to create a report. No fictional enforcement team or SLA is implied.

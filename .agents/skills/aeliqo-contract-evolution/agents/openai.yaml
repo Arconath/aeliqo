@@ -1,6 +1,0 @@
-interface:
-  display_name: "Evolve portable Aeliqo contracts"
-  short_description: "Evolve portable Aeliqo contracts"
-  default_prompt: "Use $aeliqo-contract-evolution for the current Aeliqo repository task. Inspect existing code, implement the relevant slice, and report verified evidence."
-policy:
-  allow_implicit_invocation: true

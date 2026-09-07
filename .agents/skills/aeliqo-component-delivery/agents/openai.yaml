@@ -1,6 +1,0 @@
-interface:
-  display_name: "Deliver a polished component"
-  short_description: "Deliver a polished component"
-  default_prompt: "Use $aeliqo-component-delivery for the current Aeliqo repository task. Inspect existing code, implement the relevant slice, and report verified evidence."
-policy:
-  allow_implicit_invocation: true

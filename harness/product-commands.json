@@ -1,0 +1,5 @@
+{
+  "schemaVersion": 1,
+  "commands": [],
+  "note": "M0 must populate real reproducible argv commands for typecheck, lint, unit, browser, packages, security, performance and boundaries. Empty list is intentionally a failing production gate."
+}

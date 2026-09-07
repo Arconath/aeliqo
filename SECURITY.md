@@ -1,13 +1,7 @@
-# Security policy
+# Security
 
-## Supported versions
+No v0.1.0 runtime has been released by this kit. Do not interpret specification-check badges as runtime security certification.
 
-Security fixes are provided for the latest published `0.x` release. Until a stable `1.0` contract exists, upgrades may include documented compatibility changes.
+Do not post secrets, real employee data, tenant data, exploit credentials or active customer incident details publicly. Use GitHub private vulnerability reporting if the repository owner has enabled it; otherwise request a private reporting channel from the owner without publishing sensitive details. M0 must verify and document an actual reporting channel; no monitored email address is invented here.
 
-## Reporting a vulnerability
-
-Use GitHub's private vulnerability reporting for this repository. Do not open a public issue containing an exploit, credential, private record, pairing URL, or provider request.
-
-Include the affected package and version, impact, minimal reproduction, and any known mitigation. Maintainers will acknowledge a valid report as soon as practical, coordinate a fix and disclosure, and publish a new version rather than replacing an existing registry artifact.
-
-Provider keys must remain in trusted backend process environments. Pairing URLs contain local credentials in their fragment and must not be logged or shared.
+Authorization belongs at the application data/action execution boundary, even after scoped discovery. Refer to docs/13-security-enterprise.md for threat model and release gates. Reproduce with synthetic minimal cases. Releases require dependency/license/SBOM review and actual isolation tests. No response-time SLA is promised without a signed support agreement.

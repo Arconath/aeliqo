@@ -1,6 +1,0 @@
-interface:
-  display_name: "Continue the existing Aeliqo PoC"
-  short_description: "Continue the existing Aeliqo PoC"
-  default_prompt: "Use $aeliqo-poc-reconcile for the current Aeliqo repository task. Inspect existing code, implement the relevant slice, and report verified evidence."
-policy:
-  allow_implicit_invocation: true

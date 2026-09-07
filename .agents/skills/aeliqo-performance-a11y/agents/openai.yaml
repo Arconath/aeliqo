@@ -1,6 +1,0 @@
-interface:
-  display_name: "Measure performance and accessibility"
-  short_description: "Measure performance and accessibility"
-  default_prompt: "Use $aeliqo-performance-a11y for the current Aeliqo repository task. Inspect existing code, implement the relevant slice, and report verified evidence."
-policy:
-  allow_implicit_invocation: true

@@ -1,0 +1,35 @@
+name: Specification and harness checks (not product readiness)
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: specification-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  specification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # verified v7.0.1; review runner requirements in M0
+        with:
+          persist-credentials: false
+      - name: Check specification consistency
+        run: python3 scripts/kit_check.py
+      - name: Test harness safety and numerical oracle
+        run: python3 -m unittest discover -s tests/harness -v
+      - name: Test independent semantic and composition reference experiments
+        run: python3 -m unittest discover -s tests/semantics_reference -v
+      - name: Report pending implementation tasks
+        run: |
+          python3 - <<'CHECK'
+          import json
+          from pathlib import Path
+          tasks = json.loads(Path('harness/tasks.json').read_text())['tasks']
+          print('Required product tasks still pending:', sum(t['status'] != 'done' for t in tasks))
+          print('These checks do not certify the product, package publication, or deployment.')
+          CHECK
+
+# M0 must pin Node/TypeScript/pnpm and add scripts/test_reference.py plus real
+# product commands. This foundation job has not been run on GitHub from this master kit.

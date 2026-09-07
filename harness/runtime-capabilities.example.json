@@ -1,0 +1,13 @@
+{
+  "verified": false,
+  "runtimeVersion": null,
+  "verifiedAt": null,
+  "orchestratorModelId": null,
+  "subagentModelId": null,
+  "orchestratorEfforts": [],
+  "subagentEfforts": [],
+  "runtimeThreadLimit": null,
+  "resourceThreadLimit": null,
+  "supportedConfigKeys": [],
+  "note": "Populate from the actual local client/model picker and supported configuration schema. Do not guess IDs or map max to xhigh silently."
+}

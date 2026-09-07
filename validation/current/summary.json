@@ -1,0 +1,135 @@
+{
+  "kitRevision": "0.1.0-master1.1",
+  "timestamp": "2026-09-07T18:08:19.533151+00:00",
+  "scope": "kit/harness/reference experiments only",
+  "productImplemented": false,
+  "productReady": false,
+  "candidateDigest": "ffcee048f15746a177da0a8f772381bdf7e022c0eec42991511a9d71c9b9a739",
+  "sourceChangedDuringRun": false,
+  "environment": {
+    "python": "3.14.7 (main, Aug  5 2026, 10:29:49) [Clang 21.0.0 (clang-2100.1.1.101)]",
+    "node": "v24.20.0",
+    "typescript": "unavailable",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O"
+  },
+  "status": "incomplete",
+  "checks": [
+    {
+      "check": "kit-consistency",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/kit_check.py"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "outcome": "pass",
+      "log": "validation/current/kit-consistency.log",
+      "sha256": "c0de8db5bd352674bcf83b1b343d2921890548f3fc0ef3a2f4158a3fa0138fd6"
+    },
+    {
+      "check": "python-harness",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/harness",
+        "-v"
+      ],
+      "exitCode": 1,
+      "expectedExitCode": 0,
+      "outcome": "fail",
+      "log": "validation/current/python-harness.log",
+      "sha256": "c04cf6867fcc3b8760a5b3a31acfca030890d0102efa85e02eacd6c94f178525"
+    },
+    {
+      "check": "independent-semantics-composition",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/semantics_reference",
+        "-v"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "outcome": "pass",
+      "log": "validation/current/independent-semantics-composition.log",
+      "sha256": "35d9b1b9183affbce9ce2b6657bc21d2083935cf5e2fc02c38ca6f954500ea38"
+    },
+    {
+      "check": "strict-ts-and-node-guards",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/test_reference.py"
+      ],
+      "exitCode": 2,
+      "expectedExitCode": 0,
+      "outcome": "blocked",
+      "log": "validation/current/strict-ts-and-node-guards.log",
+      "sha256": "9b6a7402fefe11c11a9f6707b4e0dc0cdbd611c9f204d087e2759bc2a89c84a4"
+    },
+    {
+      "check": "reference-search-measurements",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/bench_reference.py"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "outcome": "pass",
+      "log": "validation/current/reference-search-measurements.log",
+      "sha256": "4fa59ba6c8e31d07fd7b403e4c05c0e81565e42fee7e89d1d5a4f95bb95f74e4"
+    },
+    {
+      "check": "publisher-dry-run",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/publish_git.py"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "outcome": "pass",
+      "log": "validation/current/publisher-dry-run.log",
+      "sha256": "16d68f779dbc2a436c2cc58df67cbd4a8546b1a28c3879452bf6ce7b3bf3616d"
+    },
+    {
+      "check": "product-ready-expected-block",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/gate.py",
+        "ready"
+      ],
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "outcome": "pass",
+      "log": "validation/current/product-ready-expected-block.log",
+      "sha256": "de7041687c52449943117b82ed48b731f6468098b6377e98e5514672218bd127"
+    },
+    {
+      "check": "product-release-expected-block",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/gate.py",
+        "release"
+      ],
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "outcome": "pass",
+      "log": "validation/current/product-release-expected-block.log",
+      "sha256": "63257637836f12d6be7c9d7784102526371d031f22dc82399826532f09844c9d"
+    }
+  ],
+  "notTested": [
+    "production runtime",
+    "actual DOM/SSR/hydration",
+    "manual assistive technology",
+    "actual UI latency/pixels",
+    "real model/MCP/native WebMCP",
+    "npm publication",
+    "deployment"
+  ]
+}

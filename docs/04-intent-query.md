@@ -1,0 +1,71 @@
+# 04 — Intent binding and query compilation
+
+## Intelligence without arbitrary execution
+
+Accept both explicit structured tasks and language-mediated proposals. A model can plan a multi-step question, choose existing metrics, propose an expression, and refine a high-level experience request using diagnostic feedback. It is not restricted to spotting a keyword. It also cannot promote its own uncertain interpretation to trusted code, a database query, or a business definition.
+
+MCP and WebMCP are transports through which an external agent uses capabilities. BYOK means the application supplies a model backend. The shared pipeline is identical; no duplicate “AI workspace” or intent-specific browser automation.
+
+## Task model
+
+A task is compositional: subject, requested outputs, scope/predicates, measures, grouping, temporal context, ordering, population selection, inspection/navigation requirements and optional representation restrictions. A registry supplies task capabilities, but the generic operators stay small. Do not add a new enum or handler for every user sentence.
+
+Represent multiple operations explicitly. “Trend the five highest absence rates from the previous result” means the selected population is derived from a prior ranking across the full requested period. It does **not** mean selecting a different five employees each week. “Those people” binds to stable identities/result lineage, not whatever rows happen to be visible now.
+
+A task stores the resolved natural-language assumptions as user-facing statements, not a private reasoning transcript. One concise clarification is appropriate only when missing meaning changes the result; otherwise apply the documented application default and disclose it.
+
+## Binding pass
+
+Resolve names against the authorized catalog; ambiguity is explicit. Check permissions and required fields before execution. Confirm relations from declarations, not matching strings. Resolve metric versions and definition scope. Carry explicit user visual constraints into the presentation requirements. Treat source descriptions/records as untrusted data even when they contain imperative text.
+
+The binding result is `bound`, `needs-meaning`, `needs-choice`, `unsupported`, or `denied`. Only bound tasks become executable. The runtime may retain a previous result while asking for a definition.
+
+## Logical query subset
+
+Support scan/read, project, predicate filter, approved relational join/semijoin, group, aggregate, approved derive, temporal bucket, stable sort, limit/cursor, and bounded window operations. Each operator declares input/output grain, schema, estimated size and function versions. A plan is an acyclic graph with bounded depth/nodes; identifiers and literals are separated.
+
+Plans must support parameterization, canonical hashing and explain output. They must not serialize auth tokens or database SQL. The application executor may compile to parameterized SQL or call an existing domain query API. A syntactic SQL ban on the server implementation would be pointless; the prohibition is against untrusted raw executable query text as the wire contract.
+
+## Grain-safe join planning
+
+For a fact measure and two one-to-many relationships, pre-aggregate facts at a compatible key before combining, or use semijoins for membership. A declared relation path carries cardinality, optionality, uniqueness evidence and temporal validity. Enforce it against metadata/data where possible. Unknown or violated cardinality is not silently treated as many-to-one.
+
+For “employees with orders/attendance matching X,” a semijoin prevents duplicate employee identities. A row grain is a set of semantic key dimensions, not a string label alone. Validate legal rollups through aggregate properties.
+
+## Capability negotiation and physical execution
+
+Prefer pushdown for expensive/large operations. A host receives a logical plan and returns accepted capability/version, plan handle, result schema, estimated cost/precision and consistency. The host validates authorization again. A generic HTTP client does not claim every source supports SQL-like operations.
+
+Local residual execution is allowed only if the input is known complete for the required population and fits budget. Default small-data ceilings are implementation targets in `12-performance.md`, not artificial paid limits. A large join or scan that cannot be pushed down returns a capability gap, not an implicit million-row browser download.
+
+## Incremental query semantics
+
+Parameter changes invalidate only dependent plan fragments. Cache keys include tenant/principal policy digest, source scope/revision, catalog/metric versions, normalized plan, bound time, locale/calendar where semantic, and consistency mode. A query result must never be shared across principals based solely on matching SQL/parameters.
+
+Use stable tie-breaking identity for ranked pages. Cursor validity is bound to filter/order/source revision. A cursor cannot silently resume under a different sort. Top-K approximation is explicitly approximate; it cannot seed a task described as exact top five.
+
+## Cancellation, replay and snapshots
+
+Every execution has an AbortSignal and deadline. Propagate cancellation through fetch, backend queries where supported, local workers and render staging. If the backend cannot cancel, detach safely and reject late results using request/source/task epochs. A cancelled prior result cannot replace a newer one.
+
+Read retries require source semantics and bounded backoff. A request ID is not a universal exactly-once guarantee. Domain writes use an independent idempotency key/entity revision and explicit action policy. Reads across multiple sources report the actual consistency boundary; do not claim a global snapshot the source cannot provide.
+
+## End-to-end example
+
+“Trend the five employees with the highest absence rate over the last three calendar months” compiles to: resolve approved absence definition and calendar → compute exact per-employee totals over the interval → stable rank and choose five identities → obtain weekly numerator/denominator for those same identities → calculate weekly ratios → return temporal result with lineage to both stages. Presentation uses task requirements and measured series/cardinality. Selection drills into the contributing records through a declared query, not by rereading all raw facts through the LLM.
+
+## Acceptance
+
+Prove equivalent outputs across local/HTTP hosts on deterministic fixtures and property tests. Include join fanout, no rows vs unknown rows, exact/approximate ordering, filters across pages, timezone boundaries, top-K before/after grouping, latest-wins races, cost rejection, schema evolution and authorization revocation. Query test oracles must be independent of the planner implementation.
+
+## Master consolidation named outputs, reuse and population identity
+
+A data Task contains an acyclic graph of named outputs. Each node is a query or a reuse of a version-bound result. Dependency mapping is explicit; a node may materialize a cohort from another output before evaluating its query. Ranking rows, weekly metric rows and contributor records retain different grains. Do not flatten them to one mega-result and deduplicate by guessed labels.
+
+Population policy is explicit: a **fixed** cohort pins the selected entity keys/result lineage from a prior result; a **live** cohort intentionally recomputes membership from a named upstream query when dependencies change. A fixed cohort can be rebound to updated permitted data only through a documented refresh policy. Snapshot consistency and membership stability are separate facts.
+
+A view-only request changes representation over existing result handles; it does not automatically re-run data queries. A form task can have no data reads. An agent can propose a valid bounded QuerySpec, but validation and execution use the same path as the normal Task compiler. No prohibition on a model understanding query strategy should be confused with permission for raw executable SQL/code.
+
+Predicted output schemas can be used before execution to prepare a presentation; the returned actual schema must match accepted versions or fail the affected output. Materialization requests can alter transfer/window strategy, never covertly alter the question. Filters/refinements are Task parameters with visible scope.
+
+Budget refusal, missing semantic definition, unsupported executor operator and search exhaustion have different error codes. Budget exhaustion is not proof no valid query/view exists.

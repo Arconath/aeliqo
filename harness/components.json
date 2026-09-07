@@ -1,0 +1,1639 @@
+{
+  "schemaVersion": 1,
+  "status": "planned-not-implemented",
+  "components": [
+    {
+      "id": "foundation.button",
+      "name": "Button",
+      "family": "foundation",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Trigger one explicit action; native button semantics; disabled and pending never double-submit.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "foundation.icon-button",
+      "name": "IconButton",
+      "family": "foundation",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Named compact action with minimum target area; icon alone is never its accessible name.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "foundation.link",
+      "name": "Link",
+      "family": "foundation",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Navigate to an application-approved destination; preserve browser open-in-new-tab behavior.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "foundation.text",
+      "name": "Text",
+      "family": "foundation",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Render trusted/plain text with locale and wrapping; no untrusted HTML interpolation.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "foundation.heading",
+      "name": "Heading",
+      "family": "foundation",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Preserve logical document hierarchy independent of visual size.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "foundation.badge",
+      "name": "Badge",
+      "family": "foundation",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Present a category/status with text as well as color.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "foundation.avatar",
+      "name": "Avatar",
+      "family": "foundation",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Display optional identity image; fallback initials and privacy-safe alt policy.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "foundation.separator",
+      "name": "Separator",
+      "family": "foundation",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Express visual or semantic separation without polluting keyboard order.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "foundation.surface",
+      "name": "Surface",
+      "family": "foundation",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Provide consistent bounded chrome; never impose dashboard cards on every control.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "foundation.stack",
+      "name": "Stack",
+      "family": "foundation",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Arrange children in logical reading order with tokenized spacing.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "foundation.grid",
+      "name": "Grid",
+      "family": "foundation",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Arrange responsive regions without changing semantic/focus order.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "foundation.split-pane",
+      "name": "SplitPane",
+      "family": "foundation",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Resize adjacent regions by pointer and keyboard while respecting minimum task requirements.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "foundation.scroll-area",
+      "name": "ScrollArea",
+      "family": "foundation",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Preserve native scrolling, focus visibility, zoom and platform affordances.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "input.text-field",
+      "name": "TextField",
+      "family": "input",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Label, description, validation, autocomplete and IME-safe controlled/uncontrolled value.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "input.text-area",
+      "name": "TextArea",
+      "family": "input",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Multiline editing preserves draft, selection and composition across unrelated updates.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "input.number-field",
+      "name": "NumberField",
+      "family": "input",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Locale-aware editing separates display text from exact numeric value; do not silently round money.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "input.checkbox",
+      "name": "Checkbox",
+      "family": "input",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Native checked/indeterminate state; group ownership and submitted value are explicit.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "input.radio-group",
+      "name": "RadioGroup",
+      "family": "input",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "One selected option; native semantics or APG-equivalent keyboard behavior.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "input.switch",
+      "name": "Switch",
+      "family": "input",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Binary setting with visible label; changing setting is not implicit business submission.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "input.select",
+      "name": "Select",
+      "family": "input",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Bounded enumerated choice with native-first semantics; empty and unknown value are distinct.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "input.combobox",
+      "name": "Combobox",
+      "family": "input",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Searchable choice with APG behavior; stale remote options cannot overwrite current input.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "input.date-field",
+      "name": "DateField",
+      "family": "input",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Calendar date rather than timezone-shifted timestamp; typed entry and picker agree.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "input.date-range",
+      "name": "DateRange",
+      "family": "input",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Explicit inclusive/exclusive boundaries, timezone/calendar policy and keyboard operation.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "input.slider",
+      "name": "Slider",
+      "family": "input",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Bounded quantity with keyboard and text alternative; steps and units are declared.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "input.search-field",
+      "name": "SearchField",
+      "family": "input",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Explicit/debounced query policy; composition input is not submitted mid-IME.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "input.file-input",
+      "name": "FileInput",
+      "family": "input",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Native file selection; host owns upload and validation; no file bytes enter agent by default.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "input.field-group",
+      "name": "FieldGroup",
+      "family": "input",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Group related controls with legend, descriptions and coordinated validation.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "input.form",
+      "name": "Form",
+      "family": "input",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Native submission semantics, draft validation, error summary and explicit host action; rerender never submits.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "navigation.tabs",
+      "name": "Tabs",
+      "family": "navigation",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Named panels with stable selection; automatic activation only when latency permits.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "navigation.breadcrumb",
+      "name": "Breadcrumb",
+      "family": "navigation",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Reversible context path; approved routes and current-location semantics.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "navigation.pagination",
+      "name": "Pagination",
+      "family": "navigation",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Stable cursor/page scope; loaded rows are not misrepresented as global selection.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "navigation.menu",
+      "name": "Menu",
+      "family": "navigation",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Action menu with focus return and keyboard behavior; no layout-generated business actions.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "navigation.tree-nav",
+      "name": "TreeNav",
+      "family": "navigation",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Hierarchical navigation with stable node identities, expansion and keyboard semantics.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "feedback.tooltip",
+      "name": "Tooltip",
+      "family": "feedback",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Supplemental nonessential information; works on focus, dismisses, not the sole label.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "feedback.popover",
+      "name": "Popover",
+      "family": "feedback",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Contextual nonmodal surface with explicit focus/dismiss behavior and viewport containment.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "feedback.dialog",
+      "name": "Dialog",
+      "family": "feedback",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Native-first modal semantics, focus containment/return and escape policy.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "feedback.drawer",
+      "name": "Drawer",
+      "family": "feedback",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Inline or modal detail according to an explicit mode; do not mix the two focus models.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "feedback.toast",
+      "name": "Toast",
+      "family": "feedback",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Bounded transient feedback; essential errors remain persistently available elsewhere.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "feedback.alert",
+      "name": "Alert",
+      "family": "feedback",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Persistent status/error with severity semantics and actionable recovery.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "feedback.progress",
+      "name": "Progress",
+      "family": "feedback",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Determinate or unknown progress honestly; no invented completion percentages.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "feedback.skeleton",
+      "name": "Skeleton",
+      "family": "feedback",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Stable reserved geometry with reduced motion and a named loading state.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "feedback.empty-state",
+      "name": "EmptyState",
+      "family": "feedback",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Distinguish no records, no matches, forbidden data, loading and failure.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "data.metric",
+      "name": "Metric",
+      "family": "data",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "One validated value or aggregate with units, scope and unavailable state.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "data.delta",
+      "name": "Delta",
+      "family": "data",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Explicit compatible baseline; zero denominator and percentage-point versus relative change distinguished.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "data.key-value",
+      "name": "KeyValue",
+      "family": "data",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Labeled facts with stable ordering, wrapping and semantic links.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "data.detail",
+      "name": "Detail",
+      "family": "data",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Selected entity facts including missing fields; record identity persists across views.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "data.record-list",
+      "name": "RecordList",
+      "family": "data",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Scannable records with identity-based selection and reachable additional fields.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "data.card-collection",
+      "name": "CardCollection",
+      "family": "data",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Repeated compact records; preserve reading order, headings and bounded loading.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "data.table",
+      "name": "Table",
+      "family": "data",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Native table first; separate interactive-grid mode; sorting, paging, selection, virtualization and precise values.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "data.filter-builder",
+      "name": "FilterBuilder",
+      "family": "data",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Typed predicates, AND/OR/null handling, visible inherited scope and explicit query application.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "data.selection-summary",
+      "name": "SelectionSummary",
+      "family": "data",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Disclose selected identities or server predicate scope; never imply unobserved global selection.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "visualization.trend",
+      "name": "Trend",
+      "family": "visualization",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Temporal metric series, declared grain, gaps and exact accessible summaries.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "visualization.bar",
+      "name": "Bar",
+      "family": "visualization",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Comparable quantitative categories; baseline and negative values correctly represented.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "visualization.area",
+      "name": "Area",
+      "family": "visualization",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Temporal area/stack with compatible additive measures; reject misleading nonadditive stacking.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "visualization.scatter",
+      "name": "Scatter",
+      "family": "visualization",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Two quantitative axes, declared units, stable point selection and noncausal interpretation.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "visualization.histogram",
+      "name": "Histogram",
+      "family": "visualization",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Declared binning, count/density labeling and missing-population disclosure.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "visualization.heatmap",
+      "name": "Heatmap",
+      "family": "visualization",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Two dimensions and one measure; accessible exact cell values and readable color key.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "visualization.matrix",
+      "name": "Matrix",
+      "family": "visualization",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Entity-feature comparison preserving row/column association and useful comparison at narrow width.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "visualization.relationship",
+      "name": "Relationship",
+      "family": "visualization",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Declared edges/cardinality only; deterministic bounded layout with accessible adjacency view.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "visualization.tree",
+      "name": "Tree",
+      "family": "visualization",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Explicit hierarchy, cycle validation, stable expansion and equivalent text navigation.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "visualization.treemap",
+      "name": "Treemap",
+      "family": "visualization",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Nonnegative additive hierarchy; area meaning and tiny-node access preserved.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "visualization.timeline",
+      "name": "Timeline",
+      "family": "visualization",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Dated events/intervals with timezone semantics, explicit overlaps and chronological alternative.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "visualization.calendar-grid",
+      "name": "CalendarGrid",
+      "family": "visualization",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Calendar-aligned 2D values/events; locale week boundaries and noncolor exact values.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "compound.explorer",
+      "name": "Explorer",
+      "family": "compound",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Filter plus collection plus selected detail using shared parameter/selection state.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "compound.comparison",
+      "name": "Comparison",
+      "family": "compound",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "A stable compare-set with compatible metrics and simultaneous comparison affordances.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "compound.breakdown",
+      "name": "Breakdown",
+      "family": "compound",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Group a declared metric and inspect contributing records; recompute ratios from sufficient statistics.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "compound.investigation",
+      "name": "Investigation",
+      "family": "compound",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Trend, baseline, event timeline and detail; associations never imply causes.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "compound.search-results",
+      "name": "SearchResults",
+      "family": "compound",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Query state, collection, scoped result count and details with stale-result protection.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "compound.record-editor",
+      "name": "RecordEditor",
+      "family": "compound",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Existing primitive form over a host-owned action with entity revision and explicit save/cancel.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "compound.form-flow",
+      "name": "FormFlow",
+      "family": "compound",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Task-based steps, draft persistence, validation and reversible navigation before commit.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "compound.quality-panel",
+      "name": "QualityPanel",
+      "family": "compound",
+      "status": "planned",
+      "requiredFor": "0.1.0",
+      "license": "Apache-2.0",
+      "contract": "Source, freshness, completeness, provenance and unsupported claims displayed honestly.",
+      "surfaces": [
+        "standalone",
+        "semantic",
+        "region"
+      ],
+      "evidenceRequired": [
+        "typed-api",
+        "behavior",
+        "a11y-keyboard",
+        "visual-matrix",
+        "package-import",
+        "cleanup"
+      ],
+      "evidence": []
+    }
+  ]
+}

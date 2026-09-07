@@ -1,0 +1,12 @@
+{
+  "orchestrator": {
+    "displayName": "Astra",
+    "effort": "medium"
+  },
+  "subagent": {
+    "displayName": "Luna",
+    "effort": "max"
+  },
+  "concurrency": "maximum-useful-within-verified-runtime-and-resource-limits",
+  "globalConfigurationChanges": false
+}
