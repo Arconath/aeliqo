@@ -6,7 +6,6 @@ case "${1:-static}" in
     test "$(id -u)" -ne 0
     docker version >/dev/null
     docker buildx version >/dev/null
-    docker buildx inspect "${BUILDX_BUILDER:-default}" >/dev/null
     ;;
   static)
     test "$(find .github/workflows -maxdepth 1 -type f -name '*.yml' -print | wc -l | tr -d ' ')" = 3

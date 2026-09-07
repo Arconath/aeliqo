@@ -19,9 +19,7 @@ Path(os.environ['DOCKER_CONFIG'], 'config.json').write_text(json.dumps({'auths':
 PY
 out=out/ci-release
 mkdir -p "$out"
-builder="${BUILDX_BUILDER:-default}"
 docker buildx build \
-  --builder "$builder" \
   --file Dockerfile \
   --build-arg "SOURCE_REVISION=$SOURCE_SHA" \
   --label "org.opencontainers.image.revision=$SOURCE_SHA" \

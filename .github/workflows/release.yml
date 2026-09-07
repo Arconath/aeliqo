@@ -46,9 +46,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_ACTOR: ${{ github.actor }}
           SOURCE_SHA: ${{ github.sha }}
-          BUILDX_BUILDER: aeliqo-release
         run: |
-          docker buildx create --name "$BUILDX_BUILDER" --driver docker-container --use
+          docker buildx create --driver docker-container --use
           docker buildx inspect --bootstrap
           scripts/ci/check-runner-contract.sh --runtime=hosted
           scripts/ci/publish-image.sh
