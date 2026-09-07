@@ -57,6 +57,7 @@ jobs:
       - name: Validate canonical core contracts and installed package
         run: |
           pnpm test:contracts
+          pnpm test:task-experience
           pnpm test:core:consumers
       - name: Verify external installed packages
         run: pnpm test:platform:consumers

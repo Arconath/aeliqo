@@ -149,9 +149,10 @@
         "Pin function/definition versions; ratio-of-sums versus mean-of-rates is selected by declared meaning, not a blanket math rule.",
         "Implement developer typed code/config authoring over canonical meaning; reuse schema references and reject invalid refs/units/grain. No dependency on Studio or model SDK."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "Exclusive Luna Max writer /tmp/aeliqo-t04-semantics from bc7c089; expressions/semantics/tests only. Parent owns canonical contracts/root integration. Independent review before acceptance."
     },
     {
       "id": "T05",
@@ -163,15 +164,34 @@
       ],
       "paths": [
         "packages/core/src/contracts/task",
-        "packages/core/src/contracts/experience"
+        "packages/core/src/contracts/experience",
+        "tests/task-experience",
+        "tests/consumers/core-tarball.mjs"
       ],
       "acceptance": [
         "Task operations/parameters and hard-constraint intersection have deterministic validation.",
         "Task supports named outputs, fixed/live populations and queryless presentation/form kinds. Separate three graph kinds."
       ],
-      "status": "planned",
+      "status": "done",
       "stage": "ready",
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t05/8d156a929ced/manifest.json",
+          "sha256": "718f2a71e97b3ca240fdc47a7dae34861abd0a0e53a72de66c48c288d63efd83"
+        }
+      ],
+      "notes": "Named output structure and queryless/fixed/live behavior, hard Experience intersection and independent installed consumer accepted. Binding, authorization and renderer feasibility remain separate passes.",
+      "review": {
+        "status": "approved",
+        "author": "integration orchestrator (Task/Experience and focused tests); release_inventory (installed consumer)",
+        "reviewer": "preflight_diagnosis (Task/Experience); integration orchestrator (independent installed consumer review)",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t05/8d156a929ced/review.json",
+            "sha256": "7113c3fe8f85a67d5d1c25dc192f798dccbe1fff0a309be7e38087c1f4059f20"
+          }
+        ]
+      }
     },
     {
       "id": "T06",

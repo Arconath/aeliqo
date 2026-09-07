@@ -17,7 +17,8 @@
     "test:next-platform": "pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/next-platform-fixture build && playwright test --config tests/next-platform/playwright.config.mjs",
     "build:core": "pnpm --filter @aeliqo/core build",
     "test:contracts": "pnpm build:core && vitest run --config tests/contracts/vitest.config.mjs && tsc -p tests/contracts/tsconfig.json --noEmit",
-    "test:core:consumers": "node tests/consumers/core-tarball.mjs"
+    "test:core:consumers": "node tests/consumers/core-tarball.mjs",
+    "test:task-experience": "pnpm build:core && vitest run --config tests/task-experience/vitest.config.mjs && tsc -p tests/task-experience/tsconfig.json"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

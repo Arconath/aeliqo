@@ -3,6 +3,7 @@
 Pure, versioned Aeliqo wire contracts for **Catalog**, **Task**, **Result**, and
 **Experience**. This implementation currently supplies canonical schemas, inferred
 readonly TypeScript types, bounded parsing, diagnostics, and stable serialization.
+Task structure and Experience restriction intersection are also available.
 Semantic compilation and evaluation are subsequent implementation slices.
 
 ```ts
@@ -52,3 +53,35 @@ network, or runtime-generated code is required by the public parser entry.
 The no-code-generation guarantee concerns execution: the pinned schema dependency
 contains an unused lazy compiler, but parsing works with string-code generation
 disabled. It is not a claim that every dependency source file lacks that syntax.
+
+## Task structure and Experience restrictions
+
+`validateTaskStructure(input)` validates the wire shape and named output graph,
+then returns the parsed task, a stable dependency order, and external result
+references. Fixed cohorts retain their complete result handles without acquiring
+an implicit dependency on a current output; live cohorts require an explicit
+upstream query edge and cannot turn an immutable reuse into live membership.
+Reuse outputs can rename prior outputs. Presentation and form
+tasks have no fabricated query. Different presentation handles may share output
+names, but an operation targeting such a name is ambiguous; use named reuse
+outputs to disambiguate those operation targets.
+
+`resolveExperienceConstraints(experience, task, restrictions)` intersects hard
+restrictions. An omitted restriction list field is unconstrained by that layer;
+an empty list permits nothing. Required operations and simultaneous groups remain
+intact. Explicit representation requests constrain the result; preferred requests
+remain soft. Empty pattern lists still permit bounded composition when the
+profile allows it. The initial search ceiling remains 64 expansions.
+
+Restrictions can reduce mode, agent enablement, allowed representations/patterns,
+operation revisions, extensions, budgets and automatic transition policy. They
+cannot expand the profile or an earlier restriction. Fixed mode disallows
+representation replacement; adaptive mode permits equivalent replacement;
+composable mode permits composition changes. The eventual presentation validator
+must enforce those flags against the actual current view and candidate.
+
+These passes do not execute reads, validate result permissions, bind a catalog,
+prove accessible renderer behavior, or grant actions/model egress. Host policy
+and candidate validation remain independent. `agentAllowed: true` is a profile
+setting, never an authenticated grant. Container width is not accepted as a
+reason to remove keyboard operations or essential comparisons.

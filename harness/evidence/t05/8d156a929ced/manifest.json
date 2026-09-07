@@ -1,0 +1,81 @@
+{
+  "sourceDigest": "8d156a929cedcd27f9bcec7c3d0c588827f6a300cc4adde1bda24bab81a74880",
+  "files": [
+    {
+      "path": "00.log",
+      "sha256": "7986b7e3f6d3dc2fcab1871fe39f4f28e06e30471e3d8b641306809eac5ee775"
+    },
+    {
+      "path": "01.log",
+      "sha256": "86cb2a3d23f513702a11fb398c36122397ff668dfaf59fdefb36e61714d10ce3"
+    },
+    {
+      "path": "02.log",
+      "sha256": "3d55eeb6b8b3165f472cc6da5379531390e285f352c9f29f06e631901808b8b4"
+    },
+    {
+      "path": "03.log",
+      "sha256": "8f93e376f3f4cebf1bb1d78b07050f4b3eaa56093ff1218ccebc435a38c36b97"
+    },
+    {
+      "path": "04.log",
+      "sha256": "7668640b1d5628ad26524b01aca4ad3d8c93d3aaba9f34ed34ab59208a2b034a"
+    },
+    {
+      "path": "05.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "consumer-package-lock.json",
+      "sha256": "aed26a082b21bd5c5452ae0919d6d3b9108fad7a5db506258e5739fad7d59949"
+    },
+    {
+      "path": "kit-reference/independent-semantics-composition.log",
+      "sha256": "4d4ebea0931f7ba16b4be6511fe49369570c04c7ed9a85b1f48531f1de65d5fa"
+    },
+    {
+      "path": "kit-reference/kit-consistency.log",
+      "sha256": "4bbf4b5ddb480cb8eccc4c3ef4d150f8f62c31715b8446c6b664689b01cc0d2b"
+    },
+    {
+      "path": "kit-reference/product-ready-expected-block.log",
+      "sha256": "ce593bea3fbad552411cc75dd48bcdc8e4638d6c139e9bd8e20f9d66235dcae4"
+    },
+    {
+      "path": "kit-reference/product-release-expected-block.log",
+      "sha256": "c182a87a78d4c85b329ddb8f0203061f5722304b6935250cccfbad8152d055d5"
+    },
+    {
+      "path": "kit-reference/publisher-dry-run.log",
+      "sha256": "c13ab807ced1de045828e5fb62bcb03d6fc0bdb425b16f4f4b9447170992b0d1"
+    },
+    {
+      "path": "kit-reference/python-harness.log",
+      "sha256": "33c03b81efa909b730b5a6dc1471e9ade417b75d07108ac5f7f5e6c6e82bcbd8"
+    },
+    {
+      "path": "kit-reference/reference-search-measurements.log",
+      "sha256": "3adb56109f49dd27debc55a541ce772d1425cba2d45df6782db88fcdacdd583a"
+    },
+    {
+      "path": "kit-reference/strict-ts-and-node-guards.log",
+      "sha256": "8bb6169982b0b8edd62979de3ee7f88482a1132653bcd8f56d2b7e301a5de818"
+    },
+    {
+      "path": "kit-reference/summary.json",
+      "sha256": "ee409ba8214bcd9284373f5a2ab28c3bf8dccc4ec3d53fff5653ab998fea2086"
+    },
+    {
+      "path": "report.json",
+      "sha256": "714fda920064f3965ebf8fd0ac295168c1799ff0e917722d94304f34c34d1b97"
+    },
+    {
+      "path": "review.json",
+      "sha256": "7113c3fe8f85a67d5d1c25dc192f798dccbe1fff0a309be7e38087c1f4059f20"
+    },
+    {
+      "path": "summary.json",
+      "sha256": "3c345954cc4682bafab4e324dcad41072cef0beb0d6a0f69fbb6648f94f5fbb9"
+    }
+  ]
+}

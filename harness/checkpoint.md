@@ -38,9 +38,18 @@ parser bundle is14,561gzip bytes; this is not a full planner budget claim.
 Independent core/integration reviews approved. Immutable evidence:
 harness/evidence/t03/e3c7fe05d213. Hosted M0 CI34155815825 also succeeded.
 
-T04 semantic expression/meaning validation and T05 Task/Experience constraints are
-next ready workstreams. Parent owns canonical schemas/root integration; workers
-use isolated non-overlapping modules and reviewed exact dependency commits.
-T42 publication remains blocked on npm namespace access/history (E401), not source
-implementation. All71catalog components and remaining task acceptance stay
-mandatory. Continue the DAG and early T39; no source publication/deployment claim.
+T05 Task/Experience passes are accepted: stable named-output dependencies,
+fixed/live distinction, queryless tasks, precise operation targets and monotone
+restriction intersection. Required comparisons survive every layer. Fresh23tests,
+43contract regressions, strict types, installed consumer and kit checks pass.
+Independent review closed reuse-as-live and overly broad output-name ambiguity.
+Evidence: harness/evidence/t05/8d156a929ced. T03 hosted CI34157687833 succeeded.
+
+T04 semantic expression/meaning validation remains active in isolated worktree
+/tmp/aeliqo-t04-semantics, Luna Max writer platform_proof, dependency bc7c089.
+Parent/reviewer feedback covers units, exact decimals, immutable ref collisions,
+code-owned definition conflicts, active authority and bounded expression traversal.
+T06 data boundary prep read docs02/27; implementation waits for accepted T04.
+Parent owns canonical schemas/root integration. T42 publication remains blocked
+on npm namespace access/history (E401), not source work. All71catalog components
+and remaining acceptance stay mandatory. Continue the DAG and early T39.

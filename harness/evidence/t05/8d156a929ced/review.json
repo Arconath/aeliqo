@@ -1,0 +1,23 @@
+{
+  "status": "approved",
+  "sourceDigest": "8d156a929cedcd27f9bcec7c3d0c588827f6a300cc4adde1bda24bab81a74880",
+  "author": "integration orchestrator (Task/Experience and focused tests); release_inventory (installed consumer)",
+  "reviewer": "preflight_diagnosis (Task/Experience); integration orchestrator (independent installed consumer review)",
+  "scope": "T05 structural Task and hard Experience constraint passes, not semantic binding/authorization or renderer feasibility",
+  "resolved": [
+    "Ambiguity only for needs targeting distinct handles with a colliding output ID",
+    "Live cohorts must source a query, not immutable reuse",
+    "Required operations and simultaneous groups remain intact across restriction intersection"
+  ],
+  "independentChecks": [
+    "23 focused tests plus strict TypeScript",
+    "Named multigrain outputs, fixed/live cohorts, queryless tasks, cycles, versioned operation restrictions",
+    "Installed public package declarations/runtime/graph/no-codegen exercised",
+    "43 canonical contract regression tests and full kit/reference checks pass"
+  ],
+  "limits": [
+    "A structurally valid task is not executable or authorized by this pass",
+    "Empty pattern list is not a no-preset composition ban",
+    "Candidate renderer, accessible layout and current-view transition validation remain later passes"
+  ]
+}
