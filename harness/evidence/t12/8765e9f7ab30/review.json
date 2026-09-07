@@ -1,0 +1,47 @@
+{
+  "status": "approved",
+  "author": "release_inventory (Luna Max) token/theme/locale source; parent integration and browser tests",
+  "reviewer": "preflight_diagnosis (independent Luna Max) source/export/contrast/locale/parts; parent visual inspection",
+  "reviewedIntegrationCommit": "c1f19e0",
+  "scope": "Scoped T12 reference on the current Chromium/macOS environment, using actual shared input/table/chart elements",
+  "findingsClosed": [
+    "legacy inherited custom properties preserved",
+    "standalone inherit hosts do not override ancestor theme",
+    "canonical locale direction from platform metadata or explicit host choice",
+    "dark visualization series contrast fixed from 2.39:1",
+    "focus/border/padding/spacing tokens wired into actual elements",
+    "disabled inputs have a visible distinct state",
+    "browser ports isolated from unrelated local projects"
+  ],
+  "visualChecks": [
+    "1280 light and dark: hierarchy, focus, error/disabled/read-only state and table/chart alignment",
+    "360 RTL: long Arabic label wraps and logical alignment is retained",
+    "320 with200percent text: page reflows and keyboard scrolling reaches all table columns",
+    "forced colors and reduced motion retain controls and focus",
+    "768 dark: intermediate layout and theme inheritance"
+  ],
+  "environment": {
+    "node": "v24.20.0",
+    "npm": "11.19.0",
+    "pnpm": "11.24.0",
+    "typescript": "7.0.2",
+    "vite": "8.2.2",
+    "playwright": "1.63.0",
+    "chromium": "153.0.8010.12",
+    "os": "darwin",
+    "release": "25.6.0",
+    "arch": "arm64",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "locale": "en-US",
+    "deviceScaleFactor": 1
+  },
+  "limitations": [
+    "Screenshots were inspected by the orchestrator, not presented as owner or human visual signoff.",
+    "200percent text and narrow reflow are tested; no blanket native400percentzoom certification.",
+    "Full71component states and release-wide browser/assistive-technology coverage remain required."
+  ],
+  "recordedAt": "2026-09-07T21:15:17.779881+00:00"
+}

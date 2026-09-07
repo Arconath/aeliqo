@@ -1,0 +1,121 @@
+{
+  "sourceDigest": "8765e9f7ab3084d7691f97b82142106e1dca4e2004eb487164dc92678e2b7c23",
+  "files": [
+    {
+      "path": "00.log",
+      "sha256": "72994c7821b4b15b439ab075b30a771c74e7dcc90b91f0320e2d8c2a24ffd2d2"
+    },
+    {
+      "path": "01.log",
+      "sha256": "b1f16fdabaf617fc1a7599a2acb451d739362bb39a32e50529a0646f0153cd98"
+    },
+    {
+      "path": "02.log",
+      "sha256": "7d95d486708899c7d072f5499a3739eae7d9a787d28c345b8cd58f1c261669d0"
+    },
+    {
+      "path": "03.log",
+      "sha256": "c582449e861f4775fc53e49a2279859d5ff065d03b821376451a11af0fe19fb7"
+    },
+    {
+      "path": "04.log",
+      "sha256": "4b89937dc71dd430ff320b4d3bec327fefba227773284dfea79abe76acecb02a"
+    },
+    {
+      "path": "05.log",
+      "sha256": "db94ac48ff888acf08f7c957f3ac5457405a36aa7b678560d504260d5a1f4ab0"
+    },
+    {
+      "path": "06.log",
+      "sha256": "7f091a7982af1c3ddbd269f50c69dedec1dbee37257c45350ef53a0fc26e1379"
+    },
+    {
+      "path": "07.log",
+      "sha256": "7668640b1d5628ad26524b01aca4ad3d8c93d3aaba9f34ed34ab59208a2b034a"
+    },
+    {
+      "path": "08.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "consumer-package-lock.json",
+      "sha256": "8734446611e1c3cee5d8ed03e0e4ea76ef08bd15e56d2f958d966a853f5c5dfa"
+    },
+    {
+      "path": "installed-input.png",
+      "sha256": "a547a084028d14c0a8a87f7e2fa4a1891c1e70daee20e4bfb0ecfaeadc4191dd"
+    },
+    {
+      "path": "kit-reference/independent-semantics-composition.log",
+      "sha256": "6f31828a7276d84222822ea97a1a192a2605830c9770a71be0f1f26794d566e3"
+    },
+    {
+      "path": "kit-reference/kit-consistency.log",
+      "sha256": "49ab15bb8eb628cce45457fc2d85df321874ca0ba67b8818b3cc3c447fe4401d"
+    },
+    {
+      "path": "kit-reference/product-ready-expected-block.log",
+      "sha256": "8203641e86f106500674f2017cd8a72fc069d9369c78b9aaab890ecf4448ea0c"
+    },
+    {
+      "path": "kit-reference/product-release-expected-block.log",
+      "sha256": "819df371882ede6c43ca6180dcff53db50c12422d85ee1f4f1aeebc82ad52cfe"
+    },
+    {
+      "path": "kit-reference/publisher-dry-run.log",
+      "sha256": "2d436e1b1bd3a93ee6454a8135a6f63111ad07dc06cc5d896e9ce8a130ee3662"
+    },
+    {
+      "path": "kit-reference/python-harness.log",
+      "sha256": "d52ba9958a59dfea54f600f0809452ce58627cc89719c0c6eba6f0aeaf07d49a"
+    },
+    {
+      "path": "kit-reference/reference-search-measurements.log",
+      "sha256": "27e7c8e3df4a8665f2daa496414f648ed4d44f89071b9f448a90796698311ae2"
+    },
+    {
+      "path": "kit-reference/strict-ts-and-node-guards.log",
+      "sha256": "13efc9207359a4ad11c0b9cb515b7cbb33c198fac8f3d2a00043c9df9bbb9e5d"
+    },
+    {
+      "path": "kit-reference/summary.json",
+      "sha256": "9aae9f2cfc8cc9abbb7886129032e850109ab3ec63790c1f2b844d64057296a1"
+    },
+    {
+      "path": "report.json",
+      "sha256": "1fd807d277b5d657c9752f79d313e6662c09645c6bbeb0c28f4420c97c09ee80"
+    },
+    {
+      "path": "review.json",
+      "sha256": "ad8787330bf73b99d0a8d72f5aff181e42e6fa6898d00ed3029a5efcd3a90474"
+    },
+    {
+      "path": "screenshots/dark-1280.png",
+      "sha256": "912a52422975338b6c8690ed15d8919ec603f4355576fa7224761045127eba5c"
+    },
+    {
+      "path": "screenshots/dark-768.png",
+      "sha256": "cb9df185e2d2a2727e1e44b3847b1be9bcc88f6ac6ef455e1ded5054494c54ae"
+    },
+    {
+      "path": "screenshots/forced-colors-320.png",
+      "sha256": "abfe3bfe0b27fed557df6fccc21d47d0f35233c4c4e3258e59afad774a9231a2"
+    },
+    {
+      "path": "screenshots/light-1280.png",
+      "sha256": "ea3c1ff7bf5261bbbb1c7952ac947b18f7a742e71a8ef3fcef43f32f9a8d6f8d"
+    },
+    {
+      "path": "screenshots/rtl-360.png",
+      "sha256": "473f683daad0b48f3fe440b52341562c6c9a83bbfc4a7e4a02f95cab550de376"
+    },
+    {
+      "path": "screenshots/rtl-text-200-320.png",
+      "sha256": "a7248d8d31872756c2a61ae43a16bff7e57eae3dd62248d89a888a676cbb6b9c"
+    },
+    {
+      "path": "summary.json",
+      "sha256": "6949462fca4931ea7f9d7f0f389ba0351827e9966a20b800ff5b945ed371f7be"
+    }
+  ]
+}

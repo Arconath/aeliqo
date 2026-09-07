@@ -1,0 +1,19 @@
+$ pnpm build:platform && playwright test --config tests/design/playwright.config.mjs
+$ pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/react build
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+[WebServer] (node:64147) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:64153) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 4:12:05 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  1 tests/design/baseline.spec.ts:4:5 › themes inherit, legacy overrides survive, and direct inputs keep native state (819ms)
+[WebServer] 4:12:06 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  2 tests/design/baseline.spec.ts:50:5 › narrow RTL, text scaling and forced colors preserve content access (678ms)
+[WebServer] 4:12:07 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  3 tests/design/baseline.spec.ts:75:5 › system preference and explicit ancestor choices remain distinct (139ms)
+
+  3 passed (2.1s)

@@ -350,10 +350,26 @@
       "acceptance": [
         "DTCG-compatible tokens, named parts, default visual system and accessible baseline approved as testable reference."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "Exclusive Luna Max writer release_inventory in /tmp/aeliqo-t12-design from d6827fa; design, docs/design, packages/web/src/styles only. Parent owns component/root integration and visual verification; independent review required."
+      "evidence": [
+        {
+          "path": "harness/evidence/t12/8765e9f7ab30/manifest.json",
+          "sha256": "d3143cb23db5664ae1311ea76c7c0846d37f29c06cfb68998f7a1bc13c4a94fd"
+        }
+      ],
+      "notes": "Scoped owned baseline accepted with generated DTCG tokens, locale/parts exports, actual input/table/chart integration, contrast tests, browser screenshots and independent review. Full catalog states/native400percentzoom/release AT remain separate.",
+      "review": {
+        "status": "approved",
+        "author": "release_inventory (Luna Max) token/theme/locale source; parent integration and browser tests",
+        "reviewer": "preflight_diagnosis (independent Luna Max) source/export/contrast/locale/parts; parent visual inspection",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t12/8765e9f7ab30/review.json",
+            "sha256": "ad8787330bf73b99d0a8d72f5aff181e42e6fa6898d00ed3029a5efcd3a90474"
+          }
+        ]
+      }
     },
     {
       "id": "T13",

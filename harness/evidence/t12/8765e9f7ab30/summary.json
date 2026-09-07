@@ -1,0 +1,82 @@
+{
+  "sourceDigest": "8765e9f7ab3084d7691f97b82142106e1dca4e2004eb487164dc92678e2b7c23",
+  "sourceAfter": "8765e9f7ab3084d7691f97b82142106e1dca4e2004eb487164dc92678e2b7c23",
+  "sourceChangedDuringRun": false,
+  "commands": [
+    {
+      "argv": [
+        "pnpm",
+        "test:design"
+      ],
+      "exitCode": 0,
+      "log": "00.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "typecheck"
+      ],
+      "exitCode": 0,
+      "log": "01.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "test:platform"
+      ],
+      "exitCode": 0,
+      "log": "02.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "test:platform:browser"
+      ],
+      "exitCode": 0,
+      "log": "03.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "test:design:browser"
+      ],
+      "exitCode": 0,
+      "log": "04.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "test:platform:consumers"
+      ],
+      "exitCode": 0,
+      "log": "05.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "test:next-platform"
+      ],
+      "exitCode": 0,
+      "log": "06.log"
+    },
+    {
+      "argv": [
+        "python3",
+        "scripts/validate_all.py"
+      ],
+      "exitCode": 0,
+      "log": "07.log"
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0,
+      "log": "08.log"
+    }
+  ],
+  "completedAt": "2026-09-07T21:12:36.300155+00:00",
+  "scope": "T12 owned tokens, theme/locale/named parts and real input/table/chart integration on Chromium/macOS; theme inheritance, token overrides, RTL and 200 percent text, keyboard comparison scroll, forced colors, isolated tarballs, native form/SSR regressions. Full 71-component states and release-wide assistive technology coverage remain separate."
+}

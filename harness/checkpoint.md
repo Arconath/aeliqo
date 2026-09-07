@@ -62,11 +62,15 @@ configuration, lockfile and integration. Initial flat-record query subset must
 reject unsupported analytical operations untilT07/T08. Principal/policy authority
 is injected by the server; meaning registration is a trusted local control path.
 
-T12 is active: token/theme/locale source is integrated; parent is integrating real
-input/table/chart styles, typed style exports and a live browser design fixture.
-Light/dark/RTL/text scaling/forced-colors and native form/SSR regression checks
-are running. Dark chart-series contrast was found below3:1 and is being corrected
-before baseline acceptance. No automatic visual approval or full71component claim.
+T12 owned token/theme/locale baseline is accepted. Real input/table/chart elements
+consume shared tokens and preserve host overrides and draft state. Dark chart
+contrast, inherited themes and token wiring were corrected. Fresh7design tests,
+3designbrowser tests,10platformbrowser tests,3SSR tests, installed web/React/styles
+consumer and1productionNextSSR/hydration check pass. Independent review and
+orchestrator screenshot inspection are recorded in harness/evidence/t12/8765e9f7ab30.
+Evidence scope is current Chromium/macOS plus narrow/200percenttext/RTL/forcedcolors;
+full71components, native400percentzoom and release-wide AT remain mandatory.
+Browser checks now select isolated ports and leave unrelated local projects alone.
 
 T42 publication remains blocked on npm namespace access/history(E401), not source
 work. Main and production remain unchanged. Continue the DAG and earlyT39.
