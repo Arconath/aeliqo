@@ -462,15 +462,23 @@ const t04Fixtures = {semanticCatalogInput};
 
 await writeFile(join(consumerDirectory, "consumer-types.ts"), `
 import {
-  parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract,
+  parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue,
   validateTaskStructure, resolveExperienceConstraints,
   createStandardFunctionRegistry, createTypedAuthoring,
 } from '@aeliqo/core';
 import type {
-  Catalog, Task, Result, Experience, Outcome, TaskStructure,
+  Catalog, Task, Result, Experience, Outcome, TaskStructure, Wire,
   ExperienceRestriction, ExperienceConstraints, TypedAuthoring, TypedExpression,
   FunctionRegistry, MeaningDefinition, MeaningBundle,
 } from '@aeliqo/core';
+const unknownWire: Outcome<unknown> = parseWireValue('{}');
+if (unknownWire.ok) {
+  // @ts-expect-error Ingress is unknown until an envelope schema validates it.
+  unknownWire.value.scope;
+}
+// @ts-expect-error Present undefined is not a wire member.
+const invalidWire: Wire<{scope?: string | undefined}> = {scope: undefined};
+void invalidWire;
 declare const catalog: Catalog;
 declare const task: Task;
 declare const result: Result;
@@ -555,10 +563,13 @@ import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {readFile} from 'node:fs/promises';
 import {
-  parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract,
+  parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue,
   validateTaskStructure, resolveExperienceConstraints,
   checkExpression, createStandardFunctionRegistry, createTypedAuthoring, authorizeMeaningActivation,
 } from '@aeliqo/core';
+assert.deepEqual(parseWireValue('{"requestId":"one"}'), {ok:true,value:{requestId:'one'}});
+assert.equal(parseWireValue('{"requestId":"one","requestId":"two"}').ok, false);
+assert.equal(parseWireValue({requestId:undefined}).ok, false);
 const documents = ${fixtureSource};
 const t05 = ${t05FixtureSource};
 const t04 = ${t04FixtureSource};
@@ -711,6 +722,10 @@ import assert from 'node:assert/strict';
 globalThis.Function = () => { throw new Error('Function constructor used by core parser'); };
 globalThis.eval = () => { throw new Error('eval used by core parser'); };
 const core = await import('@aeliqo/core');
+const {parseWireValue} = core;
+assert.deepEqual(parseWireValue('{"requestId":"one"}'), {ok:true,value:{requestId:'one'}});
+assert.equal(parseWireValue('{"requestId":"one","requestId":"two"}').ok, false);
+assert.equal(parseWireValue({requestId:undefined}).ok, false);
 const documents = ${fixtureSource};
 const t05 = ${t05FixtureSource};
 const t04 = ${t04FixtureSource};
@@ -742,6 +757,9 @@ import {
   validateTaskStructure, resolveExperienceConstraints,
   createStandardFunctionRegistry, createTypedAuthoring,
 } from '@aeliqo/core';
+assert.deepEqual(parseWireValue('{"requestId":"one"}'), {ok:true,value:{requestId:'one'}});
+assert.equal(parseWireValue('{"requestId":"one","requestId":"two"}').ok, false);
+assert.equal(parseWireValue({requestId:undefined}).ok, false);
 const documents = ${fixtureSource};
 const t05 = ${t05FixtureSource};
 const t04 = ${t04FixtureSource};

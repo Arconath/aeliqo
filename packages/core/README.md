@@ -40,6 +40,13 @@ numbers, and `__proto__` keys are rejected. JavaScript proxies and modified host
 intrinsics are outside the JSON-data trust boundary; use JSON text at an external
 boundary. These resource limits are independent of licensing.
 
+`parseWireValue(input)` applies the same bounded JSON ingress checks before an
+application protocol validates its own envelope schema. Strings are interpreted
+as JSON text, including duplicate-key detection. It returns `Outcome<unknown>`;
+successful ingress is not envelope validation or authorization. The exported
+`Wire<T>` utility supplies the same readonly JSON type convention for inferred
+envelope types.
+
 JSON Schema 2020-12 files are exported through
 `@aeliqo/core/schemas/catalog.schema.json` (and the other contract kinds).
 Consumers must apply the documented byte, depth, and node limits before recursive
