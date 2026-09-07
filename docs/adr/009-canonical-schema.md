@@ -73,3 +73,11 @@ and schema exports do not expose that compiler. JSON text rejects duplicate keys
 (including escaped-equivalent spellings) after native syntax validation, avoiding
 last-value disagreement across consumers. Ordinary `constructor`/`prototype`
 keys remain data; no prototype assignment or merge is authorized by parsing.
+
+T04 review found that entity-local field IDs could silently rebind after builder
+serialization. Field expressions now accept an optional explicit `entity` ID;
+typed authoring emits it and semantic binding must preserve it. Existing ref-only
+expressions remain wire-compatible and require unambiguous/context-bound semantic
+resolution. This additive change is within the unreleased version1 contract;
+there is no migration of published or saved customer data. No parallel field AST
+or guessed first-entity lowering is permitted.

@@ -43,7 +43,7 @@ export const relationshipSchema = object({
 });
 export const expressionSchema = z.discriminatedUnion('kind', [
   object({kind: z.literal('literal'), value: valueSchema, type: semanticTypeSchema}),
-  object({kind: z.literal('field'), ref: idSchema}),
+  object({kind: z.literal('field'), ref: idSchema, entity: optional(idSchema)}),
   object({kind: z.literal('definition'), ref: versionRefSchema}),
   object({kind: z.literal('call'), function: versionRefSchema,
     get arguments() {return array(expressionSchema, L.arguments);}}),

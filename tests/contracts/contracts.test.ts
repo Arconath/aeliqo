@@ -59,6 +59,22 @@ describe('JSON text key uniqueness', () => {
 
 const clone = <T>(value: T): T => structuredClone(value);
 
+describe('entity-qualified field references', () => {
+  it('preserves explicit entity identity through wire serialization', () => {
+    for (const entity of ['employees', 'departments']) {
+      const parsed = parseContract('expression', {kind:'field', ref:'name', entity});
+      expect(parsed.ok).toBe(true);
+      if (parsed.ok) {
+        const wire = serializeContract('expression', parsed.value);
+        expect(wire.ok).toBe(true);
+        if (wire.ok) expect(JSON.parse(wire.value)).toEqual({kind:'field',ref:'name',entity});
+      }
+    }
+    expect(parseContract('expression',{kind:'field',ref:'employees.name'}).ok).toBe(true);
+    expect(parseContract('expression',{kind:'field',ref:'name',entity:3}).ok).toBe(false);
+  });
+});
+
 function parse(kind: string, input: unknown): any {
   return parseContract(kind as never, input);
 }

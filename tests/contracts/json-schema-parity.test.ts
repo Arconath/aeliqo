@@ -78,6 +78,15 @@ describe('independent JSON Schema validation parity', () => {
       expect(parseContract('catalog', input).ok).toBe(length <= 4096);
     }
   });
+  it('preserves the optional entity qualifier in generated expression schemas', () => {
+    const schema = JSON.parse(readFileSync(new URL('../../packages/core/schemas/expression.schema.json', import.meta.url), 'utf8'));
+    const validate = ajv.getSchema(schema.$id) ?? ajv.compile(schema);
+    for (const entity of ['employees', 'departments', 7, null]) {
+      const input = {kind:'field',ref:'name',entity};
+      expect(validate(input)).toBe(typeof entity === 'string');
+      expect(parseContract('expression',input).ok).toBe(typeof entity === 'string');
+    }
+  });
   it('validates optional timestamp fields consistently without inferring an interval', () => {
     const schema = JSON.parse(readFileSync(new URL('../../packages/core/schemas/query.schema.json', import.meta.url), 'utf8'));
     const validate = ajv.getSchema(schema.$id) ?? ajv.compile(schema);
