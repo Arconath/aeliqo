@@ -228,6 +228,9 @@ type EnterScenario =
   | "default-first-enabled"
   | "default-first-disabled"
   | "default-fieldset-disabled"
+  | "image-first-enabled"
+  | "external-image-first"
+  | "external-image-after"
   | "no-submit-one-field"
   | "no-submit-two-fields";
 
@@ -251,7 +254,8 @@ async function runEnterScenario(page: import("@playwright/test").Page, scenario:
     nativeForm.id = "native-enter-form";
     const customForm = document.createElement("form");
     customForm.id = "custom-enter-form";
-    root.append(nativeForm, customForm);
+    const externalBefore: HTMLInputElement[] = [];
+    const externalAfter: HTMLInputElement[] = [];
 
     const nativeInput = document.createElement("input");
     nativeInput.id = "native-enter-input";
@@ -319,14 +323,55 @@ async function runEnterScenario(page: import("@playwright/test").Page, scenario:
       };
       addSubmitters(nativeForm);
       addSubmitters(customForm);
+    } else if (currentScenario === "image-first-enabled") {
+      const addImageSubmitters = (form: HTMLFormElement): void => {
+        const image = document.createElement("input");
+        image.id = "image-submit";
+        image.type = "image";
+        image.name = "image";
+        const button = document.createElement("button");
+        button.id = "button-submit";
+        button.type = "submit";
+        button.name = "submitter";
+        button.value = "button";
+        form.append(image, button);
+      };
+      addImageSubmitters(nativeForm);
+      addImageSubmitters(customForm);
+    } else if (currentScenario === "external-image-first" || currentScenario === "external-image-after") {
+      const addExternalImage = (id: string, formId: string): HTMLInputElement => {
+        const image = document.createElement("input");
+        image.id = id;
+        image.type = "image";
+        image.name = "image";
+        image.setAttribute("form", formId);
+        return image;
+      };
+      const addButton = (form: HTMLFormElement): void => {
+        const button = document.createElement("button");
+        button.id = "button-submit";
+        button.type = "submit";
+        button.name = "submitter";
+        button.value = "button";
+        form.append(button);
+      };
+      addButton(nativeForm);
+      addButton(customForm);
+      const images = [
+        addExternalImage("native-image-submit", nativeForm.id),
+        addExternalImage("custom-image-submit", customForm.id),
+      ];
+      (currentScenario === "external-image-first" ? externalBefore : externalAfter).push(...images);
     }
 
+    root.append(...externalBefore, nativeForm, customForm, ...externalAfter);
     for (const form of [nativeForm, customForm]) {
       (form as HTMLFormElement & {records: SubmissionRecord[]}).records = [];
       form.addEventListener("submit", (event) => {
         const records = (form as HTMLFormElement & {records: SubmissionRecord[]}).records;
+        const submitter = (event as SubmitEvent).submitter;
         records.push({
-          submitter: (event as SubmitEvent).submitter?.id ?? null,
+          submitter: submitter?.matches("input[type=image]") ? "image" : submitter?.id ?? null,
           data: Object.fromEntries(new FormData(form).entries()) as Record<string, string>,
         });
         event.preventDefault();
@@ -353,6 +398,9 @@ test("Enter semantics match native implicit submission across the platform table
     "default-first-enabled",
     "default-first-disabled",
     "default-fieldset-disabled",
+    "image-first-enabled",
+    "external-image-first",
+    "external-image-after",
     "no-submit-one-field",
     "no-submit-two-fields",
   ];

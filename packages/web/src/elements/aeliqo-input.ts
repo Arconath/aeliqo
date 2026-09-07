@@ -249,7 +249,15 @@ export class AeliqoInputElement extends LitElement {
   private getDefaultSubmitter(
     form: HTMLFormElement,
   ): HTMLButtonElement | HTMLInputElement | null | undefined {
-    for (const control of Array.from(form.elements)) {
+    const root = form.getRootNode();
+    if (!(root instanceof Document || root instanceof DocumentFragment)) {
+      return undefined;
+    }
+
+    for (const control of root.querySelectorAll<HTMLButtonElement | HTMLInputElement>("button, input")) {
+      if (control.form !== form) {
+        continue;
+      }
       if (control instanceof HTMLButtonElement && control.type === "submit") {
         return control.matches(":disabled") ? null : control;
       }
