@@ -1,10 +1,11 @@
 /**
  * Build and consume the actual @aeliqo/core package outside the workspace.
  *
- * This is a bounded T03 package-boundary check. It proves the four public
- * document parsers, generated schema files, the installed package graph and a
- * small parser bundle. It does not certify the planner, the complete product,
- * universal browser performance, or a universal secret/code scanner.
+ * This is a bounded T03/T05 package-boundary check. It proves the four public
+ * document parsers, generated schema files, task structure and experience
+ * constraint passes, the installed package graph and a small core bundle. It
+ * does not certify the full planner, the complete product, universal browser
+ * performance, or a universal secret/code scanner.
  */
 import assert from "node:assert/strict";
 import {createHash} from "node:crypto";
@@ -272,13 +273,186 @@ const experienceInput = {
 };
 const documents = {catalog: catalogInput, task: taskInput, result: resultInput, experience: experienceInput};
 
+const {inputs: _presentationInputs, ...taskBaseInput} = taskInput;
+const queryInput = {
+  entity: "employees",
+  fields: ["employee.id"],
+  measures: [],
+  relations: [],
+  groupBy: ["employee.id"],
+  population: {kind: "all-authorized"},
+  order: [],
+};
+const namedOutputTaskInput = {
+  ...taskBaseInput,
+  id: "task-named-output",
+  revision: "1",
+  goal: "Load named employee outputs",
+  kind: "data",
+  outputs: [
+    {id: "summary", kind: "query", query: queryInput, dependsOn: ["detail"], delivery: "eager"},
+    {id: "detail", kind: "query", query: queryInput, dependsOn: [], delivery: "eager"},
+  ],
+};
+const cyclicTaskInput = {
+  ...namedOutputTaskInput,
+  id: "task-cyclic-output",
+  outputs: [
+    {...namedOutputTaskInput.outputs[0], dependsOn: ["detail"]},
+    {...namedOutputTaskInput.outputs[1], dependsOn: ["summary"]},
+  ],
+};
+const fixedPopulationTaskInput = {
+  ...taskBaseInput,
+  id: "task-fixed-population",
+  revision: "1",
+  goal: "Load a fixed employee cohort",
+  kind: "data",
+  outputs: [{
+    id: "fixed",
+    kind: "query",
+    query: {
+      ...queryInput,
+      population: {kind: "fixed", source: resultInput.ref, identityKeys: ["employee.id"], cohortDigest: "cohort-1"},
+    },
+    dependsOn: [],
+    delivery: "eager",
+  }],
+};
+const livePopulationTaskInput = {
+  ...taskBaseInput,
+  id: "task-live-population",
+  revision: "1",
+  goal: "Load a live employee cohort",
+  kind: "data",
+  outputs: [
+    {id: "upstream", kind: "query", query: queryInput, dependsOn: [], delivery: "eager"},
+    {
+      id: "downstream",
+      kind: "query",
+      query: {
+        ...queryInput,
+        population: {kind: "live-output", outputId: "upstream", identityKeys: ["employee.id"]},
+      },
+      dependsOn: ["upstream"],
+      delivery: "eager",
+    },
+  ],
+};
+const formTaskInput = {
+  ...taskBaseInput,
+  id: "task-form",
+  revision: "1",
+  goal: "Edit an employee",
+  kind: "form",
+  schema: {id: "employee.form", revision: "1"},
+  action: {id: "employee.update", revision: "1"},
+};
+const operationConflictTaskInput = {
+  ...formTaskInput,
+  id: "task-operation-conflict",
+  needs: [{id: "save-employee", operation: {id: "employee.update", revision: "2"}, fields: [], required: true}],
+};
+const preferredPresentationTaskInput = {
+  ...taskInput,
+  id: "task-preferred-representation",
+  viewPreference: {representation: "chart.bar", strength: "preferred"},
+};
+const explicitConflictTaskInput = {
+  ...taskInput,
+  id: "task-explicit-representation",
+  viewPreference: {representation: "chart.line", strength: "explicit"},
+};
+const noPresetExperienceInput = {
+  ...experienceInput,
+  id: "experience-no-preset",
+  mode: "composable",
+  allowedRepresentations: ["data.table"],
+  composition: {allowWithoutPreset: true, maxNodes: 8, maxExpansions: 16},
+};
+const preferredExperienceInput = {
+  ...experienceInput,
+  id: "experience-preferred",
+  mode: "adaptive",
+  allowedRepresentations: ["data.table", "chart.bar"],
+  allowedPatterns: ["table.basic", "chart.basic"],
+  composition: {allowWithoutPreset: true, maxNodes: 8, maxExpansions: 16},
+};
+const explicitConflictExperienceInput = {
+  ...experienceInput,
+  id: "experience-explicit-conflict",
+  mode: "adaptive",
+  allowedRepresentations: ["data.table"],
+  composition: {allowWithoutPreset: true, maxNodes: 8, maxExpansions: 16},
+};
+const operationExperienceInput = {
+  ...experienceInput,
+  id: "experience-operation-revision",
+  mode: "adaptive",
+  allowedRepresentations: ["data.table"],
+  requiredOperations: ["employee.update"],
+  composition: {allowWithoutPreset: true, maxNodes: 8, maxExpansions: 16},
+};
+const restrictionIntersectionExperienceInput = {
+  ...experienceInput,
+  id: "experience-restriction-intersection",
+  mode: "fixed",
+  agentAllowed: false,
+  allowedRepresentations: ["data.table", "chart.bar"],
+  allowedPatterns: ["table.basic", "chart.basic"],
+  composition: {allowWithoutPreset: false, maxNodes: 8, maxExpansions: 16},
+};
+const wideningRestrictionInput = [{
+  id: "host-attempted-widening",
+  allowedRepresentations: ["chart.bar"],
+  allowedPatterns: ["chart.basic"],
+  mode: "composable",
+  agentAllowed: true,
+  allowWithoutPreset: true,
+  maxNodes: 32,
+  maxExpansions: 64,
+  transitionPolicy: "stable",
+}];
+const operationRevisionRestrictionInput = [{
+  id: "host-operation-revision",
+  allowedOperations: [{id: "employee.update", revision: "1"}],
+}];
+const t05Fixtures = {
+  namedOutputTaskInput,
+  cyclicTaskInput,
+  fixedPopulationTaskInput,
+  livePopulationTaskInput,
+  taskInput,
+  formTaskInput,
+  operationConflictTaskInput,
+  preferredPresentationTaskInput,
+  explicitConflictTaskInput,
+  experienceInput,
+  noPresetExperienceInput,
+  preferredExperienceInput,
+  explicitConflictExperienceInput,
+  operationExperienceInput,
+  restrictionIntersectionExperienceInput,
+  wideningRestrictionInput,
+  operationRevisionRestrictionInput,
+};
+
 await writeFile(join(consumerDirectory, "consumer-types.ts"), `
-import {parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract} from '@aeliqo/core';
-import type {Catalog, Task, Result, Experience, Outcome} from '@aeliqo/core';
+import {
+  parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract,
+  validateTaskStructure, resolveExperienceConstraints,
+} from '@aeliqo/core';
+import type {
+  Catalog, Task, Result, Experience, Outcome, TaskStructure,
+  ExperienceRestriction, ExperienceConstraints,
+} from '@aeliqo/core';
 declare const catalog: Catalog;
 declare const task: Task;
 declare const result: Result;
 declare const experience: Experience;
+declare const taskStructure: TaskStructure;
+declare const restriction: ExperienceRestriction;
+declare const constraints: ExperienceConstraints;
 function unwrap<T>(outcome: Outcome<T>): T {
   if (!outcome.ok) throw new Error('unreachable in type-only consumer fixture');
   return outcome.value;
@@ -287,7 +461,11 @@ const typedCatalog: Catalog = unwrap(parseCatalog({}));
 const typedTask: Task = unwrap(parseTask({}));
 const typedResult: Result = unwrap(parseResult({}));
 const typedExperience: Experience = unwrap(parseExperience({}));
+const typedStructure: TaskStructure = taskStructure;
+const typedRestriction: ExperienceRestriction = restriction;
+const typedConstraints: ExperienceConstraints = constraints;
 void [catalog, task, result, experience, typedCatalog, typedTask, typedResult, typedExperience];
+void [typedStructure, typedRestriction, typedConstraints];
 void parseContract('catalog', catalog);
 void parseContract('task', task);
 void parseContract('result', result);
@@ -296,6 +474,17 @@ void serializeContract('catalog', catalog);
 void serializeContract('task', task);
 void serializeContract('result', result);
 void serializeContract('experience', experience);
+const structureOutcome: Outcome<TaskStructure> = validateTaskStructure(task);
+const constraintsOutcome: Outcome<ExperienceConstraints> = resolveExperienceConstraints(experience, task, []);
+void [structureOutcome, constraintsOutcome];
+// @ts-expect-error TaskStructure output order is readonly for consumers.
+taskStructure.outputOrder.push('unexpected');
+// @ts-expect-error ExperienceRestriction fields are readonly wire data.
+restriction.id = 'unexpected';
+// @ts-expect-error Resolved constraints cannot be mutated by a consumer.
+constraints.allowedRepresentations.push('unexpected');
+// @ts-expect-error Task contracts do not carry self-declared actor authority.
+void taskStructure.task.actor;
 `);
 await writeFile(join(consumerDirectory, "tsconfig.json"), JSON.stringify({
   compilerOptions: {
@@ -313,12 +502,17 @@ await writeFile(join(consumerDirectory, "tsconfig.json"), JSON.stringify({
 run([join(consumerDirectory, "node_modules/.bin/tsc"), "--project", "tsconfig.json"], consumerDirectory);
 
 const fixtureSource = JSON.stringify(documents);
+const t05FixtureSource = JSON.stringify(t05Fixtures);
 await writeFile(join(consumerDirectory, "consumer.mjs"), `
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {readFile} from 'node:fs/promises';
-import {parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract} from '@aeliqo/core';
+import {
+  parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract,
+  validateTaskStructure, resolveExperienceConstraints,
+} from '@aeliqo/core';
 const documents = ${fixtureSource};
+const t05 = ${t05FixtureSource};
 function unwrap(outcome) {
   assert.equal(outcome.ok, true);
   return outcome.value;
@@ -343,6 +537,48 @@ for (const [kind, input] of Object.entries(documents)) {
 }
 assert.equal(parseCatalog({...documents.catalog, unexpected: true}).ok, false);
 assert.equal(parseContract('task', {...documents.task, unexpected: true}).ok, false);
+const named = unwrap(validateTaskStructure(t05.namedOutputTaskInput));
+assert.deepEqual(named.outputOrder, ['detail', 'summary']);
+assert.deepEqual(named.resultReferences, []);
+assert.deepEqual(named.task.outputs.map((output) => output.id), ['summary', 'detail']);
+const fixedPopulation = unwrap(validateTaskStructure(t05.fixedPopulationTaskInput));
+assert.deepEqual(fixedPopulation.outputOrder, ['fixed']);
+assert.deepEqual(fixedPopulation.resultReferences, [t05.fixedPopulationTaskInput.outputs[0].query.population.source]);
+const livePopulation = unwrap(validateTaskStructure(t05.livePopulationTaskInput));
+assert.deepEqual(livePopulation.outputOrder, ['upstream', 'downstream']);
+assert.deepEqual(livePopulation.resultReferences, []);
+const cycle = validateTaskStructure(t05.cyclicTaskInput);
+assert.equal(cycle.ok, false);
+if (!cycle.ok) assert(cycle.diagnostics.some((diagnostic) => diagnostic.code === 'task.output-cycle'));
+const form = unwrap(validateTaskStructure(t05.formTaskInput));
+assert.deepEqual(form.outputOrder, []);
+assert.deepEqual(form.resultReferences, []);
+const noPreset = unwrap(resolveExperienceConstraints(t05.noPresetExperienceInput, t05.taskInput));
+assert.equal(noPreset.allowWithoutPreset, true);
+assert.equal(noPreset.compositionChangeAllowed, true);
+const preferred = unwrap(resolveExperienceConstraints(t05.preferredExperienceInput, t05.preferredPresentationTaskInput));
+assert.deepEqual(preferred.allowedRepresentations, ['chart.bar', 'data.table']);
+assert.equal(preferred.preferredRepresentation, 'chart.bar');
+const explicit = resolveExperienceConstraints(t05.explicitConflictExperienceInput, t05.explicitConflictTaskInput);
+assert.equal(explicit.ok, false);
+if (!explicit.ok) assert(explicit.diagnostics.some((diagnostic) => diagnostic.code === 'experience.representation-conflict'));
+const intersected = unwrap(resolveExperienceConstraints(
+  t05.restrictionIntersectionExperienceInput,
+  t05.taskInput,
+  t05.wideningRestrictionInput,
+));
+assert.deepEqual(intersected.allowedRepresentations, ['chart.bar']);
+assert.deepEqual(intersected.allowedPatterns, ['chart.basic']);
+assert.equal(intersected.mode, 'fixed');
+assert.equal(intersected.agentAllowed, false);
+assert.equal(intersected.allowWithoutPreset, false);
+const operationConflict = resolveExperienceConstraints(
+  t05.operationExperienceInput,
+  t05.operationConflictTaskInput,
+  t05.operationRevisionRestrictionInput,
+);
+assert.equal(operationConflict.ok, false);
+if (!operationConflict.ok) assert(operationConflict.diagnostics.some((diagnostic) => diagnostic.code === 'experience.operation-conflict'));
 const require = createRequire(import.meta.url);
 for (const name of ${JSON.stringify(expectedSchemas)}) {
   const path = require.resolve('@aeliqo/core/schemas/' + name + '.schema.json');
@@ -352,6 +588,7 @@ for (const name of ${JSON.stringify(expectedSchemas)}) {
 const runtimeSchema = await import('@aeliqo/core/schema');
 assert(Object.keys(runtimeSchema).length > 0);
 console.log('Installed @aeliqo/core parsers, schema exports, and round trips pass.');
+console.log('Installed @aeliqo/core task structure and experience constraint passes pass.');
 `);
 const consumerOutput = run([process.execPath, "consumer.mjs"], consumerDirectory);
 const parserProbe = join(consumerDirectory, "no-codegen.mjs");
@@ -361,10 +598,13 @@ globalThis.Function = () => { throw new Error('Function constructor used by core
 globalThis.eval = () => { throw new Error('eval used by core parser'); };
 const core = await import('@aeliqo/core');
 const documents = ${fixtureSource};
+const t05 = ${t05FixtureSource};
 assert.equal(core.parseCatalog(documents.catalog).ok, true);
 assert.equal(core.parseTask(documents.task).ok, true);
 assert.equal(core.parseResult(documents.result).ok, true);
 assert.equal(core.parseExperience(documents.experience).ok, true);
+assert.equal(core.validateTaskStructure(t05.namedOutputTaskInput).ok, true);
+assert.equal(core.resolveExperienceConstraints(t05.noPresetExperienceInput, t05.taskInput).ok, true);
 console.log('No dynamic code generation during core import and parser calls.');
 `);
 const parserProbeOutput = run([
@@ -375,9 +615,16 @@ const parserProbeOutput = run([
 
 await writeFile(join(consumerDirectory, "index.html"), '<!doctype html><html><body><script type="module" src="/bundle-entry.js"></script></body></html>');
 await writeFile(join(consumerDirectory, "bundle-entry.js"), `
-import {parseCatalog, parseTask, parseResult, parseExperience} from '@aeliqo/core';
+import {
+  parseCatalog, parseTask, parseResult, parseExperience,
+  validateTaskStructure, resolveExperienceConstraints,
+} from '@aeliqo/core';
 const documents = ${fixtureSource};
-const parsed = [parseCatalog(documents.catalog), parseTask(documents.task), parseResult(documents.result), parseExperience(documents.experience)];
+const t05 = ${t05FixtureSource};
+const parsed = [
+  parseCatalog(documents.catalog), parseTask(documents.task), parseResult(documents.result), parseExperience(documents.experience),
+  validateTaskStructure(t05.namedOutputTaskInput), resolveExperienceConstraints(t05.noPresetExperienceInput, t05.taskInput),
+];
 globalThis.__aeliqoParsed = parsed;
 export {parsed};
 `);
@@ -427,7 +674,7 @@ const report = {
   sourceDigestBefore: sourceBefore,
   sourceDigestAfter: sourceAfter,
   sourceChangedDuringRun: sourceBefore !== sourceAfter,
-  scope: "@aeliqo/core 0.1.0 installed tarball; four document parsers/round trips; generated schemas; Vite parser graph and 70 KiB gzip budget. Planner/full product/browser certification are outside this check.",
+  scope: "@aeliqo/core 0.1.0 installed tarball; four document parsers/round trips; TaskStructure and ExperienceConstraints passes; generated schemas; Vite core graph and 70 KiB gzip budget. Planner/full product/browser certification are outside this check.",
   artifact: {name: packedManifest.name, version: packedManifest.version, path: tarballPath, sha256: tarballSha256, integrity: tarballIntegrity},
   consumer: {directory: consumerDirectory, lockPath: join(runDirectory, "consumer-package-lock.json"), lockSha256: hash(lockBytes)},
   schemas: expectedSchemas.map((name) => `schemas/${name}.schema.json`),
