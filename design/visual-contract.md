@@ -26,7 +26,7 @@ Wide inspection can use collection+detail; narrow inspection may use collectionâ
 
 Main navigation: brand/home, Docs, Playground, Blog; GitHub on the right and a theme toggle. Footer/legal/about pages reuse one quiet content layout. Documentation uses one predictable navigation system with actual API references and compiled examples. Playground begins with a small useful task, not a wall of technical panels. MCP/BYOK/WebMCP status and scope are discoverable in a compact connection control. Inspect expands on demand.
 
-Local Studio has four clear work areas: Data, Meaning, Experience, Inspect. It edits the same manifests as code; no independent opaque database is mandatory. Default app-user interfaces contain no unexplained compiler IDs or confidence scores.
+Local Studio has four clear work areas: **Data & Meaning**, **Experience**, **Component Gallery**, and **Inspect**. It edits the same manifests as code; no independent opaque database is mandatory. Default app-user interfaces contain no unexplained compiler IDs or confidence scores. Component Gallery is the concrete rendering and state review surface; Inspect remains the secondary explanation surface.
 
 ## Required review
 
