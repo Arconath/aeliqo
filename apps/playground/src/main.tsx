@@ -173,7 +173,7 @@ function Playground({ initialTab = "Showcase" }: { initialTab?: string }) {
     <div className="shell aeliqo-theme" data-aeliqo-theme="light">
       <aside className="sidebar">
         <a className="brand" href="/">
-          <span className="brand-mark">A</span> Aeliqo
+          <img className="brand-mark" src="/aeliqo-logo.png" alt="" style={{ background: 'transparent', objectFit: 'contain' }} /> Aeliqo
         </a>
         <div className="sidebar-caption">RESEARCH WORKSPACE</div>
         <div className="nav-active">

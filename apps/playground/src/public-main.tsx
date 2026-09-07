@@ -25,7 +25,7 @@ if (path.startsWith("/playground")) {
   ] };
 
   function PublicNav() {
-    return <nav className="public-nav" aria-label="Primary navigation"><a className="public-brand" href="/">Aeliqo</a><div><a href="/docs/">Docs</a><a href="/playground/">Playground</a><a href="/changelog/">Changelog</a></div></nav>;
+    return <nav className="public-nav" aria-label="Primary navigation"><a className="public-brand" href="/"><img src="/aeliqo-logo.png" alt="" style={{ width: 34, height: 34, objectFit: 'contain', marginRight: 10 }} />Aeliqo</a><div><a href="/docs/">Docs</a><a href="/playground/">Playground</a><a href="/changelog/">Changelog</a></div></nav>;
   }
   function Home() {
     return <div className="public-site aeliqo-theme" data-aeliqo-theme="light"><PublicNav /><main className="public-main">
