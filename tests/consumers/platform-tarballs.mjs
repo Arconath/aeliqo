@@ -96,6 +96,10 @@ import {AeliqoTableElement} from '@aeliqo/web/table';
 import {AeliqoChartElement} from '@aeliqo/web/chart';
 import {AeliqoInput, registerAeliqoReactElements} from '@aeliqo/react';
 import type {AeliqoInputChangeDetail} from '@aeliqo/web';
+import {aeliqoThemeStyles, createAeliqoLocaleContext} from '@aeliqo/web/styles';
+const locale = createAeliqoLocaleContext('ar-EG', {direction: 'rtl'});
+const styleText: string = aeliqoThemeStyles.cssText;
+void [locale, styleText];
 const value: AeliqoInputChangeDetail = {value: 'Ada', source: 'user'};
 const input = <AeliqoInput label="Person" value="Ada" onAeliqoInput={event => {const text:string=event.detail.value;void text;}} />;
 void [AeliqoInputElement,AeliqoTableElement,AeliqoChartElement,registerAeliqoReactElements,value,input];
@@ -113,6 +117,9 @@ import {renderToString} from 'react-dom/server';
 import {AeliqoInput} from '@aeliqo/react';
 import {AeliqoInputElement} from '@aeliqo/web/input';
 assert.equal(typeof window, 'undefined');
+const styles = await import('@aeliqo/web/styles');
+assert.equal(styles.createAeliqoLocaleContext('ar-EG', {direction:'rtl'}).direction, 'rtl');
+assert.match(styles.aeliqoThemeStyles.cssText, /:host/);
 assert.equal(typeof AeliqoInputElement, 'function');
 const reactMarkup=renderToString(createElement(AeliqoInput,{label:'Person',value:'Ada'}));
 assert.match(reactMarkup, /aeliqo-input/);assert.match(reactMarkup,/label="Person"/);
@@ -139,7 +146,7 @@ export default {build:{minify:true},plugins:[{name:'record-modules',generateBund
 `);
 run([join(consumer,'node_modules/.bin/vite'),'build'],consumer);
 const modules=JSON.parse(await readFile(join(consumer,'dist/modules.json'),'utf8'));
-const allowed=/(?:\/browser\.js$|\/index\.html$|vite\/modulepreload-polyfill|\/node_modules\/(?:lit(?:-html|-element)?\/|@lit\/reactive-element\/|@aeliqo\/web\/dist\/(?:elements\/aeliqo-input|events)\.js$))/;
+const allowed=/(?:\/browser\.js$|\/index\.html$|vite\/modulepreload-polyfill|\/node_modules\/(?:lit(?:-html|-element)?\/|@lit\/reactive-element\/|@aeliqo\/web\/dist\/(?:elements\/aeliqo-input|events|styles\/(?:theme|tokens))\.js$))/;
 assert.deepEqual(modules.filter(id=>!allowed.test(id)),[], 'Unexpected standalone input module');
 const browserBundles=[];
 for (const file of await readdir(join(consumer,'dist/assets'))) {
@@ -168,13 +175,16 @@ try {
  await page.goto(`http://127.0.0.1:${server.address().port}`);
  const input=page.getByLabel('Installed person');await input.waitFor();assert.equal(await input.inputValue(),'Ada');
  await input.fill('Lin');assert.equal(await input.inputValue(),'Lin');
+ await page.locator('installed-aeliqo-input').evaluate(element=>element.setAttribute('data-aeliqo-theme','dark'));
+ assert.equal(await input.evaluate(element=>getComputedStyle(element).backgroundColor),'rgb(15, 17, 23)');
+ assert.equal(await input.inputValue(),'Lin');
  assert.equal(await page.locator('form').evaluate(form=>new FormData(form).get('person')),'Lin');
  await input.focus();assert(await input.evaluate(element=>element.getRootNode().activeElement===element));
  assert.deepEqual(failures,[]);await page.screenshot({path:join(runDirectory,'installed-input.png')});
 } finally {await browser?.close();await new Promise(resolve=>server.close(resolve));}
 assert.equal(run(['python3','scripts/gate.py','digest'],root).trim(),sourceDigest,'Source changed during consumer test');
 await writeFile(join(runDirectory,'report.json'),JSON.stringify({sourceDigest,
- scope:'M0 installed web/React types and SSR; Chromium direct input/form/focus; standalone bundle. Full React/Vue hydration matrix is separate.',
+ scope:'M0 and T12 installed web/React/style types and SSR; locale metadata; Chromium direct input/form/focus/theme; standalone bundle. Full React/Vue hydration matrix is separate.',
  artifacts,consumerDirectory:consumer,consumerLock:{path:join(runDirectory,'consumer-package-lock.json'),sha256:hash(lockBytes)},
  screenshot:{path:join(runDirectory,'installed-input.png'),sha256:hash(await readFile(join(runDirectory,'installed-input.png')))},
  environment:{node:process.version,npm:run(['npm','--version'],consumer).trim(),pnpm:run(['pnpm','--version'],root).trim(),typescript:'7.0.2',vite:'8.2.2',playwright:JSON.parse(await readFile(join(root,'node_modules/@playwright/test/package.json'),'utf8')).version,chromium:browserVersion,os:platform(),release:release(),arch:arch(),viewport,locale:'en-US',deviceScaleFactor:1},

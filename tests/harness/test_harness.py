@@ -75,6 +75,12 @@ class PathTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp); (root/'packages').mkdir(); file=root/'packages/a.ts'; file.write_text('one')
             first=candidate_digest(root); file.write_text('two'); self.assertNotEqual(first,candidate_digest(root))
+    def test_digest_includes_owned_design_contract(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp); directory=root/'docs/design'; directory.mkdir(parents=True)
+            file=directory/'baseline.md'; file.write_text('approved focus and contrast rules')
+            first=candidate_digest(root); file.write_text('different focus and contrast rules')
+            self.assertNotEqual(first,candidate_digest(root))
     def test_digest_excludes_evidence_bookkeeping(self):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp); (root/'harness').mkdir(); file=root/'harness/state.json'; file.write_text('{}')
@@ -285,5 +291,4 @@ class DesignReferenceTests(unittest.TestCase):
             self.assertTrue(set(profile['allowedRepresentations']).issubset(ids))
 
 if __name__=='__main__': unittest.main()
-
 

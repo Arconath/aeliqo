@@ -29,7 +29,8 @@
     "examples/*/app/**/*.tsx",
     "tests/platform/**/*.ts",
     "tests/platform/**/*.tsx",
-    "tests/next-platform/**/*.ts"
+    "tests/next-platform/**/*.ts",
+    "tests/design/**/*.ts"
   ],
   "exclude": [
     "**/node_modules/**",

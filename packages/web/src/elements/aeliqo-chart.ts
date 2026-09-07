@@ -1,3 +1,4 @@
+import {aeliqoThemeStyles} from "../styles/theme.js";
 import {css, html, LitElement, nothing} from "lit";
 import type {AeliqoChartPoint} from "../types.js";
 
@@ -106,11 +107,10 @@ export class AeliqoChartElement extends LitElement {
     return {polyline: circles.map((circle) => `${circle.x},${circle.y}`).join(" "), circles};
   }
 
-  static readonly styles = css`
+  static readonly styles = [aeliqoThemeStyles, css`
     :host {
-      color: var(--aeliqo-chart-color, #18202a);
+      color: var(--aeliqo-chart-color, var(--aeliqo-color-text, #18202a));
       display: block;
-      font: inherit;
       max-inline-size: 100%;
     }
 
@@ -120,65 +120,65 @@ export class AeliqoChartElement extends LitElement {
 
     figcaption {
       display: grid;
-      gap: 0.2rem;
-      margin-block-end: 0.6rem;
+      gap: var(--aeliqo-space-4, 0.25rem);
+      margin-block-end: var(--aeliqo-space-12, 0.75rem);
     }
 
     [part="summary"],
     [part="unit"],
     [part="scope"],
     [part="error"] {
-      color: var(--aeliqo-chart-muted, #495464);
+      color: var(--aeliqo-chart-muted, var(--aeliqo-color-muted, #495464));
       font-size: 0.9em;
     }
 
     svg {
-      background: var(--aeliqo-chart-background, #fff);
+      background: var(--aeliqo-chart-background, var(--aeliqo-color-canvas, #fff));
       block-size: 12rem;
-      border: 1px solid var(--aeliqo-chart-border, #c9d0d8);
+      border: var(--aeliqo-control-border-width, 1px) solid var(--aeliqo-chart-border, var(--aeliqo-color-border, #c9d0d8));
       inline-size: 100%;
       min-block-size: 8rem;
     }
 
     line {
-      stroke: var(--aeliqo-chart-rule, #8d98a5);
+      stroke: var(--aeliqo-chart-rule, var(--aeliqo-color-border, #8d98a5));
       stroke-width: 1;
     }
 
     [part="line"] {
       fill: none;
-      stroke: var(--aeliqo-chart-line, #0b63ce);
+      stroke: var(--aeliqo-chart-line, var(--aeliqo-visualization-series1, #0b63ce));
       stroke-linecap: round;
       stroke-linejoin: round;
       stroke-width: 3;
     }
 
     [part="point"] {
-      fill: var(--aeliqo-chart-point, #fff);
-      stroke: var(--aeliqo-chart-line, #0b63ce);
+      fill: var(--aeliqo-chart-point, var(--aeliqo-color-canvas, #fff));
+      stroke: var(--aeliqo-chart-line, var(--aeliqo-visualization-series1, #0b63ce));
       stroke-width: 2;
     }
 
     details {
-      margin-block-start: 0.7rem;
+      margin-block-start: var(--aeliqo-space-12, 0.75rem);
     }
 
     details:focus-within {
-      outline: 0.2rem solid var(--aeliqo-chart-focus, #0b63ce);
-      outline-offset: 0.15rem;
+      outline: var(--aeliqo-focus-width, 0.1875rem) solid var(--aeliqo-chart-focus, var(--aeliqo-color-focus, #0b63ce));
+      outline-offset: var(--aeliqo-focus-offset, 0.1875rem);
     }
 
     table {
       border-collapse: collapse;
-      margin-block-start: 0.5rem;
+      margin-block-start: var(--aeliqo-space-8, 0.5rem);
       min-inline-size: min(100%, 20rem);
     }
 
     th,
     td {
-      border-block-end: 1px solid var(--aeliqo-chart-rule, #c9d0d8);
-      padding: 0.35rem 0.5rem;
+      border-block-end: var(--aeliqo-control-border-width, 1px) solid var(--aeliqo-chart-rule, var(--aeliqo-color-border, #c9d0d8));
+      padding: var(--aeliqo-space-4, 0.25rem) var(--aeliqo-space-8, 0.5rem);
       text-align: start;
     }
-  `;
+  `];
 }

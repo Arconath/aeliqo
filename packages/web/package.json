@@ -32,6 +32,10 @@
     "./chart": {
       "types": "./dist/elements/aeliqo-chart.d.ts",
       "import": "./dist/elements/aeliqo-chart.js"
+    },
+    "./styles": {
+      "types": "./dist/styles/index.d.ts",
+      "import": "./dist/styles/index.js"
     }
   },
   "files": [

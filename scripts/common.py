@@ -100,7 +100,7 @@ def candidate_digest(root: Path) -> str:
                 path.name.startswith(('PROMPT-', 'tsconfig.')))):
             payload = path.read_bytes()
         elif relative.parts[0] == 'docs' and len(relative.parts) > 1 and (
-                relative.parts[1][0:2].isdigit() or relative.parts[1] == 'adr'):
+                relative.parts[1][0:2].isdigit() or relative.parts[1] in {'adr', 'design'}):
             payload = path.read_bytes()
         if payload is not None:
             h.update(name.encode() + b'\0' + hashlib.sha256(payload).digest())

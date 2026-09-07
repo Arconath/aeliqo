@@ -1,3 +1,4 @@
+import {aeliqoThemeStyles} from "../styles/theme.js";
 import {css, html, LitElement, noChange, nothing} from "lit";
 import type {PropertyValues} from "lit";
 import {AeliqoInputEvent} from "../events.js";
@@ -356,52 +357,62 @@ export class AeliqoInputElement extends LitElement {
     this.internals.setValidity({});
   }
 
-  static readonly styles = css`
+  static readonly styles = [aeliqoThemeStyles, css`
     :host {
-      color: var(--aeliqo-input-color, #18202a);
+      color: var(--aeliqo-input-color, var(--aeliqo-color-text, #18202a));
       display: inline-block;
-      font: inherit;
+      min-inline-size: min(100%, 12rem);
+      overflow-wrap: anywhere;
       max-inline-size: 100%;
     }
 
     label {
       display: grid;
-      gap: 0.35rem;
+      gap: var(--aeliqo-space-4, 0.25rem);
     }
 
     [part="field"] {
       display: grid;
-      gap: 0.35rem;
+      gap: var(--aeliqo-space-4, 0.25rem);
     }
 
     .label-text {
-      font-weight: 600;
+      font-weight: var(--aeliqo-typography-font-weight-semibold, 600);
     }
 
     input {
-      background: var(--aeliqo-input-background, #fff);
-      border: 1px solid var(--aeliqo-input-border, #65707d);
-      border-radius: 0.35rem;
+      background: var(--aeliqo-input-background, var(--aeliqo-color-canvas, #fff));
+      border: var(--aeliqo-control-border-width, 1px) solid var(--aeliqo-input-border, var(--aeliqo-color-border, #65707d));
+      border-radius: var(--aeliqo-radius-small, 0.35rem);
+      box-sizing: border-box;
       color: inherit;
       font: inherit;
-      min-block-size: 2.5rem;
-      min-inline-size: 12rem;
-      padding: 0.45rem 0.65rem;
+      min-block-size: var(--aeliqo-control-min-target, 2.75rem);
+      min-inline-size: 0;
+      inline-size: 100%;
+      padding: var(--aeliqo-space-8, 0.5rem) var(--aeliqo-control-inline-padding, 0.75rem);
     }
 
     input:focus-visible {
-      outline: 0.2rem solid var(--aeliqo-input-focus, #0b63ce);
-      outline-offset: 0.15rem;
+      outline: var(--aeliqo-focus-width, 0.1875rem) solid var(--aeliqo-input-focus, var(--aeliqo-color-focus, #0b63ce));
+      outline-offset: var(--aeliqo-focus-offset, 0.1875rem);
+    }
+
+    input:disabled {
+      background: var(--aeliqo-color-surface);
+      color: var(--aeliqo-color-muted);
+      border-style: dashed;
+      cursor: not-allowed;
     }
 
     [part="description"] {
-      color: var(--aeliqo-input-description, #495464);
+      color: var(--aeliqo-input-description, var(--aeliqo-color-muted, #495464));
       font-size: 0.9em;
     }
 
     [part="error"] {
-      color: var(--aeliqo-input-error, #a32929);
+      color: var(--aeliqo-input-error, var(--aeliqo-color-danger, #a32929));
       font-size: 0.9em;
     }
-  `;
+  `];
 }

@@ -9,7 +9,7 @@
     "release:check": "python3 scripts/gate.py release",
     "kit:test": "python3 scripts/validate_all.py",
     "kit:reference": "python3 scripts/test_reference.py",
-    "typecheck": "pnpm build:platform && tsc --project tsconfig.json",
+    "typecheck": "pnpm build:runtime && pnpm build:platform && tsc --project tsconfig.json",
     "build:platform": "pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/react build",
     "test:platform": "vitest run --config tests/platform/vitest.config.mjs",
     "test:platform:browser": "pnpm build:platform && playwright test --config tests/platform/playwright.config.mjs",
@@ -21,7 +21,9 @@
     "test:task-experience": "pnpm build:core && vitest run --config tests/task-experience/vitest.config.mjs && tsc -p tests/task-experience/tsconfig.json",
     "test:semantics": "pnpm build:core && vitest run --config tests/semantics/vitest.config.mjs",
     "build:runtime": "pnpm build:core && pnpm --filter @aeliqo/runtime build",
-    "test:data-stream": "pnpm build:runtime && vitest run --config tests/runtime-data/vitest.config.mjs && tsc -p tests/runtime-data/tsconfig.json"
+    "test:data-stream": "pnpm build:runtime && vitest run --config tests/runtime-data/vitest.config.mjs && tsc -p tests/runtime-data/tsconfig.json",
+    "test:design": "node design/generate-web-tokens.mjs --check && vitest run design/styles.test.ts",
+    "test:design:browser": "pnpm build:platform && playwright test --config tests/design/playwright.config.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

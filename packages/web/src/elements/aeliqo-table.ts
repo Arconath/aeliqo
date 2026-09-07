@@ -1,3 +1,4 @@
+import {aeliqoThemeStyles} from "../styles/theme.js";
 import {css, html, LitElement, nothing} from "lit";
 import type {AeliqoTableColumn, AeliqoTableRow} from "../types.js";
 
@@ -49,11 +50,10 @@ export class AeliqoTableElement extends LitElement {
     return String(value);
   }
 
-  static readonly styles = css`
+  static readonly styles = [aeliqoThemeStyles, css`
     :host {
-      color: var(--aeliqo-table-color, #18202a);
+      color: var(--aeliqo-table-color, var(--aeliqo-color-text, #18202a));
       display: block;
-      font: inherit;
       max-inline-size: 100%;
     }
 
@@ -62,8 +62,8 @@ export class AeliqoTableElement extends LitElement {
     }
 
     [part="scroll"]:focus-visible {
-      outline: 0.2rem solid var(--aeliqo-table-focus, #0b63ce);
-      outline-offset: 0.15rem;
+      outline: var(--aeliqo-focus-width, 0.1875rem) solid var(--aeliqo-table-focus, var(--aeliqo-color-focus, #0b63ce));
+      outline-offset: var(--aeliqo-focus-offset, 0.1875rem);
     }
 
     table {
@@ -72,22 +72,22 @@ export class AeliqoTableElement extends LitElement {
     }
 
     caption {
-      font-weight: 600;
-      padding-block: 0.45rem;
+      font-weight: var(--aeliqo-typography-font-weight-semibold, 600);
+      padding-block: var(--aeliqo-space-8, 0.5rem);
       text-align: start;
     }
 
     th,
     td {
-      border-block-end: 1px solid var(--aeliqo-table-rule, #c9d0d8);
-      padding: 0.55rem 0.7rem;
+      border-block-end: var(--aeliqo-control-border-width, 1px) solid var(--aeliqo-table-rule, var(--aeliqo-color-border, #c9d0d8));
+      padding: var(--aeliqo-space-8, 0.5rem) var(--aeliqo-space-12, 0.75rem);
       text-align: start;
       vertical-align: top;
     }
 
     th {
-      background: var(--aeliqo-table-heading-background, #eef2f5);
-      font-weight: 650;
+      background: var(--aeliqo-table-heading-background, var(--aeliqo-color-surface, #eef2f5));
+      font-weight: var(--aeliqo-typography-font-weight-semibold, 600);
     }
-  `;
+  `];
 }
