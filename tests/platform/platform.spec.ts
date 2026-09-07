@@ -222,74 +222,247 @@ test("IME composition preserves drafts across host updates and commits once", as
   });
 });
 
-test("Enter bridges to the associated form with validation and composition guards", async ({page}) => {
-  await page.goto("/index.html");
-  await page.evaluate(() => {
-    const form = document.querySelector<HTMLFormElement>("#standalone-form");
-    if (form === null) {
-      throw new Error("form missing");
+type EnterScenario =
+  | "readonly-required-empty"
+  | "readonly-value"
+  | "default-first-enabled"
+  | "default-first-disabled"
+  | "default-fieldset-disabled"
+  | "no-submit-one-field"
+  | "no-submit-two-fields";
+
+type SubmissionRecord = {
+  readonly submitter: string | null;
+  readonly data: Record<string, string>;
+};
+
+async function runEnterScenario(page: import("@playwright/test").Page, scenario: EnterScenario): Promise<{
+  readonly native: readonly SubmissionRecord[];
+  readonly custom: readonly SubmissionRecord[];
+}> {
+  await page.evaluate(async (currentScenario) => {
+    const root = document.querySelector<HTMLElement>("#standalone-root");
+    if (root === null) {
+      throw new Error("fixture root missing");
     }
-    (form as HTMLFormElement & {submitState?: unknown[]}).submitState = [];
-    form.addEventListener("submit", (event) => {
-      const state = form as HTMLFormElement & {submitState: unknown[]};
-      state.submitState.push({
-        value: new FormData(form).get("person"),
-        submitter: (event as SubmitEvent).submitter?.textContent?.trim() ?? null,
+    root.replaceChildren();
+
+    const nativeForm = document.createElement("form");
+    nativeForm.id = "native-enter-form";
+    const customForm = document.createElement("form");
+    customForm.id = "custom-enter-form";
+    root.append(nativeForm, customForm);
+
+    const nativeInput = document.createElement("input");
+    nativeInput.id = "native-enter-input";
+    nativeInput.name = "field";
+    nativeInput.value = currentScenario === "readonly-required-empty" ? "" : "value";
+    const customInput = document.createElement("aeliqo-input") as HTMLElement & {
+      name: string;
+      value: string;
+      required: boolean;
+      readOnly: boolean;
+      updateComplete: Promise<unknown>;
+    };
+    customInput.id = "custom-enter-input";
+    customInput.name = "field";
+    customInput.value = currentScenario === "readonly-required-empty" ? "" : "value";
+
+    nativeForm.append(nativeInput);
+    customForm.append(customInput);
+
+    if (currentScenario === "readonly-required-empty" || currentScenario === "readonly-value") {
+      nativeInput.readOnly = true;
+      customInput.readOnly = true;
+      nativeInput.required = currentScenario === "readonly-required-empty";
+      customInput.required = currentScenario === "readonly-required-empty";
+    }
+
+    if (currentScenario === "no-submit-two-fields") {
+      const nativeSecond = document.createElement("input");
+      nativeSecond.name = "second";
+      nativeSecond.value = "second";
+      nativeForm.append(nativeSecond);
+      const customSecond = document.createElement("input");
+      customSecond.name = "second";
+      customSecond.value = "second";
+      customForm.append(customSecond);
+    }
+
+    if (
+      currentScenario === "default-first-enabled" ||
+      currentScenario === "default-first-disabled" ||
+      currentScenario === "default-fieldset-disabled"
+    ) {
+      const addSubmitters = (form: HTMLFormElement): void => {
+        const first = document.createElement("button");
+        first.id = "first-submit";
+        first.type = "submit";
+        first.name = "submitter";
+        first.value = "first";
+        first.textContent = "First";
+        const second = document.createElement("button");
+        second.id = "second-submit";
+        second.type = "submit";
+        second.name = "submitter";
+        second.value = "second";
+        second.textContent = "Second";
+        if (currentScenario === "default-fieldset-disabled") {
+          const fieldset = document.createElement("fieldset");
+          fieldset.disabled = true;
+          fieldset.append(first);
+          form.append(fieldset, second);
+        } else {
+          first.disabled = currentScenario === "default-first-disabled";
+          form.append(first, second);
+        }
+      };
+      addSubmitters(nativeForm);
+      addSubmitters(customForm);
+    }
+
+    for (const form of [nativeForm, customForm]) {
+      (form as HTMLFormElement & {records: SubmissionRecord[]}).records = [];
+      form.addEventListener("submit", (event) => {
+        const records = (form as HTMLFormElement & {records: SubmissionRecord[]}).records;
+        records.push({
+          submitter: (event as SubmitEvent).submitter?.id ?? null,
+          data: Object.fromEntries(new FormData(form).entries()) as Record<string, string>,
+        });
+        event.preventDefault();
       });
-    });
-  });
+    }
+    await customInput.updateComplete;
+  }, scenario);
 
-  const input = page.locator("#standalone-form aeliqo-input").locator("input");
-  await input.press("Enter");
-  const firstSubmission = await page.locator("#standalone-form").evaluate((element) => {
-    return (element as HTMLFormElement & {submitState: unknown[]}).submitState;
-  });
-  expect(firstSubmission).toEqual([{value: "Ada", submitter: "Submit"}]);
+  await page.locator("#native-enter-form #native-enter-input").press("Enter");
+  await page.waitForTimeout(30);
+  await page.locator("#custom-enter-form aeliqo-input").locator("input").press("Enter");
+  await page.waitForTimeout(30);
+  return page.evaluate(() => ({
+    native: (document.querySelector("#native-enter-form") as HTMLFormElement & {records: SubmissionRecord[]}).records,
+    custom: (document.querySelector("#custom-enter-form") as HTMLFormElement & {records: SubmissionRecord[]}).records,
+  }));
+}
 
-  await page.locator("#standalone-form aeliqo-input").evaluate((element) => {
-    (element as HTMLElement & {value: string}).value = "";
-  });
-  await input.press("Enter");
-  const invalidSubmission = await page.locator("#standalone-form").evaluate((element) => {
-    return (element as HTMLFormElement & {submitState: unknown[]}).submitState;
-  });
-  expect(invalidSubmission).toEqual([{value: "Ada", submitter: "Submit"}]);
+test("Enter semantics match native implicit submission across the platform table", async ({page}) => {
+  await page.goto("/index.html");
+  const scenarios: readonly EnterScenario[] = [
+    "readonly-required-empty",
+    "readonly-value",
+    "default-first-enabled",
+    "default-first-disabled",
+    "default-fieldset-disabled",
+    "no-submit-one-field",
+    "no-submit-two-fields",
+  ];
 
-  await page.locator("#standalone-form aeliqo-input").evaluate((element) => {
-    const host = element as HTMLElement & {value: string; readOnly: boolean};
-    host.value = "Ada";
-    host.readOnly = true;
-  });
-  await input.press("Enter");
-  const readOnlySubmission = await page.locator("#standalone-form").evaluate((element) => {
-    return (element as HTMLFormElement & {submitState: unknown[]}).submitState;
-  });
-  expect(readOnlySubmission).toEqual([{value: "Ada", submitter: "Submit"}]);
+  for (const scenario of scenarios) {
+    const result = await runEnterScenario(page, scenario);
+    expect(result.custom, scenario).toEqual(result.native);
+  }
+});
 
-  await page.locator("#standalone-form aeliqo-input").evaluate((element) => {
-    (element as HTMLElement & {readOnly: boolean}).readOnly = false;
+test("readonly required empty inputs also match native direct requestSubmit", async ({page}) => {
+  await page.goto("/index.html");
+  const result = await page.evaluate(async () => {
+    const root = document.querySelector<HTMLElement>("#standalone-root");
+    if (root === null) {
+      throw new Error("fixture root missing");
+    }
+    root.replaceChildren();
+    const nativeForm = document.createElement("form");
+    const customForm = document.createElement("form");
+    root.append(nativeForm, customForm);
+    const nativeInput = document.createElement("input");
+    nativeInput.name = "field";
+    nativeInput.required = true;
+    nativeInput.readOnly = true;
+    const customInput = document.createElement("aeliqo-input") as HTMLElement & {
+      name: string;
+      required: boolean;
+      readOnly: boolean;
+      updateComplete: Promise<unknown>;
+    };
+    customInput.name = "field";
+    customInput.required = true;
+    customInput.readOnly = true;
+    nativeForm.append(nativeInput);
+    customForm.append(customInput);
+    for (const form of [nativeForm, customForm]) {
+      (form as HTMLFormElement & {submitted: number}).submitted = 0;
+      form.addEventListener("submit", (event) => {
+        (form as HTMLFormElement & {submitted: number}).submitted += 1;
+        event.preventDefault();
+      });
+    }
+    await customInput.updateComplete;
+    nativeForm.requestSubmit();
+    customForm.requestSubmit();
+    return {
+      native: (nativeForm as HTMLFormElement & {submitted: number}).submitted,
+      custom: (customForm as HTMLFormElement & {submitted: number}).submitted,
+    };
   });
-  await page.locator("#standalone-form aeliqo-input").evaluate((element) => {
-    (element as HTMLElement & {disabled: boolean}).disabled = true;
-  });
-  await input.evaluate((element) => {
-    element.dispatchEvent(new KeyboardEvent("keydown", {bubbles: true, key: "Enter"}));
-  });
-  const disabledSubmission = await page.locator("#standalone-form").evaluate((element) => {
-    return (element as HTMLFormElement & {submitState: unknown[]}).submitState;
-  });
-  expect(disabledSubmission).toEqual([{value: "Ada", submitter: "Submit"}]);
-  await page.locator("#standalone-form aeliqo-input").evaluate((element) => {
-    (element as HTMLElement & {disabled: boolean}).disabled = false;
-  });
-  await input.evaluate((element) => {
-    element.dispatchEvent(new CompositionEvent("compositionstart", {bubbles: true}));
-    element.dispatchEvent(new KeyboardEvent("keydown", {bubbles: true, key: "Enter"}));
-  });
-  const composingSubmission = await page.locator("#standalone-form").evaluate((element) => {
-    return (element as HTMLFormElement & {submitState: unknown[]}).submitState;
-  });
-  expect(composingSubmission).toEqual([{value: "Ada", submitter: "Submit"}]);
+  expect(result).toEqual({native: 1, custom: 1});
+});
+
+test("Enter bridge honors outer cancellation and default submitter click cancellation", async ({page}) => {
+  await page.goto("/index.html");
+  for (const cancellation of ["form-keydown", "submitter-click"] as const) {
+    await page.evaluate(async (currentCancellation) => {
+      const root = document.querySelector<HTMLElement>("#standalone-root");
+      if (root === null) {
+        throw new Error("fixture root missing");
+      }
+      root.replaceChildren();
+      const nativeForm = document.createElement("form");
+      nativeForm.id = "native-cancel-form";
+      const customForm = document.createElement("form");
+      customForm.id = "custom-cancel-form";
+      root.append(nativeForm, customForm);
+
+      const addControls = (form: HTMLFormElement, custom: boolean): void => {
+        const button = document.createElement("button");
+        button.id = "cancel-submit";
+        button.type = "submit";
+        button.textContent = "Submit";
+        const control = custom
+          ? (document.createElement("aeliqo-input") as HTMLElement & {name: string; value: string})
+          : document.createElement("input");
+        control.id = custom ? "custom-cancel-input" : "native-cancel-input";
+        control.name = "field";
+        control.value = custom ? "custom" : "native";
+        form.append(button, control);
+        if (currentCancellation === "form-keydown") {
+          form.addEventListener("keydown", (event) => event.preventDefault());
+        } else {
+          button.addEventListener("click", (event) => event.preventDefault());
+        }
+      };
+      addControls(nativeForm, false);
+      addControls(customForm, true);
+      for (const form of [nativeForm, customForm]) {
+        (form as HTMLFormElement & {submitted: number}).submitted = 0;
+        form.addEventListener("submit", (event) => {
+          (form as HTMLFormElement & {submitted: number}).submitted += 1;
+          event.preventDefault();
+        });
+      }
+      await (customForm.querySelector("aeliqo-input") as HTMLElement & {updateComplete: Promise<unknown>})
+        .updateComplete;
+    }, cancellation);
+
+    await page.locator("#native-cancel-form #native-cancel-input").press("Enter");
+    await page.waitForTimeout(30);
+    await page.locator("#custom-cancel-form aeliqo-input").locator("input").press("Enter");
+    await page.waitForTimeout(30);
+    const result = await page.evaluate(() => ({
+      native: (document.querySelector("#native-cancel-form") as HTMLFormElement & {submitted: number}).submitted,
+      custom: (document.querySelector("#custom-cancel-form") as HTMLFormElement & {submitted: number}).submitted,
+    }));
+    expect(result, cancellation).toEqual({native: 0, custom: 0});
+  }
 });
 
 test("strict script CSP blocks injected inline code while the fixture remains interactive", async ({page}) => {

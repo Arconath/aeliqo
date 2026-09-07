@@ -2,6 +2,21 @@ import {css, html, LitElement, noChange, nothing} from "lit";
 import type {PropertyValues} from "lit";
 import {AeliqoInputEvent} from "../events.js";
 
+const BLOCKING_INPUT_TYPES = new Set([
+  "text",
+  "search",
+  "url",
+  "tel",
+  "email",
+  "password",
+  "date",
+  "month",
+  "week",
+  "time",
+  "datetime-local",
+  "number",
+]);
+
 /** A user edit proposed by the native control inside `<aeliqo-input>`. */
 export class AeliqoInputElement extends LitElement {
   static readonly formAssociated = true;
@@ -193,8 +208,7 @@ export class AeliqoInputElement extends LitElement {
       event.isComposing ||
       this.composing ||
       this.disabled ||
-      this.formDisabled ||
-      this.readOnly
+      this.formDisabled
     ) {
       return;
     }
@@ -204,29 +218,66 @@ export class AeliqoInputElement extends LitElement {
       return;
     }
 
-    event.preventDefault();
-    const submitter = this.getDefaultSubmitter(form);
-    if (submitter === undefined) {
-      form.requestSubmit();
-    } else {
-      form.requestSubmit(submitter);
-    }
+    setTimeout(() => {
+      if (
+        event.defaultPrevented ||
+        !this.isConnected ||
+        this.internals?.form !== form ||
+        this.composing ||
+        event.isComposing ||
+        this.disabled ||
+        this.formDisabled
+      ) {
+        return;
+      }
+
+      const submitter = this.getDefaultSubmitter(form);
+      if (submitter === null || (submitter === undefined && !this.hasSingleBlockingField(form))) {
+        event.preventDefault();
+        return;
+      }
+
+      event.preventDefault();
+      if (submitter === undefined) {
+        form.requestSubmit();
+      } else {
+        submitter.click();
+      }
+    }, 0);
   };
 
-  private getDefaultSubmitter(form: HTMLFormElement): HTMLButtonElement | HTMLInputElement | undefined {
+  private getDefaultSubmitter(
+    form: HTMLFormElement,
+  ): HTMLButtonElement | HTMLInputElement | null | undefined {
     for (const control of Array.from(form.elements)) {
-      if (control instanceof HTMLButtonElement && control.type === "submit" && !control.disabled) {
-        return control;
+      if (control instanceof HTMLButtonElement && control.type === "submit") {
+        return control.matches(":disabled") ? null : control;
       }
-      if (
-        control instanceof HTMLInputElement &&
-        (control.type === "submit" || control.type === "image") &&
-        !control.disabled
-      ) {
-        return control;
+      if (control instanceof HTMLInputElement && (control.type === "submit" || control.type === "image")) {
+        return control.matches(":disabled") ? null : control;
       }
     }
     return undefined;
+  }
+
+  private hasSingleBlockingField(form: HTMLFormElement): boolean {
+    let count = 0;
+    for (const control of Array.from(form.elements)) {
+      if (control.matches(":disabled")) {
+        continue;
+      }
+
+      if (control instanceof AeliqoInputElement) {
+        count += 1;
+      } else if (control instanceof HTMLInputElement && BLOCKING_INPUT_TYPES.has(control.type)) {
+        count += 1;
+      }
+
+      if (count > 1) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private getNativeInput(): HTMLInputElement | undefined {
@@ -278,7 +329,7 @@ export class AeliqoInputElement extends LitElement {
       return;
     }
 
-    if (this.required && value.length === 0) {
+    if (this.required && !this.readOnly && value.length === 0) {
       this.internals.setValidity(
         {valueMissing: true},
         this.error || "Enter a value.",
