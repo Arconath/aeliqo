@@ -110,25 +110,27 @@ export class AeliqoInputElement extends LitElement {
       .join(" ");
 
     return html`
-      <label part="label">
-        <span class="label-text">${this.label}</span>
-        <input
-          part="input"
-          .value=${this.composing ? noChange : this.value}
-          name=""
-          ?required=${this.required}
-          ?disabled=${disabled}
-          ?readonly=${this.readOnly}
-          aria-invalid=${this.error ? "true" : nothing}
-          aria-describedby=${describedBy || nothing}
-          @input=${this.handleInput}
-          @keydown=${this.handleKeyDown}
-          @compositionstart=${this.handleCompositionStart}
-          @compositionend=${this.handleCompositionEnd}
-        />
+      <div part="field">
+        <label part="label">
+          <span class="label-text">${this.label}</span>
+          <input
+            part="input"
+            .value=${this.composing ? noChange : this.value}
+            name=""
+            ?required=${this.required}
+            ?disabled=${disabled}
+            ?readonly=${this.readOnly}
+            aria-invalid=${this.error ? "true" : nothing}
+            aria-describedby=${describedBy || nothing}
+            @input=${this.handleInput}
+            @keydown=${this.handleKeyDown}
+            @compositionstart=${this.handleCompositionStart}
+            @compositionend=${this.handleCompositionEnd}
+          />
+        </label>
         ${this.hint ? html`<span id="description" part="description">${this.hint}</span>` : nothing}
         ${this.error ? html`<span id="error" part="error">${this.error}</span>` : nothing}
-      </label>
+      </div>
     `;
   }
 
@@ -363,6 +365,11 @@ export class AeliqoInputElement extends LitElement {
     }
 
     label {
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    [part="field"] {
       display: grid;
       gap: 0.35rem;
     }

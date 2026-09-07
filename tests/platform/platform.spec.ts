@@ -7,6 +7,19 @@ test("vanilla embedding keeps controlled events, forms, focus and style isolatio
   await page.goto("/index.html");
   const input = page.locator("#standalone-form aeliqo-input").locator("input");
   await expect(input).toHaveValue("Ada");
+  await expect(input).toHaveAccessibleName("Name");
+  await expect(input).toHaveAccessibleDescription("The value is controlled by the host.");
+  await page.locator("#standalone-form aeliqo-input").evaluate((element) => {
+    (element as HTMLElement & {error: string}).error = "Name is invalid.";
+  });
+  await expect(input).toHaveAccessibleName("Name");
+  await expect(input).toHaveAccessibleDescription(
+    "The value is controlled by the host. Name is invalid.",
+  );
+  await page.locator("#standalone-form aeliqo-input").evaluate((element) => {
+    (element as HTMLElement & {error: string}).error = "";
+  });
+  await expect(input).toHaveAccessibleDescription("The value is controlled by the host.");
 
   await input.fill("Lin");
   await expect(page.locator("#standalone-status")).toHaveText("Draft: Lin");
