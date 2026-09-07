@@ -12,9 +12,10 @@ import type {CatalogIndex, MeaningActivationPolicy, MeaningActivationReceipt, Me
 export interface MeaningValidationContext extends MeaningBundleContext {
   readonly index?: CatalogIndex;
   readonly entityId?: string;
-  /** Internal flag used by the iterative closure walker. */
+}
+
+interface MeaningValidationOptions {
   readonly skipDependencyClosure?: boolean;
-  /** Internal immutable index reused by the closure walker. */
   readonly availableDefinitions?: ReadonlyMap<string, MeaningDefinition>;
 }
 
@@ -63,7 +64,11 @@ export function validateMeaning(input: unknown, context: MeaningValidationContex
   return validateMeaningValue(parsed.data as MeaningDefinition, context);
 }
 
-function validateMeaningValue(meaning: MeaningDefinition, context: MeaningValidationContext): Outcome<MeaningDefinition> {
+function validateMeaningValue(
+  meaning: MeaningDefinition,
+  context: MeaningValidationContext,
+  options: MeaningValidationOptions = {},
+): Outcome<MeaningDefinition> {
   if (context.registry.digest !== context.catalog.functionRegistryDigest)
     return semanticFailure('semantic.stale-registry', 'The supplied function registry does not match the catalog registry pin.', ['functionRegistryDigest']);
   const indexOutcome = context.index === undefined ? createCatalogIndex(context.catalog) : {ok: true as const, value: context.index};
@@ -83,8 +88,8 @@ function validateMeaningValue(meaning: MeaningDefinition, context: MeaningValida
   if (new Set(meaning.dependencies.map(versionKey)).size !== meaning.dependencies.length)
     return semanticFailure('semantic.duplicate-dependency', 'Meaning dependencies must be unique.', ['dependencies']);
   let available: ReadonlyMap<string, MeaningDefinition>;
-  if (context.availableDefinitions !== undefined) {
-    available = context.availableDefinitions;
+  if (options.availableDefinitions !== undefined) {
+    available = options.availableDefinitions;
   } else {
     const indexed = new Map<string, MeaningDefinition>();
     for (const candidate of context.catalog.meanings) indexed.set(versionKey(candidate), candidate);
@@ -110,7 +115,7 @@ function validateMeaningValue(meaning: MeaningDefinition, context: MeaningValida
       return semanticFailure('semantic.stale-registry', `Meaning dependency ${dependencyMeaning.id}@${dependencyMeaning.revision} pins a different function registry digest.`, ['dependencies', indexOfDependency]);
   }
 
-  if (!context.skipDependencyClosure) {
+  if (!options.skipDependencyClosure) {
     const closure = validateDependencyClosure([{meaning, path: []}], available, context);
     if (!closure.ok) return closure;
   }
@@ -215,9 +220,7 @@ export function validateMeaningBundle(input: unknown, context: MeaningBundleCont
       ...context,
       index: indexOutcome.value,
       definitions: [...(context.definitions ?? []), ...suppliedMeanings],
-      availableDefinitions: allDefinitions,
-      skipDependencyClosure: true,
-    });
+    }, {availableDefinitions: allDefinitions, skipDependencyClosure: true});
     if (!validated.ok) return prependOutcomePath(['meanings', index], validated);
     const identity = versionKey(validated.value);
     const inherited = [...(context.definitions ?? []), ...context.catalog.meanings].find((candidate) => versionKey(candidate) === identity);
@@ -237,7 +240,7 @@ export function validateMeaningBundle(input: unknown, context: MeaningBundleCont
   const closure = validateDependencyClosure(
     bundleMeanings.map((meaning, index) => ({meaning, path: ['meanings', index] as const})),
     byIdentity,
-    {...context, definitions: [...byIdentity.values()], availableDefinitions: byIdentity, skipDependencyClosure: true},
+    {...context, definitions: [...byIdentity.values()]},
   );
   if (!closure.ok) return closure;
   return {ok: true, value: {catalogRevision: bundle.catalogRevision, functionRegistryDigest: bundle.functionRegistryDigest, meanings: bundleMeanings}};
@@ -301,9 +304,7 @@ function validateDependencyClosure(
         const validated = validateMeaningValue(frame.meaning, {
           ...context,
           definitions,
-          availableDefinitions: available,
-          skipDependencyClosure: true,
-        });
+        }, {availableDefinitions: available, skipDependencyClosure: true});
         if (!validated.ok) return prependOutcomePath(materializePath(frame.path), validated);
         frame.meaning = validated.value;
         frame.entered = true;
