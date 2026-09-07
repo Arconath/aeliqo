@@ -4,7 +4,8 @@ Pure, versioned Aeliqo wire contracts for **Catalog**, **Task**, **Result**, and
 **Experience**. This implementation currently supplies canonical schemas, inferred
 readonly TypeScript types, bounded parsing, diagnostics, and stable serialization.
 Task structure and Experience restriction intersection are also available.
-Semantic compilation and evaluation are subsequent implementation slices.
+Semantic expression checking and typed meaning authoring are available.
+Query execution remains a subsequent implementation slice.
 
 ```ts
 import {parseCatalog, serializeContract} from '@aeliqo/core';
@@ -85,3 +86,41 @@ prove accessible renderer behavior, or grant actions/model egress. Host policy
 and candidate validation remain independent. `agentAllowed: true` is a profile
 setting, never an authenticated grant. Container width is not accepted as a
 reason to remove keyboard operations or essential comparisons.
+
+
+## Expressions and meaning authoring
+
+`createStandardFunctionRegistry()` returns an `Outcome<FunctionRegistry>` with
+versioned standard signatures. Pin its digest in the catalog. Trusted application
+code can supply signatures through `createFunctionRegistry`; signatures describe
+semantics and do not execute code. Unsupported function revisions fail explicitly.
+
+`createTypedAuthoring({catalog, registry})` reuses catalog field types and identity.
+With a literal catalog (`as const satisfies Catalog`), `field(entity, field)` also
+checks entity and field names in TypeScript. Runtime checking remains necessary
+for loaded catalogs. Builder methods return `Outcome` values, and failed inputs
+propagate through composed expressions.
+
+`ratioOfSums({numerator, denominator, zeroDenominator})` requires an explicit
+`null`, `unknown`, or `error` denominator policy. `meanOfRates({rates})` expresses a
+different, non-additive meaning. The checker preserves that distinction; neither
+operation is a universal replacement for the other. Units, grain, nullable values,
+temporal policy and function context constrain which expressions can be combined.
+These checks describe arithmetic; they do not calculate query results.
+
+`defineMetric` creates a manual draft with hypothesis authority. `bundle` and
+`validateMeaningBundle` pin the catalog and function registry and reject conflicting
+contents at an existing meaning ID/revision. A developer can review definitions in
+source and ship the resulting bundle without Studio or model calls.
+
+`validateMeaning` checks semantics and optional scope/authority-label restrictions.
+It does not establish business truth or approve activation. The host calls
+`authorizeMeaningActivation` against its own exact canonical definition allowlist;
+copying an approved ID onto changed contents cannot grant activation. Keep that
+allowlist and its policy revision outside untrusted model/client inputs. A returned
+receipt is a local policy result, not a transferable authentication credential.
+Data reads, actions and model egress require their own host authorization.
+
+Expression traversal has explicit node/depth bounds. Function execution-cost
+metadata is reserved for the query planner/evaluator; this module does not claim
+to enforce a source-scan or execution-time budget.

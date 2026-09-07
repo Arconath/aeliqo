@@ -6,3 +6,5 @@ export {resolveExperienceConstraints, PRESENTATION_EXPANSION_LIMIT} from './cont
 export type {ExperienceRestriction, ExperienceConstraints} from './contracts/experience/index.js';
 export type {Catalog, Task, Result, Experience, Contract, ContractKind, Diagnostic, Outcome,
   Expression, FieldDefinition, MeaningDefinition, QuerySpec, ResultRef, SemanticType, VersionRef} from './contracts/types.js';
+export * from './expressions/index.js';
+export * from './semantics/index.js';

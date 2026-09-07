@@ -58,6 +58,7 @@ jobs:
         run: |
           pnpm test:contracts
           pnpm test:task-experience
+          pnpm test:semantics
           pnpm test:core:consumers
       - name: Verify external installed packages
         run: pnpm test:platform:consumers
