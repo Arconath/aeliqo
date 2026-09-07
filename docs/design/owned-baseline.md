@@ -19,16 +19,16 @@ export class ExampleElement extends LitElement {
 }
 ```
 
-The default mode follows the system color preference until a host reflects `data-aeliqo-theme="light"` or `data-aeliqo-theme="dark"`. Direct custom properties remain the final theming escape hatch. Existing `--aeliqo-input-*`, `--aeliqo-table-*` and `--aeliqo-chart-*` properties are mapped to semantic roles, so current consumers can keep their overrides while new components use the owned token names.
+The default mode follows the system color preference until a host reflects `data-aeliqo-theme="light"` or `data-aeliqo-theme="dark"`. Direct custom properties remain the final theming escape hatch. Components resolve their existing `--aeliqo-input-*`, `--aeliqo-table-*` and `--aeliqo-chart-*` properties before semantic tokens and their original fallbacks; the baseline deliberately does not define those legacy properties, so inherited and direct consumer overrides remain intact while new components use the owned token names.
 
-Forced-colors maps roles to system colors such as `Canvas`, `CanvasText`, `ButtonText`, `Highlight` and `HighlightText`. Reduced motion sets the shared transition durations to `0ms`; components choose whether a transition is applicable. Direction uses CSS logical properties and can be reflected from `createAeliqoLocaleContext` with `aeliqoLocaleAttributes`:
+Forced-colors maps roles to system colors such as `Canvas`, `CanvasText`, `ButtonText`, `Highlight` and `HighlightText`. Reduced motion sets the shared transition durations to `0ms`; components choose whether a transition is applicable. Direction uses CSS logical properties and can be reflected from `createAeliqoLocaleContext` with `aeliqoLocaleAttributes`. The helper canonicalizes and validates the BCP 47 tag with `Intl.Locale`. An explicit `direction` option always wins; otherwise the platform `Intl.Locale.prototype.getTextInfo()` result is required. Hosts running without that platform method must provide `direction` explicitly, rather than relying on a language list. Invalid tags are rejected:
 
 ```ts
-const locale = createAeliqoLocaleContext("ar-EG");
+const locale = createAeliqoLocaleContext("ar-EG", {direction: "rtl"});
 // {lang: "ar-EG", dir: "rtl"}
 ```
 
-The locale helper does not rewrite labels, infer a business calendar or mutate global locale state. It only provides immutable locale and direction metadata for the host/component boundary. Long labels and text scaling remain content and browser responsibilities and must be covered by visual and accessibility checks.
+The locale helper does not rewrite labels, infer a business calendar or mutate global locale state. It only provides immutable locale and direction metadata for the host/component boundary. Long labels and text scaling remain content and browser responsibilities and must be covered by visual and accessibility checks. Run `pnpm exec vitest run design/styles.test.ts` after changing tokens or locale behavior.
 
 ## Default visual language
 

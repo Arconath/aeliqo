@@ -9,7 +9,6 @@ export {
 export type {AeliqoThemeMode, AeliqoTokenName, AeliqoTokenValues} from "./tokens.js";
 export {aeliqoStandaloneThemeStyles, aeliqoThemeStyles, aeliqoThemeStyleText} from "./theme.js";
 export {
-  AELIQO_RTL_LANGUAGE_CODES,
   aeliqoLocaleAttributes,
   createAeliqoLocaleContext,
   resolveAeliqoDirection,

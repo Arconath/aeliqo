@@ -6,36 +6,90 @@ export interface AeliqoLocaleContext {
 }
 
 export interface AeliqoLocaleOptions {
+  /** Explicit host direction wins over platform locale inference. */
   readonly direction?: AeliqoDirection;
 }
 
-/** Languages whose default writing direction is right-to-left. */
-export const AELIQO_RTL_LANGUAGE_CODES = ["ar", "fa", "he", "ur"] as const;
+type AeliqoTextInfo = {readonly direction?: string};
+type AeliqoLocaleWithTextInfo = Intl.Locale & {
+  readonly getTextInfo?: () => AeliqoTextInfo;
+};
 
-const rtlLanguageCodes = new Set<string>(AELIQO_RTL_LANGUAGE_CODES);
+function canonicalizeLocale(locale: string): AeliqoLocaleWithTextInfo {
+  if (typeof locale !== "string") {
+    throw new TypeError("Aeliqo locale must be a BCP 47 language tag.");
+  }
 
-function languageCode(locale: string): string {
-  return locale.trim().toLowerCase().split("-")[0] ?? "";
+  const candidate = locale.trim();
+  if (candidate.length === 0) {
+    throw new RangeError("Aeliqo locale must be a non-empty BCP 47 language tag.");
+  }
+
+  try {
+    // Intl.Locale both validates the language tag and returns its canonical form.
+    return new Intl.Locale(candidate) as AeliqoLocaleWithTextInfo;
+  } catch {
+    throw new RangeError(`Invalid Aeliqo BCP 47 locale: ${locale}`);
+  }
 }
 
-/** Resolve direction from an explicit host choice or a BCP 47 language tag. */
+function validateDirection(direction: AeliqoDirection): AeliqoDirection {
+  if (direction !== "ltr" && direction !== "rtl") {
+    throw new RangeError(`Invalid Aeliqo text direction: ${String(direction)}`);
+  }
+  return direction;
+}
+
+function inferDirection(locale: AeliqoLocaleWithTextInfo): AeliqoDirection {
+  const getTextInfo = locale.getTextInfo;
+  if (typeof getTextInfo !== "function") {
+    throw new RangeError(
+      "The platform cannot infer locale direction; provide options.direction explicitly.",
+    );
+  }
+
+  let textInfo: AeliqoTextInfo;
+  try {
+    textInfo = getTextInfo.call(locale);
+  } catch {
+    throw new RangeError(
+      "The platform could not infer locale direction; provide options.direction explicitly.",
+    );
+  }
+
+  const direction = textInfo.direction;
+  if (direction === "ltr" || direction === "rtl") return direction;
+  throw new RangeError(
+    "The platform returned no usable locale direction; provide options.direction explicitly.",
+  );
+}
+
+/**
+ * Resolve direction from an explicit host choice or the platform's BCP 47 text
+ * metadata. The function deliberately does not guess from a short language list.
+ */
 export function resolveAeliqoDirection(
   locale: string,
   direction?: AeliqoDirection,
 ): AeliqoDirection {
-  if (direction !== undefined) return direction;
-  return rtlLanguageCodes.has(languageCode(locale)) ? "rtl" : "ltr";
+  const canonicalLocale = canonicalizeLocale(locale);
+  if (direction !== undefined) return validateDirection(direction);
+  return inferDirection(canonicalLocale);
 }
 
-/** Create immutable locale metadata for a component or an application scope. */
+/** Create immutable, canonical locale metadata for a component or application scope. */
 export function createAeliqoLocaleContext(
   locale = "en-US",
   options: AeliqoLocaleOptions = {},
 ): AeliqoLocaleContext {
-  const normalizedLocale = locale.trim() || "en-US";
+  const canonicalLocale = canonicalizeLocale(locale);
+  const resolvedDirection =
+    options.direction === undefined
+      ? inferDirection(canonicalLocale)
+      : validateDirection(options.direction);
   return Object.freeze({
-    locale: normalizedLocale,
-    direction: resolveAeliqoDirection(normalizedLocale, options.direction),
+    locale: canonicalLocale.toString(),
+    direction: resolvedDirection,
   });
 }
 

@@ -9,34 +9,8 @@ import {
 const declarations = (values: Readonly<Record<string, string>>): string =>
   Object.entries(values).map(([name, value]) => `${name}: ${value};`).join("\n");
 
-const semanticAliases = `
-  /* Existing component variables remain valid and can still be overridden directly. */
-  --aeliqo-input-color: var(--aeliqo-color-text);
-  --aeliqo-input-background: var(--aeliqo-color-canvas);
-  --aeliqo-input-border: var(--aeliqo-color-border);
-  --aeliqo-input-focus: var(--aeliqo-color-focus);
-  --aeliqo-input-description: var(--aeliqo-color-muted);
-  --aeliqo-input-error: var(--aeliqo-color-danger);
-  --aeliqo-table-color: var(--aeliqo-color-text);
-  --aeliqo-table-focus: var(--aeliqo-color-focus);
-  --aeliqo-table-rule: var(--aeliqo-color-border);
-  --aeliqo-table-heading-background: var(--aeliqo-color-surface);
-  --aeliqo-chart-color: var(--aeliqo-color-text);
-  --aeliqo-chart-muted: var(--aeliqo-color-muted);
-  --aeliqo-chart-background: var(--aeliqo-color-canvas);
-  --aeliqo-chart-border: var(--aeliqo-color-border);
-  --aeliqo-chart-focus: var(--aeliqo-color-focus);
-  --aeliqo-chart-rule: var(--aeliqo-color-border);
-  --aeliqo-chart-line: var(--aeliqo-visualization-series1);
-  --aeliqo-chart-point: var(--aeliqo-color-canvas);
-`;
-
-const baseDeclarations = `${declarations(AELIQO_LIGHT_TOKENS)}
-${declarations(AELIQO_SHARED_TOKENS)}
-${semanticAliases}`;
-const darkDeclarations = `${declarations(AELIQO_DARK_TOKENS)}
-${declarations(AELIQO_SHARED_TOKENS)}
-${semanticAliases}`;
+const baseDeclarations = `${declarations(AELIQO_LIGHT_TOKENS)}\n${declarations(AELIQO_SHARED_TOKENS)}`;
+const darkDeclarations = `${declarations(AELIQO_DARK_TOKENS)}\n${declarations(AELIQO_SHARED_TOKENS)}`;
 
 const forcedColorDeclarations = `
   --aeliqo-color-canvas: Canvas;
@@ -156,8 +130,14 @@ export const aeliqoStandaloneThemeStyles: CSSResult = css`
     }
   }
 
-  :where([dir="rtl"]) {
+  :where([data-aeliqo-theme][dir="rtl"]),
+  :where([data-aeliqo-theme] [dir="rtl"]) {
     direction: rtl;
+  }
+
+  :where([data-aeliqo-theme][dir="ltr"]),
+  :where([data-aeliqo-theme] [dir="ltr"]) {
+    direction: ltr;
   }
 
   @media (prefers-reduced-motion: reduce) {
