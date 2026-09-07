@@ -1,0 +1,16 @@
+{
+  "name": "@aeliqo/platform-fixture",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite"
+  },
+  "dependencies": {
+    "@aeliqo/react": "workspace:*",
+    "@aeliqo/web": "workspace:*",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "vue": "3.5.42"
+  }
+}

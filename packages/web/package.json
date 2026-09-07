@@ -1,0 +1,50 @@
+{
+  "name": "@aeliqo/web",
+  "version": "0.1.0",
+  "description": "Aeliqo's shared Lit web elements",
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": [
+    "./dist/register.js",
+    "./dist/server.js"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./register": {
+      "types": "./dist/register.d.ts",
+      "import": "./dist/register.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    },
+    "./input": {
+      "types": "./dist/elements/aeliqo-input.d.ts",
+      "import": "./dist/elements/aeliqo-input.js"
+    },
+    "./table": {
+      "types": "./dist/elements/aeliqo-table.d.ts",
+      "import": "./dist/elements/aeliqo-table.js"
+    },
+    "./chart": {
+      "types": "./dist/elements/aeliqo-chart.d.ts",
+      "import": "./dist/elements/aeliqo-chart.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@lit-labs/ssr": "4.1.0",
+    "@lit-labs/ssr-client": "1.1.8",
+    "lit": "3.3.3"
+  }
+}

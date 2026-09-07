@@ -1,0 +1,30 @@
+{
+  "name": "@aeliqo/react",
+  "version": "0.1.0",
+  "description": "Thin React bindings for Aeliqo web elements",
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "peerDependencies": {
+    "react": ">=19.2.0 <20.0.0",
+    "react-dom": ">=19.2.0 <20.0.0"
+  },
+  "dependencies": {
+    "@aeliqo/web": "workspace:*",
+    "@lit/react": "1.0.8"
+  }
+}
