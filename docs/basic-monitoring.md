@@ -76,3 +76,5 @@ through the existing pipeline, promote its immutable digest with GitOps, and
 verify a real browser POST plus stored Prometheus/Tempo signals before declaring
 production coverage. If a browser lacks INP or CLS support, record that gap
 rather than treating another metric as a substitute.
+
+The explicit production allowlist includes both the apex and www hostnames; both send to the same-origin intake.

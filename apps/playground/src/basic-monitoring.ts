@@ -42,7 +42,7 @@ export function webVitalData(metric: Pick<Metric, 'name' | 'value' | 'rating'>, 
 
 export function startBasicMonitoring(config: BasicMonitoringConfig) {
   if (started || !config.enabled || typeof window === 'undefined'
-      || window.location.hostname !== `${config.product}.com`
+      || ![`${config.product}.com`, `www.${config.product}.com`].includes(window.location.hostname)
       || window.location.protocol !== 'https:') return;
   started = true;
   const start = performance.timeOrigin;
