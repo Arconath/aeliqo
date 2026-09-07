@@ -1,0 +1,4 @@
+$ pnpm build:platform && tsc --project tsconfig.json
+$ pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/react build
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json

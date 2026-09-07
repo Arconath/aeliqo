@@ -149,10 +149,26 @@
         "Pin function/definition versions; ratio-of-sums versus mean-of-rates is selected by declared meaning, not a blanket math rule.",
         "Implement developer typed code/config authoring over canonical meaning; reuse schema references and reject invalid refs/units/grain. No dependency on Studio or model SDK."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "Exclusive Luna Max writer /tmp/aeliqo-t04-semantics from bc7c089; expressions/semantics/tests only. Parent owns canonical contracts/root integration. Independent review before acceptance."
+      "evidence": [
+        {
+          "path": "harness/evidence/t04/f1848485a702/manifest.json",
+          "sha256": "37df928c33e5354f8c276d04c662f1575e5648c9ecaabd85d1adbd690e0e9f93"
+        }
+      ],
+      "notes": "Typed authoring and bounded semantic/meaning checks accepted with independent review and installed package evidence. Execution/planning, source budgets and business truth remain separate.",
+      "review": {
+        "status": "approved",
+        "author": "platform_proof (Luna Max); parent integration; release_inventory installed consumer",
+        "reviewer": "preflight_diagnosis (independent Luna Max); parent consumer review",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t04/f1848485a702/review.json",
+            "sha256": "6567a29a5db4a547bfd57583e6b16734c8307b84fed93b6d959cd51469ca6575"
+          }
+        ]
+      }
     },
     {
       "id": "T05",
@@ -204,15 +220,18 @@
       ],
       "paths": [
         "examples/reference-host",
-        "packages/runtime/src/data"
+        "packages/runtime/src/data",
+        "packages/runtime/README.md",
+        "tests/runtime-data"
       ],
       "acceptance": [
         "Scoped discovery/plan/execute streaming contract, abort, revisions and structured unsupported capability work.",
         "Register reviewed code-owned meaning bundles through the local data/catalog path without model calls or end-user reauthoring; authorize activation, make identical registration idempotent, and reject conflicting ID/revision contents."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "Exclusive Luna Max writer platform_proof in /tmp/aeliqo-t06-data from6d959f9; runtime/data, reference host and ADC conformance tests. Parent owns configuration/lockfile/integration; bounded stream prep accepted separately. Full query planner followsT07."
     },
     {
       "id": "T07",
@@ -331,9 +350,10 @@
       "acceptance": [
         "DTCG-compatible tokens, named parts, default visual system and accessible baseline approved as testable reference."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "Exclusive Luna Max writer release_inventory in /tmp/aeliqo-t12-design from d6827fa; design, docs/design, packages/web/src/styles only. Parent owns component/root integration and visual verification; independent review required."
     },
     {
       "id": "T13",

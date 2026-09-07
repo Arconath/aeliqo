@@ -1,0 +1,66 @@
+{
+  "sourceDigest": "f1848485a702b13c88f74c89c435690ef354e956ad02b6c4cbb9cc5c5e44f7cd",
+  "sourceAfter": "f1848485a702b13c88f74c89c435690ef354e956ad02b6c4cbb9cc5c5e44f7cd",
+  "sourceChangedDuringRun": false,
+  "commands": [
+    {
+      "argv": [
+        "pnpm",
+        "test:semantics"
+      ],
+      "exitCode": 0,
+      "log": "00.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "test:task-experience"
+      ],
+      "exitCode": 0,
+      "log": "01.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "test:contracts"
+      ],
+      "exitCode": 0,
+      "log": "02.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "typecheck"
+      ],
+      "exitCode": 0,
+      "log": "03.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "test:core:consumers"
+      ],
+      "exitCode": 0,
+      "log": "04.log"
+    },
+    {
+      "argv": [
+        "python3",
+        "scripts/validate_all.py"
+      ],
+      "exitCode": 0,
+      "log": "05.log"
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0,
+      "log": "06.log"
+    }
+  ],
+  "completedAt": "2026-09-07T20:55:11.340923+00:00",
+  "scope": "T04 typed semantic authoring, unit/grain/null/temporal/function rules, immutable definitions, bounded transitive dependency validation and independent installed consumer. Arithmetic execution, business truth, authenticated grants and full product readiness remain separate."
+}

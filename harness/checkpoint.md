@@ -45,11 +45,28 @@ restriction intersection. Required comparisons survive every layer. Fresh23tests
 Independent review closed reuse-as-live and overly broad output-name ambiguity.
 Evidence: harness/evidence/t05/8d156a929ced. T03 hosted CI34157687833 succeeded.
 
-T04 semantic expression/meaning validation remains active in isolated worktree
-/tmp/aeliqo-t04-semantics, Luna Max writer platform_proof, dependency bc7c089.
-Parent/reviewer feedback covers units, exact decimals, immutable ref collisions,
-code-owned definition conflicts, active authority and bounded expression traversal.
-T06 data boundary prep read docs02/27; implementation waits for accepted T04.
-Parent owns canonical schemas/root integration. T42 publication remains blocked
-on npm namespace access/history (E401), not source work. All71catalog components
-and remaining acceptance stay mandatory. Continue the DAG and early T39.
+T04 semantic expressions and meaning authoring are accepted. Versioned function
+signatures, typed catalog field authoring, explicit ratio policies, units/grain,
+null/temporal rules and immutable definition conflicts are checked. Reachable
+meaning closures validate transitively and iteratively; 10,000 inherited definitions
+no longer overflow the stack. Exact host allowlists remain separate from labels.
+Independent review approved source0576239. Fresh23semantic,45contract and23task
+checks, strict types, installed package and kit validation passed with unchanged
+candidate digest. Evidence: harness/evidence/t04/f1848485a702. This does not claim
+arithmetic execution or business-truth certification.
+
+T06 is active in /tmp/aeliqo-t06-data, Luna Max writer platform_proof, from6d959f9.
+Parent's bounded NDJSON stream packet3c7d767 passes22tests and independent review.
+Worker owns runtime/data, local/HTTP host and ADC conformance tests; parent owns
+configuration, lockfile and integration. Initial flat-record query subset must
+reject unsupported analytical operations untilT07/T08. Principal/policy authority
+is injected by the server; meaning registration is a trusted local control path.
+
+T12 is active: token/theme/locale source is integrated; parent is integrating real
+input/table/chart styles, typed style exports and a live browser design fixture.
+Light/dark/RTL/text scaling/forced-colors and native form/SSR regression checks
+are running. Dark chart-series contrast was found below3:1 and is being corrected
+before baseline acceptance. No automatic visual approval or full71component claim.
+
+T42 publication remains blocked on npm namespace access/history(E401), not source
+work. Main and production remain unchanged. Continue the DAG and earlyT39.
