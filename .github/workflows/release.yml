@@ -41,11 +41,16 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
+      - name: Set up containerized BuildKit
+        run: |
+          docker buildx create --name aeliqo-release --driver docker-container --use
+          docker buildx inspect --bootstrap
       - name: Verify hosted BuildKit and publish web image
         env:
           GH_TOKEN: ${{ github.token }}
           GH_ACTOR: ${{ github.actor }}
           SOURCE_SHA: ${{ github.sha }}
+          BUILDX_BUILDER: aeliqo-release
         run: |
           scripts/ci/check-runner-contract.sh --runtime=hosted
           scripts/ci/publish-image.sh
