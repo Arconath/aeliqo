@@ -155,12 +155,12 @@ function xCoordinates(domain: readonly AeliqoChartDomainPoint[]): readonly numbe
   const temporalValues = temporal !== undefined && temporalBase !== undefined
     ? temporal.map((value) => value.milliseconds - temporalBase + (value.fraction.length > 0 ? Number(`0.${value.fraction}`) * 1000 : 0))
     : undefined;
-  const usableTemporalValues = temporalValues !== undefined && temporalValues.every(Number.isFinite) && new Set(temporalValues).size === temporalValues.length
+  const usableTemporalValues = temporalValues !== undefined && temporalValues.every(Number.isFinite)
     ? temporalValues
     : undefined;
   const values = numeric.every((value) => value !== undefined) ? numeric as number[]
     : usableTemporalValues !== undefined ? usableTemporalValues
-    : dateValues !== undefined && new Set(dateValues).size === dateValues.length ? dateValues : undefined;
+    : dateValues !== undefined ? dateValues : undefined;
   if (values === undefined) {
     const step = domain.length === 1 ? 0 : PLOT_WIDTH / (domain.length - 1);
     return domain.map((_, index) => PLOT_LEFT + step * index);

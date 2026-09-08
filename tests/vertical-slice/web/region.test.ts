@@ -144,6 +144,9 @@ describe("T39 registered web region", () => {
     ];
     expect(buildAeliqoChartDomain(dates).map((point) => point.x)).toEqual(["2026-01-01", "2026-01-08", "2026-01-15"]);
     expect(alignAeliqoChartSeries(dates).map((series) => series.points.map((point) => point.value))).toEqual([[1, null, 3], [null, 2, null]]);
+    expect(new Set(buildAeliqoChartGeometry([{id: "same-date", label: "Same date", points: [
+      {x: "2026-01-01", label: "first", value: 1}, {x: "2026-01-01", label: "second", value: 2},
+    ]}]).circles.map((circle) => circle.x))).toEqual(new Set([164]));
 
     const halfSecond = buildAeliqoChartGeometry([{
       id: "timed", label: "Timed", points: [
