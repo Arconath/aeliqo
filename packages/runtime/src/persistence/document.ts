@@ -59,7 +59,7 @@ function validReadSet(value: unknown): value is RegionReadSet {
   return true;
 }
 
-function validHistory(value: unknown): value is readonly RegionHistoryEntry[] {
+function validHistory(value: unknown, scopeDigest: string): value is readonly RegionHistoryEntry[] {
   if (!Array.isArray(value) || value.length > WIRE_LIMITS.array) return false;
   return value.every((entry) => {
     if (entry === null || typeof entry !== 'object' || Array.isArray(entry)) return false;
@@ -73,10 +73,15 @@ function validHistory(value: unknown): value is readonly RegionHistoryEntry[] {
     if (record.reason !== undefined && (typeof record.reason !== 'string' || record.reason.length === 0 || record.reason.length > WIRE_LIMITS.text)) return false;
     if (record.changedResults !== undefined) {
       if (!Array.isArray(record.changedResults) || record.changedResults.length > WIRE_LIMITS.array) return false;
+      const refs = new Set<string>();
       for (const ref of record.changedResults) {
         if (ref === null || typeof ref !== 'object' || Array.isArray(ref)) return false;
         const candidate = ref as Record<string, unknown>;
         if (Object.keys(candidate).length !== 5 || ['id', 'revision', 'outputId', 'queryDigest', 'scopeDigest'].some((name) => !validId(candidate[name]))) return false;
+        if (candidate.scopeDigest !== scopeDigest) return false;
+        const key = canonical(ref);
+        if (refs.has(key)) return false;
+        refs.add(key);
       }
     }
     return true;
@@ -90,8 +95,11 @@ function validateDocument(input: unknown): RegionOutcome<RegionDocument> {
   if (Object.keys(value).some((key) => !allowed.includes(key))) return failure('runtime.region-invalid', 'The persisted region document contains an unknown property.');
   if (value.version !== VERSION || !validId(value.id) || !validId(value.taskRevision) || !validId(value.regionRevision) || !validId(value.stateDigest))
     return failure('runtime.region-invalid', 'The persisted region document has an unsupported identity or version.');
-  if (!Number.isSafeInteger(value.dataRevision) || (value.dataRevision as number) < 0 || !validReadSet(value.readSet) || !validHistory(value.history))
-    return failure('runtime.region-invalid', 'The persisted region revisions, read set or history are invalid.');
+  if (!Number.isSafeInteger(value.dataRevision) || (value.dataRevision as number) < 0 || !validReadSet(value.readSet))
+    return failure('runtime.region-invalid', 'The persisted region revisions or read set are invalid.');
+  const readSet = value.readSet as RegionReadSet;
+  if (value.dataRevision !== readSet.dataRevision || !validHistory(value.history, readSet.scopeDigest))
+    return failure('runtime.region-invalid', 'The persisted data revision or history is invalid.');
   const task = parseContract('task', value.task);
   if (!task.ok || task.value.regionId !== value.id || task.value.revision !== value.taskRevision)
     return failure('runtime.region-invalid', 'The persisted Task does not belong to the region revision.');

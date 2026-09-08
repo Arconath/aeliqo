@@ -28,6 +28,9 @@ const resultDescriptor = {
 const resultKey = {principalKey: 'principal-a', scopeDigest: 'scope-1', policyRevision: 'policy-1', queryDigest: 'query-1', catalogRevision: 'catalog-1', functionRegistryDigest: 'functions-1', sourceRevision: 'source-1', outputId: 'rows', taskId: 'task-1', requestId: 'result-request', populationDigest: 'population-1'} as const;
 const resultDescriptorB = {...resultDescriptor, ref: refB, consistency: {...resultDescriptor.consistency, sourceRevisions: {source: 'source-2'}}, evidence: {...resultDescriptor.evidence, source: {id: 'source', revision: 'source-2'}}} as const;
 const resultKeyB = {...resultKey, queryDigest: 'query-2', outputId: 'trend', sourceRevision: 'source-2', requestId: 'result-request-b'} as const;
+const refA2 = {...refA, id: 'result-a-2', revision: 'result-2'} as const;
+const resultDescriptorA2 = {...resultDescriptor, ref: refA2, consistency: {...resultDescriptor.consistency, snapshotId: 'source-2', sourceRevisions: {source: 'source-2'}}, evidence: {...resultDescriptor.evidence, source: {id: 'source', revision: 'source-2'}}} as const;
+const resultKeyA2 = {...resultKey, sourceRevision: 'source-2', requestId: 'result-request-a2'} as const;
 let authority: RegionAuthority = {
   principalKey: 'principal-a', scopeDigest: 'scope-1', policyRevision: 'policy-1', catalogRevision: 'catalog-1',
   experienceRevision: 'experience-1', functionRegistryDigest: 'functions-1', results: [refA, refB],
@@ -336,6 +339,29 @@ describe('transactional region store', () => {
     expect(resultHandle.snapshot().status).toBe('disposed');
   });
 
+  it('retains two authorized historical generations used for comparison', async () => {
+    const resultStore = createResultStore({maxEntries: 2});
+    const handleA = resultStore.begin(resultKey);
+    const handleA2 = resultStore.begin(resultKeyA2);
+    for await (const _update of handleA.subscribe(resultEvents())) { /* materialize A1 */ }
+    for await (const _update of handleA2.subscribe(resultEventsFor(refA2, resultDescriptorA2))) { /* materialize A2 */ }
+    handleA.release();
+    handleA2.release();
+    authority = {...authority, results: [refA, refA2, refB]};
+    const store = createRegionStore(options());
+    const created = store.create({id: 'region-1', state: {task: task()}});
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const staged = await created.value.stage({requestId: 'historical-comparison', expected: created.value.snapshot().readSet!, state: {task: task()}, resultHandles: [handleA, handleA2]});
+    expect(staged.ok).toBe(true);
+    if (!staged.ok) return;
+    await expect(created.value.commit(staged.value)).resolves.toMatchObject({ok: true});
+    await expect(created.value.publishData({resultHandles: [handleA]})).resolves.toMatchObject({ok: true});
+    expect(() => resultStore.begin({...resultKeyA2, requestId: 'historical-probe'})).toThrow(RangeError);
+    created.value.dispose();
+    resultStore.dispose();
+  });
+
   it('keeps an unrelated output lease when publishing one output', async () => {
     const resultStore = createResultStore({maxEntries: 2});
     const handleA = resultStore.begin(resultKey);
@@ -370,6 +396,36 @@ describe('transactional region store', () => {
     const second = await region.stage({requestId: 'two', expected, state: {task: task()}});
     expect(second.ok).toBe(false);
     if (!second.ok) expect(second.diagnostics[0]?.code).toBe('runtime.region-budget');
+  });
+
+  it('releases earlier leases when a later stage handle is invalid', async () => {
+    let released = 0;
+    const handle = {
+      get generation() { return 1; },
+      key: {principalKey: 'principal-a', policyRevision: 'policy-1', catalogRevision: 'catalog-1', functionRegistryDigest: 'functions-1', outputId: 'rows', queryDigest: 'query-1', scopeDigest: 'scope-1'},
+      snapshot: () => ({status: 'ready', descriptor: {ref: refA}}),
+      retain: () => ({released: false, release() { released++; }}),
+    } as never;
+    const {region} = create();
+    const staged = await region.stage({requestId: 'partial-invalid', expected: region.snapshot().readSet!, state: {task: task()}, resultHandles: [handle, {} as never]});
+    expect(staged).toMatchObject({ok: false, diagnostics: [{code: 'runtime.region-invalid'}]});
+    expect(released).toBe(1);
+  });
+
+  it('rejects a generation reentrant revoke after retaining a stage handle', async () => {
+    let region: RegionHandle | undefined;
+    let released = 0;
+    const handle = {
+      get generation() { region?.revoke('generation callback'); return 1; },
+      key: {principalKey: 'principal-a', policyRevision: 'policy-1', catalogRevision: 'catalog-1', functionRegistryDigest: 'functions-1', outputId: 'rows', queryDigest: 'query-1', scopeDigest: 'scope-1'},
+      snapshot: () => ({status: 'ready', descriptor: {ref: refA}}),
+      retain: () => ({released: false, release() { released++; }}),
+    } as never;
+    const created = create();
+    region = created.region;
+    const staged = await region.stage({requestId: 'generation-reentrant', expected: region.snapshot().readSet!, state: {task: task()}, resultHandles: [handle]});
+    expect(staged).toMatchObject({ok: false, diagnostics: [{code: 'runtime.region-revoked'}]});
+    expect(released).toBe(1);
   });
 
   it('discards an unused staged token and releases its lease budget', async () => {
@@ -517,10 +573,30 @@ describe('transactional region store', () => {
     })}));
     const pending = concurrent.restore(document);
     await Promise.resolve();
+    await expect(concurrent.restore(document)).resolves.toMatchObject({ok: false, diagnostics: [{code: 'runtime.region-budget'}]});
     const filled = concurrent.create({id: 'region-2', state: {task: task('1', 'region-2')}});
-    expect(filled.ok).toBe(true);
+    expect(filled.ok).toBe(false);
+    if (!filled.ok) expect(filled.diagnostics[0]?.code).toBe('runtime.region-budget');
     release?.();
-    await expect(pending).resolves.toMatchObject({ok: false, diagnostics: [{code: 'runtime.region-budget'}]});
+    await expect(pending).resolves.toMatchObject({ok: true});
+  });
+
+  it('rejects persistence revision mismatches and malformed history references', () => {
+    const {region} = create();
+    const document = region.export();
+    const mismatched = {...document, dataRevision: 1};
+    expect(parseRegionDocument(mismatched).ok).toBe(false);
+    const changed = {...refA};
+    const foreignHistory = {...document, history: [...document.history, {
+      kind: 'data' as const, taskRevision: document.taskRevision, regionRevision: document.regionRevision,
+      dataRevision: document.dataRevision, changedResults: [{...changed, scopeDigest: 'foreign-scope'}], at: 1,
+    }]};
+    expect(parseRegionDocument(foreignHistory).ok).toBe(false);
+    const duplicateHistory = {...document, history: [...document.history, {
+      kind: 'data' as const, taskRevision: document.taskRevision, regionRevision: document.regionRevision,
+      dataRevision: document.dataRevision, changedResults: [changed, changed], at: 1,
+    }]};
+    expect(parseRegionDocument(duplicateHistory).ok).toBe(false);
   });
 
   it('fails closed when restore has no host requery callback and does not attach observers after revoke', async () => {
@@ -538,6 +614,19 @@ describe('transactional region store', () => {
     const created = store.create({id: 'region-1', state: {task: task()}});
     expect(created.ok).toBe(false);
     if (!created.ok) expect(created.diagnostics[0]?.code).toBe('runtime.region-denied');
+  });
+
+  it('rejects host outcome extensions and negative diagnostic paths', () => {
+    const unknownField = createRegionStore({
+      readAuthority: () => ({ok: true, value: authority, extra: true}),
+      authorizeCommit: async () => ({ok: true, value: undefined}),
+    } as never);
+    expect(unknownField.create({id: 'region-1', state: {task: task()}})).toMatchObject({ok: false, diagnostics: [{code: 'runtime.region-denied'}]});
+    const negativePath = createRegionStore({
+      readAuthority: () => ({ok: false, diagnostics: [{code: 'host.denied', message: 'Denied', retryable: false, path: [-1]}]}),
+      authorizeCommit: async () => ({ok: true, value: undefined}),
+    } as never);
+    expect(negativePath.create({id: 'region-1', state: {task: task()}})).toMatchObject({ok: false, diagnostics: [{code: 'runtime.region-denied'}]});
   });
 
   it('rejects truthy malformed host outcomes instead of treating them as approval', () => {

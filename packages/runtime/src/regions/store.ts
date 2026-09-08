@@ -60,8 +60,10 @@ function normalizeHostOutcome<T>(value: unknown, code: RegionFailure['code'] = '
   try {
     if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
       const record = value as Record<string, unknown>;
-      if (record.ok === true && Object.hasOwn(record, 'value')) return {ok: true, value: record.value as T};
-      if (record.ok === false && Array.isArray(record.diagnostics) && record.diagnostics.length > 0 && record.diagnostics.length <= WIRE_LIMITS.diagnostics) {
+      const keys = Reflect.ownKeys(record);
+      if (keys.some((key) => typeof key !== 'string')) return failure(code, FAILURE.denied);
+      if (record.ok === true && keys.length === 2 && keys.includes('ok') && keys.includes('value')) return {ok: true, value: record.value as T};
+      if (record.ok === false && keys.length === 2 && keys.includes('ok') && keys.includes('diagnostics') && Array.isArray(record.diagnostics) && record.diagnostics.length > 0 && record.diagnostics.length <= WIRE_LIMITS.diagnostics) {
         const diagnostics: RegionFailure[] = [];
         for (const candidate of record.diagnostics) {
           if (candidate === null || typeof candidate !== 'object' || Array.isArray(candidate)) return failure(code, FAILURE.denied);
@@ -69,7 +71,7 @@ function normalizeHostOutcome<T>(value: unknown, code: RegionFailure['code'] = '
           const allowed = ['code', 'message', 'retryable', 'path', 'remedies'];
           if (Object.keys(diagnostic).some((key) => !allowed.includes(key)) || !validId(diagnostic.code) || !validText(diagnostic.message) || typeof diagnostic.retryable !== 'boolean')
             return failure(code, FAILURE.denied);
-          if (diagnostic.path !== undefined && (!Array.isArray(diagnostic.path) || diagnostic.path.length > WIRE_LIMITS.array || diagnostic.path.some((part) => !(typeof part === 'string' ? validId(part) : Number.isSafeInteger(part)))))
+          if (diagnostic.path !== undefined && (!Array.isArray(diagnostic.path) || diagnostic.path.length > WIRE_LIMITS.array || diagnostic.path.some((part) => !(typeof part === 'string' ? validId(part) : Number.isSafeInteger(part) && part >= 0))))
             return failure(code, FAILURE.denied);
           if (diagnostic.remedies !== undefined && (!Array.isArray(diagnostic.remedies) || diagnostic.remedies.length > WIRE_LIMITS.array || diagnostic.remedies.some((remedy) => !validText(remedy))))
             return failure(code, FAILURE.denied);
@@ -464,16 +466,16 @@ class RegionHandleImpl implements RegionHandle {
   }
 
   private transferResultLeases(next: readonly OwnedResultLease[], expectedEpoch = this.epoch): boolean {
-    const byLogical = new Map<string, OwnedResultLease>();
+    const byRef = new Map<string, OwnedResultLease>();
     const replaced: OwnedResultLease[] = [];
     for (const owned of next) {
-      const key = logicalRefKey(owned.ref);
-      const previous = byLogical.get(key);
+      const key = refKey(owned.ref);
+      const previous = byRef.get(key);
       if (previous !== undefined && previous !== owned) replaced.push(previous);
-      byLogical.set(key, owned);
+      byRef.set(key, owned);
     }
     const previous = this.currentResultLeases;
-    this.currentResultLeases = Object.freeze([...byLogical.values()]);
+    this.currentResultLeases = Object.freeze([...byRef.values()]);
     releaseLeases([...previous, ...replaced]);
     return this.live(expectedEpoch);
   }
@@ -481,25 +483,25 @@ class RegionHandleImpl implements RegionHandle {
   private mergeResultLeases(next: readonly OwnedResultLease[], authorized: readonly ResultRef[], expectedEpoch = this.epoch): boolean {
     if (!this.live(expectedEpoch)) return false;
     const authorizedKeys = new Set(authorized.map(refKey));
-    const byLogical = new Map<string, OwnedResultLease>();
+    const byRef = new Map<string, OwnedResultLease>();
     const replaced: OwnedResultLease[] = [];
     for (const owned of this.currentResultLeases) {
-      if (!authorizedKeys.has(refKey(owned.ref))) {
+      const key = refKey(owned.ref);
+      if (!authorizedKeys.has(key)) {
         replaced.push(owned);
         continue;
       }
-      const key = logicalRefKey(owned.ref);
-      const previous = byLogical.get(key);
+      const previous = byRef.get(key);
       if (previous !== undefined && previous !== owned) replaced.push(previous);
-      byLogical.set(key, owned);
+      byRef.set(key, owned);
     }
     for (const owned of next) {
-      const key = logicalRefKey(owned.ref);
-      const previous = byLogical.get(key);
+      const key = refKey(owned.ref);
+      const previous = byRef.get(key);
       if (previous !== undefined && previous !== owned) replaced.push(previous);
-      byLogical.set(key, owned);
+      byRef.set(key, owned);
     }
-    this.currentResultLeases = Object.freeze([...byLogical.values()]);
+    this.currentResultLeases = Object.freeze([...byRef.values()]);
     releaseLeases(replaced);
     return this.live(expectedEpoch);
   }
@@ -552,64 +554,65 @@ class RegionHandleImpl implements RegionHandle {
     if (!Array.isArray(handles) || handles.length > WIRE_LIMITS.array) return failure('runtime.region-budget', FAILURE.budget);
     const generations = new Map<string, number>();
     const leases: OwnedResultLease[] = [];
-    for (const handle of handles) {
-      const ref = resultRefFromHandle(handle);
-      if (!ref.ok) return ref;
-      if (!this.live(stagedEpoch)) return this.closedOutcome();
-      const handleBinding = bindResultHandleToAuthority(handle, authorityResult.value);
-      if (!handleBinding.ok) { releaseLeases(leases); return handleBinding as RegionOutcome<RegionCommitToken>; }
-      if (!this.live(stagedEpoch)) { releaseLeases(leases); return this.closedOutcome(); }
-      const lease = retainResultHandle(handle);
-      if (!lease.ok) { releaseLeases(leases); return lease; }
-      leases.push({ref: ref.value, lease: lease.value});
-      if (!this.live(stagedEpoch)) { releaseLeases(leases); return this.closedOutcome(); }
-      required.push(ref.value);
-      const generation = resultHandleGeneration(handle);
-      if (!generation.ok) { releaseLeases(leases); return generation as RegionOutcome<RegionCommitToken>; }
-      generations.set(refKey(ref.value), generation.value);
+    let retainedForStage = false;
+    try {
+      for (const handle of handles) {
+        const ref = resultRefFromHandle(handle);
+        if (!ref.ok) return ref;
+        if (!this.live(stagedEpoch)) return this.closedOutcome();
+        const handleBinding = bindResultHandleToAuthority(handle, authorityResult.value);
+        if (!handleBinding.ok) return handleBinding as RegionOutcome<RegionCommitToken>;
+        if (!this.live(stagedEpoch)) return this.closedOutcome();
+        const lease = retainResultHandle(handle);
+        if (!lease.ok) return lease;
+        leases.push({ref: ref.value, lease: lease.value});
+        if (!this.live(stagedEpoch)) return this.closedOutcome();
+        required.push(ref.value);
+        const generation = resultHandleGeneration(handle);
+        if (!generation.ok) return generation as RegionOutcome<RegionCommitToken>;
+        if (!this.live(stagedEpoch)) return this.closedOutcome();
+        generations.set(refKey(ref.value), generation.value);
+      }
+      if (expected.value.dataRevision !== actual.dataRevision) return failure('runtime.region-stale', FAILURE.stale);
+      const checked = validateCommitReadSet(stripData(expected.value), stripData(actual), required);
+      if (!checked.ok) return failure('runtime.region-stale', checked.diagnostics[0]!.message);
+      const capturedRefs = new Map<string, ResultRef>();
+      for (const ref of expected.value.results) capturedRefs.set(refKey(ref), ref);
+      for (const ref of required) capturedRefs.set(refKey(ref), ref);
+      const capturedResults = normalizeRefs([...capturedRefs.values()], actual.scopeDigest);
+      if (!capturedResults.ok) return capturedResults as RegionOutcome<RegionCommitToken>;
+      // Preserve the declared read set plus candidate-required dependencies. The
+      // host authority may expose unrelated outputs; capturing all of them would
+      // make an otherwise disjoint proposal stale when those outputs refresh.
+      const capturedReadSet = frozen({...expected.value, results: capturedResults.value});
+      const bytes = new TextEncoder().encode(canonical(checkedState.value)).byteLength + new TextEncoder().encode(canonical(capturedReadSet)).byteLength;
+      if (this.staged.size >= this.maxStagedCommits || this.stagedBytes + bytes > this.maxStagedBytes)
+        return failure('runtime.region-budget', FAILURE.budget);
+      const token = Object.freeze({[TOKEN_MARKER]: true}) as unknown as RegionCommitToken;
+      const record: StageRecord = {
+        token,
+        state: checkedState.value,
+        requestId: input.requestId,
+        capturedReadSet,
+        requiredResults: Object.freeze(required.map((ref) => frozen({...ref}))),
+        resultHandles: Object.freeze([...handles]),
+        resultLeases: Object.freeze([...leases]),
+        handleGenerations: generations,
+        baseTaskRevision: this.taskRevision,
+        baseRegionRevision: this.regionRevision,
+        baseDataRevision: this.dataRevision,
+        principalKey: authorityResult.value.principalKey,
+        bytes,
+        consumed: false,
+      };
+      this.staged.set(token, record);
+      this.stagedBytes += bytes;
+      retainedForStage = true;
+      return {ok: true, value: token};
+    } finally {
+      if (!retainedForStage) releaseLeases(leases);
     }
-    if (expected.value.dataRevision !== actual.dataRevision) {
-      releaseLeases(leases);
-      return failure('runtime.region-stale', FAILURE.stale);
-    }
-    const checked = validateCommitReadSet(stripData(expected.value), stripData(actual), required);
-    if (!checked.ok) {
-      releaseLeases(leases);
-      return failure('runtime.region-stale', checked.diagnostics[0]!.message);
-    }
-    const capturedRefs = new Map<string, ResultRef>();
-    for (const ref of expected.value.results) capturedRefs.set(refKey(ref), ref);
-    for (const ref of required) capturedRefs.set(refKey(ref), ref);
-    const capturedResults = normalizeRefs([...capturedRefs.values()], actual.scopeDigest);
-    if (!capturedResults.ok) { releaseLeases(leases); return capturedResults as RegionOutcome<RegionCommitToken>; }
-    // Capture the verified host pins and only the declared/required result refs;
-    // unrelated authorized outputs are not dependencies of this proposal.
-    const capturedReadSet = frozen({...actual, results: capturedResults.value});
-    const bytes = new TextEncoder().encode(canonical(checkedState.value)).byteLength + new TextEncoder().encode(canonical(capturedReadSet)).byteLength;
-    if (this.staged.size >= this.maxStagedCommits || this.stagedBytes + bytes > this.maxStagedBytes) {
-      releaseLeases(leases);
-      return failure('runtime.region-budget', FAILURE.budget);
-    }
-    const token = Object.freeze({[TOKEN_MARKER]: true}) as unknown as RegionCommitToken;
-    const record: StageRecord = {
-      token,
-      state: checkedState.value,
-      requestId: input.requestId,
-      capturedReadSet,
-      requiredResults: Object.freeze(required.map((ref) => frozen({...ref}))),
-      resultHandles: Object.freeze([...handles]),
-      resultLeases: Object.freeze([...leases]),
-      handleGenerations: generations,
-      baseTaskRevision: this.taskRevision,
-      baseRegionRevision: this.regionRevision,
-      baseDataRevision: this.dataRevision,
-      principalKey: authorityResult.value.principalKey,
-      bytes,
-      consumed: false,
-    };
-    this.staged.set(token, record);
-    this.stagedBytes += bytes;
-    return {ok: true, value: token};
+
   }
 
   private currentAuthority(expectedEpoch = this.epoch): RegionOutcome<RegionAuthority> {
@@ -842,14 +845,19 @@ class RegionHandleImpl implements RegionHandle {
         if (this.dataRevision >= Number.MAX_SAFE_INTEGER) return failure('runtime.region-budget', FAILURE.budget);
         const authorityRefs = new Set(authority.value.results.map(refKey));
         if (normalized.value.some((ref) => !authorityRefs.has(refKey(ref)))) return failure('runtime.region-stale', FAILURE.stale);
-        const changedResults: ResultRef[] = [...normalized.value];
         const currentRefKeys = new Set(currentPins.results.map(refKey));
         const authorityRefKeys = new Set(authority.value.results.map(refKey));
-        for (const ref of authority.value.results) if (!currentRefKeys.has(refKey(ref))) changedResults.push(ref);
-        for (const ref of currentPins.results) if (!authorityRefKeys.has(refKey(ref))) changedResults.push(ref);
-        const changedByKey = new Map<string, ResultRef>();
-        for (const ref of changedResults) changedByKey.set(logicalRefKey(ref), ref);
-        const effectiveChangedResults = [...changedByKey.values()];
+        // Prefer the fresh authority metadata when a logical output has both a
+        // retired and a replacement generation in the symmetric diff.
+        const changedByLogical = new Map<string, {readonly ref: ResultRef; readonly priority: number}>();
+        for (const ref of normalized.value) changedByLogical.set(logicalRefKey(ref), {ref, priority: 1});
+        for (const ref of authority.value.results) {
+          if (!currentRefKeys.has(refKey(ref))) changedByLogical.set(logicalRefKey(ref), {ref, priority: 2});
+        }
+        for (const ref of currentPins.results) {
+          if (!authorityRefKeys.has(refKey(ref)) && !changedByLogical.has(logicalRefKey(ref))) changedByLogical.set(logicalRefKey(ref), {ref, priority: 0});
+        }
+        const effectiveChangedResults = [...changedByLogical.values()].sort((left, right) => right.priority - left.priority).map((entry) => entry.ref);
         if (effectiveChangedResults.length > WIRE_LIMITS.array) return failure('runtime.region-budget', FAILURE.budget);
         // Obtain host clock metadata before changing the materialized revision.
         const at = this.now();
@@ -985,6 +993,7 @@ export class RegionStoreImpl implements RegionStore {
   private disposed = false;
   private epoch = 0;
   private readonly restoreControllers = new Set<AbortController>();
+  private pendingRestores = 0;
 
   constructor(options: RegionStoreOptions) {
     this.maxRegions = options?.maxRegions ?? 128;
@@ -1084,10 +1093,11 @@ export class RegionStoreImpl implements RegionStore {
     }
   }
 
-  private createInternal(input: RegionCreateInput, authority: RegionAuthority, seed?: {readonly taskRevision: string; readonly regionRevision: string; readonly dataRevision: number; readonly history: readonly RegionHistoryEntry[]}, initialResultLeases: readonly OwnedResultLease[] = []): RegionOutcome<RegionHandle> {
+  private createInternal(input: RegionCreateInput, authority: RegionAuthority, seed?: {readonly taskRevision: string; readonly regionRevision: string; readonly dataRevision: number; readonly history: readonly RegionHistoryEntry[]}, initialResultLeases: readonly OwnedResultLease[] = [], reservedRestore = false): RegionOutcome<RegionHandle> {
     if (this.disposed) return failure('runtime.region-disposed', FAILURE.disposed);
     if (this.regions.has(input.id)) return failure('runtime.region-invalid', 'A region with this stable ID already exists.');
-    if (this.regions.size >= this.maxRegions) return failure('runtime.region-budget', FAILURE.budget);
+    const otherPendingRestores = this.pendingRestores - (reservedRestore ? 1 : 0);
+    if (this.regions.size + otherPendingRestores >= this.maxRegions) return failure('runtime.region-budget', FAILURE.budget);
     const maxHistory = input.maxHistory ?? this.maxHistory;
     if (!Number.isSafeInteger(maxHistory) || maxHistory < 1 || maxHistory > WIRE_LIMITS.array) return failure('runtime.region-budget', FAILURE.budget);
     try {
@@ -1109,7 +1119,7 @@ export class RegionStoreImpl implements RegionStore {
     if (input === null || typeof input !== 'object' || !validId(input.id)) return failure('runtime.region-invalid', FAILURE.invalid);
     if (!Object.hasOwn(input, 'state')) return failure('runtime.region-invalid', 'A region requires canonical initial state.');
     if (this.regions.has(input.id)) return failure('runtime.region-invalid', 'A region with this stable ID already exists.');
-    if (this.regions.size >= this.maxRegions) return failure('runtime.region-budget', FAILURE.budget);
+    if (this.regions.size + this.pendingRestores >= this.maxRegions) return failure('runtime.region-budget', FAILURE.budget);
     const state = validateState(input.state, input.id);
     if (!state.ok) return state;
     const authority = this.authority(input.id);
@@ -1138,60 +1148,66 @@ export class RegionStoreImpl implements RegionStore {
     const document = parseRegionDocument(documentInput as RegionDocument | string);
     if (!document.ok) return document;
     if (this.regions.has(document.value.id)) return failure('runtime.region-invalid', 'A region with this stable ID already exists.');
-    const authority = this.authority(document.value.id, restoreEpoch);
-    if (!authority.ok) return authority as RegionOutcome<RegionHandle>;
-    if (document.value.task.catalogRevision !== authority.value.catalogRevision || document.value.task.functionRegistryDigest !== authority.value.functionRegistryDigest)
-      return failure('runtime.region-stale', 'The persisted Task is bound to a different catalog or function registry.');
-    const materialization = await this.restoreWithDeadline(document.value, authority.value, restoreEpoch);
-    if (!materialization.ok) return materialization as RegionOutcome<RegionHandle>;
-    if (restoreEpoch !== this.epoch || this.disposed) return failure('runtime.region-disposed', FAILURE.disposed);
-    const checked = validateState(materialization.value.state, document.value.id);
-    if (!checked.ok) return checked;
-    if (checked.value.task.id !== document.value.task.id) return failure('runtime.region-stale', 'The restored Task does not match the persisted Task identity.');
-    const freshAuthority = this.authority(document.value.id, restoreEpoch);
-    if (!freshAuthority.ok) return freshAuthority as RegionOutcome<RegionHandle>;
-    if (freshAuthority.value.principalKey !== authority.value.principalKey || freshAuthority.value.scopeDigest !== authority.value.scopeDigest ||
-        freshAuthority.value.policyRevision !== authority.value.policyRevision || freshAuthority.value.catalogRevision !== authority.value.catalogRevision ||
-        freshAuthority.value.experienceRevision !== authority.value.experienceRevision || freshAuthority.value.functionRegistryDigest !== authority.value.functionRegistryDigest)
-      return failure('runtime.region-stale', 'The host authorization changed while restoring the region.');
-    if (checked.value.task.catalogRevision !== freshAuthority.value.catalogRevision || checked.value.task.functionRegistryDigest !== freshAuthority.value.functionRegistryDigest)
-      return failure('runtime.region-stale', 'The restored Task is bound to a different catalog or function registry.');
-    const incarnation = newRegionRevision();
-    const freshReadSet = authorityReadSet(freshAuthority.value, checked.value.task.revision, incarnation, 0);
-    const binding = bindCandidateToReadSet(checked.value, freshReadSet);
-    if (!binding.ok) return binding as RegionOutcome<RegionHandle>;
-    const handles = materialization.value.resultHandles ?? [];
-    if (!Array.isArray(handles) || handles.length > WIRE_LIMITS.array) return failure('runtime.region-budget', FAILURE.budget);
-    const leases: OwnedResultLease[] = [];
-    const required = [...requiredResultReferences(checked.value)];
-    for (const handle of handles) {
-      const ref = resultRefFromHandle(handle);
-      if (!ref.ok) { releaseLeases(leases); return ref as RegionOutcome<RegionHandle>; }
+    if (this.regions.size + this.pendingRestores >= this.maxRegions) return failure('runtime.region-budget', FAILURE.budget);
+    this.pendingRestores++;
+    try {
+      const authority = this.authority(document.value.id, restoreEpoch);
+      if (!authority.ok) return authority as RegionOutcome<RegionHandle>;
+      if (document.value.task.catalogRevision !== authority.value.catalogRevision || document.value.task.functionRegistryDigest !== authority.value.functionRegistryDigest)
+        return failure('runtime.region-stale', 'The persisted Task is bound to a different catalog or function registry.');
+      const materialization = await this.restoreWithDeadline(document.value, authority.value, restoreEpoch);
+      if (!materialization.ok) return materialization as RegionOutcome<RegionHandle>;
+      if (restoreEpoch !== this.epoch || this.disposed) return failure('runtime.region-disposed', FAILURE.disposed);
+      const checked = validateState(materialization.value.state, document.value.id);
+      if (!checked.ok) return checked;
+      if (checked.value.task.id !== document.value.task.id) return failure('runtime.region-stale', 'The restored Task does not match the persisted Task identity.');
+      const freshAuthority = this.authority(document.value.id, restoreEpoch);
+      if (!freshAuthority.ok) return freshAuthority as RegionOutcome<RegionHandle>;
+      if (freshAuthority.value.principalKey !== authority.value.principalKey || freshAuthority.value.scopeDigest !== authority.value.scopeDigest ||
+          freshAuthority.value.policyRevision !== authority.value.policyRevision || freshAuthority.value.catalogRevision !== authority.value.catalogRevision ||
+          freshAuthority.value.experienceRevision !== authority.value.experienceRevision || freshAuthority.value.functionRegistryDigest !== authority.value.functionRegistryDigest)
+        return failure('runtime.region-stale', 'The host authorization changed while restoring the region.');
+      if (checked.value.task.catalogRevision !== freshAuthority.value.catalogRevision || checked.value.task.functionRegistryDigest !== freshAuthority.value.functionRegistryDigest)
+        return failure('runtime.region-stale', 'The restored Task is bound to a different catalog or function registry.');
+      const incarnation = newRegionRevision();
+      const freshReadSet = authorityReadSet(freshAuthority.value, checked.value.task.revision, incarnation, 0);
+      const binding = bindCandidateToReadSet(checked.value, freshReadSet);
+      if (!binding.ok) return binding as RegionOutcome<RegionHandle>;
+      const handles = materialization.value.resultHandles ?? [];
+      if (!Array.isArray(handles) || handles.length > WIRE_LIMITS.array) return failure('runtime.region-budget', FAILURE.budget);
+      const leases: OwnedResultLease[] = [];
+      const required = [...requiredResultReferences(checked.value)];
+      for (const handle of handles) {
+        const ref = resultRefFromHandle(handle);
+        if (!ref.ok) { releaseLeases(leases); return ref as RegionOutcome<RegionHandle>; }
+        if (restoreEpoch !== this.epoch || this.disposed) { releaseLeases(leases); return failure('runtime.region-disposed', FAILURE.disposed); }
+        const bindingForHandle = bindResultHandleToAuthority(handle, freshAuthority.value);
+        if (!bindingForHandle.ok) { releaseLeases(leases); return bindingForHandle as RegionOutcome<RegionHandle>; }
+        const lease = retainResultHandle(handle);
+        if (!lease.ok) { releaseLeases(leases); return lease as RegionOutcome<RegionHandle>; }
+        leases.push({ref: ref.value, lease: lease.value});
+        required.push(ref.value);
+      }
+      const actual = authorityReadSet(freshAuthority.value, checked.value.task.revision, incarnation, 0);
+      const readCheck = validateCommitReadSet(stripData(freshReadSet), stripData(actual), required);
+      if (!readCheck.ok) { releaseLeases(leases); return failure('runtime.region-stale', readCheck.diagnostics[0]!.message); }
+      const finalState = validateState(checked.value, document.value.id);
+      if (!finalState.ok) { releaseLeases(leases); return finalState; }
       if (restoreEpoch !== this.epoch || this.disposed) { releaseLeases(leases); return failure('runtime.region-disposed', FAILURE.disposed); }
-      const bindingForHandle = bindResultHandleToAuthority(handle, freshAuthority.value);
-      if (!bindingForHandle.ok) { releaseLeases(leases); return bindingForHandle as RegionOutcome<RegionHandle>; }
-      const lease = retainResultHandle(handle);
-      if (!lease.ok) { releaseLeases(leases); return lease as RegionOutcome<RegionHandle>; }
-      leases.push({ref: ref.value, lease: lease.value});
-      required.push(ref.value);
+      if (this.regions.has(document.value.id)) { releaseLeases(leases); return failure('runtime.region-invalid', 'A region with this stable ID already exists.'); }
+      // A restored session starts with a fresh materialization and a fresh history;
+      // persisted history remains metadata for the document, never live state.
+      const created = this.createInternal({id: document.value.id, state: finalState.value}, freshAuthority.value, {
+        taskRevision: finalState.value.task.revision,
+        regionRevision: incarnation,
+        dataRevision: 0,
+        history: [],
+      }, leases, true);
+      if (!created.ok) releaseLeases(leases);
+      return created;
+    } finally {
+      this.pendingRestores--;
     }
-    const actual = authorityReadSet(freshAuthority.value, checked.value.task.revision, incarnation, 0);
-    const readCheck = validateCommitReadSet(stripData(freshReadSet), stripData(actual), required);
-    if (!readCheck.ok) { releaseLeases(leases); return failure('runtime.region-stale', readCheck.diagnostics[0]!.message); }
-    const finalState = validateState(checked.value, document.value.id);
-    if (!finalState.ok) { releaseLeases(leases); return finalState; }
-    if (restoreEpoch !== this.epoch || this.disposed) { releaseLeases(leases); return failure('runtime.region-disposed', FAILURE.disposed); }
-    if (this.regions.has(document.value.id)) { releaseLeases(leases); return failure('runtime.region-invalid', 'A region with this stable ID already exists.'); }
-    // A restored session starts with a fresh materialization and a fresh history;
-    // persisted history remains metadata for the document, never live state.
-    const created = this.createInternal({id: document.value.id, state: finalState.value}, freshAuthority.value, {
-      taskRevision: finalState.value.task.revision,
-      regionRevision: incarnation,
-      dataRevision: 0,
-      history: [],
-    }, leases);
-    if (!created.ok) releaseLeases(leases);
-    return created;
   }
 
   get(id: string): RegionHandle | undefined { return this.regions.get(id); }
