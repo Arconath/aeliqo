@@ -184,3 +184,14 @@ Hosted T10 CI34196145497 succeeded on exact0fac53d, including platform, NextSSR,
 region tests and installed consumers. Evidence harness/evidence/t10/hosted-0fac53d.json.
 T11 is active with separate interaction and action authors; root committed the
 pure registered port/mapping graph validator015eec2 and69contractchecks pass.
+
+T11 canonical interaction state and package integration are committed through
+96c0fd8. Fresh pinned Node24.20.0 gates pass72contract and42region tests, strict
+types, installed core Node/no-codegen/Chromium and runtime Node/Chromium consumers
+(run-z0FJkB and run-fmLdO6). Independent source review approved the bounded state,
+atomic commit, exact reference/lease and installed-consumer scope; its supplemental
+runs used Node24.19.0 and are not treated as pinned-toolchain evidence.
+Action admission/retention hardening2392cd0 passes16focused tests, but independent
+review found remaining input-parser/clock revocation return paths and public
+preview retention. These remain open. Controller query materialization is still
+in progress; T11 is not accepted. Main/npm/production remain unchanged.
