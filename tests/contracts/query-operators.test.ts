@@ -69,3 +69,12 @@ it('roundtrips semantic top-K separately from delivery paging and rejects malfor
     if (topK !== undefined) expect(validate({...query, topK})).toBe(false);
   }
 });
+
+it('roundtrips an explicit weekly policy and bounds week start before planning', () => {
+  const input = {...query, timeBucket: {field: 'day', grain: 'week', calendar: 'iso8601', timezone: 'Asia/Jakarta', weekStartsOn: 1}};
+  expect(validate(input)).toBe(true);
+  expect(parseContract('query', input)).toMatchObject({ok: true, value: {timeBucket: input.timeBucket}});
+  for (const weekStartsOn of [-1, 7, 0.5, 'Monday', undefined]) {
+    expect(parseContract('query', {...input, timeBucket: {...input.timeBucket, weekStartsOn}}).ok).toBe(false);
+  }
+});

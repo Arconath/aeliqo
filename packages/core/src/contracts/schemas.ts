@@ -100,7 +100,7 @@ export const querySchema = object({
     orderBy: array(object({expression: expressionSchema, direction: z.enum(['asc','desc']), nulls: z.enum(['first','last'])})),
     frame: object({preceding: count.check(z.maximum(L.array)), following: count.check(z.maximum(L.array))})}))),
   where: optional(predicateSchema), period: optional(periodSchema),
-  timeBucket: optional(object({field: idSchema, grain: idSchema})), population: populationSchema,
+  timeBucket: optional(object({field: idSchema, grain: idSchema, calendar: optional(idSchema), timezone: optional(idSchema), weekStartsOn: optional(z.literal([0, 1, 2, 3, 4, 5, 6]))})), population: populationSchema,
   order: array(object({field: idSchema, direction: z.enum(['asc','desc']), nulls: z.enum(['first','last'])})),
   topK: optional(positiveCount.check(z.maximum(L.array))),
   page: optional(object({size: positiveCount.check(z.maximum(L.array)), cursor: optional(text)})),

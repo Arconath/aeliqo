@@ -327,15 +327,21 @@ function lowerQuerySpec(query: QuerySpec, catalog: Catalog, registry: FunctionRe
   let bucketId: string | undefined;
   let timeBuckets: TimeBucketSpec[] = [];
   if (query.timeBucket !== undefined) {
-    if (query.period === undefined) return unsupported('query.time-bucket-policy', 'QuerySpec time buckets do not carry an explicit calendar and timezone policy.', ['Provide a period policy or use a typed RelationalQuery TimeBucketSpec.'], ['timeBucket']);
+    const calendar = query.timeBucket.calendar ?? query.period?.calendar;
+    const timezone = query.timeBucket.timezone ?? query.period?.timezone;
+    if (calendar === undefined || timezone === undefined) return unsupported('query.time-bucket-policy', 'Time buckets require an explicit calendar and timezone policy.', ['Provide both fields on timeBucket or an instant period policy.'], ['timeBucket']);
+    if ((query.timeBucket.calendar === undefined) !== (query.timeBucket.timezone === undefined)) return failure('query.time-bucket-policy', 'Calendar and timezone must be supplied together.', ['timeBucket']);
+    if (query.period !== undefined && (calendar !== query.period.calendar || timezone !== query.period.timezone)) return failure('query.time-bucket-policy', 'The bucket and period policies disagree.', ['timeBucket']);
     const temporalField = entityDefinition.fields.find((candidate) => candidate.id === query.timeBucket!.field);
     if (temporalField === undefined) return failure('query.field', `Field ${query.timeBucket.field} is not declared on ${query.entity}.`, ['timeBucket', 'field']);
-    if (temporalField.type.value !== 'instant') return unsupported('query.period-type', 'QuerySpec period bounds are instants and require an instant-valued time bucket field.', ['Use a typed RelationalQuery date predicate for local dates.'], ['period']);
+    if (temporalField.type.value !== 'instant' && temporalField.type.value !== 'date') return failure('query.period-type', 'Time buckets require a date or instant field.', ['timeBucket']);
     if (!['day', 'week', 'month', 'quarter', 'year'].includes(query.timeBucket.grain)) return unsupported('temporal-grain', 'The requested temporal grain is not in the bounded evaluator subset.', ['Use day, week, month, quarter or year.'], ['timeBucket', 'grain']);
-    if (query.timeBucket.grain === 'week') return unsupported('temporal-week-start', 'QuerySpec weekly buckets do not pin a week start.', ['Use a RelationalQuery TimeBucketSpec with weekStartsOn.'], ['timeBucket']);
+    if (calendar !== 'gregorian' && calendar !== 'iso8601') return unsupported('temporal-policy', 'The requested civil calendar is not supported.', ['Use an explicit Gregorian or ISO8601 civil calendar.'], ['timeBucket']);
+    if (query.timeBucket.grain === 'week' && query.timeBucket.weekStartsOn === undefined) return unsupported('temporal-week-start', 'Weekly buckets require an explicit week start.', ['Supply weekStartsOn from the domain policy.'], ['timeBucket']);
     bucketId = `__aeliqo_bucket_${query.timeBucket.field}_${query.timeBucket.grain}`;
     if (entityDefinition.fields.some((field) => field.id === bucketId)) return failure('query.time-bucket', 'Generated time bucket identifier collides with a source field.', ['timeBucket', 'field']);
-    timeBuckets = [{id: bucketId, expression: fieldExpression(query.entity, query.timeBucket.field), grain: query.timeBucket.grain as TimeBucketSpec['grain'], calendar: 'gregorian', timezone: 'UTC', weekStartsOn: 1, label: temporalField.label}];
+    timeBuckets = [{id: bucketId, expression: fieldExpression(query.entity, query.timeBucket.field), grain: query.timeBucket.grain as TimeBucketSpec['grain'], calendar, timezone,
+      ...(query.timeBucket.weekStartsOn === undefined ? {} : {weekStartsOn: query.timeBucket.weekStartsOn}), label: temporalField.label}];
   }
   const measureIds = new Set(query.measures.map((measure) => measure.id));
   const windowIds = new Set((query.windows ?? []).map((window) => window.id));
@@ -391,7 +397,7 @@ function lowerQuerySpec(query: QuerySpec, catalog: Catalog, registry: FunctionRe
   if (query.page !== undefined) return unsupported('query.pagination', 'Delivery paging requires the ADC adapter and does not define the query population.', ['Use topK for an explicit ranked population, or execute paging through the ADC adapter.'], ['page']);
   if (query.topK !== undefined && query.order.length === 0) return failure('query.top-k-order', 'A top-K population requires an explicit deterministic ordering.', ['topK']);
   const orderBy: SortSpec[] = query.order.map((entry) => ({expression: bucketId !== undefined && query.timeBucket !== undefined && entry.field === query.timeBucket.field
-    ? {kind: 'field', ref: bucketId}
+    ? {kind: 'field', ref: query.groupBy.includes(entry.field) ? entry.field : bucketId}
     : measureIds.has(entry.field) ? {kind: 'field', ref: entry.field} : fieldExpression(query.entity, entry.field), direction: entry.direction, nulls: entry.nulls}));
   const windows: WindowSpec[] = (query.windows ?? []).map((window) => ({
     id: window.id,
@@ -520,13 +526,20 @@ function timeBucketSchema(input: QuerySchema, items: readonly TimeBucketSpec[], 
   const ids = new Set(fields.map((field) => field.id));
   for (const item of items) {
     if (!safeId(item.id) || ids.has(item.id)) return failure('query.time-bucket', 'Time bucket identifiers must be unique and must not shadow an input field.', ['timeBuckets']);
-    if (item.calendar !== 'gregorian' || item.timezone !== 'UTC') return unsupported('temporal-policy', 'Only explicit Gregorian UTC buckets are implemented in the pure evaluator.', ['Supply a host temporal policy.'], ['timeBuckets']);
+    if (item.calendar !== 'gregorian' && item.calendar !== 'iso8601') return unsupported('temporal-policy', 'The requested civil calendar is not supported.', ['Use Gregorian or ISO8601 civil dates.'], ['timeBuckets']);
+    if (!safeId(item.timezone)) return failure('query.temporal-policy', 'A bounded timezone identifier is required.', ['timeBuckets']);
+    try { new Intl.DateTimeFormat('en', {timeZone: item.timezone}); } catch { return unsupported('temporal-policy', 'The timezone identifier is not supported by this environment.', ['Use a supported timezone identifier.'], ['timeBuckets']); }
+    if (item.weekStartsOn !== undefined && (!Number.isInteger(item.weekStartsOn) || item.weekStartsOn < 0 || item.weekStartsOn > 6)) return failure('query.temporal-week-start', 'Week start must be an integer from zero through six.', ['timeBuckets']);
+    if (item.calendar === 'iso8601' && item.grain === 'week' && item.weekStartsOn !== 1) return unsupported('temporal-week-start', 'ISO8601 weeks start on Monday.', ['Set weekStartsOn to 1.'], ['timeBuckets']);
     if (!['day', 'week', 'month', 'quarter', 'year'].includes(item.grain)) return unsupported('temporal-grain', 'The requested temporal grain is not in the bounded evaluator subset.', ['Use day, week, month, quarter or year.'], ['timeBuckets']);
     if (item.grain === 'week' && item.weekStartsOn === undefined) return unsupported('temporal-week-start', 'Weekly buckets require an explicit week start.', ['Set weekStartsOn to an ISO or locale-approved weekday.'], ['timeBuckets']);
     const expression = resolveExpression(item.expression, input, registry);
     if (!expression.ok) return expression;
     if (expression.value.typed.type.value !== 'date' && expression.value.typed.type.value !== 'instant') return failure('query.temporal-type', 'Time buckets require a date or instant expression.', ['timeBuckets']);
-    const bucketType: SemanticType = {value: 'date', nullable: expression.value.typed.type.nullable, grain: [...input.grain]};
+    const sourceType = expression.value.typed.type;
+    if (sourceType.value === 'instant' && (item.timezone !== 'UTC' || item.calendar !== 'gregorian')) return unsupported('temporal-policy', 'Instant conversion currently supports Gregorian UTC buckets only.', ['Use a host temporal adapter for other instant timezones.'], ['timeBuckets']);
+    if (sourceType.temporal !== undefined && (sourceType.temporal.calendar !== item.calendar || sourceType.temporal.timezone !== item.timezone)) return failure('query.temporal-policy', 'The bucket policy conflicts with its source temporal semantics.', ['timeBuckets']);
+    const bucketType: SemanticType = {value: 'date', nullable: sourceType.nullable, grain: [...input.grain], temporal: {calendar: item.calendar, timezone: item.timezone, grain: item.grain}};
     fields.push({id: item.id, label: item.label ?? item.id, type: bucketType, role: 'dimension'});
     ids.add(item.id);
   }

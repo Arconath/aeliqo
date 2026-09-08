@@ -522,6 +522,19 @@ function runInstalledQuery() {
     throw new Error('Installed mixed decimal/integer arithmetic failed');
   const cancelled = factory.value.evaluate(aggregate.value,source,{cancellation:{aborted:true}});
   if (cancelled.ok) throw new Error('Installed query ignored cancellation');
+  const calendar = {calendar:'iso8601',timezone:'Asia/Jakarta',grain:'day'};
+  const datedCatalog = {...catalog,entities:[{...catalog.entities[0],fields:[...catalog.entities[0].fields,
+    {id:'day',label:'Day',role:'time',type:{value:'date',nullable:false,temporal:calendar}}]}]};
+  const dated = createQueryPlanner({catalog:datedCatalog,registry:registry.value});
+  if (!dated.ok) throw new Error('Installed calendar planner failed');
+  const weekly = dated.value.plan({entity:'sales',fields:['day'],measures:[],relations:[],groupBy:['day'],
+    population:{kind:'all-authorized'},order:[{field:'day',direction:'asc',nulls:'last'}],
+    timeBucket:{field:'day',grain:'week',calendar:calendar.calendar,timezone:calendar.timezone,weekStartsOn:1}});
+  if (!weekly.ok) throw new Error(JSON.stringify(weekly.diagnostics));
+  const weeks = dated.value.evaluate(weekly.value,{revision:'dated-1',relations:{sales:{entity:'sales',complete:true,
+    rows:source.relations.sales.rows.map((row,index)=>({...row,day:index===0?'2026-01-04':'2026-01-05'}))}}});
+  if (!weeks.ok || JSON.stringify(weeks.value.rows)!==JSON.stringify([{day:'2025-12-29'},{day:'2026-01-05'}]) ||
+      weeks.value.schema.fields[0]?.type.temporal?.timezone!=='Asia/Jakarta') throw new Error('Installed civil weekly policy failed');
   return {ranked:ranked.value.rows,total:total.value.rows,precision:total.value.precision};
 }
 `;

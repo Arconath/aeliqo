@@ -125,8 +125,9 @@ export interface TimeBucketSpec {
   readonly id: string;
   readonly expression: Expression;
   readonly grain: TimeGrain;
-  readonly calendar: 'gregorian';
-  readonly timezone: 'UTC';
+  readonly calendar: 'gregorian' | 'iso8601';
+  /** Civil dates retain their declared timezone without instant conversion. Instant buckets currently require UTC. */
+  readonly timezone: string;
   readonly weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
   readonly label?: string;
 }

@@ -28,6 +28,8 @@ Plans must support parameterization, canonical hashing and explain output. They 
 
 ## Grain-safe join planning
 
+`QuerySpec.timeBucket` may declare `calendar` and `timezone` together without an instant `period`; weekly buckets additionally declare `weekStartsOn` (Sunday = 0, Monday = 1). The early local evaluator supports Gregorian and ISO8601 civil dates in their declared timezone context. It groups date values as calendar dates without converting them to instants. ISO8601 weeks require Monday. Source temporal metadata and bucket policy must agree. Instant bucketing remains bounded to Gregorian UTC; other instant conversions require a host adapter. Bucket result fields retain calendar, timezone and output grain.
+
 For a fact measure and two one-to-many relationships, pre-aggregate facts at a compatible key before combining, or use semijoins for membership. A declared relation path carries cardinality, optionality, uniqueness evidence and temporal validity. Enforce it against metadata/data where possible. Unknown or violated cardinality is not silently treated as many-to-one.
 
 For “employees with orders/attendance matching X,” a semijoin prevents duplicate employee identities. A row grain is a set of semantic key dimensions, not a string label alone. Validate legal rollups through aggregate properties.

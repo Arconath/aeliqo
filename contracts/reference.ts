@@ -112,7 +112,7 @@ export interface QuerySpec {
   readonly groupBy:readonly Id[];
   readonly where?:Predicate;
   readonly period?:Period;
-  readonly timeBucket?:{ readonly field:Id; readonly grain:string };
+  readonly timeBucket?:{ readonly field:Id; readonly grain:string; readonly calendar?:Id; readonly timezone?:Id; readonly weekStartsOn?:0|1|2|3|4|5|6 };
   readonly population:Population;
   readonly order:readonly { readonly field:Id; readonly direction:'asc'|'desc'; readonly nulls:'first'|'last' }[];
   /** Semantic ranked population, separate from delivery paging. */
