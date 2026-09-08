@@ -9,6 +9,7 @@ import type {
   Outcome,
   QuerySpec,
   FunctionRegistry,
+  QueryLimits,
 } from '@aeliqo/core';
 import type {
   AcceptedQueryWire,
@@ -98,6 +99,11 @@ export interface MeaningRegistration {
 
 export interface LocalDataServiceOptions {
   readonly snapshot: LocalSnapshot;
+  /** Host-owned executable registry; omitted means no registered function execution. */
+  readonly functionRegistry?: FunctionRegistry;
+  /** Host-owned planner/work ceilings, additionally bounded by sourceLimits.
+   * ADC QueryBudget independently caps the streamed response. */
+  readonly queryLimits?: Partial<QueryLimits>;
   /** Host-owned limits for the immutable in-process source snapshot. */
   readonly sourceLimits?: {
     readonly rows: number;

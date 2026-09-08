@@ -277,9 +277,10 @@
       "acceptance": [
         "Local and HTTP parity; unsupported query fails explicitly; no download-all fallback or vendor SDK in core."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "Luna Max writer release_inventory prepares host integration in isolated codex/t08-host; owns runtime/data local evaluator integration and analytical tests. Root owns types/contracts/config/exports/referencehost integration. T09 isolated results writer does not edit data."
     },
     {
       "id": "T09",
@@ -297,9 +298,10 @@
         "Principal-scoped immutable handles, completeness, backpressure, cancellation and stale-result ordering proven.",
         "Results distinguish count value/scope, precision, completeness, inference evidence and consistency."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "Luna Max writer platform_proof prepares isolated codex/t09-results result handle/cache/lifecycle implementation and tests. Root owns contracts/config/exports. T08 writer owns runtime/data; no overlapping source paths."
     },
     {
       "id": "T10",
