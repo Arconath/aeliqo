@@ -159,10 +159,15 @@ export class AeliqoDateRangeElement extends AeliqoFieldElement<AeliqoDateRangeVa
   }
 
   static readonly styles = [...aeliqoInputStyles, css`
+    :host { container-type: inline-size; }
     fieldset { border: 0; display: grid; gap: var(--aeliqo-space-4, 0.25rem); margin: 0; min-inline-size: 0; padding: 0; }
     legend { font-weight: var(--aeliqo-typography-font-weight-semibold, 600); }
     .range-inputs { align-items: end; display: grid; gap: var(--aeliqo-space-8, 0.5rem); grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
     .range-inputs label { display: grid; gap: var(--aeliqo-space-4, 0.25rem); }
+    @container (max-width: 28rem) {
+      .range-inputs { grid-template-columns: minmax(0, 1fr); }
+      .range-inputs > span { display: none; }
+    }
     .policy { color: var(--aeliqo-color-muted, #4b5563); font-size: 0.9em; }
   `];
 }

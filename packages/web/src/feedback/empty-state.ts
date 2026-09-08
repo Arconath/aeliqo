@@ -19,7 +19,7 @@ export class AeliqoEmptyStateElement extends AeliqoFoundationElement {
     [part="state"] { align-items: center; border: 0.0625rem dashed var(--aeliqo-color-border, #64748b); border-radius: var(--aeliqo-radius-medium, 0.625rem); display: grid; gap: var(--aeliqo-space-8, 0.5rem); justify-items: center; min-block-size: 8rem; padding: var(--aeliqo-space-24, 1.5rem); text-align: center; }
     [part="heading"] { font-weight: var(--aeliqo-typography-font-weight-semibold, 600); }
     [part="message"] { max-inline-size: 42rem; overflow-wrap: anywhere; }
-    [part="action"] { background: var(--aeliqo-color-accent, #4338ca); border: 0; border-radius: var(--aeliqo-radius-small, 0.375rem); color: white; cursor: pointer; min-block-size: var(--aeliqo-control-min-target, 2.75rem); padding-inline: var(--aeliqo-space-12, 0.75rem); }
+    [part="action"] { background: var(--aeliqo-color-accent, #4338ca); border: 0; border-radius: var(--aeliqo-radius-small, 0.375rem); color: var(--aeliqo-color-on-accent, #fff); cursor: pointer; min-block-size: var(--aeliqo-control-min-target, 2.75rem); padding-inline: var(--aeliqo-space-12, 0.75rem); }
   `];
 
   kind: AeliqoEmptyStateKind = "no-records";

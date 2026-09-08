@@ -197,7 +197,7 @@ export class AeliqoDeltaElement extends LitElement {
       <dl part="delta" aria-describedby=${scope ? "scope" : nothing} data-mode=${this.validMode} data-status=${unavailable ? "unavailable" : "ready"}>
         <dt part="label">${this.label}</dt>
         <dd part="value" class=${unavailable ? "unavailable" : ""} aria-label=${unavailable ? rendered : `${rendered}, ${modeLabel}`}>
-          <span part="number">${rendered}</span>${this.unit && !unavailable ? html`<span part="unit">${this.unit}</span>` : nothing}
+          <bdi part="number" dir=${unavailable ? "auto" : "ltr"}>${rendered}</bdi>${this.unit && !unavailable ? html`<span part="unit">${this.unit}</span>` : nothing}
         </dd>
       </dl>
         <div part="mode">${modeLabel}</div>

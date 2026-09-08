@@ -177,6 +177,6 @@ export class AeliqoNumberFieldElement extends AeliqoFieldElement<AeliqoNumberCha
   static readonly styles = [...aeliqoInputStyles, css`
     .input-wrap { align-items: center; display: flex; gap: var(--aeliqo-space-8, 0.5rem); }
     .input-wrap input { flex: 1 1 auto; min-inline-size: 0; }
-    [part=unit] { color: var(--aeliqo-color-muted, #4b5563); }
+    [part=unit] { flex: 0 0 auto; white-space: nowrap; color: var(--aeliqo-color-muted, #4b5563); }
   `];
 }
