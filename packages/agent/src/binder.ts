@@ -162,6 +162,14 @@ function decisionFor(
       && samePath(candidate.diagnosticPath, item.path));
 }
 
+/** A host decision may represent a goal-wide material ambiguity even when
+ * the candidate's individual query is structurally and semantically valid.
+ * The goal epoch is the authority key; model task IDs are intentionally not
+ * consulted here. */
+function goalDecision(context: NormalizedHostContext): AgentBindingDecision | undefined {
+  return context.decisions?.find((candidate) => candidate.goalEpoch === context.goalEpoch);
+}
+
 function canonical(value: unknown): string {
   if (value === null) return 'null';
   if (typeof value === 'number') return Object.is(value, -0) ? '-0' : JSON.stringify(value);
@@ -459,7 +467,11 @@ export function createAgentBinder(options: AgentBinderOptions): AgentBinder {
       return failure('agent.stale-epoch', 'The agent goal epoch changed before binding.');
     const freshReadSet = validateCommitReadSet(parsed.value.preconditions, freshContext.value.current, structure.value.resultReferences);
     if (!freshReadSet.ok) return freshReadSet;
-    return validateTaskSemantics(parsed.value, structure.value.task, structure.value, freshContext.value);
+    const freshSemantics = validateTaskSemantics(parsed.value, structure.value.task, structure.value, freshContext.value);
+    if (!freshSemantics.ok) return freshSemantics;
+    const materialDecision = goalDecision(freshContext.value);
+    if (materialDecision !== undefined) return inspectionState(decisionOutcome(materialDecision));
+    return freshSemantics;
   };
 
   const bind = async (input: unknown, bindOptions: AgentBindOptions = {}): Promise<Outcome<AgentBindingOutcome>> => {

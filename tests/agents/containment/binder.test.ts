@@ -197,6 +197,25 @@ describe('production agent binder', () => {
     expect(staleDecision.state).toBe('stale');
   });
 
+  it('applies a current goal ambiguity after a valid bind and releases it when resolved', async () => {
+    const meaningCurrent = {...current, catalogRevision: meaningCatalog.revision};
+    const validTask = task({id: 'task-original', catalogRevision: meaningCatalog.revision, outputs: [
+      {id: 'gross', kind: 'query', query: query({fields: [], measures: [{id: gross.id, revision: gross.revision}]}), dependsOn: [], delivery: 'eager'},
+      {id: 'net', kind: 'query', query: query({fields: [], measures: [{id: net.id, revision: net.revision}]}), dependsOn: [], delivery: 'eager'},
+    ]});
+    const decision = {state: 'needs-choice' as const, goalEpoch: 'epoch-1', diagnosticCode: 'agent.material-ambiguity', choices: [
+      {id: 'gross', label: 'Gross', consequence: 'Use the gross definition.'},
+      {id: 'net', label: 'Net', consequence: 'Use the net definition.'},
+    ]};
+    const guarded = binder({catalog: meaningCatalog, current: meaningCurrent, decisions: [decision]});
+    expect(outcomeState(await guarded.bind(proposal(validTask, meaningCurrent))).state).toBe('needs-choice');
+    const renamed = {...validTask, id: 'task-renamed'};
+    expect(outcomeState(await guarded.bind(proposal(renamed, meaningCurrent))).state).toBe('needs-choice');
+
+    const resolved = binder({catalog: meaningCatalog, current: meaningCurrent});
+    expect(outcomeState(await resolved.bind(proposal(validTask, meaningCurrent))).state).toBe('bound');
+  });
+
   it('releases cancelled host reads so a later healthy bind is admitted', async () => {
     let healthy = false;
     const context = {
