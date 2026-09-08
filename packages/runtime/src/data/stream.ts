@@ -16,6 +16,7 @@ export interface ResultStreamContext {
   readonly queryDigest: string;
   readonly scopeDigest: string;
   readonly outputId: string;
+  readonly populationDigest?: string;
   readonly limits: ResultStreamLimits;
   readonly signal?: AbortSignal;
 }
@@ -39,7 +40,7 @@ export async function* readResultStream(
   source: ReadableStream<Uint8Array>, context: ResultStreamContext,
 ): AsyncGenerator<ResultEvent> {
   const limits = {...context.limits};
-  const {requestId, queryDigest, scopeDigest, outputId, signal} = context;
+  const {requestId, queryDigest, scopeDigest, outputId, populationDigest, signal} = context;
   for (const limit of [limits.bytes, limits.messageBytes, limits.messages, limits.rows]) {
     if (!Number.isSafeInteger(limit) || limit < 0) fail('data.stream-budget', 'Stream limits must be nonnegative safe integers.');
   }
@@ -62,6 +63,7 @@ export async function* readResultStream(
   const decoder = new TextDecoder('utf-8', {fatal: true});
 
   const parseLine = (): ResultEvent => {
+    if (signal?.aborted) fail('data.aborted', 'Result stream was cancelled.');
     if (++messages > limits.messages) fail('data.stream-budget', 'Stream message budget exceeded.');
     if (terminal) fail('data.stream-terminal', 'A result stream continued after its terminal event.');
     let text: string;
@@ -84,6 +86,11 @@ export async function* readResultStream(
       reference = ref;
       const coverage = event.descriptor.coverage;
       population = coverage.kind === 'unknown' ? undefined : coverage.populationDigest;
+      if (populationDigest !== undefined && population !== populationDigest)
+        fail('data.stream-population', 'Result descriptor does not match the accepted population.');
+      const count = event.descriptor.counts.population;
+      if (count.kind !== 'unknown' && population !== undefined && count.populationDigest !== population)
+        fail('data.stream-population', 'Result count and coverage refer to different populations.');
       return event;
     }
     if (reference === undefined) fail('data.stream-descriptor', 'A result stream event arrived before its descriptor.');
@@ -98,6 +105,8 @@ export async function* readResultStream(
       progress.set(event.unit, event.completed);
     } else {
       const coverage = event.finalCoverage;
+      if (populationDigest !== undefined && (coverage.kind === 'unknown' || coverage.populationDigest !== populationDigest))
+        fail('data.stream-population', 'Result completion does not match the accepted population.');
       if (population !== undefined && coverage.kind !== 'unknown' && coverage.populationDigest !== population)
         fail('data.stream-population', 'Result stream population changed at completion.');
       terminal = true;

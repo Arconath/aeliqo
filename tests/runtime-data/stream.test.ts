@@ -40,6 +40,7 @@ describe('bounded result stream', () => {
     ['changed revision', [resultEvents.descriptor, {...resultEvents.batch, result: {...ref, revision: 'other'}}], 'data.stream-lineage'],
     ['wrong request error', [{...resultEvents.error, requestId: 'other'}], 'data.stream-request'],
     ['changed population', [resultEvents.descriptor, {...resultEvents.complete, finalCoverage: {kind: 'complete', populationDigest: 'other'}}], 'data.stream-population'],
+    ['count population mismatch', [{...resultEvents.descriptor, descriptor: {...resultEvents.descriptor.descriptor, counts: {loaded: 1, population: {kind: 'exact', value: 1, populationDigest: 'other'}}}}], 'data.stream-population'],
     ['inconsistent progress', [resultEvents.descriptor, {...resultEvents.progress, completed: 2}], 'data.stream-progress'],
     ['truncated', [resultEvents.descriptor, resultEvents.batch], 'data.stream-truncated'],
     ['terminal followed by data', [...valid, resultEvents.batch], 'data.stream-terminal'],

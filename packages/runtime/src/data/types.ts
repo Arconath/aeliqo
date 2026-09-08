@@ -127,6 +127,8 @@ export interface HttpDataServiceOptions {
   readonly fetch?: typeof globalThis.fetch;
   readonly headers?: Readonly<Record<string, string>>;
   readonly paths?: Partial<HttpDataPaths>;
+  /** Overall transport deadline, including response bodies. Defaults to 30 seconds. */
+  readonly maxRequestMilliseconds?: number;
   readonly responseLimits?: {
     readonly bytes: number;
     readonly messageBytes: number;
@@ -147,6 +149,9 @@ export interface DataHttpServerOptions {
   readonly authenticate?: (request: Request) => Promise<Outcome<{readonly principal?: unknown}>> | Outcome<{readonly principal?: unknown}>;
   readonly allowedOrigin?: string;
   readonly maxRequestBytes?: number;
+  readonly maxRequestMilliseconds?: number;
+  /** Counts open streamed responses as well as pending authentication/reads. */
+  readonly maxConcurrentRequests?: number;
 }
 
 export type DataHttpHandler = (request: Request) => Promise<Response>;
