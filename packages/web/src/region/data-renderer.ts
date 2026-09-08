@@ -11,16 +11,12 @@ import type { AeliqoKeyValueItem } from "../data/key-value.js";
 import type { AeliqoSelectionScope } from "../data/selection-summary.js";
 import { stableDataRecordKey, dataValueText } from "../data/shared.js";
 import type {
-  AeliqoDataColumn,
-  AeliqoDataRecord,
   AeliqoDataScope,
   AeliqoDataStatus,
   AeliqoFilterChangeDetail,
   AeliqoFilterPredicate,
   AeliqoPageRequest,
-  AeliqoSelectionDetail,
   AeliqoSortState,
-  AeliqoTableSortDetail,
   AeliqoTableWindowDetail,
 } from "../data/types.js";
 import type { AeliqoDataResolvedNode } from "./data-registry.js";
@@ -88,10 +84,90 @@ export interface AeliqoDataRenderContext {
   readonly onRequest?: AeliqoDataHostRequestHandler;
 }
 
-const record = (value: unknown): Record<string, unknown> | undefined =>
-  value !== null && typeof value === "object" && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : undefined;
+const RESULT_REF_KEYS = [
+  "id",
+  "revision",
+  "outputId",
+  "queryDigest",
+  "scopeDigest",
+] as const;
+
+/**
+ * Read only plain data records at the event boundary.  Event details come
+ * from component/application code and may be proxies, class instances or
+ * accessor-backed objects.  Copying data descriptors both prevents an
+ * accidental getter from becoming trusted input and gives callers one
+ * fail-closed representation to validate.
+ */
+const record = (value: unknown): Record<string, unknown> | undefined => {
+  try {
+    if (value === null || typeof value !== "object" || Array.isArray(value))
+      return undefined;
+    const prototype = Object.getPrototypeOf(value);
+    if (prototype !== null && prototype !== Object.prototype) return undefined;
+    const keys = Reflect.ownKeys(value);
+    if (keys.some((key) => typeof key !== "string")) return undefined;
+    const output = Object.create(null) as Record<string, unknown>;
+    for (const key of keys as string[]) {
+      const descriptor = Object.getOwnPropertyDescriptor(value, key);
+      if (descriptor === undefined || !("value" in descriptor)) return undefined;
+      output[key] = descriptor.value;
+    }
+    return output;
+  } catch {
+    return undefined;
+  }
+};
+
+function exactRecord(
+  value: unknown,
+  allowed: readonly string[],
+  required: readonly string[] = allowed,
+): Record<string, unknown> | undefined {
+  const candidate = record(value);
+  if (candidate === undefined) return undefined;
+  const keys = Object.keys(candidate);
+  if (keys.some((key) => !allowed.includes(key))) return undefined;
+  if (required.some((key) => !Object.hasOwn(candidate, key))) return undefined;
+  return candidate;
+}
+
+function resultRef(value: unknown): ResultRef | undefined {
+  const candidate = exactRecord(value, RESULT_REF_KEYS);
+  if (
+    candidate === undefined ||
+    RESULT_REF_KEYS.some(
+      (key) =>
+        typeof candidate[key] !== "string" ||
+        !validId(candidate[key]),
+    )
+  )
+    return undefined;
+  return {
+    id: candidate.id as string,
+    revision: candidate.revision as string,
+    outputId: candidate.outputId as string,
+    queryDigest: candidate.queryDigest as string,
+    scopeDigest: candidate.scopeDigest as string,
+  };
+}
+
+function validId(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.length > 0 &&
+    value.length <= 128 &&
+    !/[\s\u0000-\u001f\u007f]/u.test(value)
+  );
+}
+
+function eventType(event: Event): string | undefined {
+  try {
+    return typeof event.type === "string" ? event.type : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 const text = (value: unknown, fallback = ""): string =>
   typeof value === "string" ? value : fallback;
@@ -107,7 +183,12 @@ function refKey(ref: ResultRef): string {
 }
 
 function sameRef(left: ResultRef | undefined, right: ResultRef): boolean {
-  return left !== undefined && refKey(left) === refKey(right);
+  try {
+    const checked = resultRef(left);
+    return checked !== undefined && refKey(checked) === refKey(right);
+  } catch {
+    return false;
+  }
 }
 
 function statusFor(node: AeliqoDataResolvedNode): AeliqoDataStatus {
@@ -120,10 +201,22 @@ function statusFor(node: AeliqoDataResolvedNode): AeliqoDataStatus {
   return "ready";
 }
 
-function selectionPort(node: AeliqoDataResolvedNode) {
-  return node.config.ports.find(
-    (port) => port.id === "selection" && port.payload === "selection",
-  );
+function selectionPort(
+  node: AeliqoDataResolvedNode,
+  output = false,
+) {
+  try {
+    return node.config.ports.find(
+      (candidate) =>
+        candidate.id === "selection" &&
+        candidate.payload === "selection" &&
+        (!output ||
+          candidate.direction === "output" ||
+          candidate.direction === "inout"),
+    );
+  } catch {
+    return undefined;
+  }
 }
 
 function port(
@@ -131,8 +224,114 @@ function port(
   id: string,
   payload: InteractionPayload["kind"],
 ): boolean {
-  return node.config.ports.some(
-    (candidate) => candidate.id === id && candidate.payload === payload,
+  try {
+    return node.config.ports.some(
+      (candidate) =>
+        candidate.id === id &&
+        candidate.payload === payload &&
+        (candidate.direction === "output" || candidate.direction === "inout"),
+    );
+  } catch {
+    return false;
+  }
+}
+
+/** Typed host requests have no core payload/port.  Their availability comes
+ * from the validated component capability and an installed host callback. */
+function hostOutput(
+  context: AeliqoDataRenderContext,
+): AeliqoDataHostRequestHandler | undefined {
+  try {
+    return typeof context.onRequest === "function" ? context.onRequest : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function interactionPayload(
+  node: AeliqoDataResolvedNode,
+  interaction: InteractionState | undefined,
+  kind: "selection" | "filter",
+  portId: string,
+): Record<string, unknown> | undefined {
+  try {
+    const values = interaction?.values;
+    if (!Array.isArray(values)) return undefined;
+    for (const raw of values) {
+      const entry = exactRecord(
+        raw,
+        ["nodeId", "portId", "payload"],
+      );
+      if (
+        entry === undefined ||
+        entry.nodeId !== node.id ||
+        entry.portId !== portId
+      )
+        continue;
+      const payload = exactRecord(
+        entry.payload,
+        kind === "selection"
+          ? ["kind", "selection"]
+          : ["kind", "predicates", "outputId"],
+      );
+      if (payload?.kind === kind) return payload;
+    }
+  } catch {
+    return undefined;
+  }
+  return undefined;
+}
+
+function exactKeys(keys: readonly unknown[]): keys is readonly string[] {
+  try {
+    return (
+      keys.length > 0 &&
+      new Set(keys).size === keys.length &&
+      keys.every((key) => typeof key === "string" && key.length > 0)
+    );
+  } catch {
+    return false;
+  }
+}
+
+function validScopeDetail(value: unknown, node: AeliqoDataResolvedNode): boolean {
+  if (value === undefined) return true;
+  const scope = exactRecord(
+    value,
+    [
+      "loaded",
+      "filteredTotal",
+      "populationTotal",
+      "populationDigest",
+      "kind",
+      "label",
+    ],
+    [],
+  );
+  if (scope === undefined) return false;
+  for (const key of ["loaded", "filteredTotal", "populationTotal"] as const) {
+    if (
+      Object.hasOwn(scope, key) &&
+      (!Number.isSafeInteger(scope[key]) || (scope[key] as number) < 0)
+    )
+      return false;
+  }
+  if (
+    Object.hasOwn(scope, "populationDigest") &&
+    (typeof scope.populationDigest !== "string" ||
+      scope.populationDigest !== node.scope.populationDigest)
+  )
+    return false;
+  if (
+    Object.hasOwn(scope, "kind") &&
+    !["loaded", "filtered", "population", "sample", "unknown"].includes(
+      String(scope.kind),
+    )
+  )
+    return false;
+  return (
+    !Object.hasOwn(scope, "label") ||
+    typeof scope.label === "string"
   );
 }
 
@@ -140,17 +339,8 @@ function selectedKeys(
   node: AeliqoDataResolvedNode,
   interaction: InteractionState | undefined,
 ): readonly string[] {
-  const entry = interaction?.values.find(
-    (candidate) =>
-      candidate.nodeId === node.id && candidate.payload.kind === "selection",
-  );
-  if (
-    entry?.payload.kind !== "selection" ||
-    entry.payload.selection.mode !== "ids"
-  )
-    return [];
-  if (!sameRef(entry.payload.selection.result, node.result.ref)) return [];
-  return entry.payload.selection.keys;
+  const selection = validatedSelection(node, interaction);
+  return selection?.mode === "ids" ? selection.keys : [];
 }
 
 function selectedSummary(
@@ -160,55 +350,153 @@ function selectedSummary(
   readonly keys: readonly string[];
   readonly scope?: AeliqoSelectionScope;
 } {
-  const entry = interaction?.values.find(
-    (candidate) =>
-      candidate.nodeId === node.id && candidate.payload.kind === "selection",
-  );
-  if (entry?.payload.kind !== "selection") return { keys: [] };
-  if (entry.payload.selection.mode === "ids") {
-    if (!sameRef(entry.payload.selection.result, node.result.ref))
-      return { keys: [] };
+  const selection = validatedSelection(node, interaction);
+  if (selection === undefined || selection.mode === "clear") return { keys: [] };
+  if (selection.mode === "ids") {
     return {
-      keys: entry.payload.selection.keys,
-      scope: { kind: "ids", matched: entry.payload.selection.keys.length },
+      keys: selection.keys,
+      scope: { kind: "ids", matched: selection.keys.length },
     };
   }
-  if (entry.payload.selection.mode === "predicate") {
-    return {
-      keys: [],
-      scope: {
-        kind: "predicate",
-        label: "All matching records in the active server filter",
-      },
-    };
-  }
-  return { keys: [] };
+  return {
+    keys: [],
+    scope: {
+      kind: "predicate",
+      label: "All matching records in the active server filter",
+    },
+  };
 }
 
 function currentFilter(
   node: AeliqoDataResolvedNode,
   interaction: InteractionState | undefined,
 ): AeliqoFilterChangeDetail | undefined {
-  const entry = interaction?.values.find(
-    (candidate) =>
-      candidate.nodeId === node.id && candidate.payload.kind === "filter",
-  );
-  if (
-    entry?.payload.kind !== "filter" ||
-    entry.payload.outputId !== node.result.ref.outputId
-  )
+  try {
+    const payload = interactionPayload(node, interaction, "filter", "filter");
+    if (
+      payload === undefined ||
+      payload.outputId !== node.result.ref.outputId ||
+      !Array.isArray(payload.predicates)
+    )
+      return undefined;
+    const predicates = payload.predicates;
+    if (
+      predicates.length > 128 ||
+      predicates.some((predicate) => !validatePredicate(predicate, node))
+    )
+      return undefined;
+    const predicate: AeliqoFilterPredicate | undefined =
+      predicates.length === 0
+        ? undefined
+        : predicates.length === 1
+          ? (predicates[0] as AeliqoFilterPredicate)
+          : {
+              op: "and" as const,
+              predicates: predicates as AeliqoFilterPredicate[],
+            };
+    return { ...(predicate === undefined ? {} : { predicate }), applied: true };
+  } catch {
     return undefined;
-  const predicates = entry.payload.predicates;
-  const predicate: AeliqoFilterPredicate | undefined =
-    predicates.length === 0
-      ? undefined
-      : predicates.length === 1
-        ? (predicates[0] as AeliqoFilterPredicate)
-        : {
-            op: "and" as const,
-            predicates: predicates as AeliqoFilterPredicate[],
-          };
-  return { ...(predicate === undefined ? {} : { predicate }), applied: true };
+  }
+}
+
+type ValidatedSelection =
+  | { readonly mode: "clear" }
+  | {
+      readonly mode: "ids";
+      readonly entity: string;
+      readonly keys: readonly string[];
+      readonly result: ResultRef;
+    }
+  | {
+      readonly mode: "predicate";
+      readonly entity: string;
+      readonly predicate: AeliqoFilterPredicate;
+      readonly queryDigest: string;
+      readonly populationDigest: string;
+    };
+
+function validPopulationDigest(node: AeliqoDataResolvedNode): string | undefined {
+  return typeof node.scope.populationDigest === "string" &&
+    node.scope.populationDigest.length > 0
+    ? node.scope.populationDigest
+    : undefined;
+}
+
+function validatedSelection(
+  node: AeliqoDataResolvedNode,
+  interaction: InteractionState | undefined,
+): ValidatedSelection | undefined {
+  const payload = interactionPayload(
+    node,
+    interaction,
+    "selection",
+    "selection",
+  );
+  if (payload === undefined) return undefined;
+  const selection = record(payload.selection);
+  const selectionPortValue = selectionPort(node);
+  if (selection === undefined || selectionPortValue === undefined) return undefined;
+  const mode = selection.mode;
+  if (mode === "clear") {
+    return Object.keys(selection).length === 1 &&
+      Object.hasOwn(selection, "mode")
+      ? { mode: "clear" }
+      : undefined;
+  }
+  const entity = selection.entity;
+  if (typeof entity !== "string" || entity !== selectionPortValue.entity)
+    return undefined;
+  if (mode === "ids") {
+    const checkedResult = resultRef(selection.result);
+    const keys = selection.keys;
+    if (
+      Object.keys(selection).some(
+        (key) => !["mode", "entity", "keys", "result"].includes(key),
+      ) ||
+      checkedResult === undefined ||
+      !sameRef(checkedResult, node.result.ref) ||
+      !Array.isArray(keys) ||
+      !exactKeys(keys)
+    )
+      return undefined;
+    return {
+      mode: "ids",
+      entity,
+      keys: [...keys],
+      result: checkedResult,
+    };
+  }
+  if (mode === "predicate") {
+    const queryDigest = selection.queryDigest;
+    const populationDigest = selection.populationDigest;
+    if (
+      Object.keys(selection).some(
+        (key) =>
+          ![
+            "mode",
+            "entity",
+            "predicate",
+            "queryDigest",
+            "populationDigest",
+          ].includes(key),
+      ) ||
+      typeof queryDigest !== "string" ||
+      queryDigest !== node.result.ref.queryDigest ||
+      typeof populationDigest !== "string" ||
+      populationDigest !== validPopulationDigest(node) ||
+      !validatePredicate(selection.predicate, node)
+    )
+      return undefined;
+    return {
+      mode: "predicate",
+      entity,
+      predicate: selection.predicate as AeliqoFilterPredicate,
+      queryDigest,
+      populationDigest,
+    };
+  }
+  return undefined;
 }
 
 function normalizedScalar(value: unknown): Scalar | undefined {
@@ -230,17 +518,25 @@ function normalizedScalar(value: unknown): Scalar | undefined {
 function validKeys(
   node: AeliqoDataResolvedNode,
   keys: readonly string[],
+  interaction: InteractionState | undefined,
+  entity: string,
 ): boolean {
-  const allowed = new Set(
-    node.rows
-      .map((row) => stableDataRecordKey(row, node.config.identity))
-      .filter((key): key is string => key !== undefined),
-  );
-  return (
-    keys.length > 0 &&
-    new Set(keys).size === keys.length &&
-    keys.every((key) => allowed.has(key))
-  );
+  try {
+    if (!exactKeys(keys)) return false;
+    const loaded = new Set(
+      node.rows
+        .map((row) => stableDataRecordKey(row, node.config.identity))
+        .filter((key): key is string => key !== undefined),
+    );
+    const authorized = validatedSelection(node, interaction);
+    const retained =
+      authorized?.mode === "ids" && authorized.entity === entity
+        ? new Set(authorized.keys)
+        : new Set<string>();
+    return keys.every((key) => loaded.has(key) || retained.has(key));
+  } catch {
+    return false;
+  }
 }
 
 function dispatchSelection(
@@ -248,35 +544,44 @@ function dispatchSelection(
   event: Event,
   context: AeliqoDataRenderContext,
 ): void {
+  const type = eventType(event);
   if (
+    type === undefined ||
     ![
       "aeliqo-record-list-selection",
       "aeliqo-card-selection",
       "aeliqo-table-selection",
       "aeliqo-selection-clear",
-    ].includes(event.type)
+    ].includes(type)
   )
     return;
-  const selection = selectionPort(node);
+  const selection = selectionPort(node, true);
   if (selection === undefined) return;
-  const detail =
-    typeof CustomEvent !== "undefined" && event instanceof CustomEvent
-      ? record(event.detail)
-      : undefined;
+  const detail = exactRecord(
+    eventDetail(event),
+    ["mode", "entity", "keys", "result", "scope"],
+    ["mode", "entity", "keys"],
+  );
   if (
     detail === undefined ||
     (detail.mode !== "clear" && detail.mode !== "ids") ||
     typeof detail.entity !== "string" ||
     !Array.isArray(detail.keys) ||
-    detail.keys.some((key) => typeof key !== "string")
+    !exactKeys(detail.keys)
   )
     return;
+  if (!validScopeDetail(detail.scope, node)) return;
   const entity = selection.entity;
   if (detail.entity !== entity) return;
   const keys = detail.keys as string[];
   if (detail.mode === "clear") {
     if (keys.length !== 0) return;
-    context.onRequest?.({
+    if (
+      Object.hasOwn(detail, "result") &&
+      !sameRef(detail.result as ResultRef, node.result.ref)
+    )
+      return;
+    hostOutput(context)?.({
       kind: "selection",
       nodeId: node.id,
       portId: selection.id,
@@ -284,14 +589,14 @@ function dispatchSelection(
     });
     return;
   }
-  const candidateResult = detail.result;
+  const candidateResult = resultRef(detail.result);
   if (
-    !record(candidateResult) ||
-    !sameRef(candidateResult as ResultRef, node.result.ref) ||
-    !validKeys(node, keys)
+    candidateResult === undefined ||
+    !sameRef(candidateResult, node.result.ref) ||
+    !validKeys(node, keys, context.interaction, entity)
   )
     return;
-  context.onRequest?.({
+  hostOutput(context)?.({
     kind: "selection",
     nodeId: node.id,
     portId: selection.id,
@@ -315,41 +620,78 @@ function validatePredicate(
   value: unknown,
   node: AeliqoDataResolvedNode,
 ): boolean {
-  const candidate = record(value);
-  if (candidate === undefined || typeof candidate.op !== "string") return false;
-  const fields = new Map(node.result.fields.map((field) => [field.id, field]));
-  const check = (item: unknown): boolean => {
+  try {
+    const fields = new Map(node.result.fields.map((field) => [field.id, field]));
+    const allowedFields =
+      node.config.fields.length === 0
+        ? new Set(node.result.fields.map((field) => field.id))
+        : new Set(node.config.fields);
+    const seen = new WeakSet<object>();
+    const check = (item: unknown, depth = 0): boolean => {
+    if (depth > 32 || item === null || typeof item !== "object") return false;
+    if (seen.has(item)) return false;
+    seen.add(item);
     const predicate = record(item);
-    if (predicate === undefined || typeof predicate.op !== "string")
-      return false;
-    if (predicate.op === "and" || predicate.op === "or")
+    if (predicate === undefined || typeof predicate.op !== "string") return false;
+    if (predicate.op === "and" || predicate.op === "or") {
+      if (
+        Object.keys(predicate).some((key) =>
+          !["op", "predicates"].includes(key),
+        ) ||
+        !Array.isArray(predicate.predicates) ||
+        predicate.predicates.length === 0 ||
+        predicate.predicates.length > 128
+      )
+        return false;
+      return predicate.predicates.every((child) => check(child, depth + 1));
+    }
+    if (predicate.op === "not") {
       return (
-        Array.isArray(predicate.predicates) &&
-        predicate.predicates.length > 0 &&
-        predicate.predicates.every(check)
+        Object.keys(predicate).length === 2 &&
+        Object.hasOwn(predicate, "predicate") &&
+        check(predicate.predicate, depth + 1)
       );
-    if (predicate.op === "not") return check(predicate.predicate);
+    }
     const field =
       typeof predicate.field === "string"
         ? fields.get(predicate.field)
         : undefined;
-    if (field === undefined || !node.config.fields.includes(predicate.field as string)) return false;
-    if (predicate.entity !== undefined) return false;
-    if (predicate.op === "is-null")
-      return typeof predicate.negate === "boolean";
+    if (
+      field === undefined ||
+      !allowedFields.has(predicate.field as string) ||
+      (Object.hasOwn(predicate, "entity") && predicate.entity !== undefined)
+    )
+      return false;
+    if (predicate.op === "is-null") {
+      return (
+        Object.keys(predicate).every((key) =>
+          ["op", "field", "negate"].includes(key),
+        ) &&
+        typeof predicate.negate === "boolean"
+      );
+    }
     if (predicate.op === "compare") {
       const scalar = scalarValueForField(predicate.value);
       const checked =
         scalar === undefined ? undefined : validateScalar(scalar, field.type);
       return (
+        Object.keys(predicate).every((key) =>
+          ["op", "field", "comparison", "value"].includes(key),
+        ) &&
         ["eq", "ne", "lt", "lte", "gt", "gte"].includes(
           String(predicate.comparison),
-        ) && checked?.ok === true
+        ) &&
+        checked?.ok === true
       );
     }
     if (predicate.op === "in") {
       return (
+        Object.keys(predicate).every((key) =>
+          ["op", "field", "values"].includes(key),
+        ) &&
         Array.isArray(predicate.values) &&
+        predicate.values.length > 0 &&
+        predicate.values.length <= 128 &&
         predicate.values.every((item) => {
           const scalar = scalarValueForField(item);
           return scalar !== undefined && validateScalar(scalar, field.type).ok;
@@ -357,8 +699,11 @@ function validatePredicate(
       );
     }
     return false;
-  };
-  return check(candidate);
+    };
+    return check(value);
+  } catch {
+    return false;
+  }
 }
 
 function dispatchFilter(
@@ -366,21 +711,39 @@ function dispatchFilter(
   event: Event,
   context: AeliqoDataRenderContext,
 ): void {
-  if (event.type !== "aeliqo-filter-change") return;
+  if (eventType(event) !== "aeliqo-filter-change") return;
   if (!port(node, "filter", "filter")) return;
-  const detail =
-    typeof CustomEvent !== "undefined" && event instanceof CustomEvent
-      ? (record(event.detail) as AeliqoFilterChangeDetail | undefined)
-      : undefined;
-  if (detail === undefined || detail.applied !== true) return;
+  const detail = exactRecord(
+    eventDetail(event),
+    ["predicate", "inherited", "scopeLabel", "applied"],
+    ["applied"],
+  ) as AeliqoFilterChangeDetail | undefined;
+  if (
+    detail === undefined ||
+    detail.applied !== true ||
+    (Object.hasOwn(detail, "scopeLabel") &&
+      detail.scopeLabel !== undefined &&
+      typeof detail.scopeLabel !== "string")
+  )
+    return;
   const predicate = detail.predicate;
   if (predicate !== undefined && !validatePredicate(predicate, node)) return;
+  const inherited = detail.inherited;
+  if (inherited !== undefined && !validatePredicate(inherited, node)) return;
+  const effective =
+    predicate === undefined
+      ? inherited
+      : inherited === undefined
+        ? predicate
+        : { op: "and" as const, predicates: [inherited, predicate] };
   const predicates: Extract<
     InteractionPayload,
     { readonly kind: "filter" }
   >["predicates"] =
-    predicate === undefined ? [] : [predicate as AeliqoFilterPredicate];
-  context.onRequest?.({
+    effective === undefined
+      ? []
+      : [effective as AeliqoFilterPredicate];
+  hostOutput(context)?.({
     kind: "filter",
     nodeId: node.id,
     portId: "filter",
@@ -389,9 +752,13 @@ function dispatchFilter(
 }
 
 function eventDetail<T>(event: Event): T | undefined {
-  return typeof CustomEvent !== "undefined" && event instanceof CustomEvent
-    ? (event.detail as T)
-    : undefined;
+  try {
+    if (typeof CustomEvent === "undefined" || !(event instanceof CustomEvent))
+      return undefined;
+    return (event.detail as T) ?? undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 function dispatchPage(
@@ -399,9 +766,21 @@ function dispatchPage(
   event: Event,
   context: AeliqoDataRenderContext,
 ): void {
-  if (event.type !== "aeliqo-table-page") return;
+  if (eventType(event) !== "aeliqo-table-page") return;
   if (!port(node, "page", "page")) return;
-  const request = eventDetail<AeliqoPageRequest>(event);
+  const detail = exactRecord(
+    eventDetail(event),
+    ["page", "pageSize", "result"],
+    ["page", "pageSize"],
+  );
+  if (detail === undefined) return;
+  const request: AeliqoPageRequest = {
+    page: detail.page as number,
+    pageSize: detail.pageSize as number,
+    ...(Object.hasOwn(detail, "result") && detail.result !== undefined
+      ? { result: detail.result as ResultRef }
+      : {}),
+  };
   if (
     request === undefined ||
     !Number.isSafeInteger(request.page) ||
@@ -412,11 +791,11 @@ function dispatchPage(
     return;
   if (request.result !== undefined && !sameRef(request.result, node.result.ref))
     return;
-  context.onRequest?.({
+  hostOutput(context)?.({
     kind: "page",
     nodeId: node.id,
     portId: "page",
-    request: { ...request, result: node.result.ref },
+    request: { page: request.page, pageSize: request.pageSize, result: node.result.ref },
   });
 }
 
@@ -425,21 +804,34 @@ function dispatchSort(
   event: Event,
   context: AeliqoDataRenderContext,
 ): void {
-  if (event.type !== "aeliqo-table-sort") return;
-  const detail = eventDetail<AeliqoTableSortDetail>(event);
-  const sort = detail?.sort;
+  if (eventType(event) !== "aeliqo-table-sort") return;
+  if (node.component !== "table" || !node.columns.some((column) => column.sortable === true)) return;
+  const detail = exactRecord(eventDetail(event), ["sort"], ["sort"]);
+  if (detail === undefined) return;
+  const sortValue = detail.sort;
+  const sort =
+    sortValue === undefined
+      ? undefined
+      : record(sortValue);
   if (
-    sort !== undefined &&
-    (typeof sort.field !== "string" ||
+    sortValue !== undefined &&
+    (sort === undefined ||
+      Object.keys(sort).some((key) => !["field", "direction"].includes(key)) ||
+      typeof sort.field !== "string" ||
       (sort.direction !== "asc" && sort.direction !== "desc") ||
-      !node.columns.some((column) => column.key === sort.field))
+      !node.columns.some(
+        (column) => column.key === sort.field && column.sortable === true,
+      ))
   )
     return;
-  context.onRequest?.({
+  hostOutput(context)?.({
     kind: "sort",
     nodeId: node.id,
     portId: "sort",
-    request: sort,
+    request:
+      sort === undefined
+        ? undefined
+        : { field: sort.field as string, direction: sort.direction as "asc" | "desc" },
   });
 }
 
@@ -448,8 +840,30 @@ function dispatchWindow(
   event: Event,
   context: AeliqoDataRenderContext,
 ): void {
-  if (event.type !== "aeliqo-table-window") return;
-  const request = eventDetail<AeliqoTableWindowDetail>(event);
+  if (
+    eventType(event) !== "aeliqo-table-window" ||
+    node.component !== "table" ||
+    node.config.values.virtualized !== true ||
+    node.config.values.mode !== "grid"
+  )
+    return;
+  const detail = exactRecord(
+    eventDetail(event),
+    ["start", "count", "overscan", "row", "column", "reason", "result"],
+    ["start", "count", "overscan", "row", "column", "reason"],
+  );
+  if (detail === undefined) return;
+  const request: AeliqoTableWindowDetail = {
+    start: detail.start as number,
+    count: detail.count as number,
+    overscan: detail.overscan as number,
+    row: detail.row as number,
+    column: detail.column as number,
+    reason: detail.reason as "keyboard",
+    ...(Object.hasOwn(detail, "result") && detail.result !== undefined
+      ? { result: detail.result as ResultRef }
+      : {}),
+  };
   if (
     request === undefined ||
     request.reason !== "keyboard" ||
@@ -467,23 +881,50 @@ function dispatchWindow(
     return;
   if (request.result !== undefined && !sameRef(request.result, node.result.ref))
     return;
-  context.onRequest?.({
+  hostOutput(context)?.({
     kind: "window",
     nodeId: node.id,
     portId: "window",
-    request: { ...request, result: node.result.ref },
+    request: {
+      start: request.start,
+      count: request.count,
+      overscan: request.overscan,
+      row: request.row,
+      column: request.column,
+      reason: request.reason,
+      result: node.result.ref,
+    },
   });
 }
 
 function dispatchLoadMore(
   node: AeliqoDataResolvedNode,
+  event: Event,
   context: AeliqoDataRenderContext,
 ): void {
-  context.onRequest?.({
+  if (
+    eventType(event) !== "aeliqo-data-load-more" ||
+    node.component !== "cardCollection"
+  )
+    return;
+  const detail = exactRecord(eventDetail(event), ["requested"], ["requested"]);
+  if (detail === undefined || detail.requested !== true || !hasMore(node)) return;
+  hostOutput(context)?.({
     kind: "load-more",
     nodeId: node.id,
     portId: "load-more",
   });
+}
+
+function hasMore(node: AeliqoDataResolvedNode): boolean {
+  const population =
+    node.result.counts.population.kind === "exact"
+      ? node.result.counts.population.value
+      : node.scope.filteredTotal;
+  return (
+    Number.isSafeInteger(population) &&
+    (population as number) > node.rows.length
+  );
 }
 
 function metricTemplate(
@@ -611,11 +1052,7 @@ function collectionTemplate(
       @aeliqo-record-list-selection=${(event: Event) => dispatchSelection(node, event, context)}
     ></aeliqo-record-list>`;
   if (component === "card-collection") {
-    const population =
-      node.result.counts.population.kind === "exact"
-        ? node.result.counts.population.value
-        : node.scope.filteredTotal;
-    const hasMore = population !== undefined && population > node.rows.length;
+    const more = hasMore(node);
     return html`<aeliqo-card-collection
       data-aeliqo-node-id=${node.id}
       data-aeliqo-theme="inherit"
@@ -629,10 +1066,10 @@ function collectionTemplate(
       .result=${result}
       .scope=${node.scope}
       .status=${status}
-      .hasMore=${hasMore}
+      .hasMore=${more}
       .loadingMore=${false}
       @aeliqo-card-selection=${(event: Event) => dispatchSelection(node, event, context)}
-      @aeliqo-data-load-more=${() => dispatchLoadMore(node, context)}
+      @aeliqo-data-load-more=${(event: Event) => dispatchLoadMore(node, event, context)}
     ></aeliqo-card-collection>`;
   }
   const mode = node.config.values.mode === "grid" ? "grid" : "table";
