@@ -19,3 +19,6 @@ export type {AeliqoFoundationBindings} from "./foundation-registry.js";
 
 export {createInputPresentationManifests} from "./input-registry.js";
 export type {AeliqoInputBindings, AeliqoInputBinding, AeliqoInputDraftBinding, AeliqoInputActionBinding, AeliqoInputFileBinding} from "./input-registry.js";
+
+export {createNavigationFeedbackPresentationManifests, AELIQO_NAVIGATION_FEEDBACK_REFS, AELIQO_NAVIGATION_FEEDBACK_CONFIG_SCHEMAS} from "./navigation-feedback-registry.js";
+export type {AeliqoNavigationFeedbackBindings} from "./navigation-feedback-registry.js";

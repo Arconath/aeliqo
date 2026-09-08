@@ -90,7 +90,7 @@ export function validatePresentationPlan(
       if (c.task.kind === 'form') return fail('binding', 'Queryless forms do not implicitly consume result data.');
     }
     let output: unknown;
-    try { output = m.resolveConfig(node.config.values, result); } catch { return fail('configuration', 'The registered configuration validator failed.'); }
+    try { output = m.resolveConfig(node.config.values, result, node); } catch { return fail('configuration', 'The registered configuration validator failed.'); }
     const wire = inspectWire(output);
     if (!wire.ok) return wire;
     const outcome = wire.value as {ok?: unknown; value?: unknown};

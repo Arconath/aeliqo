@@ -1,3 +1,4 @@
+import {renderNavigationFeedbackNode} from "./navigation-feedback-renderer.js";
 import {renderInputNode} from "./input-renderer.js";
 import {renderFoundationNode} from "./foundation-renderer.js";
 import type {InteractionPayload, InteractionState, Result, ResultRef, ValidatedPresentation} from "@aeliqo/core";
@@ -200,7 +201,7 @@ export class AeliqoRegionElement extends LitElement {
       case "data.table": return this.renderTable(resolved, values);
       case "data.trend": return this.renderTrend(resolved, values);
       case "control.filter": return this.renderFilter(resolved, values);
-      default: return renderFoundationNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? renderInputNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? html`<div part="unsupported">Unsupported registered representation.</div>`;
+      default: return renderFoundationNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? renderInputNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? renderNavigationFeedbackNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? html`<div part="unsupported">Unsupported registered representation.</div>`;
     }
   }
 

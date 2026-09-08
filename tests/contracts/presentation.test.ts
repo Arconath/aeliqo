@@ -158,3 +158,15 @@ describe('registered presentation feasibility', () => {
     expect(createPresentationRegistry([table, table]).ok).toBe(false);
   });
 });
+
+describe('configuration-dependent child layout',()=>{
+ it('passes parsed node structure to registered resolvers before accepting coverage',()=>{
+  const r=registry([table,{...stack,resolveConfig:(values,result,node)=>node?.children.length===1
+    ? {ok:true,value:{values:{},fields:[],ports:[]}}
+    : {ok:false,diagnostics:[{code:'slots',message:'One registered slot is available.',retryable:false}]}}]);
+  const leaf=plan().nodes[0]!;
+  const p={...plan(),rootId:'container',nodes:[{id:'container',role:'structure',representation:stack.ref,config:{schema:stack.configSchema,values:{}},children:[leaf.id]},leaf]};
+  expect(checked(p,context(),r).ok).toBe(true);
+  expect(checked({...p,nodes:[{...p.nodes[0]!,children:[leaf.id,'extra']},leaf,{...leaf,id:'extra'}]},context(),r)).toMatchObject({ok:false,diagnostics:[{code:'presentation.configuration'}]});
+ });
+});

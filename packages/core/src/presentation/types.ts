@@ -30,7 +30,8 @@ export interface PresentationManifest {
   /** Exclusive containers cannot satisfy a simultaneous comparison across their children. */
   readonly visibility: 'simultaneous' | 'exclusive' | 'leaf';
   readonly extension: boolean;
-  readonly resolveConfig: (values: PresentationValues, result: Result | undefined) => Outcome<ResolvedPresentationConfig>;
+  /** The validator supplies the parsed node so config-dependent child layouts can reject omitted content. */
+  readonly resolveConfig: (values: PresentationValues, result: Result | undefined, node?: PresentationNode) => Outcome<ResolvedPresentationConfig>;
   /** Optional deterministic candidate authoring. Explicit candidates use the same validator. */
   readonly suggestConfig?: (needs: readonly Task['needs'][number][], result: Result | undefined) => Outcome<PresentationValues>;
 }

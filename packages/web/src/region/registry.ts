@@ -1,3 +1,4 @@
+import {createNavigationFeedbackPresentationManifests, type AeliqoNavigationFeedbackBindings} from "./navigation-feedback-registry.js";
 import {createInputPresentationManifests, type AeliqoInputBindings} from "./input-registry.js";
 import {createFoundationPresentationManifests, type AeliqoFoundationBindings} from "./foundation-registry.js";
 import {
@@ -22,6 +23,7 @@ export interface AeliqoPresentationRegistryOptions {
   /** Reviewed static content/action/route bindings; changes require a new Experience revision. */
   readonly foundation?: AeliqoFoundationBindings;
   readonly inputs?: AeliqoInputBindings;
+  readonly navigationFeedback?: AeliqoNavigationFeedbackBindings;
   /** Resolve the entity represented by an authorized result. Never take this from presentation config. */
   readonly resolveEntity?: (result: Result) => string | undefined;
 }
@@ -257,7 +259,9 @@ const defaultFoundation = createFoundationPresentationManifests();
 if (!defaultFoundation.ok) throw new Error('Default foundation manifests are invalid.');
 const defaultInputs = createInputPresentationManifests();
 if (!defaultInputs.ok) throw new Error("Default input manifests are invalid.");
-export const AELIQO_PRESENTATION_MANIFESTS: readonly PresentationManifest[] = Object.freeze([...buildManifests({}), ...defaultFoundation.value, ...defaultInputs.value]);
+const defaultNavigationFeedback = createNavigationFeedbackPresentationManifests();
+if (!defaultNavigationFeedback.ok) throw new Error("Default navigation/feedback manifests are invalid.");
+export const AELIQO_PRESENTATION_MANIFESTS: readonly PresentationManifest[] = Object.freeze([...buildManifests({}), ...defaultFoundation.value, ...defaultInputs.value, ...defaultNavigationFeedback.value]);
 
 export function createSelectionIdentityMapping(entity: string, identity: readonly string[], grain: readonly string[] = identity): InteractionMappingManifest {
   const shape = {payload: "selection" as const, entity, identity: [...identity], grain: [...grain]};
@@ -277,5 +281,7 @@ export function createAeliqoPresentationRegistry(
   if (!foundation.ok) return foundation;
   const inputs = createInputPresentationManifests(options.inputs);
   if (!inputs.ok) return inputs;
-  return createPresentationRegistry([...buildManifests(options), ...foundation.value, ...inputs.value], registeredMappings);
+  const navigationFeedback = createNavigationFeedbackPresentationManifests(options.navigationFeedback);
+  if (!navigationFeedback.ok) return navigationFeedback;
+  return createPresentationRegistry([...buildManifests(options), ...foundation.value, ...inputs.value, ...navigationFeedback.value], registeredMappings);
 }
