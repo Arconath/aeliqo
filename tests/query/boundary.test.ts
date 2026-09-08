@@ -19,6 +19,9 @@ const source: QuerySource = {revision: 'source-1', catalogRevision: 'catalog-1',
   relations: {facts: {entity: 'facts', complete: true, rows: [{id: 'a', value: 1}, {id: 'b', value: null}]}}};
 const planner = () => unwrap(createQueryPlanner({catalog, registry,
   limits: {maxRows: 100, maxJoinRows: 100, maxBytes: 100_000, maxOperations: 100_000}}));
+const canonical = (value: unknown): string => value === null || typeof value !== 'object'
+  ? JSON.stringify(value) : Array.isArray(value) ? `[${value.map(canonical).join(',')}]`
+    : `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonical((value as Record<string, unknown>)[key])}`).join(',')}}`;
 
 describe('query plan and execution boundaries', () => {
   it('rejects malformed query input without throwing or invoking accessors', () => {
@@ -66,6 +69,25 @@ describe('query plan and execution boundaries', () => {
       expect(() => engine.evaluate(changed as LogicalPlan, source)).not.toThrow();
       expect(engine.evaluate(changed as LogicalPlan, source).ok).toBe(false);
     }
+  });
+  it('revalidates predicate semantics even when the caller recomputes a forged plan identity', () => {
+    const engine = planner();
+    const plan = unwrap(engine.plan({...query, filter: {op:'compare', left:{kind:'field',ref:'value'}, comparison:'eq',
+      right:{kind:'literal',value:1,type:{value:'integer',nullable:false}}}}));
+    const changed = structuredClone(plan) as any;
+    changed.nodes.find((node: any) => node.op === 'filter').predicate.right = {kind:'literal',value:'1',type:{value:'text',nullable:false}};
+    changed.canonical = canonical({version:'1',pins:changed.pins,root:changed.root,nodes:changed.nodes});
+    changed.planKey = `query-${changed.canonical}`;
+    const outcome = engine.evaluate(changed, source);
+    expect(outcome.ok).toBe(false);
+    if (!outcome.ok) expect(outcome.diagnostics[0].code).toBe('query.predicate-type');
+  });
+  it('keeps fractional division typed as float during membership evaluation', () => {
+    const engine = planner();
+    const plan = unwrap(engine.plan({...query, filter:{op:'in',expression:{kind:'call',function:{id:'core.divide.null',revision:'1'},arguments:[
+      {kind:'field',ref:'value'},{kind:'literal',value:2,type:{value:'integer',nullable:false}},
+    ]},values:[{kind:'literal',value:0.5,type:{value:'float',nullable:false}}]}}));
+    expect(unwrap(engine.evaluate(plan, source)).rows).toEqual([{id:'a',value:1}]);
   });
   it('never turns an incomplete materialization into an exact top-k population', () => {
     const engine = planner();

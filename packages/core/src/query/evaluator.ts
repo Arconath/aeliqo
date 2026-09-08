@@ -9,6 +9,8 @@ import type {FunctionRegistry, FunctionSignature} from '../expressions/types.js'
 import {queryFunctionSignatures, standardFunctionSignatures} from '../expressions/registry.js';
 import {validateSemanticType} from '../semantics/type-utils.js';
 import {compareScalars, scalarIdentity, scalarInstantParts, validateScalar} from '../contracts/scalars.js';
+import {inspectWire} from '../contracts/ingress.js';
+import {validatePlanSemantics} from './planner.js';
 import {
   type AggregateSpec,
   type LogicalPlan,
@@ -432,6 +434,9 @@ function validateNode(node: PlanRecord, inputRelations: readonly PlanNode[], cat
 }
 
 function validateLogicalPlan(input: unknown, catalog: Catalog, registry: FunctionRegistry): Outcome<LogicalPlan> {
+  const ingress = inspectWire(input);
+  if (!ingress.ok) return ingress;
+  input = ingress.value;
   if (!isRecord(input) || input.version !== '1' || !isRecord(input.pins) || !planId(input.pins.catalogRevision) || !planId(input.pins.functionRegistryDigest) ||
     !planId(input.root) || !Array.isArray(input.nodes) || input.nodes.length === 0 || !validQuerySchema(input.output, catalog) || !validNodeCost(input.cost) ||
     typeof input.canonical !== 'string' || typeof input.planKey !== 'string' || !Array.isArray(input.explain)) return failure('query.plan', 'Logical plan shape is invalid.');
@@ -480,7 +485,9 @@ function validateLogicalPlan(input: unknown, catalog: Catalog, registry: Functio
     if (!isRecord(explanation) || explanation.operation !== node.op || !Array.isArray(explanation.inputIds) || !sameIds(explanation.inputIds.filter((id): id is string => typeof id === 'string'), node.inputs) ||
       explanation.estimatedRows !== node.cost.estimatedRows || explanation.estimatedBytes !== node.cost.estimatedBytes) return failure('query.plan', 'Logical plan explanation metadata is inconsistent.');
   }
-  return {ok: true, value: input as unknown as LogicalPlan};
+  const plan = input as unknown as LogicalPlan;
+  const semantics = validatePlanSemantics(plan, catalog, registry);
+  return semantics.ok ? {ok: true, value: plan} : semantics;
 }
 
 function sourceField(schema: QuerySchema, expression: Extract<Expression, {kind: 'field'}>): QueryField | undefined {
@@ -538,7 +545,8 @@ function expressionValueType(expression: Expression, schema: QuerySchema, regist
   if (expression.kind === 'field') return sourceField(schema, expression)?.type.value;
   if (expression.kind === 'literal') return expression.type.value;
   if (expression.kind === 'call') {
-    const output = registry.resolve(expression.function)?.output;
+    const signature = registry.resolve(expression.function);
+    const output = signature?.output;
     if (output === undefined) return undefined;
     if ('value' in output) return output.value;
     if (output.kind === 'same-as' || output.kind === 'nullable-same-as') {
@@ -546,7 +554,7 @@ function expressionValueType(expression: Expression, schema: QuerySchema, regist
       return argument === undefined ? undefined : expressionValueType(argument, schema, registry);
     }
     const argumentTypes = expression.arguments.map((argument) => expressionValueType(argument, schema, registry));
-    return output.forceFloat || argumentTypes.includes('float') ? 'float'
+    return output.forceFloat || signature?.operation === 'divide' || signature?.operation === 'ratio-of-sums' || signature?.operation === 'mean-of-rates' || argumentTypes.includes('float') ? 'float'
       : argumentTypes.includes('decimal') ? 'decimal' : 'integer';
   }
   return undefined;

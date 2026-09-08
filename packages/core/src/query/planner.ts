@@ -745,6 +745,57 @@ function buildPlan(input: RelationalQuery, catalog: Catalog, registry: FunctionR
   return {ok: true, value: deepFreeze(plan)};
 }
 
+/** Reuse planner semantics after a transported plan passes structural validation. */
+export function validatePlanSemantics(plan: LogicalPlan, catalog: Catalog, registry: FunctionRegistry): QueryOutcome<void> {
+  const nodes = new Map(plan.nodes.map((node) => [node.id, node]));
+  for (const node of plan.nodes) {
+    const input = nodes.get(node.inputs[0]!)?.output;
+    let expected: QueryOutcome<QuerySchema>;
+    if (node.op === 'scan') {
+      const entity = catalog.entities.find((candidate) => candidate.id === node.entity);
+      if (entity === undefined) return failure('query.plan', 'Plan scan entity is unavailable.');
+      expected = {ok: true, value: scanSchema(entity)};
+    } else {
+      if (input === undefined) return failure('query.plan', 'Plan input schema is unavailable.');
+      expected = {ok: true, value: input};
+      if (node.op === 'filter') {
+        const checked = validatePredicate(node.predicate, input, registry);
+        if (!checked.ok) return checked;
+      } else if (node.op === 'project') expected = projectSchema(input, node.items, registry);
+      else if (node.op === 'derive') expected = appendSchema(input, node.items, registry);
+      else if (node.op === 'time-bucket') expected = timeBucketSchema(input, node.items, registry);
+      else if (node.op === 'window') expected = windowSchema(input, node.items, registry);
+      else if (node.op === 'group') expected = groupSchema(input, node.keys, registry);
+      else if (node.op === 'aggregate') {
+        const group = nodes.get(node.inputs[0]!);
+        const population = group === undefined ? undefined : nodes.get(group.inputs[0]!)?.output;
+        if (group?.op !== 'group' || population === undefined) return failure('query.plan', 'Aggregate population schema is unavailable.');
+        expected = aggregateSchema(population, input, node.items, registry);
+      } else if (node.op === 'sort') {
+        for (const item of node.items) {
+          const checked = resolveExpression(item.expression, input, registry);
+          if (!checked.ok) return checked;
+        }
+      } else if (node.op === 'join' || node.op === 'semijoin') {
+        const right = nodes.get(node.inputs[1]!)?.output;
+        const relation = relationshipFor(catalog, node.spec.relationship);
+        if (right === undefined || relation === undefined) return failure('query.plan', 'Relationship schema is unavailable.');
+        const keys = validateRelationshipKeyTypes(catalog, relation, []);
+        if (!keys.ok) return keys;
+        if (node.spec.where !== undefined) {
+          const checked = validatePredicate(node.spec.where, right, registry);
+          if (!checked.ok) return checked;
+        }
+        if (node.op === 'join') expected = {ok: true, value: joinSchema(input, right, relation, node.spec.kind)};
+      }
+    }
+    if (!expected.ok) return expected;
+    if (stable(expected.value) !== stable(node.output))
+      return failure('query.plan-schema', 'Plan output metadata does not match its validated semantics.', ['nodes', node.id, 'output']);
+  }
+  return {ok: true, value: undefined};
+}
+
 export function createQueryPlanner(options: QueryPlannerOptions): QueryOutcome<import('./types.js').QueryPlanner> {
   const parsed = parseCatalog(options.catalog);
   if (!parsed.ok) return parsed;
