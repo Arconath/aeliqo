@@ -466,7 +466,10 @@ globalThis.__aeliqoBrowserData = {local,network};
     bundleFiles.push({file: relative('dist', path), bytes: bytes.length, gzipBytes: gzipSync(bytes).length});
   }
   const initialGzipBytes = bundleFiles.reduce((sum, item) => sum + item.gzipBytes, 0);
-  assert(initialGzipBytes <= 120 * 1024, 'Runtime browser data entry exceeds 120 KiB gzip');
+  // docs/12 assigns 160 KiB to the complete interactive table path.
+  // This data-only subset must fit inside it; passing does not prove that
+  // the remaining renderer/interaction code meets the whole-path budget.
+  assert(initialGzipBytes <= 160 * 1024, 'Data subset alone exceeds the 160 KiB interactive-path budget');
 
   const staticServer = createServer(async (incoming, outgoing) => {
     if ((incoming.url ?? '').startsWith('/adc/')) {
