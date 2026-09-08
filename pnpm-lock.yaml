@@ -8,6 +8,24 @@ importers:
 
   .:
     devDependencies:
+      '@aeliqo/agent':
+        specifier: workspace:*
+        version: link:packages/agent
+      '@aeliqo/core':
+        specifier: workspace:*
+        version: link:packages/core
+      '@aeliqo/devtools':
+        specifier: workspace:*
+        version: link:packages/devtools
+      '@aeliqo/react':
+        specifier: workspace:*
+        version: link:packages/react
+      '@aeliqo/runtime':
+        specifier: workspace:*
+        version: link:packages/runtime
+      '@aeliqo/web':
+        specifier: workspace:*
+        version: link:packages/web
       '@axe-core/playwright':
         specifier: 4.13.0
         version: 4.13.0(playwright-core@1.63.0)

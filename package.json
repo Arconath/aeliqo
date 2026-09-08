@@ -112,7 +112,13 @@
     "vitest": "5.0.0",
     "vue": "3.5.42",
     "@modelcontextprotocol/client": "2.0.0",
-    "openai": "7.10.0"
+    "openai": "7.10.0",
+    "@aeliqo/core": "workspace:*",
+    "@aeliqo/runtime": "workspace:*",
+    "@aeliqo/web": "workspace:*",
+    "@aeliqo/react": "workspace:*",
+    "@aeliqo/agent": "workspace:*",
+    "@aeliqo/devtools": "workspace:*"
   },
   "packageManager": "pnpm@11.24.0",
   "engines": {
