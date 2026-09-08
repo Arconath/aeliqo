@@ -1,0 +1,178 @@
+import type {InteractionPayload, ValidatedPresentation} from "@aeliqo/core";
+import {html, nothing, type TemplateResult} from "lit";
+import {repeat} from "lit/directives/repeat.js";
+
+type Node = ValidatedPresentation["nodes"][number];
+type ChildRenderer = (nodeId: string) => unknown;
+type Emit = (node: Node, portId: string, payload: InteractionPayload) => void;
+type Values = Record<string, unknown>;
+
+function record(value: unknown): Values | undefined {
+  return value !== null && typeof value === "object" && !Array.isArray(value) ? value as Values : undefined;
+}
+
+function text(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback;
+}
+
+function booleanValue(value: unknown, fallback: boolean): boolean {
+  return typeof value === "boolean" ? value : fallback;
+}
+
+function valuesOf(node: Node): Values {
+  return node.config.values as Values;
+}
+
+function declared(node: Node, portId: string, payload: InteractionPayload["kind"]): boolean {
+  return node.config.ports.some((port) => port.id === portId && port.payload === payload && (port.direction === "output" || port.direction === "inout"));
+}
+
+function routePayload(value: unknown): Extract<InteractionPayload, {readonly kind: "navigate"}> | undefined {
+  const candidate = record(value);
+  const route = record(candidate?.route);
+  const params = record(candidate?.params);
+  if (route === undefined || typeof route.id !== "string" || typeof route.revision !== "string" || params === undefined) return undefined;
+  return {kind: "navigate", route: {id: route.id, revision: route.revision}, params: params as Extract<InteractionPayload, {readonly kind: "navigate"}>["params"]};
+}
+
+function actionPayload(value: unknown): Extract<InteractionPayload, {readonly kind: "action-request"}> | undefined {
+  const candidate = record(value);
+  const action = record(candidate?.action);
+  const input = record(candidate?.input);
+  if (action === undefined || typeof action.id !== "string" || typeof action.revision !== "string" || input === undefined) return undefined;
+  return {kind: "action-request", action: {id: action.id, revision: action.revision}, input: input as Extract<InteractionPayload, {readonly kind: "action-request"}>["input"]};
+}
+
+function itemById(values: Values, id: string): Values | undefined {
+  const items = Array.isArray(values.items) ? values.items : [];
+  return items.map(record).find((item) => item?.id === id);
+}
+
+function emitNavigation(node: Node, event: Event, emit: Emit): void {
+  const detail = record(event instanceof CustomEvent ? event.detail : undefined);
+  const id = detail?.id;
+  if (typeof id !== "string") return;
+  const item = itemById(valuesOf(node), id);
+  const payload = routePayload(item);
+  if (payload === undefined || !declared(node, "navigate", "navigate")) return;
+  event.preventDefault();
+  emit(node, "navigate", payload);
+}
+
+function emitItemAction(node: Node, event: Event, emit: Emit): void {
+  const detail = record(event instanceof CustomEvent ? event.detail : undefined);
+  const id = detail?.id;
+  if (typeof id !== "string") return;
+  const item = itemById(valuesOf(node), id);
+  if (item === undefined) return;
+  const action = actionPayload(item);
+  if (action !== undefined && declared(node, "action", "action-request")) {
+    emit(node, "action", action);
+    return;
+  }
+  const route = routePayload(item);
+  if (route !== undefined && declared(node, "navigate", "navigate")) {
+    emit(node, "navigate", route);
+  }
+}
+
+function emitNodeAction(node: Node, event: Event, emit: Emit): void {
+  const payload = actionPayload(valuesOf(node));
+  if (payload === undefined || !declared(node, "action", "action-request")) return;
+  emit(node, "action", payload);
+}
+
+function emitTreeNavigation(node: Node, event: Event, emit: Emit): void {
+  const detail = record(event instanceof CustomEvent ? event.detail : undefined);
+  const id = detail?.id;
+  if (typeof id !== "string") return;
+  const nodes: Values[] = [];
+  const visit = (items: unknown): void => {
+    if (!Array.isArray(items)) return;
+    for (const raw of items) {
+      const item = record(raw); if (item === undefined) continue;
+      nodes.push(item); visit(item.children);
+    }
+  };
+  visit(valuesOf(node).nodes);
+  const item = nodes.find((candidate) => candidate.id === id);
+  if (item === undefined) return;
+  const action = actionPayload(item);
+  if (action !== undefined && declared(node, "action", "action-request")) {
+    emit(node, "action", action);
+    return;
+  }
+  const route = routePayload(item);
+  if (route !== undefined && declared(node, "navigate", "navigate")) {
+    emit(node, "navigate", route);
+  }
+}
+
+function emitPage(node: Node, event: Event, emit: Emit): void {
+  const detail = record(event instanceof CustomEvent ? event.detail : undefined);
+  const page = detail?.page;
+  const values = valuesOf(node);
+  const cursors = Array.isArray(values.cursors) ? values.cursors.map(record).filter((cursor): cursor is Values => cursor !== undefined) : [];
+  const cursor = cursors.find((candidate) => candidate.page === page);
+  if (!Number.isSafeInteger(page) || cursor === undefined || typeof cursor.cursor !== "string" || typeof values.outputId !== "string" || typeof values.queryDigest !== "string" || !declared(node, "page", "page")) return;
+  emit(node, "page", {kind: "page", outputId: values.outputId, cursor: cursor.cursor, queryDigest: values.queryDigest});
+}
+
+function children(node: Node, child: ChildRenderer): unknown {
+  return repeat(node.node.children, (id) => id, (id) => child(id));
+}
+
+function tabChildren(node: Node, child: ChildRenderer): unknown {
+  const values = valuesOf(node);
+  const items = Array.isArray(values.items) ? values.items.map(record) : [];
+  return node.node.children.map((childId, index) => {
+    const item = items[index];
+    return item === undefined || typeof item.id !== "string"
+      ? nothing
+      : html`<div slot=${item.id} data-aeliqo-tab-content=${item.id}>${child(childId)}</div>`;
+  });
+}
+
+/**
+ * Render one registered navigation/feedback node through the existing owned
+ * component. This function contains event adaptation only; focus, dismissal,
+ * keyboard behavior and overlay state remain in the component implementation.
+ */
+export function renderNavigationFeedbackNode(node: Node, child: ChildRenderer, emit: Emit): TemplateResult | typeof nothing | undefined {
+  const values = valuesOf(node);
+  const id = node.node.id;
+  switch (node.manifest.id) {
+    case "navigation.breadcrumb":
+      return html`<aeliqo-breadcrumb data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .items=${values.items ?? []} .label=${text(values.label)} @aeliqo-navigation=${(event: Event) => emitNavigation(node, event, emit)}></aeliqo-breadcrumb>`;
+    case "navigation.menu":
+      return html`<aeliqo-menu data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .items=${values.items ?? []} .label=${text(values.label)} @aeliqo-menu-action=${(event: Event) => emitItemAction(node, event, emit)}></aeliqo-menu>`;
+    case "navigation.pagination":
+      return html`<aeliqo-pagination data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .page=${values.page} .pageCount=${values.pageCount} .hasPrevious=${booleanValue(values.hasPrevious, false)} .hasNext=${booleanValue(values.hasNext, false)} .label=${text(values.label)} .pending=${booleanValue(values.pending, false)} @aeliqo-page-change=${(event: Event) => emitPage(node, event, emit)}></aeliqo-pagination>`;
+    case "navigation.tabs":
+      return html`<aeliqo-tabs data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .items=${values.items ?? []} .value=${text(values.value)} .defaultValue=${text(values.defaultValue)} .activation=${text(values.activation, "automatic")} .orientation=${text(values.orientation, "horizontal")} .idPrefix=${text(values.idPrefix, `aeliqo-tabs-${id}`)}>${tabChildren(node, child)}</aeliqo-tabs>`;
+    case "navigation.tree-nav":
+      return html`<aeliqo-tree-nav data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .nodes=${values.nodes ?? []} .expandedIds=${values.expandedIds ?? []} .selectedId=${text(values.selectedId)} .label=${text(values.label)} @aeliqo-tree-nav-select=${(event: Event) => emitTreeNavigation(node, event, emit)}></aeliqo-tree-nav>`;
+    case "feedback.tooltip":
+      return html`<aeliqo-tooltip data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .label=${text(values.label)} .content=${text(values.content)} .open=${booleanValue(values.open, false)}></aeliqo-tooltip>`;
+    case "feedback.popover":
+      return html`<aeliqo-popover data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .label=${text(values.label)} .content=${text(values.content)} .open=${booleanValue(values.open, false)} .modal=${booleanValue(values.modal, false)} .closeOnOutside=${booleanValue(values.closeOnOutside, true)}>${children(node, child)}</aeliqo-popover>`;
+    case "feedback.dialog":
+      return html`<aeliqo-dialog data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .heading=${text(values.heading)} .open=${booleanValue(values.open, false)} .modal=${booleanValue(values.modal, true)} .closeOnEscape=${booleanValue(values.closeOnEscape, true)}>${children(node, child)}</aeliqo-dialog>`;
+    case "feedback.drawer":
+      return html`<aeliqo-drawer data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .heading=${text(values.heading)} .open=${booleanValue(values.open, false)} .mode=${text(values.mode, "inline")} .side=${text(values.side, "end")}>${children(node, child)}</aeliqo-drawer>`;
+    case "feedback.toast":
+      return html`<aeliqo-toast data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .message=${text(values.message)} .open=${booleanValue(values.open, false)} .tone=${text(values.tone, "info")} .duration=${values.duration} .dismissible=${booleanValue(values.dismissible, true)}></aeliqo-toast>`;
+    case "feedback.alert":
+      return html`<aeliqo-alert data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .heading=${text(values.heading)} .message=${text(values.message)} .open=${booleanValue(values.open, true)} .tone=${text(values.tone, "info")} .actionLabel=${text(values.actionLabel)} .dismissible=${booleanValue(values.dismissible, false)} @aeliqo-alert-action=${(event: Event) => emitNodeAction(node, event, emit)}></aeliqo-alert>`;
+    case "feedback.progress":
+      return html`<aeliqo-progress data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .label=${text(values.label)} .value=${values.progressValue} .max=${values.progressMax}></aeliqo-progress>`;
+    case "feedback.skeleton":
+      return html`<aeliqo-skeleton data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .label=${text(values.label)} .lines=${values.lines} .variant=${text(values.variant, "text")} .animated=${booleanValue(values.animated, true)}></aeliqo-skeleton>`;
+    case "feedback.empty-state":
+      return html`<aeliqo-empty-state data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .kind=${text(values.kind, "failure")} .heading=${text(values.heading)} .message=${text(values.message)} .actionLabel=${text(values.actionLabel)} @aeliqo-empty-state-action=${(event: Event) => emitNodeAction(node, event, emit)}></aeliqo-empty-state>`;
+    default:
+      return undefined;
+  }
+}
+
+export const renderNavigationFeedback = renderNavigationFeedbackNode;

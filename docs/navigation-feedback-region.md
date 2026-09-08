@@ -1,0 +1,12 @@
+# Navigation and feedback region adapters
+
+The navigation and feedback region adapters use the same presentation registry contract as data and foundation views. The host installs an immutable `AeliqoNavigationFeedbackBindings` table with a revision, bounded copy entries, approved routes, approved actions, and component definitions. A plan node carries only the host `bindingRevision` and a `bindingRef`, plus bounded local view options such as an overlay's open state or a tab activation policy.
+
+The adapter rejects unknown fields, stale revisions, raw destinations, raw business actions, unregistered text, unsafe schemes, duplicate identities, cyclic trees, sparse or oversized binding data, and pagination movement without a host cursor. A route binding contains the application-resolved `href` for native browser behavior and a versioned route/parameter pair for semantic navigation. An action binding contains a versioned action and scalar input. The renderer emits `navigate`, `action-request`, or scoped `page` payloads only when the resolved node declares the corresponding output port.
+
+The renderer delegates to the owned `aeliqo-breadcrumb`, `aeliqo-menu`, `aeliqo-pagination`, `aeliqo-tabs`, `aeliqo-tree-nav`, `aeliqo-tooltip`, `aeliqo-popover`, `aeliqo-dialog`, `aeliqo-drawer`, `aeliqo-toast`, `aeliqo-alert`, `aeliqo-progress`, `aeliqo-skeleton`, and `aeliqo-empty-state` elements. Their keyboard behavior, focus return, native modal semantics, dismissal, reduced-motion treatment, and local tab/overlay state remain in those components. Tab and overlay children are passed through their declared slots; no second widget implementation is created in the region adapter.
+
+Tabs and overlays advertise `exclusive` visibility to the core presentation validator. An exclusive container cannot satisfy a simultaneous comparison across hidden branches. Tabs do not turn a local tab change into a generic interaction payload. Breadcrumb, menu, and tree nodes use host-registered route/action mappings; tree expansion remains local, while a selected mapped node emits the approved route or action request.
+
+The parent region registry should call `createNavigationFeedbackPresentationManifests(bindings)` and combine its result with the foundation and data manifests. The default `AELIQO_NAVIGATION_FEEDBACK_MANIFESTS` export is discovery metadata with an unconfigured binding table; application nodes should use the host-bound factory so route/action operations and content references are pinned to the active Experience revision.
+
