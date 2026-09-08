@@ -269,6 +269,50 @@ describe('runtime interaction controller', () => {
     store.dispose();
   });
 
+  it('cancels before region authorization publishes the staged interaction state', async () => {
+    const result = await localResult();
+    const authority: RegionAuthority = {
+      principalKey: 'principal-a', scopeDigest: result.ref.scopeDigest, policyRevision: 'policy-1', catalogRevision: catalog.revision,
+      experienceRevision: 'experience-1', functionRegistryDigest: catalog.functionRegistryDigest, results: [result.ref],
+    };
+    const task = {version: '1' as const, id: 'interaction-task', revision: '1', catalogRevision: catalog.revision,
+      functionRegistryDigest: catalog.functionRegistryDigest, regionId: 'region-1', goal: 'Interact with events', kind: 'presentation' as const,
+      needs: [], assumptions: [], inputs: [result.ref]};
+    let authorizeStarted!: () => void;
+    let releaseAuthorize!: () => void;
+    const started = new Promise<void>((resolve) => { authorizeStarted = resolve; });
+    const gate = new Promise<void>((resolve) => { releaseAuthorize = resolve; });
+    const store = createRegionStore({
+      readAuthority: () => ({ok: true as const, value: authority}),
+      authorizeCommit: async ({signal}) => { void signal; authorizeStarted(); await gate; return {ok: true as const, value: undefined}; },
+    });
+    const created = store.create({id: 'region-1', state: {task}});
+    if (!created.ok) throw new Error(created.diagnostics[0]!.message);
+    const region = created.value;
+    const controller = createInteractionController({
+      region,
+      graph: createInteractionGraph(graphFor()),
+      readContext: () => ({principalKey: authority.principalKey, draftDomain: 'events', actor: {id: 'user-a', kind: 'user'}, grants: ['experience.commit', 'result.inspect'],
+        scopeDigest: authority.scopeDigest, policyRevision: authority.policyRevision, catalogRevision: authority.catalogRevision,
+        experienceRevision: authority.experienceRevision, functionRegistryDigest: authority.functionRegistryDigest, results: [result.ref]}),
+      resolveResult: () => result.handle,
+      validateSelection: () => ({ok: true, value: undefined}),
+    });
+    const before = region.snapshot();
+    const abort = new AbortController();
+    const pending = controller.dispatch(event(before.regionRevision,
+      {kind: 'selection', selection: {mode: 'ids', entity: 'events', keys: ['a'], result: result.ref}}, 'cancel-auth'),
+      {sourcePortId: 'input', signal: abort.signal});
+    await started;
+    abort.abort();
+    releaseAuthorize();
+    expect(await pending).toMatchObject({ok: false, diagnostics: [{code: 'runtime.interaction-cancelled'}]});
+    expect(region.snapshot().regionRevision).toBe(before.regionRevision);
+    expect(region.snapshot().state?.interaction).toBeUndefined();
+    controller.dispose();
+    store.dispose();
+  });
+
   it('converges a bidirectional identity selection cycle with built-in propagation', async () => {
     const shape = {payload: 'selection' as const, entity: 'events', identity: ['id'], grain: ['id'], type: {value: 'text' as const, nullable: false}};
     const graph = createInteractionGraph({nodes: [

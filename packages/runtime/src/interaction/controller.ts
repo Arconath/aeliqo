@@ -516,8 +516,12 @@ class InteractionControllerImpl implements InteractionController {
       const staged = await this.region.stage({requestId: event.eventId, expected, state, ...(resultHandles.length === 0 ? {} : {resultHandles})});
       if (!staged.ok) return failure('runtime.interaction-stale', staged.diagnostics[0]!.message);
       if (controller.signal.aborted) { this.region.discard(staged.value); return failure('runtime.interaction-cancelled', 'The interaction was cancelled.'); }
-      const committed = await this.region.commit(staged.value);
-      if (!committed.ok) return failure('runtime.interaction-stale', committed.diagnostics[0]!.message);
+      const committed = await this.region.commit(staged.value, {signal: controller.signal});
+      if (!committed.ok) {
+        if (controller.signal.aborted || committed.diagnostics[0]?.code === 'runtime.region-cancelled')
+          return failure('runtime.interaction-cancelled', committed.diagnostics[0]!.message);
+        return failure('runtime.interaction-stale', committed.diagnostics[0]!.message);
+      }
       return committed;
     } finally {
       this.committing = false;
