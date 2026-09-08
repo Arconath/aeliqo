@@ -310,3 +310,27 @@ test("qualified predicates never apply under a different builder entity", async 
     op: "compare", entity: "customers", field: "status", comparison: "eq", value: "draft",
   });
 });
+
+test("RTL scope prose and long metric numbers keep their reading order", async ({page}) => {
+  await page.goto("/tests/data-components/index.html");
+  await page.evaluate(async () => {
+    document.documentElement.dir = "rtl";
+    const table = document.querySelector("#table") as any;
+    table.scope = {loaded: 2, filteredTotal: 100, kind: "filtered"};
+    table.totalRows = 100;
+    const metric = document.querySelector("#metric") as any;
+    metric.style.inlineSize = "8rem";
+    metric.value = {decimal: "100000000000000000.01"};
+    await Promise.all([table.updateComplete, metric.updateComplete]);
+  });
+  const tableScope = page.locator("#table [part=scope]");
+  await expect(tableScope).toContainText("Showing 2 of 100 rows.");
+  await expect.poll(() => tableScope.evaluate((element) => getComputedStyle(element).unicodeBidi)).toBe("plaintext");
+  const metricNumber = page.locator("#metric [part=number]");
+  await expect(metricNumber).toHaveAttribute("dir", "ltr");
+  await expect(metricNumber).toHaveText("100000000000000000.01");
+  await expect.poll(() => metricNumber.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return {direction: style.direction, whiteSpace: style.whiteSpace, overflowX: style.overflowX, clipped: element.scrollWidth > element.clientWidth};
+  })).toEqual({direction: "ltr", whiteSpace: "nowrap", overflowX: "auto", clipped: true});
+});

@@ -79,10 +79,11 @@ export const dataStyles = css`
   [part="status"] { margin: 0; padding: var(--aeliqo-space-8, 0.5rem) 0; }
   [part="status"].error { color: var(--aeliqo-color-danger, #b91c1c); }
   [part="status"].partial, [part="status"].stale { color: var(--aeliqo-color-warning, #854d0e); }
-  :is(button, input, select):focus-visible {
+  :is(button, input, select, [part="number"]):focus-visible {
     outline: var(--aeliqo-focus-width, 0.1875rem) solid var(--aeliqo-color-focus, #4338ca);
     outline-offset: var(--aeliqo-focus-offset, 0.125rem);
   }
+  [part="scope"] { unicode-bidi: plaintext; }
   @media (forced-colors: active) {
     :is(button, input, select):focus-visible { outline: 2px solid Highlight; }
   }

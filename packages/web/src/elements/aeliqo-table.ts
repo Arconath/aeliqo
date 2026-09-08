@@ -415,6 +415,7 @@ export class AeliqoTableElement extends LitElement {
     [part="grid-head"] [part="grid-row"] > * { background: var(--aeliqo-table-heading-background, var(--aeliqo-color-surface, #eef2f5)); }
     [part="grid-row"] [part="selection-cell"], [part="grid-head"] [part="grid-row"] > [part="selection-heading"] { min-inline-size: 3.25rem; }
     [part="scope"], [part="status"] { color: var(--aeliqo-color-muted, #475569); font-size: var(--aeliqo-typography-font-size-caption, 0.8125rem); margin: var(--aeliqo-space-8, 0.5rem) 0 0; }
+    [part="scope"] { unicode-bidi: plaintext; }
     [part="status"].error, [part="status"].unavailable { color: var(--aeliqo-color-danger, #b91c1c); }
     [part="status"].partial, [part="status"].stale { color: var(--aeliqo-color-warning, #854d0e); }
     [part="pagination"] { align-items: center; display: flex; flex-wrap: wrap; gap: var(--aeliqo-space-8, 0.5rem); margin-block-start: var(--aeliqo-space-12, 0.75rem); }
