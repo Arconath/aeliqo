@@ -262,11 +262,45 @@ export const modelEvaluationSchema = z.discriminatedUnion('state', [
   object({state: z.literal('evaluated'), modelSnapshot: idSchema, recipeDigest: idSchema, corpusDigest: idSchema,
     trials: positiveCount, evidenceId: idSchema, scope: label, permittedGrantsChanged: z.literal(false)}),
 ]);
+/** Independent host grants; no model label or preset implies another grant. */
+export const operationGrantSchema = z.enum([
+  'catalog.read', 'result.inspect', 'task.propose', 'task.evaluate',
+  'experience.propose', 'experience.commit', 'meaning.propose', 'meaning.activate',
+  'action.propose', 'action.execute', 'model.egress',
+]);
+/** Limits for proposal repair only. Query/egress/commit budgets belong to their effect authorities. */
+export const agentLoopBudgetSchema = object({
+  maxTurns: positiveCount.check(z.maximum(64)),
+  maxRepairs: count.check(z.maximum(16)),
+  maxMilliseconds: positiveCount.check(z.maximum(300_000)),
+  maxProposalBytes: positiveCount.check(z.maximum(L.bytes)),
+});
+export const agentStopReasonSchema = z.enum([
+  'complete', 'cancelled', 'turn-budget', 'repair-budget', 'time-budget',
+  'cost-budget', 'query-budget', 'byte-budget', 'commit-budget', 'no-progress',
+  'denied', 'unavailable', 'stale', 'needs-choice', 'needs-meaning', 'unsupported', 'invalid',
+]);
+/** An exact cell, not prose entailment. The runtime resolves its authorized rows independently. */
+export const narrativeCellSchema = object({
+  result: resultRefSchema, field: idSchema, identity: record(valueSchema),
+  type: semanticTypeSchema, definition: optional(versionRefSchema),
+  populationDigest: idSchema, filters: array(predicateSchema), period: optional(periodSchema),
+});
+export const narrativeClaimSchema = z.discriminatedUnion('kind', [
+  object({version, id: idSchema, kind: z.literal('value'), cell: narrativeCellSchema, value: valueSchema}),
+  object({version, id: idSchema, kind: z.literal('comparison'), left: narrativeCellSchema, right: narrativeCellSchema,
+    relation: z.enum(['eq', 'ne', 'lt', 'lte', 'gt', 'gte'])}),
+  // References permit inspection only. They never make this text a computed fact.
+  object({version, id: idSchema, kind: z.enum(['inference', 'hypothesis']), text: label,
+    references: array(resultRefSchema)}),
+]);
 export const contractSchemas = Object.freeze({
   catalog: catalogSchema, task: taskSchema, result: resultSchema, experience: experienceSchema,
   expression: expressionSchema, query: querySchema, interaction: interactionSchema,
   'result-event': resultEventSchema, environment: environmentSchema,
   'presentation-plan': presentationPlanSchema, 'task-proposal': taskProposalSchema,
   'meaning-draft': meaningDraftSchema, 'binding-outcome': bindingOutcomeSchema,
+  'operation-grant': operationGrantSchema, 'agent-loop-budget': agentLoopBudgetSchema,
+  'agent-stop-reason': agentStopReasonSchema, 'narrative-claim': narrativeClaimSchema,
   'model-evaluation': modelEvaluationSchema,
 });

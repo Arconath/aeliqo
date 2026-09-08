@@ -17,6 +17,10 @@ const kinds = [
   'meaning-draft',
   'binding-outcome',
   'model-evaluation',
+  'operation-grant',
+  'agent-loop-budget',
+  'agent-stop-reason',
+  'narrative-claim',
 ] as const;
 
 type Schema = {
@@ -27,6 +31,7 @@ type Schema = {
   additionalProperties?: unknown;
   properties?: Record<string, unknown>;
   oneOf?: Schema[];
+  enum?: unknown[];
 };
 
 function readSchema(kind: string): Schema {
@@ -44,8 +49,13 @@ describe('generated JSON Schema artifacts', () => {
       const roots = schema.oneOf ?? [schema];
       expect(roots.length).toBeGreaterThan(0);
       for (const root of roots) {
-        expect(root.type).toBe('object');
-        expect(root.additionalProperties).toBe(false);
+        if (kind === 'operation-grant' || kind === 'agent-stop-reason') {
+          expect(root.type).toBe('string');
+          expect(root.enum?.length).toBeGreaterThan(0);
+        } else {
+          expect(root.type).toBe('object');
+          expect(root.additionalProperties).toBe(false);
+        }
       }
     }
   });

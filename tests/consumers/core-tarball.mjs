@@ -139,7 +139,8 @@ run(["pnpm", "build"], coreDirectory);
 
 const expectedSchemas = ["catalog", "task", "result", "experience", "expression", "query",
   "interaction", "result-event", "environment", "presentation-plan", "task-proposal",
-  "meaning-draft", "binding-outcome", "model-evaluation"];
+  "meaning-draft", "binding-outcome", "model-evaluation",
+  "operation-grant", "agent-loop-budget", "agent-stop-reason", "narrative-claim"];
 for (const name of expectedSchemas) {
   const schemaPath = join(schemaDirectory, `${name}.schema.json`);
   assert(await fileExists(schemaPath), `Missing generated schema: ${schemaPath}`);
@@ -586,20 +587,40 @@ function runInstalledPresentation(createPresentationRegistry, composePresentatio
 }
 const presentationConsumerSource = runInstalledPresentation.toString();
 
+function runInstalledAgentContracts(parseContract, serializeContract, compareScalars, resultRef) {
+  const type = {value: 'decimal', nullable: false};
+  const claim = {version:'1',id:'claim',kind:'value',cell:{result:resultRef,field:'rate',identity:{id:'e1'},type,populationDigest:'cohort',filters:[]},value:{decimal:'0.1250'}};
+  const wire = serializeContract('narrative-claim', claim);
+  if (!wire.ok || !parseContract('narrative-claim', wire.value).ok) throw new Error('Installed narrative round trip failed');
+  if (parseContract('narrative-claim', {...claim,text:'The cause is proved.'}).ok) throw new Error('Numerical claim accepted authorizing prose');
+  if (!parseContract('operation-grant', JSON.stringify('task.propose')).ok || parseContract('operation-grant', JSON.stringify('act')).ok) throw new Error('Independent grant vocabulary failed');
+  const compared = compareScalars({decimal:'0.125'}, claim.value, type);
+  if (!compared.ok || compared.value !== 0) throw new Error('Installed exact scalar comparison failed');
+  return {claimShapeChecked:true,proseSeparated:true,grantsIndependent:true};
+}
+const agentConsumerSource = runInstalledAgentContracts.toString();
+
+
+
 
 await writeFile(join(consumerDirectory, "consumer-types.ts"), `
 import {
-  parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue,
+  parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue, compareScalars,
   validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph, parseInteractionState, createPresentationRegistry, composePresentation, validatePresentationPlan,
   checkExpression, createStandardFunctionRegistry, createTypedAuthoring, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
 import type {
-  Catalog, Task, Result, Experience, CommitPreconditions, Outcome, TaskStructure, Wire, PresentationPlan, PresentationValues,
+  Catalog, Task, Result, Experience, CommitPreconditions, Outcome, TaskStructure, Wire, PresentationPlan, PresentationValues, NarrativeClaim, OperationGrant,
   Interaction, InteractionPayload, InteractionSelection, InteractionLink, InteractionGraphInput, InteractionGraph, InteractionMappingManifest,
   ExperienceRestriction, ExperienceConstraints, TypedAuthoring, TypedExpression,
   FunctionRegistry, MeaningDefinition, MeaningBundle, QueryPlanner, LogicalPlan, QueryResult, QuerySpec, QuerySource,
 } from '@aeliqo/core';
 const commitPins: CommitPreconditions = ${JSON.stringify(commitPins)};
+const agentGrant: OperationGrant = 'task.propose';
+// @ts-expect-error Model presets do not grant authority.
+const invalidAgentGrant: OperationGrant = 'act';
+const typedClaim: NarrativeClaim = {version:'1',id:'claim',kind:'inference',text:'A hypothesis.',references:[]};
+void [agentGrant, invalidAgentGrant, typedClaim];
 const nestedPresentationValues: PresentationValues = {nested: [{value: 'text'}, null, 1]};
 const presentationLiteral: PresentationPlan = {id:'typed',revision:'1',rootId:'node',preconditions:commitPins,nodes:[{id:'node',role:'table',representation:{id:'table',revision:'1'},config:{schema:{id:'table.config',revision:'1'},values:nestedPresentationValues},children:[]}],links:[],coverage:[],stateTransfer:[],diagnostics:[]};
 // @ts-expect-error Wire presentation config does not accept executable functions.
@@ -723,7 +744,7 @@ import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {readFile} from 'node:fs/promises';
 import {
-  parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue,
+  parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue, compareScalars,
   validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph, parseInteractionState, createPresentationRegistry, composePresentation, validatePresentationPlan,
   checkExpression, createStandardFunctionRegistry, createTypedAuthoring, authorizeMeaningActivation, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
@@ -888,6 +909,8 @@ ${graphConsumerSource}
 assert.equal(runInstalledInteractionGraph(validateInteractionGraph, parseInteractionState).selectionEquivalence, true);
 ${presentationConsumerSource}
 assert.equal(runInstalledPresentation(createPresentationRegistry, composePresentation, validatePresentationPlan, documents, commitPins).noPreset, true);
+${agentConsumerSource}
+assert.equal(runInstalledAgentContracts(parseContract, serializeContract, compareScalars, documents.result.ref).claimShapeChecked, true);
 console.log('Installed @aeliqo/core query planning, exact evaluation and cancellation pass.');
 console.log('Installed @aeliqo/core parsers, schema exports, and round trips pass.');
 console.log('Installed @aeliqo/core task structure and experience constraint passes pass.');
@@ -938,7 +961,7 @@ const parserProbeOutput = run([
 await writeFile(join(consumerDirectory, "index.html"), '<!doctype html><html><body><script type="module" src="/bundle-entry.js"></script></body></html>');
 await writeFile(join(consumerDirectory, "bundle-entry.js"), `
 import {
-  parseCatalog, parseTask, parseResult, parseExperience, parseWireValue,
+  parseCatalog, parseTask, parseResult, parseExperience, parseWireValue, parseContract, serializeContract, compareScalars,
   validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph, parseInteractionState, createPresentationRegistry, composePresentation, validatePresentationPlan,
   checkExpression, createStandardFunctionRegistry, createTypedAuthoring, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
@@ -956,6 +979,8 @@ ${graphConsumerSource}
 const installedInteractionGraph = runInstalledInteractionGraph(validateInteractionGraph, parseInteractionState);
 ${presentationConsumerSource}
 const installedPresentation = runInstalledPresentation(createPresentationRegistry, composePresentation, validatePresentationPlan, documents, commitPins);
+${agentConsumerSource}
+const installedAgent = runInstalledAgentContracts(parseContract, serializeContract, compareScalars, documents.result.ref);
 const semanticRegistry = createStandardFunctionRegistry();
 const semanticAuthoring = semanticRegistry.ok
   ? createTypedAuthoring({catalog: t04.semanticCatalogInput, registry: semanticRegistry.value})
@@ -966,7 +991,7 @@ const parsed = [
   validateTaskStructure(t05.namedOutputTaskInput), resolveExperienceConstraints(t05.noPresetExperienceInput, t05.taskInput),
   semanticRegistry, semanticAuthoring, semanticField, {ok:true,value:installedQueryResult},
   validateCommitReadSet(commitPins, commitPins, commitPins.results),
-  {ok: true, value: installedInteractionGraph}, {ok:true,value:installedPresentation},
+  {ok: true, value: installedInteractionGraph}, {ok:true,value:installedPresentation}, {ok:true,value:installedAgent},
 ];
 globalThis.__aeliqoParsed = parsed;
 export {parsed};

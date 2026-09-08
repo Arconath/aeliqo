@@ -14,6 +14,9 @@ const cases: Record<ContractKind, unknown> = {
   environment: fixtures.environment, 'presentation-plan': fixtures.presentationPlan,
   'task-proposal': fixtures.taskProposal, 'meaning-draft': fixtures.meaningDraft,
   'binding-outcome': fixtures.bindingOutcome, 'model-evaluation': fixtures.modelEvaluation,
+  'operation-grant': 'task.propose', 'agent-stop-reason': 'no-progress',
+  'agent-loop-budget': {maxTurns: 8, maxRepairs: 2, maxMilliseconds: 1000, maxProposalBytes: 4096},
+  'narrative-claim': {version:'1', id:'claim', kind:'value', cell:{result:fixtures.ref,field:'amount',identity:{'employee.id':'e1'},type:{value:'decimal',nullable:false},populationDigest:'cohort',filters:[]},value:{decimal:'1.25'}},
 };
 
 describe('independent JSON Schema validation parity', () => {
@@ -22,7 +25,7 @@ describe('independent JSON Schema validation parity', () => {
       const schema = JSON.parse(readFileSync(new URL(`../../packages/core/schemas/${kind}.schema.json`, import.meta.url), 'utf8'));
       const validate = ajv.getSchema(schema.$id) ?? ajv.compile(schema);
       const variants = [fixture, null, [], 7, {...fixture as object, unknownField: true}];
-      for (const key of Object.keys(fixture as object)) {
+      for (const key of Object.keys(typeof fixture === 'object' && fixture !== null ? fixture : {})) {
         variants.push({...fixture as object, [key]: null});
         const absent = {...fixture as Record<string, unknown>};
         delete absent[key];
@@ -30,7 +33,7 @@ describe('independent JSON Schema validation parity', () => {
       }
       expect(validate(fixture), JSON.stringify(validate.errors)).toBe(true);
       for (const input of variants) {
-        expect(Boolean(validate(input)), `${kind}: ${JSON.stringify(input)}`).toBe(parseContract(kind, input).ok);
+        expect(Boolean(validate(input)), `${kind}: ${JSON.stringify(input)}`).toBe(parseContract(kind, typeof input === 'string' ? JSON.stringify(input) : input).ok);
       }
       const pending: {value: unknown; path: (string | number)[]}[] = [{value: fixture, path: []}];
       while (pending.length) {
@@ -42,7 +45,7 @@ describe('independent JSON Schema validation parity', () => {
             for (const part of path.slice(0, -1)) parent = parent[part];
             parent[path.at(-1)!] = replacement;
             expect(Boolean(validate(input)), `${kind}.${path.join('.')}: ${JSON.stringify(replacement)}`)
-              .toBe(parseContract(kind, input).ok);
+              .toBe(parseContract(kind, typeof input === 'string' ? JSON.stringify(input) : input).ok);
           }
         }
         if (value !== null && typeof value === 'object') {

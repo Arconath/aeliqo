@@ -244,3 +244,22 @@ later registered transfer implementation. Structural, configuration, result and
 interaction/coverage changes respect the host's focus/draft/IME transition lock.
 The host supplies a previously committed incumbent for transition comparison;
 reuse as a new candidate still requires current feasibility validation.
+
+
+The agent contract types (`OperationGrant`, `AgentTaskProposal`,
+`AgentBindingOutcome`, `AgentLoopBudget`, `NarrativeClaim`) share the same strict
+schema source. A proposal never carries an authenticated actor, approval or grant.
+Grant names are independent; an `act` preset or a model label is not a grant.
+Enum contracts use JSON text when calling `parseContract`, for example
+`parseContract('operation-grant', JSON.stringify('task.propose'))`.
+
+A numerical narrative claim identifies an exact result, field, row identity,
+semantic type, definition, population, filters and period. Value/comparison claims
+cannot attach free prose. Inference and hypothesis text have separate variants;
+references alone cannot verify their meaning. Shape parsing does not resolve
+rows or check numerical truth. The runtime must obtain authorized evidence and
+compare values; `compareScalars` exposes the existing exact scalar comparison.
+Proposal repair budgets cover turns, repairs, elapsed time and payload size;
+query, model egress and commit budgets remain with their effect authorities.
+These additive pre-release contracts do not alter existing Task proposals or
+create a provider, binder, permission, query or business effect in core.
