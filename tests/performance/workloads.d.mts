@@ -1,0 +1,10 @@
+export const LARGE_POPULATION_COUNT: number;
+export const LARGE_TRANSFERRED_ROW_COUNT: number;
+export const MEDIUM_ROW_COUNT: number;
+export const MEDIUM_VIEW_COUNT: number;
+export const SMALL_ROW_COUNT: number;
+export function coldWarm(label: string, operation: (phase: "cold" | "warm", index: number) => unknown, options?: {coldCount?: number; warmCount?: number}): Promise<unknown>;
+export function environmentSnapshot(): Record<string, unknown>;
+export function makeRows(count: number, fieldCount?: number): Array<Record<string, string | number>>;
+export function runMediumPlanner(): {durationMs: number; status: string; expansions: number; nodes: number; candidateCount: number; rowCount: number; viewCount: number; fieldCount: number};
+export function runTargetedReducer(iterations?: number): Promise<{iterations: number; successful: number; unrelatedRoutes: number; finalDraftCount: number; rawMs: number[]; count: number; minMs: number; maxMs: number; p50Ms: number; p95Ms: number}>;
