@@ -180,3 +180,12 @@ test("feedback remains usable at narrow RTL text scale", async ({page}) => {
   const overflow = await page.locator("#fixture").evaluate((element) => element.scrollWidth > element.clientWidth);
   expect(overflow).toBe(false);
 });
+
+test('nonmodal popover does not steal focus on open or listener policy updates',async({page})=>{
+ const popover=page.locator('#popover');const trigger=popover.getByRole('button',{name:'Details'});
+ await trigger.click();await expect(popover.locator('[part=popover]')).toBeVisible();
+ await expect(trigger).toBeFocused();
+ await page.locator('#before').focus();
+ await popover.evaluate(async(el:any)=>{el.closeOnOutside=false;await el.updateComplete;await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));});
+ await expect(page.locator('#before')).toBeFocused();
+});

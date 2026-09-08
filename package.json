@@ -51,7 +51,8 @@
     "test:data-components:consumers": "node tests/consumers/data-tarballs.mjs",
     "test:plot": "pnpm build:platform && vitest run --config tests/plot/vitest.config.mjs && tsc -p tests/plot/tsconfig.json && node tests/plot/ssr.mjs",
     "test:plot:browser": "playwright test --config tests/plot/playwright.config.mjs",
-    "test:plot:consumers": "node tests/consumers/plot-tarballs.mjs"
+    "test:plot:consumers": "node tests/consumers/plot-tarballs.mjs",
+    "test:navigation-feedback:consumers": "node tests/consumers/navigation-feedback-tarballs.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

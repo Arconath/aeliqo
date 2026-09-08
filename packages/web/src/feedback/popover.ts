@@ -60,8 +60,8 @@ export class AeliqoPopoverElement extends AeliqoFoundationElement {
       // Preserve a focused slotted control during a mode switch synchronously.
       // The queued fallback only fills an empty focus surface and cannot steal a
       // focus that the consumer moved after opening.
-      focusIfNeeded(true);
-      if (surface !== null) nextFrame(() => focusIfNeeded(false));
+      if (this.modal || pending?.isConnected) focusIfNeeded(true);
+      if (this.modal && surface !== null) nextFrame(() => focusIfNeeded(false));
     } else {
       this.pendingFocus = undefined;
       const surface = this.renderRoot.querySelector<HTMLDialogElement>("dialog[part='popover']");
