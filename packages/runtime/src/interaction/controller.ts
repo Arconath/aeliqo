@@ -165,8 +165,6 @@ class InteractionControllerImpl implements InteractionController {
       throw new TypeError('maxHops must be a bounded positive integer.');
     const snapshot = this.region.snapshot();
     if (snapshot.status !== 'active') throw new TypeError('An interaction controller requires an active region.');
-    if (options.initialState !== undefined && parseInteractionState({...emptyPersistedState(), ...options.initialState}).ok === false)
-      throw new TypeError('initialState must be a canonical interaction state.');
     this.maxQueuedEvents = options.maxQueuedEvents ?? DEFAULT_MAX_QUEUED_EVENTS;
     if (!Number.isSafeInteger(this.maxQueuedEvents) || this.maxQueuedEvents < 1 || this.maxQueuedEvents > WIRE_LIMITS.array)
       throw new TypeError('maxQueuedEvents must be a bounded positive integer.');

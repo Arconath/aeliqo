@@ -173,8 +173,6 @@ export interface InteractionControllerOptions {
   readonly onNavigate?: InteractionHostCallback<Extract<InteractionPayload, {readonly kind: 'navigate'}>>;
   /** Proposal-only: this callback cannot execute a business write. */
   readonly onActionProposal?: InteractionHostCallback<Extract<InteractionPayload, {readonly kind: 'action-request'}>>;
-  /** Deprecated compatibility seed; authoritative state is always the region snapshot. */
-  readonly initialState?: Partial<CoreInteractionState>;
   readonly maxQueuedEvents?: number;
   readonly maxEventMilliseconds?: number;
   readonly maxHops?: number;
