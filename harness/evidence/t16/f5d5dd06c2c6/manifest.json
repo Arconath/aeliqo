@@ -1,0 +1,86 @@
+{
+  "tasks": [
+    "T16"
+  ],
+  "status": "pass",
+  "sourceCommit": "068cb830c32f0be097b5749bb47944e7b6e873f9",
+  "sourceDigest": "f5d5dd06c2c66f775e8d03f61bcba4b4e78ec391282a648138a072e51ccce876",
+  "scope": "All nine owned data components: direct, canonical semantic and region surfaces, exact values, stable identity, bounded table, lossless filter drafts, precise scope and authorized materialization.",
+  "checks": {
+    "semanticAndLitSSR": 39,
+    "directUnit": 9,
+    "nativeBrowser": 13,
+    "semanticBrowser": 4,
+    "legacyRegionBrowser": 2,
+    "visualA11yChecks": 3,
+    "strictTypes": true,
+    "installedTarballConsumer": true,
+    "installedReactSSR": true,
+    "directEntryBundleBuilds": 18,
+    "metricGzipExcludingLit": 3639,
+    "tableGzipExcludingLit": 8638
+  },
+  "limits": [
+    "Manual screen-reader and complete cross-browser/hydration matrices remain T29/T30.",
+    "JavaScript size checks do not prove parse/execute or whole-page performance.",
+    "No publication, deployment or full release readiness claim."
+  ],
+  "artifacts": [
+    {
+      "path": "browser.log",
+      "sha256": "a4d6117aa4b4e6e2bb34dcd8d90215b6a5bec3df49e18f4c7563cb120390e0ee"
+    },
+    {
+      "path": "bundle-measurements.json",
+      "sha256": "bb248981a645de64d989a6153c413f5f44f2e49cfdb01a454a68b0a74e01e1cb"
+    },
+    {
+      "path": "consumer-package-lock.json",
+      "sha256": "92a23800b7fffed0a375fe6c9f14022a7ea2c35ccaa08efdb4d66386b18438e1"
+    },
+    {
+      "path": "consumer-report.json",
+      "sha256": "b0a0031f62b6549041bb044236eeda955bc1d50ce2132583bb54d048c912b27b"
+    },
+    {
+      "path": "consumer.log",
+      "sha256": "bc15af72937b0f0baeb35d7fb424ab37bbf961c094b1561727e8c0d862e5d077"
+    },
+    {
+      "path": "data-components-desktop.png",
+      "sha256": "77f3b571b8305e6985703349d55faf6f2c8f7fb00e5b15aab96b6b0f50892570"
+    },
+    {
+      "path": "data-components-narrow-dark-rtl.png",
+      "sha256": "04e7f0d112ed7a207ea2a2166317dfb38a0134964133f3f03d70c027364a13a8"
+    },
+    {
+      "path": "installed.png",
+      "sha256": "7bf59f92ed8e9f4b2a748ae5a1bafe0606531d9288e18492f1eb9dba96f65f8c"
+    },
+    {
+      "path": "legacy-browser.log",
+      "sha256": "06d5224ab21e26ee7c28ba93f7fa4470510400c39b33b896350239809a322c36"
+    },
+    {
+      "path": "review.json",
+      "sha256": "f09b73e5ad4b77125cfe25f64017e6f4caf48f7cbc393934ff52b84ddd8e7759"
+    },
+    {
+      "path": "semantic-browser.log",
+      "sha256": "545c89f0fb817e1f6e2f84c762c98f3b008438a9e7d7356913cea9ff5d952195"
+    },
+    {
+      "path": "semantic.log",
+      "sha256": "d42627b89547f1f48648575d67c31f7329aaaa53d0f285af30ef87e2679d2094"
+    },
+    {
+      "path": "unit.log",
+      "sha256": "6819b95bfea690571009bba9f1cb86bffa34f090ac68d32a6b6ca378f5389d00"
+    },
+    {
+      "path": "visual.log",
+      "sha256": "3821dc26eb396901cfa608fa6323558a109c2a71997511a69a6dfc9bcbd3fce0"
+    }
+  ]
+}

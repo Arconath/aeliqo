@@ -1,0 +1,36 @@
+$ playwright test --config tests/data-components/playwright.config.mjs
+[WebServer] (node:88843) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 13 tests using 1 worker
+
+(node:88849) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 11:42:31 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   1 tests/data-components/browser.spec.ts:3:5 › native table preserves exact values, stable identity and scope (264ms)
+[WebServer] 11:42:32 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   2 tests/data-components/browser.spec.ts:15:5 › grid mode is explicit and virtualization remains bounded (204ms)
+[WebServer] 11:42:32 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   3 tests/data-components/browser.spec.ts:34:5 › malformed virtual windows remain bounded and keyboard requests reach the host (189ms)
+[WebServer] 11:42:32 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   4 tests/data-components/browser.spec.ts:62:5 › grid focus follows stable identity across reorder and falls back after removal (182ms)
+[WebServer] 11:42:32 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   5 tests/data-components/browser.spec.ts:86:5 › filter typing is draft-only and Apply emits the typed predicate (210ms)
+[WebServer] 11:42:32 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   6 tests/data-components/browser.spec.ts:96:5 › compound predicates and multiple clauses remain visible and intact on Apply (226ms)
+[WebServer] 11:42:33 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   7 tests/data-components/browser.spec.ts:129:5 › explicit clauses stay visible and unsupported nested predicates stay read-only (184ms)
+[WebServer] 11:42:33 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   8 tests/data-components/browser.spec.ts:168:5 › membership values preserve commas and inherited predicates are visibly read-only (217ms)
+[WebServer] 11:42:33 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   9 tests/data-components/browser.spec.ts:208:5 › text compare and membership values preserve whitespace and empty strings (256ms)
+[WebServer] 11:42:33 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  10 tests/data-components/browser.spec.ts:236:5 › nullable text membership preserves null separately from an empty string (193ms)
+[WebServer] 11:42:34 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  11 tests/data-components/browser.spec.ts:252:5 › equivalent predicate refreshes preserve the active filter draft (173ms)
+[WebServer] 11:42:34 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  12 tests/data-components/browser.spec.ts:279:5 › qualified predicates never apply under a different builder entity (242ms)
+[WebServer] 11:42:34 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  13 tests/data-components/browser.spec.ts:314:5 › RTL scope prose and long metric numbers keep their reading order (353ms)
+
+  13 passed (3.7s)

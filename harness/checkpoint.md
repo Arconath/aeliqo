@@ -247,3 +247,13 @@ Source e1ae3d1 accepted for T13 and T41 after independent review. Frozen evidenc
 T14 accepted at sourceff2befe. Frozen evidence: harness/evidence/t14/693ed739b36b/manifest.json. All15 queryless bindings validate/render through the canonical graph; Node24 input5/semantic12, native20/semantic1 Chromium, two visual/a11y variants, actual installed core/web/React consumers pass. Independent review repairs closed. T15/T16 semantic hardening remains active; no registry or production changes.
 
 T15 accepted at source339457a. Frozen evidence: harness/evidence/t15/60b2b11f28be/manifest.json. All14 navigation/feedback entries have canonical bindings, actual SSR/browser and installed core/web/React proof. Independent review repaired operation reachability, malformed events and keyed overlay state. T16 remains active; no publication or deployment.
+
+T16 accepted at source 068cb83: all nine data components,
+strict authorized scope/materialization, precise Delta and lossless FilterBuilder.
+39 semantic/Lit SSR, 9 unit, 13 direct browser, 4 semantic browser, 2 legacy
+region browser and 3 automated visual/a11y checks pass. Installed core/web/React
+tarballs and all 18 direct JS bundle builds pass; Metric 3639 / Table 8638 gzip
+bytes excluding Lit. Independent reviews closed; actual desktop/RTL/installed
+captures inspected. Evidence: harness/evidence/t16/f5d5dd06c2c6.
+T18 visualization family and T19 bounded presentation compiler are next.
+Manual AT, cross-browser, integrated performance and release gates remain open.

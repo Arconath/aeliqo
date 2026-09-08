@@ -1182,7 +1182,7 @@
       "id": "data.metric",
       "name": "Metric",
       "family": "data",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "One validated value or aggregate with units, scope and unavailable state.",
@@ -1199,13 +1199,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t16/f5d5dd06c2c6/manifest.json",
+          "sha256": "0dc8eed218b164874cefc36473a8adec9eaf82282462f7329ef226a211f18174"
+        }
+      ]
     },
     {
       "id": "data.delta",
       "name": "Delta",
       "family": "data",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Explicit compatible baseline; zero denominator and percentage-point versus relative change distinguished.",
@@ -1222,13 +1227,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t16/f5d5dd06c2c6/manifest.json",
+          "sha256": "0dc8eed218b164874cefc36473a8adec9eaf82282462f7329ef226a211f18174"
+        }
+      ]
     },
     {
       "id": "data.key-value",
       "name": "KeyValue",
       "family": "data",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Labeled facts with stable ordering, wrapping and semantic links.",
@@ -1245,13 +1255,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t16/f5d5dd06c2c6/manifest.json",
+          "sha256": "0dc8eed218b164874cefc36473a8adec9eaf82282462f7329ef226a211f18174"
+        }
+      ]
     },
     {
       "id": "data.detail",
       "name": "Detail",
       "family": "data",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Selected entity facts including missing fields; record identity persists across views.",
@@ -1268,13 +1283,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t16/f5d5dd06c2c6/manifest.json",
+          "sha256": "0dc8eed218b164874cefc36473a8adec9eaf82282462f7329ef226a211f18174"
+        }
+      ]
     },
     {
       "id": "data.record-list",
       "name": "RecordList",
       "family": "data",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Scannable records with identity-based selection and reachable additional fields.",
@@ -1291,13 +1311,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t16/f5d5dd06c2c6/manifest.json",
+          "sha256": "0dc8eed218b164874cefc36473a8adec9eaf82282462f7329ef226a211f18174"
+        }
+      ]
     },
     {
       "id": "data.card-collection",
       "name": "CardCollection",
       "family": "data",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Repeated compact records; preserve reading order, headings and bounded loading.",
@@ -1314,13 +1339,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t16/f5d5dd06c2c6/manifest.json",
+          "sha256": "0dc8eed218b164874cefc36473a8adec9eaf82282462f7329ef226a211f18174"
+        }
+      ]
     },
     {
       "id": "data.table",
       "name": "Table",
       "family": "data",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Native table first; separate interactive-grid mode; sorting, paging, selection, virtualization and precise values.",
@@ -1337,13 +1367,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t16/f5d5dd06c2c6/manifest.json",
+          "sha256": "0dc8eed218b164874cefc36473a8adec9eaf82282462f7329ef226a211f18174"
+        }
+      ]
     },
     {
       "id": "data.filter-builder",
       "name": "FilterBuilder",
       "family": "data",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Typed predicates, AND/OR/null handling, visible inherited scope and explicit query application.",
@@ -1360,13 +1395,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t16/f5d5dd06c2c6/manifest.json",
+          "sha256": "0dc8eed218b164874cefc36473a8adec9eaf82282462f7329ef226a211f18174"
+        }
+      ]
     },
     {
       "id": "data.selection-summary",
       "name": "SelectionSummary",
       "family": "data",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Disclose selected identities or server predicate scope; never imply unobserved global selection.",
@@ -1383,7 +1423,12 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t16/f5d5dd06c2c6/manifest.json",
+          "sha256": "0dc8eed218b164874cefc36473a8adec9eaf82282462f7329ef226a211f18174"
+        }
+      ]
     },
     {
       "id": "visualization.trend",

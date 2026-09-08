@@ -1,0 +1,292 @@
+[
+  {
+    "entry": "metric",
+    "excludeLit": false,
+    "bytes": 31733,
+    "gzipBytes": 9759,
+    "modules": [
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@lit/reactive-element/css-tag.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@lit/reactive-element/reactive-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/lit-html/lit-html.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/lit-element/lit-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/tokens.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/theme.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/shared.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/metric.js"
+    ]
+  },
+  {
+    "entry": "metric",
+    "excludeLit": true,
+    "bytes": 12650,
+    "gzipBytes": 3639,
+    "modules": [
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/tokens.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/theme.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/shared.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/metric.js"
+    ]
+  },
+  {
+    "entry": "delta",
+    "excludeLit": false,
+    "bytes": 38177,
+    "gzipBytes": 11653,
+    "modules": [
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@lit/reactive-element/css-tag.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@lit/reactive-element/reactive-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/lit-html/lit-html.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/lit-element/lit-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/tokens.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/theme.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/limits.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/scalars.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/shared.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/delta.js"
+    ]
+  },
+  {
+    "entry": "delta",
+    "excludeLit": true,
+    "bytes": 19043,
+    "gzipBytes": 5586,
+    "modules": [
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/tokens.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/theme.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/limits.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/scalars.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/shared.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/delta.js"
+    ]
+  },
+  {
+    "entry": "key-value",
+    "excludeLit": false,
+    "bytes": 31027,
+    "gzipBytes": 9629,
+    "modules": [
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@lit/reactive-element/css-tag.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@lit/reactive-element/reactive-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/lit-html/lit-html.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/lit-element/lit-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/tokens.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/theme.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/foundation/base.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/shared.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/key-value.js"
+    ]
+  },
+  {
+    "entry": "key-value",
+    "excludeLit": true,
+    "bytes": 11935,
+    "gzipBytes": 3549,
+    "modules": [
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/tokens.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/theme.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/foundation/base.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/shared.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/key-value.js"
+    ]
+  },
+  {
+    "entry": "detail",
+    "excludeLit": false,
+    "bytes": 34731,
+    "gzipBytes": 10838,
+    "modules": [
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@lit/reactive-element/css-tag.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@lit/reactive-element/reactive-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/lit-html/lit-html.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/lit-element/lit-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/tokens.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/theme.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/limits.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/scalars.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/shared.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/detail.js"
+    ]
+  },
+  {
+    "entry": "detail",
+    "excludeLit": true,
+    "bytes": 15619,
+    "gzipBytes": 4769,
+    "modules": [
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/tokens.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/theme.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/limits.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/scalars.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/shared.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/detail.js"
+    ]
+  },
+  {
+    "entry": "record-list",
+    "excludeLit": false,
+    "bytes": 37095,
+    "gzipBytes": 11430,
+    "modules": [
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@lit/reactive-element/css-tag.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@lit/reactive-element/reactive-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/lit-html/lit-html.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/lit-element/lit-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/tokens.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/theme.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/events.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/limits.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/scalars.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/shared.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/record-list.js"
+    ]
+  },
+  {
+    "entry": "record-list",
+    "excludeLit": true,
+    "bytes": 17980,
+    "gzipBytes": 5389,
+    "modules": [
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/tokens.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/theme.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/events.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/limits.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/scalars.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/shared.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/record-list.js"
+    ]
+  },
+  {
+    "entry": "card-collection",
+    "excludeLit": false,
+    "bytes": 38169,
+    "gzipBytes": 11628,
+    "modules": [
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@lit/reactive-element/css-tag.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@lit/reactive-element/reactive-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/lit-html/lit-html.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/lit-element/lit-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/tokens.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/theme.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/events.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/limits.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/scalars.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/shared.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/card-collection.js"
+    ]
+  },
+  {
+    "entry": "card-collection",
+    "excludeLit": true,
+    "bytes": 19052,
+    "gzipBytes": 5583,
+    "modules": [
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/tokens.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/theme.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/events.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/limits.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/scalars.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/shared.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/card-collection.js"
+    ]
+  },
+  {
+    "entry": "selection-summary",
+    "excludeLit": false,
+    "bytes": 31061,
+    "gzipBytes": 9633,
+    "modules": [
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@lit/reactive-element/css-tag.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@lit/reactive-element/reactive-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/lit-html/lit-html.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/lit-element/lit-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/tokens.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/theme.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/events.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/shared.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/selection-summary.js"
+    ]
+  },
+  {
+    "entry": "selection-summary",
+    "excludeLit": true,
+    "bytes": 11972,
+    "gzipBytes": 3512,
+    "modules": [
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/tokens.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/theme.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/events.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/shared.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/selection-summary.js"
+    ]
+  },
+  {
+    "entry": "filter-builder",
+    "excludeLit": false,
+    "bytes": 46205,
+    "gzipBytes": 13399,
+    "modules": [
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@lit/reactive-element/css-tag.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@lit/reactive-element/reactive-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/lit-html/lit-html.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/lit-element/lit-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/tokens.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/theme.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/limits.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/scalars.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/events.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/shared.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/filter-builder.js"
+    ]
+  },
+  {
+    "entry": "filter-builder",
+    "excludeLit": true,
+    "bytes": 27052,
+    "gzipBytes": 7376,
+    "modules": [
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/tokens.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/theme.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/limits.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/scalars.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/events.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/shared.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/filter-builder.js"
+    ]
+  },
+  {
+    "entry": "table",
+    "excludeLit": false,
+    "bytes": 50684,
+    "gzipBytes": 14646,
+    "modules": [
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@lit/reactive-element/css-tag.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@lit/reactive-element/reactive-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/lit-html/lit-html.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/lit-element/lit-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/tokens.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/theme.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/events.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/events.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/limits.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/scalars.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/shared.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/elements/aeliqo-table.js"
+    ]
+  },
+  {
+    "entry": "table",
+    "excludeLit": true,
+    "bytes": 31555,
+    "gzipBytes": 8638,
+    "modules": [
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/tokens.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/styles/theme.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/events.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/events.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/limits.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/core/dist/contracts/scalars.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/data/shared.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-data-consumer-HbwvMj/node_modules/@aeliqo/web/dist/elements/aeliqo-table.js"
+    ]
+  }
+]

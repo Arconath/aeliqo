@@ -541,10 +541,15 @@
       "acceptance": [
         "Every data entry and bounded virtual table preserve identity, precise scope and accessible reading."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "preflight_diagnosis owns isolated codex/t16-data from e1ae3d1: nine data components plus focused tests/docs and narrow shared existing Table refactor. Parent owns contracts, exports, root config, region integration, installed consumers and task state; independent parent review required."
+      "evidence": [
+        {
+          "path": "harness/evidence/t16/f5d5dd06c2c6/manifest.json",
+          "sha256": "0dc8eed218b164874cefc36473a8adec9eaf82282462f7329ef226a211f18174"
+        }
+      ],
+      "notes": "All nine data entries implemented and reviewed; canonical scope/materialization and lossless filters verified. Installed bundles, Lit/React SSR, native/semantic/legacy browsers and inspected RTL/a11y evidence frozen. Global manual AT, cross-browser and performance release checks remain separate."
     },
     {
       "id": "T17",
