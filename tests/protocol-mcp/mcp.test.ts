@@ -1,3 +1,4 @@
+import {Client, StreamableHTTPClientTransport} from '@modelcontextprotocol/client';
 import {createServer, type Server} from 'node:http';
 import {once} from 'node:events';
 import {readFile} from 'node:fs/promises';
@@ -20,6 +21,7 @@ import {
   connectMcpStdioClient,
   createMcpHttpHandler,
   createMcpServerFactory,
+  createMcpClientEndpoint,
 } from '../../packages/agent/src/mcp/index.js';
 
 const servers: Server[] = [];
@@ -247,6 +249,22 @@ describe('MCP adapter', () => {
     client.close();
     release();
     expect(await discovery).toMatchObject({ok: false, diagnostics: [{code: 'agent.mcp.closed'}]});
+    await fixture.handler.close();
+  });
+
+  it('pins client region and goal despite mutation of the caller options', async () => {
+    const fixture = await startHttp({createEndpoint: () => newEndpoint(), authenticate: authGate()});
+    const sdk = new Client({name: 'snapshot-test', version: '1'});
+    await sdk.connect(new StreamableHTTPClientTransport(fixture.url, {requestInit: {headers: {authorization: 'Bearer fixture-token'}}}));
+    const options = {client: sdk, targetRegionId: 'region', goalEpoch: 'goal'};
+    const endpoint = createMcpClientEndpoint(options);
+    expect((await endpoint.discover()).ok).toBe(true);
+    options.targetRegionId = 'other';
+    options.goalEpoch = 'other';
+    expect(await endpoint.invoke('summary', {}, {requestId: 'snapshot'})).toMatchObject({ok: true, value: {targetRegionId: 'region', goalEpoch: 'goal'}});
+    expect(Object.isFrozen(endpoint)).toBe(true);
+    expect(await endpoint.invoke('summary', {}, undefined as never)).toMatchObject({ok: false});
+    endpoint.close();
     await fixture.handler.close();
   });
 

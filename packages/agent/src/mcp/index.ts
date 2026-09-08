@@ -611,12 +611,13 @@ function clientOptions(options: McpClientCommonOptions & {readonly clientOptions
 export function createMcpClientEndpoint(options: McpClientEndpointOptions): AgentToolEndpoint {
   if (options === null || typeof options !== 'object' || !(options.client instanceof Client)) throw new TypeError('A connected MCP client is required.');
   if (!validId(options.targetRegionId) || !validId(options.goalEpoch)) throw new TypeError('MCP target binding is invalid.');
+  const boundOptions = Object.freeze({...options});
   let closed = false;
   let discoveredTools = new Map<string, AgentToolDefinition>();
   const endpoint: AgentToolEndpoint = {
     transport: 'mcp',
-    targetRegionId: options.targetRegionId,
-    goalEpoch: options.goalEpoch,
+    targetRegionId: boundOptions.targetRegionId,
+    goalEpoch: boundOptions.goalEpoch,
     discover: async (discoverOptions = {}) => {
       if (closed) return failure('agent.mcp.closed', 'The MCP client endpoint is closed.');
       if (discoverOptions.signal?.aborted) return failure('agent.mcp.cancelled', 'MCP capability discovery was cancelled.');
@@ -624,7 +625,7 @@ export function createMcpClientEndpoint(options: McpClientEndpointOptions): Agen
       try {
         const listOptions: CacheableRequestOptions = {cacheMode: 'bypass'};
         if (discoverOptions.signal !== undefined) listOptions.signal = discoverOptions.signal;
-        const result = await options.client.listTools({}, listOptions);
+        const result = await boundOptions.client.listTools({}, listOptions);
         if (closed) return failure('agent.mcp.closed', 'The MCP client endpoint is closed.');
         if (discoverOptions.signal?.aborted) return failure('agent.mcp.cancelled', 'MCP capability discovery was cancelled.');
         const definitions: AgentToolDefinition[] = [];
@@ -648,7 +649,7 @@ export function createMcpClientEndpoint(options: McpClientEndpointOptions): Agen
     },
     invoke: async (name: string, input: unknown, callOptions: AgentToolCallOptions) => {
       if (closed) return failure('agent.mcp.closed', 'The MCP client endpoint is closed.');
-      if (!validId(name) || !validId(callOptions.requestId)) return failure('agent.mcp.call', 'MCP tool identity is invalid.');
+      if (!validId(name) || !isRecord(callOptions) || !validId(callOptions.requestId)) return failure('agent.mcp.call', 'MCP tool identity is invalid.');
       if (callOptions.signal?.aborted) return failure('agent.mcp.cancelled', 'MCP tool invocation was cancelled.');
       const definition = discoveredTools.get(name);
       if (definition === undefined) return failure('agent.mcp.discovery', 'MCP tool invocation requires a current discovered tool.');
@@ -660,14 +661,14 @@ export function createMcpClientEndpoint(options: McpClientEndpointOptions): Agen
           callRequestOptions.signal = callOptions.signal;
           callRequestOptions.requestSignal = callOptions.signal;
         }
-        const result = await options.client.callTool({
+        const result = await boundOptions.client.callTool({
           name,
           arguments: input,
           _meta: {[AELIQO_MCP_TOOL_META]: {version: ADAPTER_VERSION, requestId: callOptions.requestId}},
         }, callRequestOptions);
         if (closed) return failure('agent.mcp.closed', 'The MCP client endpoint is closed.');
         if (callOptions.signal?.aborted) return failure('agent.mcp.cancelled', 'MCP tool invocation was cancelled.');
-        return resultToOutcome(result, callOptions, definition, options.targetRegionId, options.goalEpoch);
+        return resultToOutcome(result, callOptions, definition, boundOptions.targetRegionId, boundOptions.goalEpoch);
       } catch (error) {
         if (closed) return failure('agent.mcp.closed', 'The MCP client endpoint is closed.');
         if (callOptions.signal?.aborted) return failure('agent.mcp.cancelled', 'MCP tool invocation was cancelled.');
@@ -678,10 +679,11 @@ export function createMcpClientEndpoint(options: McpClientEndpointOptions): Agen
     close: () => {
       if (closed) return;
       closed = true;
-      void options.client.close().catch(() => undefined);
+      discoveredTools = new Map();
+      void boundOptions.client.close().catch(() => undefined);
     },
   };
-  return endpoint;
+  return Object.freeze(endpoint);
 }
 
 export async function connectMcpStdioClient(options: McpStdioClientOptions): Promise<AgentToolEndpoint> {
