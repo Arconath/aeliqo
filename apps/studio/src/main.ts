@@ -1,6 +1,6 @@
 import {parseExperience, createStandardFunctionRegistry, type Catalog, type Experience, type MeaningDefinition, type QuerySource} from '@aeliqo/core';
 import {createMeaningAuthoring, meaningDigest} from '@aeliqo/runtime/meaning';
-import {createStudioDocument, createStudioSession, type StudioArea, type StudioDocument, type StudioSession} from '@aeliqo/devtools';
+import {createStudioDocument, createStudioSession, type StudioArea, type StudioSession} from '@aeliqo/devtools';
 import {registerAeliqoElements} from '@aeliqo/web/register';
 import {catalogExample, catalogExamples, type CatalogExampleId} from '../../../examples/catalog/index.js';
 import './styles.css';

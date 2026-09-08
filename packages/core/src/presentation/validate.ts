@@ -10,7 +10,7 @@ import {resolveExperienceConstraints, type ExperienceConstraints} from '../contr
 import {validateInteractionGraph} from '../interaction/graph.js';
 import type {CommitPreconditions, Experience, Outcome, Result, ResultRef, Task, VersionRef} from '../contracts/types.js';
 import type {
-  PresentationContext, PresentationEnvironment, PresentationManifest, PresentationPatternContext, PresentationPatternManifest,
+  PresentationContext, PresentationEnvironment, PresentationPatternContext, PresentationPatternManifest,
   PresentationRegistry, PresentationValues, PresentationQuality, ResolvedPresentationNode, ValidatedPresentation,
 } from './types.js';
 import {freezePresentation, isThenable, presentationFailure as fail, versionKey} from './registry.js';

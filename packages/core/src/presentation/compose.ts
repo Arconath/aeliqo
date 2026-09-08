@@ -2,7 +2,7 @@ import {stateMappingFor} from './state.js';
 import * as z from 'zod/mini';
 import {parseContract} from '../contracts/parse.js';
 import {inspectWire} from '../contracts/ingress.js';
-import {idSchema, revisionSchema, versionRefSchema, jsonSchema} from '../contracts/schemas.js';
+import {idSchema, revisionSchema, jsonSchema} from '../contracts/schemas.js';
 import {validateCommitReadSet} from '../contracts/commit.js';
 import type {Diagnostic, Outcome, PresentationPlan, Result, Task, VersionRef} from '../contracts/types.js';
 import type {
@@ -124,7 +124,7 @@ function validPattern(
 function stableNodeId(
   need: Task['needs'][number],
   role: string,
-  representation: VersionRef,
+  _representation: VersionRef,
   used: Set<string>,
   context: PresentationCompositionRequest['context'],
 ): string {
@@ -143,7 +143,7 @@ function stableNodeId(
 
 function stableRootId(
   role: string,
-  representation: VersionRef,
+  _representation: VersionRef,
   used: Set<string>,
   context: PresentationCompositionRequest['context'],
 ): string {

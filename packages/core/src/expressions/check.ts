@@ -4,7 +4,7 @@ import {createCatalogIndex} from '../semantics/catalog.js';
 import {prependOutcomePath, semanticFailure} from '../semantics/errors.js';
 import {compatibleType, grainOf, isNumericType, sameStringSet, sameTemporal, sameUnit, validateSemanticType, numericOutput} from '../semantics/type-utils.js';
 import type {CatalogIndex, EvaluationContext} from '../semantics/types.js';
-import type {FunctionOutput, FunctionParameter, FunctionRegistry, FunctionSignature, TypedExpression, TypeConstraint} from './types.js';
+import type {FunctionOutput, FunctionRegistry, FunctionSignature, TypedExpression, TypeConstraint} from './types.js';
 
 export interface ExpressionCheckContext {
   readonly catalog: Catalog;

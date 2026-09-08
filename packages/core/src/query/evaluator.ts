@@ -93,7 +93,7 @@ const trustedLocalSignatures = new Map<string, FunctionSignature>(
   [...standardFunctionSignatures, ...queryFunctionSignaturesV2].map((signature) => [relationKey(signature.ref), signature]),
 );
 
-function trustedLocalSignature(state: EvalState, candidate: FunctionSignature): Outcome<FunctionSignature> {
+function trustedLocalSignature(_state: EvalState, candidate: FunctionSignature): Outcome<FunctionSignature> {
   const expected = trustedLocalSignatures.get(relationKey(candidate.ref));
   if (expected === undefined) return unsupported('function-runtime', `No trusted local implementation exists for ${candidate.ref.id}@${candidate.ref.revision}.`);
   // The registry is a semantic pin, not an implementation capability. A host
@@ -609,7 +609,7 @@ function scalarKey(value: QueryValue | undefined, type?: SemanticType['value']):
   return identity.ok ? identity.value : stable(value);
 }
 
-function rowValue(state: EvalState, expression: Extract<Expression, {kind: 'field'}>, row: QueryRow, schema: QuerySchema): QueryOutcome<QueryValue | undefined> {
+function rowValue(_state: EvalState, expression: Extract<Expression, {kind: 'field'}>, row: QueryRow, schema: QuerySchema): QueryOutcome<QueryValue | undefined> {
   const field = sourceField(schema, expression);
   if (field === undefined) return failure('query.field', 'Field reference is unknown or ambiguous during evaluation.');
   return {ok: true, value: row[field.id]};
@@ -999,7 +999,7 @@ function sumValues(state: EvalState, values: readonly QueryValue[], type: Semant
   return {ok: true, value: total ?? null};
 }
 
-function nullResult(schema: QuerySchema, row: QueryRow, fields: readonly QueryField[]): QueryRow {
+function nullResult(_schema: QuerySchema, row: QueryRow, fields: readonly QueryField[]): QueryRow {
   const output: Record<string, QueryValue> = {...row};
   for (const field of fields) output[field.id] = null;
   return Object.freeze(output);

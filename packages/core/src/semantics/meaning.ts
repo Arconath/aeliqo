@@ -1,9 +1,8 @@
 import * as z from 'zod/mini';
 import {inspectWire} from '../contracts/ingress.js';
 import {meaningSchema} from '../contracts/schemas.js';
-import type {Catalog, MeaningDefinition, Outcome, VersionRef} from '../contracts/types.js';
+import type {MeaningDefinition, Outcome, VersionRef} from '../contracts/types.js';
 import {checkExpression} from '../expressions/check.js';
-import type {FunctionRegistry} from '../expressions/types.js';
 import {createCatalogIndex, versionKey} from './catalog.js';
 import {isRecord, prependOutcomePath, semanticFailure} from './errors.js';
 import {sameStringSet, validateSemanticType} from './type-utils.js';

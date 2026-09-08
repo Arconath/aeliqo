@@ -1,6 +1,6 @@
 import {
   createStandardFunctionRegistry, parseTask, validatePresentationPlan,
-  type Catalog, type Diagnostic, type Experience, type MeaningDefinition, type Outcome,
+  type Catalog, type Experience, type MeaningDefinition, type Outcome,
   type PresentationContext, type PresentationPlan, type QuerySpec, type Result, type ResultRef,
   type Task, type ValidatedPresentation, type VisualizationSpec,
 } from '@aeliqo/core';

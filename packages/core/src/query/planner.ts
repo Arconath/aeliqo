@@ -6,7 +6,6 @@ import type {
   Expression,
   FieldDefinition,
   MeaningDefinition,
-  Outcome,
   QuerySpec,
   SemanticType,
   VersionRef,
@@ -17,7 +16,6 @@ import {createCatalogIndex} from '../semantics/catalog.js';
 import type {FunctionRegistry, TypedExpression} from '../expressions/types.js';
 import {
   type AggregateSpec,
-  type DeriveSpec,
   type GroupKeySpec,
   type JoinSpec,
   type LogicalPlan,
@@ -27,7 +25,6 @@ import {
   type PredicateSpec,
   type QueryCost,
   type QueryField,
-  type QueryInput,
   type QueryLimits,
   type QueryOutcome,
   type QueryPlannerOptions,
@@ -455,10 +452,6 @@ function validateRelationshipKeyTypes(catalog: Catalog, relationship: CatalogRel
     if (!sameTypeFamily(left.type, right.type)) return failure('query.relationship-key-type', 'Relationship key fields must have compatible semantic types, units and temporal policies.', [...path, 'keys', index]);
   }
   return {ok: true, value: undefined};
-}
-
-function schemaFieldBySource(schema: QuerySchema, entity: string, field: string): QueryField | undefined {
-  return schema.fields.find((candidate) => candidate.source?.entity === entity && candidate.source.field === field);
 }
 
 function addNode(state: PlannerState, operation: PlanOperation, output: QuerySchema, params: Record<string, unknown>, limits: QueryLimits, inputs: readonly string[], rows: number, joinRows = state.cost.joinRows, requiresComplete = state.cost.requiresComplete): QueryOutcome<void> {
