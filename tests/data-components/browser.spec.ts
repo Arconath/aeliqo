@@ -155,6 +155,14 @@ test("explicit clauses stay visible and unsupported nested predicates stay read-
   });
   await expect(filter.locator("[part=unsupported-predicate]")).toBeVisible();
   await expect(filter.locator("button[part=apply]")).toBeDisabled();
+
+  await page.evaluate(async () => {
+    const filter = document.querySelector("#filter") as any;
+    filter.predicate = {op: "compare", field: "name", comparison: "eq", value: null};
+    await filter.updateComplete;
+  });
+  await expect(filter.locator("[part=unsupported-predicate]")).toBeVisible();
+  await expect(filter.locator("button[part=apply]")).toBeDisabled();
 });
 
 test("membership values preserve commas and inherited predicates are visibly read-only", async ({page}) => {
@@ -223,4 +231,39 @@ test("text compare and membership values preserve whitespace and empty strings",
   await expect.poll(() => page.evaluate(() => (window as any).dataFixture.events.findLast((event: any) => event.type === "aeliqo-filter-change")?.detail.predicate)).toEqual({
     op: "in", field: "name", values: [" ACME ", ""],
   });
+});
+
+test("nullable text membership preserves null separately from an empty string", async ({page}) => {
+  await page.goto("/tests/data-components/index.html");
+  await page.evaluate(async () => {
+    const filter = document.querySelector("#filter") as any;
+    filter.fields = [{id: "name", label: "Name", type: "text", nullable: true}];
+    filter.predicate = {op: "in", field: "name", values: [null, ""]};
+    await filter.updateComplete;
+  });
+  const filter = page.locator("#filter");
+  await expect(filter.locator("input[part=value]")).toHaveValue('[null,""]');
+  await filter.locator("button[part=apply]").click();
+  await expect.poll(() => page.evaluate(() => (window as any).dataFixture.events.findLast((event: any) => event.type === "aeliqo-filter-change")?.detail.predicate)).toEqual({
+    op: "in", field: "name", values: [null, ""],
+  });
+});
+
+test("equivalent predicate refreshes preserve the active filter draft", async ({page}) => {
+  await page.goto("/tests/data-components/index.html");
+  await page.evaluate(async () => {
+    const filter = document.querySelector("#filter") as any;
+    filter.fields = [{id: "name", label: "Name", type: "text"}];
+    filter.predicate = {op: "compare", field: "name", comparison: "eq", value: "Initial"};
+    await filter.updateComplete;
+  });
+  const filter = page.locator("#filter");
+  await filter.locator("input[part=value]").fill("Draft");
+  await page.evaluate(async () => {
+    const filter = document.querySelector("#filter") as any;
+    filter.predicate = structuredClone(filter.predicate);
+    filter.scopeLabel = "Updated scope";
+    await filter.updateComplete;
+  });
+  await expect(filter.locator("input[part=value]")).toHaveValue("Draft");
 });

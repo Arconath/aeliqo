@@ -80,10 +80,33 @@ function parseValue(raw: string, field: AeliqoFieldOption | undefined): AeliqoFi
   return checked.ok ? checked.value : undefined;
 }
 
+type MembershipJsonValue = string | boolean | number | null;
+
+function membershipJsonValue(value: AeliqoFilterValue): MembershipJsonValue | undefined {
+  if (value === null || typeof value === "string" || typeof value === "boolean") return value;
+  if (typeof value === "number") return Number.isFinite(value) ? value : undefined;
+  if (typeof value !== "object" || Array.isArray(value)) return undefined;
+  const checked = validateScalar(value, {value: "decimal", nullable: false});
+  if (!checked.ok || checked.value === null || typeof checked.value !== "object" || Array.isArray(checked.value)) return undefined;
+  return typeof checked.value.decimal === "string" ? checked.value.decimal : undefined;
+}
+
+function membershipJsonText(values: readonly AeliqoFilterValue[]): string | undefined {
+  const serialized = values.map((value) => membershipJsonValue(value));
+  if (serialized.some((value) => value === undefined)) return undefined;
+  return JSON.stringify(serialized);
+}
+
 function clauseFromPredicate(predicate: AeliqoFilterPredicate | undefined): AeliqoFilterClause | undefined {
-  if (predicate?.op === "compare") return {field: predicate.field, operator: predicate.comparison, value: dataValueText(predicate.value, "")};
+  if (predicate?.op === "compare") {
+    if (predicate.value === null || predicate.value === undefined) return undefined;
+    return {field: predicate.field, operator: predicate.comparison, value: dataValueText(predicate.value, "")};
+  }
   if (predicate?.op === "is-null") return {field: predicate.field, operator: predicate.negate ? "not-null" : "is-null"};
-  if (predicate?.op === "in") return {field: predicate.field, operator: "in", value: JSON.stringify(predicate.values.map((value) => dataValueText(value, "")))};
+  if (predicate?.op === "in") {
+    const value = Array.isArray(predicate.values) ? membershipJsonText(predicate.values) : undefined;
+    return value === undefined ? undefined : {field: predicate.field, operator: "in", value};
+  }
   if (predicate?.op === "not" && predicate.predicate.op === "is-null") {
     return {field: predicate.predicate.field, operator: predicate.predicate.negate ? "is-null" : "not-null"};
   }
@@ -138,9 +161,15 @@ function predicateText(
   try {
     if (depth > MAX_PREDICATE_DEPTH || traversal.nodes >= MAX_PREDICATE_NODES) return "Unsupported filter condition";
     traversal.nodes += 1;
-    if (predicate.op === "compare") return `${predicate.field} ${predicate.comparison} ${dataValueText(predicate.value, "")}`;
+    if (predicate.op === "compare") {
+      if (predicate.value === null || predicate.value === undefined) return "Unsupported filter condition";
+      return `${predicate.field} ${predicate.comparison} ${dataValueText(predicate.value, "")}`;
+    }
     if (predicate.op === "is-null") return `${predicate.field} ${predicate.negate ? "is not empty" : "is empty"}`;
-    if (predicate.op === "in") return `${predicate.field} is one of ${JSON.stringify(predicate.values.map((value) => dataValueText(value, "")))}`;
+    if (predicate.op === "in") {
+      const value = Array.isArray(predicate.values) ? membershipJsonText(predicate.values) : undefined;
+      return value === undefined ? "Unsupported filter condition" : `${predicate.field} is one of ${value}`;
+    }
     if (predicate.op === "not") return `NOT (${predicateText(predicate.predicate, depth + 1, traversal)})`;
     if (predicate.op !== "and" && predicate.op !== "or") return "Unsupported filter condition";
     const predicates = predicate.predicates;
@@ -160,14 +189,37 @@ function predicateText(
   }
 }
 
+function predicateSourceSignature(predicate: AeliqoFilterPredicate, projection: PredicateProjection): string {
+  if (projection.unsupported !== undefined) return `unsupported:${predicateText(predicate)}`;
+  const logical = projection.clauses.length > 1 ? projection.logical : "and";
+  return JSON.stringify({logical, clauses: projection.clauses});
+}
+
+function clausesSourceSignature(clauses: readonly AeliqoFilterClause[], logical: AeliqoFilterLogical): string {
+  return JSON.stringify({logical: clauses.length > 1 ? logical : "and", clauses});
+}
+
+function parseMembershipValue(raw: unknown, field: AeliqoFieldOption | undefined): AeliqoFilterValue | undefined {
+  const semanticType = fieldSemanticType(field);
+  if (semanticType === undefined) return undefined;
+  if (typeof raw === "string") return parseValue(raw, field);
+  if (raw === null || typeof raw === "boolean" || typeof raw === "number") {
+    const checked = validateScalar(raw, semanticType);
+    return checked.ok ? checked.value : undefined;
+  }
+  if (semanticType.value !== "decimal" || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+  const checked = validateScalar(raw, semanticType);
+  return checked.ok ? checked.value : undefined;
+}
+
 function parseMembershipValues(raw: string, field: AeliqoFieldOption | undefined): AeliqoFilterValue[] | undefined {
   const source = raw.trim();
   if (source.length === 0) return undefined;
-  let rawValues: readonly string[];
+  let rawValues: readonly unknown[];
   if (source.startsWith("[")) {
     try {
       const parsed: unknown = JSON.parse(source);
-      if (!Array.isArray(parsed) || parsed.some((value) => typeof value !== "string")) return undefined;
+      if (!Array.isArray(parsed)) return undefined;
       rawValues = parsed;
     } catch {
       return undefined;
@@ -175,7 +227,7 @@ function parseMembershipValues(raw: string, field: AeliqoFieldOption | undefined
   } else {
     rawValues = source.split(",");
   }
-  const values = rawValues.map((value) => parseValue(value, field));
+  const values = rawValues.map((value) => parseMembershipValue(value, field));
   return values.some((value) => value === undefined) ? undefined : values as AeliqoFilterValue[];
 }
 
@@ -234,28 +286,30 @@ export class AeliqoFilterBuilderElement extends LitElement {
   private logicalMode: AeliqoFilterLogical = "and";
   private unsupportedPredicate: AeliqoFilterPredicate | undefined = undefined;
   private draft: AeliqoFilterClause = {field: "", operator: "eq", value: ""};
+  private draftSourceSignature: string | undefined;
   private draftInitialized = false;
   private validationMessage = "";
 
   protected override willUpdate(changed: Map<string, unknown>): void {
-    if (changed.has("predicate") || changed.has("clauses") || !this.draftInitialized) {
-      if (this.predicate !== undefined) {
-        const projection = projectPredicate(this.predicate);
+    if (changed.has("predicate") || changed.has("clauses") || changed.has("logical") || !this.draftInitialized) {
+      const projection: PredicateProjection = this.predicate !== undefined
+        ? projectPredicate(this.predicate)
+        : {clauses: this.clauses.map((clause) => ({...clause})), logical: this.logical === "or" ? "or" : "and"};
+      const signature = this.predicate !== undefined
+        ? predicateSourceSignature(this.predicate, projection)
+        : clausesSourceSignature(projection.clauses, projection.logical);
+      this.unsupportedPredicate = projection.unsupported;
+      if (!this.draftInitialized || signature !== this.draftSourceSignature) {
         this.clauseDrafts = projection.clauses.map((clause) => ({...clause}));
         this.logicalMode = projection.logical;
-        this.unsupportedPredicate = projection.unsupported;
-      } else {
-        this.clauseDrafts = this.clauses.map((clause) => ({...clause}));
-        this.logicalMode = this.logical === "or" ? "or" : "and";
-        this.unsupportedPredicate = undefined;
+        if (this.clauseDrafts.length === 0 && this.unsupportedPredicate === undefined) {
+          this.clauseDrafts = [{field: this.fields[0]?.id ?? "", operator: "eq", value: ""}];
+        }
+        this.draft = this.clauseDrafts[0] ?? {field: "", operator: "eq", value: ""};
       }
-      if (this.clauseDrafts.length === 0 && this.unsupportedPredicate === undefined) {
-        this.clauseDrafts = [{field: this.fields[0]?.id ?? "", operator: "eq", value: ""}];
-      }
-      this.draft = this.clauseDrafts[0] ?? {field: "", operator: "eq", value: ""};
+      this.draftSourceSignature = signature;
       this.draftInitialized = true;
     }
-    if (changed.has("logical") && this.predicate === undefined && this.clauses.length > 0) this.logicalMode = this.logical === "or" ? "or" : "and";
   }
 
   protected override render() {
