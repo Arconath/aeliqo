@@ -41,6 +41,10 @@
     "./presentation": {
       "types": "./dist/presentation/index.d.ts",
       "import": "./dist/presentation/index.js"
+    },
+    "./meaning": {
+      "types": "./dist/meaning/index.d.ts",
+      "import": "./dist/meaning/index.js"
     }
   },
   "scripts": {
