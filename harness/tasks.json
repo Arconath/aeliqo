@@ -729,7 +729,18 @@
           "sha256": "501044e6580e1b6534ac231c94fb57d6c39fe7652c7c715e5f74d44cf8a31df4"
         }
       ],
-      "notes": "Accepted compound source e00492c after independent review: eight direct shared-primitive compounds and canonical validated macros, bounded comparisons, scoped details, form drafts/focus, actual SSR and installed web/React consumers. Full release matrix remains T29/T30."
+      "notes": "Accepted compound source e00492c after independent review: eight direct shared-primitive compounds and canonical validated macros, bounded comparisons, scoped details, form drafts/focus, actual SSR and installed web/React consumers. Full release matrix remains T29/T30.",
+      "review": {
+        "status": "approved",
+        "author": "preflight_diagnosis; root canonical macros and boundary fixes",
+        "reviewer": "platform_proof; preflight_diagnosis reviewed root-authored canonical macros",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t21/8ddad0da180c/review.json",
+            "sha256": "c1985df8655d208915d290f21e9d9f8b826b62ab11b14d6f7e103440fa562148"
+          }
+        ]
+      }
     },
     {
       "id": "T22",
@@ -823,7 +834,18 @@
           "sha256": "bad0ff4c7f8dd4d9feb5b7218831653c0e9513fff7a248fc3c3efc626173bf4a"
         }
       ],
-      "notes": "Accepted protocol implementation: shared endpoint/executor, actual official MCP SDK and controlled HTTP OpenAI port, bounded BYOK loop, native Chrome153 experimental WebMCP adapter registration/invocation/disposal. Installed consumer passes. Live provider reasoning remains T40; default native WebMCP unavailable."
+      "notes": "Accepted protocol implementation: shared endpoint/executor, actual official MCP SDK and controlled HTTP OpenAI port, bounded BYOK loop, native Chrome153 experimental WebMCP adapter registration/invocation/disposal. Installed consumer passes. Live provider reasoning remains T40; default native WebMCP unavailable.",
+      "review": {
+        "status": "approved",
+        "author": "root and scoped MCP/WebMCP writers",
+        "reviewer": "platform_proof; scoped peer reviews of transport adapters",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t24/8ddad0da180c/review.json",
+            "sha256": "73695e2fe6fa431614cfe73a2c03c31aac5930228201f826d1b53cd55b603150"
+          }
+        ]
+      }
     },
     {
       "id": "T25",
@@ -842,10 +864,26 @@
         "Thin wrappers only; all release consumers install actual tarballs outside workspace and preserve events/SSR.",
         "Compile developer meaning registration quickstart from built tarballs; useful negative type examples and schema reuse; manual path has zero model/Studio requirement and no chart/layout coupling."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "preflight_diagnosis owns isolated React/examples and framework consumer implementation. Root owns integration/config/contracts/lock/task state. No external writes or provider spending."
+      "evidence": [
+        {
+          "path": "harness/evidence/t25/44fccb94ca19/manifest.json",
+          "sha256": "fc4876181af526e87d3f2a82e7d94dcdd4d5575d174dc43b328b7093da22a2e9"
+        }
+      ],
+      "notes": "Accepted source48fba80 with independent review and actual installed core/runtime/web/react consumers. All71 wrapper exports, representative vanilla/React/Vue properties/events, Next SSR/hydration and manual meaning quickstart negative types verified. Full per-component reusable example kit is additional T27 support.",
+      "review": {
+        "status": "approved",
+        "author": "preflight_diagnosis; root exact allowlist/config integration",
+        "reviewer": "platform_proof",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t25/44fccb94ca19/review.json",
+            "sha256": "ea95f6b1edf5fb808c273add6531a72187d83ccc06cecaba8ae1b069fe91908d"
+          }
+        ]
+      }
     },
     {
       "id": "T26",
@@ -888,9 +926,10 @@
         "Clean coherent routes, source-copy examples, honest support status, actual end-to-end demos, app-shell ownership.",
         "All chapter38 routes, real per-component snippets, source/agent disclosure, responsive inspector and actual preview behavior pass browser/DX checks."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "Root owns apps/site static shared shell, generated docs and public playground; independent reusable component examples in examples/catalog support all71 docs previews. Production remains explicit GitOps release, not a separate hosting provider. T26 review remains active."
     },
     {
       "id": "T28",

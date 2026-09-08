@@ -1,0 +1,118 @@
+{
+  "sourceDigest": "44fccb94ca19f00e82323561611e77dc9c11f8d526fbf5c6743d3dc34186c322",
+  "scope": "M0/T12 installed web/React/styles and direct input/form/focus/theme; T13 all thirteen installed foundation types, Lit SSR, React client rendering/action events and standalone Button bundle. Full React/Vue hydration and manual assistive-technology matrix are separate.",
+  "artifacts": [
+    {
+      "name": "@aeliqo/core",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/platform-consumers/run-ryp2zY/aeliqo-core-0.1.0.tgz",
+      "sha256": "ae8b89bc2a0b48aae1dc3168979448b622500b8beba454c70a877f692aa83413",
+      "integrity": "sha512-3JMaJIUW7gi1A4FEvXYS0J3sqGXZ0MdirqnarakFzomT7wDNLL9PoDihcxt2W8o+sclkGjtAyCLKaxyDgvDB6Q=="
+    },
+    {
+      "name": "@aeliqo/web",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/platform-consumers/run-ryp2zY/aeliqo-web-0.1.0.tgz",
+      "sha256": "92f5f3169b7908e3e83cbe536d8b6b9d7947e409735b352fe641377f2ce6da89",
+      "integrity": "sha512-L7PKxrFsY1WHB1qRsA1ZNCegthbIpWxc4GJnwf2zVEETfcuEGWYM4IRhsY8JPbQ5UPQH4c102klUW4Lp51JVTA=="
+    },
+    {
+      "name": "@aeliqo/react",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/platform-consumers/run-ryp2zY/aeliqo-react-0.1.0.tgz",
+      "sha256": "325bdb899ee095a5b611cad85676f5f8a3806a87ed103841b569697745d80f13",
+      "integrity": "sha512-NdGT/B4/7CaM0ltKNZzuDq0kYGsNy5N6yTUocV2prYznO0c1+wU80G/fyxwthqEFzq0SQJTL3CgJ12FzAapfZQ=="
+    }
+  ],
+  "consumerDirectory": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B",
+  "consumerLock": {
+    "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/platform-consumers/run-ryp2zY/consumer-package-lock.json",
+    "sha256": "232aa2440a2e73390809173d17823991edada2cc4569f90838819a8aef1e3c27"
+  },
+  "screenshot": {
+    "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/platform-consumers/run-ryp2zY/installed-input.png",
+    "sha256": "a547a084028d14c0a8a87f7e2fa4a1891c1e70daee20e4bfb0ecfaeadc4191dd"
+  },
+  "environment": {
+    "node": "v24.20.0",
+    "npm": "11.19.0",
+    "pnpm": "11.24.0",
+    "typescript": "7.0.2",
+    "vite": "8.2.2",
+    "playwright": "1.63.0",
+    "chromium": "153.0.8010.12",
+    "os": "darwin",
+    "release": "25.6.0",
+    "arch": "arm64",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "locale": "en-US",
+    "deviceScaleFactor": 1
+  },
+  "foundation": {
+    "ssr": "All thirteen installed foundation elements rendered with Lit SSR.\n",
+    "components": [
+      "Button",
+      "IconButton",
+      "Link",
+      "Text",
+      "Heading",
+      "Badge",
+      "Avatar",
+      "Separator",
+      "Surface",
+      "Stack",
+      "Grid",
+      "SplitPane",
+      "ScrollArea"
+    ],
+    "standaloneButtonModules": [
+      "\u0000vite/modulepreload-polyfill.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/@lit/reactive-element/css-tag.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/@lit/reactive-element/reactive-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/lit-html/lit-html.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/lit-element/lit-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/lit/index.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/@aeliqo/web/dist/foundation/events.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/@aeliqo/web/dist/styles/tokens.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/@aeliqo/web/dist/styles/theme.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/@aeliqo/web/dist/foundation/base.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/@aeliqo/web/dist/foundation/action-base.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/@aeliqo/web/dist/foundation/button.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/browser.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/index.html"
+    ],
+    "screenshot": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/platform-consumers/run-ryp2zY/installed-foundations.png"
+  },
+  "stdout": "Installed web/React types, Node import and Lit SSR content pass.\n",
+  "browserBundles": [
+    {
+      "file": "index-DN7XimQs.js",
+      "bytes": 39726,
+      "gzipBytes": 11956
+    }
+  ],
+  "standaloneModules": [
+    "\u0000vite/modulepreload-polyfill.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/@lit/reactive-element/css-tag.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/@lit/reactive-element/reactive-element.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/lit-html/lit-html.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/lit-element/lit-element.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/lit/index.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/@aeliqo/web/dist/events.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/@aeliqo/web/dist/input/events.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/@aeliqo/web/dist/styles/tokens.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/@aeliqo/web/dist/styles/theme.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/@aeliqo/web/dist/foundation/base.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/@aeliqo/web/dist/input/base.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/@aeliqo/web/dist/input/text-control.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/@aeliqo/web/dist/input/text-field.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/node_modules/@aeliqo/web/dist/elements/aeliqo-input.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/browser.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-uwFG1B/index.html"
+  ],
+  "moduleCheckScope": "Vite module-ID graph allowlist; not arbitrary generated-code certification",
+  "passed": true
+}
