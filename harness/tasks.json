@@ -471,14 +471,18 @@
         "T39"
       ],
       "paths": [
-        "packages/web/src/input"
+        "packages/web/src/input",
+        "packages/web/src/elements/aeliqo-input.ts",
+        "tests/input",
+        "docs/input"
       ],
       "acceptance": [
         "Every input entry proves native forms, IME/draft/focus, locale and async validation."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "Isolated Luna Max writer codex/t14-input from reviewed foundation source12df3f3. Owns15 input entries and narrow existing Input compatibility refactor to reuse one native/IME/form engine; parent owns contracts/root config/exports/lockfile/integration. T13 semantic registry and external/visual evidence remain parent work. No source imports of runtime/planner/agent."
     },
     {
       "id": "T15",
@@ -492,14 +496,19 @@
       ],
       "paths": [
         "packages/web/src/navigation",
-        "packages/web/src/feedback"
+        "packages/web/src/feedback",
+        "tests/navigation",
+        "tests/feedback",
+        "docs/navigation",
+        "docs/feedback"
       ],
       "acceptance": [
         "Every navigation/feedback entry passes focus/dismissal, keyboard and nonmodal/modal distinction."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "release_inventory owns isolated codex/t15-navigation-feedback navigation/feedback source, tests and docs. Parent owns contracts, root/package exports, shared region integration, task state and installed consumers. Independent review required before integration."
     },
     {
       "id": "T16",
@@ -1065,9 +1074,11 @@
         "T11"
       ],
       "paths": [
-        "packages/runtime/src/agents",
+        "packages/agent",
         "packages/core/src/contracts/agent",
-        "tests/agents/containment"
+        "tests/agents",
+        "packages/runtime/src/data/local.ts",
+        "tests/runtime-data/analytical-local.test.ts"
       ],
       "acceptance": [
         "Formal bound/needs-choice/needs-meaning/unsupported/denied/invalid/stale outcomes; trusted independent grants; malformed inputs fail safely.",
@@ -1077,7 +1088,7 @@
       "status": "active",
       "stage": "ready",
       "evidence": [],
-      "notes": "Parent owns canonical agent contracts in isolated codex/t41-contracts while T39 frozen checks run. Runtime implementation waits for exact contract handoff and independent review; no provider or business effects are introduced by binding."
+      "notes": "Core agent contracts ff41c73 independently reviewed; 102 contracts and installed Node/Chromium consumer passed. Containment is implemented in the canonical optional @aeliqo/agent package (MASTER section 23), rather than coupling the lower runtime package to agent APIs. Parent owns package/root integration, narrative and recovery; isolated codex/t41-agent worker owns binder/repair files plus containment tests. T22 later extends the same package with dispatch/protocol adapters. T13 remains a separate foundation worktree. No binding effects or model-quality privileges. Independent narrative review found missing local computed field definition provenance; fixed in source8f27a3b with actual local analytical result and installed consumer evidence. Binder integration remains under independent review; no task acceptance or release claim yet."
     },
     {
       "id": "T42",
