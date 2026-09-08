@@ -131,3 +131,14 @@ non-null; division with a null/unknown zero-denominator policy is nullable even
 when its inputs are non-null. Division and means produce a float result with
 explicit arithmetic approximation, including when their inputs are decimals.
 Ordinary decimal addition and multiplication retain decimal results.
+
+### Qualified predicate fields (T08 host integration)
+
+Canonical compare, is-null and membership predicates may carry an explicit
+`entity` alongside `field`. Omission resolves against the query root (or the
+relationship target for a relation-local predicate). Qualification selects an
+existing declared field; it neither adds a join nor grants access to that entity.
+The field must exist in the validated operator input, and the host must authorize
+all referenced entity/field dependencies before evaluation. This allows a
+post-left-join null/boolean policy filter without broadcasting measures across
+incompatible grains. Existing unqualified queries keep their meaning.

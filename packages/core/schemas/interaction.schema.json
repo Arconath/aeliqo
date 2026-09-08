@@ -854,6 +854,12 @@
               "maxLength": 160,
               "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
             },
+            "entity": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160,
+              "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
+            },
             "comparison": {
               "type": "string",
               "enum": [
@@ -934,6 +940,12 @@
               "maxLength": 160,
               "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
             },
+            "entity": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160,
+              "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
+            },
             "negate": {
               "type": "boolean"
             }
@@ -961,6 +973,12 @@
               "maxLength": 16384
             },
             "field": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160,
+              "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
+            },
+            "entity": {
               "type": "string",
               "minLength": 1,
               "maxLength": 160,

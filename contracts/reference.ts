@@ -86,9 +86,9 @@ export interface Period {
   readonly interpretation:string; // already resolved against a clock, not "three months ago"
 }
 export type Predicate =
-  | { readonly op:'compare'; readonly field:Id; readonly comparison:'eq'|'ne'|'lt'|'lte'|'gt'|'gte'; readonly value:Value }
-  | { readonly op:'is-null'; readonly field:Id; readonly negate:boolean }
-  | { readonly op:'in'; readonly field:Id; readonly values:readonly Value[] }
+  | { readonly op:'compare'; readonly field:Id; readonly entity?:Id; readonly comparison:'eq'|'ne'|'lt'|'lte'|'gt'|'gte'; readonly value:Value }
+  | { readonly op:'is-null'; readonly field:Id; readonly entity?:Id; readonly negate:boolean }
+  | { readonly op:'in'; readonly field:Id; readonly entity?:Id; readonly values:readonly Value[] }
   | { readonly op:'and'|'or'; readonly predicates:readonly Predicate[] }
   | { readonly op:'not'; readonly predicate:Predicate };
 export interface ResultRef {

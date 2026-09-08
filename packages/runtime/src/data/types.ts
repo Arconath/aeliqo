@@ -99,7 +99,8 @@ export interface MeaningRegistration {
 
 export interface LocalDataServiceOptions {
   readonly snapshot: LocalSnapshot;
-  /** Host-owned executable registry; omitted means no registered function execution. */
+  /** Host-owned executable registry; defaults to meaningActivation.registry or the standard registry.
+   * Its digest must match the catalog. */
   readonly functionRegistry?: FunctionRegistry;
   /** Host-owned planner/work ceilings, additionally bounded by sourceLimits.
    * ADC QueryBudget independently caps the streamed response. */

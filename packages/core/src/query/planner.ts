@@ -269,11 +269,14 @@ function querySpecPredicate(predicate: QuerySpec['where'], entity: string, catal
       return converted.ok ? {ok: true, value: {op: 'not', predicate: converted.value}} : converted;
     }
     if (input.op !== 'compare' && input.op !== 'is-null' && input.op !== 'in') return failure('query.predicate', 'Predicate operator is not supported.');
-    const field = entityDefinition.fields.find((candidate) => candidate.id === input.field);
-    if (field === undefined) return failure('query.field', `Field ${input.field} is not declared on ${entity}.`, ['where', 'field']);
-    const left = fieldExpression(entity, input.field);
+    const selectedEntity = input.entity ?? entity;
+    const selectedDefinition = catalog.entities.find((candidate) => candidate.id === selectedEntity);
+    if (selectedDefinition === undefined) return failure('query.entity', `Entity ${selectedEntity} is not declared.`, ['where', 'entity']);
+    const field = selectedDefinition.fields.find((candidate) => candidate.id === input.field);
+    if (field === undefined) return failure('query.field', `Field ${input.field} is not declared on ${selectedEntity}.`, ['where', 'field']);
+    const left = fieldExpression(selectedEntity, input.field);
     if (input.op === 'is-null') return {ok: true, value: {op: 'is-null', expression: left, negate: input.negate}};
-    const type = semanticType(field.type, entityDefinition.rowGrain.map((grain) => fieldKey(entity, grain)));
+    const type = semanticType(field.type, selectedDefinition.rowGrain.map((grain) => fieldKey(selectedEntity, grain)));
     if (input.op === 'compare') return {ok: true, value: {op: 'compare', left, comparison: input.comparison, right: literalExpression(input.value, {...type, nullable: input.value === null})}};
     return {ok: true, value: {op: 'in', expression: left, values: input.values.map((value) => literalExpression(value, {...type, nullable: value === null}))}};
   };

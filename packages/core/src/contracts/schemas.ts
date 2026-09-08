@@ -76,10 +76,10 @@ export const periodSchema = object({
   calendar: idSchema, timezone: idSchema, interpretation: label,
 });
 export const predicateSchema = z.discriminatedUnion('op', [
-  object({op: z.literal('compare'), field: idSchema,
+  object({op: z.literal('compare'), field: idSchema, entity: optional(idSchema),
     comparison: z.enum(['eq','ne','lt','lte','gt','gte']), value: valueSchema}),
-  object({op: z.literal('is-null'), field: idSchema, negate: z.boolean()}),
-  object({op: z.literal('in'), field: idSchema, values: array(valueSchema)}),
+  object({op: z.literal('is-null'), field: idSchema, entity: optional(idSchema), negate: z.boolean()}),
+  object({op: z.literal('in'), field: idSchema, entity: optional(idSchema), values: array(valueSchema)}),
   object({op: z.enum(['and','or']), get predicates() {return array(predicateSchema);}}),
   object({op: z.literal('not'), get predicate() {return predicateSchema;}}),
 ]);
