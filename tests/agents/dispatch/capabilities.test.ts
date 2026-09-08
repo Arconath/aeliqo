@@ -146,3 +146,70 @@ describe('capability dispatcher', () => {
     expect(result).toMatchObject({ok: true, value: {state: 'denied', diagnostics: [{code: 'agent.capability.scope'}]}});
   });
 });
+
+describe('capability output authority',()=>{
+ it('does not hide model egress inside a proposal operation',async()=>{
+  const proposal:AgentCapabilityManifest={...manifest(()=>({state:'bound',value:{contextHint:'private derived value'}})),operation:'task.propose'};
+  const registry=createAgentCapabilityRegistry([proposal]);if(!registry.ok)throw new Error('registry');
+  const dispatcher=createAgentCapabilityDispatcher({registry:registry.value,host:host(['task.propose'])});
+  expect(await dispatcher.mcp.invoke(request({operation:'task.propose'}))).toMatchObject({ok:true,value:{state:'denied'}});
+ });
+ it('rejects removal of pinned authority after a handler',async()=>{
+  const current={scopeDigest:'s',policyRevision:'p',taskRevision:'t',regionRevision:'r',catalogRevision:'c',experienceRevision:'e',functionRegistryDigest:'f',results:[]};let calls=0;
+  const registry=createAgentCapabilityRegistry([manifest(()=>({state:'data-ready',value:{rows:1}}))]);if(!registry.ok)throw new Error('registry');
+  const dispatcher=createAgentCapabilityDispatcher({registry:registry.value,host:{readContext:()=>({ok:true,value:{principalKey:'p',regionId:'region-1',goalEpoch:'goal-1',grants:['catalog.read'],...(++calls===1?{current}:{})}})}});
+  const result=await dispatcher.direct.invoke(request());expect(result).toMatchObject({ok:true,value:{state:'partial'}});expect(result.ok&&result.value.value).toBeUndefined();
+ });
+ it('retains distinct reference tuples with delimiter characters',()=>{
+  const first={...manifest(()=>({state:'accepted'})),ref:{id:'a@b',revision:'c'}};const second={...first,ref:{id:'a',revision:'b@c'}};
+  const registry=createAgentCapabilityRegistry([first,second]);expect(registry.ok).toBe(true);if(!registry.ok)return;
+  expect(registry.value.get(first.ref)?.ref).toEqual(first.ref);expect(registry.value.get(second.ref)?.ref).toEqual(second.ref);
+ });
+});
+
+it('rejects invented same-scope refs and permits freshly authorized evaluation outputs',async()=>{
+ const ref={id:'new',revision:'1',outputId:'rows',queryDigest:'q',scopeDigest:'s'};
+ const current={scopeDigest:'s',policyRevision:'p',taskRevision:'t',regionRevision:'r',catalogRevision:'c',experienceRevision:'e',functionRegistryDigest:'f',results:[]};
+ const registry=createAgentCapabilityRegistry([{...manifest(()=>({state:'data-ready',value:{result:ref},affectedResults:[ref]})),operation:'task.evaluate'}]);if(!registry.ok)throw new Error('registry');
+ for(const publish of [false,true]){let reads=0;const dispatcher=createAgentCapabilityDispatcher({registry:registry.value,host:{readContext:()=>({ok:true,value:{principalKey:'p',regionId:'region-1',goalEpoch:'goal-1',grants:['task.evaluate'],current:{...current,results:++reads>1&&publish?[ref]:[]}}})}});
+ const outcome=await dispatcher.dispatch(request({operation:'task.evaluate'}));expect(outcome).toMatchObject({ok:true,value:{state:publish?'data-ready':'denied'}});
+ }
+});
+
+
+describe('external diagnostic egress', () => {
+  it('redacts handler diagnostics, reasons and revisions without egress, including after revocation', async () => {
+    const secret = 'SECRET-ROW-42';
+    const registry = createAgentCapabilityRegistry([manifest(() => ({state: 'invalid', reason: secret,
+      regionRevision: secret, diagnostics: [{code: secret, message: secret, path: [secret], remedies: [secret], retryable: false}]}))]);
+    if (!registry.ok) throw new Error('registry');
+    for (const transport of ['mcp', 'webmcp', 'byok'] as const) {
+      let reads = 0;
+      const dispatcher = createAgentCapabilityDispatcher({registry: registry.value, host: {readContext: () => {
+        reads++;
+        return host(reads === 1 ? ['catalog.read', 'model.egress'] : ['catalog.read']).readContext();
+      }}});
+      const receipt = await dispatcher.port(transport).invoke(request({metadata: {note: secret}}));
+      expect(receipt).toMatchObject({ok: true, value: {state: 'invalid', diagnostics: [{code: 'agent.capability.invalid'}]}});
+      expect(JSON.stringify(receipt)).not.toContain(secret);
+    }
+    const local = await createAgentCapabilityDispatcher({registry: registry.value, host: host()}).manual.invoke(request());
+    expect(JSON.stringify(local)).toContain(secret);
+    const authorized = await createAgentCapabilityDispatcher({registry: registry.value, host: host(['catalog.read', 'model.egress'])}).mcp.invoke(request());
+    expect(JSON.stringify(authorized)).toContain(secret);
+  });
+
+  it('never echoes custom host, parser or failed-outcome diagnostics across external boundaries', async () => {
+    const secret = 'SECRET-ROW-42';
+    const failure = {ok: false, diagnostics: [{code: secret, message: secret, retryable: false}]} as const;
+    for (const origin of ['host', 'parser', 'handler']) {
+      const entry = {...manifest(() => origin === 'handler' ? failure : {state: 'accepted' as const}),
+        ...(origin === 'parser' ? {parse: () => failure} : {})};
+      const registry = createAgentCapabilityRegistry([entry]);
+      if (!registry.ok) throw new Error('registry');
+      const dispatcher = createAgentCapabilityDispatcher({registry: registry.value,
+        host: origin === 'host' ? {readContext: () => failure} : host()});
+      expect(JSON.stringify(await dispatcher.mcp.invoke(request()))).not.toContain(secret);
+    }
+  });
+});

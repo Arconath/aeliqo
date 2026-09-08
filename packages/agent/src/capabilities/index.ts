@@ -18,6 +18,7 @@ export type {
   AgentCapabilityHostContext,
   AgentCapabilityLimits,
   AgentCapabilityManifest,
+  AgentCapabilityRegistry,
   AgentCapabilityOperation,
   AgentCapabilityPort,
   AgentCapabilityReceipt,

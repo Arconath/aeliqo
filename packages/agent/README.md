@@ -12,11 +12,11 @@ names one versioned operation grant, a bounded parser and a local handler. Model
 or tool input can select an existing reference, but cannot install a handler or
 provide actor, approval, principal or grant fields. `createAgentCapabilityDispatcher`
 checks fresh host grants, input/output byte limits, cancellation and a
-post-handler authority recheck. `experience.commit` and `renderer-ready`
+post-handler authority recheck. Every external value/result-reference payload requires the current independent model-egress grant, including outputs of proposal capabilities. Operation names cannot hide a data egress boundary. `experience.commit` and `renderer-ready`
 receipts carry an exact region revision; authority changes after a handler yield
 an ambiguous `partial` receipt for host recovery.
 
-`createAgentSession` runs one explicit operation at a time with bounded turns,
+`createAgentSession({dispatcher, transport})` takes its transport from trusted host configuration; request transport metadata is advisory. It runs one explicit operation at a time with bounded turns,
 repairs, bytes and elapsed time. It records runtime-computed fingerprints and
 compact attempts, stops repeated candidates, and returns a recovery receipt.
 Evaluation (`task.evaluate`/`result.inspect`) and visible presentation
@@ -90,3 +90,28 @@ The loop returns a receipt and never commits a replacement UI. Existing runtime
 region/result ownership preserves the authorized incumbent during failure and
 clears revoked data. Applications must use that same authorization boundary for
 manual fallback and for any later accepted proposal.
+
+
+Composition validation uses `createAgentCompositionRegistry` as an alias for the
+canonical core `createPresentationRegistry`. Pass current host-owned
+`PresentationContext` as the third argument to
+`validateAgentComposition(proposal, registry, context)`. The implementation calls
+`validatePresentationPlan`: required operations and comparisons, descriptor
+scope, renderer capabilities, profile restrictions and state mappings therefore
+have exactly the same checks as developer-authored plans. There is no separate
+agent view registry or relaxed graph validator. Validation grants no execution
+or visible commit authority.
+
+
+Session inspection and final receipts are host-side records, not model messages.
+Repair callbacks receive only compact attempt metadata and bounded diagnostics;
+prior capability values, result references and metadata are omitted. Applications
+must recheck current egress authorization before forwarding a stored session
+receipt externally. Disposal clears the retained inspection snapshot. Output
+ResultRefs must be present exactly in the final host read set; evaluations may
+add freshly authorized results while all previously read pins remain valid.
+
+External receipts without current model-egress permission keep only the bounded
+operation stage and generic diagnostics. Handler reasons, diagnostic text/paths,
+revisions and echoed metadata may contain private data and are omitted. Host,
+parser and malformed-handler failures use generic external diagnostics.

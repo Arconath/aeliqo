@@ -31,7 +31,6 @@ const FAILED = Symbol('agent-capability-failed');
 const DEFAULT_MAX_PENDING = 8;
 const DEFAULT_MAX_MILLISECONDS = 30_000;
 const MAX_METADATA_BYTES = 64 * 1024;
-const DATA_OUTPUT_OPERATIONS = new Set<OperationGrant>(['catalog.read', 'task.evaluate', 'result.inspect']);
 const EXTERNAL_TRANSPORTS = new Set<AgentCapabilityTransport>(['mcp', 'webmcp', 'byok']);
 
 type BoundaryResult<T> =
@@ -105,7 +104,7 @@ function normalizeTransport(input: unknown): AgentCapabilityTransport {
   return input === 'manual' || input === 'mcp' || input === 'webmcp' || input === 'byok' || input === 'direct' ? input : 'direct';
 }
 
-function normalizeRequest(input: unknown): Outcome<AgentCapabilityRequest> {
+export function normalizeAgentCapabilityRequest(input: unknown): Outcome<AgentCapabilityRequest> {
   const wire = parseWireValue(input);
   if (!wire.ok) return wire;
   if (wire.value === null || typeof wire.value !== 'object' || Array.isArray(wire.value)) return failure('agent.capability.invalid', 'A capability request must be an object.');
@@ -194,8 +193,8 @@ function cleanRefs(input: readonly ResultRef[] | undefined): Outcome<readonly Re
   return {ok: true, value: Object.freeze(refs)};
 }
 
-function hasDataOutput(operation: OperationGrant, value: AgentJsonValue | undefined, refs: readonly ResultRef[] | undefined): boolean {
-  return DATA_OUTPUT_OPERATIONS.has(operation) && (value !== undefined || (refs !== undefined && refs.length > 0));
+function hasDataOutput(_operation: OperationGrant, value: AgentJsonValue | undefined, refs: readonly ResultRef[] | undefined): boolean {
+  return value !== undefined || (refs !== undefined && refs.length > 0);
 }
 
 /**
@@ -208,12 +207,16 @@ function hasDataOutput(operation: OperationGrant, value: AgentJsonValue | undefi
  */
 function outputScopeMatches(value: AgentJsonValue | undefined, refs: readonly ResultRef[] | undefined, authority: AgentCapabilityAuthority): boolean {
   const expected = authority.current?.scopeDigest;
-  if (refs !== undefined && refs.some((ref) => expected === undefined || ref.scopeDigest !== expected)) return false;
+  if(refs!==undefined&&refs.length>0&&(authority.current===undefined||!validateCommitReadSet(authority.current,authority.current,refs).ok))return false;
   let marked = false;
   const visit = (candidate: AgentJsonValue): boolean => {
     if (candidate === null || typeof candidate !== 'object') return true;
     if (Array.isArray(candidate)) return candidate.every(visit);
     const object = candidate as {readonly [key: string]: AgentJsonValue};
+    if(['id','revision','outputId','queryDigest','scopeDigest'].every(key=>typeof object[key]==='string')){
+      const ref={id:object.id,revision:object.revision,outputId:object.outputId,queryDigest:object.queryDigest,scopeDigest:object.scopeDigest} as ResultRef;
+      if(authority.current===undefined||!validateCommitReadSet(authority.current,authority.current,[ref]).ok)return false;
+    }
     if (Object.hasOwn(object, 'scopeDigest')) {
       marked = true;
       if (expected === undefined || object.scopeDigest !== expected) return false;
@@ -224,12 +227,11 @@ function outputScopeMatches(value: AgentJsonValue | undefined, refs: readonly Re
 }
 
 function allowedState(operation: OperationGrant, state: AgentCapabilityState): boolean {
-  if (operation === 'task.propose' || operation === 'task.evaluate' || operation === 'result.inspect' || operation === 'catalog.read')
-    return state !== 'plan-committed' && state !== 'renderer-ready';
-  if (operation === 'experience.propose') return state !== 'plan-committed' && state !== 'renderer-ready';
-  if (operation === 'experience.commit') return state !== 'bound' && state !== 'data-ready' && state !== 'needs-choice' && state !== 'needs-meaning' && state !== 'unsupported';
-  if (operation.endsWith('.propose')) return state !== 'renderer-ready' && state !== 'plan-committed';
-  return true;
+  if(['partial','cancelled','failed','denied','stale','unsupported','invalid','needs-choice','needs-meaning'].includes(state))return true;
+  if(operation.endsWith('.propose'))return state==='accepted'||state==='bound';
+  if(operation==='experience.commit')return state==='accepted'||state==='plan-committed'||state==='renderer-ready';
+  if(operation==='catalog.read'||operation==='result.inspect'||operation==='task.evaluate')return state==='accepted'||state==='data-ready';
+  return state==='accepted'||state==='data-ready';
 }
 
 function changedAuthority(before: AgentCapabilityAuthority, after: AgentCapabilityAuthority, operation: OperationGrant, result: AgentCapabilityState): 'none' | 'denied' | 'changed' {
@@ -237,13 +239,13 @@ function changedAuthority(before: AgentCapabilityAuthority, after: AgentCapabili
   if (!after.grants.includes(operation)) return 'denied';
   const left = before.current;
   const right = after.current;
-  if (left === undefined || right === undefined) return 'none';
+  if (left === undefined || right === undefined) return left===right?'none':'changed';
   const stablePins = ['scopeDigest', 'policyRevision', 'catalogRevision', 'experienceRevision', 'functionRegistryDigest'] as const;
   if (stablePins.some((pin) => left[pin] !== right[pin])) return 'changed';
   // A successful commit is allowed to advance the task/region/result pins it
   // owns; all other operations must still see the same read set.
   if (operation === 'experience.commit' && (result === 'plan-committed' || result === 'renderer-ready')) return 'none';
-  if (left.taskRevision !== right.taskRevision || left.regionRevision !== right.regionRevision || JSON.stringify(left.results) !== JSON.stringify(right.results)) return 'changed';
+  if (!validateCommitReadSet(left,right).ok) return 'changed';
   return 'none';
 }
 
@@ -337,12 +339,13 @@ export function createAgentCapabilityDispatcher(options: AgentCapabilityDispatch
   let pending = 0;
 
   const dispatch = async (input: AgentCapabilityRequest | unknown, dispatchOptions: {readonly signal?: AbortSignal; readonly transport?: AgentCapabilityTransport} = {}): Promise<Outcome<AgentCapabilityReceipt>> => {
-    const request = normalizeRequest(input);
+    const request = normalizeAgentCapabilityRequest(input);
     if (!request.ok) return request;
     // `request.transport` is wire data and cannot select a less restricted
     // boundary.  Only a port or an explicit trusted dispatch option may set
     // the transport; generic dispatch is always local/direct.
     const transport = dispatchOptions.transport ?? 'direct';
+    if(normalizeTransport(transport)!==transport)return failure('agent.capability.transport','The trusted dispatch transport is invalid.');
     if (!EXTERNAL_TRANSPORTS.has(transport) && transport !== 'direct' && transport !== 'manual')
       return failureReceipt(request.value, 'direct', 'invalid', 'agent.capability.transport', 'The trusted dispatch transport is unsupported.');
     if (dispatchOptions.signal?.aborted) return failureReceipt(request.value, transport, 'cancelled', 'agent.capability.cancelled', 'Capability dispatch was cancelled before authority inspection.');
@@ -361,7 +364,7 @@ export function createAgentCapabilityDispatcher(options: AgentCapabilityDispatch
       if (hostBoundary.kind === 'aborted') return failureReceipt(request.value, transport, 'cancelled', 'agent.capability.cancelled', 'Capability dispatch was cancelled.');
       if (hostBoundary.kind === 'failed') return failureReceipt(request.value, transport, 'denied', 'agent.capability.denied', 'The host authority context could not be read safely.');
       const hostResult = hostBoundary.value;
-      if (!hostResult.ok) return failureReceipt(request.value, transport, 'denied', hostResult.diagnostics[0]?.code ?? 'agent.capability.denied', hostResult.diagnostics[0]?.message ?? 'The host did not authorize capability inspection.');
+      if (!hostResult.ok) return failureReceipt(request.value, transport, 'denied', EXTERNAL_TRANSPORTS.has(transport) ? 'agent.capability.denied' : hostResult.diagnostics[0]?.code ?? 'agent.capability.denied', EXTERNAL_TRANSPORTS.has(transport) ? 'The host did not authorize capability inspection.' : hostResult.diagnostics[0]?.message ?? 'The host did not authorize capability inspection.');
       const authority = normalizeHostContext(hostResult.value, request.value);
       if (!authority.ok) {
         const first = authority.diagnostics[0];
@@ -372,7 +375,7 @@ export function createAgentCapabilityDispatcher(options: AgentCapabilityDispatch
       const parsed = (() => {try { return manifest.parse(request.value.input); } catch { return failure('agent.capability.input', 'The capability input could not be parsed safely.'); }})();
       if (!parsed.ok) {
         const first = parsed.diagnostics[0];
-        return failureReceipt(request.value, transport, 'invalid', first?.code ?? 'agent.capability.input', first?.message ?? 'The capability input is invalid.');
+        return failureReceipt(request.value, transport, 'invalid', EXTERNAL_TRANSPORTS.has(transport) ? 'agent.capability.input' : first?.code ?? 'agent.capability.input', EXTERNAL_TRANSPORTS.has(transport) ? 'The capability input is invalid.' : first?.message ?? 'The capability input is invalid.');
       }
       const context: AgentCapabilityContext = Object.freeze({requestId: request.value.requestId, targetRegionId: request.value.targetRegionId, goalEpoch: request.value.goalEpoch,
         signal: dispatchOptions.signal ?? new AbortController().signal, transport, authority: authority.value});
@@ -382,7 +385,7 @@ export function createAgentCapabilityDispatcher(options: AgentCapabilityDispatch
       if (invocation.kind === 'aborted') return failureReceipt(request.value, transport, 'cancelled', 'agent.capability.cancelled', 'Capability execution was cancelled.');
       if (invocation.kind === 'failed') return failureReceipt(request.value, transport, 'failed', 'agent.capability.handler', 'The capability handler failed safely.');
       const normalized = normalizeHandlerResult(invocation.value);
-      if (!normalized.ok) return failureReceipt(request.value, transport, 'failed', normalized.diagnostics[0]?.code ?? 'agent.capability.output', normalized.diagnostics[0]?.message ?? 'The capability output was invalid.');
+      if (!normalized.ok) return failureReceipt(request.value, transport, 'failed', EXTERNAL_TRANSPORTS.has(transport) ? 'agent.capability.output' : normalized.diagnostics[0]?.code ?? 'agent.capability.output', EXTERNAL_TRANSPORTS.has(transport) ? 'The capability output was invalid.' : normalized.diagnostics[0]?.message ?? 'The capability output was invalid.');
       const result = normalized.value;
       if (!allowedState(request.value.operation, result.state)) return failureReceipt(request.value, transport, 'invalid', 'agent.capability.stage', 'The capability returned a stage that its operation cannot produce.');
       if ((result.state === 'renderer-ready' || result.state === 'plan-committed') && result.regionRevision === undefined) return failureReceipt(request.value, transport, 'invalid', 'agent.capability.stage', 'A committed presentation receipt must identify the committed region revision.');
@@ -411,6 +414,14 @@ export function createAgentCapabilityDispatcher(options: AgentCapabilityDispatch
         return failureReceipt(request.value, transport, 'denied', 'agent.capability.scope', 'The capability output is outside the current authorization scope.');
       if (dataOutput && EXTERNAL_TRANSPORTS.has(transport) && !finalAuthority.value.grants.includes('model.egress'))
         return failureReceipt(request.value, transport, 'denied', 'agent.capability.egress', 'The host did not grant model egress for this result.');
+      // Handler prose, paths, revisions and metadata can contain private data
+      // just like values. Keep only the bounded stage without current egress.
+      if (EXTERNAL_TRANSPORTS.has(transport) && !finalAuthority.value.grants.includes('model.egress')) {
+        return {ok: true, value: receipt(request.value, transport, result.state, {
+          diagnostics: result.diagnostics?.length || result.reason !== undefined
+            ? [diagnostic(`agent.capability.${result.state}`, `The capability returned ${result.state}; details require model egress.`)] : [],
+        })};
+      }
       const metadata = request.value.metadata === undefined ? undefined : parseWireValue(request.value.metadata);
       return {ok: true, value: receipt(request.value, transport, result.state, {
         ...(output === undefined ? {} : {value: output.value as AgentJsonValue}), diagnostics: cleanDiagnostics(result.diagnostics),

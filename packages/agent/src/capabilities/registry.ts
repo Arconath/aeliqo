@@ -6,7 +6,7 @@ const failure = <T>(code: string, message: string, path?: readonly (string | num
   diagnostics: [{code, message, retryable: false, ...(path === undefined ? {} : {path: [...path]})}],
 });
 
-export const capabilityRefKey = (ref: VersionRef): string => `${ref.id}@${ref.revision}`;
+export const capabilityRefKey = (ref: VersionRef): string => JSON.stringify([ref.id,ref.revision]);
 
 function validId(value: unknown): value is string {
   return typeof value === 'string' && value.length > 0 && value.length <= WIRE_LIMITS.id
@@ -55,7 +55,7 @@ export function createAgentCapabilityRegistry(
     const key = capabilityRefKey(manifest.ref);
     if (entries.has(key)) return failure('agent.capability.duplicate', 'A capability reference is already registered.', ['ref']);
     if (entries.size >= WIRE_LIMITS.presentationNodes) return failure('agent.capability.registry', 'The capability registry is full.');
-    entries.set(key, Object.freeze({...manifest, ref: Object.freeze({id: manifest.ref.id, revision: manifest.ref.revision})}) as unknown as AgentCapabilityManifest<unknown, unknown>);
+    entries.set(key, Object.freeze({...manifest, ref: Object.freeze({id: manifest.ref.id, revision: manifest.ref.revision}), ...(manifest.limits===undefined?{}:{limits:Object.freeze({...manifest.limits})})}) as unknown as AgentCapabilityManifest<unknown, unknown>);
     return {ok: true, value: undefined};
   };
   for (const manifest of initial) {

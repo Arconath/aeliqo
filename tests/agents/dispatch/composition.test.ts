@@ -1,38 +1,27 @@
-import {describe, expect, it} from 'vitest';
-import {createAgentCompositionRegistry, validateAgentComposition} from '../../../packages/agent/src/capabilities/composition.js';
-import type {CommitPreconditions} from '../../../packages/core/src/index.js';
-
-const current: CommitPreconditions = {
-  scopeDigest: 'scope-1', policyRevision: 'policy-1', taskRevision: 'task-1', regionRevision: 'region-1',
-  catalogRevision: 'catalog-1', experienceRevision: 'experience-1', functionRegistryDigest: 'functions-1', results: [],
-};
-const view = {ref: {id: 'table', revision: '1'}, configSchema: {id: 'table.config', revision: '1'}, roles: ['leaf'], result: 'required' as const, children: {min: 0, max: 0}};
-const registry = createAgentCompositionRegistry([view]);
-const plan = {
-  id: 'experience-1', revision: 'experience-1', rootId: 'table-1', preconditions: current,
-  nodes: [{id: 'table-1', role: 'leaf', representation: view.ref, result: {id: 'result-1', revision: 'result-1', outputId: 'main', queryDigest: 'query-1', scopeDigest: 'scope-1'}, config: {schema: view.configSchema, values: {fields: ['id'] as const}}, children: []}],
-  links: [], coverage: [], stateTransfer: [], diagnostics: [],
-};
-
-describe('registered composition capability validation', () => {
-  it('accepts an exact registered view graph and rejects unknown schemas', () => {
-    expect(registry.ok).toBe(true);
-    if (!registry.ok) return;
-    expect(validateAgentComposition(plan, registry.value)).toMatchObject({ok: true, value: {plan: {rootId: 'table-1'}}});
-    const unknownSchema = {...plan, nodes: [{...plan.nodes[0]!, config: {schema: {id: 'unknown.config', revision: '1'}, values: {fields: ['id']}}}]};
-    expect(validateAgentComposition(unknownSchema, registry.value)).toMatchObject({ok: false, diagnostics: [{code: 'agent.composition.schema'}]});
-  });
-
-  it('rejects executable config, cycles and orphaned nodes', () => {
-    expect(registry.ok).toBe(true);
-    if (!registry.ok) return;
-    const executable = {...plan, nodes: [{...plan.nodes[0]!, config: {schema: view.configSchema, values: {code: 'document.body.innerHTML'}}}]};
-    expect(validateAgentComposition(executable, registry.value)).toMatchObject({ok: false, diagnostics: [{code: 'agent.composition.executable'}]});
-    const cyclicView = {...view, ref: {id: 'layout', revision: '1'}, configSchema: {id: 'layout.config', revision: '1'}, roles: ['layout'], result: 'none' as const, children: {min: 1, max: 1}};
-    const cycleRegistry = createAgentCompositionRegistry([cyclicView]);
-    expect(cycleRegistry.ok).toBe(true);
-    if (!cycleRegistry.ok) return;
-    const cycle = {...plan, nodes: [{id: 'layout-1', role: 'layout', representation: cyclicView.ref, config: {schema: cyclicView.configSchema, values: {}}, children: ['layout-1']}], rootId: 'layout-1'};
-    expect(validateAgentComposition(cycle, cycleRegistry.value)).toMatchObject({ok: false, diagnostics: [{code: 'agent.composition.cycle'}]});
-  });
+import {describe,expect,it} from 'vitest';
+import {createAgentCompositionRegistry,validateAgentComposition} from '../../../packages/agent/src/capabilities/composition.js';
+import {validatePresentationPlan,type PresentationManifest,type PresentationContext} from '../../../packages/core/dist/index.js';
+import {environment,experience,presentationPlan,presentationTask,result} from '../../contracts/fixtures.js';
+const read={id:'data.read',revision:'1'};
+const table:PresentationManifest={ref:{id:'data.table',revision:'1'},configSchema:{id:'data.table.config',revision:'1'},roles:['table'],operations:[read],result:'required',children:{min:0,max:0},visibility:'leaf',extension:false,
+ resolveConfig:(values,descriptor)=>Object.keys(values).length===0&&descriptor!==undefined?{ok:true,value:{values:{},fields:descriptor.fields.map(f=>f.id),ports:[]}}:{ok:false,diagnostics:[{code:'table.config',message:'Unsupported table configuration.',retryable:false}]}};
+const registry=createAgentCompositionRegistry([table]);if(!registry.ok)throw new Error('registry');const registered=registry.value;
+const context=():PresentationContext=>({task:{...presentationTask,needs:[{id:'browse',operation:read,fields:['employee.id'],outputId:'rows',required:true}]},experience:{...experience,mode:'composable',allowedRepresentations:['data.table']},results:[result],current:presentationPlan.preconditions,environment,rendererCapabilities:[table.ref]});
+const plan=()=>({...presentationPlan,coverage:[{needId:'browse',nodeIds:['table-1'],operations:[read]}]});
+describe('canonical agent composition',()=>{
+ it('resolves the same graph, actual fields and descriptors as manual authoring',()=>{
+  const actual=validateAgentComposition(plan(),registered,context());const manual=validatePresentationPlan(plan(),context(),registered);
+  expect(actual.ok).toBe(true);expect(manual.ok).toBe(true);if(!actual.ok||!manual.ok)return;
+  expect(actual.value.plan).toEqual(manual.value.plan);expect(actual.value.nodes).toEqual(manual.value.nodes);expect(actual.value.resultReferences).toEqual([result.ref]);
+ });
+ it.each(['coverage','scope','renderer','config','approval','result'] as const)('rejects %s through the same manual validator',kind=>{
+  let input:unknown=plan();let ctx=context();
+  if(kind==='coverage')input={...plan(),coverage:[]};
+  if(kind==='scope')ctx={...ctx,current:{...ctx.current,scopeDigest:'revoked'}};
+  if(kind==='renderer')ctx={...ctx,rendererCapabilities:[]};
+  if(kind==='config')input={...plan(),nodes:[{...plan().nodes[0]!,config:{schema:table.configSchema,values:{html:'<script>code</script>'}}}]};
+  if(kind==='approval')input={...plan(),approved:true};
+  if(kind==='result')ctx={...ctx,results:[]};
+  const manual=validatePresentationPlan(input,ctx,registered);expect(manual.ok).toBe(false);expect(validateAgentComposition(input,registered,ctx)).toEqual(manual);
+ });
 });

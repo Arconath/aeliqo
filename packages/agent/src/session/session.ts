@@ -1,3 +1,4 @@
+import {normalizeAgentCapabilityRequest} from '../capabilities/dispatcher.js';
 import {parseContract, parseWireValue, type AgentStopReason, type Diagnostic, type Outcome} from '@aeliqo/core';
 import type {
   AgentCapabilityDispatcher,
@@ -131,6 +132,8 @@ export function createAgentSession(options: AgentSessionOptions): AgentSession {
   let currentRequestId: string | undefined;
   let closed = false;
   const now = options.now ?? Date.now;
+  const transport=options.transport??'direct';
+  if(!['direct','manual','mcp','webmcp','byok'].includes(transport))throw new TypeError('A valid trusted session transport is required.');
 
   const inspect = (): AgentSessionSnapshot => Object.freeze({status, ...(currentRequestId === undefined ? {} : {requestId: currentRequestId}), attempts: Object.freeze([...snapshotAttempts]), ...(snapshotReceipt === undefined ? {} : {receipt: snapshotReceipt})});
 
@@ -140,7 +143,9 @@ export function createAgentSession(options: AgentSessionOptions): AgentSession {
     const budget = parseContract('agent-loop-budget', input?.budget);
     if (!budget.ok) return budget;
     if (input === null || typeof input !== 'object' || input.request === null || typeof input.request !== 'object' || typeof input.request.requestId !== 'string') return failure('agent.session.invalid', 'The session request is malformed.');
-    const request = input.request;
+    const checkedRequest=normalizeAgentCapabilityRequest(input.request);
+    if(!checkedRequest.ok)return checkedRequest;
+    const request=Object.freeze({...checkedRequest.value,transport});
     const controller = new AbortController();
     active = controller;
     currentRequestId = request.requestId;
@@ -172,9 +177,9 @@ export function createAgentSession(options: AgentSessionOptions): AgentSession {
       const value: AgentSessionReceipt = Object.freeze({version: '1', requestId: request.requestId, targetRegionId: request.targetRegionId,
         goalEpoch: request.goalEpoch, capability: Object.freeze({...request.capability}), operation: request.operation, transport: request.transport ?? 'direct', stop,
         attempts: Object.freeze([...attempts]), ...(last === undefined ? {} : {last}), ...(recovery === undefined ? {} : {recovery})});
-      snapshotAttempts = value.attempts;
-      snapshotReceipt = value;
-      status = reason === 'cancelled' ? 'cancelled' : reason === 'complete' ? 'completed' : 'idle';
+      snapshotAttempts = closed ? Object.freeze([]) : value.attempts;
+      snapshotReceipt = closed ? undefined : value;
+      status = closed ? 'closed' : reason === 'cancelled' ? 'cancelled' : reason === 'complete' ? 'completed' : 'idle';
       return {ok: true, value};
     };
     try {
@@ -221,7 +226,7 @@ export function createAgentSession(options: AgentSessionOptions): AgentSession {
         if (repairs >= budget.value.maxRepairs) return finalize('repair-budget');
         repairs++;
         if (attempts.length >= budget.value.maxTurns) return finalize('turn-budget');
-        const repairRequest: AgentSessionRepairRequest = Object.freeze({turn: attempts.length + 1, previous: Object.freeze([...attempts]), diagnostics: Object.freeze([...lastDiagnostics]), signal: controller.signal});
+        const repairRequest: AgentSessionRepairRequest = Object.freeze({turn: attempts.length + 1, previous: Object.freeze(attempts.map(({turn,state,fingerprint,proposalBytes,progress})=>Object.freeze({turn,state,fingerprint,proposalBytes,progress}))), diagnostics: Object.freeze([...lastDiagnostics]), signal: controller.signal});
         const next = await awaitBoundary((signal) => input.propose!({...repairRequest, signal}), controller.signal, Math.max(1, budget.value.maxMilliseconds - elapsed(start, now)));
         if (next.kind === 'deadline') return finalize('time-budget');
         if (next.kind === 'aborted') return finalize('cancelled');
@@ -251,6 +256,7 @@ export function createAgentSession(options: AgentSessionOptions): AgentSession {
       active?.abort('disposed');
       active = undefined;
       status = 'closed';
+      snapshotAttempts=Object.freeze([]);snapshotReceipt=undefined;currentRequestId=undefined;
     },
   });
 }

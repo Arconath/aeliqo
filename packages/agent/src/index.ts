@@ -4,3 +4,5 @@ export {createAgentBinder, bindAgentProposal, fingerprintAgentProposal} from './
 export {containAgentProposal, runAgentContainment} from './loop.js';
 export type {AgentBinder, AgentBinderOptions, AgentHost, AgentHostContext, AgentContextRequest, AgentBindOptions, AgentBindingDecision} from './binder-types.js';
 export type {AgentContainmentInput, AgentContainmentReceipt, AgentContainmentOutcome, AgentAttempt, AgentAttemptProgress, AgentRepairRequest} from './loop-types.js';
+export * from './capabilities/index.js';
+export * from './session/index.js';

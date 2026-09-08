@@ -20,7 +20,7 @@ export interface AgentSessionAttempt {
 
 export interface AgentSessionRepairRequest {
   readonly turn: number;
-  readonly previous: readonly AgentSessionAttempt[];
+  readonly previous: readonly Omit<AgentSessionAttempt, "receipt">[];
   readonly diagnostics: readonly Diagnostic[];
   readonly signal: AbortSignal;
 }
@@ -71,6 +71,8 @@ export interface AgentSessionSnapshot {
 }
 
 export interface AgentSessionOptions {
+  /** Trusted host transport. Wire request metadata cannot change this boundary. */
+  readonly transport?: AgentCapabilityTransport;
   readonly dispatcher: import('../capabilities/types.js').AgentCapabilityDispatcher;
   /** Host-owned recovery callback. It must clear data when authority is revoked. */
   readonly recover?: (input: {

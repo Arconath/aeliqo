@@ -49,3 +49,29 @@ describe('bounded agent sessions', () => {
     expect(called).toBe(1);
   });
 });
+
+describe('session trusted boundaries',()=>{
+ it('does not promote wire transport metadata into a trusted dispatch option',async()=>{
+  const registry=createAgentCapabilityRegistry([{ref:{id:'inspect',revision:'1'},operation:'result.inspect',label:'Inspect',parse:input=>parseWireValue(input) as Outcome<never>,invoke:()=>({state:'data-ready',value:{privateRow:'secret'}})}]);
+  if(!registry.ok)throw new Error('registry');
+  const dispatcher=createAgentCapabilityDispatcher({registry:registry.value,host:{readContext:()=>({ok:true,value:{principalKey:'p',regionId:'region-1',goalEpoch:'goal-1',grants:['result.inspect']}})}});
+  const session=createAgentSession({dispatcher,transport:'mcp'});
+  const outcome=await session.run({request:{...base,capability:{id:'inspect',revision:'1'},operation:'result.inspect',input:{},transport:'manual'},budget:budget()});
+  expect(outcome).toMatchObject({ok:true,value:{transport:'mcp',stop:'denied'}});
+  expect(outcome.ok&&outcome.value.last?.value).toBeUndefined();
+ });
+ it('remains closed after an in-flight cancellation settles',async()=>{
+  const session=createAgentSession({dispatcher:dispatcher()});
+  let started!:()=>void;const ready=new Promise<void>(r=>{started=r;});
+  const pending=session.run({request:base,budget:budget(),propose:()=>{started();return new Promise(()=>{});}});
+  await ready;session.dispose();await pending;
+  expect(session.inspect().status).toBe('closed');
+ });
+});
+
+it('redacts capability outputs from repair history',async()=>{
+ const registry=createAgentCapabilityRegistry([{...manifest,invoke:()=>({state:'invalid',value:{secret:'private source record'},diagnostics:[{code:'proposal.invalid',message:'Repair config.',retryable:false}]})}]);if(!registry.ok)throw new Error('registry');
+ const session=createAgentSession({dispatcher:createAgentCapabilityDispatcher({registry:registry.value,host})});let history:unknown;
+ await session.run({request:base,budget:budget(),propose:input=>{history=input.previous;return base.input;}});
+ expect(JSON.stringify(history)).not.toContain('private source record');expect(JSON.stringify(history)).not.toContain('receipt');expect(history).toMatchObject([{turn:1,state:'invalid'}]);
+});
