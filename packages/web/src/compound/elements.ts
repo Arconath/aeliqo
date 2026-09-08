@@ -233,7 +233,7 @@ export class AeliqoInvestigationElement extends AeliqoCompoundElement {
 }
 
 export class AeliqoSearchResultsElement extends AeliqoCompoundElement {
-  static readonly styles = aeliqoCompoundThemeStyles;
+  static readonly styles = [...aeliqoCompoundThemeStyles];
   static readonly properties = {detailRecord: {attribute: false}, detailFields: {attribute: false}, query: {type: String}, queryRevision: {attribute: "query-revision", type: String}, resultRevision: {attribute: "result-revision", type: String}, rows: {attribute: false}, columns: {attribute: false}, identity: {attribute: false}, result: {attribute: false}, scope: {attribute: false}, selectedKey: {attribute: "selected-key", type: String}, entity: {type: String}, status: {type: String}, message: {type: String}, title: {type: String}, count: {type: Number}};
   detailRecord: AeliqoDataRecord | undefined; detailFields: readonly AeliqoDataColumn[] = []; query = ""; queryRevision = ""; resultRevision = ""; rows: readonly AeliqoDataRecord[] = []; columns: readonly AeliqoDataColumn[] = []; identity: readonly string[] = []; result: ResultRef | undefined; scope: AeliqoDataScope | undefined; selectedKey = ""; entity = "result"; status: AeliqoCompoundStatus = "ready"; message = ""; title = "Search results"; count: number | undefined;
   protected override render() {
