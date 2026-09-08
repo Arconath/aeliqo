@@ -3,6 +3,7 @@ import type {NarrativeClaim, ResultRef} from '../../packages/core/src/index.js';
 import {createNarrativeVerifier, type NarrativeAuthority} from '../../packages/agent/src/narrative.js';
 import {createResultStore} from '../../packages/runtime/src/results/index.js';
 import {createRegionStore, type RegionAuthority, type RegionContent} from '../../packages/runtime/src/regions/index.js';
+import {assertDeniedSnapshot, assertNoMaterializedRows} from '../../packages/testkit/src/index.js';
 import {resultDescriptor, resultRef} from './fixtures.js';
 
 const ok = <T>(value: T) => ({ok: true as const, value});
@@ -123,8 +124,11 @@ describe('T28 revocation materializations', () => {
     // Revocation has to erase the materialized bytes first; the host then
     // revokes the region so its task/presentation cannot retain a dead ref.
     store.revoke({principalKey: 'alice', scopeDigest: 'scope-alice'});
-    expect(handle.snapshot()).toMatchObject({status: 'denied', batches: [], diagnostics: [{code: 'data.authorization-revoked'}]});
-    expect(handle.snapshot().descriptor).toBeUndefined();
+    const revokedSnapshot = handle.snapshot();
+    expect(revokedSnapshot).toMatchObject({status: 'denied', batches: [], diagnostics: [{code: 'data.authorization-revoked'}]});
+    assertDeniedSnapshot(revokedSnapshot, 'data.authorization-revoked');
+    assertNoMaterializedRows(revokedSnapshot);
+    expect(revokedSnapshot.descriptor).toBeUndefined();
     expect(verifier.verify(narrativeClaim()).ok).toBe(false);
     expect(regions.revoke('security-region', 'permission revoked')).toBe(true);
     expect(regionHandle.snapshot().status).toBe('revoked');

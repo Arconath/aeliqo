@@ -1,0 +1,20 @@
+{
+  "name": "@aeliqo/testkit",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Small assertions and stream helpers for Aeliqo host and security tests",
+  "license": "Apache-2.0",
+  "files": ["dist", "README.md", "LICENSE"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@aeliqo/runtime": "workspace:*"
+  }
+}

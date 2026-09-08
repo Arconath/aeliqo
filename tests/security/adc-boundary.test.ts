@@ -7,12 +7,13 @@ import {
 } from '../../packages/runtime/src/data/index.js';
 import type {CohortMembership, CohortResolver} from '../../packages/runtime/src/evaluation/index.js';
 import {createResultStore} from '../../packages/runtime/src/results/index.js';
+import {assertNoMaterializedRows, rowsFromResultEvents} from '../../packages/testkit/src/index.js';
 import {budget, collect, query, resultRef, securityCatalog, snapshot} from './fixtures.js';
 
 const ok = <T>(value: T): Outcome<T> => ({ok: true, value});
 
 function rows(events: readonly ResultEvent[]): readonly Record<string, unknown>[] {
-  return events.flatMap((event) => event.kind === 'batch' ? event.rows as readonly Record<string, unknown>[] : []);
+  return rowsFromResultEvents(events) as readonly Record<string, unknown>[];
 }
 
 const sourceRef: ResultRef = resultRef({id: 'cohort-source', revision: 'cohort-source-1', scopeDigest: 'scope-colliding'});
@@ -67,6 +68,53 @@ describe('T28 ADC authorization discrimination', () => {
 
     expect(planned.ok).toBe(true);
     expect(seenPrincipalKeys).toEqual(['bob']);
+    resultStore.dispose();
+  });
+
+  it('rejects a structured principal without a trusted cohort key, while a host cohort capability may supply one', async () => {
+    const seenPrincipalKeys: string[] = [];
+    const resolver: CohortResolver = {
+      async resolve(_request, context) {
+        seenPrincipalKeys.push(context.principalKey);
+        return ok(membershipFor(context.principalKey));
+      },
+    };
+    const resultStore = createResultStore();
+    const service = createLocalDataService({
+      snapshot: snapshot(),
+      cohortResolver: resolver,
+      cohortContext: () => ({resultStore, resolveResult: () => undefined}),
+      authorize: () => ok({scopeDigest: 'scope-colliding', policyRevision: 'policy-shared'}),
+    });
+    const request = {
+      version: '1' as const,
+      requestId: 'structured-principal-plan',
+      catalogRevision: securityCatalog.revision,
+      target: {outputId: 'fixed-employees'},
+      query: query({population: fixedPopulation}),
+      budget,
+    };
+
+    // The application-owned principal is deliberately structured. It cannot
+    // select a result-store partition by coercion or by a shared fallback.
+    // docs/02-data-contract and docs/13-security-enterprise require a trusted
+    // authenticated key, while the in-process cohort capability is the only
+    // explicit exception for a host-owned partition.
+    const untrusted = await service.plan(request, {principal: {id: 'alice'}});
+    expect(untrusted.ok).toBe(false);
+    expect(seenPrincipalKeys).toEqual([]);
+
+    const trustedStore = createResultStore();
+    const trusted = await service.plan(
+      {...request, requestId: 'structured-principal-with-cohort-key'},
+      {
+        principal: {id: 'alice'},
+        cohort: {principalKey: 'alice', resolver, resultStore: trustedStore, resolveResult: () => undefined},
+      },
+    );
+    expect(trusted.ok).toBe(true);
+    expect(seenPrincipalKeys).toEqual(['alice']);
+    trustedStore.dispose();
     resultStore.dispose();
   });
 
@@ -134,6 +182,7 @@ describe('T28 ADC authorization discrimination', () => {
     await revoked;
     const events = await eventsPromise;
     expect(events).toEqual([{kind: 'error', requestId: 'revocation-plan', error: expect.objectContaining({code: 'data.aborted'})}]);
+    assertNoMaterializedRows(events);
     expect(rows(events)).toHaveLength(0);
   });
 });

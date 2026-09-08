@@ -9,8 +9,8 @@ import type {
   DataRecord,
   LocalSnapshot,
   QueryBudget,
-  ResultEvent,
 } from '../../packages/runtime/src/data/index.js';
+import {collectResultEvents} from '../../packages/testkit/src/index.js';
 
 const registry = createStandardFunctionRegistry();
 if (!registry.ok) throw new Error('The standard function registry is unavailable.');
@@ -67,11 +67,7 @@ export function snapshot(rows: readonly DataRecord[] = securityRows, sourceRevis
   return {catalog: securityCatalog, sourceRevision, records: {employees: rows}};
 }
 
-export async function collect(events: AsyncIterable<ResultEvent>): Promise<ResultEvent[]> {
-  const result: ResultEvent[] = [];
-  for await (const event of events) result.push(event);
-  return result;
-}
+export const collect = collectResultEvents;
 
 export function resultRef(overrides: Partial<ResultRef> = {}): ResultRef {
   return {
