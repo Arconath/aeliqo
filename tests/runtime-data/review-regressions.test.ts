@@ -107,4 +107,32 @@ describe('T08 independent review regressions', () => {
       digestSpy.mockRestore();
     }
   });
+
+  it('rejects a source replacement that races the execute result digest as stale', async () => {
+    const service = createLocalDataService({snapshot: snapshot()});
+    const planned = await service.plan({
+      version: '1', requestId: 'execute-digest-race-plan', catalogRevision: catalog.revision,
+      target: {outputId: 'facts-output'}, query, budget,
+    });
+    expect(planned.ok).toBe(true);
+    if (!planned.ok) return;
+
+    const digestStarted = deferred<void>();
+    const releaseDigest = deferred<ArrayBuffer>();
+    const digestSpy = vi.spyOn(globalThis.crypto.subtle, 'digest').mockImplementationOnce(() => {
+      digestStarted.resolve();
+      return releaseDigest.promise;
+    });
+    try {
+      const executing = collect(service, planned.value);
+      await digestStarted.promise;
+      expect(service.replaceSnapshot(snapshot('review-source-2'))).toMatchObject({ok: true});
+      releaseDigest.resolve(new Uint8Array(32).buffer);
+      const events = await executing;
+      expect(events).toMatchObject([{kind: 'error', requestId: 'execute-digest-race-plan', error: {code: 'data.stale-plan'}}]);
+      expect(events).toHaveLength(1);
+    } finally {
+      digestSpy.mockRestore();
+    }
+  });
 });
