@@ -120,3 +120,9 @@ These oracle-only tests do not mark T07 complete.
 Hosted run34178608583 for exactc5486effd9e3207680e176b7d4c2e8336e6e975d
 completed successfully: platform and specification jobs pass. This includes the
 new native authentication retention regression. No SDK/release/deployment claim.
+
+Scalar helper packet fdf0343 is independently reviewed and locally passes54
+contract tests and strict types; hosted run34179383070 succeeds for that exact
+commit. It provides pure shared scalar validation, exact decimal/instant ordering
+and normalized identity semantics for the query engine. T07 is still active;
+production oracle binding and plan boundary tests await a compiling engine packet.

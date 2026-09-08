@@ -1,0 +1,26 @@
+{
+  "commit": "fdf0343adfc01009800704d2e7f644d92b2fbcb5",
+  "scope": "Pure internal scalar helpers; query engine integration remains pending.",
+  "local": {
+    "contractTests": 54,
+    "strictTypecheck": "pass"
+  },
+  "independentReview": {
+    "reviewer": "preflight_diagnosis",
+    "result": "pass",
+    "focusedTests": 6,
+    "additionalChecks": [
+      "comparator antisymmetry/transitivity",
+      "compare equality implies normalized identity equality",
+      "date/instant offsets and year boundaries",
+      "decimal bounds, nonfinite/unsafe inputs and accessor rejection"
+    ]
+  },
+  "hosted": {
+    "runId": 34179383070,
+    "headSha": "fdf0343adfc01009800704d2e7f644d92b2fbcb5",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "doesNotClose": "T07 relational engine or full SDK release"
+}
