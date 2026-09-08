@@ -3,6 +3,43 @@ import {mkdir, writeFile} from "node:fs/promises";
 import {createServer} from "node:http";
 import {dirname} from "node:path";
 
+type TraceEvent = {readonly name?: unknown; readonly dur?: unknown; readonly ts?: unknown; readonly ph?: unknown; readonly cat?: unknown};
+
+function traceEvent(value: unknown): TraceEvent | undefined {
+  return typeof value === "object" && value !== null ? value as TraceEvent : undefined;
+}
+
+function percentile(values: readonly number[], fraction: number): number | null {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((left, right) => left - right);
+  return sorted[Math.min(sorted.length - 1, Math.max(0, Math.ceil(sorted.length * fraction) - 1))] ?? null;
+}
+
+function tracePhaseSummary(events: readonly TraceEvent[], matches: (event: TraceEvent, normalizedName: string) => boolean) {
+  const selected = events.filter((event) => matches(event, String(event.name ?? "").toLowerCase().replace(/[^a-z0-9]/gu, "")));
+  const durations = selected.map((event) => typeof event.dur === "number" && Number.isFinite(event.dur) ? event.dur / 1000 : 0);
+  return {
+    count: selected.length,
+    timedCount: durations.filter((duration) => duration > 0).length,
+    totalMs: durations.reduce((total, duration) => total + duration, 0),
+    p50Ms: percentile(durations, 0.5),
+    p95Ms: percentile(durations, 0.95),
+    maxMs: durations.length === 0 ? null : Math.max(...durations),
+    names: [...new Set(selected.map((event) => String(event.name ?? "unknown")))].sort(),
+  };
+}
+
+function summarizeTrace(events: readonly unknown[]) {
+  const parsed = events.map(traceEvent).filter((event): event is TraceEvent => event !== undefined);
+  return {
+    eventCount: parsed.length,
+    script: tracePhaseSummary(parsed, (_event, name) => name.includes("script") || ["functioncall", "runmicrotasks", "v8execute", "compilecode"].includes(name)),
+    layout: tracePhaseSummary(parsed, (_event, name) => name === "layout" || name === "updatelayouttree" || name === "recalculatestyles"),
+    paint: tracePhaseSummary(parsed, (_event, name) => name === "paint" || name.startsWith("paint")),
+    compositeLayers: tracePhaseSummary(parsed, (_event, name) => name === "compositelayers"),
+  };
+}
+
 type PerformanceApi = {
   smallStandalone: (options?: {timed?: boolean}) => Promise<any>;
   mediumViews: (options?: {timed?: boolean}) => Promise<any>;
@@ -82,8 +119,8 @@ test("runs small, medium, large-window, reducer and teardown workloads", async (
   expect(result.large.executedRows).toBe(100);
   expect(result.large.examinedRows).toBe(100);
   expect(result.large.transferredRows).toBe(100);
-  expect(result.large.transportBytes).toBeGreaterThan(0);
-  expect(result.large.responseBodyBytes).toBe(result.large.transportBytes);
+  expect(result.large.contentLengthBodyBytes).toBeGreaterThan(0);
+  expect(result.large.responseBodyBytes).toBe(result.large.contentLengthBodyBytes);
   expect(result.large.mountedRows).toBeLessThanOrEqual(100);
   expect(result.reducer.successful).toBe(result.reducer.iterations);
   expect(result.reducer.unrelatedRoutes).toBe(0);
@@ -118,21 +155,32 @@ test("records first/subsequent observations with a Chromium layout/paint trace",
     await source.close();
   }
   await client.detach();
-  await writeFile(testInfo.outputPath("chromium-timeline-trace.json"), `${JSON.stringify({traceEvents}, null, 2)}\n`, "utf8");
   const measured = report as any;
+  const trace = summarizeTrace(traceEvents);
+  const tracePhasesAvailable = trace.script.count > 0 && trace.layout.count > 0 && trace.paint.count > 0;
+  const plannerDurations = (measured as any)?.medium?.measurement?.results?.subsequent
+    ?.map((sample: any) => sample?.plan?.durationMs)
+    ?.filter((duration: unknown): duration is number => typeof duration === "number" && Number.isFinite(duration)) ?? [];
+  const reducerDispatchDurations = (measured as any)?.reducer?.results?.subsequent
+    ?.flatMap((sample: any) => Array.isArray(sample?.rawMs) ? sample.rawMs : [])
+    ?.filter((duration: unknown): duration is number => typeof duration === "number" && Number.isFinite(duration)) ?? [];
+  const plannerP95Ms = percentile(plannerDurations, 0.95);
+  const reducerDispatchP95Ms = percentile(reducerDispatchDurations, 0.95);
+  await writeFile(testInfo.outputPath("chromium-timeline-trace.json"), `${JSON.stringify({traceEvents, trace}, null, 2)}\n`, "utf8");
   const budgetAssertions = {
-    presentationPlannerP95Ms: measured.medium?.measurement?.subsequent?.p95Ms,
-    targetedReducerP95Ms: measured.reducer?.subsequent?.p95Ms,
+    presentationPlannerP95Ms: plannerP95Ms,
+    targetedReducerDispatchP95Ms: reducerDispatchP95Ms,
     largeMountedRows: measured.large?.sample?.mountedRows,
-    presentationPlannerWithinBudget: measured.medium?.measurement?.subsequent?.p95Ms <= 16,
-    targetedReducerWithinBudget: measured.reducer?.subsequent?.p95Ms <= 4,
+    presentationPlannerWithinBudget: plannerP95Ms !== null && plannerP95Ms <= 16,
+    targetedReducerWithinBudget: reducerDispatchP95Ms !== null && reducerDispatchP95Ms <= 4,
     largeGeometryWithinBudget: measured.large?.sample?.mountedRows <= 100,
-    enforced: process.env.AELIQO_ENFORCE_PERFORMANCE_BUDGETS === "1",
+    tracePhasesAvailable,
+    enforced: process.env.AELIQO_ENFORCE_PERFORMANCE_BUDGETS !== "0",
   };
   const output = testInfo.outputPath("performance-report.json");
   await mkdir(dirname(output), {recursive: true});
-  await writeFile(output, `${JSON.stringify({sourceCommit: process.env.AELIQO_SOURCE_COMMIT ?? "unknown", report, budgetAssertions}, null, 2)}\n`, "utf8");
+  await writeFile(output, `${JSON.stringify({sourceCommit: process.env.AELIQO_SOURCE_COMMIT ?? "unknown", report, trace, budgetAssertions}, null, 2)}\n`, "utf8");
   expect(report).toMatchObject({environment: {runtime: "browser"}, small: {measurement: {first: {rawMs: expect.any(Array)}, subsequent: {rawMs: expect.any(Array)}}}});
+  expect(tracePhasesAvailable).toBe(true);
   if (budgetAssertions.enforced) expect(budgetAssertions).toMatchObject({presentationPlannerWithinBudget: true, targetedReducerWithinBudget: true, largeGeometryWithinBudget: true});
-  expect(traceEvents.some((event) => typeof event === "object" && event !== null && ["Layout", "Paint", "CompositeLayers"].includes((event as {name?: string}).name ?? ""))).toBe(true);
 });

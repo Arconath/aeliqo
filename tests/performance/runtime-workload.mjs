@@ -17,10 +17,10 @@ const sourceCommit = (() => {
 })();
 
 const medium = timingEnabled
-  ? await firstSubsequent('medium-planner', async () => { runMediumPlanner(); })
+  ? await firstSubsequent('medium-planner', async () => runMediumPlanner())
   : {label: 'medium-planner', skipped: true};
 const reducer = timingEnabled
-  ? await firstSubsequent('targeted-reducer', async () => { await runTargetedReducer(100); })
+  ? await firstSubsequent('targeted-reducer', async () => runTargetedReducer(100))
   : {label: 'targeted-reducer', skipped: true};
 const functionalMedium = runMediumPlanner();
 const functionalReducer = await runTargetedReducer(100);

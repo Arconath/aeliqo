@@ -85,7 +85,7 @@ async function mediumOnce(): Promise<{readonly rowCount: number; readonly rowFie
   return {rowCount: rows.length, rowFieldCount: MEDIUM_FIELD_COUNT, views: views.length, virtualRows, plan};
 }
 
-async function largeOnce(sourceUrl: string): Promise<{readonly populationRows: number; readonly requestedRows: number; readonly transferredRows: number; readonly mountedRows: number; readonly totalRows: number; readonly executedRows: number; readonly examinedRows: number; readonly transportBytes: number; readonly responseBodyBytes: number}> {
+async function largeOnce(sourceUrl: string): Promise<{readonly populationRows: number; readonly requestedRows: number; readonly transferredRows: number; readonly mountedRows: number; readonly totalRows: number; readonly executedRows: number; readonly examinedRows: number; readonly contentLengthBodyBytes: number; readonly responseBodyBytes: number}> {
   resetFixture();
   const response = await fetch(`${sourceUrl.replace(/\/$/u, "")}/rows?limit=${LARGE_TRANSFERRED_ROW_COUNT}&cursor=page-1`, {cache: "no-store"});
   if (!response.ok) throw new Error(`large source fixture returned ${response.status}`);
@@ -97,7 +97,7 @@ async function largeOnce(sourceUrl: string): Promise<{readonly populationRows: n
   const mountedRows = dataTable.shadowRoot?.querySelectorAll("tbody tr").length ?? 0;
   return {populationRows: payload.populationRows, requestedRows: payload.requestedRows, transferredRows: rows.length, mountedRows,
     totalRows: dataTable.totalRows ?? 0, executedRows: payload.executedRows, examinedRows: payload.examinedRows,
-    transportBytes: Number(response.headers.get("content-length") ?? 0), responseBodyBytes: responseBuffer.byteLength};
+    contentLengthBodyBytes: Number(response.headers.get("content-length") ?? 0), responseBodyBytes: responseBuffer.byteLength};
 }
 
 async function measured(label: string, once: () => Promise<unknown>, timed: boolean): Promise<unknown> {
@@ -194,7 +194,7 @@ async function runAll(options: {timed?: boolean; sourceUrl?: string} = {}): Prom
   const geometry = await boundedGeometry(options.sourceUrl);
   const cleanup = await mountDispose();
   return {environment: environmentSnapshot(), elapsedMs: performance.now() - started, small, medium, large, reducer, geometry, cleanup,
-    notes: ["First/subsequent samples reuse one already-loaded browser page; they do not claim a process or HTTP-cache cold start.", "Layout and paint evidence belongs to the Chromium timeline trace; requestAnimationFrame/updateComplete is not used as a paint measurement.", "Large workload fetches 100 records from a local HTTP source fixture whose declared population is 1,000,000 rows, and records executed rows and Content-Length.", "The teardown probe counts connected listeners separately from detached shadow-root registrations released with their owning elements, and checks ResultStore leases plus Region observers/controllers."]};
+    notes: ["First/subsequent samples reuse one already-loaded browser page; they do not claim a process or HTTP-cache cold start.", "Layout and paint evidence belongs to the Chromium timeline trace; requestAnimationFrame/updateComplete is not used as a paint measurement.", "Large workload fetches 100 records from a local indexed source fixture whose declared population is 1,000,000 rows, and records executed/examined rows plus response body bytes. Content-Length is reported as a body-byte declaration; it is not a full transport-byte measurement including headers.", "The teardown probe counts connected listeners separately from detached shadow-root registrations released with their owning elements, and checks ResultStore leases plus Region observers/controllers."]};
 }
 
 window.aeliqoPerformance = {smallStandalone: (options = {}) => measured("small-standalone", smallOnce, options.timed === true),
