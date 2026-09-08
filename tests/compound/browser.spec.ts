@@ -13,12 +13,12 @@ test("explorer forwards filter and stable identity selection to the host", async
   const filter = explorer.locator("aeliqo-filter-builder");
   await filter.locator("input[part=value]").fill("Ada");
   await filter.locator("button[part=apply]").click();
-  await expect.poll(() => page.evaluate(() => (window as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-explorer-filter")?.detail.predicate)).toEqual({op: "compare", entity: "person", field: "name", value: "Ada", comparison: "eq"});
+  await expect.poll(() => page.evaluate(() => (window as unknown as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-explorer-filter")?.detail.predicate)).toEqual({op: "compare", entity: "person", field: "name", value: "Ada", comparison: "eq"});
 
   const record = explorer.locator("aeliqo-record-list").locator("button[part=record-button]").first();
   await record.focus();
   await page.keyboard.press("Enter");
-  await expect.poll(() => page.evaluate(() => (window as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-explorer-selection")?.detail.keys)).toEqual(["string:1:a"]);
+  await expect.poll(() => page.evaluate(() => (window as unknown as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-explorer-selection")?.detail.keys)).toEqual(["string:1:a"]);
   await expect(explorer.locator("aeliqo-detail").locator("[part=identity]")).toContainText("string:1:a");
 });
 
@@ -32,14 +32,14 @@ test("comparison and breakdown use shared bounded tables and host evaluated valu
     return {identity: table.identity, columns: table.columns.map((column: {key: string}) => column.key), firstMetric: table.rows[0]?.metric};
   })).toEqual({identity: ["metricId"], columns: ["metric", "comparison:a", "comparison:b", "comparison:metric"], firstMetric: "Amount (USD)"});
   await comparison.getByRole("button", {name: "Alpha", exact: true}).click();
-  await expect.poll(() => page.evaluate(() => (window as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-comparison-set")?.detail)).toMatchObject({keys: ["b", "metric"], scope: {label: "Authorized people"}});
+  await expect.poll(() => page.evaluate(() => (window as unknown as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-comparison-set")?.detail)).toMatchObject({keys: ["b", "metric"], scope: {label: "Authorized people"}});
 
   const breakdown = page.locator("#breakdown");
   await expect(breakdown.locator("aeliqo-table")).toHaveCount(1);
   await expect(breakdown.locator("aeliqo-table")).toContainText("25%");
   await expect(breakdown.locator("aeliqo-table")).toContainText("Not available");
   await breakdown.locator("aeliqo-table input[type=radio]").first().check();
-  await expect.poll(() => page.evaluate(() => (window as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-breakdown-group")?.detail)).toMatchObject({key: "north", scope: {label: "Authorized people"}});
+  await expect.poll(() => page.evaluate(() => (window as unknown as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-breakdown-group")?.detail)).toMatchObject({key: "north", scope: {label: "Authorized people"}});
 });
 
 test("search results hide stale materialization and restore the matching revision", async ({page}) => {
@@ -65,23 +65,23 @@ test("record editor validates slotted fields and includes the explicit draft rec
     await element.updateComplete;
   });
   await editor.getByRole("button", {name: "Save", exact: true}).click();
-  expect(await page.evaluate(() => (window as FixtureWindow).compoundFixture.events.filter(event => event.type === "aeliqo-record-editor-save").length)).toBe(0);
+  expect(await page.evaluate(() => (window as unknown as FixtureWindow).compoundFixture.events.filter(event => event.type === "aeliqo-record-editor-save").length)).toBe(0);
   await editor.locator("aeliqo-text-field").locator("input").fill("Ada Lovelace");
   await page.evaluate(async () => await (document.querySelector("#editor aeliqo-date-range") as any).updateComplete);
   await editor.getByRole("button", {name: "Save", exact: true}).click();
-  await expect.poll(() => page.evaluate(() => (window as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-record-editor-save")?.detail)).toMatchObject({key: "a", entityRevision: "rev-1", values: {name: "Ada Lovelace", tags: ["first", "second"], "period[start]": "2026-09-01", "period[end]": "2026-09-08", "__proto__": "safe", constructor: "safe-constructor"}});
+  await expect.poll(() => page.evaluate(() => (window as unknown as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-record-editor-save")?.detail)).toMatchObject({key: "a", entityRevision: "rev-1", values: {name: "Ada Lovelace", tags: ["first", "second"], "period[start]": "2026-09-01", "period[end]": "2026-09-08", "__proto__": "safe", constructor: "safe-constructor"}});
   expect(await page.evaluate(() => {
-    const detail = (window as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-record-editor-save")?.detail as {values: Record<string, unknown>};
+    const detail = (window as unknown as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-record-editor-save")?.detail as {values: Record<string, unknown>};
     return {keys: Object.keys(detail.values), ignored: detail.values.ignored, proto: detail.values["__proto__"], constructor: detail.values.constructor};
   })).toEqual({keys: ["tags", "__proto__", "constructor", "name", "period[start]", "period[end]"], ignored: undefined, proto: "safe", constructor: "safe-constructor"});
   await editor.getByRole("button", {name: "Cancel", exact: true}).click();
-  await expect.poll(() => page.evaluate(() => (window as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-record-editor-cancel")?.detail)).toMatchObject({key: "a", entityRevision: "rev-1", values: {name: "Ada Lovelace", tags: ["first", "second"], "period[start]": "2026-09-01", "period[end]": "2026-09-08", "__proto__": "safe", constructor: "safe-constructor"}});
+  await expect.poll(() => page.evaluate(() => (window as unknown as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-record-editor-cancel")?.detail)).toMatchObject({key: "a", entityRevision: "rev-1", values: {name: "Ada Lovelace", tags: ["first", "second"], "period[start]": "2026-09-01", "period[end]": "2026-09-08", "__proto__": "safe", constructor: "safe-constructor"}});
 });
 
 test("form flow keeps step scoped controls mounted, blocks invalid progression, and commits all steps", async ({page}) => {
   const flow = page.locator("#flow");
   await flow.getByRole("button", {name: "Next", exact: true}).click();
-  expect(await page.evaluate(() => (window as FixtureWindow).compoundFixture.events.filter(event => event.type === "aeliqo-form-flow-step").length)).toBe(0);
+  expect(await page.evaluate(() => (window as unknown as FixtureWindow).compoundFixture.events.filter(event => event.type === "aeliqo-form-flow-step").length)).toBe(0);
   await expect(flow.locator("[part=step-panel]")).toHaveAttribute("data-step", "one");
   await flow.locator("aeliqo-text-field").locator("input").fill("Ada Lovelace");
   await flow.getByRole("button", {name: "Next", exact: true}).click();
@@ -93,9 +93,9 @@ test("form flow keeps step scoped controls mounted, blocks invalid progression, 
     await element.updateComplete;
   });
   await flow.getByRole("button", {name: "Commit", exact: true}).click();
-  await expect.poll(() => page.evaluate(() => (window as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-form-flow-commit")?.detail.draft)).toMatchObject({draftOnly: "new", displayName: "Ada Lovelace", plan: "standard", consent: "yes", tags: ["one", "two"], choices: ["red", "blue"], "window[start]": "2026-09-02", "window[end]": "2026-09-09", "__proto__": "draft-proto", constructor: "draft-constructor"});
+  await expect.poll(() => page.evaluate(() => (window as unknown as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-form-flow-commit")?.detail.draft)).toMatchObject({draftOnly: "new", displayName: "Ada Lovelace", plan: "standard", consent: "yes", tags: ["one", "two"], choices: ["red", "blue"], "window[start]": "2026-09-02", "window[end]": "2026-09-09", "__proto__": "draft-proto", constructor: "draft-constructor"});
   expect(await page.evaluate(() => {
-    const draft = (window as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-form-flow-commit")?.detail.draft as Record<string, unknown>;
+    const draft = (window as unknown as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-form-flow-commit")?.detail.draft as Record<string, unknown>;
     return {keys: Object.keys(draft), ignored: draft.ignoredFlow, proto: draft["__proto__"], constructor: draft.constructor};
   })).toEqual({keys: ["draftOnly", "displayName", "tags", "__proto__", "constructor", "plan", "consent", "choices", "window[start]", "window[end]"], ignored: undefined, proto: "draft-proto", constructor: "draft-constructor"});
 });

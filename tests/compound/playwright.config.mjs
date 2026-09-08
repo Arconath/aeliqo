@@ -14,5 +14,5 @@ export default defineConfig({
   timeout: 30_000,
   outputDir: resolve(repositoryRoot, "artifacts/compound-browser"),
   use: {baseURL: origin, browserName: "chromium", trace: "retain-on-failure"},
-  webServer: {command: `./node_modules/.bin/vite --host 127.0.0.1 --port ${port} --strictPort`, cwd: repositoryRoot, url: `${origin}/tests/compound/index.html`, reuseExistingServer: false, timeout: 120_000},
+  webServer: {command: `./node_modules/.bin/vite --config tests/compound/vite.config.mjs --host 127.0.0.1 --port ${port} --strictPort`, cwd: repositoryRoot, url: `${origin}/tests/compound/index.html`, reuseExistingServer: false, timeout: 120_000},
 });
