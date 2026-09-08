@@ -792,12 +792,22 @@ class RegionHandleImpl implements RegionHandle {
         const at = this.now();
         if (!this.live(queuedEpoch)) return this.closedOutcome();
         if (signal?.aborted) return failure('runtime.region-cancelled', 'The region commit was cancelled before publication.');
+        const nextReadSet = authorityReadSet(afterAuthority.value, nextTaskRevision, nextRegionRevision, this.dataRevision);
+        const prospective = frozen({
+          id: this.id,
+          taskRevision: nextTaskRevision,
+          regionRevision: nextRegionRevision,
+          dataRevision: this.dataRevision,
+          status: 'active' as const,
+          state: nextState.value,
+          readSet: nextReadSet,
+        });
         // A controller may have narrower, independently changing grants than
         // the region. Check them after all awaited work and injected callbacks.
         // This guard can only restrict the already-authorized commit.
         if (recheck !== undefined) {
           try {
-            const raw: unknown = recheck();
+            const raw: unknown = recheck(prospective);
             if (raw !== null && typeof raw === 'object' && typeof (raw as PromiseLike<unknown>).then === 'function') {
               void Promise.resolve(raw).catch(() => {});
               return failure('runtime.region-denied', 'The final commit recheck must return a synchronous outcome.');
@@ -811,7 +821,6 @@ class RegionHandleImpl implements RegionHandle {
           if (!this.live(queuedEpoch)) return this.closedOutcome();
           if (signal?.aborted) return failure('runtime.region-cancelled', 'The region commit was cancelled before publication.');
         }
-        const nextReadSet = authorityReadSet(afterAuthority.value, nextTaskRevision, nextRegionRevision, this.dataRevision);
         this.taskRevision = nextTaskRevision;
         this.principalKey = afterAuthority.value.principalKey;
         this.regionRevision = nextRegionRevision;

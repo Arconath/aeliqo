@@ -154,7 +154,8 @@ export interface RegionCommitOptions {
   /** Cancels before the atomic state swap; cancellation after commit cannot undo it. */
   readonly signal?: AbortSignal;
   /** Additional trusted synchronous precondition, checked after host authorization and the clock. */
-  readonly recheck?: () => RegionOutcome<void>;
+  /** Receives the exact prospective snapshot after host authorization and before publication. */
+  readonly recheck?: (next?: RegionSnapshot) => RegionOutcome<void>;
 }
 
 export interface RegionHandle {
