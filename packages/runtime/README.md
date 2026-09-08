@@ -115,3 +115,61 @@ when authorization changes; revocation clears rows before source cleanup runs.
 Result revisions are separate from source revisions. Validation checks declared
 pins and internal consistency, and does not certify business truth or grant model
 egress. Persistence and columnar codecs are not implemented by this memory store.
+
+## Region transactions
+
+`@aeliqo/runtime/regions` exposes `createRegionStore`. The application supplies
+`readAuthority` and `authorizeCommit`; neither comes from a proposal. Current
+authority includes the private principal partition, scope, policy, catalog,
+experience and function-registry revisions, and authorized result references.
+The store owns task, region and data revisions. Each region incarnation receives
+a fresh revision identity, including after disposal or restore.
+
+```ts
+const regions = createRegionStore({readAuthority, authorizeCommit, restoreRegion});
+const created = regions.create({id: task.regionId, state: {task}});
+if (created.ok) {
+  const region = created.value;
+  const staged = await region.stage({
+    requestId: 'present-employees',
+    expected: region.snapshot().readSet!,
+    state: {task: proposedTask, presentation: proposedPresentation},
+    resultHandles: [resultHandle],
+  });
+  if (staged.ok) {
+    const committed = await region.commit(staged.value);
+    if (committed.ok) resultHandle.release();
+  }
+}
+```
+
+Staging captures the complete declared and derived dependency read set in an
+opaque token. Commit serializes changes per region, awaits bounded host
+authorization, then rechecks authority, revisions and result generations before
+swapping state. A stale proposal leaves the current authorized state intact;
+revocation clears it. These checks do not establish intent correctness or
+presentation feasibility, which require the semantic and presentation passes.
+When read access is revoked, the host must revoke the affected region and
+result-store partition. Denial of a presentation commit preserves existing
+authorized data.
+
+Explicit result handles must belong to the current principal and semantic pins.
+Staged and committed regions own separate leases; failed proposals, replacement,
+revocation and disposal release those leases. References supplied without handles
+remain application-managed. Call `region.discard(token)` when dismissing an unused
+proposal to release its staged resources. Histories contain bounded lifecycle metadata.
+`publishData` advances data revision independently and targets observers by
+logical output, query and scope; even a same-reference refresh invalidates a
+proposal that read the previous data revision. Host callbacks receive an
+`AbortSignal` and must stop work when it aborts. Deadlines also stop waiting for
+uncooperative callbacks, whose late results cannot commit.
+
+`@aeliqo/runtime/persistence` serializes versioned task metadata and semantic
+pins, without result rows, principal keys or presentation plans. Storage remains
+the application's responsibility. `await regions.restore(document)` requires a
+host `restoreRegion` callback: requery the persisted task under current
+permissions, update the host's current result authority, and return fresh task
+content and result handles. Only the validated fresh state becomes active.
+Restoration starts a new materialization revision and history; saved references
+do not grant access to data. The callback remains responsible for its original
+result-handle ownership after the restored region acquires its own leases.

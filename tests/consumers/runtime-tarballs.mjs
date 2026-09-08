@@ -2,9 +2,9 @@
  * Build and consume the actual @aeliqo/core and @aeliqo/runtime packages
  * outside the workspace.
  *
- * This is a bounded T06 package-boundary check. It proves the installed data
- * entrypoint, strict consumer declarations, local execution, HTTP transport,
- * authorization revalidation, and a browser fetch path. It does not certify
+ * This is a bounded data/results/regions package-boundary check. It proves
+ * strict consumer declarations, local execution, HTTP transport, region commits,
+ * fresh-query restore, result leases, and browser integration. It does not certify
  * every source adapter, the full query planner, or universal browser support.
  */
 import assert from 'node:assert/strict';
@@ -254,11 +254,108 @@ const query = {
 const fixture = {catalog, rows, budget, query};
 const fixtureSource = JSON.stringify(fixture);
 
+// The same installed SDK exercise runs in Node and a bundled browser consumer.
+const regionExerciseSource = `
+async function exerciseRegions() {
+  const check = (condition, message) => { if (!condition) throw new Error(message); };
+  const value = outcome => { check(outcome.ok, JSON.stringify(outcome)); return outcome.value; };
+  const principalKey = 'region-consumer-private';
+  const regionRows = rows.map((row, index) => index === 0 ? {...row, name: 'region-original-data'} : row);
+  const service = createLocalDataService({
+    snapshot: {catalog, sourceRevision: 'region-source-1', records: {employees: regionRows}},
+    authorize: () => ({ok: true, value: {scopeDigest: 'region-consumer-scope', policyRevision: 'region-policy-1'}}),
+  });
+  const cache = createResultStore({maxEntries: 1});
+  let authority;
+  let queryCount = 0;
+  let restoredHandle;
+  const materialize = async signal => {
+    const accepted = value(await service.plan({version: '1', requestId: 'region-query-' + (++queryCount),
+      catalogRevision: catalog.revision, target: {outputId: 'region-rows'}, query, budget}, {signal}));
+    const events = [];
+    for await (const event of service.execute(accepted, {signal})) events.push(event);
+    check(events[0]?.kind === 'descriptor' && events.at(-1)?.kind === 'complete', 'Region query did not complete');
+    const descriptor = events[0].descriptor;
+    const handle = cache.begin({principalKey, scopeDigest: accepted.scopeDigest, policyRevision: accepted.policyRevision,
+      queryDigest: accepted.queryDigest, catalogRevision: accepted.catalogRevision,
+      functionRegistryDigest: accepted.functionRegistryDigest, sourceRevision: accepted.sourceRevision,
+      outputId: accepted.target.outputId, taskId: descriptor.taskId, requestId: accepted.requestId,
+      populationDigest: accepted.populationDigest});
+    for await (const update of handle.subscribe((async function* () { yield* events; })(), {signal})) void update;
+    check(handle.snapshot().status === 'ready', 'Region handle did not materialize');
+    authority = {principalKey, scopeDigest: accepted.scopeDigest, policyRevision: accepted.policyRevision,
+      catalogRevision: accepted.catalogRevision, functionRegistryDigest: accepted.functionRegistryDigest,
+      experienceRevision: 'consumer-experience-1', results: [descriptor.ref]};
+    return {handle, ref: descriptor.ref};
+  };
+  const first = await materialize();
+  const task = {version: '1', id: 'consumer-task', revision: '1', regionId: 'consumer-region',
+    catalogRevision: authority.catalogRevision, functionRegistryDigest: authority.functionRegistryDigest,
+    kind: 'presentation', goal: 'Show employees', needs: [], assumptions: [], inputs: [first.ref]};
+  const store = createRegionStore({readAuthority: () => ({ok: true, value: authority}),
+    authorizeCommit: () => ({ok: true, value: undefined}),
+    restoreRegion: async ({document, signal}) => {
+      const fresh = await materialize(signal);
+      restoredHandle = fresh.handle;
+      return {ok: true, value: {state: {task: {...document.task, inputs: [fresh.ref]}}, resultHandles: [fresh.handle]}};
+    }});
+  const region = value(store.create({id: task.regionId, state: {task}}));
+  const originalRevision = region.snapshot().regionRevision;
+  const token = value(await region.stage({requestId: 'consumer-stage', expected: region.snapshot().readSet,
+    state: {task}, resultHandles: [first.handle]}));
+  const committed = value(await region.commit(token));
+  check(committed.regionRevision !== originalRevision, 'Commit reused a region revision');
+  check(region.history().at(-1).regionRevision === committed.regionRevision, 'Commit history has the wrong revision');
+  first.handle.release();
+  let capacityBlocked = false;
+  try { cache.begin({...first.handle.key, sourceRevision: 'eviction-probe', requestId: 'eviction-probe'}); }
+  catch (error) { capacityBlocked = error instanceof RangeError; }
+  check(capacityBlocked, 'Active region did not retain its result lease');
+  const pending = value(await region.stage({requestId: 'before-refresh', expected: region.snapshot().readSet,
+    state: region.snapshot().state, resultHandles: [first.handle]}));
+  value(await region.publishData({results: [first.ref]}));
+  const stale = await region.commit(pending);
+  check(!stale.ok && stale.diagnostics[0].code === 'runtime.region-stale', 'Same-reference refresh did not invalidate commit');
+  const persisted = serializeRegionDocument(region.snapshot(), region.history());
+  const document = value(parseRegionDocument(persisted));
+  check(document.dataRevision === 1 && !persisted.includes('region-original-data') && !persisted.includes('batches'),
+    'Persistence did not preserve metadata-only materialization state');
+  const savedRevision = region.snapshot().regionRevision;
+  region.dispose();
+  value(service.replaceSnapshot({catalog, sourceRevision: 'region-source-2', records: {
+    employees: regionRows.map((row, index) => index === 0 ? {...row, name: 'region-restored-data'} : row),
+  }}));
+  const restored = value(await store.restore(persisted));
+  check(queryCount === 2, 'Restore did not execute a fresh query');
+  check(restored.snapshot().regionRevision !== savedRevision, 'Restore reused the previous incarnation revision');
+  check(restored.snapshot().dataRevision === 0 && restored.history().every(entry => entry.dataRevision === 0),
+    'Restore reused prior materialization history');
+  restoredHandle.release();
+  check(restoredHandle.snapshot().batches.some(batch => batch.rows.some(row => row.name === 'region-restored-data')),
+    'Restore did not expose freshly evaluated data');
+  restored.revoke('consumer revocation');
+  check(restored.snapshot().state === undefined && restored.snapshot().readSet === undefined, 'Revocation retained protected region state');
+  const replacement = cache.begin({...restoredHandle.key, sourceRevision: 'after-revoke', requestId: 'after-revoke'});
+  check(restoredHandle.snapshot().status === 'disposed', 'Revoked region retained a data lease against eviction');
+  replacement.release();
+  store.dispose(); cache.dispose();
+  return {queryCount, staleCommitRejected: true, leasesReleased: true, restoreRequeried: true};
+}
+`;
+
 await writeFile(join(consumerDirectory, 'consumer-types.ts'), `
 import {createDataHttpHandler, createHttpDataService, createLocalDataService, parseBudget, parseResultEvent} from '@aeliqo/runtime/data';
 import type {DataHttpHandler, DataRecord, DataService, LocalSnapshot, QueryBudget, ReadContext, ResultEvent} from '@aeliqo/runtime/data';
 import type {Catalog, QuerySpec} from '@aeliqo/core';
 import {createResultStore, type ResultStore, type ResultCacheKey} from '@aeliqo/runtime/results';
+import {createRegionStore, type RegionHandle, type RegionStore} from '@aeliqo/runtime/regions';
+import {parseRegionDocument} from '@aeliqo/runtime/persistence';
+declare const region: RegionHandle;
+// @ts-expect-error Only a runtime-staged opaque token can be committed.
+region.commit({regionRevision: '1'});
+// @ts-expect-error Current host authority is required independently of a proposal.
+const incompleteRegionStore: RegionStore = createRegionStore({authorizeCommit: () => ({ok: true, value: undefined})});
+void [incompleteRegionStore, parseRegionDocument];
 const resultStore: ResultStore = createResultStore();
 // @ts-expect-error Host principal partition is required.
 const invalidResultKey: ResultCacheKey = {scopeDigest: 'scope'};
@@ -305,6 +402,8 @@ import {
   createLocalDataService,
 } from '@aeliqo/runtime/data';
 import {createResultStore} from '@aeliqo/runtime/results';
+import {createRegionStore} from '@aeliqo/runtime/regions';
+import {parseRegionDocument, serializeRegionDocument} from '@aeliqo/runtime/persistence';
 
 const run = (argv, cwd) => {
   const result = spawnSync(argv[0], argv.slice(1), {cwd, encoding: 'utf8'});
@@ -373,6 +472,8 @@ assert.equal(resultHandle.snapshot().status, 'denied');
 assert.equal(resultHandle.snapshot().loadedRows, 0);
 assert.deepEqual(resultHandle.snapshot().batches, []);
 resultStore.dispose();
+${regionExerciseSource}
+const regionProof = await exerciseRegions();
 assert(observations.some(item => item.operation === 'execute' && item.principal === 'alice'));
 
 authMode = 'policy-change';
@@ -447,8 +548,11 @@ try {
   await writeFile('browser.js', \`
 import {createDataHttpHandler, createHttpDataService, createLocalDataService} from '@aeliqo/runtime/data';
 import {createResultStore} from '@aeliqo/runtime/results';
+import {createRegionStore} from '@aeliqo/runtime/regions';
+import {parseRegionDocument, serializeRegionDocument} from '@aeliqo/runtime/persistence';
 const fixture = ${fixtureSource};
 const {catalog, rows, budget, query} = fixture;
+${regionExerciseSource}
 const describeRequest = requestId => ({version:'1',requestId,catalogRevision:null,target:{kind:'catalog'},budget,pageSize:1});
 const planRequest = requestId => ({version:'1',requestId,catalogRevision:'catalog-1',target:{outputId:'employees-output'},query,budget});
 const collect = async iterable => {const events=[];for await (const event of iterable) events.push(event);return events;};
@@ -482,7 +586,8 @@ const network = await runFlow(networkClient);
 // previously raced its completion notification on Linux Chromium.
 const transportFlows = 21;
 for (let flow = 1; flow < transportFlows; flow++) await runFlow(networkClient);
-globalThis.__aeliqoBrowserData = {local,network,transportFlows};
+const regions = await exerciseRegions();
+globalThis.__aeliqoBrowserData = {local,network,transportFlows,regions};
 \`);
   await writeFile('vite.config.mjs', \`export default {build:{minify:true,outDir:'dist',rollupOptions:{input:'index.html'}},plugins:[{name:'record-runtime-modules',generateBundle(_,bundle){const modules=Object.values(bundle).filter(item=>item.type==='chunk').flatMap(item=>Object.keys(item.modules));this.emitFile({type:'asset',fileName:'modules.json',source:JSON.stringify(modules)});}}]};\`);
   run(['node_modules/.bin/vite', 'build'], process.cwd());
@@ -506,9 +611,9 @@ globalThis.__aeliqoBrowserData = {local,network,transportFlows};
   }
   const initialGzipBytes = bundleFiles.reduce((sum, item) => sum + item.gzipBytes, 0);
   // docs/12 assigns 160 KiB to the complete interactive table path.
-  // This data-only subset must fit inside it; passing does not prove that
+  // This data/region subset must fit inside it; passing does not prove that
   // the remaining renderer/interaction code meets the whole-path budget.
-  assert(initialGzipBytes <= 160 * 1024, 'Data subset alone exceeds the 160 KiB interactive-path budget');
+  assert(initialGzipBytes <= 160 * 1024, 'Data/region subset alone exceeds the 160 KiB interactive-path budget');
 
   const staticServer = createServer(async (incoming, outgoing) => {
     if ((incoming.url ?? '').startsWith('/adc/')) {
@@ -545,6 +650,7 @@ globalThis.__aeliqoBrowserData = {local,network,transportFlows};
     assert.equal(browserResult.local.rows, 3);
     assert.equal(browserResult.network.rows, 1);
     assert.equal(browserResult.transportFlows, 21);
+    assert.deepEqual(browserResult.regions, {queryCount: 2, staleCommitRejected: true, leasesReleased: true, restoreRequeried: true});
     assert.deepEqual(browserFailures, []);
   } finally {
     await browser?.close();
@@ -556,9 +662,10 @@ globalThis.__aeliqoBrowserData = {local,network,transportFlows};
     http: {eventKinds: httpEvents.map(event => event.kind), denied: deniedHttpEvents[0].error.code},
     browser: {result: browserResult, modules: browserModules, bundle: bundleFiles, initialGzipBytes, browserVersion},
     observations,
+    regions: regionProof,
   };
   await writeFile(${JSON.stringify(join(runDirectory, 'runtime-report.json'))}, JSON.stringify(report, null, 2) + '\\n');
-  console.log('Installed @aeliqo/runtime/data local, HTTP, auth revalidation, Vite and Chromium passes.');
+  console.log('Installed runtime data, results, region transactions, restore, HTTP and Chromium pass.');
 } finally {
   await new Promise(resolve => server.close(resolve));
 }
@@ -572,7 +679,7 @@ const sourceDigestAfter = {
 assert.deepEqual(sourceDigestAfter, sourceDigestBefore, 'Package source changed during consumer verification');
 const report = {
   passed: true,
-  scope: '@aeliqo/core and @aeliqo/runtime 0.1.0 installed tarballs; strict declarations; local/HTTP ADC roundtrip; authorization and stale-plan checks; browser bundle and fetch path.',
+  scope: '@aeliqo/core and @aeliqo/runtime 0.1.0 installed tarballs; strict declarations; local/HTTP ADC roundtrip; authorization and stale-plan checks; region commits, result leases and fresh-query restore in Node and Chromium.',
   artifacts: artifacts.map(({name, version, path, sha256, integrity}) => ({name, version, path, sha256, integrity})),
   consumer: {directory: consumerDirectory, lockPath: join(runDirectory, 'consumer-package-lock.json'), lockSha256: hash(lockBytes)},
   sourceDigestBefore,
@@ -589,5 +696,5 @@ const report = {
   },
 };
 await writeFile(join(runDirectory, 'report.json'), JSON.stringify(report, null, 2) + '\n');
-console.log('Installed @aeliqo/core/runtime data types, packages, local/HTTP service and Chromium browser fetch path pass.');
+console.log('Installed core/runtime data, results, regions, persistence, HTTP and Chromium consumer checks pass.');
 console.log(`Evidence: ${join(runDirectory, 'report.json')}`);

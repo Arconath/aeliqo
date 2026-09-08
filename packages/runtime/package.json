@@ -17,6 +17,14 @@
     "./results": {
       "types": "./dist/results/index.d.ts",
       "import": "./dist/results/index.js"
+    },
+    "./regions": {
+      "types": "./dist/regions/index.d.ts",
+      "import": "./dist/regions/index.js"
+    },
+    "./persistence": {
+      "types": "./dist/persistence/index.d.ts",
+      "import": "./dist/persistence/index.js"
     }
   },
   "scripts": {
