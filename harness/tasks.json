@@ -905,7 +905,7 @@
       "status": "active",
       "stage": "ready",
       "evidence": [],
-      "notes": "release_inventory owns isolated devtools/Studio implementation. Root owns integration/config/contracts/lock/task state. No external writes or provider spending."
+      "notes": "Devtools ownership/DAG/experience fixes and installed consumer pass; Studio real evaluated preview matrix, all71 Gallery and canonical brand added at a550a4c. Final independent functional review pending. Root owns integration; no publication."
     },
     {
       "id": "T27",
@@ -929,7 +929,7 @@
       "status": "active",
       "stage": "ready",
       "evidence": [],
-      "notes": "Root owns apps/site static shared shell, generated docs and public playground; independent reusable component examples in examples/catalog support all71 docs previews. Production remains explicit GitOps release, not a separate hosting provider. T26 review remains active."
+      "notes": "Real evaluator playground, all71 component routes, static source/API docs and lifecycle fixes implemented. Source-copy minification and actual packed consumer proof added; drift/receipt hardening plus independent final review active."
     },
     {
       "id": "T28",
@@ -1222,9 +1222,10 @@
         "Unavailable credentials remain BLOCKED; does not block independent component implementation.",
         "Run weak/strong model configurations with independent effect permissions and repeated invalid/valid-but-wrong tasks; never derive privilege from evaluation score."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "Root implements data-only production-port evaluation host and explicit owner/corpus/spend-bound live runner; development8 tests pass. No provider call authorized or made; independent heldout corpus, full UI/grounding/ablation/MCP live evaluation and owner provider/models/budget remain required. T40 not accepted."
     },
     {
       "id": "T41",
