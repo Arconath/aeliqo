@@ -10,7 +10,7 @@
     "kit:test": "python3 scripts/validate_all.py",
     "kit:reference": "python3 scripts/test_reference.py",
     "typecheck": "pnpm build:runtime && pnpm build:platform && tsc --project tsconfig.json",
-    "build:platform": "pnpm build:core && pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/react build",
+    "build:platform": "pnpm build:runtime && pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/react build",
     "test:platform": "vitest run --config tests/platform/vitest.config.mjs",
     "test:platform:browser": "pnpm build:platform && playwright test --config tests/platform/playwright.config.mjs",
     "test:platform:consumers": "node tests/consumers/platform-tarballs.mjs",
@@ -63,7 +63,12 @@
     "test:visualization": "pnpm build:platform && vitest run --config tests/visualization/vitest.config.mjs && tsc -p tests/visualization/tsconfig.json && node tests/visualization/temporal-ssr.mjs && node tests/visualization/hierarchy-ssr.mjs && node tests/visualization/cartesian-ssr.mjs",
     "test:visualization:temporal:browser": "playwright test --config tests/visualization/temporal.playwright.config.mjs",
     "test:visualization:consumers": "node tests/consumers/visualization-tarballs.mjs",
-    "test:visualization:browser": "playwright test --config tests/visualization/temporal.playwright.config.mjs && playwright test --config tests/visualization/cartesian.playwright.config.mjs && playwright test --config tests/visualization/playwright.config.mjs"
+    "test:visualization:browser": "playwright test --config tests/visualization/temporal.playwright.config.mjs && playwright test --config tests/visualization/cartesian.playwright.config.mjs && playwright test --config tests/visualization/playwright.config.mjs",
+    "test:presentation-adaptation": "pnpm build:runtime && pnpm build:platform && vitest run --config tests/runtime-presentation/vitest.config.mjs && tsc -p tests/runtime-presentation/tsconfig.json && tsc -p tests/adaptation-semantic/tsconfig.json",
+    "test:presentation-adaptation:browser": "playwright test --config tests/adaptation-semantic/playwright.config.mjs",
+    "test:visualization-semantic": "pnpm build:platform && vitest run --config tests/visualization-semantic/vitest.config.mjs && tsc -p tests/visualization-semantic/tsconfig.json && node tests/visualization-semantic/ssr.mjs",
+    "test:visualization-semantic:browser": "playwright test --config tests/visualization-semantic/playwright.config.mjs",
+    "test:presentation-adaptation:consumers": "node tests/consumers/adaptation-tarballs.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

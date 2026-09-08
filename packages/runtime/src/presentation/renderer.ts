@@ -140,21 +140,24 @@ export interface PresentationRenderer {
 export interface CallbackPresentationRendererOptions {
   readonly apply: (next: PresentationProjectionState, previous: PresentationProjectionState | undefined) => Outcome<void> | void;
   readonly rollback?: (previous: PresentationProjectionState | undefined, next: PresentationProjectionState) => void;
+  /** Required for callbacks that publish visible/private data; omit only for headless instrumentation. */
   readonly clear?: (reason?: string) => void;
 }
 
 /** Wrap an application/DOM projection in the renderer prepare/rollback contract. */
 export function createCallbackPresentationRenderer(options: CallbackPresentationRendererOptions): PresentationRenderer {
+  let epoch = 0;
   return {
     prepare(input) {
       if (input.signal.aborted) return failure('runtime.presentation-cancelled', 'The renderer preparation was cancelled.');
+      const preparedEpoch = epoch;
       let applied = false;
       let appliedState: PresentationProjectionState | undefined;
       return {
         ok: true,
         value: {
           apply: (next = input.next) => {
-            if (input.signal.aborted) return failure('runtime.presentation-cancelled', 'The renderer application was cancelled.');
+            if (input.signal.aborted || epoch !== preparedEpoch) return failure('runtime.presentation-cancelled', 'The renderer application was cancelled.');
             if (applied) return {ok: true, value: undefined};
             // Mark the transaction before calling host code. A callback may
             // mutate the DOM and then throw; rollback must still run.
@@ -169,7 +172,7 @@ export function createCallbackPresentationRenderer(options: CallbackPresentation
             }
           },
           rollback: () => {
-            if (!applied) return;
+            if (!applied || epoch !== preparedEpoch) return;
             applied = false;
             const state = appliedState ?? input.next;
             appliedState = undefined;
@@ -179,6 +182,8 @@ export function createCallbackPresentationRenderer(options: CallbackPresentation
       };
     },
     clear(reason) {
+      // Revocation invalidates pending apply/rollback closures before host code.
+      epoch++;
       try { options.clear?.(reason); } catch { /* clearing a revoked surface cannot repair authorization */ }
     },
   };

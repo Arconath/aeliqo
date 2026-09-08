@@ -37,6 +37,10 @@
     "./interaction": {
       "types": "./dist/interaction/index.d.ts",
       "import": "./dist/interaction/index.js"
+    },
+    "./presentation": {
+      "types": "./dist/presentation/index.d.ts",
+      "import": "./dist/presentation/index.js"
     }
   },
   "scripts": {

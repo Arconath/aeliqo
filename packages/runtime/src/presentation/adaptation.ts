@@ -3,6 +3,7 @@ import {
   validatePresentationPlan,
   type CommitPreconditions,
   type PresentationComposition,
+  type PresentationCompositionRequest,
   type PresentationContext,
   type PresentationEnvironment,
   type PresentationPlan,
@@ -39,7 +40,10 @@ type AdaptationContextFields = Omit<PresentationContext, 'task' | 'current' | 'i
  * derives all three from the current RegionSnapshot immediately before compose.
  */
 export type PresentationAdaptationContext = AdaptationContextFields &
-  Partial<Pick<PresentationContext, 'environment' | 'transitionBlocked' | 'explicitTransition'>>;
+  Partial<Pick<PresentationContext, 'environment' | 'transitionBlocked' | 'explicitTransition'>> & {
+    /** Optional host proposals; all use the same core feasibility validator. */
+    readonly candidates?: PresentationCompositionRequest['candidates'];
+  };
 
 export interface PresentationAdaptationReadInput {
   readonly region: RegionHandle;
@@ -305,6 +309,7 @@ export function createPresentationAdaptationController(options: PresentationAdap
   let waiters: ((outcome: RegionOutcome<PresentationAdaptationResult>) => void)[] = [];
   let scheduled: unknown;
   let scheduledActive = false;
+  let scheduleEpoch = 0;
   let running: Promise<RegionOutcome<PresentationAdaptationResult>> | undefined;
   let runningWaiters: readonly ((outcome: RegionOutcome<PresentationAdaptationResult>) => void)[] = [];
   let activeController: AbortController | undefined;
@@ -337,6 +342,7 @@ export function createPresentationAdaptationController(options: PresentationAdap
   };
 
   const cancelScheduled = (): void => {
+    scheduleEpoch++;
     if (!scheduledActive) return;
     if (scheduled !== undefined) { try { cancelSchedule(scheduled); } catch { /* best effort */ } }
     scheduled = undefined;
@@ -359,6 +365,10 @@ export function createPresentationAdaptationController(options: PresentationAdap
     }
   };
   const observer = options.region.observe(observe);
+  if (observer.closed) {
+    closedByRegion = true;
+    try { options.renderer.clear("The region was already closed."); } catch { /* clearing remains the renderer owner responsibility */ }
+  }
 
   const run = async (request: PendingRequest): Promise<RegionOutcome<PresentationAdaptationResult>> => {
     const controller = new AbortController();
@@ -397,7 +407,7 @@ export function createPresentationAdaptationController(options: PresentationAdap
       return {ok: true, value: {status: 'deferred', snapshot: before, reason: 'transition-blocked'}};
     }
     const requestIdentity = makeRequestId(++requestCounter);
-    const composed = composePresentation({id: requestIdentity.id, revision: requestIdentity.revision, preconditions: semanticReadSet(currentReadSet.value), context: context.value}, options.registry);
+    const composed = composePresentation({id: requestIdentity.id, revision: requestIdentity.revision, preconditions: semanticReadSet(currentReadSet.value), context: context.value, ...(refreshed.value.candidates === undefined ? {} : {candidates: refreshed.value.candidates})}, options.registry);
     if (!composed.ok) return failureFromCore(composed);
     if (signal.aborted) return failure('runtime.presentation-cancelled', 'The adaptation was cancelled.');
     const candidate = composed.value.presentation;
@@ -467,7 +477,10 @@ export function createPresentationAdaptationController(options: PresentationAdap
 
   function scheduleStart(delay: number): void {
     if (disposed || scheduledActive || running !== undefined || pending === undefined) return;
+    const epoch = ++scheduleEpoch;
     const callback = (): void => {
+      if (epoch !== scheduleEpoch || disposed || closedByRegion) return;
+      scheduleEpoch++;
       scheduled = undefined;
       scheduledActive = false;
       const request = pending;

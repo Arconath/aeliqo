@@ -288,6 +288,10 @@
     "./visualization/hierarchy": {
       "types": "./dist/visualization/hierarchy/index.d.ts",
       "import": "./dist/visualization/hierarchy/index.js"
+    },
+    "./region/adaptation": {
+      "types": "./dist/region/adaptation.d.ts",
+      "import": "./dist/region/adaptation.js"
     }
   },
   "files": [
@@ -308,6 +312,15 @@
   },
   "devDependencies": {
     "@types/d3-scale": "4.0.9",
-    "@types/d3-shape": "3.2.0"
+    "@types/d3-shape": "3.2.0",
+    "@aeliqo/runtime": "workspace:*"
+  },
+  "peerDependencies": {
+    "@aeliqo/runtime": "0.1.0"
+  },
+  "peerDependenciesMeta": {
+    "@aeliqo/runtime": {
+      "optional": true
+    }
   }
 }

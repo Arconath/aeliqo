@@ -289,4 +289,47 @@ describe('presentation adaptation runtime', () => {
     expect(region.snapshot().state?.presentation).toBeUndefined();
     controller.dispose();
   });
+  it('ignores a cancelled void-handle callback instead of stealing a later queued request', async () => {
+    const {region, registry} = setup();
+    const callbacks: (() => void)[] = [];
+    let reads = 0;
+    const controller = createPresentationAdaptationController({region, registry,
+      baseContext: () => { reads++; return baseContext(); },
+      renderer: createCallbackPresentationRenderer({apply: () => {}}), dwellMs: 0,
+      schedule: callback => { callbacks.push(callback); },
+    });
+    const first = controller.request(environment(800));
+    await controller.flush();
+    await expect(first).resolves.toMatchObject({ok:true});
+    const second = controller.request(environment(320));
+    expect(callbacks).toHaveLength(2);
+    const before = reads;
+    callbacks[0]!();
+    await Promise.resolve();
+    expect(reads).toBe(before);
+    callbacks[1]!();
+    await expect(second).resolves.toMatchObject({ok:true,value:{status:'committed'}});
+    expect(region.snapshot().state!.presentation!.nodes[0]!.representation.id).toBe('layout.narrow');
+    controller.dispose();
+  });
+
+  it('keeps revoked content cleared when a failed commit rolls back an applied renderer',async()=>{
+    const {region,registry}=setup();let visible='private incumbent';let rollbacks=0;
+    const renderer=createCallbackPresentationRenderer({apply:()=>{visible='candidate';region.revoke('revoked during apply');},rollback:()=>{rollbacks++;visible='private incumbent';},clear:()=>{visible='';}});
+    const controller=createPresentationAdaptationController({region,registry,baseContext:baseContext(),renderer,dwellMs:0});
+    const pending=controller.request(environment(800));
+    await expect(pending).resolves.toMatchObject({ok:false});
+    // Wait for the commit's failure and finally block, not just the observer's early settlement.
+    await new Promise(resolve=>setTimeout(resolve,0));
+    expect(visible).toBe('');expect(rollbacks).toBe(0);controller.dispose();
+  });
+
+  it('clears renderer content when attached to an already closed region',async()=>{
+    for(const close of ['revoke','dispose'] as const){
+      const {region,registry}=setup();let visible='old data';region[close]();
+      const controller=createPresentationAdaptationController({region,registry,baseContext:baseContext(),renderer:createCallbackPresentationRenderer({apply:()=>{},clear:()=>{visible='';}})});
+      expect(visible).toBe('');await expect(controller.request(environment(800))).resolves.toMatchObject({ok:false});controller.dispose();
+    }
+  });
+
 });
