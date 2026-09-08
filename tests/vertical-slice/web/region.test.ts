@@ -128,6 +128,7 @@ describe("T39 registered web region", () => {
     expect(buildAeliqoChartDomain(duplicate)).toHaveLength(2);
     expect(aligned[0]?.points.map((point) => point.value)).toEqual([1, 2]);
     expect(aligned[1]?.points.map((point) => point.value)).toEqual([3, null]);
+    expect(new Set(buildAeliqoChartGeometry(duplicate).circles.map((circle) => circle.x))).toEqual(new Set([164]));
 
     const temporal = [
       {id: "a", label: "A", points: [{x: "2026-01-01T00:00:00.0001Z", label: "early", value: 1}, {x: "2026-01-01T00:00:00.0009Z", label: "late", value: 2}]},

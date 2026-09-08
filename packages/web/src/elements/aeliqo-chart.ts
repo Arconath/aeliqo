@@ -172,8 +172,8 @@ function xCoordinates(domain: readonly AeliqoChartDomainPoint[]): readonly numbe
   const scaledMin = min / scale;
   const span = max / scale - scaledMin;
   if (span === 0) {
-    const step = domain.length === 1 ? 0 : PLOT_WIDTH / (domain.length - 1);
-    return domain.map((_, index) => PLOT_LEFT + step * index);
+    const center = PLOT_LEFT + PLOT_WIDTH / 2;
+    return domain.map(() => center);
   }
   return values.map((value) => PLOT_LEFT + ((value / scale - scaledMin) / span) * PLOT_WIDTH);
 }
