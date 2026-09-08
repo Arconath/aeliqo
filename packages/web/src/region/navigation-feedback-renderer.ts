@@ -6,6 +6,7 @@ type Node = ValidatedPresentation["nodes"][number];
 type ChildRenderer = (nodeId: string) => unknown;
 type Emit = (node: Node, portId: string, payload: InteractionPayload) => void;
 type Values = Record<string, unknown>;
+const PAGE_OPERATION = {id: "navigation.page", revision: "1"} as const;
 
 function record(value: unknown): Values | undefined {
   return value !== null && typeof value === "object" && !Array.isArray(value) ? value as Values : undefined;
@@ -23,8 +24,22 @@ function valuesOf(node: Node): Values {
   return node.config.values as Values;
 }
 
-function declared(node: Node, portId: string, payload: InteractionPayload["kind"]): boolean {
-  return node.config.ports.some((port) => port.id === portId && port.payload === payload && (port.direction === "output" || port.direction === "inout"));
+function operationDeclared(node: Node, operation: unknown): boolean {
+  const candidate = record(operation);
+  return candidate !== undefined && typeof candidate.id === "string" && typeof candidate.revision === "string"
+    && (node.config.operations ?? []).some((declared) => declared.id === candidate.id && declared.revision === candidate.revision);
+}
+
+function declared(node: Node, portId: string, payload: InteractionPayload["kind"], operation?: unknown): boolean {
+  return node.config.ports.some((port) => port.id === portId && port.payload === payload && (port.direction === "output" || port.direction === "inout"))
+    && (operation === undefined || operationDeclared(node, operation));
+}
+
+function ownedEvent(event: Event, type: string, keys: readonly string[]): Values | undefined {
+  if (event.type !== type || typeof CustomEvent === "undefined" || !(event instanceof CustomEvent)) return undefined;
+  const detail = record(event.detail);
+  if (detail === undefined || detail.source !== "user" || Object.keys(detail).some((key) => !keys.includes(key))) return undefined;
+  return detail;
 }
 
 function routePayload(value: unknown): Extract<InteractionPayload, {readonly kind: "navigate"}> | undefined {
@@ -49,41 +64,43 @@ function itemById(values: Values, id: string): Values | undefined {
 }
 
 function emitNavigation(node: Node, event: Event, emit: Emit): void {
-  const detail = record(event instanceof CustomEvent ? event.detail : undefined);
+  const detail = ownedEvent(event, "aeliqo-navigation", ["id", "href", "source"]);
   const id = detail?.id;
   if (typeof id !== "string") return;
   const item = itemById(valuesOf(node), id);
   const payload = routePayload(item);
-  if (payload === undefined || !declared(node, "navigate", "navigate")) return;
+  if (payload === undefined || !declared(node, "navigate", "navigate", payload.route)) return;
   event.preventDefault();
   emit(node, "navigate", payload);
 }
 
 function emitItemAction(node: Node, event: Event, emit: Emit): void {
-  const detail = record(event instanceof CustomEvent ? event.detail : undefined);
+  const detail = ownedEvent(event, "aeliqo-menu-action", ["id", "source"]);
   const id = detail?.id;
   if (typeof id !== "string") return;
   const item = itemById(valuesOf(node), id);
-  if (item === undefined) return;
+  if (item === undefined || item.disabled === true) return;
   const action = actionPayload(item);
-  if (action !== undefined && declared(node, "action", "action-request")) {
+  if (action !== undefined && declared(node, "action", "action-request", action.action)) {
     emit(node, "action", action);
     return;
   }
   const route = routePayload(item);
-  if (route !== undefined && declared(node, "navigate", "navigate")) {
+  if (route !== undefined && declared(node, "navigate", "navigate", route.route)) {
     emit(node, "navigate", route);
   }
 }
 
-function emitNodeAction(node: Node, event: Event, emit: Emit): void {
+function emitNodeAction(node: Node, event: Event, type: "aeliqo-alert-action" | "aeliqo-empty-state-action", emit: Emit): void {
+  const detail = ownedEvent(event, type, type === "aeliqo-empty-state-action" ? ["kind", "source"] : ["source"]);
+  if (detail === undefined || (type === "aeliqo-empty-state-action" && detail.kind !== valuesOf(node).kind)) return;
   const payload = actionPayload(valuesOf(node));
-  if (payload === undefined || !declared(node, "action", "action-request")) return;
+  if (payload === undefined || !declared(node, "action", "action-request", payload.action)) return;
   emit(node, "action", payload);
 }
 
 function emitTreeNavigation(node: Node, event: Event, emit: Emit): void {
-  const detail = record(event instanceof CustomEvent ? event.detail : undefined);
+  const detail = ownedEvent(event, "aeliqo-tree-nav-select", ["id", "previousId", "source"]);
   const id = detail?.id;
   if (typeof id !== "string") return;
   const nodes: Values[] = [];
@@ -96,25 +113,32 @@ function emitTreeNavigation(node: Node, event: Event, emit: Emit): void {
   };
   visit(valuesOf(node).nodes);
   const item = nodes.find((candidate) => candidate.id === id);
-  if (item === undefined) return;
+  if (item === undefined || item.disabled === true) return;
   const action = actionPayload(item);
-  if (action !== undefined && declared(node, "action", "action-request")) {
+  if (action !== undefined && declared(node, "action", "action-request", action.action)) {
     emit(node, "action", action);
     return;
   }
   const route = routePayload(item);
-  if (route !== undefined && declared(node, "navigate", "navigate")) {
+  if (route !== undefined && declared(node, "navigate", "navigate", route.route)) {
     emit(node, "navigate", route);
   }
 }
 
 function emitPage(node: Node, event: Event, emit: Emit): void {
-  const detail = record(event instanceof CustomEvent ? event.detail : undefined);
+  const detail = ownedEvent(event, "aeliqo-page-change", ["page", "previousPage", "direction", "source"]);
   const page = detail?.page;
   const values = valuesOf(node);
+  const previousPage = detail?.previousPage;
+  const direction = detail?.direction;
   const cursors = Array.isArray(values.cursors) ? values.cursors.map(record).filter((cursor): cursor is Values => cursor !== undefined) : [];
   const cursor = cursors.find((candidate) => candidate.page === page);
-  if (!Number.isSafeInteger(page) || cursor === undefined || typeof cursor.cursor !== "string" || typeof values.outputId !== "string" || typeof values.queryDigest !== "string" || !declared(node, "page", "page")) return;
+  const currentPage = values.page;
+  const validDirection = direction === "next" || direction === "previous";
+  const validStep = direction === "next" ? page === Number(previousPage) + 1 : page === Number(previousPage) - 1;
+  if (!Number.isSafeInteger(page) || !Number.isSafeInteger(previousPage) || !Number.isSafeInteger(currentPage)
+    || previousPage !== currentPage || !validDirection || !validStep || cursor === undefined || typeof cursor.cursor !== "string"
+    || typeof values.outputId !== "string" || typeof values.queryDigest !== "string" || !declared(node, "page", "page", PAGE_OPERATION)) return;
   emit(node, "page", {kind: "page", outputId: values.outputId, cursor: cursor.cursor, queryDigest: values.queryDigest});
 }
 
@@ -163,13 +187,13 @@ export function renderNavigationFeedbackNode(node: Node, child: ChildRenderer, e
     case "feedback.toast":
       return html`<aeliqo-toast data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .message=${text(values.message)} .open=${booleanValue(values.open, false)} .tone=${text(values.tone, "info")} .duration=${values.duration} .dismissible=${booleanValue(values.dismissible, true)}></aeliqo-toast>`;
     case "feedback.alert":
-      return html`<aeliqo-alert data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .heading=${text(values.heading)} .message=${text(values.message)} .open=${booleanValue(values.open, true)} .tone=${text(values.tone, "info")} .actionLabel=${text(values.actionLabel)} .dismissible=${booleanValue(values.dismissible, false)} @aeliqo-alert-action=${(event: Event) => emitNodeAction(node, event, emit)}></aeliqo-alert>`;
+      return html`<aeliqo-alert data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .heading=${text(values.heading)} .message=${text(values.message)} .open=${booleanValue(values.open, true)} .tone=${text(values.tone, "info")} .actionLabel=${text(values.actionLabel)} .dismissible=${booleanValue(values.dismissible, false)} @aeliqo-alert-action=${(event: Event) => emitNodeAction(node, event, "aeliqo-alert-action", emit)}></aeliqo-alert>`;
     case "feedback.progress":
       return html`<aeliqo-progress data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .label=${text(values.label)} .value=${values.progressValue} .max=${values.progressMax}></aeliqo-progress>`;
     case "feedback.skeleton":
       return html`<aeliqo-skeleton data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .label=${text(values.label)} .lines=${values.lines} .variant=${text(values.variant, "text")} .animated=${booleanValue(values.animated, true)}></aeliqo-skeleton>`;
     case "feedback.empty-state":
-      return html`<aeliqo-empty-state data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .kind=${text(values.kind, "failure")} .heading=${text(values.heading)} .message=${text(values.message)} .actionLabel=${text(values.actionLabel)} @aeliqo-empty-state-action=${(event: Event) => emitNodeAction(node, event, emit)}></aeliqo-empty-state>`;
+      return html`<aeliqo-empty-state data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .kind=${text(values.kind, "failure")} .heading=${text(values.heading)} .message=${text(values.message)} .actionLabel=${text(values.actionLabel)} @aeliqo-empty-state-action=${(event: Event) => emitNodeAction(node, event, "aeliqo-empty-state-action", emit)}></aeliqo-empty-state>`;
     default:
       return undefined;
   }

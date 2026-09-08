@@ -3,6 +3,7 @@ import {
   type InteractionPort,
   type Outcome,
   type PresentationManifest,
+  type PresentationNode,
   type PresentationValues,
   type Scalar,
   type VersionRef,
@@ -171,7 +172,6 @@ const EMPTY_STATE_KINDS: readonly AeliqoEmptyStateKind[] = ["no-records", "no-ma
 const FEEDBACK_TONES = ["neutral", "info", "success", "warning", "danger"] as const;
 
 type RecordValue = Record<string, unknown>;
-type AnyBinding = AeliqoNavigationFeedbackBindings & Record<string, unknown>;
 
 const fail = <T>(code: string, message: string): Outcome<T> => ({
   ok: false,
@@ -204,6 +204,19 @@ function scalarRecord(value: unknown): value is Readonly<Record<string, Scalar>>
   const candidate = record(value);
   return candidate !== undefined && Object.keys(candidate).length <= MAX_ITEMS
     && Object.entries(candidate).every(([key, item]) => bounded(key) && scalar(item));
+}
+
+function copyVersionRef(value: VersionRef): VersionRef {
+  return {id: value.id, revision: value.revision};
+}
+
+function copyScalar(value: Scalar): Scalar {
+  if (value === null || typeof value !== "object") return value;
+  return {decimal: value.decimal};
+}
+
+function copyScalarRecord(value: Readonly<Record<string, Scalar>>): Readonly<Record<string, Scalar>> {
+  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, copyScalar(item)]));
 }
 
 function safeHref(value: unknown): value is string {
@@ -282,7 +295,7 @@ function normalizeRoutes(value: unknown): Outcome<readonly AeliqoNavigationFeedb
       || !bounded(candidate.id) || seen.has(candidate.id) || !ref(candidate.route) || !scalarRecord(candidate.params) || !safeHref(candidate.href))
       return fail("bindings", "Route bindings require unique IDs, versioned routes, scalar params and safe host destinations.");
     seen.add(candidate.id);
-    result.push({id: candidate.id, route: candidate.route, params: candidate.params, href: candidate.href});
+    result.push({id: candidate.id, route: copyVersionRef(candidate.route), params: copyScalarRecord(candidate.params), href: candidate.href});
   }
   return {ok: true, value: result};
 }
@@ -298,7 +311,7 @@ function normalizeActions(value: unknown): Outcome<readonly AeliqoNavigationFeed
       || !bounded(candidate.id) || seen.has(candidate.id) || !ref(candidate.action) || !scalarRecord(candidate.input))
       return fail("bindings", "Action bindings require unique IDs, versioned actions and scalar input.");
     seen.add(candidate.id);
-    result.push({id: candidate.id, action: candidate.action, input: candidate.input});
+    result.push({id: candidate.id, action: copyVersionRef(candidate.action), input: copyScalarRecord(candidate.input)});
   }
   return {ok: true, value: result};
 }
@@ -565,11 +578,13 @@ function breadcrumbConfig(values: PresentationValues, bindings: AeliqoNavigation
   const entry = bindings.breadcrumbs?.find((candidate) => candidate.id === checked.value.bindingRef); if (entry === undefined) return fail("binding", "Breadcrumb bindingRef is not registered.");
   const contents = contentMap(bindings); const routes = routeMap(bindings);
   const items: RecordValue[] = []; const operations: VersionRef[] = [];
-  for (const item of entry.items) {
+  const hasExplicitCurrent = entry.items.some((item) => item.current === true);
+  for (const [index, item] of entry.items.entries()) {
     const label = content(contents, item.labelRef, "breadcrumb label"); if (!label.ok) return label;
     const route = item.routeRef === undefined ? undefined : routes.get(item.routeRef); if (item.routeRef !== undefined && route === undefined) return fail("binding", "Breadcrumb routeRef is not registered.");
-    if (route !== undefined) operations.push(route.route);
-    items.push({id: item.id, label: label.value!, ...(route === undefined ? {} : routeValue(route)), ...(item.current === undefined ? {} : {current: item.current})});
+    const current = item.current === true || (!hasExplicitCurrent && index === entry.items.length - 1);
+    if (route !== undefined && !current) operations.push(route.route);
+    items.push({id: item.id, label: label.value!, ...(route === undefined || current ? {} : routeValue(route)), ...(item.current === undefined ? {} : {current: item.current})});
   }
   const label = content(contents, entry.labelRef, "breadcrumb label"); if (!label.ok) return label;
   return resolved({...baseValues(bindings, entry.id), label: label.value!, items}, [], operations.length === 0 ? [] : [navPort("navigate", "navigate")], uniqueRefs(operations));
@@ -586,9 +601,11 @@ function menuConfig(values: PresentationValues, bindings: AeliqoNavigationFeedba
     const route = item.routeRef === undefined ? undefined : routes.get(item.routeRef); const action = item.actionRef === undefined ? undefined : actions.get(item.actionRef);
     if (item.routeRef !== undefined && route === undefined) return fail("binding", "Menu routeRef is not registered.");
     if (item.actionRef !== undefined && action === undefined) return fail("binding", "Menu actionRef is not registered.");
-    if (route !== undefined) { operations.push(route.route); hasRoute = true; }
-    if (action !== undefined) { operations.push(action.action); hasAction = true; }
-    items.push({id: item.id, label: label.value!, ...(route === undefined ? {} : routeValue(route)), ...(action === undefined ? {} : actionValue(action)), ...(item.disabled === undefined ? {} : {disabled: item.disabled})});
+    if (item.disabled !== true) {
+      if (route !== undefined) { operations.push(route.route); hasRoute = true; }
+      if (action !== undefined) { operations.push(action.action); hasAction = true; }
+    }
+    items.push({id: item.id, label: label.value!, ...(route === undefined || item.disabled === true ? {} : routeValue(route)), ...(action === undefined || item.disabled === true ? {} : actionValue(action)), ...(item.disabled === undefined ? {} : {disabled: item.disabled})});
   }
   const label = content(contents, entry.labelRef, "menu label"); if (!label.ok) return label;
   return resolved({...baseValues(bindings, entry.id), label: label.value!, items}, [], [
@@ -601,16 +618,21 @@ function paginationConfig(values: PresentationValues, bindings: AeliqoNavigation
   const checked = configRecord(values, ["bindingRevision", "bindingRef"], bindings); if (!checked.ok) return checked;
   const entry = bindings.pagination?.find((candidate) => candidate.id === checked.value.bindingRef); if (entry === undefined) return fail("binding", "Pagination bindingRef is not registered.");
   const label = content(contentMap(bindings), entry.labelRef, "pagination label"); if (!label.ok) return label;
+  const pending = entry.pending ?? false;
+  const previousAvailable = !pending && entry.hasPrevious && entry.page > 1;
+  const nextAvailable = !pending && entry.hasNext && (entry.pageCount === undefined || entry.page < entry.pageCount);
+  const canMove = previousAvailable || nextAvailable;
   return resolved({...baseValues(bindings, entry.id), label: label.value!, outputId: entry.outputId, queryDigest: entry.queryDigest, page: entry.page,
-    ...(entry.pageCount === undefined ? {} : {pageCount: entry.pageCount}), hasPrevious: entry.hasPrevious, hasNext: entry.hasNext, pending: entry.pending ?? false,
-    cursors: entry.cursors}, [], [navPort("page", "page")], [AELIQO_NAVIGATION_FEEDBACK_OPERATION_REFS.page]);
+    ...(entry.pageCount === undefined ? {} : {pageCount: entry.pageCount}), hasPrevious: entry.hasPrevious, hasNext: entry.hasNext, pending,
+    cursors: entry.cursors}, [], canMove ? [navPort("page", "page")] : [], canMove ? [AELIQO_NAVIGATION_FEEDBACK_OPERATION_REFS.page] : []);
 }
 
-function tabsConfig(values: PresentationValues, bindings: AeliqoNavigationFeedbackBindings): Outcome<ReturnType<typeof resolved> extends Outcome<infer T> ? T : never> {
+function tabsConfig(values: PresentationValues, bindings: AeliqoNavigationFeedbackBindings, node?: PresentationNode): Outcome<ReturnType<typeof resolved> extends Outcome<infer T> ? T : never> {
   const checked = configRecord(values, ["bindingRevision", "bindingRef", "value", "defaultValue", "activation", "orientation", "idPrefix"], bindings); if (!checked.ok) return checked;
   const entry = bindings.tabs?.find((candidate) => candidate.id === checked.value.bindingRef); if (entry === undefined) return fail("binding", "Tabs bindingRef is not registered.");
+  if (node !== undefined && (node.children.length > entry.items.length || node.children.some((_, index) => entry.items[index]?.disabled === true))) return fail("children", "Tabs cannot bind child panels to disabled or missing tab items.");
   const input = checked.value.input;
-  for (const key of ["value", "defaultValue"] as const) if (input[key] !== undefined && (!bounded(input[key]) || !entry.items.some((item) => item.id === input[key]))) return fail("config", `${key} must identify an item in the registered tab set.`);
+  for (const key of ["value", "defaultValue"] as const) if (input[key] !== undefined && (!bounded(input[key]) || !entry.items.some((item) => item.id === input[key] && item.disabled !== true))) return fail("config", `${key} must identify an enabled item in the registered tab set.`);
   if (input.activation !== undefined && input.activation !== "automatic" && input.activation !== "manual") return fail("config", "Tabs activation must be automatic or manual.");
   if (input.orientation !== undefined && input.orientation !== "horizontal" && input.orientation !== "vertical") return fail("config", "Tabs orientation must be horizontal or vertical.");
   const contents = contentMap(bindings);
@@ -634,10 +656,12 @@ function treeConfig(values: PresentationValues, bindings: AeliqoNavigationFeedba
   const renderNodes = (source: readonly AeliqoTreeBindingNode[]): RecordValue[] => source.map((item) => {
     ids.add(item.id);
     const route = item.routeRef === undefined ? undefined : routes.get(item.routeRef); const action = item.actionRef === undefined ? undefined : actions.get(item.actionRef);
-    if (route !== undefined) { operations.push(route.route); hasRoute = true; }
-    if (action !== undefined) { operations.push(action.action); hasAction = true; }
+    if (item.disabled !== true) {
+      if (route !== undefined) { operations.push(route.route); hasRoute = true; }
+      if (action !== undefined) { operations.push(action.action); hasAction = true; }
+    }
     const label = contents.get(item.labelRef)!.text;
-    return {id: item.id, label, ...(item.children === undefined ? {} : {children: renderNodes(item.children)}), ...(item.disabled === undefined ? {} : {disabled: item.disabled}), ...(route === undefined ? {} : routeValue(route)), ...(action === undefined ? {} : actionValue(action))};
+    return {id: item.id, label, ...(item.children === undefined ? {} : {children: renderNodes(item.children)}), ...(item.disabled === undefined ? {} : {disabled: item.disabled}), ...(route === undefined || item.disabled === true ? {} : routeValue(route)), ...(action === undefined || item.disabled === true ? {} : actionValue(action))};
   });
   const nodes = renderNodes(entry.nodes);
   if (input.expandedIds !== undefined && (!Array.isArray(input.expandedIds) || input.expandedIds.length > MAX_TREE_NODES || input.expandedIds.some((id) => typeof id !== "string" || !ids.has(id)) || new Set(input.expandedIds).size !== input.expandedIds.length)) return fail("config", "expandedIds must name unique registered tree nodes.");
@@ -655,7 +679,7 @@ function feedbackBase(values: PresentationValues, allowed: readonly string[], bi
   return {ok: true, value: {input: checked.value.input, entry, contents: contentMap(bindings), actions: actionMap(bindings)}};
 }
 
-function feedbackConfig(values: PresentationValues, kind: keyof typeof AELIQO_NAVIGATION_FEEDBACK_REFS, bindings: AeliqoNavigationFeedbackBindings): Outcome<ReturnType<typeof resolved> extends Outcome<infer T> ? T : never> {
+function feedbackConfig(values: PresentationValues, kind: keyof typeof AELIQO_NAVIGATION_FEEDBACK_REFS, bindings: AeliqoNavigationFeedbackBindings, node?: PresentationNode): Outcome<ReturnType<typeof resolved> extends Outcome<infer T> ? T : never> {
   const refs = AELIQO_NAVIGATION_FEEDBACK_REFS;
   switch (kind) {
     case "tooltip": {
@@ -676,7 +700,9 @@ function feedbackConfig(values: PresentationValues, kind: keyof typeof AELIQO_NA
       const checked = feedbackBase(values, ["bindingRevision", "bindingRef", "open", "modal", "closeOnEscape"], bindings); if (!checked.ok) return checked;
       const heading = content(checked.value.contents, checked.value.entry.headingRef, "dialog heading"); if (!heading.ok) return heading;
       for (const key of ["open", "modal", "closeOnEscape"] as const) if (checked.value.input[key] !== undefined && typeof checked.value.input[key] !== "boolean") return fail("config", `Dialog ${key} must be boolean.`);
-      return resolved({...baseValues(bindings, checked.value.entry.id), heading: heading.value!, open: checked.value.input.open ?? false, modal: checked.value.input.modal ?? true, closeOnEscape: checked.value.input.closeOnEscape ?? true});
+      const open = checked.value.input.open ?? false;
+      if (node !== undefined && node.children.length > 0 && !open) return fail("children", "A closed dialog cannot claim child content before its host opens it.");
+      return resolved({...baseValues(bindings, checked.value.entry.id), heading: heading.value!, open, modal: checked.value.input.modal ?? true, closeOnEscape: checked.value.input.closeOnEscape ?? true});
     }
     case "drawer": {
       const checked = feedbackBase(values, ["bindingRevision", "bindingRef", "open", "mode", "side"], bindings); if (!checked.ok) return checked;
@@ -684,7 +710,9 @@ function feedbackConfig(values: PresentationValues, kind: keyof typeof AELIQO_NA
       if (checked.value.input.open !== undefined && typeof checked.value.input.open !== "boolean") return fail("config", "Drawer open must be boolean.");
       if (checked.value.input.mode !== undefined && checked.value.input.mode !== "inline" && checked.value.input.mode !== "modal") return fail("config", "Drawer mode must be inline or modal.");
       if (checked.value.input.side !== undefined && checked.value.input.side !== "start" && checked.value.input.side !== "end") return fail("config", "Drawer side must be start or end.");
-      return resolved({...baseValues(bindings, checked.value.entry.id), heading: heading.value!, open: checked.value.input.open ?? false, mode: checked.value.input.mode ?? "inline", side: checked.value.input.side ?? "end"});
+      const open = checked.value.input.open ?? false;
+      if (node !== undefined && node.children.length > 0 && !open) return fail("children", "A closed drawer cannot claim child content before its host opens it.");
+      return resolved({...baseValues(bindings, checked.value.entry.id), heading: heading.value!, open, mode: checked.value.input.mode ?? "inline", side: checked.value.input.side ?? "end"});
     }
     case "toast": {
       const checked = feedbackBase(values, ["bindingRevision", "bindingRef", "open", "tone", "duration", "dismissible"], bindings); if (!checked.ok) return checked;
@@ -706,7 +734,9 @@ function feedbackConfig(values: PresentationValues, kind: keyof typeof AELIQO_NA
       if (checked.value.input.tone !== undefined && (typeof checked.value.input.tone !== "string" || !FEEDBACK_TONES.includes(checked.value.input.tone as typeof FEEDBACK_TONES[number]))) return fail("config", "Alert tone is unsupported.");
       if (checked.value.input.dismissible !== undefined && typeof checked.value.input.dismissible !== "boolean") return fail("config", "Alert dismissible must be boolean.");
       const action = checked.value.entry.actionRef === undefined ? undefined : checked.value.actions.get(checked.value.entry.actionRef); if (checked.value.entry.actionRef !== undefined && action === undefined) return fail("binding", "Alert actionRef is not registered.");
-      return resolved({...baseValues(bindings, checked.value.entry.id), ...(heading.value === undefined ? {} : {heading: heading.value}), message: message.value!, ...(actionLabel.value === undefined ? {} : {actionLabel: actionLabel.value}), ...(action === undefined ? {} : actionValue(action)), open: checked.value.input.open ?? true, tone: checked.value.input.tone ?? "info", dismissible: checked.value.input.dismissible ?? false}, [], action === undefined ? [] : [navPort("action", "action-request")], action === undefined ? [] : [action.action]);
+      const open = checked.value.input.open ?? true;
+      const actionReachable = action !== undefined && open;
+      return resolved({...baseValues(bindings, checked.value.entry.id), ...(heading.value === undefined ? {} : {heading: heading.value}), message: message.value!, ...(actionLabel.value === undefined || !actionReachable ? {} : {actionLabel: actionLabel.value}), ...(actionReachable ? actionValue(action) : {}), open, tone: checked.value.input.tone ?? "info", dismissible: checked.value.input.dismissible ?? false}, [], actionReachable ? [navPort("action", "action-request")] : [], actionReachable ? [action!.action] : []);
     }
     case "progress": {
       const checked = feedbackBase(values, ["bindingRevision", "bindingRef"], bindings); if (!checked.ok) return checked;
@@ -749,20 +779,20 @@ export function createNavigationFeedbackPresentationManifests(input?: AeliqoNavi
   const routeRefs = routes.map((route) => route.route); const actionRefs = actions.map((action) => action.action);
   const dynamicNavigation = uniqueRefs([...routeRefs, ...actionRefs]);
   const manifests: readonly PresentationManifest[] = [
-    manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.tabs, "navigation", {min: 0, max: 32}, "exclusive", [], (values) => tabsConfig(values, bindings)),
+    manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.tabs, "navigation", {min: 0, max: 32}, "exclusive", [], (values, _result, node) => tabsConfig(values, bindings, node)),
     manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.breadcrumb, "navigation", {min: 0, max: 0}, "leaf", uniqueRefs(routeRefs), (values) => breadcrumbConfig(values, bindings)),
     manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.pagination, "navigation", {min: 0, max: 0}, "leaf", [AELIQO_NAVIGATION_FEEDBACK_OPERATION_REFS.page], (values) => paginationConfig(values, bindings)),
     manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.menu, "navigation", {min: 0, max: 0}, "leaf", dynamicNavigation, (values) => menuConfig(values, bindings)),
     manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.treeNav, "navigation", {min: 0, max: 0}, "leaf", dynamicNavigation, (values) => treeConfig(values, bindings)),
-    manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.tooltip, "feedback", {min: 0, max: 0}, "leaf", [], (values) => feedbackConfig(values, "tooltip", bindings)),
-    manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.popover, "feedback", {min: 0, max: 16}, "exclusive", [], (values) => feedbackConfig(values, "popover", bindings)),
-    manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.dialog, "feedback", {min: 0, max: 16}, "exclusive", [], (values) => feedbackConfig(values, "dialog", bindings)),
-    manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.drawer, "feedback", {min: 0, max: 16}, "exclusive", [], (values) => feedbackConfig(values, "drawer", bindings)),
-    manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.toast, "feedback", {min: 0, max: 0}, "leaf", [], (values) => feedbackConfig(values, "toast", bindings)),
-    manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.alert, "feedback", {min: 0, max: 0}, "leaf", uniqueRefs(actionRefs), (values) => feedbackConfig(values, "alert", bindings)),
-    manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.progress, "feedback", {min: 0, max: 0}, "leaf", [], (values) => feedbackConfig(values, "progress", bindings)),
-    manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.skeleton, "feedback", {min: 0, max: 0}, "leaf", [], (values) => feedbackConfig(values, "skeleton", bindings)),
-    manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.emptyState, "feedback", {min: 0, max: 0}, "leaf", uniqueRefs(actionRefs), (values) => feedbackConfig(values, "emptyState", bindings)),
+    manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.tooltip, "feedback", {min: 0, max: 0}, "leaf", [], (values, _result, node) => feedbackConfig(values, "tooltip", bindings, node)),
+    manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.popover, "feedback", {min: 0, max: 16}, "exclusive", [], (values, _result, node) => feedbackConfig(values, "popover", bindings, node)),
+    manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.dialog, "feedback", {min: 0, max: 16}, "exclusive", [], (values, _result, node) => feedbackConfig(values, "dialog", bindings, node)),
+    manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.drawer, "feedback", {min: 0, max: 16}, "exclusive", [], (values, _result, node) => feedbackConfig(values, "drawer", bindings, node)),
+    manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.toast, "feedback", {min: 0, max: 0}, "leaf", [], (values, _result, node) => feedbackConfig(values, "toast", bindings, node)),
+    manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.alert, "feedback", {min: 0, max: 0}, "leaf", uniqueRefs(actionRefs), (values, _result, node) => feedbackConfig(values, "alert", bindings, node)),
+    manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.progress, "feedback", {min: 0, max: 0}, "leaf", [], (values, _result, node) => feedbackConfig(values, "progress", bindings, node)),
+    manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.skeleton, "feedback", {min: 0, max: 0}, "leaf", [], (values, _result, node) => feedbackConfig(values, "skeleton", bindings, node)),
+    manifest(AELIQO_NAVIGATION_FEEDBACK_REFS.emptyState, "feedback", {min: 0, max: 0}, "leaf", uniqueRefs(actionRefs), (values, _result, node) => feedbackConfig(values, "emptyState", bindings, node)),
   ];
   return {ok: true, value: freeze(manifests)};
 }

@@ -1,8 +1,9 @@
 import {describe, expect, it} from "vitest";
-import type {PresentationValues} from "../../packages/core/src/index.js";
+import type {PresentationNode, PresentationValues} from "../../packages/core/src/index.js";
 import {createPresentationRegistry} from "../../packages/core/src/index.js";
 import {
   AELIQO_NAVIGATION_FEEDBACK_OPERATION_REFS,
+  AELIQO_NAVIGATION_FEEDBACK_CONFIG_SCHEMAS,
   AELIQO_NAVIGATION_FEEDBACK_REFS,
   createNavigationFeedbackPresentationManifests,
   type AeliqoNavigationFeedbackBindings,
@@ -130,6 +131,60 @@ describe("navigation and feedback semantic adapters", () => {
     expect(tabs.ports).toEqual([]);
     expect(resolve(AELIQO_NAVIGATION_FEEDBACK_REFS.dialog.id, {bindingRevision: bindings.revision, bindingRef: "dialog.confirm", open: true, modal: true}).values).toMatchObject({heading: "Confirm", open: true, modal: true});
     expect(resolve(AELIQO_NAVIGATION_FEEDBACK_REFS.skeleton.id, {bindingRevision: bindings.revision, bindingRef: "skeleton.load", lines: 4, variant: "text"}).values).toMatchObject({label: "Loading", lines: 4});
+  });
+
+  it("rejects tab panels that cannot be represented and disabled controlled selection", () => {
+    const tabManifest = manifests().find((manifest) => manifest.ref.id === AELIQO_NAVIGATION_FEEDBACK_REFS.tabs.id)!;
+    const tabsNode = {id: "tabs", role: "navigation", representation: AELIQO_NAVIGATION_FEEDBACK_REFS.tabs, config: {schema: AELIQO_NAVIGATION_FEEDBACK_CONFIG_SCHEMAS.tabs, values: {}}, children: ["one", "two", "three"]} as PresentationNode;
+    expect(tabManifest.resolveConfig({bindingRevision: bindings.revision, bindingRef: "tabs.main"}, undefined, tabsNode)).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.navigation-feedback.children"}]});
+    const disabled = createNavigationFeedbackPresentationManifests({...bindings, tabs: [{id: "tabs.main", items: [
+      {id: "overview", labelRef: "copy.tabs.overview", disabled: true},
+      {id: "details", labelRef: "copy.tabs.details"},
+    ]}]});
+    expect(disabled.ok).toBe(true);
+    if (disabled.ok) {
+      const manifest = disabled.value.find((candidate) => candidate.ref.id === AELIQO_NAVIGATION_FEEDBACK_REFS.tabs.id)!;
+      expect(manifest.resolveConfig({bindingRevision: bindings.revision, bindingRef: "tabs.main", value: "overview"}, undefined)).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.navigation-feedback.config"}]});
+      expect(manifest.resolveConfig({bindingRevision: bindings.revision, bindingRef: "tabs.main"}, undefined, {...tabsNode, children: ["one"]})).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.navigation-feedback.children"}]});
+    }
+  });
+
+  it("rejects closed dialog and drawer child claims", () => {
+    const dialog = manifests().find((manifest) => manifest.ref.id === AELIQO_NAVIGATION_FEEDBACK_REFS.dialog.id)!;
+    const drawer = manifests().find((manifest) => manifest.ref.id === AELIQO_NAVIGATION_FEEDBACK_REFS.drawer.id)!;
+    const child = {id: "dialog", role: "feedback", representation: AELIQO_NAVIGATION_FEEDBACK_REFS.dialog, config: {schema: AELIQO_NAVIGATION_FEEDBACK_CONFIG_SCHEMAS.dialog, values: {}}, children: ["child"]} as PresentationNode;
+    expect(dialog.resolveConfig({bindingRevision: bindings.revision, bindingRef: "dialog.confirm"}, undefined, child)).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.navigation-feedback.children"}]});
+    expect(drawer.resolveConfig({bindingRevision: bindings.revision, bindingRef: "drawer.details", open: true}, undefined, {...child, representation: AELIQO_NAVIGATION_FEEDBACK_REFS.drawer, config: {schema: AELIQO_NAVIGATION_FEEDBACK_CONFIG_SCHEMAS.drawer, values: {}}})).toMatchObject({ok: true});
+    expect(drawer.resolveConfig({bindingRevision: bindings.revision, bindingRef: "drawer.details"}, undefined, {...child, representation: AELIQO_NAVIGATION_FEEDBACK_REFS.drawer, config: {schema: AELIQO_NAVIGATION_FEEDBACK_CONFIG_SCHEMAS.drawer, values: {}}})).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.navigation-feedback.children"}]});
+  });
+
+  it("declares only operations that remain reachable in the current host state", () => {
+    const current = createNavigationFeedbackPresentationManifests({...bindings, breadcrumbs: [{id: "crumb.reports", labelRef: "copy.breadcrumb", items: [
+      {id: "home", labelRef: "copy.home", routeRef: "route.home"},
+      {id: "current", labelRef: "copy.breadcrumb", routeRef: "route.home", current: true},
+    ]}]});
+    expect(current.ok).toBe(true);
+    if (current.ok) {
+      const breadcrumb = current.value.find((manifest) => manifest.ref.id === AELIQO_NAVIGATION_FEEDBACK_REFS.breadcrumb.id)!;
+      expect(breadcrumb.resolveConfig({bindingRevision: bindings.revision, bindingRef: "crumb.reports"}, undefined)).toMatchObject({ok: true, value: {operations: [{id: "route.home", revision: "1"}]}});
+    }
+
+    const disabled = createNavigationFeedbackPresentationManifests({...bindings,
+      menus: [{id: "menu.actions", labelRef: "copy.menu", items: [{id: "open", labelRef: "copy.open", actionRef: "action.open", disabled: true}]}],
+      trees: [{id: "tree.main", labelRef: "copy.tree", nodes: [{id: "settings", labelRef: "copy.tree.settings", actionRef: "action.open", disabled: true}]}],
+      pagination: [{id: "page.results", labelRef: "copy.pagination.label", outputId: "results", queryDigest: "query-1", page: 1, pageCount: 1, hasPrevious: false, hasNext: false, cursors: []}],
+      feedback: [{id: "alert.review", headingRef: "copy.alert.heading", messageRef: "copy.alert.message", actionLabelRef: "copy.alert.action", actionRef: "action.review"}, ...bindings.feedback!.filter((entry) => entry.id !== "alert.review")],
+    });
+    expect(disabled.ok).toBe(true);
+    if (disabled.ok) {
+      const get = (id: string) => disabled.value.find((manifest) => manifest.ref.id === id)!;
+      expect(get(AELIQO_NAVIGATION_FEEDBACK_REFS.menu.id).resolveConfig({bindingRevision: bindings.revision, bindingRef: "menu.actions"}, undefined)).toMatchObject({ok: true, value: {operations: [], ports: []}});
+      expect(get(AELIQO_NAVIGATION_FEEDBACK_REFS.treeNav.id).resolveConfig({bindingRevision: bindings.revision, bindingRef: "tree.main"}, undefined)).toMatchObject({ok: true, value: {operations: [], ports: []}});
+      expect(get(AELIQO_NAVIGATION_FEEDBACK_REFS.pagination.id).resolveConfig({bindingRevision: bindings.revision, bindingRef: "page.results"}, undefined)).toMatchObject({ok: true, value: {operations: [], ports: []}});
+      const hiddenAlert = get(AELIQO_NAVIGATION_FEEDBACK_REFS.alert.id).resolveConfig({bindingRevision: bindings.revision, bindingRef: "alert.review", open: false}, undefined);
+      expect(hiddenAlert).toMatchObject({ok: true, value: {operations: [], ports: []}});
+      if (hiddenAlert.ok) expect(hiddenAlert.value.values).not.toHaveProperty("actionLabel");
+    }
   });
 
   it("uses registered routes/actions for tree nodes and truthful feedback states", () => {

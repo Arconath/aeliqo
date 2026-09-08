@@ -4,14 +4,14 @@ import {renderNavigationFeedbackNode} from "../../packages/web/src/region/naviga
 
 type Node = ValidatedPresentation["nodes"][number];
 
-function node(id: string, values: PresentationValues, ports: readonly {id: string; direction: "output"; payload: InteractionPayload["kind"]}[] = []): Node {
+function node(id: string, values: PresentationValues, ports: readonly {id: string; direction: "output"; payload: InteractionPayload["kind"]}[] = [], operations: readonly {id: string; revision: string}[] = []): Node {
   return {
     node: {id, role: "feedback", representation: {id, revision: "1"}, config: {schema: {id: `${id}.config`, revision: "1"}, values}, children: [],
       result: undefined},
     manifest: {id, revision: "1"},
-    config: {values, fields: [], ports, operations: []},
+    config: {values, fields: [], ports, operations},
     result: undefined,
-  } as Node;
+  } as unknown as Node;
 }
 
 function handler(rendered: ReturnType<typeof renderNavigationFeedbackNode>): (event: Event) => void {
@@ -47,15 +47,15 @@ describe("navigation and feedback region renderer", () => {
   });
 
   it("maps breadcrumb and menu events to declared canonical route/action payloads", () => {
-    const emitted: InteractionPayload[] = [];
-    const breadcrumb = node("navigation.breadcrumb", {items: [{id: "home", route: {id: "route.home", revision: "1"}, params: {}, href: "/home"}]}, [{id: "navigate", direction: "output", payload: "navigate"}]);
+    const emitted: unknown[] = [];
+    const breadcrumb = node("navigation.breadcrumb", {items: [{id: "home", route: {id: "route.home", revision: "1"}, params: {}, href: "/home"}]}, [{id: "navigate", direction: "output", payload: "navigate"}], [{id: "route.home", revision: "1"}]);
     const navigationEvent = new CustomEvent("aeliqo-navigation", {detail: {id: "home", source: "user"}, cancelable: true});
     const breadcrumbHandler = handler(renderNavigationFeedbackNode(breadcrumb, () => undefined, (_node, _port, payload) => emitted.push(payload)));
     breadcrumbHandler(navigationEvent);
     expect(navigationEvent.defaultPrevented).toBe(true);
     expect(emitted).toEqual([{kind: "navigate", route: {id: "route.home", revision: "1"}, params: {}}]);
 
-    const menu = node("navigation.menu", {items: [{id: "open", action: {id: "action.open", revision: "1"}, input: {mode: "open"}}]}, [{id: "action", direction: "output", payload: "action-request"}]);
+    const menu = node("navigation.menu", {items: [{id: "open", action: {id: "action.open", revision: "1"}, input: {mode: "open"}}]}, [{id: "action", direction: "output", payload: "action-request"}], [{id: "action.open", revision: "1"}]);
     const menuEvent = new CustomEvent("aeliqo-menu-action", {detail: {id: "open", source: "user"}, cancelable: true});
     const menuHandler = handler(renderNavigationFeedbackNode(menu, () => undefined, (_node, _port, payload) => emitted.push(payload)));
     menuHandler(menuEvent);
@@ -64,16 +64,27 @@ describe("navigation and feedback region renderer", () => {
   });
 
   it("keeps page and tree mappings scoped to their host metadata", () => {
-    const emitted: InteractionPayload[] = [];
-    const page = node("navigation.pagination", {page: 1, outputId: "results", queryDigest: "query-1", cursors: [{page: 2, cursor: "cursor-2"}]}, [{id: "page", direction: "output", payload: "page"}]);
-    const pageEvent = new CustomEvent("aeliqo-page-change", {detail: {page: 2, source: "user"}, cancelable: true});
+    const emitted: unknown[] = [];
+    const page = node("navigation.pagination", {page: 1, outputId: "results", queryDigest: "query-1", cursors: [{page: 2, cursor: "cursor-2"}]}, [{id: "page", direction: "output", payload: "page"}], [{id: "navigation.page", revision: "1"}]);
+    const pageEvent = new CustomEvent("aeliqo-page-change", {detail: {page: 2, previousPage: 1, direction: "next", source: "user"}, cancelable: true});
     handler(renderNavigationFeedbackNode(page, () => undefined, (_node, _port, payload) => emitted.push(payload)))(pageEvent);
     expect(emitted.at(-1)).toEqual({kind: "page", outputId: "results", queryDigest: "query-1", cursor: "cursor-2"});
 
-    const tree = node("navigation.tree-nav", {nodes: [{id: "settings", action: {id: "action.open", revision: "1"}, input: {}}]}, [{id: "action", direction: "output", payload: "action-request"}]);
+    const tree = node("navigation.tree-nav", {nodes: [{id: "settings", action: {id: "action.open", revision: "1"}, input: {}}]}, [{id: "action", direction: "output", payload: "action-request"}], [{id: "action.open", revision: "1"}]);
     const treeEvent = new CustomEvent("aeliqo-tree-nav-select", {detail: {id: "settings", source: "user"}, cancelable: true});
     handler(renderNavigationFeedbackNode(tree, () => undefined, (_node, _port, payload) => emitted.push(payload)))(treeEvent);
     expect(emitted.at(-1)).toEqual({kind: "action-request", action: {id: "action.open", revision: "1"}, input: {}});
   });
-});
 
+  it("ignores forged, disabled, undeclared and wrongly scoped events", () => {
+    const emitted: unknown[] = [];
+    const menu = node("navigation.menu", {items: [{id: "disabled", disabled: true, action: {id: "action.open", revision: "1"}, input: {}}]}, [{id: "action", direction: "output", payload: "action-request"}], [{id: "action.open", revision: "1"}]);
+    handler(renderNavigationFeedbackNode(menu, () => undefined, (_node, _port, payload) => emitted.push(payload)))(new CustomEvent("aeliqo-menu-action", {detail: {id: "disabled", source: "user"}}));
+    handler(renderNavigationFeedbackNode(menu, () => undefined, (_node, _port, payload) => emitted.push(payload)))(new CustomEvent("aeliqo-menu-action", {detail: {id: "disabled", source: "model"}}));
+    expect(emitted).toEqual([]);
+
+    const undeclared = node("navigation.menu", {items: [{id: "open", action: {id: "action.open", revision: "1"}, input: {}}]}, [{id: "action", direction: "output", payload: "action-request"}]);
+    handler(renderNavigationFeedbackNode(undeclared, () => undefined, (_node, _port, payload) => emitted.push(payload)))(new CustomEvent("aeliqo-menu-action", {detail: {id: "open", source: "user"}}));
+    expect(emitted).toEqual([]);
+  });
+});

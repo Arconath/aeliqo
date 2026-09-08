@@ -51,13 +51,15 @@ function focusableCandidate(element: HTMLElement, state: FocusTraversalState): b
 }
 
 function ancestorState(element: HTMLElement): FocusTraversalState {
+  const Element = globalThis.HTMLElement;
+  if (Element === undefined) return {hidden: false, disabled: false, inert: false};
   let current: HTMLElement | null = element;
   let state: FocusTraversalState = {hidden: false, disabled: false, inert: false};
   while (current !== null) {
     state = elementState(current, state);
     const root = current.getRootNode();
     if (typeof globalThis.ShadowRoot !== "undefined" && root instanceof globalThis.ShadowRoot) {
-      current = root.host instanceof HTMLElement ? root.host : null;
+      current = root.host instanceof Element ? root.host : null;
     } else current = current.parentElement;
   }
   return state;
@@ -65,11 +67,14 @@ function ancestorState(element: HTMLElement): FocusTraversalState {
 
 /** Collect focusable controls through slots and nested open shadow roots. */
 export function focusableElements(root: ParentNode): HTMLElement[] {
+  const Element = globalThis.HTMLElement;
+  if (Element === undefined) return [];
+  const Slot = globalThis.HTMLSlotElement;
   const result: HTMLElement[] = [];
   const seen = new Set<HTMLElement>();
-  const initial = root instanceof HTMLElement ? ancestorState(root) : {hidden: false, disabled: false, inert: false};
+  const initial = root instanceof Element ? ancestorState(root) : {hidden: false, disabled: false, inert: false};
   const visit = (node: ParentNode, inherited: FocusTraversalState): void => {
-    if (node instanceof HTMLElement) {
+    if (node instanceof Element) {
       const state = elementState(node, inherited);
       if (focusableCandidate(node, state) && !seen.has(node)) {
         seen.add(node);
@@ -81,7 +86,7 @@ export function focusableElements(root: ParentNode): HTMLElement[] {
       }
       inherited = state;
     }
-    if (node instanceof HTMLSlotElement) {
+    if (Slot !== undefined && node instanceof Slot) {
       const assigned = node.assignedElements({flatten: true});
       if (assigned.length > 0) {
         for (const element of assigned) visit(element, inherited);
@@ -108,9 +113,12 @@ export function focusLast(root: ParentNode): HTMLElement | undefined {
 }
 
 function descendActive(element: HTMLElement): HTMLElement {
-  if (element instanceof HTMLSlotElement) {
+  const Element = globalThis.HTMLElement;
+  const Slot = globalThis.HTMLSlotElement;
+  if (Element === undefined) return element;
+  if (Slot !== undefined && element instanceof Slot) {
     for (const assigned of element.assignedElements({flatten: true})) {
-      if (!(assigned instanceof HTMLElement)) continue;
+      if (!(assigned instanceof Element)) continue;
       if (assigned.matches(":focus")) return descendActive(assigned);
       if (assigned.shadowRoot !== null) {
         const nested = activeWithin(assigned.shadowRoot);
@@ -126,11 +134,15 @@ function descendActive(element: HTMLElement): HTMLElement {
 }
 
 function activeWithin(root: Document | ShadowRoot): HTMLElement | undefined {
+  const Element = globalThis.HTMLElement;
+  if (Element === undefined) return undefined;
   const active = root.activeElement;
-  return active instanceof HTMLElement ? descendActive(active) : undefined;
+  return active instanceof Element ? descendActive(active) : undefined;
 }
 
 export function activeElement(owner?: HTMLElement): HTMLElement | undefined {
+  const Element = globalThis.HTMLElement;
+  if (Element === undefined) return undefined;
   const nested = owner?.shadowRoot === null || owner?.shadowRoot === undefined ? undefined : activeWithin(owner.shadowRoot);
   if (nested !== undefined && nested !== owner) return nested;
   const documentElement = globalThis.document?.activeElement;
@@ -139,7 +151,7 @@ export function activeElement(owner?: HTMLElement): HTMLElement | undefined {
     if (focused !== undefined) return focused;
     if (documentElement === owner) return owner;
   }
-  return documentElement instanceof HTMLElement ? documentElement : undefined;
+  return documentElement instanceof Element ? documentElement : undefined;
 }
 
 export function restoreFocus(element: HTMLElement | undefined): void {
