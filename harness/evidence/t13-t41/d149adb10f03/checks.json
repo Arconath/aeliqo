@@ -1,0 +1,110 @@
+[
+  {
+    "name": "contracts",
+    "command": [
+      "pnpm",
+      "test:contracts"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 2.87
+  },
+  {
+    "name": "agents",
+    "command": [
+      "pnpm",
+      "test:agents"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 9.6
+  },
+  {
+    "name": "foundation",
+    "command": [
+      "pnpm",
+      "test:foundation"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 7.29
+  },
+  {
+    "name": "vertical",
+    "command": [
+      "pnpm",
+      "test:vertical"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 7.74
+  },
+  {
+    "name": "data",
+    "command": [
+      "pnpm",
+      "test:data"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 3.39
+  },
+  {
+    "name": "platform",
+    "command": [
+      "pnpm",
+      "test:platform"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.8
+  },
+  {
+    "name": "foundation-browser",
+    "command": [
+      "pnpm",
+      "test:foundation:browser"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 8.64
+  },
+  {
+    "name": "vertical-browser",
+    "command": [
+      "pnpm",
+      "test:vertical:browser"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 9.12
+  },
+  {
+    "name": "platform-browser",
+    "command": [
+      "pnpm",
+      "test:platform:browser"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 7.3
+  },
+  {
+    "name": "agent-consumer",
+    "command": [
+      "pnpm",
+      "test:agent:consumers"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 17.7
+  },
+  {
+    "name": "platform-consumer",
+    "command": [
+      "pnpm",
+      "test:platform:consumers"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 12.48
+  },
+  {
+    "name": "kit",
+    "command": [
+      "python3",
+      "scripts/validate_all.py"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 14.17
+  }
+]

@@ -1,0 +1,113 @@
+{
+  "sourceDigest": "d149adb10f03d68cef476c4442f9c8763ee52b9f599ceb0bdfbc7645a8bdbc85",
+  "scope": "M0/T12 installed web/React/styles and direct input/form/focus/theme; T13 all thirteen installed foundation types, Lit SSR, React client rendering/action events and standalone Button bundle. Full React/Vue hydration and manual assistive-technology matrix are separate.",
+  "artifacts": [
+    {
+      "name": "@aeliqo/core",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/platform-consumers/run-NGr34p/aeliqo-core-0.1.0.tgz",
+      "sha256": "0ac257278164f7f51ec0886288b2d7944d3ffd05fa8a315762de48ee9d8005bb",
+      "integrity": "sha512-wtEE5LH7Z6kSiePdhb99v2DZWVIFtiqCcfceDHSb0obuv5BunhvE+0sUwE5DMKyGYtwiqsz0Ud3pXdBNn3TR1A=="
+    },
+    {
+      "name": "@aeliqo/web",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/platform-consumers/run-NGr34p/aeliqo-web-0.1.0.tgz",
+      "sha256": "24487963d51f2b65874788b41ac4569f8a47757d222064886439464e62b8c598",
+      "integrity": "sha512-U0mn8hx81sn7viGo8CUnS/c9Z7hKetvkMw06WRCTWGqDc8u0rf0yPp5Flm2XtXoEJEwVhhKz+tphcEnmKFhR/Q=="
+    },
+    {
+      "name": "@aeliqo/react",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/platform-consumers/run-NGr34p/aeliqo-react-0.1.0.tgz",
+      "sha256": "3d20a2ccf893f903c9d30cb94bea481744cb734e970a4c82507374d9b4b25fe6",
+      "integrity": "sha512-BmCpZ5WTtODBLFS5Dsnt0bjBJiAdr9EW3Q4AsOkgJ1hGWJX/ddxOnzmDuztjQUSu0pG0237KDHkApvbXPDEz9w=="
+    }
+  ],
+  "consumerDirectory": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met",
+  "consumerLock": {
+    "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/platform-consumers/run-NGr34p/consumer-package-lock.json",
+    "sha256": "620b4052d7b1dc14a198c479346a658287e29539d40bf5a32e1ee18dc56158f1"
+  },
+  "screenshot": {
+    "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/platform-consumers/run-NGr34p/installed-input.png",
+    "sha256": "a547a084028d14c0a8a87f7e2fa4a1891c1e70daee20e4bfb0ecfaeadc4191dd"
+  },
+  "environment": {
+    "node": "v24.20.0",
+    "npm": "11.19.0",
+    "pnpm": "11.24.0",
+    "typescript": "7.0.2",
+    "vite": "8.2.2",
+    "playwright": "1.63.0",
+    "chromium": "153.0.8010.12",
+    "os": "darwin",
+    "release": "25.6.0",
+    "arch": "arm64",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "locale": "en-US",
+    "deviceScaleFactor": 1
+  },
+  "foundation": {
+    "ssr": "All thirteen installed foundation elements rendered with Lit SSR.\n",
+    "components": [
+      "Button",
+      "IconButton",
+      "Link",
+      "Text",
+      "Heading",
+      "Badge",
+      "Avatar",
+      "Separator",
+      "Surface",
+      "Stack",
+      "Grid",
+      "SplitPane",
+      "ScrollArea"
+    ],
+    "standaloneButtonModules": [
+      "\u0000vite/modulepreload-polyfill.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/node_modules/@lit/reactive-element/css-tag.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/node_modules/@lit/reactive-element/reactive-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/node_modules/lit-html/lit-html.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/node_modules/lit-element/lit-element.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/node_modules/lit/index.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/node_modules/@aeliqo/web/dist/foundation/events.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/node_modules/@aeliqo/web/dist/styles/tokens.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/node_modules/@aeliqo/web/dist/styles/theme.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/node_modules/@aeliqo/web/dist/foundation/base.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/node_modules/@aeliqo/web/dist/foundation/action-base.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/node_modules/@aeliqo/web/dist/foundation/button.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/browser.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/index.html"
+    ],
+    "screenshot": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/platform-consumers/run-NGr34p/installed-foundations.png"
+  },
+  "stdout": "Installed web/React types, Node import and Lit SSR content pass.\n",
+  "browserBundles": [
+    {
+      "file": "index-CPgaopAN.js",
+      "bytes": 29649,
+      "gzipBytes": 9825
+    }
+  ],
+  "standaloneModules": [
+    "\u0000vite/modulepreload-polyfill.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/node_modules/@lit/reactive-element/css-tag.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/node_modules/@lit/reactive-element/reactive-element.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/node_modules/lit-html/lit-html.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/node_modules/lit-element/lit-element.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/node_modules/lit/index.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/node_modules/@aeliqo/web/dist/styles/tokens.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/node_modules/@aeliqo/web/dist/styles/theme.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/node_modules/@aeliqo/web/dist/events.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/node_modules/@aeliqo/web/dist/elements/aeliqo-input.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/browser.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-gP2Met/index.html"
+  ],
+  "moduleCheckScope": "Vite module-ID graph allowlist; not arbitrary generated-code certification",
+  "passed": true
+}

@@ -455,10 +455,15 @@
       "acceptance": [
         "Every required foundation inventory entry works standalone and in grammar; no decorative fake controls."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "platform_proof owns isolated codex/t13-foundation shared foundation components/tests and local manifest helpers. Parent owns canonical contracts, package/root exports, shared region integration, task state and installed consumers. Independent reviewer preflight_diagnosis; no competing writers."
+      "evidence": [
+        {
+          "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
+          "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        }
+      ],
+      "notes": "Accepted at source e1ae3d1 after independent review and frozen Node24.20.0 integration, installed-tarball, browser and type checks. All thirteen foundation entries work standalone and in the actual presentation grammar with binding revision pins. Manual AT/native platform and complete release remain separate required gates."
     },
     {
       "id": "T14",
@@ -526,9 +531,10 @@
       "acceptance": [
         "Every data entry and bounded virtual table preserve identity, precise scope and accessible reading."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "preflight_diagnosis owns isolated codex/t16-data from e1ae3d1: nine data components plus focused tests/docs and narrow shared existing Table refactor. Parent owns contracts, exports, root config, region integration, installed consumers and task state; independent parent review required."
     },
     {
       "id": "T17",
@@ -1085,10 +1091,15 @@
         "Valid-but-wrong intent is evaluated as residual risk, not magically detected. No model-quality privilege escalation.",
         "Bounded repair/no-progress, scoped numerical narrative checks, authorized fallback and revoked-data clearing; port reference counterexamples to real runtime."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "Core agent contracts ff41c73 independently reviewed; 102 contracts and installed Node/Chromium consumer passed. Containment is implemented in the canonical optional @aeliqo/agent package (MASTER section 23), rather than coupling the lower runtime package to agent APIs. Parent owns package/root integration, narrative and recovery; isolated codex/t41-agent worker owns binder/repair files plus containment tests. T22 later extends the same package with dispatch/protocol adapters. T13 remains a separate foundation worktree. No binding effects or model-quality privileges. Independent narrative review found missing local computed field definition provenance; fixed in source8f27a3b with actual local analytical result and installed consumer evidence. Binder integration remains under independent review; no task acceptance or release claim yet."
+      "evidence": [
+        {
+          "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
+          "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        }
+      ],
+      "notes": "Accepted at source e1ae3d1 after independent review and frozen Node24.20.0 integration, installed-tarball, browser and type checks. No-effect binder/repair, independent grants, actual runtime fallback/revocation and structured numerical claim verification. Intent truth, prose entailment, real model evaluation and provider dispatch remain separate tasks."
     },
     {
       "id": "T42",

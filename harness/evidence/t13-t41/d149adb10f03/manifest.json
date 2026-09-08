@@ -1,0 +1,132 @@
+{
+  "tasks": [
+    "T13",
+    "T41"
+  ],
+  "sourceCommit": "e1ae3d11a64b5067c9dc16d199c3ea8d3a27acb5",
+  "sourceDigest": "d149adb10f03d68cef476c4442f9c8763ee52b9f599ceb0bdfbc7645a8bdbc85",
+  "status": "pass",
+  "foundationComponents": [
+    "foundation.button",
+    "foundation.icon-button",
+    "foundation.link",
+    "foundation.text",
+    "foundation.heading",
+    "foundation.badge",
+    "foundation.avatar",
+    "foundation.separator",
+    "foundation.surface",
+    "foundation.stack",
+    "foundation.grid",
+    "foundation.split-pane",
+    "foundation.scroll-area"
+  ],
+  "scope": "Thirteen owned standalone/semantic/React foundation implementations; optional no-effect semantic binder, bounded repair, runtime recovery and structured narrative evidence.",
+  "limits": "No manual screen-reader or native platform certification, natural-language entailment, model quality, provider execution, publication or production readiness claim.",
+  "artifacts": [
+    {
+      "path": "agent-consumer-package-lock.json",
+      "sha256": "650efe8e28211d518a01f5748f6a01ac6efaeaa4287bf1c3f10f79ef558712ac"
+    },
+    {
+      "path": "agent-consumer.log",
+      "sha256": "f6314354332937eb0237828fc297b614e3fdf03278a940bff629a7927b29a515"
+    },
+    {
+      "path": "agent-report.json",
+      "sha256": "7351fd42a88c67c0df8b3ee83e508ef90a934a0c29e37a29b31c8b19f8c82dd0"
+    },
+    {
+      "path": "agents.log",
+      "sha256": "7ca1b0c4ddedc8e06ccb06567b3c9b38ce6aa9670665953f9cacc33cbcfde897"
+    },
+    {
+      "path": "checks.json",
+      "sha256": "ee764c46398c01e1b0a7960b42e6e483a7ccc050bf605f18f9cb7c3206fe0d94"
+    },
+    {
+      "path": "contracts.log",
+      "sha256": "24878fb9aa05e029b71fe1e8eb6ecd68672a49499ce2289ec14f5d48d686fcde"
+    },
+    {
+      "path": "data.log",
+      "sha256": "47af6d274fb44ad951a258823fc061326e47a04099959cfce8226bc2961a5cf2"
+    },
+    {
+      "path": "foundation-browser.log",
+      "sha256": "339b38009fccf9e26b10531f714774f649e200d6d4318b908ecb5ac769961d0a"
+    },
+    {
+      "path": "foundation-dark.png",
+      "sha256": "68564a63b331b9b49d1c75d4638796479ee449be27c9ee2930bac374982f2222"
+    },
+    {
+      "path": "foundation-forced-colors.png",
+      "sha256": "dbee4949d4bc46af7a752ca8b2c9898bc3f7d81c6fc1eb43cdd53a17b95bb7e6"
+    },
+    {
+      "path": "foundation-light.png",
+      "sha256": "1b2cf7125b1868548299623d63762b531669396ee8c64a975f2b297da57243a6"
+    },
+    {
+      "path": "foundation-mobile.png",
+      "sha256": "d55c3a7ad1e02979f9e8861649baed7730ee0597ff02df94c1252d38dae80812"
+    },
+    {
+      "path": "foundation-rtl-large.png",
+      "sha256": "4964509bf753aafffa20ad7b807a680516d43609a16c7ef5901ccdaf1a90a7da"
+    },
+    {
+      "path": "foundation.log",
+      "sha256": "e4bab5053d7c589c326b699af494c5563131aac5a76dfcdcb410068af314ddfe"
+    },
+    {
+      "path": "installed-foundations.png",
+      "sha256": "f5c8fceffc58415ecfda1477c5df83ea6912303c818f45c182d1df83714fc4e3"
+    },
+    {
+      "path": "installed-input.png",
+      "sha256": "a547a084028d14c0a8a87f7e2fa4a1891c1e70daee20e4bfb0ecfaeadc4191dd"
+    },
+    {
+      "path": "kit.log",
+      "sha256": "7668640b1d5628ad26524b01aca4ad3d8c93d3aaba9f34ed34ab59208a2b034a"
+    },
+    {
+      "path": "platform-browser.log",
+      "sha256": "24baaef1c8c224236ab97de0d24f8da4be6f13f2870f0108e524e727fcb2e43b"
+    },
+    {
+      "path": "platform-consumer-package-lock.json",
+      "sha256": "620b4052d7b1dc14a198c479346a658287e29539d40bf5a32e1ee18dc56158f1"
+    },
+    {
+      "path": "platform-consumer.log",
+      "sha256": "e405073e10c4bb04554b6c24788270850e50706b668239124d38f109d766ab47"
+    },
+    {
+      "path": "platform-report.json",
+      "sha256": "91f311ce5de1d0c257f8843417c84be1c355e7ced686a9781f5223da1afff5cd"
+    },
+    {
+      "path": "platform.log",
+      "sha256": "74aa2676c28799d783f855c8458a3762a42974d6636cb867b79c0c2c1d253c7e"
+    },
+    {
+      "path": "review.json",
+      "sha256": "cf7ca397a5aedadab8ab2be9544ecf3bc48e1d6acb46a3e0cef43b52f3270f62"
+    },
+    {
+      "path": "subject.json",
+      "sha256": "7d5bfb2bd6736ed917126937f039aeeacfd170116811eeb85d6186271149a6b1"
+    },
+    {
+      "path": "vertical-browser.log",
+      "sha256": "3662e2a6958c216b036c24b9335fcfb8a1ff3567ff08c0e8b1cd58733471f564"
+    },
+    {
+      "path": "vertical.log",
+      "sha256": "7b7e7782e0be93ee6b8ecce519c94effd1229e7d6fee4d83e2218ea76e79efce"
+    }
+  ]
+}

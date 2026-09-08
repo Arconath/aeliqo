@@ -1,0 +1,2 @@
+$ node tests/consumers/agent-tarballs.mjs
+Installed agent narrative verification passed. Evidence: /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/agent-consumers/run-0SsZeX/report.json

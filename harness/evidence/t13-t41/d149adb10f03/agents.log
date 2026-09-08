@@ -1,0 +1,20 @@
+$ pnpm build:agent && vitest run --config tests/agents/vitest.config.mjs && tsc -p tests/agents/tsconfig.json --noEmit
+$ pnpm build:runtime && pnpm --filter @aeliqo/agent build
+$ pnpm build:core && pnpm --filter @aeliqo/runtime build
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+
+ RUN  v5.0.0 /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo
+
+
+ Test Files  5 passed (5)
+      Tests  49 passed (49)
+   Start at  20:06:09
+   Duration  2.20s (transform 87%, import 9%, tests 4%)
+
+  Transform  transforming modules took 7.58s · 87% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

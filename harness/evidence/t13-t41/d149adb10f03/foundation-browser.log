@@ -1,0 +1,47 @@
+$ pnpm build:platform && playwright test --config tests/foundation/playwright.config.mjs
+$ pnpm build:core && pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/react build
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+[WebServer] (node:23776) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 13 tests using 1 worker
+
+(node:23786) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 8:06:37 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   1 tests/foundation/browser.spec.ts:9:5 › native action controls submit, reset and cancellation exactly once (231ms)
+[WebServer] 8:06:37 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   2 tests/foundation/browser.spec.ts:32:5 › links, identity fallback, hierarchy and composed foundations retain semantics (95ms)
+[WebServer] 8:06:37 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   3 tests/foundation/browser.spec.ts:45:5 › scroll areas constrain their viewport, separators follow properties, and surfaces expose names (214ms)
+[WebServer] 8:06:38 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   4 tests/foundation/browser.spec.ts:82:5 › split pane provides keyboard and RTL pointer semantics (259ms)
+[WebServer] 8:06:38 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   5 tests/foundation/browser.spec.ts:169:5 › split pane rejects malformed numeric properties without exposing NaN geometry (101ms)
+[WebServer] 8:06:38 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   6 tests/foundation/browser.spec.ts:191:5 › mount and dispose leaves no foundation nodes behind (80ms)
+[WebServer] 8:06:38 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   7 tests/foundation/browser.spec.ts:203:5 › forced colors, RTL and large text preserve visible controls (102ms)
+[WebServer] 8:06:38 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 8:06:38 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   8 tests/foundation/browser.spec.ts:215:5 › validated foundation composition dispatches host requests and preserves focused nodes (338ms)
+[WebServer] 8:06:39 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 8:06:39 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   9 tests/foundation/browser.spec.ts:238:7 › foundation semantic visual and accessibility matrix: light (455ms)
+[WebServer] 8:06:39 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 8:06:39 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  10 tests/foundation/browser.spec.ts:238:7 › foundation semantic visual and accessibility matrix: dark (468ms)
+[WebServer] 8:06:40 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 8:06:40 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  11 tests/foundation/browser.spec.ts:238:7 › foundation semantic visual and accessibility matrix: mobile (429ms)
+[WebServer] 8:06:40 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 8:06:40 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  12 tests/foundation/browser.spec.ts:238:7 › foundation semantic visual and accessibility matrix: rtl-large (428ms)
+[WebServer] 8:06:40 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 8:06:41 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  13 tests/foundation/browser.spec.ts:238:7 › foundation semantic visual and accessibility matrix: forced-colors (405ms)
+
+  13 passed (4.9s)

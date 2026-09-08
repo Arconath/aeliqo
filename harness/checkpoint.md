@@ -239,3 +239,7 @@ Hosted CI34219991766 on exact711a949 passed both specification and platform jobs
 including all new vertical/evaluation/installed consumers and production Next SSR.
 Evidence: harness/evidence/t39/hosted-711a949.json. T13 foundation and T41 containment
 are active with isolated source ownership. No registry or production changes.
+
+## 2026-09-08 foundation and containment integration
+
+Source e1ae3d1 accepted for T13 and T41 after independent review. Frozen evidence: harness/evidence/t13-t41/d149adb10f03/manifest.json. Node24.20.0 gates passed: contracts102, agents49, foundation11, data98, vertical18, platform3; Chromium foundation13, platform10, vertical4; actual installed agent and platform consumers; kit/reference checks. All thirteen foundation components now have evidence. T14 remains under repair after parent reproduced native form, validation, IME, initial value and combobox failures. T15 owns fourteen navigation/feedback entries including Skeleton/EmptyState; T16 owns nine data entries. No publication/deployment or overall readiness claim.

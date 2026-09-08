@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "status": "planned-not-implemented",
+  "status": "partially-implemented",
   "components": [
     {
       "id": "foundation.button",
       "name": "Button",
       "family": "foundation",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Trigger one explicit action; native button semantics; disabled and pending never double-submit.",
@@ -23,13 +23,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
+          "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        }
+      ]
     },
     {
       "id": "foundation.icon-button",
       "name": "IconButton",
       "family": "foundation",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Named compact action with minimum target area; icon alone is never its accessible name.",
@@ -46,13 +51,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
+          "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        }
+      ]
     },
     {
       "id": "foundation.link",
       "name": "Link",
       "family": "foundation",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Navigate to an application-approved destination; preserve browser open-in-new-tab behavior.",
@@ -69,13 +79,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
+          "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        }
+      ]
     },
     {
       "id": "foundation.text",
       "name": "Text",
       "family": "foundation",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Render trusted/plain text with locale and wrapping; no untrusted HTML interpolation.",
@@ -92,13 +107,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
+          "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        }
+      ]
     },
     {
       "id": "foundation.heading",
       "name": "Heading",
       "family": "foundation",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Preserve logical document hierarchy independent of visual size.",
@@ -115,13 +135,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
+          "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        }
+      ]
     },
     {
       "id": "foundation.badge",
       "name": "Badge",
       "family": "foundation",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Present a category/status with text as well as color.",
@@ -138,13 +163,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
+          "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        }
+      ]
     },
     {
       "id": "foundation.avatar",
       "name": "Avatar",
       "family": "foundation",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Display optional identity image; fallback initials and privacy-safe alt policy.",
@@ -161,13 +191,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
+          "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        }
+      ]
     },
     {
       "id": "foundation.separator",
       "name": "Separator",
       "family": "foundation",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Express visual or semantic separation without polluting keyboard order.",
@@ -184,13 +219,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
+          "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        }
+      ]
     },
     {
       "id": "foundation.surface",
       "name": "Surface",
       "family": "foundation",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Provide consistent bounded chrome; never impose dashboard cards on every control.",
@@ -207,13 +247,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
+          "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        }
+      ]
     },
     {
       "id": "foundation.stack",
       "name": "Stack",
       "family": "foundation",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Arrange children in logical reading order with tokenized spacing.",
@@ -230,13 +275,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
+          "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        }
+      ]
     },
     {
       "id": "foundation.grid",
       "name": "Grid",
       "family": "foundation",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Arrange responsive regions without changing semantic/focus order.",
@@ -253,13 +303,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
+          "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        }
+      ]
     },
     {
       "id": "foundation.split-pane",
       "name": "SplitPane",
       "family": "foundation",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Resize adjacent regions by pointer and keyboard while respecting minimum task requirements.",
@@ -276,13 +331,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
+          "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        }
+      ]
     },
     {
       "id": "foundation.scroll-area",
       "name": "ScrollArea",
       "family": "foundation",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Preserve native scrolling, focus visibility, zoom and platform affordances.",
@@ -299,7 +359,12 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
+          "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        }
+      ]
     },
     {
       "id": "input.text-field",

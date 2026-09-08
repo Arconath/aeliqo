@@ -1,0 +1,49 @@
+{
+  "sourceDigest": "d149adb10f03d68cef476c4442f9c8763ee52b9f599ceb0bdfbc7645a8bdbc85",
+  "passed": true,
+  "scope": "Installed core/runtime/agent semantic binding, bounded repair and narrative verification; strict declarations, Node without code generation, Chromium, exact decimals, actual local analytical metric versions, false claims, unverified prose and real revoked handles.",
+  "artifacts": [
+    {
+      "name": "@aeliqo/core",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/agent-consumers/run-0SsZeX/aeliqo-core-0.1.0.tgz",
+      "sha256": "0ac257278164f7f51ec0886288b2d7944d3ffd05fa8a315762de48ee9d8005bb",
+      "integrity": "sha512-wtEE5LH7Z6kSiePdhb99v2DZWVIFtiqCcfceDHSb0obuv5BunhvE+0sUwE5DMKyGYtwiqsz0Ud3pXdBNn3TR1A=="
+    },
+    {
+      "name": "@aeliqo/runtime",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/agent-consumers/run-0SsZeX/aeliqo-runtime-0.1.0.tgz",
+      "sha256": "4caf9896ff4a0f5ba5ec12421cd602609709aefb438b9d364407870314afecae",
+      "integrity": "sha512-B/Hpo59iy5RD9dr+OjDhb6MAfHiLsCxk8i93xCuginY/80neaoX1qzVoWwEX+kUNKClrExxAXgYPnbILxeKztQ=="
+    },
+    {
+      "name": "@aeliqo/agent",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/agent-consumers/run-0SsZeX/aeliqo-agent-0.1.0.tgz",
+      "sha256": "7086ab76004c08d2815e5b8cfc818f17ae6d07dca61da6dcae78ffcb16b68ca1",
+      "integrity": "sha512-3U2DuSo87DUAnrEa2QuUTUHTD1+Rm6QqIgWl79KEsI13aAfHGdceUTQNjpZ3/9j2fg0czLCbGlYGz3w46WJZEg=="
+    }
+  ],
+  "consumerDirectory": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-agent-consumer-oxVA8z",
+  "node": {
+    "guardedRepair": true,
+    "exact": true,
+    "falseValueRejected": true,
+    "proseUnverified": true,
+    "revokedCleared": true,
+    "computedMetricVersion": true
+  },
+  "browser": {
+    "guardedRepair": true,
+    "exact": true,
+    "falseValueRejected": true,
+    "proseUnverified": true,
+    "revokedCleared": true,
+    "computedMetricVersion": true
+  },
+  "environment": {
+    "node": "v24.20.0",
+    "chromium": "153.0.8010.12"
+  }
+}
