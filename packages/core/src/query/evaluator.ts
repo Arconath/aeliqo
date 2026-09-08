@@ -659,8 +659,10 @@ function evaluateCall(state: EvalState, signature: FunctionSignature, args: read
     return compared === undefined ? failure('query.equal-type', 'Equality received incompatible runtime values.') : {ok: true, value: compared === 0};
   }
   if (id === 'core.add' || id === 'core.subtract' || id === 'core.multiply') {
-    const left = args[0]; const right = args[1];
+    let left = args[0]; let right = args[1];
     if (left === null || right === null || left === undefined || right === undefined) return {ok: true, value: null};
+    if (isDecimal(left) && typeof right === 'number' && argumentTypes[1]?.value === 'integer' && Number.isSafeInteger(right)) right = {decimal: String(right)};
+    if (isDecimal(right) && typeof left === 'number' && argumentTypes[0]?.value === 'integer' && Number.isSafeInteger(left)) left = {decimal: String(left)};
     if (isDecimal(left) && isDecimal(right)) {
       const result = id === 'core.multiply' ? decimalMultiply(left, right) : decimalAdd(left, right, id === 'core.subtract' ? -1n : 1n);
       return result === undefined ? failure('query.numeric-overflow', 'Decimal operation exceeded the bounded exact representation.') : {ok: true, value: result};
@@ -668,16 +670,9 @@ function evaluateCall(state: EvalState, signature: FunctionSignature, args: read
     if (typeof left === 'number' && typeof right === 'number') {
       const result = id === 'core.add' ? left + right : id === 'core.subtract' ? left - right : left * right;
       if (!Number.isFinite(result)) return failure('query.numeric-overflow', 'Numeric operation produced a non-finite result.');
+      if (argumentTypes.every((type) => type?.value === 'integer') && argumentTypes.length === 2 && !Number.isSafeInteger(result)) return failure('query.numeric-overflow', 'Integer operation exceeded the exact safe integer representation.');
       if (!Number.isSafeInteger(left) || !Number.isSafeInteger(right) || !Number.isSafeInteger(result)) state.approximate = true;
       return {ok: true, value: result};
-    }
-    if (isDecimal(left) && typeof right === 'number' && Number.isSafeInteger(right) && id === 'core.multiply') {
-      const result = decimalMultiply(left, {decimal: String(right)});
-      return result === undefined ? failure('query.numeric-overflow', 'Decimal multiplication exceeded the bounded exact representation.') : {ok: true, value: result};
-    }
-    if (typeof left === 'number' && isDecimal(right) && Number.isSafeInteger(left) && id === 'core.multiply') {
-      const result = decimalMultiply({decimal: String(left)}, right);
-      return result === undefined ? failure('query.numeric-overflow', 'Decimal multiplication exceeded the bounded exact representation.') : {ok: true, value: result};
     }
     return failure('query.numeric-type', 'Numeric operation received incompatible runtime values.');
   }
@@ -891,29 +886,13 @@ function aggregateValues(state: EvalState, item: AggregateSpec, group: EvalGroup
     return {ok: true, value: distinct.size};
   }
   if (id === 'core.aggregate.sum') {
-    let total: QueryValue | undefined;
-    for (const value of values[0] ?? []) {
-      if (value === null) {
-        if (signature.nullPolicy === 'propagate') return {ok: true, value: null};
-        continue;
-      }
-      if (typeof value === 'number' && !Number.isSafeInteger(value)) state.approximate = true;
-      if (total === undefined) total = value;
-      else {
-        const addedCandidate = state.registry.resolve({id: 'core.add', revision: '1'});
-        if (addedCandidate === undefined) return failure('query.function', 'Function core.add@1 is not registered.');
-        const addedSignature = trustedLocalSignature(state, addedCandidate);
-        if (!addedSignature.ok) return addedSignature;
-        const added = evaluateCall(state, addedSignature.value, [total, value]);
-        if (!added.ok) return added;
-        total = added.value;
-      }
-    }
-    return {ok: true, value: total ?? null};
+    const inputs = values[0] ?? [];
+    if (signature.nullPolicy === 'propagate' && inputs.some((value) => value === null)) return {ok: true, value: null};
+    return sumValues(state, inputs.filter((value) => value !== null), expressionSemanticType(item.arguments[0]!, group.schema, state.registry));
   }
   if (id.startsWith('core.ratio-of-sums')) {
     if (values.length < 2) return failure('query.aggregate', 'Ratio-of-sums requires numerator and denominator arguments.');
-    const numerator = sumValues(state, values[0]!); const denominator = sumValues(state, values[1]!);
+    const numerator = sumValues(state, values[0]!, expressionSemanticType(item.arguments[0]!, group.schema, state.registry), true); const denominator = sumValues(state, values[1]!, expressionSemanticType(item.arguments[1]!, group.schema, state.registry), true);
     if (!numerator.ok) return numerator; if (!denominator.ok) return denominator;
     if (numerator.value === null || denominator.value === null) return {ok: true, value: null};
     const divideId = signature.zeroDenominator === 'error' ? 'core.divide.error' : signature.zeroDenominator === 'unknown' ? 'core.divide.unknown' : 'core.divide.null';
@@ -976,7 +955,30 @@ function evaluateAggregateExpression(state: EvalState, expression: Expression, g
   return evaluateCall(state, signature, arguments_, expression.arguments.map((argument) => expressionSemanticType(argument, group.schema, state.registry)));
 }
 
-function sumValues(state: EvalState, values: readonly QueryValue[]): Outcome<QueryValue | null> {
+function sumValues(state: EvalState, values: readonly QueryValue[], type: SemanticType | undefined, allowWide = false): Outcome<QueryValue | null> {
+  if (values.length > 1) {
+    const candidate = state.registry.resolve({id: 'core.add', revision: '1'});
+    if (candidate === undefined) return failure('query.function', 'Function core.add@1 is not registered.');
+    const trusted = trustedLocalSignature(state, candidate);
+    if (!trusted.ok) return trusted;
+  }
+  if (type?.value === 'integer') {
+    let total = 0n;
+    for (let index = 0; index < values.length; index += 1) {
+      // Preserve the addition charge for each input after the first.
+      if (index > 0) {const charged = tick(state); if (!charged.ok) return charged;}
+      const value = values[index];
+      if (value === null) return {ok: true, value: null};
+      if (typeof value !== 'number' || !Number.isSafeInteger(value)) return failure('query.numeric-overflow', 'Integer sum requires exact safe integer inputs.');
+      total += BigInt(value);
+    }
+    if (values.length === 0) return {ok: true, value: null};
+    if (total > BigInt(Number.MAX_SAFE_INTEGER) || total < BigInt(Number.MIN_SAFE_INTEGER)) {
+      // A ratio may divide exact wide totals; public integer outputs cannot carry them.
+      return allowWide ? {ok: true, value: {decimal: String(total)}} : failure('query.numeric-overflow', 'Integer sum exceeded the exact safe integer representation.');
+    }
+    return {ok: true, value: Number(total)};
+  }
   let total: QueryValue | undefined;
   for (const value of values) {
     if (value === null) return {ok: true, value: null};
@@ -987,7 +989,7 @@ function sumValues(state: EvalState, values: readonly QueryValue[]): Outcome<Que
       if (candidate === undefined) return failure('query.function', 'Function core.add@1 is not registered.');
       const addedSignature = trustedLocalSignature(state, candidate);
       if (!addedSignature.ok) return addedSignature;
-      const added = evaluateCall(state, addedSignature.value, [total, value]);
+      const added = evaluateCall(state, addedSignature.value, [total, value], [type, type]);
       if (!added.ok) return added;
       total = added.value;
     }
@@ -1083,7 +1085,7 @@ function executeWindow(state: EvalState, input: EvalRelation, items: readonly Wi
           }
           if (hasNull && signature.nullPolicy === 'propagate') value = null;
           else {
-            const summed = sumValues(state, values);
+            const summed = sumValues(state, values, expressionSemanticType(item.arguments[0]!, input.schema, state.registry));
             if (!summed.ok) return summed;
             value = summed.value;
           }

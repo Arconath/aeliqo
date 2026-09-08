@@ -226,7 +226,7 @@ describe('production query engine against the independent oracle', () => {
     // emitting a value outside its predicted type or silently coercing it.
     expect(BigInt(oracleExpected.exactArithmetic.integerTotal) > BigInt(oracleExpected.exactArithmetic.safeIntegerMaximum)).toBe(true);
     expect(() => execute(integerCatalog, integerQuery, {integerRows: {entity: 'integerRows', complete: true,
-      rows: oracleCases.exactArithmetic.integerValues.map((amount, index) => ({id: `i${index}`, amount}))}})).toThrow(/query\.output-value/);
+      rows: oracleCases.exactArithmetic.integerValues.map((amount, index) => ({id: `i${index}`, amount}))}})).toThrow(/query\.numeric-overflow/);
     const unsafeSource = {integerRows: {entity: 'integerRows', complete: true, rows: [
       {id: 'a', amount: Number(oracleCases.exactArithmetic.unsafeIntegerInput)},
     ]}};
