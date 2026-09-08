@@ -324,7 +324,7 @@ test("RTL scope prose and long metric numbers keep their reading order", async (
     await Promise.all([table.updateComplete, metric.updateComplete]);
   });
   const tableScope = page.locator("#table [part=scope]");
-  await expect(tableScope).toContainText("Showing 2 of 100 rows.");
+  await expect(tableScope).toContainText("2 of 100 matching records loaded");
   await expect.poll(() => tableScope.evaluate((element) => getComputedStyle(element).unicodeBidi)).toBe("plaintext");
   const metricNumber = page.locator("#metric [part=number]");
   await expect(metricNumber).toHaveAttribute("dir", "ltr");
@@ -333,4 +333,18 @@ test("RTL scope prose and long metric numbers keep their reading order", async (
     const style = getComputedStyle(element);
     return {direction: style.direction, whiteSpace: style.whiteSpace, overflowX: style.overflowX, clipped: element.scrollWidth > element.clientWidth};
   })).toEqual({direction: "ltr", whiteSpace: "nowrap", overflowX: "auto", clipped: true});
+  await metricNumber.focus();
+  await expect(metricNumber).toBeFocused();
+  await page.keyboard.press("ArrowRight");
+  await expect.poll(() => metricNumber.evaluate(element => element.scrollLeft)).toBeGreaterThan(0);
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.emulateMedia({forcedColors: "active"});
+  await expect.poll(() => metricNumber.evaluate(element => {
+    const style = getComputedStyle(element);
+    return {width: style.outlineWidth, style: style.outlineStyle};
+  })).toEqual({width: "2px", style: "solid"});
+  await page.locator("#metric").evaluate(async (element: any) => {element.displayValue = "غير متاح"; await element.updateComplete;});
+  await expect(metricNumber).toHaveAttribute("dir", "auto");
+  await expect(metricNumber).not.toHaveAttribute("tabindex");
+  await expect(metricNumber).toHaveText("غير متاح");
 });

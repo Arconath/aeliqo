@@ -6,7 +6,10 @@ execute a query, infer a metric, or create a region/runtime. Each component
 accepts the same explicit loading, partial, stale, error and unavailable
 states where those states apply.
 
-`Metric` renders one validated value with its unit and visible scope.
+`Metric` renders one validated value with its unit and visible scope. Numeric
+values keep an unbroken left-to-right reading order with local keyboard scrolling
+when needed. A custom `displayValue` is treated as text with automatic direction
+so localized prose is not forced into numeric formatting.
 `Delta` requires an explicitly compatible baseline. Its `absolute`, `relative`
 and `percentage-point` modes remain distinct. A missing baseline is unavailable;
 a zero baseline is valid for absolute and percentage-point changes, but relative

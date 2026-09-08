@@ -85,7 +85,7 @@ export const dataStyles = css`
   }
   [part="scope"] { unicode-bidi: plaintext; }
   @media (forced-colors: active) {
-    :is(button, input, select):focus-visible { outline: 2px solid Highlight; }
+    :is(button, input, select, [part="number"]):focus-visible { outline: 2px solid Highlight; }
   }
 `;
 

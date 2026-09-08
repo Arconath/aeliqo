@@ -58,7 +58,7 @@ export class AeliqoMetricElement extends LitElement {
   }
 
   private get numericValue(): boolean {
-    return typeof this.value === "number" || (typeof this.value === "object" && this.value !== null && !Array.isArray(this.value) && typeof this.value.decimal === "string");
+    return this.displayValue === undefined && (typeof this.value === "number" || (typeof this.value === "object" && this.value !== null && !Array.isArray(this.value) && typeof this.value.decimal === "string"));
   }
 
   private renderValue(): string {
