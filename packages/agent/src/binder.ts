@@ -159,7 +159,7 @@ function decisionFor(
   return context.decisions.find((candidate) =>
     candidate.goalEpoch === context.goalEpoch
       && candidate.diagnosticCode === item.code
-      && (candidate.diagnosticPath === undefined || samePath(candidate.diagnosticPath, item.path)));
+      && samePath(candidate.diagnosticPath, item.path));
 }
 
 function canonical(value: unknown): string {
