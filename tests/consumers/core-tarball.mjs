@@ -491,10 +491,10 @@ function runInstalledQuery() {
     {id:'first',amount:{decimal:'10.01'}},{id:'second',amount:{decimal:'10.02'}},
   ]}}};
   const wirePlan = factory.value.plan({entity:'sales',fields:['id'],measures:[],relations:[],groupBy:[],
-    population:{kind:'all-authorized'},order:[{field:'amount',direction:'desc',nulls:'last'}],page:{size:1}});
+    population:{kind:'all-authorized'},order:[{field:'amount',direction:'desc',nulls:'last'}],topK:1});
   if (!wirePlan.ok) throw new Error(JSON.stringify(wirePlan.diagnostics));
   const ranked = factory.value.evaluate(wirePlan.value,source);
-  if (!ranked.ok || ranked.value.rows[0]?.id !== 'second') throw new Error('Installed exact ranking failed');
+  if (!ranked.ok || ranked.value.rows.length !== 1 || !ranked.value.complete || ranked.value.rows[0]?.id !== 'second') throw new Error('Installed exact ranking failed');
   if (Object.hasOwn(ranked.value.rows[0], 'amount')) throw new Error('Hidden order field leaked into projection');
   const windowPlan = factory.value.plan({entity:'sales',fields:['id','previous'],measures:[],relations:[],groupBy:[],
     population:{kind:'all-authorized'},order:[],windows:[{id:'previous',function:{id:'core.window.lag',revision:'1'},

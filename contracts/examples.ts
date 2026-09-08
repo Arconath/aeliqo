@@ -21,7 +21,7 @@ const baseQuery:QuerySpec = {
   order:[{field:'absence.rate',direction:'desc',nulls:'last'}],
 };
 export const dataTask:Task = {...common,kind:'data',outputs:[
-  {id:'ranking',kind:'query',query:{...baseQuery,page:{size:5}},dependsOn:[],delivery:'eager'},
+  {id:'ranking',kind:'query',query:{...baseQuery,topK:5},dependsOn:[],delivery:'eager'},
   {id:'trend',kind:'query',query:{...baseQuery,groupBy:['Employee.id','week'],
     population:{kind:'live-output',outputId:'ranking',identityKeys:['Employee.id']}},
     dependsOn:['ranking'],delivery:'eager'},

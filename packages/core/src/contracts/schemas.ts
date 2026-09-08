@@ -102,6 +102,7 @@ export const querySchema = object({
   where: optional(predicateSchema), period: optional(periodSchema),
   timeBucket: optional(object({field: idSchema, grain: idSchema})), population: populationSchema,
   order: array(object({field: idSchema, direction: z.enum(['asc','desc']), nulls: z.enum(['first','last'])})),
+  topK: optional(positiveCount.check(z.maximum(L.array))),
   page: optional(object({size: positiveCount.check(z.maximum(L.array)), cursor: optional(text)})),
 });
 export const taskOutputSchema = z.discriminatedUnion('kind', [

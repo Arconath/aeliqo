@@ -388,7 +388,8 @@ function lowerQuerySpec(query: QuerySpec, catalog: Catalog, registry: FunctionRe
     ]};
     filter = filter === undefined ? range : {op: 'and', predicates: [filter, range]};
   }
-  if (query.page?.cursor !== undefined) return unsupported('query.cursor', 'Cursor continuation requires an authorized source cursor and stable source revision.', ['Use a bounded top-K page without a cursor.'], ['page', 'cursor']);
+  if (query.page !== undefined) return unsupported('query.pagination', 'Delivery paging requires the ADC adapter and does not define the query population.', ['Use topK for an explicit ranked population, or execute paging through the ADC adapter.'], ['page']);
+  if (query.topK !== undefined && query.order.length === 0) return failure('query.top-k-order', 'A top-K population requires an explicit deterministic ordering.', ['topK']);
   const orderBy: SortSpec[] = query.order.map((entry) => ({expression: bucketId !== undefined && query.timeBucket !== undefined && entry.field === query.timeBucket.field
     ? {kind: 'field', ref: bucketId}
     : measureIds.has(entry.field) ? {kind: 'field', ref: entry.field} : fieldExpression(query.entity, entry.field), direction: entry.direction, nulls: entry.nulls}));
@@ -406,7 +407,7 @@ function lowerQuerySpec(query: QuerySpec, catalog: Catalog, registry: FunctionRe
     ...(timeBuckets.length === 0 ? {} : {timeBuckets}), ...(windows.length === 0 ? {} : {windows}),
     ...(groupBy.length === 0 ? {} : {groupBy}), ...(aggregates.length === 0 ? {} : {aggregates}),
     ...(orderBy.length === 0 ? {} : {orderBy}),
-    ...(query.page === undefined ? {} : {topK: query.page.size}),
+    ...(query.topK === undefined ? {} : {topK: query.topK}),
     pins: {catalogRevision: catalog.revision, functionRegistryDigest: registry.digest},
   }};
 }
@@ -612,6 +613,7 @@ function aggregateSchema(input: QuerySchema, groupOutput: QuerySchema, items: re
 }
 
 function buildPlan(input: RelationalQuery, catalog: Catalog, registry: FunctionRegistry, limits: QueryLimits): QueryOutcome<LogicalPlan> {
+  if (input.topK !== undefined && (input.orderBy?.length ?? 0) === 0) return failure('query.top-k-order', 'A top-K population requires an explicit deterministic ordering.', ['topK']);
   const pins = input.pins;
   const pinCheck = validatePins(pins, catalog, registry);
   if (!pinCheck.ok) return pinCheck;

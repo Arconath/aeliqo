@@ -54,3 +54,18 @@ it('accepts bounded window specifications and rejects unbounded or executable fr
     expect(validate(bad)).toBe(false);
   }
 });
+
+it('roundtrips semantic top-K separately from delivery paging and rejects malformed limits', () => {
+  const input: QuerySpec = {...query, topK: 5, page: {size: 2}};
+  expect(validate(input)).toBe(true);
+  const parsed = parseContract('query', input);
+  expect(parsed).toMatchObject({ok: true, value: {topK: 5, page: {size: 2}}});
+  if (!parsed.ok) return;
+  const serialized = serializeContract('query', parsed.value);
+  expect(serialized.ok).toBe(true);
+  if (serialized.ok) expect(parseContract('query', serialized.value)).toEqual(parsed);
+  for (const topK of [0, -1, 1.5, 10001, '5', {count: 5}, undefined]) {
+    expect(parseContract('query', {...query, topK}).ok).toBe(false);
+    if (topK !== undefined) expect(validate({...query, topK})).toBe(false);
+  }
+});

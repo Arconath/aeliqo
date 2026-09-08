@@ -115,6 +115,8 @@ export interface QuerySpec {
   readonly timeBucket?:{ readonly field:Id; readonly grain:string };
   readonly population:Population;
   readonly order:readonly { readonly field:Id; readonly direction:'asc'|'desc'; readonly nulls:'first'|'last' }[];
+  /** Semantic ranked population, separate from delivery paging. */
+  readonly topK?:number;
   readonly page?:{ readonly size:number; readonly cursor?:string };
 }
 export type TaskOutput =

@@ -284,7 +284,7 @@ describe('independent query review regressions', () => {
       groupBy: [],
       population: {kind: 'all-authorized'},
       order: [{field: 'value', direction: 'desc', nulls: 'last'}],
-      page: {size: 1},
+      topK: 1,
     };
     const engine = planner(valueCatalog);
     const planned = engine.plan(query);
@@ -293,6 +293,10 @@ describe('independent query review regressions', () => {
     expect(planned.value.nodes.map((node) => node.op)).toEqual(['scan', 'sort', 'project', 'top-k']);
     const result = engine.evaluate(planned.value, source(valueCatalog, [{id: 'a', value: 1}, {id: 'b', value: 2}]));
     expect(result).toMatchObject({ok: true, value: {rows: [{id: 'b'}]}});
+    const {topK: _topK, ...unlimited} = query;
+    expect(engine.plan({...unlimited, page: {size: 1}})).toMatchObject({ok: false});
+    expect(engine.plan({...query, order: []})).toMatchObject({ok: false, diagnostics: [{code: 'query.top-k-order'}]});
+    expect(engine.plan({...standardQuery('events', [{id: 'id', expression: plainField('id')}]), topK: 1, orderBy: []})).toMatchObject({ok: false, diagnostics: [{code: 'query.top-k-order'}]});
   });
 
   it('retains wire QuerySpec time buckets and windows when lowering', () => {

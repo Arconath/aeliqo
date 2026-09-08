@@ -142,3 +142,18 @@ The field must exist in the validated operator input, and the host must authoriz
 all referenced entity/field dependencies before evaluation. This allows a
 post-left-join null/boolean policy filter without broadcasting measures across
 incompatible grains. Existing unqualified queries keep their meaning.
+
+## T39 clarification: ranked population versus delivery page
+
+`QuerySpec.topK` defines an explicitly requested ranked population after ordering;
+`page` only bounds transport delivery of that population. A complete top-five
+result can seed a fixed cohort. The first five rows of a larger ranking are a
+partial page and cannot establish complete cohort membership. Top-K requires an
+explicit order (including stable identity tie-breaking where ties are possible).
+The ADC adapter handles page/cursor delivery after semantic evaluation; the pure
+planner rejects paging instead of treating page size as a population limit.
+
+The initial pre-release QuerySpec lowering conflated `page.size` with top-K while
+the local ADC correctly treated it as paging. Producers requesting ranking must
+now emit `topK: 5`; producers requesting a page retain `page: {size: 5}`. Existing
+published packages are not changed or automatically migrated by this source edit.

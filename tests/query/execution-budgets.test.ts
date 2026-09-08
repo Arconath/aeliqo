@@ -65,6 +65,7 @@ describe('bounded query execution budgets', () => {
     const query = projection({
       filter: {op: 'compare', left: field('facts', 'value'), comparison: 'gte', right: literal(0)},
       topK: 1,
+      orderBy: [{expression: {kind: 'field', ref: 'id'}, direction: 'asc', nulls: 'last'}],
     });
     const plan = planFor(engine, query);
     const result = engine.evaluate(plan, source(rows(100)));
@@ -179,7 +180,7 @@ describe('bounded query execution budgets', () => {
 
   it('keeps standalone evaluateLogicalPlan bounded by default', () => {
     const engine = planner();
-    const plan = planFor(engine, projection({topK: 1}));
+    const plan = planFor(engine, projection({topK: 1, orderBy: [{expression: {kind: 'field', ref: 'id'}, direction: 'asc', nulls: 'last'}]}));
     const result = evaluateLogicalPlan(plan, source(rows(10_001)), catalog, registry);
     expect(result.ok).toBe(false);
     expect(diagnosticCode(result)).toBe('query.budget');
