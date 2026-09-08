@@ -1215,88 +1215,95 @@ export function createAeliqoDataRegistry(
     input: AeliqoDataNodeInput,
     binding: AeliqoDataBinding,
   ): Outcome<AeliqoDataResolvedNode> => {
-    if (
-      input === null ||
-      typeof input !== "object" ||
-      typeof input.id !== "string" ||
-      input.id.length === 0 ||
-      input.id.length > MAX_NODE_ID
-    )
-      return failure("config", "A data node requires a bounded ID.");
-    const component = normalizeComponent(input.component);
-    if (component === undefined)
-      return failure(
-        "config",
-        "The data node representation is not registered.",
+    try {
+      if (
+        input === null ||
+        typeof input !== "object" ||
+        typeof input.id !== "string" ||
+        input.id.length === 0 ||
+        input.id.length > MAX_NODE_ID
+      )
+        return failure("config", "A data node requires a bounded ID.");
+      const component = normalizeComponent(input.component);
+      if (component === undefined)
+        return failure(
+          "config",
+          "The data node representation is not registered.",
+        );
+      const entry = byRef.get(
+        `${AELIQO_DATA_REFS[component].id}@${AELIQO_DATA_REFS[component].revision}`,
+      )!;
+      const checkedBinding = validateBinding(binding, options);
+      if (!checkedBinding.ok) return checkedBinding;
+      const values = input.config ?? {};
+      if (
+        values === null ||
+        typeof values !== "object" ||
+        Array.isArray(values) ||
+        Object.keys(values).length > MAX_VALUE_KEYS
+      )
+        return failure(
+          "config",
+          "Data configuration must be a bounded object.",
+        );
+      const wireValues = parseWireValue(values);
+      if (
+        !wireValues.ok ||
+        wireValues.value === null ||
+        typeof wireValues.value !== "object" ||
+        Array.isArray(wireValues.value)
+      )
+        return failure(
+          "config",
+          "Data configuration must contain only bounded JSON values.",
+        );
+      const config = entry.resolveConfig(
+        wireValues.value as Readonly<Record<string, unknown>>,
+        checkedBinding.value,
+        options,
       );
-    const entry = byRef.get(
-      `${AELIQO_DATA_REFS[component].id}@${AELIQO_DATA_REFS[component].revision}`,
-    )!;
-    const checkedBinding = validateBinding(binding, options);
-    if (!checkedBinding.ok) return checkedBinding;
-    const values = input.config ?? {};
-    if (
-      values === null ||
-      typeof values !== "object" ||
-      Array.isArray(values) ||
-      Object.keys(values).length > MAX_VALUE_KEYS
-    )
-      return failure("config", "Data configuration must be a bounded object.");
-    const wireValues = parseWireValue(values);
-    if (
-      !wireValues.ok ||
-      wireValues.value === null ||
-      typeof wireValues.value !== "object" ||
-      Array.isArray(wireValues.value)
-    )
-      return failure(
-        "config",
-        "Data configuration must contain only bounded JSON values.",
-      );
-    const config = entry.resolveConfig(
-      wireValues.value as Readonly<Record<string, unknown>>,
-      checkedBinding.value,
-      options,
-    );
-    if (!config.ok) return config;
-    const selectedColumns =
-      config.value.columns.length === 0
-        ? checkedBinding.value.columns
-        : config.value.columns;
-    return {
-      ok: true,
-      value: Object.freeze({
-        id: input.id,
-        component,
-        ref: entry.ref,
-        result: checkedBinding.value.result,
-        rows: checkedBinding.value.rows,
-        columns: selectedColumns,
-        scope: checkedBinding.value.scope,
-        config: Object.freeze({
-          ...config.value,
-          values: Object.freeze({ ...config.value.values }),
-          columns: Object.freeze(
-            selectedColumns.map((column) => Object.freeze({ ...column })),
-          ),
-          fields: Object.freeze([...config.value.fields]),
-          identity: Object.freeze([...config.value.identity]),
-          ports: Object.freeze(
-            config.value.ports.map((port) =>
-              Object.freeze({
-                ...port,
-                ...(port.identity === undefined
-                  ? {}
-                  : { identity: Object.freeze([...port.identity]) }),
-                ...(port.grain === undefined
-                  ? {}
-                  : { grain: Object.freeze([...port.grain]) }),
-              }),
+      if (!config.ok) return config;
+      const selectedColumns =
+        config.value.columns.length === 0
+          ? checkedBinding.value.columns
+          : config.value.columns;
+      return {
+        ok: true,
+        value: Object.freeze({
+          id: input.id,
+          component,
+          ref: entry.ref,
+          result: checkedBinding.value.result,
+          rows: checkedBinding.value.rows,
+          columns: selectedColumns,
+          scope: checkedBinding.value.scope,
+          config: Object.freeze({
+            ...config.value,
+            values: Object.freeze({ ...config.value.values }),
+            columns: Object.freeze(
+              selectedColumns.map((column) => Object.freeze({ ...column })),
             ),
-          ),
+            fields: Object.freeze([...config.value.fields]),
+            identity: Object.freeze([...config.value.identity]),
+            ports: Object.freeze(
+              config.value.ports.map((port) =>
+                Object.freeze({
+                  ...port,
+                  ...(port.identity === undefined
+                    ? {}
+                    : { identity: Object.freeze([...port.identity]) }),
+                  ...(port.grain === undefined
+                    ? {}
+                    : { grain: Object.freeze([...port.grain]) }),
+                }),
+              ),
+            ),
+          }),
         }),
-      }),
-    };
+      };
+    } catch {
+      return failure("config", "The data node could not be validated.");
+    }
   };
   return Object.freeze({ manifests: entries, resolve });
 }
