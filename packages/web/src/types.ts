@@ -10,6 +10,8 @@ export type TableCell = string | number | boolean | null | AeliqoDecimalCell;
 export interface AeliqoTableColumn {
   readonly key: string;
   readonly label: string;
+  readonly sortable?: boolean;
+  readonly align?: "start" | "center" | "end";
 }
 
 export type AeliqoTableRow = Readonly<Record<string, TableCell>>;
