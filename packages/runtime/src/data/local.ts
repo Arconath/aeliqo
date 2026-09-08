@@ -363,6 +363,16 @@ function validateReadGrant(grant: ReadGrant): Outcome<ReadGrant> {
   return {ok: true, value: grant};
 }
 
+function normalizeAuthorizationOutcome(value: unknown): Outcome<ReadGrant> {
+  if (value !== null && typeof value === 'object' && (value as {readonly ok?: unknown}).ok === true)
+    return validateReadGrant((value as {readonly value?: unknown}).value as ReadGrant);
+  if (value !== null && typeof value === 'object' && (value as {readonly ok?: unknown}).ok === false) {
+    const diagnostics = (value as {readonly diagnostics?: unknown}).diagnostics;
+    if (Array.isArray(diagnostics) && diagnostics.length > 0) return value as Outcome<ReadGrant>;
+  }
+  return failure('data.authorization', 'The ADC authorization returned an invalid outcome.');
+}
+
 interface Deadline {
   readonly signal: AbortSignal;
   readonly timedOut: () => boolean;
@@ -402,7 +412,7 @@ function authorizeResult(
   } catch {
     return Promise.resolve(failure('data.authorization', 'The ADC authorization failed.'));
   }
-  if (context.signal === undefined) return pending.then((result) => result.ok ? validateReadGrant(result.value) : result, () => failure('data.authorization', 'The ADC authorization failed.'));
+  if (context.signal === undefined) return pending.then(normalizeAuthorizationOutcome, () => failure('data.authorization', 'The ADC authorization failed.'));
   if (context.signal.aborted) return Promise.resolve(failure('data.aborted', 'The ADC authorization was cancelled.'));
   return new Promise((resolve) => {
     let settled = false;
@@ -414,7 +424,7 @@ function authorizeResult(
     };
     const onAbort = () => finish(failure('data.aborted', 'The ADC authorization was cancelled.'));
     context.signal!.addEventListener('abort', onAbort, {once: true});
-    pending.then(finish, () => finish(failure('data.authorization', 'The ADC authorization failed.')));
+    pending.then((result) => finish(normalizeAuthorizationOutcome(result)), () => finish(failure('data.authorization', 'The ADC authorization failed.')));
   });
 }
 
