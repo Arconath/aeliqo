@@ -1,0 +1,27 @@
+Scope: all 15 workspace projects
+✓ Lockfile passes supply-chain policies (verified 726ms ago)
+Lockfile is up to date, resolution step is skipped
+Already up to date
+
+devDependencies:
++ @aeliqo/testkit 0.1.0 <- packages/testkit
+
+Done in 548ms using pnpm v11.24.0
+$ pnpm build:runtime && vitest run --config tests/runtime-data/vitest.config.mjs && tsc -p tests/runtime-data/tsconfig.json
+$ pnpm build:core && pnpm --filter @aeliqo/runtime build
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+
+ RUN  v5.0.0 /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo
+
+
+ Test Files  8 passed (8)
+      Tests  98 passed (98)
+   Start at  05:35:33
+   Duration  921ms (transform 61%, import 21%, tests 17%, worker 1%)
+
+  Transform  transforming modules took 3.38s · 61% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

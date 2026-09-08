@@ -1,0 +1,9 @@
+
+ RUN  v5.0.0 /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  05:52:20
+   Duration  313ms (transform 48%, import 42%, tests 10%, worker 1%)
+

@@ -1,0 +1,13 @@
+
+ RUN  v5.0.0 /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo
+
+
+ Test Files  10 passed (10)
+      Tests  95 passed (95)
+   Start at  05:52:16
+   Duration  685ms (transform 67%, import 25%, tests 7%, worker 1%)
+
+  Transform  transforming modules took 3.10s · 67% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

@@ -1,0 +1,107 @@
+{
+  "task": "T28",
+  "status": "pass",
+  "sourceCommit": "54bb82364f8d1408d0b2a3a0f7dfe84a52439315",
+  "sourceDigest": "5c66e87873def88d5015effa644d1e604e275ec87afae99b66ee3bfca11fdb10",
+  "scope": "Execution-time authorization, principal/cohort and cache/handle isolation, bounded testkit, package dependency boundaries and lifecycle robustness.",
+  "checks": {
+    "frozenInstall": true,
+    "securityTests": "5 files, 14 passed",
+    "securityStrictTypeScript": true,
+    "installedConsumer": true,
+    "installedConsumerSourceCleanBeforeAfter": true,
+    "installedConsumerSourceDigestStable": true,
+    "installedConsumerPackageLockSha256": "74f41cc95eb081212cac31d28ad26027b86f45f7eb9f0e4b6f0c680ced9f78ea",
+    "installedConsumerPackageCount": 26,
+    "installedBoundary": {
+      "fullApacheLicenses": true,
+      "noWorkspaceAliases": true,
+      "noInstalledSymlinks": true,
+      "strictTypeScript": true,
+      "resultStoreRevocation": true,
+      "boundedCollectionDefault": true,
+      "overflowCleanup": true,
+      "abortCleanup": true,
+      "synchronousThrowCleanup": true
+    },
+    "sourceContinuity": {
+      "coreRuntimeAgentTestkitSinceC1e0a10": "clean",
+      "coreRuntimeAgentTestkitConsumerSinceD4bbb25": "clean",
+      "testkitConsumerScriptSinceD4bbb25": "clean"
+    }
+  },
+  "limits": [
+    "This is a source-bound package, AST-boundary and installed-consumer review, not a full security certification or penetration test.",
+    "The package-boundary AST suite covers core/runtime/web; agent and testkit source graphs were compared for continuity and exercised through the installed consumer, not re-audited by that AST suite.",
+    "Prior broad 98-data, 7-evaluation, 95-agent, MCP11, WebMCP12, actions27, regions49 and results23 suites were not rerun; their previously logged evidence is not regenerated here.",
+    "AST probes intentionally cover the declared static import/export, relative path, selected dynamic edge and ambient-effect patterns; they do not prove absence of every runtime loader or platform escape.",
+    "Historical task acceptance; core performance changes underway on root are not covered by this source snapshot. Final candidate security gates must rerun after integration.",
+    "Continuity logs pin their original runs; source equality for core/runtime/agent/testkit established by independent review."
+  ],
+  "artifacts": [
+    {
+      "path": "actions-continuity.log",
+      "sha256": "f153cfde6b07278e3748e1a030679f68c51af1c0465f50016d0e910ae172dad0"
+    },
+    {
+      "path": "agents-continuity.log",
+      "sha256": "89213d0218f5b4bd1b492c934e5782d9e7639fe33728f6c7ede036f897505026"
+    },
+    {
+      "path": "consumer-package-lock.json",
+      "sha256": "74f41cc95eb081212cac31d28ad26027b86f45f7eb9f0e4b6f0c680ced9f78ea"
+    },
+    {
+      "path": "data-continuity.log",
+      "sha256": "a35a2a32a02372cf2858d9d976a97b0891df75d0357bee99260f7bc7b0c7d308"
+    },
+    {
+      "path": "evaluation-continuity.log",
+      "sha256": "95c6d79e58576f31512762027ab7f019b432eeff72e93ab40b688d343cbbc01b"
+    },
+    {
+      "path": "independent-review.json",
+      "sha256": "9d8593765916542bd2f11cef26f4f5a54744ed1fa28061ae2f5b87cb80944905"
+    },
+    {
+      "path": "installed-consumer-report.json",
+      "sha256": "f1d559a466ce6d32155b53c5b7e4f42b33e55195c666f4ad0eff0187d0eeea19"
+    },
+    {
+      "path": "mcp-continuity.log",
+      "sha256": "a67e14f2e4e1ed72887fa70c5b544e240f4922e1399bb55c5f32199661f4c759"
+    },
+    {
+      "path": "model-continuity.log",
+      "sha256": "6e4022bfa444c35b88aa0ac11f8ff4b13d87c741604b6d5bfec9779dc894a198"
+    },
+    {
+      "path": "regions-continuity.log",
+      "sha256": "e34b65ed159cd942e06c7cad257ab5f3bb203bc394eef59361956c46415e3d6e"
+    },
+    {
+      "path": "results-continuity.log",
+      "sha256": "e0f3c2b0a32dcad5803815be4d545d625ecbc56643df6f978f6b15eae91a0e83"
+    },
+    {
+      "path": "source-continuity.log",
+      "sha256": "3d2a4a9e3c1849747955f35c4883b0f1cb7e26eb4de46d3aa1c07180aeefe299"
+    },
+    {
+      "path": "test-security-node24.log",
+      "sha256": "10384defcefc881bca4c7d120b67916396e427ef6352d71567b180678a23cbaa"
+    },
+    {
+      "path": "testkit-consumer-node24.log",
+      "sha256": "f1d559a466ce6d32155b53c5b7e4f42b33e55195c666f4ad0eff0187d0eeea19"
+    },
+    {
+      "path": "versions.log",
+      "sha256": "1deaf100281b5f08037cc126e126d140d2ef00559ad56d1e9d45af17773ab70c"
+    },
+    {
+      "path": "webmcp-continuity.log",
+      "sha256": "bfcd59f6ac4598e4e431932a2340c531a105453b4923d7e6df938759ebab98b0"
+    }
+  ]
+}

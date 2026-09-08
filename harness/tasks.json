@@ -957,10 +957,26 @@
       "acceptance": [
         "Permissions enforced at execution, metadata/data minimization, cache/cursor isolation, injection/cancel/revoke tests."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "Security probes reproduce then close metadata principal override d38c06a; independent review and testkit integration underway. T26 accepted; not a T28 pass."
+      "evidence": [
+        {
+          "path": "harness/evidence/t28/54bb823-sourcebound/manifest.json",
+          "sha256": "949adb34090bc059a6e8a9f677ab8320f9cfd07b5637fbe1e939b829ae951d29"
+        }
+      ],
+      "notes": "Accepted onclean54bb823 snapshot:14security+strict andinstalledcore/runtime/testkit consumer; sourcecontinuity forbroaderdata/agent/protocol/action/lifecycle suites. Independentreviewapproved. Latercoreperformancechanges requirefreshfinalcandidatechecks; nofullsecuritycertification.",
+      "review": {
+        "status": "approved",
+        "author": "root + preflight_diagnosis + release_inventory",
+        "reviewer": "platform_proof",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t28/54bb823-sourcebound/independent-review.json",
+            "sha256": "9d8593765916542bd2f11cef26f4f5a54744ed1fa28061ae2f5b87cb80944905"
+          }
+        ]
+      }
     },
     {
       "id": "T29",
