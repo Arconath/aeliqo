@@ -136,7 +136,7 @@ export function normalizeAgentCapabilityRequest(input: unknown): Outcome<AgentCa
     ...(metadata === undefined ? {} : {metadata}), ...(object.transport === undefined ? {} : {transport})})};
 }
 
-function normalizeHostContext(input: unknown, request: AgentCapabilityRequest): Outcome<AgentCapabilityAuthority> {
+function normalizeHostContext(input: unknown, request: Pick<AgentCapabilityRequest, 'targetRegionId' | 'goalEpoch'>): Outcome<AgentCapabilityAuthority> {
   const wire = parseWireValue(input);
   if (!wire.ok) return failure('agent.capability.denied', 'The host authority context is not bounded data.');
   if (wire.value === null || typeof wire.value !== 'object' || Array.isArray(wire.value)) return failure('agent.capability.denied', 'The host authority context is unavailable.');
@@ -454,3 +454,6 @@ export function dispatchAgentCapability(
 
 export {canonical as capabilityCanonical};
 export {capabilityRefKey};
+
+// Internal shared boundaries for protocol projection; not exported by the public barrel.
+export {normalizeHostContext as normalizeAgentCapabilityAuthority, awaitBoundary as awaitAgentBoundary};

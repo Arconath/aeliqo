@@ -31,3 +31,28 @@ export interface AgentToolEndpoint {
   readonly invoke: (name: string, input: unknown, options: AgentToolCallOptions) => Promise<Outcome<AgentCapabilityReceipt>>;
   readonly close: () => void;
 }
+
+/** Host-only egress admission receipt; never automatically included in model input. */
+export interface AgentModelScope {
+  readonly principalKey: string;
+  readonly current?: import('@aeliqo/core').CommitPreconditions;
+}
+export interface AgentModelToolEndpoint extends AgentToolEndpoint {
+  readonly authorizeModel: (options?: {readonly signal?: AbortSignal}) => Promise<Outcome<AgentModelScope>>;
+}
+export interface AgentToolEndpointOptions {
+  readonly transport: AgentToolTransport;
+  readonly targetRegionId: string;
+  readonly goalEpoch: string;
+  readonly principalKey: string;
+  readonly scopeDigest?: string;
+  readonly expiresAt: number;
+  readonly registry: import('../capabilities/types.js').AgentCapabilityRegistry;
+  readonly host: import('../capabilities/types.js').AgentCapabilityHost;
+  readonly tools: readonly AgentToolBinding[];
+  readonly now?: () => number;
+  readonly maxPending?: number;
+  readonly maxMilliseconds?: number;
+  readonly maxInputBytes?: number;
+  readonly maxOutputBytes?: number;
+}
