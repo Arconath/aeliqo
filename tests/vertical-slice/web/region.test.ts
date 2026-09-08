@@ -86,6 +86,21 @@ describe("T39 registered web region", () => {
     expect(filter.suggestConfig?.([{id: "filter", operation: AELIQO_OPERATION_REFS.filter, fields: ["employee.id"], outputId: "rows", required: true}], result)).toMatchObject({ok: true, value: {field: "employee.id", outputId: "rows"}});
   });
 
+  it("rejects mixed numeric units on a shared trend axis", () => {
+    const trend = registry().manifests.find((candidate) => candidate.ref.id === AELIQO_PRESENTATION_REFS.trend.id)!;
+    const mixed = {
+      ...result,
+      fields: [
+        ...result.fields,
+        {id: "rate", label: "Rate", type: {value: "decimal" as const, nullable: true, unit: {dimension: "ratio", symbol: "%"}}, role: "measure" as const},
+      ],
+    } as const;
+    expect(trend.resolveConfig({labelField: "month", series: [{field: "amount"}, {field: "rate"}]}, mixed)).toMatchObject({
+      ok: false,
+      diagnostics: [{code: "web.presentation.field"}],
+    });
+  });
+
   it("uses stable identity tuples and registered identity mappings", () => {
     expect(stableTableRowKey({"employee.id": "e1", month: "Jan"}, ["employee.id"])).toBe("e1");
     expect(stableTableRowKey({"employee.id": "e1", month: "Jan"}, ["employee.id", "month"])).toBe(JSON.stringify(["e1", "Jan"]));
@@ -108,5 +123,26 @@ describe("T39 registered web region", () => {
     expect(geometry.segments.filter((segment) => segment.seriesIndex === 1)).toHaveLength(1);
     expect(geometry.circles).toHaveLength(5);
     expect(geometry.segments.every((segment) => segment.points.length > 0)).toBe(true);
+  });
+
+  it("aligns sparse and disjoint explicit x values to one shared domain", () => {
+    const geometry = buildAeliqoChartGeometry([
+      {id: "actual", label: "Actual", points: [
+        {x: 1, label: "Jan", value: 1},
+        {x: 3, label: "Mar", value: 3},
+      ]},
+      {id: "target", label: "Target", points: [
+        {x: 2, label: "Feb", value: 2},
+        {x: 4, label: "Apr", value: 4},
+      ]},
+    ]);
+    expect(geometry.segments).toHaveLength(4);
+    expect(geometry.circles).toHaveLength(4);
+    const actualX = geometry.circles.filter((circle) => circle.seriesIndex === 0).map((circle) => circle.x);
+    const targetX = geometry.circles.filter((circle) => circle.seriesIndex === 1).map((circle) => circle.x);
+    expect(actualX[0]).toBe(24);
+    expect(actualX[1]).toBeCloseTo(210.66666666666666, 8);
+    expect(targetX[0]).toBeCloseTo(117.33333333333333, 8);
+    expect(targetX[1]).toBe(304);
   });
 });

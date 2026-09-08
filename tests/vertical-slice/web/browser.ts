@@ -42,10 +42,10 @@ const tableColumns: readonly AeliqoTableColumn[] = [{key: "employee.id", label: 
 const trendResult = result([textField, weekField, amountField]);
 const trendRows = [
   {"employee.id": "e1", week: "2026-01-01T00:00:00Z", absence: 1}, {"employee.id": "e1", week: "2026-01-08T00:00:00Z", absence: null}, {"employee.id": "e1", week: "2026-01-15T00:00:00Z", absence: 2},
-  {"employee.id": "e2", week: "2026-01-01T00:00:00Z", absence: 0}, {"employee.id": "e2", week: "2026-01-08T00:00:00Z", absence: 1}, {"employee.id": "e2", week: "2026-01-15T00:00:00Z", absence: 1},
+  {"employee.id": "e2", week: "2026-01-01T00:00:00Z", absence: 0}, {"employee.id": "e2", week: "2026-01-15T00:00:00Z", absence: 1},
   {"employee.id": "e3", week: "2026-01-01T00:00:00Z", absence: 2}, {"employee.id": "e3", week: "2026-01-08T00:00:00Z", absence: 2}, {"employee.id": "e3", week: "2026-01-15T00:00:00Z", absence: 3},
   {"employee.id": "e4", week: "2026-01-01T00:00:00Z", absence: 3}, {"employee.id": "e4", week: "2026-01-08T00:00:00Z", absence: 2}, {"employee.id": "e4", week: "2026-01-15T00:00:00Z", absence: 4},
-  {"employee.id": "e5", week: "2026-01-01T00:00:00Z", absence: 4}, {"employee.id": "e5", week: "2026-01-08T00:00:00Z", absence: 3}, {"employee.id": "e5", week: "2026-01-15T00:00:00Z", absence: 5},
+  {"employee.id": "e5", week: "2026-01-01T00:00:00Z", absence: 4}, {"employee.id": "e5", week: "2026-01-08T00:00:00Z", absence: 3}, {"employee.id": "e5", week: "2026-02-01T00:00:00Z", absence: 6},
 ];
 
 function mountFilters(order: readonly string[] = ["filter-a", "filter-b"]): void {

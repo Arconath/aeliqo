@@ -107,6 +107,11 @@ function numericField(field: Result["fields"][number]): boolean {
   return field.type.value === "integer" || field.type.value === "float" || field.type.value === "decimal";
 }
 
+function unitKey(field: Result["fields"][number]): string {
+  const unit = field.type.unit;
+  return unit === undefined ? "" : JSON.stringify([unit.dimension, unit.symbol, unit.currency ?? null]);
+}
+
 function trendGrain(seriesBy: readonly string[], labelField: string, result: Result): Outcome<undefined> {
   const expected = new Set([...seriesBy, labelField]);
   const actual = new Set(result.rowGrain);
@@ -164,6 +169,7 @@ function trendConfig(values: PresentationValues, result: Result | undefined, res
   if (!Array.isArray(input.series) || input.series.length === 0 || input.series.length > 8) return fail("config", "series must contain one to eight entries.");
   const series: {readonly field: string; readonly label: string; readonly unit?: string}[] = [];
   const seen = new Set<string>();
+  let firstUnitKey: string | undefined;
   for (const item of input.series) {
     const candidate = record(item); if (candidate === undefined || Object.keys(candidate).some((key) => !["field", "label", "unit"].includes(key))) return fail("config", "Trend series entries are malformed.");
     const field = text(candidate.field, "series.field"); if (!field.ok) return field;
@@ -177,6 +183,9 @@ function trendConfig(values: PresentationValues, result: Result | undefined, res
     const unit = optionalText(candidate, "unit"); if (!unit.ok) return unit;
     const descriptorUnit = descriptor.type.unit?.symbol;
     if (unit.value !== undefined && unit.value !== descriptorUnit) return fail("field", `Trend series ${field.value} must use its registered descriptor unit.`);
+    const descriptorUnitKey = unitKey(descriptor);
+    if (firstUnitKey === undefined) firstUnitKey = descriptorUnitKey;
+    else if (descriptorUnitKey !== firstUnitKey) return fail("field", "Trend series fields must use one compatible numeric unit on a shared y-axis.");
     seen.add(field.value); series.push({field: field.value, label: labelValue, ...(descriptorUnit === undefined ? {} : {unit: descriptorUnit})});
   }
   const grouping = input.seriesBy;

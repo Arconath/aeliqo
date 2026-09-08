@@ -1,6 +1,11 @@
 import type {ResultRef} from "@aeliqo/core";
 
-export type TableCell = string | number | boolean | null;
+/** Exact decimal values stay structured so tables never round them through IEEE-754. */
+export interface AeliqoDecimalCell {
+  readonly decimal: string;
+}
+
+export type TableCell = string | number | boolean | null | AeliqoDecimalCell;
 
 export interface AeliqoTableColumn {
   readonly key: string;
@@ -23,8 +28,12 @@ export interface AeliqoTableSelectionDetail {
 
 export interface AeliqoChartPoint {
   readonly label: string;
+  /** Shared domain coordinate. Temporal renderers use a finite epoch value. */
+  readonly x?: string | number;
   /** `null` is an unknown/missing point and creates a visible line gap. */
   readonly value: number | null;
+  /** Exact source text for the accessible table when the plotted value is a decimal. */
+  readonly displayValue?: string;
 }
 
 export interface AeliqoChartSeries {

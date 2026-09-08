@@ -38,7 +38,18 @@ function temporalLabel(value: unknown): string {
 
 function numericValue(value: unknown): number | null {
   if (value === null || value === undefined) return null;
-  return typeof value === "number" && Number.isFinite(value) ? value : Number.NaN;
+  if (typeof value === "number") return Number.isFinite(value) ? value : Number.NaN;
+  const decimal = record(value);
+  if (decimal !== undefined && Object.keys(decimal).length === 1 && typeof decimal.decimal === "string") {
+    const parsed = Number(decimal.decimal);
+    return Number.isFinite(parsed) ? parsed : Number.NaN;
+  }
+  return Number.NaN;
+}
+
+function decimalText(value: unknown): string | undefined {
+  const decimal = record(value);
+  return decimal !== undefined && Object.keys(decimal).length === 1 && typeof decimal.decimal === "string" ? decimal.decimal : undefined;
 }
 
 function resultFor(node: {readonly result: Result | undefined}, results: readonly AeliqoRegionResult[]): AeliqoRegionResult | undefined {
@@ -90,7 +101,8 @@ export class AeliqoRegionElement extends LitElement {
   protected override willUpdate(changed: PropertyValues<this>): void {
     if (!changed.has("presentation")) return;
     const active = this.shadowRoot?.activeElement;
-    if (!(active instanceof HTMLElement)) return;
+    const elementConstructor = globalThis.HTMLElement;
+    if (elementConstructor === undefined || !(active instanceof elementConstructor)) return;
     const nodeHost = active.closest<HTMLElement>("[data-aeliqo-node-id]");
     if (nodeHost === null) return;
     this.focusedNodeId = nodeHost.dataset.aeliqoNodeId;
@@ -131,8 +143,10 @@ export class AeliqoRegionElement extends LitElement {
     const values = valuesOf(resolved);
     switch (resolved.manifest.id) {
       case "layout.stack": {
-        const gap = typeof values.gap === "number" && Number.isSafeInteger(values.gap) && values.gap >= 0 && values.gap <= 64 ? values.gap : 0;
-        return html`<div part="stack" data-aeliqo-role="stack" data-aeliqo-node-id=${resolved.node.id} style=${`gap:${gap}px`}>${children()}</div>`;
+        const gap = typeof values.gap === "number" && Number.isSafeInteger(values.gap) && values.gap >= 0 && values.gap <= 64
+          ? `${values.gap}px`
+          : "var(--aeliqo-space-24, 1.5rem)";
+        return html`<div part="stack" data-aeliqo-role="stack" data-aeliqo-node-id=${resolved.node.id} style=${`gap:${gap}`}>${children()}</div>`;
       }
       case "data.table": return this.renderTable(resolved, values);
       case "data.trend": return this.renderTrend(resolved, values);
@@ -188,7 +202,17 @@ export class AeliqoRegionElement extends LitElement {
       return [...groups.entries()].map(([groupKey, group]) => {
         const ordered = [...group.rows].sort((left, right) => Number.isNaN(left.time) || Number.isNaN(right.time) ? left.index - right.index : left.time - right.time || left.index - right.index);
         const suffix = group.values.length === 0 ? "" : ` · ${group.values.map((value) => value === null || value === undefined ? "—" : String(value)).join(" · ")}`;
-        const points = ordered.map(({row, time}) => ({label: temporalLabel(row[labelField]), value: Number.isNaN(time) ? Number.NaN : numericValue(row[field])}));
+        const points = ordered.map(({row, time}) => {
+          const sourceValue = row[field];
+          const value = Number.isNaN(time) ? Number.NaN : numericValue(sourceValue);
+          const displayValue = decimalText(sourceValue);
+          return {
+            label: temporalLabel(row[labelField]),
+            ...(Number.isNaN(time) ? {} : {x: time}),
+            value,
+            ...(displayValue === undefined ? {} : {displayValue}),
+          };
+        });
         return {id: `${field}:${groupKey}`, label: `${label}${suffix}`, ...(unit.length === 0 ? {} : {unit}), points};
       });
     });

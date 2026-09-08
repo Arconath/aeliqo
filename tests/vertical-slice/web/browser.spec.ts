@@ -52,8 +52,12 @@ test("region emits trusted table selection, clears explicitly, and keeps long fo
     await (document.querySelector("aeliqo-region") as HTMLElement & {updateComplete: Promise<unknown>}).updateComplete;
   });
   const chart = page.locator('aeliqo-chart[data-aeliqo-node-id="trend"]');
-  await expect(chart.locator('svg [part="line"]')).toHaveCount(6);
+  await expect(chart.locator('svg [part="line"]')).toHaveCount(8);
+  await expect(chart.locator('[part="legend"] li')).toHaveCount(5);
+  await expect(chart.locator('[part="legend"] li.style-1')).toHaveCount(1);
   await chart.locator("details summary").click();
   await expect(chart.locator("thead th")).toHaveCount(6);
-  await expect(chart.locator("tbody td").filter({hasText: "—"})).toHaveCount(1);
+  await expect(chart.locator("tbody tr")).toHaveCount(4);
+  await expect(chart.locator("tbody td").filter({hasText: "—"})).toHaveCount(7);
+  await expect(chart.locator("tbody tr").nth(3).locator("td").nth(4)).toHaveText("6");
 });

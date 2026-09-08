@@ -2,7 +2,7 @@ import {aeliqoThemeStyles} from "../styles/theme.js";
 import {css, html, LitElement, nothing} from "lit";
 import {AeliqoTableSelectionEvent} from "../events.js";
 import type {ResultRef} from "@aeliqo/core";
-import type {AeliqoTableColumn, AeliqoTableRow, AeliqoTableSelectionMode} from "../types.js";
+import type {AeliqoTableColumn, AeliqoTableRow, AeliqoTableSelectionMode, TableCell} from "../types.js";
 
 /**
  * Encode a row identity for a semantic selection payload. Single-field
@@ -13,7 +13,11 @@ export function stableTableRowKey(row: AeliqoTableRow, identity: readonly string
   if (identity.length === 0) return undefined;
   const values = identity.map((field) => row[field]);
   if (values.some((value) => value === undefined)) return undefined;
-  if (values.length === 1) return String(values[0]);
+  if (values.length === 1) {
+    const value = values[0];
+    if (value !== null && typeof value === "object" && Object.keys(value).length === 1 && typeof value.decimal === "string") return value.decimal;
+    return String(value);
+  }
   return JSON.stringify(values);
 }
 
@@ -101,9 +105,12 @@ export class AeliqoTableElement extends LitElement {
     this.dispatchEvent(new AeliqoTableSelectionEvent(detail));
   };
 
-  private formatCell(value: string | number | boolean | null | undefined): string {
+  private formatCell(value: TableCell | undefined): string {
     if (value === null || value === undefined) {
       return "—";
+    }
+    if (typeof value === "object" && Object.keys(value).length === 1 && typeof value.decimal === "string") {
+      return value.decimal;
     }
     return String(value);
   }
