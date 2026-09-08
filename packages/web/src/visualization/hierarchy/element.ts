@@ -37,7 +37,7 @@ export abstract class AeliqoHierarchyElementBase extends AeliqoFoundationElement
     table { border-collapse: collapse; inline-size: 100%; }
     th, td { text-align: start; padding: .5rem; border-block-end: 1px solid var(--aeliqo-color-border, #cbd5e1); vertical-align: top; }
     [aria-selected="true"] { background: color-mix(in srgb, var(--aeliqo-color-accent, #4338ca) 12%, transparent); }
-    [part="scope"] { color: var(--aeliqo-color-text-muted, #475569); }
+    [part="scope"] { color: var(--aeliqo-color-muted, #4b5563); }
     @media (forced-colors: active) { svg path, svg line, svg rect, svg circle { stroke: CanvasText; fill: Canvas; } }
   `];
 

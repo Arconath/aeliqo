@@ -35,8 +35,8 @@ export class AeliqoKeyValueElement extends LitElement {
     return html`
       <dl part="list" data-status=${this.status}>
         ${this.items.map((item) => this.renderItem(item))}
-        ${scope ? html`<div part="scope" aria-label="Scope">${scope}</div>` : nothing}
       </dl>
+      ${scope ? html`<p part="scope" aria-label="Scope">${scope}</p>` : nothing}
       ${this.status === "loading" || this.status === "partial" || this.status === "stale" || this.status === "empty" || this.status === "error" || this.status === "unavailable"
         ? statusTemplate(this.status, this.message) : nothing}
     `;
@@ -52,7 +52,7 @@ export class AeliqoKeyValueElement extends LitElement {
         <dd part="value" aria-describedby=${descriptionId ?? nothing}>
           ${href ? html`<a part="link" href=${href}>${text}</a>` : text}
         </dd>
-        ${item.description ? html`<div id=${descriptionId} part="description">${item.description}</div>` : nothing}
+        ${item.description ? html`<dd id=${descriptionId} part="description">${item.description}</dd>` : nothing}
       </div>
     `;
   }
@@ -64,7 +64,6 @@ export class AeliqoKeyValueElement extends LitElement {
     dd { margin: var(--aeliqo-space-4, 0.25rem) 0 0; overflow-wrap: anywhere; }
     a { color: var(--aeliqo-color-accent, #4338ca); }
     [part="description"], [part="scope"] { color: var(--aeliqo-color-muted, #475569); font-size: var(--aeliqo-typography-font-size-caption, 0.8125rem); margin-block-start: var(--aeliqo-space-4, 0.25rem); overflow-wrap: anywhere; }
-    [part="scope"] { grid-column: 1 / -1; }
+    [part="scope"] { margin-block-end: 0; }
   `];
 }
-
