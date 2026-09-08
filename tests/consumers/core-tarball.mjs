@@ -140,7 +140,7 @@ run(["pnpm", "build"], coreDirectory);
 const expectedSchemas = ["catalog", "task", "result", "experience", "expression", "query",
   "interaction", "result-event", "environment", "presentation-plan", "task-proposal",
   "meaning-draft", "binding-outcome", "model-evaluation",
-  "operation-grant", "agent-loop-budget", "agent-stop-reason", "narrative-claim"];
+  "operation-grant", "agent-loop-budget", "agent-stop-reason", "narrative-claim", "plot-spec", "visualization-spec"];
 for (const name of expectedSchemas) {
   const schemaPath = join(schemaDirectory, `${name}.schema.json`);
   assert(await fileExists(schemaPath), `Missing generated schema: ${schemaPath}`);
@@ -605,17 +605,24 @@ const agentConsumerSource = runInstalledAgentContracts.toString();
 
 await writeFile(join(consumerDirectory, "consumer-types.ts"), `
 import {
-  parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue, compareScalars,
+  parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue, compareScalars, bindVisualizationSpec, parseVisualizationSpec,
   validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph, parseInteractionState, createPresentationRegistry, composePresentation, validatePresentationPlan,
   checkExpression, createStandardFunctionRegistry, createTypedAuthoring, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
 import type {
-  Catalog, Task, Result, Experience, CommitPreconditions, Outcome, TaskStructure, Wire, PresentationPlan, PresentationValues, NarrativeClaim, OperationGrant,
+  VisualizationSpec, Catalog, Task, Result, Experience, CommitPreconditions, Outcome, TaskStructure, Wire, PresentationPlan, PresentationValues, NarrativeClaim, OperationGrant,
   Interaction, InteractionPayload, InteractionSelection, InteractionLink, InteractionGraphInput, InteractionGraph, InteractionMappingManifest,
   ExperienceRestriction, ExperienceConstraints, TypedAuthoring, TypedExpression,
   FunctionRegistry, MeaningDefinition, MeaningBundle, QueryPlanner, LogicalPlan, QueryResult, QuerySpec, QuerySource,
 } from '@aeliqo/core';
 const commitPins: CommitPreconditions = ${JSON.stringify(commitPins)};
+declare const visualizationResult: Result;
+const visualization: VisualizationSpec = {version: '1', view: 'matrix', result: visualizationResult.ref, columns: ['employee.id']};
+const visualizationBound = bindVisualizationSpec(visualization, {results: [visualizationResult]});
+void visualizationBound;
+// @ts-expect-error A matrix has columns; it cannot accept arbitrary renderer code.
+const invalidVisualization: VisualizationSpec = {version:'1',view:'matrix',result:visualizationResult.ref,columns:['employee.id'],render:()=>''};
+void invalidVisualization;
 const agentGrant: OperationGrant = 'task.propose';
 // @ts-expect-error Model presets do not grant authority.
 const invalidAgentGrant: OperationGrant = 'act';
@@ -744,7 +751,7 @@ import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {readFile} from 'node:fs/promises';
 import {
-  parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue, compareScalars,
+  parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue, compareScalars, bindVisualizationSpec, parseVisualizationSpec,
   validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph, parseInteractionState, createPresentationRegistry, composePresentation, validatePresentationPlan,
   checkExpression, createStandardFunctionRegistry, createTypedAuthoring, authorizeMeaningActivation, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
@@ -769,6 +776,12 @@ function unwrap(outcome) {
   assert.equal(outcome.ok, true);
   return outcome.value;
 }
+const visualizationResult = {...documents.result, fields: documents.catalog.entities[0].fields, identity: ['employee.id'], rowGrain: ['employee.id']};
+const visualization = {version: '1', view: 'matrix', result: visualizationResult.ref, columns: ['employee.id']};
+assert.equal(parseVisualizationSpec(visualization).ok, true);
+assert.deepEqual(parseVisualizationSpec(unwrap(serializeContract('visualization-spec', visualization))), {ok: true, value: visualization});
+assert.equal(bindVisualizationSpec(visualization, {results: [visualizationResult]}).ok, true);
+assert.equal(bindVisualizationSpec(visualization, {results: []}).ok, false);
 const direct = {
   catalog: unwrap(parseCatalog(documents.catalog)),
   task: unwrap(parseTask(documents.task)),

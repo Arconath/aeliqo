@@ -315,9 +315,60 @@ export const plotNodeSchema = z.discriminatedUnion('kind', [
   object({kind: z.literal('concat'), direction: z.enum(['inline', 'block']),
     get children() {return nonEmpty(plotNodeSchema, 32);}}),
 ]);
-export const plotSpecSchema = object({version, root: plotNodeSchema});
-export const contractSchemas = Object.freeze({
+/** Named schema boundary avoids repeatedly expanding the recursive plot shape
+ * in every visualization declaration. Runtime validation stays schema-derived. */
+export type PlotSpecSchema = z.ZodMiniObject<{version: typeof version; root: typeof plotNodeSchema}, z.core.$strict>;
+export const plotSpecSchema: PlotSpecSchema = object({version, root: plotNodeSchema});
+/** Family semantics extend PlotSpec without adding DOM or arbitrary layout options. */
+const visualizationBase = {version};
+export const histogramBinsSchema = object({start: idSchema, end: idSchema, value: idSchema,
+  measure: z.enum(['count', 'density']), boundary: z.literal('start-inclusive-end-exclusive')});
+export const visualizationSpecSchema = z.discriminatedUnion('view', [
+  object({...visualizationBase, view: z.literal('trend'), plot: plotSpecSchema}),
+  object({...visualizationBase, view: z.literal('bar'), plot: plotSpecSchema}),
+  object({...visualizationBase, view: z.literal('scatter'), plot: plotSpecSchema}),
+  object({...visualizationBase, view: z.literal('area'), plot: plotSpecSchema,
+    meaning: versionRefSchema, stack: z.enum(['none', 'zero'])}),
+  object({...visualizationBase, view: z.literal('histogram'), plot: plotSpecSchema,
+    bins: histogramBinsSchema}),
+  object({...visualizationBase, view: z.literal('heatmap'), plot: plotSpecSchema}),
+  object({...visualizationBase, view: z.literal('matrix'), result: resultRefSchema, columns: nonEmpty(idSchema, 128)}),
+  object({...visualizationBase, view: z.literal('tree'), result: resultRefSchema,
+    node: nonEmpty(idSchema, 16), parent: nonEmpty(idSchema, 16), label: optional(idSchema)}),
+  object({...visualizationBase, view: z.literal('treemap'), result: resultRefSchema,
+    node: nonEmpty(idSchema, 16), parent: nonEmpty(idSchema, 16), label: optional(idSchema), value: idSchema, meaning: versionRefSchema}),
+  object({...visualizationBase, view: z.literal('relationship'), result: resultRefSchema,
+    relationship: versionRefSchema, source: nonEmpty(idSchema, 16), target: nonEmpty(idSchema, 16), label: optional(idSchema)}),
+  object({...visualizationBase, view: z.literal('timeline'), result: resultRefSchema,
+    start: idSchema, end: optional(idSchema), label: optional(idSchema)}),
+  object({...visualizationBase, view: z.literal('calendar-grid'), result: resultRefSchema,
+    date: idSchema, value: optional(idSchema), label: optional(idSchema),
+    weekStartsOn: optional(z.literal([0, 1, 2, 3, 4, 5, 6]))}),
+]);
+export const contractSchemas: Readonly<{
+  'plot-spec': typeof plotSpecSchema;
+  'visualization-spec': typeof visualizationSpecSchema;
+  catalog: typeof catalogSchema;
+  task: typeof taskSchema;
+  result: typeof resultSchema;
+  experience: typeof experienceSchema;
+  expression: typeof expressionSchema;
+  query: typeof querySchema;
+  interaction: typeof interactionSchema;
+  'result-event': typeof resultEventSchema;
+  environment: typeof environmentSchema;
+  'presentation-plan': typeof presentationPlanSchema;
+  'task-proposal': typeof taskProposalSchema;
+  'meaning-draft': typeof meaningDraftSchema;
+  'binding-outcome': typeof bindingOutcomeSchema;
+  'operation-grant': typeof operationGrantSchema;
+  'agent-loop-budget': typeof agentLoopBudgetSchema;
+  'agent-stop-reason': typeof agentStopReasonSchema;
+  'narrative-claim': typeof narrativeClaimSchema;
+  'model-evaluation': typeof modelEvaluationSchema;
+}> = Object.freeze({
   'plot-spec': plotSpecSchema,
+  'visualization-spec': visualizationSpecSchema,
   catalog: catalogSchema, task: taskSchema, result: resultSchema, experience: experienceSchema,
   expression: expressionSchema, query: querySchema, interaction: interactionSchema,
   'result-event': resultEventSchema, environment: environmentSchema,

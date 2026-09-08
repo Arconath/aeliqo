@@ -16,3 +16,5 @@ export * from './interaction/index.js';
 export * from './presentation/index.js';
 export type {OperationGrant, AgentTaskProposal, AgentBindingOutcome, AgentLoopBudget, AgentStopReason, NarrativeClaim, NarrativeCell} from './contracts/agent/index.js';
 export * from './contracts/plot/index.js';
+
+export * from './contracts/visualization/index.js';

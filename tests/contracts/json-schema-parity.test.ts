@@ -9,6 +9,7 @@ const ajv = new Ajv2020({strict: false, allErrors: true});
 addFormats(ajv);
 const cases: Record<ContractKind, unknown> = {
   ...fixtures.familyFixtures,
+  'visualization-spec': {version: '1', view: 'matrix', result: fixtures.ref, columns: ['employee.id']},
   'plot-spec': {version:'1',root:{kind:'unit',mark:'point',result:fixtures.ref,encoding:{x:{field:'x',scale:'linear'},y:{field:'y',scale:'linear'}},missing:'gap'}},
   expression: fixtures.expression, query: fixtures.query,
   interaction: fixtures.interaction, 'result-event': fixtures.resultEvents.batch,
