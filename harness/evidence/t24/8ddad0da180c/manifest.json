@@ -1,0 +1,57 @@
+{
+  "task": "T24",
+  "status": "pass",
+  "sourceCommit": "e00492c54468a594cc798440b0fcda3aa5e76a22",
+  "sourceDigest": "8ddad0da180c5fb089f33c4a7333a744cc4b68ba364f2c6ace15113a44b084f8",
+  "nativeProbeCommit": "10acfd6a263c133646a1257ca5e1cd1db4f66fb1",
+  "checks": {
+    "mcpActualSDKTests": 11,
+    "webmcpAdapterTests": 12,
+    "officialOpenAIControlledHTTPTests": 2,
+    "agentTests": 95,
+    "strictTypesAndBuild": true,
+    "installedTarballs": true,
+    "nativeWebMcpExperimental": true,
+    "defaultWebMcp": "unavailable"
+  },
+  "limits": [
+    "Actual official SDK transport and controlled HTTP provider port are tested; no live model response or reasoning-quality claim. Live providers/evaluation remain T40.",
+    "Native Chrome153 WebMCP requires the experimental WebMCPTesting flag; default unavailable is BLOCKED, not PASS.",
+    "Installed MCP runs actual stdio; BYOK and WebMCP installed parity uses synthetic/simulated hosts. Native adapter evidence is a separately pinned built-module browser probe.",
+    "Application supplies authenticated principal, backend provider client/model, egress grants, scope and endpoint lease. No API credential or paid fallback is configured."
+  ],
+  "artifacts": [
+    {
+      "path": "agents.log",
+      "sha256": "d325e1e6534e1f1f9367e1d555c8c8c0af9b1721e660794436ffa72e1ca6ee87"
+    },
+    {
+      "path": "consumer-report.json",
+      "sha256": "730b440b78f6fe4acb74a4669ef5f5b25262568d8139560cc1a523e886d13f68"
+    },
+    {
+      "path": "consumer.log",
+      "sha256": "410495e453ba28b62d9a87876d9636093047431520f96b343d0cb0fad5fdfb95"
+    },
+    {
+      "path": "mcp.log",
+      "sha256": "238c24ced5290b2302d715c64af9ca3af54ec2d257d6456188c5526952546453"
+    },
+    {
+      "path": "model-port.log",
+      "sha256": "d3641a5e13a34d54abd72f907ac2766b73d54119a2e0142197e8acb5725ad93e"
+    },
+    {
+      "path": "native-webmcp.json",
+      "sha256": "cea57e72a21b38f7528e2bfd27d5609b21b40d9b647133c3b09597dba99b0c3d"
+    },
+    {
+      "path": "review.json",
+      "sha256": "73695e2fe6fa431614cfe73a2c03c31aac5930228201f826d1b53cd55b603150"
+    },
+    {
+      "path": "webmcp.log",
+      "sha256": "1844df4d8b10b9de55d604f665388d2e1bc420130ed57335e32f7117fd185ed7"
+    }
+  ]
+}

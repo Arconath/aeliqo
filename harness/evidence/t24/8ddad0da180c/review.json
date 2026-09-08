@@ -1,0 +1,21 @@
+{
+  "result": "reviewed source accepted",
+  "reviews": [
+    {
+      "reviewer": "platform_proof",
+      "scope": "Root protocol endpoint/BYOK model loop and official OpenAI port",
+      "outcome": "No blocking findings; original consumer claim was retracted, replaced with actual root installed-package run."
+    },
+    {
+      "reviewer": "release_inventory",
+      "scope": "WebMCP adapter independent review",
+      "outcome": "Cancellation/late result and registration fixes reviewed;12 tests pass."
+    },
+    {
+      "reviewer": "root",
+      "scope": "MCP adapter independent review",
+      "outcome": "Receipt validation, correlation, malformed auth/clock, closed client and option snapshots corrected;11 actual SDK tests pass."
+    }
+  ],
+  "nativeProbeAuthor": "platform_proof, independent of adapter author; root reran and asserted native results."
+}

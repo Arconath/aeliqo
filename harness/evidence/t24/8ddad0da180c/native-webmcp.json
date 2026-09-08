@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-09-08T20:49:45.000Z",
+  "origin": "http://127.0.0.1:61652/",
+  "browser": {
+    "requested": "Playwright-bundled Chrome for Testing 153",
+    "executablePath": "/Users/nino/Library/Caches/ms-playwright/chromium-1243/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing"
+  },
+  "officialInstructions": {
+    "overview": "https://developer.chrome.com/docs/ai/webmcp",
+    "imperativeApi": "https://developer.chrome.com/docs/ai/webmcp/imperative-api",
+    "localFlag": "chrome://flags/#enable-webmcp-testing",
+    "commandLineEquivalent": "--enable-features=WebMCPTesting"
+  },
+  "runs": [
+    {
+      "mode": "default",
+      "flags": [],
+      "headless": false,
+      "isolatedProfile": true,
+      "executablePath": "/Users/nino/Library/Caches/ms-playwright/chromium-1243/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+      "status": "blocked",
+      "browserVersion": "153.0.8010.12",
+      "page": {
+        "origin": "http://127.0.0.1:61652",
+        "secureContext": true,
+        "modelContextPresent": false,
+        "adapterEvidence": "unavailable",
+        "adapterSupported": false,
+        "discoveryOk": false,
+        "registered": false,
+        "invoked": false,
+        "disposed": false,
+        "lateDenied": false,
+        "authorityReads": 0,
+        "endpointInvocations": 0,
+        "events": [],
+        "registration": {
+          "ok": false,
+          "diagnostics": [
+            {
+              "code": "agent.webmcp.unavailable",
+              "message": "The host does not expose document.modelContext.registerTool.",
+              "retryable": false
+            }
+          ]
+        },
+        "status": "blocked",
+        "done": true
+      },
+      "pageErrors": [],
+      "console": []
+    },
+    {
+      "mode": "enable-webmcp-testing",
+      "flags": [
+        "--enable-features=WebMCPTesting"
+      ],
+      "headless": false,
+      "isolatedProfile": true,
+      "executablePath": "/Users/nino/Library/Caches/ms-playwright/chromium-1243/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+      "status": "pass",
+      "browserVersion": "153.0.8010.12",
+      "page": {
+        "origin": "http://127.0.0.1:61652",
+        "secureContext": true,
+        "modelContextPresent": true,
+        "adapterEvidence": "native",
+        "adapterSupported": true,
+        "discoveryOk": true,
+        "registered": true,
+        "invoked": true,
+        "disposed": true,
+        "lateDenied": true,
+        "authorityReads": 4,
+        "endpointInvocations": 1,
+        "events": [
+          {
+            "phase": "authority",
+            "requestId": "tool-discovery-1"
+          },
+          {
+            "phase": "authority",
+            "requestId": "tool-discovery-2"
+          },
+          {
+            "phase": "authority",
+            "requestId": "webmcp-1"
+          },
+          {
+            "phase": "dispatcher",
+            "input": "events",
+            "requestId": "webmcp-1",
+            "transport": "webmcp",
+            "region": "region-1"
+          },
+          {
+            "phase": "authority",
+            "requestId": "webmcp-1"
+          }
+        ],
+        "registration": {
+          "ok": true,
+          "value": [
+            {
+              "name": "aeliqo_native_adapter_probe",
+              "capability": {
+                "id": "catalog.summary",
+                "revision": "1"
+              },
+              "operation": "catalog.read",
+              "evidence": "native"
+            }
+          ]
+        },
+        "toolsBeforeDispose": [
+          {
+            "name": "aeliqo_native_adapter_probe",
+            "annotations": {
+              "readOnlyHint": true,
+              "untrustedContentHint": true
+            }
+          }
+        ],
+        "invokeResult": {
+          "ok": true,
+          "value": {
+            "version": "1",
+            "requestId": "webmcp-1",
+            "targetRegionId": "region-1",
+            "goalEpoch": "goal-1",
+            "capability": {
+              "id": "catalog.summary",
+              "revision": "1"
+            },
+            "operation": "catalog.read",
+            "transport": "webmcp",
+            "state": "data-ready",
+            "status": "data-ready",
+            "stage": "data-ready",
+            "diagnostics": [],
+            "value": {
+              "region": "region-1",
+              "transport": "webmcp",
+              "query": "events"
+            }
+          }
+        },
+        "toolsAfterDispose": [],
+        "lateInvokeError": {
+          "name": "UnknownError",
+          "message": "The operation failed for an unknown transient reason (e.g. out of memory)."
+        },
+        "status": "pass",
+        "done": true
+      },
+      "pageErrors": [],
+      "console": []
+    }
+  ]
+}

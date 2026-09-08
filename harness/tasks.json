@@ -815,10 +815,15 @@
       "acceptance": [
         "Same executor; real supported MCP/BYOK flow, feature-detected WebMCP with honest native versus simulated evidence."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "Root owns protocol endpoint/types/BYOK/config/lock integration. Isolated MCP and WebMCP writers use one shared AgentToolEndpoint, actual official SDK/native tests; no paid provider call authorized or credential configured."
+      "evidence": [
+        {
+          "path": "harness/evidence/t24/8ddad0da180c/manifest.json",
+          "sha256": "bad0ff4c7f8dd4d9feb5b7218831653c0e9513fff7a248fc3c3efc626173bf4a"
+        }
+      ],
+      "notes": "Accepted protocol implementation: shared endpoint/executor, actual official MCP SDK and controlled HTTP OpenAI port, bounded BYOK loop, native Chrome153 experimental WebMCP adapter registration/invocation/disposal. Installed consumer passes. Live provider reasoning remains T40; default native WebMCP unavailable."
     },
     {
       "id": "T25",
@@ -837,9 +842,10 @@
         "Thin wrappers only; all release consumers install actual tarballs outside workspace and preserve events/SSR.",
         "Compile developer meaning registration quickstart from built tarballs; useful negative type examples and schema reuse; manual path has zero model/Studio requirement and no chart/layout coupling."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "preflight_diagnosis owns isolated React/examples and framework consumer implementation. Root owns integration/config/contracts/lock/task state. No external writes or provider spending."
     },
     {
       "id": "T26",
@@ -858,9 +864,10 @@
       "acceptance": [
         "Data/meaning/experience/inspect flows functional; valid code/file export; no separate source of truth or required cloud."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "release_inventory owns isolated devtools/Studio implementation. Root owns integration/config/contracts/lock/task state. No external writes or provider spending."
     },
     {
       "id": "T27",
