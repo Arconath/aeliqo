@@ -1,0 +1,36 @@
+{
+  "sourceCommit": "c5486effd9e3207680e176b7d4c2e8336e6e975d",
+  "observedFailure": {
+    "hostedRun": 34177458845,
+    "commit": "995e2aea0b6b1631f9082381f13522ea6be72672",
+    "failures": [
+      "Root ADC test import depended on an undeclared local package link.",
+      "Authentication request signal could remain un-aborted after a 408 deadline."
+    ]
+  },
+  "fixes": [
+    "Use repository-relative test imports; installed-package consumers remain separate.",
+    "Keep authentication Request strongly reachable through Lifetime.dispose."
+  ],
+  "verification": {
+    "dataTestsPassed": 83,
+    "dataTypecheck": "pass",
+    "installedRuntimeConsumer": "pass",
+    "nativeRequestProbe": {
+      "command": "pnpm test:data:auth-retention",
+      "output": {
+        "iterations": 1000,
+        "failures": [],
+        "passed": 1000
+      },
+      "requestShim": false
+    },
+    "independentReviewer": "preflight_diagnosis",
+    "independentNativeProbe": "1000/1000 pass without Request override"
+  },
+  "limits": [
+    "Hosted rerun pending at recording time.",
+    "Earlier retained-Request shim experiment was diagnostic only; final verification uses native Request.",
+    "No release/publication/deployment claim."
+  ]
+}

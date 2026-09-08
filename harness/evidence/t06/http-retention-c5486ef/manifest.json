@@ -1,0 +1,24 @@
+{
+  "files": [
+    {
+      "path": "auth-timeout-probe.mjs",
+      "sha256": "4085abc7893f4fbb259a7697a00338d569adfea42829777748a044d80f1bee6d"
+    },
+    {
+      "path": "consumer-consumer-package-lock.json",
+      "sha256": "a1be051845878d9b8979b05b84babfe9c1f2d4a9bfb734d52af7aeb14f1fecbf"
+    },
+    {
+      "path": "consumer-report.json",
+      "sha256": "bad99c09608f03b323eac7165c1c22d925df8c0e78be46b866ebfeebe9e0206d"
+    },
+    {
+      "path": "consumer-runtime-report.json",
+      "sha256": "5836235a0d4d85a3b4d5ff69a3c8fc2dc82cf6bc7ba44e7deaca98058e693a56"
+    },
+    {
+      "path": "report.json",
+      "sha256": "4cebc4ab50b0b3b3071c546eba3a8fd68f29a98139338aaeda68d0576bfffcc2"
+    }
+  ]
+}

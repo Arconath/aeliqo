@@ -1,0 +1,118 @@
+{
+  "passed": true,
+  "local": {
+    "eventKinds": [
+      "descriptor",
+      "batch",
+      "progress",
+      "complete"
+    ],
+    "stalePlan": "data.stale-plan"
+  },
+  "http": {
+    "eventKinds": [
+      "descriptor",
+      "batch",
+      "progress",
+      "complete"
+    ],
+    "denied": "data.denied"
+  },
+  "browser": {
+    "result": {
+      "local": {
+        "scopeDigest": "scope-public",
+        "rows": 3
+      },
+      "network": {
+        "scopeDigest": "scope-alice",
+        "rows": 1
+      }
+    },
+    "modules": [
+      "\u0000vite/modulepreload-polyfill.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/@aeliqo/core/dist/contracts/limits.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/zod/v4/core/util.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/zod/v4/core/core.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/zod/v4/core/errors.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/zod/v4/core/parse.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/zod/v4/core/regexes.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/zod/v4/core/checks.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/zod/v4/core/versions.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/zod/v4/core/schemas.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/zod/v4/core/api.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/zod/v4/mini/schemas.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/zod/v4/mini/iso.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/@aeliqo/core/dist/contracts/schemas.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/@aeliqo/core/dist/diagnostics/wire.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/@aeliqo/core/dist/contracts/ingress.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/@aeliqo/core/dist/contracts/parse.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/@aeliqo/core/dist/semantics/errors.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/@aeliqo/core/dist/semantics/type-utils.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/@aeliqo/core/dist/semantics/catalog.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/@aeliqo/core/dist/expressions/check.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/@aeliqo/core/dist/semantics/meaning.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/@aeliqo/runtime/dist/data/stream.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/@aeliqo/runtime/dist/data/schema.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/@aeliqo/runtime/dist/data/local.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/node_modules/@aeliqo/runtime/dist/data/http.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/browser.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-1NaDiu/index.html"
+    ],
+    "bundle": [
+      {
+        "file": "assets/index-DWA_KhWA.js",
+        "bytes": 136162,
+        "gzipBytes": 37641
+      }
+    ],
+    "initialGzipBytes": 37641,
+    "browserVersion": "153.0.8010.12"
+  },
+  "observations": [
+    {
+      "operation": "describe",
+      "principal": "alice"
+    },
+    {
+      "operation": "plan",
+      "principal": "alice"
+    },
+    {
+      "operation": "execute",
+      "principal": "alice"
+    },
+    {
+      "operation": "execute",
+      "principal": "alice"
+    },
+    {
+      "operation": "describe",
+      "principal": "alice"
+    },
+    {
+      "operation": "plan",
+      "principal": "alice"
+    },
+    {
+      "operation": "execute",
+      "principal": "alice"
+    },
+    {
+      "operation": "execute",
+      "principal": "alice"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    }
+  ]
+}

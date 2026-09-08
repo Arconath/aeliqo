@@ -103,3 +103,16 @@ coverage are covered. Measured installed browser data subset37437gzip bytes;
 not full interactive-path certification. Kit/reference checks pass while product
 readiness/release remain correctly blocked. Next ready task T07, then T08.
 No npm publication, main cutover or production deployment performed.
+
+Hosted T06 run34177458845 exposed an undeclared root test import and a
+reproducible Node Request dependent-signal retention problem. Root52be8b2
+fixes imports; c5486ef retains the authentication Request through operation
+cleanup. Fresh83data tests/types and installed runtime consumer run-JmzjpA pass.
+The native Request stress probe (no shim) passes1000/1000 locally and independently;
+it is now in hosted checks. Evidence: harness/evidence/t06/http-retention-c5486ef.
+Hosted rerun pending; prior local evidence remains scoped to its frozen candidate.
+T07 now has explicit relationUsage and bounded windows wire fields, a distinct
+core-query-1 function registry, strict schema/local-rejection/consumer checks and
+independent shape review. Pure engine author is active; oracle author has11
+reference tests and exact HR mutation cases waiting for production API binding.
+These oracle-only tests do not mark T07 complete.
