@@ -121,6 +121,29 @@ test("form wrapper bridges slotted native buttons, Enter and form data", async (
   expect(result).toEqual({clickSubmit: 1, enterSubmit: 2, data: [["native-name", "Ada"]], resetValue: "Ada"});
 });
 
+test("form wrapper honors a trusted child-cancelled submit click", async ({page}) => {
+  await page.evaluate(async () => {
+    const root = document.querySelector<HTMLElement>("#fixture");
+    if (root === null) throw new Error("fixture missing");
+    const form = document.createElement("aeliqo-form") as HTMLElement & {updateComplete: Promise<unknown>};
+    form.id = "cancelled-click-form";
+    const submit = document.createElement("button");
+    submit.type = "submit";
+    const label = document.createElement("span");
+    label.textContent = "Cancelled";
+    submit.append(label);
+    submit.addEventListener("click", (event) => event.preventDefault());
+    let submits = 0;
+    form.addEventListener("aeliqo-form-submit", () => { submits += 1; });
+    form.append(submit);
+    root.append(form);
+    await form.updateComplete;
+    (window as Window & {cancelledClickSubmits?: number}).cancelledClickSubmits = submits;
+  });
+  await page.locator("#cancelled-click-form span").click();
+  expect(await page.evaluate(() => (window as Window & {cancelledClickSubmits?: number}).cancelledClickSubmits)).toBe(0);
+});
+
 test("form wrapper defers child Enter behavior and respects native ownership", async ({page}) => {
   await page.evaluate(async () => {
     const root = document.querySelector<HTMLElement>("#fixture");

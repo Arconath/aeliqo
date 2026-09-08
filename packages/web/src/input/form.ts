@@ -19,13 +19,13 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
-    this.addEventListener("click", this.handleSlottedClick, true);
-    this.addEventListener("keydown", this.handleSlottedKeyDown, true);
+    this.addEventListener("click", this.handleSlottedClick);
+    this.addEventListener("keydown", this.handleSlottedKeyDown);
   }
 
   override disconnectedCallback(): void {
-    this.removeEventListener("click", this.handleSlottedClick, true);
-    this.removeEventListener("keydown", this.handleSlottedKeyDown, true);
+    this.removeEventListener("click", this.handleSlottedClick);
+    this.removeEventListener("keydown", this.handleSlottedKeyDown);
     super.disconnectedCallback();
   }
 
@@ -142,11 +142,8 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
     if (this.eventFormOwner(event) !== null) return;
     if (native instanceof HTMLTextAreaElement || native instanceof HTMLSelectElement) return;
     if (native instanceof HTMLButtonElement || (native instanceof HTMLInputElement && ["checkbox", "radio", "range", "file", "submit", "reset", "button", "image"].includes(native.type))) return;
-    setTimeout(() => {
-      if (!this.isConnected || event.defaultPrevented || !owned) return;
-      event.preventDefault();
-      this.submitSlotted(this.defaultSlottedSubmitter());
-    }, 0);
+    event.preventDefault();
+    this.submitSlotted(this.defaultSlottedSubmitter());
   };
 
   private submitSlotted(submitter: HTMLElement | null): void {
