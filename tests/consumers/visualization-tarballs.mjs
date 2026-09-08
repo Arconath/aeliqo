@@ -112,48 +112,54 @@ assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_m
 assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/react/node_modules/")), []);
 await writeFile(join(runDirectory, "consumer-package-lock.json"), lockBytes);
 
+const hierarchy=await import('../visualization/hierarchy-fixtures.ts');
+const cartesian=await import('../visualization/cartesian-fixtures.mjs');
+const extraViews=[...['trend','bar','area','scatter','histogram','heatmap'].map(view=>({view,spec:cartesian.specs[view],context:cartesian.contextFor(view),datasets:[{result:cartesian.ref,rows:cartesian.rowsFor(view)}]})),...['tree','treemap','relationship'].map(view=>({view,spec:hierarchy[view],context:hierarchy.context,datasets:hierarchy.datasets}))];
+const extraNames=['Trend','Bar','Area','Scatter','Histogram','Heatmap','Tree','Treemap','Relationship'];
 const ref={id:'r',revision:'1',outputId:'out',queryDigest:'q',scopeDigest:'s'};
 const result={version:'1',ref,taskId:'t',fields:[{id:'id',label:'ID',type:{value:'text',nullable:false},role:'identity'},{id:'date',label:'Date',type:{value:'date',nullable:false,temporal:{calendar:'gregory'}},role:'attribute'},{id:'amount',label:'Amount',type:{value:'decimal',nullable:false},role:'measure'}],identity:['id'],rowGrain:['id'],counts:{loaded:1,population:{kind:'unknown'}},precision:{kind:'exact'},coverage:{kind:'unknown',reason:'Bounded supplied rows'},consistency:{kind:'unknown',reason:'Host snapshot unknown'},evidence:{kind:'computed',queryDigest:'q',definitions:[]},filters:[],warnings:[{code:'scope-page',message:'Other rows may exist.',retryable:false}],lineage:[]};
 const rows=[{id:'a',date:'2026-09-08',amount:{decimal:'9007199254740993.001'}}];
 const specs=[{version:'1',view:'matrix',result:ref,columns:['id','amount']},{version:'1',view:'timeline',result:ref,start:'date'},{version:'1',view:'calendar-grid',result:ref,date:'date',value:'amount',label:'id'}];
-const dataSource=`const result=${JSON.stringify(result)},rows=${JSON.stringify(rows)},specs=${JSON.stringify(specs)};\n`;
+const dataSource=`const extraViews=${JSON.stringify(extraViews)};\nconst result=${JSON.stringify(result)},rows=${JSON.stringify(rows)},specs=${JSON.stringify(specs)};\n`;
 await writeFile(join(consumer,'consumer.tsx'),`import React from 'react';
 import type {VisualizationSpec,Result} from '@aeliqo/core';
 import {AeliqoMatrixElement,AeliqoTimelineElement,AeliqoCalendarGridElement,type VisualizationInputs} from '@aeliqo/web/visualization';
-import {AeliqoMatrix,AeliqoTimeline,AeliqoCalendarGrid} from '@aeliqo/react/visualization';
+import {AeliqoMatrix,AeliqoTimeline,AeliqoCalendarGrid,${extraNames.map(name=>'Aeliqo'+name).join(',')}} from '@aeliqo/react/visualization';
 const result:Result=${JSON.stringify(result)};
 const specs:readonly VisualizationSpec[]=${JSON.stringify(specs)};
 const inputs:VisualizationInputs={visualization:specs[0],context:{results:[result]},datasets:[{result:result.ref,rows:${JSON.stringify(rows)}}],label:'Exact result',width:640,height:320,maxMarks:1000};
 const element=new AeliqoMatrixElement();element.visualization=specs[0];element.context=inputs.context;element.datasets=inputs.datasets;
 const component=<AeliqoMatrix {...inputs} onSelectionChange={e=>{const digest:string=e.detail.result.scopeDigest;const identity:string=e.detail.identity;void[digest,identity];}}/>;
-void[component,AeliqoTimeline,AeliqoCalendarGrid,AeliqoTimelineElement,AeliqoCalendarGridElement];
+void[component,AeliqoTimeline,AeliqoCalendarGrid,AeliqoTimelineElement,AeliqoCalendarGridElement,${extraNames.map(name=>'Aeliqo'+name).join(',')}];
 `);
 await writeFile(join(consumer,'tsconfig.json'),JSON.stringify({compilerOptions:{target:'ES2022',module:'NodeNext',moduleResolution:'NodeNext',jsx:'react-jsx',strict:true,noEmit:true,skipLibCheck:false,lib:['ES2022','DOM','DOM.Iterable']},files:['consumer.tsx']}));
 run([join(consumer,'node_modules/.bin/tsc'),'-p','tsconfig.json'],consumer);
 await writeFile(join(consumer,'ssr.mjs'),`import '@aeliqo/react/ssr';
-import assert from 'node:assert/strict';import {createElement} from 'react';import {renderToString} from 'react-dom/server';import {AeliqoMatrix,AeliqoTimeline,AeliqoCalendarGrid} from '@aeliqo/react/visualization';
+import assert from 'node:assert/strict';import {createElement} from 'react';import {renderToString} from 'react-dom/server';import {AeliqoMatrix,AeliqoTimeline,AeliqoCalendarGrid,${extraNames.map(name=>'Aeliqo'+name).join(',')}} from '@aeliqo/react/visualization';
 ${dataSource}
 for(const [index,component] of [AeliqoMatrix,AeliqoTimeline,AeliqoCalendarGrid].entries()){
  const output=renderToString(createElement(component,{visualization:specs[index],context:{results:[result]},datasets:[{result:result.ref,rows}]}));
  assert(output.includes('9007199254740993.001'));assert(output.includes('shadowrootmode="open"'));assert(output.includes('Other rows may exist.'));
  const next=renderToString(createElement(component));assert(!next.includes('9007199254740993'));assert(!next.includes('<table'));
 }
-console.log('Installed React Matrix, Timeline, CalendarGrid SSR exact values, warnings and request isolation passed.');`);
+for(const [index,component] of [${extraNames.map(name=>'Aeliqo'+name).join(',')}].entries()){const data=extraViews[index];const output=renderToString(createElement(component,{visualization:data.spec,context:data.context,datasets:data.datasets}));assert(output.includes('<table'));assert(output.includes('<svg'));assert(output.includes('shadowrootmode="open"'));const next=renderToString(createElement(component));assert(!next.includes('<table'));}
+console.log('Installed React twelve-family plus Matrix, Timeline, CalendarGrid SSR exact values, warnings and request isolation passed.');`);
 const ssr=run(['node','ssr.mjs'],consumer);
 await writeFile(join(consumer,'browser.ts'),`import {registerAeliqoElements} from '@aeliqo/web';
 ${dataSource}
-registerAeliqoElements();const views=specs.map(spec=>{const element=document.createElement('aeliqo-'+spec.view);Object.assign(element,{label:spec.view,visualization:spec,context:{results:[result]},datasets:[{result:result.ref,rows}]});element.addEventListener('aeliqo-visualization-select',event=>Object.assign(window,{selection:event.detail}));document.querySelector('main').append(element);return element;});Object.assign(window,{views});`);
+registerAeliqoElements();const views=specs.map(spec=>{const element=document.createElement('aeliqo-'+spec.view);Object.assign(element,{label:spec.view,visualization:spec,context:{results:[result]},datasets:[{result:result.ref,rows}]});element.addEventListener('aeliqo-visualization-select',event=>Object.assign(window,{selection:event.detail}));document.querySelector('main').append(element);return element;});for(const data of extraViews){const element=document.createElement('aeliqo-'+data.view);Object.assign(element,{visualization:data.spec,context:data.context,datasets:data.datasets});element.addEventListener('aeliqo-visualization-select',event=>Object.assign(window,{selection:event.detail}));document.querySelector('main').append(element);views.push(element);}Object.assign(window,{views});`);
 await writeFile(join(consumer,'index.html'),'<!doctype html><html lang="en"><meta charset="utf-8"><title>Installed visualizations</title><body><main></main><script type="module" src="/browser.ts"></script></body></html>');
 run([join(consumer,'node_modules/.bin/vite'),'build'],consumer);
 const server=createServer(async(req,res)=>{try{const name=new URL(req.url,'http://localhost').pathname;const file=resolve(consumer,'dist',name==='/'?'index.html':'.'+name);if(!file.startsWith(join(consumer,'dist')+'/')){res.writeHead(403).end();return;}res.setHeader('Content-Type',extname(file)==='.js'?'text/javascript':'text/html');res.end(await readFile(file));}catch{res.writeHead(404).end();}});
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));let browser;let browserVersion;const failures=[];
 try{
  browser=await chromium.launch();browserVersion=browser.version();const page=await browser.newPage({viewport:{width:1280,height:1100}});page.on('pageerror',e=>failures.push(e.message));await page.goto(`http://127.0.0.1:${server.address().port}`);await page.locator('aeliqo-matrix table').waitFor();
- assert.equal(await page.locator('table').count(),3);assert.equal(await page.getByRole('cell',{name:'9007199254740993.001',exact:true}).count(),3);assert.equal(await page.locator('aeliqo-timeline line').count(),1);
+ assert.equal(await page.locator('table').count(),12);assert.equal(await page.getByRole('cell',{name:'9007199254740993.001',exact:true}).count(),3);assert.equal(await page.locator('aeliqo-timeline line').count(),1);
  const button=page.locator('aeliqo-matrix').getByRole('button',{name:'Select a',exact:true});await button.focus();await page.keyboard.press('Enter');const selected=await page.evaluate(()=>window.selection);assert.equal(selected.source,'user');assert.equal(selected.result.scopeDigest,'s');assert(selected.identity.includes('a'));
+ for(const data of extraViews){const host=page.locator('aeliqo-'+data.view);assert.equal(await host.locator('table').count(),1);assert.equal(await host.locator('svg').count(),1);assert(await host.locator('tbody tr').count()>0);assert(await host.locator('svg rect,svg line,svg circle,svg path').evaluateAll(nodes=>nodes.length>0&&nodes.every(node=>node instanceof SVGGraphicsElement)));const button=host.locator('table button').first();await button.focus();await page.keyboard.press('Enter');const selected=await page.evaluate(()=>window.selection);assert.equal(selected.source,'user');assert.equal(selected.result.scopeDigest,data.datasets[0].result.scopeDigest);}
  await page.screenshot({path:join(runDirectory,'installed-visualizations.png'),fullPage:true});assert.deepEqual(failures,[]);
  await page.evaluate(async()=>{for(const view of window.views){view.context={results:[]};await view.updateComplete;}});assert.equal(await page.locator('table').count(),0);assert.equal(await page.locator('svg').count(),0);
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}
 assert.equal(sourceDigest(),before,'Source changed during installed visualization proof');
-await writeFile(join(runDirectory,'report.json'),JSON.stringify({sourceDigest:before,sourceChangedDuringRun:false,scope:'Installed Matrix/Timeline/CalendarGrid public web/React strict declarations, React SSR exact data/warnings/isolation, Chromium geometry/keyboard selection/revocation',artifacts:artifacts.map(({bytes,entries,...a})=>a),consumerDirectory:consumer,consumerLock:{sha256:hash(lockBytes)},ssr,failures,environment:{node:process.version,chromium:browserVersion},passed:true},null,2)+'\n');
+await writeFile(join(runDirectory,'report.json'),JSON.stringify({sourceDigest:before,sourceChangedDuringRun:false,scope:'Installed twelve-family public web/React strict declarations, React SSR exact data/warnings/isolation, Chromium geometry/keyboard selection/revocation',artifacts:artifacts.map(({bytes,entries,...a})=>a),consumerDirectory:consumer,consumerLock:{sha256:hash(lockBytes)},ssr,failures,environment:{node:process.version,chromium:browserVersion},passed:true},null,2)+'\n');
 console.log(`Evidence: ${join(runDirectory,'report.json')}`);
