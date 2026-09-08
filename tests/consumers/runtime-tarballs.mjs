@@ -258,6 +258,11 @@ await writeFile(join(consumerDirectory, 'consumer-types.ts'), `
 import {createDataHttpHandler, createHttpDataService, createLocalDataService, parseBudget, parseResultEvent} from '@aeliqo/runtime/data';
 import type {DataHttpHandler, DataRecord, DataService, LocalSnapshot, QueryBudget, ReadContext, ResultEvent} from '@aeliqo/runtime/data';
 import type {Catalog, QuerySpec} from '@aeliqo/core';
+import {createResultStore, type ResultStore, type ResultCacheKey} from '@aeliqo/runtime/results';
+const resultStore: ResultStore = createResultStore();
+// @ts-expect-error Host principal partition is required.
+const invalidResultKey: ResultCacheKey = {scopeDigest: 'scope'};
+void [resultStore, invalidResultKey];
 const catalog = ${JSON.stringify(catalog)} as const satisfies Catalog;
 const query = ${JSON.stringify(query)} as const satisfies QuerySpec;
 const budget: QueryBudget = ${JSON.stringify(budget)};
@@ -299,6 +304,7 @@ import {
   createHttpDataService,
   createLocalDataService,
 } from '@aeliqo/runtime/data';
+import {createResultStore} from '@aeliqo/runtime/results';
 
 const run = (argv, cwd) => {
   const result = spawnSync(argv[0], argv.slice(1), {cwd, encoding: 'utf8'});
@@ -350,6 +356,23 @@ assert.equal(localDescribe.value.catalog.entities[0].id, 'employees');
 const localAccepted = unwrap(await local.plan(planRequest('local-plan'), {principal: 'alice'}));
 const localEvents = await collect(local.execute(localAccepted, {principal: 'alice'}));
 assertResultEvents(localEvents);
+const resultStore = createResultStore();
+const resultHandle = resultStore.begin({
+  principalKey: 'alice-private', scopeDigest: localAccepted.scopeDigest, policyRevision: localAccepted.policyRevision,
+  queryDigest: localAccepted.queryDigest, catalogRevision: localAccepted.catalogRevision,
+  functionRegistryDigest: localAccepted.functionRegistryDigest, sourceRevision: localAccepted.sourceRevision,
+  outputId: localAccepted.target.outputId, taskId: localEvents[0].descriptor.taskId,
+  requestId: localAccepted.requestId, populationDigest: localAccepted.populationDigest,
+});
+await collect(resultHandle.subscribe(local.execute(localAccepted, {principal: 'alice'})));
+assert.equal(resultHandle.snapshot().status, 'ready');
+assert.deepEqual(resultHandle.snapshot().batches[0].rows, localEvents[1].rows);
+assert.equal('principalKey' in resultHandle.snapshot().key, false);
+resultStore.revoke({principalKey: 'alice-private'});
+assert.equal(resultHandle.snapshot().status, 'denied');
+assert.equal(resultHandle.snapshot().loadedRows, 0);
+assert.deepEqual(resultHandle.snapshot().batches, []);
+resultStore.dispose();
 assert(observations.some(item => item.operation === 'execute' && item.principal === 'alice'));
 
 authMode = 'policy-change';
@@ -423,6 +446,7 @@ try {
   await writeFile('index.html', '<!doctype html><html><body><script type="module" src="browser.js"></script></body></html>');
   await writeFile('browser.js', \`
 import {createDataHttpHandler, createHttpDataService, createLocalDataService} from '@aeliqo/runtime/data';
+import {createResultStore} from '@aeliqo/runtime/results';
 const fixture = ${fixtureSource};
 const {catalog, rows, budget, query} = fixture;
 const describeRequest = requestId => ({version:'1',requestId,catalogRevision:null,target:{kind:'catalog'},budget,pageSize:1});
@@ -435,6 +459,17 @@ const runFlow = async client => {
   if (!accepted.ok) throw new Error(accepted.diagnostics[0]?.code ?? 'plan failed');
   const events = await collect(client.execute(accepted.value));
   if (events.length !== 4 || events.at(-1)?.kind !== 'complete') throw new Error('browser result stream failed');
+  const store = createResultStore();
+  const pins = accepted.value;
+  const handle = store.begin({principalKey:'browser-host',scopeDigest:pins.scopeDigest,policyRevision:pins.policyRevision,
+    queryDigest:pins.queryDigest,catalogRevision:pins.catalogRevision,functionRegistryDigest:pins.functionRegistryDigest,
+    sourceRevision:pins.sourceRevision,outputId:pins.target.outputId,taskId:events[0].descriptor.taskId,
+    requestId:pins.requestId,populationDigest:pins.populationDigest});
+  await collect(handle.subscribe(client.execute(pins)));
+  if (handle.snapshot().status !== 'ready') throw new Error('browser result handle failed');
+  store.revoke({principalKey:'browser-host'});
+  if (handle.snapshot().loadedRows !== 0) throw new Error('browser revoked rows retained');
+  store.dispose();
   return {scopeDigest: described.value.scopeDigest, rows: events.find(event => event.kind === 'batch')?.rows.length ?? 0};
 };
 const localService = createLocalDataService({snapshot:{catalog,sourceRevision:'browser-source',records:{employees:rows}}});

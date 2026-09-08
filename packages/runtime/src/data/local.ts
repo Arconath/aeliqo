@@ -836,7 +836,16 @@ function queryFieldDefinition(field: QueryField): CatalogEntity['fields'][number
 }
 
 function resultWarnings(result: QueryResult): readonly Diagnostic[] {
-  return Object.freeze(result.unknown.map((unknown) => diagnostic('data.unknown', `Output ${unknown.field} is unknown: ${unknown.reason}.`, ['result', unknown.field])));
+  const unique = new Map<string, Diagnostic>();
+  for (const unknown of result.unknown) {
+    const key = JSON.stringify([unknown.field, unknown.reason]);
+    if (!unique.has(key)) unique.set(key, diagnostic('data.unknown', `Output ${unknown.field} has unknown values: ${unknown.reason}.`, ['result', unknown.field]));
+  }
+  const warnings = [...unique.values()];
+  return Object.freeze(warnings.length <= WIRE_LIMITS.diagnostics ? warnings : [
+    ...warnings.slice(0, WIRE_LIMITS.diagnostics - 1),
+    diagnostic('data.unknown', `${warnings.length - WIRE_LIMITS.diagnostics + 1} additional field/reason combinations contain unknown values. Inspect the result values before making claims.`, ['result']),
+  ]);
 }
 
 function resultPrecision(result: QueryResult): {readonly kind: 'exact'} | {readonly kind: 'approximate'; readonly method: string; readonly uncertainty: {readonly kind: 'unquantified'; readonly reason: string}} {
@@ -1053,6 +1062,8 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
       };
       const planDigestOutcome = await digestWithDeadline({accepted: acceptedBase, planKey: logical.planKey}, 'plan', context, boundedBudget.maxMilliseconds - (Date.now() - startedAt));
       if (!planDigestOutcome.ok) return planDigestOutcome;
+      if (currentCatalog !== initialCatalog || snapshot !== initialSnapshot)
+        return failure('data.stale-plan', 'The catalog or source changed while plan identities were being computed.');
       const planDigest = planDigestOutcome.value;
       const accepted: PlanAcceptance = {
         ...acceptedBase, kind: 'accepted', planDigest, supported: supportedOperations(logical, input.query),
@@ -1135,6 +1146,10 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
       const resultIdOutcome = await digestWithDeadline({planDigest: stored.accepted.planDigest, requestId: input.requestId}, 'result', context, executionBudget.maxMilliseconds - (Date.now() - startedAt));
       if (!resultIdOutcome.ok) {
         yield resultError(input.requestId, resultIdOutcome.diagnostics[0]?.code ?? 'data.crypto', resultIdOutcome.diagnostics[0]?.message ?? 'The result identity could not be computed.');
+        return;
+      }
+      if (currentCatalog !== initialCatalog || snapshot !== initialSnapshot) {
+        yield resultError(input.requestId, 'data.stale-plan', 'The catalog or source changed while the result identity was being computed.');
         return;
       }
       const ref = resultReference(stored.accepted, resultIdOutcome.value);

@@ -46,12 +46,11 @@ grant, policy or catalog makes the accepted plan stale. Row policies run again f
 every execution and may return different principal-scoped populations only when the
 host supplies a matching scope and policy revision.
 
-The local evaluator deliberately supports a small, explicit subset: projection,
-typed predicates (`and`, `or`, `not`, comparisons, membership and null checks),
-deterministic code-point/text and numeric ordering, and bounded cursor paging.
-Relations, grouping, measures and inferred temporal operators return structured
-unsupported diagnostics; the runtime does not download an unbounded collection to
-simulate them. Decimal values use exact decimal comparison, and result descriptors
+The local evaluator uses the core query planner for typed predicates, projection,
+ordering, paging, registered measures, validated relations, grouping and explicit
+temporal operations. Discovery negotiates supported operations; unsupported plans
+return structured diagnostics. The runtime evaluates only its bounded host-owned
+snapshot. Decimal values use exact decimal comparison, and result descriptors
 carry identity, grain, consistency, evidence, counts, population and complete or
 partial coverage.
 
@@ -82,3 +81,30 @@ validated terminal event. Source error events remain error events, not completio
 These checks establish framing and lineage, not arithmetic correctness, field
 authorization, completeness truth, or permission to send results to a model.
 The host and later data/evaluation passes retain those responsibilities.
+
+## Result handles
+
+`@aeliqo/runtime/results` exposes `createResultStore`. Begin a handle with the
+host's principal partition, accepted scope/policy/query/catalog/function/source
+pins, output/task/request IDs and accepted population digest. Consume
+`handle.subscribe(service.execute(accepted, {signal}), {signal})` as an async
+iterator. Each pull requests one event. Snapshot rows are immutable and retain
+identity, grain, coverage, precision and lineage. A sampled or partial population
+never becomes complete merely because the stream ends.
+
+`begin` owns one reference; `handle.release()` releases it idempotently.
+`handle.retain()` creates a separate lease with its own `release()`. Live owners,
+leases and subscriptions prevent TTL/LRU eviction. A full store whose entries are
+all pinned throws `RangeError`; release ownership before refreshing within a
+one-entry store. `dispose` releases a handle immediately. The store bounds encoded
+descriptor/batch retention, including a previous snapshot kept during refresh.
+TTL applies to unpinned idle entries; it does not revoke authorization.
+
+A same-population refresh can preserve prior authorized rows with an explicit
+`refreshing`/`stale` status when the source fails. Different populations or semantic
+pins never share that carry. A denied or cancelled refresh clears its rows.
+The host must call `store.revoke({principalKey, scopeDigest?, policyRevision?})`
+when authorization changes; revocation clears rows before source cleanup runs.
+Result revisions are separate from source revisions. Validation checks declared
+pins and internal consistency, and does not certify business truth or grant model
+egress. Persistence and columnar codecs are not implemented by this memory store.

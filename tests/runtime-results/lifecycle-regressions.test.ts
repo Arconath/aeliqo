@@ -31,11 +31,12 @@ async function drain(handle: ReturnType<ReturnType<typeof createResultStore>['be
 
 describe('result lifecycle regressions', () => {
   it('keeps a live lease from max-entry eviction and TTL expiry', () => {
-    const bounded = createResultStore({maxEntries: 1});
+    const bounded = createResultStore({maxEntries: 2});
     const pinned = bounded.begin(key('pinned'));
     const lease = pinned.retain();
     pinned.release();
-    bounded.begin({...key('other'), outputId: 'other'});
+    bounded.begin({...key('other'), outputId: 'other'}).release();
+    bounded.begin({...key('third'), outputId: 'third'});
     expect(lease.released).toBe(false);
     expect(pinned.snapshot().status).not.toBe('disposed');
 
@@ -97,11 +98,82 @@ describe('result lifecycle regressions', () => {
     expect(handle.snapshot().diagnostics[0]?.code).toBe('data.result-evidence');
   });
 
+  it('does not carry an authorized result across population changes', async () => {
+    const store = createResultStore();
+    const first = store.begin(key('population-first'));
+    await drain(first, from(completeEvents));
+    first.release();
+    const changedPopulation = store.begin({...key('population-refresh'), populationDigest: 'population-other'});
+    expect(changedPopulation.snapshot().status).toBe('loading');
+    expect(changedPopulation.snapshot().loadedRows).toBe(0);
+  });
+
+  it('keeps result-reference revision distinct from the source revision', async () => {
+    const resultRef = {...ref, revision: 'result-revision-1'};
+    const resultDescriptor = {...descriptor, ref: resultRef};
+    const handle = createResultStore().begin(key('result-revision'));
+    await drain(handle, from([
+      {kind: 'descriptor', descriptor: resultDescriptor},
+      {kind: 'batch', result: resultRef, sequence: 0, rows: [{id: 'a'}]},
+      {kind: 'complete', result: resultRef, finalCoverage: resultDescriptor.coverage},
+    ]));
+    expect(handle.snapshot().status).toBe('ready');
+    expect(handle.snapshot().descriptor?.ref.revision).toBe('result-revision-1');
+  });
+
   it('cancels an idle subscription when its signal aborts', () => {
     const handle = createResultStore().begin(key('idle-abort'));
     const controller = new AbortController();
     handle.subscribe({next: () => new Promise<IteratorResult<unknown>>(() => {})}, {signal: controller.signal});
     controller.abort();
     expect(handle.snapshot().status).toBe('cancelled');
+  });
+
+  it('refuses capacity overflow while the initial owner remains retained', () => {
+    const store = createResultStore({maxEntries: 1});
+    const owner = store.begin(key('owner'));
+    expect(() => store.begin({...key('other'), outputId: 'other'})).toThrow(RangeError);
+    expect(owner.snapshot().status).toBe('loading');
+    owner.release();
+    owner.release();
+    expect(store.begin({...key('other'), outputId: 'other'}).snapshot().status).toBe('loading');
+    expect(owner.snapshot().status).toBe('disposed');
+  });
+
+  it('rejects omitted partition pins and accessor inputs without invoking them', () => {
+    const store = createResultStore();
+    expect(() => store.begin({} as never)).toThrow(TypeError);
+    let read = false;
+    const input = {...key('accessor'), get scopeDigest() { read = true; return 'scope-1'; }};
+    expect(() => store.begin(input)).toThrow(TypeError);
+    expect(read).toBe(false);
+  });
+
+  it('keeps the final coverage in the descriptor and never changes its population', async () => {
+    const handle = createResultStore().begin(key('downgrade'));
+    const partial = {kind: 'partial' as const, populationDigest: 'population-1', reason: 'source incomplete'};
+    await drain(handle, from([completeEvents[0], completeEvents[1], {kind: 'complete', result: ref, finalCoverage: partial}]));
+    expect(handle.snapshot().status).toBe('partial');
+    expect(handle.snapshot().descriptor?.coverage).toEqual(partial);
+    const {populationDigest: _population, ...unpinned} = key('population-change');
+    const other = createResultStore().begin(unpinned);
+    const unknownCount = {...descriptor, counts: {loaded: 1, population: {kind: 'unknown' as const}}};
+    await drain(other, from([{kind: 'descriptor', descriptor: unknownCount}, completeEvents[1],
+      {kind: 'complete', result: ref, finalCoverage: {...partial, populationDigest: 'another-population'}}]));
+    expect(other.snapshot().diagnostics[0]?.code).toBe('data.result-population');
+  });
+
+  it('accepts an explicit null group identity while rejecting duplicate null groups', async () => {
+    const grouped = {...descriptor, fields: [{...field, role: 'dimension' as const, type: {...field.type, nullable: true}}]};
+    const handle = createResultStore().begin(key('null-group'));
+    await drain(handle, from([{kind: 'descriptor', descriptor: grouped},
+      {kind: 'batch', result: ref, sequence: 0, rows: [{id: null}]}, completeEvents[2]]));
+    expect(handle.snapshot().status).toBe('ready');
+    expect(handle.snapshot().batches[0]?.rows[0]?.id).toBeNull();
+    const duplicated = createResultStore().begin(key('duplicate-null'));
+    await drain(duplicated, from([{kind: 'descriptor', descriptor: {...grouped,
+      counts: {loaded: 2, population: {kind: 'exact', value: 2, populationDigest: 'population-1'}}}},
+      {kind: 'batch', result: ref, sequence: 0, rows: [{id: null}, {id: null}]}]));
+    expect(duplicated.snapshot().diagnostics[0]?.code).toBe('data.result-identity');
   });
 });

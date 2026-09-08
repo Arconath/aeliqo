@@ -214,10 +214,12 @@ describe('result store handles', () => {
     const store = createResultStore({maxEntries: 1, ttlMs: 10, now: () => now});
     const first = store.begin(key());
     await collect(first, from(events));
+    first.release();
     now = 5;
     const second = store.begin(key('request-second'));
     expect(first.snapshot().status).toBe('disposed');
     expect(store.get(second.key)).toBe(second);
+    second.release();
     now = 20;
     expect(store.get(second.key)).toBeUndefined();
     expect(second.snapshot().status).toBe('disposed');

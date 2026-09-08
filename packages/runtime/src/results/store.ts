@@ -81,7 +81,15 @@ function validKeyPart(value: unknown, name: string): asserts value is string {
 
 function validateBeginInput(input: ResultBeginInput): void {
   if (input === null || typeof input !== 'object') throw new TypeError('A result begin input is required.');
-  for (const [name, value] of Object.entries(input)) {
+  const required = ['principalKey', 'scopeDigest', 'queryDigest', 'catalogRevision', 'functionRegistryDigest', 'sourceRevision', 'outputId', 'taskId', 'requestId'];
+  const allowed = new Set([...required, 'policyRevision', 'populationDigest']);
+  const properties = Object.getOwnPropertyDescriptors(input);
+  for (const name of required) if (!Object.hasOwn(properties, name)) throw new TypeError(`${name} is required.`);
+  for (const name of Reflect.ownKeys(input)) {
+    if (typeof name !== 'string' || !allowed.has(name)) throw new TypeError('Unknown result input property.');
+    const property = properties[name]!;
+    if (!Object.hasOwn(property, 'value')) throw new TypeError('Result inputs cannot contain accessors.');
+    const value: unknown = property.value;
     if (name === 'policyRevision' || name === 'populationDigest') {
       if (value !== undefined) validKeyPart(value, name);
       continue;
@@ -100,6 +108,7 @@ function slotKey(input: ResultCacheKey): string {
     input.principalKey,
     input.scopeDigest,
     input.policyRevision ?? null,
+    input.populationDigest ?? null,
     input.queryDigest,
     input.catalogRevision,
     input.functionRegistryDigest,
@@ -114,9 +123,9 @@ function sameRef(left: ResultRef, right: ResultRef): boolean {
     && left.queryDigest === right.queryDigest && left.scopeDigest === right.scopeDigest;
 }
 
-function sameRefParts(ref: ResultRef, input: ResultBeginInput): boolean {
+function sameRefParts(ref: ResultRef, input: ResultCacheKey): boolean {
   return ref.outputId === input.outputId && ref.queryDigest === input.queryDigest
-    && ref.scopeDigest === input.scopeDigest && ref.revision === input.sourceRevision;
+    && ref.scopeDigest === input.scopeDigest;
 }
 
 function statusForError(code: string): ResultStatus {
@@ -225,7 +234,7 @@ class HandleController implements ResultHandle {
   private superseded = false;
   private revoked = false;
   private disposed = false;
-  private leases = 1;
+  private ownerRetained = true;
   private readonly leaseObjects = new Set<ResultLease>();
   private readonly subscriptions = new Set<ResultSubscriptionImpl>();
   private lastTouched: number;
@@ -236,6 +245,7 @@ class HandleController implements ResultHandle {
       principalKey: input.principalKey,
       scopeDigest: input.scopeDigest,
       ...(input.policyRevision === undefined ? {} : {policyRevision: input.policyRevision}),
+      ...(input.populationDigest === undefined ? {} : {populationDigest: input.populationDigest}),
       queryDigest: input.queryDigest,
       catalogRevision: input.catalogRevision,
       functionRegistryDigest: input.functionRegistryDigest,
@@ -260,10 +270,10 @@ class HandleController implements ResultHandle {
   }
 
   get active(): boolean { return this.subscriptions.size > 0; }
+  get pinned(): boolean { return this.ownerRetained || this.leaseObjects.size > 0 || this.active; }
   get touchedAt(): number { return this.lastTouched; }
   get retainedBytes(): number {
-    if (this.showingCarry && this.carry !== undefined) return this.carry.bytes;
-    return this.state.bytes;
+    return this.state.bytes + (this.carry?.bytes ?? 0);
   }
 
   private touch(): void { this.lastTouched = this.store.now(); }
@@ -290,7 +300,6 @@ class HandleController implements ResultHandle {
 
   retain(): ResultLease {
     if (this.disposed || this.revoked) return {released: true, release() { /* already unavailable */ }};
-    this.leases += 1;
     let released = false;
     const lease: ResultLease = {
       get released() { return released; },
@@ -298,7 +307,7 @@ class HandleController implements ResultHandle {
         if (released) return;
         released = true;
         this.leaseObjects.delete(lease);
-        this.release();
+        this.touch();
       },
     };
     this.leaseObjects.add(lease);
@@ -306,7 +315,7 @@ class HandleController implements ResultHandle {
   }
 
   release(): void {
-    if (this.leases > 0) this.leases -= 1;
+    this.ownerRetained = false;
     this.touch();
   }
 
@@ -317,12 +326,12 @@ class HandleController implements ResultHandle {
       return subscription;
     }
     this.subscriptions.add(subscription);
-    this.leases += 1;
+    subscription.listenForAbort();
     return subscription;
   }
 
   removeSubscription(subscription: ResultSubscriptionImpl): void {
-    if (this.subscriptions.delete(subscription) && this.leases > 0) this.leases -= 1;
+    this.subscriptions.delete(subscription);
     this.touch();
   }
 
@@ -331,15 +340,15 @@ class HandleController implements ResultHandle {
     this.disposed = true;
     this.superseded = false;
     this.revoked = false;
-    for (const subscription of [...this.subscriptions]) subscription.closeWithoutPull();
-    this.subscriptions.clear();
-    for (const lease of [...this.leaseObjects]) lease.release();
-    this.leaseObjects.clear();
-    this.leases = 0;
     this.carry = undefined;
     this.showingCarry = false;
     this.state = this.emptyState('disposed');
     this.state.diagnostics = Object.freeze([makeDiagnostic('data.disposed', 'The result handle has been disposed.')]);
+    for (const subscription of [...this.subscriptions]) subscription.closeWithoutPull();
+    this.subscriptions.clear();
+    for (const lease of [...this.leaseObjects]) lease.release();
+    this.leaseObjects.clear();
+    this.ownerRetained = false;
     this.store.remove(this);
   }
 
@@ -355,15 +364,15 @@ class HandleController implements ResultHandle {
   revoke(): void {
     if (this.disposed || this.revoked) return;
     this.revoked = true;
-    for (const subscription of [...this.subscriptions]) subscription.closeWithoutPull();
-    this.subscriptions.clear();
-    for (const lease of [...this.leaseObjects]) lease.release();
-    this.leaseObjects.clear();
-    this.leases = 0;
     this.carry = undefined;
     this.showingCarry = false;
     this.state = this.emptyState('denied');
     this.state.diagnostics = Object.freeze([makeDiagnostic('data.authorization-revoked', 'Authorization for this result has been revoked.')]);
+    for (const subscription of [...this.subscriptions]) subscription.closeWithoutPull();
+    this.subscriptions.clear();
+    for (const lease of [...this.leaseObjects]) lease.release();
+    this.leaseObjects.clear();
+    this.ownerRetained = false;
     this.store.remove(this);
   }
 
@@ -381,6 +390,7 @@ class HandleController implements ResultHandle {
     };
     const retained = this.carry ?? current;
     if (retained !== undefined && preserveOnFailure(status)) {
+      if (this.carry !== undefined) this.state = this.emptyState(status);
       this.showingCarry = retained === this.carry;
       this.state.status = this.carry === undefined ? status : 'stale';
       this.state.diagnostics = diagnostic === undefined ? [] : Object.freeze([diagnostic]);
@@ -388,6 +398,7 @@ class HandleController implements ResultHandle {
       this.state.terminal = true;
       return;
     }
+    this.carry = undefined;
     this.showingCarry = false;
     this.state.status = status;
     this.state.descriptor = undefined;
@@ -407,7 +418,7 @@ class HandleController implements ResultHandle {
 
   private validateDescriptor(descriptor: Result): Outcome<void> {
     if (descriptor.taskId !== this.key.taskId) return failure('data.result-task', 'The result descriptor belongs to another task.');
-    if (!sameRefParts(descriptor.ref, this.key as ResultBeginInput)) return failure('data.result-scope', 'The result descriptor does not match the authorized result pins.');
+    if (!sameRefParts(descriptor.ref, this.key)) return failure('data.result-scope', 'The result descriptor does not match the authorized result pins.');
     if (this.populationDigest !== undefined) {
       if (!isKnownCoverage(descriptor.coverage) || descriptor.coverage.populationDigest !== this.populationDigest)
         return failure('data.result-population', 'The result descriptor does not match the accepted population.');
@@ -429,14 +440,25 @@ class HandleController implements ResultHandle {
     if (!grain.ok) return grain;
     if (descriptor.counts.loaded > WIRE_LIMITS.array) return failure('data.result-budget', 'The result loaded count exceeds the bounded result limit.');
     const count = descriptor.counts.population;
+    if (count.kind === 'exact' && count.value < descriptor.counts.loaded)
+      return failure('data.result-count', 'The loaded count cannot exceed its exact population count.');
     if (isKnownCoverage(descriptor.coverage)) {
       if (count.kind !== 'unknown' && count.populationDigest !== descriptor.coverage.populationDigest)
         return failure('data.result-population', 'The result population count and coverage refer to different populations.');
     }
     if (descriptor.coverage.kind !== 'unknown' && descriptor.coverage.kind !== 'complete' && descriptor.coverage.kind !== 'partial' && descriptor.coverage.kind !== 'sample')
       return failure('data.result-coverage', 'The result descriptor has an invalid coverage state.');
-    if (descriptor.consistency.kind === 'snapshot' && !Object.values(descriptor.consistency.sourceRevisions).includes(this.key.sourceRevision))
+    if (descriptor.consistency.kind === 'snapshot' && descriptor.consistency.snapshotId !== this.key.sourceRevision && !Object.values(descriptor.consistency.sourceRevisions).includes(this.key.sourceRevision))
       return failure('data.result-consistency', 'The result snapshot does not include the pinned source revision.');
+    if (descriptor.evidence.kind === 'computed' && descriptor.evidence.queryDigest !== this.key.queryDigest)
+      return failure('data.result-evidence', 'Computed evidence belongs to a different query.');
+    if (descriptor.evidence.kind === 'observed' && descriptor.consistency.kind !== 'unknown') {
+      const pinned = descriptor.consistency.sourceRevisions[descriptor.evidence.source.id];
+      if (pinned !== undefined && pinned !== descriptor.evidence.source.revision)
+        return failure('data.result-evidence', 'Observed evidence contradicts the declared source revision.');
+    }
+    if (descriptor.lineage.some((edge) => edge.inputs.some((ref) => ref.scopeDigest !== this.key.scopeDigest)))
+      return failure('data.result-lineage', 'Result lineage belongs to another authorization scope.');
     return {ok: true, value: undefined};
   }
 
@@ -459,7 +481,7 @@ class HandleController implements ResultHandle {
     for (const identity of descriptor.identity) {
       const field = fields.get(identity)!;
       const value = normalized[identity];
-      if (value === undefined || value === null) return failure('data.result-identity', 'Result identity fields must be present and non-null.');
+      if (value === undefined) return failure('data.result-identity', 'Result identity fields must be present.');
       const key = scalarIdentity(value, field.type);
       if (!key.ok) return failure('data.result-identity', 'Result identity value is invalid.');
       // The caller checks duplicate tuples after all fields have been visited.
@@ -544,6 +566,8 @@ class HandleController implements ResultHandle {
     if (this.state.loadedRows !== this.state.descriptor.counts.loaded)
       return this.invalid('data.result-count', 'Result completion does not match the descriptor loaded count.');
     const initialCoverage = this.state.descriptor.coverage;
+    if (initialCoverage.kind !== 'unknown' && event.finalCoverage.kind !== 'unknown' && initialCoverage.populationDigest !== event.finalCoverage.populationDigest)
+      return this.invalid('data.result-population', 'Completion cannot change the descriptor population.');
     if (initialCoverage.kind !== 'unknown' && initialCoverage.kind !== 'complete' && event.finalCoverage.kind === 'complete')
       return this.invalid('data.result-coverage', 'A partial or sampled result cannot be promoted to complete by its terminal event.');
     if (this.populationDigest !== undefined && (event.finalCoverage.kind === 'unknown' || event.finalCoverage.populationDigest !== this.populationDigest))
@@ -551,6 +575,15 @@ class HandleController implements ResultHandle {
     const count = this.state.descriptor.counts.population;
     if (event.finalCoverage.kind !== 'unknown' && count.kind !== 'unknown' && count.populationDigest !== event.finalCoverage.populationDigest)
       return this.invalid('data.result-population', 'The result completion population differs from its count population.');
+    if (event.finalCoverage.kind === 'complete' && count.kind === 'exact' && count.value !== this.state.loadedRows)
+      return this.invalid('data.result-count', 'Complete coverage must contain the exact population row count.');
+    const finalDescriptor = frozen({...this.state.descriptor, coverage: event.finalCoverage});
+    const descriptorDelta = byteLength(finalDescriptor) - byteLength(this.state.descriptor);
+    if (this.store.totalBytes() + descriptorDelta - (this.carry?.bytes ?? 0) > this.store.maxBytes)
+      return this.invalid('data.result-budget', 'Final coverage exceeds the bounded store byte budget.');
+    this.state.descriptor = finalDescriptor;
+    this.state.bytes += descriptorDelta;
+    this.carry = undefined;
     this.state.lastEvent = event;
     this.state.terminal = true;
     this.state.status = event.finalCoverage.kind === 'complete' ? 'ready' : 'partial';
@@ -622,11 +655,20 @@ class ResultSubscriptionImpl implements ResultSubscription {
     this.signal = signal;
   }
 
+  private readonly onAbort = (): void => { this.cancel(); };
+
+  listenForAbort(): void {
+    if (this.closed) return;
+    this.signal?.addEventListener('abort', this.onAbort, {once: true});
+    if (this.signal?.aborted) this.cancel();
+  }
+
   [Symbol.asyncIterator](): AsyncIterableIterator<ResultUpdate> { return this; }
 
   private finish(): void {
     if (this.closed) return;
     this.closed = true;
+    this.signal?.removeEventListener('abort', this.onAbort);
     this.localAbort.abort();
     try {
       const cleanup = this.iterator.return?.();
@@ -639,6 +681,7 @@ class ResultSubscriptionImpl implements ResultSubscription {
 
   closeAsSuperseded(): void {
     this.closed = true;
+    this.signal?.removeEventListener('abort', this.onAbort);
     this.localAbort.abort();
     try {
       const cleanup = this.iterator.return?.();
@@ -678,7 +721,7 @@ class ResultSubscriptionImpl implements ResultSubscription {
     }
     const raced = await raceAbort(pending, [this.signal, this.localAbort.signal]);
     if (raced.aborted) {
-      if (this.closed) return {done: true, value: undefined};
+      if (this.closed) return this.signal?.aborted ? this.terminalUpdate() : {done: true, value: undefined};
       this.cancel();
       return this.terminalUpdate();
     }
@@ -753,15 +796,15 @@ class ResultStoreImpl implements ResultStore, InternalStore {
   private expire(): void {
     const now = this.now();
     for (const handle of [...this.handles]) {
-      if (!handle.active && now - handle.touchedAt >= this.ttlMs) handle.dispose();
+      if (!handle.pinned && now - handle.touchedAt >= this.ttlMs) handle.dispose();
     }
   }
 
   private evict(): void {
     this.expire();
     while (this.handles.size >= this.maxEntries) {
-      const candidate = [...this.handles].filter((handle) => !handle.active).sort((left, right) => left.touchedAt - right.touchedAt)[0];
-      if (candidate === undefined) break;
+      const candidate = [...this.handles].filter((handle) => !handle.pinned).sort((left, right) => left.touchedAt - right.touchedAt)[0];
+      if (candidate === undefined) throw new RangeError('The result store is at capacity with live owners, leases or subscriptions.');
       candidate.dispose();
     }
   }
@@ -769,7 +812,7 @@ class ResultStoreImpl implements ResultStore, InternalStore {
   begin(input: ResultBeginInput): ResultHandle {
     if (this.disposed) throw new Error('The result store has been disposed.');
     validateBeginInput(input);
-    this.evict();
+    this.expire();
     const key = slotKey(input);
     const previous = this.slots.get(key);
     const carrySnapshot = previous === undefined ? undefined : previous.snapshot();
@@ -780,6 +823,8 @@ class ResultStoreImpl implements ResultStore, InternalStore {
       ...(carrySnapshot.lastEvent === undefined ? {} : {lastEvent: carrySnapshot.lastEvent}),
       bytes: byteLength(carrySnapshot.descriptor) + carrySnapshot.batches.reduce((sum, batch) => sum + byteLength(batch), 0),
     } satisfies CarryData;
+    this.evict();
+    if (this.totalBytes() + (carry?.bytes ?? 0) > this.maxBytes) throw new RangeError('The result refresh exceeds the bounded store byte budget.');
     const handle = new HandleController(this, input, ++this.generation, carry);
     this.handles.add(handle);
     this.slots.set(key, handle);

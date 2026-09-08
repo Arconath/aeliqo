@@ -24,6 +24,7 @@ export interface ResultCacheKey {
   readonly principalKey: string;
   readonly scopeDigest: string;
   readonly policyRevision?: string;
+  readonly populationDigest?: string;
   readonly queryDigest: string;
   readonly catalogRevision: string;
   readonly functionRegistryDigest: string;
@@ -37,7 +38,6 @@ export type ResultPins = Omit<ResultCacheKey, 'principalKey'>;
 
 export interface ResultBeginInput extends ResultCacheKey {
   readonly requestId: string;
-  readonly populationDigest?: string;
 }
 
 export interface ResultStoreOptions {
