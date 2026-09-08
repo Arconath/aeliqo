@@ -1,4 +1,4 @@
-import {createStandardFunctionRegistry, type Catalog, type Experience, type MeaningDefinition, type QuerySource} from '@aeliqo/core';
+import {parseExperience, createStandardFunctionRegistry, type Catalog, type Experience, type MeaningDefinition, type QuerySource} from '@aeliqo/core';
 import {createMeaningAuthoring, meaningDigest} from '@aeliqo/runtime/meaning';
 import {createStudioDocument, createStudioSession, type StudioArea, type StudioDocument, type StudioSession} from '@aeliqo/devtools';
 import {registerAeliqoElements} from '@aeliqo/web/register';
@@ -225,8 +225,9 @@ function bindEvents(): void {
     const active = session.getState().document.profiles.find((entry) => entry.experience.id === session.getState().document.activeProfile.id && entry.experience.revision === session.getState().document.activeProfile.revision);
     if (active === undefined) return;
     const data = new FormData(form);
-    const candidateExperience = {...active.experience, id: active.experience.id, revision: String(data.get('profile-revision')), mode: String(data.get('profile-mode'))};
-    const result = session.editExperience({base: {id: active.experience.id, revision: active.experience.revision}, label: String(data.get('profile-label')), experience: candidateExperience});
+    const candidateExperience = parseExperience({...active.experience, id: active.experience.id, revision: String(data.get('profile-revision')), mode: String(data.get('profile-mode'))});
+    if (!candidateExperience.ok) { session.showDiagnostics(candidateExperience.diagnostics); return; }
+    const result = session.editExperience({base: {id: active.experience.id, revision: active.experience.revision}, label: String(data.get('profile-label')), experience: candidateExperience.value});
     if (!result.ok) session.showDiagnostics(result.diagnostics);
   });
   root.querySelector<HTMLFormElement>('#meaning-form')?.addEventListener('submit', (event) => { event.preventDefault(); const form = event.currentTarget; if (!(form instanceof HTMLFormElement)) return; const data = new FormData(form); const result = session.defineMeaning({id: String(data.get('id')), label: String(data.get('label')), description: String(data.get('description')), entity: String(data.get('entity')), field: String(data.get('field'))}); if (!result.ok) session.showDiagnostics(result.diagnostics); });

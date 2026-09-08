@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import {createStudioDocument, createStudioSession, parseStudioDocument} from '../../packages/devtools/src/index.js';
-import {createMeaningAuthoring, meaningDigest} from '@aeliqo/runtime/meaning';
+import {createMeaningAuthoring, meaningDigest} from '../../packages/runtime/src/meaning/index.js';
 import type {QuerySource} from '@aeliqo/core';
 import {catalog, document, input, registry} from './fixtures.js';
 
