@@ -31,11 +31,11 @@ const report = {
   environment: environmentSnapshot(),
   workloads: {
     medium: {functional: functionalMedium, observations: medium, budgetMsP95: 16,
-      plannerDurationsP95Ms: timingEnabled ? percentile(medium.results.subsequent.map((sample) => sample.durationMs)) : undefined,
-      budgetAssertion: timingEnabled ? percentile(medium.results.subsequent.map((sample) => sample.durationMs)) <= 16 : undefined},
+      plannerDurationsP95Ms: timingEnabled ? percentile(medium.results.subsequent.map((sample) => sample.durationMs), 0.95) : undefined,
+      budgetAssertion: timingEnabled ? percentile(medium.results.subsequent.map((sample) => sample.durationMs), 0.95) <= 16 : undefined},
     targetedReducer: {functional: {...functionalReducer, rawMs: undefined}, observations: reducer, budgetMsP95: 4,
-      dispatchP95Ms: timingEnabled ? percentile(reducer.results.subsequent.flatMap((sample) => sample.rawMs)) : undefined,
-      budgetAssertion: timingEnabled ? percentile(reducer.results.subsequent.flatMap((sample) => sample.rawMs)) <= 4 : undefined},
+      dispatchP95Ms: timingEnabled ? percentile(reducer.results.subsequent.flatMap((sample) => sample.rawMs), 0.95) : undefined,
+      budgetAssertion: timingEnabled ? percentile(reducer.results.subsequent.flatMap((sample) => sample.rawMs), 0.95) <= 4 : undefined},
     cleanup: {functional: resources, budgetAssertion: resources.bounded},
   },
   notes: [

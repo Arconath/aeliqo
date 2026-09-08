@@ -25,3 +25,37 @@ cold/warm timing observations and p50/p95, input and layout/paint traces, bounde
 DOM/geometry, cancellation and 100-cycle cleanup/heap observations, whole-site
 metrics, plus the real lower-powered device specified by chapter 12. Run timing
 work without concurrent builds. Do not revise budgets to fit observed results.
+
+
+## Production workload probes
+
+`pnpm exec playwright test --config tests/performance/playwright.config.mjs`
+builds the actual packages and a minified Vite production fixture, then serves it
+with preview. It checks 100-row controls, 10,000 loaded records carrying all 100
+semantic fields, 30 views and 64 presentation candidates, typed draft updates,
+and a bounded HTTP window from a synthetic indexed million-record source.
+The two display fields supplement those 100 semantic fields. The source is a
+local deterministic fixture, not a database capacity benchmark. Content-Length
+measures response body bytes, excluding headers and other transport overhead.
+
+Set `AELIQO_RUN_PERFORMANCE=1` for the timing gate. It records 10 initial and 30
+subsequent observations on one already-loaded page; these are not cold-cache
+measurements. Budgets use actual planner duration and individual dispatch
+samples, separately from complete workload duration. Chromium CDP traces retain
+script, layout and paint events; inclusive event durations can overlap and must
+not be added to claim wall-clock latency. Budget assertions are enforced unless
+explicitly disabled with `AELIQO_ENFORCE_PERFORMANCE_BUDGETS=0`; a disabled run
+is measurement only and cannot qualify the gate.
+
+`node --test tests/performance/workloads.test.mjs` checks the measurement
+calculations after building the packages. `AELIQO_RUN_PERFORMANCE=1 node
+tests/performance/runtime-workload.mjs` measures the Node package path and fails
+on budget overruns. It does not replace the browser gate. Both commands retain
+raw samples. Resource checks exercise ResultStore and Region ownership and
+100 component mount/dispose cycles. Heap samples require investigation; a zero
+active-resource count does not prove garbage collection.
+
+Still unqualified by these probes: genuine cold/warm cache paths, input-to-paint,
+network/server phase breakdown, dense plots and adverse workloads, final
+installed-package timing, whole-site metrics, and real lower-powered hardware.
+No timing result from this fixture alone marks T30 complete.

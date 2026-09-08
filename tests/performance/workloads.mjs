@@ -24,7 +24,8 @@ export const FIRST_SAMPLE_COUNT = 10;
 export const SUBSEQUENT_SAMPLE_COUNT = 30;
 
 export function percentile(values, percentileValue) {
-  if (values.length === 0) return 0;
+  if (!Number.isFinite(percentileValue) || percentileValue <= 0 || percentileValue > 1) throw new Error('A percentile fraction in (0, 1] is required.');
+  if (values.length === 0 || values.some(value => !Number.isFinite(value) || value < 0)) throw new Error('Finite nonnegative observations are required.');
   const sorted = [...values].sort((left, right) => left - right);
   const index = Math.min(sorted.length - 1, Math.max(0, Math.ceil(sorted.length * percentileValue) - 1));
   return sorted[index] ?? 0;

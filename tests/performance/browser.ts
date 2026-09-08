@@ -122,7 +122,7 @@ async function mountDispose(): Promise<unknown> {
     return memory?.usedJSHeapSize;
   };
   const heapBefore = heapMemory();
-  const heapSamples: Array<{readonly cycle: number; readonly usedBytes?: number}> = [];
+  const heapSamples: Array<{readonly cycle: number; readonly usedBytes: number | undefined}> = [];
   let activeListeners = 0;
   let trackedRegistrations = 0;
   let listenerId = 0;
@@ -164,7 +164,7 @@ async function mountDispose(): Promise<unknown> {
     EventTarget.prototype.removeEventListener = originalRemove;
   }
   for (const target of trackedTargets) {
-    if (target instanceof Node && (target === document || document.documentElement.contains(target))) {
+    if (target === window || (target instanceof Node && target.isConnected)) {
       activeListeners += registrations.get(target)?.size ?? 0;
     }
   }
