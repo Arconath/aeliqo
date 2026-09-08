@@ -142,12 +142,15 @@ describe('production agent binder', () => {
     if (baseline.state !== 'unsupported') return;
     const code = baseline.diagnostics[0]?.code;
     if (code === undefined) throw new Error('missing planner diagnostic');
-    const ref = {id: missing.id, revision: missing.revision};
     const diagnosticPath = baseline.diagnostics[0]?.path;
-    const needsMeaning = outcomeState(await binder({decisions: [{state: 'needs-meaning', task: ref, diagnosticCode: code, ...(diagnosticPath === undefined ? {} : {diagnosticPath}), concept: 'metric.missing', authoringRoutes: ['manual', 'ai-assisted']}]}).bind(proposal(missing)));
+    const needsMeaning = outcomeState(await binder({decisions: [{state: 'needs-meaning', goalEpoch: 'epoch-1', diagnosticCode: code, ...(diagnosticPath === undefined ? {} : {diagnosticPath}), concept: 'metric.missing', authoringRoutes: ['manual', 'ai-assisted']}]}).bind(proposal(missing)));
     expect(needsMeaning.state).toBe('needs-meaning');
-    const needsChoice = outcomeState(await binder({decisions: [{state: 'needs-choice', task: ref, diagnosticCode: code, ...(diagnosticPath === undefined ? {} : {diagnosticPath}), choices: [{id: 'metric.net', label: 'Net', consequence: 'Uses reviewed net metric.'}, {id: 'metric.gross', label: 'Gross', consequence: 'Uses reviewed gross metric.'}]}]}).bind(proposal(missing)));
+    const needsChoice = outcomeState(await binder({decisions: [{state: 'needs-choice', goalEpoch: 'epoch-1', diagnosticCode: code, ...(diagnosticPath === undefined ? {} : {diagnosticPath}), choices: [{id: 'metric.net', label: 'Net', consequence: 'Uses reviewed net metric.'}, {id: 'metric.gross', label: 'Gross', consequence: 'Uses reviewed gross metric.'}]}]}).bind(proposal(missing)));
     expect(needsChoice.state).toBe('needs-choice');
+
+    const resolved = task({catalogRevision: meaningCatalog.revision, outputs: [{id: 'main', kind: 'query', query: query({fields: [], measures: [{id: gross.id, revision: gross.revision}]}), dependsOn: [], delivery: 'eager'}]});
+    const resolvedOutcome = outcomeState(await binder({catalog: meaningCatalog}).bind(proposal(resolved, {...current, catalogRevision: meaningCatalog.revision})));
+    expect(resolvedOutcome.state).toBe('bound');
   });
 
   it('enforces independent grants, read sets, goal epochs, and source revisions', async () => {
@@ -168,6 +171,53 @@ describe('production agent binder', () => {
     const changedCurrent = {...current, results: [changedRef]};
     const refreshed = outcomeState(await binder({current: changedCurrent, grants: ['catalog.read', 'task.propose', 'result.inspect']}).bind(proposal(task({outputs: [{id: 'source', kind: 'reuse', result: changedRef, dependsOn: []}]}), changedCurrent)));
     expect(refreshed.state).toBe('bound');
+  });
+
+  it('requires the task revision and a stable host authority across inspection', async () => {
+    const staleTask = task({revision: 'task-old'});
+    const staleTaskResult = outcomeState(await binder().bind(proposal(staleTask)));
+    expect(staleTaskResult.state).toBe('stale');
+
+    let reads = 0;
+    const changing = binder({}, (value) => {
+      reads++;
+      if (reads === 2) {
+        const context = value as {grants: string[]};
+        context.grants = ['catalog.read'];
+      }
+    });
+    const changed = outcomeState(await changing.bind(proposal(task())));
+    expect(changed.state).toBe('stale');
+    expect(reads).toBeGreaterThanOrEqual(2);
+  });
+
+  it('keeps host decisions scoped to the current goal epoch', async () => {
+    const missing = task({outputs: [{id: 'main', kind: 'query', query: query({measures: [{id: 'metric.missing', revision: '1'}]}), dependsOn: [], delivery: 'eager'}]});
+    const staleDecision = outcomeState(await binder({decisions: [{state: 'needs-meaning', goalEpoch: 'old-epoch', diagnosticCode: 'query.meaning', concept: 'metric.missing', authoringRoutes: ['manual']}]}).bind(proposal(missing)));
+    expect(staleDecision.state).toBe('stale');
+  });
+
+  it('releases cancelled host reads so a later healthy bind is admitted', async () => {
+    let healthy = false;
+    const context = {
+      principalKey: 'principal-1', regionId: 'region-1', goalEpoch: 'epoch-1', current,
+      catalog, functionRegistry: registry, grants: ['catalog.read', 'task.propose'],
+    };
+    const actual = createAgentBinder({maxPending: 8, host: {
+      readContext: async () => healthy ? {ok: true, value: context} : new Promise<never>(() => {}),
+    }} as unknown as BinderOptions);
+    const input = proposal(task());
+    for (let index = 0; index < 8; index++) {
+      const controller = new AbortController();
+      const pending = actual.bind(input, {signal: controller.signal});
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      controller.abort();
+      const cancelled = await pending;
+      expect(cancelled.ok && cancelled.value.state).toBe('invalid');
+    }
+    healthy = true;
+    const recovered = outcomeState(await actual.bind(input));
+    expect(recovered.state).toBe('bound');
   });
 
   it('owns source-scoped fingerprints and ignores proposal envelope key order', async () => {

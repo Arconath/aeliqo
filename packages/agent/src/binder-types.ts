@@ -11,7 +11,6 @@ import type {
   Catalog,
   ResultRef,
   Task,
-  VersionRef,
 } from '@aeliqo/core';
 
 /**
@@ -22,7 +21,8 @@ import type {
 export type AgentBindingDecision =
   | {
       readonly state: 'needs-choice';
-      readonly task: VersionRef;
+      /** Host-owned goal identity; model task IDs are never authority keys. */
+      readonly goalEpoch: string;
       readonly diagnosticCode: string;
       readonly diagnosticPath?: readonly (string | number)[];
       readonly choices: readonly {
@@ -33,7 +33,8 @@ export type AgentBindingDecision =
     }
   | {
       readonly state: 'needs-meaning';
-      readonly task: VersionRef;
+      /** Host-owned goal identity; model task IDs are never authority keys. */
+      readonly goalEpoch: string;
       readonly diagnosticCode: string;
       readonly diagnosticPath?: readonly (string | number)[];
       readonly concept: string;

@@ -15,9 +15,9 @@ import {
   type OperationGrant,
   type Outcome,
   type QueryPlanner,
+  type QueryLimits,
   type ResultRef,
   type Task,
-  type VersionRef,
 } from '@aeliqo/core';
 import type {
   AgentBindOptions,
@@ -29,6 +29,7 @@ import type {
 } from './binder-types.js';
 
 type BindingFailureState = Extract<AgentBindingOutcome, {readonly state: 'unsupported' | 'denied' | 'invalid' | 'stale'}>['state'];
+const ABORTED = Symbol('agent-host-aborted');
 
 interface NormalizedHostContext extends AgentHostContext {
   readonly catalog: Catalog;
@@ -83,10 +84,6 @@ function validId(value: unknown, limit = WIRE_LIMITS.id): value is string {
 
 function validText(value: unknown): value is string {
   return typeof value === 'string' && value.length > 0 && value.length <= WIRE_LIMITS.text;
-}
-
-function sameRef(left: VersionRef, right: VersionRef): boolean {
-  return left.id === right.id && left.revision === right.revision;
 }
 
 function sameResultRef(left: ResultRef, right: ResultRef): boolean {
@@ -155,33 +152,14 @@ function decisionOutcome(
 }
 
 function decisionFor(
-  task: Task,
   item: Diagnostic,
-  decisions: readonly AgentBindingDecision[] | undefined,
+  context: NormalizedHostContext,
 ): AgentBindingDecision | undefined {
-  if (decisions === undefined) return undefined;
-  return decisions.find((candidate) =>
-    sameRef(candidate.task, {id: task.id, revision: task.revision})
+  if (context.decisions === undefined) return undefined;
+  return context.decisions.find((candidate) =>
+    candidate.goalEpoch === context.goalEpoch
       && candidate.diagnosticCode === item.code
-      && samePath(candidate.diagnosticPath, item.path));
-}
-
-function classifyPlannerFailure(
-  task: Task,
-  result: Extract<Outcome<unknown>, {readonly ok: false}>,
-  decisions: readonly AgentBindingDecision[] | undefined,
-): Outcome<AgentBindingOutcome> {
-  const first = result.diagnostics[0];
-  if (first !== undefined) {
-    const decision = decisionFor(task, first, decisions);
-    if (decision !== undefined) return decisionOutcome(decision);
-  }
-  const diagnostics = result.diagnostics;
-  if (first !== undefined && (first.code === 'query.meaning' || first.code === 'query.unsupported' || first.code.startsWith('query.unsupported'))) {
-    return stateOutcome('unsupported', diagnostics);
-  }
-  if (first !== undefined && first.code.startsWith('query.stale')) return stateOutcome('stale', diagnostics);
-  return stateOutcome('invalid', diagnostics);
+      && (candidate.diagnosticPath === undefined || samePath(candidate.diagnosticPath, item.path)));
 }
 
 function canonical(value: unknown): string {
@@ -226,6 +204,12 @@ function taskFingerprint(
       regionId: context.regionId,
       regionRevision: context.current.regionRevision,
       results: context.current.results,
+      goalEpoch: context.goalEpoch,
+      grants: [...context.grants].sort(),
+      decisions: context.decisions,
+      queryLimits: context.planner.limits,
+      catalog: context.catalog,
+      functionRegistry: context.functionRegistry,
     },
     plans,
   }));
@@ -245,9 +229,7 @@ function normalizeDecision(input: unknown): AgentBindingDecision | undefined {
   if (input === null || typeof input !== 'object' || Array.isArray(input)) return undefined;
   const record = input as Record<string, unknown>;
   if (record.state !== 'needs-choice' && record.state !== 'needs-meaning') return undefined;
-  if (record.task === null || typeof record.task !== 'object' || Array.isArray(record.task)) return undefined;
-  const task = record.task as Record<string, unknown>;
-  if (!validId(task.id) || !validId(task.revision) || !validId(record.diagnosticCode)) return undefined;
+  if (!validId(record.goalEpoch) || !validId(record.diagnosticCode)) return undefined;
   const path = record.diagnosticPath;
   if (path !== undefined && (!Array.isArray(path) || path.length > WIRE_LIMITS.depth || path.some((part) =>
     !(typeof part === 'string' ? validId(part) : Number.isSafeInteger(part) && part >= 0)))) return undefined;
@@ -260,17 +242,17 @@ function normalizeDecision(input: unknown): AgentBindingDecision | undefined {
       return Object.freeze({id: value.id, label: value.label, consequence: value.consequence});
     });
     if (choices.some((choice) => choice === undefined)) return undefined;
-    return Object.freeze({state: 'needs-choice' as const, task: Object.freeze({id: task.id, revision: task.revision}), diagnosticCode: record.diagnosticCode,
+    return Object.freeze({state: 'needs-choice' as const, goalEpoch: record.goalEpoch, diagnosticCode: record.diagnosticCode,
       ...(path === undefined ? {} : {diagnosticPath: Object.freeze([...(path as readonly (string | number)[])])}), choices: Object.freeze(choices as AgentBindingDecision & {state: 'needs-choice'} extends never ? never : {id: string; label: string; consequence: string}[])}) as unknown as AgentBindingDecision;
   }
   if (!validText(record.concept) || !Array.isArray(record.authoringRoutes) || record.authoringRoutes.length > 2 ||
       record.authoringRoutes.some((route) => route !== 'ai-assisted' && route !== 'manual')) return undefined;
-  return Object.freeze({state: 'needs-meaning' as const, task: Object.freeze({id: task.id, revision: task.revision}), diagnosticCode: record.diagnosticCode,
+  return Object.freeze({state: 'needs-meaning' as const, goalEpoch: record.goalEpoch, diagnosticCode: record.diagnosticCode,
     ...(path === undefined ? {} : {diagnosticPath: Object.freeze([...(path as readonly (string | number)[])])}), concept: record.concept,
     authoringRoutes: Object.freeze([...(record.authoringRoutes as readonly ('ai-assisted' | 'manual')[])])});
 }
 
-function normalizeHost(value: AgentHostContext): Outcome<NormalizedHostContext> {
+function normalizeHost(value: AgentHostContext, queryLimits?: Partial<QueryLimits>): Outcome<NormalizedHostContext> {
   try {
     if (value === null || typeof value !== 'object' || Array.isArray(value)) return failure('agent.denied', 'The host authority context is unavailable.');
     if (!validId(value.regionId) || !validId(value.goalEpoch) ||
@@ -292,7 +274,8 @@ function normalizeHost(value: AgentHostContext): Outcome<NormalizedHostContext> 
     }
     if (current.value.catalogRevision !== catalog.value.revision || current.value.functionRegistryDigest !== value.functionRegistry.digest ||
         value.functionRegistry.digest !== catalog.value.functionRegistryDigest) return failure('agent.stale', 'The host catalog or function registry does not match the current pins.');
-    const planner = createQueryPlanner({catalog: catalog.value, registry: value.functionRegistry, definitions: catalog.value.meanings});
+    const planner = createQueryPlanner({catalog: catalog.value, registry: value.functionRegistry, definitions: catalog.value.meanings,
+      ...(queryLimits === undefined ? {} : {limits: queryLimits})});
     if (!planner.ok) return failure('agent.denied', 'The host query registry is unavailable for semantic validation.');
     let decisions: AgentBindingDecision[] | undefined;
     if (value.decisions !== undefined) {
@@ -301,6 +284,7 @@ function normalizeHost(value: AgentHostContext): Outcome<NormalizedHostContext> 
       for (const candidate of value.decisions) {
         const normalized = normalizeDecision(candidate);
         if (normalized === undefined) return failure('agent.denied', 'The host binding decisions are malformed.');
+        if (normalized.goalEpoch !== value.goalEpoch) return failure('agent.stale-decisions', 'The host binding decision belongs to a different goal epoch.');
         decisions.push(normalized);
       }
     }
@@ -320,8 +304,24 @@ function normalizeHost(value: AgentHostContext): Outcome<NormalizedHostContext> 
   }
 }
 
-function authorityResultRefs(context: NormalizedHostContext): readonly ResultRef[] {
-  return context.current.results;
+/**
+ * Authority data is host-owned and must be part of the accepted plan's
+ * identity.  This key intentionally includes the grants, goal epoch,
+ * decisions and planner limits that are easy to omit from a result-only
+ * fingerprint.
+ */
+function authorityKey(context: NormalizedHostContext): string {
+  return canonical({
+    principalKey: context.principalKey,
+    regionId: context.regionId,
+    goalEpoch: context.goalEpoch,
+    current: context.current,
+    catalog: context.catalog,
+    functionRegistry: context.functionRegistry,
+    grants: [...context.grants].sort(),
+    decisions: context.decisions,
+    queryLimits: context.planner.limits,
+  });
 }
 
 function validateRequiredResults(
@@ -337,12 +337,11 @@ function validateRequiredResults(
 }
 
 function plannerFailure(
-  task: Task,
   result: Extract<ReturnType<QueryPlanner['plan']>, {readonly ok: false}>,
   context: NormalizedHostContext,
 ): InspectionFailure {
   const first = result.diagnostics[0];
-  const decision = first === undefined ? undefined : decisionFor(task, first, context.decisions);
+  const decision = first === undefined ? undefined : decisionFor(first, context);
   if (decision !== undefined) return inspectionState(decisionOutcome(decision));
   if (first !== undefined && first.code.startsWith('query.stale')) return inspectionState(stateOutcome('stale', result.diagnostics));
   if (first !== undefined && (first.code === 'query.meaning' || first.code === 'query.unsupported' || first.code.startsWith('query.unsupported')))
@@ -358,6 +357,8 @@ function validateTaskSemantics(
 ): Inspection {
   if (task.regionId !== proposal.targetRegionId || task.regionId !== context.regionId)
     return inspectionState(stateOutcome('stale', [diagnostic('agent.stale-region', 'The Task region does not match the authorized target region.')])) ;
+  if (task.revision !== context.current.taskRevision)
+    return inspectionState(stateOutcome('stale', [diagnostic('agent.stale-task', 'The Task revision does not match the current host task revision.')])) ;
   if (task.catalogRevision !== context.current.catalogRevision || task.functionRegistryDigest !== context.current.functionRegistryDigest)
     return inspectionState(stateOutcome('stale', [diagnostic('agent.stale-pins', 'The Task catalog or function registry pin is stale.')])) ;
   const required = validateRequiredResults(structure.resultReferences, context);
@@ -372,44 +373,64 @@ function validateTaskSemantics(
       if (output.query.population.kind !== 'all-authorized')
         return inspectionState(stateOutcome('unsupported', [diagnostic('agent.population-unsupported', 'Fixed and live populations require an authorized result lineage and are not rewritten during binding.', ['outputs', output.id, 'query', 'population'])]));
       const planned = context.planner.plan(output.query);
-      if (!planned.ok) return plannerFailure(task, planned, context);
+      if (!planned.ok) return plannerFailure(planned, context);
       plans.push({outputId: output.id, canonical: planned.value.canonical, planKey: planned.value.planKey});
     }
   }
   return {ok: true, value: {proposal, task, structure, context, plans}};
 }
 
-function hostFailure(value: Outcome<AgentHostContext>): Outcome<AgentBindingOutcome> {
-  if (!value.ok) return stateOutcome('denied', value.diagnostics);
-  return stateOutcome('denied', [diagnostic('agent.denied', 'The host authority context is unavailable.')]);
-}
-
-function candidateBytes(input: unknown): number {
-  if (typeof input === 'string') return new TextEncoder().encode(input).byteLength;
-  const wire = parseWireValue(input);
-  if (!wire.ok) return Number.MAX_SAFE_INTEGER;
-  return new TextEncoder().encode(JSON.stringify(wire.value)).byteLength;
-}
-
 export function createAgentBinder(options: AgentBinderOptions): AgentBinder {
   if (options === null || typeof options !== 'object' || options.host === null || typeof options.host?.readContext !== 'function')
     throw new TypeError('An agent host readContext callback is required.');
   let pending = 0;
-  const maxPending = Math.max(1, Math.min(64, Math.floor(options.maxPending ?? 8)));
+  const requestedPending = options.maxPending;
+  const maxPending = typeof requestedPending === 'number' && Number.isSafeInteger(requestedPending) && requestedPending > 0
+    ? Math.min(64, requestedPending)
+    : 8;
+
+  /**
+   * Race the host callback with cancellation.  A host is expected to honor
+   * the signal, but releasing this binder slot does not depend on that
+   * cooperation; late host promises are harmlessly ignored.
+   */
+  const readHost = async (
+    proposal: AgentTaskProposal,
+    signal: AbortSignal,
+  ): Promise<Outcome<AgentHostContext>> => {
+    if (signal.aborted) return failure('agent.cancelled', 'Agent binding was cancelled.');
+    let removeAbort: (() => void) | undefined;
+    let resolveAbort!: () => void;
+    const aborted = new Promise<typeof ABORTED>((resolve) => { resolveAbort = () => resolve(ABORTED); });
+    const onAbort = (): void => resolveAbort();
+    signal.addEventListener('abort', onAbort, {once: true});
+    removeAbort = () => signal.removeEventListener('abort', onAbort);
+    const work = Promise.resolve().then(async (): Promise<Outcome<AgentHostContext> | typeof ABORTED | undefined> => {
+      if (signal.aborted) return ABORTED;
+      try {
+        return await options.host.readContext({requestId: proposal.requestId, targetRegionId: proposal.targetRegionId, signal});
+      } catch {
+        return undefined;
+      }
+    });
+    try {
+      const result = await Promise.race([work, aborted]);
+      if (result === ABORTED) return failure('agent.cancelled', 'Agent binding was cancelled.');
+      if (result === undefined) return failure('agent.denied', 'The host authority context failed safely.');
+      return result;
+    } finally {
+      removeAbort();
+    }
+  };
 
   const inspect = async (input: unknown, bindOptions: AgentBindOptions = {}): Promise<Inspection> => {
     const parsed = parseContract('task-proposal', input);
     if (!parsed.ok) return parsed;
     if (bindOptions.signal?.aborted) return failure('agent.cancelled', 'Agent binding was cancelled.');
-    let hostResult: Outcome<AgentHostContext>;
-    try {
-      hostResult = await options.host.readContext({requestId: parsed.value.requestId, targetRegionId: parsed.value.targetRegionId,
-        signal: bindOptions.signal ?? new AbortController().signal});
-    } catch {
-      return failure('agent.denied', 'The host authority context failed safely.');
-    }
+    const signal = bindOptions.signal ?? new AbortController().signal;
+    const hostResult = await readHost(parsed.value, signal);
     if (!hostResult.ok) return hostResult;
-    const context = normalizeHost(hostResult.value);
+    const context = normalizeHost(hostResult.value, options.queryLimits);
     if (!context.ok) return context;
     if (bindOptions.goalEpoch !== undefined && bindOptions.goalEpoch !== context.value.goalEpoch)
       return failure('agent.stale-epoch', 'The agent goal epoch changed before binding.');
@@ -423,7 +444,22 @@ export function createAgentBinder(options: AgentBinderOptions): AgentBinder {
     if (!readSet.ok) return readSet;
     const semantics = validateTaskSemantics(parsed.value, structure.value.task, structure.value, context.value);
     if (!semantics.ok) return semantics;
-    return semantics;
+
+    // Re-read the full authority after semantic inspection.  A proposal is
+    // only safe to report as bound/fingerprintable when the principal,
+    // grants, goal, decisions and complete read set still describe the same
+    // host authority that was inspected.
+    const freshHost = await readHost(parsed.value, signal);
+    if (!freshHost.ok) return freshHost;
+    const freshContext = normalizeHost(freshHost.value, options.queryLimits);
+    if (!freshContext.ok) return freshContext;
+    if (authorityKey(context.value) !== authorityKey(freshContext.value))
+      return failure('agent.stale-authority', 'Host authority changed while the proposal was being inspected.');
+    if (bindOptions.goalEpoch !== undefined && bindOptions.goalEpoch !== freshContext.value.goalEpoch)
+      return failure('agent.stale-epoch', 'The agent goal epoch changed before binding.');
+    const freshReadSet = validateCommitReadSet(parsed.value.preconditions, freshContext.value.current, structure.value.resultReferences);
+    if (!freshReadSet.ok) return freshReadSet;
+    return validateTaskSemantics(parsed.value, structure.value.task, structure.value, freshContext.value);
   };
 
   const bind = async (input: unknown, bindOptions: AgentBindOptions = {}): Promise<Outcome<AgentBindingOutcome>> => {
@@ -435,7 +471,7 @@ export function createAgentBinder(options: AgentBinderOptions): AgentBinder {
         if (inspected.state !== undefined) return {ok: true, value: inspected.state};
         const first = inspected.diagnostics[0];
         if (first?.code === 'agent.unsupported') return stateOutcome('unsupported', inspected.diagnostics);
-        if (first?.code === 'agent.stale-epoch' || first?.code === 'commit.stale' || first?.code === 'commit.missing-dependency' || first?.code === 'agent.stale') return stateOutcome('stale', inspected.diagnostics);
+        if (first?.code === 'agent.stale-epoch' || first?.code === 'agent.stale-authority' || first?.code === 'agent.stale-decisions' || first?.code === 'commit.stale' || first?.code === 'commit.missing-dependency' || first?.code === 'agent.stale' || first?.code === 'agent.stale-task') return stateOutcome('stale', inspected.diagnostics);
         if (first?.code === 'agent.denied' || first?.code === 'agent.denied-result-inspect') return stateOutcome('denied', inspected.diagnostics);
         if (first?.code === 'query.unsupported' || first?.code?.startsWith('query.unsupported')) return stateOutcome('unsupported', inspected.diagnostics);
         if (first?.code?.startsWith('query.stale')) return stateOutcome('stale', inspected.diagnostics);
@@ -451,9 +487,15 @@ export function createAgentBinder(options: AgentBinderOptions): AgentBinder {
   };
 
   const fingerprint = async (input: unknown, bindOptions: AgentBindOptions = {}): Promise<Outcome<string>> => {
-    const inspected = await inspect(input, bindOptions);
-    if (inspected.ok) return {ok: true, value: taskFingerprint(inspected.value.task, inspected.value.context, inspected.value.plans)};
-    return {ok: true, value: candidateFingerprint(input)};
+    if (pending >= maxPending) return failure('agent.budget', 'The binding queue is full.');
+    pending++;
+    try {
+      const inspected = await inspect(input, bindOptions);
+      if (inspected.ok) return {ok: true, value: taskFingerprint(inspected.value.task, inspected.value.context, inspected.value.plans)};
+      return {ok: true, value: candidateFingerprint(input)};
+    } finally {
+      pending = Math.max(0, pending - 1);
+    }
   };
 
   return Object.freeze({bind, fingerprint});

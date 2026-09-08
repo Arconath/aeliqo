@@ -133,6 +133,10 @@ async function awaitBounded<T>(
   parent: AbortSignal | undefined,
   milliseconds: number,
 ): Promise<BoundedResult<T>> {
+  // Do not even schedule untrusted work after the containment run has been
+  // cancelled.  Scheduling through Promise.resolve().then() here would call
+  // a producer once more despite an already-aborted parent signal.
+  if (parent?.aborted) return {kind: 'aborted'};
   const controller = new AbortController();
   let timer: ReturnType<typeof setTimeout> | undefined;
   let removeParent: (() => void) | undefined;
@@ -146,7 +150,10 @@ async function awaitBounded<T>(
   });
   if (parent !== undefined) {
     const onAbort = (): void => resolveAborted();
-    if (parent.aborted) resolveAborted();
+    if (parent.aborted) {
+      resolveAborted();
+      return {kind: 'aborted'};
+    }
     else {
       parent.addEventListener('abort', onAbort, {once: true});
       removeParent = () => parent.removeEventListener('abort', onAbort);
