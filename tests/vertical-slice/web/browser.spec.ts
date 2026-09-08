@@ -53,8 +53,16 @@ test("region emits trusted table selection, clears explicitly, and keeps long fo
   });
   const chart = page.locator('aeliqo-chart[data-aeliqo-node-id="trend"]');
   await expect(chart.locator('svg [part="line"]')).toHaveCount(8);
+  const svgGeometry = await chart.evaluate((element) => [...(element.shadowRoot?.querySelectorAll("polyline") ?? [])].map((line) => {
+    const svgLine = line as SVGPolylineElement;
+    const box = svgLine.getBBox();
+    return {namespace: line.namespaceURI, width: box.width, height: box.height, points: line.getAttribute("points")};
+  }));
+  expect(svgGeometry).toHaveLength(8);
+  expect(svgGeometry.every((line) => line.namespace === "http://www.w3.org/2000/svg" && line.points !== null)).toBe(true);
+  expect(svgGeometry.some((line) => line.width > 0 && line.height > 0)).toBe(true);
   await expect(chart.locator('[part="legend"] li')).toHaveCount(5);
-  await expect(chart.locator('[part="legend"] li.style-1')).toHaveCount(1);
+  await expect(chart.locator('[part="legend"] [part="legend-marker"].style-1')).toHaveCount(1);
   await chart.locator("details summary").click();
   await expect(chart.locator("thead th")).toHaveCount(6);
   await expect(chart.locator("tbody tr")).toHaveCount(4);

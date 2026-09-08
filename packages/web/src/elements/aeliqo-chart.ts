@@ -1,5 +1,5 @@
 import {aeliqoThemeStyles} from "../styles/theme.js";
-import {css, html, LitElement, nothing} from "lit";
+import {css, html, LitElement, nothing, svg} from "lit";
 import type {AeliqoChartPoint, AeliqoChartSeries} from "../types.js";
 
 const CHART_WIDTH = 320;
@@ -195,27 +195,13 @@ export class AeliqoChartElement extends LitElement {
           ${this.unit ? html`<span part="unit">Unit: ${this.unit}</span>` : nothing}
           ${this.scope ? html`<span part="scope">Scope: ${this.scope}</span>` : nothing}
         </figcaption>
-        <svg
-          part="plot"
-          role="img"
-          aria-label=${accessibleName}
-          viewBox=${`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
-          preserveAspectRatio="none"
-        >
-          <title>Data chart</title>
-          <desc>Use the data table below to explore the values.</desc>
-          <line x1=${PLOT_LEFT} y1=${PLOT_TOP + PLOT_HEIGHT} x2=${PLOT_LEFT + PLOT_WIDTH} y2=${PLOT_TOP + PLOT_HEIGHT}></line>
-          ${geometry.segments.map((segment) => html`<polyline points=${segment.points} class=${this.seriesClasses(segment.seriesIndex)} part="line"></polyline>`)}
-          ${geometry.circles.map(
-            (circle) => html`<circle cx=${circle.x} cy=${circle.y} r="3" class=${this.seriesClasses(circle.seriesIndex)} part="point"></circle>`,
-          )}
-        </svg>
+        ${this.renderPlot(geometry, accessibleName)}
         ${hasInvalidPoints ? html`<p part="error" role="status">${invalidMessage}</p>` : nothing}
         ${hasGaps && !hasInvalidPoints ? html`<p part="gap" role="status">Missing values are shown as gaps.</p>` : nothing}
         ${series.length > 0 ? html`
           <ul part="legend" aria-label="Series">
-            ${series.map((item, index) => html`<li class=${this.seriesClasses(index)}>
-              <span part="legend-marker" aria-hidden="true"></span>
+            ${series.map((item, index) => html`<li>
+              <span part="legend-marker" class=${this.seriesClasses(index)} aria-hidden="true"></span>
               <span part="legend-label">${item.label}${item.unit ? ` (${item.unit})` : nothing}</span>
             </li>`)}
           </ul>` : nothing}
@@ -252,6 +238,26 @@ export class AeliqoChartElement extends LitElement {
   }
 
   private getGeometry(series: readonly AeliqoChartSeries[]): AeliqoChartGeometry { return buildAeliqoChartGeometry(series); }
+
+  private renderPlot(geometry: AeliqoChartGeometry, accessibleName: string) {
+    return svg`
+      <svg
+        part="plot"
+        role="img"
+        aria-label=${accessibleName}
+        viewBox=${`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
+        preserveAspectRatio="none"
+      >
+        <title>Data chart</title>
+        <desc>Use the data table below to explore the values.</desc>
+        <line x1=${PLOT_LEFT} y1=${PLOT_TOP + PLOT_HEIGHT} x2=${PLOT_LEFT + PLOT_WIDTH} y2=${PLOT_TOP + PLOT_HEIGHT}></line>
+        ${geometry.segments.map((segment) => svg`<polyline points=${segment.points} class=${this.seriesClasses(segment.seriesIndex)} part="line"></polyline>`)}
+        ${geometry.circles.map(
+          (circle) => svg`<circle cx=${circle.x} cy=${circle.y} r="3" class=${this.seriesClasses(circle.seriesIndex)} part="point"></circle>`,
+        )}
+      </svg>
+    `;
+  }
 
   private seriesClasses(index: number): string {
     const style = index < 4 ? 0 : ((index - 4) % 4) + 1;

@@ -166,6 +166,7 @@ export class AeliqoRegionElement extends LitElement {
     const entity = selectionPort?.entity ?? "row";
     return html`<aeliqo-table
       data-aeliqo-node-id=${nodeId}
+      data-aeliqo-theme="inherit"
       .columns=${columns}
       .rows=${bound?.rows ?? []}
       .caption=${text(values.caption)}
@@ -218,6 +219,7 @@ export class AeliqoRegionElement extends LitElement {
     });
     return html`<aeliqo-chart
       data-aeliqo-node-id=${resolved.node.id}
+      data-aeliqo-theme="inherit"
       .title=${text(values.title, "Trend")}
       .summary=${bound === undefined ? "Data unavailable." : ""}
       .scope=${text(values.scope)}
@@ -231,6 +233,7 @@ export class AeliqoRegionElement extends LitElement {
     const current = this.filterValue(resolved.node.id, field);
     return html`<aeliqo-input
       data-aeliqo-node-id=${resolved.node.id}
+      data-aeliqo-theme="inherit"
       .label=${this.fieldLabel(resolved, field)}
       .hint=${text(values.placeholder)}
       .value=${current}
