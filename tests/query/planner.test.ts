@@ -77,8 +77,8 @@ describe('bounded query planner/evaluator', () => {
     expect(plan.ok).toBe(true);
     if (!plan.ok) return;
     const canonical = plan.value.canonical;
-    (input.select as Array<{id: string}>)[0]!.id = 'forged';
-    (input.windows as Array<{frame: {preceding: number; following: number}}>)[0]!.frame.preceding = 99;
+    (input.select as unknown as Array<{id: string}>)[0]!.id = 'forged';
+    (input.windows as unknown as Array<{frame: {preceding: number; following: number}}>)[0]!.frame.preceding = 99;
     expect(plan.value.canonical).toBe(canonical);
     expect(plan.value.nodes[0]?.op).toBe('scan');
     expect(Object.isFrozen(plan.value)).toBe(true);

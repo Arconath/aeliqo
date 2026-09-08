@@ -21,6 +21,17 @@ const planner = () => unwrap(createQueryPlanner({catalog, registry,
   limits: {maxRows: 100, maxJoinRows: 100, maxBytes: 100_000, maxOperations: 100_000}}));
 
 describe('query plan and execution boundaries', () => {
+  it('rejects malformed query input without throwing or invoking accessors', () => {
+    const engine = planner();
+    for (const input of [null, undefined, {}, {root:'facts'}, {...query, select:[null]}, {...query, pins:null}]) {
+      expect(() => engine.plan(input as never)).not.toThrow();
+      expect(engine.plan(input as never).ok).toBe(false);
+    }
+    let invoked = false;
+    const input = {...query, get filter() {invoked = true; return undefined;}};
+    expect(engine.plan(input as never).ok).toBe(false);
+    expect(invoked).toBe(false);
+  });
   it('takes an immutable plan snapshot independent of caller input mutation', () => {
     const engine = planner();
     const mutable = structuredClone(query);
@@ -67,8 +78,11 @@ describe('query plan and execution boundaries', () => {
       expect(createQueryPlanner({catalog, registry, limits: {maxOperations}}).ok).toBe(false);
     const engine = planner(); const plan = unwrap(engine.plan(query));
     expect(engine.evaluate(plan, source, {cancellation: {aborted: true}}).ok).toBe(false);
-    for (const maxRows of [0, -1, 1.5, Infinity, NaN])
-      expect(engine.evaluate(plan, source, {maxRows}).ok).toBe(false);
+    for (const key of ['maxRows', 'maxBytes', 'maxOperations'] as const)
+      for (const value of [0, -1, 1.5, Infinity, NaN])
+        expect(engine.evaluate(plan, source, {[key]: value}).ok).toBe(false);
+    for (const maxMilliseconds of [0, -1, Infinity, NaN])
+      expect(engine.evaluate(plan, source, {clock: () => 0, maxMilliseconds}).ok).toBe(false);
   });
   it('fails malformed source values and duplicate normalized identities explicitly', () => {
     const engine = planner(); const plan = unwrap(engine.plan(query));

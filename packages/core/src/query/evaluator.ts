@@ -255,7 +255,7 @@ function validQuerySchema(value: unknown, catalog: Catalog): value is QuerySchem
 function planFields(schema: QuerySchema): Set<string> { return new Set(schema.fields.map((field) => field.id)); }
 
 function compatibleSemanticTypes(left: SemanticType, right: SemanticType): boolean {
-  return left.value === right.value && left.unit?.dimension === right.unit?.dimension && left.unit?.currency === right.unit?.currency &&
+  return left.value === right.value && left.unit?.dimension === right.unit?.dimension && left.unit?.currency === right.unit?.currency && left.unit?.symbol === right.unit?.symbol &&
     left.temporal?.calendar === right.temporal?.calendar && left.temporal?.timezone === right.temporal?.timezone && left.temporal?.grain === right.temporal?.grain;
 }
 
@@ -534,9 +534,21 @@ function compareValue(left: QueryValue | undefined, right: QueryValue | undefine
   return compared.ok && compared.value !== null ? compared.value : undefined;
 }
 
-function expressionValueType(expression: Expression, schema: QuerySchema): SemanticType['value'] | undefined {
+function expressionValueType(expression: Expression, schema: QuerySchema, registry: FunctionRegistry): SemanticType['value'] | undefined {
   if (expression.kind === 'field') return sourceField(schema, expression)?.type.value;
   if (expression.kind === 'literal') return expression.type.value;
+  if (expression.kind === 'call') {
+    const output = registry.resolve(expression.function)?.output;
+    if (output === undefined) return undefined;
+    if ('value' in output) return output.value;
+    if (output.kind === 'same-as' || output.kind === 'nullable-same-as') {
+      const argument = expression.arguments[output.argument];
+      return argument === undefined ? undefined : expressionValueType(argument, schema, registry);
+    }
+    const argumentTypes = expression.arguments.map((argument) => expressionValueType(argument, schema, registry));
+    return output.forceFloat || argumentTypes.includes('float') ? 'float'
+      : argumentTypes.includes('decimal') ? 'decimal' : 'integer';
+  }
   return undefined;
 }
 
@@ -654,7 +666,7 @@ function evaluatePredicate(state: EvalState, predicate: PredicateSpec, row: Quer
     return {ok: true, value: matched ? 'true' : 'false'};
   }
   if (predicate.op !== 'in') return failure('query.predicate', 'Predicate operator is invalid.');
-  const type = expressionValueType(predicate.expression, schema) ?? (typeof value.value === 'number' ? 'float' : typeof value.value === 'boolean' ? 'boolean' : isDecimal(value.value) ? 'decimal' : 'text');
+  const type = expressionValueType(predicate.expression, schema, state.registry) ?? (typeof value.value === 'number' ? 'float' : typeof value.value === 'boolean' ? 'boolean' : isDecimal(value.value) ? 'decimal' : 'text');
   let unknown = false;
   for (const candidate of predicate.values) {
     const right = evaluateExpression(state, candidate, row, schema);
@@ -785,7 +797,7 @@ function aggregateValues(state: EvalState, item: AggregateSpec, group: EvalGroup
   const id = signature.ref.id;
   if (id === 'core.aggregate.count') return {ok: true, value: values[0] === undefined ? 0 : values[0].filter((value) => value !== null).length};
   if (id === 'core.aggregate.count-distinct') {
-    const type = item.arguments[0] === undefined ? undefined : expressionValueType(item.arguments[0], group.schema);
+    const type = item.arguments[0] === undefined ? undefined : expressionValueType(item.arguments[0], group.schema, state.registry);
     const distinct = new Set(values[0]?.filter((value) => value !== null).map((value) => scalarKey(value, type)));
     return {ok: true, value: distinct.size};
   }
@@ -905,7 +917,7 @@ function executeWindow(state: EvalState, input: EvalRelation, items: readonly Wi
         if (!value.ok) return value;
         values.push(value.value === undefined ? null : value.value);
       }
-      const key = values.map((value, index) => scalarKey(value, expressionValueType(item.partitionBy[index]!, input.schema))).join('|');
+      const key = values.map((value, index) => scalarKey(value, expressionValueType(item.partitionBy[index]!, input.schema, state.registry))).join('|');
       const indexes = partitions.get(key) ?? [];
       indexes.push(index); partitions.set(key, indexes);
     }

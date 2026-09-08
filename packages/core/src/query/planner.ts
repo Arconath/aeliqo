@@ -1,4 +1,5 @@
 import {parseCatalog, parseContract} from '../contracts/parse.js';
+import {inspectWire} from '../contracts/ingress.js';
 import {WIRE_LIMITS} from '../contracts/limits.js';
 import type {
   Catalog,
@@ -206,7 +207,7 @@ function resolveExpression(expression: Expression, schema: QuerySchema, registry
 
 function sameTypeFamily(left: SemanticType, right: SemanticType): boolean {
   if (left.value !== right.value) return false;
-  if (left.unit?.dimension !== right.unit?.dimension || left.unit?.currency !== right.unit?.currency) return false;
+  if (left.unit?.dimension !== right.unit?.dimension || left.unit?.currency !== right.unit?.currency || left.unit?.symbol !== right.unit?.symbol) return false;
   if (left.temporal?.calendar !== right.temporal?.calendar || left.temporal?.timezone !== right.temporal?.timezone || left.temporal?.grain !== right.temporal?.grain) return false;
   return true;
 }
@@ -784,15 +785,27 @@ export function createQueryPlanner(options: QueryPlannerOptions): QueryOutcome<i
     registry,
     limits,
     plan(input) {
-      let snapshot: QueryInput;
+      const ingress = inspectWire(input);
+      if (!ingress.ok) return ingress;
+      if (ingress.value === null || typeof ingress.value !== 'object' || Array.isArray(ingress.value))
+        return failure('query.input', 'Query input must be a bounded data object.');
       try {
-        snapshot = immutableSnapshot(input);
+        let lowered: QueryOutcome<RelationalQuery>;
+        if ('root' in ingress.value) {
+          const allowed = new Set(['root', 'select', 'filter', 'semiJoins', 'joins', 'derives', 'timeBuckets', 'windows', 'groupBy', 'aggregates', 'orderBy', 'topK', 'pins']);
+          if (Object.keys(ingress.value).some((key) => !allowed.has(key)))
+            return failure('query.input', 'Internal query contains an unknown field.');
+          lowered = {ok: true, value: immutableSnapshot(ingress.value) as RelationalQuery};
+        } else {
+          const parsedQuery = parseContract('query', ingress.value);
+          if (!parsedQuery.ok) return parsedQuery;
+          lowered = lowerQuerySpec(parsedQuery.value, catalog, registry, definitions);
+        }
+        if (!lowered.ok) return lowered;
+        return buildPlan(lowered.value, catalog, registry, limits);
       } catch {
-        return failure('query.input', 'Query input snapshot failed safely at the untrusted boundary.');
+        return failure('query.input', 'Query input is malformed or exceeds the supported structural bounds.');
       }
-      const lowered = 'root' in snapshot ? {ok: true as const, value: snapshot} : lowerQuerySpec(snapshot, catalog, registry, definitions);
-      if (!lowered.ok) return lowered;
-      return buildPlan(lowered.value, catalog, registry, limits);
     },
     evaluate(plan, source, context) {
       return evaluateLogicalPlan(plan, source, catalog, registry, context);
