@@ -11,6 +11,7 @@ export class AeliqoFileInputElement extends AeliqoFieldElement<readonly AeliqoFi
     capture: {type: String},
     maxFiles: {attribute: "max-files", type: Number},
     maxBytes: {attribute: "max-bytes", type: Number},
+    selected: {attribute: false},
   };
 
   static readonly aeliqoVersion = "0.1.0-m0";
