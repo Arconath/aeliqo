@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import type {Catalog, Outcome, QuerySpec} from '@aeliqo/core';
+import type {Catalog, Outcome, QuerySpec} from '../../packages/core/src/index.js';
 import {
   createLocalDataService,
   type AuthorizeRead,

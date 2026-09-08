@@ -1,6 +1,6 @@
 import {describe, expect, it, vi} from 'vitest';
 import {createLocalDataService} from '../../packages/runtime/src/data/local.js';
-import type {Catalog, QuerySpec} from '@aeliqo/core';
+import type {Catalog, QuerySpec} from '../../packages/core/src/index.js';
 import type {DataRecord, QueryBudget} from '../../packages/runtime/src/data/types.js';
 
 const budget: QueryBudget = {maxRows: 100, maxBytes: 100_000, maxColumns: 10, maxMessages: 10, maxMilliseconds: 2000};
