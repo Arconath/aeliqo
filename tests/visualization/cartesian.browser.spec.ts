@@ -18,6 +18,22 @@ test('renders six families with exact tables, histogram scope and heatmap color 
   await expect(page.locator('aeliqo-scatter').getByRole('cell', {name: '5', exact: true}).first()).toBeVisible();
 });
 
+test('keeps edge x-axis labels inside the chart viewport', async ({page}) => {
+  const bounds = await page.locator('aeliqo-trend svg').evaluate((svg) => {
+    const svgBounds = svg.getBoundingClientRect();
+    const xTickY = String(svg.viewBox.baseVal.height - 30);
+    return [...svg.querySelectorAll<SVGTextElement>(`text[y="${xTickY}"]`)].map((label) => {
+      const bounds = label.getBoundingClientRect();
+      return {text: label.textContent, left: bounds.left, right: bounds.right, svgLeft: svgBounds.left, svgRight: svgBounds.right};
+    });
+  });
+  expect(bounds.length).toBeGreaterThan(1);
+  for (const bound of bounds) {
+    expect(bound.left, `${bound.text} starts outside the SVG`).toBeGreaterThanOrEqual(bound.svgLeft - 0.5);
+    expect(bound.right, `${bound.text} ends outside the SVG`).toBeLessThanOrEqual(bound.svgRight + 0.5);
+  }
+});
+
 test('selection is keyboard reachable and an over-budget graphic retains exact data', async ({page}) => {
   await page.locator('aeliqo-trend').evaluate((node) => {
     node.addEventListener('aeliqo-visualization-select', (event) => { (window as any).selection = (event as CustomEvent).detail; });

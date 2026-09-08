@@ -207,7 +207,7 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
         <svg viewBox=${`0 0 ${geometry.width} ${geometry.height}`} width=${geometry.width} height=${geometry.height} role="img" aria-label=${`${label}. ${scope} Values and selection are available in the data table below.`}>
           ${svgPlotMarks(geometry)}
           <path d=${`M64,24V${geometry.height - 48}H${geometry.width - 24}`} fill="none" stroke="currentColor"></path>
-          ${axes.x.ticks.map((tick) => svg`<text x=${tick.position} y=${geometry.height - 30} text-anchor="middle" aria-label=${tick.label}>${this.tickText(tick.label)}</text>`)}
+          ${axes.x.ticks.map((tick, index) => svg`<text x=${tick.position} y=${geometry.height - 30} text-anchor=${index === 0 ? "start" : index === axes.x.ticks.length - 1 ? "end" : "middle"} aria-label=${tick.label}>${this.tickText(tick.label)}</text>`)}
           ${axes.y.ticks.map((tick) => svg`<text x="58" y=${tick.position} text-anchor="end" aria-label=${tick.label}>${this.tickText(tick.label)}</text>`)}
           <text x=${geometry.width / 2} y=${geometry.height - 8} text-anchor="middle">${axes.xLabel}</text>
           <text x="64" y="14">${axes.yLabel}</text>
