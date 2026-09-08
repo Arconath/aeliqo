@@ -1,5 +1,5 @@
+import {scalarIdentity, WIRE_LIMITS} from '@aeliqo/core';
 import type {Catalog, Diagnostic, Outcome, QuerySpec, Result, ResultRef, SemanticType} from '@aeliqo/core';
-import {WIRE_LIMITS} from '@aeliqo/core';
 import type {DataValue} from '../data/types.js';
 import type {ResultHandle, ResultSnapshot} from '../results/types.js';
 import type {CohortMembership, CohortRequest, CohortResolver, CohortResolverContext} from './types.js';
@@ -69,23 +69,15 @@ function validValue(value: DataValue, type: SemanticType): boolean {
     && typeof value.decimal === 'string' && /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/u.test(value.decimal);
 }
 
-function normalizedTupleValue(value: DataValue, type: SemanticType): unknown {
-  if (type.value === 'decimal' && value !== null && typeof value === 'object') {
-    const negative = value.decimal.startsWith('-');
-    const unsigned = negative ? value.decimal.slice(1) : value.decimal;
-    const [whole, fraction = ''] = unsigned.split('.');
-    const trimmed = fraction.replace(/0+$/u, '');
-    if (whole === '0' && trimmed.length === 0) return '0';
-    return `${negative ? '-' : ''}${whole}${trimmed.length === 0 ? '' : `.${trimmed}`}`;
+function tupleKey(tuple: readonly DataValue[], types: readonly SemanticType[]): Outcome<string> {
+  if (tuple.length !== types.length) return failure('runtime.evaluation-grain', 'Cohort identity tuple arity does not match its declared types.');
+  const identities: string[] = [];
+  for (let index = 0; index < tuple.length; index++) {
+    const identity = scalarIdentity(tuple[index], types[index]!);
+    if (!identity.ok) return failure('runtime.evaluation-grain', 'Cohort identity value does not match its declared scalar type.');
+    identities.push(identity.value);
   }
-  // Date/instant values remain text here. They are already validated by the
-  // source ResultHandle; preserving the source spelling avoids accidental
-  // precision loss in a resolver that does not own temporal arithmetic.
-  return value;
-}
-
-function tupleKey(tuple: readonly DataValue[], types: readonly SemanticType[]): string {
-  return canonical(tuple.map((value, index) => normalizedTupleValue(value, types[index]!)));
+  return {ok: true, value: canonical(identities)};
 }
 
 function fieldSuffix(value: string): string {
@@ -194,7 +186,6 @@ function authorityCheck(request: CohortRequest, context: CohortResolverContext, 
   if (!context.grants.includes('result.inspect')) return failure('runtime.evaluation-denied', 'The host did not grant result inspection for cohort membership.');
   if (request.scopeDigest !== context.scopeDigest) return failure('runtime.evaluation-denied', 'The cohort request scope does not match the fresh host authority.', ['scopeDigest']);
   if (handle.key.principalKey !== context.principalKey) return failure('runtime.evaluation-denied', 'The cohort source belongs to a different authenticated principal.');
-  if (handle.key.principalKey !== context.principalKey) return failure('runtime.evaluation-denied', 'The cohort source belongs to a different authenticated principal.');
   if (request.catalogRevision !== context.catalogRevision || handle.key.catalogRevision !== context.catalogRevision)
     return failure('runtime.evaluation-stale', 'The cohort result is bound to a different catalog revision.', ['catalogRevision']);
   if (handle.key.scopeDigest !== context.scopeDigest) return failure('runtime.evaluation-denied', 'The cohort result is outside the current authorization scope.');
@@ -226,9 +217,16 @@ export async function cohortDigest(input: {
   if (subtle === undefined) return failure('runtime.evaluation-crypto', 'WebCrypto SHA-256 is required for cohort identities.');
   try {
     // Membership is a set, while each tuple's position remains meaningful for
-    // composite identities. Sorting canonical tuples makes the digest stable
-    // when a complete source changes row order without changing membership.
-    const tuples = [...input.tuples].sort((left, right) => canonical(left).localeCompare(canonical(right)));
+    // composite identities. scalarIdentity supplies the typed canonical form
+    // (including decimal, signed-zero and instant equivalence); sorting those
+    // identities makes the digest stable when source row order changes.
+    const tuples: string[] = [];
+    for (const tuple of input.tuples) {
+      const key = tupleKey(tuple, input.types);
+      if (!key.ok) return key;
+      tuples.push(key.value);
+    }
+    tuples.sort((left, right) => left.localeCompare(right));
     const encoded = new TextEncoder().encode(canonical({...input, tuples}));
     const bytes = new Uint8Array(await subtle.digest('SHA-256', encoded));
     let hex = '';
@@ -304,11 +302,12 @@ export function createResultCohortResolver(options: ResultCohortResolverOptions 
             tuple.push(value);
           }
           const key = tupleKey(tuple, selected.map((field) => field.type));
-          if (seen.has(key)) continue;
-          seen.add(key);
+          if (!key.ok) return key;
+          if (seen.has(key.value)) continue;
+          seen.add(key.value);
           tuples.push(Object.freeze(tuple));
           if (tuples.length > maxTuples) return failure('runtime.evaluation-budget', 'The cohort exceeds its bounded identity tuple budget.');
-          bytes += new TextEncoder().encode(key).byteLength;
+          bytes += new TextEncoder().encode(key.value).byteLength;
           if (bytes > maxBytes) return failure('runtime.evaluation-budget', 'The cohort exceeds its bounded identity byte budget.');
         }
         const types = selected.map((field) => field.type);

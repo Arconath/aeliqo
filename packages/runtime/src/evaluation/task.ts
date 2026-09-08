@@ -147,12 +147,17 @@ export function createTaskEvaluator(options: TaskEvaluatorOptions): {evaluate(in
         if (released) return;
         released = true;
         for (const lease of leases.splice(0)) lease.release();
+        for (const handle of owned) {
+          try { handle.release(); } catch { /* Best-effort ownership release. */ }
+        }
+        owned.clear();
       };
       const clearOwned = (): void => {
         for (const handle of owned) {
           try { handle.dispose(); } catch { /* Best-effort cleanup after revoked authority. */ }
         }
         owned.clear();
+        for (const lease of leases.splice(0)) lease.release();
       };
       const requested = input.task;
       const configuredMs = input.deadlineMs ?? options.maxMilliseconds ?? DEFAULT_BUDGET.maxMilliseconds;
@@ -219,6 +224,10 @@ export function createTaskEvaluator(options: TaskEvaluatorOptions): {evaluate(in
             let handle: ResultHandle | undefined;
             try { handle = context.resolveResult(output.result); } catch { return failure('runtime.evaluation-denied', 'The host result resolver failed for a reused output.'); }
             if (handle === undefined) return failure('runtime.evaluation-denied', 'The reused output is not a host-owned live result.', ['outputs', outputId]);
+            let lease: ResultLease;
+            try { lease = handle.retain(); } catch { return failure('runtime.evaluation-denied', 'The reused output could not be retained.', ['outputs', outputId]); }
+            if (lease.released) return failure('runtime.evaluation-denied', 'The reused output is no longer available.', ['outputs', outputId]);
+            leases.push(lease);
             const snapshot = handle.snapshot();
             if (snapshot.descriptor === undefined || !sameRef(snapshot.descriptor.ref, output.result)) return failure('runtime.evaluation-stale', 'The reused result descriptor does not match its immutable reference.', ['outputs', outputId]);
             if (handle.key.principalKey !== context.principalKey || handle.key.scopeDigest !== context.scopeDigest || handle.key.catalogRevision !== context.catalogRevision || handle.key.functionRegistryDigest !== context.functionRegistryDigest || handle.key.policyRevision !== context.policyRevision)

@@ -172,6 +172,59 @@ describe('runtime named-output and cohort evaluation', () => {
     }
   });
 
+  it('releases evaluator ownership without disposing retained outputs and holds reuse leases until release', async () => {
+    const service = createLocalDataService({snapshot: snapshot()});
+    const store = createResultStore({maxEntries: 1});
+    const context = hostContext(service, store, () => undefined);
+    const evaluator = createTaskEvaluator({host: {readContext: () => ({ok: true, value: context})}});
+    const first = await evaluator.evaluate({task: task([{id: 'first', kind: 'query', query: query('employees', ['employee_id', 'score']), dependsOn: [], delivery: 'eager'}])});
+    expect(first.ok).toBe(true);
+    if (!first.ok) throw new Error(first.diagnostics[0]?.message);
+    const firstHandle = first.value.get('first')!.handle;
+    first.value.release();
+    expect(firstHandle.snapshot().status).toBe('ready');
+
+    const second = await evaluator.evaluate({task: task([{id: 'second', kind: 'query', query: query('employees', ['employee_id', 'score']), dependsOn: [], delivery: 'eager'}])});
+    expect(second.ok).toBe(true);
+    if (!second.ok) throw new Error(second.diagnostics[0]?.message);
+    second.value.release();
+
+    const retained = await evaluator.evaluate({task: task([{id: 'retained', kind: 'query', query: query('employees', ['employee_id', 'score']), dependsOn: [], delivery: 'eager'}])});
+    expect(retained.ok).toBe(true);
+    if (!retained.ok) throw new Error(retained.diagnostics[0]?.message);
+    const retainedHandle = retained.value.get('retained')!.handle;
+    const externalLease = retainedHandle.retain();
+    retained.value.release();
+    expect(retainedHandle.snapshot().status).toBe('ready');
+    expect(() => store.begin({principalKey: 'principal-a', scopeDigest: 'scope-public', queryDigest: 'query-retained', catalogRevision: catalog.revision, functionRegistryDigest, sourceRevision: 'source-1', outputId: 'retained-next', taskId: 'retained-next', requestId: 'retained-next'})).toThrow(/capacity/u);
+    externalLease.release();
+
+    const reusedStore = createResultStore({maxEntries: 1});
+    const reusedSeed = await materializeSeed(service, reusedStore, {outputId: 'reused-seed', query: query('employees', ['employee_id', 'score'])});
+    reusedSeed.release();
+    const reusedContext = hostContext(service, reusedStore, (ref) => ref.id === reusedSeed.snapshot().descriptor?.ref.id ? reusedSeed : undefined);
+    const reused = await createTaskEvaluator({host: {readContext: () => ({ok: true, value: reusedContext})}}).evaluate({task: task([{id: 'alias', kind: 'reuse', result: reusedSeed.snapshot().descriptor!.ref, dependsOn: []}])});
+    expect(reused.ok).toBe(true);
+    if (!reused.ok) throw new Error(reused.diagnostics[0]?.message);
+    expect(() => reusedStore.begin({principalKey: 'principal-a', scopeDigest: 'scope-public', queryDigest: 'query-new', catalogRevision: catalog.revision, functionRegistryDigest, sourceRevision: 'source-1', outputId: 'new', taskId: 'new', requestId: 'new'})).toThrow(/capacity/u);
+    reused.value.release();
+    reused.value.release();
+    const replacement = reusedStore.begin({principalKey: 'principal-a', scopeDigest: 'scope-public', queryDigest: 'query-new', catalogRevision: catalog.revision, functionRegistryDigest, sourceRevision: 'source-1', outputId: 'new', taskId: 'new', requestId: 'new'});
+    replacement.dispose();
+  });
+
+  it('uses core scalar identities for order-independent cohort digests', async () => {
+    const source: ResultRef = {id: 'digest-result', revision: '1', outputId: 'output', queryDigest: 'query', scopeDigest: 'scope-public'};
+    const common = {source, identityKeys: ['value'], scopeDigest: 'scope-public', catalogRevision: catalog.revision, sourceRevision: 'source-1'};
+    const signedZero = await cohortDigest({...common, types: [{value: 'float', nullable: false}], tuples: [[-0]]});
+    const positiveZero = await cohortDigest({...common, types: [{value: 'float', nullable: false}], tuples: [[0]]});
+    expect(signedZero).toEqual(positiveZero);
+    const instantType = {value: 'instant' as const, nullable: false};
+    const utc = await cohortDigest({...common, types: [instantType], tuples: [['2026-01-01T00:00:00Z']]});
+    const offset = await cohortDigest({...common, types: [instantType], tuples: [['2025-12-31T19:00:00-05:00']]});
+    expect(utc).toEqual(offset);
+  });
+
   it('rejects partial or revoked cohort sources and independent grant loss before publication', async () => {
     const service = createLocalDataService({snapshot: snapshot()});
     const store = createResultStore();
