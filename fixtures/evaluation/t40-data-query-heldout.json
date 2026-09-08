@@ -528,8 +528,7 @@
           "populationCount": 2,
           "precision": "exact",
           "sourceRevisions": {
-            "employees": "hr-source-2026-01",
-            "attendance": "hr-source-2026-01"
+            "employees": "hr-source-2026-01"
           },
           "evidenceKind": "observed",
           "definitions": []
@@ -891,6 +890,15 @@
             "absenceReason": null
           },
           {
+            "attendanceId": "a-102",
+            "employeeId": "e-100",
+            "department": "Engineering",
+            "workDate": "2026-02-02",
+            "scheduledHours": 8,
+            "absenceHours": null,
+            "absenceReason": null
+          },
+          {
             "attendanceId": "a-103",
             "employeeId": "e-101",
             "department": "Engineering",
@@ -909,12 +917,30 @@
             "absenceReason": "medical"
           },
           {
+            "attendanceId": "a-105",
+            "employeeId": "e-102",
+            "department": "Support",
+            "workDate": "2026-01-07",
+            "scheduledHours": 8,
+            "absenceHours": null,
+            "absenceReason": null
+          },
+          {
             "attendanceId": "a-106",
             "employeeId": "e-102",
             "department": "Support",
             "workDate": "2026-01-14",
             "scheduledHours": 8,
             "absenceHours": 0,
+            "absenceReason": null
+          },
+          {
+            "attendanceId": "a-107",
+            "employeeId": "e-102",
+            "department": "Support",
+            "workDate": "2026-02-10",
+            "scheduledHours": 8,
+            "absenceHours": null,
             "absenceReason": null
           },
           {
@@ -1015,7 +1041,7 @@
         "rows": [
           {
             "department": "Engineering",
-            "hr.absence-rate": 0.125
+            "hr.absence-rate": null
           },
           {
             "department": "Sales",
@@ -1023,7 +1049,7 @@
           },
           {
             "department": "Support",
-            "hr.absence-rate": 0.20833333333333334
+            "hr.absence-rate": null
           }
         ],
         "orderMatters": true,
@@ -2504,6 +2530,15 @@
             "absenceReason": null
           },
           {
+            "attendanceId": "a-102",
+            "employeeId": "e-100",
+            "department": "Engineering",
+            "workDate": "2026-02-02",
+            "scheduledHours": 8,
+            "absenceHours": null,
+            "absenceReason": null
+          },
+          {
             "attendanceId": "a-103",
             "employeeId": "e-101",
             "department": "Engineering",
@@ -2522,12 +2557,30 @@
             "absenceReason": "medical"
           },
           {
+            "attendanceId": "a-105",
+            "employeeId": "e-102",
+            "department": "Support",
+            "workDate": "2026-01-07",
+            "scheduledHours": 8,
+            "absenceHours": null,
+            "absenceReason": null
+          },
+          {
             "attendanceId": "a-106",
             "employeeId": "e-102",
             "department": "Support",
             "workDate": "2026-01-14",
             "scheduledHours": 8,
             "absenceHours": 0,
+            "absenceReason": null
+          },
+          {
+            "attendanceId": "a-107",
+            "employeeId": "e-102",
+            "department": "Support",
+            "workDate": "2026-02-10",
+            "scheduledHours": 8,
+            "absenceHours": null,
             "absenceReason": null
           },
           {
@@ -2692,8 +2745,7 @@
           "populationCount": 4,
           "precision": "exact",
           "sourceRevisions": {
-            "employees": "hr-source-2026-01",
-            "attendance": "hr-source-2026-01"
+            "employees": "hr-source-2026-01"
           },
           "evidenceKind": "observed",
           "definitions": []
@@ -2711,7 +2763,7 @@
         "rows": [
           {
             "department": "Engineering",
-            "hr.absence-rate": 0.125
+            "hr.absence-rate": null
           },
           {
             "department": "Sales",
@@ -2719,7 +2771,7 @@
           },
           {
             "department": "Support",
-            "hr.absence-rate": 0.20833333333333334
+            "hr.absence-rate": null
           }
         ],
         "orderMatters": true,
@@ -3879,9 +3931,7 @@
           "populationCount": 6,
           "precision": "exact",
           "sourceRevisions": {
-            "customers": "commerce-source-2026-01",
-            "orders": "commerce-source-2026-01",
-            "products": "commerce-source-2026-01"
+            "orders": "commerce-source-2026-01"
           },
           "evidenceKind": "observed",
           "definitions": []
@@ -5093,9 +5143,7 @@
           "populationCount": 1,
           "precision": "exact",
           "sourceRevisions": {
-            "customers": "commerce-source-2026-01",
-            "orders": "commerce-source-2026-01",
-            "products": "commerce-source-2026-01"
+            "orders": "commerce-source-2026-01"
           },
           "evidenceKind": "observed",
           "definitions": []
@@ -5723,8 +5771,7 @@
           "precision": "exact",
           "sourceRevisions": {
             "customers": "commerce-source-2026-01",
-            "orders": "commerce-source-2026-01",
-            "products": "commerce-source-2026-01"
+            "orders": "commerce-source-2026-01"
           },
           "evidenceKind": "computed",
           "definitions": []
@@ -6997,9 +7044,7 @@
           "populationCount": 5,
           "precision": "exact",
           "sourceRevisions": {
-            "customers": "commerce-source-2026-01",
-            "orders": "commerce-source-2026-01",
-            "products": "commerce-source-2026-01"
+            "orders": "commerce-source-2026-01"
           },
           "evidenceKind": "observed",
           "definitions": []
@@ -7654,7 +7699,6 @@
           "populationCount": 5,
           "precision": "exact",
           "sourceRevisions": {
-            "accounts": "support-source-2026-01",
             "tickets": "support-source-2026-01"
           },
           "evidenceKind": "observed",
@@ -8049,7 +8093,7 @@
             "queue": "technical",
             "priority": "urgent",
             "openedDate": "2026-01-05",
-            "resolvedFlag": 0,
+            "resolvedFlag": null,
             "eligibleFlag": 1,
             "firstResponseHours": null,
             "billableMinutes": 45
@@ -8086,7 +8130,7 @@
             "queue": "billing",
             "priority": "normal",
             "openedDate": "2026-02-03",
-            "resolvedFlag": 0,
+            "resolvedFlag": null,
             "eligibleFlag": 1,
             "firstResponseHours": null,
             "billableMinutes": 25
@@ -8110,7 +8154,7 @@
             "queue": "onboarding",
             "priority": "normal",
             "openedDate": "2026-02-18",
-            "resolvedFlag": 0,
+            "resolvedFlag": null,
             "eligibleFlag": 1,
             "firstResponseHours": null,
             "billableMinutes": 20
@@ -8214,11 +8258,11 @@
         "rows": [
           {
             "queue": "billing",
-            "support.resolution-rate": 0.75
+            "support.resolution-rate": null
           },
           {
             "queue": "onboarding",
-            "support.resolution-rate": 0.5
+            "support.resolution-rate": null
           },
           {
             "queue": "retention",
@@ -8226,7 +8270,7 @@
           },
           {
             "queue": "technical",
-            "support.resolution-rate": 0.5
+            "support.resolution-rate": null
           }
         ],
         "orderMatters": true,
@@ -9858,7 +9902,7 @@
             "queue": "technical",
             "priority": "urgent",
             "openedDate": "2026-01-05",
-            "resolvedFlag": 0,
+            "resolvedFlag": null,
             "eligibleFlag": 1,
             "firstResponseHours": null,
             "billableMinutes": 45
@@ -9895,7 +9939,7 @@
             "queue": "billing",
             "priority": "normal",
             "openedDate": "2026-02-03",
-            "resolvedFlag": 0,
+            "resolvedFlag": null,
             "eligibleFlag": 1,
             "firstResponseHours": null,
             "billableMinutes": 25
@@ -9919,7 +9963,7 @@
             "queue": "onboarding",
             "priority": "normal",
             "openedDate": "2026-02-18",
-            "resolvedFlag": 0,
+            "resolvedFlag": null,
             "eligibleFlag": 1,
             "firstResponseHours": null,
             "billableMinutes": 20
@@ -10057,11 +10101,11 @@
         "rows": [
           {
             "queue": "billing",
-            "support.resolution-rate": 0.75
+            "support.resolution-rate": null
           },
           {
             "queue": "onboarding",
-            "support.resolution-rate": 0.5
+            "support.resolution-rate": null
           },
           {
             "queue": "retention",
@@ -10069,7 +10113,7 @@
           },
           {
             "queue": "technical",
-            "support.resolution-rate": 0.5
+            "support.resolution-rate": null
           }
         ],
         "orderMatters": true,
@@ -10152,7 +10196,6 @@
           "populationCount": 5,
           "precision": "exact",
           "sourceRevisions": {
-            "accounts": "support-source-2026-01",
             "tickets": "support-source-2026-01"
           },
           "evidenceKind": "observed",
@@ -10740,7 +10783,6 @@
           "populationCount": 4,
           "precision": "exact",
           "sourceRevisions": {
-            "accounts": "support-source-2026-01",
             "tickets": "support-source-2026-01"
           },
           "evidenceKind": "observed",
