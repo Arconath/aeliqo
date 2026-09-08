@@ -148,6 +148,9 @@ for (const spec of [...webSpecifiers, ...reactSpecifiers]) assert(resolved[spec]
 
 await writeFile(join(consumer, "consumer.tsx"), `
 import React from 'react';
+import {createAeliqoPresentationRegistry} from '@aeliqo/web';
+import type {AeliqoDataBinding, AeliqoPresentationRegistryOptions} from '@aeliqo/web';
+import type {Result, ResultRef} from '@aeliqo/core';
 import {AeliqoMetric, AeliqoDelta, AeliqoKeyValue, AeliqoDetail, AeliqoRecordList, AeliqoCardCollection, AeliqoSelectionSummary, AeliqoFilterBuilder, AeliqoTable} from '@aeliqo/react/data';
 import {AeliqoTable as MainTable} from '@aeliqo/react';
 import {AeliqoMetricElement} from '@aeliqo/web/metric';
@@ -165,6 +168,25 @@ const rows = [
   {id: 'a', name: 'Ada', amount: {decimal: '100000000000000000.01'}},
   {id: 'b', name: 'Lin', amount: {decimal: '2.50'}},
 ] as const satisfies readonly AeliqoTableRow[];
+const semanticRef = {id: 'semantic-result', revision: '1', outputId: 'people', queryDigest: 'query-1', scopeDigest: 'scope-1'} as const satisfies ResultRef;
+const semanticResult: Result = {
+  version: '1', ref: semanticRef, taskId: 'consumer-task',
+  fields: [
+    {id: 'id', label: 'ID', type: {value: 'text', nullable: false}, role: 'identity'},
+    {id: 'amount', label: 'Amount', type: {value: 'decimal', nullable: false, unit: {dimension: 'currency', symbol: 'USD'}}, role: 'measure'},
+  ],
+  identity: ['id'], rowGrain: ['id'],
+  counts: {loaded: 1, population: {kind: 'exact', value: 1, populationDigest: 'population-1'}},
+  precision: {kind: 'exact'}, coverage: {kind: 'complete', populationDigest: 'population-1'},
+  consistency: {kind: 'snapshot', snapshotId: 'snapshot-1', sourceRevisions: {source: '1'}},
+  evidence: {kind: 'observed', source: {id: 'source', revision: '1'}},
+  filters: [], warnings: [], lineage: [],
+};
+const semanticBinding: AeliqoDataBinding = {result: semanticResult, rows: [{id: 'a', amount: {decimal: '12.50'}}]};
+const semanticOptions = {data: [semanticBinding], resolveEntity: (value: Result) => value.ref.outputId === 'people' ? 'person' : undefined} satisfies AeliqoPresentationRegistryOptions;
+const semanticRegistry = createAeliqoPresentationRegistry(semanticOptions);
+if (!semanticRegistry.ok) throw new Error(semanticRegistry.diagnostics[0]?.message ?? 'semantic registry failed');
+void semanticRegistry.value;
 const columns = [{key: 'id', label: 'ID'}, {key: 'name', label: 'Name'}, {key: 'amount', label: 'Amount'}] as const;
 const scope: AeliqoDataScope = {loaded: 2, filteredTotal: 2, kind: 'filtered'};
 const delta = calculateAeliqoDelta({decimal: '0.0001'}, {decimal: '0'}, 'percentage-point');
@@ -203,6 +225,8 @@ import {createElement} from 'react';
 import {renderToString} from 'react-dom/server';
 import {html} from 'lit';
 import {renderAeliqo} from '@aeliqo/web/server';
+import {createAeliqoPresentationRegistry} from '@aeliqo/web';
+import {validatePresentationPlan} from '@aeliqo/core';
 import {AeliqoMetricElement, AeliqoDeltaElement, AeliqoKeyValueElement, AeliqoDetailElement, AeliqoRecordListElement, AeliqoCardCollectionElement, AeliqoSelectionSummaryElement, AeliqoFilterBuilderElement, AeliqoTableElement} from '@aeliqo/web/data';
 import {AeliqoTable, AeliqoDelta} from '@aeliqo/react/data';
 assert.equal(typeof globalThis.window, 'undefined');
@@ -215,6 +239,46 @@ const webMarkup = await renderAeliqo(html\`<aeliqo-table caption="SSR people" .c
 assert.match(webMarkup, /shadowrootmode="open"/);
 assert.match(webMarkup, /100000000000000000\.01/);
 assert(webMarkup.includes('+0.01 pp'));
+const semanticRef = {id: 'semantic-result', revision: '1', outputId: 'people', queryDigest: 'query-1', scopeDigest: 'scope-1'};
+const semanticResult = {
+  version: '1', ref: semanticRef, taskId: 'consumer-task',
+  fields: [
+    {id: 'id', label: 'ID', type: {value: 'text', nullable: false}, role: 'identity'},
+    {id: 'amount', label: 'Amount', type: {value: 'decimal', nullable: false, unit: {dimension: 'currency', symbol: 'USD'}}, role: 'measure'},
+  ],
+  identity: ['id'], rowGrain: ['id'],
+  counts: {loaded: 1, population: {kind: 'exact', value: 1, populationDigest: 'population-1'}},
+  precision: {kind: 'exact'}, coverage: {kind: 'complete', populationDigest: 'population-1'},
+  consistency: {kind: 'snapshot', snapshotId: 'snapshot-1', sourceRevisions: {source: '1'}},
+  evidence: {kind: 'observed', source: {id: 'source', revision: '1'}},
+  filters: [], warnings: [], lineage: [],
+};
+const semanticBinding = {result: semanticResult, rows: [{id: 'a', amount: {decimal: '12.50'}}]};
+const semanticRegistry = createAeliqoPresentationRegistry({data: [semanticBinding], resolveEntity: () => 'person'});
+assert.equal(semanticRegistry.ok, true);
+if (!semanticRegistry.ok) throw new Error(semanticRegistry.diagnostics[0]?.message ?? 'semantic registry failed');
+const semanticManifest = semanticRegistry.value.manifests.find(manifest => manifest.ref.id === 'data.metric');
+assert(semanticManifest, 'public registry did not expose data.metric');
+const semanticPlan = {
+  id: 'consumer-semantic-plan', revision: '1', rootId: 'metric',
+  preconditions: {scopeDigest: 'scope-1', policyRevision: 'policy-1', taskRevision: 'task-1', regionRevision: 'region-1', catalogRevision: 'catalog-1', experienceRevision: 'experience-1', functionRegistryDigest: 'functions-1', results: [semanticRef]},
+  nodes: [{id: 'metric', role: 'metric', representation: semanticManifest.ref, result: semanticRef, config: {schema: semanticManifest.configSchema, values: {field: 'amount', identityValues: {id: 'a'}}}, children: []}],
+  links: [], coverage: [{needId: 'read', nodeIds: ['metric'], operations: [{id: 'data.read', revision: '1'}]}], stateTransfer: [], diagnostics: [],
+};
+const semanticContext = {
+  task: {version: '1', id: 'consumer-task', revision: 'task-1', catalogRevision: 'catalog-1', functionRegistryDigest: 'functions-1', regionId: 'region-1', goal: 'Present the authorized metric', needs: [{id: 'read', operation: {id: 'data.read', revision: '1'}, fields: ['amount'], outputId: 'people', required: true}], assumptions: [], kind: 'presentation', inputs: [semanticRef]},
+  experience: {version: '1', id: 'consumer-experience', revision: 'experience-1', mode: 'adaptive', agentAllowed: false, allowedRepresentations: ['data.metric'], allowedPatterns: [], composition: {allowWithoutPreset: true, maxNodes: 4, maxExpansions: 4}, requiredOperations: [], tokenProfile: {id: 'tokens.default', revision: '1'}, extensionAllowlist: [], transitionPolicy: 'stable'},
+  results: [semanticResult], current: semanticPlan.preconditions,
+  environment: {inlineSize: {state: 'unknown'}, blockSize: {state: 'unknown'}, textScale: {state: 'unknown'}, pointer: 'unknown', hover: 'unknown', keyboard: 'unknown', locale: 'en-US', direction: 'ltr', reducedMotion: false, forcedColors: false},
+  rendererCapabilities: [semanticManifest.ref],
+};
+const semanticChecked = validatePresentationPlan(semanticPlan, semanticContext, semanticRegistry.value);
+assert.equal(semanticChecked.ok, true);
+if (!semanticChecked.ok) throw new Error(semanticChecked.diagnostics[0]?.message ?? 'semantic plan failed');
+const semanticMarkup = await renderAeliqo(html\`<aeliqo-region .presentation=\${semanticChecked.value} .results=\${[{ref: semanticRef, rows: semanticBinding.rows}]}></aeliqo-region>\`);
+assert(semanticMarkup.includes('<aeliqo-metric'));
+assert(semanticMarkup.includes('12.50'));
+assert(semanticMarkup.includes('shadowrootmode="open"'));
 const reactMarkup = renderToString(createElement(AeliqoTable, {caption: 'React SSR people', columns, rows, identity: ['id']}));
 assert.match(reactMarkup, /aeliqo-table/);
 assert.match(reactMarkup, /shadowrootmode="open"/);
