@@ -51,7 +51,7 @@ test.describe('T26 Studio browser boundary review', () => {
     await page.locator('#preview-direction').selectOption('rtl');
     await expect(page.locator('[data-preview-frame="320"]')).toHaveAttribute('dir', 'rtl');
     await page.locator('#preview-long-label').check();
-    await expect(page.locator('[data-preview-metric="320"]')).toContainText('Authorized employee amount after normalization');
+    await expect(page.locator('[data-preview-metric="320"]')).toContainText('Total amount from the authorized employee population');
     await page.getByRole('button', {name: 'Dark'}).click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   });
@@ -82,4 +82,29 @@ test.describe('T26 Studio browser boundary review', () => {
     await expect(page.getByLabel('Meaning ID')).toHaveValue('employees.imeDraft');
     await expect(page.getByLabel('Meaning ID')).toBeFocused();
   });
+});
+
+test('dark previews inherit theme and narrow frames support keyboard inspection in both directions', async ({page}) => {
+  await page.setViewportSize({width:360,height:800});
+  await page.goto('/');
+  await page.getByRole('button',{name:'Experience',exact:true}).click();
+  await page.getByRole('button',{name:'Dark',exact:true}).click();
+  const metric=page.locator('[data-preview-metric="1280"]');
+  await expect(metric).toHaveAttribute('data-aeliqo-theme','dark');
+  await expect(metric).toContainText('Total amount');
+  expect(await metric.evaluate(element=>(element as HTMLElement & {unit?:string}).unit)).toBeUndefined();
+  const viewport=page.getByRole('region',{name:'1280px preview',exact:true});
+  await viewport.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect.poll(()=>viewport.evaluate(element=>element.scrollLeft)).toBeGreaterThan(0);
+  await page.locator('#preview-direction').selectOption('rtl');
+  await expect(viewport).toHaveAttribute('dir','rtl');
+  await viewport.focus();
+  await page.keyboard.press('ArrowLeft');
+  await expect.poll(()=>viewport.evaluate(element=>element.scrollLeft)).toBeLessThan(0);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.screenshot({path:'artifacts/studio-review-browser/dark-narrow-rtl.png',fullPage:true});
+  await page.getByRole('button',{name:'Component Gallery',exact:true}).click();
+  await page.locator('#gallery-component-select').selectOption('form-flow');
+  await expect(page.locator('#gallery-preview aeliqo-form-flow')).toHaveAttribute('data-aeliqo-theme','dark');
 });

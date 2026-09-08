@@ -184,7 +184,7 @@ function renderExperience(state: ReturnType<StudioSession['getState']>): string 
   return `<section class="workspace-section" aria-labelledby="experience-title"><div class="section-heading"><div><p class="eyebrow">Bounded design choices</p><h2 id="experience-title">Experience</h2><p class="lede">Preview approved patterns across size and data states.</p></div><span class="badge">${esc(active.experience.mode)}</span></div>
     <div class="panel experience-controls"><label>Profile<select id="profile-select">${state.document.profiles.map((entry) => `<option value="${esc(entry.experience.id)}@${esc(entry.experience.revision)}" ${entry.experience.id === active.experience.id && entry.experience.revision === active.experience.revision ? 'selected' : ''}>${esc(entry.label)}</option>`).join('')}</select></label><div class="segmented" role="group" aria-label="Theme"><button data-theme="light" class="${state.document.tokens.theme === 'light' ? 'selected' : ''}">Light</button><button data-theme="dark" class="${state.document.tokens.theme === 'dark' ? 'selected' : ''}">Dark</button></div><label>Direction<select id="preview-direction"><option value="ltr" ${previewDirection === 'ltr' ? 'selected' : ''}>LTR</option><option value="rtl" ${previewDirection === 'rtl' ? 'selected' : ''}>RTL</option></select></label><label class="checkbox-label"><input id="preview-long-label" aria-label="Use long preview text" type="checkbox" ${previewLongLabel ? 'checked' : ''} /> Long preview text</label></div>
     <form class="panel experience-edit" id="experience-edit-form"><div><h3>Edit a validated profile</h3><p class="muted">Changes create a new personal revision and leave code-owned profiles intact.</p></div><label>Label<input name="profile-label" value="${esc(active.label)}" required /></label><label>Revision<input name="profile-revision" value="${esc(`${active.experience.revision}-studio`)}" required /></label><label>Mode<select name="profile-mode"><option value="fixed" ${active.experience.mode === 'fixed' ? 'selected' : ''}>fixed</option><option value="adaptive" ${active.experience.mode === 'adaptive' ? 'selected' : ''}>adaptive</option><option value="composable" ${active.experience.mode === 'composable' ? 'selected' : ''}>composable</option></select></label><button class="primary" type="submit">Save profile revision</button></form>
-    <div class="matrix" aria-label="Preview matrix">${previewWidths.map((width) => `<article class="matrix-cell" data-preview-width="${width}"><div class="matrix-label"><strong>${width}px</strong><span>${state.previewState}</span></div><div class="preview-viewport"><div class="preview-frame" data-preview-frame="${width}" dir="${previewDirection}" style="width: ${width}px"><aeliqo-metric data-preview-metric="${width}"></aeliqo-metric></div></div></article>`).join('')}</div>
+    <p id="preview-scroll-help" class="muted">Each preview retains its stated width. Focus a preview and use the left and right arrow keys to inspect it horizontally.</p><div class="matrix" aria-label="Preview matrix">${previewWidths.map((width) => `<article class="matrix-cell" data-preview-width="${width}"><div class="matrix-label"><strong>${width}px</strong><span>${state.previewState}</span></div><div class="preview-viewport" tabindex="0" role="region" aria-label="${width}px preview" aria-describedby="preview-scroll-help" dir="${previewDirection}"><div class="preview-frame" data-preview-frame="${width}" dir="${previewDirection}" style="width: ${width}px"><aeliqo-metric data-preview-metric="${width}"></aeliqo-metric></div></div></article>`).join('')}</div>
     <div class="panel state-panel"><h3>Data states</h3><div class="state-buttons" role="group" aria-label="Preview data state">${(['ready', 'loading', 'empty', 'partial', 'stale', 'error'] as const).map((value) => `<button data-preview="${value}" class="${state.previewState === value ? 'selected' : ''}">${value}</button>`).join('')}</div><p class="muted">State previews are local and do not claim provider or model execution.</p></div>
   </section>`;
 }
@@ -213,7 +213,17 @@ function render(state: ReturnType<StudioSession['getState']>): void {
   bindEvents();
   if (state.area === 'experience') bindExperiencePreview(state);
   if (state.area === 'gallery') bindGallery(state);
+  void syncPreviewTheme(root, state.document.tokens.theme);
   restoreControls();
+}
+
+async function syncPreviewTheme(container: Element | ShadowRoot, theme: string): Promise<void> {
+  for (const element of container.querySelectorAll<HTMLElement>("*")) {
+    if (!element.localName.startsWith("aeliqo-")) continue;
+    element.setAttribute("data-aeliqo-theme", theme);
+    await (element as HTMLElement & {updateComplete?: Promise<unknown>}).updateComplete;
+    if (element.shadowRoot) await syncPreviewTheme(element.shadowRoot, theme);
+  }
 }
 
 function bindExperiencePreview(state: StudioState): void {
@@ -224,12 +234,12 @@ function bindExperiencePreview(state: StudioState): void {
   const value = state.previewState === 'loading' || state.previewState === 'empty' || state.previewState === 'error' ? undefined : evaluatedValue;
   const scope = {kind: 'filtered', loaded: localSource.relations.employees?.rows.length ?? 0, filteredTotal: localSource.relations.employees?.rows.length ?? 0, populationDigest: localSource.scopeDigest, label: 'Authorized employees'};
   root.querySelectorAll<HTMLElement>('[data-preview-metric]').forEach((metric) => Object.assign(metric, {
-    label: previewLongLabel ? 'Authorized employee amount after normalization' : 'Total employee amount',
+    label: previewLongLabel ? `${meaning?.label ?? 'Local result'} from the authorized employee population` : meaning?.label ?? 'Local result',
     value,
     description: evaluation?.ok ? 'Evaluated from the bounded local source.' : 'Local evaluation unavailable.',
     status: state.previewState,
     message: state.previewState === 'stale' ? 'Showing the last authorized value.' : undefined,
-    unit: 'employees', scope, format: 'number',
+    unit: undefined, scope, format: 'number',
   }));
 }
 

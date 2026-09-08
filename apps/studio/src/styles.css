@@ -110,7 +110,7 @@ h3 { font-size: 1rem; margin-bottom: .45rem; }
 .segmented, .state-buttons { display: flex; flex-wrap: wrap; gap: .3rem; }
 .segmented button, .state-buttons button { background: var(--surface); color: var(--muted); font-size: .8rem; }
 .segmented button.selected, .state-buttons button.selected { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 650; }
-.matrix { display: grid; gap: .75rem; grid-template-columns: repeat(4, minmax(220px, 1fr)); overflow-x: auto; padding-bottom: .25rem; }
+.matrix { display: grid; gap: .75rem; grid-template-columns: repeat(2, minmax(0, 1fr)); padding-bottom: .25rem; }
 .matrix-cell { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; min-width: 0; overflow: hidden; padding: .75rem; }
 .matrix-label { align-items: center; color: var(--muted); display: flex; font-size: .74rem; justify-content: space-between; margin-bottom: .6rem; }
 .matrix-label strong { color: var(--text); }
@@ -147,7 +147,7 @@ h3 { font-size: 1rem; margin-bottom: .45rem; }
   .main-content { padding-top: 1rem; }
   .split-grid, .inspect-grid { grid-template-columns: 1fr; }
   .gallery-controls { grid-template-columns: 1fr; }
-  .matrix { grid-template-columns: repeat(4, minmax(220px, 1fr)); }
+  .matrix { grid-template-columns: minmax(0, 1fr); }
   .author-form { grid-template-columns: 1fr; }
   .author-form > div { grid-column: auto; }
   .experience-edit { grid-template-columns: 1fr; }
@@ -157,3 +157,5 @@ h3 { font-size: 1rem; margin-bottom: .45rem; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .001ms !important; }
 }
+
+.preview-viewport:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
