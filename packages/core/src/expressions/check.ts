@@ -162,7 +162,8 @@ function checkLiteral(
     return semanticFailure('semantic.literal-date', 'Date literals must be valid proleptic-Gregorian ISO calendar dates.', [...path, 'value']);
   } else if (node.type.value === 'instant' && (typeof value !== 'string' || !isValidIsoInstant(value))) {
     return semanticFailure('semantic.literal-instant', 'Instant literals must be ISO datetimes with an explicit timezone offset.', [...path, 'value']);
-  } else if ((node.type.value === 'date' || node.type.value === 'instant') && node.type.temporal !== undefined && node.type.temporal.calendar !== 'gregorian') {
+  } else if ((node.type.value === 'date' || node.type.value === 'instant') && node.type.temporal !== undefined && node.type.temporal.calendar !== 'gregorian'
+    && !(node.type.value === 'date' && node.type.temporal.calendar === 'iso8601')) {
     return semanticFailure('semantic.temporal-calendar', 'Non-Gregorian literal calendars require a registered temporal policy.', [...path, 'type', 'temporal', 'calendar']);
   } else if (node.type.value === 'decimal' && (!isDecimal(value))) {
     return semanticFailure('semantic.literal-type', 'Decimal literals must use the exact decimal object representation.', [...path, 'value']);

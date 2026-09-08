@@ -32,6 +32,13 @@ describe('explicit civil weekly query policy', () => {
     expect(result).toMatchObject({ok: true, value: {rows: [{day: '2025-12-29'}, {day: '2026-01-05'}],
       schema: {grain: ['day'], fields: [{id: 'day', type: {value: 'date', temporal: {calendar: 'iso8601', timezone, grain: 'week'}}}]}}});
   });
+  it('filters ISO8601 civil dates using the source calendar before bucketing', () => {
+    const {planner, query, source} = fixture();
+    const plan = planner.plan({...query, where: {op: 'compare', field: 'day', comparison: 'gte', value: '2026-01-05'}});
+    expect(plan.ok, JSON.stringify(plan)).toBe(true); if (!plan.ok) return;
+    expect(planner.evaluate(plan.value, source)).toMatchObject({ok: true, value: {rows: [{day: '2026-01-05'}]}});
+    expect(planner.plan({...query, where: {op: 'compare', field: 'day', comparison: 'gte', value: '2026-02-30'}}).ok).toBe(false);
+  });
   it('requires explicit week start and coherent source/calendar/timezone policy', () => {
     const {planner, query} = fixture();
     expect(planner.plan({...query, timeBucket: {field: 'day', grain: 'week', calendar: 'iso8601', timezone: 'Asia/Jakarta'}}).ok).toBe(false);
