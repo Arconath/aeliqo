@@ -147,6 +147,7 @@ function validInstant(value: string): boolean {
 function validSourceValue(value: unknown, field: CatalogEntity['fields'][number]): value is DataValue {
   if (value === null) return field.type.nullable;
   if (typeof value === 'string') {
+    if (value.length > WIRE_LIMITS.text) return false;
     if (field.type.value === 'date') return validDate(value);
     if (field.type.value === 'instant') return validInstant(value);
     return field.type.value === 'text';
@@ -172,6 +173,8 @@ function normalizeSnapshot(snapshot: LocalSnapshot): StoredSnapshot {
   assertSafeId(snapshot.sourceRevision, 'sourceRevision');
   if (!snapshot.records || typeof snapshot.records !== 'object' || Array.isArray(snapshot.records))
     throw new TypeError('Local data snapshot records must be an entity-to-records map.');
+  if (Object.keys(snapshot.records).length > WIRE_LIMITS.properties)
+    throw new TypeError('Local data snapshot records exceed the bounded entity map limit.');
   const records: Record<string, readonly DataRecord[]> = {};
   const entities = new Map(parsed.value.entities.map((entity) => [entity.id, entity] as const));
   for (const [entityId, rows] of Object.entries(snapshot.records)) {
@@ -183,6 +186,7 @@ function normalizeSnapshot(snapshot: LocalSnapshot): StoredSnapshot {
     records[entityId] = Object.freeze(rows.map((row) => {
       if (row === null || typeof row !== 'object' || Array.isArray(row)) throw new TypeError(`Row for ${entityId} must be a plain object.`);
       if (Object.getPrototypeOf(row) !== Object.prototype && Object.getPrototypeOf(row) !== null) throw new TypeError(`Row for ${entityId} must be a plain object.`);
+      if (Object.keys(row).length > WIRE_LIMITS.properties) throw new TypeError(`Row for ${entityId} exceeds the bounded field limit.`);
       for (const key of Object.keys(row)) {
         const field = entity.fields.find((candidate) => candidate.id === key);
         if (field === undefined || !validSourceValue(row[key], field)) throw new TypeError(`Row for ${entityId} has an invalid value for ${key}.`);
