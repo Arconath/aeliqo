@@ -902,10 +902,15 @@
       "acceptance": [
         "Data/meaning/experience/inspect flows functional; valid code/file export; no separate source of truth or required cloud."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "Devtools ownership/DAG/experience fixes and installed consumer pass; Studio real evaluated preview matrix, all71 Gallery and canonical brand added at a550a4c. Final independent functional review pending. Root owns integration; no publication."
+      "evidence": [
+        {
+          "path": "harness/evidence/t26/344e5c28b787/manifest.json",
+          "sha256": "7e241c0c90e11cd77a1093042348df7ca2f4ad41c7cd07a0d72e9f702833e2f9"
+        }
+      ],
+      "notes": "Accepted Studio source db7f33d after independent review; actual installed consumer,12units/types,7reviewbrowser,1productbrowser and build frozen. Real evaluated widths/themes/gallery and immutable code-owned export proven. T29 manualAT/visual matrix remains separate."
     },
     {
       "id": "T27",
@@ -947,9 +952,10 @@
       "acceptance": [
         "Permissions enforced at execution, metadata/data minimization, cache/cursor isolation, injection/cancel/revoke tests."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "Security probes reproduce then close metadata principal override d38c06a; independent review and testkit integration underway. T26 accepted; not a T28 pass."
     },
     {
       "id": "T29",

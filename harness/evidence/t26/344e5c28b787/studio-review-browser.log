@@ -1,0 +1,25 @@
+[WebServer] (node:44131) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:44132) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 7 tests using 1 worker
+
+(node:44142) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 5:12:03 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  1 tests/studio-review/browser.spec.ts:4:7 › T26 Studio browser boundary review › shows malformed import diagnostics in the visible workspace (321ms)
+[WebServer] 5:12:03 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  2 tests/studio-review/browser.spec.ts:11:7 › T26 Studio browser boundary review › preserves a partially authored meaning while navigating between spaces (400ms)
+[WebServer] 5:12:04 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  3 tests/studio-review/browser.spec.ts:22:7 › T26 Studio browser boundary review › renders a real local evaluation and edits an Experience revision (405ms)
+[WebServer] 5:12:04 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  4 tests/studio-review/browser.spec.ts:36:7 › T26 Studio browser boundary review › binds evaluated data to real preview components at each declared width (512ms)
+[WebServer] 5:12:05 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  5 tests/studio-review/browser.spec.ts:59:7 › T26 Studio browser boundary review › mounts the selected executable catalog example for all 71 component choices (358ms)
+[WebServer] 5:12:05 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  6 tests/studio-review/browser.spec.ts:71:7 › T26 Studio browser boundary review › defers visible rerender until an IME composition ends (416ms)
+[WebServer] 5:12:05 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  7 tests/studio-review/browser.spec.ts:87:5 › dark previews inherit theme and narrow frames support keyboard inspection in both directions (722ms)
+
+  7 passed (3.9s)

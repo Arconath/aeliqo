@@ -1,0 +1,54 @@
+{
+  "task": "T26",
+  "status": "pass",
+  "sourceCommit": "db7f33da88fc6e7cf1cddd14c857c32b2e0afe63",
+  "sourceDigest": "344e5c28b7875efa37974a329f7255a5ddecab85e58e16d65aa3408dd9db6430",
+  "scope": "OSS Studio and devtools authoring, inspection, code/JSON export, code-owned immutability, real previews and installed SDK consumer",
+  "checks": [
+    "12 Studio unit tests and strict types",
+    "7 Studio review browser cases",
+    "1 complete Studio browser journey",
+    "Strict Studio application build",
+    "Independent actual installed core/runtime/devtools tarballs and standalone export compilation",
+    "Independent review closure"
+  ],
+  "limits": [
+    "This is agent review, not human assistive technology or human design approval.",
+    "T29 remains separate; all-state/cross-browser/pixel approval is not implied.",
+    "Historical task evidence; final release candidate must rerun integrated gates after later changes."
+  ],
+  "artifacts": [
+    {
+      "path": "dark-narrow-rtl.png",
+      "sha256": "623f78bc5896c71dd3f96df8efae8ca27a376bbda2b4db079d3b427d03c71fed"
+    },
+    {
+      "path": "independent-review.json",
+      "sha256": "a0b41bf440c16586432cae531b48c2a1c36e8079745a84d98614153e929c3c0b"
+    },
+    {
+      "path": "installed-consumer-report.json",
+      "sha256": "a2e2354901ce2e093e874b056be38a6b0d574c9a0cb9191f7497765269c0bcc2"
+    },
+    {
+      "path": "installed-consumer.log",
+      "sha256": "8e52f591edc1cbbb675877700b3074c0020a975e950f1ecdcdb48279f4322359"
+    },
+    {
+      "path": "studio-build.log",
+      "sha256": "4e7cd8a51f3c55e2000842867fdba6ad9a3136881dbfbe89cc18fe5447cd372a"
+    },
+    {
+      "path": "studio-product-browser.log",
+      "sha256": "c01c3e42e7d878135aa399dfb6461478da715da1dd7883d0a7e25f9211376673"
+    },
+    {
+      "path": "studio-review-browser.log",
+      "sha256": "585f7709710c20dece276ce589610dcd34644db7c781e96cb1f050412dd40ad3"
+    },
+    {
+      "path": "studio-unit-types.log",
+      "sha256": "92a39ff4f64c9ade77b931a63003eb77bf545c51a8658feda7069848fac627da"
+    }
+  ]
+}
