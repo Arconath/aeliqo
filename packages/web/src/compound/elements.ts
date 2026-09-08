@@ -1,19 +1,83 @@
 import {css, html, nothing} from "lit";
 import type {ResultRef, Scalar, VersionRef, VisualizationBindingContext, VisualizationSpec} from "@aeliqo/core";
 import {AeliqoCompoundElement, aeliqoCompoundThemeStyles} from "./base.js";
-import {stableDataRecordKey} from "../data/shared.js";
+import {dataValueText, stableDataRecordKey, stableDataValueKey} from "../data/shared.js";
 import type {
-  AeliqoBreakdownGroup, AeliqoComparisonMetric, AeliqoCompoundStatus, AeliqoFormFlowCommitDetail, AeliqoFormFlowStepDetail,
+  AeliqoBreakdownGroup, AeliqoBreakdownGroupDetail, AeliqoComparisonMetric, AeliqoComparisonSetDetail, AeliqoCompoundStatus, AeliqoFormFlowCommitDetail, AeliqoFormFlowStep,
+  AeliqoFormFlowStepDetail,
   AeliqoRecordEditorCancelDetail, AeliqoRecordEditorSaveDetail, AeliqoQualityState,
 } from "./types.js";
 import type {AeliqoDataColumn, AeliqoDataRecord, AeliqoDataScope, AeliqoFieldOption, AeliqoFilterPredicate} from "../data/types.js";
 import type {VisualizationDataset} from "../visualization/types.js";
 import type {AeliqoFilterChangeDetail, AeliqoSelectionDetail} from "../data/types.js";
+import type {AeliqoTableColumn, AeliqoTableRow, TableCell} from "../types.js";
+import {AeliqoFormElement} from "../input/form.js";
 
 const statusValues = ["ready", "loading", "empty", "partial", "stale", "error", "unavailable"] as const;
 type Status = typeof statusValues[number];
 const status = (value: unknown): Status => typeof value === "string" && (statusValues as readonly string[]).includes(value) ? value as Status : "ready";
 const event = <T>(type: string, detail: T, cancelable = true): CustomEvent<T> => new CustomEvent(type, {bubbles: true, composed: true, cancelable, detail: Object.freeze(detail)});
+const MAX_COMPARISON_KEYS = 32;
+const MAX_COMPARISON_METRICS = 64;
+const MAX_BREAKDOWN_GROUPS = 100;
+const bounded = <T>(items: readonly T[], maximum: number): readonly T[] => items.slice(0, maximum);
+
+function tableCell(value: Scalar | undefined): TableCell {
+  if (value === undefined) return "Not available";
+  if (value === null || typeof value === "string" || typeof value === "number" || typeof value === "boolean") return value;
+  if (typeof value === "object" && !Array.isArray(value) && typeof value.decimal === "string") return {decimal: value.decimal};
+  return "Not available";
+}
+
+type CompoundControl = HTMLElement & {
+  readonly name?: string;
+  readonly value?: unknown;
+  readonly formValue?: string | File | FormData | null;
+  checkValidity?: () => boolean;
+  reportValidity?: () => boolean;
+};
+
+function compoundControls(host: HTMLElement): readonly CompoundControl[] {
+  return Array.from(host.querySelectorAll<HTMLElement>("input, select, textarea, button, aeliqo-input, aeliqo-text-field, aeliqo-text-area, aeliqo-number-field, aeliqo-date-field, aeliqo-date-range, aeliqo-search-field, aeliqo-checkbox, aeliqo-switch, aeliqo-radio-group, aeliqo-select, aeliqo-combobox, aeliqo-slider, aeliqo-file-input"))
+    .filter((control): control is CompoundControl => control.closest("aeliqo-record-editor, aeliqo-form-flow") === host);
+}
+
+function appendCompoundValue(output: Record<string, string | readonly string[]>, name: string, raw: unknown): void {
+  if (raw === undefined || raw === null) return;
+  const values: string[] = Array.isArray(raw) ? raw.map(value => String(value)) : raw instanceof FormData
+    ? [...raw.values()].map(value => typeof value === "string" ? value : value.name)
+    : typeof File !== "undefined" && raw instanceof File ? [raw.name] : [String(raw)];
+  if (values.length === 0) return;
+  const existing = output[name];
+  if (existing === undefined) output[name] = values.length === 1 ? values[0]! : values;
+  else output[name] = [...(Array.isArray(existing) ? existing : [existing]), ...values];
+}
+
+function collectCompoundValues(host: HTMLElement): Readonly<Record<string, string | readonly string[]>> {
+  const output: Record<string, string | readonly string[]> = {};
+  for (const control of compoundControls(host)) {
+    const name = control.getAttribute("name") || control.name || "";
+    if (!name || control instanceof HTMLButtonElement || (control instanceof HTMLInputElement && ["submit", "reset", "button", "image"].includes(control.type))) continue;
+    if (control instanceof HTMLInputElement && ["checkbox", "radio"].includes(control.type) && !control.checked) continue;
+    if (control instanceof HTMLSelectElement && control.multiple) {
+      appendCompoundValue(output, name, [...control.selectedOptions].map(option => option.value));
+      continue;
+    }
+    appendCompoundValue(output, name, "formValue" in control ? control.formValue : control.value);
+  }
+  return output;
+}
+
+function reportCompoundValidity(host: HTMLElement): boolean {
+  const controls = compoundControls(host);
+  let valid = true;
+  for (const control of controls) {
+    if (control.matches(":disabled") || control.closest("fieldset:disabled") !== null) continue;
+    const check = control.reportValidity ?? control.checkValidity;
+    if (check !== undefined && !check.call(control)) valid = false;
+  }
+  return valid;
+}
 
 export class AeliqoExplorerElement extends AeliqoCompoundElement {
   static readonly properties = {
@@ -23,7 +87,7 @@ export class AeliqoExplorerElement extends AeliqoCompoundElement {
   fields: readonly AeliqoFieldOption[] = []; predicate: AeliqoFilterPredicate | undefined; rows: readonly AeliqoDataRecord[] = []; columns: readonly AeliqoDataColumn[] = []; identity: readonly string[] = []; entity = "record"; selectedKey = ""; detailRecord: AeliqoDataRecord | undefined; detailFields: readonly AeliqoDataColumn[] = []; result: ResultRef | undefined; scope: AeliqoDataScope | undefined; status: AeliqoCompoundStatus = "ready"; message = ""; title = "Explore"; filterLabel = "Filter"; collectionLabel = "Records"; detailLabel = "Selected detail"; selection: "none" | "single" | "multiple" = "single";
   protected override render() {
     const current = status(this.status); const detail = this.detailRecord ?? this.rows.find(row => this.rowKey(row) === this.selectedKey); const statusText = this.statusTemplate(current, this.message);
-    return html`<section part="root" data-status=${current} aria-label=${this.title}><div part="header"><h2>${this.title}</h2>${this.scope ? html`<span part="scope">${this.scopeLabel(this.scope)}</span>` : nothing}</div><div part="panels"><section part="filter" aria-label=${this.filterLabel}><h3>${this.filterLabel}</h3><aeliqo-filter-builder .fields=${this.fields} .predicate=${this.predicate} .entity=${this.entity} .status=${current} @aeliqo-filter-change=${this.forwardFilter}></aeliqo-filter-builder></section><section part="collection" aria-label=${this.collectionLabel}><h3>${this.collectionLabel}</h3><aeliqo-record-list .rows=${this.rows} .columns=${this.columns} .identity=${this.identity} .entity=${this.entity} .selectedKeys=${this.selectedKey ? [this.selectedKey] : []} .result=${this.result} .scope=${this.scope} .selection=${this.selection} .status=${current} @aeliqo-record-list-selection=${this.forwardSelection}></aeliqo-record-list></section><section part="detail" aria-label=${this.detailLabel}><h3>${this.detailLabel}</h3><aeliqo-detail .record=${detail} .fields=${this.detailFields.length ? this.detailFields : this.columns} .identity=${this.identity} .entity=${this.entity} .scope=${this.scope} .status=${current}></aeliqo-detail></section></div>${statusText ? html`<p part="status" role="status">${statusText}</p>` : nothing}</section>`;
+    return html`<section part="root" data-status=${current} aria-label=${this.title}><div part="header"><h2>${this.title}</h2>${this.scope ? html`<span part="scope">${this.scopeLabel(this.scope)}</span>` : nothing}</div><div part="panels"><section part="filter" aria-label=${this.filterLabel}><h3>${this.filterLabel}</h3><aeliqo-filter-builder .fields=${this.fields} .predicate=${this.predicate} .entity=${this.entity} .status=${current} @aeliqo-filter-change=${this.forwardFilter}></aeliqo-filter-builder></section><section part="collection" aria-label=${this.collectionLabel}><h3>${this.collectionLabel}</h3><aeliqo-record-list .rows=${this.rows} .columns=${this.columns} .identity=${this.identity} .entity=${this.entity} .selectedKeys=${this.selectedKey ? [this.selectedKey] : []} .result=${this.result} .scope=${this.scope} .selection=${this.selection} .status=${current} @aeliqo-record-list-selection=${this.forwardSelection}></aeliqo-record-list></section><section part="detail"><h3>${this.detailLabel}</h3><aeliqo-detail .title=${this.detailLabel} .record=${detail} .fields=${this.detailFields.length ? this.detailFields : this.columns} .identity=${this.identity} .entity=${this.entity} .status=${current}></aeliqo-detail></section></div>${statusText ? html`<p part="status" role="status">${statusText}</p>` : nothing}</section>`;
   }
   private rowKey(row: AeliqoDataRecord): string | undefined { return stableDataRecordKey(row, this.identity); }
   private readonly forwardFilter = (raw: Event): void => { const detail = (raw as CustomEvent<AeliqoFilterChangeDetail>).detail; if (detail) this.dispatchEvent(event("aeliqo-explorer-filter", detail)); };
@@ -32,45 +96,82 @@ export class AeliqoExplorerElement extends AeliqoCompoundElement {
 
 export class AeliqoComparisonElement extends AeliqoCompoundElement {
   static readonly properties = {compareKeys: {attribute: false}, compareSet: {attribute: false}, metrics: {attribute: false}, entity: {type: String}, status: {type: String}, message: {type: String}, title: {type: String}, result: {attribute: false}, scope: {attribute: false}, identity: {attribute: false}, compatible: {type: Boolean}, selectedKey: {attribute: "selected-key", type: String}};
-  static readonly styles = [...aeliqoCompoundThemeStyles, css`table { border-collapse: collapse; inline-size: 100%; min-inline-size: 32rem; } [part="table"] { max-inline-size: 100%; overflow-x: auto; } th, td { border-block-end: .0625rem solid var(--aeliqo-color-border, #c9d0d8); padding: var(--aeliqo-space-8, .5rem); text-align: start; vertical-align: top; } th { background: var(--aeliqo-color-surface-muted, #f8fafc); }`];
+  static readonly styles = [...aeliqoCompoundThemeStyles, css`[part="table"] { max-inline-size: 100%; overflow-x: auto; }`];
   compareKeys: readonly string[] = []; compareSet: readonly {readonly key: string; readonly label?: string}[] = []; metrics: readonly AeliqoComparisonMetric[] = []; entity = "record"; status: AeliqoCompoundStatus = "ready"; message = ""; title = "Comparison"; result: ResultRef | undefined; scope: AeliqoDataScope | undefined; identity: readonly string[] = []; compatible = true; selectedKey = "";
-  protected override render() { const keys = this.compareKeys.length ? this.compareKeys : this.compareSet.map(item => item.key); const label = (key: string) => this.compareSet.find(item => item.key === key)?.label ?? key; const current = status(this.status); return html`<section part="root" data-status=${current} aria-label=${this.title}><div part="header"><h2>${this.title}</h2>${this.scope ? html`<span part="scope">${this.scopeLabel(this.scope)}</span>` : nothing}</div>${!this.compatible ? html`<p part="status" role="alert">These metrics cannot be compared because their units or grain are incompatible.</p>` : html`<div part="table" role="region" aria-label="Simultaneous comparison"><table><caption>${this.title}: ${keys.length} ${this.entity}${keys.length === 1 ? "" : "s"}</caption><thead><tr><th scope="col">Metric</th>${keys.map(key => html`<th scope="col"><button part="compare-button" type="button" aria-pressed="true" @click=${() => this.requestCompare(key)}>${label(key)}</button></th>`)}</tr></thead><tbody>${this.metrics.map(metric => html`<tr><th scope="row">${metric.label}${metric.unit ? html` <span part="unit">(${metric.unit})</span>` : nothing}</th>${keys.map(key => html`<td>${metric.values[key] === undefined ? "Not available" : this.display(metric.values[key])}</td>`)}</tr>`)}</tbody></table></div>`}${current !== "ready" ? html`<p part="status" role="status">${this.statusText(current, this.message)}</p>` : nothing}</section>`; }
-  private display(value: Scalar | undefined): string { if (value === undefined || value === null) return "—"; if (typeof value === "object" && !Array.isArray(value) && "decimal" in value) return value.decimal; return String(value); }
+  protected override render() {
+    const requestedKeys = this.compareKeys.length ? this.compareKeys : this.compareSet.map(item => item.key);
+    const keys = bounded(requestedKeys, MAX_COMPARISON_KEYS);
+    const metrics = bounded(this.metrics, MAX_COMPARISON_METRICS);
+    const labels = new Map(this.compareSet.map(item => [item.key, item.label ?? item.key]));
+    const selectedKeys = new Set(requestedKeys);
+    const columns: readonly AeliqoTableColumn[] = [{key: "metric", label: "Metric"}, ...keys.map(key => ({key, label: labels.get(key) ?? key}))];
+    const rows: readonly AeliqoTableRow[] = metrics.map(metric => ({
+      metric: metric.unit ? `${metric.label} (${metric.unit})` : metric.label,
+      ...Object.fromEntries(keys.map(key => [key, tableCell(metric.values[key])])),
+    }));
+    const current = status(this.status);
+    const boundedNotice = requestedKeys.length > keys.length || this.metrics.length > metrics.length;
+    return html`<section part="root" data-status=${current} aria-label=${this.title}>
+      <div part="header"><h2>${this.title}</h2>${this.scope ? html`<span part="scope">${this.scopeLabel(this.scope)}</span>` : nothing}</div>
+      ${!this.compatible ? html`<p part="status" role="alert">These metrics cannot be compared because their units or grain are incompatible.</p>` : html`
+        <div part="actions" aria-label="Compare set">${keys.map(key => html`<button part="compare-button" type="button" aria-pressed=${String(selectedKeys.has(key))} @click=${() => this.requestCompare(key)}>${labels.get(key) ?? key}</button>`)}</div>
+        <div part="table" role="region" aria-label="Simultaneous comparison"><aeliqo-table .caption=${`${this.title}: ${keys.length} ${this.entity}${keys.length === 1 ? "" : "s"}`} .columns=${columns} .rows=${rows} .identity=${["metric"]} .result=${this.result} .scope=${this.scope} status=${current}></aeliqo-table></div>
+        ${boundedNotice ? html`<p part="hint">Showing a bounded comparison window.</p>` : nothing}
+      `}
+      ${current !== "ready" ? html`<p part="status" role="status">${this.statusText(current, this.message)}</p>` : nothing}
+    </section>`;
+  }
   private readonly requestCompare = (key: string): void => {
     const current = this.compareKeys.length ? [...this.compareKeys] : this.compareSet.map(item => item.key);
     const next = current.includes(key) ? current.filter(item => item !== key) : [...current, key];
     if (next.length === 0) return;
-    this.dispatchEvent(event("aeliqo-comparison-set", {source: "user", entity: this.entity, keys: next, ...(this.result === undefined ? {} : {result: this.result})}));
+    this.dispatchEvent(event<AeliqoComparisonSetDetail>("aeliqo-comparison-set", {source: "user", entity: this.entity, keys: next, ...(this.result === undefined ? {} : {result: this.result}), ...(this.scope === undefined ? {} : {scope: this.scope})}));
   };
 }
 
 export class AeliqoBreakdownElement extends AeliqoCompoundElement {
   static readonly properties = {groups: {attribute: false}, rows: {attribute: false}, columns: {attribute: false}, identity: {attribute: false}, entity: {type: String}, groupLabel: {attribute: "group-label", type: String}, metricLabel: {attribute: "metric-label", type: String}, result: {attribute: false}, scope: {attribute: false}, status: {type: String}, message: {type: String}, title: {type: String}, selectedGroup: {attribute: "selected-group", type: String}};
-  static readonly styles = [...aeliqoCompoundThemeStyles, css`table { border-collapse: collapse; inline-size: 100%; } th, td { border-block-end: .0625rem solid var(--aeliqo-color-border, #c9d0d8); padding: var(--aeliqo-space-8, .5rem); text-align: start; } button { text-align: start; width: 100%; }`];
+  static readonly styles = [...aeliqoCompoundThemeStyles, css`[part="table"] { max-inline-size: 100%; overflow-x: auto; }`];
   groups: readonly AeliqoBreakdownGroup[] = []; rows: readonly AeliqoDataRecord[] = []; columns: readonly AeliqoDataColumn[] = []; identity: readonly string[] = []; entity = "record"; groupLabel = "Group"; metricLabel = "Metric"; result: ResultRef | undefined; scope: AeliqoDataScope | undefined; status: AeliqoCompoundStatus = "ready"; message = ""; title = "Breakdown"; selectedGroup = "";
   protected override render() {
     const current = status(this.status);
+    const groups = bounded(this.groups, MAX_BREAKDOWN_GROUPS);
+    const tableColumns: readonly AeliqoTableColumn[] = [
+      {key: "group", label: this.groupLabel},
+      {key: "metric", label: this.metricLabel},
+      {key: "records", label: "Records"},
+    ];
+    const tableRows: readonly AeliqoTableRow[] = groups.map(group => ({
+      groupKey: group.key,
+      group: group.label,
+      metric: group.displayValue ?? tableCell(group.value),
+      records: group.recordCount === undefined ? "Not available" : group.recordCount,
+    }));
+    const selectedKey = this.selectedGroup.length > 0 ? stableDataValueKey(this.selectedGroup) : undefined;
     return html`
       <section part="root" data-status=${current} aria-label=${this.title}>
         <div part="header"><h2>${this.title}</h2>${this.scope ? html`<span part="scope">${this.scopeLabel(this.scope)}</span>` : nothing}</div>
-        <div part="table"><table><caption>${this.title}: grouped ${this.entity} data</caption><thead><tr><th scope="col">${this.groupLabel}</th><th scope="col">${this.metricLabel}</th><th scope="col">Records</th></tr></thead><tbody>
-          ${this.groups.map(group => html`<tr data-selected=${String(group.key === this.selectedGroup)}><th scope="row"><button type="button" aria-pressed=${String(group.key === this.selectedGroup)} @click=${() => this.selectGroup(group.key)}>${group.label}</button></th><td>${this.ratioText(group)}</td><td>${group.recordCount === undefined ? "Not available" : group.recordCount}</td></tr>`)}
-        </tbody></table></div>
+        <div part="table"><aeliqo-table .caption=${`${this.title}: grouped ${this.entity} data`} .columns=${tableColumns} .rows=${tableRows} .identity=${["groupKey"]} .selectedKeys=${selectedKey ? [selectedKey] : []} .selection=${"single"} .result=${this.result} .scope=${this.scope} status=${current} @aeliqo-table-selection=${this.forwardGroupSelection}></aeliqo-table></div>
+        ${this.groups.length > groups.length ? html`<p part="hint">Showing a bounded group window.</p>` : nothing}
         ${this.selectedGroup ? html`<section part="detail" aria-label="Contributing records"><h3>Contributing records</h3><aeliqo-record-list .rows=${this.rows} .columns=${this.columns} .identity=${this.identity} .entity=${this.entity} .result=${this.result} .scope=${this.scope} selection="none"></aeliqo-record-list></section>` : nothing}
         ${current !== "ready" ? html`<p part="status" role="status">${this.statusText(current, this.message)}</p>` : nothing}
       </section>
     `;
   }
-  private ratioText(group: AeliqoBreakdownGroup): string { if (group.value !== undefined) return this.scalarText(group.value); if (group.numerator === undefined || group.denominator === undefined) return "Not available"; if (!Number.isFinite(group.numerator) || !Number.isFinite(group.denominator) || group.denominator === 0) return "Not available (zero or invalid denominator)"; return `${(group.numerator / group.denominator * 100).toLocaleString(undefined, {maximumFractionDigits: 2})}%`; }
-  private scalarText(value: Scalar): string { if (value === null) return "—"; if (typeof value === "object" && !Array.isArray(value) && "decimal" in value) return value.decimal; return String(value); }
-  private readonly selectGroup = (key: string): void => { this.dispatchEvent(event("aeliqo-breakdown-group", {source: "user", key, entity: this.entity, result: this.result})); };
+  private readonly forwardGroupSelection = (raw: Event): void => {
+    const detail = (raw as CustomEvent<AeliqoSelectionDetail>).detail;
+    if (!detail || detail.mode !== "ids" || detail.keys.length === 0) return;
+    const group = this.groups.find(candidate => stableDataValueKey(candidate.key) === detail.keys[0]);
+    if (group === undefined) return;
+    this.dispatchEvent(event<AeliqoBreakdownGroupDetail>("aeliqo-breakdown-group", {source: "user", key: group.key, entity: this.entity, ...(this.result === undefined ? {} : {result: this.result}), ...(this.scope === undefined ? {} : {scope: this.scope})}));
+  };
 }
 
 export class AeliqoInvestigationElement extends AeliqoCompoundElement {
   static readonly properties = {trendContext: {attribute: false}, trendDatasets: {attribute: false}, eventContext: {attribute: false}, eventDatasets: {attribute: false}, trend: {attribute: false}, baseline: {attribute: false}, events: {attribute: false}, detailRecord: {attribute: false}, detailFields: {attribute: false}, result: {attribute: false}, eventResult: {attribute: false}, identity: {attribute: false}, entity: {type: String}, scope: {attribute: false}, status: {type: String}, message: {type: String}, title: {type: String}, label: {type: String}};
   static readonly styles = [...aeliqoCompoundThemeStyles, css`[part="caution"] { border-inline-start: .25rem solid var(--aeliqo-color-warning, #b54708); padding-inline-start: var(--aeliqo-space-12, .75rem); }`];
   trendContext: VisualizationBindingContext = {results: []}; trendDatasets: readonly VisualizationDataset[] = []; eventContext: VisualizationBindingContext = {results: []}; eventDatasets: readonly VisualizationDataset[] = []; trend: VisualizationSpec | undefined; baseline: Scalar | undefined; events: VisualizationSpec | undefined; detailRecord: AeliqoDataRecord | undefined; detailFields: readonly AeliqoDataColumn[] = []; result: ResultRef | undefined; eventResult: ResultRef | undefined; identity: readonly string[] = []; entity = "record"; scope: AeliqoDataScope | undefined; status: AeliqoCompoundStatus = "ready"; message = ""; title = "Investigation"; label = "Trend";
-  protected override render() { const current = status(this.status); return html`<section part="root" data-status=${current} aria-label=${this.title}><div part="header"><h2>${this.title}</h2>${this.scope ? html`<span part="scope">${this.scopeLabel(this.scope)}</span>` : nothing}</div><div part="grid"><section part="trend" aria-label="Trend"><h3>${this.label}</h3>${this.trend ? html`<aeliqo-trend .visualization=${this.trend} .context=${this.trendContext} .datasets=${this.trendDatasets}></aeliqo-trend>` : html`<p part="hint">No trend is available.</p>`}</section><section part="baseline" aria-label="Baseline"><h3>Baseline</h3><aeliqo-metric label="Baseline" .value=${this.baseline}></aeliqo-metric></section><section part="events" aria-label="Event timeline"><h3>Event timeline</h3>${this.events ? html`<aeliqo-timeline .visualization=${this.events} .context=${this.eventContext} .datasets=${this.eventDatasets}></aeliqo-timeline>` : html`<p part="hint">No events are available.</p>`}</section><section part="detail" aria-label="Detail"><h3>Detail</h3><aeliqo-detail .record=${this.detailRecord} .fields=${this.detailFields} .identity=${this.identity} .entity=${this.entity}></aeliqo-detail></section></div><p part="caution">Associations are displayed as evidence in the selected scope. They do not establish causal claims.</p>${current !== "ready" ? html`<p part="status" role="status">${this.statusText(current, this.message)}</p>` : nothing}</section>`; }
+  protected override render() { const current = status(this.status); return html`<section part="root" data-status=${current} aria-label=${this.title}><div part="header"><h2>${this.title}</h2>${this.scope ? html`<span part="scope">${this.scopeLabel(this.scope)}</span>` : nothing}</div><div part="grid"><section part="trend" aria-label="Trend"><h3>${this.label}</h3>${this.trend ? html`<aeliqo-trend .visualization=${this.trend} .context=${this.trendContext} .datasets=${this.trendDatasets}></aeliqo-trend>` : html`<p part="hint">No trend is available.</p>`}</section><section part="baseline" aria-label="Baseline"><h3>Baseline</h3><aeliqo-metric label="Baseline" .value=${this.baseline}></aeliqo-metric></section><section part="events" aria-label="Event timeline"><h3>Event timeline</h3>${this.events ? html`<aeliqo-timeline .visualization=${this.events} .context=${this.eventContext} .datasets=${this.eventDatasets}></aeliqo-timeline>` : html`<p part="hint">No events are available.</p>`}</section><section part="detail"><h3>Detail</h3><aeliqo-detail .title=${"Investigation detail"} .record=${this.detailRecord} .fields=${this.detailFields} .identity=${this.identity} .entity=${this.entity}></aeliqo-detail></section></div><p part="caution">Associations are displayed as evidence in the selected scope. They do not establish causal claims.</p>${current !== "ready" ? html`<p part="status" role="status">${this.statusText(current, this.message)}</p>` : nothing}</section>`; }
 }
 
 export class AeliqoSearchResultsElement extends AeliqoCompoundElement {
@@ -98,19 +199,121 @@ export class AeliqoRecordEditorElement extends AeliqoCompoundElement {
   static readonly properties = {entity: {type: String}, entityKey: {attribute: "entity-key", type: String}, entityRevision: {attribute: "entity-revision", type: String}, action: {attribute: false}, status: {type: String}, message: {type: String}, title: {type: String}, disabled: {type: Boolean}, invalid: {type: Boolean}, saveLabel: {attribute: "save-label", type: String}, cancelLabel: {attribute: "cancel-label", type: String}};
   static readonly styles = [...aeliqoCompoundThemeStyles, css`[part="form"] { display: grid; gap: var(--aeliqo-space-12, .75rem); }`];
   entity = "record"; entityKey = ""; entityRevision = ""; action: VersionRef | undefined; status: AeliqoCompoundStatus = "ready"; message = ""; title = "Edit record"; disabled = false; invalid = false; saveLabel = "Save"; cancelLabel = "Cancel";
-  protected override render() { const current = status(this.status); return html`<section part="root" data-status=${current} aria-label=${this.title}><div part="header"><h2>${this.title}</h2><span part="meta">${this.entity} ${this.entityKey ? `· ${this.entityKey}` : ""}${this.entityRevision ? ` · revision ${this.entityRevision}` : ""}</span></div><aeliqo-form part="form" label=${this.title} ?no-validate=${this.invalid}><slot></slot><div part="actions"><button type="button" ?disabled=${this.disabled} @click=${this.cancel}>${this.cancelLabel}</button><button type="button" ?disabled=${this.disabled || this.invalid} @click=${this.save}>${this.saveLabel}</button></div></aeliqo-form>${this.message || current !== "ready" ? html`<p part="status" role="status">${this.statusText(current, this.message)}</p>` : nothing}</section>`; }
-  private readonly save = (): void => { if (this.disabled || this.invalid || !this.entityKey || !this.entityRevision) return; this.dispatchEvent(event<AeliqoRecordEditorSaveDetail>("aeliqo-record-editor-save", {source: "user", entity: this.entity, key: this.entityKey, entityRevision: this.entityRevision, ...(this.action === undefined ? {} : {action: this.action})})); };
-  private readonly cancel = (): void => { if (!this.entityKey || !this.entityRevision) return; this.dispatchEvent(event<AeliqoRecordEditorCancelDetail>("aeliqo-record-editor-cancel", {source: "user", entity: this.entity, key: this.entityKey, entityRevision: this.entityRevision})); };
+  protected override render() {
+    const current = status(this.status);
+    return html`<section part="root" data-status=${current} aria-label=${this.title}>
+      <div part="header"><h2>${this.title}</h2><span part="meta">${this.entity} ${this.entityKey ? `· ${this.entityKey}` : ""}${this.entityRevision ? ` · revision ${this.entityRevision}` : ""}</span></div>
+      <aeliqo-form part="form" label=${this.title}>
+        <slot></slot>
+        <div part="actions"><button type="button" ?disabled=${this.disabled} @click=${this.cancel}>${this.cancelLabel}</button><button type="button" ?disabled=${this.disabled || this.invalid} @click=${this.save}>${this.saveLabel}</button></div>
+      </aeliqo-form>
+      ${this.message || current !== "ready" ? html`<p part="status" role="status">${this.statusText(current, this.message)}</p>` : nothing}
+    </section>`;
+  }
+  private readonly save = (): void => {
+    if (this.disabled || this.invalid || !this.entityKey || !this.entityRevision) return;
+    const form = this.renderRoot.querySelector("aeliqo-form");
+    const formValid = form instanceof AeliqoFormElement ? form.reportValidity() : true;
+    const controlsValid = reportCompoundValidity(this);
+    if (!formValid || !controlsValid) return;
+    this.dispatchEvent(event<AeliqoRecordEditorSaveDetail>("aeliqo-record-editor-save", {
+      source: "user", entity: this.entity, key: this.entityKey, entityRevision: this.entityRevision,
+      values: collectCompoundValues(this), ...(this.action === undefined ? {} : {action: this.action}),
+    }));
+  };
+  private readonly cancel = (): void => {
+    if (!this.entityKey || !this.entityRevision) return;
+    this.dispatchEvent(event<AeliqoRecordEditorCancelDetail>("aeliqo-record-editor-cancel", {
+      source: "user", entity: this.entity, key: this.entityKey, entityRevision: this.entityRevision, values: collectCompoundValues(this),
+    }));
+  };
 }
 
 export class AeliqoFormFlowElement extends AeliqoCompoundElement {
   static readonly properties = {steps: {attribute: false}, activeStep: {attribute: "active-step", type: String}, draft: {attribute: false}, validation: {attribute: false}, status: {type: String}, message: {type: String}, title: {type: String}, nextLabel: {attribute: "next-label", type: String}, backLabel: {attribute: "back-label", type: String}, commitLabel: {attribute: "commit-label", type: String}};
   static readonly styles = [...aeliqoCompoundThemeStyles, css`[part="step-list"] { display: flex; flex-wrap: wrap; gap: var(--aeliqo-space-8, .5rem); list-style: none; margin: 0 0 var(--aeliqo-space-16, 1rem); padding: 0; } [part="step"][data-active="true"] { font-weight: 700; }`];
-  steps: readonly {readonly id: string; readonly label: string}[] = []; activeStep = ""; draft: Readonly<Record<string, Scalar>> = {}; validation: Readonly<Record<string, string | undefined>> = {}; status: AeliqoCompoundStatus = "ready"; message = ""; title = "Form"; nextLabel = "Next"; backLabel = "Back"; commitLabel = "Commit";
-  protected override render() { const active = this.activeStep || this.steps[0]?.id || ""; const index = this.steps.findIndex(step => step.id === active); const current = status(this.status); const error = this.validation[active]; return html`<section part="root" data-status=${current} aria-label=${this.title}><div part="header"><h2>${this.title}</h2><span part="meta">Step ${index < 0 ? 0 : index + 1} of ${this.steps.length}</span></div><ol part="step-list">${this.steps.map(step => html`<li part="step" data-active=${String(step.id === active)}><button type="button" @click=${() => this.moveTo(step.id, step.id === active ? "next" : (this.steps.findIndex(item => item.id === step.id) > index ? "next" : "back"))}>${step.label}</button></li>`)}</ol>${error ? html`<p part="status" role="alert">${error}</p>` : current !== "ready" ? html`<p part="status" role="status">${this.statusText(current, this.message)}</p>` : nothing}<slot></slot><div part="navigation"><button type="button" ?disabled=${index <= 0} @click=${() => this.moveRelative(-1)}>${this.backLabel}</button>${index >= 0 && index < this.steps.length - 1 ? html`<button type="button" @click=${() => this.moveRelative(1)}>${this.nextLabel}</button>` : html`<button type="button" @click=${this.commit}>${this.commitLabel}</button>`}</div></section>`; }
-  private moveRelative(delta: number): void { const active = this.activeStep || this.steps[0]?.id || ""; const index = this.steps.findIndex(step => step.id === active); const target = this.steps[index + delta]; if (target) this.moveTo(target.id, delta > 0 ? "next" : "back"); }
-  private moveTo(target: string, direction: "next" | "back"): void { const from = this.activeStep || this.steps[0]?.id || ""; if (!target || target === from) return; if (direction === "next" && this.validation[from]) return; this.dispatchEvent(event<AeliqoFormFlowStepDetail>("aeliqo-form-flow-step", {source: "user", from, to: target, direction})); }
-  private readonly commit = (): void => { const active = this.activeStep || this.steps[0]?.id || ""; if (!active || this.validation[active]) return; this.dispatchEvent(event<AeliqoFormFlowCommitDetail>("aeliqo-form-flow-commit", {source: "user", step: active})); };
+  steps: readonly AeliqoFormFlowStep[] = []; activeStep = ""; draft: Readonly<Record<string, Scalar>> = {}; validation: Readonly<Record<string, string | undefined>> = {}; status: AeliqoCompoundStatus = "ready"; message = ""; title = "Form"; nextLabel = "Next"; backLabel = "Back"; commitLabel = "Commit";
+  private transientDraft: Record<string, Scalar> = {};
+
+  protected override render() {
+    const active = this.activeStep || this.steps[0]?.id || "";
+    const index = this.steps.findIndex(step => step.id === active);
+    const current = status(this.status);
+    const error = this.validation[active];
+    const named = this.hasNamedStepSlots();
+    const slotName = `step-${active}`;
+    return html`<section part="root" data-status=${current} aria-label=${this.title}>
+      <div part="header"><h2>${this.title}</h2><span part="meta">Step ${index < 0 ? 0 : index + 1} of ${this.steps.length}</span></div>
+      <ol part="step-list">${this.steps.map(step => html`<li part="step" data-active=${String(step.id === active)}><button type="button" aria-current=${step.id === active ? "step" : nothing} @click=${() => this.moveTo(step.id, this.steps.findIndex(item => item.id === step.id) > index ? "next" : "back")}>${step.label}</button></li>`)}</ol>
+      ${error ? html`<p part="status" role="alert">${error}</p>` : current !== "ready" ? html`<p part="status" role="status">${this.statusText(current, this.message)}</p>` : nothing}
+      <div part="step-panel" data-step=${active}>${named ? html`<slot name=${slotName}></slot>` : html`<slot></slot>`}</div>
+      <div part="navigation"><button type="button" ?disabled=${index <= 0} @click=${() => this.moveRelative(-1)}>${this.backLabel}</button>${index >= 0 && index < this.steps.length - 1 ? html`<button type="button" @click=${() => this.moveRelative(1)}>${this.nextLabel}</button>` : html`<button type="button" @click=${this.commit}>${this.commitLabel}</button>`}</div>
+    </section>`;
+  }
+
+  private hasNamedStepSlots(): boolean {
+    return Array.from(this.children ?? []).some(child => (child.getAttribute("slot") ?? "").startsWith("step-"));
+  }
+
+  private controlsForStep(stepId: string): readonly CompoundControl[] {
+    if (!this.hasNamedStepSlots()) return compoundControls(this);
+    return compoundControls(this).filter(control => control.closest("[slot]")?.getAttribute("slot") === `step-${stepId}`);
+  }
+
+  private stepValid(stepId: string, report = false): boolean {
+    if (this.validation[stepId]) return false;
+    let valid = true;
+    for (const control of this.controlsForStep(stepId)) {
+      if (control.matches(":disabled") || control.closest("fieldset:disabled") !== null) continue;
+      const check = report ? (control.reportValidity ?? control.checkValidity) : control.checkValidity;
+      if (check !== undefined && !check.call(control)) valid = false;
+    }
+    return valid;
+  }
+
+  private collectDraft(): Readonly<Record<string, Scalar>> {
+    const output: Record<string, Scalar> = {...this.draft, ...this.transientDraft};
+    for (const control of compoundControls(this)) {
+      const name = control.getAttribute("name") || control.name || "";
+      if (!name || control instanceof HTMLButtonElement || (control instanceof HTMLInputElement && ["submit", "reset", "button", "image"].includes(control.type))) continue;
+      if (control instanceof HTMLInputElement && ["checkbox", "radio"].includes(control.type)) { output[name] = control.checked; continue; }
+      const raw = "formValue" in control ? control.formValue : control.value;
+      if (typeof raw === "string" || typeof raw === "number" || typeof raw === "boolean" || raw === null) output[name] = raw;
+      else if (raw instanceof FormData) {
+        const values = [...raw.values()].map(value => typeof value === "string" ? value : value.name);
+        if (values.length === 1) output[name] = values[0]!;
+        else if (values.length > 1) output[name] = values.join(",");
+      }
+    }
+    return output;
+  }
+
+  private moveRelative(delta: number): void {
+    const active = this.activeStep || this.steps[0]?.id || "";
+    const index = this.steps.findIndex(step => step.id === active);
+    const target = this.steps[index + delta];
+    if (target) this.moveTo(target.id, delta > 0 ? "next" : "back");
+  }
+
+  private moveTo(target: string, direction: "next" | "back"): void {
+    const from = this.activeStep || this.steps[0]?.id || "";
+    const fromIndex = this.steps.findIndex(step => step.id === from);
+    const targetIndex = this.steps.findIndex(step => step.id === target);
+    if (!target || target === from || fromIndex < 0 || targetIndex < 0) return;
+    if (direction === "next") {
+      for (let index = fromIndex; index < targetIndex; index += 1) if (!this.stepValid(this.steps[index]!.id, true)) return;
+    }
+    this.transientDraft = {...this.collectDraft()};
+    this.dispatchEvent(event<AeliqoFormFlowStepDetail>("aeliqo-form-flow-step", {source: "user", from, to: target, direction, draft: this.transientDraft}));
+  }
+
+  private readonly commit = (): void => {
+    const active = this.activeStep || this.steps[0]?.id || "";
+    if (!active) return;
+    for (const step of this.steps) if (!this.stepValid(step.id, true)) return;
+    this.transientDraft = {...this.collectDraft()};
+    this.dispatchEvent(event<AeliqoFormFlowCommitDetail>("aeliqo-form-flow-commit", {source: "user", step: active, draft: this.transientDraft}));
+  };
 }
 
 export class AeliqoQualityPanelElement extends AeliqoCompoundElement {

@@ -49,9 +49,15 @@ export interface AeliqoComparisonRecipeInput extends AeliqoCompoundRecipeInput {
 export interface AeliqoBreakdownGroup {
   readonly key: string;
   readonly label: string;
-  readonly numerator?: number;
-  readonly denominator?: number;
+  /** A value evaluated by the host's canonical meaning/query layer. */
   readonly value?: Scalar;
+  /** Optional host-formatted value. The compound never derives this text. */
+  readonly displayValue?: string;
+  readonly unit?: string;
+  /** @deprecated Retained as input provenance only; never evaluated by the web component. */
+  readonly numerator?: number;
+  /** @deprecated Retained as input provenance only; never evaluated by the web component. */
+  readonly denominator?: number;
   readonly recordCount?: number;
 }
 export interface AeliqoBreakdownRecipeInput extends AeliqoCompoundRecipeInput {
@@ -120,6 +126,14 @@ export interface AeliqoComparisonSetDetail {
   readonly entity: string;
   readonly keys: readonly string[];
   readonly result?: ResultRef;
+  readonly scope?: AeliqoDataScope;
+}
+export interface AeliqoBreakdownGroupDetail {
+  readonly source: "user";
+  readonly entity: string;
+  readonly key: string;
+  readonly result?: ResultRef;
+  readonly scope?: AeliqoDataScope;
 }
 
 export interface AeliqoRecordEditorSaveDetail {
@@ -127,6 +141,8 @@ export interface AeliqoRecordEditorSaveDetail {
   readonly entity: string;
   readonly key: string;
   readonly entityRevision: string;
+  /** Draft values captured at the explicit save boundary. */
+  readonly values: Readonly<Record<string, string | readonly string[]>>;
   readonly action?: VersionRef;
 }
 export interface AeliqoRecordEditorCancelDetail {
@@ -134,16 +150,26 @@ export interface AeliqoRecordEditorCancelDetail {
   readonly entity: string;
   readonly key: string;
   readonly entityRevision: string;
+  readonly values: Readonly<Record<string, string | readonly string[]>>;
+}
+
+export interface AeliqoFormFlowStep {
+  readonly id: string;
+  readonly label: string;
+  /** Optional field names used to describe the step's draft boundary. */
+  readonly fieldNames?: readonly string[];
 }
 export interface AeliqoFormFlowStepDetail {
   readonly source: "user";
   readonly from: string;
   readonly to: string;
   readonly direction: "next" | "back";
+  readonly draft: Readonly<Record<string, Scalar>>;
 }
 export interface AeliqoFormFlowCommitDetail {
   readonly source: "user";
   readonly step: string;
+  readonly draft: Readonly<Record<string, Scalar>>;
 }
 
 export type AeliqoCompoundInteractionLink = InteractionLink;
