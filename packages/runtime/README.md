@@ -27,6 +27,15 @@ if (plan.ok) {
 }
 ```
 
+The local source is bounded before it is cloned or exposed. By default one
+snapshot may contain at most 10,000 rows and 8 MiB of UTF-8 JSON row data
+across all entities. A host may choose lower limits with
+`sourceLimits: {rows, bytes}`; the limits are host configuration, are retained
+when `replaceSnapshot` installs a new revision, and reject a replacement that
+exceeds either aggregate bound. Source rows are typed against the catalog,
+including unique identity tuples (decimal identity values are normalized so
+`1.0` and `1.00` identify the same row).
+
 Every request is schema-checked before evaluation. Discovery, planning and
 execution intersect the requested budget with host and principal grants. Catalog
 and source revisions, scope digests, policy revisions and SHA-256

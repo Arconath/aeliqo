@@ -59,12 +59,18 @@ interface StoredSnapshot {
   readonly records: Readonly<Record<string, readonly DataRecord[]>>;
 }
 
+interface SourceLimits {
+  readonly rows: number;
+  readonly bytes: number;
+}
+
 interface CursorValue {
   readonly kind: 'catalog' | 'data';
   readonly catalogRevision?: string;
   readonly target?: string;
   readonly queryDigest?: string;
   readonly scopeDigest?: string;
+  readonly policyRevision?: string;
   readonly sourceRevision?: string;
   readonly offset: number;
 }
@@ -140,7 +146,13 @@ function validDate(value: string): boolean {
 }
 
 function validInstant(value: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/u.test(value)) return false;
+  const matched = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?(Z|[+-](\d{2}):(\d{2}))$/u.exec(value);
+  if (matched === null || !validDate(matched[1]!)) return false;
+  const hour = Number(matched[2]);
+  const minute = Number(matched[3]);
+  const second = Number(matched[4]);
+  if (hour > 23 || minute > 59 || second > 59) return false;
+  if (matched[7] !== undefined && (Number(matched[7]) > 23 || Number(matched[8]) > 59)) return false;
   return Number.isFinite(Date.parse(value));
 }
 
@@ -165,7 +177,37 @@ function validSourceValue(value: unknown, field: CatalogEntity['fields'][number]
   return false;
 }
 
-function normalizeSnapshot(snapshot: LocalSnapshot): StoredSnapshot {
+const DEFAULT_SOURCE_LIMITS: SourceLimits = Object.freeze({rows: WIRE_LIMITS.array, bytes: WIRE_LIMITS.bytes});
+
+function normalizeSourceLimits(input: LocalDataServiceOptions['sourceLimits'] | undefined): SourceLimits {
+  if (input === undefined) return DEFAULT_SOURCE_LIMITS;
+  if (input === null || typeof input !== 'object' || Array.isArray(input) || !isSafePositive(input.rows) || !isSafePositive(input.bytes) || input.rows > DEFAULT_SOURCE_LIMITS.rows || input.bytes > DEFAULT_SOURCE_LIMITS.bytes)
+    throw new TypeError('sourceLimits must be bounded positive rows and bytes limits.');
+  return Object.freeze({rows: input.rows, bytes: input.bytes});
+}
+
+function normalizeDecimalIdentity(value: string): string {
+  const negative = value.startsWith('-');
+  const unsigned = negative ? value.slice(1) : value;
+  const [whole, fraction = ''] = unsigned.split('.');
+  const normalizedFraction = fraction.replace(/0+$/u, '');
+  if (whole === '0' && normalizedFraction.length === 0) return '0';
+  return `${negative ? '-' : ''}${whole}${normalizedFraction.length === 0 ? '' : `.${normalizedFraction}`}`;
+}
+
+function identityPart(value: DataValue, fieldType: string): string {
+  if (fieldType === 'decimal' && value !== null && typeof value === 'object')
+    return `decimal:${normalizeDecimalIdentity(value.decimal)}`;
+  return `${fieldType}:${canonical(value)}`;
+}
+
+function sourceJsonBytes(value: unknown): number {
+  const serialized = JSON.stringify(value);
+  if (serialized === undefined) throw new TypeError('Local data snapshot contains a non-JSON source value.');
+  return new TextEncoder().encode(serialized).byteLength;
+}
+
+function normalizeSnapshot(snapshot: LocalSnapshot, sourceLimits: SourceLimits): StoredSnapshot {
   const parsed = parseCatalog(snapshot.catalog);
   if (!parsed.ok) throw new TypeError('Local data snapshot catalog is not canonical.');
   const indexed = createCatalogIndex(parsed.value);
@@ -177,16 +219,28 @@ function normalizeSnapshot(snapshot: LocalSnapshot): StoredSnapshot {
     throw new TypeError('Local data snapshot records exceed the bounded entity map limit.');
   const records: Record<string, readonly DataRecord[]> = {};
   const entities = new Map(parsed.value.entities.map((entity) => [entity.id, entity] as const));
+  let totalRows = 0;
+  let totalBytes = sourceJsonBytes({});
+  const addBytes = (value: unknown): void => {
+    totalBytes += sourceJsonBytes(value);
+    if (totalBytes > sourceLimits.bytes) throw new TypeError('Local data snapshot exceeds the bounded source byte limit.');
+  };
   for (const [entityId, rows] of Object.entries(snapshot.records)) {
     assertSafeId(entityId, 'entity id');
     const entity = entities.get(entityId);
     if (entity === undefined) throw new TypeError(`Rows reference unknown entity ${entityId}.`);
     if (!Array.isArray(rows)) throw new TypeError(`Rows for ${entityId} must be an array.`);
     if (rows.length > WIRE_LIMITS.array) throw new TypeError(`Rows for ${entityId} exceed the bounded local source limit.`);
+    addBytes(entityId);
+    addBytes([]);
+    const identityKeys = new Set<string>();
     records[entityId] = Object.freeze(rows.map((row) => {
+      totalRows += 1;
+      if (totalRows > sourceLimits.rows) throw new TypeError('Local data snapshot exceeds the bounded source row limit.');
       if (row === null || typeof row !== 'object' || Array.isArray(row)) throw new TypeError(`Row for ${entityId} must be a plain object.`);
       if (Object.getPrototypeOf(row) !== Object.prototype && Object.getPrototypeOf(row) !== null) throw new TypeError(`Row for ${entityId} must be a plain object.`);
       if (Object.keys(row).length > WIRE_LIMITS.properties) throw new TypeError(`Row for ${entityId} exceeds the bounded field limit.`);
+      addBytes(row);
       for (const key of Object.keys(row)) {
         const field = entity.fields.find((candidate) => candidate.id === key);
         if (field === undefined || !validSourceValue(row[key], field)) throw new TypeError(`Row for ${entityId} has an invalid value for ${key}.`);
@@ -196,6 +250,12 @@ function normalizeSnapshot(snapshot: LocalSnapshot): StoredSnapshot {
           throw new TypeError(`Row for ${entityId} is missing non-nullable field ${field.id}.`);
       }
       for (const identity of entity.identity) if (!Object.hasOwn(row, identity) || row[identity] === undefined || row[identity] === null) throw new TypeError(`Row for ${entityId} has an invalid identity field ${identity}.`);
+      const identityKey = entity.identity.map((identity) => {
+        const field = entity.fields.find((candidate) => candidate.id === identity)!;
+        return identityPart(row[identity]!, field.type.value);
+      }).join('|');
+      if (identityKeys.has(identityKey)) throw new TypeError(`Rows for ${entityId} contain a duplicate identity tuple.`);
+      identityKeys.add(identityKey);
       return deepFreezeRecord(row);
     }));
   }
@@ -284,6 +344,7 @@ function decodeCursor(value: string): CursorValue | undefined {
       ...(typeof record.target === 'string' ? {target: record.target} : {}),
       ...(typeof record.queryDigest === 'string' ? {queryDigest: record.queryDigest} : {}),
       ...(typeof record.scopeDigest === 'string' ? {scopeDigest: record.scopeDigest} : {}),
+      ...(typeof record.policyRevision === 'string' ? {policyRevision: record.policyRevision} : {}),
       ...(typeof record.sourceRevision === 'string' ? {sourceRevision: record.sourceRevision} : {}),
     };
   } catch {
@@ -367,8 +428,16 @@ function normalizeAuthorizationOutcome(value: unknown): Outcome<ReadGrant> {
   if (value !== null && typeof value === 'object' && (value as {readonly ok?: unknown}).ok === true)
     return validateReadGrant((value as {readonly value?: unknown}).value as ReadGrant);
   if (value !== null && typeof value === 'object' && (value as {readonly ok?: unknown}).ok === false) {
-    const diagnostics = (value as {readonly diagnostics?: unknown}).diagnostics;
-    if (Array.isArray(diagnostics) && diagnostics.length > 0) return value as Outcome<ReadGrant>;
+    const diagnosticsValue = (value as {readonly diagnostics?: unknown}).diagnostics;
+    if (!Array.isArray(diagnosticsValue) || diagnosticsValue.length === 0 || diagnosticsValue.length > WIRE_LIMITS.diagnostics)
+      return failure('data.authorization', 'The ADC authorization returned malformed diagnostics.');
+    const diagnostics: Diagnostic[] = [];
+    for (const candidate of diagnosticsValue) {
+      const parsed = parseContract('result-event', {kind: 'error', requestId: 'authorization', error: candidate});
+      if (!parsed.ok || parsed.value.kind !== 'error') return failure('data.authorization', 'The ADC authorization returned malformed diagnostics.');
+      diagnostics.push(parsed.value.error);
+    }
+    return {ok: false, diagnostics: diagnostics as [Diagnostic, ...Diagnostic[]]};
   }
   return failure('data.authorization', 'The ADC authorization returned an invalid outcome.');
 }
@@ -489,9 +558,11 @@ function mergeCatalogPage(catalog: Catalog, target: CatalogTarget, grant: ReadGr
     if (!entityIds.has(relationship.sourceEntity) || !entityIds.has(relationship.targetEntity)) return false;
     return relationship.keys.every((key) => allowedField(grant, relationship.sourceEntity, key.sourceField) && allowedField(grant, relationship.targetEntity, key.targetField));
   });
+  const visibleRelationshipRefs = new Set(relationships.map((relationship) => `${relationship.id}@${relationship.revision}`));
   const capabilities = catalog.capabilities.filter((capability) => {
     if (!entityIds.has(capability.entity)) return false;
-    return capability.fields.every((field) => allowedField(grant, capability.entity, field));
+    return capability.fields.every((field) => allowedField(grant, capability.entity, field))
+      && capability.relations.every((relation) => visibleRelationshipRefs.has(`${relation.id}@${relation.revision}`));
   });
   const restrictedFields = grant.fields !== undefined;
   const pageEntities = page.map((entity) => {
@@ -505,9 +576,9 @@ function mergeCatalogPage(catalog: Catalog, target: CatalogTarget, grant: ReadGr
       entities: pageEntities,
       relationships,
       capabilities,
-      meanings: restrictedFields ? [] : catalog.meanings,
+      meanings: restrictedFields || grant.entities !== undefined ? [] : catalog.meanings,
     },
-    ...(nextOffset < entities.length ? {nextCursor: encodeCursor({kind: 'catalog', catalogRevision: catalog.revision, target: canonical(target), sourceRevision, scopeDigest, offset: nextOffset})} : {}),
+    ...(nextOffset < entities.length ? {nextCursor: encodeCursor({kind: 'catalog', catalogRevision: catalog.revision, target: canonical(target), sourceRevision, scopeDigest, ...(grant.policyRevision === undefined ? {} : {policyRevision: grant.policyRevision}), offset: nextOffset})} : {}),
   };
 }
 
@@ -577,7 +648,8 @@ function expectedValueType(type: string, value: DataValue): boolean {
   if (type === 'date') return typeof value === 'string' && validDate(value);
   if (type === 'instant') return typeof value === 'string' && validInstant(value);
   if (type === 'boolean') return typeof value === 'boolean';
-  if (type === 'integer' || type === 'float') return typeof value === 'number' && Number.isFinite(value);
+  if (type === 'integer') return typeof value === 'number' && Number.isSafeInteger(value);
+  if (type === 'float') return typeof value === 'number' && Number.isFinite(value);
   if (type === 'decimal') return typeof value === 'object' && value !== null && typeof value.decimal === 'string';
   return false;
 }
@@ -739,7 +811,7 @@ function eventBytes(event: DataResultEvent): number {
 }
 
 function pageCursor(accepted: AcceptedQuery, offset: number): string {
-  return encodeCursor({kind: 'data', queryDigest: accepted.queryDigest, scopeDigest: accepted.scopeDigest, sourceRevision: accepted.sourceRevision, catalogRevision: accepted.catalogRevision, target: accepted.target.outputId, offset});
+  return encodeCursor({kind: 'data', queryDigest: accepted.queryDigest, scopeDigest: accepted.scopeDigest, sourceRevision: accepted.sourceRevision, catalogRevision: accepted.catalogRevision, target: accepted.target.outputId, ...(accepted.policyRevision === undefined ? {} : {policyRevision: accepted.policyRevision}), offset});
 }
 
 function acceptedParts(value: AcceptedQuery | PlanAcceptance): AcceptedQuery {
@@ -752,7 +824,8 @@ function sameAccepted(left: AcceptedQuery | PlanAcceptance, right: AcceptedQuery
 }
 
 export function createLocalDataService(options: LocalDataServiceOptions): LocalDataService {
-  let snapshot = normalizeSnapshot(options.snapshot);
+  const sourceLimits = normalizeSourceLimits(options.sourceLimits);
+  let snapshot = normalizeSnapshot(options.snapshot, sourceLimits);
   let currentCatalog = snapshot.catalog;
   const plans = new Map<string, PlanAcceptance>();
   const registeredBundles = new Map<string, MeaningRegistration>();
@@ -794,7 +867,7 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
       let offset = 0;
       if (input.cursor !== undefined) {
         const cursor = decodeCursor(input.cursor);
-        if (cursor?.kind !== 'catalog' || cursor.catalogRevision !== currentCatalog.revision || cursor.scopeDigest !== grant.value.scopeDigest || cursor.sourceRevision !== snapshot.sourceRevision || cursor.target !== canonical(input.target)) return failure('data.stale-cursor', 'The catalog cursor does not belong to the current catalog, source, target or authorization scope.', ['cursor']);
+        if (cursor?.kind !== 'catalog' || cursor.catalogRevision !== currentCatalog.revision || cursor.scopeDigest !== grant.value.scopeDigest || cursor.policyRevision !== grant.value.policyRevision || cursor.sourceRevision !== snapshot.sourceRevision || cursor.target !== canonical(input.target)) return failure('data.stale-cursor', 'The catalog cursor does not belong to the current catalog, source, target or authorization scope.', ['cursor']);
         offset = cursor.offset;
       }
       const page = mergeCatalogPage(currentCatalog, input.target, grant.value, offset, pageSize, snapshot.sourceRevision, grant.value.scopeDigest);
@@ -802,11 +875,16 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
       if (!catalog.ok) return failure('data.catalog', 'The authorized catalog projection is not canonical.');
       if (context.signal?.aborted) return failure('data.aborted', 'The catalog request was cancelled.');
       if (Date.now() - startedAt > effectiveBudget.maxMilliseconds) return failure('data.budget', 'Discovery exceeded the effective time budget.', ['budget']);
-      return {ok: true, value: {
+      const pageValue: CatalogPage = {
         version: '1', requestId: input.requestId, catalog: catalog.value, catalogRevision: currentCatalog.revision,
         sourceRevision: snapshot.sourceRevision, scopeDigest: grant.value.scopeDigest, target: input.target, effectiveBudget,
         ...(page.nextCursor === undefined ? {} : {nextCursor: page.nextCursor}),
-      }};
+      };
+      const columnCount = pageValue.catalog.entities.reduce((count, entity) => count + entity.fields.length, 0);
+      if (columnCount > effectiveBudget.maxColumns) return failure('data.budget', 'Discovery exceeds the effective column budget.', ['budget', 'maxColumns']);
+      if (new TextEncoder().encode(JSON.stringify(pageValue)).byteLength > effectiveBudget.maxBytes)
+        return failure('data.budget', 'Discovery exceeds the effective response byte budget.', ['budget', 'maxBytes']);
+      return {ok: true, value: pageValue};
     },
 
     async plan(request, context = {}) {
@@ -850,11 +928,11 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
       if (currentCatalog !== initialCatalog || snapshot !== initialSnapshot) return failure('data.stale-plan', 'The catalog or source changed while the plan identity was being computed.');
       if (input.query.page?.cursor !== undefined) {
         const cursor = decodeCursor(input.query.page.cursor);
-        if (cursor?.kind !== 'data' || cursor.queryDigest !== queryDigest || cursor.scopeDigest !== grant.value.scopeDigest || cursor.sourceRevision !== snapshot.sourceRevision || cursor.catalogRevision !== currentCatalog.revision || cursor.target !== input.target.outputId)
+        if (cursor?.kind !== 'data' || cursor.queryDigest !== queryDigest || cursor.scopeDigest !== grant.value.scopeDigest || cursor.policyRevision !== grant.value.policyRevision || cursor.sourceRevision !== snapshot.sourceRevision || cursor.catalogRevision !== currentCatalog.revision || cursor.target !== input.target.outputId)
           return failure('data.stale-cursor', 'The query cursor does not belong to this query, scope, target or source revision.', ['query', 'page', 'cursor']);
       }
       const populationDigestOutcome = await digestWithDeadline(
-        {queryDigest, scopeDigest: grant.value.scopeDigest, sourceRevision: snapshot.sourceRevision, catalogRevision: currentCatalog.revision},
+        {queryDigest, scopeDigest: grant.value.scopeDigest, sourceRevision: snapshot.sourceRevision, catalogRevision: currentCatalog.revision, ...(grant.value.policyRevision === undefined ? {} : {policyRevision: grant.value.policyRevision})},
         'population',
         context,
         boundedBudget.maxMilliseconds - (Date.now() - startedAt),
@@ -1041,7 +1119,7 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
       const pageLimit = input.query.page?.size ?? Number.MAX_SAFE_INTEGER;
       const available = evaluated.slice(requestedOffset);
       let outputRows: DataRecord[] = [];
-      let partialReason: string | undefined;
+      let partialReason: string | undefined = requestedOffset > 0 ? 'page' : undefined;
       for (const evaluatedRow of available) {
         if (outputRows.length >= pageLimit) { partialReason = 'page'; break; }
         if (outputRows.length >= executionBudget.maxRows) { partialReason = 'row budget'; break; }
@@ -1076,48 +1154,82 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
       let batch: DataResultEvent | undefined = outputRows.length > 0 ? {kind: 'batch', result: ref, sequence: 0, rows: outputRows} : undefined;
       let progress: DataResultEvent | undefined = includeProgress ? {kind: 'progress', result: ref, completed: outputRows.length, total: evaluated.length, unit: 'rows'} : undefined;
       let complete = makeComplete();
+      let fitFailure: 'aborted' | 'budget' | undefined;
       const fits = () => {
+        if (context.signal?.aborted) { fitFailure = 'aborted'; return false; }
+        if (Date.now() - startedAt > executionBudget.maxMilliseconds) { fitFailure = 'budget'; return false; }
         descriptor = makeDescriptor();
         batch = outputRows.length > 0 ? {kind: 'batch', result: ref, sequence: 0, rows: outputRows} : undefined;
         progress = includeProgress ? {kind: 'progress', result: ref, completed: outputRows.length, total: evaluated.length, unit: 'rows'} : undefined;
         complete = makeComplete();
         return eventBytes(descriptor) + (batch === undefined ? 0 : eventBytes(batch)) + (progress === undefined ? 0 : eventBytes(progress)) + eventBytes(complete) <= executionBudget.maxBytes;
       };
-      while (!fits() && outputRows.length > 0) {
-        outputRows = outputRows.slice(0, -1);
+      let responseFits = fits();
+      if (!responseFits && fitFailure === undefined && outputRows.length > 0) {
+        const candidates = outputRows;
+        let low = 0;
+        let high = candidates.length;
+        let best = -1;
         partialReason = 'byte budget';
+        while (low <= high && fitFailure === undefined) {
+          const middle = Math.ceil((low + high) / 2);
+          outputRows = candidates.slice(0, middle);
+          if (fits()) {
+            best = middle;
+            low = middle + 1;
+          } else {
+            high = middle - 1;
+          }
+        }
+        if (best >= 0) outputRows = candidates.slice(0, best);
+        responseFits = fitFailure === undefined && fits();
       }
-      if (!fits()) {
-        yield resultError(input.requestId, 'data.budget', 'The bounded result cannot fit the effective response byte budget.');
-        return;
-      }
-      if (context.signal?.aborted) {
+      if (fitFailure === 'aborted') {
         yield resultError(input.requestId, 'data.aborted', 'The result execution was cancelled.');
         return;
       }
+      if (fitFailure === 'budget') {
+        yield resultError(input.requestId, 'data.budget', 'Execution exceeded the effective time budget while bounding the response.');
+        return;
+      }
+      if (!responseFits) {
+        yield resultError(input.requestId, 'data.budget', 'The bounded result cannot fit the effective response byte budget.');
+        return;
+      }
+      const yieldFailure = (): DataResultEvent | undefined => {
+        if (context.signal?.aborted) return resultError(input.requestId, 'data.aborted', 'The result execution was cancelled.');
+        if (Date.now() - startedAt > executionBudget.maxMilliseconds) return resultError(input.requestId, 'data.budget', 'Execution exceeded the effective time budget while emitting the response.');
+        return undefined;
+      };
+      let pendingFailure = yieldFailure();
+      if (pendingFailure !== undefined) { yield pendingFailure; return; }
       yield descriptor;
       if (batch !== undefined) {
-        if (context.signal?.aborted) { yield resultError(input.requestId, 'data.aborted', 'The result execution was cancelled.'); return; }
+        pendingFailure = yieldFailure();
+        if (pendingFailure !== undefined) { yield pendingFailure; return; }
         yield batch;
       }
       if (progress !== undefined) {
-        if (context.signal?.aborted) { yield resultError(input.requestId, 'data.aborted', 'The result execution was cancelled.'); return; }
+        pendingFailure = yieldFailure();
+        if (pendingFailure !== undefined) { yield pendingFailure; return; }
         yield progress;
       }
-      if (context.signal?.aborted) { yield resultError(input.requestId, 'data.aborted', 'The result execution was cancelled.'); return; }
+      pendingFailure = yieldFailure();
+      if (pendingFailure !== undefined) { yield pendingFailure; return; }
       yield complete;
       return;
     },
 
     replaceSnapshot(next) {
       let normalized: StoredSnapshot;
-      try { normalized = normalizeSnapshot(next); }
+      try { normalized = normalizeSnapshot(next, sourceLimits); }
       catch { return failure('data.source-shape', 'The replacement source snapshot is not a bounded canonical source.'); }
       if (normalized.sourceRevision === snapshot.sourceRevision && canonical(normalized.records) !== canonical(snapshot.records))
         return failure('data.source-revision-conflict', 'Source records changed without a new immutable source revision.', ['sourceRevision']);
       snapshot = normalized;
       currentCatalog = normalized.catalog;
       plans.clear();
+      registeredBundles.clear();
       return {ok: true, value: undefined};
     },
 
@@ -1126,7 +1238,30 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
       if (control === undefined) return failure('data.meaning-controlplane', 'Meaning registration requires a host-owned activation policy and function registry.');
       const bundleKey = canonical(bundle);
       const existingBundle = registeredBundles.get(bundleKey);
-      if (existingBundle !== undefined) return {ok: true, value: {...existingBundle, idempotent: true}};
+      if (existingBundle !== undefined) {
+        const replayBundle: MeaningBundle = {
+          catalogRevision: currentCatalog.revision,
+          functionRegistryDigest: bundle.functionRegistryDigest,
+          meanings: existingBundle.meanings,
+        };
+        const replayed = validateMeaningBundle(replayBundle, {
+          catalog: currentCatalog,
+          registry: control.registry,
+          definitions: currentCatalog.meanings,
+          policy: {allowHostCapabilities: true},
+        });
+        if (!replayed.ok) return replayed;
+        const receipts: MeaningActivationReceipt[] = [];
+        for (const meaning of replayed.value.meanings) {
+          if (meaning.origin === 'ai-assisted') return failure('data.meaning-origin', 'Only reviewed code-owned meanings may enter the local activation control plane.', ['meanings']);
+          const activation = authorizeMeaningActivation(meaning, control.policy);
+          if (!activation.ok) return activation;
+          receipts.push(activation.value);
+        }
+        const registration: MeaningRegistration = freezeDeep({catalogRevision: currentCatalog.revision, meanings: replayed.value.meanings, receipts, idempotent: true});
+        registeredBundles.set(bundleKey, registration);
+        return {ok: true, value: registration};
+      }
       if (bundle.catalogRevision !== currentCatalog.revision)
         return failure('data.stale-catalog', 'Meaning registration must pin the current catalog revision.', ['catalogRevision']);
       const validated = validateMeaningBundle(bundle, {
@@ -1138,8 +1273,6 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
       if (!validated.ok) return validated;
       for (const meaning of validated.value.meanings) {
         if (meaning.origin === 'ai-assisted') return failure('data.meaning-origin', 'Only reviewed code-owned meanings may enter the local activation control plane.', ['meanings']);
-        const activation = authorizeMeaningActivation(meaning, control.policy);
-        if (!activation.ok) return activation;
       }
       const added: MeaningDefinition[] = [];
       for (const meaning of validated.value.meanings) {
@@ -1179,4 +1312,4 @@ function allowedTarget(target: CatalogTarget, catalog: Catalog, grant: ReadGrant
   return entity !== undefined && allowedEntity(grant, target.entity) && allowedIdentity(grant, entity) && entity.rowGrain.every((field) => allowedField(grant, entity.id, field));
 }
 
-export {DEFAULT_BUDGET};
+export {DEFAULT_BUDGET, DEFAULT_SOURCE_LIMITS};

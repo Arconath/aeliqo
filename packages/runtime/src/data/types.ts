@@ -98,6 +98,11 @@ export interface MeaningRegistration {
 
 export interface LocalDataServiceOptions {
   readonly snapshot: LocalSnapshot;
+  /** Host-owned limits for the immutable in-process source snapshot. */
+  readonly sourceLimits?: {
+    readonly rows: number;
+    readonly bytes: number;
+  };
   readonly hostBudget?: QueryBudget;
   readonly authorize?: AuthorizeRead;
   readonly planTtlMs?: number;

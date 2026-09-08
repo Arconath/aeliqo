@@ -153,6 +153,42 @@ describe('in-process ADC data service', () => {
     expect(() => createLocalDataService({snapshot: snapshot([{id: null, name: 'null identity', amount: {decimal: '1'}, active: true} as unknown as DataRecord])})).toThrow();
   });
 
+  it('enforces aggregate host source row and UTF-8 byte limits across replacements', () => {
+    const service = createLocalDataService({
+      snapshot: snapshot(rows.slice(0, 1)),
+      sourceLimits: {rows: 2, bytes: 8 * 1024},
+    });
+    expect(service.replaceSnapshot(snapshot(rows.slice(0, 2), 'source-2'))).toMatchObject({ok: false, diagnostics: [{code: 'data.source-shape'}]});
+    expect(service.sourceRevision).toBe('source-1');
+    expect(() => createLocalDataService({
+      snapshot: snapshot([{...rows[0]!, name: '😀'.repeat(100)}]),
+      sourceLimits: {rows: 10, bytes: 256},
+    })).toThrow();
+  });
+
+  it('rejects duplicate identity tuples, including decimal scale variants', () => {
+    const decimalIdentityCatalog: Catalog = {
+      ...catalog,
+      revision: 'catalog-decimal-identity',
+      entities: catalog.entities.map((entity) => entity.id === 'employees'
+        ? {...entity, identity: ['amount'], rowGrain: ['amount']}
+        : entity),
+    };
+    expect(() => createLocalDataService({
+      snapshot: {
+        catalog: decimalIdentityCatalog,
+        sourceRevision: 'source-decimal-identity',
+        records: {
+          employees: [
+            {...rows[0]!, id: 'e-1', amount: {decimal: '1.0'}},
+            {...rows[1]!, id: 'e-2', amount: {decimal: '1.00'}},
+          ],
+          teams: [{id: 'team-1'}],
+        },
+      },
+    })).toThrow();
+  });
+
   it('expires accepted plans and does not let cursors change the normalized query identity', async () => {
     const service = createLocalDataService({snapshot: snapshot(), planTtlMs: 1, maxPlans: 2});
     const planned = await service.plan({version: '1', requestId: 'plan-expire', catalogRevision: 'catalog-1', target: {outputId: 'employees-output'}, query: query({page: {size: 1}}), budget});
@@ -223,5 +259,30 @@ describe('local meaning activation control plane', () => {
     expect(second).toMatchObject({ok: true, value: {idempotent: true}});
     expect(service.catalog.meanings).toHaveLength(1);
     expect(service.catalog.revision).not.toBe(meaningCatalog.revision);
+  });
+
+  it('reauthorizes a cached bundle after catalog revision changes', () => {
+    const registry = createStandardFunctionRegistry('functions-meaning-replay');
+    expect(registry.ok).toBe(true);
+    if (!registry.ok) return;
+    const meaningCatalog: Catalog = {
+      ...catalog, revision: 'catalog-meaning-replay', functionRegistryDigest: registry.value.digest,
+      capabilities: [{ref: {id: 'absence.metric', revision: '1'}, entity: 'employees', operators: [], fields: ['id'], relations: [], maxOutputRows: 10}],
+    };
+    const meaning: MeaningDefinition = {
+      id: 'meaning.absence', revision: '1', label: 'Absence', explanation: 'Reviewed absence metric',
+      output: {value: 'integer', nullable: false}, implementation: {kind: 'host-capability', capability: {id: 'absence.metric', revision: '1'}},
+      dependencies: [], functionRegistryDigest: registry.value.digest, origin: 'system', lifecycle: 'active', scope: 'organization',
+      authority: 'approved', aggregation: 'non-additive', aggregationDimensions: [], missingPolicy: 'reject',
+    };
+    const policy = {policyRevision: 'policy-replay-1', allowlistedDefinitions: [meaning], allowlistedRefs: [{id: meaning.id, revision: meaning.revision}], minAuthority: 'approved' as const};
+    const service = createLocalDataService({
+      snapshot: {catalog: meaningCatalog, sourceRevision: 'source-meaning-replay', records: {employees: rows}},
+      meaningActivation: {registry: registry.value, policy},
+    });
+    const bundle = {catalogRevision: meaningCatalog.revision, functionRegistryDigest: registry.value.digest, meanings: [meaning]};
+    expect(service.registerMeaningBundle(bundle)).toMatchObject({ok: true, value: {idempotent: false}});
+    policy.allowlistedDefinitions.length = 0;
+    expect(service.registerMeaningBundle(bundle)).toMatchObject({ok: false, diagnostics: [{code: 'semantic.activation-denied'}]});
   });
 });
