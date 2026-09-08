@@ -1,0 +1,550 @@
+/**
+ * Build and consume the actual @aeliqo/core and @aeliqo/runtime packages
+ * outside the workspace.
+ *
+ * This is a bounded T06 package-boundary check. It proves the installed data
+ * entrypoint, strict consumer declarations, local execution, HTTP transport,
+ * authorization revalidation, and a browser fetch path. It does not certify
+ * every source adapter, the full query planner, or universal browser support.
+ */
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {createServer} from 'node:http';
+import {spawnSync} from 'node:child_process';
+import {gzipSync} from 'node:zlib';
+import {chromium} from '@playwright/test';
+import {
+  access,
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  lstat,
+  realpath,
+  rmdir,
+  unlink,
+  writeFile,
+} from 'node:fs/promises';
+import {tmpdir, platform, release, arch} from 'node:os';
+import {extname, join, relative, resolve} from 'node:path';
+
+const root = resolve(import.meta.dirname, '../..');
+const coreDirectory = join(root, 'packages', 'core');
+const runtimeDirectory = join(root, 'packages', 'runtime');
+const outputDirectory = join(root, 'artifacts', 'runtime-consumers');
+await mkdir(outputDirectory, {recursive: true});
+const runDirectory = await mkdtemp(join(outputDirectory, 'run-'));
+const consumerDirectory = await mkdtemp(join(tmpdir(), 'aeliqo-runtime-consumer-'));
+
+function run(argv, cwd, encoding = 'utf8', env = process.env) {
+  const result = spawnSync(argv[0], argv.slice(1), {
+    cwd,
+    encoding,
+    env,
+    timeout: 180_000,
+  });
+  if (result.error || result.status !== 0) {
+    throw new Error(`${argv.join(' ')} failed: ${result.error ?? ''}\n${result.stdout ?? ''}\n${result.stderr ?? ''}`);
+  }
+  return result.stdout;
+}
+
+const hash = (bytes, algorithm = 'sha256', encoding = 'hex') =>
+  createHash(algorithm).update(bytes).digest(encoding);
+
+async function fileExists(path) {
+  try {
+    await access(path);
+    return true;
+  } catch (error) {
+    if (error?.code === 'ENOENT') return false;
+    throw error;
+  }
+}
+
+async function sortedFiles(directory, excluded = new Set()) {
+  const result = [];
+  async function visit(current) {
+    const entries = await readdir(current, {withFileTypes: true});
+    for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
+      if (excluded.has(entry.name)) continue;
+      const path = join(current, entry.name);
+      const stat = await lstat(path);
+      assert(!stat.isSymbolicLink(), `Refuse symlink in source tree: ${path}`);
+      if (stat.isDirectory()) await visit(path);
+      else if (stat.isFile()) result.push(path);
+    }
+  }
+  await visit(directory);
+  return result;
+}
+
+async function sourceDigest(directory) {
+  const actual = await realpath(directory);
+  const files = await sortedFiles(actual, new Set(['node_modules', 'dist', 'schemas']));
+  const digest = createHash('sha256');
+  for (const path of files) {
+    digest.update(relative(actual, path).split('\\').join('/')).update('\0').update(await readFile(path));
+  }
+  return digest.digest('hex');
+}
+
+async function clearCompiledOutput(directory, allowedPattern) {
+  if (!(await fileExists(directory))) return;
+  for (const name of await readdir(directory)) {
+    const path = join(directory, name);
+    const stat = await lstat(path);
+    assert(!stat.isSymbolicLink(), `Refuse generated-output symlink: ${path}`);
+    if (stat.isDirectory()) {
+      await clearCompiledOutput(path, allowedPattern);
+      await rmdir(path);
+    } else {
+      assert(stat.isFile() && allowedPattern.test(name), `Unexpected generated output: ${path}`);
+      await unlink(path);
+    }
+  }
+}
+
+const coreManifest = JSON.parse(await readFile(join(coreDirectory, 'package.json'), 'utf8'));
+const runtimeManifest = JSON.parse(await readFile(join(runtimeDirectory, 'package.json'), 'utf8'));
+assert.equal(coreManifest.name, '@aeliqo/core');
+assert.equal(coreManifest.version, '0.1.0');
+assert.equal(coreManifest.license, 'Apache-2.0');
+assert.notEqual(coreManifest.private, true);
+assert.equal(runtimeManifest.name, '@aeliqo/runtime');
+assert.equal(runtimeManifest.version, '0.1.0');
+assert.equal(runtimeManifest.license, 'Apache-2.0');
+assert.notEqual(runtimeManifest.private, true);
+assert.deepEqual(Object.keys(runtimeManifest.dependencies ?? {}), ['@aeliqo/core', 'zod']);
+assert.equal(runtimeManifest.dependencies['@aeliqo/core'], 'workspace:*');
+assert.deepEqual(Object.keys(runtimeManifest.peerDependencies ?? {}), []);
+assert.deepEqual(Object.keys(runtimeManifest.optionalDependencies ?? {}), []);
+assert.deepEqual(runtimeManifest.exports?.['./data'], {
+  types: './dist/data/index.d.ts',
+  import: './dist/data/index.js',
+});
+assert.equal(runtimeManifest.exports?.['./data']?.types, './dist/data/index.d.ts');
+assert.equal(runtimeManifest.exports?.['./data']?.import, './dist/data/index.js');
+assert(await fileExists(join(runtimeDirectory, 'src', 'data')), 'Runtime data source is not ready');
+
+const sourceDigestBefore = {
+  core: await sourceDigest(coreDirectory),
+  runtime: await sourceDigest(runtimeDirectory),
+};
+await clearCompiledOutput(join(coreDirectory, 'dist'), /(?:\.js|\.d\.ts|\.js\.map|\.d\.ts\.map|\.tsbuildinfo)$/);
+await clearCompiledOutput(join(coreDirectory, 'schemas'), /\.schema\.json$/);
+await clearCompiledOutput(join(runtimeDirectory, 'dist'), /(?:\.js|\.d\.ts|\.js\.map|\.d\.ts\.map|\.tsbuildinfo)$/);
+run(['pnpm', 'build'], coreDirectory);
+run(['pnpm', 'build'], runtimeDirectory);
+
+const coreTarball = join(runDirectory, 'aeliqo-core-0.1.0.tgz');
+const runtimeTarball = join(runDirectory, 'aeliqo-runtime-0.1.0.tgz');
+run(['pnpm', 'pack', '--out', coreTarball], coreDirectory);
+run(['pnpm', 'pack', '--out', runtimeTarball], runtimeDirectory);
+const coreBytes = await readFile(coreTarball);
+const runtimeBytes = await readFile(runtimeTarball);
+const artifacts = [
+  {
+    name: coreManifest.name,
+    version: coreManifest.version,
+    path: coreTarball,
+    bytes: coreBytes,
+    sha256: hash(coreBytes),
+    integrity: `sha512-${hash(coreBytes, 'sha512', 'base64')}`,
+  },
+  {
+    name: runtimeManifest.name,
+    version: runtimeManifest.version,
+    path: runtimeTarball,
+    bytes: runtimeBytes,
+    sha256: hash(runtimeBytes),
+    integrity: `sha512-${hash(runtimeBytes, 'sha512', 'base64')}`,
+  },
+];
+
+const packedCoreManifest = JSON.parse(run(['tar', '-xOf', coreTarball, 'package/package.json'], root));
+const packedRuntimeManifest = JSON.parse(run(['tar', '-xOf', runtimeTarball, 'package/package.json'], root));
+assert.deepEqual(packedCoreManifest, coreManifest);
+assert.equal(packedRuntimeManifest.name, '@aeliqo/runtime');
+assert.equal(packedRuntimeManifest.version, '0.1.0');
+assert.equal(packedRuntimeManifest.license, 'Apache-2.0');
+assert.deepEqual(packedRuntimeManifest.exports, runtimeManifest.exports);
+assert.deepEqual(Object.keys(packedRuntimeManifest.dependencies ?? {}), ['@aeliqo/core', 'zod']);
+assert.equal(packedRuntimeManifest.dependencies['@aeliqo/core'], '0.1.0');
+for (const manifest of [packedCoreManifest, packedRuntimeManifest]) {
+  for (const field of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
+    assert(!JSON.stringify(manifest[field] ?? {}).includes('workspace:'), `Workspace alias in ${manifest.name} ${field}`);
+  }
+}
+
+const coreEntries = run(['tar', '-tzf', coreTarball], root).trim().split('\n');
+const runtimeEntries = run(['tar', '-tzf', runtimeTarball], root).trim().split('\n');
+for (const [name, entries] of [['@aeliqo/core', coreEntries], ['@aeliqo/runtime', runtimeEntries]]) {
+  for (const entry of entries) {
+    assert(entry.startsWith('package/') && !entry.split('/').includes('..'), `Unexpected ${name} archive path: ${entry}`);
+  }
+  assert(entries.includes('package/LICENSE'), `${name} archive is missing LICENSE`);
+  assert(entries.includes('package/README.md'), `${name} archive is missing README.md`);
+  assert(!entries.some((entry) => entry.startsWith('package/src/')), `${name} source leaked into package`);
+}
+assert(coreEntries.includes('package/dist/index.js'), 'Core dist entry is absent from tarball');
+assert(runtimeEntries.includes('package/dist/data/index.js'), 'Runtime data dist entry is absent from tarball');
+assert(runtimeEntries.includes('package/dist/data/index.d.ts'), 'Runtime data declarations are absent from tarball');
+
+await writeFile(join(consumerDirectory, 'package.json'), JSON.stringify({private: true, type: 'module'}));
+run([
+  'npm', 'install', '--ignore-scripts', '--no-audit', '--no-fund', '--save-exact',
+  coreTarball, runtimeTarball, 'typescript@7.0.2', 'vite@8.2.2', '@playwright/test@1.63.0',
+], consumerDirectory);
+const lockBytes = await readFile(join(consumerDirectory, 'package-lock.json'));
+const lock = JSON.parse(lockBytes);
+for (const artifact of artifacts) {
+  const location = `node_modules/${artifact.name}`;
+  assert.equal(lock.packages[location].version, artifact.version);
+  assert.equal(lock.packages[location].integrity, artifact.integrity);
+  assert.deepEqual(
+    Object.keys(lock.packages).filter((key) => key.endsWith(location)),
+    [location],
+    `Duplicate installed ${artifact.name}`,
+  );
+}
+assert.equal(lock.packages['node_modules/@aeliqo/runtime'].dependencies['@aeliqo/core'], '0.1.0');
+assert.equal(lock.packages['node_modules/@aeliqo/core'].version, '0.1.0');
+assert.equal(lock.packages['node_modules/zod'].version, '4.5.4');
+assert.match(lock.packages['node_modules/zod'].integrity, /^sha512-/);
+assert.deepEqual(
+  Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/runtime/node_modules/')),
+  [],
+  'Runtime has unexpected nested production dependencies',
+);
+for (const artifact of artifacts) {
+  const entries = artifact.name === '@aeliqo/core' ? coreEntries : runtimeEntries;
+  for (const entry of entries) {
+    if (entry.endsWith('/')) continue;
+    const installedPath = join(consumerDirectory, 'node_modules', artifact.name, entry.slice('package/'.length));
+    const stat = await lstat(installedPath);
+    assert(stat.isFile(), `Installed package entry is not a regular file: ${artifact.name}/${entry}`);
+    const packedEntry = run(['tar', '-xOf', artifact.path, entry], root, null);
+    assert.equal(hash(await readFile(installedPath)), hash(packedEntry), `Installed bytes differ: ${artifact.name}/${entry}`);
+  }
+}
+await writeFile(join(runDirectory, 'consumer-package-lock.json'), lockBytes);
+
+const fields = [
+  {id: 'id', label: 'ID', type: {value: 'text', nullable: false}, role: 'identity'},
+  {id: 'name', label: 'Name', type: {value: 'text', nullable: false}, role: 'attribute'},
+  {id: 'amount', label: 'Amount', type: {value: 'decimal', nullable: false}, role: 'measure'},
+  {id: 'active', label: 'Active', type: {value: 'boolean', nullable: true}, role: 'attribute'},
+];
+const catalog = {
+  version: '1', revision: 'catalog-1', functionRegistryDigest: 'functions-1',
+  entities: [{id: 'employees', label: 'Employees', identity: ['id'], rowGrain: ['id'], fields}],
+  relationships: [], meanings: [], capabilities: [],
+};
+const rows = [
+  {id: 'e-1', name: '😀', amount: {decimal: '10.00'}, active: true},
+  {id: 'e-2', name: '𐀀', amount: {decimal: '20.00'}, active: null},
+  {id: 'e-3', name: 'a', amount: {decimal: '10.0'}, active: false},
+];
+const budget = {maxRows: 10, maxBytes: 100_000, maxMessages: 8, maxMilliseconds: 10_000, maxColumns: 4};
+const query = {
+  entity: 'employees', fields: ['id', 'name', 'amount', 'active'], measures: [], relations: [], groupBy: [],
+  population: {kind: 'all-authorized'}, order: [{field: 'name', direction: 'asc', nulls: 'last'}],
+};
+const fixture = {catalog, rows, budget, query};
+const fixtureSource = JSON.stringify(fixture);
+
+await writeFile(join(consumerDirectory, 'consumer-types.ts'), `
+import {createDataHttpHandler, createHttpDataService, createLocalDataService, parseBudget, parseResultEvent} from '@aeliqo/runtime/data';
+import type {DataHttpHandler, DataRecord, DataService, LocalSnapshot, QueryBudget, ReadContext, ResultEvent} from '@aeliqo/runtime/data';
+import type {Catalog, QuerySpec} from '@aeliqo/core';
+const catalog = ${JSON.stringify(catalog)} as const satisfies Catalog;
+const query = ${JSON.stringify(query)} as const satisfies QuerySpec;
+const budget: QueryBudget = ${JSON.stringify(budget)};
+const snapshot: LocalSnapshot = {catalog, sourceRevision: 'source-1', records: {employees: ${JSON.stringify(rows)}}};
+const context: ReadContext = {principal: {id: 'alice'}, metadata: {request: 'consumer'}};
+const local: DataService = createLocalDataService({snapshot});
+const handler: DataHttpHandler = createDataHttpHandler({service: local});
+const http: DataService = createHttpDataService({baseUrl: 'https://example.test'});
+const parsedBudget = parseBudget(budget);
+const parsedEvent = parseResultEvent({});
+const record: DataRecord = {id: 'e-1', amount: {decimal: '10.00'}, active: true};
+// @ts-expect-error Nested objects are outside the bounded DataRecord value set.
+const invalidRecord: DataRecord = {nested: {value: 'not-a-wire-value'}};
+// @ts-expect-error Query budget fields are numeric.
+const invalidBudget: QueryBudget = {...budget, maxRows: '10'};
+void [catalog, query, budget, snapshot, context, local, handler, http, parsedBudget, parsedEvent, record, invalidRecord, invalidBudget];
+const typedEvent: ResultEvent | undefined = undefined;
+void typedEvent;
+`);
+await writeFile(join(consumerDirectory, 'tsconfig.json'), JSON.stringify({
+  compilerOptions: {
+    target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext', strict: true,
+    exactOptionalPropertyTypes: true, noUncheckedIndexedAccess: true, noEmit: true, skipLibCheck: false,
+  },
+  files: ['consumer-types.ts'],
+}));
+run([join(consumerDirectory, 'node_modules/.bin/tsc'), '--project', 'tsconfig.json'], consumerDirectory);
+
+await writeFile(join(consumerDirectory, 'consumer.mjs'), `
+import assert from 'node:assert/strict';
+import {createServer} from 'node:http';
+import {lstat, readFile, readdir, writeFile} from 'node:fs/promises';
+import {resolve, join, extname, relative} from 'node:path';
+import {spawnSync} from 'node:child_process';
+import {chromium} from '@playwright/test';
+import {gzipSync} from 'node:zlib';
+import {
+  createDataHttpHandler,
+  createHttpDataService,
+  createLocalDataService,
+} from '@aeliqo/runtime/data';
+
+const run = (argv, cwd) => {
+  const result = spawnSync(argv[0], argv.slice(1), {cwd, encoding: 'utf8'});
+  if (result.error || result.status !== 0) throw new Error(argv.join(' ') + ' failed: ' + (result.stderr || result.stdout || result.error || ''));
+  return result.stdout;
+};
+const fixture = ${fixtureSource};
+const {catalog, rows, budget, query} = fixture;
+const snapshot = (sourceRevision = 'source-1', sourceRows = rows) => ({
+  catalog, sourceRevision, records: {employees: sourceRows},
+});
+const ok = value => ({ok: true, value});
+const denied = () => ({ok: false, diagnostics: [{code: 'data.denied', message: 'Denied by consumer host policy.', retryable: false}]});
+const unwrap = outcome => {
+  assert.equal(outcome.ok, true, JSON.stringify(outcome));
+  return outcome.value;
+};
+const diagnosticsCode = outcome => outcome.ok ? undefined : outcome.diagnostics[0]?.code;
+const collect = async iterable => { const events = []; for await (const event of iterable) events.push(event); return events; };
+const assertResultEvents = (events, expectedName = 'a', expectedAmount = '10.0') => {
+  assert.deepEqual(events.map(event => event.kind), ['descriptor', 'batch', 'progress', 'complete']);
+  assert.equal(events[1].rows[0].name, expectedName);
+  assert.equal(events[1].rows[0].amount.decimal, expectedAmount);
+  assert.equal(events[3].finalCoverage.kind, 'complete');
+};
+const planRequest = requestId => ({
+  version: '1', requestId, catalogRevision: 'catalog-1', target: {outputId: 'employees-output'}, query, budget,
+});
+const describeRequest = requestId => ({
+  version: '1', requestId, catalogRevision: null, target: {kind: 'catalog'}, budget, pageSize: 1,
+});
+
+let authMode = 'allow';
+const observations = [];
+const authorize = ({operation, context}) => {
+  observations.push({operation, principal: context.principal});
+  if (authMode === 'deny' && operation === 'execute') return denied();
+  return ok({
+    scopeDigest: 'scope-alice',
+    policyRevision: authMode === 'policy-change' ? 'policy-2' : 'policy-1',
+    entities: ['employees'],
+    maxBudget: {maxRows: 10, maxColumns: 4},
+  });
+};
+const local = createLocalDataService({snapshot: snapshot(), hostBudget: budget, authorize});
+const localDescribe = await local.describe(describeRequest('local-describe'), {principal: 'alice'});
+assert.equal(localDescribe.ok, true);
+assert.equal(localDescribe.value.catalog.entities[0].id, 'employees');
+const localAccepted = unwrap(await local.plan(planRequest('local-plan'), {principal: 'alice'}));
+const localEvents = await collect(local.execute(localAccepted, {principal: 'alice'}));
+assertResultEvents(localEvents);
+assert(observations.some(item => item.operation === 'execute' && item.principal === 'alice'));
+
+authMode = 'policy-change';
+const policyChangedEvents = await collect(local.execute(localAccepted, {principal: 'alice'}));
+assert.deepEqual(policyChangedEvents.map(event => event.kind), ['error']);
+assert.equal(policyChangedEvents[0].error.code, 'data.denied');
+authMode = 'allow';
+const sameRevisionMutation = local.replaceSnapshot(snapshot('source-1', [{...rows[0], name: 'mutated'}]));
+assert.equal(diagnosticsCode(sameRevisionMutation), 'data.source-revision-conflict');
+assert.equal(local.replaceSnapshot(snapshot('source-2', [{...rows[0], name: 'new-source'}])).ok, true);
+const staleEvents = await collect(local.execute(localAccepted, {principal: 'alice'}));
+assert.deepEqual(staleEvents.map(event => event.kind), ['error']);
+assert.equal(staleEvents[0].error.code, 'data.stale-plan');
+
+authMode = 'allow';
+const httpHandler = createDataHttpHandler({
+  service: local,
+  authenticate: request => {
+    const authorization = request.headers.get('authorization');
+    if (authorization !== 'Bearer alice' && authorization !== 'Bearer browser') return denied();
+    return ok({principal: authorization.slice('Bearer '.length)});
+  },
+});
+
+async function nodeRequest(incoming) {
+  const chunks = [];
+  for await (const chunk of incoming) chunks.push(Buffer.from(chunk));
+  const headers = new Headers();
+  for (const [name, value] of Object.entries(incoming.headers)) {
+    if (typeof value === 'string') headers.set(name, value);
+    else if (Array.isArray(value)) headers.set(name, value.join(', '));
+  }
+  const body = chunks.length === 0 ? undefined : Buffer.concat(chunks);
+  return new Request(new URL(incoming.url ?? '/', 'http://127.0.0.1').toString(), {
+    method: incoming.method ?? 'GET', headers,
+    ...(body === undefined ? {} : {body, duplex: 'half'}),
+  });
+}
+async function dispatch(handler, incoming, outgoing) {
+  try {
+    const response = await handler(await nodeRequest(incoming));
+    const headers = Object.fromEntries(response.headers.entries());
+    outgoing.writeHead(response.status, headers);
+    outgoing.end(response.body === null ? undefined : Buffer.from(await response.arrayBuffer()));
+  } catch (error) {
+    outgoing.writeHead(500, {'content-type': 'text/plain'});
+    outgoing.end(String(error));
+  }
+}
+const server = createServer(async (incoming, outgoing) => dispatch(httpHandler, incoming, outgoing));
+await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve); });
+const baseUrl = 'http://127.0.0.1:' + server.address().port;
+try {
+  const http = createHttpDataService({baseUrl, headers: {authorization: 'Bearer alice'}});
+  const httpDescribe = unwrap(await http.describe(describeRequest('http-describe')));
+  assert.equal(httpDescribe.scopeDigest, 'scope-alice');
+  const httpAccepted = unwrap(await http.plan(planRequest('http-plan')));
+  const httpEvents = await collect(http.execute(httpAccepted));
+  assertResultEvents(httpEvents, 'new-source', '10.00');
+  assert(observations.some(item => item.operation === 'plan' && item.principal === 'alice'));
+
+  const unauthenticated = createHttpDataService({baseUrl});
+  const deniedDescribe = await unauthenticated.describe(describeRequest('http-unauthorized'));
+  assert.equal(diagnosticsCode(deniedDescribe), 'data.denied');
+  authMode = 'deny';
+  const deniedHttpEvents = await collect(http.execute(httpAccepted));
+  assert.deepEqual(deniedHttpEvents.map(event => event.kind), ['error']);
+  assert.equal(deniedHttpEvents[0].error.code, 'data.denied');
+  authMode = 'allow';
+
+  await writeFile('index.html', '<!doctype html><html><body><script type="module" src="browser.js"></script></body></html>');
+  await writeFile('browser.js', \`
+import {createDataHttpHandler, createHttpDataService, createLocalDataService} from '@aeliqo/runtime/data';
+const fixture = ${fixtureSource};
+const {catalog, rows, budget, query} = fixture;
+const describeRequest = requestId => ({version:'1',requestId,catalogRevision:null,target:{kind:'catalog'},budget,pageSize:1});
+const planRequest = requestId => ({version:'1',requestId,catalogRevision:'catalog-1',target:{outputId:'employees-output'},query,budget});
+const collect = async iterable => {const events=[];for await (const event of iterable) events.push(event);return events;};
+const runFlow = async client => {
+  const described = await client.describe(describeRequest('browser-describe'));
+  if (!described.ok) throw new Error(described.diagnostics[0]?.code ?? 'describe failed');
+  const accepted = await client.plan(planRequest('browser-plan'));
+  if (!accepted.ok) throw new Error(accepted.diagnostics[0]?.code ?? 'plan failed');
+  const events = await collect(client.execute(accepted.value));
+  if (events.length !== 4 || events.at(-1)?.kind !== 'complete') throw new Error('browser result stream failed');
+  return {scopeDigest: described.value.scopeDigest, rows: events.find(event => event.kind === 'batch')?.rows.length ?? 0};
+};
+const localService = createLocalDataService({snapshot:{catalog,sourceRevision:'browser-source',records:{employees:rows}}});
+const localHandler = createDataHttpHandler({service:localService});
+const localClient = createHttpDataService({baseUrl:'http://in-memory.invalid',fetch:(input,init) => localHandler(new Request(input,init))});
+const networkClient = createHttpDataService({baseUrl:location.origin,headers:{authorization:'Bearer browser'}});
+const local = await runFlow(localClient);
+const network = await runFlow(networkClient);
+globalThis.__aeliqoBrowserData = {local,network};
+\`);
+  await writeFile('vite.config.mjs', \`export default {build:{minify:true,outDir:'dist',rollupOptions:{input:'index.html'}},plugins:[{name:'record-runtime-modules',generateBundle(_,bundle){const modules=Object.values(bundle).filter(item=>item.type==='chunk').flatMap(item=>Object.keys(item.modules));this.emitFile({type:'asset',fileName:'modules.json',source:JSON.stringify(modules)});}}]};\`);
+  run(['node_modules/.bin/vite', 'build'], process.cwd());
+  const browserModules = JSON.parse(await readFile('dist/modules.json', 'utf8'));
+  assert(browserModules.some(id => id.includes('@aeliqo/runtime')), 'Browser graph omitted installed runtime');
+  assert(browserModules.some(id => id.includes('@aeliqo/core')), 'Browser graph omitted installed core');
+  const bundleFiles = [];
+  for (const path of await (async function files(directory) {
+    const result = [];
+    for (const name of await readdir(directory)) {
+      const path = join(directory, name);
+      const stat = await lstat(path);
+      if (stat.isDirectory()) result.push(...await files(path));
+      else if (stat.isFile()) result.push(path);
+    }
+    return result;
+  })('dist')) {
+    if (extname(path) !== '.js') continue;
+    const bytes = await readFile(path);
+    bundleFiles.push({file: relative('dist', path), bytes: bytes.length, gzipBytes: gzipSync(bytes).length});
+  }
+  const initialGzipBytes = bundleFiles.reduce((sum, item) => sum + item.gzipBytes, 0);
+  assert(initialGzipBytes <= 120 * 1024, 'Runtime browser data entry exceeds 120 KiB gzip');
+
+  const staticServer = createServer(async (incoming, outgoing) => {
+    if ((incoming.url ?? '').startsWith('/adc/')) {
+      await dispatch(httpHandler, incoming, outgoing);
+      return;
+    }
+    try {
+      const pathname = new URL(incoming.url ?? '/', baseUrl).pathname;
+      const path = resolve(process.cwd(), 'dist', pathname === '/' ? 'index.html' : '.' + pathname);
+      assert(path === resolve(process.cwd(), 'dist') || path.startsWith(resolve(process.cwd(), 'dist') + '/'));
+      const bytes = await readFile(path);
+      outgoing.writeHead(200, {'content-type': extname(path) === '.js' ? 'text/javascript' : 'text/html'});
+      outgoing.end(bytes);
+    } catch {
+      outgoing.writeHead(404);
+      outgoing.end();
+    }
+  });
+  await new Promise((resolve, reject) => { staticServer.once('error', reject); staticServer.listen(0, '127.0.0.1', resolve); });
+  let browser;
+  let browserVersion;
+  let browserResult;
+  const browserFailures = [];
+  try {
+    browser = await chromium.launch();
+    browserVersion = browser.version();
+    const page = await browser.newPage({viewport: {width: 1280, height: 720}});
+    page.on('pageerror', error => browserFailures.push(error.message));
+    page.on('console', message => { if (message.type() === 'error') browserFailures.push(message.text()); });
+    page.on('requestfailed', request => browserFailures.push(request.url() + ': ' + request.failure()?.errorText));
+    await page.goto('http://127.0.0.1:' + staticServer.address().port + '/');
+    await page.waitForFunction(() => globalThis.__aeliqoBrowserData !== undefined, null, {timeout: 10_000});
+    browserResult = await page.evaluate(() => globalThis.__aeliqoBrowserData);
+    assert.equal(browserResult.local.rows, 3);
+    assert.equal(browserResult.network.rows, 1);
+    assert.deepEqual(browserFailures, []);
+  } finally {
+    await browser?.close();
+    await new Promise(resolve => staticServer.close(resolve));
+  }
+  const report = {
+    passed: true,
+    local: {eventKinds: localEvents.map(event => event.kind), stalePlan: staleEvents[0].error.code},
+    http: {eventKinds: httpEvents.map(event => event.kind), denied: deniedHttpEvents[0].error.code},
+    browser: {result: browserResult, modules: browserModules, bundle: bundleFiles, initialGzipBytes, browserVersion},
+    observations,
+  };
+  await writeFile(${JSON.stringify(join(runDirectory, 'runtime-report.json'))}, JSON.stringify(report, null, 2) + '\\n');
+  console.log('Installed @aeliqo/runtime/data local, HTTP, auth revalidation, Vite and Chromium passes.');
+} finally {
+  await new Promise(resolve => server.close(resolve));
+}
+`);
+const consumerOutput = run([process.execPath, 'consumer.mjs'], consumerDirectory);
+
+const sourceDigestAfter = {
+  core: await sourceDigest(coreDirectory),
+  runtime: await sourceDigest(runtimeDirectory),
+};
+assert.deepEqual(sourceDigestAfter, sourceDigestBefore, 'Package source changed during consumer verification');
+const report = {
+  passed: true,
+  scope: '@aeliqo/core and @aeliqo/runtime 0.1.0 installed tarballs; strict declarations; local/HTTP ADC roundtrip; authorization and stale-plan checks; browser bundle and fetch path.',
+  artifacts: artifacts.map(({name, version, path, sha256, integrity}) => ({name, version, path, sha256, integrity})),
+  consumer: {directory: consumerDirectory, lockPath: join(runDirectory, 'consumer-package-lock.json'), lockSha256: hash(lockBytes)},
+  sourceDigestBefore,
+  sourceDigestAfter,
+  consumerOutput: consumerOutput.trim(),
+  environment: {
+    node: process.version,
+    npm: run(['npm', '--version'], consumerDirectory).trim(),
+    pnpm: run(['pnpm', '--version'], root).trim(),
+    typescript: '7.0.2',
+    vite: '8.2.2',
+    playwright: JSON.parse(await readFile(join(root, 'node_modules/@playwright/test/package.json'), 'utf8')).version,
+    os: platform(), release: release(), arch: arch(),
+  },
+};
+await writeFile(join(runDirectory, 'report.json'), JSON.stringify(report, null, 2) + '\n');
+console.log('Installed @aeliqo/core/runtime data types, packages, local/HTTP service and Chromium browser fetch path pass.');
+console.log(`Evidence: ${join(runDirectory, 'report.json')}`);
