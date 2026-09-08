@@ -61,6 +61,41 @@ async function clearCompiledOutput(directory) {
   }
 }
 
+
+async function measureDirectEntries() {
+  const entries = ["metric", "delta", "key-value", "detail", "record-list", "card-collection", "selection-summary", "filter-builder", "table"];
+  await writeFile(join(consumer, "measure-bundles.mjs"), `
+import {build} from 'vite';
+import {gzipSync} from 'node:zlib';
+import {writeFile} from 'node:fs/promises';
+const measured = [];
+for (const entry of ${JSON.stringify(entries)}) {
+  await writeFile('measure-entry.js', 'export * from "@aeliqo/web/' + entry + '";');
+  for (const excludeLit of [false, true]) {
+    const result = await build({configFile: false, logLevel: 'silent', build: {write: false, minify: true,
+      lib: {entry: 'measure-entry.js', formats: ['es']},
+      rollupOptions: {external: excludeLit ? id => /^(lit|lit-html|lit-element|@lit\\/)/.test(id) : undefined}}});
+    const chunks = (Array.isArray(result) ? result : [result]).flatMap(item => item.output).filter(item => item.type === 'chunk');
+    measured.push({entry, excludeLit, bytes: chunks.reduce((n, item) => n + Buffer.byteLength(item.code), 0),
+      gzipBytes: chunks.reduce((n, item) => n + gzipSync(item.code).length, 0),
+      modules: chunks.flatMap(item => Object.entries(item.modules).filter(([, module]) => module.renderedLength > 0).map(([id]) => id))});
+  }
+}
+await writeFile('bundle-measurements.json', JSON.stringify(measured, null, 2));
+`);
+  run(["node", "measure-bundles.mjs"], consumer);
+  const measurements = JSON.parse(await readFile(join(consumer, "bundle-measurements.json"), "utf8"));
+  for (const item of measurements) {
+    assert(!item.modules.some(module => /@aeliqo\/(agent|runtime)|\/dist\/(region|plot|visualization|studio|presentation)\//.test(module)), `${item.entry} pulled a planner, runtime, chart or agent`);
+    for (const module of item.modules.filter(module => module.includes("@aeliqo/")))
+      assert(module.startsWith(consumerReal + "/node_modules/"), `Direct bundle resolved outside the installed consumer: ${module}`);
+    if (item.excludeLit && item.entry === "metric") assert(item.gzipBytes <= 15 * 1024, "Metric exceeds the standalone 15 KiB gzip budget");
+    if (item.excludeLit && item.entry === "table") assert(item.gzipBytes <= 40 * 1024, "Table exceeds the standalone 40 KiB gzip budget");
+  }
+  await writeFile(join(runDirectory, "bundle-measurements.json"), JSON.stringify(measurements, null, 2) + "\n");
+  return measurements.map(({modules, ...item}) => item);
+}
+
 const sourceDigest = () => run(["python3", "scripts/gate.py", "digest"], root).trim();
 assert.match(process.version, /^v24\./, `Node 24 is required; received ${process.version}`);
 const before = sourceDigest();
@@ -384,13 +419,14 @@ try {
   await new Promise(resolveServer => server.close(resolveServer));
 }
 
+const directBundles = await measureDirectEntries();
 assert.equal(sourceDigest(), before, "Source changed during data tarball consumer proof");
 await writeFile(join(runDirectory, "report.json"), JSON.stringify({
   sourceDigest: before, sourceChangedDuringRun: false,
   scope: "Installed @aeliqo/core, @aeliqo/web data entry points and @aeliqo/react data wrappers from actual tarballs; strict TypeScript; Lit/React SSR; Chromium exact decimal and percentage-point rendering, host-controlled virtual-grid keyboard window echo/focus, and native filter Apply behavior.",
   artifacts: artifacts.map(({bytes, entries, ...item}) => item), consumerDirectory: consumer,
   consumerLock: {path: join(runDirectory, "consumer-package-lock.json"), sha256: hash(lockBytes)},
-  resolution: resolved, ssr: ssrOutput,
+  resolution: resolved, ssr: ssrOutput, directBundles,
   screenshot: {path: join(runDirectory, "installed-data.png"), sha256: hash(await readFile(join(runDirectory, "installed-data.png")))},
   browser: browserReport,
   environment: {node: process.version, npm: run(["npm", "--version"], consumer).trim(), pnpm: run(["pnpm", "--version"], root).trim(), typescript: "7.0.2", vite: "8.2.2", playwright: "1.63.0", chromium: browserVersion, os: platform(), release: release(), arch: arch(), viewport: {width: 1280, height: 900}, locale: "en-US", deviceScaleFactor: 1},
