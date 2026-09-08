@@ -75,6 +75,7 @@ describe('local analytical ADC adapter', () => {
     expect(descriptor.descriptor.coverage.kind).toBe('partial');
     expect(descriptor.descriptor.counts.population).toMatchObject({kind: 'exact', value: 3});
     expect(complete.cursor).toBeTypeOf('string');
+    if (typeof complete.cursor !== 'string') throw new Error('Expected a continuation cursor.');
     const second = await service.plan({version: '1', requestId: 'page-plan-2', catalogRevision: catalog.revision, target: {outputId: 'events-output'}, query: query({page: {size: 1, cursor: complete.cursor}}), budget});
     expect(second.ok).toBe(true);
     if (!second.ok) throw new Error(second.diagnostics[0]?.message);

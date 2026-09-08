@@ -237,7 +237,7 @@ const fields = [
   {id: 'active', label: 'Active', type: {value: 'boolean', nullable: true}, role: 'attribute'},
 ];
 const catalog = {
-  version: '1', revision: 'catalog-1', functionRegistryDigest: 'functions-1',
+  version: '1', revision: 'catalog-1', functionRegistryDigest: 'core-standard-1',
   entities: [{id: 'employees', label: 'Employees', identity: ['id'], rowGrain: ['id'], fields}],
   relationships: [], meanings: [], capabilities: [],
 };

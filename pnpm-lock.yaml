@@ -112,6 +112,15 @@ importers:
         specifier: 3.5.42
         version: 3.5.42(typescript@7.0.2)
 
+  examples/reference-host:
+    dependencies:
+      '@aeliqo/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@aeliqo/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
+
   packages/core:
     dependencies:
       zod:

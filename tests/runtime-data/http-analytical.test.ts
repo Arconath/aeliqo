@@ -205,8 +205,16 @@ describe('commerce analytical local/HTTP parity', () => {
     const direct = await planAndCollect(local, groupedTopK);
     const remote = await planAndCollect(http, groupedTopK);
 
-    expect(remote.accepted).toEqual(direct.accepted);
-    expect(remote.events).toEqual(direct.events);
+    // Separately accepted leases may have different expiry and content identities.
+    const {expiresAt: directExpiry, planDigest: directDigest, ...directPlan} = direct.accepted;
+    const {expiresAt: remoteExpiry, planDigest: remoteDigest, ...remotePlan} = remote.accepted;
+    expect(remotePlan).toEqual(directPlan);
+    expect(directExpiry).toBeGreaterThan(Date.now());
+    expect(remoteExpiry).toBeGreaterThan(Date.now());
+    expect(directDigest).toMatch(/^plan-/); expect(remoteDigest).toMatch(/^plan-/);
+    // The same accepted handle must retain its complete event lineage over HTTP.
+    expect(await collect(http.execute(direct.accepted))).toEqual(direct.events);
+    expect(await collect(local.execute(remote.accepted))).toEqual(remote.events);
     const batch = direct.events.find((event) => event.kind === 'batch');
     if (batch?.kind !== 'batch') throw new Error('The grouped query did not emit a batch.');
     expect(batch.rows).toEqual([{region: 'north', 'order.total': {decimal: '25.25'}}]);
@@ -230,7 +238,8 @@ describe('commerce analytical local/HTTP parity', () => {
     const direct = await planAndCollect(local, activeCustomerOrders, 'commerce-relation-1');
     const remote = await planAndCollect(http, activeCustomerOrders, 'commerce-relation-1');
 
-    expect(remote.events).toEqual(direct.events);
+    expect(await collect(http.execute(direct.accepted))).toEqual(direct.events);
+    expect(await collect(local.execute(remote.accepted))).toEqual(remote.events);
     const batch = direct.events.find((event) => event.kind === 'batch');
     if (batch?.kind !== 'batch') throw new Error('The relation query did not emit a batch.');
     expect(batch.rows).toEqual([
@@ -263,7 +272,8 @@ describe('commerce analytical local/HTTP parity', () => {
     const replaced = local.replaceSnapshot(snapshot('commerce-source-2'));
     expect(replaced.ok).toBe(true);
     const stale = await collect(local.execute(planned.value));
-    expect(stale).toEqual([expect.objectContaining({kind: 'error', error: {code: 'data.stale-plan'}})]);
+    expect(stale).toHaveLength(1);
+    expect(stale[0]).toMatchObject({kind: 'error', error: {code: 'data.stale-plan'}});
 
     let scope = 'scope-acme';
     const revoked = createLocalDataService({
@@ -275,6 +285,7 @@ describe('commerce analytical local/HTTP parity', () => {
     if (!accepted.ok) throw new Error(accepted.diagnostics.map((diagnostic) => diagnostic.message).join('; '));
     scope = 'scope-revoked';
     const denied = await collect(revoked.execute(accepted.value));
-    expect(denied).toEqual([expect.objectContaining({kind: 'error', error: {code: 'data.denied'}})]);
+    expect(denied).toHaveLength(1);
+    expect(denied[0]).toMatchObject({kind: 'error', error: {code: 'data.denied'}});
   });
 });
