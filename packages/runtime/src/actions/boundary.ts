@@ -20,7 +20,18 @@ import type {
   TrustedActionContext,
 } from './types.js';
 
-const DEFAULTS = Object.freeze({previews: 128, pending: 128, history: 256, idempotency: 512, inputBytes: 256 * 1024, callbackMilliseconds: 30_000, inFlight: 16});
+const DEFAULTS = Object.freeze({
+  previews: 128,
+  pending: 128,
+  history: 256,
+  idempotency: 512,
+  identityBytes: 512 * 1024,
+  ledgerBytes: 4 * 1024 * 1024,
+  outputBytes: 256 * 1024,
+  inputBytes: 256 * 1024,
+  callbackMilliseconds: 30_000,
+  inFlight: 16,
+});
 const MAX_CALLBACK_MS = 86_400_000;
 const validId = (value: unknown): value is string => typeof value === 'string' && value.length > 0 && value.length <= WIRE_LIMITS.id && !/[\s\u0000-\u001f\u007f]/u.test(value);
 const validText = (value: unknown): value is string => typeof value === 'string' && value.length > 0 && value.length <= WIRE_LIMITS.text;
@@ -141,7 +152,7 @@ function normalizeOutcome<T>(value: unknown): Outcome<T> | undefined {
   return undefined;
 }
 
-type HostCall<T> = {readonly state: 'completed'; readonly value: T} | {readonly state: 'cancelled' | 'timeout' | 'lifecycle'};
+type HostCall<T> = {readonly state: 'completed'; readonly value: T} | {readonly state: 'cancelled' | 'timeout' | 'lifecycle' | 'budget'};
 
 interface ActiveCall {abort(state: 'cancelled' | 'lifecycle'): void;}
 
@@ -177,10 +188,15 @@ type LedgerRecord = {
   readonly action: VersionRef;
   readonly receiptId: string;
   readonly at: number;
+  readonly identityBytes: number;
+  readonly metadataBytes: number;
   state: 'in-flight' | 'executed' | 'ambiguous' | 'rejected';
   output?: ActionPayload;
+  outputBytes?: number;
   reason?: string;
+  reasonBytes?: number;
   diagnostics?: readonly [ActionFailure, ...ActionFailure[]];
+  diagnosticsBytes?: number;
 };
 
 function copyDiagnostics(value: readonly Diagnostic[]): readonly [ActionFailure, ...ActionFailure[]] {
@@ -214,6 +230,9 @@ class ActionPortImpl implements ActionPort {
   private readonly maxPending: number;
   private readonly maxHistory: number;
   private readonly maxIdempotencyEntries: number;
+  private readonly maxIdentityBytes: number;
+  private readonly maxLedgerBytes: number;
+  private readonly maxOutputBytes: number;
   private readonly maxInputBytes: number;
   private readonly maxCallbackMilliseconds: number;
   private readonly maxInFlight: number;
@@ -223,6 +242,9 @@ class ActionPortImpl implements ActionPort {
   private readonly idempotency = new Map<string, LedgerRecord>();
   private readonly activeCalls = new Set<ActiveCall>();
   private readonly historyEntries: ActionHistoryEntry[] = [];
+  private ledgerBytes = 0;
+  /** Reservations made before an asynchronous context read completes. */
+  private pendingPreviewReservations = 0;
   private sequence = 0;
   private epoch = 0;
   private status: 'active' | 'revoked' | 'disposed' = 'active';
@@ -234,6 +256,9 @@ class ActionPortImpl implements ActionPort {
     this.maxPending = bounded(options.maxPending ?? DEFAULTS.pending, 1, WIRE_LIMITS.array, 'maxPending');
     this.maxHistory = bounded(options.maxHistory ?? DEFAULTS.history, 1, WIRE_LIMITS.array, 'maxHistory');
     this.maxIdempotencyEntries = bounded(options.maxIdempotencyEntries ?? DEFAULTS.idempotency, 1, WIRE_LIMITS.array, 'maxIdempotencyEntries');
+    this.maxIdentityBytes = bounded(options.maxIdentityBytes ?? DEFAULTS.identityBytes, 1, WIRE_LIMITS.bytes, 'maxIdentityBytes');
+    this.maxLedgerBytes = bounded(options.maxLedgerBytes ?? DEFAULTS.ledgerBytes, 1, WIRE_LIMITS.bytes, 'maxLedgerBytes');
+    this.maxOutputBytes = bounded(options.maxOutputBytes ?? DEFAULTS.outputBytes, 1, WIRE_LIMITS.bytes, 'maxOutputBytes');
     this.maxInputBytes = bounded(options.maxInputBytes ?? DEFAULTS.inputBytes, 1, WIRE_LIMITS.bytes, 'maxInputBytes');
     this.maxCallbackMilliseconds = bounded(options.maxCallbackMilliseconds ?? DEFAULTS.callbackMilliseconds, 1, MAX_CALLBACK_MS, 'maxCallbackMilliseconds');
     this.maxInFlight = bounded(options.maxInFlight ?? DEFAULTS.inFlight, 1, WIRE_LIMITS.array, 'maxInFlight');
@@ -246,6 +271,17 @@ class ActionPortImpl implements ActionPort {
   private lifecycle<T>(): ActionOutcome<T> { return this.status === 'disposed' ? this.outcome('action.disposed', 'The action port has been disposed.') : this.outcome('action.revoked', 'The action port has been revoked.'); }
   private live(): boolean { return this.status === 'active'; }
 
+  private reservePreview(): boolean {
+    if (this.previews.size + this.pendingPreviewReservations >= this.maxPreviews ||
+        this.previews.size + this.receipts.size + this.pendingPreviewReservations >= this.maxPending) return false;
+    this.pendingPreviewReservations++;
+    return true;
+  }
+
+  private releasePreviewReservation(): void {
+    if (this.pendingPreviewReservations > 0) this.pendingPreviewReservations--;
+  }
+
   private addHistory(entry: ActionHistoryEntry): void {
     this.historyEntries.push(frozen(entry));
     if (this.historyEntries.length > this.maxHistory) this.historyEntries.splice(0, this.historyEntries.length - this.maxHistory);
@@ -256,6 +292,7 @@ class ActionPortImpl implements ActionPort {
   private async callHost<T>(callback: (signal: AbortSignal) => T | Promise<T>, signal: AbortSignal | undefined): Promise<HostCall<T>> {
     if (!this.live()) return {state: 'lifecycle'};
     if (signal?.aborted) return {state: 'cancelled'};
+    if (this.activeCalls.size >= this.maxInFlight) return {state: 'budget'};
     const controller = new AbortController();
     let finished = false;
     let stop: (state: 'cancelled' | 'timeout' | 'lifecycle') => void = () => {};
@@ -288,6 +325,7 @@ class ActionPortImpl implements ActionPort {
     if (host.state !== 'completed') {
       if (host.state === 'lifecycle') return this.lifecycle();
       if (host.state === 'cancelled') return this.outcome('action.cancelled', 'The action context read was cancelled.');
+      if (host.state === 'budget') return this.outcome('action.budget', 'The host callback budget is full.');
       return this.outcome('action.budget', 'The action context read exceeded its bounded time budget.');
     }
     const outcome = normalizeOutcome<unknown>(host.value);
@@ -312,27 +350,37 @@ class ActionPortImpl implements ActionPort {
 
   async preview(raw: unknown, options: {readonly signal?: AbortSignal} = {}): Promise<ActionOutcome<ActionPreview>> {
     if (!this.live()) return this.lifecycle();
-    if (this.previews.size >= this.maxPreviews || this.previews.size + this.receipts.size >= this.maxPending) return this.outcome('action.budget', 'The action preview budget is full.');
-    const parsed = request(raw); if (!parsed.ok) return parsed;
-    const registration = resolveRegisteredAction(this.registry, parsed.value.action);
-    if (registration === undefined) return this.outcome('action.unknown', 'The requested action version is not registered.');
-    if (registration.descriptor.idempotency === 'required' && parsed.value.idempotencyKey === undefined) return this.outcome('action.invalid', 'This action requires an idempotency key.');
-    if (registration.descriptor.entityRevision === 'required' && parsed.value.entity === undefined) return this.outcome('action.invalid', 'This action requires an entity revision.');
-    const hostContext = await this.readContext(options.signal);
-    if (!hostContext.ok) return hostContext;
-    if (!grantsInclude(hostContext.value, 'action.propose')) return this.outcome('action.denied', 'The host did not grant action proposal.');
-    if (!this.live()) return this.lifecycle();
-    const input = this.normalizedInput(registration, parsed.value.input); if (!input.ok) return input;
-    const identity = parsed.value.idempotencyKey === undefined ? undefined : this.idempotencyIdentity(registration, input.value, parsed.value.entity, parsed.value.idempotencyKey);
-    const id = this.nextId('preview');
-    const preview = frozen({state: 'preview' as const, id, requestId: parsed.value.requestId, action: cloneRef(registration.descriptor.ref),
-      descriptor: registration.descriptor, input: input.value, ...(parsed.value.entity === undefined ? {} : {entity: parsed.value.entity}),
-      ...(parsed.value.idempotencyKey === undefined ? {} : {idempotencyKey: parsed.value.idempotencyKey}), sideEffect: registration.descriptor.sideEffect,
-      confirmation: registration.descriptor.confirmation});
-    const record: PreviewRecord = {id, requestId: parsed.value.requestId, registration, preview, input: input.value, inputIdentity: identity ?? '', context: hostContext.value, consumed: false, confirming: false};
-    this.previews.set(id, record);
-    this.addHistory({state: 'preview', action: cloneRef(registration.descriptor.ref), previewId: id, at: this.now()});
-    return {ok: true, value: preview};
+    // Reserve synchronously before the first await so concurrent context reads
+    // cannot over-admit previews or the combined pending record budget.
+    if (!this.reservePreview()) return this.outcome('action.budget', 'The action preview budget is full.');
+    try {
+      const parsed = request(raw); if (!parsed.ok) return parsed;
+      const registration = resolveRegisteredAction(this.registry, parsed.value.action);
+      if (registration === undefined) return this.outcome('action.unknown', 'The requested action version is not registered.');
+      if (registration.descriptor.idempotency === 'required' && parsed.value.idempotencyKey === undefined) return this.outcome('action.invalid', 'This action requires an idempotency key.');
+      if (registration.descriptor.entityRevision === 'required' && parsed.value.entity === undefined) return this.outcome('action.invalid', 'This action requires an entity revision.');
+      const hostContext = await this.readContext(options.signal);
+      if (!hostContext.ok) return hostContext;
+      if (!grantsInclude(hostContext.value, 'action.propose')) return this.outcome('action.denied', 'The host did not grant action proposal.');
+      if (!this.live()) return this.lifecycle();
+      const input = this.normalizedInput(registration, parsed.value.input); if (!input.ok) return input;
+      // Recheck after the asynchronous host call. Other completions may have
+      // filled a slot while this proposal was being authenticated.
+      if (this.previews.size >= this.maxPreviews || this.previews.size + this.receipts.size >= this.maxPending)
+        return this.outcome('action.budget', 'The action preview budget is full.');
+      const identity = parsed.value.idempotencyKey === undefined ? undefined : this.idempotencyIdentity(registration, input.value, parsed.value.entity, parsed.value.idempotencyKey);
+      const id = this.nextId('preview');
+      const preview = frozen({state: 'preview' as const, id, requestId: parsed.value.requestId, action: cloneRef(registration.descriptor.ref),
+        descriptor: registration.descriptor, input: input.value, ...(parsed.value.entity === undefined ? {} : {entity: parsed.value.entity}),
+        ...(parsed.value.idempotencyKey === undefined ? {} : {idempotencyKey: parsed.value.idempotencyKey}), sideEffect: registration.descriptor.sideEffect,
+        confirmation: registration.descriptor.confirmation});
+      const record: PreviewRecord = {id, requestId: parsed.value.requestId, registration, preview, input: input.value, inputIdentity: identity ?? '', context: hostContext.value, consumed: false, confirming: false};
+      this.previews.set(id, record);
+      this.addHistory({state: 'preview', action: cloneRef(registration.descriptor.ref), previewId: id, at: this.now()});
+      return {ok: true, value: preview};
+    } finally {
+      this.releasePreviewReservation();
+    }
   }
 
   async previewInteraction(input: unknown, options: {readonly signal?: AbortSignal; readonly entity?: ActionEntity; readonly idempotencyKey?: string} = {}): Promise<ActionOutcome<ActionPreview>> {
@@ -369,6 +417,7 @@ class ActionPortImpl implements ActionPort {
       if (issued.state !== 'completed') {
         if (issued.state === 'lifecycle') return retry(this.lifecycle());
         if (issued.state === 'cancelled') return retry(this.outcome('action.cancelled', 'The action confirmation was cancelled.'));
+        if (issued.state === 'budget') return retry(this.outcome('action.budget', 'The host callback budget is full.'));
         return retry(this.outcome('action.budget', 'The action confirmation exceeded its bounded time budget.'));
       }
       const outcome = normalizeOutcome<unknown>(issued.value);
@@ -433,17 +482,26 @@ class ActionPortImpl implements ActionPort {
         return {ok: true, value: {state: 'executed', receiptId: matched.id, action: cloneRef(existing.action), output: existing.output}};
       }
       if (this.idempotency.size >= this.maxIdempotencyEntries) { this.consumeReceipt(matched); return this.outcome('action.budget', 'The idempotency ledger is full; no new action is admitted.'); }
+      const identityBytes = bytes(identity);
+      const at = this.now();
+      const metadataBytes = this.ledgerMetadataBytes(ledgerKey!, key, matched.registration.descriptor.ref, matched.id, at);
+      if (identityBytes > this.maxIdentityBytes || this.ledgerBytes + identityBytes + metadataBytes > this.maxLedgerBytes) {
+        this.consumeReceipt(matched);
+        return this.outcome('action.budget', 'The idempotency identity exceeds the bounded ledger budget.');
+      }
       // Reserve synchronously immediately before dispatch; no asynchronous host call occurs after this point.
-      this.idempotency.set(ledgerKey!, {key, identity, action: cloneRef(matched.registration.descriptor.ref), receiptId: matched.id, at: this.now(), state: 'in-flight'});
+      this.idempotency.set(ledgerKey!, {key, identity, identityBytes, metadataBytes, action: cloneRef(matched.registration.descriptor.ref), receiptId: matched.id, at, state: 'in-flight'});
+      this.ledgerBytes += identityBytes + metadataBytes;
     }
     // A host clock or lifecycle callback may have revoked the port while the reservation was made.
     // Never invoke the domain callback after that synchronous barrier.
     if (!this.live() || matched.input === undefined) {
+      if (ledgerKey !== undefined) this.removeLedger(ledgerKey);
       this.consumeReceipt(matched);
       return this.lifecycle();
     }
     if (this.activeCalls.size >= this.maxInFlight) {
-      if (ledgerKey !== undefined) this.idempotency.delete(ledgerKey);
+      if (ledgerKey !== undefined) this.removeLedger(ledgerKey);
       this.consumeReceipt(matched);
       return this.outcome('action.budget', 'The action callback budget is full.');
     }
@@ -451,29 +509,48 @@ class ActionPortImpl implements ActionPort {
     const dispatchCall = await this.callHost((signal) => matched.registration.dispatch({descriptor: matched.registration.descriptor, input: input!,
       ...(matched.entity === undefined ? {} : {entity: matched.entity}), ...(matched.idempotencyKey === undefined ? {} : {idempotencyKey: matched.idempotencyKey}), context: current.value, signal}), options.signal);
     if (dispatchCall.state !== 'completed') {
+      if (dispatchCall.state === 'budget') {
+        if (ledgerKey !== undefined) this.removeLedger(ledgerKey);
+        this.consumeReceipt(matched);
+        return this.outcome('action.budget', 'The host callback budget is full.');
+      }
       const reason = dispatchCall.state === 'timeout' ? 'The action callback exceeded its bounded time budget.' : dispatchCall.state === 'cancelled' ? 'The action callback was cancelled after dispatch.' : 'The action port was revoked or disposed during dispatch.';
-      if (ledgerKey !== undefined) { const entry = this.idempotency.get(ledgerKey); if (entry !== undefined) { entry.state = 'ambiguous'; entry.reason = reason; } }
+      this.markAmbiguous(ledgerKey, reason);
       this.consumeReceipt(matched);
       this.addHistory({state: 'ambiguous', action: cloneRef(matched.registration.descriptor.ref), receiptId: matched.id, reasonCode: 'action.ambiguous', at: this.now()});
       return {ok: true, value: {state: 'ambiguous', receiptId: matched.id, action: cloneRef(matched.registration.descriptor.ref), reason}};
     }
     const dispatch = normalizeDispatch(dispatchCall.value);
+    // Accessors used by the callback result can re-enter lifecycle methods.
+    // Once authority is revoked, completion cannot be reported as executed.
+    if (!this.live()) return this.ambiguousResult(matched, ledgerKey, 'The action port was revoked or disposed after dispatch completed.');
     if (dispatch === undefined) {
       const reason = 'The host action returned an invalid result after dispatch.';
-      if (ledgerKey !== undefined) { const entry = this.idempotency.get(ledgerKey); if (entry !== undefined) { entry.state = 'ambiguous'; entry.reason = reason; } }
+      this.markAmbiguous(ledgerKey, reason);
       this.consumeReceipt(matched);
       this.addHistory({state: 'ambiguous', action: cloneRef(matched.registration.descriptor.ref), receiptId: matched.id, reasonCode: 'action.ambiguous', at: this.now()});
       return {ok: true, value: {state: 'ambiguous', receiptId: matched.id, action: cloneRef(matched.registration.descriptor.ref), reason}};
     }
     if (dispatch.state === 'ambiguous') {
-      if (ledgerKey !== undefined) { const entry = this.idempotency.get(ledgerKey); if (entry !== undefined) { entry.state = 'ambiguous'; entry.reason = dispatch.reason; } }
+      this.markAmbiguous(ledgerKey, dispatch.reason);
       this.consumeReceipt(matched);
       this.addHistory({state: 'ambiguous', action: cloneRef(matched.registration.descriptor.ref), receiptId: matched.id, reasonCode: 'action.ambiguous', at: this.now()});
       return {ok: true, value: {state: 'ambiguous', receiptId: matched.id, action: cloneRef(matched.registration.descriptor.ref), reason: dispatch.reason}};
     }
     if (dispatch.state === 'rejected') {
       const diagnostics = copyDiagnostics(dispatch.diagnostics);
-      if (ledgerKey !== undefined) { const entry = this.idempotency.get(ledgerKey); if (entry !== undefined) { entry.state = 'rejected'; entry.diagnostics = diagnostics; } }
+      if (ledgerKey !== undefined) {
+        const entry = this.idempotency.get(ledgerKey);
+        if (entry !== undefined) {
+          entry.state = 'rejected';
+          const diagnosticsBytes = bytes(canonical(diagnostics));
+          if (this.ledgerBytes + diagnosticsBytes <= this.maxLedgerBytes) {
+            entry.diagnostics = diagnostics;
+            entry.diagnosticsBytes = diagnosticsBytes;
+            this.ledgerBytes += diagnosticsBytes;
+          }
+        }
+      }
       this.consumeReceipt(matched);
       this.addHistory({state: 'rejected', action: cloneRef(matched.registration.descriptor.ref), receiptId: matched.id, reasonCode: 'action.callback', at: this.now()});
       return {ok: false, diagnostics};
@@ -482,17 +559,32 @@ class ActionPortImpl implements ActionPort {
     try { parsedOutput = matched.registration.outputSchema.parse(dispatch.output); } catch { parsedOutput = undefined; }
     const output = parsedOutput === undefined ? undefined : normalizeOutcome<unknown>(parsedOutput);
     const checkedOutput = output?.ok ? payload(output.value) : undefined;
+    // Output schemas and normalization are trusted local callbacks but may
+    // still synchronously revoke this port. Discard any parsed output then.
+    if (!this.live()) return this.ambiguousResult(matched, ledgerKey, 'The action port was revoked or disposed during output validation.');
     if (checkedOutput === undefined || !checkedOutput.ok) {
       const reason = 'The host action returned an invalid output after dispatch.';
-      if (ledgerKey !== undefined) { const entry = this.idempotency.get(ledgerKey); if (entry !== undefined) { entry.state = 'ambiguous'; entry.reason = reason; } }
+      this.markAmbiguous(ledgerKey, reason);
       this.consumeReceipt(matched);
       this.addHistory({state: 'ambiguous', action: cloneRef(matched.registration.descriptor.ref), receiptId: matched.id, reasonCode: 'action.ambiguous', at: this.now()});
       return {ok: true, value: {state: 'ambiguous', receiptId: matched.id, action: cloneRef(matched.registration.descriptor.ref), reason}};
     }
-    if (ledgerKey !== undefined) { const entry = this.idempotency.get(ledgerKey); if (entry !== undefined) { entry.state = 'executed'; entry.output = checkedOutput.value; } }
+    const outputValue = checkedOutput.value;
+    const outputBytes = bytes(canonical(outputValue));
+    if (outputBytes > this.maxOutputBytes || (ledgerKey !== undefined && this.ledgerBytes + outputBytes > this.maxLedgerBytes)) {
+      const reason = 'The host action output exceeded its bounded retention budget after dispatch.';
+      this.markAmbiguous(ledgerKey, reason);
+      this.consumeReceipt(matched);
+      this.addHistory({state: 'ambiguous', action: cloneRef(matched.registration.descriptor.ref), receiptId: matched.id, reasonCode: 'action.ambiguous', at: this.now()});
+      return {ok: true, value: {state: 'ambiguous', receiptId: matched.id, action: cloneRef(matched.registration.descriptor.ref), reason}};
+    }
+    if (ledgerKey !== undefined) {
+      const entry = this.idempotency.get(ledgerKey);
+      if (entry !== undefined) { entry.state = 'executed'; entry.output = outputValue; entry.outputBytes = outputBytes; this.ledgerBytes += outputBytes; }
+    }
     this.consumeReceipt(matched);
     this.addHistory({state: 'executed', action: cloneRef(matched.registration.descriptor.ref), receiptId: matched.id, at: this.now()});
-    return {ok: true, value: {state: 'executed', receiptId: matched.id, action: cloneRef(matched.registration.descriptor.ref), output: checkedOutput.value}};
+    return {ok: true, value: {state: 'executed', receiptId: matched.id, action: cloneRef(matched.registration.descriptor.ref), output: outputValue}};
   }
 
   private entityCurrent(record: ReceiptRecord, current: TrustedActionContext): boolean {
@@ -504,6 +596,53 @@ class ActionPortImpl implements ActionPort {
   private idempotencyKey(context: TrustedActionContext, key: string): string {
     return canonical({principalKey: context.principalKey, actorKey: context.actorKey, scopeDigest: context.scopeDigest,
       policyRevision: context.policyRevision, domainRevision: context.domainRevision, key});
+  }
+
+  private ledgerMetadataBytes(ledgerKey: string, key: string, action: VersionRef, receiptId: string, at: number): number {
+    // Count the map key and the bounded metadata retained alongside it. This
+    // keeps the aggregate ledger budget honest even for rejected/ambiguous
+    // entries that have no output payload.
+    return bytes(canonical({ledgerKey, key, action, receiptId, at}));
+  }
+
+  private removeLedger(key: string): void {
+    const entry = this.idempotency.get(key);
+    if (entry === undefined) return;
+    this.ledgerBytes -= entry.identityBytes + entry.metadataBytes + (entry.outputBytes ?? 0) + (entry.reasonBytes ?? 0) + (entry.diagnosticsBytes ?? 0);
+    if (this.ledgerBytes < 0) this.ledgerBytes = 0;
+    this.idempotency.delete(key);
+  }
+
+  private markAmbiguous(key: string | undefined, reason: string): void {
+    if (key === undefined) return;
+    const entry = this.idempotency.get(key);
+    if (entry === undefined) return;
+    if (entry.output !== undefined) {
+      this.ledgerBytes -= entry.outputBytes ?? 0;
+      if (this.ledgerBytes < 0) this.ledgerBytes = 0;
+      delete entry.output;
+      delete entry.outputBytes;
+    }
+    if (entry.reason !== undefined) {
+      this.ledgerBytes -= entry.reasonBytes ?? 0;
+      if (this.ledgerBytes < 0) this.ledgerBytes = 0;
+      delete entry.reason;
+      delete entry.reasonBytes;
+    }
+    entry.state = 'ambiguous';
+    const reasonBytes = bytes(canonical(reason));
+    if (this.ledgerBytes + reasonBytes <= this.maxLedgerBytes) {
+      entry.reason = reason;
+      entry.reasonBytes = reasonBytes;
+      this.ledgerBytes += reasonBytes;
+    }
+  }
+
+  private ambiguousResult(record: ReceiptRecord, ledgerKey: string | undefined, reason: string): ActionOutcome<ActionExecution> {
+    this.markAmbiguous(ledgerKey, reason);
+    this.consumeReceipt(record);
+    this.addHistory({state: 'ambiguous', action: cloneRef(record.registration.descriptor.ref), receiptId: record.id, reasonCode: 'action.ambiguous', at: this.now()});
+    return {ok: true, value: {state: 'ambiguous', receiptId: record.id, action: cloneRef(record.registration.descriptor.ref), reason}};
   }
 
   private consumeReceipt(record: ReceiptRecord): void {
@@ -536,7 +675,11 @@ class ActionPortImpl implements ActionPort {
     this.receipts.clear();
     for (const preview of this.previews.values()) { preview.input = undefined; preview.consumed = true; }
     this.previews.clear();
-    for (const entry of this.idempotency.values()) if (entry.state === 'in-flight') { entry.state = 'ambiguous'; entry.reason = reason ?? 'The action port was revoked during dispatch.'; }
+    // A revoked port cannot accept a replay, so release every retained
+    // identity/output and let late callbacks observe an empty terminal ledger.
+    this.idempotency.clear();
+    this.ledgerBytes = 0;
+    this.pendingPreviewReservations = 0;
     return true;
   }
 
@@ -549,7 +692,9 @@ class ActionPortImpl implements ActionPort {
     this.receipts.clear();
     for (const preview of this.previews.values()) { preview.input = undefined; preview.consumed = true; }
     this.previews.clear();
-    for (const entry of this.idempotency.values()) if (entry.state === 'in-flight') { entry.state = 'ambiguous'; entry.reason = 'The action port was disposed during dispatch.'; }
+    this.idempotency.clear();
+    this.ledgerBytes = 0;
+    this.pendingPreviewReservations = 0;
   }
 }
 

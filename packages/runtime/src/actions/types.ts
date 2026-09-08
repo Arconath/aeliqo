@@ -179,6 +179,12 @@ export interface ActionBoundaryOptions {
   readonly maxPending?: number;
   readonly maxHistory?: number;
   readonly maxIdempotencyEntries?: number;
+  /** Maximum UTF-8 bytes retained for one canonical idempotency identity. */
+  readonly maxIdentityBytes?: number;
+  /** Maximum UTF-8 bytes retained across all canonical identities and outputs. */
+  readonly maxLedgerBytes?: number;
+  /** Maximum UTF-8 bytes retained for one action output. */
+  readonly maxOutputBytes?: number;
   readonly maxInputBytes?: number;
   readonly maxCallbackMilliseconds?: number;
   readonly maxInFlight?: number;

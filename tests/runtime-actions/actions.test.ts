@@ -17,6 +17,15 @@ const outcome = <T>(value: T): Outcome<T> => ({ok: true, value});
 const fail = <T = never>(code = 'test.denied'): Outcome<T> => ({ok: false, diagnostics: [{code, message: 'Rejected by test host.', retryable: false}]});
 const inputRef = (id: string): VersionRef => ({id: `${id}-input`, revision: '1'});
 const outputRef = (id: string): VersionRef => ({id: `${id}-output`, revision: '1'});
+const canonical = (value: unknown): string => {
+  if (value === null) return 'null';
+  if (typeof value === 'number') return Object.is(value, -0) ? '-0' : JSON.stringify(value);
+  if (typeof value !== 'object') return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
+  const record = value as Record<string, unknown>;
+  return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${canonical(record[key])}`).join(',')}}`;
+};
+const utf8Bytes = (value: string): number => new TextEncoder().encode(value).byteLength;
 
 const context = (overrides: Partial<TrustedActionContext> = {}): TrustedActionContext => ({
   principalKey: 'principal-a', actorKey: 'actor-a', scopeDigest: 'scope-a', policyRevision: 'policy-a',
@@ -329,8 +338,146 @@ describe('bounded idempotency and lifecycle', () => {
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.value.state).toBe('ambiguous');
     resolveDispatch!({state: 'completed', output: {ok: true, value: {late: true}}});
-    expect(state.port.inspect('revoke-1')?.state).toBe('ambiguous');
+    // A terminally revoked port cannot accept replay, so retained ledger
+    // identities and outputs are released rather than kept indefinitely.
+    expect(state.port.inspect('revoke-1')).toBeUndefined();
     expect((await state.port.execute(receipt)).ok).toBe(false);
+  });
+
+  it('reserves preview capacity before asynchronous context reads', async () => {
+    const registry = new ActionRegistry();
+    const descriptor = register(registry, {id: 'preview-budget'});
+    let reads = 0;
+    const resolvers: Array<(value: Outcome<TrustedActionContext>) => void> = [];
+    const port = createActionPort({
+      registry,
+      maxPreviews: 2,
+      maxPending: 2,
+      host: {readContext: () => {
+        reads++;
+        return new Promise<Outcome<TrustedActionContext>>((resolve) => { resolvers.push(resolve); });
+      }},
+    });
+    const first = port.preview({requestId: 'preview-1', action: descriptor.ref, input: {}});
+    const second = port.preview({requestId: 'preview-2', action: descriptor.ref, input: {}});
+    const refused = port.preview({requestId: 'preview-3', action: descriptor.ref, input: {}});
+    await Promise.resolve();
+    expect(reads).toBe(2);
+    const refusedResult = await refused;
+    expect(refusedResult.ok).toBe(false);
+    if (!refusedResult.ok) expect(refusedResult.diagnostics[0]!.code).toBe('action.budget');
+    for (const resolve of resolvers) resolve(outcome(context()));
+    expect((await first).ok).toBe(true);
+    expect((await second).ok).toBe(true);
+  });
+
+  it('bounds concurrent host confirmation reads with the callback budget', async () => {
+    const registry = new ActionRegistry();
+    const descriptor = register(registry, {id: 'confirm-budget'});
+    let releaseRead: ((value: Outcome<TrustedActionContext>) => void) | undefined;
+    let holdRead = false;
+    const port = createActionPort({
+      registry,
+      maxInFlight: 1,
+      host: {readContext: () => {
+        if (!holdRead) return outcome(context());
+        return new Promise<Outcome<TrustedActionContext>>((resolve) => { releaseRead = resolve; });
+      }},
+    });
+    const firstPreview = await port.preview({requestId: 'confirm-1', action: descriptor.ref, input: {}});
+    const secondPreview = await port.preview({requestId: 'confirm-2', action: descriptor.ref, input: {}});
+    expect(firstPreview.ok && secondPreview.ok).toBe(true);
+    if (!firstPreview.ok || !secondPreview.ok) return;
+    holdRead = true;
+    const first = port.confirm(firstPreview.value);
+    const second = port.confirm(secondPreview.value);
+    const refused = await second;
+    expect(refused.ok).toBe(false);
+    if (!refused.ok) expect(refused.diagnostics[0]!.code).toBe('action.budget');
+    holdRead = false;
+    releaseRead!(outcome(context()));
+    expect((await first).ok).toBe(true);
+  });
+
+  it('retains a collision-safe identity when output retention overflows', async () => {
+    const registry = new ActionRegistry();
+    let dispatches = 0;
+    const descriptor = register(registry, {
+      id: 'large-output',
+      idempotency: 'required',
+      dispatch: () => { dispatches++; return {state: 'completed', output: {ok: true, value: {large: 'this output is too large'}}}; },
+    });
+    const port = createActionPort({
+      registry,
+      maxOutputBytes: 8,
+      host: {readContext: () => outcome(context())},
+    });
+    const first = await previewAndConfirm(port, descriptor, {}, {idempotencyKey: 'large-1'});
+    const ambiguous = await port.execute(first);
+    expect(ambiguous.ok).toBe(true);
+    if (ambiguous.ok) expect(ambiguous.value.state).toBe('ambiguous');
+    expect(dispatches).toBe(1);
+    expect(port.inspect('large-1')).toMatchObject({state: 'ambiguous', outputAvailable: false});
+    const replay = await previewAndConfirm(port, descriptor, {}, {idempotencyKey: 'large-1'});
+    const replayResult = await port.execute(replay);
+    expect(replayResult.ok).toBe(true);
+    if (replayResult.ok) expect(replayResult.value.state).toBe('ambiguous');
+    expect(dispatches).toBe(1);
+    const changed = await previewAndConfirm(port, descriptor, {changed: true}, {idempotencyKey: 'large-1'});
+    const changedResult = await port.execute(changed);
+    expect(changedResult.ok).toBe(false);
+    if (!changedResult.ok) expect(changedResult.diagnostics[0]!.code).toBe('action.idempotency');
+  });
+
+  it('marks output ambiguous when aggregate ledger bytes are exhausted', async () => {
+    const registry = new ActionRegistry();
+    let dispatches = 0;
+    const descriptor = register(registry, {
+      id: 'ledger-output',
+      idempotency: 'required',
+      dispatch: () => { dispatches++; return {state: 'completed', output: {ok: true, value: {saved: true}}}; },
+    });
+    const input = {};
+    const identity = (key: string): string => canonical({key, action: descriptor.ref, input, inputSchema: descriptor.input, outputSchema: descriptor.output});
+    const identityBytes = utf8Bytes(identity('a'));
+    const outputBytes = utf8Bytes(canonical({saved: true}));
+    const ledgerKey = (key: string): string => canonical({
+      principalKey: 'principal-a', actorKey: 'actor-a', scopeDigest: 'scope-a', policyRevision: 'policy-a', domainRevision: 'domain-a', key,
+    });
+    const metadataBytes = (key: string, receiptId: string): number => utf8Bytes(canonical({ledgerKey: ledgerKey(key), key, action: descriptor.ref, receiptId, at: 0}));
+    const port = createActionPort({
+      registry,
+      now: () => 0,
+      maxLedgerBytes: identityBytes + metadataBytes('a', 'receipt-2') + identityBytes + metadataBytes('b', 'receipt-4') + outputBytes,
+      host: {readContext: () => outcome(context())},
+    });
+    const first = await previewAndConfirm(port, descriptor, input, {idempotencyKey: 'a'});
+    expect((await port.execute(first)).ok).toBe(true);
+    const second = await previewAndConfirm(port, descriptor, input, {idempotencyKey: 'b'});
+    const secondResult = await port.execute(second);
+    expect(secondResult.ok).toBe(true);
+    if (secondResult.ok) expect(secondResult.value.state).toBe('ambiguous');
+    expect(dispatches).toBe(2);
+    expect(port.inspect('b')).toMatchObject({state: 'ambiguous', outputAvailable: false});
+  });
+
+  it('converts reentrant output-schema revocation into ambiguity', async () => {
+    const registry = new ActionRegistry();
+    let port: ReturnType<typeof createActionPort> | undefined;
+    const descriptor = register(registry, {
+      id: 'schema-revoke',
+      idempotency: 'required',
+      outputParse: (value) => {
+        port!.revoke('schema revoked authority');
+        return outcome(value as ActionPayload);
+      },
+    });
+    port = createActionPort({registry, host: {readContext: () => outcome(context())}});
+    const receipt = await previewAndConfirm(port, descriptor, {}, {idempotencyKey: 'schema-1'});
+    const result = await port.execute(receipt);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.state).toBe('ambiguous');
+    expect(port.inspect('schema-1')).toBeUndefined();
   });
 });
 
