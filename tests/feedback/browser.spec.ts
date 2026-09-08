@@ -84,6 +84,28 @@ test("dialog uses native modal semantics and returns focus", async ({page}) => {
   await expect(nativeDialog).toBeHidden();
 });
 
+test("dialog focus containment skips hidden slotted controls", async ({page}) => {
+  const dialog = page.locator("#focus-dialog");
+  await dialog.evaluate((element) => {(element as HTMLElement & {open: boolean}).open = true;});
+  const close = dialog.getByRole("button", {name: "Close"});
+  const real = dialog.getByRole("button", {name: "Real"});
+  await close.focus();
+  await close.press("Shift+Tab");
+  await expect(real).toBeFocused();
+});
+
+test("dialog focus containment follows nested shadow controls", async ({page}) => {
+  const dialog = page.locator("#nested-dialog");
+  await dialog.evaluate((element) => {(element as HTMLElement & {open: boolean}).open = true;});
+  const close = dialog.getByRole("button", {name: "Close"});
+  const nested = dialog.getByRole("button", {name: "Nested control"});
+  await nested.focus();
+  await nested.press("Tab");
+  await expect(close).toBeFocused();
+  await close.press("Shift+Tab");
+  await expect(nested).toBeFocused();
+});
+
 test("drawer keeps inline and modal modes separate", async ({page}) => {
   const drawer = page.locator("#drawer");
   await drawer.evaluate((element) => {(element as HTMLElement & {open: boolean}).open = true;});

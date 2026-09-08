@@ -28,23 +28,70 @@ export const interactiveSelector = [
   "[tabindex]:not([tabindex='-1'])",
 ].join(",");
 
+type FocusTraversalState = {
+  readonly hidden: boolean;
+  readonly disabled: boolean;
+  readonly inert: boolean;
+};
+
+function elementState(element: HTMLElement, inherited: FocusTraversalState): FocusTraversalState {
+  const style = typeof globalThis.getComputedStyle === "function" ? globalThis.getComputedStyle(element) : undefined;
+  const hidden = Boolean(inherited.hidden || element.hidden || element.getAttribute("aria-hidden") === "true" || style?.display === "none" || style?.visibility === "hidden" || style?.visibility === "collapse");
+  const disabled = Boolean(inherited.disabled || element.matches(":disabled") || element.getAttribute("aria-disabled") === "true");
+  const inert = Boolean(inherited.inert || element.hasAttribute("inert") || ("inert" in element && Boolean((element as HTMLElement & {inert?: boolean}).inert)));
+  return {hidden, disabled, inert};
+}
+
+function hasNegativeTabIndex(element: HTMLElement): boolean {
+  const tabindex = element.getAttribute("tabindex");
+  return tabindex !== null && Number.parseInt(tabindex, 10) < 0;
+}
+
+function focusableCandidate(element: HTMLElement, state: FocusTraversalState): boolean {
+  return element.matches(interactiveSelector) && !state.hidden && !state.disabled && !state.inert && !hasNegativeTabIndex(element);
+}
+
+function ancestorState(element: HTMLElement): FocusTraversalState {
+  let current: HTMLElement | null = element;
+  let state: FocusTraversalState = {hidden: false, disabled: false, inert: false};
+  while (current !== null) {
+    state = elementState(current, state);
+    const root = current.getRootNode();
+    if (typeof globalThis.ShadowRoot !== "undefined" && root instanceof globalThis.ShadowRoot) {
+      current = root.host instanceof HTMLElement ? root.host : null;
+    } else current = current.parentElement;
+  }
+  return state;
+}
+
 /** Collect focusable controls through slots and nested open shadow roots. */
 export function focusableElements(root: ParentNode): HTMLElement[] {
   const result: HTMLElement[] = [];
-  const visit = (node: ParentNode): void => {
-    if (node instanceof HTMLElement && node.matches(interactiveSelector)) result.push(node);
+  const seen = new Set<HTMLElement>();
+  const initial = root instanceof HTMLElement ? ancestorState(root) : {hidden: false, disabled: false, inert: false};
+  const visit = (node: ParentNode, inherited: FocusTraversalState): void => {
+    if (node instanceof HTMLElement) {
+      const state = elementState(node, inherited);
+      if (focusableCandidate(node, state) && !seen.has(node)) {
+        seen.add(node);
+        result.push(node);
+      }
+      if (node.shadowRoot !== null) {
+        visit(node.shadowRoot, state);
+        return;
+      }
+      inherited = state;
+    }
     if (node instanceof HTMLSlotElement) {
-      for (const assigned of node.assignedElements({flatten: true})) visit(assigned);
+      const assigned = node.assignedElements({flatten: true});
+      if (assigned.length > 0) {
+        for (const element of assigned) visit(element, inherited);
+        return;
+      }
     }
-    if (node instanceof HTMLElement && node.shadowRoot !== null) {
-      visit(node.shadowRoot);
-      return;
-    }
-    for (const child of Array.from(node.children)) {
-      visit(child);
-    }
+    for (const child of Array.from(node.children)) visit(child, inherited);
   };
-  visit(root);
+  visit(root, initial);
   return result;
 }
 
@@ -61,16 +108,39 @@ export function focusLast(root: ParentNode): HTMLElement | undefined {
   return target ?? undefined;
 }
 
+function descendActive(element: HTMLElement): HTMLElement {
+  if (element instanceof HTMLSlotElement) {
+    for (const assigned of element.assignedElements({flatten: true})) {
+      if (!(assigned instanceof HTMLElement)) continue;
+      if (assigned.matches(":focus")) return descendActive(assigned);
+      if (assigned.shadowRoot !== null) {
+        const nested = activeWithin(assigned.shadowRoot);
+        if (nested !== undefined) return nested;
+      }
+    }
+  }
+  if (element.shadowRoot !== null) {
+    const nested = activeWithin(element.shadowRoot);
+    if (nested !== undefined) return nested;
+  }
+  return element;
+}
+
+function activeWithin(root: Document | ShadowRoot): HTMLElement | undefined {
+  const active = root.activeElement;
+  return active instanceof HTMLElement ? descendActive(active) : undefined;
+}
+
 export function activeElement(owner?: HTMLElement): HTMLElement | undefined {
-  const shadowElement = owner?.shadowRoot?.activeElement;
-  if (shadowElement instanceof HTMLElement && shadowElement !== owner) return shadowElement;
+  const nested = owner?.shadowRoot === null || owner?.shadowRoot === undefined ? undefined : activeWithin(owner.shadowRoot);
+  if (nested !== undefined && nested !== owner) return nested;
   const documentElement = globalThis.document?.activeElement;
-  if (owner !== undefined && documentElement === owner) {
+  if (owner !== undefined) {
     const focused = focusableElements(owner).find((candidate) => candidate.matches(":focus"));
     if (focused !== undefined) return focused;
+    if (documentElement === owner) return owner;
   }
-  const element = documentElement;
-  return element instanceof HTMLElement ? element : undefined;
+  return documentElement instanceof HTMLElement ? documentElement : undefined;
 }
 
 export function restoreFocus(element: HTMLElement | undefined): void {

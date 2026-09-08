@@ -21,6 +21,15 @@ const registrations: readonly [string, CustomElementConstructor][] = [
 ];
 for (const [name, constructor] of registrations) customElements.define(name, constructor);
 
+class FeedbackNestedControlElement extends HTMLElement {
+  constructor() {
+    super();
+    const root = this.attachShadow({mode: "open"});
+    root.innerHTML = '<button id="nested-control" type="button">Nested control</button>';
+  }
+}
+customElements.define("feedback-nested-control", FeedbackNestedControlElement);
+
 const fixture = document.querySelector<HTMLElement>("#fixture");
 if (fixture === null) throw new Error("Feedback fixture root is missing.");
 fixture.innerHTML = `
@@ -28,6 +37,8 @@ fixture.innerHTML = `
   <aeliqo-tooltip id="tooltip" label="Help" content="Helpful context"></aeliqo-tooltip>
   <aeliqo-popover id="popover" label="Details" content="Popover context"></aeliqo-popover>
   <aeliqo-dialog id="dialog" heading="Confirm details"><button id="dialog-action" type="button">Continue</button></aeliqo-dialog>
+  <aeliqo-dialog id="focus-dialog" heading="Focus details"><button id="real" type="button">Real</button><button id="hidden" type="button" hidden>Hidden</button></aeliqo-dialog>
+  <aeliqo-dialog id="nested-dialog" heading="Nested details"><feedback-nested-control id="nested-control-host"></feedback-nested-control></aeliqo-dialog>
   <aeliqo-drawer id="drawer" heading="More details"><p>Drawer content</p><button id="drawer-action" type="button">Drawer action</button></aeliqo-drawer>
   <aeliqo-toast id="toast" message="Saved" duration="60"></aeliqo-toast>
   <aeliqo-alert id="alert" heading="Notice" message="Review this item" tone="warning" action-label="Review" dismissible></aeliqo-alert>

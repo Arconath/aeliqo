@@ -49,9 +49,15 @@ export class AeliqoDialogElement extends AeliqoFoundationElement {
       }
       const target = this.pendingFocus;
       this.pendingFocus = undefined;
-      const focusTarget = (): void => { if (target?.isConnected) target.focus(); else focusFirst(dialog); };
-      focusTarget();
-      nextFrame(focusTarget);
+      const focusTarget = (preserveCurrent: boolean): void => {
+        const focusables = focusableElements(dialog);
+        const current = activeElement(this);
+        if (preserveCurrent && current !== undefined && focusables.includes(current)) return;
+        if (target?.isConnected && focusables.includes(target)) target.focus();
+        else focusFirst(dialog);
+      };
+      focusTarget(false);
+      nextFrame(() => focusTarget(true));
     } else {
       if (dialog.open && typeof dialog.close === "function") dialog.close(); else dialog.removeAttribute("open");
       this.shownModal = undefined;
