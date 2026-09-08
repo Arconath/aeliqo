@@ -810,9 +810,10 @@
       "acceptance": [
         "Same executor; real supported MCP/BYOK flow, feature-detected WebMCP with honest native versus simulated evidence."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "Root owns protocol endpoint/types/BYOK/config/lock integration. Isolated MCP and WebMCP writers use one shared AgentToolEndpoint, actual official SDK/native tests; no paid provider call authorized or credential configured."
     },
     {
       "id": "T25",
