@@ -221,7 +221,7 @@ export function createTaskEvaluator(options: TaskEvaluatorOptions): {evaluate(in
             if (handle === undefined) return failure('runtime.evaluation-denied', 'The reused output is not a host-owned live result.', ['outputs', outputId]);
             const snapshot = handle.snapshot();
             if (snapshot.descriptor === undefined || !sameRef(snapshot.descriptor.ref, output.result)) return failure('runtime.evaluation-stale', 'The reused result descriptor does not match its immutable reference.', ['outputs', outputId]);
-            if (handle.key.scopeDigest !== context.scopeDigest || handle.key.catalogRevision !== context.catalogRevision || handle.key.functionRegistryDigest !== context.functionRegistryDigest || handle.key.policyRevision !== context.policyRevision)
+            if (handle.key.principalKey !== context.principalKey || handle.key.scopeDigest !== context.scopeDigest || handle.key.catalogRevision !== context.catalogRevision || handle.key.functionRegistryDigest !== context.functionRegistryDigest || handle.key.policyRevision !== context.policyRevision)
               return failure('runtime.evaluation-denied', 'The reused result is outside the current authority pins.', ['outputs', outputId]);
             materialized.set(outputId, {outputId, kind: 'reuse', ref: snapshot.descriptor.ref, descriptor: snapshot.descriptor, handle, lineage: snapshot.descriptor.lineage.flatMap((entry) => entry.inputs)});
             continue;

@@ -179,6 +179,10 @@ describe('runtime named-output and cohort evaluation', () => {
     const resolver = createResultCohortResolver();
     const base = hostContext(service, store, (ref) => ref.id === seed.snapshot().descriptor?.ref.id ? seed : undefined, resolver);
     const partial = seed.snapshot().descriptor!.ref;
+    const crossPrincipal = {...base, principalKey: 'principal-b', resolveResult: () => seed};
+    const reused = await createTaskEvaluator({host: {readContext: () => ({ok: true, value: crossPrincipal})}}).evaluate({task: task([{id: 'reuse', kind: 'reuse', result: partial, dependsOn: []}])});
+    expect(reused.ok).toBe(false);
+    if (!reused.ok) expect(reused.diagnostics[0]?.code).toBe('runtime.evaluation-denied');
     seed.dispose();
     const denied = await resolver.resolve({source: partial, identityKeys: ['employee_id'], scopeDigest: base.scopeDigest, catalogRevision: base.catalogRevision, deadlineAt: Date.now() + 5_000}, resolverContext(base, () => seed));
     expect(denied.ok).toBe(false);
