@@ -42,6 +42,17 @@ describe("data semantic region SSR", () => {
     expect(missing).toContain("Value unavailable.");
   });
 
+  it("keeps metric units attached only to a displayed value", async () => {
+    const zero = await renderAeliqo(html`<aeliqo-metric .value=${0} unit="records"></aeliqo-metric>`);
+    expect(zero).toMatch(/<span[^>]*part="unit"[\s\S]*?records/);
+    const empty = await renderAeliqo(html`<aeliqo-metric .value=${undefined} status="empty" unit="records"></aeliqo-metric>`);
+    expect(empty).toContain("No data to display.");
+    expect(empty).not.toMatch(/<span[^>]*part="unit"[\s\S]*?records/);
+    const unavailable = await renderAeliqo(html`<aeliqo-metric .value=${3} status="unavailable" unit="records"></aeliqo-metric>`);
+    expect(unavailable).toContain("Value unavailable.");
+    expect(unavailable).not.toMatch(/<span[^>]*part="unit"[\s\S]*?records/);
+  });
+
   it("preserves registered host scope annotations alongside the current materialization", async () => {
     const scope = {kind: "loaded" as const, loaded: 2, populationTotal: 3, populationDigest: "population-1", label: "Active people"};
     const registry = createAeliqoPresentationRegistry({...registryOptions, data: [{...binding, scope}]});

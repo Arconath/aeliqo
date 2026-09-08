@@ -43,7 +43,7 @@ export class AeliqoMetricElement extends LitElement {
       <dl part="metric" aria-describedby=${describedBy || nothing} data-status=${effectiveStatus}>
         <dt part="label">${this.label}</dt>
         <dd part="value" class=${unavailable ? "unavailable" : nothing}>
-          <bdi part="number" dir=${!unavailable && this.numericValue ? "ltr" : "auto"} tabindex=${!unavailable && this.numericValue ? "0" : nothing}>${value}</bdi>${this.unit ? html`<span part="unit">${this.unit}</span>` : nothing}
+          <bdi part="number" dir=${!unavailable && this.numericValue ? "ltr" : "auto"} tabindex=${!unavailable && this.numericValue ? "0" : nothing}>${value}</bdi>${this.unit && !unavailable && (this.value !== undefined && this.value !== null || this.displayValue !== undefined) ? html`<span part="unit">${this.unit}</span>` : nothing}
         </dd>
       </dl>
         ${this.description ? html`<div id="description" part="description">${this.description}</div>` : nothing}
