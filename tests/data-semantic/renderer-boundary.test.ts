@@ -166,4 +166,63 @@ describe("data renderer interaction boundary", () => {
     });
     expect(values(filterTemplate)).not.toContainEqual(expect.objectContaining({ field: "unknown" }));
   });
+
+  it("projects validated initial and inherited predicates without resurrecting a clear", () => {
+    const initial = { op: "compare", field: "name", comparison: "eq", value: "Ada" } as const;
+    const inherited = { op: "is-null", field: "name", negate: true } as const;
+    const filterNode = node("filterBuilder", {
+      field: "name",
+      outputId: "people",
+      predicate: initial,
+      inherited,
+    });
+
+    expect(values(renderAeliqoDataNode(filterNode))).toContainEqual(initial);
+    expect(values(renderAeliqoDataNode(filterNode))).toContainEqual(inherited);
+
+    const cleared = renderAeliqoDataNode(filterNode, {
+      interaction: filterState([], filterNode.id),
+    });
+    expect(values(cleared)).not.toContainEqual(initial);
+    expect(values(cleared)).toContainEqual(inherited);
+
+    const active = { op: "compare", field: "name", comparison: "eq", value: "Grace" } as const;
+    const current = renderAeliqoDataNode(filterNode, {
+      interaction: filterState([active], filterNode.id),
+    });
+    expect(values(current)).toContainEqual(active);
+    expect(values(current)).not.toContainEqual(initial);
+
+    const malformed = node("filterBuilder", {
+      field: "name",
+      outputId: "people",
+      predicate: { op: "compare", field: "not-authorized", comparison: "eq", value: "Ada" },
+      inherited: { op: "is-null", field: "not-authorized", negate: true },
+    });
+    const malformedValues = values(renderAeliqoDataNode(malformed));
+    expect(malformedValues).not.toContainEqual(expect.objectContaining({ field: "not-authorized" }));
+  });
+
+  it("keeps inherited filter request merging and its canonical payload shape", () => {
+    const inherited = { op: "is-null", field: "name", negate: true } as const;
+    const predicate = { op: "compare", field: "name", comparison: "eq", value: "Ada" } as const;
+    const filterNode = node("filterBuilder", { field: "name", outputId: "people", inherited });
+    const requests: AeliqoDataHostRequest[] = [];
+    const template = renderAeliqoDataNode(filterNode, {
+      onRequest: (request) => requests.push(request),
+    });
+    emit(template, new CustomEvent("aeliqo-filter-change", {
+      detail: { applied: true, predicate, inherited },
+    }));
+    expect(requests).toEqual([{
+      kind: "filter",
+      nodeId: filterNode.id,
+      portId: "filter",
+      payload: {
+        kind: "filter",
+        predicates: [{ op: "and", predicates: [inherited, predicate] }],
+        outputId: "people",
+      },
+    }]);
+  });
 });

@@ -400,6 +400,20 @@ function currentFilter(
   }
 }
 
+function configuredPredicate(
+  node: AeliqoDataResolvedNode,
+  key: "predicate" | "inherited",
+): AeliqoFilterPredicate | undefined {
+  try {
+    const candidate = node.config.values[key];
+    return validatePredicate(candidate, node)
+      ? (candidate as AeliqoFilterPredicate)
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 type ValidatedSelection =
   | { readonly mode: "clear" }
   | {
@@ -1114,11 +1128,16 @@ function filterTemplate(
       semanticType: field.type,
     }));
   const current = currentFilter(node, context.interaction);
+  const predicate = current === undefined
+    ? configuredPredicate(node, "predicate")
+    : current.predicate;
+  const inherited = configuredPredicate(node, "inherited");
   return html`<aeliqo-filter-builder
     data-aeliqo-node-id=${node.id}
     data-aeliqo-theme="inherit"
     .fields=${fields}
-    .predicate=${current?.predicate}
+    .predicate=${predicate}
+    .inherited=${inherited}
     .scopeLabel=${text(node.config.values.scopeLabel, "Current authorized scope")}
     .status=${status}
     @aeliqo-filter-change=${(event: Event) => dispatchFilter(node, event, context)}
