@@ -129,7 +129,18 @@ function clone<T>(value: T): T {
 
 function copyJson(value: unknown): unknown {
   const parsed = parseWireValue(value);
-  return parsed.ok ? parsed.value : undefined;
+  if (!parsed.ok) return undefined;
+  // `inspectWire` returns the inspected value. Copy every JSON node before the
+  // snapshot is frozen so caller-owned nested config/ref/type objects are not
+  // frozen in place.
+  const copy = (candidate: unknown): unknown => {
+    if (candidate === null || typeof candidate !== "object") return candidate;
+    if (Array.isArray(candidate)) return candidate.map((item) => copy(item));
+    const output: Record<string, unknown> = {};
+    for (const key of Object.keys(candidate)) output[key] = copy((candidate as Record<string, unknown>)[key]);
+    return output;
+  };
+  return copy(parsed.value);
 }
 
 function optionList(value: unknown): value is readonly AeliqoOption[] {
@@ -162,14 +173,12 @@ function dateValue(value: unknown): boolean {
   return Number.isFinite(parsed) && new Date(parsed).toISOString().slice(0, 10) === value;
 }
 
-function commonConfig(value: Record<string, unknown>, keys: readonly string[], requireLabel = true): boolean {
-  return exactKeys(value, ["label", "description", "required", "disabled", "readOnly", "name", ...keys]) &&
-    (requireLabel ? boundedText(value.label, 512, true) : (value.label === undefined || boundedText(value.label, 512))) &&
-    (value.description === undefined || boundedText(value.description, 2048)) &&
-    (value.required === undefined || typeof value.required === "boolean") &&
-    (value.disabled === undefined || typeof value.disabled === "boolean") &&
-    (value.readOnly === undefined || typeof value.readOnly === "boolean") &&
-    (value.name === undefined || boundedText(value.name, 128));
+function commonConfig(value: Record<string, unknown>, keys: readonly string[], requireLabel = true, includeCommon = true): boolean {
+  const allowed = includeCommon ? ["label", "description", "required", "disabled", "readOnly", "name", ...keys] : keys;
+  if (!exactKeys(value, allowed)) return false;
+  if (!includeCommon) return true;
+  const checks = [requireLabel ? boundedText(value.label, 512, true) : (value.label === undefined || boundedText(value.label, 512)), value.description === undefined || boundedText(value.description, 2048), value.required === undefined || typeof value.required === "boolean", value.disabled === undefined || typeof value.disabled === "boolean", value.readOnly === undefined || typeof value.readOnly === "boolean", value.name === undefined || boundedText(value.name, 128)];
+  return checks.every(Boolean);
 }
 
 function typeValue(type: SemanticType, value: unknown, allowEmpty = true): Outcome<Scalar | undefined> {
@@ -245,7 +254,8 @@ function validateInputBinding(binding: AeliqoInputBinding): Outcome<AeliqoInputB
     "input.field-group": ["legend", "description", "error", "disabled"],
     "input.form": ["label", "noValidate"],
   };
-  if (!commonConfig(config, allowedByRef[ref], ref !== "input.field-group")) return fail("binding", `${ref} contains an unknown or malformed common configuration field.`);
+  const structure = ref === "input.field-group" || ref === "input.form";
+  if (!commonConfig(config, allowedByRef[ref], ref !== "input.field-group", !structure)) return fail("binding", `${ref} contains an unknown or malformed common configuration field.`);
   if (ref === "input.text-field" && (!stringField("value", 16_384) || !stringField("defaultValue", 16_384) || !stringField("placeholder", 1_024) || !stringField("autocomplete", 128) || !enumField("inputType", ["text", "search", "url", "tel", "email", "password", "date", "month", "week", "time", "datetime-local", "number"]))) return fail("binding", "Text field configuration is invalid.");
   if (ref === "input.text-area" && (!stringField("value", 65_536) || !stringField("defaultValue", 65_536) || !finiteNumber(config.rows, 1, 100))) return fail("binding", "Text area configuration is invalid.");
   if (ref === "input.number-field" && (!numericText(config.value) || !numericText(config.defaultValue) || !numericText(config.min) || !numericText(config.max) || !numericText(config.step) || !stringField("unit", 128))) return fail("binding", "Number field configuration is invalid.");

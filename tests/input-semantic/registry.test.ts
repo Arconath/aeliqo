@@ -71,6 +71,13 @@ describe("semantic input registry", () => {
     const invalidFile = bindings();
     (invalidFile.inputs[5] as unknown as {file?: unknown}).file = undefined;
     expect(createInputPresentationManifests(invalidFile).ok).toBe(false);
+
+    const invalidStructure = bindings();
+    (invalidStructure.inputs[6]!.config as Record<string, unknown>).label = "forged";
+    expect(createInputPresentationManifests(invalidStructure).ok).toBe(false);
+    const invalidForm = bindings();
+    (invalidForm.inputs[4]!.config as Record<string, unknown>).disabled = true;
+    expect(createInputPresentationManifests(invalidForm).ok).toBe(false);
   });
 
   it("freezes the copied binding snapshot", () => {
@@ -81,5 +88,7 @@ describe("semantic input registry", () => {
     expect(Object.isFrozen(result.value)).toBe(true);
     expect(Object.isFrozen(result.value[0])).toBe(true);
     expect(Object.isFrozen(input)).toBe(false);
+    expect(Object.isFrozen(input.inputs[0]!.config)).toBe(false);
+    expect(Object.isFrozen(input.inputs[0]!.draft!)).toBe(false);
   });
 });

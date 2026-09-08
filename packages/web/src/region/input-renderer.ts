@@ -129,6 +129,73 @@ function scalar(raw: unknown, type: SemanticType, numericText = false): Scalar |
   return checked.ok ? checked.value : undefined;
 }
 
+/** Compare semantic types by their declared members rather than object serialization. */
+function sameSemanticType(left: SemanticType, right: SemanticType): boolean {
+  if (left.value !== right.value || left.nullable !== right.nullable) return false;
+  const leftUnit = left.unit;
+  const rightUnit = right.unit;
+  if (leftUnit === undefined || rightUnit === undefined) {
+    if (leftUnit !== rightUnit) return false;
+  } else if (leftUnit.dimension !== rightUnit.dimension || leftUnit.symbol !== rightUnit.symbol || leftUnit.currency !== rightUnit.currency) return false;
+  const leftGrain = left.grain ?? [];
+  const rightGrain = right.grain ?? [];
+  if (leftGrain.length !== rightGrain.length || leftGrain.some((item, index) => item !== rightGrain[index])) return false;
+  const leftTemporal = left.temporal;
+  const rightTemporal = right.temporal;
+  if (leftTemporal === undefined || rightTemporal === undefined) return leftTemporal === rightTemporal;
+  return leftTemporal.calendar === rightTemporal.calendar && leftTemporal.timezone === rightTemporal.timezone && leftTemporal.grain === rightTemporal.grain;
+}
+
+type DecimalNumber = {readonly coefficient: bigint; readonly scale: number};
+
+/** Parse bounded decimal text/number values for exact bound and step checks. */
+function decimalNumber(value: unknown): DecimalNumber | undefined {
+  const textValue = typeof value === "number" && Number.isFinite(value) ? String(value) : value;
+  if (typeof textValue !== "string" || textValue.length === 0 || textValue.length > 512) return undefined;
+  const matched = /^([+-])?(?:(\d+)(?:\.(\d*))?|\.(\d+))(?:[eE]([+-]?\d+))?$/u.exec(textValue);
+  if (matched === null) return undefined;
+  const whole = matched[2] ?? "0";
+  const fraction = matched[3] ?? matched[4] ?? "";
+  const exponent = Number(matched[5] ?? "0");
+  if (!Number.isSafeInteger(exponent) || Math.abs(exponent) > 1024) return undefined;
+  const sign = matched[1] === "-" ? -1n : 1n;
+  let coefficient = BigInt(`${whole}${fraction}` || "0") * sign;
+  let scale = fraction.length - exponent;
+  if (scale < 0) {
+    coefficient *= 10n ** BigInt(-scale);
+    scale = 0;
+  }
+  return {coefficient, scale};
+}
+
+function decimalCompare(left: DecimalNumber, right: DecimalNumber): -1 | 0 | 1 {
+  const scale = Math.max(left.scale, right.scale);
+  const a = left.coefficient * 10n ** BigInt(scale - left.scale);
+  const b = right.coefficient * 10n ** BigInt(scale - right.scale);
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+function decimalOnStep(value: DecimalNumber, minimum: DecimalNumber | undefined, step: DecimalNumber | undefined): boolean {
+  if (step === undefined) return true;
+  if (step.coefficient <= 0n) return false;
+  const base = minimum ?? {coefficient: 0n, scale: 0};
+  const scale = Math.max(value.scale, base.scale, step.scale);
+  const delta = value.coefficient * 10n ** BigInt(scale - value.scale) - base.coefficient * 10n ** BigInt(scale - base.scale);
+  const increment = step.coefficient * 10n ** BigInt(scale - step.scale);
+  return delta % increment === 0n;
+}
+
+function boundedStep(value: unknown, minimum: unknown, maximum: unknown, step: unknown): boolean {
+  const parsed = decimalNumber(value);
+  const min = minimum === undefined || minimum === "" ? undefined : decimalNumber(minimum);
+  const max = maximum === undefined || maximum === "" ? undefined : decimalNumber(maximum);
+  const increment = step === undefined || step === "" ? undefined : decimalNumber(step);
+  if (parsed === undefined || (minimum !== undefined && minimum !== "" && min === undefined) || (maximum !== undefined && maximum !== "" && max === undefined) || (step !== undefined && step !== "" && increment === undefined)) return false;
+  if (min !== undefined && decimalCompare(parsed, min) < 0) return false;
+  if (max !== undefined && decimalCompare(parsed, max) > 0) return false;
+  return decimalOnStep(parsed, min, increment);
+}
+
 function port(node: Node, id: string, payload: InteractionPayload["kind"]): boolean {
   return node.config.ports.some((candidate) => candidate.id === id && candidate.payload === payload);
 }
@@ -141,7 +208,7 @@ function draftFrom(node: Node, binding: Record<string, unknown>, raw: unknown, n
   const type = scalarType(binding.type);
   if (!bounded(entity, 160) || !bounded(key, 512) || !bounded(field, 160) || !bounded(entityRevision, 160) || type === undefined) return undefined;
   const declaredPort = node.config.ports.find((candidate) => candidate.id === portId && candidate.payload === "draft");
-  if (declaredPort?.type === undefined || JSON.stringify(declaredPort.type) !== JSON.stringify(type)) return undefined;
+  if (declaredPort?.type === undefined || !sameSemanticType(declaredPort.type, type)) return undefined;
   const value = scalar(raw, type, numericText);
   return value === undefined ? undefined : {kind: "draft", entity, key, field, value, entityRevision};
 }
@@ -159,13 +226,21 @@ function interactionForDraft(node: Node, event: Event): readonly AeliqoInputInte
     const detail = commit?.value;
     const candidate = record(detail);
     if (candidate === undefined || !exactKeys(candidate, ["text", "value", "valid"]) || candidate.valid !== true || typeof candidate.value !== "string") return [];
+    if (!boundedStep(candidate.value, binding.min, binding.max, binding.step)) return [];
     raw = candidate.value; numericText = true;
   } else if (ref === "input.slider") {
     const detail = commit?.value;
     const candidate = record(detail);
     if (candidate === undefined || !exactKeys(candidate, ["value", "unit"]) || typeof candidate.value !== "number" || !Number.isFinite(candidate.value)) return [];
     const unit = text(binding.unit);
-    if (candidate.unit !== unit || (binding.type !== undefined && scalarType(binding.type)?.unit?.symbol !== candidate.unit)) return [];
+    const registeredUnit = scalarType(binding.type)?.unit?.symbol;
+    if (candidate.unit !== unit || (registeredUnit !== undefined && registeredUnit !== candidate.unit) || (registeredUnit === undefined && candidate.unit !== "")) return [];
+    // The shared slider element uses these defaults when the reviewed binding
+    // omits a bound or increment; validate against the same effective values.
+    const minimum = binding.min === undefined ? 0 : binding.min;
+    const maximum = binding.max === undefined ? 100 : binding.max;
+    const step = binding.step === undefined ? 1 : binding.step;
+    if (!boundedStep(candidate.value, minimum, maximum, step)) return [];
     raw = candidate.value;
   } else if (ref === "input.search-field" && search !== undefined) {
     raw = search;
@@ -203,12 +278,15 @@ function interactionForRange(node: Node, event: Event): readonly AeliqoInputInte
 function interactionForForm(node: Node, event: Event): readonly AeliqoInputInteraction[] {
   if (submitDetail(event) === undefined || !port(node, "submit", "action-request")) return [];
   const values = node.config.values as Record<string, unknown>;
-  if (!validRef(values.action)) return [];
+  const action = values.action;
+  if (!validRef(action)) return [];
+  const operations = node.config.operations;
+  if (!Array.isArray(operations) || !operations.some((operation) => validRef(operation) && operation.id === action.id && operation.revision === action.revision)) return [];
   const actionInput = record(values.actionInput);
   if (actionInput === undefined) return [];
   const input: Record<string, unknown> = actionInput;
   if (!Object.keys(input).every((key) => bounded(key, 160) && scalarValue(input[key]))) return [];
-  const payload: ActionPayload = {kind: "action-request", action: values.action, input: input as ActionPayload["input"]};
+  const payload: ActionPayload = {kind: "action-request", action, input: input as ActionPayload["input"]};
   return [{portId: "submit", payload}];
 }
 
