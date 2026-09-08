@@ -1,0 +1,37 @@
+{
+  "sourceDigest": "1fb2bf0b46dfbfef1badce0d34b57750830eb31026a43f572d31c8922c120fb7",
+  "sourceCommit": "14bea8d0e649a845d466d97ffaa3a398cb04b49b",
+  "sourceAfter": "1fb2bf0b46dfbfef1badce0d34b57750830eb31026a43f572d31c8922c120fb7",
+  "sourceChangedDuringRun": false,
+  "allChecksPassed": true,
+  "task": "T11",
+  "status": "pass",
+  "timestamp": "2026-09-08T08:31:26.785298+00:00",
+  "checks": {
+    "contracts": 72,
+    "regions": 49,
+    "interaction": 24,
+    "actions": 27,
+    "data": 97,
+    "results": 23,
+    "workspaceTypes": "pass",
+    "installedCoreNodeNoCodegenChromium": "pass",
+    "installedRuntimeNodeChromium": "pass",
+    "kitReference": "pass"
+  },
+  "scope": "Typed registered interaction graphs and canonical state, atomic filter/range query results, linked selection, draft/navigation authority, preview/confirm/recheck actions and scoped metadata with bounded cancellation/idempotency.",
+  "consumerEvidence": [
+    "artifacts/core-consumers/run-omgjvN",
+    "artifacts/runtime-consumers/run-avZZZV"
+  ],
+  "notClaimed": [
+    "full71components",
+    "T39 integrated shared web composition",
+    "full renderer/planner bundle budgets",
+    "cross-browser interaction proof",
+    "npm publication",
+    "main cutover",
+    "production deployment",
+    "release readiness"
+  ]
+}

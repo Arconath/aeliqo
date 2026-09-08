@@ -1,0 +1,3 @@
+$ node tests/consumers/runtime-tarballs.mjs
+Installed core/runtime data, results, regions, persistence, HTTP and Chromium consumer checks pass.
+Evidence: /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/runtime-consumers/run-avZZZV/report.json

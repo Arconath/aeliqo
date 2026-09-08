@@ -1,0 +1,41 @@
+{
+  "status": "pass",
+  "sourceCommit": "14bea8d0e649a845d466d97ffaa3a398cb04b49b",
+  "authors": [
+    "root contracts/integration",
+    "platform_proof interaction",
+    "release_inventory actions"
+  ],
+  "independentReviewers": [
+    "preflight_diagnosis final interaction/actions and canonical contracts",
+    "release_inventory root region cancellation/commit guards"
+  ],
+  "finalReviewedCommits": [
+    "14bea8d",
+    "95dedd9",
+    "78171f0",
+    "4abe7c5",
+    "4734b44",
+    "13091fe"
+  ],
+  "findingsClosed": [
+    "typed graph identities and registered mappings",
+    "owned bounded interaction state",
+    "atomic query materialization and late authority recheck",
+    "event abort and synchronous deadline barriers",
+    "success-only canonical bounded event deduplication",
+    "action preview revocation clears retained input",
+    "fresh private context partitions for metadata/history",
+    "parser/clock cancellation and final dispatch barriers",
+    "idempotency reservation cleanup and explicit retry"
+  ],
+  "independentChecks": {
+    "node": "v24.20.0",
+    "actions": 27,
+    "interaction": 24,
+    "regions": 49,
+    "build": "pass",
+    "types": "pass"
+  },
+  "limits": "Scoped source review and regressions; does not prove user intent, business truth or complete product readiness."
+}

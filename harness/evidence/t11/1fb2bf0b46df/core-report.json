@@ -1,0 +1,109 @@
+{
+  "sourceDigestBefore": "70ed178612720575cab859ba9b1c318b93e7032225cdd3c9538494338462e21e",
+  "sourceDigestAfter": "70ed178612720575cab859ba9b1c318b93e7032225cdd3c9538494338462e21e",
+  "sourceChangedDuringRun": false,
+  "scope": "@aeliqo/core 0.1.0 installed tarball; four document parsers/round trips; TaskStructure, ExperienceConstraints, semantic checker and typed authoring passes; generated schemas; Vite core graph and 70 KiB gzip budget. Includes installed exact decimal aggregate, canonical query ranking, cancellation and registered interaction graph validation in Node/no-codegen/Chromium. Full planner and product certification are outside this scoped check.",
+  "artifact": {
+    "name": "@aeliqo/core",
+    "version": "0.1.0",
+    "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/core-consumers/run-omgjvN/aeliqo-core-0.1.0.tgz",
+    "sha256": "d651c80a29b0b6a07f144ce30ba839173b487d9dceb99d2d0c376021e38e1f64",
+    "integrity": "sha512-ff47lEt5Zi3PvgkOD4WyKN8N/XPT1HSVRezocML0QTeSZESk3hlyD/+w48nlcsmN9Zq+jfnUmlz7Z9euICcgJA=="
+  },
+  "consumer": {
+    "directory": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH",
+    "lockPath": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/core-consumers/run-omgjvN/consumer-package-lock.json",
+    "lockSha256": "e9d03f31bb479464cc7e6f813380c13d81e1f4457bd1dee90cbc2d7b890ab4ab"
+  },
+  "schemas": [
+    "schemas/catalog.schema.json",
+    "schemas/task.schema.json",
+    "schemas/result.schema.json",
+    "schemas/experience.schema.json",
+    "schemas/expression.schema.json",
+    "schemas/query.schema.json",
+    "schemas/interaction.schema.json",
+    "schemas/result-event.schema.json",
+    "schemas/environment.schema.json",
+    "schemas/presentation-plan.schema.json",
+    "schemas/task-proposal.schema.json",
+    "schemas/meaning-draft.schema.json",
+    "schemas/binding-outcome.schema.json",
+    "schemas/model-evaluation.schema.json"
+  ],
+  "browserOutcomes": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ],
+  "consumerOutput": "Installed @aeliqo/core query planning, exact evaluation and cancellation pass.\nInstalled @aeliqo/core parsers, schema exports, and round trips pass.\nInstalled @aeliqo/core task structure and experience constraint passes pass.\nInstalled @aeliqo/core semantic checker and typed authoring passes pass.",
+  "parserProbeOutput": "No dynamic code generation during core, parser, and semantic authoring calls.",
+  "bundle": {
+    "initialGzipBytes": 51173,
+    "files": [
+      {
+        "file": "assets/index-DXd7uU0g.js",
+        "bytes": 198033,
+        "gzipBytes": 51173
+      }
+    ],
+    "modules": [
+      "\u0000vite/modulepreload-polyfill.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/@aeliqo/core/dist/contracts/limits.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/zod/v4/core/util.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/zod/v4/core/core.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/zod/v4/core/errors.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/zod/v4/core/parse.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/zod/v4/core/regexes.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/zod/v4/core/checks.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/zod/v4/core/versions.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/zod/v4/core/schemas.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/zod/v4/core/api.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/zod/v4/mini/schemas.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/zod/v4/mini/iso.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/@aeliqo/core/dist/contracts/schemas.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/@aeliqo/core/dist/diagnostics/wire.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/@aeliqo/core/dist/contracts/ingress.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/@aeliqo/core/dist/contracts/parse.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/@aeliqo/core/dist/contracts/scalars.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/@aeliqo/core/dist/contracts/commit.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/@aeliqo/core/dist/contracts/task/index.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/@aeliqo/core/dist/contracts/experience/index.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/@aeliqo/core/dist/semantics/errors.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/@aeliqo/core/dist/semantics/type-utils.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/@aeliqo/core/dist/semantics/catalog.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/@aeliqo/core/dist/expressions/check.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/@aeliqo/core/dist/semantics/meaning.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/@aeliqo/core/dist/expressions/registry.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/@aeliqo/core/dist/expressions/builder.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/@aeliqo/core/dist/query/evaluator.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/@aeliqo/core/dist/query/planner.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/@aeliqo/core/dist/interaction/graph.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/node_modules/@aeliqo/core/dist/interaction/state.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/bundle-entry.js",
+      "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-core-consumer-N5qmmH/index.html"
+    ],
+    "moduleGraphScope": "installed package parser, semantics, query and interaction graph validation; no universal dependency/security certification"
+  },
+  "environment": {
+    "node": "v24.20.0",
+    "npm": "11.19.0",
+    "pnpm": "11.24.0",
+    "typescript": "7.0.2",
+    "vite": "8.2.2",
+    "zod": "4.5.4",
+    "os": "darwin",
+    "release": "25.6.0",
+    "arch": "arm64"
+  },
+  "passed": true
+}

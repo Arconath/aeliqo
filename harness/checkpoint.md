@@ -195,3 +195,12 @@ Action admission/retention hardening2392cd0 passes16focused tests, but independe
 review found remaining input-parser/clock revocation return paths and public
 preview retention. These remain open. Controller query materialization is still
 in progress; T11 is not accepted. Main/npm/production remain unchanged.
+
+T11 accepted at source14bea8d with immutable evidence harness/evidence/t11/1fb2bf0b46df.
+Fresh72contract,49region,24interaction,27action,97data,23result tests, strict workspace
+types, installed core/runtime Node and Chromium consumers, and kit/reference checks pass.
+Independent review approved final cancellation, authority, scoped metadata and event
+deduplication fixes, plus real temporal range/draft/navigation/page regressions.
+Frozen digest1fb2bf0b46dfbfef1badce0d34b57750830eb31026a43f572d31c8922c120fb7 remained unchanged.
+T39 early compositional UI and T41 model containment are next ready source tasks.
+No npm publication, main cutover or production deployment occurred.

@@ -1,0 +1,102 @@
+[
+  {
+    "name": "contracts",
+    "command": [
+      "pnpm",
+      "test:contracts"
+    ],
+    "exitCode": 0,
+    "seconds": 1.888
+  },
+  {
+    "name": "regions",
+    "command": [
+      "pnpm",
+      "test:regions"
+    ],
+    "exitCode": 0,
+    "seconds": 2.635
+  },
+  {
+    "name": "interaction",
+    "command": [
+      "pnpm",
+      "test:interaction"
+    ],
+    "exitCode": 0,
+    "seconds": 3.017
+  },
+  {
+    "name": "actions",
+    "command": [
+      "pnpm",
+      "test:actions"
+    ],
+    "exitCode": 0,
+    "seconds": 2.631
+  },
+  {
+    "name": "data",
+    "command": [
+      "pnpm",
+      "test:data"
+    ],
+    "exitCode": 0,
+    "seconds": 3.1
+  },
+  {
+    "name": "results",
+    "command": [
+      "pnpm",
+      "test:results"
+    ],
+    "exitCode": 0,
+    "seconds": 2.623
+  },
+  {
+    "name": "workspace-types",
+    "command": [
+      "pnpm",
+      "typecheck"
+    ],
+    "exitCode": 0,
+    "seconds": 3.884
+  },
+  {
+    "name": "core-consumer",
+    "command": [
+      "pnpm",
+      "test:core:consumers"
+    ],
+    "exitCode": 0,
+    "seconds": 7.644
+  },
+  {
+    "name": "runtime-consumer",
+    "command": [
+      "pnpm",
+      "test:runtime:consumers"
+    ],
+    "exitCode": 0,
+    "seconds": 6.298
+  },
+  {
+    "name": "kit",
+    "command": [
+      "python3",
+      "scripts/validate_all.py"
+    ],
+    "exitCode": 0,
+    "seconds": 12.814
+  },
+  {
+    "name": "diff",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exitCode": 0,
+    "seconds": 0.021
+  }
+]
