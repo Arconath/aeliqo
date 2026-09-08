@@ -150,7 +150,6 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
     // on the input after a selection.
     setTimeout(() => {
       if (!this.isConnected) return;
-      const root = this.renderRoot;
       const active = this.shadowRoot?.activeElement;
       if (active !== this.native()) {
         this.open = false;
@@ -287,8 +286,9 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
 
   private nextEnabledIndex(options: readonly AeliqoOption[], current: number, direction: 1 | -1): number {
     if (options.length === 0) return -1;
+    const start = current < 0 ? (direction === 1 ? -1 : 0) : current;
     for (let offset = 1; offset <= options.length; offset += 1) {
-      const index = (current + direction * offset + options.length * 2) % options.length;
+      const index = (start + direction * offset + options.length * 2) % options.length;
       if (options[index]?.disabled !== true) return index;
     }
     return -1;
