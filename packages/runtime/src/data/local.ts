@@ -145,16 +145,19 @@ function validDate(value: string): boolean {
   return Number.isFinite(parsed) && new Date(parsed).toISOString().slice(0, 10) === value;
 }
 
-function validInstant(value: string): boolean {
-  const matched = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?(Z|[+-](\d{2}):(\d{2}))$/u.exec(value);
-  if (matched === null || !validDate(matched[1]!)) return false;
-  const hour = Number(matched[2]);
-  const minute = Number(matched[3]);
-  const second = Number(matched[4]);
-  if (hour > 23 || minute > 59 || second > 59) return false;
-  if (matched[7] !== undefined && (Number(matched[7]) > 23 || Number(matched[8]) > 59)) return false;
-  return Number.isFinite(Date.parse(value));
+/** Fractional precision stays as decimal digits; Date only parses whole seconds. */
+function instantParts(value: string): {epochMilliseconds: number; fraction: string} | undefined {
+  if (value.length > WIRE_LIMITS.text) return undefined;
+  const matched = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(Z|[+-](\d{2}):(\d{2}))$/u.exec(value);
+  if (matched === null || !validDate(matched[1]!)) return undefined;
+  if (Number(matched[2]) > 23 || Number(matched[3]) > 59 || Number(matched[4]) > 59) return undefined;
+  if (matched[7] !== undefined && (Number(matched[7]) > 23 || Number(matched[8]) > 59)) return undefined;
+  const epochMilliseconds = Date.parse(`${matched[1]}T${matched[2]}:${matched[3]}:${matched[4]}${matched[6]}`);
+  if (!Number.isSafeInteger(epochMilliseconds)) return undefined;
+  return {epochMilliseconds, fraction: (matched[5] ?? '').replace(/0+$/u, '')};
 }
+
+function validInstant(value: string): boolean {return instantParts(value) !== undefined;}
 
 function validSourceValue(value: unknown, field: CatalogEntity['fields'][number]): value is DataValue {
   if (value === null) return field.type.nullable;
@@ -181,7 +184,7 @@ const DEFAULT_SOURCE_LIMITS: SourceLimits = Object.freeze({rows: WIRE_LIMITS.arr
 
 function normalizeSourceLimits(input: LocalDataServiceOptions['sourceLimits'] | undefined): SourceLimits {
   if (input === undefined) return DEFAULT_SOURCE_LIMITS;
-  if (input === null || typeof input !== 'object' || Array.isArray(input) || !isSafePositive(input.rows) || !isSafePositive(input.bytes) || input.rows > DEFAULT_SOURCE_LIMITS.rows || input.bytes > DEFAULT_SOURCE_LIMITS.bytes)
+  if (input === null || typeof input !== 'object' || Array.isArray(input) || !isSafePositive(input.rows) || !isSafePositive(input.bytes))
     throw new TypeError('sourceLimits must be bounded positive rows and bytes limits.');
   return Object.freeze({rows: input.rows, bytes: input.bytes});
 }
@@ -198,6 +201,11 @@ function normalizeDecimalIdentity(value: string): string {
 function identityPart(value: DataValue, fieldType: string): string {
   if (fieldType === 'decimal' && value !== null && typeof value === 'object')
     return `decimal:${normalizeDecimalIdentity(value.decimal)}`;
+  if (fieldType === 'instant' && typeof value === 'string') {
+    const parts = instantParts(value)!;
+    return `instant:${parts.epochMilliseconds}:${parts.fraction}`;
+  }
+  if (typeof value === 'number' && value === 0) return `${fieldType}:0`;
   return `${fieldType}:${canonical(value)}`;
 }
 
@@ -212,48 +220,61 @@ function normalizeSnapshot(snapshot: LocalSnapshot, sourceLimits: SourceLimits):
   if (!parsed.ok) throw new TypeError('Local data snapshot catalog is not canonical.');
   const indexed = createCatalogIndex(parsed.value);
   if (!indexed.ok) throw new TypeError('Local data snapshot catalog has invalid entity, relationship or capability references.');
+  if (parsed.value.entities.some(entity => entity.id === '__proto__' || entity.fields.some(field => field.id === '__proto__')))
+    throw new TypeError('Local source identifiers must be representable as wire record keys.');
   assertSafeId(snapshot.sourceRevision, 'sourceRevision');
   if (!snapshot.records || typeof snapshot.records !== 'object' || Array.isArray(snapshot.records))
     throw new TypeError('Local data snapshot records must be an entity-to-records map.');
   if (Object.keys(snapshot.records).length > WIRE_LIMITS.properties)
     throw new TypeError('Local data snapshot records exceed the bounded entity map limit.');
-  const records: Record<string, readonly DataRecord[]> = {};
+  const records: Record<string, readonly DataRecord[]> = Object.create(null) as Record<string, readonly DataRecord[]>;
   const entities = new Map(parsed.value.entities.map((entity) => [entity.id, entity] as const));
   let totalRows = 0;
-  let totalBytes = sourceJsonBytes({});
-  const addBytes = (value: unknown): void => {
-    totalBytes += sourceJsonBytes(value);
-    if (totalBytes > sourceLimits.bytes) throw new TypeError('Local data snapshot exceeds the bounded source byte limit.');
+  let totalBytes = 0;
+  const addCount = (count: number): void => {
+    // Subtract first so accumulated byte counts cannot overflow a safe integer.
+    if (count > sourceLimits.bytes - totalBytes) throw new TypeError('Local data snapshot exceeds the bounded source byte limit.');
+    totalBytes += count;
   };
+  const addBytes = (value: unknown): void => {addCount(sourceJsonBytes(value));};
+  addCount(2); // Outer record-map braces.
+  let firstEntity = true;
   for (const [entityId, rows] of Object.entries(snapshot.records)) {
     assertSafeId(entityId, 'entity id');
     const entity = entities.get(entityId);
     if (entity === undefined) throw new TypeError(`Rows reference unknown entity ${entityId}.`);
     if (!Array.isArray(rows)) throw new TypeError(`Rows for ${entityId} must be an array.`);
-    if (rows.length > WIRE_LIMITS.array) throw new TypeError(`Rows for ${entityId} exceed the bounded local source limit.`);
+    if (rows.length > sourceLimits.rows - totalRows) throw new TypeError('Local data snapshot exceeds the bounded source row limit.');
+    totalRows += rows.length;
+    if (!firstEntity) addCount(1);
+    firstEntity = false;
     addBytes(entityId);
-    addBytes([]);
+    addCount(3); // Colon and array brackets.
     const identityKeys = new Set<string>();
-    records[entityId] = Object.freeze(rows.map((row) => {
-      totalRows += 1;
-      if (totalRows > sourceLimits.rows) throw new TypeError('Local data snapshot exceeds the bounded source row limit.');
+    const fieldsById = new Map(entity.fields.map(field => [field.id, field]));
+    records[entityId] = Object.freeze(Array.from({length: rows.length}, (_, rowIndex) => {
+      const row = rows[rowIndex];
       if (row === null || typeof row !== 'object' || Array.isArray(row)) throw new TypeError(`Row for ${entityId} must be a plain object.`);
       if (Object.getPrototypeOf(row) !== Object.prototype && Object.getPrototypeOf(row) !== null) throw new TypeError(`Row for ${entityId} must be a plain object.`);
-      if (Object.keys(row).length > WIRE_LIMITS.properties) throw new TypeError(`Row for ${entityId} exceeds the bounded field limit.`);
-      addBytes(row);
-      for (const key of Object.keys(row)) {
-        const field = entity.fields.find((candidate) => candidate.id === key);
-        if (field === undefined || !validSourceValue(row[key], field)) throw new TypeError(`Row for ${entityId} has an invalid value for ${key}.`);
+      const keys = Object.keys(row);
+      if (keys.length > WIRE_LIMITS.properties) throw new TypeError(`Row for ${entityId} exceeds the bounded field limit.`);
+      addCount(2 + (rowIndex > 0 ? 1 : 0));
+      for (const [index, key] of keys.entries()) {
+        const field = fieldsById.get(key);
+        const value = row[key];
+        if (field === undefined || !validSourceValue(value, field)) throw new TypeError(`Row for ${entityId} has an invalid value for ${key}.`);
+        // Only validated scalars are serialized. A large row is never stringified
+        // wholesale before the source limit can reject it.
+        addCount(1 + (index > 0 ? 1 : 0));
+        addBytes(key);
+        addBytes(value !== null && typeof value === 'object' ? {decimal: value.decimal} : value);
       }
       for (const field of entity.fields) {
         if (!field.type.nullable && (!Object.hasOwn(row, field.id) || row[field.id] === undefined || row[field.id] === null))
           throw new TypeError(`Row for ${entityId} is missing non-nullable field ${field.id}.`);
       }
       for (const identity of entity.identity) if (!Object.hasOwn(row, identity) || row[identity] === undefined || row[identity] === null) throw new TypeError(`Row for ${entityId} has an invalid identity field ${identity}.`);
-      const identityKey = entity.identity.map((identity) => {
-        const field = entity.fields.find((candidate) => candidate.id === identity)!;
-        return identityPart(row[identity]!, field.type.value);
-      }).join('|');
+      const identityKey = canonical(entity.identity.map(identity => identityPart(row[identity]!, fieldsById.get(identity)!.type.value)));
       if (identityKeys.has(identityKey)) throw new TypeError(`Rows for ${entityId} contain a duplicate identity tuple.`);
       identityKeys.add(identityKey);
       return deepFreezeRecord(row);
@@ -623,7 +644,18 @@ function compareValues(left: DataValue, right: DataValue, type: string): number 
     if (typeof left !== 'object' || typeof right !== 'object') return undefined;
     return compareDecimal(left, right);
   }
-  if (type === 'date' || type === 'instant') {
+  if (type === 'instant') {
+    if (typeof left !== 'string' || typeof right !== 'string') return undefined;
+    const a = instantParts(left);
+    const b = instantParts(right);
+    if (a === undefined || b === undefined) return undefined;
+    if (a.epochMilliseconds !== b.epochMilliseconds) return a.epochMilliseconds < b.epochMilliseconds ? -1 : 1;
+    const digits = Math.max(a.fraction.length, b.fraction.length);
+    const fractionA = a.fraction.padEnd(digits, '0');
+    const fractionB = b.fraction.padEnd(digits, '0');
+    return fractionA < fractionB ? -1 : fractionA > fractionB ? 1 : 0;
+  }
+  if (type === 'date') {
     if (typeof left !== 'string' || typeof right !== 'string') return undefined;
     const a = Date.parse(left);
     const b = Date.parse(right);
