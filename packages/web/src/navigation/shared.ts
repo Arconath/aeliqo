@@ -4,7 +4,6 @@ export const aeliqoNavigationStyles = css`
   :host {
     color: var(--aeliqo-color-text, #111827);
     display: block;
-    font: inherit;
     max-inline-size: 100%;
   }
 
