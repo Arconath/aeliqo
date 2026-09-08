@@ -969,7 +969,7 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
       return unsupported({kind: 'source', id: 'population', reason: 'A fixed population requires a host-owned complete cohort resolver and result handle context.', alternatives: ['Configure cohortResolver and cohortContext on the host service.']}, ['query', 'population']);
     const remaining = budget.maxMilliseconds - (Date.now() - startedAt);
     if (remaining <= 0) return failure('data.budget', 'Cohort resolution exceeded the effective time budget.', ['budget']);
-    const principalKey = context.metadata?.['aeliqo-principal-key'] ?? 'local-principal';
+    const principalKey = context.cohort?.principalKey ?? context.metadata?.['aeliqo-principal-key'] ?? (typeof context.principal === 'string' ? context.principal : 'local-principal');
     let handles: Pick<CohortResolverContext, 'resultStore' | 'resolveResult'>;
     if (context.cohort !== undefined) handles = context.cohort;
     else {

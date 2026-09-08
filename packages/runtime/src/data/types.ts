@@ -62,6 +62,7 @@ export interface ReadContext {
    * omits this field; the server supplies its own trusted resolver context.
    */
   readonly cohort?: {
+    readonly principalKey: string;
     readonly resolver: import('../evaluation/types.js').CohortResolver;
     readonly resultStore: import('../results/types.js').ResultStore;
     readonly resolveResult: (ref: import('@aeliqo/core').ResultRef) => import('../results/types.js').ResultHandle | undefined;

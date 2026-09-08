@@ -193,6 +193,8 @@ function resultRows(snapshot: ResultSnapshot): readonly Record<string, DataValue
 function authorityCheck(request: CohortRequest, context: CohortResolverContext, handle: ResultHandle): Outcome<void> {
   if (!context.grants.includes('result.inspect')) return failure('runtime.evaluation-denied', 'The host did not grant result inspection for cohort membership.');
   if (request.scopeDigest !== context.scopeDigest) return failure('runtime.evaluation-denied', 'The cohort request scope does not match the fresh host authority.', ['scopeDigest']);
+  if (handle.key.principalKey !== context.principalKey) return failure('runtime.evaluation-denied', 'The cohort source belongs to a different authenticated principal.');
+  if (handle.key.principalKey !== context.principalKey) return failure('runtime.evaluation-denied', 'The cohort source belongs to a different authenticated principal.');
   if (request.catalogRevision !== context.catalogRevision || handle.key.catalogRevision !== context.catalogRevision)
     return failure('runtime.evaluation-stale', 'The cohort result is bound to a different catalog revision.', ['catalogRevision']);
   if (handle.key.scopeDigest !== context.scopeDigest) return failure('runtime.evaluation-denied', 'The cohort result is outside the current authorization scope.');

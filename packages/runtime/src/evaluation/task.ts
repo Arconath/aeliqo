@@ -194,7 +194,7 @@ export function createTaskEvaluator(options: TaskEvaluatorOptions): {evaluate(in
         const materialized = new Map<string, MaterializedTaskOutput>();
         const resolver = context.cohortResolver ?? options.cohortResolver ?? localResolver(context.data) ?? createResultCohortResolver();
         const resolveMaterialized = (ref: ResultRef): ResultHandle | undefined => materialized.get(ref.outputId)?.ref && sameRef(materialized.get(ref.outputId)!.ref, ref) ? materialized.get(ref.outputId)!.handle : context.resolveResult(ref);
-        const cohortCapability: NonNullable<ReadContext['cohort']> = {resolver, resultStore: context.resultStore, resolveResult: resolveMaterialized};
+        const cohortCapability: NonNullable<ReadContext['cohort']> = {principalKey: context.principalKey, resolver, resultStore: context.resultStore, resolveResult: resolveMaterialized};
         const contextForResolver = (): CohortResolverContext => ({readContext: contextRead(context, outer.signal), principalKey: context.principalKey, scopeDigest: context.scopeDigest, ...(context.policyRevision === undefined ? {} : {policyRevision: context.policyRevision}), catalogRevision: context.catalogRevision, functionRegistryDigest: context.functionRegistryDigest, grants: context.grants, catalog: context.catalog, resultStore: context.resultStore, resolveResult: resolveMaterialized, now: currentNow});
         const bindLivePopulation = async (query: QuerySpec): Promise<Outcome<QuerySpec>> => {
           if (query.population.kind !== 'live-output') return {ok: true, value: query};
