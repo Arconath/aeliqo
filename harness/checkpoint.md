@@ -81,3 +81,13 @@ helper check (missing imports and Node assertions). The fresh external-package
 run artifacts/core-consumers/run-x98TZ5/report.json passed all checks and every
 browser outcome. No product source changed; browser certification remains scoped
 to these parser/semantic fixtures.
+
+T06 integration e424239 now contains scoped local ADC plus bounded authenticated
+HTTP transport, public data exports and README. Fresh integrated59data tests and
+strictTS pass; actual core/runtime tarballs installed outsideworkspace pass strict
+consumer, local/HTTP requests, auth/stale rejection and Chromium realfetch
+(artifacts/runtime-consumers/run-oYclqf, measured browser entry36221gzip bytes).
+Independent HTTP/stream review passed. Local review9tests passed but source
+normalization, discovery budgets and registration-cache followup remain active;
+T06 is not accepted yet. Additional adversarial boundary regressions are in an
+isolated consumer-author worktree. Parent owns HTTP/config/integration.
