@@ -1,123 +1,347 @@
-import {resolveExperienceConstraints} from '../contracts/experience/index.js';
 import * as z from 'zod/mini';
-import {idSchema, revisionSchema} from '../contracts/schemas.js';
-import {validateCommitReadSet} from '../contracts/commit.js';
-import {parseResult} from '../contracts/parse.js';
+import {parseContract} from '../contracts/parse.js';
 import {inspectWire} from '../contracts/ingress.js';
-import type {Diagnostic, Outcome, PresentationPlan, Result, Task} from '../contracts/types.js';
-import type {PresentationComposition, PresentationCompositionRequest, PresentationManifest, PresentationRegistry, PresentationValues} from './types.js';
-import {freezePresentation, presentationFailure as fail, versionKey} from './registry.js';
-import {validatePresentationPlan} from './validate.js';
+import {idSchema, revisionSchema, versionRefSchema, jsonSchema} from '../contracts/schemas.js';
+import {validateCommitReadSet} from '../contracts/commit.js';
+import type {Diagnostic, Outcome, PresentationPlan, Result, Task, VersionRef} from '../contracts/types.js';
+import type {
+  PresentationComposition, PresentationCompositionRequest, PresentationManifest, PresentationPatternManifest, PresentationRegistry,
+  PresentationValues, ValidatedPresentation,
+} from './types.js';
+import {freezePresentation, isThenable, presentationFailure as fail, versionKey} from './registry.js';
+import {preparePresentationContext, validatePresentationPlan, type PresentationValidationOptions, type PreparedPresentationContext} from './validate.js';
 
-/**
- * Bounded no-preset composition. Try a complete incumbent first, then complete
- * explicit candidates, then one whole deterministic composition before variations.
- * A failed configuration suggestion is not proof no other configuration exists.
- */
+const stateIdentity = {id: 'aeliqo.state.identity', revision: '1'} as const;
+const suggestionSchema = z.record(z.string(), jsonSchema);
+
+function normalizePlan(input: unknown, id: string, revision: string, preconditions: unknown): Outcome<PresentationPlan> {
+  const wire = inspectWire(input);
+  if (!wire.ok) return wire;
+  if (wire.value === null || typeof wire.value !== 'object' || Array.isArray(wire.value))
+    return fail('candidate', 'A presentation candidate must be a plan object.');
+  const normalized = {...wire.value as Record<string, unknown>, id, revision, preconditions};
+  const reparsed = parseContract('presentation-plan', normalized);
+  return reparsed;
+}
+
+function callbackValue(raw: unknown, code: string, message: string): Outcome<unknown> {
+  if (isThenable(raw)) return fail(code, message);
+  const wire = inspectWire(raw);
+  if (!wire.ok) return wire;
+  const outcome = wire.value as {ok?: unknown; value?: unknown};
+  if (outcome === null || typeof outcome !== 'object' || outcome.ok !== true || !Object.hasOwn(outcome, 'value')) return fail(code, message);
+  return {ok: true, value: outcome.value};
+}
+
+function canonical(value: unknown): string {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
+  return `{${Object.keys(value as Record<string, unknown>).sort().map(key => `${JSON.stringify(key)}:${canonical((value as Record<string, unknown>)[key])}`).join(',')}}`;
+}
+
+function sameRef(left: VersionRef, right: VersionRef): boolean {
+  return versionKey(left) === versionKey(right);
+}
+
+function planTopology(plan: PresentationPlan): string {
+  return canonical(plan.nodes.map(node => [node.id, node.role, node.children]).sort((a, b) => String(a[0]).localeCompare(String(b[0]))));
+}
+
+function planVariants(plan: PresentationPlan): string {
+  return canonical(plan.nodes.map(node => [node.id, versionKey(node.representation)]).sort());
+}
+
+function planConfigurations(plan: PresentationPlan): string {
+  return canonical(plan.nodes.map(node => [node.id, node.config]).sort());
+}
+
+function planSemantics(plan: PresentationPlan): string {
+  return canonical([plan.links, plan.coverage, plan.nodes.map(node => [node.id, node.result]).sort()]);
+}
+
+function changePenalty(candidate: PresentationPlan, incumbent: PresentationPlan | undefined): number {
+  if (incumbent === undefined) return 0;
+  let penalty = 0;
+  if (planTopology(candidate) !== planTopology(incumbent)) penalty += 80;
+  if (planVariants(candidate) !== planVariants(incumbent)) penalty += 80;
+  if (planConfigurations(candidate) !== planConfigurations(incumbent)) penalty += 20;
+  if (planSemantics(candidate) !== planSemantics(incumbent)) penalty += 20;
+  return penalty;
+}
+
+function candidateScore(
+  presentation: ValidatedPresentation,
+  prepared: PreparedPresentationContext,
+  incumbent: PresentationPlan | undefined,
+): number {
+  let score = 0;
+  for (const node of presentation.nodes) {
+    const quality = node.quality;
+    if (quality === undefined) continue;
+    score += quality.taskFit * 100;
+    score += quality.informationDensity * 25;
+    score -= quality.interactionEffort * 20;
+    score -= quality.legibilityPenalty * 20;
+    if (quality.cost !== undefined) score -= Math.min(100, Math.floor(quality.cost.microseconds / 1_000_000)) * 5;
+  }
+  if (prepared.constraints.preferredRepresentation !== undefined && presentation.nodes.some(node => node.manifest.id === prepared.constraints.preferredRepresentation)) score += 150;
+  const optionalCovered = prepared.constraints.taskNeeds.filter(need => !need.required && presentation.plan.coverage.some(entry => entry.needId === need.id)).length;
+  score += optionalCovered * 10;
+  score -= changePenalty(presentation.plan, incumbent);
+  return score;
+}
+
+interface RankedCandidate {
+  readonly presentation: ValidatedPresentation;
+  readonly score: number;
+  readonly tie: string;
+  readonly incumbent: boolean;
+}
+
+function betterCandidate(next: RankedCandidate, current: RankedCandidate | undefined): boolean {
+  if (current === undefined) return true;
+  if (next.score !== current.score) return next.score > current.score;
+  if (next.incumbent !== current.incumbent) return next.incumbent;
+  return next.tie < current.tie;
+}
+
+function validPattern(
+  candidate: {readonly source: 'explicit' | 'pattern'; readonly pattern?: VersionRef; readonly plan: PresentationPlan},
+  patterns: readonly PresentationPatternManifest[],
+  prepared: PreparedPresentationContext,
+): Outcome<PresentationPatternManifest | undefined> {
+  if (candidate.source !== 'pattern') return {ok: true, value: undefined};
+  const patternRef = candidate.pattern;
+  if (patternRef === undefined) return fail('pattern-required', 'A pattern candidate must identify its registered pattern.');
+  const pattern = patterns.find(item => sameRef(item.ref, patternRef));
+  if (pattern === undefined || !prepared.constraints.allowedPatterns.includes(pattern.ref.id))
+    return fail('pattern-required', 'The candidate pattern is not allowed by the active experience.');
+  return {ok: true, value: pattern};
+}
+
+function stableNodeId(
+  need: Task['needs'][number],
+  role: string,
+  representation: VersionRef,
+  used: Set<string>,
+  context: PresentationCompositionRequest['context'],
+): string {
+  const coverage = context.incumbent?.coverage.find(entry => entry.needId === need.id);
+  const existing = coverage?.nodeIds.find(id => {
+    const node = context.incumbent?.nodes.find(candidate => candidate.id === id);
+    return node !== undefined && node.role === role && sameRef(node.representation, representation) && !used.has(id);
+  });
+  if (existing !== undefined) { used.add(existing); return existing; }
+  const base = `view.${need.id}`;
+  if (!used.has(base)) { used.add(base); return base; }
+  let index = 2;
+  while (used.has(`${base}.${index}`)) index++;
+  const id = `${base}.${index}`; used.add(id); return id;
+}
+
+function stableRootId(
+  role: string,
+  representation: VersionRef,
+  used: Set<string>,
+  context: PresentationCompositionRequest['context'],
+): string {
+  const currentRoot = context.incumbent?.nodes.find(node => node.id === context.incumbent?.rootId);
+  if (currentRoot !== undefined && currentRoot.role === role && sameRef(currentRoot.representation, representation) && !used.has(currentRoot.id)) {
+    used.add(currentRoot.id); return currentRoot.id;
+  }
+  const base = 'layout';
+  if (!used.has(base)) { used.add(base); return base; }
+  let index = 2;
+  while (used.has(`${base}.${index}`)) index++;
+  const id = `${base}.${index}`; used.add(id); return id;
+}
+
+function transfersFor(
+  nodes: readonly PresentationPlan['nodes'][number][],
+  incumbent: PresentationPlan | undefined,
+): PresentationPlan['stateTransfer'] {
+  if (incumbent === undefined) return [];
+  const next = new Map(nodes.map(node => [node.id, node]));
+  return incumbent.nodes.flatMap(previous => {
+    const candidate = next.get(previous.id);
+    if (candidate === undefined || candidate.role !== previous.role || !sameRef(candidate.representation, previous.representation)) return [];
+    return [{fromNode: previous.id, toNode: previous.id, mapping: stateIdentity}];
+  });
+}
+
+function buildPlan(
+  request: PresentationCompositionRequest,
+  prepared: PreparedPresentationContext,
+  layout: PresentationManifest | undefined,
+  selected: readonly PresentationManifest[],
+  suggest: (manifest: PresentationManifest, needs: readonly Task['needs'][number][], result: Result | undefined) => Outcome<PresentationValues>,
+): Outcome<PresentationPlan> {
+  const required = prepared.constraints.taskNeeds.filter(need => need.required);
+  const used = new Set<string>();
+  const descriptors = prepared.results;
+  const resultFor = (need: Task['needs'][number]): Result | undefined => {
+    if (need.outputId === undefined) return undefined;
+    return descriptors.find(result => result.ref.outputId === need.outputId);
+  };
+  const nodes: PresentationPlan['nodes'][number][] = [];
+  for (let index = 0; index < required.length; index++) {
+    const need = required[index]!;
+    const manifest = selected[index];
+    if (manifest === undefined) return fail('suggestion', 'The bounded composition did not provide a representation for every required need.');
+    const result = resultFor(need);
+    if (manifest.result === 'required' && result === undefined) return fail('suggestion', 'A required-result representation has no exact task output.');
+    const values = suggest(manifest, [need], result);
+    if (!values.ok) return values;
+    const nodeId = stableNodeId(need, manifest.roles[0]!, manifest.ref, used, request.context);
+    nodes.push({id: nodeId, role: manifest.roles[0]!, representation: manifest.ref, ...(result === undefined ? {} : {result: result.ref}),
+      config: {schema: manifest.configSchema, values: values.value}, children: []});
+  }
+  if (layout === undefined && nodes.length !== 1) return fail('suggestion', 'A single leaf is required when no layout manifest is selected.');
+  let rootId: string;
+  if (layout === undefined) rootId = nodes[0]!.id;
+  else {
+    const values = suggest(layout, [], undefined);
+    if (!values.ok) return values;
+    rootId = stableRootId(layout.roles[0]!, layout.ref, used, request.context);
+    nodes.unshift({id: rootId, role: layout.roles[0]!, representation: layout.ref, config: {schema: layout.configSchema, values: values.value}, children: nodes.map(node => node.id)});
+  }
+  return {ok: true, value: {
+    id: request.id, revision: request.revision, rootId, preconditions: request.preconditions,
+    nodes, links: [], coverage: required.map((need, index) => ({needId: need.id, nodeIds: [nodes[layout === undefined ? index : index + 1]!.id], operations: [need.operation]})),
+    stateTransfer: transfersFor(nodes, request.context.incumbent), diagnostics: [],
+  }};
+}
+
+/** Bounded deterministic composition. Every candidate still passes the shared feasibility validator. */
 export function composePresentation(request: PresentationCompositionRequest, registry: PresentationRegistry): Outcome<PresentationComposition> {
   const identity = z.safeParse(z.strictObject({id: idSchema, revision: revisionSchema}), {id: request.id, revision: request.revision});
   if (!identity.success) return fail('request', 'The composition identity is invalid.');
   const requestPins = validateCommitReadSet(request.preconditions, request.context.current);
   if (!requestPins.ok) return requestPins;
-  const resolved = resolveExperienceConstraints(request.context.experience, request.context.task, request.context.restrictions);
-  if (!resolved.ok) return resolved;
-  const constraints = freezePresentation(resolved.value);
-  const descriptors: Result[] = [];
-  for (const input of request.context.results) {
-    const parsed = parseResult(input);
-    if (!parsed.ok) return parsed;
-    descriptors.push(freezePresentation(parsed.value));
+  const prepared = preparePresentationContext(request.context);
+  if (!prepared.ok) return prepared;
+  const constraints = prepared.value.constraints;
+  if (constraints.task.revision !== requestPins.value.taskRevision || constraints.task.catalogRevision !== requestPins.value.catalogRevision
+    || constraints.task.functionRegistryDigest !== requestPins.value.functionRegistryDigest || constraints.experience.revision !== requestPins.value.experienceRevision)
+    return fail('stale', 'The task or experience differs from the current version pins.');
+  if (request.candidates !== undefined) {
+    const candidatesWire = inspectWire(request.candidates);
+    if (!candidatesWire.ok) return candidatesWire;
+    if (!Array.isArray(candidatesWire.value) || candidatesWire.value.length > 64)
+      return fail('candidate-budget', 'The proposed complete candidate list exceeds the input budget.');
   }
-  if (!constraints.allowWithoutPreset) return fail('pattern-required', 'This composition pass requires a profile allowing registered views without a preset.');
-  if ((request.candidates?.length ?? 0) > 64) return fail('candidate-budget', 'The proposed complete candidate list exceeds the input budget.');
   const rejected: {candidate: string; diagnostics: readonly Diagnostic[]}[] = [];
   let expansions = 0;
-  let incumbent: PresentationComposition['presentation'];
-  const attempt = (plan: PresentationPlan, label: string): boolean => {
-    if (expansions >= constraints.maxExpansions) return false;
+  let budgetBlocked = false;
+  let best: RankedCandidate | undefined;
+  const spend = (): boolean => {
+    if (expansions >= constraints.maxExpansions) { budgetBlocked = true; return false; }
     expansions++;
-    const result = validatePresentationPlan(plan, request.context, registry);
-    if (result.ok) {
-      const candidatePins = validateCommitReadSet(result.value.plan.preconditions, requestPins.value);
-      if (!candidatePins.ok) { rejected.push({candidate: label, diagnostics: candidatePins.diagnostics}); return false; }
-      incumbent = freezePresentation({...result.value, plan: {...result.value.plan, id: identity.data.id, revision: identity.data.revision, preconditions: requestPins.value}});
-    }
-    else rejected.push({candidate: label, diagnostics: result.diagnostics});
-    return result.ok;
+    return true;
   };
-  // An incumbent is reused only after all current feasibility/read-set checks.
-  if (request.context.incumbent !== undefined && attempt(request.context.incumbent, 'incumbent'))
-    return {ok: true, value: freezePresentation({status: 'composed', presentation: incumbent!, expansions, rejected})};
-  for (const candidate of request.candidates ?? []) {
-    if (candidate.source === 'pattern') {
-      rejected.push({candidate: candidate.plan.id, diagnostics: [{code: 'presentation.pattern-unavailable', message: 'No registered pattern expander is installed in this composition pass.', retryable: false}]});
+  const reject = (candidate: string, diagnostics: readonly Diagnostic[]) => rejected.push({candidate, diagnostics});
+  const consider = (presentation: ValidatedPresentation, candidateIsIncumbent: boolean): void => {
+    const rank: RankedCandidate = {presentation, score: candidateScore(presentation, prepared.value, request.context.incumbent),
+      tie: canonical(presentation.plan), incumbent: candidateIsIncumbent};
+    if (betterCandidate(rank, best)) best = rank;
+  };
+  const validateCandidate = (input: unknown, label: string, options: PresentationValidationOptions = {}, candidateIsIncumbent = false): boolean => {
+    if (!spend()) return false;
+    const normalized = normalizePlan(input, identity.data.id, identity.data.revision, requestPins.value);
+    if (!normalized.ok) { reject(label, normalized.diagnostics); return false; }
+    const checked = validatePresentationPlan(normalized.value, request.context, registry, options);
+    if (!checked.ok) { reject(label, checked.diagnostics); return false; }
+    consider(checked.value, candidateIsIncumbent);
+    return true;
+  };
+  if (request.context.incumbent !== undefined) validateCandidate(request.context.incumbent, 'incumbent', {}, true);
+
+  const patterns = registry.patterns ?? [];
+  const patternContext = prepared.value.patternContext;
+  const candidates = request.candidates ?? [];
+  for (let index = 0; index < candidates.length; index++) {
+    const candidate = candidates[index]!;
+    if (candidate === null || typeof candidate !== 'object' || (candidate.source !== 'explicit' && candidate.source !== 'pattern')) {
+      reject(`candidate.${index}`, [{code: 'presentation.candidate', message: 'The candidate source is invalid.', retryable: false}]);
       continue;
     }
-    if (attempt(candidate.plan, candidate.plan.id)) return {ok: true, value: freezePresentation({status: 'composed', presentation: incumbent!, expansions, rejected})};
-    if (expansions >= constraints.maxExpansions) return {ok: true, value: freezePresentation({status: 'search-exhausted', expansions, rejected})};
+    const pattern = validPattern(candidate, patterns, prepared.value);
+    if (!pattern.ok) { reject(`candidate.${index}`, pattern.diagnostics); continue; }
+    if (candidate.source === 'pattern') {
+      if (!spend()) break;
+      let expanded: unknown;
+      try {
+        expanded = pattern.value!.expand({id: identity.data.id, revision: identity.data.revision, preconditions: requestPins.value, context: patternContext});
+      } catch { reject(`pattern.${candidate.pattern!.id}`, [{code: 'presentation.pattern', message: 'The registered pattern expander failed.', retryable: false}]); continue; }
+      const expansion = callbackValue(expanded, 'pattern', 'The registered pattern expander failed.');
+      if (!expansion.ok) { reject(`pattern.${candidate.pattern!.id}`, expansion.diagnostics); continue; }
+      const selectedPattern = pattern.value;
+      if (selectedPattern === undefined) { reject(`pattern.${candidate.pattern!.id}`, [{code: 'presentation.pattern', message: 'The registered pattern is unavailable.', retryable: false}]); continue; }
+      validateCandidate(expansion.value, `pattern.${candidate.pattern!.id}`, {requiredPattern: selectedPattern}, false);
+    } else validateCandidate(candidate.plan, `candidate.${index}`, {}, false);
+    if (budgetBlocked) break;
   }
-  const capabilities = new Set(request.context.rendererCapabilities.map(versionKey));
-  const allowed = registry.manifests.filter(m => constraints.allowedRepresentations.includes(m.ref.id)
-    && capabilities.has(versionKey(m.ref)) && m.suggestConfig !== undefined
-    && (!m.extension || constraints.extensionAllowlist.some(ref => versionKey(ref) === versionKey(m.ref))))
-    .sort((a, b) => versionKey(a.ref) < versionKey(b.ref) ? -1 : 1);
-  const required = constraints.taskNeeds.filter(n => n.required);
-  const layouts = allowed.filter(m => m.result === 'none' && m.visibility === 'simultaneous'
-    && m.children.min <= required.length && m.children.max >= required.length);
+  const allowed = registry.manifests.filter(manifest => constraints.allowedRepresentations.includes(manifest.ref.id)
+    && contextHasRenderer(request.context.rendererCapabilities, manifest.ref)
+    && manifest.suggestConfig !== undefined
+    && (!manifest.extension || constraints.extensionAllowlist.some(ref => sameRef(ref, manifest.ref))))
+    .sort((a, b) => versionKey(a.ref).localeCompare(versionKey(b.ref)));
+  const required = constraints.taskNeeds.filter(need => need.required);
   for (const need of required) {
-    if (need.outputId !== undefined && descriptors.filter(r => r.ref.outputId === need.outputId).length > 1)
+    if (need.outputId !== undefined && prepared.value.results.filter(result => result.ref.outputId === need.outputId).length > 1)
       return fail('ambiguous-result', 'Several result revisions match a named output; select an exact authorized descriptor before composing.');
   }
-  const resultFor = (need: Task['needs'][number]): Result | undefined => descriptors.find(r => r.ref.outputId === need.outputId);
-  const choices = required.map(need => allowed.filter(m => m.visibility === 'leaf' && m.children.min === 0
-    && m.operations.some(op => versionKey(op) === versionKey(need.operation)) && (need.outputId === undefined ? m.result !== 'required' : m.result !== 'none')));
-  if (layouts.length === 0 || choices.some(list => list.length === 0))
-    return {ok: true, value: freezePresentation({status: 'search-exhausted', expansions, rejected: [...rejected, {candidate: 'registered-composition', diagnostics: [{code: 'presentation.no-suggestion', message: 'No complete suggestion is available from the installed registry. Explicit registered configurations may still be feasible.', retryable: false}]}]})};
-  const suggest = (m: PresentationManifest, needs: readonly Task['needs'][number][], result: Result | undefined): Outcome<PresentationValues> => {
-    try {
-      const output = m.suggestConfig!(needs, result);
-      const wire = inspectWire(output);
-      if (!wire.ok) return wire;
-      const outcome = wire.value as {ok?: unknown; value?: unknown};
-      if (outcome === null || typeof outcome !== 'object' || outcome.ok !== true || outcome.value === null || typeof outcome.value !== 'object' || Array.isArray(outcome.value))
-        return fail('suggestion', 'The registered configuration suggestion failed.');
-      return {ok: true, value: outcome.value as PresentationValues};
-    } catch { return fail('suggestion', 'The registered configuration suggestion failed.'); }
+  const choices = required.map(need => allowed.filter(manifest => manifest.visibility === 'leaf' && manifest.children.min === 0
+    && manifest.operations.some(op => sameRef(op, need.operation)) && (need.outputId === undefined ? manifest.result !== 'required' : manifest.result !== 'none')));
+  const layouts = allowed.filter(manifest => manifest.result === 'none' && manifest.visibility === 'simultaneous'
+    && manifest.children.min <= required.length && manifest.children.max >= required.length);
+  const suggest = (manifest: PresentationManifest, needs: readonly Task['needs'][number][], result: Result | undefined): Outcome<PresentationValues> => {
+    if (manifest.suggestConfig === undefined) return fail('suggestion', 'The representation has no trusted bounded suggestion.');
+    let raw: unknown;
+    try { raw = manifest.suggestConfig(needs, result); } catch { return fail('suggestion', 'The registered configuration suggestion failed.'); }
+    const outcome = callbackValue(raw, 'suggestion', 'The registered configuration suggestion failed.');
+    if (!outcome.ok) return outcome;
+    const parsed = z.safeParse(suggestionSchema, outcome.value);
+    if (!parsed.success) return fail('suggestion', 'The registered configuration suggestion is not bounded JSON configuration.');
+    return {ok: true, value: freezePresentation(parsed.data as PresentationValues)};
   };
-  const build = (layout: PresentationManifest, selected: readonly PresentationManifest[]): Outcome<PresentationPlan> => {
-    const layoutValues = suggest(layout, [], undefined);
-    if (!layoutValues.ok) return layoutValues;
-    const nodes: PresentationPlan['nodes'][number][] = [];
-    for (let i = 0; i < required.length; i++) {
-      const need = required[i]!; const m = selected[i]!; const result = resultFor(need);
-      const values = suggest(m, [need], result);
-      if (!values.ok) return values;
-      nodes.push({id: `view.${need.id}`, role: m.roles[0]!, representation: m.ref, ...(result === undefined ? {} : {result: result.ref}),
-        config: {schema: m.configSchema, values: values.value}, children: []});
-    }
-    const rootNode: PresentationPlan['nodes'][number] = {id: 'layout', role: layout.roles[0]!, representation: layout.ref, config: {schema: layout.configSchema, values: layoutValues.value}, children: nodes.map(n => n.id)};
-    return {ok: true, value: {id: request.id, revision: request.revision, rootId: 'layout', preconditions: request.preconditions,
-      nodes: [rootNode, ...nodes],
-      links: [], coverage: required.map(need => ({needId: need.id, nodeIds: [`view.${need.id}`], operations: [need.operation]})), stateTransfer: [], diagnostics: []}};
+  const tryBuild = (layout: PresentationManifest | undefined, selected: readonly PresentationManifest[], label: string): boolean => {
+    if (!spend()) return false;
+    const built = buildPlan(request, prepared.value, layout, selected, suggest);
+    if (!built.ok) { reject(label, built.diagnostics); return false; }
+    return validateCandidate(built.value, label, {}, false);
   };
-  const selected = choices.map(list => list[0]!);
-  const proposals: {layout: PresentationManifest; selected: readonly PresentationManifest[]}[] = [{layout: layouts[0]!, selected}];
-  // Bounded single substitutions avoid enumerating the Cartesian product.
-  for (let i = 0; i < choices.length && proposals.length < constraints.maxExpansions; i++) {
-    for (const alternate of choices[i]!.slice(1)) {
-      if (proposals.length >= constraints.maxExpansions) break;
-      proposals.push({layout: layouts[0]!, selected: selected.map((m, index) => index === i ? alternate : m)});
+  if (!budgetBlocked && required.length === 1 && choices[0]!.length > 0) {
+    for (const leaf of choices[0]!) {
+      tryBuild(undefined, [leaf], `registered.leaf.${leaf.ref.id}`);
+      if (budgetBlocked) break;
     }
+  } else if (!budgetBlocked && required.length > 1 && layouts.length > 0 && choices.every(list => list.length > 0)) {
+    const selected = choices.map(list => list[0]!);
+    const proposals: readonly {layout: PresentationManifest; selected: readonly PresentationManifest[]}[] = [{layout: layouts[0]!, selected}];
+    const mutable = [...proposals];
+    for (let index = 0; index < choices.length && mutable.length < constraints.maxExpansions; index++) {
+      for (const alternate of choices[index]!.slice(1)) {
+        if (mutable.length >= constraints.maxExpansions) break;
+        mutable.push({layout: layouts[0]!, selected: selected.map((manifest, position) => position === index ? alternate : manifest)});
+      }
+    }
+    for (const layout of layouts.slice(1)) {
+      if (mutable.length >= constraints.maxExpansions) break;
+      mutable.push({layout, selected});
+    }
+    for (let index = 0; index < mutable.length; index++) {
+      const proposal = mutable[index]!;
+      tryBuild(proposal.layout, proposal.selected, `registered.${index}`);
+      if (budgetBlocked) break;
+    }
+  } else if (!budgetBlocked) {
+    reject('registered-composition', [{code: 'presentation.no-suggestion', message: 'No complete suggestion is available from the installed registry. Explicit registered configurations may still be feasible.', retryable: false}]);
   }
-  for (const layout of layouts.slice(1)) {
-    if (proposals.length >= constraints.maxExpansions) break;
-    proposals.push({layout, selected});
-  }
-  for (const [i, proposal] of proposals.entries()) {
-    if (expansions >= constraints.maxExpansions) break;
-    const plan = build(proposal.layout, proposal.selected);
-    if (!plan.ok) { expansions++; rejected.push({candidate: `registered.${i}`, diagnostics: plan.diagnostics}); continue; }
-    if (attempt(plan.value, `registered.${i}`)) return {ok: true, value: freezePresentation({status: 'composed', presentation: incumbent!, expansions, rejected})};
-  }
-  return {ok: true, value: freezePresentation({status: 'search-exhausted', expansions, rejected})};
+  if (best === undefined) return {ok: true, value: freezePresentation({status: budgetBlocked ? 'search-exhausted' : 'conflict', expansions, rejected})};
+  return {ok: true, value: freezePresentation({status: budgetBlocked ? 'search-exhausted' : 'composed', presentation: best.presentation, expansions, rejected})};
+}
+
+function contextHasRenderer(capabilities: readonly VersionRef[], ref: VersionRef): boolean {
+  try { return capabilities.some(candidate => sameRef(candidate, ref)); } catch { return false; }
 }

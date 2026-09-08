@@ -1,4 +1,5 @@
 export {createPresentationRegistry} from './registry.js';
-export {validatePresentationPlan} from './validate.js';
+export {preparePresentationContext, validatePresentationPlan} from './validate.js';
+export type {PresentationValidationOptions, PreparedPresentationContext} from './validate.js';
 export type * from './types.js';
 export {composePresentation} from './compose.js';

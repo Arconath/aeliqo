@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import {composePresentation, createPresentationRegistry, validatePresentationPlan} from '../../packages/core/src/presentation/index.js';
-import type {PresentationContext, PresentationManifest, PresentationRegistry} from '../../packages/core/src/presentation/index.js';
+import type {PresentationContext, PresentationManifest, PresentationPatternManifest, PresentationRegistry} from '../../packages/core/src/presentation/index.js';
 import type {PresentationPlan} from '../../packages/core/src/contracts/types.js';
 import {environment, experience, presentationPlan, presentationTask, result} from './fixtures.js';
 
@@ -48,6 +48,9 @@ describe('registered presentation feasibility', () => {
   });
   it('rejects descriptor, read-set and task/profile staleness', () => {
     expect(checked(plan(), {...context(), results: []}).ok).toBe(false);
+    const unauthorized = {...context(), current: {...context().current, results: []}};
+    expect(composePresentation({id: 'unauthorized', revision: '1', context: unauthorized, preconditions: unauthorized.current}, registry()))
+      .toMatchObject({ok: false, diagnostics: [{code: 'presentation.results'}]});
     expect(checked(plan(), {...context(), current: {...context().current, regionRevision: 'new'}})).toMatchObject({ok: false, diagnostics: [{code: 'commit.stale'}]});
     expect(checked(plan(), {...context(), task: {...context().task, revision: 'new'}}).ok).toBe(false);
     expect(checked({...plan(), preconditions: {...plan().preconditions, results: []}}).ok).toBe(false);
@@ -76,7 +79,7 @@ describe('registered presentation feasibility', () => {
     expect(checked(plan(), context(), registry([configured([{id: 'undeclared', revision: '1'}]), stack]))).toMatchObject({ok: false, diagnostics: [{code: 'presentation.configuration'}]});
     expect(checked(plan(), context(), registry([configured([read, read]), stack]))).toMatchObject({ok: false, diagnostics: [{code: 'presentation.configuration'}]});
     const composed = composePresentation({id: 'disabled-read', revision: '1', preconditions: plan().preconditions, context: context()}, registry([configured([]), stack]));
-    expect(composed).toMatchObject({ok: true, value: {status: 'search-exhausted'}});
+    expect(composed).toMatchObject({ok: true, value: {status: 'conflict'}});
   });
   it('intersects profile and explicit restrictions, including no-preset prohibition', () => {
     expect(checked(plan(), {...context(), experience: {...context().experience, allowedRepresentations: []}}).ok).toBe(false);
@@ -121,19 +124,84 @@ describe('registered presentation feasibility', () => {
     expect(checked(plan(), context(), registry([{...table, resolveConfig: (() => Promise.resolve({ok: true, value: {values: {}, fields: [], ports: []}})) as never}])).ok).toBe(false);
     expect(checked(plan(), context(), registry([{...table, resolveConfig: () => ({ok: true, value: {values: {}, fields: ['invented'], ports: []}})}])).ok).toBe(false);
   });
+  it('keeps registered patterns bounded, version-unique, frozen and behind shared validation', () => {
+    let callbackSawFrozenContext = false;
+    const preset: PresentationPatternManifest = {
+      ref: {id: 'preset.table', revision: '1'},
+      expand: ({context: patternContext}) => {
+        callbackSawFrozenContext = Object.isFrozen(patternContext) && Object.isFrozen(patternContext.task)
+          && Object.isFrozen(patternContext.results);
+        return {ok: true, value: plan()};
+      },
+      matches: (candidate, patternContext) => {
+        callbackSawFrozenContext = callbackSawFrozenContext && Object.isFrozen(patternContext) && Object.isFrozen(candidate);
+        return candidate.nodes.length === 1 && candidate.nodes[0]!.representation.id === table.ref.id;
+      },
+    };
+    const installed = createPresentationRegistry([table, stack], [], [preset]);
+    expect(installed).toMatchObject({ok: true, value: {patterns: [{ref: preset.ref}]}});
+    if (!installed.ok) return;
+    expect(Object.isFrozen(installed.value.patterns)).toBe(true);
+    expect(Object.isFrozen(installed.value.patterns![0])).toBe(true);
+    const c: PresentationContext = {...context(), experience: {...context().experience,
+      allowedPatterns: [preset.ref.id], composition: {...context().experience.composition, allowWithoutPreset: false}}};
+    const composed = composePresentation({id: 'pattern-compose', revision: '1', context: c, preconditions: c.current,
+      candidates: [{source: 'pattern', pattern: preset.ref, plan: plan()}]}, installed.value);
+    expect(composed).toMatchObject({ok: true, value: {status: 'composed', presentation: {plan: {id: 'pattern-compose'}}}});
+    expect(callbackSawFrozenContext).toBe(true);
+    expect(createPresentationRegistry([table, stack], [], [preset, {...preset, ref: {id: preset.ref.id, revision: '2'}}]).ok).toBe(false);
+
+    const forged = composePresentation({id: 'forged-pattern', revision: '1', context: c, preconditions: c.current,
+      candidates: [{source: 'pattern', pattern: {...preset.ref, revision: '2'}, plan: plan()}]}, installed.value);
+    expect(forged).toMatchObject({ok: true, value: {status: 'composed', rejected: [{candidate: 'candidate.0', diagnostics: [{code: 'presentation.pattern-required'}]}]}});
+  });
+  it('rejects asynchronous or invalid assessors and ranks bounded measured quality deterministically', () => {
+    const badQuality = {...table, assess: () => ({ok: true as const, value: {taskFit: 101, informationDensity: 0,
+      interactionEffort: 0, legibilityPenalty: 0}})};
+    expect(checked(plan(), context(), registry([badQuality, stack]))).toMatchObject({ok: false, diagnostics: [{code: 'presentation.quality'}]});
+    const asyncQuality = {...table, assess: (() => Promise.resolve({ok: true, value: {taskFit: 50, informationDensity: 50,
+      interactionEffort: 0, legibilityPenalty: 0}})) as never};
+    expect(checked(plan(), context(), registry([asyncQuality, stack]))).toMatchObject({ok: false, diagnostics: [{code: 'presentation.quality'}]});
+
+    const low: PresentationManifest = {...table, ref: {id: 'data.low', revision: '1'}, configSchema: {id: 'data.low.config', revision: '1'},
+      assess: () => ({ok: true, value: {taskFit: 10, informationDensity: 10, interactionEffort: 90, legibilityPenalty: 90,
+        cost: {microseconds: 900_000_000, measurement: {id: 'measure.low', revision: '1'}}}})};
+    const high: PresentationManifest = {...table, ref: {id: 'data.high', revision: '1'}, configSchema: {id: 'data.high.config', revision: '1'},
+      assess: () => ({ok: true, value: {taskFit: 90, informationDensity: 80, interactionEffort: 10, legibilityPenalty: 0,
+        cost: {microseconds: 1, measurement: {id: 'measure.high', revision: '1'}}}})};
+    const r = registry([low, high]);
+    const c: PresentationContext = {...context(), experience: {...context().experience, allowedRepresentations: [low.ref.id, high.ref.id],
+      composition: {...context().experience.composition, maxExpansions: 8}}, rendererCapabilities: [low.ref, high.ref]};
+    const composed = composePresentation({id: 'quality-compose', revision: '1', context: c, preconditions: c.current}, r);
+    expect(composed).toMatchObject({ok: true, value: {status: 'composed', presentation: {plan: {nodes: [{representation: high.ref}]}}}});
+    if (!composed.ok || composed.value.presentation === undefined) return;
+    expect(Object.isFrozen(composed.value.presentation.nodes[0]!.quality)).toBe(true);
+    expect(composed.value.presentation.nodes[0]!.quality?.cost?.measurement).toEqual({id: 'measure.high', revision: '1'});
+  });
+  it('composes multiple required needs under one simultaneous layout without a Cartesian search', () => {
+    const baseNeed = context().task.needs[0]!;
+    const c: PresentationContext = {...context(), task: {...context().task,
+      needs: [baseNeed, {...baseNeed, id: 'compare', simultaneousGroup: 'comparison'}]},
+      experience: {...context().experience, composition: {...context().experience.composition, maxExpansions: 8}}};
+    const composed = composePresentation({id: 'multi-compose', revision: '1', context: c, preconditions: c.current}, registry());
+    expect(composed).toMatchObject({ok: true, value: {status: 'composed', expansions: 2,
+      presentation: {plan: {rootId: 'layout', nodes: [{id: 'layout'}, {id: 'view.browse'}, {id: 'view.compare'}]}}}});
+    if (!composed.ok || composed.value.presentation === undefined) return;
+    expect(validatePresentationPlan(composed.value.presentation.plan, c, registry()).ok).toBe(true);
+  });
   it('constructs a complete no-preset candidate within a one-expansion budget', () => {
-    const c: PresentationContext = {...context(), experience: {...context().experience, composition: {...context().experience.composition, maxExpansions: 1}}};
+    const c: PresentationContext = {...context(), experience: {...context().experience, composition: {...context().experience.composition, maxExpansions: 2}}};
     const composed = composePresentation({id: 'composed', revision: '1', preconditions: c.current, context: c}, registry());
-    expect(composed).toMatchObject({ok: true, value: {status: 'composed', expansions: 1, presentation: {plan: {rootId: 'layout'}}}});
+    expect(composed).toMatchObject({ok: true, value: {status: 'composed', expansions: 2, presentation: {plan: {rootId: 'view.browse'}}}});
     if (!composed.ok || composed.value.presentation === undefined) return;
     expect(checked(composed.value.presentation.plan, c).ok).toBe(true);
     expect(composed.value.presentation.plan.coverage).toEqual([{needId: 'browse', nodeIds: ['view.browse'], operations: [read]}]);
   });
   it('uses the same validator for explicit candidates and retains a feasible incumbent', () => {
     const r = registry(); const c = {...context(), incumbent: plan()};
-    expect(composePresentation({id: 'compose', revision: '1', context: c, preconditions: c.current}, r)).toMatchObject({ok: true, value: {status: 'composed', expansions: 1, presentation: {plan: {id: 'compose'}}}});
+    expect(composePresentation({id: 'compose', revision: '1', context: c, preconditions: c.current}, r)).toMatchObject({ok: true, value: {status: 'composed', expansions: 3, presentation: {plan: {id: 'compose'}}}});
     const explicit = composePresentation({id: 'compose', revision: '1', context: context(), preconditions: c.current, candidates: [{source: 'explicit', plan: {...plan(), coverage: []}}]}, r);
-    expect(explicit).toMatchObject({ok: true, value: {status: 'composed', expansions: 2, rejected: [{candidate: 'plan-1'}]}});
+    expect(explicit).toMatchObject({ok: true, value: {status: 'composed', expansions: 3, rejected: [{candidate: 'candidate.0'}]}});
   });
   it('rejects stale or invalid composition requests even with a feasible incumbent', () => {
     const c = {...context(), incumbent: plan()};
@@ -152,8 +220,9 @@ describe('registered presentation feasibility', () => {
     expect(checked(p, c, registry([{...table, operations: [read, {id: 'other', revision: '1'}]}, stack]))).toMatchObject({ok: false, diagnostics: [{code: 'presentation.transition'}]});
   });
   it('reports exhausted search separately from impossibility and does not exceed its bound', () => {
-    const r = registry([{...table, suggestConfig: () => ({ok: true, value: {bad: 'config'}})}, stack]);
-    const c = context();
+    const r = registry();
+    const c: PresentationContext = {...context(), experience: {...context().experience,
+      composition: {...context().experience.composition, maxExpansions: 1}}};
     expect(composePresentation({id: 'compose', revision: '1', context: c, preconditions: c.current}, r)).toMatchObject({ok: true, value: {status: 'search-exhausted', expansions: 1}});
     expect(createPresentationRegistry([table, table]).ok).toBe(false);
   });
