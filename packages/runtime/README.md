@@ -46,6 +46,12 @@ grant, policy or catalog makes the accepted plan stale. Row policies run again f
 every execution and may return different principal-scoped populations only when the
 host supplies a matching scope and policy revision.
 
+An ADC plan may set `target.taskId` beside `target.outputId` to bind its Result
+descriptor to the semantic Task. `requestId` still identifies transport work.
+The accepted plan pins both target fields; changing either before execution is
+rejected. Direct legacy requests that omit `taskId` retain the request ID as
+their descriptor task ID. These identifiers grant no authority.
+
 The local evaluator uses the core query planner for typed predicates, projection,
 ordering, paging, registered measures, validated relations, grouping and explicit
 temporal operations. Discovery negotiates supported operations; unsupported plans

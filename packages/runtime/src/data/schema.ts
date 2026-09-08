@@ -27,7 +27,7 @@ const catalogTargetSchema = z.discriminatedUnion('kind', [
   strictObject({kind: z.literal('catalog')}),
   strictObject({kind: z.literal('entity'), entity: idSchema}),
 ]);
-const planTargetSchema = strictObject({outputId: idSchema});
+const planTargetSchema = strictObject({outputId: idSchema, taskId: z.optional(idSchema)});
 const catalogRequestSchema = strictObject({
   version: z.literal('1'), requestId: idSchema, catalogRevision: z.union([revisionSchema, z.null()]),
   target: catalogTargetSchema, budget: budgetSchema, pageSize: z.optional(positive), cursor: z.optional(text),
@@ -123,7 +123,11 @@ export function parsePlanRequest(input: unknown): Outcome<PlanRequest> {
   const parsed = parseSchema(planRequestSchema, input, 'plan-request');
   if (!parsed.ok) return parsed;
   const query = parseNestedQuery(parsed.value.query, ['query']);
-  return query.ok ? {ok: true, value: {...parsed.value, query: query.value}} : query;
+  return query.ok ? {ok: true, value: {...parsed.value, target: exactPlanTarget(parsed.value.target), query: query.value}} : query;
+}
+
+function exactPlanTarget(target: PlanTargetWire): PlanRequest['target'] {
+  return {outputId: target.outputId, ...(target.taskId === undefined ? {} : {taskId: target.taskId})};
 }
 
 export function parseAcceptedQuery(input: unknown): Outcome<AcceptedQuery> {
@@ -135,7 +139,7 @@ export function parseAcceptedQuery(input: unknown): Outcome<AcceptedQuery> {
     ? (() => { const {kind: _kind, supported: _supported, ...rest} = parsed.value; return rest; })()
     : parsed.value;
   const {policyRevision, ...required} = candidate;
-  return {ok: true, value: {...required, query: query.value, ...(policyRevision === undefined ? {} : {policyRevision})}};
+  return {ok: true, value: {...required, target: exactPlanTarget(required.target), query: query.value, ...(policyRevision === undefined ? {} : {policyRevision})}};
 }
 
 export function parsePlanAcceptance(input: unknown): Outcome<PlanAcceptance> {
@@ -144,7 +148,7 @@ export function parsePlanAcceptance(input: unknown): Outcome<PlanAcceptance> {
   const query = parseNestedQuery(parsed.value.query, ['query']);
   if (!query.ok) return query;
   const {policyRevision, ...required} = parsed.value;
-  return {ok: true, value: {...required, query: query.value, ...(policyRevision === undefined ? {} : {policyRevision})}};
+  return {ok: true, value: {...required, target: exactPlanTarget(required.target), query: query.value, ...(policyRevision === undefined ? {} : {policyRevision})}};
 }
 
 export function parseDataError(input: unknown): Outcome<DataErrorPayload> {

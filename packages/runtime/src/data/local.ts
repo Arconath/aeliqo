@@ -1190,7 +1190,7 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
       const refFields = result.schema.fields.map(queryFieldDefinition);
       const sourceRevisions: Record<string, string> = Object.fromEntries(stored.scanEntities.map((entity) => [entity, stored.accepted.sourceRevision]));
       const descriptorBase = {
-        version: '1' as const, ref, taskId: input.requestId,
+        version: '1' as const, ref, taskId: input.target.taskId ?? input.requestId,
         fields: refFields, identity: result.schema.identity, rowGrain: result.schema.grain,
         precision: resultPrecision(result),
         consistency: {kind: 'snapshot' as const, snapshotId: stored.accepted.sourceRevision, sourceRevisions},

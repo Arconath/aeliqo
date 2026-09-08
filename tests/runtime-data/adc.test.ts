@@ -2,6 +2,9 @@ import {describe, expect, it} from 'vitest';
 import {createStandardFunctionRegistry, type Catalog, type MeaningDefinition, type QuerySpec} from '../../packages/core/src/index.js';
 import {
   createLocalDataService,
+  createDataHttpHandler,
+  createHttpDataService,
+  type ResultEvent,
   type DataRecord,
   type LocalSnapshot,
   type QueryBudget,
@@ -37,6 +40,25 @@ const ok = <T>(value: T) => ({ok: true as const, value});
 const denied = () => ({ok: false as const, diagnostics: [{code: 'data.denied', message: 'Denied', retryable: false} as const]});
 
 describe('in-process ADC data service', () => {
+  it('preserves semantic task identity separately from request identity through local and HTTP ADC', async () => {
+    const local = createLocalDataService({snapshot: snapshot()});
+    const handler = createDataHttpHandler({service: local, authenticate: () => ok({principal: 'fixture-reader'})});
+    const http = createHttpDataService({baseUrl: 'https://adc.test', fetch: async (input, init) => handler(new Request(input, init))});
+    for (const service of [local, http]) {
+      const planned = await service.plan({version: '1', requestId: 'transport-request', catalogRevision: catalog.revision,
+        target: {taskId: 'semantic-task', outputId: 'rows'}, query: query(), budget});
+      expect(planned.ok).toBe(true); if (!planned.ok) throw new Error(JSON.stringify(planned.diagnostics));
+      expect(planned.value.target.taskId).toBe('semantic-task');
+      expect(planned.value.requestId).toBe('transport-request');
+      const events: ResultEvent[] = [];
+      for await (const event of service.execute(planned.value)) events.push(event);
+      expect(events.find(event => event.kind === 'descriptor')).toMatchObject({descriptor: {taskId: 'semantic-task'}});
+      const tampered: ResultEvent[] = [];
+      for await (const event of service.execute({...planned.value, target: {...planned.value.target, taskId: 'different-task'}})) tampered.push(event);
+      expect(tampered.some(event => event.kind === 'descriptor')).toBe(false);
+      expect(tampered.some(event => event.kind === 'error')).toBe(true);
+    }
+  });
   it('paginates discovery, pins revisions, and rejects client authority fields', async () => {
     const service = createLocalDataService({snapshot: snapshot()});
     const first = await service.describe({version: '1', requestId: 'describe-1', catalogRevision: null, target: {kind: 'catalog'}, budget, pageSize: 1});
