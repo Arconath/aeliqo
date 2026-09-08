@@ -208,7 +208,9 @@ for (const id of COMPOUND_COMPONENTS) {
     await page.setViewportSize({width: 1280, height: 900});
     await page.emulateMedia({colorScheme: "light"});
     await openFixture(page, id);
-    const states = id === "search-results" ? ["stale"] : ["loading", "empty", "partial", "stale", "error", "unavailable"];
+    const states = id === "search-results"
+      ? ["loading", "partial", "error", "unavailable", "stale"]
+      : ["loading", "empty", "partial", "stale", "error", "unavailable"];
     for (const state of states) {
       await mutateCompoundState(page, id, state);
       await assertCompoundState(page, id, state);
@@ -294,7 +296,7 @@ test.describe("unsupported state coverage is explicit", () => {
         "Visualization elements expose empty/error/partial/data-only outcomes through their typed visualization, context, datasets, and maxMarks inputs; they do not expose a generic loading/stale/error status prop.",
         "filter-builder and selection-summary have loading/partial/stale/error/unavailable inputs but no independent empty rendering path.",
         "record-editor invalid/disabled and form-flow validation are exercised here through their real controlled properties; pending remains the documented loading status path.",
-        "search-results only presents its stale revision state; its status property is not rendered for loading/partial/error/unavailable and remains a focused compound-suite gap.",
+        "search-results renders loading/partial/error/unavailable status text while preserving its separate stale revision state.",
         "No visual baseline is auto-accepted. Every state asserts rendered semantics, runs Axe, and captures an unapproved review image.",
       ].join("\n"),
       contentType: "text/plain",

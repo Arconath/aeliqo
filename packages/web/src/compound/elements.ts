@@ -248,6 +248,7 @@ export class AeliqoSearchResultsElement extends AeliqoCompoundElement {
           <aeliqo-card-collection .rows=${this.rows} .columns=${this.columns} .identity=${this.identity} .entity=${this.entity} .selectedKeys=${this.selectedKey ? [this.selectedKey] : []} .result=${this.result} .scope=${this.scope} selection="single" @aeliqo-card-selection=${this.forwardSelection}></aeliqo-card-collection>
           ${this.detailRecord ? html`<aeliqo-detail part="detail" .record=${this.detailRecord} .fields=${this.detailFields.length ? this.detailFields : this.columns} .identity=${this.identity} .entity=${this.entity} .scope=${this.scope} .status=${current}></aeliqo-detail>` : nothing}
         `}
+        ${!stale && current !== "ready" ? html`<p part="status" role="status">${this.statusText(current, this.message)}</p>` : nothing}
       </section>
     `;
   }
