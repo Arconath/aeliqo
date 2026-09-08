@@ -24,6 +24,13 @@ export function combineAeliqoPredicates(
 
 type AeliqoFilterLogical = "and" | "or";
 
+const MAX_PREDICATE_DEPTH = 32;
+const MAX_PREDICATE_NODES = 128;
+
+interface PredicateTraversal {
+  nodes: number;
+}
+
 interface PredicateProjection {
   readonly clauses: readonly AeliqoFilterClause[];
   readonly logical: AeliqoFilterLogical;
@@ -76,49 +83,100 @@ function parseValue(raw: string, field: AeliqoFieldOption | undefined): AeliqoFi
 function clauseFromPredicate(predicate: AeliqoFilterPredicate | undefined): AeliqoFilterClause | undefined {
   if (predicate?.op === "compare") return {field: predicate.field, operator: predicate.comparison, value: dataValueText(predicate.value, "")};
   if (predicate?.op === "is-null") return {field: predicate.field, operator: predicate.negate ? "not-null" : "is-null"};
-  if (predicate?.op === "in") return {field: predicate.field, operator: "in", value: predicate.values.map((value) => dataValueText(value, "")).join(", ")};
+  if (predicate?.op === "in") return {field: predicate.field, operator: "in", value: JSON.stringify(predicate.values.map((value) => dataValueText(value, "")))};
   if (predicate?.op === "not" && predicate.predicate.op === "is-null") {
     return {field: predicate.predicate.field, operator: predicate.predicate.negate ? "is-null" : "not-null"};
   }
   return undefined;
 }
 
-function projectPredicate(predicate: AeliqoFilterPredicate | undefined): PredicateProjection {
+function unsupportedProjection(predicate: AeliqoFilterPredicate, logical: AeliqoFilterLogical = "and"): PredicateProjection {
+  return {clauses: [], logical, unsupported: predicate};
+}
+
+function projectPredicate(
+  predicate: AeliqoFilterPredicate | undefined,
+  depth = 0,
+  traversal: PredicateTraversal = {nodes: 0},
+): PredicateProjection {
   try {
     if (predicate === undefined) return {clauses: [], logical: "and"};
+    if (depth > MAX_PREDICATE_DEPTH || traversal.nodes >= MAX_PREDICATE_NODES) return unsupportedProjection(predicate);
+    traversal.nodes += 1;
     const clause = clauseFromPredicate(predicate);
     if (clause !== undefined) return {clauses: [clause], logical: "and"};
     if (predicate.op !== "and" && predicate.op !== "or") return {clauses: [], logical: "and", unsupported: predicate};
-    if (predicate.predicates.length === 0) return {clauses: [], logical: predicate.op, unsupported: predicate};
+    const predicates = predicate.predicates;
+    if (!Array.isArray(predicates) || predicates.length === 0) return unsupportedProjection(predicate, predicate.op);
     const clauses: AeliqoFilterClause[] = [];
-    for (const child of predicate.predicates) {
-      const projection = projectPredicate(child);
+    for (let index = 0; index < predicates.length; index += 1) {
+      if (traversal.nodes >= MAX_PREDICATE_NODES) return unsupportedProjection(predicate, predicate.op);
+      const child = predicates[index];
+      if (child === undefined) return unsupportedProjection(predicate, predicate.op);
+      const projection = projectPredicate(child, depth + 1, traversal);
       if (projection.unsupported !== undefined || (projection.clauses.length > 1 && projection.logical !== predicate.op)) {
-        return {clauses: [], logical: predicate.op, unsupported: predicate};
+        return unsupportedProjection(predicate, predicate.op);
       }
       clauses.push(...projection.clauses);
     }
     return clauses.length === 0
-      ? {clauses: [], logical: predicate.op, unsupported: predicate}
+      ? unsupportedProjection(predicate, predicate.op)
       : {clauses, logical: predicate.op};
   } catch {
     return predicate === undefined
       ? {clauses: [], logical: "and"}
-      : {clauses: [], logical: "and", unsupported: predicate};
+      : unsupportedProjection(predicate);
   }
 }
 
-function predicateText(predicate: AeliqoFilterPredicate): string {
+function predicateText(
+  predicate: AeliqoFilterPredicate,
+  depth = 0,
+  traversal: PredicateTraversal = {nodes: 0},
+  parentLogical = false,
+): string {
   try {
+    if (depth > MAX_PREDICATE_DEPTH || traversal.nodes >= MAX_PREDICATE_NODES) return "Unsupported filter condition";
+    traversal.nodes += 1;
     if (predicate.op === "compare") return `${predicate.field} ${predicate.comparison} ${dataValueText(predicate.value, "")}`;
     if (predicate.op === "is-null") return `${predicate.field} ${predicate.negate ? "is not empty" : "is empty"}`;
-    if (predicate.op === "in") return `${predicate.field} is one of ${predicate.values.map((value) => dataValueText(value, "")).join(", ")}`;
-    if (predicate.op === "not") return `NOT (${predicateText(predicate.predicate)})`;
+    if (predicate.op === "in") return `${predicate.field} is one of ${JSON.stringify(predicate.values.map((value) => dataValueText(value, "")))}`;
+    if (predicate.op === "not") return `NOT (${predicateText(predicate.predicate, depth + 1, traversal)})`;
+    if (predicate.op !== "and" && predicate.op !== "or") return "Unsupported filter condition";
+    const predicates = predicate.predicates;
+    if (!Array.isArray(predicates) || predicates.length === 0) return "Unsupported filter condition";
     const joiner = predicate.op === "and" ? " AND " : " OR ";
-    return predicate.predicates.map((child) => predicateText(child)).join(joiner);
+    const children: string[] = [];
+    for (let index = 0; index < predicates.length; index += 1) {
+      if (traversal.nodes >= MAX_PREDICATE_NODES) return "Unsupported filter condition";
+      const child = predicates[index];
+      if (child === undefined) return "Unsupported filter condition";
+      children.push(predicateText(child, depth + 1, traversal, true));
+    }
+    const text = children.join(joiner);
+    return parentLogical ? `(${text})` : text;
   } catch {
     return "Unsupported filter condition";
   }
+}
+
+function parseMembershipValues(raw: string, field: AeliqoFieldOption | undefined): AeliqoFilterValue[] | undefined {
+  const source = raw.trim();
+  if (source.length === 0) return undefined;
+  let rawValues: readonly string[];
+  if (source.startsWith("[")) {
+    try {
+      const parsed: unknown = JSON.parse(source);
+      if (!Array.isArray(parsed) || parsed.some((value) => typeof value !== "string")) return undefined;
+      rawValues = parsed;
+    } catch {
+      return undefined;
+    }
+  } else {
+    rawValues = source.split(",");
+  }
+  const values = rawValues.map((value) => parseValue(value, field));
+  return values.some((value) => value === undefined) ? undefined : values as AeliqoFilterValue[];
 }
 
 /** Convert one author-controlled draft clause into the canonical predicate
@@ -132,10 +190,9 @@ export function buildAeliqoPredicate(
   const base = entity.length === 0 ? {} : {entity};
   if (clause.operator === "is-null" || clause.operator === "not-null") return {op: "is-null", field: clause.field, ...base, negate: clause.operator === "not-null"};
   if (clause.operator === "in") {
-    const rawValues = (clause.value ?? "").split(",");
-    const values = rawValues.map((value) => parseValue(value, field));
-    if (values.some((value) => value === undefined)) return undefined;
-    return {op: "in", field: clause.field, ...base, values: values as AeliqoFilterValue[]};
+    const values = parseMembershipValues(clause.value ?? "", field);
+    if (values === undefined) return undefined;
+    return {op: "in", field: clause.field, ...base, values};
   }
   const value = parseValue(clause.value ?? "", field);
   if (value === undefined) return undefined;
@@ -176,7 +233,6 @@ export class AeliqoFilterBuilderElement extends LitElement {
   private clauseDrafts: AeliqoFilterClause[] = [];
   private logicalMode: AeliqoFilterLogical = "and";
   private unsupportedPredicate: AeliqoFilterPredicate | undefined = undefined;
-  private unsupportedInherited: AeliqoFilterPredicate | undefined = undefined;
   private draft: AeliqoFilterClause = {field: "", operator: "eq", value: ""};
   private draftInitialized = false;
   private validationMessage = "";
@@ -199,7 +255,6 @@ export class AeliqoFilterBuilderElement extends LitElement {
       this.draft = this.clauseDrafts[0] ?? {field: "", operator: "eq", value: ""};
       this.draftInitialized = true;
     }
-    if (changed.has("inherited") || !this.draftInitialized) this.unsupportedInherited = projectPredicate(this.inherited).unsupported;
     if (changed.has("logical") && this.predicate === undefined && this.clauses.length > 0) this.logicalMode = this.logical === "or" ? "or" : "and";
   }
 
@@ -220,7 +275,7 @@ export class AeliqoFilterBuilderElement extends LitElement {
             </label>` : nothing}
           </div>
           ${this.unsupportedPredicate === undefined ? nothing : html`<div part="unsupported-predicate" role="status">This filter contains a nested condition that is read-only: ${predicateText(this.unsupportedPredicate)}</div>`}
-          ${this.unsupportedInherited === undefined ? nothing : html`<div part="unsupported-inherited-predicate" role="status">Inherited filter (read-only): ${predicateText(this.unsupportedInherited)}</div>`}
+          ${this.inherited === undefined ? nothing : html`<div part="inherited-predicate" role="status">Inherited filter (read-only): ${predicateText(this.inherited)}</div>`}
           <button part="apply" type="submit" ?disabled=${applyDisabled}>${this.applyLabel}</button>
           ${this.validationMessage ? html`<p part="validation" role="alert">${this.validationMessage}</p>` : nothing}
         </fieldset>
@@ -245,7 +300,7 @@ export class AeliqoFilterBuilderElement extends LitElement {
           <option value="in">Is one of</option><option value="is-null">Is empty</option><option value="not-null">Is not empty</option>
         </select>
       </label>
-      ${this.clauseNeedsValue(clause) ? html`<label part="value-label">Value ${index + 1}
+      ${this.clauseNeedsValue(clause) ? html`<label part="value-label">${clause.operator === "in" ? "Values (JSON array)" : "Value"} ${index + 1}
         <input part="value" data-clause-index=${index} .value=${clause.value ?? ""} @input=${this.handleValueInput} @compositionend=${this.handleValueInput} />
       </label>` : nothing}
     </div>`;
@@ -344,7 +399,7 @@ export class AeliqoFilterBuilderElement extends LitElement {
     [part="clause"] { display: flex; flex-wrap: wrap; gap: var(--aeliqo-space-8, 0.5rem); }
     label { display: grid; gap: var(--aeliqo-space-4, 0.25rem); min-inline-size: 9rem; }
     [part="scope"] { color: var(--aeliqo-color-muted, #475569); flex-basis: 100%; font-size: var(--aeliqo-typography-font-size-caption, 0.8125rem); }
-    [part="unsupported-predicate"], [part="unsupported-inherited-predicate"] { background: var(--aeliqo-color-surface-muted, #f1f5f9); border-inline-start: 0.1875rem solid var(--aeliqo-color-warning, #b45309); flex-basis: 100%; padding: var(--aeliqo-space-8, 0.5rem); }
+    [part="unsupported-predicate"], [part="inherited-predicate"] { background: var(--aeliqo-color-surface-muted, #f1f5f9); border-inline-start: 0.1875rem solid var(--aeliqo-color-warning, #b45309); flex-basis: 100%; padding: var(--aeliqo-space-8, 0.5rem); }
     select, input, [part="apply"] { background: var(--aeliqo-color-surface, #fff); border: var(--aeliqo-control-border-width, 0.0625rem) solid var(--aeliqo-color-border, #94a3b8); border-radius: var(--aeliqo-radius-small, 0.375rem); color: inherit; font: inherit; min-block-size: var(--aeliqo-control-min-target, 2.75rem); padding-inline: var(--aeliqo-space-8, 0.5rem); }
     [part="apply"] { align-self: end; background: var(--aeliqo-color-accent, #4338ca); border-color: var(--aeliqo-color-accent, #4338ca); color: var(--aeliqo-color-on-accent, #fff); cursor: pointer; }
     [part="validation"] { color: var(--aeliqo-color-danger, #b91c1c); flex-basis: 100%; margin: 0; }
