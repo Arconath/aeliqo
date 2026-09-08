@@ -91,7 +91,7 @@ assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_m
 await writeFile(join(runDirectory, "consumer-package-lock.json"), lockBytes);
 
 const probe = `
-import {createNarrativeVerifier} from '@aeliqo/agent';
+import {createNarrativeVerifier, createAgentBinder, containAgentProposal} from '@aeliqo/agent';
 import {createStandardFunctionRegistry} from '@aeliqo/core';
 import {createLocalDataService} from '@aeliqo/runtime/data';
 import {createResultStore} from '@aeliqo/runtime/results';
@@ -122,8 +122,14 @@ export async function probe() {
  const computedVerifier=createNarrativeVerifier({readContext:()=>({ok:true,value:{principalKey:'principal',scopeDigest:accepted.scopeDigest,...(accepted.policyRevision===undefined?{}:{policyRevision:accepted.policyRevision}),catalogRevision:accepted.catalogRevision,functionRegistryDigest:accepted.functionRegistryDigest,grants:['result.inspect'],resolveResult:()=>computedHandle}})});
  const computedClaim={...claim,cell:{result:computed.ref,field:'total',identity:{id:'a'},type:field.type,definition:field.derivation,populationDigest:computed.coverage.populationDigest,filters:computed.filters}};
  const checkedComputed=computedVerifier.verify(computedClaim);check(checkedComputed.ok&&checkedComputed.value.state==='verified','computed grounding');
- const {definition:omitted,...unversioned}=computedClaim.cell;check(!computedVerifier.verify({...computedClaim,cell:unversioned}).ok,'omitted metric version rejected');computedStore.dispose();
- return {exact:true,falseValueRejected:true,proseUnverified:true,revokedCleared:true,computedMetricVersion:true};
+ const {definition:omitted,...unversioned}=computedClaim.cell;check(!computedVerifier.verify({...computedClaim,cell:unversioned}).ok,'omitted metric version rejected');const current={scopeDigest:accepted.scopeDigest,policyRevision:accepted.policyRevision??'policy',taskRevision:'1',regionRevision:'1',catalogRevision:catalog.revision,experienceRevision:'experience',functionRegistryDigest:registry.value.digest,results:[]};
+ const task={version:'1',id:'task',revision:'1',regionId:'region',catalogRevision:catalog.revision,functionRegistryDigest:registry.value.digest,goal:'Show approved totals',kind:'data',outputs:[{id:'total',kind:'query',query:accepted.query,dependsOn:[],delivery:'eager'}],needs:[],assumptions:[]};
+ const proposal={requestId:'proposal',targetRegionId:'region',effect:'read',preconditions:current,value:task};
+ const binder=createAgentBinder({host:{readContext:()=>({ok:true,value:{principalKey:'principal',regionId:'region',goalEpoch:'goal',current,catalog,functionRegistry:registry.value,grants:['task.propose','catalog.read']}})}});
+ let repairs=0;const repaired=await containAgentProposal({requestId:'loop',targetRegionId:'region',goalEpoch:'goal',budget:{maxTurns:3,maxRepairs:1,maxMilliseconds:1000,maxProposalBytes:65536},initial:{...proposal,actor:'model'},propose:()=>{repairs++;return proposal;},binder});check(repaired.ok&&repaired.value.stop==='complete'&&repairs===1,'real guarded repair');
+ const denied=await binder.bind({...proposal,effect:'business-write'});check(denied.ok&&denied.value.state==='unsupported','business write not bound');
+ computedStore.dispose();
+ return {guardedRepair:true,exact:true,falseValueRejected:true,proseUnverified:true,revokedCleared:true,computedMetricVersion:true};
 }
 `;
 await writeFile(join(consumer,'probe.mjs'),probe);
@@ -132,13 +138,18 @@ for(const specifier of ['@aeliqo/core','@aeliqo/runtime/results','@aeliqo/agent'
 console.log(JSON.stringify(await probe()));
 `);
 const nodeReport=JSON.parse(run(['node','--disallow-code-generation-from-strings','node.mjs'],consumer).trim());
-await writeFile(join(consumer,'consumer.ts'),`import {createNarrativeVerifier, type NarrativeAuthority, type NarrativeReceipt} from '@aeliqo/agent';
+await writeFile(join(consumer,'consumer.ts'),`import {createNarrativeVerifier, createAgentBinder, containAgentProposal, type AgentHost, type AgentBindingDecision, type AgentContainmentReceipt, type NarrativeAuthority, type NarrativeReceipt} from '@aeliqo/agent';
 import type {OperationGrant, NarrativeClaim} from '@aeliqo/core';
 declare const authority: NarrativeAuthority; declare const claim: NarrativeClaim;
 const checked=createNarrativeVerifier({readContext:()=>({ok:true,value:authority})}).verify(claim);
 if(checked.ok){const receipt:NarrativeReceipt=checked.value;void receipt;}
 // @ts-expect-error Model quality does not create an act grant.
 const invalid:OperationGrant='act';void invalid;
+declare const host:AgentHost;
+const binder=createAgentBinder({host});
+const result=await containAgentProposal({requestId:'request',targetRegionId:'region',goalEpoch:'goal',budget:{maxTurns:2,maxRepairs:1,maxMilliseconds:1000,maxProposalBytes:4096},propose:()=>({untrusted:true}),binder});
+if(result.ok){const receipt:AgentContainmentReceipt=result.value;void receipt;}
+const decision:AgentBindingDecision={state:'needs-meaning',scope:'diagnostic',goalEpoch:'goal-1',diagnosticCode:'query.meaning',concept:'Total',authoringRoutes:['manual']};void decision;
 `);
 await writeFile(join(consumer,'tsconfig.json'),JSON.stringify({compilerOptions:{target:'ES2022',module:'NodeNext',moduleResolution:'NodeNext',strict:true,exactOptionalPropertyTypes:true,noUncheckedIndexedAccess:true,skipLibCheck:false,noEmit:true},include:['consumer.ts']}));
 run(['node','node_modules/typescript/bin/tsc','-p','tsconfig.json'],consumer);
@@ -151,5 +162,5 @@ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 let browser;let chromiumVersion;let browserReport;
 try{browser=await chromium.launch();chromiumVersion=browser.version();const page=await browser.newPage();const errors=[];page.on('pageerror',error=>errors.push(error.message));await page.goto('http://127.0.0.1:'+server.address().port);await page.waitForFunction(()=>document.querySelector('#status')?.textContent==='Passed');browserReport=await page.evaluate(()=>window.agentReport);assert.deepEqual(browserReport,nodeReport);assert.deepEqual(errors,[]);}finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}
 assert.equal(sourceDigest(),before,'Source changed during consumer proof');
-await writeFile(join(runDirectory,'report.json'),JSON.stringify({sourceDigest:before,passed:true,scope:'Installed core/runtime/agent narrative verification; strict declarations, Node without code generation, Chromium, exact decimals, actual local analytical metric versions, false claims, unverified prose and real revoked handles.',artifacts:packages.map(({bytes,...item})=>item),consumerDirectory:consumer,node:nodeReport,browser:browserReport,environment:{node:process.version,chromium:chromiumVersion}},null,2)+'\n');
+await writeFile(join(runDirectory,'report.json'),JSON.stringify({sourceDigest:before,passed:true,scope:'Installed core/runtime/agent semantic binding, bounded repair and narrative verification; strict declarations, Node without code generation, Chromium, exact decimals, actual local analytical metric versions, false claims, unverified prose and real revoked handles.',artifacts:packages.map(({bytes,...item})=>item),consumerDirectory:consumer,node:nodeReport,browser:browserReport,environment:{node:process.version,chromium:chromiumVersion}},null,2)+'\n');
 console.log('Installed agent narrative verification passed. Evidence: '+join(runDirectory,'report.json'));

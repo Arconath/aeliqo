@@ -32,3 +32,35 @@ Verification scans at most 100,000 rows by default across both comparison cells;
 `maxRows` may be configured from 1 through 1,000,000. It reads existing immutable
 batches and performs no data query, action, presentation commit, network request,
 or model call. Diagnostics contain no records or host exception text.
+
+## Proposal binding and containment
+
+`createAgentBinder({host, queryLimits?, maxPending?})` validates a serialized
+`AgentTaskProposal` using the real Task and query planners. The application
+supplies `readContext` with its authenticated principal, independent operation
+grants, current catalog/function registry/read set and goal epoch. A model cannot
+supply these host fields. Binding returns the formal bound, needs-choice,
+needs-meaning, unsupported, denied, invalid or stale outcome; it executes no
+query, presentation or business action.
+
+Application decisions about material ambiguity or missing meaning are keyed by
+`goalEpoch`, independently of the model's proposed Task identity. Their required
+`scope` distinguishes goal-wide decisions from diagnostic decisions; diagnostic
+decisions apply only to an exact planner code and path. A successful
+binding rechecks host authority after semantic inspection. `bound` means the
+proposal is feasible against that context; it does not certify user intent or
+business truth and does not replace commit-time authorization.
+
+`containAgentProposal` accepts a binder and optional producer, with explicit
+turn, repair, byte and elapsed-time budgets. It stops on repeated candidates
+without progress and propagates cancellation to producer and host calls.
+Uncooperative cancelled host calls release binder admission slots; late producer
+work cannot be forcibly terminated by JavaScript, so providers must honor their
+signal too. Supplying a producer does not grant model egress: the application or
+future protocol adapter must establish that independent permission before calling
+an external model.
+
+The loop returns a receipt and never commits a replacement UI. Existing runtime
+region/result ownership preserves the authorized incumbent during failure and
+clears revoked data. Applications must use that same authorization boundary for
+manual fallback and for any later accepted proposal.
