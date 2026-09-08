@@ -7,7 +7,7 @@ import {
   resultEventSchema,
   revisionSchema,
 } from '@aeliqo/core/schema';
-import {parseCatalog, parseContract, parseWireValue} from '@aeliqo/core';
+import {parseCatalog, parseContract, parseWireValue, WIRE_LIMITS} from '@aeliqo/core';
 import type {CatalogRequest, CatalogPage, DataErrorPayload, PlanAcceptance, PlanRequest, AcceptedQuery, QueryBudget} from './types.js';
 import type {Catalog, Diagnostic, Outcome, QuerySpec} from '@aeliqo/core';
 import type {ResultEvent} from './types.js';
@@ -15,7 +15,7 @@ import type {ResultEvent} from './types.js';
 const strictObject = z.strictObject;
 const text = z.string().check(z.maxLength(16_384));
 const count = z.int().check(z.minimum(0));
-const positive = z.int().check(z.minimum(1));
+const positive = z.int().check(z.minimum(1), z.maximum(Number.MAX_SAFE_INTEGER));
 const budgetSchema = strictObject({
   maxRows: positive,
   maxBytes: positive,
@@ -48,11 +48,11 @@ const acceptedQuerySchema = strictObject({
   functionRegistryDigest: idSchema, policyRevision: z.optional(revisionSchema), query: querySchema, effectiveBudget: budgetSchema,
 });
 const planAcceptanceSchema = strictObject({
-  kind: z.literal('accepted'), ...acceptedQuerySchema.shape, supported: z.array(text),
+  kind: z.literal('accepted'), ...acceptedQuerySchema.shape, supported: z.array(text).check(z.maxLength(WIRE_LIMITS.array)),
 });
 const acceptedEnvelopeSchema = z.union([acceptedQuerySchema, planAcceptanceSchema]);
 const dataErrorSchema = strictObject({
-  version: z.literal('1'), requestId: idSchema, diagnostics: z.tuple([diagnosticSchema], diagnosticSchema),
+  version: z.literal('1'), requestId: idSchema, diagnostics: z.tuple([diagnosticSchema], diagnosticSchema).check(z.maxLength(WIRE_LIMITS.diagnostics)),
 });
 
 export type CatalogTargetWire = z.infer<typeof catalogTargetSchema>;
