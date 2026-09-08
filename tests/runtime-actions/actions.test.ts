@@ -47,6 +47,7 @@ function register(
     readonly confirmation?: 'none' | 'required';
     readonly idempotency?: 'optional' | 'required';
     readonly entityRevision?: 'none' | 'required';
+    readonly inputParse?: (value: unknown) => Outcome<ActionPayload>;
     readonly dispatch?: ActionRegistration['dispatch'];
     readonly outputParse?: (value: unknown) => Outcome<ActionPayload>;
   } = {},
@@ -66,7 +67,7 @@ function register(
     return fail('test.output');
   });
   const registration: ActionRegistration = {
-    descriptor, inputSchema: schema(input), outputSchema: schema(output, outputParse),
+    descriptor, inputSchema: schema(input, options.inputParse), outputSchema: schema(output, outputParse),
     dispatch: options.dispatch ?? (() => ({state: 'completed', output: {ok: true, value: {saved: true}}})),
   };
   const registered = registry.register(registration);
@@ -173,6 +174,22 @@ describe('action registry and authority boundary', () => {
 });
 
 describe('confirmation and execute rechecks', () => {
+  it('cancels preview when input validation aborts its caller signal', async () => {
+    const registry = new ActionRegistry();
+    const abort = new AbortController();
+    const descriptor = register(registry, {
+      id: 'parser-cancel',
+      inputParse: (value) => {
+        abort.abort();
+        return outcome(value as ActionPayload);
+      },
+    });
+    const port = createActionPort({registry, host: {readContext: () => outcome(context())}});
+    const preview = await port.preview({requestId: 'parser-cancel-request', action: descriptor.ref, input: {amount: 1}}, {signal: abort.signal});
+    expect(preview.ok).toBe(false);
+    if (!preview.ok) expect(preview.diagnostics[0]!.code).toBe('action.cancelled');
+  });
+
   it('does not admit a preview when input normalization revokes authority', async () => {
     const registry = new ActionRegistry();
     const descriptor: ActionDescriptor = {
@@ -295,6 +312,29 @@ describe('confirmation and execute rechecks', () => {
     if (ambiguous.ok) expect(ambiguous.value.state).toBe('ambiguous');
   });
 
+  it('returns ambiguity when the caller cancels after dispatch completion', async () => {
+    const registry = new ActionRegistry();
+    const abort = new AbortController();
+    let dispatches = 0;
+    const descriptor = register(registry, {
+      id: 'dispatch-cancelled',
+      outputParse: (value) => {
+        abort.abort();
+        return outcome(value as ActionPayload);
+      },
+      dispatch: () => {
+        dispatches++;
+        return {state: 'completed', output: {ok: true, value: {saved: true}}};
+      },
+    });
+    const port = createActionPort({registry, host: {readContext: () => outcome(context())}});
+    const receipt = await previewAndConfirm(port, descriptor);
+    const result = await port.execute(receipt, {signal: abort.signal});
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.state).toBe('ambiguous');
+    expect(dispatches).toBe(1);
+  });
+
   it('exposes preview input to trusted confirmation only while the preview is live', async () => {
     const registry = new ActionRegistry();
     const descriptor = register(registry, {id: 'confirmation-input', confirmation: 'required'});
@@ -346,7 +386,44 @@ describe('bounded idempotency and lifecycle', () => {
     const otherExecution = await state.port.execute(other);
     expect(otherExecution.ok).toBe(true);
     expect(dispatches).toBe(2);
-    expect(state.port.inspect('charge-1')?.outputAvailable).toBe(true);
+    const ownInspection = await state.port.inspect('charge-1');
+    expect(ownInspection.ok).toBe(true);
+    if (ownInspection.ok) expect(ownInspection.value?.outputAvailable).toBe(true);
+  });
+
+  it('partitions inspect and history by the authenticated principal and scope', async () => {
+    const registry = new ActionRegistry();
+    const descriptor = register(registry, {id: 'partitioned', idempotency: 'required'});
+    const state = makePort({registry});
+    const receipt = await previewAndConfirm(state.port, descriptor, {amount: 2}, {idempotencyKey: 'partitioned-1'});
+    expect((await state.port.execute(receipt)).ok).toBe(true);
+
+    const ownHistory = await state.port.history();
+    expect(ownHistory.ok).toBe(true);
+    if (ownHistory.ok) {
+      expect(ownHistory.value.length).toBeGreaterThan(0);
+      for (const entry of ownHistory.value) {
+        expect(Object.keys(entry)).not.toContain('principalKey');
+        expect(Object.keys(entry)).not.toContain('actorKey');
+        expect(Object.keys(entry)).not.toContain('scopeDigest');
+        expect(Object.keys(entry)).not.toContain('input');
+        expect(Object.keys(entry)).not.toContain('output');
+      }
+    }
+    const ownInspect = await state.port.inspect('partitioned-1');
+    expect(ownInspect.ok).toBe(true);
+    if (ownInspect.ok) expect(ownInspect.value?.outputAvailable).toBe(true);
+
+    state.setContext(context({principalKey: 'principal-b', actorKey: 'actor-b', scopeDigest: 'scope-b', policyRevision: 'policy-b', domainRevision: 'domain-b', grants: []}));
+    const foreignInspect = await state.port.inspect('partitioned-1');
+    expect(foreignInspect).toEqual({ok: true, value: undefined});
+    const foreignHistory = await state.port.history();
+    expect(foreignHistory).toEqual({ok: true, value: []});
+
+    state.setContext(context());
+    const restoredHistory = await state.port.history();
+    expect(restoredHistory.ok).toBe(true);
+    if (restoredHistory.ok) expect(restoredHistory.value.length).toBeGreaterThan(0);
   });
 
   it('refuses new idempotency admission when the bounded ledger is full', async () => {
@@ -417,7 +494,12 @@ describe('bounded idempotency and lifecycle', () => {
     resolveDispatch!({state: 'completed', output: {ok: true, value: {late: true}}});
     // A terminally revoked port cannot accept replay, so retained ledger
     // identities and outputs are released rather than kept indefinitely.
-    expect(state.port.inspect('revoke-1')).toBeUndefined();
+    const revokedInspection = await state.port.inspect('revoke-1');
+    expect(revokedInspection.ok).toBe(false);
+    if (!revokedInspection.ok) expect(revokedInspection.diagnostics[0]!.code).toBe('action.revoked');
+    const revokedHistory = await state.port.history();
+    expect(revokedHistory.ok).toBe(false);
+    if (!revokedHistory.ok) expect(revokedHistory.diagnostics[0]!.code).toBe('action.revoked');
     expect((await state.port.execute(receipt)).ok).toBe(false);
   });
 
@@ -494,7 +576,9 @@ describe('bounded idempotency and lifecycle', () => {
     expect(ambiguous.ok).toBe(true);
     if (ambiguous.ok) expect(ambiguous.value.state).toBe('ambiguous');
     expect(dispatches).toBe(1);
-    expect(port.inspect('large-1')).toMatchObject({state: 'ambiguous', outputAvailable: false});
+    const largeInspection = await port.inspect('large-1');
+    expect(largeInspection.ok).toBe(true);
+    if (largeInspection.ok) expect(largeInspection.value).toMatchObject({state: 'ambiguous', outputAvailable: false});
     const replay = await previewAndConfirm(port, descriptor, {}, {idempotencyKey: 'large-1'});
     const replayResult = await port.execute(replay);
     expect(replayResult.ok).toBe(true);
@@ -521,7 +605,8 @@ describe('bounded idempotency and lifecycle', () => {
     const ledgerKey = (key: string): string => canonical({
       principalKey: 'principal-a', actorKey: 'actor-a', scopeDigest: 'scope-a', policyRevision: 'policy-a', domainRevision: 'domain-a', key,
     });
-    const metadataBytes = (key: string, receiptId: string): number => utf8Bytes(canonical({ledgerKey: ledgerKey(key), key, action: descriptor.ref, receiptId, at: 0}));
+    const metadataBytes = (key: string, receiptId: string): number => utf8Bytes(canonical({ledgerKey: ledgerKey(key), key, action: descriptor.ref, receiptId, at: 0,
+      partition: {principalKey: 'principal-a', actorKey: 'actor-a', scopeDigest: 'scope-a', policyRevision: 'policy-a', domainRevision: 'domain-a'}}));
     const port = createActionPort({
       registry,
       now: () => 0,
@@ -535,7 +620,9 @@ describe('bounded idempotency and lifecycle', () => {
     expect(secondResult.ok).toBe(true);
     if (secondResult.ok) expect(secondResult.value.state).toBe('ambiguous');
     expect(dispatches).toBe(2);
-    expect(port.inspect('b')).toMatchObject({state: 'ambiguous', outputAvailable: false});
+    const ledgerInspection = await port.inspect('b');
+    expect(ledgerInspection.ok).toBe(true);
+    if (ledgerInspection.ok) expect(ledgerInspection.value).toMatchObject({state: 'ambiguous', outputAvailable: false});
   });
 
   it('converts reentrant output-schema revocation into ambiguity', async () => {
@@ -554,7 +641,9 @@ describe('bounded idempotency and lifecycle', () => {
     const result = await port.execute(receipt);
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.value.state).toBe('ambiguous');
-    expect(port.inspect('schema-1')).toBeUndefined();
+    const schemaInspection = await port.inspect('schema-1');
+    expect(schemaInspection.ok).toBe(false);
+    if (!schemaInspection.ok) expect(schemaInspection.diagnostics[0]!.code).toBe('action.revoked');
   });
 
   it('returns a structured failure when the pre-dispatch clock fails', async () => {
@@ -598,7 +687,9 @@ describe('bounded idempotency and lifecycle', () => {
     expect(ambiguous.ok).toBe(true);
     if (ambiguous.ok) expect(ambiguous.value.state).toBe('ambiguous');
     expect(dispatches).toBe(1);
-    expect(port.inspect('clock-after-1')).toMatchObject({state: 'ambiguous', outputAvailable: false});
+    const clockInspection = await port.inspect('clock-after-1');
+    expect(clockInspection.ok).toBe(true);
+    if (clockInspection.ok) expect(clockInspection.value).toMatchObject({state: 'ambiguous', outputAvailable: false});
     const replay = await previewAndConfirm(port, descriptor, {}, {idempotencyKey: 'clock-after-1'});
     const replayResult = await port.execute(replay);
     expect(replayResult.ok).toBe(true);
@@ -625,7 +716,9 @@ describe('bounded idempotency and lifecycle', () => {
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.value.state).toBe('ambiguous');
     expect(dispatches).toBe(1);
-    expect(port.inspect('clock-revoke-1')).toBeUndefined();
+    const clockRevokeInspection = await port.inspect('clock-revoke-1');
+    expect(clockRevokeInspection.ok).toBe(false);
+    if (!clockRevokeInspection.ok) expect(clockRevokeInspection.diagnostics[0]!.code).toBe('action.revoked');
   });
 });
 

@@ -11,6 +11,7 @@ import type {
   ActionOutcome,
   ActionPayload,
   ActionPort,
+  ActionReadOptions,
   ActionPreview,
   ActionReceipt,
   ActionRegistration,
@@ -188,6 +189,7 @@ interface ReceiptRecord {
 type LedgerRecord = {
   readonly key: string;
   readonly identity: string;
+  readonly partition: ActionPartition;
   readonly action: VersionRef;
   readonly receiptId: string;
   readonly at: number;
@@ -201,6 +203,29 @@ type LedgerRecord = {
   diagnostics?: readonly [ActionFailure, ...ActionFailure[]];
   diagnosticsBytes?: number;
 };
+
+interface ActionPartition {
+  readonly principalKey: string;
+  readonly actorKey: string;
+  readonly scopeDigest: string;
+  readonly policyRevision: string;
+  readonly domainRevision: string;
+}
+
+interface HistoryRecord {
+  readonly entry: ActionHistoryEntry;
+  readonly partition: ActionPartition;
+}
+
+function partition(contextValue: TrustedActionContext): ActionPartition {
+  return frozen({principalKey: contextValue.principalKey, actorKey: contextValue.actorKey, scopeDigest: contextValue.scopeDigest,
+    policyRevision: contextValue.policyRevision, domainRevision: contextValue.domainRevision});
+}
+
+function samePartition(left: ActionPartition, right: ActionPartition): boolean {
+  return left.principalKey === right.principalKey && left.actorKey === right.actorKey && left.scopeDigest === right.scopeDigest &&
+    left.policyRevision === right.policyRevision && left.domainRevision === right.domainRevision;
+}
 
 function copyDiagnostics(value: readonly Diagnostic[]): readonly [ActionFailure, ...ActionFailure[]] {
   const items = Array.isArray(value) ? value.slice(0, WIRE_LIMITS.diagnostics) : [];
@@ -244,7 +269,7 @@ class ActionPortImpl implements ActionPort {
   private readonly receipts = new Map<string, ReceiptRecord>();
   private readonly idempotency = new Map<string, LedgerRecord>();
   private readonly activeCalls = new Set<ActiveCall>();
-  private readonly historyEntries: ActionHistoryEntry[] = [];
+  private readonly historyEntries: HistoryRecord[] = [];
   private ledgerBytes = 0;
   /** Reservations made before an asynchronous context read completes. */
   private pendingPreviewReservations = 0;
@@ -281,16 +306,16 @@ class ActionPortImpl implements ActionPort {
     } catch { return {ok: false}; }
   }
 
-  private tryHistory(entry: Omit<ActionHistoryEntry, 'at'>): boolean {
+  private tryHistory(entry: Omit<ActionHistoryEntry, 'at'>, historyPartition: ActionPartition): boolean {
     if (!this.live()) return false;
     const at = this.clock();
     if (!at.ok || !this.live()) return false;
-    this.addHistory({...entry, at: at.value});
+    this.addHistory({...entry, at: at.value}, historyPartition);
     return this.live();
   }
 
-  private addHistoryAt(entry: Omit<ActionHistoryEntry, 'at'>, at: number): void {
-    this.addHistory({...entry, at});
+  private addHistoryAt(entry: Omit<ActionHistoryEntry, 'at'>, at: number, historyPartition: ActionPartition): void {
+    this.addHistory({...entry, at}, historyPartition);
   }
 
   private consumePreview(record: PreviewRecord): void {
@@ -311,8 +336,8 @@ class ActionPortImpl implements ActionPort {
     if (this.pendingPreviewReservations > 0) this.pendingPreviewReservations--;
   }
 
-  private addHistory(entry: ActionHistoryEntry): void {
-    this.historyEntries.push(frozen(entry));
+  private addHistory(entry: ActionHistoryEntry, historyPartition: ActionPartition): void {
+    this.historyEntries.push({entry: frozen(entry), partition: historyPartition});
     if (this.historyEntries.length > this.maxHistory) this.historyEntries.splice(0, this.historyEntries.length - this.maxHistory);
   }
 
@@ -384,6 +409,7 @@ class ActionPortImpl implements ActionPort {
     if (!this.reservePreview()) return this.outcome('action.budget', 'The action preview budget is full.');
     try {
       const parsed = request(raw); if (!parsed.ok) return parsed;
+      if (options.signal?.aborted) return this.outcome('action.cancelled', 'The action preview was cancelled during request validation.');
       const registration = resolveRegisteredAction(this.registry, parsed.value.action);
       if (registration === undefined) return this.outcome('action.unknown', 'The requested action version is not registered.');
       if (registration.descriptor.idempotency === 'required' && parsed.value.idempotencyKey === undefined) return this.outcome('action.invalid', 'This action requires an idempotency key.');
@@ -394,6 +420,7 @@ class ActionPortImpl implements ActionPort {
       if (!this.live()) return this.lifecycle();
       const input = this.normalizedInput(registration, parsed.value.input);
       if (!this.live()) return this.lifecycle();
+      if (options.signal?.aborted) return this.outcome('action.cancelled', 'The action preview was cancelled during input validation.');
       if (!input.ok) return input;
       // Recheck after the asynchronous host call. Other completions may have
       // filled a slot while this proposal was being authenticated.
@@ -403,6 +430,7 @@ class ActionPortImpl implements ActionPort {
       const at = this.clock();
       if (!at.ok) return this.outcome('action.callback', 'The action clock callback failed.');
       if (!this.live()) return this.lifecycle();
+      if (options.signal?.aborted) return this.outcome('action.cancelled', 'The action preview was cancelled before publication.');
       const identity = parsed.value.idempotencyKey === undefined ? undefined : this.idempotencyIdentity(registration, input.value, parsed.value.entity, parsed.value.idempotencyKey);
       const id = this.nextId('preview');
       const preview = {state: 'preview' as const, id, requestId: parsed.value.requestId, action: cloneRef(registration.descriptor.ref),
@@ -414,8 +442,9 @@ class ActionPortImpl implements ActionPort {
       previewRecords.set(preview, record);
       Object.defineProperty(preview, 'input', {enumerable: true, get(this: object): ActionPayload | undefined { return previewRecords.get(this)?.input; }});
       Object.freeze(preview);
+      if (options.signal?.aborted) return this.outcome('action.cancelled', 'The action preview was cancelled before publication.');
       this.previews.set(id, record);
-      this.addHistoryAt({state: 'preview', action: cloneRef(registration.descriptor.ref), previewId: id}, at.value);
+      this.addHistoryAt({state: 'preview', action: cloneRef(registration.descriptor.ref), previewId: id}, at.value, partition(hostContext.value));
       return {ok: true, value: preview};
     } finally {
       this.releasePreviewReservation();
@@ -447,7 +476,7 @@ class ActionPortImpl implements ActionPort {
     if (!grantsInclude(current.value, 'action.propose') || !grantsInclude(current.value, 'action.execute')) return retry(this.outcome('action.denied', 'The host did not grant both proposal and execution for confirmation.'));
     if (!sameContext(matched.context, current.value) || resolveRegisteredAction(this.registry, matched.registration.descriptor.ref) !== matched.registration) {
       this.consumePreview(matched);
-      this.tryHistory({state: 'rejected', action: cloneRef(matched.registration.descriptor.ref), previewId: matched.id, reasonCode: 'action.stale'});
+      this.tryHistory({state: 'rejected', action: cloneRef(matched.registration.descriptor.ref), previewId: matched.id, reasonCode: 'action.stale'}, partition(current.value));
       return this.outcome('action.stale', 'The action preview is stale against the current host context.');
     }
     if (matched.registration.descriptor.confirmation === 'required') {
@@ -460,6 +489,7 @@ class ActionPortImpl implements ActionPort {
         return retry(this.outcome('action.budget', 'The action confirmation exceeded its bounded time budget.'));
       }
       if (!this.live()) return retry(this.lifecycle());
+      if (options.signal?.aborted) return retry(this.outcome('action.cancelled', 'The action confirmation was cancelled.'));
       const outcome = normalizeOutcome<unknown>(issued.value);
       if (outcome === undefined || !outcome.ok) return retry(this.outcome('action.confirmation', 'The trusted host did not confirm this action.'));
       if (!this.live()) return retry(this.lifecycle());
@@ -467,24 +497,26 @@ class ActionPortImpl implements ActionPort {
     const rechecked = await this.readContext(options.signal);
     if (!rechecked.ok) {
       this.consumePreview(matched);
-      this.tryHistory({state: 'rejected', action: cloneRef(matched.registration.descriptor.ref), previewId: matched.id, reasonCode: 'action.stale'});
+      this.tryHistory({state: 'rejected', action: cloneRef(matched.registration.descriptor.ref), previewId: matched.id, reasonCode: 'action.stale'}, partition(current.value));
       return rechecked;
     }
     if (!this.live()) return retry(this.lifecycle());
+    if (options.signal?.aborted) return retry(this.outcome('action.cancelled', 'The action confirmation was cancelled.'));
     if (!grantsInclude(rechecked.value, 'action.propose') || !grantsInclude(rechecked.value, 'action.execute')) {
       this.consumePreview(matched);
-      this.tryHistory({state: 'rejected', action: cloneRef(matched.registration.descriptor.ref), previewId: matched.id, reasonCode: 'action.denied'});
+      this.tryHistory({state: 'rejected', action: cloneRef(matched.registration.descriptor.ref), previewId: matched.id, reasonCode: 'action.denied'}, partition(rechecked.value));
       return this.outcome('action.denied', 'The host no longer grants both proposal and execution for confirmation.');
     }
     if (!sameContext(current.value, rechecked.value)) {
       this.consumePreview(matched);
-      this.tryHistory({state: 'rejected', action: cloneRef(matched.registration.descriptor.ref), previewId: matched.id, reasonCode: 'action.stale'});
+      this.tryHistory({state: 'rejected', action: cloneRef(matched.registration.descriptor.ref), previewId: matched.id, reasonCode: 'action.stale'}, partition(rechecked.value));
       return this.outcome('action.stale', 'The action confirmation context changed before a receipt was issued.');
     }
     if (this.receipts.size >= this.maxPending) return retry(this.outcome('action.budget', 'The pending action receipt budget is full.'));
     const historyAt = this.clock();
     if (!historyAt.ok) return retry(this.outcome('action.callback', 'The action clock callback failed.'));
     if (!this.live()) return retry(this.lifecycle());
+    if (options.signal?.aborted) return retry(this.outcome('action.cancelled', 'The action confirmation was cancelled before receipt issuance.'));
     const input = matched.input;
     if (input === undefined) return retry(this.outcome('action.replay', 'The action preview input is no longer available.'));
     this.consumePreview(matched);
@@ -493,7 +525,7 @@ class ActionPortImpl implements ActionPort {
     const receiptRecord: ReceiptRecord = {id, previewId: matched.id, registration: matched.registration, receipt, input, inputIdentity: matched.inputIdentity,
       ...(matched.preview.entity === undefined ? {} : {entity: matched.preview.entity}), ...(matched.preview.idempotencyKey === undefined ? {} : {idempotencyKey: matched.preview.idempotencyKey}), context: rechecked.value, consumed: false, executing: false};
     this.receipts.set(id, receiptRecord);
-    this.addHistoryAt({state: 'confirmed', action: cloneRef(matched.registration.descriptor.ref), previewId: matched.id, receiptId: id}, historyAt.value);
+    this.addHistoryAt({state: 'confirmed', action: cloneRef(matched.registration.descriptor.ref), previewId: matched.id, receiptId: id}, historyAt.value, partition(rechecked.value));
     return {ok: true, value: receipt};
   }
 
@@ -509,7 +541,7 @@ class ActionPortImpl implements ActionPort {
     if (!grantsInclude(current.value, 'action.execute') || !sameContext(matched.context, current.value) ||
         resolveRegisteredAction(this.registry, matched.registration.descriptor.ref) !== matched.registration || !this.entityCurrent(matched, current.value)) {
       this.consumeReceipt(matched);
-      this.tryHistory({state: 'rejected', action: cloneRef(matched.registration.descriptor.ref), receiptId: matched.id, reasonCode: 'action.stale'});
+      this.tryHistory({state: 'rejected', action: cloneRef(matched.registration.descriptor.ref), receiptId: matched.id, reasonCode: 'action.stale'}, partition(current.value));
       return this.outcome('action.stale', 'The action receipt is stale against current authority or entity revision.');
     }
     if (!this.live()) { this.consumeReceipt(matched); return this.lifecycle(); }
@@ -533,13 +565,13 @@ class ActionPortImpl implements ActionPort {
       const at = this.clock();
       if (!at.ok) { this.consumeReceipt(matched); return this.outcome('action.callback', 'The action clock callback failed.'); }
       if (!this.live()) { this.consumeReceipt(matched); return this.lifecycle(); }
-      const metadataBytes = this.ledgerMetadataBytes(ledgerKey!, key, matched.registration.descriptor.ref, matched.id, at.value);
+      const metadataBytes = this.ledgerMetadataBytes(ledgerKey!, key, matched.registration.descriptor.ref, matched.id, at.value, partition(current.value));
       if (identityBytes > this.maxIdentityBytes || this.ledgerBytes + identityBytes + metadataBytes > this.maxLedgerBytes) {
         this.consumeReceipt(matched);
         return this.outcome('action.budget', 'The idempotency identity exceeds the bounded ledger budget.');
       }
       // Reserve synchronously immediately before dispatch; no asynchronous host call occurs after this point.
-      this.idempotency.set(ledgerKey!, {key, identity, identityBytes, metadataBytes, action: cloneRef(matched.registration.descriptor.ref), receiptId: matched.id, at: at.value, state: 'in-flight'});
+      this.idempotency.set(ledgerKey!, {key, identity, partition: partition(current.value), identityBytes, metadataBytes, action: cloneRef(matched.registration.descriptor.ref), receiptId: matched.id, at: at.value, state: 'in-flight'});
       this.ledgerBytes += identityBytes + metadataBytes;
     }
     // Even actions without an idempotency key must pass a synchronous clock
@@ -576,6 +608,7 @@ class ActionPortImpl implements ActionPort {
       return this.ambiguousResult(matched, ledgerKey, reason);
     }
     const dispatch = normalizeDispatch(dispatchCall.value);
+    if (options.signal?.aborted) return this.ambiguousResult(matched, ledgerKey, 'The action execution was cancelled after dispatch.');
     // Accessors used by the callback result can re-enter lifecycle methods.
     // Once authority is revoked, completion cannot be reported as executed.
     if (!this.live()) return this.ambiguousResult(matched, ledgerKey, 'The action port was revoked or disposed after dispatch completed.');
@@ -601,13 +634,14 @@ class ActionPortImpl implements ActionPort {
         }
       }
       this.consumeReceipt(matched);
-      this.tryHistory({state: 'rejected', action: cloneRef(matched.registration.descriptor.ref), receiptId: matched.id, reasonCode: 'action.callback'});
+      this.tryHistory({state: 'rejected', action: cloneRef(matched.registration.descriptor.ref), receiptId: matched.id, reasonCode: 'action.callback'}, partition(current.value));
       return {ok: false, diagnostics};
     }
     let parsedOutput: Outcome<unknown> | undefined;
     try { parsedOutput = matched.registration.outputSchema.parse(dispatch.output); } catch { parsedOutput = undefined; }
     const output = parsedOutput === undefined ? undefined : normalizeOutcome<unknown>(parsedOutput);
     const checkedOutput = output?.ok ? payload(output.value) : undefined;
+    if (options.signal?.aborted) return this.ambiguousResult(matched, ledgerKey, 'The action execution was cancelled after dispatch.');
     // Output schemas and normalization are trusted local callbacks but may
     // still synchronously revoke this port. Discard any parsed output then.
     if (!this.live()) return this.ambiguousResult(matched, ledgerKey, 'The action port was revoked or disposed during output validation.');
@@ -627,12 +661,13 @@ class ActionPortImpl implements ActionPort {
     const completionAt = this.clock();
     if (!completionAt.ok) return this.ambiguousResult(matched, ledgerKey, 'The action clock callback failed after dispatch.', false);
     if (!this.live()) return this.ambiguousResult(matched, ledgerKey, 'The action port was revoked or disposed after dispatch completed.');
+    if (options.signal?.aborted) return this.ambiguousResult(matched, ledgerKey, 'The action execution was cancelled after dispatch.');
     if (ledgerKey !== undefined) {
       const entry = this.idempotency.get(ledgerKey);
       if (entry !== undefined) { entry.state = 'executed'; entry.output = outputValue; entry.outputBytes = outputBytes; this.ledgerBytes += outputBytes; }
     }
     this.consumeReceipt(matched);
-    this.addHistoryAt({state: 'executed', action: cloneRef(matched.registration.descriptor.ref), receiptId: matched.id}, completionAt.value);
+    this.addHistoryAt({state: 'executed', action: cloneRef(matched.registration.descriptor.ref), receiptId: matched.id}, completionAt.value, partition(current.value));
     return {ok: true, value: {state: 'executed', receiptId: matched.id, action: cloneRef(matched.registration.descriptor.ref), output: outputValue}};
   }
 
@@ -647,11 +682,11 @@ class ActionPortImpl implements ActionPort {
       policyRevision: context.policyRevision, domainRevision: context.domainRevision, key});
   }
 
-  private ledgerMetadataBytes(ledgerKey: string, key: string, action: VersionRef, receiptId: string, at: number): number {
+  private ledgerMetadataBytes(ledgerKey: string, key: string, action: VersionRef, receiptId: string, at: number, historyPartition: ActionPartition): number {
     // Count the map key and the bounded metadata retained alongside it. This
     // keeps the aggregate ledger budget honest even for rejected/ambiguous
     // entries that have no output payload.
-    return bytes(canonical({ledgerKey, key, action, receiptId, at}));
+    return bytes(canonical({ledgerKey, key, action, receiptId, at, partition: historyPartition}));
   }
 
   private removeLedger(key: string): void {
@@ -687,10 +722,10 @@ class ActionPortImpl implements ActionPort {
     }
   }
 
-  private ambiguousResult(record: ReceiptRecord, ledgerKey: string | undefined, reason: string, recordHistory = true): ActionOutcome<ActionExecution> {
+  private ambiguousResult(record: ReceiptRecord, ledgerKey: string | undefined, reason: string, recordHistory = true, historyPartition = partition(record.context)): ActionOutcome<ActionExecution> {
     this.markAmbiguous(ledgerKey, reason);
     this.consumeReceipt(record);
-    if (recordHistory) this.tryHistory({state: 'ambiguous', action: cloneRef(record.registration.descriptor.ref), receiptId: record.id, reasonCode: 'action.ambiguous'});
+    if (recordHistory) this.tryHistory({state: 'ambiguous', action: cloneRef(record.registration.descriptor.ref), receiptId: record.id, reasonCode: 'action.ambiguous'}, historyPartition);
     return {ok: true, value: {state: 'ambiguous', receiptId: record.id, action: cloneRef(record.registration.descriptor.ref), reason}};
   }
 
@@ -702,17 +737,33 @@ class ActionPortImpl implements ActionPort {
     this.receipts.delete(record.id);
   }
 
-  inspect(idempotencyKey: string): ActionInspection | undefined {
-    if (!validId(idempotencyKey)) return undefined;
+  async inspect(idempotencyKey: string, options: ActionReadOptions = {}): Promise<ActionOutcome<ActionInspection | undefined>> {
+    if (!this.live()) return this.lifecycle();
+    if (!validId(idempotencyKey)) return this.outcome('action.invalid', 'The idempotency key is not a bounded identifier.', ['idempotencyKey']);
+    const current = await this.readContext(options.signal);
+    if (!current.ok) return current;
+    if (!this.live()) return this.lifecycle();
+    if (options.signal?.aborted) return this.outcome('action.cancelled', 'The action inspection was cancelled.');
+    const currentPartition = partition(current.value);
     let record: LedgerRecord | undefined;
     for (const candidate of this.idempotency.values()) {
-      if (candidate.key === idempotencyKey && (record === undefined || candidate.at >= record.at)) record = candidate;
+      if (candidate.key !== idempotencyKey) continue;
+      if (!samePartition(candidate.partition, currentPartition)) continue;
+      if (record === undefined || candidate.at >= record.at) record = candidate;
     }
-    if (record === undefined) return undefined;
-    return frozen({state: record.state, action: cloneRef(record.action), receiptId: record.receiptId, outputAvailable: record.output !== undefined, at: record.at});
+    if (record === undefined) return {ok: true, value: undefined};
+    return {ok: true, value: frozen({state: record.state, action: cloneRef(record.action), receiptId: record.receiptId, outputAvailable: record.output !== undefined, at: record.at})};
   }
 
-  history(): readonly ActionHistoryEntry[] { return Object.freeze(this.historyEntries.slice()); }
+  async history(options: ActionReadOptions = {}): Promise<ActionOutcome<readonly ActionHistoryEntry[]>> {
+    if (!this.live()) return this.lifecycle();
+    const current = await this.readContext(options.signal);
+    if (!current.ok) return current;
+    if (!this.live()) return this.lifecycle();
+    if (options.signal?.aborted) return this.outcome('action.cancelled', 'The action history read was cancelled.');
+    const currentPartition = partition(current.value);
+    return {ok: true, value: Object.freeze(this.historyEntries.filter((record) => samePartition(record.partition, currentPartition)).map((record) => record.entry))};
+  }
 
   revoke(reason?: string): boolean {
     if (!this.live()) return false;

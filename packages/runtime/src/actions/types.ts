@@ -173,6 +173,10 @@ export interface ActionInspection {
   readonly at: number;
 }
 
+export interface ActionReadOptions {
+  readonly signal?: AbortSignal;
+}
+
 export interface ActionBoundaryOptions {
   readonly host: ActionHost;
   readonly registry: import('./registry.js').ActionRegistry;
@@ -202,8 +206,8 @@ export interface ActionPort {
   }): Promise<ActionOutcome<ActionPreview>>;
   confirm(preview: ActionPreview, options?: {readonly signal?: AbortSignal}): Promise<ActionOutcome<ActionReceipt>>;
   execute(receipt: ActionReceipt, options?: {readonly signal?: AbortSignal}): Promise<ActionOutcome<ActionExecution>>;
-  inspect(idempotencyKey: string): ActionInspection | undefined;
-  history(): readonly ActionHistoryEntry[];
+  inspect(idempotencyKey: string, options?: ActionReadOptions): Promise<ActionOutcome<ActionInspection | undefined>>;
+  history(options?: ActionReadOptions): Promise<ActionOutcome<readonly ActionHistoryEntry[]>>;
   revoke(reason?: string): boolean;
   dispose(): void;
 }

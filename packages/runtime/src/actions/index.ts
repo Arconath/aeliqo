@@ -18,6 +18,7 @@ export type {
   ActionIdempotencyPolicy,
   ActionInspection,
   ActionInspectionState,
+  ActionReadOptions,
   ActionOutcome,
   ActionPayload,
   ActionPort,
@@ -32,4 +33,3 @@ export type {
   IssueActionConfirmation,
   TrustedActionContext,
 } from './types.js';
-
