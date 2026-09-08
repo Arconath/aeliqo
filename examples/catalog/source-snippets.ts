@@ -17,7 +17,7 @@ export const CATALOG_MOUNT_SOURCES = {
   "icon-button": String.raw`((root) => {
 		const element = createCatalogElement<AeliqoIconButtonElement>("aeliqo-icon-button", root);
 		element.label = "Open details";
-		(appendSlottedText)(element, "icon", "⋯");
+		appendSlottedText(element, "icon", "⋯");
 	})`,
   "link": String.raw`((root) => {
 		const element = createCatalogElement<AeliqoLinkElement>("aeliqo-link", root);
@@ -79,8 +79,8 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.max = 80;
 		element.primaryLabel = "Primary panel";
 		element.secondaryLabel = "Secondary panel";
-		(appendSlottedText)(element, "start", "Primary panel");
-		(appendSlottedText)(element, "end", "Secondary panel");
+		appendSlottedText(element, "start", "Primary panel");
+		appendSlottedText(element, "end", "Secondary panel");
 	})`,
   "scroll-area": String.raw`((root) => {
 		const element = createCatalogElement<AeliqoScrollAreaElement>("aeliqo-scroll-area", root);
@@ -430,18 +430,18 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.scope = catalogScope;
 		element.clearable = true;
 	})`,
-  "trend": String.raw`((root) => configure(createCatalogElement<AeliqoTrendElement>("aeliqo-trend", root), catalogVisualizationSpecs.trend, (catalogVisualizationContext)))`,
-  "bar": String.raw`((root) => configure(createCatalogElement<AeliqoBarElement>("aeliqo-bar", root), catalogVisualizationSpecs.bar, (catalogVisualizationContext)))`,
-  "area": String.raw`((root) => configure(createCatalogElement<AeliqoAreaElement>("aeliqo-area", root), catalogVisualizationSpecs.area, (catalogVisualizationContext)))`,
-  "scatter": String.raw`((root) => configure(createCatalogElement<AeliqoScatterElement>("aeliqo-scatter", root), catalogVisualizationSpecs.scatter, (catalogVisualizationContext)))`,
+  "trend": String.raw`((root) => configure(createCatalogElement<AeliqoTrendElement>("aeliqo-trend", root), catalogVisualizationSpecs.trend, catalogVisualizationContext))`,
+  "bar": String.raw`((root) => configure(createCatalogElement<AeliqoBarElement>("aeliqo-bar", root), catalogVisualizationSpecs.bar, catalogVisualizationContext))`,
+  "area": String.raw`((root) => configure(createCatalogElement<AeliqoAreaElement>("aeliqo-area", root), catalogVisualizationSpecs.area, catalogVisualizationContext))`,
+  "scatter": String.raw`((root) => configure(createCatalogElement<AeliqoScatterElement>("aeliqo-scatter", root), catalogVisualizationSpecs.scatter, catalogVisualizationContext))`,
   "histogram": String.raw`((root) => configure(createCatalogElement<AeliqoHistogramElement>("aeliqo-histogram", root), histogramSpec, histogramContext))`,
-  "heatmap": String.raw`((root) => configure(createCatalogElement<AeliqoHeatmapElement>("aeliqo-heatmap", root), catalogVisualizationSpecs.heatmap, (catalogVisualizationContext)))`,
-  "matrix": String.raw`((root) => configure(createCatalogElement<AeliqoMatrixElement>("aeliqo-matrix", root), catalogTemporalSpecs.matrix, (catalogVisualizationContext)))`,
-  "relationship": String.raw`((root) => configure(createCatalogElement<AeliqoRelationshipElement>("aeliqo-relationship", root), (relationshipSpec), (relationshipContext), [relationshipDataset]))`,
-  "tree": String.raw`((root) => configure(createCatalogElement<AeliqoTreeElement>("aeliqo-tree", root), (hierarchySpec), (hierarchyContext), [hierarchyDataset]))`,
-  "treemap": String.raw`((root) => configure(createCatalogElement<AeliqoTreemapElement>("aeliqo-treemap", root), (treemapSpec), (hierarchyContext), [hierarchyDataset]))`,
-  "timeline": String.raw`((root) => configure(createCatalogElement<AeliqoTimelineElement>("aeliqo-timeline", root), catalogTemporalSpecs.timeline, (catalogVisualizationContext)))`,
-  "calendar-grid": String.raw`((root) => configure(createCatalogElement<AeliqoCalendarGridElement>("aeliqo-calendar-grid", root), catalogTemporalSpecs["calendar-grid"], (catalogVisualizationContext)))`,
+  "heatmap": String.raw`((root) => configure(createCatalogElement<AeliqoHeatmapElement>("aeliqo-heatmap", root), catalogVisualizationSpecs.heatmap, catalogVisualizationContext))`,
+  "matrix": String.raw`((root) => configure(createCatalogElement<AeliqoMatrixElement>("aeliqo-matrix", root), catalogTemporalSpecs.matrix, catalogVisualizationContext))`,
+  "relationship": String.raw`((root) => configure(createCatalogElement<AeliqoRelationshipElement>("aeliqo-relationship", root), relationshipSpec, relationshipContext, [relationshipDataset]))`,
+  "tree": String.raw`((root) => configure(createCatalogElement<AeliqoTreeElement>("aeliqo-tree", root), hierarchySpec, hierarchyContext, [hierarchyDataset]))`,
+  "treemap": String.raw`((root) => configure(createCatalogElement<AeliqoTreemapElement>("aeliqo-treemap", root), treemapSpec, hierarchyContext, [hierarchyDataset]))`,
+  "timeline": String.raw`((root) => configure(createCatalogElement<AeliqoTimelineElement>("aeliqo-timeline", root), catalogTemporalSpecs.timeline, catalogVisualizationContext))`,
+  "calendar-grid": String.raw`((root) => configure(createCatalogElement<AeliqoCalendarGridElement>("aeliqo-calendar-grid", root), catalogTemporalSpecs["calendar-grid"], catalogVisualizationContext))`,
   "explorer": String.raw`((root) => {
 		const element = createCatalogElement<AeliqoExplorerElement>("aeliqo-explorer", root);
 		element.fields = catalogFields;

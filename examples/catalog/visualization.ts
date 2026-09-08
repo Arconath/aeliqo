@@ -51,7 +51,7 @@ const sourceImports = `import {
 } from "@aeliqo/web";
 `;
 
-const sourceTypeImports = `import type {PlotUnit, ResultRef, Scalar, VisualizationBindingContext, VisualizationSpec} from "@aeliqo/core";
+const sourceTypeImports = `import type {Catalog, PlotUnit, Result, ResultRef, Scalar, VisualizationBindingContext, VisualizationSpec} from "@aeliqo/core";
 import type {VisualizationDataset} from "@aeliqo/web/visualization";`;
 
 const sourceSetup = `${sourceTypeImports}
@@ -68,16 +68,75 @@ const rows: readonly Readonly<Record<string, Scalar>>[] = [
   {id: "lin", name: "Lin Chen", team: "Product", date: "2026-09-09", amount: 96, low: 100, high: 140, zero: 0},
   {id: "grace", name: "Grace Hopper", team: "Research", date: "2026-09-10", amount: 144, low: 140, high: 160, zero: 0},
 ];
+const text = {value: "text", nullable: false} as const;
+const integer = {value: "integer", nullable: false} as const;
+const date = {value: "date", nullable: false, temporal: {calendar: "gregory", grain: "day"}} as const;
+const meaning = {
+  id: "amount",
+  revision: "1",
+  label: "Amount",
+  explanation: "Authorized additive amount",
+  output: integer,
+  implementation: {kind: "host-capability", capability: {id: "amount", revision: "1"}},
+  dependencies: [],
+  functionRegistryDigest: "catalog-functions",
+  origin: "manual",
+  lifecycle: "active",
+  scope: "workspace",
+  authority: "reviewed",
+  aggregation: "additive",
+  aggregationDimensions: [],
+  missingPolicy: "reject",
+} as const;
+const peopleEntity: Catalog["entities"][number] = {
+  id: "people",
+  label: "People",
+  identity: ["id"],
+  rowGrain: ["id"],
+  fields: [
+    {id: "id", label: "ID", role: "identity", type: text},
+    {id: "name", label: "Name", role: "attribute", type: text},
+    {id: "team", label: "Team", role: "dimension", type: text},
+    {id: "date", label: "Date", role: "time", type: date},
+    {id: "amount", label: "Amount", role: "measure", type: integer, derivation: {id: "amount", revision: "1"}},
+    {id: "low", label: "Bin start", role: "dimension", type: integer},
+    {id: "high", label: "Bin end", role: "dimension", type: integer},
+    {id: "zero", label: "Baseline", role: "measure", type: integer},
+  ],
+};
+const catalog: Catalog = {
+  version: "1",
+  revision: "catalog-1",
+  functionRegistryDigest: "catalog-functions",
+  entities: [peopleEntity],
+  relationships: [],
+  meanings: [meaning],
+  capabilities: [],
+};
+const catalogResult: Result = {
+  version: "1",
+  ref: catalogRef,
+  taskId: "catalog-example-task",
+  identity: ["id"],
+  rowGrain: ["id", "date", "team", "name", "low", "high"],
+  fields: peopleEntity.fields,
+  counts: {loaded: rows.length, population: {kind: "unknown"}},
+  precision: {kind: "exact"},
+  coverage: {kind: "complete", populationDigest: catalogRef.scopeDigest},
+  consistency: {kind: "snapshot", snapshotId: "catalog-snapshot", sourceRevisions: {people: "1"}},
+  evidence: {kind: "computed", queryDigest: catalogRef.queryDigest, definitions: []},
+  filters: [],
+  warnings: [],
+  lineage: [],
+};
 const plot = (mark: PlotUnit["mark"], encoding: PlotUnit["encoding"]): PlotUnit => ({kind: "unit", mark, result: catalogRef, missing: "gap", encoding});
-type CartesianView = "trend" | "bar" | "area" | "scatter" | "histogram" | "heatmap";
-const cartesian = (view: CartesianView, mark: PlotUnit["mark"]): VisualizationSpec => ({version: "1", view, plot: {version: "1", root: plot(mark, {x: {field: "date", scale: "temporal"}, y: {field: "amount", scale: "linear", zero: true}})}} as VisualizationSpec);
-const catalogVisualizationSpecs: Readonly<Record<CartesianView, VisualizationSpec>> = {
-  trend: cartesian("trend", "line"),
-  bar: cartesian("bar", "bar"),
-  area: {...cartesian("area", "area"), stack: "none", meaning: {id: "amount", revision: "1"}} as VisualizationSpec,
-  scatter: cartesian("scatter", "point"),
-  histogram: {...cartesian("histogram", "rect"), bins: {start: "low", end: "high", value: "amount", measure: "count", boundary: "start-inclusive-end-exclusive"}} as VisualizationSpec,
-  heatmap: cartesian("heatmap", "cell"),
+const catalogVisualizationSpecs: Readonly<Record<"trend" | "bar" | "area" | "scatter" | "histogram" | "heatmap", VisualizationSpec>> = {
+  trend: {version: "1", view: "trend", plot: {version: "1", root: plot("line", {x: {field: "date", scale: "temporal"}, y: {field: "amount", scale: "linear"}})}},
+  bar: {version: "1", view: "bar", plot: {version: "1", root: plot("bar", {x: {field: "team", scale: "ordinal"}, y: {field: "amount", scale: "linear", zero: true}, series: {field: "name", scale: "ordinal"}})}},
+  area: {version: "1", view: "area", plot: {version: "1", root: plot("area", {x: {field: "date", scale: "temporal"}, y: {field: "amount", scale: "linear", zero: true}})}, meaning: {id: "amount", revision: "1"}, stack: "none"},
+  scatter: {version: "1", view: "scatter", plot: {version: "1", root: plot("point", {x: {field: "amount", scale: "linear"}, y: {field: "amount", scale: "linear"}})}},
+  histogram: {version: "1", view: "histogram", plot: {version: "1", root: plot("rect", {x: {field: "low", scale: "linear"}, x2: {field: "high", scale: "linear"}, y: {field: "amount", scale: "linear", zero: true}, y2: {field: "zero", scale: "linear", zero: true}})}, bins: {start: "low", end: "high", value: "amount", measure: "count", boundary: "start-inclusive-end-exclusive"}},
+  heatmap: {version: "1", view: "heatmap", plot: {version: "1", root: plot("cell", {x: {field: "team", scale: "ordinal"}, y: {field: "name", scale: "ordinal"}, color: {field: "amount", scale: "linear"}})}},
 };
 const catalogTemporalSpecs: Readonly<Record<"matrix" | "timeline" | "calendar-grid", VisualizationSpec>> = {
   matrix: {version: "1", view: "matrix", result: catalogRef, columns: ["name", "team", "amount"]},
@@ -85,18 +144,67 @@ const catalogTemporalSpecs: Readonly<Record<"matrix" | "timeline" | "calendar-gr
   "calendar-grid": {version: "1", view: "calendar-grid", result: catalogRef, date: "date"},
 };
 const catalogVisualizationDataset: VisualizationDataset = {result: catalogRef, rows};
-const catalogVisualizationContext: VisualizationBindingContext = {results: []};
+const catalogVisualizationContext: VisualizationBindingContext = {results: [catalogResult], catalog};
 const histogramSpec = catalogVisualizationSpecs.histogram as Extract<VisualizationSpec, {view: "histogram"}>;
 const histogramContext: VisualizationBindingContext = {...catalogVisualizationContext, histograms: [{result: catalogRef, bins: histogramSpec.bins}]};
 const hierarchyRef: ResultRef = {...catalogRef, id: "aeliqo-catalog-hierarchy", outputId: "nodes"};
-const hierarchyDataset: VisualizationDataset = {result: hierarchyRef, rows: [{id: "company", parent: null, label: "Company", amount: 3}]};
+const hierarchyRows: readonly Readonly<Record<string, Scalar>>[] = [
+  {id: "company", parent: null, label: "Company", amount: 3},
+  {id: "research", parent: "company", label: "Research", amount: 2},
+  {id: "product", parent: "company", label: "Product", amount: 1},
+];
+const hierarchyResult: Result = {
+  ...catalogResult,
+  ref: hierarchyRef,
+  taskId: "catalog-hierarchy-task",
+  identity: ["id"],
+  rowGrain: ["id"],
+  fields: [
+    {id: "id", label: "ID", role: "identity", type: text},
+    {id: "parent", label: "Parent", role: "attribute", type: {...text, nullable: true}},
+    {id: "label", label: "Label", role: "attribute", type: text},
+    {id: "amount", label: "Amount", role: "measure", type: integer, derivation: {id: "amount", revision: "1"}},
+  ],
+  counts: {loaded: hierarchyRows.length, population: {kind: "unknown"}},
+};
+const hierarchyDataset: VisualizationDataset = {result: hierarchyRef, rows: hierarchyRows};
 const hierarchySpec: VisualizationSpec = {version: "1", view: "tree", result: hierarchyRef, node: ["id"], parent: ["parent"], label: "label"};
 const treemapSpec: VisualizationSpec = {...hierarchySpec, view: "treemap", value: "amount", meaning: {id: "amount", revision: "1"}};
-const hierarchyContext: VisualizationBindingContext = {results: []};
+const hierarchyContext: VisualizationBindingContext = {results: [hierarchyResult], catalog};
 const relationshipRef: ResultRef = {...catalogRef, id: "aeliqo-catalog-relationship", outputId: "edges"};
-const relationshipDataset: VisualizationDataset = {result: relationshipRef, rows: [{edge: "e1", source: "research", target: "company"}]};
+const relationshipRows: readonly Readonly<Record<string, Scalar>>[] = [
+  {edge: "e1", source: "research", target: "company"},
+  {edge: "e2", source: "product", target: "company"},
+];
+const relationshipResult: Result = {
+  ...hierarchyResult,
+  ref: relationshipRef,
+  identity: ["edge"],
+  rowGrain: ["edge"],
+  fields: [
+    {id: "edge", label: "Edge", role: "identity", type: text},
+    {id: "source", label: "Source", role: "dimension", type: text},
+    {id: "target", label: "Target", role: "dimension", type: text},
+  ],
+  counts: {loaded: relationshipRows.length, population: {kind: "unknown"}},
+};
+const relationship: Catalog["relationships"][number] = {
+  id: "reports-to",
+  revision: "1",
+  sourceEntity: "people",
+  targetEntity: "people",
+  keys: [{sourceField: "id", targetField: "id"}],
+  cardinality: "many-to-one",
+  optional: false,
+  joinPolicy: "validated",
+};
+const relationshipDataset: VisualizationDataset = {result: relationshipRef, rows: relationshipRows};
 const relationshipSpec: VisualizationSpec = {version: "1", view: "relationship", result: relationshipRef, source: ["source"], target: ["target"], relationship: {id: "reports-to", revision: "1"}};
-const relationshipContext: VisualizationBindingContext = {results: [], relationships: [{result: relationshipRef, relationship: {id: "reports-to", revision: "1"}, source: ["source"], target: ["target"]}]};
+const relationshipContext: VisualizationBindingContext = {
+  results: [relationshipResult],
+  catalog: {...catalog, relationships: [relationship]},
+  relationships: [{result: relationshipRef, relationship: {id: "reports-to", revision: "1"}, source: ["source"], target: ["target"]}],
+};
 type CatalogVisualizationElement = HTMLElement & {
   visualization: VisualizationSpec | undefined;
   context: VisualizationBindingContext;
