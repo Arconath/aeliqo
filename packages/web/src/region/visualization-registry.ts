@@ -194,6 +194,7 @@ function snapshotContext(context: VisualizationBindingContext): Outcome<Visualiz
 
 function snapshotBindings(input: AeliqoAuthorizedVisualizationBindings, options: AeliqoVisualizationRegistryOptions): Outcome<ReadonlyMap<string, AeliqoVisualizationBinding>> {
   try {
+    if (options.maxDatasets !== undefined && (!Number.isSafeInteger(options.maxDatasets) || options.maxDatasets < 1 || options.maxDatasets > MAX_DATASETS)) return fail("budget", "maxDatasets must be a safe integer from 1 to 64.");
     const entries = entriesFor(input);
     if (entries.length > 128) return fail("binding", "The authorized visualization binding table is too large.");
     const map = new Map<string, AeliqoVisualizationBinding>();

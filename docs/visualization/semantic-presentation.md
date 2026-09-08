@@ -28,3 +28,16 @@ The twelve registered views are `trend`, `bar`, `area`, `scatter`, `histogram`,
 `.context`, and `.datasets` properties. A stale descriptor, changed context or
 dataset snapshot, malformed event, or config whose derived ports and fields do
 not match the registered manifest renders nothing and emits no interaction.
+
+The canonical semantic node binds one exact Result. A multi-output Task uses
+separate presentation nodes for its separate grains/results; a single semantic
+visualization node rejects a PlotSpec spanning several ResultRefs. Direct
+visualization elements can still consume supported multi-result PlotSpecs with
+explicit datasets. This restriction prevents primary-result field coverage or
+selection ports from claiming authority over a secondary result.
+
+Use `createAeliqoPresentationRegistry({visualizations: bindings, resolveEntity})`
+and provide each region result's `visualizationContext` for its reviewed catalog,
+histogram or relationship metadata. Region rows remain the one materialization
+source. Read-only nodes disable selection and ignore retained selection state;
+selectable nodes require the exact entity, node, port and ResultRef.

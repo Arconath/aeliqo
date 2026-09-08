@@ -45,3 +45,15 @@ describe("canonical semantic visualization presentation", () => {
     expect(visualizationNodes.every((node) => node.config.operations?.length === 1 && node.config.operations[0]?.id === "data.read")).toBe(true);
   });
 });
+
+it('cannot claim required matrix fields that its selected columns omit',()=>{
+ const registry=createAeliqoPresentationRegistry(visualizationRegistryOptions() as AeliqoPresentationRegistryOptions);if(!registry.ok)throw Error('registry');
+ const context=visualizationContext() as PresentationContext;
+ const temporal=context.results.find(result=>result.ref.id==='semantic-temporal')!;
+ const constrained={...context,results:[temporal],task:{...context.task,kind:'presentation' as const,inputs:[temporal.ref],needs:[{id:'required-date',operation:{id:'data.read',revision:'1'},outputId:'rows',fields:['date'],required:true}]}};
+ const source=visualizationPlan() as PresentationPlan;
+ const covered={...source,rootId:'visualization-matrix',nodes:source.nodes.filter(node=>node.id==='visualization-matrix'),coverage:[{needId:'required-date',nodeIds:['visualization-matrix'],operations:[{id:'data.read',revision:'1'}]}]};
+ expect(validatePresentationPlan(covered,constrained,registry.value).ok).toBe(true);
+ const omitted={...covered,nodes:covered.nodes.map(node=>node.id!=='visualization-matrix'?node:{...node,config:{...node.config,values:{visualization:{version:'1',view:'matrix',result:node.result!,columns:['id']}}}})};
+ expect(validatePresentationPlan(omitted,constrained,registry.value).ok).toBe(false);
+});

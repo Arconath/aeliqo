@@ -68,4 +68,8 @@ describe("semantic visualization registry", () => {
     const malformed = {...binding, datasets: [{result: {...ref, outputId: "other"}, rows}]} as AeliqoVisualizationBinding;
     expect(createAeliqoVisualizationPresentationManifests([malformed]).ok).toBe(false);
   });
+  it('rejects malformed materialization budgets',()=>{
+    for(const maxDatasets of [NaN,Infinity,-1,0,1.5,65]) expect(createAeliqoVisualizationPresentationManifests([binding],{maxDatasets}).ok).toBe(false);
+  });
+
 });

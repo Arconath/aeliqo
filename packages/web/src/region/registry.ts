@@ -296,5 +296,5 @@ export function createAeliqoPresentationRegistry(
   if (!data.ok) return data;
   const visualizations=createAeliqoVisualizationPresentationManifests(options.visualizations??[],options.resolveEntity===undefined?{}:{resolveEntity:options.resolveEntity});
   if(!visualizations.ok)return visualizations;
-  return createPresentationRegistry([...visualizations.value,...buildManifests(options), ...foundation.value, ...inputs.value, ...navigationFeedback.value, ...data.value], registeredMappings);
+  return createPresentationRegistry([...buildManifests(options), ...foundation.value, ...inputs.value, ...navigationFeedback.value, ...data.value, ...visualizations.value], registeredMappings);
 }

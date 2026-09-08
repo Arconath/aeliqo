@@ -123,7 +123,8 @@ function resultFor(node: {readonly result: Result | undefined}, results: readonl
       for (const [field, value] of Object.entries(source)) if (value !== undefined) row[field] = value;
       return row;
     });
-    return {ref: checked.value.result.ref, rows, columns: checked.value.columns, scope: checked.value.scope};
+    return {ref: checked.value.result.ref, rows, columns: checked.value.columns, scope: checked.value.scope,
+      ...(current.visualizationContext === undefined ? {} : {visualizationContext: current.visualizationContext})};
   } catch {
     return undefined;
   }

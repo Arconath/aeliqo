@@ -43,6 +43,8 @@ test("emits a typed selection and retains the authorized identity", async ({page
     await region.updateComplete;
   });
   await expect(matrix.getByRole("button", {name: "Select a", exact: true})).toHaveAttribute("aria-pressed", "true");
+  await page.evaluate(async()=>{const region=document.querySelector<any>('#editable');region.interaction={...region.interaction,values:region.interaction.values.map((value:any)=>({...value,payload:{...value.payload,selection:{...value.payload.selection,entity:'other'}}}))};await region.updateComplete;});
+  await expect(matrix.getByRole("button", {name: "Select a", exact: true})).toHaveAttribute("aria-pressed", "false");
 });
 
 test("suppresses forged selections and disables the read-only path", async ({page}) => {
@@ -58,7 +60,9 @@ test("suppresses forged selections and disables the read-only path", async ({pag
   });
   await expect.poll(() => page.evaluate(() => (window as SemanticWindow).aeliqoVisualizationSemanticEvents?.length ?? 0)).toBe(before);
 
+  await page.evaluate(async()=>{const region=document.querySelector<any>('#readonly');region.interaction={version:'1',values:[{nodeId:'visualization-matrix',portId:'selection',payload:{kind:'selection',selection:{mode:'ids',entity:'rows',keys:[JSON.stringify([JSON.stringify(['text','a'])])],result:(window as any).aeliqoVisualizationSemanticTemporalRef}}}],drafts:[]};await region.updateComplete;});
   const readOnlyMatrix = page.locator("#readonly aeliqo-matrix");
+  await expect(readOnlyMatrix.locator('[aria-pressed="true"]')).toHaveCount(0);
   await expect(readOnlyMatrix.getByRole("button", {name: "Select a", exact: true})).toBeDisabled();
   const readOnlyBefore = await page.evaluate(() => (window as SemanticWindow).aeliqoVisualizationSemanticReadOnlyEvents?.length ?? 0);
   await expect(readOnlyMatrix.getByRole("button", {name: "Select a", exact: true})).toBeDisabled();

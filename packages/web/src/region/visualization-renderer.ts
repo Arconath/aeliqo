@@ -61,12 +61,12 @@ function selectionDetail(event: Event): {readonly identity: string; readonly res
   return ref === undefined ? undefined : {identity: candidate.identity, result: ref};
 }
 
-function selectedIdentity(interaction: InteractionState | undefined, nodeId: string, result: ResultRef): string | undefined {
+function selectedIdentity(interaction: InteractionState | undefined, nodeId: string, result: ResultRef, entity: string | undefined): string | undefined {
   if (interaction === undefined) return undefined;
   try {
     const retained = interaction.values.find((value) => value.nodeId === nodeId && value.portId === "selection" && value.payload.kind === "selection");
     const selection = retained?.payload.kind === "selection" ? retained.payload.selection : undefined;
-    return selection?.mode === "ids" && sameRef(selection.result, result) && selection.keys.length === 1 ? selection.keys[0] : undefined;
+    return selection?.mode === "ids" && selection.entity === entity && sameRef(selection.result, result) && selection.keys.length === 1 ? selection.keys[0] : undefined;
   } catch { return undefined; }
 }
 
@@ -136,7 +136,8 @@ function renderWith(
   const expectedFields = parsed.value.view==="matrix"?[...parsed.value.columns]:node.result.fields.map((field) => field.id);
   const expectedOperations = owner === undefined ? [{id: "data.read", revision: "1"}] : [{id: "data.read", revision: "1"}, {id: "interaction.selection", revision: "1"}];
   if (canonical(node.config.values) !== canonical({visualization: parsed.value}) || canonical(node.config.fields) !== canonical(expectedFields) || canonical(node.config.ports) !== canonical(expectedPort) || canonical(node.config.operations) !== canonical(expectedOperations)) return nothing;
-  const selected = selectedIdentity(context.interaction, node.node.id, node.result.ref);
+  const selectionEnabled = declaredSelection(node);
+  const selected = selectionEnabled ? selectedIdentity(context.interaction, node.node.id, node.result.ref, owner) : undefined;
   const handler = (event: Event): void => {
     if (!declaredSelection(node) || typeof context.onSemanticInteraction !== "function") {event.preventDefault();return;}
     const detail = selectionDetail(event);
@@ -148,7 +149,7 @@ function renderWith(
     const payload: InteractionPayload = {kind: "selection", selection: {mode: "ids", entity: port.entity, keys: [detail.identity], result: node.result!.ref}};
     try { context.onSemanticInteraction(node.node.id, port.id, payload); } catch { /* host callback failures do not alter authorization */ }
   };
-  return renderElement(parsed.value, current, `Data visualization: ${view}`, selected, declaredSelection(node), handler);
+  return renderElement(parsed.value, current, `Data visualization: ${view}`, selected, selectionEnabled, handler);
 }
 
 export function renderAeliqoVisualizationPresentationNode(node: CoreNode, current: AeliqoVisualizationBinding, context: AeliqoVisualizationPresentationRenderContext = {}, options: AeliqoVisualizationRegistryOptions = {}, authorized?: ReadonlyMap<string, AeliqoVisualizationBinding>): TemplateResult | typeof nothing {
