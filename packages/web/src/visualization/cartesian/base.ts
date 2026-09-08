@@ -42,6 +42,7 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
     width: {type: Number},
     height: {type: Number},
     maxMarks: {type: Number, attribute: "max-marks"},
+    selectionEnabled: {type:Boolean,attribute:false},
     selectedIdentity: {type: String, attribute: "selected-identity"},
     selectedResult: {attribute: false},
   };
@@ -80,6 +81,7 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
   width = 640;
   height = 320;
   maxMarks = 20_000;
+  selectionEnabled=true;
   selectedIdentity = "";
   selectedResult: ResultRef | undefined;
 
@@ -214,7 +216,7 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
       </div>` : nothing}
       ${data ? html`${this.renderLegend(geometry)}${this.renderColorKey(geometry)}<div part="data"><table>
         <caption>${label}: ${tableLabel}</caption><thead><tr><th scope="col">Select</th>${geometry.result.fields.map((field) => html`<th scope="col">${field.label}${field.type.unit ? ` (${field.type.unit.symbol})` : nothing}</th>`)}</tr></thead>
-        <tbody>${repeat(pageRows, (row) => row.identity, (row) => html`<tr><td><button type="button" data-aeliqo-row-identity=${row.identity} data-aeliqo-result=${resultKey(geometry.result.ref)} aria-pressed=${this.isSelected(row.identity, geometry.result.ref) ? "true" : "false"} aria-label=${`Select ${this.identityLabel(row, geometry.result)}`} @click=${() => this.select(row.identity, geometry.result.ref)}>Select</button></td>${geometry.result.fields.map((field) => html`<td>${exactLabel(row.values[field.id]!)}</td>`)}</tr>`)}</tbody>
+        <tbody>${repeat(pageRows, (row) => row.identity, (row) => html`<tr><td><button type="button" ?disabled=${!this.selectionEnabled} data-aeliqo-row-identity=${row.identity} data-aeliqo-result=${resultKey(geometry.result.ref)} aria-pressed=${this.isSelected(row.identity, geometry.result.ref) ? "true" : "false"} aria-label=${`Select ${this.identityLabel(row, geometry.result)}`} @click=${() => this.select(row.identity, geometry.result.ref)}>Select</button></td>${geometry.result.fields.map((field) => html`<td>${exactLabel(row.values[field.id]!)}</td>`)}</tr>`)}</tbody>
       </table></div>${displayed.length > 25 ? html`<nav part="pagination" aria-label="${label} data pages"><button type="button" ?disabled=${page === 0} @click=${() => { this.page = page - 1; this.requestUpdate(); }}>Previous</button><span>Rows ${page * 25 + 1}–${Math.min((page + 1) * 25, displayed.length)} of ${displayed.length}</span><button type="button" ?disabled=${page + 1 >= pageCount} @click=${() => { this.page = page + 1; this.requestUpdate(); }}>Next</button></nav>` : nothing}` : nothing}
     </figure>`;
   }
@@ -249,6 +251,7 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
     return identity === this.selectedIdentity && (this.selectedResult === undefined ? this.singleResult : resultKey(result) === resultKey(this.selectedResult));
   }
   private select(identity: string, result: ResultRef): void {
+    if(!this.selectionEnabled)return;
     const event = new CustomEvent<AeliqoVisualizationSelectionDetail>("aeliqo-visualization-select", {bubbles: true, composed: true, cancelable: true, detail: Object.freeze({source: "user", identity, result})});
     if (this.dispatchEvent(event)) {
       this.selectedIdentity = identity;

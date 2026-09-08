@@ -234,6 +234,7 @@ function configFor(view: VisualizationView, values: PresentationValues, result: 
   if (binding === undefined || !sameResult(binding.result, result)) return fail("stale", "The authorized visualization Result descriptor is stale or unavailable.");
   const bound = bindVisualizationSpec(spec.value, binding.context);
   if (!bound.ok) return bound;
+  if(bound.value.results.length!==1)return fail("multigrain","Use a separate presentation node for each named Result; this view binds one Result scope.");
   if (!bound.value.results.some((candidate) => sameResult(candidate, result))) return fail("binding", "The primary Result is not part of the visualization specification.");
   for (const candidate of bound.value.results) {
     const rows = materializeVisualizationRows(bound.value, candidate.ref, binding.datasets);
@@ -246,7 +247,7 @@ function configFor(view: VisualizationView, values: PresentationValues, result: 
   const ports: InteractionPort[] = owner === undefined ? [] : [{id: "selection", direction: "inout", payload: "selection", entity: owner, identity: [...result.identity], grain: [...result.rowGrain]}];
   return {ok: true, value: freeze({
     values: {visualization: spec.value},
-    fields: [...result.fields.map((field) => field.id)],
+    fields: spec.value.view==="matrix"?[...spec.value.columns]:result.fields.map(field=>field.id),
     ports,
     operations: owner === undefined ? [AELIQO_VISUALIZATION_PRESENTATION_OPERATIONS.read] : [AELIQO_VISUALIZATION_PRESENTATION_OPERATIONS.read, AELIQO_VISUALIZATION_PRESENTATION_OPERATIONS.selection],
   })};

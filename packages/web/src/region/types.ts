@@ -1,5 +1,5 @@
 import type {AeliqoDataHostRequest} from "./data-renderer.js";
-import type {InteractionPayload, ResultRef, ValidatedPresentation} from "@aeliqo/core";
+import type {InteractionPayload, ResultRef, ValidatedPresentation, VisualizationBindingContext} from "@aeliqo/core";
 import type {AeliqoTableColumn, AeliqoTableRow} from "../types.js";
 import type {AeliqoDataScope} from "../data/types.js";
 
@@ -8,6 +8,8 @@ export interface AeliqoRegionResult {
   readonly ref: ResultRef;
   readonly rows: readonly AeliqoTableRow[];
   readonly columns?: readonly AeliqoTableColumn[];
+  /** Current host-owned meanings and source mappings for this visualization. */
+  readonly visualizationContext?: VisualizationBindingContext;
   /** Optional host scope annotations; validated against the Result descriptor. */
   readonly scope?: AeliqoDataScope;
 }

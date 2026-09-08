@@ -75,6 +75,7 @@ function renderElement(
   binding: AeliqoVisualizationBinding,
   label: string,
   selected: string | undefined,
+  selectionEnabled:boolean,
   onSelect: (event: Event) => void,
 ): TemplateResult {
   const props = {
@@ -90,18 +91,18 @@ function renderElement(
   // Lit SSR needs literal tag names so that its element registry can attach
   // the correct custom-element renderer. Every branch remains typed input.
   switch (spec.view) {
-    case "trend": return html`<aeliqo-trend .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} .selectedIdentity=${selected ?? ""} @aeliqo-visualization-select=${onSelect}></aeliqo-trend>`;
-    case "bar": return html`<aeliqo-bar .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} .selectedIdentity=${selected ?? ""} @aeliqo-visualization-select=${onSelect}></aeliqo-bar>`;
-    case "area": return html`<aeliqo-area .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} .selectedIdentity=${selected ?? ""} @aeliqo-visualization-select=${onSelect}></aeliqo-area>`;
-    case "scatter": return html`<aeliqo-scatter .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} .selectedIdentity=${selected ?? ""} @aeliqo-visualization-select=${onSelect}></aeliqo-scatter>`;
-    case "histogram": return html`<aeliqo-histogram .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} .selectedIdentity=${selected ?? ""} @aeliqo-visualization-select=${onSelect}></aeliqo-histogram>`;
-    case "heatmap": return html`<aeliqo-heatmap .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} .selectedIdentity=${selected ?? ""} @aeliqo-visualization-select=${onSelect}></aeliqo-heatmap>`;
-    case "matrix": return html`<aeliqo-matrix .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} @aeliqo-visualization-select=${onSelect}></aeliqo-matrix>`;
-    case "timeline": return html`<aeliqo-timeline .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} @aeliqo-visualization-select=${onSelect}></aeliqo-timeline>`;
-    case "calendar-grid": return html`<aeliqo-calendar-grid .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} @aeliqo-visualization-select=${onSelect}></aeliqo-calendar-grid>`;
-    case "tree": return html`<aeliqo-tree .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} .selectedIdentity=${selected ?? ""} @aeliqo-visualization-select=${onSelect}></aeliqo-tree>`;
-    case "treemap": return html`<aeliqo-treemap .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} .selectedIdentity=${selected ?? ""} @aeliqo-visualization-select=${onSelect}></aeliqo-treemap>`;
-    case "relationship": return html`<aeliqo-relationship .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} .selectedIdentity=${selected ?? ""} @aeliqo-visualization-select=${onSelect}></aeliqo-relationship>`;
+    case "trend": return html`<aeliqo-trend .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} .selectedIdentity=${selected ?? ""} .selectionEnabled=${selectionEnabled} @aeliqo-visualization-select=${onSelect}></aeliqo-trend>`;
+    case "bar": return html`<aeliqo-bar .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} .selectedIdentity=${selected ?? ""} .selectionEnabled=${selectionEnabled} @aeliqo-visualization-select=${onSelect}></aeliqo-bar>`;
+    case "area": return html`<aeliqo-area .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} .selectedIdentity=${selected ?? ""} .selectionEnabled=${selectionEnabled} @aeliqo-visualization-select=${onSelect}></aeliqo-area>`;
+    case "scatter": return html`<aeliqo-scatter .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} .selectedIdentity=${selected ?? ""} .selectionEnabled=${selectionEnabled} @aeliqo-visualization-select=${onSelect}></aeliqo-scatter>`;
+    case "histogram": return html`<aeliqo-histogram .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} .selectedIdentity=${selected ?? ""} .selectionEnabled=${selectionEnabled} @aeliqo-visualization-select=${onSelect}></aeliqo-histogram>`;
+    case "heatmap": return html`<aeliqo-heatmap .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} .selectedIdentity=${selected ?? ""} .selectionEnabled=${selectionEnabled} @aeliqo-visualization-select=${onSelect}></aeliqo-heatmap>`;
+    case "matrix": return html`<aeliqo-matrix .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} .selectedIdentity=${selected??""} .selectionEnabled=${selectionEnabled} @aeliqo-visualization-select=${onSelect}></aeliqo-matrix>`;
+    case "timeline": return html`<aeliqo-timeline .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} .selectedIdentity=${selected??""} .selectionEnabled=${selectionEnabled} @aeliqo-visualization-select=${onSelect}></aeliqo-timeline>`;
+    case "calendar-grid": return html`<aeliqo-calendar-grid .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} .selectedIdentity=${selected??""} .selectionEnabled=${selectionEnabled} @aeliqo-visualization-select=${onSelect}></aeliqo-calendar-grid>`;
+    case "tree": return html`<aeliqo-tree .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} .selectedIdentity=${selected ?? ""} .selectionEnabled=${selectionEnabled} @aeliqo-visualization-select=${onSelect}></aeliqo-tree>`;
+    case "treemap": return html`<aeliqo-treemap .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} .selectedIdentity=${selected ?? ""} .selectionEnabled=${selectionEnabled} @aeliqo-visualization-select=${onSelect}></aeliqo-treemap>`;
+    case "relationship": return html`<aeliqo-relationship .visualization=${props.visualization} .context=${props.context} .datasets=${props.datasets} .label=${props.label} .width=${props.width} .height=${props.height} .maxMarks=${props["max-marks"]} .selectedIdentity=${selected ?? ""} .selectionEnabled=${selectionEnabled} @aeliqo-visualization-select=${onSelect}></aeliqo-relationship>`;
   }
 }
 
@@ -128,16 +129,16 @@ function renderWith(
   const parsed = parseVisualizationSpec(node.config.values.visualization);
   if (!parsed.ok || parsed.value.view !== view) return nothing;
   const bound = bindVisualizationSpec(parsed.value, current.context);
-  if (!bound.ok || !bound.value.results.some((result) => sameResult(result, node.result!))) return nothing;
+  if (!bound.ok || bound.value.results.length!==1 || !bound.value.results.some((result) => sameResult(result, node.result!))) return nothing;
   for (const result of bound.value.results) if (!materializeVisualizationRows(bound.value, result.ref, current.datasets).ok) return nothing;
   const owner = options.resolveEntity === undefined ? undefined : (() => { try { return options.resolveEntity(node.result!); } catch { return undefined; } })();
   const expectedPort = owner === undefined ? [] : [{id: "selection", direction: "inout", payload: "selection", entity: owner, identity: [...node.result.identity], grain: [...node.result.rowGrain]}];
-  const expectedFields = node.result.fields.map((field) => field.id);
+  const expectedFields = parsed.value.view==="matrix"?[...parsed.value.columns]:node.result.fields.map((field) => field.id);
   const expectedOperations = owner === undefined ? [{id: "data.read", revision: "1"}] : [{id: "data.read", revision: "1"}, {id: "interaction.selection", revision: "1"}];
   if (canonical(node.config.values) !== canonical({visualization: parsed.value}) || canonical(node.config.fields) !== canonical(expectedFields) || canonical(node.config.ports) !== canonical(expectedPort) || canonical(node.config.operations) !== canonical(expectedOperations)) return nothing;
   const selected = selectedIdentity(context.interaction, node.node.id, node.result.ref);
   const handler = (event: Event): void => {
-    if (!declaredSelection(node) || typeof context.onSemanticInteraction !== "function") return;
+    if (!declaredSelection(node) || typeof context.onSemanticInteraction !== "function") {event.preventDefault();return;}
     const detail = selectionDetail(event);
     if (detail === undefined || !sameRef(detail.result, node.result!.ref)) return;
     const rows = materializeVisualizationRows(bound.value, node.result!.ref, current.datasets);
@@ -147,7 +148,7 @@ function renderWith(
     const payload: InteractionPayload = {kind: "selection", selection: {mode: "ids", entity: port.entity, keys: [detail.identity], result: node.result!.ref}};
     try { context.onSemanticInteraction(node.node.id, port.id, payload); } catch { /* host callback failures do not alter authorization */ }
   };
-  return renderElement(parsed.value, current, `Data visualization: ${view}`, selected, handler);
+  return renderElement(parsed.value, current, `Data visualization: ${view}`, selected, declaredSelection(node), handler);
 }
 
 export function renderAeliqoVisualizationPresentationNode(node: CoreNode, current: AeliqoVisualizationBinding, context: AeliqoVisualizationPresentationRenderContext = {}, options: AeliqoVisualizationRegistryOptions = {}, authorized?: ReadonlyMap<string, AeliqoVisualizationBinding>): TemplateResult | typeof nothing {

@@ -27,3 +27,6 @@ export {createAeliqoDataPresentationManifests} from "./data-presentation.js";
 export type {AeliqoAuthorizedDataBindings} from "./data-presentation.js";
 export type {AeliqoDataBinding} from "./data-registry.js";
 export type {AeliqoRegionDataRequest, AeliqoRegionDataRequestHandler} from "./types.js";
+
+export {createAeliqoVisualizationPresentationManifests,createAeliqoVisualizationPresentationRegistry,AELIQO_VISUALIZATION_REFS,AELIQO_VISUALIZATION_CONFIG_SCHEMAS,AELIQO_VISUALIZATION_PRESENTATION_OPERATIONS} from "./visualization-registry.js";
+export type {AeliqoVisualizationBinding,AeliqoAuthorizedVisualizationBindings,AeliqoVisualizationRegistryOptions} from "./visualization-registry.js";

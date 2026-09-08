@@ -1,3 +1,5 @@
+import {renderAeliqoVisualizationPresentationNode} from "./visualization-renderer.js";
+import {AELIQO_VISUALIZATION_REFS} from "./visualization-registry.js";
 import {renderAeliqoDataPresentationNode} from "./data-presentation.js";
 import {AELIQO_DATA_REFS, validateAeliqoDataBinding} from "./data-registry.js";
 import type {AeliqoRegionDataRequestHandler} from "./types.js";
@@ -223,8 +225,21 @@ export class AeliqoRegionElement extends LitElement {
       case "data.table": return this.renderTable(resolved, values);
       case "data.trend": return this.renderTrend(resolved, values);
       case "control.filter": return this.renderFilter(resolved, values);
-      default: return renderFoundationNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? renderInputNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload), this.presentation?.environment.locale) ?? renderNavigationFeedbackNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? this.renderData(resolved) ?? html`<div part="unsupported">Unsupported registered representation.</div>`;
+      default: return renderFoundationNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? renderInputNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload), this.presentation?.environment.locale) ?? renderNavigationFeedbackNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? this.renderData(resolved) ?? this.renderVisualization(resolved) ?? html`<div part="unsupported">Unsupported registered representation.</div>`;
     }
+  }
+
+  private renderVisualization(node: ValidatedPresentation["nodes"][number]): TemplateResult | typeof nothing | undefined {
+    if(!Object.values(AELIQO_VISUALIZATION_REFS).some(ref=>ref.id===node.manifest.id&&ref.revision===node.manifest.revision))return undefined;
+    const current=resultFor(node,this.results);
+    if(current===undefined||node.result===undefined)return html`<p part="status">Data unavailable.</p>`;
+    const context=current.visualizationContext??{results:[node.result]};
+    const entity=node.config.ports.find(port=>port.id==='selection'&&port.payload==='selection')?.entity;
+    const rendered=renderAeliqoVisualizationPresentationNode(node,{result:node.result,context,datasets:[{result:current.ref,rows:current.rows}]},{
+      ...(this.interaction===undefined?{}:{interaction:this.interaction}),
+      onSemanticInteraction:(_nodeId,portId,payload)=>this.emitFoundation(node,portId,payload),
+    },{resolveEntity:()=>entity});
+    return rendered===nothing?html`<p part="status">Data unavailable.</p>`:html`<div data-aeliqo-node-id=${node.node.id}>${rendered}</div>`;
   }
 
   private renderData(node: ValidatedPresentation["nodes"][number]): TemplateResult | typeof nothing | undefined {
