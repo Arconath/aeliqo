@@ -260,7 +260,7 @@ export class AeliqoChartElement extends LitElement {
   }
 
   private seriesClasses(index: number): string {
-    const style = index < 4 ? 0 : ((index - 4) % 4) + 1;
+    const style = index % 5;
     return `series-${index} color-${index % 4} style-${style}`;
   }
 
@@ -366,7 +366,10 @@ export class AeliqoChartElement extends LitElement {
     [part="legend-marker"].style-1 { border-block-start-style: dashed; }
     [part="legend-marker"].style-2 { border-block-start-style: dotted; }
     [part="legend-marker"].style-3 { border-block-start-style: double; }
-    [part="legend-marker"].style-4 { border-block-start-style: dashed; }
+    [part="legend-marker"].style-4 {
+      border-block-start-style: dashed;
+      border-block-start-width: 0.1rem;
+    }
 
     [part="legend-label"] {
       font-size: 0.9em;

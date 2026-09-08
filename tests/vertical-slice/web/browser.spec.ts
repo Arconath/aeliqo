@@ -61,6 +61,13 @@ test("region emits trusted table selection, clears explicitly, and keeps long fo
   expect(svgGeometry).toHaveLength(8);
   expect(svgGeometry.every((line) => line.namespace === "http://www.w3.org/2000/svg" && line.points !== null)).toBe(true);
   expect(svgGeometry.some((line) => line.width > 0 && line.height > 0)).toBe(true);
+  await page.emulateMedia({forcedColors: "active"});
+  const forcedColorDashArrays = await chart.evaluate((element) => Array.from({length: 5}, (_, index) => {
+    const line = element.shadowRoot?.querySelector(`polyline.series-${index}`);
+    return line === null || line === undefined ? "missing" : getComputedStyle(line).strokeDasharray;
+  }));
+  expect(new Set(forcedColorDashArrays).size).toBe(5);
+  await page.emulateMedia({forcedColors: null});
   await expect(chart.locator('[part="legend"] li')).toHaveCount(5);
   await expect(chart.locator('[part="legend"] [part="legend-marker"].style-1')).toHaveCount(1);
   await chart.locator("details summary").click();
