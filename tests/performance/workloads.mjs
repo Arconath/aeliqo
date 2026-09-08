@@ -149,7 +149,8 @@ export function mediumPlan() {
   if (!registryResult.ok) throw new Error(`presentation registry unavailable: ${registryResult.diagnostics[0]?.message ?? 'unknown error'}`);
   const context = {task, experience, results: [result], current, environment,
     rendererCapabilities: [AELIQO_PRESENTATION_REFS.stack, AELIQO_PRESENTATION_REFS.table]};
-  const candidates = Array.from({length: MEDIUM_CANDIDATE_COUNT}, () => ({source: 'explicit', plan}));
+  const candidates = Array.from({length: MEDIUM_CANDIDATE_COUNT}, (_, gap) => ({source: 'explicit', plan: {...plan,
+    nodes: plan.nodes.map((node, index) => index === 0 ? {...node, config: {...node.config, values: {gap}}} : node)}}));
   return {context, registry: registryResult.value, plan, candidates, rows: makeRows(MEDIUM_ROW_COUNT, MEDIUM_FIELD_COUNT), rowFieldCount: MEDIUM_FIELD_COUNT};
 }
 

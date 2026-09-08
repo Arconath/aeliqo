@@ -17,10 +17,13 @@ export const isThenable = (value: unknown): value is {then: (...args: readonly u
   try { return typeof (value as {then?: unknown}).then === 'function'; }
   catch { return true; }
 };
+// Cache only graphs recursively frozen by this function, never arbitrary shallow-frozen input.
+const ownedFrozenGraphs = new WeakSet<object>();
 export function freezePresentation<T>(value: T): T {
-  if (value !== null && typeof value === 'object') {
+  if (value !== null && typeof value === 'object' && !ownedFrozenGraphs.has(value)) {
     for (const child of Object.values(value)) freezePresentation(child);
     Object.freeze(value);
+    ownedFrozenGraphs.add(value);
   }
   return value;
 }

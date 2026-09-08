@@ -4,6 +4,7 @@ import {wireFailure} from '../diagnostics/wire.js';
 
 /** UTF-8 size without a browser/Node encoder or ambient effect. */
 export function utf8Bytes(text: string): number {
+  if (!/[^\x00-\x7f]/.test(text)) return Math.min(text.length, L.bytes + 1);
   let bytes = 0;
   for (const point of text) {
     const value = point.codePointAt(0)!;
@@ -12,7 +13,13 @@ export function utf8Bytes(text: string): number {
   }
   return bytes;
 }
-type Frame = {value: unknown; path: readonly (string | number)[]; leave?: boolean};
+type WirePath = {readonly parent: WirePath | undefined; readonly key: string | number; readonly depth: number};
+type Frame = {value: unknown; path: WirePath | undefined; leave?: boolean};
+function pathParts(path: WirePath | undefined): (string | number)[] {
+  const parts = new Array<string | number>(path?.depth ?? 0);
+  for (let current = path; current !== undefined; current = current.parent) parts[current.depth - 1] = current.key;
+  return parts;
+}
 /** Native JSON.parse has already checked syntax. Scan only object-key uniqueness. */
 function inspectTextKeys(text: string): Outcome<undefined> {
   const containers: (Set<string> | null)[] = [];
@@ -54,7 +61,7 @@ export function inspectWire(input: unknown): Outcome<unknown> {
     const uniqueKeys = inspectTextKeys(input);
     if (!uniqueKeys.ok) return uniqueKeys;
   }
-  const frames: Frame[] = [{value, path: []}];
+  const frames: Frame[] = [{value, path: undefined}];
   const ancestors = new Set<object>();
   let nodes = 0;
   let textBytes = 0;
@@ -63,46 +70,46 @@ export function inspectWire(input: unknown): Outcome<unknown> {
       const frame = frames.pop()!;
       const current = frame.value;
       if (frame.leave) {ancestors.delete(current as object); continue;}
-      if (++nodes > L.nodes) return wireFailure('wire.nodes', 'The wire document exceeds its node limit.', frame.path);
-      if (frame.path.length > L.depth) return wireFailure('wire.depth', 'The wire document exceeds its depth limit.', frame.path.slice(0, L.depth));
+      if (++nodes > L.nodes) return wireFailure('wire.nodes', 'The wire document exceeds its node limit.', pathParts(frame.path));
+      if ((frame.path?.depth ?? 0) > L.depth) return wireFailure('wire.depth', 'The wire document exceeds its depth limit.', pathParts(frame.path).slice(0, L.depth));
       if (current === null || typeof current === 'boolean') continue;
       if (typeof current === 'number') {
-        if (!Number.isFinite(current)) return wireFailure('wire.number', 'Wire numbers must be finite.', frame.path);
+        if (!Number.isFinite(current)) return wireFailure('wire.number', 'Wire numbers must be finite.', pathParts(frame.path));
         continue;
       }
       if (typeof current === 'string') {
-        if (current.length > L.text) return wireFailure('wire.text', 'A wire string exceeds its length limit.', frame.path);
+        if (current.length > L.text) return wireFailure('wire.text', 'A wire string exceeds its length limit.', pathParts(frame.path));
         textBytes += utf8Bytes(current);
         if (textBytes > L.bytes) return wireFailure('wire.bytes', 'The wire document exceeds its byte limit.');
         continue;
       }
-      if (typeof current !== 'object') return wireFailure('wire.type', 'Only JSON values are accepted.', frame.path);
-      if (ancestors.has(current)) return wireFailure('wire.cycle', 'Cyclic objects are not wire data.', frame.path);
+      if (typeof current !== 'object') return wireFailure('wire.type', 'Only JSON values are accepted.', pathParts(frame.path));
+      if (ancestors.has(current)) return wireFailure('wire.cycle', 'Cyclic objects are not wire data.', pathParts(frame.path));
       const isArray = Array.isArray(current);
       const prototype = Object.getPrototypeOf(current) as unknown;
       if (prototype !== (isArray ? Array.prototype : Object.prototype) && !(prototype === null && !isArray))
-        return wireFailure('wire.object', 'Only plain JSON objects and arrays are accepted.', frame.path);
+        return wireFailure('wire.object', 'Only plain JSON objects and arrays are accepted.', pathParts(frame.path));
       const keys = Reflect.ownKeys(current);
       if (isArray && current.length > L.array)
-        return wireFailure('wire.array', 'A wire array exceeds its item limit.', frame.path);
+        return wireFailure('wire.array', 'A wire array exceeds its item limit.', pathParts(frame.path));
       if (!isArray && keys.length > L.properties)
-        return wireFailure('wire.properties', 'A wire object exceeds its property limit.', frame.path);
+        return wireFailure('wire.properties', 'A wire object exceeds its property limit.', pathParts(frame.path));
       if (isArray && keys.length !== current.length + 1)
-        return wireFailure('wire.array', 'Sparse arrays and extra array properties are not accepted.', frame.path);
+        return wireFailure('wire.array', 'Sparse arrays and extra array properties are not accepted.', pathParts(frame.path));
       ancestors.add(current);
       frames.push({value: current, path: frame.path, leave: true});
       for (let index = keys.length - 1; index >= 0; index--) {
         const key = keys[index]!;
-        if (typeof key !== 'string') return wireFailure('wire.key', 'Symbol keys are not wire data.', frame.path);
+        if (typeof key !== 'string') return wireFailure('wire.key', 'Symbol keys are not wire data.', pathParts(frame.path));
         if (isArray && key === 'length') continue;
-        if (key.length > L.id || key === '__proto__') return wireFailure('wire.key', 'A wire property name is not supported.', frame.path);
+        if (key.length > L.id || key === '__proto__') return wireFailure('wire.key', 'A wire property name is not supported.', pathParts(frame.path));
         if (isArray && (!/^(?:0|[1-9][0-9]*)$/.test(key) || Number(key) >= current.length))
-          return wireFailure('wire.array', 'Extra array properties are not accepted.', frame.path);
+          return wireFailure('wire.array', 'Extra array properties are not accepted.', pathParts(frame.path));
         const descriptor = Object.getOwnPropertyDescriptor(current, key);
         if (!descriptor || !('value' in descriptor) || !descriptor.enumerable)
-          return wireFailure('wire.accessor', 'Accessors and hidden properties are not wire data.', [...frame.path, key]);
+          return wireFailure('wire.accessor', 'Accessors and hidden properties are not wire data.', [...pathParts(frame.path), key]);
         textBytes += utf8Bytes(key);
-        frames.push({value: descriptor.value as unknown, path: [...frame.path, isArray ? Number(key) : key]});
+        frames.push({value: descriptor.value as unknown, path: {parent: frame.path, key: isArray ? Number(key) : key, depth: (frame.path?.depth ?? 0) + 1}});
       }
     }
     // Includes escaped characters and punctuation after the bounded structure walk.

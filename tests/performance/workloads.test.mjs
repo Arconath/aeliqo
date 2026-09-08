@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {percentile, firstSubsequent, makeRows, semanticFields} from './workloads.mjs';
+import {percentile, firstSubsequent, makeRows, semanticFields, mediumPlan} from './workloads.mjs';
 
 test('nearest-rank p95 uses the tail, not a missing-index zero fallback', () => {
   assert.equal(percentile([5, 1, 4, 2, 3], 0.95), 5);
@@ -21,4 +21,11 @@ test('measurements retain operation results and predetermined sample counts', as
 test('medium records contain every declared semantic field', () => {
   const rows = makeRows(3, 100);
   for (const row of rows) for (const field of semanticFields(100)) assert.ok(Object.hasOwn(row, field.id), field.id);
+});
+
+test('the planner workload exercises 64 distinct complete candidates', () => {
+  const {candidates} = mediumPlan();
+  assert.equal(candidates.length, 64);
+  assert.equal(new Set(candidates.map(candidate => JSON.stringify(candidate.plan))).size, 64);
+  for (const candidate of candidates) assert.equal(candidate.plan.nodes.length, 31);
 });

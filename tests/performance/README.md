@@ -32,7 +32,7 @@ work without concurrent builds. Do not revise budgets to fit observed results.
 `pnpm exec playwright test --config tests/performance/playwright.config.mjs`
 builds the actual packages and a minified Vite production fixture, then serves it
 with preview. It checks 100-row controls, 10,000 loaded records carrying all 100
-semantic fields, 30 views and 64 presentation candidates, typed draft updates,
+semantic fields, 30 views and 64 distinct presentation candidates, typed draft updates,
 and a bounded HTTP window from a synthetic indexed million-record source.
 The two display fields supplement those 100 semantic fields. The source is a
 local deterministic fixture, not a database capacity benchmark. Content-Length
@@ -59,3 +59,10 @@ Still unqualified by these probes: genuine cold/warm cache paths, input-to-paint
 network/server phase breakdown, dense plots and adverse workloads, final
 installed-package timing, whole-site metrics, and real lower-powered hardware.
 No timing result from this fixture alone marks T30 complete.
+
+The planner reuses pure registered node resolution only within one synchronous
+composition and one immutable prepared context. Keys include the full parsed
+node, including signed zero; every candidate still passes plan-wide validation.
+Wire inspection and public input parsing remain mandatory. The diagnostic
+September 9 optimization run measured five Node samples at 76–93 ms on the
+development machine. This still exceeds 16 ms and is not an isolated p95 gate.

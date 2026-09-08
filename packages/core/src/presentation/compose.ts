@@ -7,10 +7,10 @@ import {validateCommitReadSet} from '../contracts/commit.js';
 import type {Diagnostic, Outcome, PresentationPlan, Result, Task, VersionRef} from '../contracts/types.js';
 import type {
   PresentationComposition, PresentationCompositionRequest, PresentationManifest, PresentationPatternManifest, PresentationRegistry,
-  PresentationValues, ValidatedPresentation,
+  PresentationValues, ValidatedPresentation, ResolvedPresentationNode,
 } from './types.js';
 import {freezePresentation, isThenable, presentationFailure as fail, versionKey} from './registry.js';
-import {preparePresentationContext, validatePresentationPlan, type PresentationValidationOptions, type PreparedPresentationContext} from './validate.js';
+import {preparePresentationContext, validatePreparedPresentationPlan, type PresentationValidationOptions, type PreparedPresentationContext} from './validate.js';
 
 const compareText = (left: string, right: string): number => left < right ? -1 : left > right ? 1 : 0;
 const stateIdentity = {id: 'aeliqo.state.identity', revision: '1'} as const;
@@ -228,6 +228,9 @@ export function composePresentation(request: PresentationCompositionRequest, reg
   const prepared = preparePresentationContext(request.context);
   if (!prepared.ok) return prepared;
   const constraints = prepared.value.constraints;
+  // Pure registered node resolutions may be reused only inside this synchronous
+  // composition; no validation/authority cache survives a subsequent invocation.
+  const nodeMemo = new Map<string, ResolvedPresentationNode>();
   if (constraints.task.revision !== requestPins.value.taskRevision || constraints.task.catalogRevision !== requestPins.value.catalogRevision
     || constraints.task.functionRegistryDigest !== requestPins.value.functionRegistryDigest || constraints.experience.revision !== requestPins.value.experienceRevision)
     return fail('stale', 'The task or experience differs from the current version pins.');
@@ -256,7 +259,7 @@ export function composePresentation(request: PresentationCompositionRequest, reg
     if (!expansionReserved && !spend()) return false;
     const normalized = normalizePlan(input, identity.data.id, identity.data.revision, requestPins.value);
     if (!normalized.ok) { reject(label, normalized.diagnostics); return false; }
-    const checked = validatePresentationPlan(normalized.value, request.context, registry, options);
+    const checked = validatePreparedPresentationPlan(normalized.value, request.context, registry, prepared.value, options, nodeMemo);
     if (!checked.ok) { reject(label, checked.diagnostics); return false; }
     consider(checked.value, candidateIsIncumbent);
     return true;

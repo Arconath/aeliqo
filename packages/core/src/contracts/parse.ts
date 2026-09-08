@@ -29,7 +29,8 @@ export const parseTask = (input: unknown) => parseContract('task', input);
 export const parseResult = (input: unknown) => parseContract('result', input);
 export const parseExperience = (input: unknown) => parseContract('experience', input);
 
-function canonicalJSON(value: unknown): string {
+/** Internal deterministic key for already-inspected JSON, including signed zero. */
+export function canonicalJSON(value: unknown): string {
   if (value === null) return 'null';
   if (typeof value === 'number' && Object.is(value, -0)) return '-0';
   if (typeof value !== 'object') return JSON.stringify(value);

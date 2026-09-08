@@ -1,6 +1,6 @@
 import {stateMappingFor} from './state.js';
 import * as z from 'zod/mini';
-import {parseContract, parseResult} from '../contracts/parse.js';
+import {canonicalJSON, parseContract, parseResult} from '../contracts/parse.js';
 import {inspectWire} from '../contracts/ingress.js';
 import {idSchema, jsonSchema, versionRefSchema} from '../contracts/schemas.js';
 import {WIRE_LIMITS} from '../contracts/limits.js';
@@ -158,10 +158,25 @@ export function validatePresentationPlan(
 ): Outcome<ValidatedPresentation> {
   const parsed = parseContract('presentation-plan', input);
   if (!parsed.ok) return parsed;
-  const plan = freezePresentation(parsed.value);
   const prepared = preparePresentationContext(context);
   if (!prepared.ok) return prepared;
+  return validatePreparedPresentationPlan(parsed.value, context, registry, prepared.value, options);
+}
+
+/** Internal composition pass over an owned schema-parsed plan and this invocation's
+ * immutable context. Deliberately not re-exported by the public presentation entry.
+ * Public callers always enter validatePresentationPlan and parse their inputs. */
+export function validatePreparedPresentationPlan(
+  input: PresentationPlanLike, context: PresentationContext, registry: PresentationRegistry,
+  preparedContext: PreparedPresentationContext, options: PresentationValidationOptions = {},
+  nodeMemo?: Map<string, ResolvedPresentationNode>,
+): Outcome<ValidatedPresentation> {
+  // The schema parser owns this plan. Freeze nodes at the callback boundary and
+  // freeze the completed replay plan after cached node substitutions.
+  const plan = input;
+  const prepared = {value: preparedContext};
   const {constraints: c, task, results, current} = prepared.value;
+  const resultFieldIds = new Map(results.map(result => [result, new Set(result.fields.map(field => field.id))]));
   if (c.task.revision !== current.taskRevision || c.task.catalogRevision !== current.catalogRevision
     || c.task.functionRegistryDigest !== current.functionRegistryDigest || c.experience.revision !== current.experienceRevision)
     return fail('stale', 'The task or experience differs from the current version pins.');
@@ -196,6 +211,11 @@ export function validatePresentationPlan(
   const extensions = new Set(c.extensionAllowlist.map(versionKey));
   const resolved: ResolvedPresentationNode[] = [];
   for (const node of plan.nodes) {
+    // Full schema-owned node identity includes config, children, representation and
+    // exact result reference. The memo belongs only to one immutable composition context.
+    const memoKey = nodeMemo === undefined ? undefined : canonicalJSON(node);
+    const cached = memoKey === undefined ? undefined : nodeMemo?.get(memoKey);
+    if (cached !== undefined) { resolved.push(cached); continue; }
     const key = versionKey(node.representation);
     const m = manifests.get(key);
     if (m === undefined || !renderer.has(key)) return fail('renderer', 'The requested representation is unavailable on this renderer.');
@@ -216,6 +236,7 @@ export function validatePresentationPlan(
       }
       if (task.kind === 'form') return fail('binding', 'Queryless forms do not implicitly consume result data.');
     }
+    freezePresentation(node);
     let output: unknown;
     try { output = m.resolveConfig(node.config.values, result, node); } catch { return fail('configuration', 'The registered configuration validator failed.'); }
     const outcome = callbackOutcome(output, 'configuration', 'The registered configuration validator failed.');
@@ -227,7 +248,7 @@ export function validatePresentationPlan(
       return fail('configuration', 'Enabled operations must be a unique subset of the registered manifest.');
     if (c.allowedOperations !== undefined && enabled.some(op => !c.allowedOperations!.some(allowed => versionKey(allowed) === versionKey(op))))
       return fail('restricted', 'The representation exposes an operation restricted by the active experience.');
-    if (config.data.fields.some(field => !result?.fields.some(f => f.id === field))) return fail('field', 'A representation refers to a field absent from its result.');
+    if (config.data.fields.some(field => result === undefined || !resultFieldIds.get(result)!.has(field))) return fail('field', 'A representation refers to a field absent from its result.');
     const portGraph = validateInteractionGraph({nodes: [{id: node.id, ports: config.data.ports}], links: []}, registry.mappings);
     if (!portGraph.ok) return portGraph;
     const values = freezePresentation(config.data.values as PresentationValues);
@@ -243,8 +264,10 @@ export function validatePresentationPlan(
     }
     // Preserve the validated wire proposal for replay; resolved values may
     // contain host-only labels/defaults that the input schema correctly rejects.
-    resolved.push({node, manifest: m.ref,
+    const resolvedNode = freezePresentation({node, manifest: m.ref,
       config: resolvedConfig, result, ...(quality === undefined ? {} : {quality})});
+    resolved.push(resolvedNode);
+    if (memoKey !== undefined) nodeMemo?.set(memoKey, resolvedNode);
   }
   const byId = new Map(resolved.map(n => [n.node.id, n]));
   const coverage = new Map<string, typeof plan.coverage[number]>();
