@@ -1,4 +1,4 @@
-import type {ResultRef, Scalar} from "@aeliqo/core";
+import type {ResultRef, Scalar, SemanticType} from "@aeliqo/core";
 export type {ResultRef} from "@aeliqo/core";
 
 /** Values accepted by the shared data views. Decimal values remain strings so
@@ -47,6 +47,8 @@ export interface AeliqoFieldOption {
   readonly label: string;
   readonly type?: "text" | "boolean" | "integer" | "float" | "decimal" | "date" | "instant";
   readonly nullable?: boolean;
+  /** Full core metadata when the host has it; `type`/`nullable` remain a small convenience form. */
+  readonly semanticType?: SemanticType;
 }
 
 export interface AeliqoDataColumn {

@@ -9,18 +9,26 @@ test("native table preserves exact values, stable identity and scope", async ({p
   await table.locator("input[type=checkbox]").first().check();
   await expect.poll(() => page.evaluate(() => (window as unknown as {dataFixture: {events: {type: string; detail: {keys?: string[]}}[]}}).dataFixture.events.findLast((event) => event.type === "aeliqo-table-selection")?.detail.keys)).toEqual(["string:1:a"]);
   const selection = await table.locator("input[type=checkbox]").first().evaluate((input) => (input as HTMLInputElement).getAttribute("aria-label"));
-  expect(selection).toContain("string:1:a");
+  expect(selection).toBe("Select row a");
 });
 
 test("grid mode is explicit and virtualization remains bounded", async ({page}) => {
   await page.goto("/tests/data-components/index.html");
   const grid = page.locator("#grid");
   await expect(grid.locator("[role=grid]")).toHaveCount(1);
+  await expect(grid.locator("[role=grid]")).toHaveAttribute("aria-rowcount", "101");
+  await expect(grid.locator("[role=row][aria-rowindex='1']")).toHaveCount(1);
+  await expect(grid.locator("[role=gridcell][data-col-index='0']").first()).toHaveAttribute("aria-colindex", "1");
   await expect(grid.locator("[role=row][data-row-index]")).toHaveCount(1);
-  await expect(grid.locator("[part=scope]")).toHaveText("Showing 2 of 100 rows.");
-  await grid.locator("[role=row][data-row-index]").focus();
+  await expect(grid.locator("[part=scope]")).toHaveText("Showing 1 rendered of 2 loaded rows; 100 matching rows.");
+  const firstCell = grid.locator("[role=gridcell][data-row-index='0'][data-col-index='0']");
+  await firstCell.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(grid.locator("[role=gridcell][data-row-index='0'][data-col-index='1']")).toBeFocused();
+  await page.evaluate(async () => { const table = (document.querySelector("#grid") as any); table.virtualized = false; await table.updateComplete; });
+  await grid.locator("[role=gridcell][data-row-index='0'][data-col-index='0']").focus();
   await page.keyboard.press("ArrowDown");
-  await expect(grid.locator("[role=row][data-row-index]").first()).toBeFocused();
+  await expect(grid.locator("[role=gridcell][data-row-index='1'][data-col-index='0']")).toBeFocused();
 });
 
 test("filter typing is draft-only and Apply emits the typed predicate", async ({page}) => {

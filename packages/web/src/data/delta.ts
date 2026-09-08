@@ -20,38 +20,84 @@ function decimalInput(value: AeliqoDataValue | undefined): string | undefined {
   return undefined;
 }
 
-function subtractDecimal(left: string, right: string): string | undefined {
-  const parse = (value: string): {readonly sign: bigint; readonly digits: bigint; readonly scale: number} | undefined => {
-    const match = /^(-?)([0-9]+)(?:\.([0-9]+))?$/u.exec(value);
-    if (match === null) return undefined;
-    const fraction = match[3] ?? "";
-    return {sign: match[1] === "-" ? -1n : 1n, digits: BigInt(`${match[2]}${fraction}`), scale: fraction.length};
+interface DecimalRational {
+  readonly numerator: bigint;
+  readonly denominator: bigint;
+}
+
+function greatestCommonDivisor(left: bigint, right: bigint): bigint {
+  let a = left < 0n ? -left : left;
+  let b = right < 0n ? -right : right;
+  while (b !== 0n) {
+    const remainder = a % b;
+    a = b;
+    b = remainder;
+  }
+  return a === 0n ? 1n : a;
+}
+
+function rational(numerator: bigint, denominator: bigint): DecimalRational | undefined {
+  if (denominator === 0n) return undefined;
+  const sign = denominator < 0n ? -1n : 1n;
+  const divisor = greatestCommonDivisor(numerator, denominator);
+  return {
+    numerator: (numerator / divisor) * sign,
+    denominator: (denominator / divisor) * sign,
   };
-  const a = parse(left);
-  const b = parse(right);
+}
+
+/** Parse ordinary and scientific decimal text without passing through IEEE-754. */
+function parseDecimal(value: string): DecimalRational | undefined {
+  const match = /^(-?)([0-9]+)(?:\.([0-9]+))?(?:e([+-]?\d+))?$/iu.exec(value);
+  if (match === null) return undefined;
+  const fraction = match[3] ?? "";
+  const exponent = Number(match[4] ?? 0);
+  if (!Number.isSafeInteger(exponent) || Math.abs(exponent) > 10000) return undefined;
+  let numerator = BigInt(`${match[1]}${match[2]}${fraction}`);
+  const scale = fraction.length - exponent;
+  let denominator = 1n;
+  if (scale > 0) denominator = 10n ** BigInt(scale);
+  else if (scale < 0) numerator *= 10n ** BigInt(-scale);
+  return rational(numerator, denominator);
+}
+
+/** Render only terminating rationals, so an exact result never hides rounding. */
+function finiteDecimal(value: DecimalRational): string | undefined {
+  if (value.numerator === 0n) return "0";
+  let denominator = value.denominator;
+  let twos = 0;
+  let fives = 0;
+  while (denominator % 2n === 0n) {denominator /= 2n; twos++;}
+  while (denominator % 5n === 0n) {denominator /= 5n; fives++;}
+  if (denominator !== 1n) return undefined;
+  const scale = Math.max(twos, fives);
+  const coefficient = (value.numerator < 0n ? -value.numerator : value.numerator)
+    * 2n ** BigInt(scale - twos)
+    * 5n ** BigInt(scale - fives);
+  const digits = coefficient.toString();
+  const padded = digits.padStart(scale + 1, "0");
+  const whole = scale === 0 ? padded : padded.slice(0, -scale) || "0";
+  const fraction = scale === 0 ? "" : padded.slice(-scale).replace(/0+$/u, "");
+  return `${value.numerator < 0n ? "-" : ""}${whole}${fraction ? `.${fraction}` : ""}`;
+}
+
+function subtractDecimal(left: string, right: string): string | undefined {
+  const a = parseDecimal(left);
+  const b = parseDecimal(right);
   if (a === undefined || b === undefined) return undefined;
-  const scale = Math.max(a.scale, b.scale);
-  const result = a.sign * a.digits * 10n ** BigInt(scale - a.scale) - b.sign * b.digits * 10n ** BigInt(scale - b.scale);
-  if (result === 0n) return "0";
-  const negative = result < 0n;
-  const digits = (negative ? -result : result).toString().padStart(scale + 1, "0");
-  const whole = scale === 0 ? digits : digits.slice(0, -scale) || "0";
-  const fraction = scale === 0 ? "" : digits.slice(-scale).replace(/0+$/u, "");
-  return `${negative ? "-" : ""}${whole}${fraction ? `.${fraction}` : ""}`;
+  return finiteDecimal(rational(a.numerator * b.denominator - b.numerator * a.denominator, a.denominator * b.denominator)!);
 }
 
 function timesHundred(value: string): string | undefined {
-  const result = subtractDecimal(value, "0");
-  if (result === undefined) return undefined;
-  const match = /^(-?)([0-9]+)(?:\.([0-9]+))?$/u.exec(result);
-  if (match === null) return undefined;
-  const fraction = match[3] ?? "";
-  const digits = `${match[2]}${fraction}`.replace(/^0+(?=[0-9])/u, "");
-  const shifted = `${digits}${"0".repeat(2)}`;
-  const split = shifted.length - fraction.length;
-  const whole = shifted.slice(0, split) || "0";
-  const decimal = shifted.slice(split).replace(/0+$/u, "");
-  return `${match[1]}${whole}${decimal ? `.${decimal}` : ""}`;
+  const parsed = parseDecimal(value);
+  return parsed === undefined ? undefined : finiteDecimal(rational(parsed.numerator * 100n, parsed.denominator)!);
+}
+
+function divideDecimal(left: string, right: string): string | undefined {
+  const a = parseDecimal(left);
+  const b = parseDecimal(right);
+  if (a === undefined || b === undefined || b.numerator === 0n) return undefined;
+  return finiteDecimal(rational(a.numerator * b.denominator, a.denominator * b.numerator)!);
 }
 
 function signed(value: string): string {
@@ -72,18 +118,37 @@ export function calculateAeliqoDelta(
   compatible = true,
 ): AeliqoDeltaResult {
   if (!compatible) return {status: "unavailable", reason: "incompatible"};
+  const currentText = decimalInput(current);
+  const baselineText = decimalInput(baseline);
+  const exactDifference = currentText !== undefined && baselineText !== undefined
+    ? subtractDecimal(currentText, baselineText) : undefined;
+  if (exactDifference !== undefined && (mode === "absolute" || mode === "percentage-point")) {
+    const exactValue: string | number = typeof current === "number" && typeof baseline === "number" ? Number(exactDifference) : exactDifference;
+    if (typeof exactValue === "number" && !Number.isFinite(exactValue)) return {status: "unavailable", reason: "invalid"};
+    if (mode === "absolute") return {status: "ready", value: exactValue, display: signed(exactDifference)};
+    const percentagePoints = timesHundred(exactDifference);
+    if (percentagePoints !== undefined) return {status: "ready", value: exactValue, display: `${signed(percentagePoints)} pp`};
+  }
+  if (mode === "relative" && currentText !== undefined && baselineText !== undefined) {
+    const ratio = exactDifference === undefined ? undefined : divideDecimal(exactDifference, baselineText);
+    if (ratio === undefined && parseDecimal(baselineText)?.numerator === 0n) return {status: "unavailable", reason: "zero-denominator"};
+    if (ratio !== undefined) {
+      const percentage = timesHundred(ratio);
+      if (percentage !== undefined) {
+        const exactValue: string | number = typeof current === "number" && typeof baseline === "number" ? Number(ratio) : ratio;
+        if (typeof exactValue === "number" && Number.isFinite(exactValue)) {
+          return {status: "ready", value: exactValue, display: `${signed(percentage)}%`};
+        }
+        if (typeof exactValue === "string") return {status: "ready", value: exactValue, display: `${signed(percentage)}%`};
+      }
+    }
+    if (typeof current === "object" || typeof baseline === "object") return {status: "unavailable", reason: "invalid"};
+  }
   const currentNumber = numeric(current);
   const baselineNumber = numeric(baseline);
   if (currentNumber === undefined) return {status: "unavailable", reason: "missing-current"};
   if (baselineNumber === undefined) return {status: "unavailable", reason: "missing-baseline"};
   if (mode === "relative" && baselineNumber === 0) return {status: "unavailable", reason: "zero-denominator"};
-  const exactDifference = subtractDecimal(decimalInput(current) ?? "", decimalInput(baseline) ?? "");
-  if (exactDifference !== undefined && (mode === "absolute" || mode === "percentage-point")) {
-    const exactValue: string | number = typeof current === "number" && typeof baseline === "number" ? Number(exactDifference) : exactDifference;
-    if (mode === "absolute") return {status: "ready", value: exactValue, display: signed(exactDifference)};
-    const percentagePoints = timesHundred(exactDifference);
-    if (percentagePoints !== undefined) return {status: "ready", value: exactValue, display: `${signed(percentagePoints)} pp`};
-  }
   const difference = currentNumber - baselineNumber;
   const value = mode === "relative" ? difference / baselineNumber : difference;
   if (!Number.isFinite(value)) return {status: "unavailable", reason: "invalid"};

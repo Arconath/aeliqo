@@ -1,5 +1,6 @@
 import {css, html, LitElement, nothing} from "lit";
 import {aeliqoThemeStyles} from "../styles/theme.js";
+import {validateScalar} from "@aeliqo/core";
 import type {AeliqoDataStatus, AeliqoFieldOption, AeliqoFilterPredicate, AeliqoFilterValue} from "./types.js";
 import {AeliqoFilterChangeEvent} from "./events.js";
 import {dataStyles, dataValueText, statusTemplate} from "./shared.js";
@@ -31,26 +32,37 @@ export function validateAeliqoPredicate(predicate: AeliqoFilterPredicate | undef
   return {ok: true};
 }
 
+function fieldSemanticType(field: AeliqoFieldOption | undefined) {
+  if (field?.semanticType !== undefined) return field.semanticType;
+  if (field?.type === undefined) return undefined;
+  return {value: field.type, nullable: field.nullable ?? true} as const;
+}
+
 function parseValue(raw: string, field: AeliqoFieldOption | undefined): AeliqoFilterValue | undefined {
   const value = raw.trim();
   if (value.length === 0) return undefined;
-  if (field?.type === "boolean") {
+  const semanticType = fieldSemanticType(field);
+  if (semanticType === undefined) return undefined;
+  let candidate: unknown = value;
+  if (semanticType.value === "boolean") {
     if (value.toLowerCase() === "true") return true;
     if (value.toLowerCase() === "false") return false;
     return undefined;
   }
-  if (field?.type === "integer") {
+  if (semanticType.value === "integer") {
     const parsed = Number(value);
-    return Number.isInteger(parsed) && Number.isFinite(parsed) ? parsed : undefined;
+    candidate = Number.isSafeInteger(parsed) ? parsed : undefined;
   }
-  if (field?.type === "float") {
+  if (semanticType.value === "float") {
     const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : undefined;
+    candidate = Number.isFinite(parsed) ? parsed : undefined;
   }
-  if (field?.type === "decimal") {
-    return /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/u.test(value) ? {decimal: value} : undefined;
+  if (semanticType.value === "decimal") {
+    candidate = {decimal: value};
   }
-  return value;
+  if (candidate === undefined) return undefined;
+  const checked = validateScalar(candidate, semanticType);
+  return checked.ok ? checked.value : undefined;
 }
 
 function clauseFromPredicate(predicate: AeliqoFilterPredicate | undefined): AeliqoFilterClause {
@@ -67,7 +79,7 @@ export function buildAeliqoPredicate(
   field: AeliqoFieldOption | undefined,
   entity = "",
 ): AeliqoFilterPredicate | undefined {
-  if (clause.field.length === 0) return undefined;
+  if (clause.field.length === 0 || field === undefined || field.id !== clause.field) return undefined;
   const base = entity.length === 0 ? {} : {entity};
   if (clause.operator === "is-null" || clause.operator === "not-null") return {op: "is-null", field: clause.field, ...base, negate: clause.operator === "not-null"};
   if (clause.operator === "in") {
@@ -132,9 +144,9 @@ export class AeliqoFilterBuilderElement extends LitElement {
           <legend>Filter</legend>
           <div part="scope" aria-label="Inherited scope">${this.scopeLabel}</div>
           <label part="field-label">Field
-            <select part="field" .value=${this.draft.field} @change=${this.handleFieldChange}>
-              <option value="">Choose a field</option>
-              ${this.fields.map((field) => html`<option value=${field.id}>${field.label}</option>`)}
+              <select part="field" @change=${this.handleFieldChange}>
+              <option value="" ?selected=${this.draft.field.length === 0}>Choose a field</option>
+              ${this.fields.map((field) => html`<option value=${field.id} ?selected=${this.draft.field === field.id}>${field.label}</option>`)}
             </select>
           </label>
           <label part="operator-label">Condition

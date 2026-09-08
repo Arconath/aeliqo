@@ -80,9 +80,9 @@ export class AeliqoTableElement extends LitElement {
     const visible = this.visibleRows();
     const rowCount = this.totalRows ?? this.scope?.filteredTotal ?? this.scope?.populationTotal ?? this.rows.length;
     return html`
-      <div part="scroll" tabindex="0" @keydown=${mode === "grid" ? this.handleGridKeyDown : nothing}>
+      <div part="scroll" tabindex=${mode === "grid" ? nothing : "0"}>
         ${mode === "table" ? html`
-          <table part="table" aria-rowcount=${rowCount === undefined ? nothing : String(rowCount)} data-virtualized=${this.virtualized ? "true" : "false"}>
+          <table part="table" data-virtualized=${this.virtualized ? "true" : "false"}>
             ${this.caption ? html`<caption>${this.caption}</caption>` : nothing}
             <thead><tr>
               ${selectable ? html`<th scope="col" part="selection-heading"><span class="visually-hidden">Select</span></th>` : nothing}
@@ -92,9 +92,9 @@ export class AeliqoTableElement extends LitElement {
               ${visible.length === 0 ? html`<tr><td colspan=${Math.max(this.columns.length + (selectable ? 1 : 0), 1)}>${status === "empty" ? this.emptyLabel : ""}</td></tr>` : visible.map((entry) => this.renderTableRow(entry.row, entry.index, selectable))}
             </tbody>
           </table>
-        ` : this.renderGrid(visible, selectable, rowCount)}
+      ` : this.renderGrid(visible, selectable, rowCount)}
       </div>
-      ${this.renderScope(rowCount)}
+      ${this.renderScope(rowCount, visible.length)}
       ${status === "loading" || status === "partial" || status === "stale" || status === "error" || status === "unavailable" ? html`<p part="status" class=${status} role=${status === "loading" ? "status" : "alert"}>${this.message || this.statusMessage(status)}</p>` : nothing}
       ${this.renderPagination()}
     `;
@@ -104,7 +104,8 @@ export class AeliqoTableElement extends LitElement {
     const sortable = column.sortable === true;
     const active = this.sort?.field === column.key;
     const indicator = active ? (this.sort?.direction === "asc" ? " ↑" : " ↓") : "";
-    return html`<th scope="col" part="heading" data-key=${column.key} style=${column.align ? `text-align:${column.align}` : nothing}>
+    const ariaSort = active ? (this.sort?.direction === "asc" ? "ascending" : "descending") : sortable ? "none" : nothing;
+    return html`<th scope="col" part="heading" data-key=${column.key} aria-sort=${ariaSort} style=${column.align ? `text-align:${column.align}` : nothing}>
       ${sortable ? html`<button part="sort" type="button" aria-label=${`Sort by ${column.label}`} aria-pressed=${active ? "true" : "false"} @click=${() => this.requestSort(column)}>${column.label}${indicator}</button>` : html`${column.label}`}
     </th>`;
   }
@@ -112,37 +113,45 @@ export class AeliqoTableElement extends LitElement {
   private renderTableRow(row: AeliqoTableRow, rowIndex: number, selectable: boolean) {
     const key = stableTableRowKey(row, this.identity);
     const selected = key !== undefined && this.selectedKeys.includes(key);
-    return html`<tr data-row-index=${rowIndex} ?data-selected=${selected} aria-selected=${selectable ? String(selected) : nothing} aria-rowindex=${rowIndex + 2}>
+    return html`<tr data-row-index=${rowIndex} ?data-selected=${selected} aria-selected=${selectable ? String(selected) : nothing}>
       ${selectable ? this.renderSelectionCell(key, selected) : nothing}
       ${this.columns.map((column) => html`<td style=${column.align ? `text-align:${column.align}` : nothing}>${this.formatCell(row[column.key])}</td>`)}
     </tr>`;
   }
 
   private renderGrid(rows: readonly {readonly row: AeliqoTableRow; readonly index: number}[], selectable: boolean, rowCount: number | undefined) {
-    return html`<div part="grid" role="grid" aria-label=${this.caption || "Data grid"} aria-rowcount=${rowCount === undefined ? nothing : String(rowCount)} aria-colcount=${String(this.columns.length + (selectable ? 1 : 0))}>
-      <div role="rowgroup" part="grid-head"><div role="row" part="grid-row" style=${this.gridTemplate(selectable)}>
-        ${selectable ? html`<div role="columnheader" part="selection-heading"><span class="visually-hidden">Select</span></div>` : nothing}
-        ${this.columns.map((column) => this.renderGridHeader(column))}
+    const gridRowCount = rowCount === undefined ? undefined : rowCount + 1;
+    const focus = this.gridFocus !== undefined && rows.some((entry) => entry.index === this.gridFocus?.row)
+      ? this.gridFocus : {row: rows[0]?.index ?? 0, column: 0};
+    return html`<div part="grid" role="grid" aria-label=${this.caption || "Data grid"} aria-rowcount=${gridRowCount === undefined ? nothing : String(gridRowCount)} aria-colcount=${String(this.columns.length + (selectable ? 1 : 0))}>
+      <div role="rowgroup" part="grid-head"><div role="row" part="grid-row" aria-rowindex="1" style=${this.gridTemplate(selectable)}>
+        ${selectable ? html`<div role="columnheader" aria-colindex="1" part="selection-heading"><span class="visually-hidden">Select</span></div>` : nothing}
+        ${this.columns.map((column, index) => this.renderGridHeader(column, selectable ? index + 2 : index + 1))}
       </div></div>
       <div role="rowgroup" part="grid-body">
-        ${rows.length === 0 ? html`<div role="row"><div role="gridcell" part="empty" aria-colspan=${Math.max(this.columns.length + (selectable ? 1 : 0), 1)}>${this.emptyLabel}</div></div>` : rows.map(({row, index}) => this.renderGridRow(row, index, selectable))}
+        ${rows.length === 0 ? html`<div role="row" aria-rowindex="2"><div role="gridcell" part="empty" aria-colspan=${Math.max(this.columns.length + (selectable ? 1 : 0), 1)}>${this.emptyLabel}</div></div>` : rows.map(({row, index}) => this.renderGridRow(row, index, selectable, focus))}
       </div>
     </div>`;
   }
 
-  private renderGridRow(row: AeliqoTableRow, rowIndex: number, selectable: boolean) {
+  private renderGridRow(row: AeliqoTableRow, rowIndex: number, selectable: boolean, focus: {readonly row: number; readonly column: number}) {
     const key = stableTableRowKey(row, this.identity);
     const selected = key !== undefined && this.selectedKeys.includes(key);
-    return html`<div role="row" part="grid-row" style=${this.gridTemplate(selectable)} tabindex="0" data-row-index=${rowIndex} ?data-selected=${selected} aria-selected=${selectable ? String(selected) : nothing} aria-rowindex=${rowIndex + 2}>
-      ${selectable ? this.renderSelectionCell(key, selected, true) : nothing}
-      ${this.columns.map((column) => html`<div role="gridcell" part="cell" style=${column.align ? `text-align:${column.align}` : nothing}>${this.formatCell(row[column.key])}</div>`)}
+    return html`<div role="row" part="grid-row" style=${this.gridTemplate(selectable)} data-row-index=${rowIndex} ?data-selected=${selected} aria-selected=${selectable ? String(selected) : nothing} aria-rowindex=${rowIndex + 2}>
+      ${selectable ? this.renderGridCell(0, rowIndex, focus, this.renderSelectionCell(key, selected, true)) : nothing}
+      ${this.columns.map((column, index) => this.renderGridCell(selectable ? index + 1 : index, rowIndex, focus, html`${this.formatCell(row[column.key])}`, column.align))}
     </div>`;
   }
 
-  private renderGridHeader(column: AeliqoTableColumn) {
+  private renderGridCell(columnIndex: number, rowIndex: number, focus: {readonly row: number; readonly column: number}, content: unknown, align?: AeliqoTableColumn["align"]) {
+    return html`<div role="gridcell" part="${columnIndex === 0 && this.selection !== "none" ? "selection-cell" : "cell"}" data-row-index=${rowIndex} data-col-index=${columnIndex} aria-colindex=${columnIndex + 1} tabindex=${focus.row === rowIndex && focus.column === columnIndex ? "0" : "-1"} style=${align ? `text-align:${align}` : nothing} @focus=${() => this.rememberGridFocus(rowIndex, columnIndex)} @keydown=${this.handleGridCellKeyDown}>${content}</div>`;
+  }
+
+  private renderGridHeader(column: AeliqoTableColumn, columnIndex: number) {
     const active = this.sort?.field === column.key;
     const indicator = active ? (this.sort?.direction === "asc" ? " ↑" : " ↓") : "";
-    return html`<div role="columnheader" part="heading" data-key=${column.key}>
+    const ariaSort = active ? (this.sort?.direction === "asc" ? "ascending" : "descending") : column.sortable === true ? "none" : nothing;
+    return html`<div role="columnheader" part="heading" data-key=${column.key} aria-colindex=${columnIndex} aria-sort=${ariaSort}>
       ${column.sortable === true ? html`<button part="sort" type="button" aria-label=${`Sort by ${column.label}`} aria-pressed=${active ? "true" : "false"} @click=${() => this.requestSort(column)}>${column.label}${indicator}</button>` : html`${column.label}`}
     </div>`;
   }
@@ -154,9 +163,14 @@ export class AeliqoTableElement extends LitElement {
 
   private renderSelectionCell(key: string | undefined, selected: boolean, grid = false) {
     const action = selected && this.selection !== "single" ? "Deselect" : "Select";
-    const label = key === undefined ? "Row cannot be selected" : `${action} ${this.entity} ${key}`;
+    const label = key === undefined ? "Row cannot be selected" : `${action} ${this.entity} ${this.selectionLabelForKey(key)}`;
     const cell = html`<input type=${this.selection === "single" ? "radio" : "checkbox"} name=${this.selection === "single" ? "aeliqo-single-selection" : nothing} .checked=${selected} ?disabled=${key === undefined} aria-label=${label} @change=${(event: Event) => this.handleSelection(event, key)} />`;
-    return grid ? html`<div role="gridcell" part="selection-cell">${cell}</div>` : html`<td part="selection-cell">${cell}</td>`;
+    return grid ? cell : html`<td part="selection-cell">${cell}</td>`;
+  }
+
+  private selectionLabelForKey(key: string): string {
+    const row = this.rows.find((candidate) => stableTableRowKey(candidate, this.identity) === key);
+    return row === undefined ? key : tableIdentityLabel(row, this.identity);
   }
 
   private visibleRows(): readonly {readonly row: AeliqoTableRow; readonly index: number}[] {
@@ -169,10 +183,14 @@ export class AeliqoTableElement extends LitElement {
     return this.rows.slice(from, to).map((row, index) => ({row, index: from + index}));
   }
 
-  private renderScope(rowCount: number | undefined) {
+  private renderScope(rowCount: number | undefined, renderedCount: number) {
     const loaded = this.scope?.loaded ?? this.rows.length;
     const total = this.totalRows ?? this.scope?.filteredTotal ?? this.scope?.populationTotal ?? rowCount;
-    if (total !== undefined && (this.virtualized || total !== loaded)) return html`<p part="scope">Showing ${loaded.toLocaleString()} of ${total.toLocaleString()} ${this.entity}s.</p>`;
+    if (this.virtualized && renderedCount !== loaded) {
+      const totalText = total !== undefined && total !== loaded ? `; ${total.toLocaleString()} matching ${this.entity}s` : "";
+      return html`<p part="scope">Showing ${renderedCount.toLocaleString()} rendered of ${loaded.toLocaleString()} loaded ${this.entity}s${totalText}.</p>`;
+    }
+    if (total !== undefined && total !== loaded) return html`<p part="scope">Showing ${loaded.toLocaleString()} of ${total.toLocaleString()} ${this.entity}s.</p>`;
     const text = this.scope?.label ?? (this.scope?.kind === "sample" ? "Bounded sample" : this.scope?.kind === "unknown" ? "Scope unknown" : undefined);
     if (text) return html`<p part="scope">${text}</p>`;
     return nothing;
@@ -215,15 +233,40 @@ export class AeliqoTableElement extends LitElement {
     this.dispatchEvent(new AeliqoTableSelectionEvent(detail));
   };
 
-  private readonly handleGridKeyDown = (event: KeyboardEvent): void => {
-    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+  private gridFocus: {readonly row: number; readonly column: number} | undefined;
+
+  private rememberGridFocus(row: number, column: number): void {
+    this.gridFocus = {row, column};
+  }
+
+  private readonly handleGridCellKeyDown = (event: KeyboardEvent): void => {
     if (event.target instanceof HTMLInputElement || event.target instanceof HTMLButtonElement) return;
-    const rows = [...(this.shadowRoot?.querySelectorAll<HTMLElement>("[role='row'][data-row-index]") ?? [])];
-    if (rows.length === 0) return;
-    const current = event.target instanceof HTMLElement ? event.target.closest<HTMLElement>("[role='row'][data-row-index]") : null;
-    const currentIndex = current === null ? 0 : rows.indexOf(current);
-    const nextIndex = event.key === "ArrowDown" ? Math.min(rows.length - 1, currentIndex + 1) : event.key === "ArrowUp" ? Math.max(0, currentIndex - 1) : event.key === "Home" ? 0 : rows.length - 1;
-    rows[nextIndex]?.focus();
+    const cell = event.currentTarget;
+    if (!(cell instanceof HTMLElement)) return;
+    const row = Number(cell.dataset.rowIndex);
+    const column = Number(cell.dataset.colIndex);
+    const cells = [...(this.shadowRoot?.querySelectorAll<HTMLElement>("[role='gridcell'][data-row-index]") ?? [])];
+    const rows = [...new Set(cells.map((entry) => Number(entry.dataset.rowIndex)))].sort((left, right) => left - right);
+    const columns = this.columns.length + (this.selection === "none" ? 0 : 1);
+    const rowPosition = rows.indexOf(row);
+    if (rowPosition < 0 || columns < 1) return;
+    let nextRow = row;
+    let nextColumn = column;
+    if (event.key === "ArrowRight") nextColumn < columns - 1 ? nextColumn++ : (nextRow = rows[Math.min(rows.length - 1, rowPosition + 1)]!, nextColumn = 0);
+    else if (event.key === "ArrowLeft") nextColumn > 0 ? nextColumn-- : (nextRow = rows[Math.max(0, rowPosition - 1)]!, nextColumn = columns - 1);
+    else if (event.key === "ArrowDown") nextRow = rows[Math.min(rows.length - 1, rowPosition + 1)]!;
+    else if (event.key === "ArrowUp") nextRow = rows[Math.max(0, rowPosition - 1)]!;
+    else if (event.key === "Home" && event.ctrlKey) {nextRow = rows[0]!; nextColumn = 0;}
+    else if (event.key === "End" && event.ctrlKey) {nextRow = rows.at(-1)!; nextColumn = columns - 1;}
+    else if (event.key === "Home") nextColumn = 0;
+    else if (event.key === "End") nextColumn = columns - 1;
+    else if (event.key === "PageDown") nextRow = rows[Math.min(rows.length - 1, rowPosition + Math.max(1, this.virtualCount))]!;
+    else if (event.key === "PageUp") nextRow = rows[Math.max(0, rowPosition - Math.max(1, this.virtualCount))]!;
+    else return;
+    const target = this.shadowRoot?.querySelector<HTMLElement>(`[role='gridcell'][data-row-index="${nextRow}"][data-col-index="${nextColumn}"]`);
+    if (target === undefined || target === null) return;
+    this.gridFocus = {row: nextRow, column: nextColumn};
+    target.focus();
     event.preventDefault();
   };
 
@@ -247,7 +290,7 @@ export class AeliqoTableElement extends LitElement {
     :host, :host * { box-sizing: border-box; }
     [part="scroll"] { max-inline-size: 100%; overflow-x: auto; }
     .visually-hidden { block-size: 1px; clip-path: inset(50%); clip: rect(0 0 0 0); inline-size: 1px; overflow: hidden; position: absolute; white-space: nowrap; }
-    [part="scroll"]:focus-visible, [part="grid-row"]:focus-visible, :is(button, input):focus-visible { outline: var(--aeliqo-focus-width, 0.1875rem) solid var(--aeliqo-table-focus, var(--aeliqo-color-focus, #0b63ce)); outline-offset: var(--aeliqo-focus-offset, 0.1875rem); }
+    [part="scroll"]:focus-visible, [part="cell"]:focus-visible, [part="selection-cell"]:focus-visible, [part="grid-row"]:focus-visible, :is(button, input):focus-visible { outline: var(--aeliqo-focus-width, 0.1875rem) solid var(--aeliqo-table-focus, var(--aeliqo-color-focus, #0b63ce)); outline-offset: var(--aeliqo-focus-offset, 0.1875rem); }
     table { border-collapse: collapse; min-inline-size: 100%; }
     caption { font-weight: var(--aeliqo-typography-font-weight-semibold, 600); padding-block: var(--aeliqo-space-8, 0.5rem); text-align: start; }
     th, td { border-block-end: var(--aeliqo-control-border-width, 1px) solid var(--aeliqo-table-rule, var(--aeliqo-color-border, #c9d0d8)); padding: var(--aeliqo-space-8, 0.5rem) var(--aeliqo-space-12, 0.75rem); text-align: start; vertical-align: top; }
