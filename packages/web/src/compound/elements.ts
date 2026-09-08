@@ -1,7 +1,7 @@
 import {css, html, nothing, type PropertyValues} from "lit";
 import type {ResultRef, Scalar, VersionRef, VisualizationBindingContext, VisualizationSpec} from "@aeliqo/core";
 import {AeliqoCompoundElement, aeliqoCompoundThemeStyles} from "./base.js";
-import {dataValueText, stableDataRecordKey, stableDataValueKey} from "../data/shared.js";
+import {stableDataRecordKey, stableDataValueKey} from "../data/shared.js";
 import type {
   AeliqoBreakdownGroup, AeliqoBreakdownGroupDetail, AeliqoComparisonMetric, AeliqoComparisonSetDetail, AeliqoCompoundStatus, AeliqoFormFlowCommitDetail, AeliqoFormFlowStep,
   AeliqoFormFlowStepDetail,

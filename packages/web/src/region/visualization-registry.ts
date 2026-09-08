@@ -7,7 +7,6 @@ import {
   type InteractionState,
   type Outcome,
   type PresentationManifest,
-  type PresentationNode,
   type PresentationValues,
   type Result,
   type ResultRef,
@@ -112,10 +111,6 @@ const fail = <T>(code: string, message: string): Outcome<T> => ({
 
 function refKey(ref: ResultRef): string {
   return JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
-}
-
-function versionKey(ref: VersionRef): string {
-  return JSON.stringify([ref.id, ref.revision]);
 }
 
 function canonical(value: unknown): string {

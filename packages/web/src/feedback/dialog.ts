@@ -1,4 +1,4 @@
-import {css, html, nothing} from "lit";
+import {css, html} from "lit";
 import {AeliqoFoundationElement, aeliqoFoundationThemeStyles} from "../foundation/base.js";
 import {activeElement, focusFirst, focusableElements, nextFrame, restoreFocus, emitAction, safeElementId} from "../navigation/shared.js";
 import {aeliqoFeedbackStyles} from "./shared.js";

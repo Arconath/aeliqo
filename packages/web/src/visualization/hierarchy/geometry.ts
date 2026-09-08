@@ -1,5 +1,5 @@
 import {bindVisualizationSpec, scalarIdentity} from '@aeliqo/core';
-import type {BoundVisualization, Catalog, Outcome, Result, ResultRef, Scalar, SemanticType, VisualizationSpec} from '@aeliqo/core';
+import type {BoundVisualization, Catalog, Outcome, Result, ResultRef, Scalar, SemanticType} from '@aeliqo/core';
 import {materializeVisualizationRows} from '../materialization.js';
 import type {VisualizationInputs, VisualizationRow} from '../types.js';
 
@@ -339,7 +339,7 @@ function checkedHierarchyNodes(prepared: PreparedHierarchy, view: 'tree' | 'tree
   return {ok: true, value: {nodes, roots, maxDepth: deepest}};
 }
 
-function treeLayout(nodes: Map<string, CheckedNode>, roots: readonly string[], width: number, height: number): readonly HierarchyNodeGeometry[] {
+function treeLayout(nodes: Map<string, CheckedNode>, width: number, height: number): readonly HierarchyNodeGeometry[] {
   const pad = 16;
   const levels = new Map<number, CheckedNode[]>();
   for (const node of [...nodes.values()].sort((left, right) => left.depth - right.depth || compareIdentity(left.identity, right.identity))) {const list = levels.get(node.depth) ?? []; list.push(node); levels.set(node.depth, list);}
@@ -439,7 +439,7 @@ function treemapLayout(nodes: Map<string, CheckedNode>, roots: readonly string[]
 export function compileTreeGeometry(inputs: VisualizationInputs, options: HierarchyGeometryOptions = {}): Outcome<HierarchyGeometry> {
   const prepared = prepareHierarchy(inputs, 'tree', options); if (!prepared.ok) return prepared;
   const checked = checkedHierarchyNodes(prepared.value.prepared, 'tree', prepared.value.dimensions.maxDepth); if (!checked.ok) return checked;
-  const nodes = treeLayout(checked.value.nodes, checked.value.roots, prepared.value.dimensions.width, prepared.value.dimensions.height);
+  const nodes = treeLayout(checked.value.nodes, prepared.value.dimensions.width, prepared.value.dimensions.height);
   if (nodes.length > prepared.value.dimensions.maxMarks || nodes.some(node=>node.width<24||node.height<24||node.x+node.width>prepared.value.dimensions.width||node.y+node.height>prepared.value.dimensions.height)) return {ok: true, value: Object.freeze({kind: 'tree', state: 'data-only', reason: 'The hierarchy exceeds the configured mark budget or readable graphic density. Exact values remain available in the data table.', bound: prepared.value.prepared.bound, result: prepared.value.prepared.result, rows: prepared.value.prepared.rows, nodes: Object.freeze([]), width: prepared.value.dimensions.width, height: prepared.value.dimensions.height, maxDepth: checked.value.maxDepth})};
   return {ok: true, value: Object.freeze({kind: 'tree', state: 'geometry', bound: prepared.value.prepared.bound, result: prepared.value.prepared.result, rows: prepared.value.prepared.rows, nodes, width: prepared.value.dimensions.width, height: prepared.value.dimensions.height, maxDepth: checked.value.maxDepth})};
 }

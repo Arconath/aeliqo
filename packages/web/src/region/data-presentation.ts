@@ -197,7 +197,6 @@ function configFor(
   values: PresentationValues,
   result: Result | undefined,
   bindings: ReadonlyMap<string, AeliqoValidatedBinding>,
-  options: AeliqoDataRegistryOptions,
   helper: ReturnType<typeof createAeliqoDataRegistry>,
 ): Outcome<ResolvedPresentationConfig> {
   if (result === undefined) return fail("binding", "A data representation requires an authorized Result.");
@@ -235,7 +234,7 @@ function buildManifest(
     children: {min: 0, max: 0},
     visibility: "leaf",
     extension: false,
-    resolveConfig: (values, result) => configFor(component, values, result, bindings, options, helper),
+    resolveConfig: (values, result) => configFor(component, values, result, bindings, helper),
   });
 }
 

@@ -5,7 +5,6 @@ import {
   type Outcome,
   type PresentationManifest,
   type PresentationValues,
-  type Result,
   type Scalar,
   type SemanticType,
   type VersionRef,

@@ -8,7 +8,7 @@ import type {CompiledPlot, CompiledPlotNode, PlotDataset} from "../../plot/compo
 import type {PlotGeometry} from "../../plot/geometry.js";
 import {QUANTITATIVE_COLOR_END, QUANTITATIVE_COLOR_START} from "../../plot/palette.js";
 import {exactLabel} from "../../plot/scales.js";
-import {seriesColor, seriesSymbol, svgPlotMarks} from "../../plot/render.js";
+import {seriesColor, svgPlotMarks} from "../../plot/render.js";
 import {materializeVisualizationRows} from "../materialization.js";
 import type {AeliqoVisualizationSelectionDetail, VisualizationDataset, VisualizationInputs} from "../types.js";
 
@@ -87,7 +87,6 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
 
   private state: CartesianState = {kind: "empty"};
   private page = 0;
-  private selectionScope = "";
   private singleResult = true;
   private focusedIdentity: string | undefined;
   private focusedResult: string | undefined;
@@ -259,16 +258,14 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
       this.requestUpdate();
     }
   }
-  private clearSelection(): void { this.selectedIdentity = ""; this.selectedResult = undefined; this.selectionScope = ""; }
+  private clearSelection(): void { this.selectedIdentity = ""; this.selectedResult = undefined; }
   private retainSelection(compiled: CompiledPlot): void {
     const geometries: PlotGeometry[] = [];
     const visit = (node: CompiledPlotNode): void => { if (node.kind === "unit") geometries.push(node.geometry); else if (node.kind === "facet") node.children.forEach((child) => visit(child.node)); else node.children.forEach(visit); };
     visit(compiled.root);
-    const scope = JSON.stringify([...new Set(geometries.map((geometry) => resultKey(geometry.result.ref)))].sort());
     this.singleResult = new Set(geometries.map((geometry) => resultKey(geometry.result.ref))).size === 1;
     const stillPresent = geometries.some((geometry) => resultKey(geometry.result.ref) === resultKey(this.selectedResult ?? geometry.result.ref) && geometry.rows.some((row) => row.identity === this.selectedIdentity));
     if (!stillPresent) { this.selectedIdentity = ""; this.selectedResult = undefined; }
-    this.selectionScope = scope;
   }
 }
 

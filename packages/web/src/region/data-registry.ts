@@ -7,7 +7,6 @@ import {
   type InteractionPayload,
   type Outcome,
   type Result,
-  type ResultRef,
   type Scalar,
   type SemanticType,
   type VersionRef,
@@ -162,20 +161,6 @@ function boundedText(value: unknown, field: string): Outcome<string> {
     return failure("config", `${field} must be bounded text.`);
   }
   return { ok: true, value };
-}
-
-function refKey(ref: ResultRef): string {
-  return JSON.stringify([
-    ref.id,
-    ref.revision,
-    ref.outputId,
-    ref.queryDigest,
-    ref.scopeDigest,
-  ]);
-}
-
-function sameRef(left: ResultRef, right: ResultRef): boolean {
-  return refKey(left) === refKey(right);
 }
 
 function fieldMap(result: Result): Map<string, Result["fields"][number]> {
@@ -781,8 +766,6 @@ function isExplicitFractionRatioType(
 
 function commonConfig(
   input: Readonly<Record<string, unknown>>,
-  binding: AeliqoValidatedBinding,
-  options: AeliqoDataRegistryOptions,
   config: Pick<
     AeliqoDataResolvedConfig,
     "fields" | "columns" | "identity" | "selection"
@@ -822,8 +805,6 @@ function resolveMetric(
     value: {
       ...commonConfig(
         input,
-        binding,
-        {},
         {
           fields: [field.value.id],
           columns: [
@@ -922,8 +903,6 @@ function resolveDelta(
     value: {
       ...commonConfig(
         input,
-        binding,
-        {},
         {
           fields:
             currentField.value.id === baselineField.value.id
@@ -1002,8 +981,6 @@ function resolveKeyValue(
     value: {
       ...commonConfig(
         input,
-        binding,
-        {},
         {
           fields: ids,
           columns: ids.map((id) => ({
@@ -1082,8 +1059,6 @@ function resolveDetail(
     value: {
       ...commonConfig(
         input,
-        binding,
-        {},
         {
           fields: resolvedFields,
           columns: cols.value,
@@ -1174,8 +1149,6 @@ function resolveCollection(
     ok: true,
     value: commonConfig(
       input,
-      binding,
-      options,
       {
         fields: cols.value.map((column) => column.key),
         columns: cols.value,
@@ -1258,8 +1231,6 @@ function resolveFilterBuilder(
     ok: true,
     value: commonConfig(
       normalized,
-      binding,
-      {},
       {
         fields: fields.value,
         columns: fields.value.map((id) => ({
@@ -1311,8 +1282,6 @@ function resolveSelectionSummary(
     ok: true,
     value: commonConfig(
       input,
-      binding,
-      options,
       {
         fields: [],
         columns: [],

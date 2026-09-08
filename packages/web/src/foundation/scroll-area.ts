@@ -1,4 +1,4 @@
-import {css, html, nothing} from "lit";
+import {css, html} from "lit";
 import {AeliqoFoundationElement, aeliqoFoundationThemeStyles} from "./base.js";
 
 export type AeliqoScrollAreaAxis = "x" | "y" | "both";

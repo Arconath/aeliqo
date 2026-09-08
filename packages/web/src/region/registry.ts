@@ -171,7 +171,7 @@ function tableConfig(values: PresentationValues, result: Result | undefined, res
   return {ok: true, value: {values: output as PresentationValues, fields: columnList.value.map((column) => column.key), ports: port.value, operations}};
 }
 
-function trendConfig(values: PresentationValues, result: Result | undefined, resolveEntity: AeliqoPresentationRegistryOptions["resolveEntity"]): Outcome<ResolvedPresentationConfig> {
+function trendConfig(values: PresentationValues, result: Result | undefined): Outcome<ResolvedPresentationConfig> {
   if (result === undefined) return fail("binding", "A trend requires a bound result.");
   const input = record(values); if (input === undefined) return fail("config", "The trend configuration must be an object.");
   if (Object.keys(input).some((key) => !["labelField", "series", "seriesBy"].includes(key))) return fail("config", "The trend configuration contains an unknown field.");
@@ -254,7 +254,7 @@ function buildManifests(options: AeliqoPresentationRegistryOptions): readonly Pr
   return Object.freeze([
     {ref: AELIQO_PRESENTATION_REFS.stack, configSchema: AELIQO_CONFIG_SCHEMAS.stack, roles: ["structure"], operations: [], result: "none", children: {min: 0, max: 32}, visibility: "simultaneous", extension: false, resolveConfig: stackConfig, suggestConfig: (): Outcome<PresentationValues> => ({ok: true, value: {}})},
     {ref: AELIQO_PRESENTATION_REFS.table, configSchema: AELIQO_CONFIG_SCHEMAS.table, roles: ["table"], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.selection], result: "required", children: {min: 0, max: 0}, visibility: "leaf", extension: false, resolveConfig: (values, result) => tableConfig(values, result, resolveEntity), suggestConfig: suggestTable},
-    {ref: AELIQO_PRESENTATION_REFS.trend, configSchema: AELIQO_CONFIG_SCHEMAS.trend, roles: ["trend", "chart"], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.compare], result: "required", children: {min: 0, max: 0}, visibility: "leaf", extension: false, resolveConfig: (values, result) => trendConfig(values, result, resolveEntity), suggestConfig: suggestTrend},
+    {ref: AELIQO_PRESENTATION_REFS.trend, configSchema: AELIQO_CONFIG_SCHEMAS.trend, roles: ["trend", "chart"], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.compare], result: "required", children: {min: 0, max: 0}, visibility: "leaf", extension: false, resolveConfig: (values, result) => trendConfig(values, result), suggestConfig: suggestTrend},
     {ref: AELIQO_PRESENTATION_REFS.filter, configSchema: AELIQO_CONFIG_SCHEMAS.filter, roles: ["filter"], operations: [AELIQO_OPERATION_REFS.filter], result: "required", children: {min: 0, max: 0}, visibility: "leaf", extension: false, resolveConfig: (values, result) => filterConfig(values, result, resolveEntity), suggestConfig: suggestFilter},
   ]);
 }

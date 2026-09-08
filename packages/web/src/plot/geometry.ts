@@ -155,7 +155,6 @@ export function compilePlotUnit(unit:PlotUnit,result:Result,inputRows:unknown,op
         if(value===null||value===undefined)continue;
         const existing=offsets.get(xIdentity.value)??{positive:zero,negative:zero};
         const sign=compareScalars(value,zero,yType);if(!sign.ok||sign.value===null)return dataOnly('Stacked area magnitudes must be ordered numeric values.');
-        const amount=numericValue(value);
         const negative=sign.value<0;
         const baseline=negative?existing.negative:existing.positive;
         const top=addNumeric(baseline,value);

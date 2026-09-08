@@ -85,7 +85,7 @@ const commonValidators = {
   readOnly: booleanField,
   name: (value: unknown) => stringField(value, 128),
 } satisfies Readonly<Record<string, Validator>>;
-const withCommon = (keys: readonly string[], validators: Readonly<Record<string, Validator>> = {}): readonly string[] => [...commonKeys, ...keys];
+const withCommon = (keys: readonly string[]): readonly string[] => [...commonKeys, ...keys];
 const merged = (validators: Readonly<Record<string, Validator>>): Readonly<Record<string, Validator>> => ({...commonValidators, ...validators});
 
 const selectValidators = {value: (value: unknown) => stringField(value, 256), emptyLabel: (value: unknown) => stringField(value, 256)};

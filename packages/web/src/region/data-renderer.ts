@@ -6,12 +6,10 @@ import type {
 } from "@aeliqo/core";
 import { validateScalar } from "@aeliqo/core";
 import { html, nothing, type TemplateResult } from "lit";
-import { calculateAeliqoDelta, type AeliqoDeltaMode } from "../data/delta.js";
 import type { AeliqoKeyValueItem } from "../data/key-value.js";
 import type { AeliqoSelectionScope } from "../data/selection-summary.js";
-import { stableDataRecordKey, dataValueText, materializedDataStatus } from "../data/shared.js";
+import { stableDataRecordKey, materializedDataStatus } from "../data/shared.js";
 import type {
-  AeliqoDataScope,
   AeliqoDataStatus,
   AeliqoFilterChangeDetail,
   AeliqoFilterPredicate,

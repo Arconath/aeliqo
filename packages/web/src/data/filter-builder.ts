@@ -298,7 +298,6 @@ export class AeliqoFilterBuilderElement extends LitElement {
   private clauseDrafts: AeliqoFilterClause[] = [];
   private logicalMode: AeliqoFilterLogical = "and";
   private unsupportedPredicate: AeliqoFilterPredicate | undefined = undefined;
-  private draft: AeliqoFilterClause = {field: "", operator: "eq", value: ""};
   private draftSourceSignature: string | undefined;
   private draftInitialized = false;
   private validationMessage = "";
@@ -318,7 +317,6 @@ export class AeliqoFilterBuilderElement extends LitElement {
         if (this.clauseDrafts.length === 0 && this.unsupportedPredicate === undefined) {
           this.clauseDrafts = [{field: this.fields[0]?.id ?? "", operator: "eq", value: ""}];
         }
-        this.draft = this.clauseDrafts[0] ?? {field: "", operator: "eq", value: ""};
       }
       this.draftSourceSignature = signature;
       this.draftInitialized = true;
@@ -388,7 +386,6 @@ export class AeliqoFilterBuilderElement extends LitElement {
     const clause = this.clauseDrafts[index];
     if (clause === undefined) return;
     this.clauseDrafts = this.clauseDrafts.map((candidate, position) => position === index ? {...candidate, ...update} : candidate);
-    this.draft = this.clauseDrafts[0] ?? {field: "", operator: "eq", value: ""};
     this.validationMessage = "";
     this.requestUpdate();
   }
