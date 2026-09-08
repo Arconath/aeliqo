@@ -1,6 +1,6 @@
 import {css, html, nothing} from "lit";
 import {AeliqoFieldElement, aeliqoInputStyles} from "./base.js";
-import {AeliqoInputChangeEvent} from "./events.js";
+import {AeliqoComboboxQueryEvent, AeliqoInputChangeEvent} from "./events.js";
 import type {AeliqoOption} from "./options.js";
 import {validOptions} from "./options.js";
 
@@ -40,6 +40,7 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
   private loadSequence = 0;
   private loadAbort: AbortController | undefined;
   private composing = false;
+  private suppressTrailingCompositionInput: string | undefined;
 
   override connectedCallback(): void {
     if (this.value.length === 0 && this.defaultValue.length > 0) this.value = this.defaultValue;
@@ -177,8 +178,24 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
     this.value = "";
     this.activeIndex = this.firstEnabledIndex(this.filteredOptions(this.safeOptions()));
     this.open = true;
-    this.dispatchEvent(new AeliqoInputChangeEvent({source: "user", value: this.query}));
-    void this.loadForQuery(this.query);
+    if (this.composing) {
+      this.cancelLoader();
+      this.validationState = "idle";
+      this.error = "";
+    } else if (this.suppressTrailingCompositionInput !== undefined) {
+      const expected = this.suppressTrailingCompositionInput;
+      this.suppressTrailingCompositionInput = undefined;
+      if (input.value === expected) {
+        this.syncNative();
+        this.requestUpdate();
+        return;
+      }
+      this.commitQueryInput(this.query);
+      return;
+    } else {
+      this.commitQueryInput(this.query);
+      return;
+    }
     this.syncNative();
     this.requestUpdate();
   };
@@ -233,11 +250,31 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
 
   private readonly handleCompositionStart = (): void => {
     this.composing = true;
+    this.suppressTrailingCompositionInput = undefined;
+    this.cancelLoader();
+    this.validationState = "idle";
+    this.error = "";
   };
 
   private readonly handleCompositionEnd = (): void => {
     this.composing = false;
+    const input = this.native();
+    if (input === undefined) return;
+    this.query = input.value;
+    this.value = "";
+    this.suppressTrailingCompositionInput = this.query;
+    this.activeIndex = this.firstEnabledIndex(this.filteredOptions(this.safeOptions()));
+    this.open = true;
+    this.commitQueryInput(this.query);
   };
+
+  private commitQueryInput(query: string): void {
+    this.dispatchEvent(new AeliqoInputChangeEvent({source: "user", value: ""}));
+    this.dispatchEvent(new AeliqoComboboxQueryEvent({source: "user", query}));
+    void this.loadForQuery(query);
+    this.syncNative();
+    this.requestUpdate();
+  }
 
   private async loadForQuery(query: string): Promise<void> {
     const loader = this.optionsLoader;

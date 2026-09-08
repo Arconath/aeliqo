@@ -513,6 +513,45 @@ test("combobox loader removal settles pending state", async ({page}) => {
   expect(state).toEqual({state: "idle", loading: null});
 });
 
+test("combobox keeps query drafts separate and defers IME loading until composition ends", async ({page}) => {
+  const state = await page.evaluate(async () => {
+    const root = document.querySelector<HTMLElement>("#fixture");
+    if (root === null) throw new Error("fixture missing");
+    const combo = document.createElement("aeliqo-combobox") as HTMLElement & {
+      optionsLoader: (query: string, signal: AbortSignal) => Promise<readonly {value: string; label: string}[]>;
+      value: string;
+      query: string;
+      updateComplete: Promise<unknown>;
+    };
+    const loaded: string[] = [];
+    const queries: string[] = [];
+    const values: string[] = [];
+    combo.optionsLoader = async (query) => { loaded.push(query); return []; };
+    combo.addEventListener("aeliqo-combobox-query", (event) => queries.push((event as CustomEvent<{query: string}>).detail.query));
+    combo.addEventListener("aeliqo-input-change", (event) => values.push((event as CustomEvent<{value: string}>).detail.value));
+    root.append(combo);
+    await combo.updateComplete;
+    const input = combo.shadowRoot?.querySelector<HTMLInputElement>("input[part=input]");
+    if (input === null || input === undefined) throw new Error("combobox input missing");
+    input.dispatchEvent(new CompositionEvent("compositionstart", {bubbles: true}));
+    input.value = "あ";
+    input.dispatchEvent(new InputEvent("input", {bubbles: true, inputType: "insertCompositionText", data: "あ"}));
+    await combo.updateComplete;
+    const during = {loaded: [...loaded], queries: [...queries], values: [...values], value: combo.value, query: combo.query};
+    input.dispatchEvent(new CompositionEvent("compositionend", {bubbles: true, data: "あ"}));
+    await combo.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    input.dispatchEvent(new InputEvent("input", {bubbles: true, inputType: "insertText", data: "あ"}));
+    await combo.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    return {during, after: {loaded, queries, values, value: combo.value, query: combo.query}};
+  });
+  expect(state).toEqual({
+    during: {loaded: [], queries: [], values: [], value: "", query: "あ"},
+    after: {loaded: ["あ"], queries: ["あ"], values: [""], value: "", query: "あ"},
+  });
+});
+
 test("text fields are uncontrolled by default and searches only commit user proposals", async ({page}) => {
   const state = await page.evaluate(async () => {
     const root = document.querySelector<HTMLElement>("#fixture");

@@ -105,6 +105,21 @@ export class AeliqoSearchEvent extends EventBase {
   }
 }
 
+/** A combobox query draft is separate from its selected value. */
+export interface AeliqoComboboxQueryDetail {
+  readonly source: AeliqoInputSource;
+  readonly query: string;
+}
+
+export class AeliqoComboboxQueryEvent extends EventBase {
+  readonly detail: AeliqoComboboxQueryDetail;
+
+  constructor(detail: AeliqoComboboxQueryDetail) {
+    super("aeliqo-combobox-query", {bubbles: true, composed: true, cancelable: true});
+    this.detail = detail;
+  }
+}
+
 export interface AeliqoFileMetadata {
   readonly name: string;
   readonly size: number;
