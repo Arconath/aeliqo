@@ -395,7 +395,7 @@ function authorizeResult(
   context: ReadContext,
   query?: QuerySpec,
 ): Promise<Outcome<ReadGrant>> {
-  if (authorize === undefined) return Promise.resolve({ok: true, value: {scopeDigest: DEFAULT_SCOPE}});
+  if (authorize === undefined) return Promise.resolve(context.signal?.aborted ? failure('data.aborted', 'The ADC authorization was cancelled.') : {ok: true, value: {scopeDigest: DEFAULT_SCOPE}});
   let pending: Promise<Outcome<ReadGrant>>;
   try {
     pending = Promise.resolve(authorize({operation, requestId, target, context, ...(query === undefined ? {} : {query})}));
@@ -790,6 +790,8 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
       const page = mergeCatalogPage(currentCatalog, input.target, grant.value, offset, pageSize, snapshot.sourceRevision, grant.value.scopeDigest);
       const catalog = parseCatalog(page.catalog);
       if (!catalog.ok) return failure('data.catalog', 'The authorized catalog projection is not canonical.');
+      if (context.signal?.aborted) return failure('data.aborted', 'The catalog request was cancelled.');
+      if (Date.now() - startedAt > effectiveBudget.maxMilliseconds) return failure('data.budget', 'Discovery exceeded the effective time budget.', ['budget']);
       return {ok: true, value: {
         version: '1', requestId: input.requestId, catalog: catalog.value, catalogRevision: currentCatalog.revision,
         sourceRevision: snapshot.sourceRevision, scopeDigest: grant.value.scopeDigest, target: input.target, effectiveBudget,
@@ -869,9 +871,10 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
       const accepted: PlanAcceptance = {
         ...acceptedBase, kind: 'accepted', planDigest, supported: SUPPORTED_OPERATIONS,
       };
+      const storedAccepted = freezeDeep(accepted);
       reapPlans(Date.now());
-      plans.set(planDigest, accepted);
-      return {ok: true, value: accepted};
+      plans.set(planDigest, storedAccepted);
+      return {ok: true, value: storedAccepted};
     },
 
     async *execute(request, context = {}) {
@@ -1152,7 +1155,7 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
         currentCatalog = freezeCatalog(nextCatalog.value);
         plans.clear();
       }
-      const registration: MeaningRegistration = {catalogRevision: currentCatalog.revision, meanings: validated.value.meanings, receipts, idempotent: false};
+      const registration: MeaningRegistration = freezeDeep({catalogRevision: currentCatalog.revision, meanings: validated.value.meanings, receipts, idempotent: false});
       registeredBundles.set(bundleKey, registration);
       return {ok: true, value: registration};
     },
