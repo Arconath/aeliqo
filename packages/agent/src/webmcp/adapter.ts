@@ -10,10 +10,13 @@ import type {
   WebMcpRegisterOptions,
   WebMcpRegistration,
   WebMcpTool,
+  WebMcpToolAnnotations,
 } from './types.js';
 
-const MAX_NAME = 256;
+const MAX_NAME = 64;
+const MAX_REFERENCE = 256;
 const MAX_DESCRIPTION = 4096;
+const TOOL_NAME = /^[A-Za-z0-9_.-]{1,64}$/u;
 const OPERATIONS = new Set([
   'catalog.read', 'result.inspect', 'task.propose', 'task.evaluate',
   'experience.propose', 'experience.commit', 'meaning.propose', 'meaning.activate',
@@ -33,6 +36,10 @@ function failure<T>(code: string, message: string): Outcome<T> {
 function validText(value: unknown, maximum: number): value is string {
   return typeof value === 'string' && value.length > 0 && value.length <= maximum
     && !/[\u0000-\u001f\u007f]/u.test(value);
+}
+
+function validToolName(value: unknown): value is string {
+  return typeof value === 'string' && TOOL_NAME.test(value);
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -108,9 +115,9 @@ function normalizeDefinitions(input: readonly AgentToolDefinition[]): Outcome<re
   const names = new Set<string>();
   const definitions: AgentToolDefinition[] = [];
   for (const candidate of input) {
-    if (!isObject(candidate) || !validText(candidate.name, MAX_NAME) || names.has(candidate.name)
+    if (!isObject(candidate) || !validToolName(candidate.name) || names.has(candidate.name)
       || !validText(candidate.description, MAX_DESCRIPTION) || !isObject(candidate.capability)
-      || !validText(candidate.capability.id, MAX_NAME) || !validText(candidate.capability.revision, MAX_NAME)
+      || !validText(candidate.capability.id, MAX_REFERENCE) || !validText(candidate.capability.revision, MAX_REFERENCE)
       || typeof candidate.operation !== 'string' || !OPERATIONS.has(candidate.operation) || !isObject(candidate.inputSchema)) {
       return failure('agent.webmcp.discovery', 'Tool discovery returned an invalid definition.');
     }
@@ -127,6 +134,17 @@ function normalizeDefinitions(input: readonly AgentToolDefinition[]): Outcome<re
     }));
   }
   return {ok: true, value: Object.freeze(definitions)};
+}
+
+function nativeAnnotations(operation: AgentToolDefinition['operation']): WebMcpToolAnnotations {
+  // A proposal is still a write to an application-owned draft boundary, and
+  // model egress is a consequential disclosure even when no local state moves.
+  const readOnlyHint = operation === 'catalog.read' || operation === 'result.inspect' || operation === 'task.evaluate';
+  const consequentialHint = operation === 'experience.commit' || operation === 'meaning.activate'
+    || operation === 'action.execute' || operation === 'model.egress';
+  // Every endpoint receipt can carry application or source data. Keep the
+  // native agent on the defensive; these hints never replace endpoint grants.
+  return Object.freeze({readOnlyHint, untrustedContentHint: true, consequentialHint});
 }
 
 function safeEndpoint(options: WebMcpAdapterOptions): AgentToolEndpoint {
@@ -188,7 +206,13 @@ async function registerNativeTool(
     resolveAbort = () => resolve('cancelled');
     controller.signal.addEventListener('abort', resolveAbort, {once: true});
   });
-  const registration = Promise.resolve().then(() => context.registerTool(tool, {signal: controller.signal})).then(() => 'registered' as const);
+  const registration = Promise.resolve().then(async () => {
+    // Abort can land after the synchronous pre-check but before this native
+    // registration microtask runs. Do not expose a tool in that window.
+    if (controller.signal.aborted) return 'cancelled' as const;
+    await context.registerTool(tool, {signal: controller.signal});
+    return controller.signal.aborted ? 'cancelled' as const : 'registered' as const;
+  });
   try {
     const result = await Promise.race([registration, aborted]);
     if (result === 'cancelled') void registration.catch(() => undefined);
@@ -269,6 +293,7 @@ export function createWebMcpAdapter(options: WebMcpAdapterOptions): WebMcpAdapte
             name: definition.name,
             description: definition.description,
             inputSchema: definition.inputSchema,
+            annotations: nativeAnnotations(definition.operation),
             execute: async (input: unknown, executionOptions?: WebMcpExecutionOptions): Promise<Outcome<AgentCapabilityReceipt>> => {
               if (closed) return cancellationFailure(true);
               if (!registered.active || controller.signal.aborted) return cancellationFailure(false);
@@ -281,6 +306,8 @@ export function createWebMcpAdapter(options: WebMcpAdapterOptions): WebMcpAdapte
                 if (!registered.active || linked.signal.aborted) return cancellationFailure(false);
                 return result;
               } catch {
+                if (closed) return cancellationFailure(true);
+                if (!registered.active || linked.signal.aborted) return cancellationFailure(false);
                 return failure('agent.webmcp.invoke', 'WebMCP capability execution failed safely.');
               } finally {
                 linked.dispose();

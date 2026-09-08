@@ -7,6 +7,13 @@ export interface WebMcpExecutionOptions {
   readonly signal?: AbortSignal;
 }
 
+/** Native WebMCP safety hints derived from the canonical operation grant. */
+export interface WebMcpToolAnnotations {
+  readonly readOnlyHint: boolean;
+  readonly untrustedContentHint: boolean;
+  readonly consequentialHint: boolean;
+}
+
 /** The subset of Chrome's imperative modelContext API used by this adapter. */
 export interface WebMcpModelContext {
   readonly registerTool: (
@@ -21,6 +28,7 @@ export interface WebMcpTool {
   readonly name: string;
   readonly description: string;
   readonly inputSchema: AgentToolInputSchema;
+  readonly annotations: WebMcpToolAnnotations;
   readonly execute: (input: unknown, options?: WebMcpExecutionOptions) => unknown | Promise<unknown>;
 }
 

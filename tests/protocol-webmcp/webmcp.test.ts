@@ -19,6 +19,12 @@ const definition: AgentToolDefinition = {
   inputSchema: {type: 'object', properties: {query: {type: 'string'}}, required: ['query']},
 };
 
+const operations: readonly AgentToolDefinition['operation'][] = [
+  'catalog.read', 'result.inspect', 'task.propose', 'task.evaluate',
+  'experience.propose', 'experience.commit', 'meaning.propose', 'meaning.activate',
+  'action.propose', 'action.execute', 'model.egress',
+];
+
 const receipt = (requestId: string): AgentCapabilityReceipt => ({
   version: '1', requestId, targetRegionId: 'region-1', goalEpoch: 'goal-1',
   capability: {id: 'catalog.summary', revision: '1'}, operation: 'catalog.read', transport: 'webmcp',
@@ -76,11 +82,52 @@ describe('WebMCP adapter', () => {
     expect(tools).toHaveLength(1);
     expect(signals).toHaveLength(1);
     expect(tools[0]?.inputSchema).toEqual(definition.inputSchema);
+    expect(tools[0]?.annotations).toEqual({readOnlyHint: true, untrustedContentHint: true, consequentialHint: false});
 
     const executed = await tools[0]!.execute({query: 'events'});
     expect(executed).toMatchObject({ok: true, value: {transport: 'webmcp', state: 'data-ready'}});
     expect(invokes).toHaveLength(1);
     expect(invokes[0]).toMatchObject({name: 'catalog_events', input: {query: 'events'}, requestId: 'webmcp-1'});
+  });
+
+  it('derives conservative native safety annotations from every operation grant', async () => {
+    const tools: WebMcpTool[] = [];
+    const host = endpoint({discover: async () => ({ok: true, value: operations.map((operation, index) => ({
+      ...definition, name: `operation_${index}`, operation,
+    }))})});
+    const adapter = createWebMcpAdapter({endpoint: host, modelContext: modelContext(tools)});
+    expect((await adapter.register()).ok).toBe(true);
+    expect(tools.map(tool => [tool.name, tool.annotations])).toEqual([
+      ['operation_0', {readOnlyHint: true, untrustedContentHint: true, consequentialHint: false}],
+      ['operation_1', {readOnlyHint: true, untrustedContentHint: true, consequentialHint: false}],
+      ['operation_2', {readOnlyHint: false, untrustedContentHint: true, consequentialHint: false}],
+      ['operation_3', {readOnlyHint: true, untrustedContentHint: true, consequentialHint: false}],
+      ['operation_4', {readOnlyHint: false, untrustedContentHint: true, consequentialHint: false}],
+      ['operation_5', {readOnlyHint: false, untrustedContentHint: true, consequentialHint: true}],
+      ['operation_6', {readOnlyHint: false, untrustedContentHint: true, consequentialHint: false}],
+      ['operation_7', {readOnlyHint: false, untrustedContentHint: true, consequentialHint: true}],
+      ['operation_8', {readOnlyHint: false, untrustedContentHint: true, consequentialHint: false}],
+      ['operation_9', {readOnlyHint: false, untrustedContentHint: true, consequentialHint: true}],
+      ['operation_10', {readOnlyHint: false, untrustedContentHint: true, consequentialHint: true}],
+    ]);
+  });
+
+  it('enforces the native tool-name ASCII grammar and 64-character bound', async () => {
+    const tools: WebMcpTool[] = [];
+    const valid = createWebMcpAdapter({
+      endpoint: endpoint({discover: async () => ({ok: true, value: [{...definition, name: `${'a'.repeat(61)}._-`} ]})}),
+      modelContext: modelContext(tools),
+    });
+    expect((await valid.register()).ok).toBe(true);
+    expect(tools[0]?.name).toHaveLength(64);
+
+    for (const name of [`${'a'.repeat(64)}a`, 'has space']) {
+      const adapter = createWebMcpAdapter({
+        endpoint: endpoint({discover: async () => ({ok: true, value: [{...definition, name}]})}),
+        modelContext: modelContext([]),
+      });
+      expect(await adapter.register()).toMatchObject({ok: false, diagnostics: [{code: 'agent.webmcp.discovery'}]});
+    }
   });
 
   it('runs a registered WebMCP tool through the real paired endpoint and dispatcher', async () => {
@@ -154,6 +201,35 @@ describe('WebMCP adapter', () => {
     expect(result).toMatchObject({ok: false, diagnostics: [{code: 'agent.webmcp.cancelled'}]});
   });
 
+  it('classifies rejected late endpoint calls as closed or cancelled', async () => {
+    const closedTools: WebMcpTool[] = [];
+    let rejectClosed!: (reason?: unknown) => void;
+    const closedPending = new Promise<Outcome<AgentCapabilityReceipt>>((_, reject) => {rejectClosed = reject;});
+    const closedAdapter = createWebMcpAdapter({
+      endpoint: endpoint({invoke: async () => closedPending}),
+      modelContext: modelContext(closedTools),
+    });
+    expect((await closedAdapter.register()).ok).toBe(true);
+    const closedExecution = closedTools[0]!.execute({query: 'events'});
+    closedAdapter.close();
+    rejectClosed(new Error('late close rejection'));
+    expect(await closedExecution).toMatchObject({ok: false, diagnostics: [{code: 'agent.webmcp.closed'}]});
+
+    const cancelledTools: WebMcpTool[] = [];
+    let rejectCancelled!: (reason?: unknown) => void;
+    const cancelledPending = new Promise<Outcome<AgentCapabilityReceipt>>((_, reject) => {rejectCancelled = reject;});
+    const cancelledAdapter = createWebMcpAdapter({
+      endpoint: endpoint({invoke: async () => cancelledPending}),
+      modelContext: modelContext(cancelledTools),
+    });
+    expect((await cancelledAdapter.register()).ok).toBe(true);
+    const controller = new AbortController();
+    const cancelledExecution = cancelledTools[0]!.execute({query: 'events'}, {signal: controller.signal});
+    controller.abort();
+    rejectCancelled(new Error('late cancellation rejection'));
+    expect(await cancelledExecution).toMatchObject({ok: false, diagnostics: [{code: 'agent.webmcp.cancelled'}]});
+  });
+
   it('settles registration when a host ignores the registration abort signal', async () => {
     let started!: () => void;
     const entered = new Promise<void>(resolve => {started = resolve;});
@@ -168,6 +244,25 @@ describe('WebMCP adapter', () => {
     adapter.close();
     expect(await registration).toMatchObject({ok: false, diagnostics: [{code: 'agent.webmcp.closed'}]});
     release();
+  });
+
+  it('rechecks registration abort in the native registration microtask', async () => {
+    const registerTool = vi.fn();
+    let reads = 0;
+    let adapter!: ReturnType<typeof createWebMcpAdapter>;
+    const registerSignal = new AbortController().signal;
+    const registerOptions = {
+      get signal(): AbortSignal {
+        reads += 1;
+        // The third read is the per-definition preflight check. Closing here
+        // leaves the native registration promise queued but not yet entered.
+        if (reads === 3) queueMicrotask(() => adapter.close());
+        return registerSignal;
+      },
+    };
+    adapter = createWebMcpAdapter({endpoint: endpoint(), modelContext: {registerTool}});
+    expect(await adapter.register(registerOptions)).toMatchObject({ok: false, diagnostics: [{code: 'agent.webmcp.closed'}]});
+    expect(registerTool).not.toHaveBeenCalled();
   });
 
   it('rejects malformed or duplicate discovered definitions before registration', async () => {

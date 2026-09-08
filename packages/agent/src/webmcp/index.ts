@@ -9,4 +9,5 @@ export type {
   WebMcpRegisterOptions,
   WebMcpRegistration,
   WebMcpTool,
+  WebMcpToolAnnotations,
 } from './types.js';
