@@ -134,6 +134,9 @@ export interface AeliqoRecordEditorCancelDetail {
   readonly values: Readonly<Record<string, string | readonly string[]>>;
 }
 
+/** Values captured from a form boundary, retaining repeated wire values. */
+export type AeliqoFormDraftValue = Scalar | readonly Scalar[];
+
 export interface AeliqoFormFlowStep {
   readonly id: string;
   readonly label: string;
@@ -145,12 +148,12 @@ export interface AeliqoFormFlowStepDetail {
   readonly from: string;
   readonly to: string;
   readonly direction: "next" | "back";
-  readonly draft: Readonly<Record<string, Scalar>>;
+  readonly draft: Readonly<Record<string, AeliqoFormDraftValue>>;
 }
 export interface AeliqoFormFlowCommitDetail {
   readonly source: "user";
   readonly step: string;
-  readonly draft: Readonly<Record<string, Scalar>>;
+  readonly draft: Readonly<Record<string, AeliqoFormDraftValue>>;
 }
 
 export type AeliqoCompoundInteractionLink = InteractionLink;

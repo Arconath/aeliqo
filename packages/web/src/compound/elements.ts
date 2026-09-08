@@ -37,33 +37,88 @@ type CompoundControl = HTMLElement & {
   reportValidity?: () => boolean;
 };
 
+type CompoundWireValue = string | readonly string[];
+type FormDraftValue = Scalar | readonly Scalar[];
+type FormDraftRecord = Record<string, FormDraftValue>;
+
+function nullRecord<T>(): Record<string, T> {
+  return Object.create(null) as Record<string, T>;
+}
+
+function isDisabledControl(control: CompoundControl): boolean {
+  return control.matches(":disabled") || control.closest("fieldset:disabled") !== null;
+}
+
+function fileName(value: unknown): string | undefined {
+  return typeof File !== "undefined" && value instanceof File ? value.name : undefined;
+}
+
+function appendWireValue(output: Record<string, CompoundWireValue>, name: string, raw: unknown): void {
+  if (raw === undefined || raw === null || name.length === 0) return;
+  if (typeof FormData !== "undefined" && raw instanceof FormData) {
+    for (const [key, value] of raw.entries()) appendWireValue(output, key, value);
+    return;
+  }
+  if (Array.isArray(raw)) {
+    for (const value of raw) appendWireValue(output, name, value);
+    return;
+  }
+  const value = fileName(raw) ?? String(raw);
+  const existing = output[name];
+  if (existing === undefined) output[name] = value;
+  else output[name] = [...(Array.isArray(existing) ? existing : [existing]), value];
+}
+
+function appendDraftValue(output: FormDraftRecord, name: string, raw: unknown): void {
+  if (raw === undefined || raw === null || name.length === 0) return;
+  if (typeof FormData !== "undefined" && raw instanceof FormData) {
+    for (const [key, value] of raw.entries()) appendDraftValue(output, key, value);
+    return;
+  }
+  if (Array.isArray(raw)) {
+    for (const value of raw) appendDraftValue(output, name, value);
+    return;
+  }
+  const value = fileName(raw) ?? raw;
+  if (typeof value !== "string" && typeof value !== "number" && typeof value !== "boolean" && typeof value !== "object") return;
+  const existing = output[name];
+  if (existing === undefined) output[name] = value as Scalar;
+  else output[name] = [...(Array.isArray(existing) ? existing : [existing]), value as Scalar];
+}
+
+/** DateRange exposes its named FormData through ElementInternals; retain the
+ * public boundary values too because ElementInternals does not expose them
+ * through the component's formValue receipt. */
+function dateRangeParts(control: CompoundControl, name: string): readonly [string, string] | undefined {
+  if (control.localName !== "aeliqo-date-range" || control.checkValidity?.() === false) return undefined;
+  const start = (control as HTMLElement & {readonly start?: unknown}).start;
+  const end = (control as HTMLElement & {readonly end?: unknown}).end;
+  return typeof start === "string" && start.length > 0 && typeof end === "string" && end.length > 0 ? [
+    `${name}[start]`, start,
+  ] as const : undefined;
+}
+
 function compoundControls(host: HTMLElement): readonly CompoundControl[] {
   return Array.from(host.querySelectorAll<HTMLElement>("input, select, textarea, button, aeliqo-input, aeliqo-text-field, aeliqo-text-area, aeliqo-number-field, aeliqo-date-field, aeliqo-date-range, aeliqo-search-field, aeliqo-checkbox, aeliqo-switch, aeliqo-radio-group, aeliqo-select, aeliqo-combobox, aeliqo-slider, aeliqo-file-input"))
     .filter((control): control is CompoundControl => control.closest("aeliqo-record-editor, aeliqo-form-flow") === host);
 }
 
-function appendCompoundValue(output: Record<string, string | readonly string[]>, name: string, raw: unknown): void {
-  if (raw === undefined || raw === null) return;
-  const values: string[] = Array.isArray(raw) ? raw.map(value => String(value)) : raw instanceof FormData
-    ? [...raw.values()].map(value => typeof value === "string" ? value : value.name)
-    : typeof File !== "undefined" && raw instanceof File ? [raw.name] : [String(raw)];
-  if (values.length === 0) return;
-  const existing = output[name];
-  if (existing === undefined) output[name] = values.length === 1 ? values[0]! : values;
-  else output[name] = [...(Array.isArray(existing) ? existing : [existing]), ...values];
-}
-
 function collectCompoundValues(host: HTMLElement): Readonly<Record<string, string | readonly string[]>> {
-  const output: Record<string, string | readonly string[]> = {};
+  const output = nullRecord<CompoundWireValue>();
   for (const control of compoundControls(host)) {
     const name = control.getAttribute("name") || control.name || "";
-    if (!name || control instanceof HTMLButtonElement || (control instanceof HTMLInputElement && ["submit", "reset", "button", "image"].includes(control.type))) continue;
+    if (!name || isDisabledControl(control) || control instanceof HTMLButtonElement || (control instanceof HTMLInputElement && ["submit", "reset", "button", "image"].includes(control.type))) continue;
     if (control instanceof HTMLInputElement && ["checkbox", "radio"].includes(control.type) && !control.checked) continue;
     if (control instanceof HTMLSelectElement && control.multiple) {
-      appendCompoundValue(output, name, [...control.selectedOptions].map(option => option.value));
+      appendWireValue(output, name, [...control.selectedOptions].map(option => option.value));
       continue;
     }
-    appendCompoundValue(output, name, "formValue" in control ? control.formValue : control.value);
+    const range = dateRangeParts(control, name);
+    if (range !== undefined) {
+      appendWireValue(output, range[0], range[1]);
+      const end = (control as HTMLElement & {readonly end?: string}).end;
+      if (typeof end === "string") appendWireValue(output, `${name}[end]`, end);
+    } else appendWireValue(output, name, "formValue" in control ? control.formValue : control.value);
   }
   return output;
 }
@@ -72,7 +127,7 @@ function reportCompoundValidity(host: HTMLElement): boolean {
   const controls = compoundControls(host);
   let valid = true;
   for (const control of controls) {
-    if (control.matches(":disabled") || control.closest("fieldset:disabled") !== null) continue;
+    if (isDisabledControl(control)) continue;
     const check = control.reportValidity ?? control.checkValidity;
     if (check !== undefined && !check.call(control)) valid = false;
   }
@@ -104,10 +159,11 @@ export class AeliqoComparisonElement extends AeliqoCompoundElement {
     const metrics = bounded(this.metrics, MAX_COMPARISON_METRICS);
     const labels = new Map(this.compareSet.map(item => [item.key, item.label ?? item.key]));
     const selectedKeys = new Set(requestedKeys);
-    const columns: readonly AeliqoTableColumn[] = [{key: "metric", label: "Metric"}, ...keys.map(key => ({key, label: labels.get(key) ?? key}))];
+    const columns: readonly AeliqoTableColumn[] = [{key: "metric", label: "Metric"}, ...keys.map(key => ({key: `comparison:${key}`, label: labels.get(key) ?? key}))];
     const rows: readonly AeliqoTableRow[] = metrics.map(metric => ({
+      metricId: metric.id,
       metric: metric.unit ? `${metric.label} (${metric.unit})` : metric.label,
-      ...Object.fromEntries(keys.map(key => [key, tableCell(metric.values[key])])),
+      ...Object.fromEntries(keys.map(key => [`comparison:${key}`, tableCell(metric.values[key])])),
     }));
     const current = status(this.status);
     const boundedNotice = requestedKeys.length > keys.length || this.metrics.length > metrics.length;
@@ -115,7 +171,7 @@ export class AeliqoComparisonElement extends AeliqoCompoundElement {
       <div part="header"><h2>${this.title}</h2>${this.scope ? html`<span part="scope">${this.scopeLabel(this.scope)}</span>` : nothing}</div>
       ${!this.compatible ? html`<p part="status" role="alert">These metrics cannot be compared because their units or grain are incompatible.</p>` : html`
         <div part="actions" aria-label="Compare set">${keys.map(key => html`<button part="compare-button" type="button" aria-pressed=${String(selectedKeys.has(key))} @click=${() => this.requestCompare(key)}>${labels.get(key) ?? key}</button>`)}</div>
-        <div part="table" role="region" aria-label="Simultaneous comparison"><aeliqo-table .caption=${`${this.title}: ${keys.length} ${this.entity}${keys.length === 1 ? "" : "s"}`} .columns=${columns} .rows=${rows} .identity=${["metric"]} .result=${this.result} .scope=${this.scope} status=${current}></aeliqo-table></div>
+        <div part="table" role="region" aria-label="Simultaneous comparison"><aeliqo-table .caption=${`${this.title}: ${keys.length} ${this.entity}${keys.length === 1 ? "" : "s"}`} .columns=${columns} .rows=${rows} .identity=${["metricId"]} .result=${this.result} .scope=${this.scope} status=${current}></aeliqo-table></div>
         ${boundedNotice ? html`<p part="hint">Showing a bounded comparison window.</p>` : nothing}
       `}
       ${current !== "ready" ? html`<p part="status" role="status">${this.statusText(current, this.message)}</p>` : nothing}
@@ -232,8 +288,9 @@ export class AeliqoRecordEditorElement extends AeliqoCompoundElement {
 export class AeliqoFormFlowElement extends AeliqoCompoundElement {
   static readonly properties = {steps: {attribute: false}, activeStep: {attribute: "active-step", type: String}, draft: {attribute: false}, validation: {attribute: false}, status: {type: String}, message: {type: String}, title: {type: String}, nextLabel: {attribute: "next-label", type: String}, backLabel: {attribute: "back-label", type: String}, commitLabel: {attribute: "commit-label", type: String}};
   static readonly styles = [...aeliqoCompoundThemeStyles, css`[part="step-list"] { display: flex; flex-wrap: wrap; gap: var(--aeliqo-space-8, .5rem); list-style: none; margin: 0 0 var(--aeliqo-space-16, 1rem); padding: 0; } [part="step"][data-active="true"] { font-weight: 700; }`];
-  steps: readonly AeliqoFormFlowStep[] = []; activeStep = ""; draft: Readonly<Record<string, Scalar>> = {}; validation: Readonly<Record<string, string | undefined>> = {}; status: AeliqoCompoundStatus = "ready"; message = ""; title = "Form"; nextLabel = "Next"; backLabel = "Back"; commitLabel = "Commit";
-  private transientDraft: Record<string, Scalar> = {};
+  steps: readonly AeliqoFormFlowStep[] = []; activeStep = ""; draft: Readonly<Record<string, FormDraftValue>> = {}; validation: Readonly<Record<string, string | undefined>> = {}; status: AeliqoCompoundStatus = "ready"; message = ""; title = "Form"; nextLabel = "Next"; backLabel = "Back"; commitLabel = "Commit";
+  private transientDraft: FormDraftRecord = nullRecord<FormDraftValue>();
+  private transientDraftSource: Readonly<Record<string, FormDraftValue>> | undefined;
 
   protected override render() {
     const active = this.activeStep || this.steps[0]?.id || "";
@@ -264,28 +321,45 @@ export class AeliqoFormFlowElement extends AeliqoCompoundElement {
     if (this.validation[stepId]) return false;
     let valid = true;
     for (const control of this.controlsForStep(stepId)) {
-      if (control.matches(":disabled") || control.closest("fieldset:disabled") !== null) continue;
+      if (isDisabledControl(control)) continue;
       const check = report ? (control.reportValidity ?? control.checkValidity) : control.checkValidity;
       if (check !== undefined && !check.call(control)) valid = false;
     }
     return valid;
   }
 
-  private collectDraft(): Readonly<Record<string, Scalar>> {
-    const output: Record<string, Scalar> = {...this.draft, ...this.transientDraft};
+  private collectDraft(): Readonly<FormDraftRecord> {
+    if (this.transientDraftSource !== this.draft) {
+      this.transientDraft = nullRecord<FormDraftValue>();
+      this.transientDraftSource = this.draft;
+    }
+    const output = Object.assign(nullRecord<FormDraftValue>(), this.draft, this.transientDraft);
     for (const control of compoundControls(this)) {
       const name = control.getAttribute("name") || control.name || "";
-      if (!name || control instanceof HTMLButtonElement || (control instanceof HTMLInputElement && ["submit", "reset", "button", "image"].includes(control.type))) continue;
-      if (control instanceof HTMLInputElement && ["checkbox", "radio"].includes(control.type)) { output[name] = control.checked; continue; }
-      const raw = "formValue" in control ? control.formValue : control.value;
-      if (typeof raw === "string" || typeof raw === "number" || typeof raw === "boolean" || raw === null) output[name] = raw;
-      else if (raw instanceof FormData) {
-        const values = [...raw.values()].map(value => typeof value === "string" ? value : value.name);
-        if (values.length === 1) output[name] = values[0]!;
-        else if (values.length > 1) output[name] = values.join(",");
+      if (!name || isDisabledControl(control) || control instanceof HTMLButtonElement || (control instanceof HTMLInputElement && ["submit", "reset", "button", "image"].includes(control.type))) continue;
+      if (control instanceof HTMLInputElement && ["checkbox", "radio"].includes(control.type)) {
+        if (!control.checked) continue;
+        appendDraftValue(output, name, control.value);
+        continue;
       }
+      if (control instanceof HTMLSelectElement && control.multiple) {
+        appendDraftValue(output, name, [...control.selectedOptions].map(option => option.value));
+        continue;
+      }
+      const range = dateRangeParts(control, name);
+      if (range !== undefined) {
+        appendDraftValue(output, range[0], range[1]);
+        const end = (control as HTMLElement & {readonly end?: string}).end;
+        if (typeof end === "string") appendDraftValue(output, `${name}[end]`, end);
+      } else appendDraftValue(output, name, "formValue" in control ? control.formValue : control.value);
     }
     return output;
+  }
+
+  private captureDraft(): Readonly<FormDraftRecord> {
+    this.transientDraft = Object.assign(nullRecord<FormDraftValue>(), this.collectDraft());
+    this.transientDraftSource = this.draft;
+    return this.transientDraft;
   }
 
   private moveRelative(delta: number): void {
@@ -303,16 +377,14 @@ export class AeliqoFormFlowElement extends AeliqoCompoundElement {
     if (direction === "next") {
       for (let index = fromIndex; index < targetIndex; index += 1) if (!this.stepValid(this.steps[index]!.id, true)) return;
     }
-    this.transientDraft = {...this.collectDraft()};
-    this.dispatchEvent(event<AeliqoFormFlowStepDetail>("aeliqo-form-flow-step", {source: "user", from, to: target, direction, draft: this.transientDraft}));
+    this.dispatchEvent(event<AeliqoFormFlowStepDetail>("aeliqo-form-flow-step", {source: "user", from, to: target, direction, draft: this.captureDraft()}));
   }
 
   private readonly commit = (): void => {
     const active = this.activeStep || this.steps[0]?.id || "";
     if (!active) return;
     for (const step of this.steps) if (!this.stepValid(step.id, true)) return;
-    this.transientDraft = {...this.collectDraft()};
-    this.dispatchEvent(event<AeliqoFormFlowCommitDetail>("aeliqo-form-flow-commit", {source: "user", step: active, draft: this.transientDraft}));
+    this.dispatchEvent(event<AeliqoFormFlowCommitDetail>("aeliqo-form-flow-commit", {source: "user", step: active, draft: this.captureDraft()}));
   };
 }
 

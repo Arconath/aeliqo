@@ -57,8 +57,8 @@ fixture.append(explorer);
 const comparison = document.createElement("aeliqo-comparison") as any;
 comparison.id = "comparison";
 Object.assign(comparison, {
-  compareSet: [{key: "a", label: "Alpha"}, {key: "b", label: "Beta"}], compareKeys: ["a", "b"], entity: "person", result: ref, scope,
-  metrics: [{id: "amount", label: "Amount", unit: "USD", values: {a: {decimal: "100000000000000000.01"}, b: {decimal: "2.50"}}}],
+  compareSet: [{key: "a", label: "Alpha"}, {key: "b", label: "Beta"}, {key: "metric", label: "Metric key"}], compareKeys: ["a", "b", "metric"], entity: "person", result: ref, scope,
+  metrics: [{id: "amount", label: "Amount", unit: "USD", values: {a: {decimal: "100000000000000000.01"}, b: {decimal: "2.50"}, metric: {decimal: "3.00"}}}, {id: "margin", label: "Margin", unit: "%", values: {a: {decimal: "0.25"}, b: {decimal: "0.50"}, metric: {decimal: "0.75"}}}],
 });
 fixture.append(comparison);
 
@@ -87,18 +87,36 @@ editor.id = "editor";
 Object.assign(editor, {entity: "person", entityKey: "a", entityRevision: "rev-1"});
 const editorField = document.createElement("aeliqo-text-field") as any;
 Object.assign(editorField, {name: "name", label: "Name", required: true, value: "Ada"});
-editor.append(editorField);
+const editorRange = document.createElement("aeliqo-date-range") as any;
+Object.assign(editorRange, {name: "period", label: "Period", start: "2026-09-01", end: "2026-09-08"});
+for (const [name, value] of [["tags", "first"], ["tags", "second"], ["__proto__", "safe"], ["constructor", "safe-constructor"]] as const) {
+  const input = document.createElement("input"); input.type = "hidden"; input.name = name; input.value = value; editor.append(input);
+}
+const ignoredEditorInput = document.createElement("input"); ignoredEditorInput.type = "hidden"; ignoredEditorInput.name = "ignored"; ignoredEditorInput.value = "disabled"; ignoredEditorInput.disabled = true; editor.append(ignoredEditorInput);
+editor.append(editorField, editorRange);
 fixture.append(editor);
+editorRange.requestUpdate();
 
 const flow = document.createElement("aeliqo-form-flow") as any;
 flow.id = "flow";
 Object.assign(flow, {steps: [{id: "one", label: "Identity"}, {id: "two", label: "Review"}], activeStep: "one"});
+flow.draft = {draftOnly: "old"};
 const one = document.createElement("div"); one.slot = "step-one";
 const oneField = document.createElement("aeliqo-text-field") as any;
 Object.assign(oneField, {name: "displayName", label: "Display name", required: true}); one.append(oneField);
 const two = document.createElement("div"); two.slot = "step-two"; two.textContent = "Review draft";
+for (const [name, value] of [["tags", "one"], ["tags", "two"], ["__proto__", "draft-proto"], ["constructor", "draft-constructor"]] as const) {
+  const input = document.createElement("input"); input.type = "hidden"; input.name = name; input.value = value; two.append(input);
+}
+const planA = document.createElement("input"); planA.type = "radio"; planA.name = "plan"; planA.value = "standard"; planA.checked = true; planA.setAttribute("aria-label", "Standard plan"); two.append(planA);
+const planB = document.createElement("input"); planB.type = "radio"; planB.name = "plan"; planB.value = "premium"; planB.setAttribute("aria-label", "Premium plan"); two.append(planB);
+const consent = document.createElement("input"); consent.type = "checkbox"; consent.name = "consent"; consent.value = "yes"; consent.checked = true; consent.setAttribute("aria-label", "Consent"); two.append(consent);
+const ignoredFlowInput = document.createElement("input"); ignoredFlowInput.type = "text"; ignoredFlowInput.name = "ignoredFlow"; ignoredFlowInput.value = "disabled"; ignoredFlowInput.disabled = true; ignoredFlowInput.setAttribute("aria-label", "Disabled field"); two.append(ignoredFlowInput);
+const tags = document.createElement("select"); tags.multiple = true; tags.name = "choices"; tags.setAttribute("aria-label", "Choices"); for (const value of ["red", "blue"]) { const option = document.createElement("option"); option.value = value; option.textContent = value; option.selected = true; tags.append(option); } two.append(tags);
+const flowRange = document.createElement("aeliqo-date-range") as any; Object.assign(flowRange, {name: "window", label: "Window", start: "2026-09-02", end: "2026-09-09"}); two.append(flowRange);
 flow.append(one, two);
 fixture.append(flow);
+flowRange.requestUpdate();
 
 const quality = document.createElement("aeliqo-quality-panel") as any;
 quality.id = "quality";

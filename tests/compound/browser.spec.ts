@@ -25,9 +25,14 @@ test("explorer forwards filter and stable identity selection to the host", async
 test("comparison and breakdown use shared bounded tables and host evaluated values", async ({page}) => {
   const comparison = page.locator("#comparison");
   await expect(comparison.locator("aeliqo-table")).toHaveCount(1);
-  await expect(comparison.locator("aeliqo-table").getByRole("columnheader")).toHaveCount(3);
+  await expect(comparison.locator("aeliqo-table").getByRole("columnheader")).toHaveCount(4);
+  await expect(comparison.locator("aeliqo-table").locator("[part=heading]").first()).toHaveText("Metric");
+  await expect.poll(() => page.locator("#comparison").evaluate((element) => {
+    const table = (element as any).renderRoot.querySelector("aeliqo-table") as any;
+    return {identity: table.identity, columns: table.columns.map((column: {key: string}) => column.key), firstMetric: table.rows[0]?.metric};
+  })).toEqual({identity: ["metricId"], columns: ["metric", "comparison:a", "comparison:b", "comparison:metric"], firstMetric: "Amount (USD)"});
   await comparison.getByRole("button", {name: "Alpha", exact: true}).click();
-  await expect.poll(() => page.evaluate(() => (window as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-comparison-set")?.detail)).toMatchObject({keys: ["b"], scope: {label: "Authorized people"}});
+  await expect.poll(() => page.evaluate(() => (window as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-comparison-set")?.detail)).toMatchObject({keys: ["b", "metric"], scope: {label: "Authorized people"}});
 
   const breakdown = page.locator("#breakdown");
   await expect(breakdown.locator("aeliqo-table")).toHaveCount(1);
@@ -62,10 +67,15 @@ test("record editor validates slotted fields and includes the explicit draft rec
   await editor.getByRole("button", {name: "Save", exact: true}).click();
   expect(await page.evaluate(() => (window as FixtureWindow).compoundFixture.events.filter(event => event.type === "aeliqo-record-editor-save").length)).toBe(0);
   await editor.locator("aeliqo-text-field").locator("input").fill("Ada Lovelace");
+  await page.evaluate(async () => await (document.querySelector("#editor aeliqo-date-range") as any).updateComplete);
   await editor.getByRole("button", {name: "Save", exact: true}).click();
-  await expect.poll(() => page.evaluate(() => (window as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-record-editor-save")?.detail)).toMatchObject({key: "a", entityRevision: "rev-1", values: {name: "Ada Lovelace"}});
+  await expect.poll(() => page.evaluate(() => (window as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-record-editor-save")?.detail)).toMatchObject({key: "a", entityRevision: "rev-1", values: {name: "Ada Lovelace", tags: ["first", "second"], "period[start]": "2026-09-01", "period[end]": "2026-09-08", "__proto__": "safe", constructor: "safe-constructor"}});
+  expect(await page.evaluate(() => {
+    const detail = (window as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-record-editor-save")?.detail as {values: Record<string, unknown>};
+    return {keys: Object.keys(detail.values), ignored: detail.values.ignored, proto: detail.values["__proto__"], constructor: detail.values.constructor};
+  })).toEqual({keys: ["tags", "__proto__", "constructor", "name", "period[start]", "period[end]"], ignored: undefined, proto: "safe", constructor: "safe-constructor"});
   await editor.getByRole("button", {name: "Cancel", exact: true}).click();
-  await expect.poll(() => page.evaluate(() => (window as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-record-editor-cancel")?.detail)).toMatchObject({key: "a", entityRevision: "rev-1", values: {name: "Ada Lovelace"}});
+  await expect.poll(() => page.evaluate(() => (window as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-record-editor-cancel")?.detail)).toMatchObject({key: "a", entityRevision: "rev-1", values: {name: "Ada Lovelace", tags: ["first", "second"], "period[start]": "2026-09-01", "period[end]": "2026-09-08", "__proto__": "safe", constructor: "safe-constructor"}});
 });
 
 test("form flow keeps step scoped controls mounted, blocks invalid progression, and commits all steps", async ({page}) => {
@@ -76,8 +86,18 @@ test("form flow keeps step scoped controls mounted, blocks invalid progression, 
   await flow.locator("aeliqo-text-field").locator("input").fill("Ada Lovelace");
   await flow.getByRole("button", {name: "Next", exact: true}).click();
   await expect(flow.locator("[part=step-panel]")).toHaveAttribute("data-step", "two");
+  await page.evaluate(async () => {
+    const element = document.querySelector("#flow") as any;
+    element.draft = {draftOnly: "new"};
+    await (element.querySelector("aeliqo-date-range") as any).updateComplete;
+    await element.updateComplete;
+  });
   await flow.getByRole("button", {name: "Commit", exact: true}).click();
-  await expect.poll(() => page.evaluate(() => (window as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-form-flow-commit")?.detail.draft)).toMatchObject({displayName: "Ada Lovelace"});
+  await expect.poll(() => page.evaluate(() => (window as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-form-flow-commit")?.detail.draft)).toMatchObject({draftOnly: "new", displayName: "Ada Lovelace", plan: "standard", consent: "yes", tags: ["one", "two"], choices: ["red", "blue"], "window[start]": "2026-09-02", "window[end]": "2026-09-09", "__proto__": "draft-proto", constructor: "draft-constructor"});
+  expect(await page.evaluate(() => {
+    const draft = (window as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-form-flow-commit")?.detail.draft as Record<string, unknown>;
+    return {keys: Object.keys(draft), ignored: draft.ignoredFlow, proto: draft["__proto__"], constructor: draft.constructor};
+  })).toEqual({keys: ["draftOnly", "displayName", "tags", "__proto__", "constructor", "plan", "consent", "choices", "window[start]", "window[end]"], ignored: undefined, proto: "draft-proto", constructor: "draft-constructor"});
 });
 
 test("compound states keep caution copy and remain accessible under RTL, zoom and forced colors", async ({page}) => {
