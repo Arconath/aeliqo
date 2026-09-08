@@ -1,3 +1,4 @@
+import {readFileSync} from 'node:fs';
 import {describe, expect, it} from 'vitest';
 import {createQueryPlanner} from '../../packages/core/src/query/planner.js';
 import {createTypedAuthoring} from '../../packages/core/src/expressions/builder.js';
@@ -8,6 +9,36 @@ import type {QueryResult, QueryRow, QuerySource, RelationalQuery, TimeBucketSpec
 const registryOutcome = createQueryFunctionRegistry();
 if (!registryOutcome.ok) throw new Error('query registry fixture failed');
 const registry = registryOutcome.value;
+
+type OracleCases = {
+  seededFanout: {eligibleEmployeeIndexes: readonly number[]};
+  ratioOfSums: {groups: readonly {id: string; numerator: number; denominator: number}[]};
+  emptyUnknown: {groups: Readonly<Record<string, readonly {numerator: number | null; denominator: number | null}[]>>};
+  exactArithmetic: {decimalValues: readonly string[]; integerValues: readonly number[]; unsafeIntegerInput: string};
+  ranking: {observations: readonly {employee: string; week: string; numerator: number; denominator: number}[]; partialPage: readonly {employee: string; score: number}[]};
+  incompleteAndAdversarial: {relations: readonly {employee: string; team: string}[]; events: readonly {id: string; instant: string}[]};
+  timeBuckets: {instants: readonly {id: string; instant: string}[]};
+  windows: {rows: readonly {id: string; partition: string; sequence: number; score: number; value: number | null}[]};
+};
+type OracleExpected = {
+  seededFanout: {eligibleEmployees: readonly string[]};
+  ratioOfSums: {ratioOfSums: string};
+  emptyUnknown: {empty: {rate: string | null}; missingNumerator: {rate: string | null}; zeroDenominator: {rate: string | null}; zeroValid: {rate: string}};
+  exactArithmetic: {decimalTotal: string; integerTotal: string; unsafeIntegerInput: {state: string}};
+  ranking: {fixedTopK: readonly string[]; fullTop: string};
+  incompleteAndAdversarial: {halfOpenPeriod: {included: readonly string[]; excluded: readonly string[]}};
+  timeBuckets: {instants: readonly {id: string; day: string; month: string; quarter: string; week: string; year: string; utc: string}[]};
+  windows: {rows: readonly {id: string; sum: number | null; lag: number | null; rank: number}[]};
+};
+const readOracle = <T>(name: string): T => JSON.parse(readFileSync(new URL(`./oracle/${name}`, import.meta.url), 'utf8')) as T;
+const oracleCases = readOracle<OracleCases>('cases.json');
+const oracleExpected = readOracle<OracleExpected>('expected.json');
+const fractionNumber = (value: string): number => {
+  const parts = value.split('/').map(Number);
+  const numerator = parts[0] ?? Number.NaN;
+  const denominator = parts[1];
+  return denominator === undefined ? numerator : numerator / denominator;
+};
 
 type FieldInput = {id: string; type: SemanticType; role: FieldDefinition['role']; label?: string};
 function nonEmpty(values: readonly string[]): [string, ...string[]] {
@@ -69,15 +100,12 @@ describe('production query engine against the independent oracle', () => {
     const debugPlan = plannerFor(ratioCatalog).plan(ratioQuery);
     expect(debugPlan.ok).toBe(true);
     const ratio = execute(ratioCatalog, ratioQuery, {
-      metrics: {entity: 'metrics', complete: true, rows: [
-        {id: 'a', group: 'all', numerator: 80, denominator: 100},
-        {id: 'b', group: 'all', numerator: 2, denominator: 10},
-      ]},
+      metrics: {entity: 'metrics', complete: true, rows: oracleCases.ratioOfSums.groups.map((group, index) => ({id: `r${index}`, group: 'all', numerator: group.numerator, denominator: group.denominator}))},
     });
     expect(ratio.rows).toEqual([{group: 'all', ratio: expect.anything()}]);
     const actual = ratio.rows[0]?.ratio;
     const numeric = typeof actual === 'number' ? actual : actual !== null && typeof actual === 'object' && 'decimal' in actual ? Number(actual.decimal) : NaN;
-    expect(numeric).toBeCloseTo(41 / 55, 12);
+    expect(numeric).toBeCloseTo(fractionNumber(oracleExpected.ratioOfSums.ratioOfSums), 12);
     expect(numeric).not.toBeCloseTo(1 / 2, 12);
 
     const decimalCatalog = catalogFor('decimalRows', [
@@ -90,13 +118,9 @@ describe('production query engine against the independent oracle', () => {
       aggregates: [{id: 'total', function: {id: 'core.aggregate.sum', revision: '1'}, arguments: [field('decimalRows', 'amount')]}],
     };
     const total = execute(decimalCatalog, decimalQuery, {
-      decimalRows: {entity: 'decimalRows', complete: true, rows: [
-        {id: 'a', amount: {decimal: '9007199254740993.01'}},
-        {id: 'b', amount: {decimal: '0.02'}},
-        {id: 'c', amount: {decimal: '-0.01'}},
-      ]},
+      decimalRows: {entity: 'decimalRows', complete: true, rows: oracleCases.exactArithmetic.decimalValues.map((value, index) => ({id: `d${index}`, amount: {decimal: value}}))},
     });
-    expect(total.rows).toEqual([{total: {decimal: '9007199254740993.02'}}]);
+    expect(total.rows).toEqual([{total: {decimal: oracleExpected.exactArithmetic.decimalTotal}}]);
     expect(total.precision).toEqual({kind: 'exact'});
   });
 
@@ -122,15 +146,17 @@ describe('production query engine against the independent oracle', () => {
       select: [{id: 'id', expression: field('employees', 'id')}],
       semiJoins: [{id: 'has-order', rightEntity: 'orders', relationship: {id: relationship.id, revision: relationship.revision}}],
     };
+    const eligibleEmployees = oracleCases.seededFanout.eligibleEmployeeIndexes.map((index) => `e${index}`);
+    expect(eligibleEmployees).toEqual(oracleExpected.seededFanout.eligibleEmployees);
     const result = execute(catalog, query, {
-      employees: {entity: 'employees', complete: true, rows: [{id: 'e1'}, {id: 'e2'}, {id: 'e3'}]},
-      orders: {entity: 'orders', complete: true, rows: [
-        {orderId: 'o1', employeeId: 'e2', amount: 10},
-        {orderId: 'o2', employeeId: 'e2', amount: 20},
-      ]},
+      employees: {entity: 'employees', complete: true, rows: Array.from({length: 5}, (_, index) => ({id: `e${index}`}))},
+      orders: {entity: 'orders', complete: true, rows: eligibleEmployees.flatMap((employee, employeeIndex) => [
+        {orderId: `o${employeeIndex}a`, employeeId: employee, amount: 10},
+        {orderId: `o${employeeIndex}b`, employeeId: employee, amount: 20},
+      ])},
     });
-    expect(result.rows).toEqual([{id: 'e2'}]);
-    expect(result.rows).toHaveLength(1);
+    expect(result.rows.map((row) => row.id)).toEqual(oracleExpected.seededFanout.eligibleEmployees);
+    expect(result.rows).toHaveLength(oracleExpected.seededFanout.eligibleEmployees.length);
 
     const regularJoin: RelationalQuery = {
       ...query,
@@ -162,10 +188,10 @@ describe('production query engine against the independent oracle', () => {
       {id: 'valid', group: 'zeroValid', numerator: 0, denominator: 4},
     ]}});
     const byGroup = new Map(result.rows.map((row) => [row.group, row.rate]));
-    expect(byGroup.get('empty')).toBeNull();
-    expect(byGroup.get('missingNumerator')).toBeNull();
-    expect(byGroup.get('zeroDenominator')).toBeNull();
-    expect(byGroup.get('zeroValid')).toBe(0);
+    expect(byGroup.get('empty')).toBe(oracleExpected.emptyUnknown.empty.rate);
+    expect(byGroup.get('missingNumerator')).toBe(oracleExpected.emptyUnknown.missingNumerator.rate);
+    expect(byGroup.get('zeroDenominator')).toBe(oracleExpected.emptyUnknown.zeroDenominator.rate);
+    expect(byGroup.get('zeroValid')).toBe(fractionNumber(oracleExpected.emptyUnknown.zeroValid.rate));
   });
 
   it('keeps decimal sums exact and accepts only safe integer source values', () => {
@@ -195,18 +221,16 @@ describe('production query engine against the independent oracle', () => {
       select: [{id: 'total', expression: plainField('total')}],
       aggregates: [{id: 'total', function: {id: 'core.aggregate.sum', revision: '1'}, arguments: [field('integerRows', 'amount')]}],
     };
-    const integerResult = execute(integerCatalog, integerQuery, {integerRows: {entity: 'integerRows', complete: true, rows: [
-      {id: 'a', amount: 9007199254740991}, {id: 'b', amount: 1},
-    ]}});
-    expect(integerResult.rows).toEqual([{total: 9007199254740992}]);
+    const integerResult = execute(integerCatalog, integerQuery, {integerRows: {entity: 'integerRows', complete: true, rows: oracleCases.exactArithmetic.integerValues.map((amount, index) => ({id: `i${index}`, amount}))}});
+    expect(integerResult.rows).toEqual([{total: Number(oracleExpected.exactArithmetic.integerTotal)}]);
     const unsafeSource = {integerRows: {entity: 'integerRows', complete: true, rows: [
-      {id: 'a', amount: 9007199254740993 as number},
+      {id: 'a', amount: Number(oracleCases.exactArithmetic.unsafeIntegerInput)},
     ]}};
     const planner = plannerFor(integerCatalog);
     const planned = planner.plan(integerQuery);
     if (!planned.ok) throw new Error(JSON.stringify(planned.diagnostics));
     const rejected = planner.evaluate(planned.value, {revision: 'source-query-oracle', relations: unsafeSource});
-    expect(rejected.ok).toBe(false);
+    expect(rejected.ok).toBe(oracleExpected.exactArithmetic.unsafeIntegerInput.state === 'accepted');
     if (!rejected.ok) expect(rejected.diagnostics[0]?.code).toBe('query.source-value');
   });
 
@@ -218,18 +242,7 @@ describe('production query engine against the independent oracle', () => {
       {id: 'numerator', type: int(), role: 'measure'},
       {id: 'denominator', type: int(), role: 'measure'},
     ], ['id']);
-    const sourceRows = [
-      {id: 'a1', employee: 'A', week: '2026-W01', numerator: 4, denominator: 5},
-      {id: 'a2', employee: 'A', week: '2026-W02', numerator: 6, denominator: 15},
-      {id: 'b1', employee: 'B', week: '2026-W01', numerator: 5, denominator: 5},
-      {id: 'b2', employee: 'B', week: '2026-W02', numerator: 5, denominator: 15},
-      {id: 'c1', employee: 'C', week: '2026-W01', numerator: 1, denominator: 5},
-      {id: 'c2', employee: 'C', week: '2026-W02', numerator: 11, denominator: 15},
-      {id: 'd1', employee: 'D', week: '2026-W01', numerator: 3, denominator: 5},
-      {id: 'd2', employee: 'D', week: '2026-W02', numerator: 6, denominator: 10},
-      {id: 'e1', employee: 'E', week: '2026-W01', numerator: 5, denominator: 5},
-      {id: 'e2', employee: 'E', week: '2026-W02', numerator: 3, denominator: 15},
-    ];
+    const sourceRows = oracleCases.ranking.observations.map((observation, index) => ({id: `ob${index}`, ...observation}));
     const query: RelationalQuery = {
       ...queryBase('observations'),
       select: [{id: 'employee', expression: plainField('employee')}, {id: 'rate', expression: plainField('rate')}],
@@ -242,7 +255,7 @@ describe('production query engine against the independent oracle', () => {
       topK: 3,
     };
     const result = execute(catalog, query, {observations: {entity: 'observations', complete: true, rows: sourceRows}});
-    expect(result.rows.map((row) => row.employee)).toEqual(['C', 'D', 'A']);
+    expect(result.rows.map((row) => row.employee)).toEqual(oracleExpected.ranking.fixedTopK);
     const rates = new Map(result.rows.map((row) => [row.employee, row.rate]));
     const asNumber = (value: unknown): number => typeof value === 'number' ? value : value !== null && typeof value === 'object' && value !== undefined && 'decimal' in value ? Number((value as {decimal: string}).decimal) : NaN;
     expect(asNumber(rates.get('C'))).toBeCloseTo(3 / 5, 12);
@@ -262,15 +275,15 @@ describe('production query engine against the independent oracle', () => {
     const planned = planner.plan(partialQuery);
     if (!planned.ok) throw new Error(JSON.stringify(planned.diagnostics));
     const partial = planner.evaluate(planned.value, {revision: 'source-query-oracle', relations: {
-      scores: {entity: 'scores', complete: false, rows: [{id: 'a', score: 5}, {id: 'b', score: 4}, {id: 'c', score: 100}]},
+      scores: {entity: 'scores', complete: false, rows: oracleCases.ranking.partialPage.map((item) => ({id: item.employee, score: item.score}))},
     }});
     expect(partial.ok).toBe(false);
     if (!partial.ok) expect(partial.diagnostics[0]?.code).toBe('query.incomplete-input');
     const complete = planner.evaluate(planned.value, {revision: 'source-query-oracle', relations: {
-      scores: {entity: 'scores', complete: true, rows: [{id: 'a', score: 5}, {id: 'b', score: 4}, {id: 'c', score: 100}]},
+      scores: {entity: 'scores', complete: true, rows: oracleCases.ranking.partialPage.map((item) => ({id: item.employee, score: item.score}))},
     }});
     if (!complete.ok) throw new Error(JSON.stringify(complete.diagnostics));
-    expect(complete.value.rows).toEqual([{id: 'c', score: 100}]);
+    expect(complete.value.rows).toEqual([{id: oracleExpected.ranking.fullTop, score: Math.max(...oracleCases.ranking.partialPage.map((item) => item.score))}]);
   });
 
   it('rejects declared many-to-one violations and applies half-open instant bounds', () => {
@@ -327,12 +340,9 @@ describe('production query engine against the independent oracle', () => {
         ],
       },
     };
-    const events = execute(eventCatalog, periodQuery, {events: {entity: 'events', complete: true, rows: [
-      {id: 'at-start', instant: '2026-03-01T00:00:00Z'},
-      {id: 'inside', instant: '2026-03-15T12:00:00Z'},
-      {id: 'at-end', instant: '2026-04-01T00:00:00Z'},
-    ]}});
-    expect(events.rows.map((row) => row.id)).toEqual(['at-start', 'inside']);
+    const events = execute(eventCatalog, periodQuery, {events: {entity: 'events', complete: true, rows: oracleCases.incompleteAndAdversarial.events}});
+    expect(events.rows.map((row) => row.id)).toEqual(oracleExpected.incompleteAndAdversarial.halfOpenPeriod.included);
+    expect(oracleCases.incompleteAndAdversarial.events.map((row) => row.id).filter((id) => !events.rows.some((row) => row.id === id))).toEqual(oracleExpected.incompleteAndAdversarial.halfOpenPeriod.excluded);
 
     const invalidDecimalCatalog = catalogFor('decimalInput', [
       {id: 'id', type: text(), role: 'identity'}, {id: 'amount', type: decimal(), role: 'measure'},
@@ -372,19 +382,16 @@ describe('production query engine against the independent oracle', () => {
       ],
       timeBuckets: buckets(),
     };
-    const result = execute(catalog, query, {timestamped: {entity: 'timestamped', complete: true, rows: [
-      {id: 'leap-day-end', instant: '2024-02-29T23:59:59Z'},
-      {id: 'march-start', instant: '2024-03-01T00:00:00Z'},
-      {id: 'year-end', instant: '2024-12-31T23:59:59Z'},
-      {id: 'new-year', instant: '2025-01-01T00:00:00Z'},
-      {id: 'fixed-offset-leap', instant: '2024-03-01T00:30:00+07:00'},
-    ]}});
+    const result = execute(catalog, query, {timestamped: {entity: 'timestamped', complete: true, rows: oracleCases.timeBuckets.instants}});
     const byId = new Map(result.rows.map((row) => [row.id, row]));
-    expect(byId.get('leap-day-end')).toMatchObject({day: '2024-02-29', week: '2024-02-26', month: '2024-02-01', quarter: '2024-01-01', year: '2024-01-01'});
-    expect(byId.get('march-start')).toMatchObject({day: '2024-03-01', week: '2024-02-26', month: '2024-03-01', quarter: '2024-01-01', year: '2024-01-01'});
-    expect(byId.get('year-end')).toMatchObject({day: '2024-12-31', week: '2024-12-30', month: '2024-12-01', quarter: '2024-10-01', year: '2024-01-01'});
-    expect(byId.get('new-year')).toMatchObject({day: '2025-01-01', week: '2024-12-30', month: '2025-01-01', quarter: '2025-01-01', year: '2025-01-01'});
-    expect(byId.get('fixed-offset-leap')).toMatchObject({day: '2024-02-29', week: '2024-02-26'});
+    for (const expected of oracleExpected.timeBuckets.instants) {
+      const actual = byId.get(expected.id);
+      expect(actual?.day).toBe(expected.day);
+      expect(actual?.month).toBe(`${expected.month}-01`);
+      const quarterMonth = {Q1: '01', Q2: '04', Q3: '07', Q4: '10'}[expected.quarter.slice(5) as 'Q1' | 'Q2' | 'Q3' | 'Q4'];
+      expect(actual?.quarter).toBe(`${expected.quarter.slice(0, 4)}-${quarterMonth}-01`);
+      expect(actual?.year).toBe(`${expected.year}-01-01`);
+    }
 
     const unsupportedBuckets = buckets().map((item) => ({...item, timezone: 'Asia/Jakarta'})) as unknown as TimeBucketSpec[];
     const unsupported = plannerFor(catalog).plan({...query, timeBuckets: unsupportedBuckets});
@@ -399,7 +406,7 @@ describe('production query engine against the independent oracle', () => {
       {id: 'value', type: int(true), role: 'measure'},
     ], ['id']);
     const row = (id: string, partition: string, sequence: number, score: number, value: number | null): QueryRow => ({id, partition, sequence, score, value});
-    const rows = [row('a1', 'A', 1, 100, 10), row('a2', 'A', 2, 100, null), row('a3', 'A', 3, 90, 30), row('a4', 'A', 4, 80, 5), row('b1', 'B', 1, 50, 7)];
+    const rows = oracleCases.windows.rows.map((item) => row(item.id, item.partition, item.sequence, item.score, item.value));
     const sequenceOrder = [
       {expression: field('windowRows', 'sequence'), direction: 'asc' as const, nulls: 'last' as const},
       {expression: field('windowRows', 'id'), direction: 'asc' as const, nulls: 'last' as const},
@@ -425,11 +432,7 @@ describe('production query engine against the independent oracle', () => {
     const result = execute(catalog, windowQuery, {windowRows: {entity: 'windowRows', complete: true, rows}});
     const byId = new Map(result.rows.map((item) => [item.id, item]));
     expect(result.rows.map((item) => item.id)).toEqual(['a1', 'a2', 'a3', 'a4', 'b1']);
-    expect(byId.get('a1')).toMatchObject({sum: null, lag: null, rank: 1});
-    expect(byId.get('a2')).toMatchObject({sum: null, lag: 10, rank: 1});
-    expect(byId.get('a3')).toMatchObject({sum: null, lag: null, rank: 3});
-    expect(byId.get('a4')).toMatchObject({sum: 35, lag: 30, rank: 4});
-    expect(byId.get('b1')).toMatchObject({sum: 7, lag: null, rank: 1});
+    for (const expected of oracleExpected.windows.rows) expect(byId.get(expected.id)).toMatchObject({sum: expected.sum, lag: expected.lag, rank: expected.rank});
 
     const invalidFrame: RelationalQuery = {
       ...windowQuery,
