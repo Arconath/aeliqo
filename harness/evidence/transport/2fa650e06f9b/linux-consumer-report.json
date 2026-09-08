@@ -1,0 +1,45 @@
+{
+  "passed": true,
+  "scope": "@aeliqo/core and @aeliqo/runtime 0.1.0 installed tarballs; strict declarations; local/HTTP ADC roundtrip; authorization and stale-plan checks; browser bundle and fetch path.",
+  "artifacts": [
+    {
+      "name": "@aeliqo/core",
+      "version": "0.1.0",
+      "path": "/work/artifacts/runtime-consumers/run-qE4h2T/aeliqo-core-0.1.0.tgz",
+      "sha256": "ac6998c0acf1cae4ec5a602eda10d429dc6682236c7d4fcf5f5497a6df3d4ed5",
+      "integrity": "sha512-9D2gH4b5Q7wREzIAsoq9hQYEeNFha1FRBSmG77F07MxoYpFP46erby8o2RKnsq0V7Ipj5qSeHt5h0NCZa6i8aw=="
+    },
+    {
+      "name": "@aeliqo/runtime",
+      "version": "0.1.0",
+      "path": "/work/artifacts/runtime-consumers/run-qE4h2T/aeliqo-runtime-0.1.0.tgz",
+      "sha256": "116a78ea49cbd6f814db964fd2b1c980bb3d6942ea1580170e607639e30ee3a8",
+      "integrity": "sha512-Pdh8k2nQFf7IRmP5e3QoTTtjcWGoL7Q/ySoPJQYC43BWgs2COj2SMYus4gG95NH2CeQp3rJ8szQX2Xcv3cF0BQ=="
+    }
+  ],
+  "consumer": {
+    "directory": "/tmp/aeliqo-runtime-consumer-ghxESo",
+    "lockPath": "/work/artifacts/runtime-consumers/run-qE4h2T/consumer-package-lock.json",
+    "lockSha256": "77e306344940702d760edf3baf47ce1d188243c2d6fddc3c6b7f8fef90e53125"
+  },
+  "sourceDigestBefore": {
+    "core": "c1bc6f62223319937f58ca0432911fe3f03f69cebce30c4f217a472d243af151",
+    "runtime": "5f81ae7434c4c5c14d4f9ff30424eee5b4931c9d65263b386bd88444d19afb91"
+  },
+  "sourceDigestAfter": {
+    "core": "c1bc6f62223319937f58ca0432911fe3f03f69cebce30c4f217a472d243af151",
+    "runtime": "5f81ae7434c4c5c14d4f9ff30424eee5b4931c9d65263b386bd88444d19afb91"
+  },
+  "consumerOutput": "Installed @aeliqo/runtime/data local, HTTP, auth revalidation, Vite and Chromium passes.",
+  "environment": {
+    "node": "v24.20.0",
+    "npm": "11.16.0",
+    "pnpm": "11.24.0",
+    "typescript": "7.0.2",
+    "vite": "8.2.2",
+    "playwright": "1.63.0",
+    "os": "linux",
+    "release": "7.0.14-orbstack-00380-ga7e0a2dc9535",
+    "arch": "arm64"
+  }
+}

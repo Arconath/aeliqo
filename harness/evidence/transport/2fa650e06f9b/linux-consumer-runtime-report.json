@@ -1,0 +1,452 @@
+{
+  "passed": true,
+  "local": {
+    "eventKinds": [
+      "descriptor",
+      "batch",
+      "progress",
+      "complete"
+    ],
+    "stalePlan": "data.stale-plan"
+  },
+  "http": {
+    "eventKinds": [
+      "descriptor",
+      "batch",
+      "progress",
+      "complete"
+    ],
+    "denied": "data.denied"
+  },
+  "browser": {
+    "result": {
+      "local": {
+        "scopeDigest": "scope-public",
+        "rows": 3
+      },
+      "network": {
+        "scopeDigest": "scope-alice",
+        "rows": 1
+      },
+      "transportFlows": 21
+    },
+    "modules": [
+      "\u0000vite/modulepreload-polyfill.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/@aeliqo/core/dist/contracts/limits.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/zod/v4/core/util.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/zod/v4/core/core.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/zod/v4/core/errors.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/zod/v4/core/parse.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/zod/v4/core/regexes.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/zod/v4/core/checks.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/zod/v4/core/versions.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/zod/v4/core/schemas.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/zod/v4/core/api.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/zod/v4/mini/schemas.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/zod/v4/mini/iso.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/@aeliqo/core/dist/contracts/schemas.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/@aeliqo/core/dist/diagnostics/wire.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/@aeliqo/core/dist/contracts/ingress.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/@aeliqo/core/dist/contracts/parse.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/@aeliqo/core/dist/contracts/scalars.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/@aeliqo/core/dist/semantics/errors.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/@aeliqo/core/dist/semantics/type-utils.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/@aeliqo/core/dist/semantics/catalog.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/@aeliqo/core/dist/expressions/check.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/@aeliqo/core/dist/semantics/meaning.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/@aeliqo/core/dist/expressions/registry.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/@aeliqo/core/dist/query/evaluator.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/@aeliqo/core/dist/query/planner.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/@aeliqo/runtime/dist/data/stream.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/@aeliqo/runtime/dist/data/schema.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/@aeliqo/runtime/dist/data/local.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/@aeliqo/runtime/dist/data/http.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/node_modules/@aeliqo/runtime/dist/results/store.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/browser.js",
+      "/tmp/aeliqo-runtime-consumer-ghxESo/index.html"
+    ],
+    "bundle": [
+      {
+        "file": "assets/index-DXc1johb.js",
+        "bytes": 251853,
+        "gzipBytes": 65575
+      }
+    ],
+    "initialGzipBytes": 65575,
+    "browserVersion": "153.0.8010.12"
+  },
+  "observations": [
+    {
+      "operation": "describe",
+      "principal": "alice"
+    },
+    {
+      "operation": "plan",
+      "principal": "alice"
+    },
+    {
+      "operation": "execute",
+      "principal": "alice"
+    },
+    {
+      "operation": "execute",
+      "principal": "alice"
+    },
+    {
+      "operation": "execute",
+      "principal": "alice"
+    },
+    {
+      "operation": "describe",
+      "principal": "alice"
+    },
+    {
+      "operation": "plan",
+      "principal": "alice"
+    },
+    {
+      "operation": "execute",
+      "principal": "alice"
+    },
+    {
+      "operation": "execute",
+      "principal": "alice"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "describe",
+      "principal": "browser"
+    },
+    {
+      "operation": "plan",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    },
+    {
+      "operation": "execute",
+      "principal": "browser"
+    }
+  ]
+}

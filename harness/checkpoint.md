@@ -156,3 +156,17 @@ Inherited hosted34185639265 request-abort investigation is still open; the isola
 Linux pinned browser download remains in progress. No Linux fix or release
 readiness claimed. T10 region transactions is the next ready implementation task.
 No npm publication,main cutover or production deployment occurred.
+
+T10 remains active. Core semantic read-set validator is committed at c77ce3a;
+the isolated runtime author is closing independent review findings around
+authority/revocation, bounded callbacks/staging, result leases and fresh restore.
+
+The inherited Linux HTTP completion regression is fixed at source02069c6.
+Immutable evidence: harness/evidence/transport/2fa650e06f9b. A pinned Linux
+Chromium probe reproduced146 canceled requests out of303 valid ADC responses;
+native clone/discard stream isolation produced zero failures over303 requests.
+Fresh97data tests/strict types, installed macOS/Linux consumers with21 native
+flows, independent real-network streaming/cancellation/budget probes and hosted
+CI34191687282 passed. Custom fetch wrappers that erase Response.url bypass the
+compatibility path; this limitation is documented. Main, npm and production remain
+unchanged. Continue T10 review/integration, then the actual DAG.

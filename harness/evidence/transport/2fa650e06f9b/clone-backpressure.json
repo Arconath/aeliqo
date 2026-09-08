@@ -1,0 +1,82 @@
+{
+  "outcome": {
+    "budget": {
+      "bytes": 196608,
+      "stopped": true
+    },
+    "early": {
+      "firstLine": "{\"kind\":\"descriptor\"}\n",
+      "stopped": true
+    }
+  },
+  "budgetStats": {
+    "written": 196608,
+    "closed": true,
+    "done": true,
+    "writes": 3
+  },
+  "earlyStats": {
+    "written": 65536,
+    "closed": true,
+    "done": true,
+    "writes": 1
+  },
+  "failures": [
+    {
+      "path": "/budget",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "path": "/early",
+      "error": "net::ERR_ABORTED"
+    }
+  ],
+  "traces": [
+    {
+      "event": "requestWillBeSent",
+      "id": "36237B1574B91FAA455F86F3911771F5",
+      "url": "http://127.0.0.1:34253/"
+    },
+    {
+      "event": "responseReceived",
+      "id": "36237B1574B91FAA455F86F3911771F5",
+      "url": "http://127.0.0.1:34253/"
+    },
+    {
+      "event": "loadingFinished",
+      "id": "36237B1574B91FAA455F86F3911771F5"
+    },
+    {
+      "event": "requestWillBeSent",
+      "id": "73.2",
+      "url": "http://127.0.0.1:34253/budget"
+    },
+    {
+      "event": "responseReceived",
+      "id": "73.2",
+      "url": "http://127.0.0.1:34253/budget"
+    },
+    {
+      "event": "requestWillBeSent",
+      "id": "73.3",
+      "url": "http://127.0.0.1:34253/early"
+    },
+    {
+      "event": "loadingFailed",
+      "id": "73.2",
+      "error": "net::ERR_ABORTED",
+      "canceled": true
+    },
+    {
+      "event": "responseReceived",
+      "id": "73.3",
+      "url": "http://127.0.0.1:34253/early"
+    },
+    {
+      "event": "loadingFailed",
+      "id": "73.3",
+      "error": "net::ERR_ABORTED",
+      "canceled": true
+    }
+  ]
+}

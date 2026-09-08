@@ -1,0 +1,35 @@
+{
+  "commit": "02069c65ee61b208ae013b77d12663574dfe4c22",
+  "candidateDigest": "2fa650e06f9b9b235dfcf1996bd739d2b88bfd34828eb9cab02fae12bd9aa481",
+  "scope": "Native HTTP fetch stream completion compatibility fix; not whole product or release certification.",
+  "validation": {
+    "dataTests": 97,
+    "strictTypes": "pass",
+    "macInstalledConsumer": "pass, 21 native flows",
+    "linuxInstalledConsumer": "pass, 21 native flows; c77ce3a archive plus exact current HTTP/test/consumer overlays, before README update",
+    "linuxDiagnostic": "14a0042 baseline: 146 failures / 303 native ADC requests; corrected HTTP code: 0 / 303",
+    "linuxEnvironment": {
+      "node": "24.20.0",
+      "playwright": "1.63.0",
+      "chromium": "153.0.8010.12",
+      "architecture": "Linux arm64",
+      "cpus": 2,
+      "ramGiB": 2
+    },
+    "safety": "Independent real HTTP probes preserved data, streaming, truncation and abort errors; budget and early cancellation stopped a 16 MiB source before 2 MiB."
+  },
+  "review": {
+    "reviewer": "release_inventory (independent Luna Max)",
+    "outcome": "approved",
+    "caveat": "Custom fetch adapters that reconstruct Responses with empty URL bypass native clone workaround; documented in runtime README."
+  },
+  "hostedCI": {
+    "runId": 34191687282,
+    "commit": "02069c65ee61b208ae013b77d12663574dfe4c22",
+    "result": "success",
+    "url": "https://github.com/Arconath/aeliqo/actions/runs/34191687282",
+    "scope": "Hosted specification/platform jobs including full workspace types, deterministic data/result suites, installed consumer21 native flows, platform consumers and Next SSR/hydration."
+  },
+  "publication": "none",
+  "deployment": "none"
+}

@@ -1,0 +1,36 @@
+{
+  "outcome": {
+    "fullLength": 535552,
+    "fullFirst": "Aeliqo clone body ✓\n0123456789",
+    "ndjsonLines": 256,
+    "ndjsonChunks": 58,
+    "truncatedError": "TypeError",
+    "delayedAbortError": "AbortError",
+    "slowAbortError": "AbortError"
+  },
+  "pageErrors": [],
+  "consoleErrors": [
+    "Failed to load resource: net::ERR_CONTENT_LENGTH_MISMATCH"
+  ],
+  "requestFailures": [
+    {
+      "url": "http://127.0.0.1:35161/truncated",
+      "error": "net::ERR_CONTENT_LENGTH_MISMATCH"
+    },
+    {
+      "url": "http://127.0.0.1:35161/delayed-abort",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:35161/slow-abort",
+      "error": "net::ERR_ABORTED"
+    }
+  ],
+  "failurePaths": [
+    "/truncated",
+    "/delayed-abort",
+    "/slow-abort"
+  ],
+  "unexpectedFailures": [],
+  "traceCount": 17
+}
