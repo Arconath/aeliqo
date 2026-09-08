@@ -44,7 +44,10 @@ distinguishes observed identity selection from a server predicate selection so
 it cannot imply that loaded rows represent an unobserved global set.
 
 The region data adapter is the boundary between these direct views and a
-validated presentation. `createAeliqoDataRegistry()` accepts an application
+validated presentation. The public
+`createAeliqoPresentationRegistry({data: bindings, resolveEntity})` installs all
+eight additional data manifests alongside the existing table manifest, using
+the same core presentation validator. Each binding contains an application
 authorized `Result` descriptor together with its exact loaded rows. It checks
 the ResultRef, loaded/population counts, declared scalar types and units, field
 labels, row grain and stable identity tuples before a node can render. It does
@@ -64,9 +67,35 @@ logical sizing, forced-colors focus and reduced-motion-compatible controls;
 application tokens supply the final visual values. Browser and screen-reader
 review remains part of the product release gate.
 
+Register the authorized materialization before validating a presentation:
+
+```ts
+import {createAeliqoPresentationRegistry} from '@aeliqo/web';
+import type {AeliqoDataBinding} from '@aeliqo/web';
+
+export function registryForPeople(binding: AeliqoDataBinding) {
+  return createAeliqoPresentationRegistry({
+    data: [binding],
+    resolveEntity: result => result.ref.outputId === 'people' ? 'person' : undefined,
+  });
+}
+```
+
+The registry takes an immutable snapshot. Recreate it for a new authorized
+result revision. Pass the registry to the core validator, then supply the
+validated presentation and current `{ref, rows}` materialization to
+`<aeliqo-region>`. Rows never enter the presentation wire graph. The renderer
+checks the current descriptor and exact ResultRef again; clearing the region
+removes the displayed data. Host requests use the region's `onDataRequest`
+callback. The lower-level `createAeliqoDataRegistry` helper remains available
+for direct adapter use; it does not replace the canonical presentation graph.
+
 Focused local checks for this slice are:
 
 ```sh
 pnpm exec vitest run --config tests/data-components/vitest.config.mjs
 pnpm exec playwright test --config tests/data-components/playwright.config.mjs
+pnpm test:data-semantic
+pnpm test:data-semantic:browser
+pnpm test:data-components:consumers
 ```
