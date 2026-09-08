@@ -1,0 +1,519 @@
+[WebServer] (node:67360) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:67367) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 252 tests using 1 worker
+
+(node:67380) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 6:04:53 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓    1 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-field disabled desktop-light (673ms)
+[WebServer] 6:04:53 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓    2 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-field disabled narrow-dark-rtl (609ms)
+[WebServer] 6:04:54 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓    3 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-field invalid desktop-light (617ms)
+[WebServer] 6:04:54 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓    4 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-field invalid narrow-dark-rtl (538ms)
+[WebServer] 6:04:55 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓    5 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-field pending desktop-light (541ms)
+[WebServer] 6:04:56 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓    6 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-field pending narrow-dark-rtl (498ms)
+[WebServer] 6:04:56 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓    7 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-field read-only desktop-light (488ms)
+[WebServer] 6:04:57 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓    8 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-field read-only narrow-dark-rtl (467ms)
+[WebServer] 6:04:57 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓    9 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-area disabled desktop-light (452ms)
+[WebServer] 6:04:57 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   10 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-area disabled narrow-dark-rtl (447ms)
+[WebServer] 6:04:58 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   11 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-area invalid desktop-light (470ms)
+[WebServer] 6:04:58 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   12 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-area invalid narrow-dark-rtl (481ms)
+[WebServer] 6:04:59 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   13 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-area pending desktop-light (487ms)
+[WebServer] 6:04:59 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   14 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-area pending narrow-dark-rtl (465ms)
+[WebServer] 6:05:00 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   15 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-area read-only desktop-light (468ms)
+[WebServer] 6:05:00 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   16 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-area read-only narrow-dark-rtl (467ms)
+[WebServer] 6:05:01 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   17 [chromium] › tests/visual/field-states.spec.ts:10:7 › number-field disabled desktop-light (451ms)
+[WebServer] 6:05:01 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   18 [chromium] › tests/visual/field-states.spec.ts:10:7 › number-field disabled narrow-dark-rtl (566ms)
+[WebServer] 6:05:02 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   19 [chromium] › tests/visual/field-states.spec.ts:10:7 › number-field invalid desktop-light (521ms)
+[WebServer] 6:05:02 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   20 [chromium] › tests/visual/field-states.spec.ts:10:7 › number-field invalid narrow-dark-rtl (606ms)
+[WebServer] 6:05:03 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   21 [chromium] › tests/visual/field-states.spec.ts:10:7 › number-field pending desktop-light (505ms)
+[WebServer] 6:05:03 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   22 [chromium] › tests/visual/field-states.spec.ts:10:7 › number-field pending narrow-dark-rtl (448ms)
+[WebServer] 6:05:04 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   23 [chromium] › tests/visual/field-states.spec.ts:10:7 › number-field read-only desktop-light (502ms)
+[WebServer] 6:05:04 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   24 [chromium] › tests/visual/field-states.spec.ts:10:7 › number-field read-only narrow-dark-rtl (462ms)
+[WebServer] 6:05:05 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   25 [chromium] › tests/visual/field-states.spec.ts:10:7 › checkbox disabled desktop-light (467ms)
+[WebServer] 6:05:05 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   26 [chromium] › tests/visual/field-states.spec.ts:10:7 › checkbox disabled narrow-dark-rtl (448ms)
+[WebServer] 6:05:06 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   27 [chromium] › tests/visual/field-states.spec.ts:10:7 › checkbox invalid desktop-light (467ms)
+[WebServer] 6:05:06 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   28 [chromium] › tests/visual/field-states.spec.ts:10:7 › checkbox invalid narrow-dark-rtl (468ms)
+[WebServer] 6:05:07 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   29 [chromium] › tests/visual/field-states.spec.ts:10:7 › checkbox pending desktop-light (469ms)
+[WebServer] 6:05:07 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   30 [chromium] › tests/visual/field-states.spec.ts:10:7 › checkbox pending narrow-dark-rtl (464ms)
+[WebServer] 6:05:08 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   31 [chromium] › tests/visual/field-states.spec.ts:10:7 › radio-group disabled desktop-light (470ms)
+[WebServer] 6:05:08 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   32 [chromium] › tests/visual/field-states.spec.ts:10:7 › radio-group disabled narrow-dark-rtl (446ms)
+[WebServer] 6:05:09 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   33 [chromium] › tests/visual/field-states.spec.ts:10:7 › radio-group invalid desktop-light (467ms)
+[WebServer] 6:05:09 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   34 [chromium] › tests/visual/field-states.spec.ts:10:7 › radio-group invalid narrow-dark-rtl (469ms)
+[WebServer] 6:05:10 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   35 [chromium] › tests/visual/field-states.spec.ts:10:7 › radio-group pending desktop-light (486ms)
+[WebServer] 6:05:10 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   36 [chromium] › tests/visual/field-states.spec.ts:10:7 › radio-group pending narrow-dark-rtl (579ms)
+[WebServer] 6:05:11 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   37 [chromium] › tests/visual/field-states.spec.ts:10:7 › switch disabled desktop-light (516ms)
+[WebServer] 6:05:11 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   38 [chromium] › tests/visual/field-states.spec.ts:10:7 › switch disabled narrow-dark-rtl (510ms)
+[WebServer] 6:05:12 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   39 [chromium] › tests/visual/field-states.spec.ts:10:7 › switch invalid desktop-light (489ms)
+[WebServer] 6:05:12 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   40 [chromium] › tests/visual/field-states.spec.ts:10:7 › switch invalid narrow-dark-rtl (465ms)
+[WebServer] 6:05:13 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   41 [chromium] › tests/visual/field-states.spec.ts:10:7 › switch pending desktop-light (488ms)
+[WebServer] 6:05:13 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   42 [chromium] › tests/visual/field-states.spec.ts:10:7 › switch pending narrow-dark-rtl (450ms)
+[WebServer] 6:05:14 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   43 [chromium] › tests/visual/field-states.spec.ts:10:7 › select disabled desktop-light (455ms)
+[WebServer] 6:05:14 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   44 [chromium] › tests/visual/field-states.spec.ts:10:7 › select disabled narrow-dark-rtl (456ms)
+[WebServer] 6:05:15 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   45 [chromium] › tests/visual/field-states.spec.ts:10:7 › select invalid desktop-light (471ms)
+[WebServer] 6:05:15 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   46 [chromium] › tests/visual/field-states.spec.ts:10:7 › select invalid narrow-dark-rtl (498ms)
+[WebServer] 6:05:15 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   47 [chromium] › tests/visual/field-states.spec.ts:10:7 › select pending desktop-light (449ms)
+[WebServer] 6:05:16 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   48 [chromium] › tests/visual/field-states.spec.ts:10:7 › select pending narrow-dark-rtl (447ms)
+[WebServer] 6:05:16 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   49 [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox disabled desktop-light (479ms)
+[WebServer] 6:05:17 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   50 [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox disabled narrow-dark-rtl (453ms)
+[WebServer] 6:05:17 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   51 [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox invalid desktop-light (489ms)
+[WebServer] 6:05:18 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   52 [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox invalid narrow-dark-rtl (483ms)
+[WebServer] 6:05:18 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   53 [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox pending desktop-light (534ms)
+[WebServer] 6:05:19 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   54 [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox pending narrow-dark-rtl (483ms)
+[WebServer] 6:05:19 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   55 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-field disabled desktop-light (469ms)
+[WebServer] 6:05:20 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   56 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-field disabled narrow-dark-rtl (463ms)
+[WebServer] 6:05:20 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   57 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-field invalid desktop-light (467ms)
+[WebServer] 6:05:21 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   58 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-field invalid narrow-dark-rtl (523ms)
+[WebServer] 6:05:21 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   59 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-field pending desktop-light (466ms)
+[WebServer] 6:05:22 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   60 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-field pending narrow-dark-rtl (484ms)
+[WebServer] 6:05:22 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   61 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-range disabled desktop-light (455ms)
+[WebServer] 6:05:23 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   62 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-range disabled narrow-dark-rtl (468ms)
+[WebServer] 6:05:23 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   63 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-range invalid desktop-light (470ms)
+[WebServer] 6:05:24 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   64 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-range invalid narrow-dark-rtl (465ms)
+[WebServer] 6:05:24 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   65 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-range pending desktop-light (506ms)
+[WebServer] 6:05:25 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   66 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-range pending narrow-dark-rtl (484ms)
+[WebServer] 6:05:25 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   67 [chromium] › tests/visual/field-states.spec.ts:10:7 › slider disabled desktop-light (471ms)
+[WebServer] 6:05:26 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   68 [chromium] › tests/visual/field-states.spec.ts:10:7 › slider disabled narrow-dark-rtl (517ms)
+[WebServer] 6:05:26 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   69 [chromium] › tests/visual/field-states.spec.ts:10:7 › slider invalid desktop-light (468ms)
+[WebServer] 6:05:27 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   70 [chromium] › tests/visual/field-states.spec.ts:10:7 › slider invalid narrow-dark-rtl (516ms)
+[WebServer] 6:05:27 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   71 [chromium] › tests/visual/field-states.spec.ts:10:7 › slider pending desktop-light (470ms)
+[WebServer] 6:05:28 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   72 [chromium] › tests/visual/field-states.spec.ts:10:7 › slider pending narrow-dark-rtl (480ms)
+[WebServer] 6:05:28 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   73 [chromium] › tests/visual/field-states.spec.ts:10:7 › search-field disabled desktop-light (436ms)
+[WebServer] 6:05:29 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   74 [chromium] › tests/visual/field-states.spec.ts:10:7 › search-field disabled narrow-dark-rtl (464ms)
+[WebServer] 6:05:29 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   75 [chromium] › tests/visual/field-states.spec.ts:10:7 › search-field invalid desktop-light (469ms)
+[WebServer] 6:05:29 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   76 [chromium] › tests/visual/field-states.spec.ts:10:7 › search-field invalid narrow-dark-rtl (467ms)
+[WebServer] 6:05:30 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   77 [chromium] › tests/visual/field-states.spec.ts:10:7 › search-field pending desktop-light (465ms)
+[WebServer] 6:05:30 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   78 [chromium] › tests/visual/field-states.spec.ts:10:7 › search-field pending narrow-dark-rtl (464ms)
+[WebServer] 6:05:31 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   79 [chromium] › tests/visual/field-states.spec.ts:10:7 › file-input disabled desktop-light (467ms)
+[WebServer] 6:05:31 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   80 [chromium] › tests/visual/field-states.spec.ts:10:7 › file-input disabled narrow-dark-rtl (448ms)
+[WebServer] 6:05:32 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   81 [chromium] › tests/visual/field-states.spec.ts:10:7 › file-input invalid desktop-light (483ms)
+[WebServer] 6:05:32 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   82 [chromium] › tests/visual/field-states.spec.ts:10:7 › file-input invalid narrow-dark-rtl (467ms)
+[WebServer] 6:05:33 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   83 [chromium] › tests/visual/field-states.spec.ts:10:7 › file-input pending desktop-light (505ms)
+[WebServer] 6:05:33 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   84 [chromium] › tests/visual/field-states.spec.ts:10:7 › file-input pending narrow-dark-rtl (476ms)
+(node:67765) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 6:05:36 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   85 [firefox] › tests/visual/field-states.spec.ts:10:7 › text-field disabled desktop-light (1.9s)
+[WebServer] 6:05:37 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   86 [firefox] › tests/visual/field-states.spec.ts:10:7 › text-field disabled narrow-dark-rtl (845ms)
+[WebServer] 6:05:38 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   87 [firefox] › tests/visual/field-states.spec.ts:10:7 › text-field invalid desktop-light (967ms)
+[WebServer] 6:05:39 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   88 [firefox] › tests/visual/field-states.spec.ts:10:7 › text-field invalid narrow-dark-rtl (984ms)
+[WebServer] 6:05:40 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   89 [firefox] › tests/visual/field-states.spec.ts:10:7 › text-field pending desktop-light (906ms)
+[WebServer] 6:05:41 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   90 [firefox] › tests/visual/field-states.spec.ts:10:7 › text-field pending narrow-dark-rtl (711ms)
+[WebServer] 6:05:41 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   91 [firefox] › tests/visual/field-states.spec.ts:10:7 › text-field read-only desktop-light (795ms)
+[WebServer] 6:05:42 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   92 [firefox] › tests/visual/field-states.spec.ts:10:7 › text-field read-only narrow-dark-rtl (870ms)
+[WebServer] 6:05:43 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   93 [firefox] › tests/visual/field-states.spec.ts:10:7 › text-area disabled desktop-light (795ms)
+[WebServer] 6:05:44 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   94 [firefox] › tests/visual/field-states.spec.ts:10:7 › text-area disabled narrow-dark-rtl (1.2s)
+[WebServer] 6:05:45 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   95 [firefox] › tests/visual/field-states.spec.ts:10:7 › text-area invalid desktop-light (651ms)
+[WebServer] 6:05:46 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   96 [firefox] › tests/visual/field-states.spec.ts:10:7 › text-area invalid narrow-dark-rtl (642ms)
+[WebServer] 6:05:46 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   97 [firefox] › tests/visual/field-states.spec.ts:10:7 › text-area pending desktop-light (660ms)
+[WebServer] 6:05:47 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   98 [firefox] › tests/visual/field-states.spec.ts:10:7 › text-area pending narrow-dark-rtl (846ms)
+[WebServer] 6:05:48 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   99 [firefox] › tests/visual/field-states.spec.ts:10:7 › text-area read-only desktop-light (717ms)
+[WebServer] 6:05:49 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  100 [firefox] › tests/visual/field-states.spec.ts:10:7 › text-area read-only narrow-dark-rtl (706ms)
+[WebServer] 6:05:49 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  101 [firefox] › tests/visual/field-states.spec.ts:10:7 › number-field disabled desktop-light (636ms)
+[WebServer] 6:05:50 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  102 [firefox] › tests/visual/field-states.spec.ts:10:7 › number-field disabled narrow-dark-rtl (627ms)
+[WebServer] 6:05:50 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  103 [firefox] › tests/visual/field-states.spec.ts:10:7 › number-field invalid desktop-light (696ms)
+[WebServer] 6:05:51 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  104 [firefox] › tests/visual/field-states.spec.ts:10:7 › number-field invalid narrow-dark-rtl (1.4s)
+[WebServer] 6:05:53 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  105 [firefox] › tests/visual/field-states.spec.ts:10:7 › number-field pending desktop-light (770ms)
+[WebServer] 6:05:53 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  106 [firefox] › tests/visual/field-states.spec.ts:10:7 › number-field pending narrow-dark-rtl (771ms)
+[WebServer] 6:05:54 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  107 [firefox] › tests/visual/field-states.spec.ts:10:7 › number-field read-only desktop-light (725ms)
+[WebServer] 6:05:55 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  108 [firefox] › tests/visual/field-states.spec.ts:10:7 › number-field read-only narrow-dark-rtl (688ms)
+[WebServer] 6:05:55 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  109 [firefox] › tests/visual/field-states.spec.ts:10:7 › checkbox disabled desktop-light (618ms)
+[WebServer] 6:05:56 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  110 [firefox] › tests/visual/field-states.spec.ts:10:7 › checkbox disabled narrow-dark-rtl (609ms)
+[WebServer] 6:05:57 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  111 [firefox] › tests/visual/field-states.spec.ts:10:7 › checkbox invalid desktop-light (655ms)
+[WebServer] 6:05:57 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  112 [firefox] › tests/visual/field-states.spec.ts:10:7 › checkbox invalid narrow-dark-rtl (635ms)
+[WebServer] 6:05:58 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  113 [firefox] › tests/visual/field-states.spec.ts:10:7 › checkbox pending desktop-light (649ms)
+[WebServer] 6:05:59 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  114 [firefox] › tests/visual/field-states.spec.ts:10:7 › checkbox pending narrow-dark-rtl (1.3s)
+[WebServer] 6:06:00 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  115 [firefox] › tests/visual/field-states.spec.ts:10:7 › radio-group disabled desktop-light (763ms)
+[WebServer] 6:06:01 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  116 [firefox] › tests/visual/field-states.spec.ts:10:7 › radio-group disabled narrow-dark-rtl (640ms)
+[WebServer] 6:06:01 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  117 [firefox] › tests/visual/field-states.spec.ts:10:7 › radio-group invalid desktop-light (680ms)
+[WebServer] 6:06:02 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  118 [firefox] › tests/visual/field-states.spec.ts:10:7 › radio-group invalid narrow-dark-rtl (726ms)
+[WebServer] 6:06:03 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  119 [firefox] › tests/visual/field-states.spec.ts:10:7 › radio-group pending desktop-light (679ms)
+[WebServer] 6:06:04 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  120 [firefox] › tests/visual/field-states.spec.ts:10:7 › radio-group pending narrow-dark-rtl (690ms)
+[WebServer] 6:06:04 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  121 [firefox] › tests/visual/field-states.spec.ts:10:7 › switch disabled desktop-light (701ms)
+[WebServer] 6:06:05 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  122 [firefox] › tests/visual/field-states.spec.ts:10:7 › switch disabled narrow-dark-rtl (624ms)
+[WebServer] 6:06:06 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  123 [firefox] › tests/visual/field-states.spec.ts:10:7 › switch invalid desktop-light (759ms)
+[WebServer] 6:06:06 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  124 [firefox] › tests/visual/field-states.spec.ts:10:7 › switch invalid narrow-dark-rtl (1.6s)
+[WebServer] 6:06:08 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  125 [firefox] › tests/visual/field-states.spec.ts:10:7 › switch pending desktop-light (689ms)
+[WebServer] 6:06:09 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  126 [firefox] › tests/visual/field-states.spec.ts:10:7 › switch pending narrow-dark-rtl (639ms)
+[WebServer] 6:06:09 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  127 [firefox] › tests/visual/field-states.spec.ts:10:7 › select disabled desktop-light (674ms)
+[WebServer] 6:06:10 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  128 [firefox] › tests/visual/field-states.spec.ts:10:7 › select disabled narrow-dark-rtl (764ms)
+[WebServer] 6:06:11 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  129 [firefox] › tests/visual/field-states.spec.ts:10:7 › select invalid desktop-light (762ms)
+[WebServer] 6:06:12 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  130 [firefox] › tests/visual/field-states.spec.ts:10:7 › select invalid narrow-dark-rtl (702ms)
+[WebServer] 6:06:12 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  131 [firefox] › tests/visual/field-states.spec.ts:10:7 › select pending desktop-light (651ms)
+[WebServer] 6:06:13 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  132 [firefox] › tests/visual/field-states.spec.ts:10:7 › select pending narrow-dark-rtl (653ms)
+[WebServer] 6:06:14 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  133 [firefox] › tests/visual/field-states.spec.ts:10:7 › combobox disabled desktop-light (674ms)
+[WebServer] 6:06:14 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  134 [firefox] › tests/visual/field-states.spec.ts:10:7 › combobox disabled narrow-dark-rtl (1.3s)
+[WebServer] 6:06:16 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  135 [firefox] › tests/visual/field-states.spec.ts:10:7 › combobox invalid desktop-light (653ms)
+[WebServer] 6:06:16 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  136 [firefox] › tests/visual/field-states.spec.ts:10:7 › combobox invalid narrow-dark-rtl (667ms)
+[WebServer] 6:06:17 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  137 [firefox] › tests/visual/field-states.spec.ts:10:7 › combobox pending desktop-light (703ms)
+[WebServer] 6:06:18 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  138 [firefox] › tests/visual/field-states.spec.ts:10:7 › combobox pending narrow-dark-rtl (663ms)
+[WebServer] 6:06:18 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  139 [firefox] › tests/visual/field-states.spec.ts:10:7 › date-field disabled desktop-light (637ms)
+[WebServer] 6:06:19 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  140 [firefox] › tests/visual/field-states.spec.ts:10:7 › date-field disabled narrow-dark-rtl (630ms)
+[WebServer] 6:06:20 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  141 [firefox] › tests/visual/field-states.spec.ts:10:7 › date-field invalid desktop-light (773ms)
+[WebServer] 6:06:20 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  142 [firefox] › tests/visual/field-states.spec.ts:10:7 › date-field invalid narrow-dark-rtl (681ms)
+[WebServer] 6:06:21 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  143 [firefox] › tests/visual/field-states.spec.ts:10:7 › date-field pending desktop-light (749ms)
+[WebServer] 6:06:22 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  144 [firefox] › tests/visual/field-states.spec.ts:10:7 › date-field pending narrow-dark-rtl (1.4s)
+[WebServer] 6:06:23 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  145 [firefox] › tests/visual/field-states.spec.ts:10:7 › date-range disabled desktop-light (655ms)
+[WebServer] 6:06:24 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  146 [firefox] › tests/visual/field-states.spec.ts:10:7 › date-range disabled narrow-dark-rtl (624ms)
+[WebServer] 6:06:24 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  147 [firefox] › tests/visual/field-states.spec.ts:10:7 › date-range invalid desktop-light (1.1s)
+[WebServer] 6:06:26 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  148 [firefox] › tests/visual/field-states.spec.ts:10:7 › date-range invalid narrow-dark-rtl (900ms)
+[WebServer] 6:06:26 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  149 [firefox] › tests/visual/field-states.spec.ts:10:7 › date-range pending desktop-light (678ms)
+[WebServer] 6:06:27 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  150 [firefox] › tests/visual/field-states.spec.ts:10:7 › date-range pending narrow-dark-rtl (963ms)
+[WebServer] 6:06:28 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  151 [firefox] › tests/visual/field-states.spec.ts:10:7 › slider disabled desktop-light (833ms)
+[WebServer] 6:06:29 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  152 [firefox] › tests/visual/field-states.spec.ts:10:7 › slider disabled narrow-dark-rtl (692ms)
+[WebServer] 6:06:30 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  153 [firefox] › tests/visual/field-states.spec.ts:10:7 › slider invalid desktop-light (788ms)
+[WebServer] 6:06:30 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  154 [firefox] › tests/visual/field-states.spec.ts:10:7 › slider invalid narrow-dark-rtl (1.2s)
+[WebServer] 6:06:32 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  155 [firefox] › tests/visual/field-states.spec.ts:10:7 › slider pending desktop-light (647ms)
+[WebServer] 6:06:32 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  156 [firefox] › tests/visual/field-states.spec.ts:10:7 › slider pending narrow-dark-rtl (639ms)
+[WebServer] 6:06:33 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  157 [firefox] › tests/visual/field-states.spec.ts:10:7 › search-field disabled desktop-light (654ms)
+[WebServer] 6:06:34 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  158 [firefox] › tests/visual/field-states.spec.ts:10:7 › search-field disabled narrow-dark-rtl (713ms)
+[WebServer] 6:06:34 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  159 [firefox] › tests/visual/field-states.spec.ts:10:7 › search-field invalid desktop-light (729ms)
+[WebServer] 6:06:35 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  160 [firefox] › tests/visual/field-states.spec.ts:10:7 › search-field invalid narrow-dark-rtl (746ms)
+[WebServer] 6:06:36 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  161 [firefox] › tests/visual/field-states.spec.ts:10:7 › search-field pending desktop-light (934ms)
+[WebServer] 6:06:37 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  162 [firefox] › tests/visual/field-states.spec.ts:10:7 › search-field pending narrow-dark-rtl (885ms)
+[WebServer] 6:06:38 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  163 [firefox] › tests/visual/field-states.spec.ts:10:7 › file-input disabled desktop-light (881ms)
+[WebServer] 6:06:39 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  164 [firefox] › tests/visual/field-states.spec.ts:10:7 › file-input disabled narrow-dark-rtl (1.6s)
+[WebServer] 6:06:40 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  165 [firefox] › tests/visual/field-states.spec.ts:10:7 › file-input invalid desktop-light (742ms)
+[WebServer] 6:06:41 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  166 [firefox] › tests/visual/field-states.spec.ts:10:7 › file-input invalid narrow-dark-rtl (709ms)
+[WebServer] 6:06:42 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  167 [firefox] › tests/visual/field-states.spec.ts:10:7 › file-input pending desktop-light (912ms)
+[WebServer] 6:06:43 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  168 [firefox] › tests/visual/field-states.spec.ts:10:7 › file-input pending narrow-dark-rtl (793ms)
+(node:68444) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 6:06:45 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  169 [webkit] › tests/visual/field-states.spec.ts:10:7 › text-field disabled desktop-light (990ms)
+[WebServer] 6:06:46 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  170 [webkit] › tests/visual/field-states.spec.ts:10:7 › text-field disabled narrow-dark-rtl (682ms)
+[WebServer] 6:06:46 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  171 [webkit] › tests/visual/field-states.spec.ts:10:7 › text-field invalid desktop-light (661ms)
+[WebServer] 6:06:47 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  172 [webkit] › tests/visual/field-states.spec.ts:10:7 › text-field invalid narrow-dark-rtl (652ms)
+[WebServer] 6:06:48 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  173 [webkit] › tests/visual/field-states.spec.ts:10:7 › text-field pending desktop-light (668ms)
+[WebServer] 6:06:48 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  174 [webkit] › tests/visual/field-states.spec.ts:10:7 › text-field pending narrow-dark-rtl (691ms)
+[WebServer] 6:06:49 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  175 [webkit] › tests/visual/field-states.spec.ts:10:7 › text-field read-only desktop-light (711ms)
+[WebServer] 6:06:50 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  176 [webkit] › tests/visual/field-states.spec.ts:10:7 › text-field read-only narrow-dark-rtl (708ms)
+[WebServer] 6:06:50 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  177 [webkit] › tests/visual/field-states.spec.ts:10:7 › text-area disabled desktop-light (652ms)
+[WebServer] 6:06:51 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  178 [webkit] › tests/visual/field-states.spec.ts:10:7 › text-area disabled narrow-dark-rtl (611ms)
+[WebServer] 6:06:52 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  179 [webkit] › tests/visual/field-states.spec.ts:10:7 › text-area invalid desktop-light (654ms)
+[WebServer] 6:06:52 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  180 [webkit] › tests/visual/field-states.spec.ts:10:7 › text-area invalid narrow-dark-rtl (624ms)
+[WebServer] 6:06:53 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  181 [webkit] › tests/visual/field-states.spec.ts:10:7 › text-area pending desktop-light (724ms)
+[WebServer] 6:06:54 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  182 [webkit] › tests/visual/field-states.spec.ts:10:7 › text-area pending narrow-dark-rtl (627ms)
+[WebServer] 6:06:54 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  183 [webkit] › tests/visual/field-states.spec.ts:10:7 › text-area read-only desktop-light (640ms)
+[WebServer] 6:06:55 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  184 [webkit] › tests/visual/field-states.spec.ts:10:7 › text-area read-only narrow-dark-rtl (620ms)
+[WebServer] 6:06:56 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  185 [webkit] › tests/visual/field-states.spec.ts:10:7 › number-field disabled desktop-light (633ms)
+[WebServer] 6:06:56 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  186 [webkit] › tests/visual/field-states.spec.ts:10:7 › number-field disabled narrow-dark-rtl (616ms)
+[WebServer] 6:06:57 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  187 [webkit] › tests/visual/field-states.spec.ts:10:7 › number-field invalid desktop-light (664ms)
+[WebServer] 6:06:58 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  188 [webkit] › tests/visual/field-states.spec.ts:10:7 › number-field invalid narrow-dark-rtl (644ms)
+[WebServer] 6:06:58 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  189 [webkit] › tests/visual/field-states.spec.ts:10:7 › number-field pending desktop-light (645ms)
+[WebServer] 6:06:59 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  190 [webkit] › tests/visual/field-states.spec.ts:10:7 › number-field pending narrow-dark-rtl (644ms)
+[WebServer] 6:07:00 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  191 [webkit] › tests/visual/field-states.spec.ts:10:7 › number-field read-only desktop-light (630ms)
+[WebServer] 6:07:00 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  192 [webkit] › tests/visual/field-states.spec.ts:10:7 › number-field read-only narrow-dark-rtl (625ms)
+[WebServer] 6:07:01 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  193 [webkit] › tests/visual/field-states.spec.ts:10:7 › checkbox disabled desktop-light (650ms)
+[WebServer] 6:07:01 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  194 [webkit] › tests/visual/field-states.spec.ts:10:7 › checkbox disabled narrow-dark-rtl (671ms)
+[WebServer] 6:07:02 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  195 [webkit] › tests/visual/field-states.spec.ts:10:7 › checkbox invalid desktop-light (656ms)
+[WebServer] 6:07:03 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  196 [webkit] › tests/visual/field-states.spec.ts:10:7 › checkbox invalid narrow-dark-rtl (621ms)
+[WebServer] 6:07:03 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  197 [webkit] › tests/visual/field-states.spec.ts:10:7 › checkbox pending desktop-light (744ms)
+[WebServer] 6:07:04 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  198 [webkit] › tests/visual/field-states.spec.ts:10:7 › checkbox pending narrow-dark-rtl (644ms)
+[WebServer] 6:07:05 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  199 [webkit] › tests/visual/field-states.spec.ts:10:7 › radio-group disabled desktop-light (639ms)
+[WebServer] 6:07:05 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  200 [webkit] › tests/visual/field-states.spec.ts:10:7 › radio-group disabled narrow-dark-rtl (634ms)
+[WebServer] 6:07:06 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  201 [webkit] › tests/visual/field-states.spec.ts:10:7 › radio-group invalid desktop-light (670ms)
+[WebServer] 6:07:07 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  202 [webkit] › tests/visual/field-states.spec.ts:10:7 › radio-group invalid narrow-dark-rtl (640ms)
+[WebServer] 6:07:07 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  203 [webkit] › tests/visual/field-states.spec.ts:10:7 › radio-group pending desktop-light (654ms)
+[WebServer] 6:07:08 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  204 [webkit] › tests/visual/field-states.spec.ts:10:7 › radio-group pending narrow-dark-rtl (653ms)
+[WebServer] 6:07:09 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  205 [webkit] › tests/visual/field-states.spec.ts:10:7 › switch disabled desktop-light (642ms)
+[WebServer] 6:07:09 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  206 [webkit] › tests/visual/field-states.spec.ts:10:7 › switch disabled narrow-dark-rtl (624ms)
+[WebServer] 6:07:10 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  207 [webkit] › tests/visual/field-states.spec.ts:10:7 › switch invalid desktop-light (656ms)
+[WebServer] 6:07:11 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  208 [webkit] › tests/visual/field-states.spec.ts:10:7 › switch invalid narrow-dark-rtl (684ms)
+[WebServer] 6:07:11 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  209 [webkit] › tests/visual/field-states.spec.ts:10:7 › switch pending desktop-light (740ms)
+[WebServer] 6:07:12 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  210 [webkit] › tests/visual/field-states.spec.ts:10:7 › switch pending narrow-dark-rtl (682ms)
+[WebServer] 6:07:13 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  211 [webkit] › tests/visual/field-states.spec.ts:10:7 › select disabled desktop-light (641ms)
+[WebServer] 6:07:13 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  212 [webkit] › tests/visual/field-states.spec.ts:10:7 › select disabled narrow-dark-rtl (645ms)
+[WebServer] 6:07:14 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  213 [webkit] › tests/visual/field-states.spec.ts:10:7 › select invalid desktop-light (755ms)
+[WebServer] 6:07:15 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  214 [webkit] › tests/visual/field-states.spec.ts:10:7 › select invalid narrow-dark-rtl (777ms)
+[WebServer] 6:07:16 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  215 [webkit] › tests/visual/field-states.spec.ts:10:7 › select pending desktop-light (696ms)
+[WebServer] 6:07:16 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  216 [webkit] › tests/visual/field-states.spec.ts:10:7 › select pending narrow-dark-rtl (673ms)
+[WebServer] 6:07:17 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  217 [webkit] › tests/visual/field-states.spec.ts:10:7 › combobox disabled desktop-light (736ms)
+[WebServer] 6:07:18 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  218 [webkit] › tests/visual/field-states.spec.ts:10:7 › combobox disabled narrow-dark-rtl (723ms)
+[WebServer] 6:07:19 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  219 [webkit] › tests/visual/field-states.spec.ts:10:7 › combobox invalid desktop-light (853ms)
+[WebServer] 6:07:19 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  220 [webkit] › tests/visual/field-states.spec.ts:10:7 › combobox invalid narrow-dark-rtl (688ms)
+[WebServer] 6:07:20 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  221 [webkit] › tests/visual/field-states.spec.ts:10:7 › combobox pending desktop-light (665ms)
+[WebServer] 6:07:21 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  222 [webkit] › tests/visual/field-states.spec.ts:10:7 › combobox pending narrow-dark-rtl (735ms)
+[WebServer] 6:07:21 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  223 [webkit] › tests/visual/field-states.spec.ts:10:7 › date-field disabled desktop-light (700ms)
+[WebServer] 6:07:22 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  224 [webkit] › tests/visual/field-states.spec.ts:10:7 › date-field disabled narrow-dark-rtl (735ms)
+[WebServer] 6:07:23 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  225 [webkit] › tests/visual/field-states.spec.ts:10:7 › date-field invalid desktop-light (831ms)
+[WebServer] 6:07:24 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  226 [webkit] › tests/visual/field-states.spec.ts:10:7 › date-field invalid narrow-dark-rtl (798ms)
+[WebServer] 6:07:25 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  227 [webkit] › tests/visual/field-states.spec.ts:10:7 › date-field pending desktop-light (785ms)
+[WebServer] 6:07:25 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  228 [webkit] › tests/visual/field-states.spec.ts:10:7 › date-field pending narrow-dark-rtl (833ms)
+[WebServer] 6:07:26 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  229 [webkit] › tests/visual/field-states.spec.ts:10:7 › date-range disabled desktop-light (761ms)
+[WebServer] 6:07:27 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  230 [webkit] › tests/visual/field-states.spec.ts:10:7 › date-range disabled narrow-dark-rtl (718ms)
+[WebServer] 6:07:28 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  231 [webkit] › tests/visual/field-states.spec.ts:10:7 › date-range invalid desktop-light (713ms)
+[WebServer] 6:07:28 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  232 [webkit] › tests/visual/field-states.spec.ts:10:7 › date-range invalid narrow-dark-rtl (694ms)
+[WebServer] 6:07:29 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  233 [webkit] › tests/visual/field-states.spec.ts:10:7 › date-range pending desktop-light (727ms)
+[WebServer] 6:07:30 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  234 [webkit] › tests/visual/field-states.spec.ts:10:7 › date-range pending narrow-dark-rtl (767ms)
+[WebServer] 6:07:31 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  235 [webkit] › tests/visual/field-states.spec.ts:10:7 › slider disabled desktop-light (698ms)
+[WebServer] 6:07:31 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  236 [webkit] › tests/visual/field-states.spec.ts:10:7 › slider disabled narrow-dark-rtl (662ms)
+[WebServer] 6:07:32 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  237 [webkit] › tests/visual/field-states.spec.ts:10:7 › slider invalid desktop-light (680ms)
+[WebServer] 6:07:33 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  238 [webkit] › tests/visual/field-states.spec.ts:10:7 › slider invalid narrow-dark-rtl (740ms)
+[WebServer] 6:07:34 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  239 [webkit] › tests/visual/field-states.spec.ts:10:7 › slider pending desktop-light (845ms)
+[WebServer] 6:07:34 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  240 [webkit] › tests/visual/field-states.spec.ts:10:7 › slider pending narrow-dark-rtl (742ms)
+[WebServer] 6:07:35 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  241 [webkit] › tests/visual/field-states.spec.ts:10:7 › search-field disabled desktop-light (675ms)
+[WebServer] 6:07:36 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  242 [webkit] › tests/visual/field-states.spec.ts:10:7 › search-field disabled narrow-dark-rtl (668ms)
+[WebServer] 6:07:36 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  243 [webkit] › tests/visual/field-states.spec.ts:10:7 › search-field invalid desktop-light (700ms)
+[WebServer] 6:07:37 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  244 [webkit] › tests/visual/field-states.spec.ts:10:7 › search-field invalid narrow-dark-rtl (681ms)
+[WebServer] 6:07:38 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  245 [webkit] › tests/visual/field-states.spec.ts:10:7 › search-field pending desktop-light (678ms)
+[WebServer] 6:07:38 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  246 [webkit] › tests/visual/field-states.spec.ts:10:7 › search-field pending narrow-dark-rtl (699ms)
+[WebServer] 6:07:39 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  247 [webkit] › tests/visual/field-states.spec.ts:10:7 › file-input disabled desktop-light (671ms)
+[WebServer] 6:07:40 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  248 [webkit] › tests/visual/field-states.spec.ts:10:7 › file-input disabled narrow-dark-rtl (701ms)
+[WebServer] 6:07:41 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  249 [webkit] › tests/visual/field-states.spec.ts:10:7 › file-input invalid desktop-light (698ms)
+[WebServer] 6:07:41 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  250 [webkit] › tests/visual/field-states.spec.ts:10:7 › file-input invalid narrow-dark-rtl (682ms)
+[WebServer] 6:07:42 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  251 [webkit] › tests/visual/field-states.spec.ts:10:7 › file-input pending desktop-light (693ms)
+[WebServer] 6:07:43 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  252 [webkit] › tests/visual/field-states.spec.ts:10:7 › file-input pending narrow-dark-rtl (698ms)
+
+  252 passed (2.9m)

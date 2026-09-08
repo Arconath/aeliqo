@@ -1,0 +1,535 @@
+[WebServer] (node:63740) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:63751) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 78 tests using 1 worker
+
+(node:63762) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 5:58:21 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   1 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-field disabled desktop-light (514ms)
+[WebServer] 5:58:22 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   2 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-field disabled narrow-dark-rtl (465ms)
+[WebServer] 5:58:22 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   3 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-field invalid desktop-light (470ms)
+[WebServer] 5:58:23 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   4 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-field invalid narrow-dark-rtl (434ms)
+[WebServer] 5:58:23 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   5 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-field pending desktop-light (433ms)
+[WebServer] 5:58:24 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   6 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-field pending narrow-dark-rtl (482ms)
+[WebServer] 5:58:24 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   7 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-area disabled desktop-light (469ms)
+[WebServer] 5:58:25 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   8 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-area disabled narrow-dark-rtl (558ms)
+[WebServer] 5:58:25 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   9 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-area invalid desktop-light (469ms)
+[WebServer] 5:58:26 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  10 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-area invalid narrow-dark-rtl (480ms)
+[WebServer] 5:58:26 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  11 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-area pending desktop-light (457ms)
+[WebServer] 5:58:26 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  12 [chromium] › tests/visual/field-states.spec.ts:10:7 › text-area pending narrow-dark-rtl (450ms)
+[WebServer] 5:58:27 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  13 [chromium] › tests/visual/field-states.spec.ts:10:7 › number-field disabled desktop-light (451ms)
+[WebServer] 5:58:27 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  14 [chromium] › tests/visual/field-states.spec.ts:10:7 › number-field disabled narrow-dark-rtl (431ms)
+[WebServer] 5:58:28 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  15 [chromium] › tests/visual/field-states.spec.ts:10:7 › number-field invalid desktop-light (453ms)
+[WebServer] 5:58:28 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  16 [chromium] › tests/visual/field-states.spec.ts:10:7 › number-field invalid narrow-dark-rtl (500ms)
+[WebServer] 5:58:29 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  17 [chromium] › tests/visual/field-states.spec.ts:10:7 › number-field pending desktop-light (485ms)
+[WebServer] 5:58:29 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  18 [chromium] › tests/visual/field-states.spec.ts:10:7 › number-field pending narrow-dark-rtl (516ms)
+[WebServer] 5:58:30 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  19 [chromium] › tests/visual/field-states.spec.ts:10:7 › checkbox disabled desktop-light (452ms)
+[WebServer] 5:58:30 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  20 [chromium] › tests/visual/field-states.spec.ts:10:7 › checkbox disabled narrow-dark-rtl (432ms)
+[WebServer] 5:58:31 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  21 [chromium] › tests/visual/field-states.spec.ts:10:7 › checkbox invalid desktop-light (431ms)
+[WebServer] 5:58:31 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  22 [chromium] › tests/visual/field-states.spec.ts:10:7 › checkbox invalid narrow-dark-rtl (446ms)
+[WebServer] 5:58:32 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  23 [chromium] › tests/visual/field-states.spec.ts:10:7 › checkbox pending desktop-light (434ms)
+[WebServer] 5:58:32 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  24 [chromium] › tests/visual/field-states.spec.ts:10:7 › checkbox pending narrow-dark-rtl (449ms)
+[WebServer] 5:58:32 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  25 [chromium] › tests/visual/field-states.spec.ts:10:7 › radio-group disabled desktop-light (451ms)
+[WebServer] 5:58:33 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  26 [chromium] › tests/visual/field-states.spec.ts:10:7 › radio-group disabled narrow-dark-rtl (449ms)
+[WebServer] 5:58:33 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✘  27 [chromium] › tests/visual/field-states.spec.ts:10:7 › radio-group invalid desktop-light (253ms)
+(node:63835) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 5:58:34 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✘  28 [chromium] › tests/visual/field-states.spec.ts:10:7 › radio-group invalid narrow-dark-rtl (285ms)
+(node:63849) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 5:58:35 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  29 [chromium] › tests/visual/field-states.spec.ts:10:7 › radio-group pending desktop-light (484ms)
+[WebServer] 5:58:35 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  30 [chromium] › tests/visual/field-states.spec.ts:10:7 › radio-group pending narrow-dark-rtl (449ms)
+[WebServer] 5:58:36 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  31 [chromium] › tests/visual/field-states.spec.ts:10:7 › switch disabled desktop-light (482ms)
+[WebServer] 5:58:36 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  32 [chromium] › tests/visual/field-states.spec.ts:10:7 › switch disabled narrow-dark-rtl (432ms)
+[WebServer] 5:58:37 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  33 [chromium] › tests/visual/field-states.spec.ts:10:7 › switch invalid desktop-light (452ms)
+[WebServer] 5:58:37 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  34 [chromium] › tests/visual/field-states.spec.ts:10:7 › switch invalid narrow-dark-rtl (467ms)
+[WebServer] 5:58:37 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  35 [chromium] › tests/visual/field-states.spec.ts:10:7 › switch pending desktop-light (450ms)
+[WebServer] 5:58:38 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  36 [chromium] › tests/visual/field-states.spec.ts:10:7 › switch pending narrow-dark-rtl (446ms)
+[WebServer] 5:58:38 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  37 [chromium] › tests/visual/field-states.spec.ts:10:7 › select disabled desktop-light (485ms)
+[WebServer] 5:58:39 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  38 [chromium] › tests/visual/field-states.spec.ts:10:7 › select disabled narrow-dark-rtl (450ms)
+[WebServer] 5:58:39 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  39 [chromium] › tests/visual/field-states.spec.ts:10:7 › select invalid desktop-light (469ms)
+[WebServer] 5:58:40 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  40 [chromium] › tests/visual/field-states.spec.ts:10:7 › select invalid narrow-dark-rtl (468ms)
+[WebServer] 5:58:40 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  41 [chromium] › tests/visual/field-states.spec.ts:10:7 › select pending desktop-light (467ms)
+[WebServer] 5:58:41 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  42 [chromium] › tests/visual/field-states.spec.ts:10:7 › select pending narrow-dark-rtl (432ms)
+[WebServer] 5:58:41 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  43 [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox disabled desktop-light (470ms)
+[WebServer] 5:58:42 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  44 [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox disabled narrow-dark-rtl (446ms)
+[WebServer] 5:58:42 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  45 [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox invalid desktop-light (449ms)
+[WebServer] 5:58:43 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  46 [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox invalid narrow-dark-rtl (446ms)
+[WebServer] 5:58:43 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✘  47 [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox pending desktop-light (508ms)
+(node:63902) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 5:58:44 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✘  48 [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox pending narrow-dark-rtl (579ms)
+(node:63909) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 5:58:45 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  49 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-field disabled desktop-light (516ms)
+[WebServer] 5:58:45 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  50 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-field disabled narrow-dark-rtl (467ms)
+[WebServer] 5:58:46 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  51 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-field invalid desktop-light (488ms)
+[WebServer] 5:58:46 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  52 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-field invalid narrow-dark-rtl (467ms)
+[WebServer] 5:58:47 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  53 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-field pending desktop-light (472ms)
+[WebServer] 5:58:47 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  54 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-field pending narrow-dark-rtl (469ms)
+[WebServer] 5:58:48 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  55 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-range disabled desktop-light (470ms)
+[WebServer] 5:58:48 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  56 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-range disabled narrow-dark-rtl (451ms)
+[WebServer] 5:58:49 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✘  57 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-range invalid desktop-light (263ms)
+(node:63938) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 5:58:49 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✘  58 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-range invalid narrow-dark-rtl (288ms)
+(node:63943) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 5:58:50 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  59 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-range pending desktop-light (588ms)
+[WebServer] 5:58:51 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  60 [chromium] › tests/visual/field-states.spec.ts:10:7 › date-range pending narrow-dark-rtl (499ms)
+[WebServer] 5:58:51 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  61 [chromium] › tests/visual/field-states.spec.ts:10:7 › slider disabled desktop-light (449ms)
+[WebServer] 5:58:52 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  62 [chromium] › tests/visual/field-states.spec.ts:10:7 › slider disabled narrow-dark-rtl (467ms)
+[WebServer] 5:58:52 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  63 [chromium] › tests/visual/field-states.spec.ts:10:7 › slider invalid desktop-light (454ms)
+[WebServer] 5:58:52 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  64 [chromium] › tests/visual/field-states.spec.ts:10:7 › slider invalid narrow-dark-rtl (467ms)
+[WebServer] 5:58:53 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  65 [chromium] › tests/visual/field-states.spec.ts:10:7 › slider pending desktop-light (468ms)
+[WebServer] 5:58:53 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  66 [chromium] › tests/visual/field-states.spec.ts:10:7 › slider pending narrow-dark-rtl (523ms)
+[WebServer] 5:58:54 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  67 [chromium] › tests/visual/field-states.spec.ts:10:7 › search-field disabled desktop-light (469ms)
+[WebServer] 5:58:54 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  68 [chromium] › tests/visual/field-states.spec.ts:10:7 › search-field disabled narrow-dark-rtl (484ms)
+[WebServer] 5:58:55 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  69 [chromium] › tests/visual/field-states.spec.ts:10:7 › search-field invalid desktop-light (490ms)
+[WebServer] 5:58:55 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  70 [chromium] › tests/visual/field-states.spec.ts:10:7 › search-field invalid narrow-dark-rtl (448ms)
+[WebServer] 5:58:56 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  71 [chromium] › tests/visual/field-states.spec.ts:10:7 › search-field pending desktop-light (471ms)
+[WebServer] 5:58:56 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  72 [chromium] › tests/visual/field-states.spec.ts:10:7 › search-field pending narrow-dark-rtl (450ms)
+[WebServer] 5:58:57 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  73 [chromium] › tests/visual/field-states.spec.ts:10:7 › file-input disabled desktop-light (467ms)
+[WebServer] 5:58:57 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  74 [chromium] › tests/visual/field-states.spec.ts:10:7 › file-input disabled narrow-dark-rtl (433ms)
+[WebServer] 5:58:58 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  75 [chromium] › tests/visual/field-states.spec.ts:10:7 › file-input invalid desktop-light (458ms)
+[WebServer] 5:58:58 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  76 [chromium] › tests/visual/field-states.spec.ts:10:7 › file-input invalid narrow-dark-rtl (433ms)
+[WebServer] 5:58:59 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  77 [chromium] › tests/visual/field-states.spec.ts:10:7 › file-input pending desktop-light (451ms)
+[WebServer] 5:58:59 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  78 [chromium] › tests/visual/field-states.spec.ts:10:7 › file-input pending narrow-dark-rtl (432ms)
+
+
+  1) [chromium] › tests/visual/field-states.spec.ts:10:7 › radio-group invalid desktop-light ───────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      31 |       await expect(field.locator('[part="error"]')).toHaveText('This value needs review. Check the supplied value.');
+      32 |       // Some composite fields carry invalid semantics on the host/fieldset.
+    > 33 |       expect(await field.evaluate(node => node.getAttribute('aria-invalid') === 'true' || Boolean(node.shadowRoot?.querySelector('[aria-invalid="true"]')))).toBe(true);
+         |                                                                                                                                                              ^
+      34 |     } else {
+      35 |       await expect(field.locator('[part="pending"][role="status"]')).toHaveText('Checking…');
+      36 |     }
+        at /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/tests/visual/field-states.spec.ts:33:158
+
+    Error Context: artifacts/visual-catalog/field-states-radio-group-invalid-desktop-light-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/visual-catalog/field-states-radio-group-invalid-desktop-light-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace artifacts/visual-catalog/field-states-radio-group-invalid-desktop-light-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/visual/field-states.spec.ts:10:7 › radio-group invalid narrow-dark-rtl ─────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      31 |       await expect(field.locator('[part="error"]')).toHaveText('This value needs review. Check the supplied value.');
+      32 |       // Some composite fields carry invalid semantics on the host/fieldset.
+    > 33 |       expect(await field.evaluate(node => node.getAttribute('aria-invalid') === 'true' || Boolean(node.shadowRoot?.querySelector('[aria-invalid="true"]')))).toBe(true);
+         |                                                                                                                                                              ^
+      34 |     } else {
+      35 |       await expect(field.locator('[part="pending"][role="status"]')).toHaveText('Checking…');
+      36 |     }
+        at /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/tests/visual/field-states.spec.ts:33:158
+
+    Error Context: artifacts/visual-catalog/field-states-radio-group-invalid-narrow-dark-rtl-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/visual-catalog/field-states-radio-group-invalid-narrow-dark-rtl-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace artifacts/visual-catalog/field-states-radio-group-invalid-narrow-dark-rtl-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox pending desktop-light ──────────
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 94
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure role attribute has an appropriate value for the element",
+    +     "help": "ARIA role should be appropriate for the element",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-allowed-role?application=playwright",
+    +     "id": "aria-allowed-role",
+    +     "impact": "minor",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Array [
+    +               "status",
+    +             ],
+    +             "id": "aria-allowed-role",
+    +             "impact": "minor",
+    +             "message": "ARIA role status is not allowed for given element",
+    +             "relatedNodes": Array [],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   ARIA role status is not allowed for given element",
+    +         "html": "<li part=\"status\" role=\"status\">Loading…</li>",
+    +         "impact": "minor",
+    +         "none": Array [],
+    +         "target": Array [
+    +           Array [
+    +             "aeliqo-combobox",
+    +             "li[part=\"status\"]",
+    +           ],
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.aria",
+    +       "best-practice",
+    +     ],
+    +   },
+    +   Object {
+    +     "description": "Ensure elements with an ARIA role that require child roles contain them",
+    +     "help": "Certain ARIA roles must contain particular children",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-required-children?application=playwright",
+    +     "id": "aria-required-children",
+    +     "impact": "critical",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "messageKey": "unallowed",
+    +               "values": "[role=status]",
+    +             },
+    +             "id": "aria-required-children",
+    +             "impact": "critical",
+    +             "message": "Element has children which are not allowed: [role=status]",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<li part=\"status\" role=\"status\">Loading…</li>",
+    +                 "target": Array [
+    +                   Array [
+    +                     "aeliqo-combobox",
+    +                     "li[part=\"status\"]",
+    +                   ],
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has children which are not allowed: [role=status]",
+    +         "html": "<ul part=\"listbox\" role=\"listbox\" id=\"options\">",
+    +         "impact": "critical",
+    +         "none": Array [],
+    +         "target": Array [
+    +           Array [
+    +             "aeliqo-combobox",
+    +             "#options",
+    +           ],
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.aria",
+    +       "wcag2a",
+    +       "wcag131",
+    +       "EN-301-549",
+    +       "EN-9.1.3.1",
+    +       "RGAAv4",
+    +       "RGAA-9.3.1",
+    +     ],
+    +   },
+    + ]
+
+      40 |     await page.screenshot({path: info.outputPath('review.png'), fullPage: true});
+      41 |     expect(errors).toEqual([]);
+    > 42 |     expect(axe.violations).toEqual([]);
+         |                            ^
+      43 |   });
+      44 | }
+      45 |
+        at /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/tests/visual/field-states.spec.ts:42:28
+
+    Error Context: artifacts/visual-catalog/field-states-combobox-pending-desktop-light-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/visual-catalog/field-states-combobox-pending-desktop-light-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace artifacts/visual-catalog/field-states-combobox-pending-desktop-light-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox pending narrow-dark-rtl ────────
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 94
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure role attribute has an appropriate value for the element",
+    +     "help": "ARIA role should be appropriate for the element",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-allowed-role?application=playwright",
+    +     "id": "aria-allowed-role",
+    +     "impact": "minor",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Array [
+    +               "status",
+    +             ],
+    +             "id": "aria-allowed-role",
+    +             "impact": "minor",
+    +             "message": "ARIA role status is not allowed for given element",
+    +             "relatedNodes": Array [],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   ARIA role status is not allowed for given element",
+    +         "html": "<li part=\"status\" role=\"status\">Loading…</li>",
+    +         "impact": "minor",
+    +         "none": Array [],
+    +         "target": Array [
+    +           Array [
+    +             "aeliqo-combobox",
+    +             "li[part=\"status\"]",
+    +           ],
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.aria",
+    +       "best-practice",
+    +     ],
+    +   },
+    +   Object {
+    +     "description": "Ensure elements with an ARIA role that require child roles contain them",
+    +     "help": "Certain ARIA roles must contain particular children",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-required-children?application=playwright",
+    +     "id": "aria-required-children",
+    +     "impact": "critical",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "messageKey": "unallowed",
+    +               "values": "[role=status]",
+    +             },
+    +             "id": "aria-required-children",
+    +             "impact": "critical",
+    +             "message": "Element has children which are not allowed: [role=status]",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<li part=\"status\" role=\"status\">Loading…</li>",
+    +                 "target": Array [
+    +                   Array [
+    +                     "aeliqo-combobox",
+    +                     "li[part=\"status\"]",
+    +                   ],
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has children which are not allowed: [role=status]",
+    +         "html": "<ul part=\"listbox\" role=\"listbox\" id=\"options\">",
+    +         "impact": "critical",
+    +         "none": Array [],
+    +         "target": Array [
+    +           Array [
+    +             "aeliqo-combobox",
+    +             "#options",
+    +           ],
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.aria",
+    +       "wcag2a",
+    +       "wcag131",
+    +       "EN-301-549",
+    +       "EN-9.1.3.1",
+    +       "RGAAv4",
+    +       "RGAA-9.3.1",
+    +     ],
+    +   },
+    + ]
+
+      40 |     await page.screenshot({path: info.outputPath('review.png'), fullPage: true});
+      41 |     expect(errors).toEqual([]);
+    > 42 |     expect(axe.violations).toEqual([]);
+         |                            ^
+      43 |   });
+      44 | }
+      45 |
+        at /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/tests/visual/field-states.spec.ts:42:28
+
+    Error Context: artifacts/visual-catalog/field-states-combobox-pending-narrow-dark-rtl-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/visual-catalog/field-states-combobox-pending-narrow-dark-rtl-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace artifacts/visual-catalog/field-states-combobox-pending-narrow-dark-rtl-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › tests/visual/field-states.spec.ts:10:7 › date-range invalid desktop-light ────────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      31 |       await expect(field.locator('[part="error"]')).toHaveText('This value needs review. Check the supplied value.');
+      32 |       // Some composite fields carry invalid semantics on the host/fieldset.
+    > 33 |       expect(await field.evaluate(node => node.getAttribute('aria-invalid') === 'true' || Boolean(node.shadowRoot?.querySelector('[aria-invalid="true"]')))).toBe(true);
+         |                                                                                                                                                              ^
+      34 |     } else {
+      35 |       await expect(field.locator('[part="pending"][role="status"]')).toHaveText('Checking…');
+      36 |     }
+        at /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/tests/visual/field-states.spec.ts:33:158
+
+    Error Context: artifacts/visual-catalog/field-states-date-range-invalid-desktop-light-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/visual-catalog/field-states-date-range-invalid-desktop-light-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace artifacts/visual-catalog/field-states-date-range-invalid-desktop-light-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [chromium] › tests/visual/field-states.spec.ts:10:7 › date-range invalid narrow-dark-rtl ──────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      31 |       await expect(field.locator('[part="error"]')).toHaveText('This value needs review. Check the supplied value.');
+      32 |       // Some composite fields carry invalid semantics on the host/fieldset.
+    > 33 |       expect(await field.evaluate(node => node.getAttribute('aria-invalid') === 'true' || Boolean(node.shadowRoot?.querySelector('[aria-invalid="true"]')))).toBe(true);
+         |                                                                                                                                                              ^
+      34 |     } else {
+      35 |       await expect(field.locator('[part="pending"][role="status"]')).toHaveText('Checking…');
+      36 |     }
+        at /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/tests/visual/field-states.spec.ts:33:158
+
+    Error Context: artifacts/visual-catalog/field-states-date-range-invalid-narrow-dark-rtl-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/visual-catalog/field-states-date-range-invalid-narrow-dark-rtl-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace artifacts/visual-catalog/field-states-date-range-invalid-narrow-dark-rtl-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6 failed
+    [chromium] › tests/visual/field-states.spec.ts:10:7 › radio-group invalid desktop-light ────────
+    [chromium] › tests/visual/field-states.spec.ts:10:7 › radio-group invalid narrow-dark-rtl ──────
+    [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox pending desktop-light ───────────
+    [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox pending narrow-dark-rtl ─────────
+    [chromium] › tests/visual/field-states.spec.ts:10:7 › date-range invalid desktop-light ─────────
+    [chromium] › tests/visual/field-states.spec.ts:10:7 › date-range invalid narrow-dark-rtl ───────
+  72 passed (39.6s)

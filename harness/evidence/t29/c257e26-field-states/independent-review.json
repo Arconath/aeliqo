@@ -1,0 +1,12 @@
+{
+  "status": "approved",
+  "reviewer": "release_inventory (independent Luna Max worker)",
+  "author": "root",
+  "sourceCommit": "c257e26",
+  "scope": "Three input fixes and field-state browser harness; registration-version review c1e0a10 also confirmed.",
+  "evidence": "Independent source review; final root252field-state/readonly browser cases and20inputinteractioncases passed.",
+  "limits": [
+    "Agent code review only, not human visual or assistive technology approval",
+    "T29 remains partial."
+  ]
+}

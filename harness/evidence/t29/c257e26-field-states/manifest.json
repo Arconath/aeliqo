@@ -1,0 +1,60 @@
+{
+  "task": "T29",
+  "status": "partial",
+  "testedSourceCommit": "c257e265f15b7c584fc1a4d0dedbb9c8b02d920a",
+  "sourceDigest": "84d4d7c55f076e38f6accee9fa24fd6da066cc89e14f2062f0d8b9e5b8e32fb3",
+  "scope": "13 real native fields with disabled/host-invalid/pending, plus three read-only controls; two visual variants across three browsers. Assertions cover real state, axe, typing and popup/message overlap.",
+  "stats": {
+    "startTime": "2026-09-08T23:04:51.282Z",
+    "duration": 172423.533,
+    "expected": 252,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "baselineApproval": "unapproved review captures",
+  "limits": [
+    "No human screen-reader or design approval",
+    "Remaining data/viz/compound/navigation/feedback state matrices are separate",
+    "Double root text is not browser 400 percent zoom evidence",
+    "Build and tests ran before atomic commit; only README wording changed afterward. No performance claims from concurrent browser run."
+  ],
+  "artifacts": [
+    {
+      "path": "browser-run.log",
+      "sha256": "ae1219ed97482e4fea1b43276cfec7a52213bbc09c8f129d9829b75fe753c20c"
+    },
+    {
+      "path": "build.log",
+      "sha256": "e1d7fee958cc153b9fea9df3ab0ec95ffc45a499fd828a1e7753347d6da57aa0"
+    },
+    {
+      "path": "capture-index.json",
+      "sha256": "890ffe018e28ae0f142428a0a065571ba52ff79a2e5c7839163e59924347c773"
+    },
+    {
+      "path": "field-state-review-captures.zip",
+      "sha256": "29e05c448c586e790892a02c10aeb216d97902ddebf6e69593b25488ac4ea804"
+    },
+    {
+      "path": "initial-state-failures.log",
+      "sha256": "16363b57d21e9bedf5141a22f7739f04c053d8edb84fcb4fc823f5983be2b9fe"
+    },
+    {
+      "path": "input-interactions.log",
+      "sha256": "41c83ee3a2cad93525c091b013575c591d1dc1c3e29b90b6b0c9bd20a8db71f1"
+    },
+    {
+      "path": "popup-occlusion-failures.log",
+      "sha256": "bd0525476dbec60afbc99e12b080db716ca315fd2a2bd104579d6a5e14508c6f"
+    },
+    {
+      "path": "strict-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "independent-review.json",
+      "sha256": "8ff16b7334eb5b876f640cf4301a4b00c9f1accf66d74443a098e123cde3f8fa"
+    }
+  ]
+}

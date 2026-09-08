@@ -1,0 +1,142 @@
+[WebServer] (node:67003) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:67004) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:67019) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 6:03:54 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✘  1 [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox invalid desktop-light (361ms)
+(node:67024) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 6:03:54 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✘  2 [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox invalid narrow-dark-rtl (301ms)
+(node:67056) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 6:03:55 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✘  3 [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox pending desktop-light (285ms)
+(node:67065) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 6:03:55 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✘  4 [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox pending narrow-dark-rtl (271ms)
+
+
+  1) [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox invalid desktop-light ──────────
+
+    Error: The option popup must not cover validation feedback
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      43 |         return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+      44 |       }, state);
+    > 45 |       expect(overlap, 'The option popup must not cover validation feedback').toBe(false);
+         |                                                                              ^
+      46 |     }
+      47 |     const axe = await new AxeBuilder({page}).analyze();
+      48 |     await info.attach('accessibility.json', {body: JSON.stringify({violations: axe.violations, incomplete: axe.incomplete}, null, 2), contentType: 'application/json'});
+        at /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/tests/visual/field-states.spec.ts:45:78
+
+    Error Context: artifacts/visual-catalog/field-states-combobox-invalid-desktop-light-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/visual-catalog/field-states-combobox-invalid-desktop-light-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace artifacts/visual-catalog/field-states-combobox-invalid-desktop-light-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox invalid narrow-dark-rtl ────────
+
+    Error: The option popup must not cover validation feedback
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      43 |         return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+      44 |       }, state);
+    > 45 |       expect(overlap, 'The option popup must not cover validation feedback').toBe(false);
+         |                                                                              ^
+      46 |     }
+      47 |     const axe = await new AxeBuilder({page}).analyze();
+      48 |     await info.attach('accessibility.json', {body: JSON.stringify({violations: axe.violations, incomplete: axe.incomplete}, null, 2), contentType: 'application/json'});
+        at /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/tests/visual/field-states.spec.ts:45:78
+
+    Error Context: artifacts/visual-catalog/field-states-combobox-invalid-narrow-dark-rtl-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/visual-catalog/field-states-combobox-invalid-narrow-dark-rtl-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace artifacts/visual-catalog/field-states-combobox-invalid-narrow-dark-rtl-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox pending desktop-light ──────────
+
+    Error: The option popup must not cover validation feedback
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      43 |         return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+      44 |       }, state);
+    > 45 |       expect(overlap, 'The option popup must not cover validation feedback').toBe(false);
+         |                                                                              ^
+      46 |     }
+      47 |     const axe = await new AxeBuilder({page}).analyze();
+      48 |     await info.attach('accessibility.json', {body: JSON.stringify({violations: axe.violations, incomplete: axe.incomplete}, null, 2), contentType: 'application/json'});
+        at /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/tests/visual/field-states.spec.ts:45:78
+
+    Error Context: artifacts/visual-catalog/field-states-combobox-pending-desktop-light-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/visual-catalog/field-states-combobox-pending-desktop-light-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace artifacts/visual-catalog/field-states-combobox-pending-desktop-light-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox pending narrow-dark-rtl ────────
+
+    Error: The option popup must not cover validation feedback
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      43 |         return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+      44 |       }, state);
+    > 45 |       expect(overlap, 'The option popup must not cover validation feedback').toBe(false);
+         |                                                                              ^
+      46 |     }
+      47 |     const axe = await new AxeBuilder({page}).analyze();
+      48 |     await info.attach('accessibility.json', {body: JSON.stringify({violations: axe.violations, incomplete: axe.incomplete}, null, 2), contentType: 'application/json'});
+        at /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/tests/visual/field-states.spec.ts:45:78
+
+    Error Context: artifacts/visual-catalog/field-states-combobox-pending-narrow-dark-rtl-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/visual-catalog/field-states-combobox-pending-narrow-dark-rtl-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace artifacts/visual-catalog/field-states-combobox-pending-narrow-dark-rtl-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox invalid desktop-light ───────────
+    [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox invalid narrow-dark-rtl ─────────
+    [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox pending desktop-light ───────────
+    [chromium] › tests/visual/field-states.spec.ts:10:7 › combobox pending narrow-dark-rtl ─────────

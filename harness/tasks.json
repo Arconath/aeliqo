@@ -983,7 +983,7 @@
       "status": "active",
       "stage": "ready",
       "evidence": [],
-      "notes": "Initial426 real catalog captures/axe checks pass acrossChromium/Firefox/WebKit; all71 atdesktoplight/narrowdarkRTL32pxrootfont. KeyValue/hierarchy defects fixedfcb88df. Fullstate/visualapproval/manualAT remain open; not accepted."
+      "notes": "426 initial catalog captures plus252 nativefield state/read-only cases pass acrossChromium/Firefox/WebKit. Invalid radio/date semantics andcomboboxfeedbackocclusion fixedc257e26; independentreview approved. Data/viz/compound alternate-state suite inreview; fullvisualapproval/manualAT stillrequired. Notaccepted."
     },
     {
       "id": "T30",
