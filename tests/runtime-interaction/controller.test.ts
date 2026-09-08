@@ -206,6 +206,71 @@ describe('runtime interaction controller', () => {
     store.dispose();
   });
 
+  it('enforces one event deadline across sequential host validations', async () => {
+    const {region, result, authority, store} = await harness();
+    const filterShape = {payload: 'filter' as const};
+    const manifest = {ref: {id: 'filter-deadline-pass-through', revision: '1'}, source: filterShape, target: filterShape, kind: 'registered' as const};
+    const graph = createInteractionGraph({
+      nodes: [
+        {id: 'source', ports: [{id: 'out', direction: 'output', ...filterShape}]},
+        {id: 'target', ports: [{id: 'in', direction: 'input', ...filterShape}]},
+      ],
+      links: [{id: 'to-target', source: {node: 'source', port: 'out'}, target: {node: 'target', port: 'in'}, mapping: manifest.ref, propagation: 'directed'}],
+      mappings: [manifest],
+    });
+    expect(graph.registerMapping({manifest, map: (payload) => ({ok: true, value: payload})})).toMatchObject({ok: true});
+    let validationCalls = 0;
+    let materializeCalls = 0;
+    const controller = createInteractionController({
+      region, graph, maxEventMilliseconds: 50,
+      readContext: () => ({principalKey: authority.principalKey, draftDomain: 'events', actor: {id: 'user-a', kind: 'user'}, grants: ['experience.commit', 'result.inspect'],
+        scopeDigest: authority.scopeDigest, policyRevision: authority.policyRevision, catalogRevision: catalog.revision,
+        experienceRevision: authority.experienceRevision, functionRegistryDigest: authority.functionRegistryDigest, results: [result.ref]}),
+      resolveResult: () => result.handle,
+      validateScope: async () => {
+        validationCalls++;
+        await new Promise<void>((resolve) => setTimeout(resolve, 30));
+        return {ok: true, value: undefined};
+      },
+      materialize: () => { materializeCalls++; return {ok: true, value: {state: region.snapshot().state!, resultHandles: [result.handle]}}; },
+    });
+    const outcome = await controller.dispatch(event(region.snapshot().regionRevision,
+      {kind: 'filter', predicates: [{op: 'compare', field: 'department', comparison: 'eq', value: 'A'}], outputId: result.ref.outputId}, 'deadline-fanout', 'source'), {sourcePortId: 'out'});
+    expect(outcome).toMatchObject({ok: false, diagnostics: [{code: 'runtime.interaction-budget'}]});
+    expect(validationCalls).toBe(2);
+    expect(materializeCalls).toBe(0);
+    expect(region.snapshot().state?.interaction).toBeUndefined();
+    controller.dispose();
+    store.dispose();
+  });
+
+  it('aborts an uncooperative callback at the event deadline without committing late success', async () => {
+    const {region, result, authority, store} = await harness();
+    let resolveValidation!: (value: {ok: true; value: undefined}) => void;
+    const lateValidation = new Promise<{ok: true; value: undefined}>((resolve) => { resolveValidation = resolve; });
+    const controller = createInteractionController({
+      region,
+      graph: createInteractionGraph(graphFor()),
+      maxEventMilliseconds: 10,
+      readContext: () => ({principalKey: authority.principalKey, draftDomain: 'events', actor: {id: 'user-a', kind: 'user'}, grants: ['experience.commit', 'result.inspect'],
+        scopeDigest: authority.scopeDigest, policyRevision: authority.policyRevision, catalogRevision: catalog.revision,
+        experienceRevision: authority.experienceRevision, functionRegistryDigest: authority.functionRegistryDigest, results: [result.ref]}),
+      resolveResult: () => result.handle,
+      validateSelection: () => lateValidation,
+    });
+    const before = region.snapshot();
+    const pending = controller.dispatch(event(before.regionRevision,
+      {kind: 'selection', selection: {mode: 'ids', entity: 'events', keys: ['a'], result: result.ref}}, 'late-validation'), {sourcePortId: 'input'});
+    await new Promise<void>((resolve) => setTimeout(resolve, 30));
+    expect(await pending).toMatchObject({ok: false, diagnostics: [{code: 'runtime.interaction-budget'}]});
+    resolveValidation({ok: true, value: undefined});
+    await Promise.resolve();
+    expect(region.snapshot().regionRevision).toBe(before.regionRevision);
+    expect(region.snapshot().state?.interaction).toBeUndefined();
+    controller.dispose();
+    store.dispose();
+  });
+
   it('extends the expected read set for a fresh materialized result handle', async () => {
     const first = await harness();
     const fresh = await localResult();
@@ -269,6 +334,32 @@ describe('runtime interaction controller', () => {
     store.dispose();
   });
 
+  it('rejects an in-place actor change while materialization is awaiting', async () => {
+    const {region, result, authority, store} = await harness();
+    const hostContext: InteractionHostContext = {principalKey: authority.principalKey, draftDomain: 'events', actor: {id: 'user-a', kind: 'user'}, grants: ['experience.commit', 'result.inspect'],
+      scopeDigest: authority.scopeDigest, policyRevision: authority.policyRevision, catalogRevision: catalog.revision,
+      experienceRevision: authority.experienceRevision, functionRegistryDigest: catalog.functionRegistryDigest, results: [result.ref]};
+    const controller = createInteractionController({
+      region,
+      graph: createInteractionGraph(graphFor('filter')),
+      readContext: () => hostContext,
+      resolveResult: () => result.handle,
+      validateScope: () => ({ok: true, value: undefined}),
+      materialize: (_payloads, context, next) => {
+        (hostContext.actor as {id: string; kind: 'user'}).id = 'attacker';
+        return {ok: true, value: {state: {...context.region.state!, interaction: next}, resultHandles: [result.handle]}};
+      },
+    });
+    const before = region.snapshot();
+    const rejected = await controller.dispatch(event(before.regionRevision,
+      {kind: 'filter', predicates: [{op: 'compare', field: 'department', comparison: 'eq', value: 'A'}], outputId: result.ref.outputId}, 'actor-mutated'), {sourcePortId: 'input'});
+    expect(rejected).toMatchObject({ok: false, diagnostics: [{code: 'runtime.interaction-stale'}]});
+    expect(region.snapshot().regionRevision).toBe(before.regionRevision);
+    expect(region.snapshot().state?.interaction).toBeUndefined();
+    controller.dispose();
+    store.dispose();
+  });
+
   it('cancels before region authorization publishes the staged interaction state', async () => {
     const result = await localResult();
     const authority: RegionAuthority = {
@@ -311,6 +402,18 @@ describe('runtime interaction controller', () => {
     expect(region.snapshot().state?.interaction).toBeUndefined();
     controller.dispose();
     store.dispose();
+  });
+
+  it('allows a propagation edge at the configured hop limit', () => {
+    const shape = {payload: 'filter' as const};
+    const manifest = {ref: {id: 'directed-hop', revision: '1'}, source: shape, target: shape, kind: 'registered' as const};
+    const graph = createInteractionGraph({nodes: [
+      {id: 'a', ports: [{id: 'filter', direction: 'output', ...shape}]},
+      {id: 'b', ports: [{id: 'filter', direction: 'input', ...shape}]},
+    ], links: [{id: 'a-to-b', source: {node: 'a', port: 'filter'}, target: {node: 'b', port: 'filter'}, mapping: manifest.ref, propagation: 'directed'}], mappings: [manifest]});
+    expect(graph.registerMapping({manifest, map: (payload) => ({ok: true, value: payload})})).toMatchObject({ok: true});
+    const routed = graph.route(event('r-1', {kind: 'filter', predicates: [{op: 'compare', field: 'department', comparison: 'eq', value: 'A'}], outputId: 'rows'}, 'one-hop', 'a'), {nodeId: 'a', portId: 'filter'}, new AbortController().signal, 1);
+    expect(routed).toMatchObject({ok: true, value: [{route: {nodeId: 'b', portId: 'filter'}}]});
   });
 
   it('converges a bidirectional identity selection cycle with built-in propagation', async () => {

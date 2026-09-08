@@ -113,7 +113,9 @@ class InteractionGraphImpl implements InteractionGraph {
     while (queue.length > 0) {
       if (signal.aborted) return failure('runtime.interaction-cancelled', 'The interaction was cancelled.');
       const current = queue.shift()!;
-      if (current.hops >= maxHops) return failure('runtime.interaction-budget', 'The interaction propagation exceeded its bounded hop budget.');
+      // The source is at hop 0, so a one-edge route is valid with maxHops=1.
+      // Reject only when attempting to expand a route beyond the limit.
+      if (current.hops > maxHops) return failure('runtime.interaction-budget', 'The interaction propagation exceeded its bounded hop budget.');
       const links = this.bySource.get(routeKey(current.route)) ?? [];
       for (const link of links) {
         if (signal.aborted) return failure('runtime.interaction-cancelled', 'The interaction was cancelled.');

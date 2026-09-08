@@ -174,6 +174,7 @@ export interface InteractionControllerOptions {
   /** Proposal-only: this callback cannot execute a business write. */
   readonly onActionProposal?: InteractionHostCallback<Extract<InteractionPayload, {readonly kind: 'action-request'}>>;
   readonly maxQueuedEvents?: number;
+  /** Per-event deadline, starting when the event begins processing after queue admission. */
   readonly maxEventMilliseconds?: number;
   readonly maxHops?: number;
   readonly now?: () => number;

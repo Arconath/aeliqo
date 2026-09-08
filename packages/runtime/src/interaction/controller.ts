@@ -75,6 +75,15 @@ function sameTrustedContext(expected: InteractionHostContext, current: Interacti
     expected.functionRegistryDigest === current.functionRegistryDigest;
 }
 
+function grantsForPayload(payload: InteractionPayload): readonly string[] {
+  if (payload.kind === 'selection') return payload.selection.mode === 'ids' ? ['experience.commit', 'result.inspect'] : ['experience.commit'];
+  if (payload.kind === 'filter' || payload.kind === 'range' || payload.kind === 'group' || payload.kind === 'page') return ['experience.commit', 'result.inspect'];
+  if (payload.kind === 'draft') return ['experience.commit', 'draft.edit'];
+  if (payload.kind === 'navigate') return ['navigation.propose'];
+  if (payload.kind === 'action-request') return ['action.propose'];
+  return [];
+}
+
 function emptyPersistedState(): CoreInteractionState {
   return freeze({version: '1', values: [], drafts: []});
 }
@@ -135,6 +144,7 @@ function materializationOutcome(value: unknown): InteractionOutcome<InteractionM
 
 interface ResolvedResult { readonly ref: ResultRef; readonly handle: ResultHandle; }
 interface AppliedPayload { readonly state: CoreInteractionState; readonly result?: ResolvedResult; }
+interface EventDeadline { expired: boolean; }
 
 class InteractionControllerImpl implements InteractionController {
   private readonly queue: SerialQueue;
@@ -255,8 +265,8 @@ class InteractionControllerImpl implements InteractionController {
   private readHost(snapshot: RegionSnapshot): InteractionOutcome<InteractionHostContext> {
     let host: InteractionHostContext;
     try { host = this.options.readContext(); } catch { return failure('runtime.interaction-denied', 'The host interaction context could not be read.'); }
-    if (host === null || typeof host !== 'object' || !validText(host.principalKey) || !validText(host.draftDomain) ||
-        host.actor === null || typeof host.actor !== 'object' || !validText(host.actor.id) ||
+    if (host === null || typeof host !== 'object' || Array.isArray(host) || !validText(host.principalKey) || !validText(host.draftDomain) ||
+        host.actor === null || typeof host.actor !== 'object' || Array.isArray(host.actor) || !validText(host.actor.id) ||
         !['user', 'service', 'system'].includes(host.actor.kind) || !Array.isArray(host.grants) || host.grants.length > WIRE_LIMITS.array ||
         host.grants.some((grant) => !validText(grant)) || !validText(host.scopeDigest) || !validText(host.policyRevision) ||
         !validText(host.catalogRevision) || !validText(host.experienceRevision) || !validText(host.functionRegistryDigest) ||
@@ -266,7 +276,17 @@ class InteractionControllerImpl implements InteractionController {
         host.functionRegistryDigest !== snapshot.readSet.functionRegistryDigest || host.scopeDigest !== snapshot.readSet.scopeDigest ||
         host.policyRevision !== snapshot.readSet.policyRevision)
       return failure('runtime.interaction-stale', 'The host interaction context is stale against the region.');
-    return {ok: true, value: host};
+    // Capture a bounded owned snapshot. Host applications may reuse and mutate
+    // their context object while an async callback is pending; retaining that
+    // object would make the original authorization silently change underneath
+    // the controller's rechecks.
+    const owned = Object.freeze({
+      ...host,
+      actor: Object.freeze({id: host.actor.id, kind: host.actor.kind}),
+      grants: Object.freeze([...host.grants]),
+      results: Object.freeze(host.results.map((ref) => Object.freeze({...ref}))),
+    });
+    return {ok: true, value: owned};
   }
 
   /** Re-read authorization after an async host operation and before effects/commit. */
@@ -298,38 +318,68 @@ class InteractionControllerImpl implements InteractionController {
     return {ok: true, value: {nodeId: node.id, portId: candidates[0]!.id}};
   }
 
-  private async callHost<T>(callback: InteractionHostCallback<T> | undefined, value: T, context: InteractionResolutionContext, controller: AbortController): Promise<InteractionOutcome<void>> {
+  private async callHost<T>(callback: InteractionHostCallback<T> | undefined, value: T, context: InteractionResolutionContext, controller: AbortController, deadline?: EventDeadline): Promise<InteractionOutcome<void>> {
     if (callback === undefined) return failure('runtime.interaction-denied', 'The host has not registered the required interaction callback.');
+    if (deadline?.expired) return failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.');
     if (controller.signal.aborted) return failure('runtime.interaction-cancelled', 'The interaction was cancelled.');
     let timer: ReturnType<typeof setTimeout> | undefined;
     let timedOut = false;
+    let onAbort: (() => void) | undefined;
     const pending = Promise.resolve().then(() => callback(value, context));
     const timeout = new Promise<'timeout'>((resolve) => { timer = setTimeout(() => { timedOut = true; resolve('timeout'); }, this.maxEventMilliseconds); });
+    const aborted = new Promise<'aborted'>((resolve) => {
+      onAbort = () => resolve('aborted');
+      if (controller.signal.aborted) onAbort();
+      else controller.signal.addEventListener('abort', onAbort, {once: true});
+    });
     try {
-      const result = await Promise.race([pending, timeout]);
+      const result = await Promise.race([pending, timeout, aborted]);
       if (result === 'timeout' || timedOut) { controller.abort(); return failure('runtime.interaction-budget', 'The host interaction callback exceeded its bounded time budget.'); }
-      if (controller.signal.aborted) return failure('runtime.interaction-cancelled', 'The interaction was cancelled.');
+      if (result === 'aborted') return deadline?.expired
+        ? failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.')
+        : failure('runtime.interaction-cancelled', 'The interaction was cancelled.');
+      if (controller.signal.aborted) return deadline?.expired
+        ? failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.')
+        : failure('runtime.interaction-cancelled', 'The interaction was cancelled.');
       return callbackOutcome(result);
     } catch {
       return failure('runtime.interaction-denied', 'The host interaction callback failed.');
-    } finally { if (timer !== undefined) clearTimeout(timer); }
+    } finally {
+      if (timer !== undefined) clearTimeout(timer);
+      if (onAbort !== undefined) controller.signal.removeEventListener('abort', onAbort);
+    }
   }
 
-  private async callMaterialize(payloads: readonly InteractionQueryPayload[], context: InteractionResolutionContext, next: CoreInteractionState, controller: AbortController): Promise<InteractionOutcome<InteractionMaterialization>> {
+  private async callMaterialize(payloads: readonly InteractionQueryPayload[], context: InteractionResolutionContext, next: CoreInteractionState, controller: AbortController, deadline?: EventDeadline): Promise<InteractionOutcome<InteractionMaterialization>> {
     if (this.options.materialize === undefined) return failure('runtime.interaction-denied', 'The host has not registered a materializer for query-affecting interaction state.');
+    if (deadline?.expired) return failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.');
     if (controller.signal.aborted) return failure('runtime.interaction-cancelled', 'The interaction was cancelled.');
     let timer: ReturnType<typeof setTimeout> | undefined;
     let timedOut = false;
+    let onAbort: (() => void) | undefined;
     const pending = Promise.resolve().then(() => this.options.materialize!(payloads, context, next));
     const timeout = new Promise<'timeout'>((resolve) => { timer = setTimeout(() => { timedOut = true; resolve('timeout'); }, this.maxEventMilliseconds); });
+    const aborted = new Promise<'aborted'>((resolve) => {
+      onAbort = () => resolve('aborted');
+      if (controller.signal.aborted) onAbort();
+      else controller.signal.addEventListener('abort', onAbort, {once: true});
+    });
     try {
-      const result = await Promise.race([pending, timeout]);
+      const result = await Promise.race([pending, timeout, aborted]);
       if (result === 'timeout' || timedOut) { controller.abort(); return failure('runtime.interaction-budget', 'The host materializer exceeded its bounded time budget.'); }
-      if (controller.signal.aborted) return failure('runtime.interaction-cancelled', 'The interaction was cancelled.');
+      if (result === 'aborted') return deadline?.expired
+        ? failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.')
+        : failure('runtime.interaction-cancelled', 'The interaction was cancelled.');
+      if (controller.signal.aborted) return deadline?.expired
+        ? failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.')
+        : failure('runtime.interaction-cancelled', 'The interaction was cancelled.');
       return materializationOutcome(result);
     } catch {
       return failure('runtime.interaction-denied', 'The host materializer failed.');
-    } finally { if (timer !== undefined) clearTimeout(timer); }
+    } finally {
+      if (timer !== undefined) clearTimeout(timer);
+      if (onAbort !== undefined) controller.signal.removeEventListener('abort', onAbort);
+    }
   }
 
   private resultFor(outputId: string, context: InteractionResolutionContext): InteractionOutcome<ResolvedResult> {
@@ -369,6 +419,7 @@ class InteractionControllerImpl implements InteractionController {
     host: InteractionHostContext,
     snapshot: RegionSnapshot,
     controller: AbortController,
+    deadline: EventDeadline,
     state: CoreInteractionState,
     effects: InteractionEffectReceipt[],
     navigations: Extract<InteractionPayload, {readonly kind: 'navigate'}>[],
@@ -388,7 +439,7 @@ class InteractionControllerImpl implements InteractionController {
         if (refKey(checked.value.ref) !== refKey(payload.selection.result)) return failure('runtime.interaction-stale', 'The selected result is not the current authorized result.');
         result = checked.value;
       }
-      const checked = await this.callHost(this.options.validateSelection, payload.selection, context, controller);
+      const checked = await this.callHost(this.options.validateSelection, payload.selection, context, controller, deadline);
       if (!checked.ok) return checked;
       return result === undefined
         ? {ok: true, value: {state: this.upsertValue(state, route, payload)}}
@@ -400,7 +451,7 @@ class InteractionControllerImpl implements InteractionController {
       const result = this.resultFor(payload.outputId, context);
       if (!result.ok) return result;
       if (payload.kind === 'page' && payload.queryDigest !== result.value.ref.queryDigest) return failure('runtime.interaction-stale', 'The page cursor belongs to a different query generation.');
-      const checked = await this.callHost(this.options.validateScope, payload, context, controller);
+      const checked = await this.callHost(this.options.validateScope, payload, context, controller, deadline);
       if (!checked.ok) return checked;
       return {ok: true, value: {state: this.upsertValue(state, route, payload), result: result.value}};
     }
@@ -410,7 +461,7 @@ class InteractionControllerImpl implements InteractionController {
       const current = state.drafts.find((draft) => draft.domain === host.draftDomain && draft.entity === payload.entity && draft.key === payload.key && draft.field === payload.field);
       if (current !== undefined && current.entityRevision !== payload.entityRevision)
         return failure('runtime.interaction-stale', 'The draft entity revision changed; resolve the draft conflict explicitly.');
-      const checked = await this.callHost(this.options.validateDraft, payload, context, controller);
+      const checked = await this.callHost(this.options.validateDraft, payload, context, controller, deadline);
       if (!checked.ok) return checked;
       const nextDraft = freeze({domain: host.draftDomain, entity: payload.entity, key: payload.key, field: payload.field, value: payload.value, entityRevision: payload.entityRevision});
       const drafts = state.drafts.filter((draft) => !(draft.domain === host.draftDomain && draft.entity === payload.entity && draft.key === payload.key && draft.field === payload.field));
@@ -420,7 +471,7 @@ class InteractionControllerImpl implements InteractionController {
       if (!hasGrant(host, 'navigation.propose')) return failure('runtime.interaction-denied', 'The host did not grant application navigation proposals.');
       const current = this.currentHost(snapshot, host, ['navigation.propose']);
       if (!current.ok) return current;
-      const checked = await this.callHost(this.options.validateNavigation, payload, this.resolutionContext(event, current.value, snapshot, controller.signal), controller);
+      const checked = await this.callHost(this.options.validateNavigation, payload, this.resolutionContext(event, current.value, snapshot, controller.signal), controller, deadline);
       if (!checked.ok) return checked;
       effects.push(freeze({kind: 'navigate', eventId: event.eventId, actorId: host.actor.id}));
       navigations.push(payload);
@@ -430,7 +481,7 @@ class InteractionControllerImpl implements InteractionController {
       if (!hasGrant(host, 'action.propose')) return failure('runtime.interaction-denied', 'The host did not grant action proposals.');
       const current = this.currentHost(snapshot, host, ['action.propose']);
       if (!current.ok) return current;
-      const checked = await this.callHost(this.options.onActionProposal, payload, this.resolutionContext(event, current.value, snapshot, controller.signal), controller);
+      const checked = await this.callHost(this.options.onActionProposal, payload, this.resolutionContext(event, current.value, snapshot, controller.signal), controller, deadline);
       if (!checked.ok) return checked;
       effects.push(freeze({kind: 'action-proposal', eventId: event.eventId, actorId: host.actor.id}));
       return {ok: true, value: {state}};
@@ -461,10 +512,11 @@ class InteractionControllerImpl implements InteractionController {
     snapshot: RegionSnapshot,
     next: CoreInteractionState,
     controller: AbortController,
+    deadline: EventDeadline,
     handles: ResultHandle[],
   ): Promise<InteractionOutcome<RegionContent | undefined>> {
     if (payloads.length === 0) return {ok: true, value: undefined};
-    const result = await this.callMaterialize(payloads, this.resolutionContext(event, host, snapshot, controller.signal), next, controller);
+    const result = await this.callMaterialize(payloads, this.resolutionContext(event, host, snapshot, controller.signal), next, controller, deadline);
     if (!result.ok) return result;
     const checked = result.value.state.interaction === undefined ? undefined : parseInteractionState(result.value.state.interaction);
     if (checked === undefined || !checked.ok || canonical(checked.value) !== canonical(next))
@@ -505,7 +557,10 @@ class InteractionControllerImpl implements InteractionController {
     candidate: RegionContent | undefined,
     resultHandles: readonly ResultHandle[],
     controller: AbortController,
+    deadline: EventDeadline,
+    recheck: () => InteractionOutcome<void>,
   ): Promise<InteractionOutcome<RegionSnapshot>> {
+    if (deadline.expired) return failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.');
     if (before.readSet === undefined || before.state === undefined) return failure('runtime.interaction-disposed', 'The region has no active state or read set.');
     if (this.region.snapshot().regionRevision !== before.regionRevision) return failure('runtime.interaction-stale', 'The region changed while the interaction was being prepared.');
     const state = candidate ?? {...before.state, interaction: next};
@@ -515,9 +570,21 @@ class InteractionControllerImpl implements InteractionController {
     try {
       const staged = await this.region.stage({requestId: event.eventId, expected, state, ...(resultHandles.length === 0 ? {} : {resultHandles})});
       if (!staged.ok) return failure('runtime.interaction-stale', staged.diagnostics[0]!.message);
-      if (controller.signal.aborted) { this.region.discard(staged.value); return failure('runtime.interaction-cancelled', 'The interaction was cancelled.'); }
-      const committed = await this.region.commit(staged.value, {signal: controller.signal});
+      if (controller.signal.aborted) {
+        this.region.discard(staged.value);
+        return deadline.expired
+          ? failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.')
+          : failure('runtime.interaction-cancelled', 'The interaction was cancelled.');
+      }
+      const committed = await this.region.commit(staged.value, {
+        signal: controller.signal,
+        recheck: () => {
+          const checked = recheck();
+          return checked.ok ? {ok: true, value: undefined} : checked;
+        },
+      });
       if (!committed.ok) {
+        if (deadline.expired) return failure('runtime.interaction-budget', committed.diagnostics[0]!.message);
         if (controller.signal.aborted || committed.diagnostics[0]?.code === 'runtime.region-cancelled')
           return failure('runtime.interaction-cancelled', committed.diagnostics[0]!.message);
         return failure('runtime.interaction-stale', committed.diagnostics[0]!.message);
@@ -534,6 +601,19 @@ class InteractionControllerImpl implements InteractionController {
   }
 
   private async process(event: InteractionEvent, sourcePortId: string | undefined, controller: AbortController): Promise<InteractionOutcome<InteractionReceipt>> {
+    // Queue admission is intentionally outside this deadline. Once the event
+    // starts processing, every callback, materializer and region commit shares
+    // one abort signal and one bounded wall-clock budget.
+    const deadline: EventDeadline = {expired: false};
+    const timer = setTimeout(() => { deadline.expired = true; controller.abort(); }, this.maxEventMilliseconds);
+    try {
+      return await this.processEvent(event, sourcePortId, controller, deadline);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  private async processEvent(event: InteractionEvent, sourcePortId: string | undefined, controller: AbortController, deadline: EventDeadline): Promise<InteractionOutcome<InteractionReceipt>> {
     if (this.disposed) return failure('runtime.interaction-disposed', 'The interaction controller has been disposed.');
     if (this.revoked) return failure('runtime.interaction-revoked', 'The interaction controller has been revoked.');
     if (controller.signal.aborted) return failure('runtime.interaction-cancelled', 'The interaction was cancelled.');
@@ -558,14 +638,16 @@ class InteractionControllerImpl implements InteractionController {
     const navigations: Extract<InteractionPayload, {readonly kind: 'navigate'}>[] = [];
     const queryPayloads: InteractionQueryPayload[] = [];
     const resultHandles: ResultHandle[] = [];
+    const requiredGrants = new Set<string>();
     const applied = new Set<string>();
     for (const item of routedItems) {
       const key = `${routeKey(item.route)}\u0000${canonical(item.payload)}`;
       if (applied.has(key)) continue;
       applied.add(key);
-      const next = await this.applyPayload(item.payload, item.route, event, host.value, before, controller, state, effects, navigations);
+      const next = await this.applyPayload(item.payload, item.route, event, host.value, before, controller, deadline, state, effects, navigations);
       if (!next.ok) return next;
       state = next.value.state;
+      for (const grant of grantsForPayload(item.payload)) requiredGrants.add(grant);
       if (next.value.result !== undefined) this.addHandle(resultHandles, next.value.result.handle);
       if (item.payload.kind === 'filter' || item.payload.kind === 'range' || item.payload.kind === 'group' || item.payload.kind === 'page') queryPayloads.push(item.payload);
     }
@@ -573,19 +655,18 @@ class InteractionControllerImpl implements InteractionController {
     let region = before;
     let candidate: RegionContent | undefined;
     if (changed) {
-      const materialized = await this.materialize(queryPayloads, event, host.value, before, state, controller, resultHandles);
+      const materialized = await this.materialize(queryPayloads, event, host.value, before, state, controller, deadline, resultHandles);
       if (!materialized.ok) return materialized;
-      const current = this.currentHost(before, host.value, [...new Set(
-        routedItems.flatMap((item) => item.payload.kind === 'draft' ? ['experience.commit', 'draft.edit'] :
-          item.payload.kind === 'selection' || item.payload.kind === 'filter' || item.payload.kind === 'range' || item.payload.kind === 'group' || item.payload.kind === 'page'
-            ? ['experience.commit', ...(item.payload.kind === 'selection' && item.payload.selection.mode === 'ids' ? ['result.inspect'] :
-              item.payload.kind !== 'selection' ? ['result.inspect'] : [])] : []),
-      )]);
+      const current = this.currentHost(before, host.value, [...requiredGrants]);
       if (!current.ok) return current;
       const expected = this.expectedReadSet(before, resultHandles);
       if (!expected.ok) return expected;
       candidate = materialized.value;
-      const committed = await this.commitState(event, before, expected.value, state, candidate, resultHandles, controller);
+      const committed = await this.commitState(event, before, expected.value, state, candidate, resultHandles, controller, deadline,
+        () => {
+          const checked = this.currentHost(before, host.value, [...requiredGrants]);
+          return checked.ok ? {ok: true, value: undefined} : checked;
+        });
       if (!committed.ok) return committed;
       region = committed.value;
       if (this.revoked) return failure('runtime.interaction-revoked', 'The region was revoked during the interaction.');
@@ -593,7 +674,7 @@ class InteractionControllerImpl implements InteractionController {
     for (const navigate of navigations) {
       const current = this.currentHost(region, host.value, ['navigation.propose']);
       if (!current.ok) return current;
-      const callback = await this.callHost(this.options.onNavigate, navigate, this.resolutionContext(event, current.value, region, controller.signal), controller);
+      const callback = await this.callHost(this.options.onNavigate, navigate, this.resolutionContext(event, current.value, region, controller.signal), controller, deadline);
       if (!callback.ok) return callback;
     }
     return {ok: true, value: freeze({eventId: event.eventId, state: publicState(region), region, routed: routed.value, effects, noop: !changed && effects.length === 0})};
