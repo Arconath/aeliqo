@@ -47,6 +47,26 @@ const fields = [
     role: "measure" as const,
   },
   {
+    id: "currentRate",
+    label: "Current rate",
+    type: {
+      value: "decimal" as const,
+      nullable: true,
+      unit: { dimension: "ratio", symbol: "1" },
+    },
+    role: "measure" as const,
+  },
+  {
+    id: "baselineRate",
+    label: "Baseline rate",
+    type: {
+      value: "decimal" as const,
+      nullable: true,
+      unit: { dimension: "ratio", symbol: "1" },
+    },
+    role: "measure" as const,
+  },
+  {
     id: "department",
     label: "Department",
     type: { value: "text" as const, nullable: false },
@@ -95,9 +115,27 @@ const rows = [
     department: "Design",
   },
 ] as const;
+const ratioRows = [
+  {
+    ...rows[0],
+    currentRate: { decimal: "0.62" },
+    baselineRate: { decimal: "0.50" },
+  },
+  {
+    ...rows[1],
+    currentRate: { decimal: "0.40" },
+    baselineRate: { decimal: "0.50" },
+  },
+] as const;
 const binding = (
   override: Partial<AeliqoDataBinding> = {},
-) => ({ result: override.result ?? result(), rows: override.rows ?? rows });
+) => ({
+  result: override.result ?? result(),
+  rows: override.rows ?? rows,
+  ...(override.columns === undefined ? {} : {columns: override.columns}),
+  ...(override.scope === undefined ? {} : {scope: override.scope}),
+});
+const ratioBinding = () => binding({rows: ratioRows});
 
 const registry = createAeliqoDataRegistry({ resolveEntity: () => "person" });
 const resolve = (
@@ -177,18 +215,21 @@ describe("authorized data binding", () => {
         binding({ rows: [new Map() as never, rows[1]] }),
       ).ok,
     ).toBe(false);
+    let invoked = false;
     const getterRow = { ...rows[0] };
     Object.defineProperty(getterRow, "amount", {
+      enumerable: true,
       get: () => {
-        throw new Error("untrusted getter");
+        invoked = true;
+        return { decimal: "12.50" };
       },
     });
     expect(
       validateAeliqoDataBinding(
         binding({ rows: [getterRow as never, rows[1]] }),
-      ).ok,
+    ).ok,
     ).toBe(false);
-    });
+    expect(invoked).toBe(false);
   });
 
   it("keeps counts, coverage and supplied scope metadata mutually consistent", () => {
@@ -235,7 +276,68 @@ describe("authorized data binding", () => {
         result: result({coverage: {kind: "future"} as never}),
       }).ok,
     ).toBe(false);
+    expect(
+      validateAeliqoDataBinding(
+        binding({
+          result: result({
+            counts: {
+              loaded: 2,
+              population: {
+                kind: "exact",
+                value: 3,
+                populationDigest: "population",
+              },
+            },
+            coverage: {kind: "complete", populationDigest: "population"},
+          }),
+        }),
+      ).ok,
+    ).toBe(false);
+    const partial = validateAeliqoDataBinding(
+      binding({
+        result: result({
+          counts: {
+            loaded: 2,
+            population: {
+              kind: "exact",
+              value: 3,
+              populationDigest: "population",
+            },
+          },
+          coverage: {
+            kind: "partial",
+            populationDigest: "population",
+            reason: "page",
+          },
+        }),
+      }),
+    );
+    expect(partial.ok).toBe(true);
+    if (partial.ok)
+      expect(partial.value.scope).toMatchObject({
+        kind: "loaded",
+        loaded: 2,
+        populationTotal: 3,
+      });
+    const sample = validateAeliqoDataBinding(
+      binding({
+        result: result({
+          counts: {
+            loaded: 2,
+            population: {
+              kind: "exact",
+              value: 3,
+              populationDigest: "population",
+            },
+          },
+          coverage: {kind: "sample", populationDigest: "population", method: "sample"},
+        }),
+      }),
+    );
+    expect(sample.ok).toBe(true);
+    if (sample.ok) expect(sample.value.scope.kind).toBe("sample");
   });
+});
 
 describe("data registry semantics", () => {
   it("registers all nine data views and only derives fields from the authorized Result", () => {
@@ -301,14 +403,108 @@ describe("data registry semantics", () => {
         identityValues: { id: "a" },
       }).ok,
     ).toBe(false);
+    expect(
+      resolve("delta", {
+        currentField: "amount",
+        baselineField: "baseline",
+        mode: "percentage-point",
+        identityValues: { id: "a" },
+      }).ok,
+    ).toBe(false);
     const valid = resolve("delta", {
       currentField: "amount",
       baselineField: "baseline",
-      mode: "percentage-point",
+      mode: "absolute",
       identityValues: { id: "a" },
     });
     expect(valid.ok).toBe(true);
     if (valid.ok) expect(valid.value.config.delta?.currentRow.id).toBe("a");
+    const ratio = resolve(
+      "delta",
+      {
+        currentField: "currentRate",
+        baselineField: "baselineRate",
+        mode: "percentage-point",
+        identityValues: {id: "a"},
+      },
+      ratioBinding(),
+    );
+    expect(ratio.ok).toBe(true);
+  });
+
+  it("rejects contradictory aliases and duplicate delta observations", () => {
+    expect(
+      resolve("delta", {
+        currentField: "amount",
+        current: {field: "baseline"},
+        baselineField: "baseline",
+      }).ok,
+    ).toBe(false);
+    const same = resolve("delta", {
+      currentField: "amount",
+      baselineField: "amount",
+      identityValues: {id: "a"},
+    });
+    expect(same.ok).toBe(true);
+    if (same.ok) expect(same.value.config.fields).toEqual(["amount"]);
+    const crossRow = resolve("delta", {
+      current: {field: "amount", identityValues: {id: "a"}},
+      baseline: {field: "amount", identityValues: {id: "b"}},
+    });
+    expect(crossRow.ok).toBe(true);
+    if (crossRow.ok) {
+      expect(crossRow.value.config.fields).toEqual(["amount"]);
+      expect(crossRow.value.config.delta?.currentRow.id).toBe("a");
+      expect(crossRow.value.config.delta?.baselineRow.id).toBe("b");
+    }
+    expect(
+      resolve("metric", {
+        field: "amount",
+        identityValues: {id: "a"},
+        rowIdentity: {id: "b"},
+      }).ok,
+    ).toBe(false);
+    expect(
+      resolve("metric", {
+        field: "amount",
+        identityValues: {id: "a"},
+        rowIdentity: {id: "a"},
+      }).ok,
+    ).toBe(true);
+  });
+
+  it("derives detail fields and filter scope labels from authorized metadata", () => {
+    const subset = resolve(
+      "detail",
+      {identityValues: {id: "a"}},
+      binding({columns: [{key: "id", label: "ID", type: "text"}]}),
+    );
+    expect(subset.ok).toBe(true);
+    if (subset.ok) {
+      expect(subset.value.config.fields).toEqual(["id"]);
+      expect(subset.value.config.columns.map((column) => column.key)).toEqual(["id"]);
+    }
+    expect(
+      resolve(
+        "detail",
+        {fields: ["name"], identityValues: {id: "a"}},
+        binding({columns: [{key: "id", label: "ID", type: "text"}]}),
+      ).ok,
+    ).toBe(false);
+    expect(
+      resolve("filterBuilder", {
+        field: "department",
+        outputId: "people",
+        scopeLabel: "All records are verified",
+      }).ok,
+    ).toBe(false);
+    const filter = resolve("filterBuilder", {
+      field: "department",
+      outputId: "people",
+    });
+    expect(filter.ok).toBe(true);
+    if (filter.ok)
+      expect(filter.value.config.values.scopeLabel).toBe("2 records in population");
   });
 
   it("does not allow presentation config to redefine identity or field labels", () => {

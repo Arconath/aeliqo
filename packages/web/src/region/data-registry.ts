@@ -21,6 +21,7 @@ import type {
   AeliqoFilterPredicate,
   AeliqoSelectionMode,
 } from "../data/index.js";
+import {scopeText} from "../data/shared.js";
 
 /** The nine data views share one trusted semantic registry. */
 export const AELIQO_DATA_REFS = Object.freeze({
@@ -503,6 +504,46 @@ function allowedKeys(
   return Object.keys(input).every((key) => keys.includes(key));
 }
 
+interface DeltaObservationInput {
+  readonly field: unknown;
+  readonly selector?: Readonly<Record<string, unknown>>;
+}
+
+function hasIdentitySelector(input: Readonly<Record<string, unknown>>): boolean {
+  return input.identityValues !== undefined || input.rowIdentity !== undefined;
+}
+
+function aliasedObservation(
+  input: Readonly<Record<string, unknown>>,
+  directKey: string,
+  nestedKey: string,
+): Outcome<DeltaObservationInput> {
+  const direct = input[directKey];
+  const nestedRaw = input[nestedKey];
+  if (nestedRaw === undefined) return {ok: true, value: {field: direct}};
+  const nested = object(nestedRaw);
+  if (
+    nested === undefined ||
+    !allowedKeys(nested, ["field", "identityValues", "rowIdentity"])
+  )
+    return failure(
+      "config",
+      `${nestedKey} must contain only its field and typed identity selector.`,
+    );
+  if (direct !== undefined && nested.field !== undefined && direct !== nested.field)
+    return failure(
+      "config",
+      `${directKey} and ${nestedKey}.field must identify the same field.`,
+    );
+  return {
+    ok: true,
+    value: {
+      field: direct ?? nested.field,
+      ...(hasIdentitySelector(nested) ? {selector: nested} : {}),
+    },
+  };
+}
+
 function rowIdentity(row: AeliqoDataRecord, result: Result): Outcome<string> {
   const fields = fieldMap(result);
   const parts: string[] = [];
@@ -526,7 +567,37 @@ function identityValues(
   input: Readonly<Record<string, unknown>>,
   result: Result,
 ): Outcome<Readonly<Record<string, Scalar>> | undefined> {
-  const raw = input.identityValues ?? input.rowIdentity;
+  const identityValues = input.identityValues;
+  const rowIdentity = input.rowIdentity;
+  if (identityValues !== undefined && rowIdentity !== undefined) {
+    const direct = identityValuesFor(identityValues, result);
+    if (!direct.ok) return direct;
+    const alias = identityValuesFor(rowIdentity, result);
+    if (!alias.ok) return alias;
+    if (direct.value === undefined || alias.value === undefined)
+      return failure("identity", "Identity aliases must contain an identity object.");
+    const descriptors = fieldMap(result);
+    const sameTuple = result.identity.every((field) => {
+      const descriptor = descriptors.get(field);
+      if (descriptor === undefined) return false;
+      const left = scalarIdentity(direct.value![field], descriptor.type);
+      const right = scalarIdentity(alias.value![field], descriptor.type);
+      return left.ok && right.ok && left.value === right.value;
+    });
+    if (!sameTuple)
+      return failure(
+        "identity",
+        "identityValues and rowIdentity must describe the same identity tuple.",
+      );
+    return direct;
+  }
+  return identityValuesFor(identityValues ?? rowIdentity, result);
+}
+
+function identityValuesFor(
+  raw: unknown,
+  result: Result,
+): Outcome<Readonly<Record<string, Scalar>> | undefined> {
   if (raw === undefined) return { ok: true, value: undefined };
   const values = object(raw);
   if (
@@ -552,6 +623,42 @@ function identityValues(
     normalized[fieldId] = checked.value;
   }
   return { ok: true, value: normalized };
+}
+
+function sameIdentityValues(
+  left: Readonly<Record<string, Scalar>> | undefined,
+  right: Readonly<Record<string, Scalar>> | undefined,
+  result: Result,
+): boolean {
+  if (left === undefined || right === undefined) return left === right;
+  const fields = fieldMap(result);
+  return result.identity.every((fieldId) => {
+    const descriptor = fields.get(fieldId);
+    if (descriptor === undefined) return false;
+    const leftValue = scalarIdentity(left[fieldId], descriptor.type);
+    const rightValue = scalarIdentity(right[fieldId], descriptor.type);
+    return leftValue.ok && rightValue.ok && leftValue.value === rightValue.value;
+  });
+}
+
+function observationSelector(
+  input: Readonly<Record<string, unknown>>,
+  observation: DeltaObservationInput,
+  result: Result,
+  label: string,
+): Outcome<Readonly<Record<string, unknown>>> {
+  if (observation.selector === undefined) return {ok: true, value: input};
+  if (!hasIdentitySelector(input)) return {ok: true, value: observation.selector};
+  const shared = identityValues(input, result);
+  if (!shared.ok) return shared;
+  const specific = identityValues(observation.selector, result);
+  if (!specific.ok) return specific;
+  if (!sameIdentityValues(shared.value, specific.value, result))
+    return failure(
+      "identity",
+      `${label} identity selector conflicts with the shared identity selector.`,
+    );
+  return {ok: true, value: observation.selector};
 }
 
 function selectOne(
@@ -614,6 +721,23 @@ function scalarField(
   if (!numeric(descriptor.type))
     return failure("field", `${role} must name a numeric Result field.`);
   return { ok: true, value: { id: field.value, descriptor } };
+}
+
+/**
+ * A percentage-point delta is defined over values represented as fractions of
+ * a ratio. The canonical fraction convention is ratio unit symbol `1`;
+ * percent-display units (`%`), currency and bare numeric fields do not carry
+ * enough meaning to apply the component's `×100` display policy safely.
+ */
+function isExplicitFractionRatioType(
+  current: SemanticType,
+  baseline: SemanticType,
+): boolean {
+  const isFractionRatio = (type: SemanticType): boolean =>
+    type.unit?.dimension === "ratio" &&
+    type.unit.symbol === "1" &&
+    type.unit.currency === undefined;
+  return isFractionRatio(current) && isFractionRatio(baseline);
 }
 
 function commonConfig(
@@ -701,15 +825,33 @@ function resolveDelta(
       "config",
       "Delta configuration contains an unknown property.",
     );
-  const current = object(input.current);
-  const baseline = object(input.baseline);
-  const currentId = input.currentField ?? current?.field;
-  const baselineId = input.baselineField ?? baseline?.field;
-  const currentField = scalarField(binding.result, currentId, "currentField");
+  const current = aliasedObservation(input, "currentField", "current");
+  if (!current.ok) return current;
+  const baseline = aliasedObservation(input, "baselineField", "baseline");
+  if (!baseline.ok) return baseline;
+  const currentSelector = observationSelector(
+    input,
+    current.value,
+    binding.result,
+    "Current",
+  );
+  if (!currentSelector.ok) return currentSelector;
+  const baselineSelector = observationSelector(
+    input,
+    baseline.value,
+    binding.result,
+    "Baseline",
+  );
+  if (!baselineSelector.ok) return baselineSelector;
+  const currentField = scalarField(
+    binding.result,
+    current.value.field,
+    "currentField",
+  );
   if (!currentField.ok) return currentField;
   const baselineField = scalarField(
     binding.result,
-    baselineId,
+    baseline.value.field,
     "baselineField",
   );
   if (!baselineField.ok) return baselineField;
@@ -724,8 +866,18 @@ function resolveDelta(
   const mode = input.mode ?? "absolute";
   if (mode !== "absolute" && mode !== "relative" && mode !== "percentage-point")
     return failure("config", "Delta mode is invalid.");
-  const selected = selectOne(input, binding);
+  if (
+    mode === "percentage-point" &&
+    !isExplicitFractionRatioType(currentField.value.descriptor.type, baselineField.value.descriptor.type)
+  )
+    return failure(
+      "unsupported",
+      "Percentage-point deltas require two explicitly declared fraction-ratio fields.",
+    );
+  const selected = selectOne(currentSelector.value, binding);
   if (!selected.ok) return selected;
+  const baselineSelected = selectOne(baselineSelector.value, binding);
+  if (!baselineSelected.ok) return baselineSelected;
   return {
     ok: true,
     value: {
@@ -734,7 +886,10 @@ function resolveDelta(
         binding,
         {},
         {
-          fields: [currentField.value.id, baselineField.value.id],
+          fields:
+            currentField.value.id === baselineField.value.id
+              ? [currentField.value.id]
+              : [currentField.value.id, baselineField.value.id],
           columns: [],
           identity: binding.result.identity,
           selection: "none",
@@ -747,7 +902,7 @@ function resolveDelta(
         baselineField: baselineField.value.id,
         mode,
         currentRow: selected.value.row,
-        baselineRow: selected.value.row,
+        baselineRow: baselineSelected.value.row,
       },
     },
   };
@@ -848,33 +1003,38 @@ function resolveDetail(
     );
   const fields =
     input.fields === undefined
-      ? {
-          ok: true as const,
-          value: binding.result.fields.map((field) => field.id),
-        }
+      ? undefined
       : validFieldList(input.fields, binding.result);
-  if (!fields.ok) return fields;
+  if (fields !== undefined && !fields.ok) return fields;
   const identity = identityFields(input, binding.result);
   if (!identity.ok) return identity;
+  const authorizedColumns = new Set(binding.columns.map((column) => column.key));
+  if (
+    fields !== undefined &&
+    fields.value.some((field) => !authorizedColumns.has(field))
+  )
+    return failure(
+      "field",
+      "Detail fields must be supplied by the authorized column set.",
+    );
   const columnFallback =
     input.columns === undefined
-      ? (() => {
-          const selected = binding.columns.filter((column) =>
-            fields.value.includes(column.key),
-          );
-          if (selected.length > 0) return selected;
-          return binding.result.fields
-            .filter((field) => fields.value.includes(field.id))
-            .map((field) => ({
-              key: field.id,
-              label: field.label,
-              type: field.type.value,
-            }));
-        })()
+      ? binding.columns.filter((column) =>
+          fields === undefined || fields.value.includes(column.key),
+        )
       : undefined;
   const cols = columns(input, binding.result, columnFallback);
   if (!cols.ok) return cols;
-  if (cols.value.some((column) => !fields.value.includes(column.key)))
+  if (cols.value.some((column) => !authorizedColumns.has(column.key)))
+    return failure(
+      "field",
+      "Detail columns must be supplied by the authorized column set.",
+    );
+  const resolvedFields = fields?.value ?? cols.value.map((column) => column.key);
+  if (
+    cols.value.length !== resolvedFields.length ||
+    resolvedFields.some((field) => !cols.value.some((column) => column.key === field))
+  )
     return failure("field", "Detail columns must be included in the configured fields.");
   const selected = selectOne(input, binding);
   if (!selected.ok) return selected;
@@ -886,7 +1046,7 @@ function resolveDetail(
         binding,
         {},
         {
-          fields: fields.value,
+          fields: resolvedFields,
           columns: cols.value,
           identity: identity.value,
           selection: "none",
@@ -1029,18 +1189,23 @@ function resolveFilterBuilder(
       ? {ok: true as const, value: undefined}
       : filterPredicate(input.inherited, binding.result, fields.value);
   if (!inherited.ok) return inherited;
-  const scopeLabel =
-    input.scopeLabel === undefined
-      ? {ok: true as const, value: undefined}
-      : boundedText(input.scopeLabel, "scopeLabel");
-  if (!scopeLabel.ok) return scopeLabel;
+  const authorizedScopeLabel = scopeText(binding.scope) ?? "Current authorized scope";
+  if (input.scopeLabel !== undefined) {
+    const scopeLabel = boundedText(input.scopeLabel, "scopeLabel");
+    if (!scopeLabel.ok) return scopeLabel;
+    if (scopeLabel.value !== authorizedScopeLabel)
+      return failure(
+        "scope",
+        "scopeLabel must match the authorized Result scope.",
+      );
+  }
   const fieldDescriptors = fieldMap(binding.result);
   const normalized: Record<string, unknown> = {
     fields: fields.value,
     outputId: outputId.value,
     ...(predicate.value === undefined ? {} : {predicate: predicate.value}),
     ...(inherited.value === undefined ? {} : {inherited: inherited.value}),
-    ...(scopeLabel.value === undefined ? {} : {scopeLabel: scopeLabel.value}),
+    scopeLabel: authorizedScopeLabel,
   };
   return {
     ok: true,
@@ -1192,6 +1357,15 @@ function validateScope(
         "count",
         "The exact Result population count cannot be below loaded rows.",
       );
+    if (
+      coverage.kind === "complete" &&
+      population.kind === "exact" &&
+      population.value !== rows.length
+    )
+      return failure(
+        "count",
+        "Complete coverage requires the exact population count to equal loaded rows.",
+      );
     const canonical: AeliqoDataScope = {
       loaded: rows.length,
       ...(population.kind === "exact"
@@ -1201,9 +1375,11 @@ function validateScope(
       kind:
         coverage.kind === "complete"
           ? "population"
-          : coverage.kind === "unknown"
-            ? "unknown"
-            : "sample",
+          : coverage.kind === "partial"
+            ? "loaded"
+            : coverage.kind === "sample"
+              ? "sample"
+              : "unknown",
     };
     if (scope === undefined) return { ok: true, value: canonical };
     if (
@@ -1289,9 +1465,16 @@ function validateBinding(
   binding: AeliqoDataBinding,
   options: AeliqoDataRegistryOptions,
 ): Outcome<AeliqoValidatedBinding> {
-  if (binding === null || typeof binding !== "object")
+  const inspectedBinding = parseWireValue(binding);
+  if (
+    !inspectedBinding.ok ||
+    inspectedBinding.value === null ||
+    typeof inspectedBinding.value !== "object" ||
+    Array.isArray(inspectedBinding.value)
+  )
     return failure("binding", "A data binding is required.");
-  const result = binding.result;
+  const wireBinding = inspectedBinding.value as AeliqoDataBinding;
+  const result = wireBinding.result;
   if (result === null || typeof result !== "object")
     return failure("binding", "The authorized Result descriptor is malformed.");
   const parsedResult = parseResult(result);
@@ -1301,20 +1484,20 @@ function validateBinding(
       "The authorized Result descriptor is not a valid core Result.",
     );
   const descriptor = parsedResult.value;
-  if (!Array.isArray(binding.rows))
+  if (!Array.isArray(wireBinding.rows))
     return failure("binding", "Authorized rows must be an array.");
   const maxRows = options.maxRows ?? 10_000;
   if (
     !Number.isSafeInteger(maxRows) ||
     maxRows < 0 ||
     maxRows > 10_000 ||
-    binding.rows.length > maxRows
+    wireBinding.rows.length > maxRows
   )
     return failure(
       "count",
       "Authorized rows exceed the bounded data view limit.",
     );
-  if (binding.rows.length !== descriptor.counts.loaded)
+  if (wireBinding.rows.length !== descriptor.counts.loaded)
     return failure(
       "count",
       "The supplied row count must equal Result.counts.loaded.",
@@ -1322,7 +1505,7 @@ function validateBinding(
   const fields = fieldMap(descriptor);
   const identities = new Set<string>();
   const normalizedRows: AeliqoDataRecord[] = [];
-  for (const row of binding.rows) {
+  for (const row of wireBinding.rows) {
     if (row === null || typeof row !== "object" || Array.isArray(row))
       return failure("row", "Authorized rows must be plain records.");
     const prototype = Object.getPrototypeOf(row);
@@ -1367,10 +1550,10 @@ function validateBinding(
       return failure("row", "Authorized row access failed validation.");
     }
   }
-  const suppliedColumns = binding.columns;
+  const suppliedColumns = wireBinding.columns;
   const checkedColumns = columns({}, descriptor, suppliedColumns);
   if (!checkedColumns.ok) return checkedColumns;
-  const scope = validateScope(descriptor, normalizedRows, binding.scope);
+  const scope = validateScope(descriptor, normalizedRows, wireBinding.scope);
   if (!scope.ok) return scope;
   return {
     ok: true,
