@@ -44,6 +44,9 @@ importers:
       lit:
         specifier: 3.3.3
         version: 3.3.3
+      openai:
+        specifier: 7.10.0
+        version: 7.10.0(zod@4.5.4)
       react:
         specifier: 19.2.8
         version: 19.2.8

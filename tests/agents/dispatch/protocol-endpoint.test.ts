@@ -85,3 +85,43 @@ describe('paired protocol endpoint', () => {
     expect(await small.endpoint.discover()).toMatchObject({ok: false, diagnostics: [{code: 'agent.protocol.bytes'}]});
   });
 });
+
+describe('endpoint revocation and timing regressions', () => {
+  it('allows manual discovery without model egress', async () => {
+    const f = fixture({transport: 'manual'});
+    f.grants(['catalog.read']);
+    expect(await f.endpoint.discover()).toMatchObject({ok: true, value: [{name: 'summary'}]});
+    expect(await f.endpoint.authorizeModel()).toMatchObject({ok: false});
+  });
+  it('propagates invocation abort to the handler and blocks late output', async () => {
+    const caller = new AbortController();
+    let entered!: () => void, release!: () => void;
+    const ready = new Promise<void>(resolve => {entered = resolve;});
+    const gate = new Promise<void>(resolve => {release = resolve;});
+    let observed: AbortSignal | undefined, effects = 0;
+    const f = fixture({}, async (_input, context) => {observed = context.signal; entered(); await gate; if (!context.signal.aborted) effects++; return {state: 'data-ready', value: {secret: 'late'}};});
+    const pending = f.endpoint.invoke('summary', {}, {requestId: 'cancelled', signal: caller.signal});
+    await ready;
+    caller.abort();
+    const outcome = await pending;
+    expect(outcome).toMatchObject({ok: false, diagnostics: [{code: 'agent.protocol.cancelled'}]});
+    expect(observed?.aborted).toBe(true);
+    release();
+    await Promise.resolve();
+    expect(effects).toBe(0);
+    expect(JSON.stringify(outcome)).not.toContain('late');
+  });
+  it('redacts endpoint output when egress is revoked at the handler', async () => {
+    const f = fixture({}, () => {f.grants(['catalog.read']); return {state: 'data-ready', value: {secret: 'private'}};});
+    const outcome = await f.endpoint.invoke('summary', {}, {requestId: 'revoke'});
+    expect(outcome).toMatchObject({ok: true, value: {state: 'denied'}});
+    expect(JSON.stringify(outcome)).not.toContain('private');
+  });
+  it('does not extend the original lease when its wall clock moves backward', async () => {
+    let time = 100;
+    const f = fixture({now: () => time, expiresAt: 110});
+    time = -10_000;
+    await new Promise(resolve => setTimeout(resolve, 15));
+    expect(await f.endpoint.discover()).toMatchObject({ok: false, diagnostics: [{code: 'agent.protocol.stale'}]});
+  });
+});

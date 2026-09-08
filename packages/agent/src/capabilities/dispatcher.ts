@@ -357,7 +357,7 @@ export function createAgentCapabilityDispatcher(options: AgentCapabilityDispatch
     if (payloadBytes !== undefined && payloadBytes > inputLimit) return failureReceipt(request.value, transport, 'invalid', 'agent.capability.bytes', 'Capability input exceeds its configured byte budget.');
     if (pending >= maxPending) return failureReceipt(request.value, transport, 'failed', 'agent.capability.budget', 'The capability dispatch queue is full.');
     pending++;
-    const start = Date.now();
+    const start = performance.now();
     try {
       const hostBoundary = await awaitBoundary((signal) => options.host.readContext({requestId: request.value.requestId, targetRegionId: request.value.targetRegionId, goalEpoch: request.value.goalEpoch, signal}), dispatchOptions.signal, maxMilliseconds);
       if (hostBoundary.kind === 'deadline') return failureReceipt(request.value, transport, 'failed', 'agent.capability.time-budget', 'Authority inspection exceeded its time budget.');
@@ -379,7 +379,7 @@ export function createAgentCapabilityDispatcher(options: AgentCapabilityDispatch
       }
       const context: AgentCapabilityContext = Object.freeze({requestId: request.value.requestId, targetRegionId: request.value.targetRegionId, goalEpoch: request.value.goalEpoch,
         signal: dispatchOptions.signal ?? new AbortController().signal, transport, authority: authority.value});
-      const remaining = Math.max(1, maxMilliseconds - (Date.now() - start));
+      const remaining = Math.max(1, maxMilliseconds - (performance.now() - start));
       const invocation = await awaitBoundary((signal) => manifest.invoke(parsed.value, {...context, signal}), dispatchOptions.signal, remaining);
       if (invocation.kind === 'deadline') return failureReceipt(request.value, transport, 'failed', 'agent.capability.time-budget', 'Capability execution exceeded its time budget.');
       if (invocation.kind === 'aborted') return failureReceipt(request.value, transport, 'cancelled', 'agent.capability.cancelled', 'Capability execution was cancelled.');
@@ -394,7 +394,7 @@ export function createAgentCapabilityDispatcher(options: AgentCapabilityDispatch
       // not change while an untrusted boundary was in flight. A changed
       // authority produces an ambiguous recovery stage rather than a false
       // success, since the handler may already have crossed an effect edge.
-      const finalHost = await awaitBoundary((signal) => options.host.readContext({requestId: request.value.requestId, targetRegionId: request.value.targetRegionId, goalEpoch: request.value.goalEpoch, signal}), dispatchOptions.signal, Math.max(1, maxMilliseconds - (Date.now() - start)));
+      const finalHost = await awaitBoundary((signal) => options.host.readContext({requestId: request.value.requestId, targetRegionId: request.value.targetRegionId, goalEpoch: request.value.goalEpoch, signal}), dispatchOptions.signal, Math.max(1, maxMilliseconds - (performance.now() - start)));
       if (finalHost.kind === 'deadline') return failureReceipt(request.value, transport, 'partial', 'agent.capability.time-budget', 'Authority recheck exceeded its time budget after the capability boundary.');
       if (finalHost.kind === 'aborted') return failureReceipt(request.value, transport, 'cancelled', 'agent.capability.cancelled', 'Capability dispatch was cancelled during authority recheck.');
       if (finalHost.kind === 'failed' || !finalHost.value.ok) return failureReceipt(request.value, transport, 'partial', 'agent.capability.recovery', 'The capability completed across an unavailable authority recheck; inspect the recovery receipt.');

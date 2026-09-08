@@ -27,6 +27,8 @@ export function createAgentToolEndpoint(input: AgentToolEndpointOptions): Outcom
   try { created = now(); } catch { return failure('agent.protocol.clock', 'The pairing clock is unavailable.'); }
   if (!Number.isFinite(created) || !Number.isFinite(input.expiresAt) || input.expiresAt <= created || input.expiresAt - created > 86_400_000)
     return failure('agent.protocol.lease', 'A pairing must expire within one day.');
+  const monotonicStart = performance.now();
+  const leaseMilliseconds = input.expiresAt - created;
   const maxPending = input.maxPending ?? 8, maxMilliseconds = input.maxMilliseconds ?? 30_000;
   const maxInputBytes = input.maxInputBytes ?? WIRE_LIMITS.bytes, maxOutputBytes = input.maxOutputBytes ?? WIRE_LIMITS.bytes;
   if (!bound(maxPending, 64) || !bound(maxMilliseconds, 300_000) || !bound(maxInputBytes, WIRE_LIMITS.bytes) || !bound(maxOutputBytes, WIRE_LIMITS.bytes))
@@ -53,7 +55,7 @@ export function createAgentToolEndpoint(input: AgentToolEndpointOptions): Outcom
   let sequence = 0;
   const remaining = (): number => {
     if (lifetime.signal.aborted) return 0;
-    try { const value = now(); return Number.isFinite(value) ? Math.max(0, Math.min(maxMilliseconds, expiresAt - value)) : 0; } catch { return 0; }
+    try { const value = now(); return Number.isFinite(value) ? Math.max(0, Math.min(maxMilliseconds, expiresAt - value, leaseMilliseconds - (performance.now() - monotonicStart))) : 0; } catch { return 0; }
   };
   const host: AgentCapabilityHost = {
     async readContext(request) {

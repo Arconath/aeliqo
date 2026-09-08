@@ -13,6 +13,22 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./protocol": {
+      "types": "./dist/protocol/index.d.ts",
+      "import": "./dist/protocol/index.js"
+    },
+    "./model": {
+      "types": "./dist/model/index.d.ts",
+      "import": "./dist/model/index.js"
+    },
+    "./model/openai": {
+      "types": "./dist/model/openai.d.ts",
+      "import": "./dist/model/openai.js"
+    },
+    "./webmcp": {
+      "types": "./dist/webmcp/index.d.ts",
+      "import": "./dist/webmcp/index.js"
     }
   },
   "scripts": {
