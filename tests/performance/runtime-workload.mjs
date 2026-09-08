@@ -8,7 +8,7 @@
 import {mkdir, writeFile} from 'node:fs/promises';
 import {join, resolve} from 'node:path';
 import {execFileSync} from 'node:child_process';
-import {environmentSnapshot, firstSubsequent, runMediumPlanner, runRuntimeResourceCycles, runTargetedReducer} from './workloads.mjs';
+import {environmentSnapshot, firstSubsequent, percentile, runMediumPlanner, runRuntimeResourceCycles, runTargetedReducer} from './workloads.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
 const timingEnabled = process.env.AELIQO_RUN_PERFORMANCE === '1';
@@ -31,9 +31,11 @@ const report = {
   environment: environmentSnapshot(),
   workloads: {
     medium: {functional: functionalMedium, observations: medium, budgetMsP95: 16,
-      budgetAssertion: timingEnabled ? medium.subsequent.p95Ms <= 16 : undefined},
+      plannerDurationsP95Ms: timingEnabled ? percentile(medium.results.subsequent.map((sample) => sample.durationMs)) : undefined,
+      budgetAssertion: timingEnabled ? percentile(medium.results.subsequent.map((sample) => sample.durationMs)) <= 16 : undefined},
     targetedReducer: {functional: {...functionalReducer, rawMs: undefined}, observations: reducer, budgetMsP95: 4,
-      budgetAssertion: timingEnabled ? reducer.subsequent.p95Ms <= 4 : undefined},
+      dispatchP95Ms: timingEnabled ? percentile(reducer.results.subsequent.flatMap((sample) => sample.rawMs)) : undefined,
+      budgetAssertion: timingEnabled ? percentile(reducer.results.subsequent.flatMap((sample) => sample.rawMs)) <= 4 : undefined},
     cleanup: {functional: resources, budgetAssertion: resources.bounded},
   },
   notes: [
@@ -42,6 +44,7 @@ const report = {
     'A skipped timing section is not a pass; run with AELIQO_RUN_PERFORMANCE=1 on an isolated runner for measurements.',
   ],
 };
+if (timingEnabled && (!report.workloads.medium.budgetAssertion || !report.workloads.targetedReducer.budgetAssertion || !report.workloads.cleanup.budgetAssertion)) process.exitCode = 1;
 const outputDirectory = process.env.AELIQO_PERFORMANCE_OUTPUT ?? join(root, 'artifacts/performance-workloads');
 await mkdir(outputDirectory, {recursive: true});
 const output = join(outputDirectory, `runtime-${Date.now()}.json`);

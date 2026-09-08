@@ -51,17 +51,20 @@ export async function firstSubsequent(label, operation, options = {}) {
   const subsequentCount = options.subsequentCount ?? SUBSEQUENT_SAMPLE_COUNT;
   const firstMs = [];
   const subsequentMs = [];
+  const firstResults = [];
+  const subsequentResults = [];
   for (let index = 0; index < firstCount; index += 1) {
     const started = now();
-    await operation('first', index);
+    firstResults.push(await operation('first', index));
     firstMs.push(now() - started);
   }
   for (let index = 0; index < subsequentCount; index += 1) {
     const started = now();
-    await operation('subsequent', index);
+    subsequentResults.push(await operation('subsequent', index));
     subsequentMs.push(now() - started);
   }
   return {label, first: {rawMs: firstMs, ...summary(firstMs)}, subsequent: {rawMs: subsequentMs, ...summary(subsequentMs)},
+    results: {first: firstResults, subsequent: subsequentResults},
     sampleCounts: {first: firstCount, subsequent: subsequentCount}, condition: 'first/subsequent reuse in one process or page'};
 }
 

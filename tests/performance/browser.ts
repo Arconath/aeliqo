@@ -102,7 +102,7 @@ async function largeOnce(sourceUrl: string): Promise<{readonly populationRows: n
 
 async function measured(label: string, once: () => Promise<unknown>, timed: boolean): Promise<unknown> {
   if (!timed) return once();
-  const measurement = await firstSubsequent(label, async () => { await once(); });
+  const measurement = await firstSubsequent(label, async () => once());
   const sample = await once();
   return {sample, measurement};
 }
