@@ -1,0 +1,404 @@
+{
+  "schemaVersion": "1",
+  "oracle": "t40-quality-python",
+  "independent": true,
+  "sdkImports": [],
+  "corpus": "fixtures/evaluation/t40-data-query-heldout.json",
+  "corpusSha256": "9b2fd53f8f9e15fdef2afd121e48ba22bad591ffd8b1ded1e5b5517fae5cbfa8",
+  "manifestSha256": "38efc8dc1ed1ae326047cb36d3e063b36760c5f432cfb105b9bc89f136a8d85e",
+  "scriptSha256": "a1da10b4427d9618cf7a2629e72a9ed40330a4e5311abbb7b22875d2b11df294",
+  "caseCount": 18,
+  "outputCount": 21,
+  "applied": false,
+  "quality": [
+    {
+      "caseId": "hr-record-browse",
+      "outputId": "employees",
+      "quality": {
+        "identity": [
+          "employeeId"
+        ],
+        "populationCount": 2,
+        "precision": "exact",
+        "sourceRevisions": {
+          "employees": "hr-source-2026-01"
+        },
+        "evidenceKind": "observed",
+        "definitions": []
+      }
+    },
+    {
+      "caseId": "hr-ratio-null-by-department",
+      "outputId": "department-rates",
+      "quality": {
+        "identity": [
+          "department"
+        ],
+        "populationCount": 3,
+        "precision": "exact",
+        "sourceRevisions": {
+          "attendance": "hr-source-2026-01"
+        },
+        "evidenceKind": "computed",
+        "definitions": [
+          {
+            "id": "hr.absence-rate",
+            "revision": "1"
+          }
+        ]
+      }
+    },
+    {
+      "caseId": "hr-weekly-absence-temporal",
+      "outputId": "weekly-absence",
+      "quality": {
+        "identity": [
+          "workDate"
+        ],
+        "populationCount": 5,
+        "precision": "exact",
+        "sourceRevisions": {
+          "attendance": "hr-source-2026-01"
+        },
+        "evidenceKind": "computed",
+        "definitions": [
+          {
+            "id": "hr.absence-hours",
+            "revision": "1"
+          }
+        ]
+      }
+    },
+    {
+      "caseId": "hr-relation-absence-followup",
+      "outputId": "employees",
+      "quality": {
+        "identity": [
+          "employeeId"
+        ],
+        "populationCount": 3,
+        "precision": "exact",
+        "sourceRevisions": {
+          "employees": "hr-source-2026-01",
+          "attendance": "hr-source-2026-01"
+        },
+        "evidenceKind": "computed",
+        "definitions": []
+      }
+    },
+    {
+      "caseId": "hr-multigrain-named-outputs",
+      "outputId": "employee-detail",
+      "quality": {
+        "identity": [
+          "employeeId"
+        ],
+        "populationCount": 4,
+        "precision": "exact",
+        "sourceRevisions": {
+          "employees": "hr-source-2026-01"
+        },
+        "evidenceKind": "observed",
+        "definitions": []
+      }
+    },
+    {
+      "caseId": "hr-multigrain-named-outputs",
+      "outputId": "department-rates",
+      "quality": {
+        "identity": [
+          "department"
+        ],
+        "populationCount": 3,
+        "precision": "exact",
+        "sourceRevisions": {
+          "attendance": "hr-source-2026-01"
+        },
+        "evidenceKind": "computed",
+        "definitions": [
+          {
+            "id": "hr.absence-rate",
+            "revision": "1"
+          }
+        ]
+      }
+    },
+    {
+      "caseId": "hr-topk-period-filter",
+      "outputId": "top-departments",
+      "quality": {
+        "identity": [
+          "department"
+        ],
+        "populationCount": 2,
+        "precision": "exact",
+        "sourceRevisions": {
+          "attendance": "hr-source-2026-01"
+        },
+        "evidenceKind": "computed",
+        "definitions": [
+          {
+            "id": "hr.absence-hours",
+            "revision": "1"
+          }
+        ]
+      }
+    },
+    {
+      "caseId": "commerce-currency-order-browse",
+      "outputId": "orders",
+      "quality": {
+        "identity": [
+          "orderId"
+        ],
+        "populationCount": 6,
+        "precision": "exact",
+        "sourceRevisions": {
+          "orders": "commerce-source-2026-01"
+        },
+        "evidenceKind": "observed",
+        "definitions": []
+      }
+    },
+    {
+      "caseId": "commerce-paid-revenue-topk",
+      "outputId": "markets",
+      "quality": {
+        "identity": [
+          "market"
+        ],
+        "populationCount": 2,
+        "precision": "exact",
+        "sourceRevisions": {
+          "orders": "commerce-source-2026-01"
+        },
+        "evidenceKind": "computed",
+        "definitions": [
+          {
+            "id": "commerce.revenue",
+            "revision": "1"
+          }
+        ]
+      }
+    },
+    {
+      "caseId": "commerce-null-amount-records",
+      "outputId": "orders",
+      "quality": {
+        "identity": [
+          "orderId"
+        ],
+        "populationCount": 1,
+        "precision": "exact",
+        "sourceRevisions": {
+          "orders": "commerce-source-2026-01"
+        },
+        "evidenceKind": "observed",
+        "definitions": []
+      }
+    },
+    {
+      "caseId": "commerce-active-customer-relation",
+      "outputId": "customers",
+      "quality": {
+        "identity": [
+          "customerId"
+        ],
+        "populationCount": 3,
+        "precision": "exact",
+        "sourceRevisions": {
+          "customers": "commerce-source-2026-01",
+          "orders": "commerce-source-2026-01"
+        },
+        "evidenceKind": "computed",
+        "definitions": []
+      }
+    },
+    {
+      "caseId": "commerce-monthly-paid-revenue",
+      "outputId": "monthly-revenue",
+      "quality": {
+        "identity": [
+          "orderDate"
+        ],
+        "populationCount": 3,
+        "precision": "exact",
+        "sourceRevisions": {
+          "orders": "commerce-source-2026-01"
+        },
+        "evidenceKind": "computed",
+        "definitions": [
+          {
+            "id": "commerce.revenue",
+            "revision": "1"
+          }
+        ]
+      }
+    },
+    {
+      "caseId": "commerce-multigrain-orders-markets",
+      "outputId": "paid-order-detail",
+      "quality": {
+        "identity": [
+          "orderId"
+        ],
+        "populationCount": 5,
+        "precision": "exact",
+        "sourceRevisions": {
+          "orders": "commerce-source-2026-01"
+        },
+        "evidenceKind": "observed",
+        "definitions": []
+      }
+    },
+    {
+      "caseId": "commerce-multigrain-orders-markets",
+      "outputId": "market-revenue",
+      "quality": {
+        "identity": [
+          "market"
+        ],
+        "populationCount": 4,
+        "precision": "exact",
+        "sourceRevisions": {
+          "orders": "commerce-source-2026-01"
+        },
+        "evidenceKind": "computed",
+        "definitions": [
+          {
+            "id": "commerce.revenue",
+            "revision": "1"
+          }
+        ]
+      }
+    },
+    {
+      "caseId": "support-urgent-ticket-browse",
+      "outputId": "tickets",
+      "quality": {
+        "identity": [
+          "ticketId"
+        ],
+        "populationCount": 5,
+        "precision": "exact",
+        "sourceRevisions": {
+          "tickets": "support-source-2026-01"
+        },
+        "evidenceKind": "observed",
+        "definitions": []
+      }
+    },
+    {
+      "caseId": "support-resolution-rate-null",
+      "outputId": "queue-rates",
+      "quality": {
+        "identity": [
+          "queue"
+        ],
+        "populationCount": 4,
+        "precision": "exact",
+        "sourceRevisions": {
+          "tickets": "support-source-2026-01"
+        },
+        "evidenceKind": "computed",
+        "definitions": [
+          {
+            "id": "support.resolution-rate",
+            "revision": "1"
+          }
+        ]
+      }
+    },
+    {
+      "caseId": "support-weekly-volume",
+      "outputId": "weekly-volume",
+      "quality": {
+        "identity": [
+          "openedDate"
+        ],
+        "populationCount": 8,
+        "precision": "exact",
+        "sourceRevisions": {
+          "tickets": "support-source-2026-01"
+        },
+        "evidenceKind": "computed",
+        "definitions": [
+          {
+            "id": "support.ticket-count",
+            "revision": "1"
+          }
+        ]
+      }
+    },
+    {
+      "caseId": "support-account-urgent-relation",
+      "outputId": "accounts",
+      "quality": {
+        "identity": [
+          "accountId"
+        ],
+        "populationCount": 5,
+        "precision": "exact",
+        "sourceRevisions": {
+          "accounts": "support-source-2026-01",
+          "tickets": "support-source-2026-01"
+        },
+        "evidenceKind": "computed",
+        "definitions": []
+      }
+    },
+    {
+      "caseId": "support-multigrain-queue-tickets",
+      "outputId": "queue-rates",
+      "quality": {
+        "identity": [
+          "queue"
+        ],
+        "populationCount": 4,
+        "precision": "exact",
+        "sourceRevisions": {
+          "tickets": "support-source-2026-01"
+        },
+        "evidenceKind": "computed",
+        "definitions": [
+          {
+            "id": "support.resolution-rate",
+            "revision": "1"
+          }
+        ]
+      }
+    },
+    {
+      "caseId": "support-multigrain-queue-tickets",
+      "outputId": "urgent-detail",
+      "quality": {
+        "identity": [
+          "ticketId"
+        ],
+        "populationCount": 5,
+        "precision": "exact",
+        "sourceRevisions": {
+          "tickets": "support-source-2026-01"
+        },
+        "evidenceKind": "observed",
+        "definitions": []
+      }
+    },
+    {
+      "caseId": "support-null-response-records",
+      "outputId": "tickets",
+      "quality": {
+        "identity": [
+          "ticketId"
+        ],
+        "populationCount": 4,
+        "precision": "exact",
+        "sourceRevisions": {
+          "tickets": "support-source-2026-01"
+        },
+        "evidenceKind": "observed",
+        "definitions": []
+      }
+    }
+  ]
+}
