@@ -653,15 +653,17 @@ function treeConfig(values: PresentationValues, bindings: AeliqoNavigationFeedba
   const input = checked.value.input;
   const ids = new Set<string>(); const operations: VersionRef[] = []; const contents = contentMap(bindings); const routes = routeMap(bindings); const actions = actionMap(bindings);
   let hasRoute = false; let hasAction = false;
-  const renderNodes = (source: readonly AeliqoTreeBindingNode[]): RecordValue[] => source.map((item) => {
+  const renderNodes = (source: readonly AeliqoTreeBindingNode[], reachable = true): RecordValue[] => source.map((item) => {
+    const available = reachable && item.disabled !== true;
+    const childrenReachable = reachable && (item.disabled !== true || (Array.isArray(input.expandedIds) && input.expandedIds.includes(item.id)));
     ids.add(item.id);
     const route = item.routeRef === undefined ? undefined : routes.get(item.routeRef); const action = item.actionRef === undefined ? undefined : actions.get(item.actionRef);
-    if (item.disabled !== true) {
+    if (available) {
       if (route !== undefined) { operations.push(route.route); hasRoute = true; }
       if (action !== undefined) { operations.push(action.action); hasAction = true; }
     }
     const label = contents.get(item.labelRef)!.text;
-    return {id: item.id, label, ...(item.children === undefined ? {} : {children: renderNodes(item.children)}), ...(item.disabled === undefined ? {} : {disabled: item.disabled}), ...(route === undefined || item.disabled === true ? {} : routeValue(route)), ...(action === undefined || item.disabled === true ? {} : actionValue(action))};
+    return {id: item.id, label, ...(item.children === undefined ? {} : {children: renderNodes(item.children, childrenReachable)}), ...(item.disabled === undefined ? {} : {disabled: item.disabled}), ...(route === undefined || !available ? {} : routeValue(route)), ...(action === undefined || !available ? {} : actionValue(action))};
   });
   const nodes = renderNodes(entry.nodes);
   if (input.expandedIds !== undefined && (!Array.isArray(input.expandedIds) || input.expandedIds.length > MAX_TREE_NODES || input.expandedIds.some((id) => typeof id !== "string" || !ids.has(id)) || new Set(input.expandedIds).size !== input.expandedIds.length)) return fail("config", "expandedIds must name unique registered tree nodes.");

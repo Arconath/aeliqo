@@ -216,3 +216,11 @@ describe("navigation and feedback semantic adapters", () => {
     }
   });
 });
+
+it('does not claim actions beneath a disabled collapsed tree branch',()=>{
+ const made=createNavigationFeedbackPresentationManifests({revision:'tree-1',contents:[{id:'tree',text:'Tree'},{id:'parent',text:'Parent'},{id:'child',text:'Child'}],actions:[{id:'open',action:{id:'record.open',revision:'1'},input:{}}],trees:[{id:'tree',labelRef:'tree',nodes:[{id:'parent',labelRef:'parent',disabled:true,children:[{id:'child',labelRef:'child',actionRef:'open'}]}]}]});
+ expect(made.ok).toBe(true);if(!made.ok)return;
+ const manifest=made.value.find(m=>m.ref.id==='navigation.tree-nav')!;
+ expect(manifest.resolveConfig({bindingRef:'tree',bindingRevision:'tree-1'},undefined)).toMatchObject({ok:true,value:{operations:[]}});
+ expect(manifest.resolveConfig({bindingRef:'tree',bindingRevision:'tree-1',expandedIds:['parent']},undefined)).toMatchObject({ok:true,value:{operations:[{id:'record.open',revision:'1'}]}});
+});

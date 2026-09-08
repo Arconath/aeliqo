@@ -36,3 +36,10 @@ const events: AeliqoSemanticInteractionRequest[] = [];
 region.onSemanticInteraction = (request) => events.push(request);
 region.presentation = checked.value;
 Object.assign(window, {aeliqoNavigationFeedbackSemanticReady: true, aeliqoNavigationFeedbackSemanticEvents: events});
+Object.assign(window,{reorderSemanticPopover:()=>{
+  const original=navigationFeedbackPresentationPlan();
+  const plan={...original,nodes:original.nodes.map(node=>node.id==='tabs-root'?{...node,children:node.children.map(id=>id==='popover'?'tooltip':id==='tooltip'?'popover':id),config:{...node.config,values:{...node.config.values,value:'tooltip'}}}:node)};
+  const next=validatePresentationPlan(plan,navigationFeedbackPresentationContext(),registry.value);
+  if(!next.ok)throw new Error(JSON.stringify(next.diagnostics));
+  region.presentation=next.value;
+}});

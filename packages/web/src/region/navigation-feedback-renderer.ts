@@ -142,8 +142,9 @@ function emitPage(node: Node, event: Event, emit: Emit): void {
   const currentPage = values.page;
   const validDirection = direction === "next" || direction === "previous";
   const validStep = direction === "next" ? page === Number(previousPage) + 1 : page === Number(previousPage) - 1;
+  const enabled = values.pending !== true && (direction === "next" ? values.hasNext === true : values.hasPrevious === true) && Number(page) >= 1 && (typeof values.pageCount !== "number" || Number(page) <= values.pageCount);
   if (!Number.isSafeInteger(page) || !Number.isSafeInteger(previousPage) || !Number.isSafeInteger(currentPage)
-    || previousPage !== currentPage || !validDirection || !validStep || cursor === undefined || typeof cursor.cursor !== "string"
+    || previousPage !== currentPage || !validDirection || !validStep || !enabled || cursor === undefined || typeof cursor.cursor !== "string"
     || typeof values.outputId !== "string" || typeof values.queryDigest !== "string" || !declared(node, "page", "page", PAGE_OPERATION)) return;
   emit(node, "page", {kind: "page", outputId: values.outputId, cursor: cursor.cursor, queryDigest: values.queryDigest});
 }
@@ -155,7 +156,7 @@ function children(node: Node, child: ChildRenderer): unknown {
 function tabChildren(node: Node, child: ChildRenderer): unknown {
   const values = valuesOf(node);
   const items = Array.isArray(values.items) ? values.items.map(record) : [];
-  return node.node.children.map((childId, index) => {
+  return repeat(node.node.children, (childId) => childId, (childId, index) => {
     const item = items[index];
     return item === undefined || typeof item.id !== "string"
       ? nothing

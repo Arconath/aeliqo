@@ -65,7 +65,7 @@ describe("navigation and feedback region renderer", () => {
 
   it("keeps page and tree mappings scoped to their host metadata", () => {
     const emitted: unknown[] = [];
-    const page = node("navigation.pagination", {page: 1, outputId: "results", queryDigest: "query-1", cursors: [{page: 2, cursor: "cursor-2"}]}, [{id: "page", direction: "output", payload: "page"}], [{id: "navigation.page", revision: "1"}]);
+    const page = node("navigation.pagination", {page: 1, hasNext: true, hasPrevious: false, outputId: "results", queryDigest: "query-1", cursors: [{page: 2, cursor: "cursor-2"}]}, [{id: "page", direction: "output", payload: "page"}], [{id: "navigation.page", revision: "1"}]);
     const pageEvent = new CustomEvent("aeliqo-page-change", {detail: {page: 2, previousPage: 1, direction: "next", source: "user"}, cancelable: true});
     handler(renderNavigationFeedbackNode(page, () => undefined, (_node, _port, payload) => emitted.push(payload)))(pageEvent);
     expect(emitted.at(-1)).toEqual({kind: "page", outputId: "results", queryDigest: "query-1", cursor: "cursor-2"});
@@ -97,4 +97,14 @@ it("ignores accessor-backed event payloads without invoking their getters",()=>{
   const receive=handler(renderNavigationFeedbackNode(target,()=>undefined,(_node,_port,value)=>emitted.push(value)));
   expect(()=>receive(new CustomEvent("aeliqo-menu-action",{detail:payload}))).not.toThrow();
   expect(reads).toBe(0); expect(emitted).toEqual([]);
+});
+
+it('rejects movement in an unavailable pagination direction even with a registered cursor',()=>{
+ const emitted:unknown[]=[];
+ const target=node('navigation.pagination',{page:2,hasPrevious:false,hasNext:true,outputId:'rows',queryDigest:'q',cursors:[{page:1,cursor:'before'},{page:3,cursor:'after'}]},[{id:'page',direction:'output',payload:'page'}],[{id:'navigation.page',revision:'1'}]);
+ const receive=handler(renderNavigationFeedbackNode(target,()=>undefined,(_node,_port,payload)=>emitted.push(payload)));
+ receive(new CustomEvent('aeliqo-page-change',{detail:{page:1,previousPage:2,direction:'previous',source:'user'}}));
+ expect(emitted).toEqual([]);
+ receive(new CustomEvent('aeliqo-page-change',{detail:{page:3,previousPage:2,direction:'next',source:'user'}}));
+ expect(emitted).toHaveLength(1);
 });

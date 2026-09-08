@@ -52,3 +52,14 @@ test("maps route, action and page events while native navigation stays suppresse
     nodeId: "pagination", portId: "page", payload: {kind: "page", outputId: "results", cursor: "cursor-2", queryDigest: "query-1"},
   });
 });
+
+test('keeps a keyed overlay instance and local open state when tab children move',async({page})=>{
+ const region=page.locator('#region');
+ await region.locator('aeliqo-tabs').getByRole('tab',{name:'Popover',exact:true}).click();
+ const popover=region.locator('aeliqo-popover');
+ await popover.getByRole('button',{name:'Details',exact:true}).click();
+ await popover.evaluate(el=>{(window as any).originalSemanticPopover=el;});
+ await page.evaluate(()=>(window as any).reorderSemanticPopover());
+ await expect.poll(()=>popover.evaluate(el=>({same:el===(window as any).originalSemanticPopover,open:(el as any).open}))).toEqual({same:true,open:true});
+ await expect(popover.getByRole('button',{name:'Close',exact:true})).toBeVisible();
+});
