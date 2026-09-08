@@ -47,7 +47,8 @@ export class AeliqoFileInputElement extends AeliqoFieldElement<readonly AeliqoFi
           accept=${this.accept || nothing}
           ?multiple=${this.multiple}
           capture=${this.capture || nothing}
-          ?disabled=${this.fieldDisabled}
+          ?disabled=${this.fieldDisabled || this.readOnly}
+          aria-readonly=${this.readOnly ? "true" : nothing}
           aria-describedby=${describedBy || nothing}
           aria-invalid=${this.error ? "true" : nothing}
           @change=${this.handleChange}
@@ -64,7 +65,12 @@ export class AeliqoFileInputElement extends AeliqoFieldElement<readonly AeliqoFi
 
   private readonly handleChange = (event: Event): void => {
     const input = event.target;
-    if (!(input instanceof HTMLInputElement) || this.fieldDisabled || this.readOnly) return;
+    if (!(input instanceof HTMLInputElement) || this.fieldDisabled) return;
+    if (this.readOnly) {
+      input.value = "";
+      this.syncNative();
+      return;
+    }
     const metadata: AeliqoFileMetadata[] = input.files === null ? [] : Array.from(input.files, (file) => ({
       name: file.name,
       size: file.size,

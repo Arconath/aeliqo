@@ -122,6 +122,7 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
       required: this.required,
       disabled: this.fieldDisabled,
       readonly: this.readOnly,
+      "aria-readonly": this.readOnly ? "true" : nothing,
       "aria-invalid": this.error ? "true" : nothing,
       "aria-describedby": describedBy || nothing,
     } as const;
@@ -143,6 +144,7 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
               ?required=${shared.required}
               ?disabled=${shared.disabled}
               ?readonly=${shared.readonly}
+              aria-readonly=${shared["aria-readonly"]}
               aria-invalid=${shared["aria-invalid"]}
               aria-describedby=${shared["aria-describedby"]}
               .value=${this.composing ? noChange : this.value}
@@ -166,6 +168,7 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
               ?required=${shared.required}
               ?disabled=${shared.disabled}
               ?readonly=${shared.readonly}
+              aria-readonly=${shared["aria-readonly"]}
               aria-invalid=${shared["aria-invalid"]}
               aria-describedby=${shared["aria-describedby"]}
               .value=${this.composing ? noChange : this.value}

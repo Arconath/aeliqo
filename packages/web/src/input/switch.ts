@@ -18,6 +18,7 @@ export class AeliqoSwitchElement extends AeliqoCheckboxElement {
             .checked=${this.checked}
             .indeterminate=${false}
             ?disabled=${this.fieldDisabled}
+            aria-readonly=${this.readOnly ? "true" : nothing}
             aria-checked=${String(this.checked)}
             aria-invalid=${this.error ? "true" : nothing}
             aria-describedby=${describedBy || nothing}

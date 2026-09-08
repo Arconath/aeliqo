@@ -24,6 +24,11 @@ export class AeliqoDateFieldElement extends AeliqoFieldElement<string> {
   max = "";
   calendar: AeliqoDateCalendar = "gregory";
 
+  override connectedCallback(): void {
+    if (this.value.length === 0 && this.defaultValue.length > 0) this.value = dateOnly(this.defaultValue) ?? "";
+    super.connectedCallback();
+  }
+
   protected override updated(): void {
     this.syncNative();
   }
@@ -50,6 +55,7 @@ export class AeliqoDateFieldElement extends AeliqoFieldElement<string> {
           max=${dateOnly(this.max) ?? nothing}
           ?disabled=${this.fieldDisabled}
           ?readonly=${this.readOnly}
+          aria-readonly=${this.readOnly ? "true" : nothing}
           aria-invalid=${this.error || !valid ? "true" : nothing}
           aria-describedby=${describedBy || nothing}
           @input=${this.handleInput}
@@ -66,7 +72,11 @@ export class AeliqoDateFieldElement extends AeliqoFieldElement<string> {
 
   private readonly handleInput = (event: Event): void => {
     const input = event.target;
-    if (!(input instanceof HTMLInputElement) || this.fieldDisabled || this.readOnly) return;
+    if (!(input instanceof HTMLInputElement) || this.fieldDisabled) return;
+    if (this.readOnly) {
+      this.syncNative();
+      return;
+    }
     const next = dateOnly(input.value) ?? input.value;
     this.value = next;
     this.dispatchEvent(new AeliqoInputChangeEvent({source: "user", value: next}));

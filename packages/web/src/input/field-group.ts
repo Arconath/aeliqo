@@ -17,7 +17,7 @@ export class AeliqoFieldGroupElement extends AeliqoFoundationElement {
   description = "";
   error = "";
   disabled = false;
-  private readonly restoredDisabled = new Map<HTMLElement & {disabled?: boolean}, boolean>();
+  private readonly restoredDisabled = new Map<HTMLElement & {disabled: boolean}, boolean>();
   private disabledObserver: MutationObserver | undefined;
 
   override connectedCallback(): void {
@@ -26,8 +26,10 @@ export class AeliqoFieldGroupElement extends AeliqoFoundationElement {
       this.disabledObserver = new MutationObserver((records) => {
         if (this.disabled) {
           for (const record of records) {
-            const control = record.target;
-            if (control instanceof HTMLElement && this.restoredDisabled.has(control) && !control.disabled) this.restoredDisabled.set(control, false);
+            const control = record.target as HTMLElement & {disabled?: boolean};
+            if (record.target instanceof HTMLElement && typeof control.disabled === "boolean" && this.restoredDisabled.has(control as HTMLElement & {disabled: boolean}) && !control.disabled) {
+              this.restoredDisabled.set(control as HTMLElement & {disabled: boolean}, false);
+            }
           }
         }
         this.syncDisabledDescendants();

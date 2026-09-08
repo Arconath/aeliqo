@@ -195,6 +195,134 @@ test("field groups propagate disabled through nested and dynamic children", asyn
   });
 });
 
+test("input defaults initialize before mount and survive reset", async ({page}) => {
+  const state = await page.evaluate(async () => {
+    const root = document.querySelector<HTMLElement>("#fixture");
+    if (root === null) throw new Error("fixture missing");
+    const options = [{value: "a", label: "Alpha"}, {value: "b", label: "Beta"}] as const;
+    const number = document.createElement("aeliqo-number-field") as HTMLElement & {locale: string; defaultValue: string; value?: string; text: string; reset: () => void; updateComplete: Promise<unknown>};
+    number.locale = "de-DE";
+    number.defaultValue = "1234.50";
+    const checkbox = document.createElement("aeliqo-checkbox") as HTMLElement & {defaultChecked: boolean; checked: boolean; reset: () => void; updateComplete: Promise<unknown>};
+    checkbox.defaultChecked = true;
+    const radio = document.createElement("aeliqo-radio-group") as HTMLElement & {options: readonly typeof options[number][]; defaultValue: string; value: string; reset: () => void; updateComplete: Promise<unknown>};
+    radio.options = options;
+    radio.defaultValue = "b";
+    const select = document.createElement("aeliqo-select") as HTMLElement & {options: readonly typeof options[number][]; defaultValue: string; value: string; reset: () => void; updateComplete: Promise<unknown>};
+    select.options = options;
+    select.defaultValue = "b";
+    const combo = document.createElement("aeliqo-combobox") as HTMLElement & {options: readonly typeof options[number][]; defaultValue: string; value: string; reset: () => void; updateComplete: Promise<unknown>};
+    combo.options = options;
+    combo.defaultValue = "b";
+    const date = document.createElement("aeliqo-date-field") as HTMLElement & {defaultValue: string; value: string; reset: () => void; updateComplete: Promise<unknown>};
+    date.defaultValue = "2026-09-08";
+    const range = document.createElement("aeliqo-date-range") as HTMLElement & {defaultStart: string; defaultEnd: string; start: string; end: string; reset: () => void; updateComplete: Promise<unknown>};
+    range.defaultStart = "2026-09-01";
+    range.defaultEnd = "2026-09-08";
+    const slider = document.createElement("aeliqo-slider") as HTMLElement & {defaultValue: number; value: number; reset: () => void; updateComplete: Promise<unknown>};
+    slider.defaultValue = 40;
+    const switchControl = document.createElement("aeliqo-switch") as HTMLElement & {defaultChecked: boolean; checked: boolean; reset: () => void; updateComplete: Promise<unknown>};
+    switchControl.defaultChecked = true;
+    const controls = [number, checkbox, radio, select, combo, date, range, slider, switchControl];
+    root.append(...controls);
+    await Promise.all(controls.map((control) => control.updateComplete));
+    const initial = {
+      number: {value: number.value, text: number.text, native: number.shadowRoot?.querySelector<HTMLInputElement>("input")?.value},
+      checkbox: checkbox.checked,
+      radio: radio.value,
+      select: select.value,
+      combo: combo.value,
+      date: date.value,
+      range: [range.start, range.end],
+      slider: slider.value,
+      switch: switchControl.checked,
+    };
+    number.value = "9";
+    number.text = "9";
+    checkbox.checked = false;
+    radio.value = "a";
+    select.value = "a";
+    combo.value = "a";
+    date.value = "2026-09-09";
+    range.start = "2026-09-02";
+    range.end = "2026-09-09";
+    slider.value = 41;
+    switchControl.checked = false;
+    controls.forEach((control) => control.reset());
+    await Promise.all(controls.map((control) => control.updateComplete));
+    return {
+      initial,
+      reset: {
+        number: {value: number.value, text: number.text, native: number.shadowRoot?.querySelector<HTMLInputElement>("input")?.value},
+        checkbox: checkbox.checked,
+        radio: radio.value,
+        select: select.value,
+        combo: combo.value,
+        date: date.value,
+        range: [range.start, range.end],
+        slider: slider.value,
+        switch: switchControl.checked,
+      },
+    };
+  });
+  expect(state).toEqual({
+    initial: {
+      number: {value: "1234.50", text: "1.234,50", native: "1.234,50"},
+      checkbox: true, radio: "b", select: "b", combo: "b", date: "2026-09-08", range: ["2026-09-01", "2026-09-08"], slider: 40, switch: true,
+    },
+    reset: {
+      number: {value: "1234.50", text: "1.234,50", native: "1.234,50"},
+      checkbox: true, radio: "b", select: "b", combo: "b", date: "2026-09-08", range: ["2026-09-01", "2026-09-08"], slider: 40, switch: true,
+    },
+  });
+});
+
+test("readonly native controls reconcile user attempts", async ({page}) => {
+  const state = await page.evaluate(async () => {
+    const root = document.querySelector<HTMLElement>("#fixture");
+    if (root === null) throw new Error("fixture missing");
+    const checkbox = document.createElement("aeliqo-checkbox") as HTMLElement & {checked: boolean; readOnly: boolean; updateComplete: Promise<unknown>};
+    checkbox.checked = true;
+    checkbox.readOnly = true;
+    const radio = document.createElement("aeliqo-radio-group") as HTMLElement & {options: readonly {value: string; label: string}[]; value: string; readOnly: boolean; updateComplete: Promise<unknown>};
+    radio.options = [{value: "a", label: "Alpha"}, {value: "b", label: "Beta"}];
+    radio.value = "a";
+    radio.readOnly = true;
+    const select = document.createElement("aeliqo-select") as HTMLElement & {options: readonly {value: string; label: string}[]; value: string; readOnly: boolean; updateComplete: Promise<unknown>};
+    select.options = [{value: "a", label: "Alpha"}, {value: "b", label: "Beta"}];
+    select.value = "a";
+    select.readOnly = true;
+    const slider = document.createElement("aeliqo-slider") as HTMLElement & {value: number; readOnly: boolean; updateComplete: Promise<unknown>};
+    slider.value = 40;
+    slider.readOnly = true;
+    const file = document.createElement("aeliqo-file-input") as HTMLElement & {readOnly: boolean; updateComplete: Promise<unknown>};
+    file.readOnly = true;
+    const controls = [checkbox, radio, select, slider, file];
+    root.append(...controls);
+    await Promise.all(controls.map((control) => control.updateComplete));
+    checkbox.shadowRoot?.querySelector<HTMLInputElement>("input")?.click();
+    radio.shadowRoot?.querySelectorAll<HTMLInputElement>("input")[1]?.click();
+    const selectNative = select.shadowRoot?.querySelector<HTMLSelectElement>("select");
+    if (selectNative !== undefined) { selectNative.value = "b"; selectNative.dispatchEvent(new Event("change", {bubbles: true})); }
+    const range = slider.shadowRoot?.querySelector<HTMLInputElement>("input[type=range]");
+    if (range !== undefined) { range.value = "41"; range.dispatchEvent(new Event("input", {bubbles: true})); }
+    return {
+      checkbox: {value: checkbox.checked, native: checkbox.shadowRoot?.querySelector<HTMLInputElement>("input")?.checked},
+      radio: {value: radio.value, native: [...radio.shadowRoot?.querySelectorAll<HTMLInputElement>("input") ?? []].map((input) => input.checked)},
+      select: {value: select.value, native: selectNative?.value},
+      slider: {value: slider.value, native: range?.value},
+      fileDisabled: file.shadowRoot?.querySelector<HTMLInputElement>("input")?.disabled,
+    };
+  });
+  expect(state).toEqual({
+    checkbox: {value: true, native: true},
+    radio: {value: "a", native: [true, false]},
+    select: {value: "a", native: "a"},
+    slider: {value: 40, native: "40"},
+    fileDisabled: true,
+  });
+});
+
 test("form wrapper defers child Enter behavior and respects native ownership", async ({page}) => {
   await page.evaluate(async () => {
     const root = document.querySelector<HTMLElement>("#fixture");
@@ -360,6 +488,31 @@ test("combobox keeps its selected label and active descendant synchronized", asy
   expect(state).toEqual({selectedLabel: "Alpha", focused: "option-0", moved: "option-1", closed: null, list: false});
 });
 
+test("combobox loader removal settles pending state", async ({page}) => {
+  const state = await page.evaluate(async () => {
+    const root = document.querySelector<HTMLElement>("#fixture");
+    if (root === null) throw new Error("fixture missing");
+    const combo = document.createElement("aeliqo-combobox") as HTMLElement & {
+      optionsLoader: unknown;
+      options: readonly {value: string; label: string}[];
+      validationState: string;
+      updateComplete: Promise<unknown>;
+    };
+    combo.optionsLoader = () => new Promise(() => {});
+    root.append(combo);
+    await combo.updateComplete;
+    const input = combo.shadowRoot?.querySelector<HTMLInputElement>("input");
+    if (input === null || input === undefined) throw new Error("combobox input missing");
+    input.value = "old";
+    input.dispatchEvent(new InputEvent("input", {bubbles: true, inputType: "insertText", data: "old"}));
+    await combo.updateComplete;
+    combo.optionsLoader = undefined;
+    await combo.updateComplete;
+    return {state: combo.validationState, loading: combo.shadowRoot?.querySelector('[role="status"]')?.textContent ?? null};
+  });
+  expect(state).toEqual({state: "idle", loading: null});
+});
+
 test("text fields are uncontrolled by default and searches only commit user proposals", async ({page}) => {
   const state = await page.evaluate(async () => {
     const root = document.querySelector<HTMLElement>("#fixture");
@@ -393,6 +546,30 @@ test("text fields are uncontrolled by default and searches only commit user prop
     return {afterEdit, afterMount, afterProgrammatic, afterUser: searches};
   });
   expect(state).toEqual({afterEdit: {native: "Lin", value: "Lin"}, afterMount: 0, afterProgrammatic: 0, afterUser: 1});
+});
+
+test("search debounce is cancelled by a host value replacement", async ({page}) => {
+  const state = await page.evaluate(async () => {
+    const root = document.querySelector<HTMLElement>("#fixture");
+    if (root === null) throw new Error("fixture missing");
+    const search = document.createElement("aeliqo-search-field") as HTMLElement & {queryOnInput: boolean; debounceMs: number; value: string; updateComplete: Promise<unknown>};
+    search.queryOnInput = true;
+    search.debounceMs = 80;
+    const queries: string[] = [];
+    search.addEventListener("aeliqo-search", (event) => queries.push((event as CustomEvent<{query: string}>).detail.query));
+    root.append(search);
+    await search.updateComplete;
+    const input = search.shadowRoot?.querySelector<HTMLInputElement>("input");
+    if (input === null || input === undefined) throw new Error("search input missing");
+    input.value = "old";
+    input.dispatchEvent(new InputEvent("input", {bubbles: true, inputType: "insertText", data: "old"}));
+    await search.updateComplete;
+    search.value = "new";
+    await search.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve, 120));
+    return {value: search.value, queries};
+  });
+  expect(state).toEqual({value: "new", queries: []});
 });
 
 test("stale text validation cannot mark a newer programmatic value invalid", async ({page}) => {

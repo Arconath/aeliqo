@@ -21,6 +21,11 @@ export class AeliqoRadioGroupElement extends AeliqoFieldElement<string> {
   defaultValue = "";
   orientation: "horizontal" | "vertical" = "vertical";
 
+  override connectedCallback(): void {
+    if (this.value.length === 0 && this.defaultValue.length > 0) this.value = this.defaultValue;
+    super.connectedCallback();
+  }
+
   protected override updated(): void {
     this.syncNative();
   }
@@ -45,6 +50,7 @@ export class AeliqoRadioGroupElement extends AeliqoFieldElement<string> {
               value=${option.value}
               .checked=${this.value === option.value}
               ?disabled=${this.fieldDisabled || option.disabled === true}
+              aria-readonly=${this.readOnly ? "true" : nothing}
               aria-describedby=${describedBy || nothing}
               @change=${this.handleChange}
             />
@@ -79,6 +85,8 @@ export class AeliqoRadioGroupElement extends AeliqoFieldElement<string> {
   }
 
   private syncNative(): void {
+    const inputs = this.renderRoot?.querySelectorAll<HTMLInputElement>("input[type=radio]");
+    inputs?.forEach((input) => { input.checked = input.value === this.value; });
     const selected = validOptions(this.options) && this.options.some((option) => option.value === this.value && option.disabled !== true);
     this.setFormValue(this.fieldDisabled || !selected ? null : this.value);
     this.updateValidity(this.native(), this.value.length === 0 || !selected);

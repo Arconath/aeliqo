@@ -41,12 +41,21 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
   private loadAbort: AbortController | undefined;
   private composing = false;
 
+  override connectedCallback(): void {
+    if (this.value.length === 0 && this.defaultValue.length > 0) this.value = this.defaultValue;
+    super.connectedCallback();
+  }
+
   protected override willUpdate(changed: Map<PropertyKey, unknown>): void {
+    if (changed.has("optionsLoader")) {
+      this.cancelLoader();
+      this.validationState = "idle";
+      this.error = "";
+    }
     if (changed.has("value") && !changed.has("query")) this.query = this.labelForValue(this.value);
   }
 
   protected override updated(changed: Map<PropertyKey, unknown>): void {
-    if (changed.has("optionsLoader")) this.cancelLoader();
     if (changed.has("options") || changed.has("value") || changed.has("disabled") || changed.has("required") || changed.has("error")) {
       this.syncNative();
     }
@@ -63,6 +72,8 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
     this.open = false;
     this.activeIndex = -1;
     this.cancelLoader();
+    this.validationState = "idle";
+    this.error = "";
     this.syncNative();
   }
 
@@ -237,6 +248,7 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
     const sequence = ++this.loadSequence;
     if (query.length < Math.max(0, this.minQueryLength)) {
       this.validationState = "idle";
+      this.error = "";
       this.requestUpdate();
       return;
     }
@@ -247,6 +259,7 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
       if (controller.signal.aborted || sequence !== this.loadSequence || !this.isConnected) return;
       this.options = validOptions(loaded) ? loaded.slice(0, COMBOBOX_MAX_OPTIONS) : [];
       this.validationState = "idle";
+      this.error = "";
       this.activeIndex = this.firstEnabledIndex(this.filteredOptions(this.options));
       this.requestUpdate();
     } catch {

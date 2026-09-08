@@ -28,6 +28,11 @@ export class AeliqoSliderElement extends AeliqoFieldElement<AeliqoSliderValue> {
   step = 1;
   unit = "";
 
+  override connectedCallback(): void {
+    if (this.value === 0 && this.defaultValue !== 0) this.value = this.safeNumber(this.defaultValue, this.min);
+    super.connectedCallback();
+  }
+
   protected override updated(): void {
     this.syncNative();
   }
@@ -54,6 +59,7 @@ export class AeliqoSliderElement extends AeliqoFieldElement<AeliqoSliderValue> {
             max=${String(this.max)}
             step=${String(this.safeStep())}
             ?disabled=${this.fieldDisabled}
+            aria-readonly=${this.readOnly ? "true" : nothing}
             aria-invalid=${this.error || !valid ? "true" : nothing}
             aria-describedby=${describedBy || nothing}
             @input=${this.handleRange}
@@ -68,6 +74,7 @@ export class AeliqoSliderElement extends AeliqoFieldElement<AeliqoSliderValue> {
             step=${String(this.safeStep())}
             ?disabled=${this.fieldDisabled}
             ?readonly=${this.readOnly}
+            aria-readonly=${this.readOnly ? "true" : nothing}
             aria-label=${this.label ? `${this.label} value` : "Value"}
             @input=${this.handleText}
             @change=${this.handleCommit}
@@ -85,7 +92,11 @@ export class AeliqoSliderElement extends AeliqoFieldElement<AeliqoSliderValue> {
 
   private readonly handleRange = (event: Event): void => {
     const input = event.target;
-    if (!(input instanceof HTMLInputElement) || this.fieldDisabled || this.readOnly) return;
+    if (!(input instanceof HTMLInputElement) || this.fieldDisabled) return;
+    if (this.readOnly) {
+      this.syncNative();
+      return;
+    }
     this.applyUserValue(input.value);
   };
 
@@ -133,6 +144,8 @@ export class AeliqoSliderElement extends AeliqoFieldElement<AeliqoSliderValue> {
   }
 
   private syncNative(): void {
+    const range = this.nativeRange();
+    if (range !== undefined && range.value !== String(this.value)) range.value = String(this.value);
     const valid = this.isValid(this.value);
     this.setFormValue(this.fieldDisabled || !valid ? null : String(this.value));
     if (this.internals !== undefined && !this.fieldDisabled && !valid) this.internals.setValidity({rangeOverflow: this.value > this.max, rangeUnderflow: this.value < this.min, stepMismatch: true}, "Enter a value in range.", this.nativeRange());

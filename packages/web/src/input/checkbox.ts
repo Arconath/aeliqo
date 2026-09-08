@@ -19,6 +19,11 @@ export class AeliqoCheckboxElement extends AeliqoFieldElement<boolean> {
   indeterminate = false;
   value = "on";
 
+  override connectedCallback(): void {
+    if (!this.checked && this.defaultChecked) this.checked = true;
+    super.connectedCallback();
+  }
+
   protected override updated(): void {
     this.syncNative();
   }
@@ -42,6 +47,7 @@ export class AeliqoCheckboxElement extends AeliqoFieldElement<boolean> {
             .indeterminate=${this.indeterminate}
             ?disabled=${this.fieldDisabled}
             ?required=${this.required}
+            aria-readonly=${this.readOnly ? "true" : nothing}
             aria-checked=${this.indeterminate ? "mixed" : String(this.checked)}
             aria-invalid=${this.error ? "true" : nothing}
             aria-describedby=${describedBy || nothing}

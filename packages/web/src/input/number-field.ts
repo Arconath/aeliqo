@@ -69,16 +69,25 @@ export class AeliqoNumberFieldElement extends AeliqoFieldElement<AeliqoNumberCha
   step = "";
   unit = "";
 
+  override connectedCallback(): void {
+    if (this.value === undefined && this.defaultValue.length > 0) this.applyDefaultValue();
+    super.connectedCallback();
+  }
+
   protected override updated(changed: Map<PropertyKey, unknown>): void {
     if (changed.has("value") && this.value !== undefined && (this.text.length === 0 || !changed.has("text"))) this.text = formatLocalizedDecimal(this.value, this.locale);
     this.syncNative();
   }
 
   protected override resetField(): void {
+    this.applyDefaultValue();
+    this.syncNative();
+  }
+
+  private applyDefaultValue(): void {
     const parsed = parseLocalizedDecimal(this.defaultValue, "en-US");
     this.value = parsed.valid ? parsed.canonical : undefined;
-    this.text = this.defaultValue;
-    this.syncNative();
+    this.text = parsed.valid && parsed.canonical !== undefined ? formatLocalizedDecimal(parsed.canonical, this.locale) : this.defaultValue;
   }
 
   protected override render() {
@@ -99,6 +108,7 @@ export class AeliqoNumberFieldElement extends AeliqoFieldElement<AeliqoNumberCha
             .value=${this.text}
             ?disabled=${this.fieldDisabled}
             ?readonly=${this.readOnly}
+            aria-readonly=${this.readOnly ? "true" : nothing}
             aria-invalid=${this.error || !valid ? "true" : nothing}
             aria-describedby=${describedBy || nothing}
             @input=${this.handleInput}

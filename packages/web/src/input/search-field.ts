@@ -1,3 +1,4 @@
+import type {PropertyValues} from "lit";
 import {AeliqoTextFieldElement} from "./text-field.js";
 import {AeliqoSearchEvent} from "./events.js";
 
@@ -16,6 +17,7 @@ export class AeliqoSearchFieldElement extends AeliqoTextFieldElement {
 
   private queryTimer: ReturnType<typeof setTimeout> | undefined;
   private compositionActive = false;
+  private userValueChange = false;
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -34,6 +36,12 @@ export class AeliqoSearchFieldElement extends AeliqoTextFieldElement {
     super.disconnectedCallback();
   }
 
+  protected override willUpdate(changed: PropertyValues<this>): void {
+    super.willUpdate(changed);
+    if ((changed.has("value") && !this.userValueChange) || changed.has("queryOnInput")) this.clearQueryTimer();
+    this.userValueChange = false;
+  }
+
   /** Commit the current query from a host action or a keyboard Enter. */
   submitQuery(): void {
     if (this.fieldDisabled || this.readOnly || this.compositionActive) return;
@@ -44,6 +52,7 @@ export class AeliqoSearchFieldElement extends AeliqoTextFieldElement {
   private readonly handleProposal = (event: Event): void => {
     const detail = (event as CustomEvent<{readonly value?: unknown}>).detail;
     if (typeof detail?.value !== "string") return;
+    this.userValueChange = true;
     if (this.queryOnInput && !this.compositionActive) this.scheduleQuery(detail.value);
   };
 

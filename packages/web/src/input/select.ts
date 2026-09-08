@@ -23,6 +23,11 @@ export class AeliqoSelectElement extends AeliqoFieldElement<string> {
   emptyLabel = "Select an option";
   unknownLabel = "Unknown option";
 
+  override connectedCallback(): void {
+    if (this.value.length === 0 && this.defaultValue.length > 0) this.value = this.defaultValue;
+    super.connectedCallback();
+  }
+
   protected override updated(): void {
     this.syncNative();
   }
@@ -46,6 +51,7 @@ export class AeliqoSelectElement extends AeliqoFieldElement<string> {
           .value=${this.value}
           ?disabled=${this.fieldDisabled}
           ?required=${this.required}
+          aria-readonly=${this.readOnly ? "true" : nothing}
           autocomplete=${this.autocomplete || nothing}
           aria-invalid=${this.error || (!known && this.value) ? "true" : nothing}
           aria-describedby=${describedBy || nothing}

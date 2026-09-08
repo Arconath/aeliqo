@@ -37,6 +37,12 @@ export class AeliqoDateRangeElement extends AeliqoFieldElement<AeliqoDateRangeVa
   timezone: "calendar" = "calendar";
   calendar: "gregory" = "gregory";
 
+  override connectedCallback(): void {
+    if (this.start.length === 0 && this.defaultStart.length > 0) this.start = dateOnly(this.defaultStart) ?? "";
+    if (this.end.length === 0 && this.defaultEnd.length > 0) this.end = dateOnly(this.defaultEnd) ?? "";
+    super.connectedCallback();
+  }
+
   protected override updated(): void {
     this.syncNative();
   }
@@ -55,11 +61,11 @@ export class AeliqoDateRangeElement extends AeliqoFieldElement<AeliqoDateRangeVa
         <legend part="label">${this.label}</legend>
         <div class="range-inputs">
           <label part="start-label">Start
-            <input part="input start" class="start" type="date" name="" .value=${dateOnly(this.start) ?? ""} ?disabled=${this.fieldDisabled} ?readonly=${this.readOnly} aria-describedby=${describedBy || nothing} @input=${this.handleStart} />
+            <input part="input start" class="start" type="date" name="" .value=${dateOnly(this.start) ?? ""} ?disabled=${this.fieldDisabled} ?readonly=${this.readOnly} aria-readonly=${this.readOnly ? "true" : nothing} aria-describedby=${describedBy || nothing} @input=${this.handleStart} />
           </label>
           <span aria-hidden="true">–</span>
           <label part="end-label">End
-            <input part="input end" class="end" type="date" name="" .value=${dateOnly(this.end) ?? ""} ?disabled=${this.fieldDisabled} ?readonly=${this.readOnly} aria-describedby=${describedBy || nothing} @input=${this.handleEnd} @change=${this.handleCommit} />
+            <input part="input end" class="end" type="date" name="" .value=${dateOnly(this.end) ?? ""} ?disabled=${this.fieldDisabled} ?readonly=${this.readOnly} aria-readonly=${this.readOnly ? "true" : nothing} aria-describedby=${describedBy || nothing} @input=${this.handleEnd} @change=${this.handleCommit} />
           </label>
         </div>
         <span class="policy" part="policy">${this.boundary === "inclusive" ? "Inclusive range" : "Exclusive range"}; calendar dates</span>
@@ -75,14 +81,22 @@ export class AeliqoDateRangeElement extends AeliqoFieldElement<AeliqoDateRangeVa
 
   private readonly handleStart = (event: Event): void => {
     const input = event.target;
-    if (!(input instanceof HTMLInputElement) || this.fieldDisabled || this.readOnly) return;
+    if (!(input instanceof HTMLInputElement) || this.fieldDisabled) return;
+    if (this.readOnly) {
+      this.syncNative();
+      return;
+    }
     this.start = dateOnly(input.value) ?? input.value;
     this.emitChange();
   };
 
   private readonly handleEnd = (event: Event): void => {
     const input = event.target;
-    if (!(input instanceof HTMLInputElement) || this.fieldDisabled || this.readOnly) return;
+    if (!(input instanceof HTMLInputElement) || this.fieldDisabled) return;
+    if (this.readOnly) {
+      this.syncNative();
+      return;
+    }
     this.end = dateOnly(input.value) ?? input.value;
     this.emitChange();
   };
