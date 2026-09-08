@@ -285,11 +285,21 @@ describe('T28 package boundary graph', () => {
       const relativeFixture = fixture('package-boundaries-forbidden-relative.fixture.ts');
       const relativeEdge = collectEdges(relativeFixture).find(edge => edge.specifier.startsWith('.'))!;
       const relativeTarget = resolveRelativeModule(relativeFixture.fileName, relativeEdge.specifier);
-      expect(relativeTarget === undefined || !isWithin(relativeTarget, fixtureRoot)).toBe(true);
+      expect(relativeTarget).toBeDefined();
+      expect(isWithin(relativeTarget!, fixtureRoot)).toBe(false);
+      const relativeGraph = reachableEntries('core', [relativeFixture.fileName], files);
+      expect(relativeGraph.findings).toEqual(expect.arrayContaining([
+        {file: relativeFixture.fileName, message: 'relative import escapes core: ../../package.json'},
+      ]));
       const dynamicFixture = fixture('package-boundaries-forbidden-dynamic.fixture.ts');
-      expect(collectEdges(dynamicFixture).some(edge => edge.dynamic)).toBe(true);
+      const dynamicEdges = collectEdges(dynamicFixture).filter(edge => edge.dynamic);
+      expect(dynamicEdges.length).toBeGreaterThanOrEqual(2);
+      expect(dynamicEdges.some(edge => edge.specifier === '<non-literal>')).toBe(true);
+      const dynamicGraph = reachableEntries('core', [dynamicFixture.fileName], files);
+      expect(dynamicGraph.findings.some(item => item.message === 'dynamic module edge <non-literal>')).toBe(true);
       expect(ambientEffectFindings(fixture('package-boundaries-forbidden-ambient.fixture.ts')).map(item => item.message)).toEqual(expect.arrayContaining([
         'ambient clock/random read Date.now', 'ambient clock/random read Math.random', 'ambient clock read new Date()',
+        'ambient platform access fetch',
       ]));
       expect(ambientEffectFindings(fixture('package-boundaries-allowed-date.fixture.ts'))).toEqual([]);
     } finally {

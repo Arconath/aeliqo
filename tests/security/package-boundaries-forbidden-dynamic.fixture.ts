@@ -1,5 +1,6 @@
 // @ts-nocheck
-// This fixture intentionally uses a runtime module edge.
+// This fixture intentionally uses non-literal runtime module edges.
 export async function loadUntrustedModule() {
-  return import('./untrusted-module.js');
+  const specifier = './untrusted-module.js';
+  return [import(specifier), require(specifier)];
 }
