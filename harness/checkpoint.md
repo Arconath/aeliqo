@@ -270,3 +270,16 @@ Independent review closed operation restrictions, queryless composition, exact
 state mapping, custom root identity, one-expansion feasible-first and bounded
 combined-alternative search gaps. T20 runtime application and T22 agent binding
 are ready; T18 Cartesian/hierarchy review is still active.
+
+T18 direct twelve-family web/React source integrated through d08bdd6. Root fixed
+real SVG namespace failures in hierarchy graphics, canonical row selection,
+readable-density fallback, paged exact rows, scope clearing and keyed focus.
+Independent hierarchy review closed; final source27tests/types and12publicSSR,
+7hierarchy and4Cartesian Chromium checks pass. Installed core/web/React tarballs
+prove all12families outside the workspace, real SVG, exact tables, keyboard
+selection, ReactSSR and revocation; report artifacts/visualization-consumers/run-Ze1yLC
+is bound to source digest85ca4780a3586ba2741cb152804a6ad45edca27d37cba3eab96d9c36ce9ab50d.
+T18 remains active: canonical semantic/region integration is being implemented
+in isolated codex/t18-semantic. T20 adaptation and T22 dispatcher remain active;
+parent review identified text-scale hysteresis and current model-egress recheck
+issues that their authors are addressing. No publication or deployment occurred.
