@@ -179,7 +179,7 @@ export class AeliqoRegionElement extends LitElement {
     if (this.presentation === undefined) return nothing;
     const nodes = new Map(this.presentation.nodes.map((node) => [node.node.id, node]));
     if (!nodes.has(this.presentation.plan.rootId)) return nothing;
-    return html`<div part="region">${this.renderNode(this.presentation.plan.rootId, nodes)}</div>`;
+    return html`<div part="region" lang=${this.presentation.environment.locale} dir=${this.presentation.environment.direction}>${this.renderNode(this.presentation.plan.rootId, nodes)}</div>`;
   }
 
   private renderNode(nodeId: string, nodes: ReadonlyMap<string, ValidatedPresentation["nodes"][number]>): TemplateResult | typeof nothing {
@@ -201,7 +201,7 @@ export class AeliqoRegionElement extends LitElement {
       case "data.table": return this.renderTable(resolved, values);
       case "data.trend": return this.renderTrend(resolved, values);
       case "control.filter": return this.renderFilter(resolved, values);
-      default: return renderFoundationNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? renderInputNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? renderNavigationFeedbackNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? html`<div part="unsupported">Unsupported registered representation.</div>`;
+      default: return renderFoundationNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? renderInputNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload), this.presentation?.environment.locale) ?? renderNavigationFeedbackNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? html`<div part="unsupported">Unsupported registered representation.</div>`;
     }
   }
 

@@ -147,6 +147,10 @@ import {AeliqoTextField as MainTextField, AeliqoTextArea as MainTextArea, Aeliqo
 import {AeliqoTextFieldElement, AeliqoTextAreaElement, AeliqoNumberFieldElement, AeliqoCheckboxElement, AeliqoRadioGroupElement, AeliqoSwitchElement, AeliqoSelectElement, AeliqoComboboxElement, AeliqoDateFieldElement, AeliqoDateRangeElement, AeliqoSliderElement, AeliqoSearchFieldElement, AeliqoFileInputElement, AeliqoFieldGroupElement, AeliqoFormElement} from '@aeliqo/web/inputs';
 import {AeliqoTextFieldElement as TextFieldByPath} from '@aeliqo/web/text-field';
 import type {AeliqoInputChangeDetail, AeliqoInputCommitDetail, AeliqoValidationDetail, AeliqoSearchDetail, AeliqoFileChangeDetail, AeliqoFormSubmitDetail, AeliqoDateRangeValue} from '@aeliqo/web/inputs';
+import {createAeliqoPresentationRegistry, type AeliqoInputBindings} from '@aeliqo/web/region';
+const semanticBindings = {revision:'inputs-1',inputs:[{id:'name',ref:{id:'input.text-field',revision:'1'},config:{label:'Name'},draft:{entity:'profile',key:'self',field:'name',entityRevision:'1',type:{value:'text',nullable:false}}}]} satisfies AeliqoInputBindings;
+const semanticRegistry = createAeliqoPresentationRegistry({inputs:semanticBindings});
+void semanticRegistry;
 
 const app = <>
   <AeliqoTextField label='Name' onValueChange={event => { const value: string = event.detail.value; void value; }} onValueCommit={event => { const value: string = event.detail.value; void value; }} onValidation={event => { const state: AeliqoValidationDetail['state'] = event.detail.state; void state; }} />
