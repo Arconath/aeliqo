@@ -1,0 +1,227 @@
+{
+  "version": "1",
+  "corpusId": "t40-data-query-heldout-2026-09",
+  "partition": "heldout",
+  "author": "platform-proof independent Python corpus author",
+  "exposure": "Prompts, fixture records and expected rows are sealed from harness/model development until T40 corpus freeze.",
+  "oracleMethod": "Expected values computed from separate Python grouping, Decimal sums, ratio-of-sums, relation membership and ISO calendar routines; no Aeliqo production evaluator output was copied.",
+  "domains": {
+    "hr": 6,
+    "commerce": 6,
+    "service-support": 6
+  },
+  "cases": [
+    {
+      "id": "hr-record-browse",
+      "domain": "hr",
+      "features": [
+        "record-browsing",
+        "paraphrase",
+        "new-field-names"
+      ],
+      "sourceRevision": "hr-source-2026-01",
+      "catalogRevision": "hr-catalog-2026-01"
+    },
+    {
+      "id": "hr-ratio-null-by-department",
+      "domain": "hr",
+      "features": [
+        "ratio-of-sums",
+        "null-propagation",
+        "grouping",
+        "distribution-shift"
+      ],
+      "sourceRevision": "hr-source-2026-01",
+      "catalogRevision": "hr-catalog-2026-01"
+    },
+    {
+      "id": "hr-weekly-absence-temporal",
+      "domain": "hr",
+      "features": [
+        "temporal-week",
+        "iso8601",
+        "grouping",
+        "nulls"
+      ],
+      "sourceRevision": "hr-source-2026-01",
+      "catalogRevision": "hr-catalog-2026-01"
+    },
+    {
+      "id": "hr-relation-absence-followup",
+      "domain": "hr",
+      "features": [
+        "declared-relation",
+        "semi-join",
+        "fanout-safe",
+        "paraphrase"
+      ],
+      "sourceRevision": "hr-source-2026-01",
+      "catalogRevision": "hr-catalog-2026-01"
+    },
+    {
+      "id": "hr-multigrain-named-outputs",
+      "domain": "hr",
+      "features": [
+        "multioutput",
+        "independent-grains",
+        "in-filter",
+        "paraphrase"
+      ],
+      "sourceRevision": "hr-source-2026-01",
+      "catalogRevision": "hr-catalog-2026-01"
+    },
+    {
+      "id": "hr-topk-period-filter",
+      "domain": "hr",
+      "features": [
+        "top-k",
+        "temporal-filter",
+        "stable-tie-order",
+        "paraphrase"
+      ],
+      "sourceRevision": "hr-source-2026-01",
+      "catalogRevision": "hr-catalog-2026-01"
+    },
+    {
+      "id": "commerce-currency-order-browse",
+      "domain": "commerce",
+      "features": [
+        "record-browsing",
+        "currency",
+        "null-aware-filter",
+        "new-field-names"
+      ],
+      "sourceRevision": "commerce-source-2026-01",
+      "catalogRevision": "commerce-catalog-2026-01"
+    },
+    {
+      "id": "commerce-paid-revenue-topk",
+      "domain": "commerce",
+      "features": [
+        "currency-sum",
+        "top-k",
+        "distribution-shift",
+        "paraphrase"
+      ],
+      "sourceRevision": "commerce-source-2026-01",
+      "catalogRevision": "commerce-catalog-2026-01"
+    },
+    {
+      "id": "commerce-null-amount-records",
+      "domain": "commerce",
+      "features": [
+        "null-semantics",
+        "record-browsing",
+        "paraphrase"
+      ],
+      "sourceRevision": "commerce-source-2026-01",
+      "catalogRevision": "commerce-catalog-2026-01"
+    },
+    {
+      "id": "commerce-active-customer-relation",
+      "domain": "commerce",
+      "features": [
+        "declared-relation",
+        "semi-join",
+        "row-policy-shape",
+        "paraphrase"
+      ],
+      "sourceRevision": "commerce-source-2026-01",
+      "catalogRevision": "commerce-catalog-2026-01"
+    },
+    {
+      "id": "commerce-monthly-paid-revenue",
+      "domain": "commerce",
+      "features": [
+        "temporal-month",
+        "currency-sum",
+        "grouping",
+        "paraphrase"
+      ],
+      "sourceRevision": "commerce-source-2026-01",
+      "catalogRevision": "commerce-catalog-2026-01"
+    },
+    {
+      "id": "commerce-multigrain-orders-markets",
+      "domain": "commerce",
+      "features": [
+        "multioutput",
+        "independent-grains",
+        "currency",
+        "paraphrase"
+      ],
+      "sourceRevision": "commerce-source-2026-01",
+      "catalogRevision": "commerce-catalog-2026-01"
+    },
+    {
+      "id": "support-urgent-ticket-browse",
+      "domain": "service-support",
+      "features": [
+        "record-browsing",
+        "new-field-names",
+        "paraphrase"
+      ],
+      "sourceRevision": "support-source-2026-01",
+      "catalogRevision": "support-catalog-2026-01"
+    },
+    {
+      "id": "support-resolution-rate-null",
+      "domain": "service-support",
+      "features": [
+        "ratio-of-sums",
+        "null-propagation",
+        "grouping",
+        "paraphrase"
+      ],
+      "sourceRevision": "support-source-2026-01",
+      "catalogRevision": "support-catalog-2026-01"
+    },
+    {
+      "id": "support-weekly-volume",
+      "domain": "service-support",
+      "features": [
+        "temporal-week",
+        "count",
+        "distribution-shift",
+        "paraphrase"
+      ],
+      "sourceRevision": "support-source-2026-01",
+      "catalogRevision": "support-catalog-2026-01"
+    },
+    {
+      "id": "support-account-urgent-relation",
+      "domain": "service-support",
+      "features": [
+        "declared-relation",
+        "semi-join",
+        "fanout-safe",
+        "paraphrase"
+      ],
+      "sourceRevision": "support-source-2026-01",
+      "catalogRevision": "support-catalog-2026-01"
+    },
+    {
+      "id": "support-multigrain-queue-tickets",
+      "domain": "service-support",
+      "features": [
+        "multioutput",
+        "independent-grains",
+        "nullable-measure",
+        "paraphrase"
+      ],
+      "sourceRevision": "support-source-2026-01",
+      "catalogRevision": "support-catalog-2026-01"
+    },
+    {
+      "id": "support-null-response-records",
+      "domain": "service-support",
+      "features": [
+        "null-semantics",
+        "record-browsing",
+        "paraphrase"
+      ],
+      "sourceRevision": "support-source-2026-01",
+      "catalogRevision": "support-catalog-2026-01"
+    }
+  ]
+}
