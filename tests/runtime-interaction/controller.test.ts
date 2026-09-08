@@ -1,0 +1,272 @@
+import {describe, expect, it} from 'vitest';
+import {createInteractionController, createInteractionGraph, type InteractionEvent, type InteractionGraphDefinition, type InteractionHostContext, type InteractionPayload} from '../../packages/runtime/src/interaction/index.js';
+import {createRegionStore, type RegionAuthority} from '../../packages/runtime/src/regions/index.js';
+import {createResultStore, type ResultBeginInput, type ResultEvent, type ResultHandle} from '../../packages/runtime/src/results/index.js';
+import {createLocalDataService, type DataRecord, type LocalSnapshot, type QueryBudget} from '../../packages/runtime/src/data/index.js';
+import {createStandardFunctionRegistry} from '../../packages/core/src/index.js';
+import type {Catalog, QuerySpec, ResultRef} from '../../packages/core/src/index.js';
+
+const budget: QueryBudget = {maxRows: 100, maxBytes: 500_000, maxMessages: 32, maxMilliseconds: 10_000, maxColumns: 20};
+const registry = createStandardFunctionRegistry();
+if (!registry.ok) throw new Error('Standard function registry unavailable.');
+const functionRegistry = registry.ok ? registry.value : (() => { throw new Error('Standard function registry unavailable.'); })();
+const catalog: Catalog = {
+  version: '1', revision: 'interaction-catalog-1', functionRegistryDigest: functionRegistry.digest,
+  entities: [{id: 'events', label: 'Events', identity: ['id'], rowGrain: ['id'], fields: [
+    {id: 'id', label: 'ID', type: {value: 'text', nullable: false}, role: 'identity'},
+    {id: 'department', label: 'Department', type: {value: 'text', nullable: false}, role: 'dimension'},
+  ]}], relationships: [], meanings: [], capabilities: [],
+};
+const rows: DataRecord[] = [{id: 'a', department: 'A'}, {id: 'b', department: 'B'}];
+const sourceSnapshot = (sourceRows: readonly DataRecord[] = rows): LocalSnapshot => ({catalog, sourceRevision: 'interaction-source-1', records: {events: sourceRows}});
+const query = (): QuerySpec => ({entity: 'events', fields: ['id', 'department'], measures: [], relations: [], groupBy: [], population: {kind: 'all-authorized'}, order: []});
+
+async function localResult(): Promise<{readonly handle: ResultHandle; readonly ref: ResultRef}> {
+  const service = createLocalDataService({snapshot: sourceSnapshot(), functionRegistry});
+  const planned = await service.plan({version: '1', requestId: 'interaction-query', target: {outputId: 'rows'}, catalogRevision: catalog.revision, query: query(), budget});
+  if (!planned.ok) throw new Error(planned.diagnostics[0]!.message);
+  const events: ResultEvent[] = [];
+  for await (const event of service.execute(planned.value)) events.push(event);
+  const descriptor = events.find((event) => event.kind === 'descriptor');
+  if (descriptor?.kind !== 'descriptor') throw new Error('Local data did not produce a descriptor.');
+  const ref = descriptor.descriptor.ref;
+  const population = descriptor.descriptor.counts.population;
+  const populationDigest = population.kind === 'unknown' ? undefined : population.populationDigest;
+  const input: ResultBeginInput = {
+    principalKey: 'principal-a', scopeDigest: ref.scopeDigest, policyRevision: 'policy-1', queryDigest: ref.queryDigest,
+    catalogRevision: catalog.revision, functionRegistryDigest: catalog.functionRegistryDigest, sourceRevision: 'interaction-source-1',
+    outputId: ref.outputId, taskId: descriptor.descriptor.taskId, requestId: 'interaction-result', ...(populationDigest === undefined ? {} : {populationDigest}),
+  };
+  const store = createResultStore();
+  const handle = store.begin(input);
+  async function* source(): AsyncGenerator<unknown> { yield* events; }
+  for await (const _update of handle.subscribe(source())) { /* consume the real ResultStore stream */ }
+  if (!['ready', 'partial'].includes(handle.snapshot().status)) throw new Error(`ResultStore did not materialize the local result: ${handle.snapshot().status} ${JSON.stringify(handle.snapshot().diagnostics)}`);
+  return {handle, ref};
+}
+
+function graphFor(payload: InteractionPayload['kind'] = 'selection'): InteractionGraphDefinition {
+  const selection = {payload: 'selection' as const, entity: 'events', identity: ['id'], grain: ['id'], type: {value: 'text' as const, nullable: false}};
+  const other = {payload};
+  if (payload === 'selection') return {nodes: [{id: 'view', ports: [
+    {id: 'input', direction: 'output', ...selection}, {id: 'filter', direction: 'output', payload: 'filter' as const},
+  ]}], links: [], mappings: []};
+  return {nodes: [{id: 'view', ports: [{id: 'input', direction: 'output', ...other}]}], links: [], mappings: []};
+}
+
+function event(regionRevision: string, payload: InteractionPayload, eventId: string, originNodeId = 'view'): InteractionEvent {
+  return {eventId, causationId: `cause-${eventId}`, regionId: 'region-1', regionRevision, originNodeId, payload};
+}
+
+async function harness() {
+  const result = await localResult();
+  const authority: RegionAuthority = {
+    principalKey: 'principal-a', scopeDigest: result.ref.scopeDigest, policyRevision: 'policy-1', catalogRevision: catalog.revision,
+    experienceRevision: 'experience-1', functionRegistryDigest: catalog.functionRegistryDigest, results: [result.ref],
+  };
+  const task = {version: '1' as const, id: 'interaction-task', revision: '1', catalogRevision: catalog.revision,
+    functionRegistryDigest: catalog.functionRegistryDigest, regionId: 'region-1', goal: 'Interact with events', kind: 'presentation' as const,
+    needs: [], assumptions: [], inputs: [result.ref]};
+  const store = createRegionStore({readAuthority: () => ({ok: true as const, value: authority}), authorizeCommit: async () => ({ok: true as const, value: undefined})});
+  const created = store.create({id: 'region-1', state: {task}});
+  if (!created.ok) throw new Error(created.diagnostics[0]!.message);
+  const region = created.value;
+  const graph = createInteractionGraph(graphFor());
+  const host = (): InteractionHostContext => ({principalKey: 'principal-a', draftDomain: 'events', actor: {id: 'user-a', kind: 'user'}, grants: ['experience.commit', 'result.inspect', 'draft.edit', 'navigation.propose', 'action.propose'],
+    scopeDigest: authority.scopeDigest, policyRevision: authority.policyRevision, catalogRevision: authority.catalogRevision,
+    experienceRevision: authority.experienceRevision, functionRegistryDigest: authority.functionRegistryDigest, results: [result.ref]});
+  const controller = createInteractionController({region, graph, readContext: host, resolveResult: (ref) => ref.id === result.ref.id ? result.handle : undefined,
+    validateSelection: (selection) => {
+      if (selection.mode === 'clear') return {ok: true, value: undefined};
+      const loaded = new Set(result.handle.snapshot().batches.flatMap((batch) => batch.rows.map((row) => String(row.id))));
+      return selection.mode === 'ids' && selection.keys.every((key) => loaded.has(key))
+        ? {ok: true, value: undefined}
+        : {ok: false, diagnostics: [{code: 'host.selection-scope', message: 'Selection is outside the loaded authorized population.', retryable: false}]};
+    },
+    validateScope: (payload) => payload.kind === 'filter' && payload.outputId === result.ref.outputId
+      ? {ok: true, value: undefined}
+      : {ok: false, diagnostics: [{code: 'host.scope', message: 'The interaction scope changed.', retryable: false}]},
+    validateDraft: () => ({ok: true, value: undefined}),
+    materialize: (_payloads, context, next) => ({ok: true, value: {state: {...context.region.state!, interaction: next}, resultHandles: [result.handle]}}),
+    validateNavigation: () => ({ok: true, value: undefined}),
+    onNavigate: () => ({ok: true, value: undefined}),
+    onActionProposal: () => ({ok: true, value: undefined}),
+  });
+  return {authority, result, store, region, controller};
+}
+
+describe('runtime interaction controller', () => {
+  it('uses a real local-data and ResultStore population for selection and filter state', async () => {
+    const {region, controller, result} = await harness();
+    const selected = await controller.dispatch(event(region.snapshot().regionRevision, {kind: 'selection', selection: {mode: 'ids', entity: 'events', keys: ['a'], result: result.ref}}, 'select-a'), {sourcePortId: 'input'});
+    expect(selected).toMatchObject({ok: true, value: {state: {values: [{payload: {kind: 'selection', selection: {mode: 'ids', keys: ['a']}}}]}}});
+    const filtered = await controller.dispatch(event(region.snapshot().regionRevision, {kind: 'filter', predicates: [{op: 'compare', field: 'department', comparison: 'eq', value: 'A'}], outputId: result.ref.outputId}, 'filter-a'), {sourcePortId: 'filter'});
+    expect(filtered.ok).toBe(true);
+    if (filtered.ok) expect(filtered.value.state.values.some((entry) => entry.payload.kind === 'filter' && entry.payload.outputId === 'rows')).toBe(true);
+    expect(controller.state().regionRevision).toBe(region.snapshot().regionRevision);
+  });
+
+  it('rejects an identity outside the real materialized result population', async () => {
+    const {region, controller, result} = await harness();
+    const rejected = await controller.dispatch(event(region.snapshot().regionRevision, {kind: 'selection', selection: {mode: 'ids', entity: 'events', keys: ['not-loaded'], result: result.ref}}, 'select-forbidden'), {sourcePortId: 'input'});
+    expect(rejected).toMatchObject({ok: false, diagnostics: [{code: 'host.selection-scope'}]});
+    expect(controller.state().values).toEqual([]);
+  });
+
+  it('rejects a result handle from a different trusted principal partition', async () => {
+    const {region, result, authority} = await harness();
+    const controller = createInteractionController({
+      region,
+      graph: createInteractionGraph(graphFor()),
+      readContext: () => ({principalKey: 'principal-b', draftDomain: 'events', actor: {id: 'user-a', kind: 'user'}, grants: ['experience.commit'],
+        scopeDigest: authority.scopeDigest, policyRevision: authority.policyRevision, catalogRevision: catalog.revision,
+        experienceRevision: authority.experienceRevision, functionRegistryDigest: catalog.functionRegistryDigest, results: [result.ref]}),
+      resolveResult: () => result.handle,
+      validateSelection: () => ({ok: true, value: undefined}),
+    });
+    const rejected = await controller.dispatch(event(region.snapshot().regionRevision,
+      {kind: 'selection', selection: {mode: 'ids', entity: 'events', keys: ['a'], result: result.ref}}, 'cross-principal'), {sourcePortId: 'input'});
+    expect(rejected).toMatchObject({ok: false, diagnostics: [{code: 'runtime.interaction-denied'}]});
+  });
+
+  it('rejects stale region vectors after another committed controller update', async () => {
+    const first = await harness();
+    const second = createInteractionController({region: first.region, graph: createInteractionGraph(graphFor()), readContext: () => ({principalKey: 'principal-a', draftDomain: 'events', actor: {id: 'user-a', kind: 'user'}, grants: ['experience.commit'],
+      scopeDigest: first.authority.scopeDigest, policyRevision: first.authority.policyRevision, catalogRevision: catalog.revision, experienceRevision: first.authority.experienceRevision,
+      functionRegistryDigest: catalog.functionRegistryDigest, results: [first.result.ref]}), resolveResult: (ref) => ref.id === first.result.ref.id ? first.result.handle : undefined,
+      validateSelection: () => ({ok: true, value: undefined})});
+    const revision = first.region.snapshot().regionRevision;
+    const committed = await first.controller.dispatch(event(revision, {kind: 'selection', selection: {mode: 'ids', entity: 'events', keys: ['a'], result: first.result.ref}}, 'first'), {sourcePortId: 'input'});
+    expect(committed.ok).toBe(true);
+    const stale = await second.dispatch(event(revision, {kind: 'selection', selection: {mode: 'clear'}}, 'second'), {sourcePortId: 'input'});
+    expect(stale).toMatchObject({ok: false, diagnostics: [{code: 'runtime.interaction-stale'}]});
+  });
+
+  it('admits no more synchronous pending events than the queue budget', async () => {
+    const {region, result, authority, store} = await harness();
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    const controller = createInteractionController({
+      region,
+      graph: createInteractionGraph(graphFor()),
+      maxQueuedEvents: 1,
+      readContext: () => ({principalKey: 'principal-a', draftDomain: 'events', actor: {id: 'user-a', kind: 'user'}, grants: ['experience.commit', 'result.inspect'],
+        scopeDigest: authority.scopeDigest, policyRevision: authority.policyRevision, catalogRevision: catalog.revision,
+        experienceRevision: authority.experienceRevision, functionRegistryDigest: catalog.functionRegistryDigest, results: [result.ref]}),
+      resolveResult: () => result.handle,
+      validateSelection: async () => { await gate; return {ok: true, value: undefined}; },
+    });
+    const first = controller.dispatch(event(region.snapshot().regionRevision,
+      {kind: 'selection', selection: {mode: 'ids', entity: 'events', keys: ['a'], result: result.ref}}, 'bounded-first'), {sourcePortId: 'input'});
+    const second = await controller.dispatch(event(region.snapshot().regionRevision,
+      {kind: 'selection', selection: {mode: 'clear'}}, 'bounded-second'), {sourcePortId: 'input'});
+    expect(second).toMatchObject({ok: false, diagnostics: [{code: 'runtime.interaction-budget'}]});
+    release();
+    expect((await first).ok).toBe(true);
+    controller.dispose();
+    store.dispose();
+  });
+
+  it('materializes once when one event reaches multiple query outputs', async () => {
+    const {region, result, authority, store} = await harness();
+    const filterShape = {payload: 'filter' as const};
+    const manifest = {ref: {id: 'filter-pass-through', revision: '1'}, source: filterShape, target: filterShape, kind: 'registered' as const};
+    const graph = createInteractionGraph({
+      nodes: [
+        {id: 'source', ports: [{id: 'out', direction: 'output', ...filterShape}]},
+        {id: 'left', ports: [{id: 'in', direction: 'input', ...filterShape}]},
+        {id: 'right', ports: [{id: 'in', direction: 'input', ...filterShape}]},
+      ],
+      links: [
+        {id: 'to-left', source: {node: 'source', port: 'out'}, target: {node: 'left', port: 'in'}, mapping: manifest.ref, propagation: 'directed'},
+        {id: 'to-right', source: {node: 'source', port: 'out'}, target: {node: 'right', port: 'in'}, mapping: manifest.ref, propagation: 'directed'},
+      ],
+      mappings: [manifest],
+    });
+    expect(graph.registerMapping({manifest, map: (payload) => ({ok: true, value: payload})})).toMatchObject({ok: true});
+    const host = (): InteractionHostContext => ({principalKey: 'principal-a', draftDomain: 'events', actor: {id: 'user-a', kind: 'user'}, grants: ['experience.commit', 'result.inspect'],
+      scopeDigest: authority.scopeDigest, policyRevision: authority.policyRevision, catalogRevision: catalog.revision,
+      experienceRevision: authority.experienceRevision, functionRegistryDigest: catalog.functionRegistryDigest, results: [result.ref]});
+    let materializeCalls = 0;
+    const controller = createInteractionController({
+      region, graph, readContext: host,
+      resolveResult: () => result.handle,
+      validateScope: () => ({ok: true, value: undefined}),
+      materialize: (_payloads, context, next) => {
+        materializeCalls++;
+        return {ok: true, value: {state: {...context.region.state!, interaction: next}, resultHandles: [result.handle]}};
+      },
+    });
+    const dispatched = await controller.dispatch(event(region.snapshot().regionRevision,
+      {kind: 'filter', predicates: [{op: 'compare', field: 'department', comparison: 'eq', value: 'A'}], outputId: result.ref.outputId}, 'fanout', 'source'), {sourcePortId: 'out'});
+    expect(dispatched.ok).toBe(true);
+    expect(materializeCalls).toBe(1);
+    if (dispatched.ok) expect(dispatched.value.state.values.filter((entry) => entry.payload.kind === 'filter')).toHaveLength(3);
+    controller.dispose();
+    store.dispose();
+  });
+
+  it('does not commit when a required grant is revoked during materialization', async () => {
+    const {region, result, authority, store} = await harness();
+    let grants: InteractionHostContext['grants'] = ['experience.commit', 'result.inspect'];
+    let release!: () => void;
+    let started!: () => void;
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    const materializerStarted = new Promise<void>((resolve) => { started = resolve; });
+    const controller = createInteractionController({
+      region,
+      graph: createInteractionGraph(graphFor('filter')),
+      readContext: () => ({principalKey: 'principal-a', draftDomain: 'events', actor: {id: 'user-a', kind: 'user'}, grants,
+        scopeDigest: authority.scopeDigest, policyRevision: authority.policyRevision, catalogRevision: catalog.revision,
+        experienceRevision: authority.experienceRevision, functionRegistryDigest: catalog.functionRegistryDigest, results: [result.ref]}),
+      resolveResult: () => result.handle,
+      validateScope: () => ({ok: true, value: undefined}),
+      materialize: async (_payloads, context, next) => {
+        grants = ['result.inspect'];
+        started();
+        await gate;
+        return {ok: true, value: {state: {...context.region.state!, interaction: next}, resultHandles: [result.handle]}};
+      },
+    });
+    const before = region.snapshot();
+    const pending = controller.dispatch(event(before.regionRevision,
+      {kind: 'filter', predicates: [{op: 'compare', field: 'department', comparison: 'eq', value: 'A'}], outputId: result.ref.outputId}, 'grant-revoked'), {sourcePortId: 'input'});
+    await materializerStarted;
+    release();
+    const rejected = await pending;
+    expect(rejected).toMatchObject({ok: false, diagnostics: [{code: 'runtime.interaction-denied'}]});
+    expect(region.snapshot().regionRevision).toBe(before.regionRevision);
+    expect(region.snapshot().state?.interaction).toBeUndefined();
+    controller.dispose();
+    store.dispose();
+  });
+
+  it('converges a bidirectional identity selection cycle with built-in propagation', async () => {
+    const shape = {payload: 'selection' as const, entity: 'events', identity: ['id'], grain: ['id'], type: {value: 'text' as const, nullable: false}};
+    const graph = createInteractionGraph({nodes: [
+      {id: 'a', ports: [{id: 'selection', direction: 'inout', ...shape}]},
+      {id: 'b', ports: [{id: 'selection', direction: 'inout', ...shape}]},
+    ], links: [
+      {id: 'a-to-b', source: {node: 'a', port: 'selection'}, target: {node: 'b', port: 'selection'}, mapping: {id: 'identity', revision: '1'}, propagation: 'identity-equivalence'},
+      {id: 'b-to-a', source: {node: 'b', port: 'selection'}, target: {node: 'a', port: 'selection'}, mapping: {id: 'identity', revision: '1'}, propagation: 'identity-equivalence'},
+    ], mappings: [{ref: {id: 'identity', revision: '1'}, source: shape, target: shape, kind: 'identity'}]});
+    expect(graph.registerMapping({manifest: {ref: {id: 'identity', revision: '1'}, source: shape, target: shape, kind: 'identity'}})).toMatchObject({ok: true});
+    const routed = graph.route(event('r-1', {kind: 'selection', selection: {mode: 'clear'}}, 'cycle'), {nodeId: 'a', portId: 'selection'}, new AbortController().signal);
+    expect(routed).toMatchObject({ok: true, value: [{route: {nodeId: 'b', portId: 'selection'}}, {route: {nodeId: 'a', portId: 'selection'}}]});
+  });
+
+  it('keeps action requests proposal-only and derives actor from host context', async () => {
+    const {region, result, authority, store} = await harness();
+    let actor = '';
+    const graph = createInteractionGraph(graphFor('action-request'));
+    const controller = createInteractionController({region, graph, readContext: () => ({principalKey: 'principal-a', draftDomain: 'events', actor: {id: 'trusted-user', kind: 'user'}, grants: ['action.propose'], scopeDigest: authority.scopeDigest,
+      policyRevision: authority.policyRevision, catalogRevision: catalog.revision, experienceRevision: authority.experienceRevision, functionRegistryDigest: catalog.functionRegistryDigest, results: [result.ref]}),
+      onActionProposal: (_payload, context) => { actor = context.host.actor.id; return {ok: true, value: undefined}; }});
+    const accepted = await controller.dispatch(event(region.snapshot().regionRevision, {kind: 'action-request', action: {id: 'archive', revision: '1'}, input: {key: 'a'}}, 'propose'), {sourcePortId: 'input'});
+    expect(accepted).toMatchObject({ok: true, value: {effects: [{kind: 'action-proposal', actorId: 'trusted-user'}]}});
+    expect(actor).toBe('trusted-user');
+    const forged = await controller.dispatch({...event(region.snapshot().regionRevision, {kind: 'action-request', action: {id: 'archive', revision: '1'}, input: {}}, 'forged'), actor: 'human'}, {sourcePortId: 'input'});
+    expect(forged).toMatchObject({ok: false, diagnostics: [{code: 'runtime.interaction-invalid'}]});
+    store.dispose();
+  });
+});
