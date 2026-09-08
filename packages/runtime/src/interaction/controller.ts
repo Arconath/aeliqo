@@ -2,7 +2,7 @@ import {parseContract, parseInteractionState, WIRE_LIMITS} from '@aeliqo/core';
 import type {InteractionState as CoreInteractionState, ResultRef} from '@aeliqo/core';
 import {createSerialQueue, type SerialQueue} from '../scheduling/index.js';
 import {resultRefForHandle} from '../regions/index.js';
-import type {RegionObserver, RegionHandle, RegionSnapshot} from '../regions/types.js';
+import type {RegionObserver, RegionHandle, RegionReadSet, RegionSnapshot} from '../regions/types.js';
 import type {RegionContent} from '../tasks/types.js';
 import type {ResultHandle} from '../results/types.js';
 import type {
@@ -72,7 +72,7 @@ function sameTrustedContext(expected: InteractionHostContext, current: Interacti
     expected.actor.id === current.actor.id && expected.actor.kind === current.actor.kind &&
     expected.scopeDigest === current.scopeDigest && expected.policyRevision === current.policyRevision &&
     expected.catalogRevision === current.catalogRevision && expected.experienceRevision === current.experienceRevision &&
-    expected.functionRegistryDigest === current.functionRegistryDigest && canonical(expected.results) === canonical(current.results);
+    expected.functionRegistryDigest === current.functionRegistryDigest;
 }
 
 function emptyPersistedState(): CoreInteractionState {
@@ -473,9 +473,34 @@ class InteractionControllerImpl implements InteractionController {
     return {ok: true, value: result.value.state};
   }
 
+  /**
+   * Extend the proposal read set with every live handle used by the candidate.
+   * A host may add a fresh result during materialization; scalar pins remain
+   * captured from the original region read set and are never rebased here.
+   */
+  private expectedReadSet(before: RegionSnapshot, handles: readonly ResultHandle[]): InteractionOutcome<RegionReadSet> {
+    if (before.readSet === undefined) return failure('runtime.interaction-disposed', 'The region has no active read set.');
+    const refs = [...before.readSet.results];
+    const seen = new Set(refs.map((ref) => refKey(ref)));
+    for (const handle of handles) {
+      let resolved: ReturnType<typeof resultRefForHandle>;
+      try { resolved = resultRefForHandle(handle); } catch { return failure('runtime.interaction-stale', 'A result handle could not be bound to the interaction read set.'); }
+      if (!resolved.ok) return failure('runtime.interaction-stale', resolved.diagnostics[0]!.message);
+      if (resolved.value.scopeDigest !== before.readSet.scopeDigest) return failure('runtime.interaction-stale', 'A result handle belongs to a different authorization scope.');
+      const key = refKey(resolved.value);
+      if (!seen.has(key)) {
+        seen.add(key);
+        refs.push(resolved.value);
+      }
+    }
+    if (refs.length > WIRE_LIMITS.array) return failure('runtime.interaction-budget', 'The interaction read set exceeds its result dependency budget.');
+    return {ok: true, value: {...before.readSet, results: refs}};
+  }
+
   private async commitState(
     event: InteractionEvent,
     before: RegionSnapshot,
+    expected: RegionReadSet,
     next: CoreInteractionState,
     candidate: RegionContent | undefined,
     resultHandles: readonly ResultHandle[],
@@ -488,7 +513,7 @@ class InteractionControllerImpl implements InteractionController {
     if (checked === undefined || !checked.ok || canonical(checked.value) !== canonical(next)) return failure('runtime.interaction-invalid', 'The interaction state candidate is not the prepared canonical state.');
     this.committing = true;
     try {
-      const staged = await this.region.stage({requestId: event.eventId, expected: before.readSet, state, ...(resultHandles.length === 0 ? {} : {resultHandles})});
+      const staged = await this.region.stage({requestId: event.eventId, expected, state, ...(resultHandles.length === 0 ? {} : {resultHandles})});
       if (!staged.ok) return failure('runtime.interaction-stale', staged.diagnostics[0]!.message);
       if (controller.signal.aborted) { this.region.discard(staged.value); return failure('runtime.interaction-cancelled', 'The interaction was cancelled.'); }
       const committed = await this.region.commit(staged.value);
@@ -553,8 +578,10 @@ class InteractionControllerImpl implements InteractionController {
               item.payload.kind !== 'selection' ? ['result.inspect'] : [])] : []),
       )]);
       if (!current.ok) return current;
+      const expected = this.expectedReadSet(before, resultHandles);
+      if (!expected.ok) return expected;
       candidate = materialized.value;
-      const committed = await this.commitState(event, before, state, candidate, resultHandles, controller);
+      const committed = await this.commitState(event, before, expected.value, state, candidate, resultHandles, controller);
       if (!committed.ok) return committed;
       region = committed.value;
       if (this.revoked) return failure('runtime.interaction-revoked', 'The region was revoked during the interaction.');

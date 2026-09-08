@@ -206,6 +206,34 @@ describe('runtime interaction controller', () => {
     store.dispose();
   });
 
+  it('extends the expected read set for a fresh materialized result handle', async () => {
+    const first = await harness();
+    const fresh = await localResult();
+    const authority = first.authority as RegionAuthority & {results: ResultRef[]};
+    const oldRef = first.result.ref;
+    authority.results = [oldRef, fresh.ref];
+    const host = (): InteractionHostContext => ({principalKey: authority.principalKey, draftDomain: 'events', actor: {id: 'user-a', kind: 'user'}, grants: ['experience.commit', 'result.inspect'],
+      scopeDigest: authority.scopeDigest, policyRevision: authority.policyRevision, catalogRevision: catalog.revision,
+      experienceRevision: authority.experienceRevision, functionRegistryDigest: authority.functionRegistryDigest, results: [oldRef]});
+    const controller = createInteractionController({
+      region: first.region,
+      graph: createInteractionGraph(graphFor('filter')),
+      readContext: host,
+      resolveResult: (ref) => ref.id === oldRef.id ? first.result.handle : undefined,
+      validateScope: () => ({ok: true, value: undefined}),
+      materialize: (_payloads, context, next) => ({ok: true, value: {
+        state: {...context.region.state!, interaction: next}, resultHandles: [first.result.handle, fresh.handle],
+      }}),
+    });
+    const committed = await controller.dispatch(event(first.region.snapshot().regionRevision,
+      {kind: 'filter', predicates: [{op: 'compare', field: 'department', comparison: 'eq', value: 'A'}], outputId: oldRef.outputId}, 'fresh-result'), {sourcePortId: 'input'});
+    expect(committed.ok).toBe(true);
+    expect(first.region.snapshot().readSet?.results).toHaveLength(2);
+    controller.dispose();
+    first.store.dispose();
+    fresh.handle.release();
+  });
+
   it('does not commit when a required grant is revoked during materialization', async () => {
     const {region, result, authority, store} = await harness();
     let grants: InteractionHostContext['grants'] = ['experience.commit', 'result.inspect'];
