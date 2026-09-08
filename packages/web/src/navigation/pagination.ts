@@ -27,21 +27,33 @@ export class AeliqoPaginationElement extends AeliqoFoundationElement {
   label = "Pagination";
   pending = false;
 
+  private normalizedPage(): number {
+    return Number.isSafeInteger(this.page) && this.page > 0 ? this.page : 1;
+  }
+
+  private normalizedPageCount(): number | undefined {
+    return Number.isSafeInteger(this.pageCount) && this.pageCount! > 0 ? this.pageCount : undefined;
+  }
+
   private move(direction: "previous" | "next"): void {
-    const next = direction === "next" ? this.page + 1 : Math.max(1, this.page - 1);
+    const page = this.normalizedPage();
+    const pageCount = this.normalizedPageCount();
+    const next = direction === "next" ? page + 1 : Math.max(1, page - 1);
     const allowed = direction === "next" ? this.hasNext : this.hasPrevious;
-    if (this.pending || !allowed || (this.pageCount !== undefined && next > this.pageCount)) return;
-    if (!emitAction(this, "aeliqo-page-change", {page: next, previousPage: this.page, direction})) return;
+    if (this.pending || !allowed || (pageCount !== undefined && next > pageCount)) return;
+    if (!emitAction(this, "aeliqo-page-change", {page: next, previousPage: page, direction})) return;
     this.page = next;
   }
 
   protected override render() {
-    const total = Number.isSafeInteger(this.pageCount) && this.pageCount! > 0 ? ` of ${this.pageCount}` : "";
-    const atFirst = !Number.isSafeInteger(this.page) || this.page <= 1;
-    const atLast = this.pageCount !== undefined && Number.isSafeInteger(this.pageCount) && this.page >= this.pageCount;
+    const page = this.normalizedPage();
+    const pageCount = this.normalizedPageCount();
+    const total = pageCount === undefined ? "" : ` of ${pageCount}`;
+    const atFirst = page <= 1;
+    const atLast = pageCount !== undefined && page >= pageCount;
     return html`<nav aria-label=${this.label}>
       <button part="previous" type="button" aria-label="Previous page" ?disabled=${this.pending || !this.hasPrevious || atFirst} @click=${() => this.move("previous")}>‹</button>
-      <span part="status" aria-live="polite">Page ${this.page}${total}</span>
+      <span part="status" aria-live="polite">Page ${page}${total}</span>
       <button part="next" type="button" aria-label="Next page" ?disabled=${this.pending || !this.hasNext || atLast} @click=${() => this.move("next")}>›</button>
     </nav>`;
   }
