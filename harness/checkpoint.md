@@ -179,3 +179,8 @@ resource cleanup, historical leases, exact change metadata, strict persistence
 and pending restore admission. Final source digest remained2524bf9a4d46d0b2bd74d0fe5ed4203f5d95eed2d89c7e80bc4ad78cd4dadec3.
 T11 typed interaction graph and action boundary is next; full catalog and earlyT39
 remain ahead. No npm publication, main cutover or deployment occurred.
+
+Hosted T10 CI34196145497 succeeded on exact0fac53d, including platform, NextSSR,
+region tests and installed consumers. Evidence harness/evidence/t10/hosted-0fac53d.json.
+T11 is active with separate interaction and action authors; root committed the
+pure registered port/mapping graph validator015eec2 and69contractchecks pass.
