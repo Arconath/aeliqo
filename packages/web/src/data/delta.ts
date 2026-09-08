@@ -194,14 +194,14 @@ export class AeliqoDeltaElement extends LitElement {
       : result.display ?? "—";
     const scope = scopeText(this.scope);
     return html`
-      <dl part="delta" data-mode=${this.validMode} data-status=${unavailable ? "unavailable" : "ready"}>
+      <dl part="delta" aria-describedby=${scope ? "scope" : nothing} data-mode=${this.validMode} data-status=${unavailable ? "unavailable" : "ready"}>
         <dt part="label">${this.label}</dt>
         <dd part="value" class=${unavailable ? "unavailable" : ""} aria-label=${unavailable ? rendered : `${rendered}, ${modeLabel}`}>
           <span part="number">${rendered}</span>${this.unit && !unavailable ? html`<span part="unit">${this.unit}</span>` : nothing}
         </dd>
-        <div part="mode">${modeLabel}</div>
-        ${scope ? html`<div part="scope">${scope}</div>` : nothing}
       </dl>
+        <div part="mode">${modeLabel}</div>
+        ${scope ? html`<div id="scope" part="scope">${scope}</div>` : nothing}
       ${this.status === "loading" || this.status === "partial" || this.status === "stale" || this.status === "empty" ? statusTemplate(this.status, this.message) : nothing}
     `;
   }

@@ -100,7 +100,7 @@ const group = document.createElement("aeliqo-field-group") as AeliqoFieldGroupEl
 group.id = "group";
 group.legend = "Profile";
 group.description = "Fields are validated together.";
-group.append(document.createElement("aeliqo-text-field"));
+const groupedField=document.createElement("aeliqo-text-field");groupedField.setAttribute("label","Profile name");group.append(groupedField);
 fixture.append(group);
 
 const appForm = document.createElement("aeliqo-form") as AeliqoFormElement;

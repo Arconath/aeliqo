@@ -247,7 +247,7 @@ const search = new AeliqoSearchFieldElement(); search.label = 'Search'; search.n
 const file = new AeliqoFileInputElement(); file.label = 'Attachment'; file.name = 'attachment';
 const all = [text, area, number, check, radio, sw, select, combo, date, range, slider, search, file];
 for (const element of all) form.append(element);
-const group = new AeliqoFieldGroupElement(); group.legend = 'Group'; group.append(new AeliqoTextFieldElement()); root.append(group);
+const group = new AeliqoFieldGroupElement(); group.legend = 'Group'; const groupedField=new AeliqoTextFieldElement(); groupedField.label='Group name'; group.append(groupedField); root.append(group);
 const appForm = new AeliqoFormElement(); appForm.id = 'app-form'; const appField = new AeliqoTextFieldElement(); appField.label = 'App field'; appForm.append(appField); const submit = document.createElement('button'); submit.type = 'submit'; submit.textContent = 'Submit'; appForm.append(submit); const reset = document.createElement('button'); reset.type = 'reset'; reset.textContent = 'Reset'; appForm.append(reset); root.append(appForm);
 const ready = Promise.all(all.map(element => element.updateComplete));
 const valueEvents: string[] = []; const queryEvents: string[] = []; const searchEvents: string[] = []; const files: string[] = []; let submitted = 0; let resetCount = 0;

@@ -67,12 +67,13 @@ export class AeliqoCardCollectionElement extends LitElement {
     const heading = this.headingKey.length > 0 ? dataValueText(row[this.headingKey]) : dataValueText(row[this.columns[0]?.key ?? ""]);
     const fields = this.columns.filter((column) => column.key !== this.headingKey);
     const content = html`
-      <h3 part="heading">${heading}</h3>
+      ${this.title?html`<h3 part="heading">${heading}</h3>`:html`<h2 part="heading">${heading}</h2>`}
       <dl part="facts">${fields.map((field) => html`<div part="fact"><dt>${field.label}</dt><dd>${dataValueText(row[field.key])}</dd></div>`)}</dl>
     `;
     return html`
       <article part="card" data-key=${key ?? "unresolved"} ?data-selected=${selected} aria-label=${heading}>
-        ${this.selection === "none" ? content : html`<button part="card-button" type="button" ?disabled=${key === undefined} aria-pressed=${String(selected)} aria-label=${`${selected ? "Deselect" : "Select"} ${this.entity} ${heading}`} @click=${() => this.requestSelection(key)}>${content}</button>`}
+        ${content}
+        ${this.selection === "none" ? nothing : html`<button part="card-button" type="button" ?disabled=${key === undefined} aria-pressed=${String(selected)} aria-label=${`${selected ? "Deselect" : "Select"} ${this.entity} ${heading}`} @click=${() => this.requestSelection(key)}>${selected?"Selected":"Select"}</button>`}
       </article>
     `;
   }
@@ -98,10 +99,10 @@ export class AeliqoCardCollectionElement extends LitElement {
     h2 { font-size: var(--aeliqo-typography-font-size-title, 1.125rem); margin: 0 0 var(--aeliqo-space-8, 0.5rem); }
     [part="cards"] { display: grid; gap: var(--aeliqo-space-12, 0.75rem); grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); }
     [part="card"] { border: var(--aeliqo-control-border-width, 0.0625rem) solid var(--aeliqo-color-border, #c9d0d8); border-radius: var(--aeliqo-radius-medium, 0.625rem); min-inline-size: 0; padding: var(--aeliqo-space-12, 0.75rem); }
-    [part="card-button"] { background: transparent; border: 0; color: inherit; cursor: pointer; display: block; font: inherit; inline-size: 100%; padding: 0; text-align: start; }
+    [part="card-button"] { background: transparent; border: 0; color: inherit; cursor: pointer; display: block; font: inherit; inline-size: 100%; padding: var(--aeliqo-space-8, .5rem); min-block-size: var(--aeliqo-control-min-target,2.75rem); text-align: start; }
     [part="card"]:has([part="card-button"]):hover { border-color: var(--aeliqo-color-accent, #4338ca); }
     [part="card"][data-selected="true"] { border-color: var(--aeliqo-color-accent, #4338ca); box-shadow: inset 0 0 0 0.125rem color-mix(in srgb, var(--aeliqo-color-accent, #4338ca) 20%, transparent); }
-    h3 { font-size: var(--aeliqo-typography-font-size-title, 1.0625rem); margin: 0; overflow-wrap: anywhere; }
+    [part="heading"] { font-size: var(--aeliqo-typography-font-size-title, 1.0625rem); margin: 0; overflow-wrap: anywhere; }
     dl { display: grid; gap: var(--aeliqo-space-8, 0.5rem); margin: var(--aeliqo-space-12, 0.75rem) 0 0; }
     [part="fact"] { display: grid; gap: var(--aeliqo-space-4, 0.25rem); min-inline-size: 0; }
     dt, [part="scope"] { color: var(--aeliqo-color-muted, #475569); font-size: var(--aeliqo-typography-font-size-caption, 0.8125rem); }

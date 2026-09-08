@@ -45,9 +45,9 @@ export class AeliqoMetricElement extends LitElement {
         <dd part="value" class=${unavailable ? "unavailable" : nothing}>
           <span part="number">${value}</span>${this.unit ? html`<span part="unit">${this.unit}</span>` : nothing}
         </dd>
+      </dl>
         ${this.description ? html`<div id="description" part="description">${this.description}</div>` : nothing}
         ${this.scopeText ? html`<div id="scope" part="scope">${this.scopeText}</div>` : nothing}
-      </dl>
       ${effectiveStatus === "loading" || effectiveStatus === "partial" || effectiveStatus === "stale" || effectiveStatus === "empty"
         ? statusTemplate(effectiveStatus, this.message) : nothing}
     `;
