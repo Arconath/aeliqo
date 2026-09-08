@@ -1,0 +1,81 @@
+{
+  "task": "T30",
+  "status": "partial-performance-budget-fails",
+  "sourceCommit": "9f2439d1f43b321e45696343cf43108363473d8b",
+  "sourceFiles": {
+    "packages/core/src/contracts/ingress.ts": "f2a816d85ba64f75ec58701da07cfab76c13168a082e8f13a070de2d9b9399a7",
+    "packages/core/src/contracts/parse.ts": "c69775f4ffe5d495cd07d80889532c286824fb8df3e87611c36ac9237eba95b7",
+    "packages/core/src/presentation/compose.ts": "fe1ab100bab9150ec7eaf701aa34756f5a2580b453dd138fdc89020b778ce473",
+    "packages/core/src/presentation/registry.ts": "ee39df49d1c2909cdbba47181f9180678d36107e4a8cd11331f78a9a0374785d",
+    "packages/core/src/presentation/validate.ts": "13fb2259aadbc9e7fe08ac7f4381edc95a916b500a47d9d2577c3ab54f83ec78",
+    "tests/contracts/presentation-ownership.test.ts": "9bddd3217a2e711f549d2e64b502939727e5352327c6c01dd45477001f578afd",
+    "tests/contracts/wire-ingress-paths.test.ts": "95f3ceb130d36b8ccacb9f09cef3031020f13ad46cefc63f3b7bf34b8d040f2d",
+    "tests/performance/README.md": "8757f232f142298ee772a7f8fdd1818ce724da44d125e25f2ddce5db054fe029",
+    "tests/performance/workloads.mjs": "36bc17a21272e99cbd13409b92f72baa72e9d33e1204784a3a1c2af2c4506a1c",
+    "tests/performance/workloads.test.mjs": "2fdb80b03af73abb0de0c7ade804566765e41d793d5d5d788e95d99229971a4c"
+  },
+  "checks": {
+    "contracts": {
+      "files": 15,
+      "passed": 154
+    },
+    "adaptation": {
+      "files": 3,
+      "passed": 23
+    },
+    "strictTypes": "pass",
+    "workloadMeasurementTests": 5,
+    "security": {
+      "files": 5,
+      "passed": 14
+    }
+  },
+  "independentReview": {
+    "reviewer": "platform_proof",
+    "author": "root",
+    "status": "approved",
+    "isolatedNode": "24.20.0",
+    "contractsPassed": 148,
+    "additionalMemoizationPassed": 6,
+    "scope": [
+      "full parsed memo key including signed zero",
+      "one immutable composition context",
+      "raw plan parsing before lookup",
+      "callback immutability and shallow-frozen ownership",
+      "result field map equivalence",
+      "linked wire diagnostic paths and resource limits",
+      "UTF-8 accounting"
+    ],
+    "findings": []
+  },
+  "diagnosticOnly": {
+    "node": "24.20.0",
+    "rawPlannerMs": [
+      93.09279100000003,
+      78.383625,
+      78.161291,
+      76.41704200000004,
+      87.10962499999994
+    ],
+    "candidateCount": 64,
+    "distinctCandidates": 64,
+    "nodes": 31,
+    "rows": 10000,
+    "semanticFields": 100,
+    "budgetMs": 16,
+    "qualified": false
+  },
+  "limits": [
+    "Five development-machine diagnostic samples are not isolated p95 qualification.",
+    "All measured planner samples exceed 16 ms; T30 remains active.",
+    "Source tests preceded the atomic code commit; README description was added afterward.",
+    "No provider, low-powered-device, full browser performance or release claim."
+  ],
+  "artifacts": {
+    "contracts.log": "9d39cda6246708babbc7bf59af70473ce8312ad77ddbb0435d90f345fc44045f",
+    "adaptation.log": "cb56489cd2d266032cef528af498b2d3b49eac718e63061d39c708b2ac7e5188",
+    "strict-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "workload-tests.log": "449bf3ede0212eea0a53bc5e79b70f62063a926898ebc334d413d2346f251730",
+    "security.log": "7133cc521a59ebd8037ece99b45aa608901cfafa2bce254dce586bd3cec8af29"
+  }
+}

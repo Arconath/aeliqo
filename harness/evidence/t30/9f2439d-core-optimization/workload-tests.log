@@ -1,0 +1,13 @@
+✔ nearest-rank p95 uses the tail, not a missing-index zero fallback (0.349542ms)
+✔ missing or invalid percentile configuration cannot pass a budget (0.136125ms)
+✔ measurements retain operation results and predetermined sample counts (1.150666ms)
+✔ medium records contain every declared semantic field (0.324916ms)
+✔ the planner workload exercises 64 distinct complete candidates (114.387458ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 215.450167
