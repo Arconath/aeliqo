@@ -1,0 +1,12 @@
+{
+  "commit": "c5486effd9e3207680e176b7d4c2e8336e6e975d",
+  "runId": 34178608583,
+  "url": "https://github.com/Arconath/aeliqo/actions/runs/34178608583",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": {
+    "platform": "success",
+    "specification": "success"
+  },
+  "scope": "Foundation package/browser/runtime/contract checks including native authentication retention regression. Not complete SDK or release certification."
+}

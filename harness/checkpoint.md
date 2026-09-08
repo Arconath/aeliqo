@@ -116,3 +116,7 @@ core-query-1 function registry, strict schema/local-rejection/consumer checks an
 independent shape review. Pure engine author is active; oracle author has11
 reference tests and exact HR mutation cases waiting for production API binding.
 These oracle-only tests do not mark T07 complete.
+
+Hosted run34178608583 for exactc5486effd9e3207680e176b7d4c2e8336e6e975d
+completed successfully: platform and specification jobs pass. This includes the
+new native authentication retention regression. No SDK/release/deployment claim.
