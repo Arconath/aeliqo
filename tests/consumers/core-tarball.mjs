@@ -1,10 +1,11 @@
 /**
  * Build and consume the actual @aeliqo/core package outside the workspace.
  *
- * This is a bounded T03/T04/T05 package-boundary check. It proves the four
+ * This is a bounded T03/T04/T05/T07 package-boundary check. It proves the four
  * public document parsers, generated schema files, task structure, experience
  * constraint and semantic meaning passes, the installed package graph and a
- * small core bundle. It does not certify query execution, the full planner,
+ * small core bundle, plus exact decimal queries, ranking and cancellation.
+ * It does not certify the full planner,
  * the complete product, universal browser performance, or a universal
  * secret/code scanner.
  */
@@ -461,17 +462,50 @@ const semanticCatalogInput = {
   capabilities: [],
 };
 const t04Fixtures = {semanticCatalogInput};
+const queryConsumerSource = `
+function runInstalledQuery() {
+  const registry = createQueryFunctionRegistry();
+  if (!registry.ok) throw new Error('Query registry rejected');
+  const catalog = {version:'1', revision:'installed-query', functionRegistryDigest:registry.value.digest,
+    entities:[{id:'sales',label:'Synthetic sales',identity:['id'],rowGrain:['id'],fields:[
+      {id:'id',label:'ID',role:'identity',type:{value:'text',nullable:false}},
+      {id:'amount',label:'Amount',role:'measure',type:{value:'decimal',nullable:false}},
+    ]}],relationships:[],meanings:[],capabilities:[]};
+  const factory = createQueryPlanner({catalog, registry:registry.value,
+    limits:{maxRows:10,maxBytes:100000,maxJoinRows:10,maxOperations:10000}});
+  if (!factory.ok) throw new Error(JSON.stringify(factory.diagnostics));
+  const source = {revision:'source-1',relations:{sales:{entity:'sales',complete:true,rows:[
+    {id:'first',amount:{decimal:'10.01'}},{id:'second',amount:{decimal:'10.02'}},
+  ]}}};
+  const wirePlan = factory.value.plan({entity:'sales',fields:['id','amount'],measures:[],relations:[],groupBy:[],
+    population:{kind:'all-authorized'},order:[{field:'amount',direction:'desc',nulls:'last'}],page:{size:1}});
+  if (!wirePlan.ok) throw new Error(JSON.stringify(wirePlan.diagnostics));
+  const ranked = factory.value.evaluate(wirePlan.value,source);
+  if (!ranked.ok || ranked.value.rows[0]?.id !== 'second') throw new Error('Installed exact ranking failed');
+  const aggregate = factory.value.plan({root:'sales',pins:{catalogRevision:catalog.revision,functionRegistryDigest:registry.value.digest},
+    select:[{id:'total',expression:{kind:'field',ref:'total'}}],
+    aggregates:[{id:'total',function:{id:'core.aggregate.sum',revision:'1'},arguments:[{kind:'field',entity:'sales',ref:'amount'}]}]});
+  if (!aggregate.ok) throw new Error(JSON.stringify(aggregate.diagnostics));
+  const total = factory.value.evaluate(aggregate.value,source);
+  if (!total.ok || total.value.rows[0]?.total?.decimal !== '20.03' || total.value.precision.kind !== 'exact')
+    throw new Error('Installed exact decimal sum failed');
+  const cancelled = factory.value.evaluate(aggregate.value,source,{cancellation:{aborted:true}});
+  if (cancelled.ok) throw new Error('Installed query ignored cancellation');
+  return {ranked:ranked.value.rows,total:total.value.rows,precision:total.value.precision};
+}
+`;
+
 
 await writeFile(join(consumerDirectory, "consumer-types.ts"), `
 import {
   parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue,
   validateTaskStructure, resolveExperienceConstraints,
-  createStandardFunctionRegistry, createTypedAuthoring,
+  createStandardFunctionRegistry, createTypedAuthoring, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
 import type {
   Catalog, Task, Result, Experience, Outcome, TaskStructure, Wire,
   ExperienceRestriction, ExperienceConstraints, TypedAuthoring, TypedExpression,
-  FunctionRegistry, MeaningDefinition, MeaningBundle,
+  FunctionRegistry, MeaningDefinition, MeaningBundle, QueryPlanner, LogicalPlan, QueryResult, QuerySpec, QuerySource,
 } from '@aeliqo/core';
 const unknownWire: Outcome<unknown> = parseWireValue('{}');
 if (unknownWire.ok) {
@@ -502,6 +536,15 @@ const typedStructure: TaskStructure = taskStructure;
 const typedRestriction: ExperienceRestriction = restriction;
 const typedConstraints: ExperienceConstraints = constraints;
 const typedRegistry: Outcome<FunctionRegistry> = createStandardFunctionRegistry();
+const typedQueryRegistry: Outcome<FunctionRegistry> = createQueryFunctionRegistry();
+const typedQueryPlanner: Outcome<QueryPlanner> = createQueryPlanner({catalog: typedCatalog, registry: unwrap(typedQueryRegistry)});
+const typedQuery: QuerySpec = {entity:'sales',fields:['id'],measures:[],relations:[],groupBy:[],population:{kind:'all-authorized'},order:[]};
+const typedPlan: Outcome<LogicalPlan> = unwrap(typedQueryPlanner).plan(typedQuery);
+const typedSource: QuerySource = {revision:'source-1',relations:{sales:{entity:'sales',complete:true,rows:[{id:'one'}]}}};
+const typedEvaluation: Outcome<QueryResult> = unwrap(typedQueryPlanner).evaluate(unwrap(typedPlan),typedSource);
+// @ts-expect-error A plan query cannot be executable JavaScript text.
+unwrap(typedQueryPlanner).plan('return records');
+void typedEvaluation;
 const typedNumerator: Outcome<TypedExpression> = authoring.field('employees', 'numerator');
 const typedDenominator: Outcome<TypedExpression> = authoring.field('employees', 'denominator');
 const typedRatio: Outcome<TypedExpression> = authoring.ratioOfSums({
@@ -567,7 +610,7 @@ import {readFile} from 'node:fs/promises';
 import {
   parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue,
   validateTaskStructure, resolveExperienceConstraints,
-  checkExpression, createStandardFunctionRegistry, createTypedAuthoring, authorizeMeaningActivation,
+  checkExpression, createStandardFunctionRegistry, createTypedAuthoring, authorizeMeaningActivation, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
 assert.deepEqual(parseWireValue('{"requestId":"one"}'), {ok:true,value:{requestId:'one'}});
 assert.equal(parseWireValue('{"requestId":"one","requestId":"two"}').ok, false);
@@ -721,6 +764,9 @@ for (const name of ${JSON.stringify(expectedSchemas)}) {
 }
 const runtimeSchema = await import('@aeliqo/core/schema');
 assert(Object.keys(runtimeSchema).length > 0);
+${queryConsumerSource}
+assert.deepEqual(runInstalledQuery().total, [{total:{decimal:'20.03'}}]);
+console.log('Installed @aeliqo/core query planning, exact evaluation and cancellation pass.');
 console.log('Installed @aeliqo/core parsers, schema exports, and round trips pass.');
 console.log('Installed @aeliqo/core task structure and experience constraint passes pass.');
 console.log('Installed @aeliqo/core semantic checker and typed authoring passes pass.');
@@ -732,7 +778,9 @@ import assert from 'node:assert/strict';
 globalThis.Function = () => { throw new Error('Function constructor used by core parser'); };
 globalThis.eval = () => { throw new Error('eval used by core parser'); };
 const core = await import('@aeliqo/core');
-const {parseWireValue} = core;
+const {parseWireValue, createQueryPlanner, createQueryFunctionRegistry} = core;
+${queryConsumerSource}
+assert.equal(runInstalledQuery().precision.kind, 'exact');
 assert.deepEqual(parseWireValue('{"requestId":"one"}'), {ok:true,value:{requestId:'one'}});
 assert.equal(parseWireValue('{"requestId":"one","requestId":"two"}').ok, false);
 assert.equal(parseWireValue({requestId:undefined}).ok, false);
@@ -765,7 +813,7 @@ await writeFile(join(consumerDirectory, "bundle-entry.js"), `
 import {
   parseCatalog, parseTask, parseResult, parseExperience, parseWireValue,
   validateTaskStructure, resolveExperienceConstraints,
-  createStandardFunctionRegistry, createTypedAuthoring,
+  createStandardFunctionRegistry, createTypedAuthoring, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
 const validWire = parseWireValue('{"requestId":"one"}');
 if (!validWire.ok || validWire.value.requestId !== 'one' ||
@@ -774,6 +822,8 @@ if (!validWire.ok || validWire.value.requestId !== 'one' ||
 const documents = ${fixtureSource};
 const t05 = ${t05FixtureSource};
 const t04 = ${t04FixtureSource};
+${queryConsumerSource}
+const installedQueryResult = runInstalledQuery();
 const semanticRegistry = createStandardFunctionRegistry();
 const semanticAuthoring = semanticRegistry.ok
   ? createTypedAuthoring({catalog: t04.semanticCatalogInput, registry: semanticRegistry.value})
@@ -782,7 +832,7 @@ const semanticField = semanticAuthoring.ok ? semanticAuthoring.value.field('empl
 const parsed = [
   parseCatalog(documents.catalog), parseTask(documents.task), parseResult(documents.result), parseExperience(documents.experience),
   validateTaskStructure(t05.namedOutputTaskInput), resolveExperienceConstraints(t05.noPresetExperienceInput, t05.taskInput),
-  semanticRegistry, semanticAuthoring, semanticField,
+  semanticRegistry, semanticAuthoring, semanticField, {ok:true,value:installedQueryResult},
 ];
 globalThis.__aeliqoParsed = parsed;
 export {parsed};
@@ -866,14 +916,14 @@ const report = {
   sourceDigestBefore: sourceBefore,
   sourceDigestAfter: sourceAfter,
   sourceChangedDuringRun: sourceBefore !== sourceAfter,
-  scope: "@aeliqo/core 0.1.0 installed tarball; four document parsers/round trips; TaskStructure, ExperienceConstraints, semantic checker and typed authoring passes; generated schemas; Vite core graph and 70 KiB gzip budget. Query execution/full planner/product/browser certification are outside this check.",
+  scope: "@aeliqo/core 0.1.0 installed tarball; four document parsers/round trips; TaskStructure, ExperienceConstraints, semantic checker and typed authoring passes; generated schemas; Vite core graph and 70 KiB gzip budget. Includes installed exact decimal aggregate, canonical query ranking and cancellation in Node/no-codegen/Chromium. Full planner and product certification are outside this scoped check.",
   artifact: {name: packedManifest.name, version: packedManifest.version, path: tarballPath, sha256: tarballSha256, integrity: tarballIntegrity},
   consumer: {directory: consumerDirectory, lockPath: join(runDirectory, "consumer-package-lock.json"), lockSha256: hash(lockBytes)},
   schemas: expectedSchemas.map((name) => `schemas/${name}.schema.json`),
   browserOutcomes,
   consumerOutput: consumerOutput.trim(),
   parserProbeOutput: parserProbeOutput.trim(),
-  bundle: {initialGzipBytes, files: bundleMetrics, modules, moduleGraphScope: "installed package parser graph; no universal dependency/security certification"},
+  bundle: {initialGzipBytes, files: bundleMetrics, modules, moduleGraphScope: "installed package parser, semantic and query graph; no universal dependency/security certification"},
   environment: {
     node: process.version,
     npm: run(["npm", "--version"], consumerDirectory).trim(),
