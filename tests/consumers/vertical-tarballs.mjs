@@ -6,7 +6,7 @@
 import assert from "node:assert/strict";
 import {createHash} from "node:crypto";
 import {createServer} from "node:http";
-import {access, cp, mkdir, mkdtemp, readFile, readdir, lstat, writeFile} from "node:fs/promises";
+import {access, copyFile, mkdir, mkdtemp, readFile, readdir, lstat, realpath, writeFile} from "node:fs/promises";
 import {tmpdir, platform, release, arch} from "node:os";
 import {extname, join, resolve} from "node:path";
 import {spawnSync} from "node:child_process";
@@ -18,6 +18,7 @@ const output = join(root, "artifacts/vertical-consumers");
 await mkdir(output, {recursive: true});
 const runDirectory = await mkdtemp(join(output, "run-"));
 const consumer = await mkdtemp(join(tmpdir(), "aeliqo-vertical-consumer-"));
+const consumerReal = await realpath(consumer);
 const source = {
   examples: resolve(root, "examples/vertical-slice"),
   fixture: resolve(root, "fixtures/hr/raw.json"),
@@ -92,11 +93,40 @@ assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_m
 assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/web/node_modules/")), []);
 await writeFile(join(runDirectory, "consumer-package-lock.json"), lockBytes);
 
-// Copy the same relative source layout used by the workspace vertical example.
-await mkdir(join(consumer, "examples"), {recursive: true});
-await cp(source.examples, join(consumer, "examples/vertical-slice"), {recursive: true});
+// Copy only the source files consumed by this probe. The workspace example may
+// have a node_modules directory with workspace symlinks after pnpm install;
+// copying the entire example would silently bypass the installed tarballs.
+const exampleFiles = ["src/hr.ts", "src/data-session.ts", "src/view-session.ts"];
+for (const relativePath of exampleFiles) {
+  const from = join(source.examples, relativePath);
+  const stat = await lstat(from);
+  assert(stat.isFile() && !stat.isSymbolicLink(), `Refuse non-regular example source: ${from}`);
+  const to = join(consumer, "examples/vertical-slice", relativePath);
+  await mkdir(resolve(to, ".."), {recursive: true});
+  await copyFile(from, to);
+}
 await mkdir(join(consumer, "fixtures/hr"), {recursive: true});
-await cp(source.fixture, join(consumer, "fixtures/hr/raw.json"));
+const fixtureStat = await lstat(source.fixture);
+assert(fixtureStat.isFile() && !fixtureStat.isSymbolicLink(), `Refuse non-regular HR fixture: ${source.fixture}`);
+await copyFile(source.fixture, join(consumer, "fixtures/hr/raw.json"));
+assert.deepEqual((await readdir(join(consumer, "examples/vertical-slice"))).sort(), ["src"], "Copied example contains unexpected files");
+
+// Resolve imports from a module physically located beside the copied example
+// source. This exercises Node's ESM package resolver from that directory and
+// proves every package comes from this temp consumer's node_modules tree.
+const resolutionModule = join(consumer, "examples/vertical-slice/src/module-resolution-check.mjs");
+await writeFile(resolutionModule, `
+import {realpath} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+const packages = ['@aeliqo/core', '@aeliqo/runtime/data', '@aeliqo/runtime/evaluation', '@aeliqo/web/region'];
+const resolved = {};
+for (const packageName of packages) resolved[packageName] = await realpath(fileURLToPath(import.meta.resolve(packageName)));
+console.log(JSON.stringify(resolved));
+`);
+const resolvedPackages = JSON.parse(run(["node", resolutionModule], consumer).trim().split("\n").at(-1));
+for (const [packageName, resolved] of Object.entries(resolvedPackages)) {
+  assert(resolved.startsWith(join(consumerReal, "node_modules") + "/"), `Example import escaped installed consumer: ${packageName} -> ${resolved}`);
+}
 
 await writeFile(join(consumer, "src-node-entry.ts"), `
 import {createHrDataSession} from './examples/vertical-slice/src/data-session.js';
@@ -182,8 +212,9 @@ const server = createServer(async (request, response) => {
 await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
 let browserVersion;
 const browserReport = {};
+let browser;
 try {
-  const browser = await chromium.launch();
+  browser = await chromium.launch();
   browserVersion = browser.version();
   const page = await browser.newPage({viewport: {width: 1280, height: 720}, locale: "en-US", deviceScaleFactor: 1});
   const failures = [];
@@ -215,9 +246,9 @@ try {
   browserReport.stale = stale;
   browserReport.failures = failures;
   await page.screenshot({path: join(runDirectory, "vertical-installed.png"), fullPage: true});
-  await browser.close();
   assert.deepEqual(failures, []);
 } finally {
+  await browser?.close();
   await new Promise(resolve => server.close(resolve));
 }
 
