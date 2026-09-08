@@ -97,17 +97,28 @@ function membershipJsonText(values: readonly AeliqoFilterValue[]): string | unde
   return JSON.stringify(serialized);
 }
 
-function clauseFromPredicate(predicate: AeliqoFilterPredicate | undefined): AeliqoFilterClause | undefined {
+function predicateEntityMatches(predicate: AeliqoFilterPredicate, entity: string): boolean {
+  const candidate = (predicate as AeliqoFilterPredicate & {readonly entity?: unknown}).entity;
+  return candidate === undefined || candidate === entity;
+}
+
+function clauseFromPredicate(predicate: AeliqoFilterPredicate | undefined, entity: string): AeliqoFilterClause | undefined {
   if (predicate?.op === "compare") {
     if (predicate.value === null || predicate.value === undefined) return undefined;
+    if (!predicateEntityMatches(predicate, entity)) return undefined;
     return {field: predicate.field, operator: predicate.comparison, value: dataValueText(predicate.value, "")};
   }
-  if (predicate?.op === "is-null") return {field: predicate.field, operator: predicate.negate ? "not-null" : "is-null"};
+  if (predicate?.op === "is-null") {
+    if (!predicateEntityMatches(predicate, entity)) return undefined;
+    return {field: predicate.field, operator: predicate.negate ? "not-null" : "is-null"};
+  }
   if (predicate?.op === "in") {
+    if (!predicateEntityMatches(predicate, entity)) return undefined;
     const value = Array.isArray(predicate.values) ? membershipJsonText(predicate.values) : undefined;
     return value === undefined ? undefined : {field: predicate.field, operator: "in", value};
   }
   if (predicate?.op === "not" && predicate.predicate.op === "is-null") {
+    if (!predicateEntityMatches(predicate, entity) || !predicateEntityMatches(predicate.predicate, entity)) return undefined;
     return {field: predicate.predicate.field, operator: predicate.predicate.negate ? "is-null" : "not-null"};
   }
   return undefined;
@@ -121,12 +132,14 @@ function projectPredicate(
   predicate: AeliqoFilterPredicate | undefined,
   depth = 0,
   traversal: PredicateTraversal = {nodes: 0},
+  entity = "",
 ): PredicateProjection {
   try {
     if (predicate === undefined) return {clauses: [], logical: "and"};
     if (depth > MAX_PREDICATE_DEPTH || traversal.nodes >= MAX_PREDICATE_NODES) return unsupportedProjection(predicate);
     traversal.nodes += 1;
-    const clause = clauseFromPredicate(predicate);
+    if (!predicateEntityMatches(predicate, entity)) return unsupportedProjection(predicate);
+    const clause = clauseFromPredicate(predicate, entity);
     if (clause !== undefined) return {clauses: [clause], logical: "and"};
     if (predicate.op !== "and" && predicate.op !== "or") return {clauses: [], logical: "and", unsupported: predicate};
     const predicates = predicate.predicates;
@@ -136,7 +149,7 @@ function projectPredicate(
       if (traversal.nodes >= MAX_PREDICATE_NODES) return unsupportedProjection(predicate, predicate.op);
       const child = predicates[index];
       if (child === undefined) return unsupportedProjection(predicate, predicate.op);
-      const projection = projectPredicate(child, depth + 1, traversal);
+      const projection = projectPredicate(child, depth + 1, traversal, entity);
       if (projection.unsupported !== undefined || (projection.clauses.length > 1 && projection.logical !== predicate.op)) {
         return unsupportedProjection(predicate, predicate.op);
       }
@@ -189,10 +202,10 @@ function predicateText(
   }
 }
 
-function predicateSourceSignature(predicate: AeliqoFilterPredicate, projection: PredicateProjection): string {
+function predicateSourceSignature(predicate: AeliqoFilterPredicate, projection: PredicateProjection, entity: string): string {
   if (projection.unsupported !== undefined) return `unsupported:${predicateText(predicate)}`;
   const logical = projection.clauses.length > 1 ? projection.logical : "and";
-  return JSON.stringify({logical, clauses: projection.clauses});
+  return JSON.stringify({entity, logical, clauses: projection.clauses});
 }
 
 function clausesSourceSignature(clauses: readonly AeliqoFilterClause[], logical: AeliqoFilterLogical): string {
@@ -291,12 +304,12 @@ export class AeliqoFilterBuilderElement extends LitElement {
   private validationMessage = "";
 
   protected override willUpdate(changed: Map<string, unknown>): void {
-    if (changed.has("predicate") || changed.has("clauses") || changed.has("logical") || !this.draftInitialized) {
+    if (changed.has("predicate") || changed.has("clauses") || changed.has("logical") || changed.has("entity") || !this.draftInitialized) {
       const projection: PredicateProjection = this.predicate !== undefined
-        ? projectPredicate(this.predicate)
+        ? projectPredicate(this.predicate, 0, {nodes: 0}, this.entity)
         : {clauses: this.clauses.map((clause) => ({...clause})), logical: this.logical === "or" ? "or" : "and"};
       const signature = this.predicate !== undefined
-        ? predicateSourceSignature(this.predicate, projection)
+        ? predicateSourceSignature(this.predicate, projection, this.entity)
         : clausesSourceSignature(projection.clauses, projection.logical);
       this.unsupportedPredicate = projection.unsupported;
       if (!this.draftInitialized || signature !== this.draftSourceSignature) {

@@ -254,7 +254,8 @@ test("equivalent predicate refreshes preserve the active filter draft", async ({
   await page.evaluate(async () => {
     const filter = document.querySelector("#filter") as any;
     filter.fields = [{id: "name", label: "Name", type: "text"}];
-    filter.predicate = {op: "compare", field: "name", comparison: "eq", value: "Initial"};
+    filter.entity = "customers";
+    filter.predicate = {op: "compare", entity: "customers", field: "name", comparison: "eq", value: "Initial"};
     await filter.updateComplete;
   });
   const filter = page.locator("#filter");
@@ -266,4 +267,46 @@ test("equivalent predicate refreshes preserve the active filter draft", async ({
     await filter.updateComplete;
   });
   await expect(filter.locator("input[part=value]")).toHaveValue("Draft");
+  await page.evaluate(async () => {
+    const element = document.querySelector("#filter") as any;
+    element.entity = "orders";
+    await element.updateComplete;
+  });
+  await expect(filter.locator("[part=unsupported-predicate]")).toBeVisible();
+  await expect(filter.locator("button[part=apply]")).toBeDisabled();
+});
+
+test("qualified predicates never apply under a different builder entity", async ({page}) => {
+  await page.goto("/tests/data-components/index.html");
+  await page.evaluate(async () => {
+    const filter = document.querySelector("#filter") as any;
+    filter.fields = [{id: "status", label: "Status", type: "text"}];
+    filter.entity = "customers";
+    filter.predicate = {op: "compare", entity: "orders", field: "status", comparison: "eq", value: "open"};
+    await filter.updateComplete;
+  });
+  const filter = page.locator("#filter");
+  await expect(filter.locator("[part=unsupported-predicate]")).toBeVisible();
+  await expect(filter.locator("button[part=apply]")).toBeDisabled();
+
+  await page.evaluate(async () => {
+    const element = document.querySelector("#filter") as any;
+    element.predicate = {op: "compare", entity: "customers", field: "status", comparison: "eq", value: "open"};
+    await element.updateComplete;
+  });
+  await filter.locator("button[part=apply]").click();
+  await expect.poll(() => page.evaluate(() => (window as any).dataFixture.events.findLast((event: any) => event.type === "aeliqo-filter-change")?.detail.predicate)).toEqual({
+    op: "compare", entity: "customers", field: "status", comparison: "eq", value: "open",
+  });
+
+  await page.evaluate(async () => {
+    const element = document.querySelector("#filter") as any;
+    element.predicate = undefined;
+    element.clauses = [{field: "status", operator: "eq", value: "draft"}];
+    await element.updateComplete;
+  });
+  await filter.locator("button[part=apply]").click();
+  await expect.poll(() => page.evaluate(() => (window as any).dataFixture.events.findLast((event: any) => event.type === "aeliqo-filter-change")?.detail.predicate)).toEqual({
+    op: "compare", entity: "customers", field: "status", comparison: "eq", value: "draft",
+  });
 });
