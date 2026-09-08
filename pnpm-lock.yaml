@@ -139,6 +139,15 @@ importers:
         specifier: 3.3.3
         version: 3.3.3
 
+  packages/agent:
+    dependencies:
+      '@aeliqo/core':
+        specifier: workspace:*
+        version: link:../core
+      '@aeliqo/runtime':
+        specifier: workspace:*
+        version: link:../runtime
+
   packages/core:
     dependencies:
       zod:

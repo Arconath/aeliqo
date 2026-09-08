@@ -35,7 +35,10 @@
     "test:evaluation": "pnpm build:runtime && vitest run --config tests/runtime-evaluation/vitest.config.mjs && tsc -p tests/runtime-evaluation/tsconfig.json",
     "test:vertical": "pnpm build:runtime && pnpm build:platform && vitest run --config tests/vertical-slice/vitest.config.mjs && tsc -p tests/vertical-slice/tsconfig.json",
     "test:vertical:browser": "pnpm build:runtime && pnpm build:platform && playwright test --config tests/vertical-slice/playwright.config.mjs && playwright test --config tests/vertical-slice/web/playwright.config.mjs",
-    "test:vertical:consumers": "node tests/consumers/vertical-tarballs.mjs"
+    "test:vertical:consumers": "node tests/consumers/vertical-tarballs.mjs",
+    "build:agent": "pnpm build:runtime && pnpm --filter @aeliqo/agent build",
+    "test:agents": "pnpm build:agent && vitest run --config tests/agents/vitest.config.mjs && tsc -p tests/agents/tsconfig.json --noEmit",
+    "test:agent:consumers": "node tests/consumers/agent-tarballs.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

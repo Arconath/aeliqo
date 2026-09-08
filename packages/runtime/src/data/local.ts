@@ -848,8 +848,12 @@ function scanEntityIds(plan: LogicalPlan): readonly string[] {
   return Object.freeze([...new Set(plan.nodes.filter((node): node is Extract<PlanNode, {readonly op: 'scan'}> => node.op === 'scan').map((node) => node.entity))]);
 }
 
-function queryFieldDefinition(field: QueryField): CatalogEntity['fields'][number] {
-  return {id: field.id, label: field.label, type: field.type, role: field.role};
+function queryFieldDefinition(field: QueryField, query: QuerySpec): CatalogEntity['fields'][number] {
+  // QuerySpec lowering gives each aggregate its reviewed meaning ID. Preserve
+  // that exact version on the output field so downstream claims cannot omit it.
+  const derivation = query.measures.find(reference => reference.id === field.id);
+  return {id: field.id, label: field.label, type: field.type, role: field.role,
+    ...(derivation === undefined ? {} : {derivation})};
 }
 
 function resultWarnings(result: QueryResult): readonly Diagnostic[] {
@@ -1281,7 +1285,7 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
       }
       if (result.complete === false) partialReason ??= 'incomplete source';
       if (Date.now() - startedAt > executionBudget.maxMilliseconds) partialReason = 'time budget';
-      const refFields = result.schema.fields.map(queryFieldDefinition);
+      const refFields = result.schema.fields.map(field => queryFieldDefinition(field, input.query));
       const sourceRevisions: Record<string, string> = Object.fromEntries(stored.scanEntities.map((entity) => [entity, stored.accepted.sourceRevision]));
       const descriptorBase = {
         version: '1' as const, ref, taskId: input.target.taskId ?? input.requestId,

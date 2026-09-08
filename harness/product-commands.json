@@ -96,7 +96,23 @@
         "test:vertical:consumers"
       ],
       "timeoutSeconds": 300
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:agents"
+      ],
+      "timeoutSeconds": 120
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:agent:consumers"
+      ],
+      "timeoutSeconds": 300
     }
   ],
-  "note": "Real scoped M0, T03, T05 and T39 commands. Full product lint, security, performance and boundary commands remain required; missing kinds deliberately keep the integrated product gate blocked."
+  "note": "Real scoped M0, T03, T05, T39 and the T41 narrative slice commands. Full product lint, security, performance and boundary commands remain required; missing kinds deliberately keep the integrated product gate blocked."
 }

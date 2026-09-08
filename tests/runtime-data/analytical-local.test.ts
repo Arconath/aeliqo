@@ -52,6 +52,8 @@ describe('local analytical ADC adapter', () => {
     expect(batch?.kind).toBe('batch');
     if (descriptor?.kind !== 'descriptor' || batch?.kind !== 'batch') return;
     expect(descriptor.descriptor.fields.map((field) => field.id)).toEqual(['department', 'metric.amount-total']);
+    expect(descriptor.descriptor.fields.find(field => field.id === sumMeaning.id)?.derivation).toEqual({id: sumMeaning.id, revision: sumMeaning.revision});
+    expect(descriptor.descriptor.fields.find(field => field.id === 'department')?.derivation).toBeUndefined();
     expect(descriptor.descriptor.identity).toEqual(['department']);
     expect(descriptor.descriptor.rowGrain).toEqual(['department']);
     expect(descriptor.descriptor.evidence).toMatchObject({kind: 'computed', queryDigest: planned.value.queryDigest});
