@@ -2,6 +2,7 @@ import {
   parseCatalog,
   parseContract,
   parseWireValue,
+  validateMeaningBundle,
   type Catalog,
   type Diagnostic,
   type Experience,
@@ -175,20 +176,37 @@ function validateDocument(value: unknown, options: StudioDocumentOptions): Outco
   const catalog = catalogResult.value;
   if (catalog.functionRegistryDigest !== options.registry.digest) return fail('studio.registry-stale', 'The function registry does not match the catalog pin.', ['catalog', 'functionRegistryDigest']);
   if (!Array.isArray(candidate.meanings) || candidate.meanings.length > 512) return fail('studio.meanings', 'Studio meaning drafts must be a bounded array.', ['meanings']);
-  const drafts: MeaningDraft[] = [];
-  const seen = new Map<string, string>();
+  const rawMeanings: MeaningDefinition[] = [];
+  const rawRefs = new Map<string, string>();
   for (let index = 0; index < candidate.meanings.length; index += 1) {
-    const draft = normalizeDraft(candidate.meanings[index], options, catalog, index, [...catalog.meanings, ...drafts.map((entry) => entry.meaning)]);
+    const entry = candidate.meanings[index];
+    if (entry === null || typeof entry !== 'object' || Array.isArray(entry)) return fail('studio.meaning-draft', 'Meaning entries must be versioned drafts.', ['meanings', index]);
+    const draft = entry as Record<string, unknown>;
+    if (draft.version !== '1') return fail('studio.meaning-draft', 'Meaning draft version is unsupported.', ['meanings', index, 'version']);
+    if (draft.meaning === null || typeof draft.meaning !== 'object' || Array.isArray(draft.meaning)) return fail('studio.meaning-draft', 'Meaning draft contents must be an object.', ['meanings', index, 'meaning']);
+    const rawMeaning = draft.meaning as MeaningDefinition;
+    const rawId = rawMeaning.id;
+    const rawRevision = rawMeaning.revision;
+    if (typeof rawId === 'string' && typeof rawRevision === 'string') {
+      const key = JSON.stringify([rawId, rawRevision]);
+      const digest = canonical(rawMeaning);
+      const prior = rawRefs.get(key);
+      if (prior !== undefined) return fail(prior === digest ? 'studio.meaning-duplicate' : 'studio.meaning-conflict', 'A meaning ID and revision may occur only once in a Studio document.', ['meanings', index, 'meaning']);
+      rawRefs.set(key, digest);
+    }
+    rawMeanings.push(rawMeaning);
+  }
+  const meaningBundle = validateMeaningBundle({catalogRevision: catalog.revision, functionRegistryDigest: options.registry.digest, meanings: rawMeanings}, {catalog, registry: options.registry, definitions: catalog.meanings});
+  if (!meaningBundle.ok) return meaningBundle;
+  const indexedDefinitions = [...catalog.meanings, ...meaningBundle.value.meanings];
+  const drafts: MeaningDraft[] = [];
+  for (let index = 0; index < candidate.meanings.length; index += 1) {
+    const draft = normalizeDraft(candidate.meanings[index], options, catalog, index, indexedDefinitions);
     if (!draft.ok) return draft;
-    const key = refKey(draft.value.meaning);
-    const digest = meaningDigest(draft.value.meaning);
     const codeMeaning = catalog.meanings.find((meaning) => sameRef(meaning, draft.value.meaning));
     if (codeMeaning !== undefined) {
-      return fail(digest === meaningDigest(codeMeaning) ? 'studio.meaning-duplicate' : 'studio.meaning-conflict', 'A document draft cannot shadow a catalog-owned meaning version.', ['meanings', index, 'meaning']);
+      return fail(meaningDigest(draft.value.meaning) === meaningDigest(codeMeaning) ? 'studio.meaning-duplicate' : 'studio.meaning-conflict', 'A document draft cannot shadow a catalog-owned meaning version.', ['meanings', index, 'meaning']);
     }
-    if (seen.has(key) && seen.get(key) !== digest) return fail('studio.meaning-conflict', 'An immutable meaning ID and revision has conflicting contents.', ['meanings', index, 'meaning']);
-    if (seen.has(key)) return fail('studio.meaning-duplicate', 'A meaning ID and revision may occur only once in a Studio document.', ['meanings', index, 'meaning']);
-    seen.set(key, digest);
     drafts.push(draft.value);
   }
   if (!Array.isArray(candidate.profiles) || candidate.profiles.length === 0 || candidate.profiles.length > 64) return fail('studio.profiles', 'Studio requires at least one bounded Experience profile.', ['profiles']);

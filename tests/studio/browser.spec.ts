@@ -13,6 +13,12 @@ test.describe('local Studio', () => {
     await page.getByRole('button', {name: 'Dark'}).click();
     await page.getByRole('button', {name: 'stale'}).click();
     await expect(page.locator('.matrix-label span').first()).toHaveText('stale');
+    await page.locator('#experience-edit-form input[name="profile-label"]').fill('Fixed employee inspection');
+    await page.locator('#experience-edit-form input[name="profile-revision"]').fill('2');
+    await page.locator('#experience-edit-form select[name="profile-mode"]').selectOption('fixed');
+    await page.getByRole('button', {name: 'Save profile revision'}).click();
+    await expect(page.locator('.experience-edit input[name="profile-label"]')).toHaveValue('Fixed employee inspection');
+    await expect(page.locator('.section-heading .badge')).toHaveText('fixed');
 
     await page.getByRole('button', {name: 'Component Gallery'}).click();
     await expect(page.getByRole('heading', {name: 'Component Gallery'})).toBeVisible();
