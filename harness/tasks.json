@@ -725,9 +725,10 @@
         "Both paths generate same typed definition; draft/activation/scope/approval and low-risk hypothesis policy work.",
         "Studio/manual and AI-assisted authoring share code definitions/evaluator; code-owned entries are read-only or proposed diffs, not silent repo overwrites. Preserve origin, version/scope, and no implicit shadowing."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "Isolated worker owns runtime/agent meaning source and focused tests in codex/t23-meaning. Root owns contracts/config/lock/integration; T18 and T20 remain independent."
     },
     {
       "id": "T24",
