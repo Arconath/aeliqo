@@ -85,7 +85,9 @@ await writeFile('bundle-measurements.json', JSON.stringify(measured, null, 2));
 `);
   run(["node", "measure-bundles.mjs"], consumer);
   const measurements = JSON.parse(await readFile(join(consumer, "bundle-measurements.json"), "utf8"));
+  assert.deepEqual(measurements.map(item => [item.entry, item.excludeLit]), entries.flatMap(entry => [[entry, false], [entry, true]]), "Direct entry measurements must cover every entry with and without Lit");
   for (const item of measurements) {
+    assert(item.bytes > 0 && item.gzipBytes > 0 && item.modules.length > 0, `${item.entry} produced no measurable JavaScript`);
     assert(!item.modules.some(module => /@aeliqo\/(agent|runtime)|\/dist\/(region|plot|visualization|studio|presentation)\//.test(module)), `${item.entry} pulled a planner, runtime, chart or agent`);
     for (const module of item.modules.filter(module => module.includes("@aeliqo/")))
       assert(module.startsWith(consumerReal + "/node_modules/"), `Direct bundle resolved outside the installed consumer: ${module}`);
