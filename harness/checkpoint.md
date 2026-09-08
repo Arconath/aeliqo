@@ -204,3 +204,10 @@ deduplication fixes, plus real temporal range/draft/navigation/page regressions.
 Frozen digest1fb2bf0b46dfbfef1badce0d34b57750830eb31026a43f572d31c8922c120fb7 remained unchanged.
 T39 early compositional UI and T41 model containment are next ready source tasks.
 No npm publication, main cutover or production deployment occurred.
+
+Hosted T11 CI34204979404 initially failed type resolution for three test imports
+that depended on an undeclared root local package link. Test-only correctionab376bb
+uses the same canonical source import as other tests; fresh49region/27action tests
+and strict types pass. Hosted CI34205677504 on exactab376bb passed both jobs, including
+interaction/actions, installed consumers and platform/NextSSR. Evidence:
+harness/evidence/t11/hosted-ab376bb.json. T39 core presentation is now in progress.
