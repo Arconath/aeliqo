@@ -3,12 +3,12 @@ import {css, html, LitElement, nothing, type TemplateResult} from "lit";
 import {repeat} from "lit/directives/repeat.js";
 import type {PropertyValues} from "lit";
 import {aeliqoThemeStyles} from "../styles/theme.js";
-import {AeliqoInputEvent, AeliqoTableSelectionEvent} from "../events.js";
 import "../elements/aeliqo-table.js";
 import "../elements/aeliqo-chart.js";
 import "../elements/aeliqo-input.js";
 import {stableTableRowKey} from "../elements/aeliqo-table.js";
 import type {AeliqoChartSeries, AeliqoTableColumn, AeliqoTableRow} from "../types.js";
+import type {AeliqoInputChangeDetail, AeliqoTableSelectionDetail} from "../types.js";
 import type {AeliqoRegionResult, AeliqoSemanticInteractionHandler, AeliqoSemanticInteractionRequest} from "./types.js";
 
 function refKey(ref: ResultRef): string {
@@ -21,6 +21,53 @@ function record(value: unknown): Record<string, unknown> | undefined {
 
 function text(value: unknown, fallback = ""): string {
   return typeof value === "string" ? value : fallback;
+}
+
+function resultRef(value: unknown): value is ResultRef {
+  try {
+    const candidate = record(value);
+    return candidate !== undefined && typeof candidate.id === "string" && typeof candidate.revision === "string" &&
+      typeof candidate.outputId === "string" && typeof candidate.queryDigest === "string" && typeof candidate.scopeDigest === "string";
+  } catch {
+    return false;
+  }
+}
+
+function customDetail(event: Event): unknown {
+  try {
+    return typeof CustomEvent !== "undefined" && event instanceof CustomEvent ? event.detail : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function tableSelectionDetail(event: Event): AeliqoTableSelectionDetail | undefined {
+  try {
+    const candidate = record(customDetail(event));
+    if (candidate === undefined || (candidate.mode !== "clear" && candidate.mode !== "ids") || typeof candidate.entity !== "string" || !Array.isArray(candidate.keys) || candidate.keys.some((key) => typeof key !== "string")) return undefined;
+    const keys = candidate.keys as string[];
+    if (candidate.mode === "clear" && keys.length !== 0) return undefined;
+    if (candidate.mode === "ids" && keys.length === 0) return undefined;
+    if (candidate.result !== undefined && !resultRef(candidate.result)) return undefined;
+    return {
+      mode: candidate.mode,
+      entity: candidate.entity,
+      keys,
+      ...(candidate.result === undefined ? {} : {result: candidate.result}),
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+function inputChangeDetail(event: Event): AeliqoInputChangeDetail | undefined {
+  try {
+    const candidate = record(customDetail(event));
+    if (candidate === undefined || candidate.source !== "user" || typeof candidate.value !== "string") return undefined;
+    return {source: "user", value: candidate.value};
+  } catch {
+    return undefined;
+  }
 }
 
 function temporalTime(value: unknown): number | undefined {
@@ -207,9 +254,12 @@ export class AeliqoRegionElement extends LitElement {
           const sourceValue = row[field];
           const value = Number.isNaN(time) ? Number.NaN : numericValue(sourceValue);
           const displayValue = decimalText(sourceValue);
+          const sourceTime = row[labelField];
           return {
             label: temporalLabel(row[labelField]),
-            ...(Number.isNaN(time) ? {} : {x: time}),
+            // Keep the source instant text so the chart can retain canonical
+            // sub-millisecond identity; Date.parse is only used for ordering.
+            ...(Number.isNaN(time) ? {} : {x: typeof sourceTime === "string" ? sourceTime : time}),
             value,
             ...(displayValue === undefined ? {} : {displayValue}),
           };
@@ -269,32 +319,43 @@ export class AeliqoRegionElement extends LitElement {
   }
 
   private handleTableSelection(event: Event, resolved: ValidatedPresentation["nodes"][number]): void {
-    const detail = (event as AeliqoTableSelectionEvent).detail;
-    const port = resolved.config.ports.find((candidate) => candidate.payload === "selection");
-    if (port === undefined) return;
-    if (detail.mode === "clear") {
-      this.emit({nodeId: resolved.node.id, portId: port.id, payload: {kind: "selection", selection: {mode: "clear"}}});
-      return;
+    try {
+      const detail = tableSelectionDetail(event);
+      if (detail === undefined) return;
+      const port = resolved.config.ports.find((candidate) => candidate.payload === "selection");
+      if (port === undefined) return;
+      if (detail.mode === "clear") {
+        if (detail.entity !== port.entity) return;
+        this.emit({nodeId: resolved.node.id, portId: port.id, payload: {kind: "selection", selection: {mode: "clear"}}});
+        return;
+      }
+      if (detail.entity !== port.entity || detail.result === undefined || resolved.result === undefined || refKey(detail.result) !== refKey(resolved.result.ref) || detail.keys.length === 0) return;
+      const bound = resultFor(resolved, this.results);
+      if (bound === undefined) return;
+      const allowed = new Set(bound.rows.map((row) => stableTableRowKey(row, port.identity ?? [])).filter((key): key is string => key !== undefined));
+      if (new Set(detail.keys).size !== detail.keys.length || detail.keys.some((key) => !allowed.has(key))) return;
+      this.emit({nodeId: resolved.node.id, portId: port.id, payload: {
+        kind: "selection",
+        selection: {mode: "ids", entity: detail.entity, keys: [...detail.keys] as [string, ...string[]], result: detail.result},
+      }});
+    } catch {
+      // Custom events are an untrusted boundary; malformed details are ignored.
     }
-    if (detail.entity !== port.entity || detail.result === undefined || resolved.result === undefined || refKey(detail.result) !== refKey(resolved.result.ref) || detail.keys.length === 0) return;
-    const bound = resultFor(resolved, this.results);
-    if (bound === undefined) return;
-    const allowed = new Set(bound.rows.map((row) => stableTableRowKey(row, port.identity ?? [])).filter((key): key is string => key !== undefined));
-    if (new Set(detail.keys).size !== detail.keys.length || detail.keys.some((key) => !allowed.has(key))) return;
-    this.emit({nodeId: resolved.node.id, portId: port.id, payload: {
-      kind: "selection",
-      selection: {mode: "ids", entity: detail.entity, keys: [...detail.keys] as [string, ...string[]], result: detail.result},
-    }});
   }
 
   private handleFilter(event: Event, resolved: ValidatedPresentation["nodes"][number], values: Record<string, unknown>): void {
-    const detail = (event as AeliqoInputEvent).detail;
-    const field = text(values.field); const outputId = text(values.outputId);
-    if (field.length === 0 || outputId.length === 0 || resolved.result === undefined || outputId !== resolved.result.ref.outputId || resolved.result.fields.find((candidate) => candidate.id === field)?.type.value !== "text" || resolved.config.ports.find((candidate) => candidate.payload === "filter") === undefined) return;
-    const predicate = detail.value.length === 0 ? [] : [{op: "compare" as const, field, ...(values.entity === undefined ? {} : {entity: text(values.entity)}), comparison: "eq" as const, value: detail.value}];
-    const payload: InteractionPayload = {kind: "filter", predicates: predicate, outputId};
-    const port = resolved.config.ports.find((candidate) => candidate.payload === "filter");
-    if (port !== undefined) this.emit({nodeId: resolved.node.id, portId: port.id, payload});
+    try {
+      const detail = inputChangeDetail(event);
+      if (detail === undefined) return;
+      const field = text(values.field); const outputId = text(values.outputId);
+      if (field.length === 0 || outputId.length === 0 || resolved.result === undefined || outputId !== resolved.result.ref.outputId || resolved.result.fields.find((candidate) => candidate.id === field)?.type.value !== "text" || resolved.config.ports.find((candidate) => candidate.payload === "filter") === undefined) return;
+      const predicate = detail.value.length === 0 ? [] : [{op: "compare" as const, field, ...(values.entity === undefined ? {} : {entity: text(values.entity)}), comparison: "eq" as const, value: detail.value}];
+      const payload: InteractionPayload = {kind: "filter", predicates: predicate, outputId};
+      const port = resolved.config.ports.find((candidate) => candidate.payload === "filter");
+      if (port !== undefined) this.emit({nodeId: resolved.node.id, portId: port.id, payload});
+    } catch {
+      // Custom events are an untrusted boundary; malformed details are ignored.
+    }
   }
 
   private emit(request: AeliqoSemanticInteractionRequest): void {

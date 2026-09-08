@@ -7,7 +7,7 @@ import {
 } from "../../../packages/web/src/region/index.js";
 import {validatePresentationPlan, type PresentationContext, type PresentationPlan} from "../../../packages/core/src/index.js";
 import {stableTableRowKey} from "../../../packages/web/src/elements/aeliqo-table.js";
-import {buildAeliqoChartGeometry} from "../../../packages/web/src/elements/aeliqo-chart.js";
+import {alignAeliqoChartSeries, buildAeliqoChartDomain, buildAeliqoChartGeometry} from "../../../packages/web/src/elements/aeliqo-chart.js";
 import {environment, experience, field, presentationPlan, presentationTask, ref, result as baseResult} from "../../contracts/fixtures.js";
 
 const result = {
@@ -102,15 +102,37 @@ describe("T39 registered web region", () => {
   });
 
   it("uses stable identity tuples and registered identity mappings", () => {
-    expect(stableTableRowKey({"employee.id": "e1", month: "Jan"}, ["employee.id"])).toBe("e1");
-    expect(stableTableRowKey({"employee.id": "e1", month: "Jan"}, ["employee.id", "month"])).toBe(JSON.stringify(["e1", "Jan"]));
+    expect(stableTableRowKey({"employee.id": "e1", month: "Jan"}, ["employee.id"])).toBe("string:2:e1");
+    expect(stableTableRowKey({"employee.id": "e1", month: "Jan"}, ["employee.id", "month"])).toBe(JSON.stringify(["string:2:e1", "string:3:Jan"]));
     expect(stableTableRowKey({month: "Jan"}, ["employee.id"])).toBeUndefined();
+    expect(stableTableRowKey({amount: {decimal: "1.0"}}, ["amount"])).toBe(stableTableRowKey({amount: {decimal: "1"}}, ["amount"]));
+    expect(stableTableRowKey({value: null}, ["value"])).not.toBe(stableTableRowKey({value: "null"}, ["value"]));
+    expect(stableTableRowKey({value: 1}, ["value"])).not.toBe(stableTableRowKey({value: "1"}, ["value"]));
     expect(createSelectionIdentityMapping("employees", ["employee.id"])).toEqual({
       ref: {id: "selection.identity", revision: "1"},
       source: {payload: "selection", entity: "employees", identity: ["employee.id"], grain: ["employee.id"]},
       target: {payload: "selection", entity: "employees", identity: ["employee.id"], grain: ["employee.id"]},
       kind: "identity",
     });
+  });
+
+  it("retains duplicate x rows and canonical sub-millisecond instants", () => {
+    const duplicate = [
+      {id: "first", label: "First", points: [{x: 1, label: "one", value: 1}, {x: 1, label: "one again", value: 2}]},
+      {id: "second", label: "Second", points: [{x: 1, label: "one", value: 3}]},
+    ];
+    const aligned = alignAeliqoChartSeries(duplicate);
+    expect(buildAeliqoChartDomain(duplicate)).toHaveLength(2);
+    expect(aligned[0]?.points.map((point) => point.value)).toEqual([1, 2]);
+    expect(aligned[1]?.points.map((point) => point.value)).toEqual([3, null]);
+
+    const temporal = [
+      {id: "a", label: "A", points: [{x: "2026-01-01T00:00:00.0001Z", label: "early", value: 1}, {x: "2026-01-01T00:00:00.0009Z", label: "late", value: 2}]},
+      {id: "b", label: "B", points: [{x: "2026-01-01T00:00:00.000100+00:00", label: "same", value: 3}]},
+    ];
+    expect(buildAeliqoChartDomain(temporal)).toHaveLength(2);
+    expect(alignAeliqoChartSeries(temporal)[1]?.points.map((point) => point.value)).toEqual([3, null]);
+    expect(buildAeliqoChartGeometry(temporal).circles).toHaveLength(3);
   });
 
   it("builds separate SVG segments for null gaps and keeps multiple series distinct", () => {

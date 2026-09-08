@@ -34,7 +34,7 @@ test("region emits trusted table selection, clears explicitly, and keeps long fo
   const checkbox = page.locator('aeliqo-table[data-aeliqo-node-id="table"] input[type="checkbox"]').first();
   await checkbox.check();
   const selected = await page.evaluate(() => (window as typeof window & {aeliqoEvents: any[]}).aeliqoEvents.at(-1));
-  expect(selected.payload.selection).toMatchObject({mode: "ids", entity: "employees", keys: ["e1"], result: {outputId: "rows"}});
+  expect(selected.payload.selection).toMatchObject({mode: "ids", entity: "employees", keys: ["string:2:e1"], result: {outputId: "rows"}});
   const eventCount = await page.evaluate(() => (window as typeof window & {aeliqoEvents: any[]}).aeliqoEvents.length);
   await page.locator('aeliqo-table[data-aeliqo-node-id="table"]').evaluate((element) => {
     element.dispatchEvent(new CustomEvent("aeliqo-table-selection", {bubbles: true, composed: true, detail: {
@@ -45,6 +45,42 @@ test("region emits trusted table selection, clears explicitly, and keeps long fo
   await checkbox.uncheck();
   const cleared = await page.evaluate(() => (window as typeof window & {aeliqoEvents: any[]}).aeliqoEvents.at(-1));
   expect(cleared.payload.selection).toEqual({mode: "clear"});
+
+  const beforeMalformed = await page.evaluate(() => (window as typeof window & {aeliqoEvents: any[]}).aeliqoEvents.length);
+  await page.evaluate(async () => {
+    const region = document.querySelector("aeliqo-region") as HTMLElement & {updateComplete: Promise<unknown>};
+    const table = region.shadowRoot?.querySelector('aeliqo-table[data-aeliqo-node-id="table"]');
+    if (table === null || table === undefined) throw new Error("table did not mount");
+    for (const detail of [null, {mode: "clear", entity: "other", keys: []}, {mode: "ids", entity: 42, keys: ["e1"]}, {mode: "ids", entity: "employees", keys: ["e1"], result: {}}]) {
+      table.dispatchEvent(new CustomEvent("aeliqo-table-selection", {bubbles: true, composed: true, detail}));
+    }
+  });
+  await expect.poll(() => page.evaluate(() => (window as typeof window & {aeliqoEvents: any[]}).aeliqoEvents.length)).toBe(beforeMalformed);
+
+  await page.evaluate(async () => {
+    const region = document.querySelector("aeliqo-region") as HTMLElement;
+    const table = region.shadowRoot?.querySelector('aeliqo-table[data-aeliqo-node-id="table"]') as (HTMLElement & {selection: string; updateComplete: Promise<unknown>}) | null;
+    if (table === null || table === undefined) throw new Error("table did not mount");
+    table.selection = "single";
+    await table.updateComplete;
+  });
+  const radioNames = await page.locator('aeliqo-table[data-aeliqo-node-id="table"] input[type="radio"]').evaluateAll((inputs) => inputs.map((input) => input.getAttribute("name")));
+  expect(radioNames.length).toBe(2);
+  expect(new Set(radioNames).size).toBe(1);
+
+  await page.evaluate(async () => {
+    const app = window as typeof window & {mountFilters: () => void};
+    const region = document.querySelector("aeliqo-region") as HTMLElement & {updateComplete: Promise<unknown>};
+    app.mountFilters();
+    await region.updateComplete;
+    const filter = region.shadowRoot?.querySelector('aeliqo-input[data-aeliqo-node-id="filter-a"]');
+    if (filter === null || filter === undefined) throw new Error("filter did not mount");
+    for (const detail of [undefined, {value: "forged", source: "program"}, {value: 42, source: "user"}]) {
+      filter.dispatchEvent(new CustomEvent("aeliqo-input", {bubbles: true, composed: true, detail}));
+    }
+    await region.updateComplete;
+  });
+  await expect.poll(() => page.evaluate(() => (window as typeof window & {aeliqoEvents: any[]}).aeliqoEvents.length)).toBe(beforeMalformed);
 
   await page.evaluate(async () => {
     const app = window as typeof window & {mountTrend: () => void};
@@ -75,4 +111,14 @@ test("region emits trusted table selection, clears explicitly, and keeps long fo
   await expect(chart.locator("tbody tr")).toHaveCount(4);
   await expect(chart.locator("tbody td").filter({hasText: "—"})).toHaveCount(7);
   await expect(chart.locator("tbody tr").nth(3).locator("td").nth(4)).toHaveText("6");
+
+  await page.evaluate(async () => {
+    const app = window as typeof window & {mountSubMillisecondTrend: () => void};
+    app.mountSubMillisecondTrend();
+    await (document.querySelector("aeliqo-region") as HTMLElement & {updateComplete: Promise<unknown>}).updateComplete;
+  });
+  const subChart = page.locator('aeliqo-chart[data-aeliqo-node-id="trend"]');
+  await subChart.locator("details summary").click();
+  await expect(subChart.locator("tbody tr")).toHaveCount(2);
+  await expect(subChart.locator('svg [part="point"]')).toHaveCount(2);
 });

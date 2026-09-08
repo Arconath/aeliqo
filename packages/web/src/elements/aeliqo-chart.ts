@@ -1,5 +1,6 @@
 import {aeliqoThemeStyles} from "../styles/theme.js";
 import {css, html, LitElement, nothing, svg} from "lit";
+import {scalarIdentity} from "@aeliqo/core";
 import type {AeliqoChartPoint, AeliqoChartSeries} from "../types.js";
 
 const CHART_WIDTH = 320;
@@ -24,16 +25,36 @@ function hasExplicitX(series: readonly AeliqoChartSeries[]): boolean {
   return series.some((item) => item.points.some((point) => point.x !== undefined));
 }
 
-function pointKey(point: AeliqoChartPoint, index: number, explicitX: boolean): string {
-  if (!explicitX || point.x === undefined) return `index:${index}`;
-  return typeof point.x === "number" ? `number:${point.x}` : `string:${point.x}`;
-}
-
 function temporalX(value: string | number | undefined): number | undefined {
   if (typeof value === "number") return Number.isFinite(value) ? value : undefined;
   if (typeof value !== "string" || value.length === 0) return undefined;
   const parsed = Date.parse(value);
   return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function pointBaseKey(point: AeliqoChartPoint, index: number, explicitX: boolean): string {
+  if (!explicitX || point.x === undefined) return `index:${index}`;
+  if (typeof point.x === "number") return `number:${point.x}`;
+  // Date.parse only retains milliseconds; use the core instant identity so
+  // sub-millisecond rows cannot collide and equivalent offsets align.
+  const instant = scalarIdentity(point.x, {value: "instant", nullable: false});
+  return instant.ok ? `instant:${instant.value}` : `string:${point.x}`;
+}
+
+function instantParts(value: string): {readonly milliseconds: number; readonly fraction: string} | undefined {
+  const identity = scalarIdentity(value, {value: "instant", nullable: false});
+  if (!identity.ok) return undefined;
+  try {
+    const parsed: unknown = JSON.parse(identity.value);
+    if (!Array.isArray(parsed) || parsed.length !== 2 || parsed[0] !== "instant" || !Array.isArray(parsed[1]) || parsed[1].length !== 2 || typeof parsed[1][0] !== "number" || typeof parsed[1][1] !== "string") return undefined;
+    return {milliseconds: parsed[1][0], fraction: parsed[1][1]};
+  } catch {
+    return undefined;
+  }
+}
+
+function occurrenceKey(baseKey: string, occurrence: number): string {
+  return `${baseKey}#${occurrence}`;
 }
 
 /** Return one bounded, ordered x domain shared by every rendered series. */
@@ -47,17 +68,41 @@ export function buildAeliqoChartDomain(series: readonly AeliqoChartSeries[]): re
     }));
   }
 
-  const domain = new Map<string, AeliqoChartDomainPoint>();
-  series.forEach((item) => item.points.forEach((point, index) => {
-    const key = pointKey(point, index, explicitX);
-    if (!domain.has(key)) domain.set(key, {key, ...(point.x === undefined ? {} : {x: point.x}), label: point.label});
-  }));
-  const output = [...domain.values()];
+  const domain: AeliqoChartDomainPoint[] = [];
+  const seen = new Set<string>();
+  series.forEach((item) => {
+    const occurrences = new Map<string, number>();
+    item.points.forEach((point, index) => {
+      const baseKey = pointBaseKey(point, index, explicitX);
+      const occurrence = occurrences.get(baseKey) ?? 0;
+      occurrences.set(baseKey, occurrence + 1);
+      const key = explicitX ? occurrenceKey(baseKey, occurrence) : baseKey;
+      if (seen.has(key)) return;
+      seen.add(key);
+      domain.push({key, ...(point.x === undefined ? {} : {x: point.x}), label: point.label});
+    });
+  });
+  const output = domain;
   const numeric = output.length > 0 && output.every((entry) => typeof entry.x === "number" && Number.isFinite(entry.x));
-  const temporal = output.length > 0 && output.every((entry) => typeof entry.x === "string" && temporalX(entry.x) !== undefined);
+  const temporal = output.length > 0 && output.every((entry) => typeof entry.x === "string" && instantParts(entry.x) !== undefined);
   if (numeric) output.sort((left, right) => (left.x as number) - (right.x as number));
-  else if (temporal) output.sort((left, right) => temporalX(left.x)! - temporalX(right.x)!);
+  else if (temporal) output.sort((left, right) => compareTemporal(left.x as string, right.x as string));
   return output;
+}
+
+function compareTemporal(left: string, right: string): number {
+  const a = instantParts(left);
+  const b = instantParts(right);
+  if (a !== undefined && b !== undefined) {
+    if (a.milliseconds !== b.milliseconds) return a.milliseconds < b.milliseconds ? -1 : 1;
+    const length = Math.max(a.fraction.length, b.fraction.length);
+    const af = a.fraction.padEnd(length, "0");
+    const bf = b.fraction.padEnd(length, "0");
+    return af < bf ? -1 : af > bf ? 1 : 0;
+  }
+  const aTime = temporalX(left);
+  const bTime = temporalX(right);
+  return aTime === undefined || bTime === undefined ? 0 : aTime - bTime;
 }
 
 /** Insert null points for dates absent from an individual grouped series. */
@@ -66,7 +111,13 @@ export function alignAeliqoChartSeries(series: readonly AeliqoChartSeries[]): re
   const domain = buildAeliqoChartDomain(series);
   return series.map((item) => {
     const byKey = new Map<string, AeliqoChartPoint>();
-    item.points.forEach((point, index) => byKey.set(pointKey(point, index, explicitX), point));
+    const occurrences = new Map<string, number>();
+    item.points.forEach((point, index) => {
+      const baseKey = pointBaseKey(point, index, explicitX);
+      const occurrence = occurrences.get(baseKey) ?? 0;
+      occurrences.set(baseKey, occurrence + 1);
+      byKey.set(explicitX ? occurrenceKey(baseKey, occurrence) : baseKey, point);
+    });
     const points = domain.map((entry) => {
       const point = byKey.get(entry.key);
       if (point !== undefined) return {
@@ -87,8 +138,18 @@ export function alignAeliqoChartSeries(series: readonly AeliqoChartSeries[]): re
 function xCoordinates(domain: readonly AeliqoChartDomainPoint[]): readonly number[] {
   if (domain.length === 0) return [];
   const numeric = domain.map((entry) => typeof entry.x === "number" && Number.isFinite(entry.x) ? entry.x : undefined);
+  const parsedInstants = domain.map((entry) => typeof entry.x === "string" ? instantParts(entry.x) : undefined);
+  const temporal = parsedInstants.every((value) => value !== undefined) ? parsedInstants as NonNullable<typeof parsedInstants[number]>[] : undefined;
   const parsed = domain.map((entry) => temporalX(entry.x));
+  const temporalBase = temporal?.[0]?.milliseconds;
+  const temporalValues = temporal !== undefined && temporalBase !== undefined
+    ? temporal.map((value) => value.milliseconds - temporalBase + (value.fraction.length > 0 ? Number(`0.${value.fraction}`) : 0))
+    : undefined;
+  const usableTemporalValues = temporalValues !== undefined && temporalValues.every(Number.isFinite) && new Set(temporalValues).size === temporalValues.length
+    ? temporalValues
+    : undefined;
   const values = numeric.every((value) => value !== undefined) ? numeric as number[]
+    : usableTemporalValues !== undefined ? usableTemporalValues
     : parsed.every((value) => value !== undefined) ? parsed as number[] : undefined;
   if (values === undefined) {
     const step = domain.length === 1 ? 0 : PLOT_WIDTH / (domain.length - 1);
@@ -250,10 +311,10 @@ export class AeliqoChartElement extends LitElement {
       >
         <title>Data chart</title>
         <desc>Use the data table below to explore the values.</desc>
-        <line x1=${PLOT_LEFT} y1=${PLOT_TOP + PLOT_HEIGHT} x2=${PLOT_LEFT + PLOT_WIDTH} y2=${PLOT_TOP + PLOT_HEIGHT}></line>
-        ${geometry.segments.map((segment) => svg`<polyline points=${segment.points} class=${this.seriesClasses(segment.seriesIndex)} part="line"></polyline>`)}
+        <line vector-effect="non-scaling-stroke" x1=${PLOT_LEFT} y1=${PLOT_TOP + PLOT_HEIGHT} x2=${PLOT_LEFT + PLOT_WIDTH} y2=${PLOT_TOP + PLOT_HEIGHT}></line>
+        ${geometry.segments.map((segment) => svg`<polyline vector-effect="non-scaling-stroke" points=${segment.points} class=${this.seriesClasses(segment.seriesIndex)} part="line"></polyline>`)}
         ${geometry.circles.map(
-          (circle) => svg`<circle cx=${circle.x} cy=${circle.y} r="3" class=${this.seriesClasses(circle.seriesIndex)} part="point"></circle>`,
+          (circle) => svg`<circle vector-effect="non-scaling-stroke" cx=${circle.x} cy=${circle.y} r="3" class=${this.seriesClasses(circle.seriesIndex)} part="point"></circle>`,
         )}
       </svg>
     `;

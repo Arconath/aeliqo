@@ -103,6 +103,10 @@ const trendRows = [
   {"employee.id": "e4", week: "2026-01-01T00:00:00Z", absence: 3}, {"employee.id": "e4", week: "2026-01-08T00:00:00Z", absence: 2}, {"employee.id": "e4", week: "2026-01-15T00:00:00Z", absence: 4},
   {"employee.id": "e5", week: "2026-01-01T00:00:00Z", absence: 4}, {"employee.id": "e5", week: "2026-01-08T00:00:00Z", absence: 3}, {"employee.id": "e5", week: "2026-02-01T00:00:00Z", absence: 6},
 ];
+const subMillisecondTrendRows = [
+  {"employee.id": "e1", week: "2026-01-01T00:00:00.0001Z", absence: 1},
+  {"employee.id": "e1", week: "2026-01-01T00:00:00.0009Z", absence: 2},
+];
 
 function mountFilters(order: readonly string[] = ["filter-a", "filter-b"]): void {
   const filterA = node("filter-a", "filter", "control.filter", {field: "department", outputId: "rows"}, ["department"], selectionResult, [{id: "filter", direction: "output", payload: "filter"}]);
@@ -123,6 +127,12 @@ function mountTrend(): void {
   region.presentation = presentation(["trend"], [trend]);
 }
 
+function mountSubMillisecondTrend(): void {
+  const trend = node("trend", "trend", "data.trend", {labelField: "week", series: [{field: "absence", label: "Absence"}], seriesBy: ["employee.id"]}, ["week", "employee.id", "absence"], trendResult);
+  region.results = [{ref: trendResult.ref, rows: subMillisecondTrendRows} satisfies AeliqoRegionResult];
+  region.presentation = presentation(["trend"], [trend]);
+}
+
 region.onSemanticInteraction = (event) => events.push(event);
 Object.assign(window, {
   aeliqoReady: true,
@@ -130,6 +140,7 @@ Object.assign(window, {
   mountFilters,
   mountSelection,
   mountTrend,
+  mountSubMillisecondTrend,
   reorderFilters: () => mountFilters(["filter-b", "filter-a"]),
 });
 mountFilters();

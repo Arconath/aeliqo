@@ -1,24 +1,42 @@
 import {aeliqoThemeStyles} from "../styles/theme.js";
 import {css, html, LitElement, nothing} from "lit";
 import {AeliqoTableSelectionEvent} from "../events.js";
+import {scalarIdentity} from "@aeliqo/core";
 import type {ResultRef} from "@aeliqo/core";
 import type {AeliqoTableColumn, AeliqoTableRow, AeliqoTableSelectionMode, TableCell} from "../types.js";
 
 /**
- * Encode a row identity for a semantic selection payload. Single-field
- * identities retain their application key; compound identities are bounded
- * JSON tuples. Render position is never part of the key.
+ * Encode a row identity for a semantic selection payload. Values are tagged
+ * so text, null, numeric and boolean identities cannot collide; compound
+ * identities are bounded JSON tuples. Render position is never part of key.
  */
+function stableTableCellKey(value: TableCell): string | undefined {
+  if (value === null) return "null:";
+  if (typeof value === "string") return `string:${value.length}:${value}`;
+  if (typeof value === "boolean") return `boolean:${value ? "true" : "false"}`;
+  if (typeof value === "number") return `number:${Object.is(value, -0) ? "-0" : String(value)}`;
+  if (typeof value !== "object" || Array.isArray(value) || Object.keys(value).length !== 1 || typeof value.decimal !== "string") return undefined;
+  const identity = scalarIdentity(value, {value: "decimal", nullable: false});
+  return identity.ok ? `decimal:${identity.value}` : undefined;
+}
+
 export function stableTableRowKey(row: AeliqoTableRow, identity: readonly string[]): string | undefined {
   if (identity.length === 0) return undefined;
   const values = identity.map((field) => row[field]);
   if (values.some((value) => value === undefined)) return undefined;
-  if (values.length === 1) {
-    const value = values[0];
-    if (value !== null && typeof value === "object" && Object.keys(value).length === 1 && typeof value.decimal === "string") return value.decimal;
+  const encoded = values.map((value) => value === undefined ? undefined : stableTableCellKey(value));
+  if (encoded.some((value) => value === undefined)) return undefined;
+  if (encoded.length === 1) return encoded[0];
+  return JSON.stringify(encoded);
+}
+
+function tableIdentityLabel(row: AeliqoTableRow, identity: readonly string[]): string {
+  const values = identity.map((field) => row[field]).filter((value): value is TableCell => value !== undefined);
+  return values.map((value) => {
+    if (value === null) return "—";
+    if (typeof value === "object" && !Array.isArray(value) && typeof value.decimal === "string") return value.decimal;
     return String(value);
-  }
-  return JSON.stringify(values);
+  }).join(" · ") || "row";
 }
 
 export class AeliqoTableElement extends LitElement {
@@ -70,15 +88,17 @@ export class AeliqoTableElement extends LitElement {
   private renderRow(row: AeliqoTableRow, selectable: boolean) {
     const key = stableTableRowKey(row, this.identity);
     const selected = key !== undefined && this.selectedKeys.includes(key);
+    const label = key === undefined ? "Row cannot be selected" : `${selected ? "Deselect" : "Select"} ${this.entity} ${tableIdentityLabel(row, this.identity)}`;
     return html`
       <tr ?data-selected=${selected} aria-selected=${selectable ? String(selected) : nothing}>
         ${selectable ? html`
           <td part="selection-cell">
             <input
               type=${this.selection === "single" ? "radio" : "checkbox"}
+              name=${this.selection === "single" ? "aeliqo-single-selection" : nothing}
               .checked=${selected}
               ?disabled=${key === undefined}
-              aria-label=${key === undefined ? "Row cannot be selected" : `${selected ? "Deselect" : "Select"} ${this.entity} ${key}`}
+              aria-label=${label}
               @change=${(event: Event) => this.handleSelection(event, key)}
             />
           </td>` : nothing}
