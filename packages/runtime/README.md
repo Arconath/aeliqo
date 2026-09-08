@@ -206,3 +206,12 @@ timeout cannot prove that an external write failed. Durable idempotency and
 transactional business checks remain the application's responsibility. Histories
 contain metadata rather than action input. Call `revoke` on authority withdrawal
 and `dispose` when the owning application scope ends.
+
+`maxPreviews`, `maxPending` and `maxInFlight` bound pending records and awaited
+host calls. `maxIdentityBytes`, `maxOutputBytes` and `maxLedgerBytes` bound
+idempotency retention, including metadata and rejected outcomes. A full ledger
+refuses a new dispatch. If a completed action's output cannot fit, its retained
+entry becomes ambiguous and subsequent attempts cannot dispatch it again.
+Revocation and disposal are terminal and clear retained ledger inputs/outputs.
+Host callbacks must honor their `AbortSignal`; a timeout stops the port waiting
+but cannot terminate an application's external operation.
