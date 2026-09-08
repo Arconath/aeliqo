@@ -173,3 +173,9 @@ result populations, named-output orchestration and HTTP execution of these plans
 remain separate integration work. Unsupported temporal policies, cursors and
 operators return diagnostics; they do not trigger a download of a larger source
 or a hidden fallback to executable query text.
+
+`validateScalar(value, semanticType)` and `scalarIdentity(value, semanticType)`
+share the query engine's bounded value rules with host/runtime consumers. The
+latter returns an opaque normalized scalar key, including exact instant fraction
+and decimal equivalence; encode composite keys as tuples of those keys. Neither
+helper authenticates data or grants access.

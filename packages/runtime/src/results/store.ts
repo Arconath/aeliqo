@@ -1,4 +1,4 @@
-import {parseContract, WIRE_LIMITS} from '@aeliqo/core';
+import {parseContract, scalarIdentity, validateScalar, WIRE_LIMITS} from '@aeliqo/core';
 import type {
   Diagnostic,
   Result,
@@ -107,61 +107,6 @@ function slotKey(input: ResultCacheKey): string {
     input.outputId,
     input.taskId,
   ]);
-}
-
-function validDate(value: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/u.test(value)) return false;
-  const parsed = Date.parse(`${value}T00:00:00.000Z`);
-  return Number.isFinite(parsed) && new Date(parsed).toISOString().slice(0, 10) === value;
-}
-
-function validInstant(value: string): boolean {
-  const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?(Z|[+-](\d{2}):(\d{2}))$/u.exec(value);
-  if (match === null || !validDate(match[1]!)) return false;
-  if (Number(match[2]) > 23 || Number(match[3]) > 59 || Number(match[4]) > 59) return false;
-  if (match[7] !== undefined && (Number(match[7]) > 23 || Number(match[8]) > 59)) return false;
-  return Number.isFinite(Date.parse(value));
-}
-
-function validDecimal(value: string): boolean {
-  return /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/u.test(value) && value.length <= 512;
-}
-
-function normalizeDecimal(value: string): string {
-  const negative = value.startsWith('-');
-  const unsigned = negative ? value.slice(1) : value;
-  const [whole, fraction = ''] = unsigned.split('.');
-  const trimmed = fraction.replace(/0+$/u, '');
-  if (whole === '0' && trimmed.length === 0) return '0';
-  return `${negative ? '-' : ''}${whole}${trimmed.length === 0 ? '' : `.${trimmed}`}`;
-}
-
-function valueMatches(value: unknown, type: Result['fields'][number]['type']): boolean {
-  if (value === null) return type.nullable;
-  if (typeof value === 'string') {
-    if (value.length > WIRE_LIMITS.text) return false;
-    if (type.value === 'date') return validDate(value);
-    if (type.value === 'instant') return validInstant(value);
-    return type.value === 'text';
-  }
-  if (typeof value === 'boolean') return type.value === 'boolean';
-  if (typeof value === 'number') {
-    if (!Number.isFinite(value)) return false;
-    if (type.value === 'integer') return Number.isSafeInteger(value);
-    return type.value === 'float';
-  }
-  if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-    const decimal = (value as {readonly decimal?: unknown}).decimal;
-    return type.value === 'decimal' && typeof decimal === 'string' && validDecimal(decimal)
-      && Object.keys(value).length === 1;
-  }
-  return false;
-}
-
-function valueKey(value: unknown, type: Result['fields'][number]['type']['value']): string {
-  if (type === 'decimal' && value !== null && typeof value === 'object')
-    return `decimal:${normalizeDecimal((value as {readonly decimal: string}).decimal)}`;
-  return `${type}:${canonical(value)}`;
 }
 
 function sameRef(left: ResultRef, right: ResultRef): boolean {
@@ -507,16 +452,18 @@ class HandleController implements ResultHandle {
         if (!field.type.nullable) return failure('data.result-schema', `The result batch is missing non-nullable field ${field.id}.`);
         continue;
       }
-      if (!valueMatches(value, field.type)) return failure('data.result-value', `The result value for ${field.id} does not match its declared semantic type.`);
-      normalized[field.id] = value as ResultCell;
+      const checked = validateScalar(value, field.type);
+      if (!checked.ok) return failure('data.result-value', `The result value for ${field.id} does not match its declared semantic type.`);
+      normalized[field.id] = checked.value;
     }
     for (const identity of descriptor.identity) {
       const field = fields.get(identity)!;
       const value = normalized[identity];
       if (value === undefined || value === null) return failure('data.result-identity', 'Result identity fields must be present and non-null.');
-      const key = `${identity}:${valueKey(value, field.type.value)}`;
+      const key = scalarIdentity(value, field.type);
+      if (!key.ok) return failure('data.result-identity', 'Result identity value is invalid.');
       // The caller checks duplicate tuples after all fields have been visited.
-      normalized[`\u0000identity:${identity}`] = key;
+      normalized[`\u0000identity:${identity}`] = key.value;
     }
     return {ok: true, value: normalized};
   }
@@ -555,7 +502,7 @@ class HandleController implements ResultHandle {
       const checked = this.validateRow(row as Record<string, unknown>);
       if (!checked.ok) return this.invalid(checked.diagnostics[0]!.code, checked.diagnostics[0]!.message);
       const rowValue = checked.value;
-      const identity = this.state.descriptor.identity.map((field) => rowValue[`\u0000identity:${field}`]).join('|');
+      const identity = JSON.stringify(this.state.descriptor.identity.map((field) => rowValue[`\u0000identity:${field}`]));
       if (this.state.descriptor.identity.length > 0) {
         if (identityKeys.has(identity) || this.state.seenIdentity.has(identity)) return this.invalid('data.result-identity', 'Result batches contain duplicate identity tuples.');
         identityKeys.add(identity);
