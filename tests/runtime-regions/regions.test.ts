@@ -451,13 +451,22 @@ describe('transactional region store', () => {
   it('stops later observers when an earlier observer revokes the region', async () => {
     const {region} = create();
     const seen: string[] = [];
-    region.observe((update) => { seen.push(`first:${update.kind}`); if (update.kind === 'commit') region.revoke('user revoked'); });
-    region.observe((update) => { seen.push(`second:${update.kind}`); });
+    const first = region.observe((update) => { seen.push(`first:${update.kind}`); if (update.kind === 'commit') region.revoke('user revoked'); });
+    const second = region.observe((update) => { seen.push(`second:${update.kind}`); });
     const staged = await region.stage({requestId: 'request-1', expected: region.snapshot().readSet!, state: {task: task()}});
     expect(staged.ok).toBe(true);
     if (staged.ok) await region.commit(staged.value);
     expect(seen).toEqual(['first:commit', 'first:revoke', 'second:revoke']);
+    expect(first.closed).toBe(true);
+    expect(second.closed).toBe(true);
     expect(region.snapshot().status).toBe('revoked');
+  });
+
+  it('closes existing observers when the region is disposed', () => {
+    const {region} = create();
+    const observer = region.observe(() => {});
+    region.dispose();
+    expect(observer.closed).toBe(true);
   });
 
   it('clears protected state and rejects queued or late commands on revoke', async () => {

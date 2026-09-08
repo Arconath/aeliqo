@@ -936,6 +936,7 @@ class RegionHandleImpl implements RegionHandle {
     const observers = [...this.observers];
     this.observers.clear();
     this.notify(frozen({kind: 'revoke', snapshot: this.snapshotValue(), ...(reason === undefined ? {} : {reason})}), undefined, observers);
+    for (const observer of observers) observer.closed = true;
     return true;
   }
 
@@ -961,6 +962,7 @@ class RegionHandleImpl implements RegionHandle {
     const observers = [...this.observers];
     this.observers.clear();
     this.notify(frozen({kind: 'dispose', snapshot: this.snapshotValue()}), undefined, observers);
+    for (const observer of observers) observer.closed = true;
     this.store.remove(this.id);
   }
 }
