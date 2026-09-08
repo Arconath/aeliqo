@@ -147,13 +147,36 @@ async function mutateCompoundState(page: StatePage, id: string, state: string): 
   await page.evaluate(({componentId, nextState, message}) => {
     const host = document.querySelector<HTMLElement>(`#fixture aeliqo-${componentId}`) as (HTMLElement & Record<string, any>) | null;
     if (host === null) throw new Error(`Missing fixture element aeliqo-${componentId}`);
+    const original = (host as any).__aeliqoCompoundStateOriginal ??= {
+      rows: host.rows,
+      groups: host.groups,
+      detailRecord: host.detailRecord,
+      queryRevision: host.queryRevision,
+      resultRevision: host.resultRevision,
+      selectedKey: host.selectedKey,
+      count: host.count,
+    };
+    if (componentId === "explorer") {
+      host.rows = original.rows;
+      host.detailRecord = original.detailRecord;
+    }
+    if (componentId === "breakdown") host.groups = original.groups;
+    if (componentId === "investigation") host.detailRecord = original.detailRecord;
+    if (componentId === "search-results") {
+      host.rows = original.rows;
+      host.detailRecord = original.detailRecord;
+      host.queryRevision = original.queryRevision;
+      host.resultRevision = original.resultRevision;
+      host.selectedKey = original.selectedKey;
+      host.count = original.count;
+    }
     host.status = nextState;
     host.message = message;
     if (componentId === "search-results") host.resultRevision = nextState === "stale" ? "different-result-revision" : host.queryRevision;
     if (componentId === "explorer" && nextState === "empty") { host.rows = []; host.detailRecord = undefined; }
     if (componentId === "breakdown" && nextState === "empty") host.groups = [];
     if (componentId === "investigation" && nextState === "empty") host.detailRecord = undefined;
-    if (componentId === "search-results" && nextState === "empty") { host.rows = []; host.detailRecord = undefined; }
+    if (componentId === "search-results" && nextState === "empty") { host.rows = []; host.detailRecord = undefined; host.count = 0; }
     if (componentId === "record-editor") { host.invalid = false; host.disabled = false; }
     if (componentId === "form-flow") host.validation = {};
   }, {componentId: id, nextState: state, message: COMPOUND_MESSAGE[state] ?? ""});
@@ -164,9 +187,29 @@ async function assertCompoundState(page: StatePage, id: string, state: string): 
   const host = page.locator(`#fixture aeliqo-${id}`);
   await expect(host.locator("[part=root]")).toHaveAttribute("data-status", state);
   if (id === "search-results" && state === "stale") {
-    await expect(host.locator("[part=root] > [part=status]")).toContainText("Results are out of date for this query.");
+    const status = host.locator("[part=root] > [part=status]");
+    await expect(status).toHaveAttribute("role", "status");
+    await expect(status).toContainText("Results are out of date for this query.");
   } else {
-    await expect(host.locator("[part=root] > [part=status]")).toContainText(COMPOUND_MESSAGE[state]!);
+    const status = host.locator("[part=root] > [part=status]");
+    await expect(status).toHaveAttribute("role", "status");
+    await expect(status).toContainText(COMPOUND_MESSAGE[state]!);
+  }
+  if (id === "search-results") {
+    await expect(host).toHaveJSProperty("queryRevision", "query-2");
+    await expect(host).toHaveJSProperty("selectedKey", "string:3:ada");
+    await expect(host.locator("[part=query]")).toContainText("Results for");
+    if (state === "empty") {
+      await expect(host.locator("[part=root] > [part=scope]")).toContainText("0 matching results");
+      await expect(host.locator("aeliqo-card-collection [part=card]")).toHaveCount(0);
+    }
+    if (state === "partial") {
+      await expect(host.locator("aeliqo-card-collection")).toContainText("Ada Lovelace");
+      await expect(host.locator("aeliqo-card-collection [part=card][data-selected]")).toHaveCount(1);
+    }
+  }
+  if (state === "partial" && ["explorer", "investigation"].includes(id)) {
+    await expect(host).toContainText("Ada Lovelace");
   }
 }
 
@@ -209,7 +252,7 @@ for (const id of COMPOUND_COMPONENTS) {
     await page.emulateMedia({colorScheme: "light"});
     await openFixture(page, id);
     const states = id === "search-results"
-      ? ["loading", "partial", "error", "unavailable", "stale"]
+      ? ["loading", "empty", "partial", "error", "unavailable", "stale"]
       : ["loading", "empty", "partial", "stale", "error", "unavailable"];
     for (const state of states) {
       await mutateCompoundState(page, id, state);
