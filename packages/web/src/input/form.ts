@@ -211,12 +211,18 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
   private resetSlottedNativeControls(): void {
     for (const control of this.slottedNativeControls()) {
       if (control instanceof HTMLInputElement) {
-        if (control.type === "checkbox" || control.type === "radio") control.checked = control.defaultChecked;
+        if (control.type === "checkbox" || control.type === "radio") {
+          control.checked = control.defaultChecked;
+          control.indeterminate = false;
+        }
         else if (control.type !== "button" && control.type !== "submit" && control.type !== "reset" && control.type !== "image") control.value = control.defaultValue;
       } else if (control instanceof HTMLTextAreaElement) {
         control.value = control.defaultValue;
       } else if (control instanceof HTMLSelectElement) {
-        for (const option of Array.from(control.options)) option.selected = option.defaultSelected;
+        const options = Array.from(control.options);
+        const hasDefault = options.some((option) => option.defaultSelected);
+        for (const option of options) option.selected = option.defaultSelected;
+        if (!hasDefault && options[0] !== undefined) options[0].selected = true;
       }
     }
   }
