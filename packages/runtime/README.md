@@ -52,6 +52,18 @@ progress and terminal events. Supply explicit byte, per-message, message-count
 and row budgets and connect the host's cancellation signal. Cancellation and
 early consumer exit cancel the reader and release its lock.
 
+HTTP endpoint paths are configurable. The client sends only bounded
+`POST`/`application/json` request envelopes and accepts bounded NDJSON result
+streams; caller credentials belong in configured headers, while the server's
+`authenticate` callback supplies the principal used by authorization. The host
+uses a 30-second whole-transport deadline, 32 concurrent request slots and an
+8 MiB default request-body limit. Applications own per-principal rate limits and
+retry policy; the generic client does not retry automatically because source
+semantics determine whether a retry is safe. Authentication, authorization and
+source callbacks receive a cancellation signal, and stalled callbacks are
+detached when the signal aborts. Accepted query and population pins are checked
+at the transport boundary; they do not prove business truth.
+
 A completion event is withheld until EOF validates that no trailing event exists.
 A dropped stream throws a structured error; already delivered batches remain
 provisional. The caller must not mark those batches complete before receiving a
