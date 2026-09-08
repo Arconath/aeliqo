@@ -144,6 +144,57 @@ test("form wrapper honors a trusted child-cancelled submit click", async ({page}
   expect(await page.evaluate(() => (window as Window & {cancelledClickSubmits?: number}).cancelledClickSubmits)).toBe(0);
 });
 
+test("field groups propagate disabled through nested and dynamic children", async ({page}) => {
+  await page.evaluate(async () => {
+    const root = document.querySelector<HTMLElement>("#fixture");
+    if (root === null) throw new Error("fixture missing");
+    const group = document.createElement("aeliqo-field-group") as HTMLElement & {disabled: boolean; updateComplete: Promise<unknown>};
+    group.id = "nested-disabled-group";
+    const wrapper = document.createElement("div");
+    const preserved = document.createElement("aeliqo-text-field") as HTMLElement & {disabled: boolean; updateComplete: Promise<unknown>};
+    preserved.name = "preserved";
+    preserved.disabled = true;
+    wrapper.append(preserved);
+    group.append(wrapper);
+    root.append(group);
+    await Promise.all([group.updateComplete, preserved.updateComplete]);
+    group.disabled = true;
+    await group.updateComplete;
+    const dynamic = document.createElement("aeliqo-text-field") as HTMLElement & {disabled: boolean; updateComplete: Promise<unknown>};
+    dynamic.name = "dynamic";
+    group.append(dynamic);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await dynamic.updateComplete;
+    (window as Window & {nestedDisabledState?: unknown}).nestedDisabledState = {
+      nestedHost: preserved.disabled,
+      nestedNative: preserved.shadowRoot?.querySelector("input")?.disabled ?? false,
+      dynamicHost: dynamic.disabled,
+      dynamicNative: dynamic.shadowRoot?.querySelector("input")?.disabled ?? false,
+    };
+    group.disabled = false;
+    await group.updateComplete;
+    await Promise.all([preserved.updateComplete, dynamic.updateComplete]);
+    (window as Window & {nestedDisabledStateAfter?: unknown}).nestedDisabledStateAfter = {
+      preservedHost: preserved.disabled,
+      preservedNative: preserved.shadowRoot?.querySelector("input")?.disabled ?? false,
+      dynamicHost: dynamic.disabled,
+      dynamicNative: dynamic.shadowRoot?.querySelector("input")?.disabled ?? false,
+    };
+  });
+  expect(await page.evaluate(() => (window as Window & {nestedDisabledState?: unknown}).nestedDisabledState)).toEqual({
+    nestedHost: true,
+    nestedNative: true,
+    dynamicHost: true,
+    dynamicNative: true,
+  });
+  expect(await page.evaluate(() => (window as Window & {nestedDisabledStateAfter?: unknown}).nestedDisabledStateAfter)).toEqual({
+    preservedHost: true,
+    preservedNative: true,
+    dynamicHost: false,
+    dynamicNative: false,
+  });
+});
+
 test("form wrapper defers child Enter behavior and respects native ownership", async ({page}) => {
   await page.evaluate(async () => {
     const root = document.querySelector<HTMLElement>("#fixture");
