@@ -1,15 +1,18 @@
 import {registerAeliqoElements} from "../../../packages/web/src/register.js";
-import {AeliqoRegionElement} from "../../../packages/web/src/region/aeliqo-region.js";
+import type {AeliqoRegionElement} from "../../../packages/web/src/region/aeliqo-region.js";
 import type {AeliqoRegionResult} from "../../../packages/web/src/region/types.js";
 import type {AeliqoTableColumn} from "../../../packages/web/src/types.js";
-import type {Result, ResultRef, ValidatedPresentation} from "../../../packages/core/src/index.js";
+import type {InteractionPort, Result, ResultRef, ValidatedPresentation} from "../../../packages/core/src/index.js";
 
 registerAeliqoElements();
-customElements.define("aeliqo-region", AeliqoRegionElement);
 
 const region = document.querySelector<AeliqoRegionElement>("#region")!;
 const ref: ResultRef = {id: "rows-result", revision: "1", outputId: "rows", queryDigest: "query", scopeDigest: "scope"};
 const events: unknown[] = [];
+
+type ResolvedNode = ValidatedPresentation["nodes"][number];
+type NodeValues = ResolvedNode["config"]["values"];
+type NodePorts = readonly InteractionPort[];
 
 function result(fields: Result["fields"]): Result {
   return {version: "1", ref, taskId: "task", fields, identity: ["employee.id"], rowGrain: ["employee.id", "week"],
@@ -17,23 +20,76 @@ function result(fields: Result["fields"]): Result {
     consistency: {kind: "unknown", reason: "fixture"}, evidence: {kind: "observed", source: {id: "fixture", revision: "1"}}, filters: [], warnings: [], lineage: []};
 }
 
-function node(id: string, role: string, representation: string, values: Record<string, unknown>, fields: string[], resultDescriptor: Result | undefined, ports: readonly Record<string, unknown>[] = []) {
-  return {node: {id, role, representation: {id: representation, revision: "1"}, ...(resultDescriptor === undefined ? {} : {result: resultDescriptor.ref}), config: {schema: {id: `${representation}.config`, revision: "1"}, values}, children: []},
-    manifest: {id: representation, revision: "1"}, config: {values, fields, ports}, result: resultDescriptor};
+function node(
+  id: string,
+  role: ResolvedNode["node"]["role"],
+  representation: ResolvedNode["node"]["representation"]["id"],
+  values: NodeValues,
+  fields: readonly string[],
+  resultDescriptor: Result | undefined,
+  ports: NodePorts = [],
+): ResolvedNode {
+  const representationRef = {id: representation, revision: "1"};
+  return {
+    node: {
+      id,
+      role,
+      representation: representationRef,
+      ...(resultDescriptor === undefined ? {} : {result: resultDescriptor.ref}),
+      config: {schema: {id: `${representation}.config`, revision: "1"}, values},
+      children: [],
+    },
+    manifest: representationRef,
+    config: {values, fields, ports},
+    result: resultDescriptor,
+  };
 }
 
-function presentation(children: readonly string[], nodes: readonly ReturnType<typeof node>[]): ValidatedPresentation {
+function presentation(children: readonly string[], nodes: readonly ResolvedNode[]): ValidatedPresentation {
   const byId = new Map(nodes.map((entry) => [entry.node.id, entry]));
   const layout = node("layout", "structure", "layout.stack", {gap: 4}, [], undefined);
-  const layoutNode = {...layout, node: {...layout.node, children}};
+  const layoutNode: ResolvedNode = {...layout, node: {...layout.node, children}};
   byId.set("layout", layoutNode);
-  return {plan: {rootId: "layout"} as ValidatedPresentation["plan"], nodes: [...byId.values()], graph: {} as ValidatedPresentation["graph"], environment: {} as ValidatedPresentation["environment"]};
+  const plan: ValidatedPresentation["plan"] = {
+    id: "fixture-plan",
+    revision: "1",
+    rootId: "layout",
+    preconditions: {
+      scopeDigest: "scope",
+      policyRevision: "policy",
+      taskRevision: "task",
+      regionRevision: "region",
+      catalogRevision: "catalog",
+      experienceRevision: "experience",
+      functionRegistryDigest: "functions",
+      results: [ref],
+    },
+    nodes: [...byId.values()].map((entry) => entry.node),
+    links: [],
+    coverage: [],
+    stateTransfer: [],
+    diagnostics: [],
+  };
+  const graph: ValidatedPresentation["graph"] = {nodes: [], links: [], mappings: []};
+  const environment: ValidatedPresentation["environment"] = {
+    inlineSize: {state: "unknown"},
+    blockSize: {state: "unknown"},
+    textScale: {state: "unknown"},
+    pointer: "unknown",
+    hover: "unknown",
+    keyboard: "unknown",
+    locale: "en-US",
+    direction: "ltr",
+    reducedMotion: false,
+    forcedColors: false,
+  };
+  return {plan, nodes: [...byId.values()], graph, environment};
 }
 
-const textField = {id: "employee.id", label: "Employee ID", type: {value: "text", nullable: false}, role: "identity" as const};
-const departmentField = {id: "department", label: "Department", type: {value: "text", nullable: false}, role: "dimension" as const};
-const weekField = {id: "week", label: "Week", type: {value: "instant", nullable: false}, role: "time" as const};
-const amountField = {id: "absence", label: "Absence", type: {value: "decimal", nullable: true}, role: "measure" as const};
+const textField = {id: "employee.id", label: "Employee ID", type: {value: "text", nullable: false}, role: "identity"} as const satisfies Result["fields"][number];
+const departmentField = {id: "department", label: "Department", type: {value: "text", nullable: false}, role: "dimension"} as const satisfies Result["fields"][number];
+const weekField = {id: "week", label: "Week", type: {value: "instant", nullable: false}, role: "time"} as const satisfies Result["fields"][number];
+const amountField = {id: "absence", label: "Absence", type: {value: "decimal", nullable: true}, role: "measure"} as const satisfies Result["fields"][number];
 
 const selectionResult = result([textField, departmentField]);
 const selectionRows = [{"employee.id": "e1", department: "People"}, {"employee.id": "e2", department: "Sales"}];
