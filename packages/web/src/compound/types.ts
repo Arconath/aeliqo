@@ -1,4 +1,4 @@
-import type {CommitPreconditions, InteractionLink, PresentationPlan, ResultRef, Scalar, VersionRef} from "@aeliqo/core";
+import type {CommitPreconditions, InteractionLink, PresentationPlan, PresentationContext, PresentationRegistry, ResultRef, Scalar, VersionRef} from "@aeliqo/core";
 import type {AeliqoDataColumn, AeliqoDataRecord, AeliqoDataScope, AeliqoDataStatus, AeliqoFieldOption, AeliqoFilterPredicate} from "../data/types.js";
 
 export type AeliqoCompoundStatus = AeliqoDataStatus;
@@ -28,24 +28,23 @@ export interface AeliqoCompoundRecipeOptions {
 }
 
 export interface AeliqoCompoundRecipeInput extends AeliqoCompoundRecipeOptions {
-  readonly result?: ResultRef;
-  readonly results?: readonly ResultRef[];
+  /** Host-configured shared primitive nodes. The macro never invents bindings. */
+  readonly parts: PresentationPlan['nodes'];
+  readonly links?: PresentationPlan['links'];
+  /** Exact task need IDs and operation refs; omission cannot satisfy a required need. */
+  readonly coverage?: PresentationPlan['coverage'];
+  readonly stateTransfer?: PresentationPlan['stateTransfer'];
+  readonly validation: {readonly context: PresentationContext; readonly registry: PresentationRegistry};
 }
 
-export interface AeliqoExplorerRecipeInput extends AeliqoCompoundRecipeInput {
-  readonly entity?: string;
-}
+export type AeliqoExplorerRecipeInput = AeliqoCompoundRecipeInput;
 export interface AeliqoComparisonMetric {
   readonly id: string;
   readonly label: string;
   readonly unit?: string;
   readonly values: Readonly<Record<string, Scalar | undefined>>;
 }
-export interface AeliqoComparisonRecipeInput extends AeliqoCompoundRecipeInput {
-  readonly entity?: string;
-  readonly compareKeys?: readonly string[];
-  readonly metrics?: readonly Pick<AeliqoComparisonMetric, "id" | "label" | "unit">[];
-}
+export type AeliqoComparisonRecipeInput = AeliqoCompoundRecipeInput;
 export interface AeliqoBreakdownGroup {
   readonly key: string;
   readonly label: string;
@@ -60,30 +59,12 @@ export interface AeliqoBreakdownGroup {
   readonly denominator?: number;
   readonly recordCount?: number;
 }
-export interface AeliqoBreakdownRecipeInput extends AeliqoCompoundRecipeInput {
-  readonly entity?: string;
-  readonly groupField?: string;
-  readonly metricId?: string;
-}
-export interface AeliqoInvestigationRecipeInput extends AeliqoCompoundRecipeInput {
-  readonly entity?: string;
-  readonly trendResult?: ResultRef;
-  readonly eventResult?: ResultRef;
-}
-export interface AeliqoSearchResultsRecipeInput extends AeliqoCompoundRecipeInput {
-  readonly entity?: string;
-  readonly query?: string;
-}
-export interface AeliqoRecordEditorRecipeInput extends AeliqoCompoundRecipeInput {
-  readonly entity?: string;
-  readonly action?: VersionRef;
-}
-export interface AeliqoFormFlowRecipeInput extends AeliqoCompoundRecipeInput {
-  readonly steps?: readonly string[];
-}
-export interface AeliqoQualityPanelRecipeInput extends AeliqoCompoundRecipeInput {
-  readonly entity?: string;
-}
+export type AeliqoBreakdownRecipeInput = AeliqoCompoundRecipeInput;
+export type AeliqoInvestigationRecipeInput = AeliqoCompoundRecipeInput;
+export type AeliqoSearchResultsRecipeInput = AeliqoCompoundRecipeInput;
+export type AeliqoRecordEditorRecipeInput = AeliqoCompoundRecipeInput;
+export type AeliqoFormFlowRecipeInput = AeliqoCompoundRecipeInput;
+export type AeliqoQualityPanelRecipeInput = AeliqoCompoundRecipeInput;
 
 export interface AeliqoCompoundRecipe {
   readonly plan: PresentationPlan;

@@ -1,46 +1,49 @@
-import {describe, expect, it} from "vitest";
-import type {CommitPreconditions, ResultRef} from "../../packages/core/src/index.js";
-import {
-  breakdownPresentationRecipe, comparisonPresentationRecipe, explorerPresentationRecipe, formFlowPresentationRecipe,
-  investigationPresentationRecipe, qualityPanelPresentationRecipe, recordEditorPresentationRecipe, searchResultsPresentationRecipe,
-} from "../../packages/web/src/compound/index.js";
+import {describe, expect, it} from 'vitest';
+import {validatePresentationPlan, type PresentationContext} from '../../packages/core/src/index.js';
+import {createAeliqoPresentationRegistry} from '../../packages/web/src/region/registry.js';
+import {explorerPresentationRecipe, breakdownPresentationRecipe, qualityPanelPresentationRecipe, compoundRecipeHelpers} from '../../packages/web/src/compound/recipes.js';
+import type {AeliqoCompoundRecipeInput} from '../../packages/web/src/compound/types.js';
+import {dataPresentationContext, dataPresentationPlan, registryOptions} from '../data-semantic/fixture.js';
 
-const ref: ResultRef = {id: "task", revision: "1", outputId: "rows", queryDigest: "query", scopeDigest: "scope"};
-const preconditions: CommitPreconditions = {scopeDigest: "scope", policyRevision: "policy", taskRevision: "task", regionRevision: "region", catalogRevision: "catalog", experienceRevision: "experience", functionRegistryDigest: "functions", results: [ref]};
-const input = {id: "view", revision: "1", preconditions, result: ref};
-const key = (value: {readonly id: string; readonly revision: string}) => `${value.id}@${value.revision}`;
+function fixture(ids: readonly string[]): AeliqoCompoundRecipeInput {
+  const original = dataPresentationPlan();
+  const base = dataPresentationContext();
+  const stack = {id: 'layout.stack', revision: '1'};
+  const context: PresentationContext = {...base, task: {...base.task, needs: [{id: 'read', operation: {id: 'data.read', revision: '1'}, fields: ['id'], outputId: 'people', required: true}]},
+    experience: {...base.experience, allowedRepresentations: [...base.experience.allowedRepresentations, stack.id]}, rendererCapabilities: [...base.rendererCapabilities, stack]};
+  const registry = createAeliqoPresentationRegistry(registryOptions);
+  if (!registry.ok) throw new Error('registry');
+  return {id: 'compound', revision: '1', preconditions: original.preconditions, parts: original.nodes.filter(node => ids.includes(node.id)),
+    coverage: [{needId: 'read', nodeIds: ids.filter(id => id !== 'filter-builder') as [string, ...string[]], operations: [{id: 'data.read', revision: '1'}]}], validation: {context, registry: registry.value}};
+}
 
-describe("compound presentation recipes", () => {
-  it("creates bounded plans with stable child identities and exact result references", () => {
-    const recipes = [
-      explorerPresentationRecipe(input), comparisonPresentationRecipe(input), breakdownPresentationRecipe(input), investigationPresentationRecipe(input),
-      searchResultsPresentationRecipe(input), recordEditorPresentationRecipe(input), formFlowPresentationRecipe(input), qualityPanelPresentationRecipe(input),
-    ];
-    for (const recipe of recipes) {
-      expect(recipe.plan.id).toBe("view");
-      expect(recipe.plan.nodes.length).toBeGreaterThan(1);
-      expect(new Set(recipe.plan.nodes.map(node => node.id)).size).toBe(recipe.plan.nodes.length);
-      expect(recipe.plan.nodes[0]?.children).toEqual(recipe.childIds);
-      if (recipe.plan.nodes.some(node => node.result !== undefined)) expect(recipe.plan.nodes.some(node => node.result?.scopeDigest === "scope")).toBe(true);
-      expect(recipe.plan.links.every(link => link.mapping.id.length > 0)).toBe(true);
-      expect(recipe.plan.stateTransfer).toEqual([]);
+describe('compound recipes use the real canonical presentation validator', () => {
+  it('builds Explorer from configured registered primitives without invented roots or needs', () => {
+    const input = fixture(['filter-builder', 'record-list', 'detail']);
+    const result = explorerPresentationRecipe(input);
+    expect(result.ok, JSON.stringify(result)).toBe(true);
+    if (!result.ok) throw new Error(JSON.stringify(result));
+    expect(result.value.plan.nodes[0]?.representation.id).toBe('layout.stack');
+    expect(result.value.plan.coverage.map(item => item.needId)).toEqual(['read']);
+    expect(validatePresentationPlan(result.value.plan, input.validation.context, input.validation.registry).ok).toBe(true);
+    expect(result.value.childIds).toEqual(['detail', 'record-list', 'filter-builder']);
+  });
+  it('rejects missing task coverage, stale results, invented configuration, and experience exclusions', () => {
+    const input = fixture(['filter-builder', 'record-list', 'detail']);
+    expect(explorerPresentationRecipe({...input, coverage: []}).ok).toBe(false);
+    expect(explorerPresentationRecipe({...input, validation: {...input.validation, context: {...input.validation.context, results: []}}}).ok).toBe(false);
+    expect(explorerPresentationRecipe({...input, parts: input.parts.map(node => ({...node, config: {...node.config, values: {arbitraryCode: 'alert(1)'}}}))}).ok).toBe(false);
+    expect(explorerPresentationRecipe({...input, validation: {...input.validation, context: {...input.validation.context, experience: {...input.validation.context.experience, allowedRepresentations: []}}}}).ok).toBe(false);
+  });
+  it('validates Breakdown and QualityPanel over actual registered data primitives', () => {
+    for (const [make, ids] of [[breakdownPresentationRecipe, ['metric', 'record-list']], [qualityPanelPresentationRecipe, ['detail']]] as const) {
+      const input = fixture(ids);
+      const result = make(input);
+      expect(result.ok, JSON.stringify(result)).toBe(true);
+      if (!result.ok) throw new Error(JSON.stringify(result));
     }
   });
-
-  it("uses semantic child representations for each inventory entry", () => {
-    expect(explorerPresentationRecipe(input).plan.nodes.map(node => key(node.representation))).toEqual(["compound.explorer@1", "control.filter-builder@1", "data.record-list@1", "data.detail@1"]);
-    expect(comparisonPresentationRecipe(input).plan.nodes[1]?.representation.id).toBe("data.table");
-    expect(breakdownPresentationRecipe(input).plan.nodes.map(node => node.role)).toEqual(["breakdown", "metric", "collection", "detail"]);
-    expect(investigationPresentationRecipe(input).plan.nodes.map(node => node.role)).toContain("timeline");
-    expect(searchResultsPresentationRecipe(input).plan.nodes.map(node => node.role)).toContain("search");
-    expect(recordEditorPresentationRecipe(input).plan.nodes[1]?.role).toBe("form");
-    expect(formFlowPresentationRecipe({...input, steps: ["one", "two"]}).plan.nodes[1]?.config.values).toEqual({steps: ["one", "two"]});
-    expect(qualityPanelPresentationRecipe(input).plan.nodes[1]?.role).toBe("quality");
-  });
-
-  it("does not invent an authorization result when none is supplied", () => {
-    const plan = explorerPresentationRecipe({id: "unresolved", revision: "1", preconditions});
-    expect(plan.plan.nodes.every(node => node.result === undefined)).toBe(true);
-    expect(plan.plan.nodes[0]?.config.values).toEqual({});
+  it('fails every macro closed without configured primitive parts', () => {
+    for (const make of Object.values(compoundRecipeHelpers)) expect(make({...fixture(['detail']), parts: []}).ok).toBe(false);
   });
 });
