@@ -1,0 +1,125 @@
+import {readFileSync} from 'node:fs';
+import {spawnSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+import {describe, expect, it} from 'vitest';
+
+type Json = null | boolean | number | string | Json[] | {[key: string]: Json};
+type OracleOutput = {
+  seededFanout: {
+    seed: number;
+    eligibleEmployees: string[];
+    semijoinTotal: number;
+    fanoutMutantTotal: number;
+  };
+  ratioOfSums: {ratioOfSums: string; meanOfRatesMutant: string};
+  emptyUnknown: {
+    empty: {state: string; rate: null};
+    missingNumerator: {state: string; reason: string; rate: null};
+    zeroDenominator: {state: string; reason: string; rate: null};
+    zeroValid: {state: string; rate: string};
+  };
+  exactArithmetic: {decimalTotal: string; integerTotal: string; safeIntegerMaximum: number; unsafeIntegerInput: {state: string; value: string}};
+  ranking: {
+    fixedTopK: string[];
+    fixedWeekly: Array<{employee: string; week: string; numerator: number; denominator: number; rate: string}>;
+    liveTopByWeekMutant: Record<string, string[]>;
+    partialPageTopMutant: string;
+    fullTop: string;
+    totals: Array<{employee: string; numerator: number; denominator: number; rate: string}>;
+  };
+  incompleteAndAdversarial: {
+    cardinality: {state: string; reason: string; offendingEmployees: string[]};
+    halfOpenPeriod: {included: string[]; excluded: string[]};
+    invalidDecimal: {state: string; value: string};
+  };
+};
+
+const oracleDirectory = fileURLToPath(new URL('./oracle/', import.meta.url));
+const oraclePath = `${oracleDirectory}oracle.py`;
+const expectedPath = `${oracleDirectory}expected.json`;
+const casesPath = `${oracleDirectory}cases.json`;
+
+function runOracle(...args: string[]): OracleOutput {
+  const result = spawnSync('python3', [oraclePath, '--json', ...args], {
+    cwd: fileURLToPath(new URL('../..', import.meta.url)),
+    encoding: 'utf8',
+  });
+  if (result.error || result.status !== 0) {
+    throw new Error(result.stderr || result.stdout || result.error?.message || 'oracle failed');
+  }
+  return JSON.parse(result.stdout) as OracleOutput;
+}
+
+describe('independent T07 numerical oracle', () => {
+  it('recomputes the checked expected output without production imports', () => {
+    const output = runOracle();
+    const expected = JSON.parse(readFileSync(expectedPath, 'utf8')) as Json;
+    expect(output).toEqual(expected);
+    const check = spawnSync('python3', [oraclePath, '--check'], {
+      cwd: fileURLToPath(new URL('../..', import.meta.url)),
+      encoding: 'utf8',
+    });
+    expect(check.status).toBe(0);
+  });
+
+  it('detects join fanout and preserves semijoin identity scope', () => {
+    const {seededFanout} = runOracle();
+    expect(seededFanout.eligibleEmployees).toEqual(['e1', 'e3']);
+    expect(seededFanout.semijoinTotal).toBe(180);
+    expect(seededFanout.fanoutMutantTotal).toBe(360);
+    expect(seededFanout.fanoutMutantTotal).not.toBe(seededFanout.semijoinTotal);
+  });
+
+  it('requires ratio-of-sums and exact nonterminating rational values', () => {
+    const output = runOracle();
+    expect(output.ratioOfSums.ratioOfSums).toBe('41/55');
+    expect(output.ratioOfSums.meanOfRatesMutant).toBe('1/2');
+    expect(output.ratioOfSums.meanOfRatesMutant).not.toBe(output.ratioOfSums.ratioOfSums);
+    expect(output.ranking.fixedWeekly.find((row) => row.employee === 'C' && row.week === '2026-W02')?.rate).toBe('11/15');
+  });
+
+  it('keeps empty, unknown, zero-denominator and valid-zero states distinct', () => {
+    const {emptyUnknown} = runOracle();
+    expect(emptyUnknown.empty).toEqual({state: 'empty', rate: null});
+    expect(emptyUnknown.missingNumerator).toEqual({state: 'unknown', reason: 'missing-input', rate: null});
+    expect(emptyUnknown.zeroDenominator).toEqual({state: 'unknown', reason: 'zero-denominator', rate: null});
+    expect(emptyUnknown.zeroValid).toEqual({state: 'exact', rate: '0'});
+  });
+
+  it('retains exact decimal and integer values beyond IEEE-754 safe arithmetic', () => {
+    const {exactArithmetic} = runOracle();
+    expect(exactArithmetic.decimalTotal).toBe('9007199254740993.02');
+    expect(exactArithmetic.integerTotal).toBe('9007199254740992');
+    expect(BigInt(exactArithmetic.integerTotal)).toBe(9_007_199_254_740_992n);
+    expect(exactArithmetic.safeIntegerMaximum).toBe(9_007_199_254_740_991);
+    expect(exactArithmetic.unsafeIntegerInput).toEqual({state: 'rejected', value: '9007199254740993'});
+  });
+
+  it('selects a fixed full-period top-K population before temporal evaluation', () => {
+    const {ranking} = runOracle();
+    expect(ranking.fixedTopK).toEqual(['C', 'D', 'A']);
+    expect(ranking.fixedWeekly.every((row) => ranking.fixedTopK.includes(row.employee))).toBe(true);
+    expect(ranking.liveTopByWeekMutant['2026-W01']).toEqual(['B', 'E', 'A']);
+    expect(ranking.liveTopByWeekMutant['2026-W01']).not.toEqual(ranking.fixedTopK);
+    expect(ranking.totals.filter((row) => row.rate === '3/5').map((row) => row.employee)).toEqual(['C', 'D']);
+  });
+
+  it('rejects partial-page winners, violated cardinality and closed time bounds', () => {
+    const output = runOracle();
+    expect(output.ranking.partialPageTopMutant).toBe('a');
+    expect(output.ranking.fullTop).toBe('c');
+    expect(output.ranking.partialPageTopMutant).not.toBe(output.ranking.fullTop);
+    expect(output.incompleteAndAdversarial.cardinality).toMatchObject({
+      state: 'invalid', reason: 'many-to-one-violation', offendingEmployees: ['e1'],
+    });
+    expect(output.incompleteAndAdversarial.halfOpenPeriod).toEqual({included: ['at-start', 'inside'], excluded: ['at-end']});
+    expect(output.incompleteAndAdversarial.invalidDecimal).toEqual({state: 'rejected', value: '1.2.3'});
+  });
+
+  it('uses the checked deterministic fixture seed', () => {
+    const cases = JSON.parse(readFileSync(casesPath, 'utf8')) as {seededFanout: {seed: number}};
+    const output = runOracle();
+    expect(cases.seededFanout.seed).toBe(17);
+    expect(output.seededFanout.seed).toBe(17);
+  });
+});

@@ -1,0 +1,260 @@
+{
+  "emptyUnknown": {
+    "empty": {
+      "rate": null,
+      "state": "empty"
+    },
+    "missingNumerator": {
+      "rate": null,
+      "reason": "missing-input",
+      "state": "unknown"
+    },
+    "zeroDenominator": {
+      "rate": null,
+      "reason": "zero-denominator",
+      "state": "unknown"
+    },
+    "zeroValid": {
+      "rate": "0",
+      "state": "exact"
+    }
+  },
+  "exactArithmetic": {
+    "decimalTotal": "9007199254740993.02",
+    "integerTotal": "9007199254740992",
+    "safeIntegerMaximum": 9007199254740991,
+    "unsafeIntegerInput": {
+      "state": "rejected",
+      "value": "9007199254740993"
+    }
+  },
+  "incompleteAndAdversarial": {
+    "cardinality": {
+      "declared": "many-to-one",
+      "offendingEmployees": [
+        "e1"
+      ],
+      "reason": "many-to-one-violation",
+      "state": "invalid"
+    },
+    "halfOpenPeriod": {
+      "excluded": [
+        "at-end"
+      ],
+      "included": [
+        "at-start",
+        "inside"
+      ]
+    },
+    "invalidDecimal": {
+      "state": "rejected",
+      "value": "1.2.3"
+    }
+  },
+  "ranking": {
+    "fixedTopK": [
+      "C",
+      "D",
+      "A"
+    ],
+    "fixedWeekly": [
+      {
+        "denominator": 5,
+        "employee": "C",
+        "numerator": 1,
+        "rate": "1/5",
+        "week": "2026-W01"
+      },
+      {
+        "denominator": 15,
+        "employee": "C",
+        "numerator": 11,
+        "rate": "11/15",
+        "week": "2026-W02"
+      },
+      {
+        "denominator": 5,
+        "employee": "D",
+        "numerator": 3,
+        "rate": "3/5",
+        "week": "2026-W01"
+      },
+      {
+        "denominator": 10,
+        "employee": "D",
+        "numerator": 6,
+        "rate": "3/5",
+        "week": "2026-W02"
+      },
+      {
+        "denominator": 5,
+        "employee": "A",
+        "numerator": 4,
+        "rate": "4/5",
+        "week": "2026-W01"
+      },
+      {
+        "denominator": 15,
+        "employee": "A",
+        "numerator": 6,
+        "rate": "2/5",
+        "week": "2026-W02"
+      }
+    ],
+    "fullTop": "c",
+    "liveTopByWeekMutant": {
+      "2026-W01": [
+        "B",
+        "E",
+        "A"
+      ],
+      "2026-W02": [
+        "C",
+        "D",
+        "A"
+      ]
+    },
+    "partialPageTopMutant": "a",
+    "totals": [
+      {
+        "denominator": 20,
+        "employee": "C",
+        "numerator": 12,
+        "rate": "3/5"
+      },
+      {
+        "denominator": 15,
+        "employee": "D",
+        "numerator": 9,
+        "rate": "3/5"
+      },
+      {
+        "denominator": 20,
+        "employee": "A",
+        "numerator": 10,
+        "rate": "1/2"
+      },
+      {
+        "denominator": 20,
+        "employee": "B",
+        "numerator": 10,
+        "rate": "1/2"
+      },
+      {
+        "denominator": 20,
+        "employee": "E",
+        "numerator": 8,
+        "rate": "2/5"
+      }
+    ]
+  },
+  "ratioOfSums": {
+    "denominatorSum": 110,
+    "groups": [
+      {
+        "denominator": 100,
+        "id": "alpha",
+        "numerator": 80,
+        "rate": "4/5"
+      },
+      {
+        "denominator": 10,
+        "id": "beta",
+        "numerator": 2,
+        "rate": "1/5"
+      }
+    ],
+    "meanOfRatesMutant": "1/2",
+    "numeratorSum": 82,
+    "ratioOfSums": "41/55"
+  },
+  "seededFanout": {
+    "eligibleEmployees": [
+      "e1",
+      "e3"
+    ],
+    "fanoutMutantTotal": 360,
+    "orders": [
+      {
+        "amount": 63,
+        "employee": "e1"
+      },
+      {
+        "amount": 48,
+        "employee": "e1"
+      },
+      {
+        "amount": 56,
+        "employee": "e1"
+      },
+      {
+        "amount": 32,
+        "employee": "e2"
+      },
+      {
+        "amount": 79,
+        "employee": "e2"
+      },
+      {
+        "amount": 13,
+        "employee": "e3"
+      },
+      {
+        "amount": 59,
+        "employee": "e4"
+      },
+      {
+        "amount": 74,
+        "employee": "e5"
+      },
+      {
+        "amount": 50,
+        "employee": "e5"
+      }
+    ],
+    "seed": 17,
+    "semijoinTotal": 180,
+    "tags": [
+      {
+        "employee": "e1",
+        "label": "eligible-0"
+      },
+      {
+        "employee": "e1",
+        "label": "eligible-1"
+      },
+      {
+        "employee": "e2",
+        "label": "other-0"
+      },
+      {
+        "employee": "e2",
+        "label": "other-1"
+      },
+      {
+        "employee": "e3",
+        "label": "eligible-0"
+      },
+      {
+        "employee": "e3",
+        "label": "eligible-1"
+      },
+      {
+        "employee": "e4",
+        "label": "other-0"
+      },
+      {
+        "employee": "e4",
+        "label": "other-1"
+      },
+      {
+        "employee": "e5",
+        "label": "other-0"
+      },
+      {
+        "employee": "e5",
+        "label": "other-1"
+      }
+    ]
+  }
+}
