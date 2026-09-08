@@ -82,6 +82,52 @@ describe('query plan and execution boundaries', () => {
     expect(outcome.ok).toBe(false);
     if (!outcome.ok) expect(outcome.diagnostics[0].code).toBe('query.predicate-type');
   });
+  it.each(['join', 'semijoin'] as const)('rejects transported %s keys that do not match the declared relationship', (kind) => {
+    const joinedCatalog: Catalog = {
+      version: '1', revision: 'joined-catalog-1', functionRegistryDigest: registry.digest,
+      entities: [
+        {id: 'events', label: 'Events', identity: ['id'], rowGrain: ['id'], fields: [
+          {id: 'id', label: 'ID', role: 'identity', type: {value: 'text', nullable: false}},
+          {id: 'group', label: 'Group', role: 'attribute', type: {value: 'text', nullable: false}},
+        ]},
+        {id: 'labels', label: 'Labels', identity: ['id'], rowGrain: ['id'], fields: [
+          {id: 'id', label: 'ID', role: 'identity', type: {value: 'text', nullable: false}},
+          {id: 'eventId', label: 'Event ID', role: 'attribute', type: {value: 'text', nullable: false}},
+          {id: 'group', label: 'Group', role: 'attribute', type: {value: 'text', nullable: false}},
+        ]},
+      ],
+      relationships: [{id: 'event-label', revision: '1', sourceEntity: 'events', targetEntity: 'labels',
+        keys: [{sourceField: 'id', targetField: 'eventId'}], cardinality: 'many-to-one', optional: false, joinPolicy: 'validated'}],
+      meanings: [], capabilities: [],
+    };
+    const engine = unwrap(createQueryPlanner({catalog: joinedCatalog, registry}));
+    const query: RelationalQuery = {
+      root: 'events', pins: {catalogRevision: joinedCatalog.revision, functionRegistryDigest: registry.digest},
+      select: kind === 'join'
+        ? [{id: 'eventId', expression: {kind: 'field', entity: 'events', ref: 'id'}}, {id: 'labelId', expression: {kind: 'field', entity: 'labels', ref: 'id'}}]
+        : [{id: 'eventId', expression: {kind: 'field', entity: 'events', ref: 'id'}}],
+      ...(kind === 'join'
+        ? {joins: [{id: 'event-label', rightEntity: 'labels', relationship: {id: 'event-label', revision: '1'}, kind: 'inner' as const}]}
+        : {semiJoins: [{id: 'event-label', rightEntity: 'labels', relationship: {id: 'event-label', revision: '1'}}]}),
+    };
+    const planned = unwrap(engine.plan(query));
+    const changed = structuredClone(planned) as any;
+    const node = changed.nodes.find((candidate: any) => candidate.op === kind);
+    expect(node).toBeDefined();
+    node.keys = [{left: '["events","group"]', right: '["labels","group"]'}];
+    changed.canonical = canonical({version: '1', pins: changed.pins, root: changed.root, nodes: changed.nodes});
+    changed.planKey = `query-${changed.canonical}`;
+    const outcome = engine.evaluate(changed as LogicalPlan, {
+      revision: 'joined-source-1', catalogRevision: joinedCatalog.revision,
+      relations: {
+        events: {entity: 'events', complete: true, rows: [{id: 'e1', group: 'A'}]},
+        labels: {entity: 'labels', complete: true, rows: [{id: 'l1', eventId: 'e1', group: 'B'}]},
+      },
+    });
+    expect(outcome.ok).toBe(false);
+    if (!outcome.ok) expect(outcome.diagnostics[0]?.code).toBe('query.relationship-keys');
+  });
+
   it('keeps fractional division typed as float during membership evaluation', () => {
     const engine = planner();
     const plan = unwrap(engine.plan({...query, filter:{op:'in',expression:{kind:'call',function:{id:'core.divide.null',revision:'1'},arguments:[
