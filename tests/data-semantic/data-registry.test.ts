@@ -187,8 +187,54 @@ describe("authorized data binding", () => {
         binding({ rows: [getterRow as never, rows[1]] }),
       ).ok,
     ).toBe(false);
+    });
   });
-});
+
+  it("keeps counts, coverage and supplied scope metadata mutually consistent", () => {
+    expect(
+      validateAeliqoDataBinding(
+        binding({
+          result: result({
+            counts: {
+              loaded: 2,
+              population: {
+                kind: "exact",
+                value: 1,
+                populationDigest: "population",
+              },
+            },
+          }),
+        }),
+      ).ok,
+    ).toBe(false);
+    expect(
+      validateAeliqoDataBinding(
+        binding({
+          result: result({
+            coverage: { kind: "complete", populationDigest: "other" },
+          }),
+        }),
+      ).ok,
+    ).toBe(false);
+    expect(
+      validateAeliqoDataBinding({
+        ...binding(),
+        scope: {
+          kind: "population",
+          loaded: 2,
+          populationTotal: 2,
+          populationDigest: "population",
+          evil: "secret",
+        } as never,
+      }).ok,
+    ).toBe(false);
+    expect(
+      validateAeliqoDataBinding({
+        ...binding(),
+        result: result({coverage: {kind: "future"} as never}),
+      }).ok,
+    ).toBe(false);
+  });
 
 describe("data registry semantics", () => {
   it("registers all nine data views and only derives fields from the authorized Result", () => {
@@ -278,6 +324,19 @@ describe("data registry semantics", () => {
     ).toBe(false);
   });
 
+  it("keeps detail columns within its selected fields", () => {
+    const selected = resolve("detail", {fields: ["id"], identityValues: {id: "a"}});
+    expect(selected.ok).toBe(true);
+    if (selected.ok) expect(selected.value.config.columns.map((column) => column.key)).toEqual(["id"]);
+    expect(
+      resolve("detail", {
+        fields: ["id"],
+        identityValues: {id: "a"},
+        columns: [{key: "name", label: "Name"}],
+      }).ok,
+    ).toBe(false);
+  });
+
   it("requires a trusted entity before selection can create a selection port", () => {
     const noEntity = createAeliqoDataRegistry();
     expect(
@@ -312,5 +371,26 @@ describe("data registry semantics", () => {
       expect(valid.value.config.ports).toEqual([
         { id: "filter", direction: "output", payload: "filter" },
       ]);
+    expect(
+      resolve("filterBuilder", {
+        field: "department",
+        outputId: "people",
+        inherited: {op: "not-registered", field: "department"},
+      }).ok,
+    ).toBe(false);
+    expect(
+      resolve("filterBuilder", {
+        field: "department",
+        outputId: "people",
+        inherited: {op: "is-null", field: "department", negate: false, extra: true},
+      }).ok,
+    ).toBe(false);
+    expect(
+      resolve("filterBuilder", {
+        field: "department",
+        outputId: "people",
+        inherited: {op: "is-null", field: "department", negate: false},
+      }).ok,
+    ).toBe(true);
   });
 });

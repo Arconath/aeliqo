@@ -262,6 +262,12 @@ describe("data presentation bridge", () => {
       ok: false,
       diagnostics: [{ code: "web.data.presentation.binding" }],
     });
+    expect(
+      createAeliqoDataPresentationManifests([undefined as never], entityOptions),
+    ).toMatchObject({
+      ok: false,
+      diagnostics: [{ code: "web.data.presentation.binding" }],
+    });
   });
 
   it("resolves every manifest through the existing semantic data helper", () => {

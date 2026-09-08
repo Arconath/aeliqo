@@ -118,29 +118,33 @@ function freeze<T>(value: T): T {
 }
 
 function snapshotBindings(input: AeliqoAuthorizedDataBindings, options: AeliqoDataRegistryOptions): Outcome<ReadonlyMap<string, AeliqoValidatedBinding>> {
-  const entries: readonly (readonly [string, AeliqoDataBinding])[] = input instanceof Map
-    ? [...input.entries()]
-    : Array.isArray(input)
-      ? input.map((binding) => [refKey(binding.result.ref), binding] as const)
-      : Object.entries(input);
-  if (entries.length > 128) return fail("binding", "The authorized data binding table is too large.");
-  const map = new Map<string, AeliqoValidatedBinding>();
-  for (const [key, binding] of entries) {
-    const checked = validateAeliqoDataBinding(binding, options);
-    if (!checked.ok) return checked;
-    const actualKey = refKey(checked.value.result.ref);
-    // A caller supplied map key is an index, never authority. It must still
-    // name the exact ResultRef so an accidental alias cannot shadow a result.
-    if (key !== actualKey) return fail("binding", "Authorized data bindings must be keyed by their exact ResultRef.");
-    if (map.has(actualKey)) return fail("binding", "An exact ResultRef may have only one authorized materialization.");
-    map.set(actualKey, freeze({
-      result: checked.value.result,
-      rows: checked.value.rows,
-      columns: checked.value.columns,
-      scope: checked.value.scope,
-    }));
+  try {
+    const entries: readonly (readonly [string, AeliqoDataBinding])[] = input instanceof Map
+      ? [...input.entries()]
+      : Array.isArray(input)
+        ? input.map((binding) => [refKey(binding.result.ref), binding] as const)
+        : Object.entries(input);
+    if (entries.length > 128) return fail("binding", "The authorized data binding table is too large.");
+    const map = new Map<string, AeliqoValidatedBinding>();
+    for (const [key, binding] of entries) {
+      const checked = validateAeliqoDataBinding(binding, options);
+      if (!checked.ok) return checked;
+      const actualKey = refKey(checked.value.result.ref);
+      // A caller supplied map key is an index, never authority. It must still
+      // name the exact ResultRef so an accidental alias cannot shadow a result.
+      if (key !== actualKey) return fail("binding", "Authorized data bindings must be keyed by their exact ResultRef.");
+      if (map.has(actualKey)) return fail("binding", "An exact ResultRef may have only one authorized materialization.");
+      map.set(actualKey, freeze({
+        result: checked.value.result,
+        rows: checked.value.rows,
+        columns: checked.value.columns,
+        scope: checked.value.scope,
+      }));
+    }
+    return {ok: true, value: map};
+  } catch {
+    return fail("binding", "The authorized data binding table could not be validated.");
   }
-  return {ok: true, value: map};
 }
 
 function dataComponent(ref: VersionRef): DataManifestComponent | "table" | undefined {

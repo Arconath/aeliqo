@@ -18,6 +18,7 @@ import type {
   AeliqoDataScope,
   AeliqoDataValue,
   AeliqoDeltaMode,
+  AeliqoFilterPredicate,
   AeliqoSelectionMode,
 } from "../data/index.js";
 
@@ -393,6 +394,100 @@ function filterPort(): readonly InteractionPort[] {
   return [{ id: "filter", direction: "output", payload: "filter" }];
 }
 
+/** Validate host-provided filter state against the exact fields exposed by a view. */
+function filterPredicate(
+  value: unknown,
+  result: Result,
+  allowedFields: readonly string[],
+  depth = 0,
+): Outcome<AeliqoFilterPredicate> {
+  if (depth > 16) return failure("config", "Filter predicates are too deeply nested.");
+  const candidate = object(value);
+  if (candidate === undefined || typeof candidate.op !== "string")
+    return failure("config", "Filter predicates must use the registered typed vocabulary.");
+  const fields = fieldMap(result);
+  const fieldFor = (raw: unknown): Outcome<{readonly id: string; readonly type: SemanticType}> => {
+    const checked = boundedText(raw, "predicate.field");
+    if (!checked.ok) return checked;
+    const descriptor = fields.get(checked.value);
+    if (descriptor === undefined || !allowedFields.includes(checked.value))
+      return failure("field", "Filter predicates must target an exposed Result field.");
+    return {ok: true, value: {id: descriptor.id, type: descriptor.type}};
+  };
+  try {
+    switch (candidate.op) {
+      case "compare": {
+        if (Object.keys(candidate).some((key) => !["op", "field", "comparison", "value"].includes(key)))
+          return failure("config", "A compare predicate contains an unknown property.");
+        const field = fieldFor(candidate.field);
+        if (!field.ok) return field;
+        if (!["eq", "ne", "lt", "lte", "gt", "gte"].includes(String(candidate.comparison)))
+          return failure("config", "A compare predicate uses an invalid comparison.");
+        const scalar = validateScalar(candidate.value, field.value.type);
+        if (!scalar.ok) return failure("field", "A compare predicate value does not match its Result field.");
+        return {
+          ok: true,
+          value: {
+            op: "compare",
+            field: field.value.id,
+            comparison: candidate.comparison as "eq" | "ne" | "lt" | "lte" | "gt" | "gte",
+            value: scalar.value,
+          },
+        };
+      }
+      case "is-null": {
+        if (Object.keys(candidate).some((key) => !["op", "field", "negate"].includes(key)))
+          return failure("config", "An is-null predicate contains an unknown property.");
+        const field = fieldFor(candidate.field);
+        if (!field.ok) return field;
+        if (typeof candidate.negate !== "boolean")
+          return failure("config", "An is-null predicate requires a boolean negate flag.");
+        return {ok: true, value: {op: "is-null", field: field.value.id, negate: candidate.negate}};
+      }
+      case "in": {
+        if (Object.keys(candidate).some((key) => !["op", "field", "values"].includes(key)))
+          return failure("config", "An in predicate contains an unknown property.");
+        const field = fieldFor(candidate.field);
+        if (!field.ok) return field;
+        if (!Array.isArray(candidate.values) || candidate.values.length === 0 || candidate.values.length > MAX_ITEMS)
+          return failure("config", "An in predicate requires a bounded nonempty values array.");
+        const values: Scalar[] = [];
+        for (const raw of candidate.values) {
+          const scalar = validateScalar(raw, field.value.type);
+          if (!scalar.ok) return failure("field", "An in predicate value does not match its Result field.");
+          values.push(scalar.value);
+        }
+        return {ok: true, value: {op: "in", field: field.value.id, values}};
+      }
+      case "and":
+      case "or": {
+        if (Object.keys(candidate).some((key) => !["op", "predicates"].includes(key)))
+          return failure("config", "A compound predicate contains an unknown property.");
+        if (!Array.isArray(candidate.predicates) || candidate.predicates.length === 0 || candidate.predicates.length > MAX_ITEMS)
+          return failure("config", "A compound predicate requires a bounded nonempty predicate list.");
+        const predicates: AeliqoFilterPredicate[] = [];
+        for (const raw of candidate.predicates) {
+          const checked = filterPredicate(raw, result, allowedFields, depth + 1);
+          if (!checked.ok) return checked;
+          predicates.push(checked.value);
+        }
+        return {ok: true, value: {op: candidate.op, predicates}};
+      }
+      case "not": {
+        if (Object.keys(candidate).some((key) => !["op", "predicate"].includes(key)))
+          return failure("config", "A not predicate contains an unknown property.");
+        const checked = filterPredicate(candidate.predicate, result, allowedFields, depth + 1);
+        if (!checked.ok) return checked;
+        return {ok: true, value: {op: "not", predicate: checked.value}};
+      }
+      default:
+        return failure("config", "The filter predicate operation is not registered.");
+    }
+  } catch {
+    return failure("config", "The filter predicate could not be validated.");
+  }
+}
+
 function paginationPort(
   input: Readonly<Record<string, unknown>>,
 ): readonly InteractionPort[] {
@@ -761,8 +856,26 @@ function resolveDetail(
   if (!fields.ok) return fields;
   const identity = identityFields(input, binding.result);
   if (!identity.ok) return identity;
-  const cols = columns(input, binding.result, binding.columns);
+  const columnFallback =
+    input.columns === undefined
+      ? (() => {
+          const selected = binding.columns.filter((column) =>
+            fields.value.includes(column.key),
+          );
+          if (selected.length > 0) return selected;
+          return binding.result.fields
+            .filter((field) => fields.value.includes(field.id))
+            .map((field) => ({
+              key: field.id,
+              label: field.label,
+              type: field.type.value,
+            }));
+        })()
+      : undefined;
+  const cols = columns(input, binding.result, columnFallback);
   if (!cols.ok) return cols;
+  if (cols.value.some((column) => !fields.value.includes(column.key)))
+    return failure("field", "Detail columns must be included in the configured fields.");
   const selected = selectOne(input, binding);
   if (!selected.ok) return selected;
   return {
@@ -884,7 +997,6 @@ function resolveFilterBuilder(
       "field",
       "fields",
       "outputId",
-      "entity",
       "predicate",
       "inherited",
       "scopeLabel",
@@ -901,15 +1013,39 @@ function resolveFilterBuilder(
       "binding",
       "FilterBuilder outputId must match the exact authorized ResultRef.",
     );
+  if (input.field !== undefined && input.fields !== undefined)
+    return failure("config", "FilterBuilder must use either field or fields, not both.");
   const rawFields =
     input.fields ?? (input.field === undefined ? undefined : [input.field]);
   const fields = validFieldList(rawFields, binding.result, "fields");
   if (!fields.ok) return fields;
+  const predicate =
+    input.predicate === undefined
+      ? {ok: true as const, value: undefined}
+      : filterPredicate(input.predicate, binding.result, fields.value);
+  if (!predicate.ok) return predicate;
+  const inherited =
+    input.inherited === undefined
+      ? {ok: true as const, value: undefined}
+      : filterPredicate(input.inherited, binding.result, fields.value);
+  if (!inherited.ok) return inherited;
+  const scopeLabel =
+    input.scopeLabel === undefined
+      ? {ok: true as const, value: undefined}
+      : boundedText(input.scopeLabel, "scopeLabel");
+  if (!scopeLabel.ok) return scopeLabel;
   const fieldDescriptors = fieldMap(binding.result);
+  const normalized: Record<string, unknown> = {
+    fields: fields.value,
+    outputId: outputId.value,
+    ...(predicate.value === undefined ? {} : {predicate: predicate.value}),
+    ...(inherited.value === undefined ? {} : {inherited: inherited.value}),
+    ...(scopeLabel.value === undefined ? {} : {scopeLabel: scopeLabel.value}),
+  };
   return {
     ok: true,
     value: commonConfig(
-      input,
+      normalized,
       binding,
       {},
       {
@@ -1032,69 +1168,121 @@ function validateScope(
   rows: readonly AeliqoDataRecord[],
   scope: AeliqoDataScope | undefined,
 ): Outcome<AeliqoDataScope> {
-  const population = result.counts.population;
-  const digest =
-    population.kind === "unknown" ? undefined : population.populationDigest;
-  const canonical: AeliqoDataScope = {
-    loaded: rows.length,
-    ...(population.kind === "exact"
-      ? { populationTotal: population.value }
-      : {}),
-    ...(digest === undefined ? {} : { populationDigest: digest }),
-    kind:
-      result.coverage.kind === "complete"
-        ? "population"
-        : result.coverage.kind === "unknown"
-          ? "unknown"
-          : "sample",
-  };
-  if (scope === undefined) return { ok: true, value: canonical };
-  if (scope.loaded !== undefined && scope.loaded !== rows.length)
-    return failure(
-      "count",
-      "Scope.loaded must equal the supplied authorized row count.",
-    );
-  if (
-    scope.populationTotal !== undefined &&
-    (population.kind !== "exact" || scope.populationTotal !== population.value)
-  )
-    return failure(
-      "count",
-      "Scope.populationTotal must match the exact Result population count.",
-    );
-  if (scope.populationDigest !== undefined && digest !== scope.populationDigest)
-    return failure(
-      "scope",
-      "Scope.populationDigest must match the Result population digest.",
-    );
-  if (
-    scope.filteredTotal !== undefined &&
-    (!Number.isSafeInteger(scope.filteredTotal) ||
-      scope.filteredTotal < rows.length ||
-      (population.kind === "exact" && scope.filteredTotal > population.value))
-  )
-    return failure(
-      "count",
-      "Scope.filteredTotal must be a safe count at least as large as loaded rows.",
-    );
-  if (
-    scope.loaded !== undefined &&
-    (!Number.isSafeInteger(scope.loaded) || scope.loaded < 0)
-  )
-    return failure("count", "Scope.loaded must be a safe nonnegative count.");
-  if (
-    scope.populationTotal !== undefined &&
-    (!Number.isSafeInteger(scope.populationTotal) || scope.populationTotal < 0)
-  )
-    return failure(
-      "count",
-      "Scope.populationTotal must be a safe nonnegative count.",
-    );
-  if (scope.kind !== undefined && scope.kind !== canonical.kind)
-    return failure("scope", "Scope.kind must match the Result coverage state.");
-  if (scope.label !== undefined && !boundedText(scope.label, "scope.label").ok)
-    return failure("scope", "Scope.label must be bounded text.");
-  return { ok: true, value: { ...canonical, ...scope, loaded: rows.length } };
+  try {
+    const population = result.counts.population;
+    const coverage = result.coverage;
+    if (
+      coverage.kind !== "complete" &&
+      coverage.kind !== "partial" &&
+      coverage.kind !== "sample" &&
+      coverage.kind !== "unknown"
+    )
+      return failure("scope", "The Result coverage state is not registered.");
+    const digest =
+      population.kind === "unknown" ? undefined : population.populationDigest;
+    const coverageDigest =
+      coverage.kind === "unknown" ? undefined : coverage.populationDigest;
+    if (digest !== undefined && coverageDigest !== undefined && digest !== coverageDigest)
+      return failure(
+        "scope",
+        "The Result population and coverage digests must match.",
+      );
+    if (population.kind === "exact" && population.value < rows.length)
+      return failure(
+        "count",
+        "The exact Result population count cannot be below loaded rows.",
+      );
+    const canonical: AeliqoDataScope = {
+      loaded: rows.length,
+      ...(population.kind === "exact"
+        ? { populationTotal: population.value }
+        : {}),
+      ...(digest === undefined ? {} : { populationDigest: digest }),
+      kind:
+        coverage.kind === "complete"
+          ? "population"
+          : coverage.kind === "unknown"
+            ? "unknown"
+            : "sample",
+    };
+    if (scope === undefined) return { ok: true, value: canonical };
+    if (
+      scope === null ||
+      typeof scope !== "object" ||
+      Array.isArray(scope) ||
+      (Object.getPrototypeOf(scope) !== Object.prototype &&
+        Object.getPrototypeOf(scope) !== null)
+    )
+      return failure("scope", "Scope must be a plain object.");
+    const allowedKeys = [
+      "loaded",
+      "filteredTotal",
+      "populationTotal",
+      "populationDigest",
+      "kind",
+      "label",
+    ];
+    if (Object.keys(scope).some((key) => !allowedKeys.includes(key)))
+      return failure("scope", "Scope contains an unknown property.");
+    if (scope.loaded !== undefined && scope.loaded !== rows.length)
+      return failure(
+        "count",
+        "Scope.loaded must equal the supplied authorized row count.",
+      );
+    if (
+      scope.populationTotal !== undefined &&
+      (population.kind !== "exact" || scope.populationTotal !== population.value)
+    )
+      return failure(
+        "count",
+        "Scope.populationTotal must match the exact Result population count.",
+      );
+    if (scope.populationDigest !== undefined && digest !== scope.populationDigest)
+      return failure(
+        "scope",
+        "Scope.populationDigest must match the Result population digest.",
+      );
+    if (
+      scope.filteredTotal !== undefined &&
+      (!Number.isSafeInteger(scope.filteredTotal) ||
+        scope.filteredTotal < rows.length ||
+        (population.kind === "exact" && scope.filteredTotal > population.value))
+    )
+      return failure(
+        "count",
+        "Scope.filteredTotal must be a safe count at least as large as loaded rows.",
+      );
+    if (
+      scope.loaded !== undefined &&
+      (!Number.isSafeInteger(scope.loaded) || scope.loaded < 0)
+    )
+      return failure("count", "Scope.loaded must be a safe nonnegative count.");
+    if (
+      scope.populationTotal !== undefined &&
+      (!Number.isSafeInteger(scope.populationTotal) || scope.populationTotal < 0)
+    )
+      return failure(
+        "count",
+        "Scope.populationTotal must be a safe nonnegative count.",
+      );
+    if (scope.kind !== undefined && scope.kind !== canonical.kind)
+      return failure("scope", "Scope.kind must match the Result coverage state.");
+    if (scope.label !== undefined && !boundedText(scope.label, "scope.label").ok)
+      return failure("scope", "Scope.label must be bounded text.");
+    return {
+      ok: true,
+      value: {
+        ...canonical,
+        ...(scope.filteredTotal === undefined
+          ? {}
+          : { filteredTotal: scope.filteredTotal }),
+        ...(scope.label === undefined ? {} : { label: scope.label }),
+        loaded: rows.length,
+      },
+    };
+  } catch {
+    return failure("scope", "Scope validation failed.");
+  }
 }
 
 function validateBinding(
