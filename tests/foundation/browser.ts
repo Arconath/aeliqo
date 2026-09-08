@@ -55,7 +55,8 @@ content.innerHTML = `
   <aeliqo-link id="unsafe-link" href="javascript:alert(1)" label="Unsafe"></aeliqo-link>
   <aeliqo-link id="external-link" href="/approved" target="_blank" label="Open approved"></aeliqo-link>
   <aeliqo-scroll-area id="scroll" label="Results"><p>Scrollable content</p></aeliqo-scroll-area>
-  <aeliqo-split-pane id="split" style="block-size: 120px; inline-size: 320px"><span slot="start">Start</span><span slot="end">End</span></aeliqo-split-pane>`;
+  <aeliqo-split-pane id="split" style="block-size: 120px; inline-size: 320px"><span slot="start">Start</span><span slot="end">End</span></aeliqo-split-pane>
+  <aeliqo-split-pane id="vertical-split" orientation="vertical" style="block-size: 240px; inline-size: 320px"><span slot="start">Top</span><span slot="end">Bottom</span></aeliqo-split-pane>`;
 fixture.append(content);
 content.addEventListener("aeliqo-split-change", (event) => events.push({kind: "split", event}));
 

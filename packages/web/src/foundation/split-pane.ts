@@ -14,6 +14,9 @@ export class AeliqoSplitPaneElement extends AeliqoFoundationElement {
     max: {type: Number},
     step: {type: Number},
     disabled: {type: Boolean, reflect: true},
+    primaryLabel: {attribute: "primary-label", type: String},
+    secondaryLabel: {attribute: "secondary-label", type: String},
+    separatorLabel: {attribute: "separator-label", type: String},
   };
 
   static readonly aeliqoVersion = "0.1.0-m0";
@@ -25,6 +28,9 @@ export class AeliqoSplitPaneElement extends AeliqoFoundationElement {
   max = 80;
   step = 5;
   disabled = false;
+  primaryLabel = "Primary pane";
+  secondaryLabel = "Secondary pane";
+  separatorLabel = "Resize panes";
 
   private internalPosition = 50;
   private activePointer: {readonly id: number; readonly target: HTMLElement} | undefined;
@@ -36,16 +42,19 @@ export class AeliqoSplitPaneElement extends AeliqoFoundationElement {
   protected override render() {
     const orientation = this.orientation === "vertical" ? "vertical" : "horizontal";
     const position = this.effectivePosition();
+    const {minimum, maximum} = this.positionBounds();
     return html`
-      <div part="split" class=${`orientation-${orientation}`} style=${`--aeliqo-split-position:${position}%`}>
-        <div part="start"><slot name="start"></slot></div>
+      <div part="split" class=${`orientation-${orientation}`} style=${`--aeliqo-split-position:${position}`}>
+        <div part="start" id="aeliqo-split-primary" role="region" aria-label=${this.primaryLabel || "Primary pane"}><slot name="start"></slot></div>
         <div
           part="splitter"
           role="separator"
           tabindex=${this.disabled ? -1 : 0}
-          aria-orientation=${orientation}
-          aria-valuemin=${this.clamped(this.min)}
-          aria-valuemax=${this.clamped(this.max)}
+          aria-orientation=${orientation === "horizontal" ? "vertical" : "horizontal"}
+          aria-controls="aeliqo-split-primary"
+          aria-label=${this.separatorLabel || "Resize panes"}
+          aria-valuemin=${minimum}
+          aria-valuemax=${maximum}
           aria-valuenow=${position}
           aria-valuetext=${`${Math.round(position)}%`}
           aria-disabled=${this.disabled ? "true" : nothing}
@@ -55,7 +64,7 @@ export class AeliqoSplitPaneElement extends AeliqoFoundationElement {
           @pointercancel=${this.handlePointerUp}
           @keydown=${this.handleKeyDown}
         ></div>
-        <div part="end"><slot name="end"></slot></div>
+        <div part="end" role="region" aria-label=${this.secondaryLabel || "Secondary pane"}><slot name="end"></slot></div>
       </div>
     `;
   }
@@ -69,10 +78,18 @@ export class AeliqoSplitPaneElement extends AeliqoFoundationElement {
     return this.position === undefined ? this.clamped(this.internalPosition) : this.clamped(this.position);
   }
 
-  private clamped(value: number): number {
+  private positionBounds(): {readonly minimum: number; readonly maximum: number} {
     const minimum = Number.isFinite(this.min) ? clampNumber(this.min, 0, 99) : 20;
-    const maximum = Number.isFinite(this.max) ? clampNumber(this.max, minimum + 1, 100) : 80;
-    return Math.round(clampNumber(Number.isFinite(value) ? value : this.defaultPosition, minimum, maximum) * 100) / 100;
+    const requestedMaximum = Number.isFinite(this.max) ? this.max : 80;
+    const maximum = clampNumber(Math.max(requestedMaximum, minimum + 1), minimum + 1, 100);
+    return {minimum, maximum};
+  }
+
+  private clamped(value: number): number {
+    const {minimum, maximum} = this.positionBounds();
+    const fallback = Number.isFinite(this.defaultPosition) ? this.defaultPosition : 50;
+    const candidate = Number.isFinite(value) ? value : fallback;
+    return Math.round(clampNumber(candidate, minimum, maximum) * 100) / 100;
   }
 
   private readonly handlePointerDown = (event: PointerEvent): void => {
@@ -106,8 +123,8 @@ export class AeliqoSplitPaneElement extends AeliqoFoundationElement {
     const rtl = orientation === "horizontal" && getComputedStyle(this).direction === "rtl";
     const step = Number.isFinite(this.step) && this.step > 0 ? this.step : 5;
     let next: number | undefined;
-    if (event.key === "Home") next = this.clamped(this.min);
-    else if (event.key === "End") next = this.clamped(this.max);
+    if (event.key === "Home") next = this.positionBounds().minimum;
+    else if (event.key === "End") next = this.positionBounds().maximum;
     else if (event.key === "ArrowLeft" && orientation === "horizontal") next = this.effectivePosition() - (rtl ? -step : step);
     else if (event.key === "ArrowRight" && orientation === "horizontal") next = this.effectivePosition() + (rtl ? -step : step);
     else if (event.key === "ArrowUp" && orientation === "vertical") next = this.effectivePosition() - step;
@@ -128,7 +145,7 @@ export class AeliqoSplitPaneElement extends AeliqoFoundationElement {
 
   static readonly styles = [...aeliqoFoundationThemeStyles, css`
     :host { display: block; min-block-size: 0; min-inline-size: 0; }
-    [part="split"] { display: flex; min-block-size: 0; min-inline-size: 0; }
+    [part="split"] { block-size: 100%; display: flex; inline-size: 100%; min-block-size: 0; min-inline-size: 0; }
     .orientation-horizontal { flex-direction: row; }
     .orientation-vertical { flex-direction: column; }
     [part="start"], [part="end"] { min-block-size: 0; min-inline-size: 0; overflow: auto; }

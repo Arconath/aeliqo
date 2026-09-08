@@ -44,6 +44,31 @@ test("links, identity fallback, hierarchy and composed foundations retain semant
 test("split pane provides keyboard and RTL pointer semantics", async ({page}) => {
   const split = page.locator("#split");
   const splitter = split.locator("[part=splitter]");
+  await expect(splitter).toHaveAttribute("aria-orientation", "vertical");
+  await expect(splitter).toHaveAttribute("aria-controls", "aeliqo-split-primary");
+  await expect(splitter).toHaveAccessibleName("Resize panes");
+  await expect(split.locator("[part=start]")).toHaveAttribute("role", "region");
+  await expect(split.locator("[part=start]")).toHaveAttribute("aria-label", "Primary pane");
+
+  const width = async (): Promise<number> => (await split.locator("[part=start]").boundingBox())?.width ?? 0;
+  const initialWidth = await width();
+  await split.evaluate((element) => {
+    (element as HTMLElement & {position: number | undefined}).position = 20;
+  });
+  await expect.poll(width).toBeLessThan(initialWidth - 10);
+  const minimumWidth = await width();
+  await split.evaluate((element) => {
+    (element as HTMLElement & {position: number | undefined}).position = 80;
+  });
+  await expect.poll(width).toBeGreaterThan(minimumWidth + 10);
+
+  await split.evaluate((element) => {
+    const splitPane = element as HTMLElement & {defaultPosition: number; position: number | undefined};
+    splitPane.position = undefined;
+    splitPane.defaultPosition = 50;
+  });
+  await expect.poll(width).toBeGreaterThan(minimumWidth + 10);
+
   await splitter.focus();
   await splitter.press("ArrowRight");
   await expect(splitter).toHaveAttribute("aria-valuenow", "55");
@@ -55,15 +80,74 @@ test("split pane provides keyboard and RTL pointer semantics", async ({page}) =>
   if (box === null) throw new Error("splitter is not measurable");
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
-  await page.mouse.move(box.x - 40, box.y + box.height / 2);
+  const splitBox = await split.boundingBox();
+  if (splitBox === null) throw new Error("split pane is not measurable");
+  await page.mouse.move(splitBox.x + 2, box.y + box.height / 2);
   await page.mouse.up();
   await expect(splitter).toHaveAttribute("aria-valuenow", "20");
+  await expect.poll(width).toBeLessThan(minimumWidth + 10);
   await page.locator("html").evaluate((element) => {(element as HTMLElement).dir = "rtl";});
   await splitter.press("End");
   await splitter.press("ArrowRight");
   await expect(splitter).toHaveAttribute("aria-valuenow", "75");
+
+  const vertical = page.locator("#vertical-split");
+  const verticalSplitter = vertical.locator("[part=splitter]");
+  await expect(verticalSplitter).toHaveAttribute("aria-orientation", "horizontal");
+  await expect(verticalSplitter).toHaveAttribute("aria-controls", "aeliqo-split-primary");
+  const height = async (): Promise<number> => (await vertical.locator("[part=start]").boundingBox())?.height ?? 0;
+  const initialHeight = await height();
+  await vertical.evaluate((element) => {
+    (element as HTMLElement & {position: number | undefined}).position = 20;
+  });
+  await expect.poll(height).toBeLessThan(initialHeight - 10);
+  const minimumHeight = await height();
+  await vertical.evaluate((element) => {
+    (element as HTMLElement & {position: number | undefined}).position = 80;
+  });
+  await expect.poll(height).toBeGreaterThan(minimumHeight + 10);
+  await vertical.evaluate((element) => {
+    const splitPane = element as HTMLElement & {defaultPosition: number; position: number | undefined};
+    splitPane.position = undefined;
+    splitPane.defaultPosition = 80;
+  });
+  await expect.poll(height).toBeGreaterThan(minimumHeight + 10);
+  await verticalSplitter.focus();
+  await verticalSplitter.press("Home");
+  await expect(verticalSplitter).toHaveAttribute("aria-valuenow", "20");
+  const verticalBox = await verticalSplitter.boundingBox();
+  const verticalSplitBox = await vertical.boundingBox();
+  if (verticalBox === null || verticalSplitBox === null) throw new Error("vertical split is not measurable");
+  await page.mouse.move(verticalBox.x + verticalBox.width / 2, verticalBox.y + verticalBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(verticalBox.x + verticalBox.width / 2, verticalSplitBox.y + 2);
+  await page.mouse.up();
+  await expect.poll(height).toBeLessThan(minimumHeight + 10);
+
   const eventCount = await page.evaluate(() => (window as typeof window & {aeliqoFoundationEvents: unknown[]}).aeliqoFoundationEvents.length);
-  expect(eventCount).toBeGreaterThanOrEqual(4);
+  expect(eventCount).toBeGreaterThanOrEqual(8);
+});
+
+test("split pane rejects malformed numeric properties without exposing NaN geometry", async ({page}) => {
+  const split = page.locator("#split");
+  await split.evaluate((element) => {
+    const splitPane = element as HTMLElement & {defaultPosition: number; min: number; max: number; position: number};
+    splitPane.defaultPosition = Number.NaN;
+    splitPane.min = Number.NaN;
+    splitPane.max = Number.NaN;
+    splitPane.position = Number.NaN;
+  });
+  const splitter = split.locator("[part=splitter]");
+  await expect(splitter).toHaveAttribute("aria-valuenow", "50");
+  await expect(splitter).toHaveAttribute("aria-valuemin", "20");
+  await expect(splitter).toHaveAttribute("aria-valuemax", "80");
+  await expect(split.locator("[part=start]")).toHaveCSS("flex-basis", /.+/);
+  const geometry = await split.locator("[part=start]").evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {width: rect.width, height: rect.height};
+  });
+  expect(Number.isFinite(geometry.width)).toBe(true);
+  expect(Number.isFinite(geometry.height)).toBe(true);
 });
 
 test("mount and dispose leaves no foundation nodes behind", async ({page}) => {
