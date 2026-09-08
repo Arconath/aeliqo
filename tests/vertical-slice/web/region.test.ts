@@ -12,9 +12,10 @@ import {environment, experience, field, presentationPlan, presentationTask, ref,
 
 const result = {
   ...baseResult,
+  rowGrain: ["employee.id", "month"],
   fields: [
     field,
-    {id: "month", label: "Month", type: {value: "text", nullable: false}, role: "dimension" as const},
+    {id: "month", label: "Month", type: {value: "date", nullable: false}, role: "time" as const},
     {id: "amount", label: "Amount", type: {value: "decimal", nullable: true}, role: "measure" as const},
   ],
 } as const;
@@ -40,13 +41,14 @@ describe("T39 registered web region", () => {
   it("derives table selection ports from the Result identity and rejects unknown config", () => {
     const manifest = registry().manifests.find((candidate) => candidate.ref.id === AELIQO_PRESENTATION_REFS.table.id)!;
     const configured = manifest.resolveConfig({selection: "multiple"}, result);
-    expect(configured).toMatchObject({ok: true, value: {fields: ["employee.id", "month", "amount"], ports: [{id: "selection", payload: "selection", entity: "employees", identity: ["employee.id"]} ]}});
+    expect(configured).toMatchObject({ok: true, value: {fields: ["employee.id", "month", "amount"], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.selection], ports: [{id: "selection", payload: "selection", entity: "employees", identity: ["employee.id"]} ]}});
     expect(manifest.resolveConfig({html: "<script>bad</script>"}, result)).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.config"}]});
     expect(manifest.resolveConfig({columns: [{key: "amount", label: "Absence"}]}, result)).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.field"}]});
     expect(manifest.resolveConfig({selection: "multiple", identity: ["month"]}, result)).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.identity"}]});
     expect(manifest.resolveConfig({selection: "multiple"}, result)).toMatchObject({ok: true, value: {ports: [{entity: "employees"}]}});
     const defaultRegistry = createAeliqoPresentationRegistry();
     expect(defaultRegistry.ok && defaultRegistry.value.manifests.find((candidate) => candidate.ref.id === AELIQO_PRESENTATION_REFS.table.id)?.resolveConfig({selection: "multiple"}, result)).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.binding"}]});
+    expect(manifest.suggestConfig?.([{id: "select", operation: AELIQO_OPERATION_REFS.selection, fields: ["employee.id"], required: true}], result)).toMatchObject({ok: true, value: {selection: "single"}});
   });
 
   it("passes a table plan through the core validator with resolved typed selection ports", () => {
@@ -71,13 +73,17 @@ describe("T39 registered web region", () => {
   it("keeps trend series fields and filter semantics typed", () => {
     const manifests = registry().manifests;
     const trend = manifests.find((candidate) => candidate.ref.id === AELIQO_PRESENTATION_REFS.trend.id)!;
-    expect(trend.resolveConfig({labelField: "month", series: [{field: "amount", label: "Amount"}]}, result)).toMatchObject({ok: true, value: {fields: ["month", "amount"]}});
+    expect(trend.resolveConfig({labelField: "month", series: [{field: "amount"}], seriesBy: ["employee.id"]}, result)).toMatchObject({ok: true, value: {fields: ["month", "employee.id", "amount"], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.compare]}});
     expect(trend.resolveConfig({labelField: "month", series: [{field: "amount", label: "Absence"}]}, result)).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.field"}]});
-    expect(trend.suggestConfig?.([], result)).toMatchObject({ok: true, value: {labelField: "month", series: [{field: "amount"}]}});
+    expect(trend.resolveConfig({labelField: "employee.id", series: [{field: "amount"}]}, result)).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.field"}]});
+    expect(trend.resolveConfig({labelField: "month", series: [{field: "month"}]}, result)).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.field"}]});
+    expect(trend.suggestConfig?.([{id: "trend", operation: AELIQO_OPERATION_REFS.compare, fields: ["employee.id", "month", "amount"], outputId: "rows", required: true}], result)).toMatchObject({ok: true, value: {labelField: "month", series: [{field: "amount"}], seriesBy: ["employee.id"]}});
     const filter = manifests.find((candidate) => candidate.ref.id === AELIQO_PRESENTATION_REFS.filter.id)!;
-    expect(filter.resolveConfig({field: "month", outputId: "rows"}, result)).toMatchObject({ok: true, value: {fields: ["month"], ports: [{payload: "filter"}]}});
-    expect(filter.resolveConfig({field: "month", outputId: "rows", label: "Untrusted claim"}, result)).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.config"}]});
-    expect(filter.suggestConfig?.([{id: "filter", operation: AELIQO_OPERATION_REFS.filter, fields: ["month"], outputId: "rows", required: true}], result)).toMatchObject({ok: true, value: {field: "month", outputId: "rows"}});
+    expect(filter.resolveConfig({field: "employee.id", outputId: "rows"}, result)).toMatchObject({ok: true, value: {fields: ["employee.id"], operations: [AELIQO_OPERATION_REFS.filter], ports: [{payload: "filter"}]}});
+    expect(filter.resolveConfig({field: "employee.id", outputId: "rows", label: "Untrusted claim"}, result)).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.config"}]});
+    expect(filter.resolveConfig({field: "month", outputId: "rows"}, result)).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.field"}]});
+    expect(filter.resolveConfig({field: "employee.id", outputId: "other"}, result)).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.binding"}]});
+    expect(filter.suggestConfig?.([{id: "filter", operation: AELIQO_OPERATION_REFS.filter, fields: ["employee.id"], outputId: "rows", required: true}], result)).toMatchObject({ok: true, value: {field: "employee.id", outputId: "rows"}});
   });
 
   it("uses stable identity tuples and registered identity mappings", () => {

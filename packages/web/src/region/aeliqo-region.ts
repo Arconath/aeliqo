@@ -1,10 +1,13 @@
 import type {InteractionPayload, InteractionState, Result, ResultRef, ValidatedPresentation} from "@aeliqo/core";
 import {css, html, LitElement, nothing, type TemplateResult} from "lit";
+import {repeat} from "lit/directives/repeat.js";
+import type {PropertyValues} from "lit";
 import {aeliqoThemeStyles} from "../styles/theme.js";
 import {AeliqoInputEvent, AeliqoTableSelectionEvent} from "../events.js";
 import "../elements/aeliqo-table.js";
 import "../elements/aeliqo-chart.js";
 import "../elements/aeliqo-input.js";
+import {stableTableRowKey} from "../elements/aeliqo-table.js";
 import type {AeliqoChartSeries, AeliqoTableColumn, AeliqoTableRow} from "../types.js";
 import type {AeliqoRegionResult, AeliqoSemanticInteractionHandler, AeliqoSemanticInteractionRequest} from "./types.js";
 
@@ -18,6 +21,24 @@ function record(value: unknown): Record<string, unknown> | undefined {
 
 function text(value: unknown, fallback = ""): string {
   return typeof value === "string" ? value : fallback;
+}
+
+function temporalTime(value: unknown): number | undefined {
+  if (typeof value === "number") return Number.isFinite(value) ? value : undefined;
+  if (typeof value !== "string" || value.length === 0) return undefined;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function temporalLabel(value: unknown): string {
+  if (typeof value === "string" && temporalTime(value) !== undefined) return value;
+  if (typeof value === "number" && Number.isFinite(value)) return new Date(value).toISOString();
+  return "Invalid date";
+}
+
+function numericValue(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  return typeof value === "number" && Number.isFinite(value) ? value : Number.NaN;
 }
 
 function resultFor(node: {readonly result: Result | undefined}, results: readonly AeliqoRegionResult[]): AeliqoRegionResult | undefined {
@@ -53,6 +74,8 @@ export class AeliqoRegionElement extends LitElement {
   results: readonly AeliqoRegionResult[] = [];
   interaction: InteractionState | undefined = undefined;
   onSemanticInteraction: AeliqoSemanticInteractionHandler | undefined = undefined;
+  private focusedNodeId: string | undefined;
+  private focusedElement: HTMLElement | undefined;
 
   /** Clear committed content when the host revokes or disposes the region. */
   clear(): void {
@@ -64,6 +87,32 @@ export class AeliqoRegionElement extends LitElement {
   revoke(): void { this.clear(); }
   dispose(): void { this.clear(); }
 
+  protected override willUpdate(changed: PropertyValues<this>): void {
+    if (!changed.has("presentation")) return;
+    const active = this.shadowRoot?.activeElement;
+    if (!(active instanceof HTMLElement)) return;
+    const nodeHost = active.closest<HTMLElement>("[data-aeliqo-node-id]");
+    if (nodeHost === null) return;
+    this.focusedNodeId = nodeHost.dataset.aeliqoNodeId;
+    const nested = active.shadowRoot?.activeElement;
+    this.focusedElement = nested instanceof HTMLElement ? nested : active;
+  }
+
+  protected override updated(changed: PropertyValues<this>): void {
+    if (!changed.has("presentation") || this.focusedNodeId === undefined) return;
+    const focusedElement = this.focusedElement;
+    const nodeId = this.focusedNodeId;
+    this.focusedElement = undefined;
+    this.focusedNodeId = undefined;
+    if (focusedElement?.isConnected) {
+      focusedElement.focus();
+      return;
+    }
+    const target = [...(this.shadowRoot?.querySelectorAll<HTMLElement>("[data-aeliqo-node-id]") ?? [])]
+      .find((candidate) => candidate.dataset.aeliqoNodeId === nodeId);
+    target?.focus();
+  }
+
   protected override render(): TemplateResult | typeof nothing {
     if (this.presentation === undefined) return nothing;
     const nodes = new Map(this.presentation.nodes.map((node) => [node.node.id, node]));
@@ -74,12 +123,16 @@ export class AeliqoRegionElement extends LitElement {
   private renderNode(nodeId: string, nodes: ReadonlyMap<string, ValidatedPresentation["nodes"][number]>): TemplateResult | typeof nothing {
     const resolved = nodes.get(nodeId);
     if (resolved === undefined) return nothing;
-    const children = () => resolved.node.children.map((child) => this.renderNode(child, nodes));
+    const children = () => repeat(
+      resolved.node.children,
+      (childId) => childId,
+      (childId) => this.renderNode(childId, nodes),
+    );
     const values = valuesOf(resolved);
     switch (resolved.manifest.id) {
       case "layout.stack": {
         const gap = typeof values.gap === "number" && Number.isSafeInteger(values.gap) && values.gap >= 0 && values.gap <= 64 ? values.gap : 0;
-        return html`<div part="stack" data-aeliqo-role="stack" style=${`gap:${gap}px`}>${children()}</div>`;
+        return html`<div part="stack" data-aeliqo-role="stack" data-aeliqo-node-id=${resolved.node.id} style=${`gap:${gap}px`}>${children()}</div>`;
       }
       case "data.table": return this.renderTable(resolved, values);
       case "data.trend": return this.renderTrend(resolved, values);
@@ -95,12 +148,15 @@ export class AeliqoRegionElement extends LitElement {
     const nodeId = resolved.node.id;
     const selectedKeys = this.selectionKeys(nodeId);
     const result = resolved.result?.ref;
+    const selectionPort = resolved.config.ports.find((candidate) => candidate.payload === "selection");
+    const entity = selectionPort?.entity ?? "row";
     return html`<aeliqo-table
+      data-aeliqo-node-id=${nodeId}
       .columns=${columns}
       .rows=${bound?.rows ?? []}
       .caption=${text(values.caption)}
       .emptyLabel=${bound === undefined ? "Data unavailable." : "No rows to display."}
-      .entity=${text(values.entity, "row")}
+      .entity=${entity}
       .identity=${resolved.result?.identity ?? []}
       .selection=${selection}
       .selectedKeys=${selectedKeys}
@@ -112,16 +168,32 @@ export class AeliqoRegionElement extends LitElement {
   private renderTrend(resolved: ValidatedPresentation["nodes"][number], values: Record<string, unknown>): TemplateResult {
     const bound = resultFor(resolved, this.results);
     const labelField = text(values.labelField);
+    const seriesBy = Array.isArray(values.seriesBy) ? values.seriesBy.flatMap((value) => typeof value === "string" ? [value] : []) : [];
     const rawSeries = Array.isArray(values.series) ? values.series : [];
-    const series: AeliqoChartSeries[] = rawSeries.flatMap((item, index) => {
+    const rows = bound?.rows ?? [];
+    const series: AeliqoChartSeries[] = rawSeries.flatMap((item) => {
       const candidate = record(item); if (candidate === undefined) return [];
       const field = text(candidate.field); if (field.length === 0) return [];
       const label = text(candidate.label, field);
       const unit = text(candidate.unit);
-      const points = (bound?.rows ?? []).map((row) => ({label: text(row[labelField], `Point ${index + 1}`), value: typeof row[field] === "number" ? row[field] as number : null}));
-      return [{id: field, label, ...(unit.length === 0 ? {} : {unit}), points}];
+      const groups = new Map<string, {readonly values: readonly unknown[]; readonly rows: {readonly row: AeliqoTableRow; readonly index: number; readonly time: number}[]}>();
+      rows.forEach((row, index) => {
+        const values = seriesBy.map((groupField) => row[groupField]);
+        const key = JSON.stringify(values);
+        const group = groups.get(key);
+        const time = temporalTime(row[labelField]);
+        if (group === undefined) groups.set(key, {values, rows: [{row, index, time: time ?? Number.NaN}]});
+        else group.rows.push({row, index, time: time ?? Number.NaN});
+      });
+      return [...groups.entries()].map(([groupKey, group]) => {
+        const ordered = [...group.rows].sort((left, right) => Number.isNaN(left.time) || Number.isNaN(right.time) ? left.index - right.index : left.time - right.time || left.index - right.index);
+        const suffix = group.values.length === 0 ? "" : ` · ${group.values.map((value) => value === null || value === undefined ? "—" : String(value)).join(" · ")}`;
+        const points = ordered.map(({row, time}) => ({label: temporalLabel(row[labelField]), value: Number.isNaN(time) ? Number.NaN : numericValue(row[field])}));
+        return {id: `${field}:${groupKey}`, label: `${label}${suffix}`, ...(unit.length === 0 ? {} : {unit}), points};
+      });
     });
     return html`<aeliqo-chart
+      data-aeliqo-node-id=${resolved.node.id}
       .title=${text(values.title, "Trend")}
       .summary=${bound === undefined ? "Data unavailable." : ""}
       .scope=${text(values.scope)}
@@ -134,6 +206,7 @@ export class AeliqoRegionElement extends LitElement {
     const field = text(values.field);
     const current = this.filterValue(resolved.node.id, field);
     return html`<aeliqo-input
+      data-aeliqo-node-id=${resolved.node.id}
       .label=${this.fieldLabel(resolved, field)}
       .hint=${text(values.placeholder)}
       .value=${current}
@@ -176,7 +249,11 @@ export class AeliqoRegionElement extends LitElement {
       this.emit({nodeId: resolved.node.id, portId: port.id, payload: {kind: "selection", selection: {mode: "clear"}}});
       return;
     }
-    if (detail.result === undefined || detail.keys.length === 0) return;
+    if (detail.entity !== port.entity || detail.result === undefined || resolved.result === undefined || refKey(detail.result) !== refKey(resolved.result.ref) || detail.keys.length === 0) return;
+    const bound = resultFor(resolved, this.results);
+    if (bound === undefined) return;
+    const allowed = new Set(bound.rows.map((row) => stableTableRowKey(row, port.identity ?? [])).filter((key): key is string => key !== undefined));
+    if (new Set(detail.keys).size !== detail.keys.length || detail.keys.some((key) => !allowed.has(key))) return;
     this.emit({nodeId: resolved.node.id, portId: port.id, payload: {
       kind: "selection",
       selection: {mode: "ids", entity: detail.entity, keys: [...detail.keys] as [string, ...string[]], result: detail.result},
@@ -186,7 +263,7 @@ export class AeliqoRegionElement extends LitElement {
   private handleFilter(event: Event, resolved: ValidatedPresentation["nodes"][number], values: Record<string, unknown>): void {
     const detail = (event as AeliqoInputEvent).detail;
     const field = text(values.field); const outputId = text(values.outputId);
-    if (field.length === 0 || outputId.length === 0 || resolved.config.ports.find((candidate) => candidate.payload === "filter") === undefined) return;
+    if (field.length === 0 || outputId.length === 0 || resolved.result === undefined || outputId !== resolved.result.ref.outputId || resolved.result.fields.find((candidate) => candidate.id === field)?.type.value !== "text" || resolved.config.ports.find((candidate) => candidate.payload === "filter") === undefined) return;
     const predicate = detail.value.length === 0 ? [] : [{op: "compare" as const, field, ...(values.entity === undefined ? {} : {entity: text(values.entity)}), comparison: "eq" as const, value: detail.value}];
     const payload: InteractionPayload = {kind: "filter", predicates: predicate, outputId};
     const port = resolved.config.ports.find((candidate) => candidate.payload === "filter");

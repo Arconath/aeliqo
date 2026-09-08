@@ -7,6 +7,7 @@ import {
   type PresentationRegistry,
   type PresentationValues,
   type Result,
+  type ResolvedPresentationConfig,
   type Task,
   type VersionRef,
 } from "@aeliqo/core";
@@ -98,6 +99,21 @@ function identity(values: Record<string, unknown>, result: Result): Outcome<read
   return {ok: true, value: [...candidate]};
 }
 
+function temporalField(field: Result["fields"][number]): boolean {
+  return field.type.value === "date" || field.type.value === "instant";
+}
+
+function numericField(field: Result["fields"][number]): boolean {
+  return field.type.value === "integer" || field.type.value === "float" || field.type.value === "decimal";
+}
+
+function trendGrain(seriesBy: readonly string[], labelField: string, result: Result): Outcome<undefined> {
+  const expected = new Set([...seriesBy, labelField]);
+  const actual = new Set(result.rowGrain);
+  if (expected.size !== actual.size || [...actual].some((field) => !expected.has(field))) return fail("grain", "Trend grouping and temporal fields must identify each row grain without hidden dimensions.");
+  return {ok: true, value: undefined};
+}
+
 function trustedEntity(result: Result, resolveEntity: AeliqoPresentationRegistryOptions["resolveEntity"]): Outcome<string | undefined> {
   if (resolveEntity === undefined) return {ok: true, value: undefined};
   let value: string | undefined;
@@ -116,14 +132,14 @@ function selectionPort(values: Record<string, unknown>, result: Result | undefin
   return {ok: true, value: [{id: portId, direction: "inout", payload: "selection", entity: owner.value, identity: fields.value, grain: result.rowGrain}]};
 }
 
-function stackConfig(values: PresentationValues): Outcome<{readonly values: PresentationValues; readonly fields: readonly string[]; readonly ports: readonly []}> {
+function stackConfig(values: PresentationValues): Outcome<ResolvedPresentationConfig> {
   const input = record(values); if (input === undefined) return fail("config", "The stack configuration must be an object.");
   if (Object.keys(input).some((key) => key !== "gap")) return fail("config", "The stack configuration only accepts gap.");
   if (input.gap !== undefined && (!Number.isSafeInteger(input.gap) || (input.gap as number) < 0 || (input.gap as number) > 64)) return fail("config", "gap must be a bounded nonnegative integer.");
-  return {ok: true, value: {values: Object.keys(input).length === 0 ? {} : {gap: input.gap as number}, fields: [], ports: []}};
+  return {ok: true, value: {values: Object.keys(input).length === 0 ? {} : {gap: input.gap as number}, fields: [], ports: [], operations: []}};
 }
 
-function tableConfig(values: PresentationValues, result: Result | undefined, resolveEntity: AeliqoPresentationRegistryOptions["resolveEntity"]): Outcome<{readonly values: PresentationValues; readonly fields: readonly string[]; readonly ports: readonly InteractionPort[]}> {
+function tableConfig(values: PresentationValues, result: Result | undefined, resolveEntity: AeliqoPresentationRegistryOptions["resolveEntity"]): Outcome<ResolvedPresentationConfig> {
   if (result === undefined) return fail("binding", "A table requires a bound result.");
   const input = record(values); if (input === undefined) return fail("config", "The table configuration must be an object.");
   if (Object.keys(input).some((key) => !["columns", "identity", "selection"].includes(key))) return fail("config", "The table configuration contains an unknown field.");
@@ -134,15 +150,17 @@ function tableConfig(values: PresentationValues, result: Result | undefined, res
   if (!identityFields.ok) return identityFields;
   const port = selectionPort(input, result, "selection", resolveEntity); if (!port.ok) return port;
   const output: Record<string, unknown> = {columns: columnList.value, selection: selected, ...(identityFields.value === undefined ? {} : {identity: identityFields.value})};
-  return {ok: true, value: {values: output as PresentationValues, fields: columnList.value.map((column) => column.key), ports: port.value}};
+  const operations = selected === "none" ? [AELIQO_OPERATION_REFS.read] : [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.selection];
+  return {ok: true, value: {values: output as PresentationValues, fields: columnList.value.map((column) => column.key), ports: port.value, operations}};
 }
 
-function trendConfig(values: PresentationValues, result: Result | undefined, resolveEntity: AeliqoPresentationRegistryOptions["resolveEntity"]): Outcome<{readonly values: PresentationValues; readonly fields: readonly string[]; readonly ports: readonly InteractionPort[]}> {
+function trendConfig(values: PresentationValues, result: Result | undefined, resolveEntity: AeliqoPresentationRegistryOptions["resolveEntity"]): Outcome<ResolvedPresentationConfig> {
   if (result === undefined) return fail("binding", "A trend requires a bound result.");
   const input = record(values); if (input === undefined) return fail("config", "The trend configuration must be an object.");
-  if (Object.keys(input).some((key) => !["labelField", "series", "identity", "selection"].includes(key))) return fail("config", "The trend configuration contains an unknown field.");
+  if (Object.keys(input).some((key) => !["labelField", "series", "seriesBy"].includes(key))) return fail("config", "The trend configuration contains an unknown field.");
   const labelField = text(input.labelField, "labelField"); if (!labelField.ok) return labelField;
-  const fields = fieldMap(result); if (!fields.has(labelField.value)) return fail("field", "labelField is absent from the bound result.");
+  const fields = fieldMap(result); const temporal = fields.get(labelField.value);
+  if (temporal === undefined || !temporalField(temporal)) return fail("field", "labelField must be a declared temporal date or instant field.");
   if (!Array.isArray(input.series) || input.series.length === 0 || input.series.length > 8) return fail("config", "series must contain one to eight entries.");
   const series: {readonly field: string; readonly label: string; readonly unit?: string}[] = [];
   const seen = new Set<string>();
@@ -150,7 +168,7 @@ function trendConfig(values: PresentationValues, result: Result | undefined, res
     const candidate = record(item); if (candidate === undefined || Object.keys(candidate).some((key) => !["field", "label", "unit"].includes(key))) return fail("config", "Trend series entries are malformed.");
     const field = text(candidate.field, "series.field"); if (!field.ok) return field;
     const descriptor = fields.get(field.value);
-    if (descriptor === undefined || seen.has(field.value)) return fail("field", "Trend series fields must be unique fields in the bound result.");
+    if (descriptor === undefined || !numericField(descriptor) || seen.has(field.value)) return fail("field", "Trend series fields must be unique declared numeric fields in the bound result.");
     let labelValue = descriptor.label;
     if (candidate.label !== undefined) {
       const label = text(candidate.label, "series.label"); if (!label.ok) return label;
@@ -161,32 +179,46 @@ function trendConfig(values: PresentationValues, result: Result | undefined, res
     if (unit.value !== undefined && unit.value !== descriptorUnit) return fail("field", `Trend series ${field.value} must use its registered descriptor unit.`);
     seen.add(field.value); series.push({field: field.value, label: labelValue, ...(descriptorUnit === undefined ? {} : {unit: descriptorUnit})});
   }
-  const identityFields = input.identity === undefined ? {ok: true as const, value: undefined} : identity(input, result);
-  if (!identityFields.ok) return identityFields;
-  const port = selectionPort(input, result, "selection", resolveEntity); if (!port.ok) return port;
-  const output: Record<string, unknown> = {labelField: labelField.value, series, selection: input.selection ?? "none", ...(identityFields.value === undefined ? {} : {identity: identityFields.value})};
-  return {ok: true, value: {values: output as PresentationValues, fields: [labelField.value, ...series.map((entry) => entry.field)], ports: port.value}};
+  const grouping = input.seriesBy;
+  if (grouping !== undefined && (!Array.isArray(grouping) || grouping.length > MAX_ITEMS || grouping.some((value) => typeof value !== "string" || value.length === 0))) return fail("config", "seriesBy must contain bounded result field IDs.");
+  const seriesBy = grouping === undefined ? [] : [...grouping as string[]];
+  if (new Set(seriesBy).size !== seriesBy.length || seriesBy.some((field) => !fields.has(field) || field === labelField.value || series.some((entry) => entry.field === field))) return fail("field", "seriesBy fields must be unique grouping fields distinct from temporal and measure fields.");
+  const grain = trendGrain(seriesBy, labelField.value, result); if (!grain.ok) return grain;
+  const output: Record<string, unknown> = {labelField: labelField.value, series, seriesBy};
+  return {ok: true, value: {values: output as PresentationValues, fields: [labelField.value, ...seriesBy, ...series.map((entry) => entry.field)], ports: [], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.compare]}};
 }
 
-function filterConfig(values: PresentationValues, result: Result | undefined, resolveEntity: AeliqoPresentationRegistryOptions["resolveEntity"]): Outcome<{readonly values: PresentationValues; readonly fields: readonly string[]; readonly ports: readonly InteractionPort[]}> {
+function filterConfig(values: PresentationValues, result: Result | undefined, resolveEntity: AeliqoPresentationRegistryOptions["resolveEntity"]): Outcome<ResolvedPresentationConfig> {
   const input = record(values); if (input === undefined) return fail("config", "The filter configuration must be an object.");
   if (Object.keys(input).some((key) => !["field", "outputId"].includes(key))) return fail("config", "The filter configuration contains an unknown field.");
   const field = text(input.field, "field"); if (!field.ok) return field;
   const outputId = text(input.outputId, "outputId"); if (!outputId.ok) return outputId;
-  if (result !== undefined && !fieldMap(result).has(field.value)) return fail("field", "The filter field is absent from the bound result.");
+  if (result === undefined) return fail("binding", "A filter requires a bound authorized result.");
+  const descriptor = fieldMap(result).get(field.value);
+  if (descriptor === undefined) return fail("field", "The filter field is absent from the bound result.");
+  if (descriptor.type.value !== "text") return fail("field", "Filter controls accept only text result fields.");
+  if (outputId.value !== result.ref.outputId) return fail("binding", "The filter output must match the bound authorized result.");
   const owner = result === undefined ? {ok: true as const, value: undefined} : trustedEntity(result, resolveEntity);
   if (!owner.ok) return owner;
   const output: Record<string, unknown> = {field: field.value, outputId: outputId.value, ...(owner.value === undefined ? {} : {entity: owner.value})};
-  return {ok: true, value: {values: output as PresentationValues, fields: result === undefined ? [] : [field.value], ports: [{id: "filter", direction: "output", payload: "filter"}]}};
+  return {ok: true, value: {values: output as PresentationValues, fields: [field.value], ports: [{id: "filter", direction: "output", payload: "filter"}], operations: [AELIQO_OPERATION_REFS.filter]}};
 }
 
 function suggestTrend(needs: readonly Task["needs"][number][], result: Result | undefined): Outcome<PresentationValues> {
   if (result === undefined || result.fields.length === 0) return fail("suggestion", "A trend suggestion requires an authorized result descriptor.");
-  const label = result.fields.find((field) => field.role === "time" || field.role === "dimension") ?? result.fields[0]!;
-  const series = result.fields.find((field) => field.role === "measure" && field.id !== label.id)
-    ?? result.fields.find((field) => field.id !== label.id)
-    ?? label;
-  return {ok: true, value: {labelField: label.id, series: [{field: series.id}]}};
+  const requested = new Set(needs.flatMap((need) => need.fields));
+  const label = result.fields.find((field) => temporalField(field) && requested.has(field.id)) ?? result.fields.find((field) => temporalField(field));
+  const series = result.fields.find((field) => numericField(field) && requested.has(field.id) && field.id !== label?.id)
+    ?? result.fields.find((field) => numericField(field) && field.id !== label?.id);
+  if (label === undefined || series === undefined) return fail("suggestion", "A trend suggestion requires a temporal field and numeric series field.");
+  const seriesBy = result.rowGrain.filter((field) => field !== label.id && field !== series.id && requested.has(field));
+  const grain = trendGrain(seriesBy, label.id, result); if (!grain.ok) return grain;
+  return {ok: true, value: {labelField: label.id, series: [{field: series.id}], seriesBy}};
+}
+
+function suggestTable(needs: readonly Task["needs"][number][]): Outcome<PresentationValues> {
+  const selection = needs.some((need) => need.operation.id === AELIQO_OPERATION_REFS.selection.id && need.operation.revision === AELIQO_OPERATION_REFS.selection.revision) ? "single" : "none";
+  return {ok: true, value: {selection}};
 }
 
 function suggestFilter(needs: readonly Task["needs"][number][], result: Result | undefined): Outcome<PresentationValues> {
@@ -200,9 +232,9 @@ function buildManifests(options: AeliqoPresentationRegistryOptions): readonly Pr
   const resolveEntity = options.resolveEntity;
   return Object.freeze([
     {ref: AELIQO_PRESENTATION_REFS.stack, configSchema: AELIQO_CONFIG_SCHEMAS.stack, roles: ["structure"], operations: [], result: "none", children: {min: 0, max: 32}, visibility: "simultaneous", extension: false, resolveConfig: stackConfig, suggestConfig: (): Outcome<PresentationValues> => ({ok: true, value: {}})},
-    {ref: AELIQO_PRESENTATION_REFS.table, configSchema: AELIQO_CONFIG_SCHEMAS.table, roles: ["table"], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.selection], result: "required", children: {min: 0, max: 0}, visibility: "leaf", extension: false, resolveConfig: (values, result) => tableConfig(values, result, resolveEntity), suggestConfig: (): Outcome<PresentationValues> => ({ok: true, value: {selection: "none"}})},
-    {ref: AELIQO_PRESENTATION_REFS.trend, configSchema: AELIQO_CONFIG_SCHEMAS.trend, roles: ["trend", "chart"], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.selection, AELIQO_OPERATION_REFS.compare], result: "required", children: {min: 0, max: 0}, visibility: "leaf", extension: false, resolveConfig: (values, result) => trendConfig(values, result, resolveEntity), suggestConfig: suggestTrend},
-    {ref: AELIQO_PRESENTATION_REFS.filter, configSchema: AELIQO_CONFIG_SCHEMAS.filter, roles: ["filter"], operations: [AELIQO_OPERATION_REFS.filter], result: "optional", children: {min: 0, max: 0}, visibility: "leaf", extension: false, resolveConfig: (values, result) => filterConfig(values, result, resolveEntity), suggestConfig: suggestFilter},
+    {ref: AELIQO_PRESENTATION_REFS.table, configSchema: AELIQO_CONFIG_SCHEMAS.table, roles: ["table"], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.selection], result: "required", children: {min: 0, max: 0}, visibility: "leaf", extension: false, resolveConfig: (values, result) => tableConfig(values, result, resolveEntity), suggestConfig: suggestTable},
+    {ref: AELIQO_PRESENTATION_REFS.trend, configSchema: AELIQO_CONFIG_SCHEMAS.trend, roles: ["trend", "chart"], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.compare], result: "required", children: {min: 0, max: 0}, visibility: "leaf", extension: false, resolveConfig: (values, result) => trendConfig(values, result, resolveEntity), suggestConfig: suggestTrend},
+    {ref: AELIQO_PRESENTATION_REFS.filter, configSchema: AELIQO_CONFIG_SCHEMAS.filter, roles: ["filter"], operations: [AELIQO_OPERATION_REFS.filter], result: "required", children: {min: 0, max: 0}, visibility: "leaf", extension: false, resolveConfig: (values, result) => filterConfig(values, result, resolveEntity), suggestConfig: suggestFilter},
   ]);
 }
 
