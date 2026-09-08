@@ -21,6 +21,8 @@ import type {
 export type AgentBindingDecision =
   | {
       readonly state: 'needs-choice';
+      /** Whether the host decision applies to the whole goal or one diagnostic. */
+      readonly scope: 'goal' | 'diagnostic';
       /** Host-owned goal identity; model task IDs are never authority keys. */
       readonly goalEpoch: string;
       readonly diagnosticCode: string;
@@ -33,6 +35,8 @@ export type AgentBindingDecision =
     }
   | {
       readonly state: 'needs-meaning';
+      /** Whether the host decision applies to the whole goal or one diagnostic. */
+      readonly scope: 'goal' | 'diagnostic';
       /** Host-owned goal identity; model task IDs are never authority keys. */
       readonly goalEpoch: string;
       readonly diagnosticCode: string;

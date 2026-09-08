@@ -157,7 +157,8 @@ function decisionFor(
 ): AgentBindingDecision | undefined {
   if (context.decisions === undefined) return undefined;
   return context.decisions.find((candidate) =>
-    candidate.goalEpoch === context.goalEpoch
+    candidate.scope === 'diagnostic'
+      && candidate.goalEpoch === context.goalEpoch
       && candidate.diagnosticCode === item.code
       && samePath(candidate.diagnosticPath, item.path));
 }
@@ -167,7 +168,7 @@ function decisionFor(
  * The goal epoch is the authority key; model task IDs are intentionally not
  * consulted here. */
 function goalDecision(context: NormalizedHostContext): AgentBindingDecision | undefined {
-  return context.decisions?.find((candidate) => candidate.goalEpoch === context.goalEpoch);
+  return context.decisions?.find((candidate) => candidate.scope === 'goal' && candidate.goalEpoch === context.goalEpoch);
 }
 
 function canonical(value: unknown): string {
@@ -237,7 +238,7 @@ function normalizeDecision(input: unknown): AgentBindingDecision | undefined {
   if (input === null || typeof input !== 'object' || Array.isArray(input)) return undefined;
   const record = input as Record<string, unknown>;
   if (record.state !== 'needs-choice' && record.state !== 'needs-meaning') return undefined;
-  if (!validId(record.goalEpoch) || !validId(record.diagnosticCode)) return undefined;
+  if (!validId(record.goalEpoch) || !validId(record.diagnosticCode) || (record.scope !== 'goal' && record.scope !== 'diagnostic')) return undefined;
   const path = record.diagnosticPath;
   if (path !== undefined && (!Array.isArray(path) || path.length > WIRE_LIMITS.depth || path.some((part) =>
     !(typeof part === 'string' ? validId(part) : Number.isSafeInteger(part) && part >= 0)))) return undefined;
@@ -250,12 +251,12 @@ function normalizeDecision(input: unknown): AgentBindingDecision | undefined {
       return Object.freeze({id: value.id, label: value.label, consequence: value.consequence});
     });
     if (choices.some((choice) => choice === undefined)) return undefined;
-    return Object.freeze({state: 'needs-choice' as const, goalEpoch: record.goalEpoch, diagnosticCode: record.diagnosticCode,
+    return Object.freeze({state: 'needs-choice' as const, scope: record.scope as 'goal' | 'diagnostic', goalEpoch: record.goalEpoch, diagnosticCode: record.diagnosticCode,
       ...(path === undefined ? {} : {diagnosticPath: Object.freeze([...(path as readonly (string | number)[])])}), choices: Object.freeze(choices as AgentBindingDecision & {state: 'needs-choice'} extends never ? never : {id: string; label: string; consequence: string}[])}) as unknown as AgentBindingDecision;
   }
   if (!validText(record.concept) || !Array.isArray(record.authoringRoutes) || record.authoringRoutes.length > 2 ||
       record.authoringRoutes.some((route) => route !== 'ai-assisted' && route !== 'manual')) return undefined;
-  return Object.freeze({state: 'needs-meaning' as const, goalEpoch: record.goalEpoch, diagnosticCode: record.diagnosticCode,
+  return Object.freeze({state: 'needs-meaning' as const, scope: record.scope as 'goal' | 'diagnostic', goalEpoch: record.goalEpoch, diagnosticCode: record.diagnosticCode,
     ...(path === undefined ? {} : {diagnosticPath: Object.freeze([...(path as readonly (string | number)[])])}), concept: record.concept,
     authoringRoutes: Object.freeze([...(record.authoringRoutes as readonly ('ai-assisted' | 'manual')[])])});
 }

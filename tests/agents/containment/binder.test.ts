@@ -143,9 +143,9 @@ describe('production agent binder', () => {
     const code = baseline.diagnostics[0]?.code;
     if (code === undefined) throw new Error('missing planner diagnostic');
     const diagnosticPath = baseline.diagnostics[0]?.path;
-    const needsMeaning = outcomeState(await binder({decisions: [{state: 'needs-meaning', goalEpoch: 'epoch-1', diagnosticCode: code, ...(diagnosticPath === undefined ? {} : {diagnosticPath}), concept: 'metric.missing', authoringRoutes: ['manual', 'ai-assisted']}]}).bind(proposal(missing)));
+    const needsMeaning = outcomeState(await binder({decisions: [{state: 'needs-meaning', scope: 'diagnostic', goalEpoch: 'epoch-1', diagnosticCode: code, ...(diagnosticPath === undefined ? {} : {diagnosticPath}), concept: 'metric.missing', authoringRoutes: ['manual', 'ai-assisted']}]}).bind(proposal(missing)));
     expect(needsMeaning.state).toBe('needs-meaning');
-    const needsChoice = outcomeState(await binder({decisions: [{state: 'needs-choice', goalEpoch: 'epoch-1', diagnosticCode: code, ...(diagnosticPath === undefined ? {} : {diagnosticPath}), choices: [{id: 'metric.net', label: 'Net', consequence: 'Uses reviewed net metric.'}, {id: 'metric.gross', label: 'Gross', consequence: 'Uses reviewed gross metric.'}]}]}).bind(proposal(missing)));
+    const needsChoice = outcomeState(await binder({decisions: [{state: 'needs-choice', scope: 'diagnostic', goalEpoch: 'epoch-1', diagnosticCode: code, ...(diagnosticPath === undefined ? {} : {diagnosticPath}), choices: [{id: 'metric.net', label: 'Net', consequence: 'Uses reviewed net metric.'}, {id: 'metric.gross', label: 'Gross', consequence: 'Uses reviewed gross metric.'}]}]}).bind(proposal(missing)));
     expect(needsChoice.state).toBe('needs-choice');
 
     const resolved = task({catalogRevision: meaningCatalog.revision, outputs: [{id: 'main', kind: 'query', query: query({fields: [], measures: [{id: gross.id, revision: gross.revision}]}), dependsOn: [], delivery: 'eager'}]});
@@ -193,8 +193,25 @@ describe('production agent binder', () => {
 
   it('keeps host decisions scoped to the current goal epoch', async () => {
     const missing = task({outputs: [{id: 'main', kind: 'query', query: query({measures: [{id: 'metric.missing', revision: '1'}]}), dependsOn: [], delivery: 'eager'}]});
-    const staleDecision = outcomeState(await binder({decisions: [{state: 'needs-meaning', goalEpoch: 'old-epoch', diagnosticCode: 'query.meaning', concept: 'metric.missing', authoringRoutes: ['manual']}]}).bind(proposal(missing)));
+    const staleDecision = outcomeState(await binder({decisions: [{state: 'needs-meaning', scope: 'diagnostic', goalEpoch: 'old-epoch', diagnosticCode: 'query.meaning', concept: 'metric.missing', authoringRoutes: ['manual']}]}).bind(proposal(missing)));
     expect(staleDecision.state).toBe('stale');
+  });
+
+  it('does not apply a diagnostic decision to an unrelated valid task', async () => {
+    const meaningCurrent = {...current, catalogRevision: meaningCatalog.revision};
+    const validTask = task({catalogRevision: meaningCatalog.revision, outputs: [{
+      id: 'main', kind: 'query', query: query({fields: [], measures: [{id: gross.id, revision: gross.revision}]}), dependsOn: [], delivery: 'eager',
+    }]});
+    const diagnosticDecision = {
+      state: 'needs-meaning' as const,
+      scope: 'diagnostic' as const,
+      goalEpoch: 'epoch-1',
+      diagnosticCode: 'query.meaning',
+      concept: 'metric.missing',
+      authoringRoutes: ['manual'] as const,
+    };
+    const guarded = binder({catalog: meaningCatalog, current: meaningCurrent, decisions: [diagnosticDecision]});
+    expect(outcomeState(await guarded.bind(proposal(validTask, meaningCurrent))).state).toBe('bound');
   });
 
   it('applies a current goal ambiguity after a valid bind and releases it when resolved', async () => {
@@ -203,7 +220,7 @@ describe('production agent binder', () => {
       {id: 'gross', kind: 'query', query: query({fields: [], measures: [{id: gross.id, revision: gross.revision}]}), dependsOn: [], delivery: 'eager'},
       {id: 'net', kind: 'query', query: query({fields: [], measures: [{id: net.id, revision: net.revision}]}), dependsOn: [], delivery: 'eager'},
     ]});
-    const decision = {state: 'needs-choice' as const, goalEpoch: 'epoch-1', diagnosticCode: 'agent.material-ambiguity', choices: [
+    const decision = {state: 'needs-choice' as const, scope: 'goal' as const, goalEpoch: 'epoch-1', diagnosticCode: 'agent.material-ambiguity', choices: [
       {id: 'gross', label: 'Gross', consequence: 'Use the gross definition.'},
       {id: 'net', label: 'Net', consequence: 'Use the net definition.'},
     ]};
