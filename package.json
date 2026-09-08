@@ -70,7 +70,12 @@
     "test:visualization-semantic:browser": "playwright test --config tests/visualization-semantic/playwright.config.mjs",
     "test:presentation-adaptation:consumers": "node tests/consumers/adaptation-tarballs.mjs",
     "test:meaning-authoring": "pnpm build:agent && vitest run --config tests/meaning-authoring/vitest.config.mjs && tsc -p tests/meaning-authoring/tsconfig.json",
-    "test:meaning-authoring:consumers": "node tests/consumers/meaning-tarballs.mjs"
+    "test:meaning-authoring:consumers": "node tests/consumers/meaning-tarballs.mjs",
+    "test:protocol-mcp": "pnpm build:agent && vitest run --config tests/protocol-mcp/vitest.config.mjs && tsc -p tests/protocol-mcp/tsconfig.json",
+    "test:protocol-webmcp": "pnpm build:agent && vitest run --config tests/protocol-webmcp/vitest.config.mjs && tsc -p tests/protocol-webmcp/tsconfig.json",
+    "test:protocol-model": "pnpm build:agent && vitest run --config tests/protocol-model/vitest.config.mjs && tsc -p tests/protocol-model/tsconfig.json",
+    "test:compounds": "pnpm build:platform && vitest run --config tests/compound/vitest.config.mjs && node tests/compound/ssr.mjs",
+    "test:compounds:browser": "playwright test --config tests/compound/playwright.config.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

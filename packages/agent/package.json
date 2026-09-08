@@ -29,6 +29,10 @@
     "./webmcp": {
       "types": "./dist/webmcp/index.d.ts",
       "import": "./dist/webmcp/index.js"
+    },
+    "./mcp": {
+      "types": "./dist/mcp/index.d.ts",
+      "import": "./dist/mcp/index.js"
     }
   },
   "scripts": {
@@ -41,7 +45,8 @@
   "peerDependencies": {
     "@modelcontextprotocol/server": "2.0.0",
     "@modelcontextprotocol/node": "2.0.0",
-    "openai": "7.10.0"
+    "openai": "7.10.0",
+    "@modelcontextprotocol/client": "2.0.0"
   },
   "peerDependenciesMeta": {
     "@modelcontextprotocol/server": {
@@ -51,6 +56,9 @@
       "optional": true
     },
     "openai": {
+      "optional": true
+    },
+    "@modelcontextprotocol/client": {
       "optional": true
     }
   },
