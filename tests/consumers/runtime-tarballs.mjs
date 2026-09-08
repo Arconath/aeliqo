@@ -354,6 +354,92 @@ async function exerciseRegions() {
 }
 `;
 
+const interactionExerciseSource = `
+async function exerciseInteraction() {
+  const check = (condition, message) => { if (!condition) throw new Error(message); };
+  const value = outcome => { check(outcome.ok, JSON.stringify(outcome)); return outcome.value; };
+  const principalKey = 'interaction-private';
+  const service = createLocalDataService({snapshot: {catalog, sourceRevision: 'interaction-source', records: {employees: rows}},
+    authorize: () => ({ok: true, value: {scopeDigest: 'interaction-scope', policyRevision: 'interaction-policy'}})});
+  const cache = createResultStore({maxEntries: 3});
+  const handles = [];
+  let queryCount = 0;
+  let authority;
+  let current;
+  async function evaluate(nextQuery, signal) {
+    const accepted = value(await service.plan({version: '1', requestId: 'interaction-query-' + (++queryCount),
+      catalogRevision: catalog.revision, target: {outputId: 'employees'}, query: nextQuery, budget}, {signal}));
+    const events = [];
+    for await (const event of service.execute(accepted, {signal})) events.push(event);
+    const descriptor = events[0]?.descriptor;
+    check(descriptor && events.at(-1)?.kind === 'complete', 'Interaction query did not complete');
+    const handle = cache.begin({principalKey, scopeDigest: accepted.scopeDigest, policyRevision: accepted.policyRevision,
+      queryDigest: accepted.queryDigest, catalogRevision: accepted.catalogRevision, functionRegistryDigest: accepted.functionRegistryDigest,
+      sourceRevision: accepted.sourceRevision, outputId: accepted.target.outputId, taskId: descriptor.taskId,
+      requestId: accepted.requestId, populationDigest: accepted.populationDigest});
+    for await (const update of handle.subscribe((async function* () { yield* events; })(), {signal})) void update;
+    handles.push(handle);
+    authority = {principalKey, scopeDigest: accepted.scopeDigest, policyRevision: accepted.policyRevision,
+      catalogRevision: accepted.catalogRevision, functionRegistryDigest: accepted.functionRegistryDigest,
+      experienceRevision: 'experience-1', results: [...(authority?.results ?? []), descriptor.ref]};
+    return {handle, ref: descriptor.ref};
+  }
+  current = await evaluate(query);
+  let prepared;
+  const task = {version: '1', id: 'interaction-task', revision: '1', regionId: 'interaction-region',
+    catalogRevision: catalog.revision, functionRegistryDigest: authority.functionRegistryDigest,
+    kind: 'data', goal: 'Filter employees', needs: [], assumptions: [],
+    outputs: [{id: 'employees', kind: 'query', query, dependsOn: [], delivery: 'eager'}]};
+  const store = createRegionStore({readAuthority: () => ({ok: true, value: authority}), authorizeCommit: () => ({ok: true, value: undefined})});
+  const region = value(store.create({id: task.regionId, state: {task}}));
+  const selection = {payload: 'selection', entity: 'employees', identity: ['id'], grain: ['id']};
+  const mapping = {ref: {id: 'selection.identity', revision: '1'}, source: selection, target: selection, kind: 'identity'};
+  const graph = createInteractionGraph({nodes: [{id: 'filter', ports: [{id: 'filter', direction: 'output', payload: 'filter'}]},
+    ...['table', 'detail'].map(id => ({id, ports: [{id: 'selection', direction: 'inout', ...selection}]}))],
+    links: [{id: 'selection-link', source: {node: 'table', port: 'selection'}, target: {node: 'detail', port: 'selection'},
+      mapping: mapping.ref, propagation: 'identity-equivalence'}], mappings: [mapping]});
+  const controller = createInteractionController({region, graph,
+    readContext: () => ({...authority, results: [current.ref], draftDomain: 'directory', actor: {id: 'owner', kind: 'user'}, grants: ['experience.commit', 'result.inspect']}),
+    resolveResult: ref => handles.find(handle => handle.snapshot().descriptor?.ref.id === ref.id),
+    validateScope: payload => payload.kind === 'filter' && payload.outputId === 'employees'
+      ? {ok: true, value: undefined} : {ok: false, diagnostics: [{code: 'host.scope', message: 'Unknown output.', retryable: false}]},
+    validateSelection: selected => selected.mode === 'ids' && selected.keys.every(key => current.handle.snapshot().batches.some(batch => batch.rows.some(row => row.id === key)))
+      ? {ok: true, value: undefined} : {ok: false, diagnostics: [{code: 'host.selection', message: 'Selection unavailable.', retryable: false}]},
+    materialize: async (payloads, context, next) => {
+      check(payloads.length === 1, 'Unexpected materialization fanout');
+      const nextQuery = {...query, where: {op: 'and', predicates: payloads[0].predicates}};
+      const fresh = await evaluate(nextQuery, context.signal);
+      prepared = fresh;
+      return {ok: true, value: {state: {task: {...context.region.state.task,
+        outputs: [{id: 'employees', kind: 'query', query: nextQuery, dependsOn: [], delivery: 'eager'}]}, interaction: next}, resultHandles: [fresh.handle]}};
+    }});
+  const event = (id, originNodeId, payload) => ({eventId: id, causationId: id, regionId: region.id,
+    regionRevision: region.snapshot().regionRevision, originNodeId, payload});
+  const filter = event('filter-active', 'filter', {kind: 'filter', outputId: 'employees', predicates: [{op: 'compare', field: 'active', comparison: 'eq', value: true}]});
+  value(await controller.dispatch(filter));
+  current = prepared;
+  check(queryCount === 2 && current.handle.snapshot().batches.flatMap(batch => batch.rows).length === 1,
+    'Typed filter did not change actual query rows');
+  check(region.snapshot().state.task.outputs[0].query.where.predicates[0].field === 'active' && controller.state().values.length === 1,
+    'Query and retained filter were not committed together');
+  const selected = event('select-employee', 'table', {kind: 'selection', selection: {mode: 'ids', entity: 'employees', keys: ['e-1'], result: current.ref}});
+  value(await controller.dispatch(selected));
+  check(controller.state().values.filter(entry => entry.payload.kind === 'selection').length === 2 && queryCount === 2,
+    'Selection did not converge without a query');
+  const stale = await controller.dispatch({...selected, eventId: 'stale-selection'});
+  check(!stale.ok, 'Stale interaction was accepted');
+  const forged = await controller.dispatch({...event('forged', 'table', selected.payload), actor: 'human'});
+  check(!forged.ok, 'Wire interaction forged actor authority');
+  const unavailable = await controller.dispatch(event('unavailable', 'table', {...selected.payload, selection: {...selected.payload.selection, keys: ['e-2']}}));
+  check(!unavailable.ok, 'Selection crossed the filtered population');
+  region.revoke();
+  check(!(await controller.dispatch(event('after-revoke', 'filter', filter.payload))).ok && region.snapshot().state === undefined,
+    'Interaction survived region revocation');
+  controller.dispose(); graph.dispose(); store.dispose(); for (const handle of handles) handle.release(); cache.dispose();
+  return {queryCount, filteredRows: 1, linkedSelection: true, staleRejected: true, revoked: true};
+}
+`;
+
 const actionExerciseSource = `
 async function exerciseActions() {
   const check = (condition, message) => { if (!condition) throw new Error(message); };
@@ -411,7 +497,11 @@ async function exerciseActions() {
   context = {...context, policyRevision: 'policy-2'};
   check(!(await port.execute(stale)).ok && writes === 1, 'Stale action confirmation executed');
   check(!JSON.stringify(port.history()).includes('delta'), 'Action history retained raw input');
+  const retainedPreview = value(await port.preview({...request, requestId: 'action-held-preview'}));
+  check(retainedPreview.input?.delta === 3, 'Live preview input was unavailable');
   port.revoke();
+  check(retainedPreview.input === undefined && port.inspect('action-once') === undefined,
+    'Revoked action port retained preview input or ledger data');
   check(!(await port.preview({...request, requestId: 'action-after-revoke'})).ok, 'Revoked action port accepted a proposal');
   port.dispose();
   return {writes, total, confirmations, independentGrant: true, confirmationRequired: true,
@@ -427,6 +517,10 @@ import {createResultStore, type ResultStore, type ResultCacheKey} from '@aeliqo/
 import {createRegionStore, type RegionHandle, type RegionStore} from '@aeliqo/runtime/regions';
 import {parseRegionDocument} from '@aeliqo/runtime/persistence';
 import {createActionPort, createActionRegistry, type ActionRequest, type ActionPort} from '@aeliqo/runtime/actions';
+import {createInteractionController, createInteractionGraph, type InteractionControllerOptions, type InteractionEvent} from '@aeliqo/runtime/interaction';
+declare const interactionOptions: InteractionControllerOptions;
+declare const interactionEvent: InteractionEvent;
+createInteractionController(interactionOptions).dispatch(interactionEvent);
 declare const actionPort: ActionPort;
 declare const actionRequest: ActionRequest;
 // @ts-expect-error Action requests cannot claim a trusted actor.
@@ -489,6 +583,7 @@ import {createResultStore} from '@aeliqo/runtime/results';
 import {createRegionStore} from '@aeliqo/runtime/regions';
 import {parseRegionDocument, serializeRegionDocument} from '@aeliqo/runtime/persistence';
 import {createActionPort, createActionRegistry} from '@aeliqo/runtime/actions';
+import {createInteractionController, createInteractionGraph} from '@aeliqo/runtime/interaction';
 
 const run = (argv, cwd) => {
   const result = spawnSync(argv[0], argv.slice(1), {cwd, encoding: 'utf8'});
@@ -559,6 +654,8 @@ assert.deepEqual(resultHandle.snapshot().batches, []);
 resultStore.dispose();
 ${regionExerciseSource}
 const regionProof = await exerciseRegions();
+${interactionExerciseSource}
+const interactionProof = await exerciseInteraction();
 ${actionExerciseSource}
 const actionProof = await exerciseActions();
 assert(observations.some(item => item.operation === 'execute' && item.principal === 'alice'));
@@ -638,9 +735,11 @@ import {createResultStore} from '@aeliqo/runtime/results';
 import {createRegionStore} from '@aeliqo/runtime/regions';
 import {parseRegionDocument, serializeRegionDocument} from '@aeliqo/runtime/persistence';
 import {createActionPort, createActionRegistry} from '@aeliqo/runtime/actions';
+import {createInteractionController, createInteractionGraph} from '@aeliqo/runtime/interaction';
 const fixture = ${fixtureSource};
 const {catalog, rows, budget, query} = fixture;
 ${regionExerciseSource}
+${interactionExerciseSource}
 ${actionExerciseSource}
 const describeRequest = requestId => ({version:'1',requestId,catalogRevision:null,target:{kind:'catalog'},budget,pageSize:1});
 const planRequest = requestId => ({version:'1',requestId,catalogRevision:'catalog-1',target:{outputId:'employees-output'},query,budget});
@@ -677,7 +776,8 @@ const transportFlows = 21;
 for (let flow = 1; flow < transportFlows; flow++) await runFlow(networkClient);
 const regions = await exerciseRegions();
 const actions = await exerciseActions();
-globalThis.__aeliqoBrowserData = {local,network,transportFlows,regions,actions};
+const interaction = await exerciseInteraction();
+globalThis.__aeliqoBrowserData = {local,network,transportFlows,regions,actions,interaction};
 \`);
   await writeFile('vite.config.mjs', \`export default {build:{minify:true,outDir:'dist',rollupOptions:{input:'index.html'}},plugins:[{name:'record-runtime-modules',generateBundle(_,bundle){const modules=Object.values(bundle).filter(item=>item.type==='chunk').flatMap(item=>Object.keys(item.modules));this.emitFile({type:'asset',fileName:'modules.json',source:JSON.stringify(modules)});}}]};\`);
   run(['node_modules/.bin/vite', 'build'], process.cwd());
@@ -740,6 +840,7 @@ globalThis.__aeliqoBrowserData = {local,network,transportFlows,regions,actions};
     assert.equal(browserResult.local.rows, 3);
     assert.equal(browserResult.network.rows, 1);
     assert.equal(browserResult.transportFlows, 21);
+    assert.deepEqual(browserResult.interaction, interactionProof);
     assert.deepEqual(browserResult.regions, {queryCount: 2, staleCommitRejected: true, leasesReleased: true, restoreRequeried: true});
     assert.deepEqual(browserFailures, []);
   } finally {
@@ -754,6 +855,7 @@ globalThis.__aeliqoBrowserData = {local,network,transportFlows,regions,actions};
     observations,
     regions: regionProof,
     actions: actionProof,
+    interaction: interactionProof,
   };
   await writeFile(${JSON.stringify(join(runDirectory, 'runtime-report.json'))}, JSON.stringify(report, null, 2) + '\\n');
   console.log('Installed runtime data, results, region transactions, restore, HTTP and Chromium pass.');

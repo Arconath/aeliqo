@@ -163,6 +163,9 @@ logical output, query and scope; even a same-reference refresh invalidates a
 proposal that read the previous data revision. Host callbacks receive an
 `AbortSignal` and must stop work when it aborts. Deadlines also stop waiting for
 uncooperative callbacks, whose late results cannot commit.
+`region.commit(token, {signal})` can cancel queued or pending authorization work
+before the atomic state swap and releases the proposal's leases. Cancellation
+after the swap does not undo an already completed commit.
 
 `@aeliqo/runtime/persistence` serializes versioned task metadata and semantic
 pins, without result rows, principal keys or presentation plans. Storage remains
@@ -184,6 +187,34 @@ commit preserves leases for results still referenced by the new state.
 Persistence exports Task metadata only; it does not automatically save these
 potentially sensitive selections or drafts.
 
+## Typed interactions
+
+`@aeliqo/runtime/interaction` exposes `createInteractionGraph` and
+`createInteractionController`. Register typed ports and mapping manifests through
+the core graph validator. Selection-equivalence links use built-in identity
+propagation; directed mappings require registered local callbacks. The controller
+validates wire events, bounds queued work, and commits retained values through
+the owning region. Events carry stable node and region identities, without actor
+or permission fields. The host supplies trusted context for each operation.
+
+For filter, range, group and page events, provide `validateScope` and `materialize`.
+The latter receives all routed query payloads, the resolution context and the next
+canonical interaction state in one call. Evaluate through the data service and
+return a full `RegionContent` plus its fresh result handles. Preserve the captured
+read dependencies in host authority while adding the fresh results; activate the
+new view only after commit succeeds. A callback that only changes control state
+cannot establish that query rows changed.
+
+Provide `validateSelection` for permitted population membership and `validateDraft`
+for editable fields/current entity revisions. Navigation uses application-declared
+destinations and explicit host callbacks. Action interaction callbacks only propose
+an action; business execution uses the separate action boundary below. No model is
+required for these interactions. Initialize controls and drafts through
+`RegionStore.create` state, and read the committed region state in view observers.
+
+Controller revocation disables that input channel. When read permission itself is
+withdrawn, the host must also revoke the region and affected result-store partition.
+
 ## Host actions
 
 `@aeliqo/runtime/actions` exposes `createActionRegistry` and `createActionPort`.
@@ -199,6 +230,9 @@ each Outcome. Preview requires `action.propose`; execution separately requires
 `issueConfirmation` callback. Preview and confirmation perform no business write.
 Opaque previews and receipts are one-use and cannot be recreated from JSON.
 Execution rechecks current authority and entity revisions before dispatch.
+`preview.input` is available only while that opaque preview is live; it becomes
+`undefined` when consumed, revoked or disposed. Any copy deliberately made by the
+application remains the application's responsibility.
 
 The in-memory idempotency ledger prevents repeated dispatch within the port's
 lifetime. An ambiguous outcome must be reconciled by the application, because a
