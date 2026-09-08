@@ -1,6 +1,12 @@
 import {css, html, nothing, type TemplateResult} from "lit";
 import {scalarIdentity} from "@aeliqo/core";
+import type {Result} from "@aeliqo/core";
 import type {AeliqoDataRecord, AeliqoDataScope, AeliqoDataStatus, AeliqoDataValue} from "./types.js";
+
+/** Materialized observations remain readable even when population coverage is unknown. */
+export function materializedDataStatus(result: Result): AeliqoDataStatus {
+  return result.coverage.kind === "partial" || result.coverage.kind === "sample" ? "partial" : "ready";
+}
 
 /** Stable, typed identity encoding. It deliberately excludes render position. */
 export function stableDataValueKey(value: AeliqoDataValue | undefined): string | undefined {
@@ -41,14 +47,18 @@ export function dataStatusMessage(status: AeliqoDataStatus, message?: string): s
 }
 
 export function scopeText(scope: AeliqoDataScope | undefined): string | undefined {
-  if (scope?.label !== undefined && scope.label.length > 0) return scope.label;
   if (scope === undefined) return undefined;
-  if (scope.kind === "sample") return "Bounded sample";
-  if (scope.kind === "unknown") return "Scope unknown";
-  if (scope.filteredTotal !== undefined) return `${scope.filteredTotal.toLocaleString()} matching records`;
-  if (scope.populationTotal !== undefined) return `${scope.populationTotal.toLocaleString()} records in population`;
-  if (scope.loaded !== undefined) return `${scope.loaded.toLocaleString()} loaded records`;
-  return undefined;
+  const parts: string[] = [];
+  if (scope.label) parts.push(scope.label);
+  if (scope.kind === "sample") parts.push("Bounded sample");
+  if (scope.kind === "unknown") parts.push("Scope unknown");
+  const total = scope.filteredTotal ?? scope.populationTotal;
+  const population = scope.filteredTotal === undefined ? "population" : "matching";
+  if (scope.loaded !== undefined && total !== undefined)
+    parts.push(`${scope.loaded.toLocaleString()} of ${total.toLocaleString()} ${population} records loaded`);
+  else if (scope.loaded !== undefined) parts.push(`${scope.loaded.toLocaleString()} loaded records`);
+  else if (total !== undefined) parts.push(`${total.toLocaleString()} ${population} records`);
+  return parts.length === 0 ? undefined : parts.join("; ");
 }
 
 export function statusTemplate(status: AeliqoDataStatus, message?: string): TemplateResult | typeof nothing {
@@ -86,4 +96,3 @@ export function safeNumber(value: unknown): number | undefined {
 export function clampInteger(value: number, minimum: number, maximum: number): number {
   return Math.min(maximum, Math.max(minimum, Math.trunc(value)));
 }
-

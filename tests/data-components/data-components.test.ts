@@ -30,6 +30,12 @@ describe("delta semantics", () => {
     expect(calculateAeliqoDelta(undefined, 2)).toMatchObject({status: "unavailable", reason: "missing-current"});
   });
 
+  it("does not coerce invalid exact decimal text through Number", () => {
+    for (const decimal of ["0x10", "", " 12 ", "1e2", "1".repeat(513)]) {
+      expect(calculateAeliqoDelta({decimal}, {decimal: "1"})).toMatchObject({status: "unavailable", reason: "invalid"});
+    }
+  });
+
   it("keeps decimal percentage points exact at sub-percent differences", () => {
     expect(calculateAeliqoDelta({decimal: "0.0001"}, {decimal: "0"}, "percentage-point"))
       .toMatchObject({status: "ready", value: "0.0001", display: "+0.01 pp"});

@@ -1,5 +1,5 @@
 import {renderAeliqoDataPresentationNode} from "./data-presentation.js";
-import {AELIQO_DATA_REFS} from "./data-registry.js";
+import {AELIQO_DATA_REFS, validateAeliqoDataBinding} from "./data-registry.js";
 import type {AeliqoRegionDataRequestHandler} from "./types.js";
 import {renderNavigationFeedbackNode} from "./navigation-feedback-renderer.js";
 import {renderInputNode} from "./input-renderer.js";
@@ -9,6 +9,7 @@ import {css, html, LitElement, nothing, type TemplateResult} from "lit";
 import {repeat} from "lit/directives/repeat.js";
 import type {PropertyValues} from "lit";
 import {aeliqoThemeStyles} from "../styles/theme.js";
+import {dataStatusMessage, materializedDataStatus, scopeText} from "../data/shared.js";
 import "../elements/aeliqo-table.js";
 import "../elements/aeliqo-chart.js";
 import "../elements/aeliqo-input.js";
@@ -106,8 +107,24 @@ function decimalText(value: unknown): string | undefined {
 }
 
 function resultFor(node: {readonly result: Result | undefined}, results: readonly AeliqoRegionResult[]): AeliqoRegionResult | undefined {
-  if (node.result === undefined) return undefined;
-  return results.find((candidate) => refKey(candidate.ref) === refKey(node.result!.ref));
+  try {
+    if (node.result === undefined || !Array.isArray(results)) return undefined;
+    const matches = results.filter(candidate => refKey(candidate.ref) === refKey(node.result!.ref));
+    if (matches.length !== 1) return undefined;
+    const current = matches[0]!;
+    const checked = validateAeliqoDataBinding({result: node.result, rows: current.rows,
+      ...(current.columns === undefined ? {} : {columns: current.columns}),
+      ...(current.scope === undefined ? {} : {scope: current.scope})});
+    if (!checked.ok) return undefined;
+    const rows = checked.value.rows.map(source => {
+      const row: Record<string, AeliqoTableRow[string]> = {};
+      for (const [field, value] of Object.entries(source)) if (value !== undefined) row[field] = value;
+      return row;
+    });
+    return {ref: checked.value.result.ref, rows, columns: checked.value.columns, scope: checked.value.scope};
+  } catch {
+    return undefined;
+  }
 }
 
 function resultColumns(node: {readonly result: Result | undefined}, bound: AeliqoRegionResult | undefined): readonly AeliqoTableColumn[] {
@@ -215,7 +232,7 @@ export class AeliqoRegionElement extends LitElement {
     const current = resultFor(node, this.results);
     if (current === undefined || node.result === undefined) return html`<p part="status">Data unavailable.</p>`;
     const entity = node.config.ports.find(port => port.payload === "selection")?.entity;
-    const rendered = renderAeliqoDataPresentationNode(node, {result: node.result, rows: current.rows, ...(current.columns === undefined ? {} : {columns: current.columns})}, {
+    const rendered = renderAeliqoDataPresentationNode(node, {result: node.result, rows: current.rows, ...(current.columns === undefined ? {} : {columns: current.columns}), ...(current.scope === undefined ? {} : {scope: current.scope})}, {
       ...(this.interaction === undefined ? {} : {interaction: this.interaction}),
       onRequest: request => {
         if (request.kind === "selection" || request.kind === "filter") this.emitFoundation(node, request.portId, request.payload);
@@ -251,6 +268,9 @@ export class AeliqoRegionElement extends LitElement {
       .selection=${selection}
       .selectedKeys=${selectedKeys}
       .result=${result}
+      .scope=${bound?.scope}
+      .status=${bound === undefined || resolved.result === undefined ? "unavailable" : materializedDataStatus(resolved.result)}
+      .message=${bound === undefined ? "Data unavailable." : ""}
       @aeliqo-table-selection=${(event: Event) => this.handleTableSelection(event, resolved)}
     ></aeliqo-table>`;
   }
@@ -299,8 +319,8 @@ export class AeliqoRegionElement extends LitElement {
       data-aeliqo-node-id=${resolved.node.id}
       data-aeliqo-theme="inherit"
       .title=${text(values.title, "Trend")}
-      .summary=${bound === undefined ? "Data unavailable." : ""}
-      .scope=${text(values.scope)}
+      .summary=${bound === undefined ? "Data unavailable." : resolved.result === undefined ? "" : dataStatusMessage(materializedDataStatus(resolved.result)) ?? ""}
+      .scope=${scopeText(bound?.scope) ?? ""}
       .series=${series}
       .points=${series[0]?.points ?? []}
     ></aeliqo-chart>`;

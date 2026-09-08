@@ -14,10 +14,10 @@ type ResolvedNode = ValidatedPresentation["nodes"][number];
 type NodeValues = ResolvedNode["config"]["values"];
 type NodePorts = readonly InteractionPort[];
 
-function result(fields: Result["fields"]): Result {
-  return {version: "1", ref, taskId: "task", fields, identity: ["employee.id"], rowGrain: ["employee.id", "week"],
-    counts: {loaded: 0, population: {kind: "unknown"}}, precision: {kind: "exact"}, coverage: {kind: "unknown", reason: "fixture"},
-    consistency: {kind: "unknown", reason: "fixture"}, evidence: {kind: "observed", source: {id: "fixture", revision: "1"}}, filters: [], warnings: [], lineage: []};
+function result(fields: Result["fields"], loaded: number, identity: readonly string[], revision: string): Result {
+  return {version: "1", ref: {...ref, revision}, taskId: "task", fields, identity, rowGrain: identity,
+    counts: {loaded, population: {kind: "exact", value: loaded, populationDigest: `fixture-${revision}`}}, precision: {kind: "exact"}, coverage: {kind: "complete", populationDigest: `fixture-${revision}`},
+    consistency: {kind: "snapshot", snapshotId: `fixture-${revision}`, sourceRevisions: {fixture: revision}}, evidence: {kind: "observed", source: {id: "fixture", revision: "1"}}, filters: [], warnings: [], lineage: []};
 }
 
 function node(
@@ -62,7 +62,7 @@ function presentation(children: readonly string[], nodes: readonly ResolvedNode[
       catalogRevision: "catalog",
       experienceRevision: "experience",
       functionRegistryDigest: "functions",
-      results: [ref],
+      results: [...new Map(nodes.flatMap(entry => entry.result ? [[JSON.stringify(entry.result.ref), entry.result.ref] as const] : [])).values()],
     },
     nodes: [...byId.values()].map((entry) => entry.node),
     links: [],
@@ -91,22 +91,23 @@ const departmentField = {id: "department", label: "Department", type: {value: "t
 const weekField = {id: "week", label: "Week", type: {value: "instant", nullable: false}, role: "time"} as const satisfies Result["fields"][number];
 const amountField = {id: "absence", label: "Absence", type: {value: "decimal", nullable: true}, role: "measure"} as const satisfies Result["fields"][number];
 
-const selectionResult = result([textField, departmentField]);
 const selectionRows = [{"employee.id": "e1", department: "People"}, {"employee.id": "e2", department: "Sales"}];
+const selectionResult = result([textField, departmentField], selectionRows.length, ["employee.id"], "selection");
 const tableColumns: readonly AeliqoTableColumn[] = [{key: "employee.id", label: "Employee ID"}, {key: "department", label: "Department"}];
 
-const trendResult = result([textField, weekField, amountField]);
 const trendRows = [
   {"employee.id": "e1", week: "2026-01-01T00:00:00Z", absence: 1}, {"employee.id": "e1", week: "2026-01-08T00:00:00Z", absence: null}, {"employee.id": "e1", week: "2026-01-15T00:00:00Z", absence: 2},
   {"employee.id": "e2", week: "2026-01-01T00:00:00Z", absence: 0}, {"employee.id": "e2", week: "2026-01-15T00:00:00Z", absence: 1},
   {"employee.id": "e3", week: "2026-01-01T00:00:00Z", absence: 2}, {"employee.id": "e3", week: "2026-01-08T00:00:00Z", absence: 2}, {"employee.id": "e3", week: "2026-01-15T00:00:00Z", absence: 3},
   {"employee.id": "e4", week: "2026-01-01T00:00:00Z", absence: 3}, {"employee.id": "e4", week: "2026-01-08T00:00:00Z", absence: 2}, {"employee.id": "e4", week: "2026-01-15T00:00:00Z", absence: 4},
   {"employee.id": "e5", week: "2026-01-01T00:00:00Z", absence: 4}, {"employee.id": "e5", week: "2026-01-08T00:00:00Z", absence: 3}, {"employee.id": "e5", week: "2026-02-01T00:00:00Z", absence: 6},
-];
+].map(row => ({...row, absence: row.absence === null ? null : {decimal: String(row.absence)}}));
+const trendResult = result([textField, weekField, amountField], trendRows.length, ["employee.id", "week"], "trend");
 const subMillisecondTrendRows = [
   {"employee.id": "e1", week: "2026-01-01T00:00:00.0001Z", absence: 1},
   {"employee.id": "e1", week: "2026-01-01T00:00:00.0009Z", absence: 2},
-];
+].map(row => ({...row, absence: {decimal: String(row.absence)}}));
+const subMillisecondResult = result([textField, weekField, amountField], subMillisecondTrendRows.length, ["employee.id", "week"], "submillisecond");
 
 function mountFilters(order: readonly string[] = ["filter-a", "filter-b"]): void {
   const filterA = node("filter-a", "filter", "control.filter", {field: "department", outputId: "rows"}, ["department"], selectionResult, [{id: "filter", direction: "output", payload: "filter"}]);
@@ -128,8 +129,8 @@ function mountTrend(): void {
 }
 
 function mountSubMillisecondTrend(): void {
-  const trend = node("trend", "trend", "data.trend", {labelField: "week", series: [{field: "absence", label: "Absence"}], seriesBy: ["employee.id"]}, ["week", "employee.id", "absence"], trendResult);
-  region.results = [{ref: trendResult.ref, rows: subMillisecondTrendRows} satisfies AeliqoRegionResult];
+  const trend = node("trend", "trend", "data.trend", {labelField: "week", series: [{field: "absence", label: "Absence"}], seriesBy: ["employee.id"]}, ["week", "employee.id", "absence"], subMillisecondResult);
+  region.results = [{ref: subMillisecondResult.ref, rows: subMillisecondTrendRows} satisfies AeliqoRegionResult];
   region.presentation = presentation(["trend"], [trend]);
 }
 

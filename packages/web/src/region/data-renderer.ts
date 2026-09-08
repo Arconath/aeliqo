@@ -9,7 +9,7 @@ import { html, nothing, type TemplateResult } from "lit";
 import { calculateAeliqoDelta, type AeliqoDeltaMode } from "../data/delta.js";
 import type { AeliqoKeyValueItem } from "../data/key-value.js";
 import type { AeliqoSelectionScope } from "../data/selection-summary.js";
-import { stableDataRecordKey, dataValueText } from "../data/shared.js";
+import { stableDataRecordKey, dataValueText, materializedDataStatus } from "../data/shared.js";
 import type {
   AeliqoDataScope,
   AeliqoDataStatus,
@@ -192,13 +192,7 @@ function sameRef(left: ResultRef | undefined, right: ResultRef): boolean {
 }
 
 function statusFor(node: AeliqoDataResolvedNode): AeliqoDataStatus {
-  if (
-    node.result.coverage.kind === "partial" ||
-    node.result.coverage.kind === "sample"
-  )
-    return "partial";
-  if (node.result.coverage.kind === "unknown") return "unavailable";
-  return "ready";
+  return materializedDataStatus(node.result);
 }
 
 function selectionPort(
@@ -1105,7 +1099,9 @@ function collectionTemplate(
     .mode=${mode}
     .virtualized=${node.config.values.virtualized === true}
     .virtualStart=${virtualStart}
-    .totalRows=${node.scope.populationTotal ?? node.scope.filteredTotal ?? node.rows.length}
+    .scope=${node.scope}
+    .status=${status}
+    .totalRows=${node.scope.filteredTotal ?? node.scope.populationTotal}
     @aeliqo-table-selection=${(event: Event) => dispatchSelection(node, event, context)}
     @aeliqo-table-page=${(event: Event) => dispatchPage(node, event, context)}
     @aeliqo-table-sort=${(event: Event) => dispatchSort(node, event, context)}

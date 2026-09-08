@@ -1,5 +1,6 @@
 import {css, html, LitElement, nothing} from "lit";
 import {aeliqoThemeStyles} from "../styles/theme.js";
+import {validateScalar} from "@aeliqo/core";
 import type {AeliqoDataScope, AeliqoDataStatus, AeliqoDataValue, AeliqoDeltaResult} from "./types.js";
 import {dataStyles, dataStatusMessage, scopeText, statusTemplate} from "./shared.js";
 
@@ -118,6 +119,11 @@ export function calculateAeliqoDelta(
   compatible = true,
 ): AeliqoDeltaResult {
   if (!compatible) return {status: "unavailable", reason: "incompatible"};
+  if (!["absolute", "relative", "percentage-point"].includes(mode)) return {status: "unavailable", reason: "invalid"};
+  for (const value of [current, baseline]) {
+    if (value !== null && typeof value === "object" && !validateScalar(value, {value: "decimal", nullable: false}).ok)
+      return {status: "unavailable", reason: "invalid"};
+  }
   const currentText = decimalInput(current);
   const baselineText = decimalInput(baseline);
   const exactDifference = currentText !== undefined && baselineText !== undefined
@@ -186,18 +192,19 @@ export class AeliqoDeltaElement extends LitElement {
   message = "";
 
   protected override render() {
-    const result = this.status === "ready" ? calculateAeliqoDelta(this.current, this.baseline, this.validMode, this.compatible) : undefined;
+    const canDisplay = this.status === "ready" || this.status === "partial" || this.status === "stale";
+    const result = canDisplay ? calculateAeliqoDelta(this.current, this.baseline, this.validMode, this.compatible) : undefined;
     const modeLabel = this.validMode === "relative" ? "relative change" : this.validMode === "percentage-point" ? "percentage-point change" : "absolute change";
-    const unavailable = this.status !== "ready" || result?.status !== "ready";
+    const unavailable = !canDisplay || result?.status !== "ready";
     const rendered = unavailable
-      ? dataStatusMessage(this.status !== "ready" ? this.status : "unavailable", this.message) ?? "Value unavailable."
+      ? dataStatusMessage(!canDisplay ? this.status : "unavailable", this.message) ?? "Value unavailable."
       : result.display ?? "—";
     const scope = scopeText(this.scope);
     return html`
-      <dl part="delta" aria-describedby=${scope ? "scope" : nothing} data-mode=${this.validMode} data-status=${unavailable ? "unavailable" : "ready"}>
+      <dl part="delta" aria-describedby=${scope ? "scope" : nothing} data-mode=${this.validMode} data-status=${unavailable ? "unavailable" : this.status}>
         <dt part="label">${this.label}</dt>
         <dd part="value" class=${unavailable ? "unavailable" : ""} aria-label=${unavailable ? rendered : `${rendered}, ${modeLabel}`}>
-          <bdi part="number" dir=${unavailable ? "auto" : "ltr"}>${rendered}</bdi>${this.unit && !unavailable ? html`<span part="unit">${this.unit}</span>` : nothing}
+          <bdi part="number" dir=${unavailable ? "auto" : "ltr"}>${rendered}</bdi>${this.unit && this.validMode === "absolute" && !unavailable ? html`<span part="unit">${this.unit}</span>` : nothing}
         </dd>
       </dl>
         <div part="mode">${modeLabel}</div>

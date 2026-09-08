@@ -1,12 +1,15 @@
 import type {AeliqoDataHostRequest} from "./data-renderer.js";
 import type {InteractionPayload, ResultRef, ValidatedPresentation} from "@aeliqo/core";
 import type {AeliqoTableColumn, AeliqoTableRow} from "../types.js";
+import type {AeliqoDataScope} from "../data/types.js";
 
 /** Rows already resolved by the application for one exact authorized ResultRef. */
 export interface AeliqoRegionResult {
   readonly ref: ResultRef;
   readonly rows: readonly AeliqoTableRow[];
   readonly columns?: readonly AeliqoTableColumn[];
+  /** Optional host scope annotations; validated against the Result descriptor. */
+  readonly scope?: AeliqoDataScope;
 }
 
 /** A semantic request from a rendered node; the host wraps it in its event envelope. */

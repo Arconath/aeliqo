@@ -122,6 +122,7 @@ describe("data renderer interaction boundary", () => {
     const result: Result = {
       ...baseResult,
       counts: { loaded: 1, population: { kind: "exact", value: 2, populationDigest: "population" } },
+      coverage: {kind: "partial", populationDigest: "population", reason: "Delivery page"},
     };
     const requests: AeliqoDataHostRequest[] = [];
     const template = renderAeliqoDataNode(node("cardCollection", {}, result), { onRequest: (request) => requests.push(request) });
@@ -193,12 +194,11 @@ describe("data renderer interaction boundary", () => {
     expect(values(current)).toContainEqual(active);
     expect(values(current)).not.toContainEqual(initial);
 
-    const malformed = node("filterBuilder", {
-      field: "name",
-      outputId: "people",
+    const malformed = {...filterNode, config: {...filterNode.config, values: {
+      ...filterNode.config.values,
       predicate: { op: "compare", field: "not-authorized", comparison: "eq", value: "Ada" },
       inherited: { op: "is-null", field: "not-authorized", negate: true },
-    });
+    }}};
     const malformedValues = values(renderAeliqoDataNode(malformed));
     expect(malformedValues).not.toContainEqual(expect.objectContaining({ field: "not-authorized" }));
   });

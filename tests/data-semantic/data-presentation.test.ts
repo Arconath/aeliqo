@@ -387,6 +387,37 @@ describe("data presentation bridge", () => {
       ok: false,
       diagnostics: [{ code: "web.data.presentation.stale" }],
     });
+    expect(created.value.render(node, {result, rows: [{...rows[0], amount: {decimal: "999"}}]})).toBe(nothing);
+  });
+
+  it("does not let current column materialization reduce validated detail coverage", () => {
+    const created = createAeliqoDataPresentationRegistry([binding], entityOptions);
+    if (!created.ok) throw new Error(JSON.stringify(created.diagnostics));
+    const manifest = created.value.manifests.find(m => m.ref.id === AELIQO_DATA_REFS.detail.id)!;
+    const checked = validatePresentationPlan(
+      planFor(manifest.ref, "detail", manifest.configSchema, {}),
+      contextFor(manifest.ref, "detail", manifest.configSchema),
+      {manifests: created.value.manifests, mappings: []},
+    );
+    if (!checked.ok) throw new Error(JSON.stringify(checked.diagnostics));
+    const node = checked.value.nodes[0]!;
+    expect(renderAeliqoDataPresentationNode(node, binding)).not.toBe(nothing);
+    expect(renderAeliqoDataPresentationNode(node, {...binding, columns: [{key: "name", label: "Name"}]})).toBe(nothing);
+  });
+
+  it("allows ordering changes within the retained authorized snapshot", () => {
+    const materializedResult: Result = {...result, counts: {loaded: 2, population: {kind: "exact", value: 2, populationDigest: "population"}}};
+    const materialized = {result: materializedResult, rows: [rows[0], {...rows[0], id: "b", name: "Bea"}]};
+    const created = createAeliqoDataPresentationRegistry([materialized], entityOptions);
+    if (!created.ok) throw new Error(JSON.stringify(created.diagnostics));
+    const manifest = created.value.manifests.find(m => m.ref.id === AELIQO_DATA_REFS.metric.id)!;
+    const checked = validatePresentationPlan(
+      planFor(manifest.ref, "metric", manifest.configSchema, {field: "amount", identityValues: {id: "a"}}),
+      {...contextFor(manifest.ref, "metric", manifest.configSchema), results: [materializedResult]},
+      {manifests: created.value.manifests, mappings: []},
+    );
+    if (!checked.ok) throw new Error(JSON.stringify(checked.diagnostics));
+    expect(created.value.render(checked.value.nodes[0]!, {...materialized, rows: [...materialized.rows].reverse()})).not.toBe(nothing);
   });
 
   it("keeps operation declarations bounded to the helper-derived capabilities", () => {

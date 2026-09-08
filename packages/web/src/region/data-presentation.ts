@@ -109,6 +109,12 @@ function sameResult(left: Result, right: Result): boolean {
   return sameRef(left.ref, right.ref) && canonical(left) === canonical(right);
 }
 
+function sameRows(left: AeliqoValidatedBinding, right: AeliqoValidatedBinding): boolean {
+  // Materialization order is presentation state; content changes require a new
+  // authorized snapshot. Identity uniqueness is checked before this comparison.
+  return canonical(left.rows.map(canonical).sort()) === canonical(right.rows.map(canonical).sort());
+}
+
 function freeze<T>(value: T): T {
   if (value !== null && typeof value === "object") {
     for (const child of Object.values(value as Record<string, unknown>)) freeze(child);
@@ -276,8 +282,15 @@ function renderAeliqoDataPresentationNodeWith(
   if (!sameRef(current.result.ref, node.result.ref)) return nothing;
   const checked = validateAeliqoDataBinding(current, options);
   if (!checked.ok || !sameResult(checked.value.result, node.result)) return nothing;
+  if (!sameRows(authorizedBinding, checked.value)
+    || canonical(authorizedBinding.scope) !== canonical(checked.value.scope)
+    || canonical(authorizedBinding.columns) !== canonical(checked.value.columns)) return nothing;
   const resolved = helper.resolve({id: node.node.id, component, config: node.config.values}, checked.value);
   if (!resolved.ok || !sameRef(resolved.value.result.ref, node.result.ref)) return nothing;
+  if (canonical(resolved.value.config.fields) !== canonical(node.config.fields)
+    || canonical(resolved.value.config.ports) !== canonical(node.config.ports)
+    || canonical(resolved.value.config.values) !== canonical(node.config.values)
+    || canonical(operationsFor(component, resolved.value.config)) !== canonical(node.config.operations)) return nothing;
   return renderAeliqoDataNode(resolved.value, context);
 }
 

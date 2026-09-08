@@ -25,7 +25,7 @@ export const result: Result = {
   rowGrain: ["id"],
   counts: {loaded: 2, population: {kind: "exact", value: 3, populationDigest: "population-1"}},
   precision: {kind: "exact"},
-  coverage: {kind: "complete", populationDigest: "population-1"},
+  coverage: {kind: "partial", populationDigest: "population-1", reason: "First delivery page"},
   consistency: {kind: "snapshot", snapshotId: "snapshot-1", sourceRevisions: {source: "1"}},
   evidence: {kind: "observed", source: {id: "source", revision: "1"}},
   filters: [],
@@ -47,7 +47,7 @@ export const registryOptions = {
 
 export const dataConfigs: Readonly<Record<string, PresentationValues>> = {
   "data.metric": {field: "amount", identityValues: {id: "a"}},
-  "data.delta": {currentField: "amount", baselineField: "baseline", mode: "percentage-point", identityValues: {id: "a"}},
+  "data.delta": {currentField: "amount", baselineField: "baseline", mode: "absolute", identityValues: {id: "a"}},
   "data.key-value": {items: [{field: "name"}, {field: "department"}], identityValues: {id: "a"}},
   "data.detail": {fields: ["id", "name", "amount", "department"], identityValues: {id: "a"}},
   "data.record-list": {selection: "single"},

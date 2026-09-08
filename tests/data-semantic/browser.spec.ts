@@ -14,10 +14,11 @@ test.beforeEach(async ({page}) => {
 test("renders metric, delta and detail from one validated semantic region", async ({page}) => {
   const region = page.locator("#region");
   await expect(region.locator("aeliqo-metric [part=number]")).toHaveText("12.50");
-  await expect(region.locator("aeliqo-delta [part=number]")).toHaveText("+250 pp");
+  await expect(region.locator("aeliqo-delta [part=number]")).toHaveText("+2.5");
   await expect(region.locator("aeliqo-detail [part=fact][data-field=name] dd")).toHaveText("Ada");
   await expect(region.locator("aeliqo-key-value")).toHaveCount(1);
   await expect(region.locator("aeliqo-selection-summary")).toHaveCount(1);
+  await expect(region.locator("aeliqo-record-list [part=scope]")).toContainText("2 of 3 population records loaded");
 });
 
 test("filter typing stays draft-only and Apply emits a typed semantic payload", async ({page}) => {

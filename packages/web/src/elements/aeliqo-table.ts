@@ -3,6 +3,7 @@ import {css, html, LitElement, nothing} from "lit";
 import {AeliqoTableSelectionEvent} from "../events.js";
 import {AeliqoTablePageEvent, AeliqoTableSortEvent, AeliqoTableWindowEvent} from "../data/events.js";
 import {scalarIdentity} from "@aeliqo/core";
+import {scopeText} from "../data/shared.js";
 import type {ResultRef} from "@aeliqo/core";
 import type {AeliqoDataScope, AeliqoDataStatus, AeliqoSortState} from "../data/types.js";
 import type {AeliqoTableColumn, AeliqoTableRow, AeliqoTableSelectionMode, TableCell} from "../types.js";
@@ -215,13 +216,13 @@ export class AeliqoTableElement extends LitElement {
   private renderScope(rowCount: number | undefined, renderedCount: number) {
     const loaded = this.scope?.loaded ?? this.rows.length;
     const total = this.totalRows ?? this.scope?.filteredTotal ?? this.scope?.populationTotal ?? rowCount;
+    const description = scopeText(this.scope);
     if (this.virtualized && renderedCount !== loaded) {
-      const totalText = total !== undefined && total !== loaded ? `; ${total.toLocaleString()} matching ${this.entity}s` : "";
+      const totalText = description ? `; ${description}` : total !== undefined && total !== loaded ? `; ${total.toLocaleString()} matching ${this.entity}s` : "";
       return html`<p part="scope">Showing ${renderedCount.toLocaleString()} rendered of ${loaded.toLocaleString()} loaded ${this.entity}s${totalText}.</p>`;
     }
+    if (description) return html`<p part="scope">${description}</p>`;
     if (total !== undefined && total !== loaded) return html`<p part="scope">Showing ${loaded.toLocaleString()} of ${total.toLocaleString()} ${this.entity}s.</p>`;
-    const text = this.scope?.label ?? (this.scope?.kind === "sample" ? "Bounded sample" : this.scope?.kind === "unknown" ? "Scope unknown" : undefined);
-    if (text) return html`<p part="scope">${text}</p>`;
     return nothing;
   }
 

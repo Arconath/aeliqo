@@ -15,6 +15,16 @@ rounded. `KeyValue` uses a native definition list. `Detail` keeps the selected
 record's stable identity and renders declared fields even when a field is
 missing.
 
+Semantic percentage-point deltas require both fields to declare
+`unit: {dimension: 'ratio', symbol: '1'}`: stored values are fractions, so
+`0.12` to `0.15` is a change of `3 pp`. A `%` display label alone cannot establish
+that storage convention. Currency, bare numbers and ambiguous percent units
+are rejected for percentage-point mode. Absolute and relative currency changes
+remain available; a relative change displays `%` without a currency suffix.
+Typed `current.identityValues` and `baseline.identityValues` can select
+different observations of the same field. Contradictory shared/side selectors
+or aliases are rejected.
+
 `RecordList` and `CardCollection` derive selection keys from declared identity
 fields. Render position is never an identity. Selection events are proposals;
 the host owns `selectedKeys`, permissions and the result reference. Cards have
@@ -89,6 +99,22 @@ checks the current descriptor and exact ResultRef again; clearing the region
 removes the displayed data. Host requests use the region's `onDataRequest`
 callback. The lower-level `createAeliqoDataRegistry` helper remains available
 for direct adapter use; it does not replace the canonical presentation graph.
+
+When registration includes custom host scope annotations, also pass that
+`scope` with the current `{ref, rows, scope}` materialization. Count annotations
+are checked against the Result; they cannot hide the loaded row count.
+Likewise, if registration supplies custom `columns`, include those columns in
+the current materialization. Omitting them selects the default Result columns;
+a resulting change to validated field coverage is rejected.
+
+The host remains responsible for authorization of the current row payload and
+must advance the ResultRef when its content changes. A matching reference is
+not an authorization grant. The standalone renderer validates the supplied
+materialization and refuses changes to the validated field/operation coverage;
+it cannot authenticate a host's assertion about business data. The optional
+`createAeliqoDataPresentationRegistry` bridge also retains its original row
+snapshot and refuses different row content under the same reference, while
+allowing row order to change.
 
 Focused local checks for this slice are:
 
