@@ -57,9 +57,11 @@ checks are supplied. Provider failures stay in the model trial denominator.
 
 The current scorer rejects extra selected fields, unexpected row keys, and duplicate
 output identities. Corpus parsing requires unique output/field identities and
-complete expected row values with bounded execution budgets. Population identity,
-counts, precision, consistency, and evidence metadata still need independent
-oracles; the data score does not currently qualify those dimensions. The owner
+complete expected row values with bounded execution budgets. Each expected output now requires an independently authored quality oracle for
+identity, population count, exact precision, source revisions and evidence kind/
+definitions. The scorer also checks loaded counts and internal population-digest
+agreement. Digest presence/agreement does not prove population membership or
+business meaning; independent cohort/arithmetic/domain oracles remain required. The owner
 configuration is a reviewed CLI input, not an authentication credential or proof
 of consent. Live execution still requires explicit owner authorization in the
 controlling session before any provider call.
