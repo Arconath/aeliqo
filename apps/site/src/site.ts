@@ -1,4 +1,5 @@
-import {AeliqoRecordListElement} from '@aeliqo/web/record-list';
+import {mountPeopleExample} from './home-example.js';
+import homeExampleSource from './home-example.ts?raw';
 
 const theme = document.querySelector<HTMLSelectElement>('#theme');
 const media = matchMedia('(prefers-color-scheme: dark)');
@@ -19,24 +20,14 @@ try { const saved = localStorage.getItem('aeliqo-theme'); if (saved === 'light' 
 if (theme) { theme.value = preference; applyTheme(preference); theme.addEventListener('change', () => { preference = theme.value; applyTheme(preference); try { localStorage.setItem('aeliqo-theme', preference); } catch {} }); }
 media.addEventListener('change', () => applyTheme(preference));
 
-const source = `import {AeliqoRecordListElement} from '@aeliqo/web/record-list';
-if (!customElements.get('aeliqo-record-list')) {
-  customElements.define('aeliqo-record-list', AeliqoRecordListElement);
-}
-const list = document.createElement('aeliqo-record-list');
-list.columns = [{key: 'name', label: 'Name'}, {key: 'team', label: 'Team'}];
-list.identity = ['id'];
-list.rows = [{id: 'ada', name: 'Ada Chen', team: 'Design'}];
-list.scope = {label: 'Synthetic people', kind: 'filtered', loaded: 1, filteredTotal: 1};
-document.body.append(list);`;
-const demo = document.querySelector('#home-demo');
+const source=homeExampleSource+"\nconst host = document.createElement('div');\ndocument.body.append(host);\nconst demo = mountPeopleExample(host);\n// Optional: demo.filter('Engineering');\n";
+const demo = document.querySelector<HTMLElement>('#home-demo');
 if (demo) {
-  if (!customElements.get('aeliqo-record-list')) customElements.define('aeliqo-record-list', AeliqoRecordListElement);
-  const rows = [{id:'ada',name:'Ada Chen',team:'Design',location:'Jakarta'}, {id:'sam',name:'Sam Rivera',team:'Engineering',location:'Lisbon'}, {id:'iman',name:'Iman Putra',team:'Engineering',location:'Bandung'}, {id:'lee',name:'Lee Morgan',team:'Operations',location:'London'}];
-  const list = new AeliqoRecordListElement(); list.columns = [{key:'name',label:'Name'}, {key:'team',label:'Team'}, {key:'location',label:'Location'}]; list.identity = ['id']; list.entity = 'person';
-  function update() { const team = document.querySelector<HTMLSelectElement>('#team')?.value ?? 'all'; const selected = rows.filter(row => team === 'all' || row.team === team); list.rows = selected; list.scope = {label:team === 'all' ? 'All synthetic people' : `${team} · synthetic people`,kind:'filtered',loaded:selected.length,filteredTotal:selected.length}; document.querySelector('#demo-status')!.textContent = `${selected.length} of ${rows.length} synthetic people shown.`; }
-  demo.append(list); update(); void syncComponentTheme(demo); document.querySelector('#team')?.addEventListener('change',update);
+  const example=mountPeopleExample(demo);
+  function update(){const team=document.querySelector<HTMLSelectElement>('#team')?.value??'all';const count=example.filter(team);document.querySelector('#demo-status')!.textContent=`${count} of 4 synthetic people shown.`;}
+  update();void syncComponentTheme(demo);document.querySelector('#team')?.addEventListener('change',update);
   document.querySelector('#demo-source')!.textContent = source;
   document.querySelector('#copy-demo')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(source);document.querySelector('#copy-status')!.textContent='Source copied.';}catch{document.querySelector('#copy-status')!.textContent='Copy unavailable. Select the source above to copy it manually.';}});
 }
 if (location.pathname.startsWith('/docs/')) void import('./docs.js');
+if (location.pathname.startsWith('/playground/')) void import('./playground.js');

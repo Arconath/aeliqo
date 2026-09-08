@@ -22,7 +22,7 @@ async function updateSearch() {
 }
 async function openSearch() {
   search.open = true; await search.updateComplete; field.focus(); void syncComponentTheme(search);
-  if (!entries) { try { const response=await fetch('/search-index.json');if(!response.ok)throw Error();const data:unknown=await response.json();if(!Array.isArray(data)||!data.every(entry=>entry!==null&&typeof entry==='object'&&typeof entry.path==='string'&&entry.path.startsWith('/')&&!entry.path.startsWith('//')&&typeof entry.title==='string'&&typeof entry.description==='string'))throw Error();entries=data as typeof entries;}catch{status.textContent='Search is unavailable. Use the documentation navigation.';return;} }
+  if (!entries) { try { const response=await fetch('/search-index.json');if(!response.ok)throw Error();const data:unknown=await response.json();if(!Array.isArray(data)||!data.every(entry=>entry!==null&&typeof entry==='object'&&typeof entry.path==='string'&&entry.path.startsWith('/')&&!entry.path.startsWith('//')&&typeof entry.title==='string'&&typeof entry.description==='string'))throw Error();entries=data as {path:string;title:string;description:string}[];}catch{status.textContent='Search is unavailable. Use the documentation navigation.';return;} }
   await updateSearch();
 }
 trigger.addEventListener('click',()=>void openSearch());
@@ -40,4 +40,15 @@ list.identity = ['id'];
 list.rows = [{id:'ada', name:'Ada Chen', team:'Design'}];
 list.scope = {label:'Synthetic people', kind:'filtered', loaded:1, filteredTotal:1};
 document.body.append(list);`;pre.append(code);mount.append(pre);
+}
+
+const componentMount=document.querySelector<HTMLElement>('[data-component-preview]');
+if(componentMount){
+ void import('../../../examples/catalog/index.js').then(({catalogExample,getCatalogExample,CATALOG_EXAMPLE_IDS})=>{
+  const full=componentMount.dataset.componentPreview??'';const candidate=full.slice(full.indexOf('.')+1);const id=CATALOG_EXAMPLE_IDS.find(id=>id===candidate);if(!id)throw Error('The component example is unavailable.');
+  const definition=getCatalogExample(id);const metadata=definition.metadata;
+  const preview=document.createElement('div');preview.className='component-preview';const previewHeading=document.createElement('h2');previewHeading.textContent='Preview';preview.append(previewHeading);componentMount.append(preview);const cleanup=catalogExample(id,preview);window.addEventListener('pagehide',cleanup,{once:true});void syncComponentTheme(preview);
+  const details=document.createElement('details');const summary=document.createElement('summary');summary.textContent='Code and required setup';const pre=document.createElement('pre');const code=document.createElement('code');code.textContent=metadata.source;pre.append(code);const copy=document.createElement('button');copy.textContent='Copy example';const status=document.createElement('p');status.setAttribute('role','status');copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(metadata.source);status.textContent='Example copied.';}catch{status.textContent='Copy is unavailable. Select the code to copy manually.';}});details.append(summary,pre,copy,status);componentMount.append(details);
+  for(const [title,text] of [['Input fixture',metadata.fixture],['Expected result',metadata.expectedOutcome],['Properties and host ownership',`${metadata.props.join(', ')}. ${metadata.propsNotes}`],['States',metadata.states.join(', ')],['Keyboard behavior',metadata.keyboard.join('; ')],['Events',metadata.events.join(', ')]]){const heading=document.createElement('h2');heading.textContent=title!;const paragraph=document.createElement('p');paragraph.textContent=text!;componentMount.append(heading,paragraph);}
+ }).catch(()=>{const message=document.createElement('p');message.setAttribute('role','alert');message.textContent='The interactive example could not load. Reload the page, or use the public API below.';componentMount.append(message);});
 }

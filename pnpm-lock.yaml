@@ -81,6 +81,34 @@ importers:
         specifier: workspace:*
         version: link:../../packages/web
 
+  apps/studio:
+    dependencies:
+      '@aeliqo/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@aeliqo/devtools':
+        specifier: workspace:*
+        version: link:../../packages/devtools
+      '@aeliqo/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
+      '@aeliqo/web':
+        specifier: workspace:*
+        version: link:../../packages/web
+    devDependencies:
+      vite:
+        specifier: 8.2.2
+        version: 8.2.2(@types/node@24.13.3)
+
+  examples/catalog:
+    dependencies:
+      '@aeliqo/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@aeliqo/web':
+        specifier: workspace:*
+        version: link:../../packages/web
+
   examples/next-platform:
     dependencies:
       '@aeliqo/web':
@@ -187,6 +215,15 @@ importers:
       zod:
         specifier: 4.5.4
         version: 4.5.4
+
+  packages/devtools:
+    dependencies:
+      '@aeliqo/core':
+        specifier: workspace:*
+        version: link:../core
+      '@aeliqo/runtime':
+        specifier: workspace:*
+        version: link:../runtime
 
   packages/react:
     dependencies:

@@ -6,7 +6,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
-EXCLUDED_PARTS = {'.git', 'node_modules', '__pycache__', '.pytest_cache', 'artifacts', 'dist', 'coverage', '.next', 'test-results', 'playwright-report'}
+EXCLUDED_PARTS = {'.git', 'node_modules', '__pycache__', '.pytest_cache', '.vitest', 'artifacts', 'dist', 'coverage', '.next', 'test-results', 'playwright-report'}
 
 def load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding='utf-8'))

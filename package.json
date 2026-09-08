@@ -80,7 +80,14 @@
     "test:compounds:consumers": "node tests/consumers/compound-tarballs.mjs",
     "test:compound-semantic": "pnpm build:platform && vitest run --config tests/compound-semantic/vitest.config.mjs && tsc -p tests/compound-semantic/tsconfig.json",
     "test:compound-semantic:browser": "playwright test --config tests/compound-semantic/playwright.config.mjs",
-    "test:framework:consumers": "node tests/framework-consumers/framework-tarballs.mjs"
+    "test:framework:consumers": "node tests/framework-consumers/framework-tarballs.mjs",
+    "build:devtools": "pnpm build:runtime && pnpm --filter @aeliqo/devtools build",
+    "build:studio": "pnpm build:platform && pnpm build:devtools && tsc -p apps/studio/tsconfig.json && pnpm --filter @aeliqo/studio build",
+    "test:studio": "pnpm build:devtools && vitest run --config tests/studio/vitest.config.mjs && tsc -p tests/studio/tsconfig.json",
+    "test:studio:browser": "playwright test --config tests/studio/playwright.config.mjs",
+    "build:site": "pnpm build:platform && pnpm --filter @aeliqo/site build",
+    "test:site": "pnpm build:platform && vitest run --config tests/site/vitest.config.mjs && tsc -p tests/site/tsconfig.json && tsc -p apps/site/tsconfig.json",
+    "test:site:browser": "playwright test --config tests/site/playwright.config.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
