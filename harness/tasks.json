@@ -455,9 +455,10 @@
       "acceptance": [
         "Every required foundation inventory entry works standalone and in grammar; no decorative fake controls."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "platform_proof owns isolated codex/t13-foundation shared foundation components/tests and local manifest helpers. Parent owns canonical contracts, package/root exports, shared region integration, task state and installed consumers. Independent reviewer preflight_diagnosis; no competing writers."
     },
     {
       "id": "T14",

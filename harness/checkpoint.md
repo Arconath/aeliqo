@@ -234,3 +234,8 @@ Light/dark/mobile captures were inspected; this is the early compositional slice
 not the finished plot/catalog or manual AT/provider/release certification.
 T41 contracts are active in isolated codex/t41-contracts; T13-T17 are now ready.
 Hosted CI for this candidate remains pending. Main/npm/production are unchanged.
+
+Hosted CI34219991766 on exact711a949 passed both specification and platform jobs,
+including all new vertical/evaluation/installed consumers and production Next SSR.
+Evidence: harness/evidence/t39/hosted-711a949.json. T13 foundation and T41 containment
+are active with isolated source ownership. No registry or production changes.
