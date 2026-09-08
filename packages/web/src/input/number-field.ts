@@ -70,7 +70,7 @@ export class AeliqoNumberFieldElement extends AeliqoFieldElement<AeliqoNumberCha
   unit = "";
 
   protected override updated(changed: Map<PropertyKey, unknown>): void {
-    if (changed.has("value") && !changed.has("text") && this.value !== undefined) this.text = formatLocalizedDecimal(this.value, this.locale);
+    if (changed.has("value") && this.value !== undefined && (this.text.length === 0 || !changed.has("text"))) this.text = formatLocalizedDecimal(this.value, this.locale);
     this.syncNative();
   }
 
@@ -84,7 +84,7 @@ export class AeliqoNumberFieldElement extends AeliqoFieldElement<AeliqoNumberCha
   protected override render() {
     const parsed = parseLocalizedDecimal(this.text, this.locale);
     const valid = this.isValid(parsed.canonical);
-    const describedBy = this.describedByIds();
+    const describedBy = [this.describedByIds(), this.unit ? "unit" : ""].filter((id) => id.length > 0).join(" ");
     return html`
       <div part="field">
         <label part="label" for="control"><span class="label-text">${this.label}</span></label>
@@ -104,7 +104,7 @@ export class AeliqoNumberFieldElement extends AeliqoFieldElement<AeliqoNumberCha
             @input=${this.handleInput}
             @change=${this.handleCommit}
           />
-          ${this.unit ? html`<span part="unit" aria-hidden="true">${this.unit}</span>` : nothing}
+          ${this.unit ? html`<span id="unit" part="unit">${this.unit}</span>` : nothing}
         </div>
         ${this.renderMessages()}
       </div>

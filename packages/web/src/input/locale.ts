@@ -3,6 +3,9 @@ export interface AeliqoLocalizedDecimal {
   readonly valid: boolean;
 }
 
+/** Keep parsing/formatting work bounded even when values come from a host. */
+export const MAX_LOCALIZED_DECIMAL_LENGTH = 4096;
+
 function numberFormat(locale: string): Intl.NumberFormat {
   try {
     return new Intl.NumberFormat(locale || "en-US");
@@ -24,31 +27,46 @@ function digitMap(formatter: Intl.NumberFormat): ReadonlyMap<string, string> {
 export function parseLocalizedDecimal(text: string, locale = "en-US"): AeliqoLocalizedDecimal {
   const trimmed = text.trim();
   if (trimmed.length === 0) return {canonical: undefined, valid: true};
+  if (trimmed.length > MAX_LOCALIZED_DECIMAL_LENGTH) return {canonical: undefined, valid: false};
   const formatter = numberFormat(locale);
   const parts = formatter.formatToParts(-12345.6);
-  const group = parts.find((part) => part.type === "group")?.value ?? ",";
+  const group = parts.find((part) => part.type === "group")?.value;
   const decimal = parts.find((part) => part.type === "decimal")?.value ?? ".";
   const minus = parts.find((part) => part.type === "minusSign")?.value ?? "-";
+  const literals = new Set(parts.filter((part) => part.type === "literal").map((part) => part.value));
   const digits = digitMap(formatter);
   let normalized = "";
   for (const character of trimmed) {
     const mapped = digits.get(character);
     if (mapped !== undefined) normalized += mapped;
-    else if (character === group || character === "\u00a0" || character === "\u202f" || character === " ") continue;
+    else if (group !== undefined && character === group) normalized += "|";
     else if (character === decimal) normalized += ".";
     else if (character === minus || character === "−") normalized += "-";
+    else if (character === "+") normalized += "+";
+    else if (literals.has(character)) continue;
     else normalized += character;
   }
-  if (!/^[+-]?(?:\d+|\d*\.\d+)$/u.test(normalized)) return {canonical: undefined, valid: false};
-  const negative = normalized.startsWith("-");
-  const unsigned = normalized.replace(/^[+-]/u, "");
-  const [integer = "0", fraction] = unsigned.split(".");
-  const canonicalInteger = integer.replace(/^0+(?=\d)/u, "");
-  const canonical = `${negative ? "-" : ""}${canonicalInteger}${fraction === undefined ? "" : `.${fraction}`}`;
+  const sign = normalized.startsWith("-") || normalized.startsWith("+") ? normalized.slice(0, 1) : "";
+  const unsigned = sign.length > 0 ? normalized.slice(1) : normalized;
+  const decimalParts = unsigned.split(".");
+  if (decimalParts.length > 2) return {canonical: undefined, valid: false};
+  const integerWithGroups = decimalParts[0] ?? "";
+  const fraction = decimalParts.length === 2 ? decimalParts[1] : undefined;
+  if (fraction !== undefined && !/^\d+$/u.test(fraction)) return {canonical: undefined, valid: false};
+  if (integerWithGroups.includes("|")) {
+    if (group === undefined || !validGrouping(integerWithGroups, formatter)) return {canonical: undefined, valid: false};
+  } else if (integerWithGroups.length > 0 && !/^\d+$/u.test(integerWithGroups)) {
+    return {canonical: undefined, valid: false};
+  }
+  if (integerWithGroups.length === 0 && fraction === undefined) return {canonical: undefined, valid: false};
+  const integer = integerWithGroups.replaceAll("|", "");
+  const canonicalInteger = (integer || "0").replace(/^0+(?=\d)/u, "");
+  const canonical = `${sign === "-" ? "-" : ""}${canonicalInteger}${fraction === undefined ? "" : `.${fraction}`}`;
   return {canonical, valid: true};
 }
 
 export function formatLocalizedDecimal(canonical: string, locale = "en-US"): string {
+  if (canonical.length > MAX_LOCALIZED_DECIMAL_LENGTH) return canonical;
   const parsed = parseLocalizedDecimal(canonical, "en-US");
   if (!parsed.valid || parsed.canonical === undefined) return canonical;
   const formatter = numberFormat(locale);
@@ -82,6 +100,23 @@ export function formatLocalizedDecimal(canonical: string, locale = "en-US"): str
   }
   const sign = negative ? minus : "";
   return `${sign}${localizedInteger}${fraction === undefined ? "" : `${decimal}${fraction}`}`;
+}
+
+function validGrouping(integerWithGroups: string, formatter: Intl.NumberFormat): boolean {
+  const chunks = formatter.formatToParts(1234567890123)
+    .filter((part) => part.type === "integer")
+    .map((part) => part.value);
+  if (chunks.length < 2) return false;
+  const groups = integerWithGroups.split("|");
+  if (groups.length < 2 || groups.some((chunk) => chunk.length === 0 || !/^\d+$/u.test(chunk))) return false;
+  const rightSize = chunks.at(-1)?.length ?? 0;
+  const repeatingSize = chunks.at(-2)?.length ?? rightSize;
+  const firstMaximum = Math.max(repeatingSize, chunks[0]?.length ?? repeatingSize);
+  if (groups.at(-1)?.length !== rightSize) return false;
+  for (let index = groups.length - 2; index > 0; index -= 1) {
+    if (groups[index]?.length !== repeatingSize) return false;
+  }
+  return (groups[0]?.length ?? 0) >= 1 && (groups[0]?.length ?? 0) <= firstMaximum;
 }
 
 export function dateOnly(value: string | undefined): string | undefined {

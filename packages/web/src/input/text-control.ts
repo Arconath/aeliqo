@@ -39,6 +39,11 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
 
   protected abstract readonly multiline: boolean;
 
+  /** Legacy `<aeliqo-input>` keeps the original host-controlled contract. */
+  protected get isControlled(): boolean {
+    return false;
+  }
+
   private composing = false;
   private lastComposingProposal: string | undefined;
   private suppressTrailingCompositionInput: string | undefined;
@@ -68,6 +73,8 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
+    if (changed.has("validator")) this.invalidateValidation(false);
+    if (changed.has("value")) this.invalidateStaleValidation(this.value, false);
     const existing = this.nativeControl();
     if (existing !== undefined && !this.hasUpdated && this.hydratedDraft === undefined && existing.value !== this.value) {
       this.hydratedDraft = existing.value;
@@ -189,6 +196,7 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
       }
     }
     if (this.composing) this.lastComposingProposal = control.value;
+    if (!this.composing && !this.isControlled) this.value = control.value;
     this.dispatchProposal(control.value);
     if (!this.composing) {
       void this.validateProposed(control.value);
@@ -210,10 +218,14 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
     this.lastComposingProposal = undefined;
     if (finalValue !== undefined) {
       this.suppressTrailingCompositionInput = finalValue;
+      if (!this.isControlled) this.value = finalValue;
       if (!alreadyProposed) {
         this.dispatchProposal(finalValue);
-        void this.validateProposed(finalValue);
       }
+      // Composition input is only a draft. Validate exactly once after the
+      // final composition value is committed, even when the browser already
+      // emitted an input event for that same final draft.
+      void this.validateProposed(finalValue);
     }
     this.syncNativeControl();
   };
@@ -293,6 +305,10 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
     this.updateValidity(control, control.value.length === 0);
     if (focused && selection.start !== null && selection.end !== null) control.setSelectionRange(selection.start, selection.end);
     this.pendingSelection = undefined;
+  }
+
+  protected override isCurrentValidationValue(value: string): boolean {
+    return this.isControlled ? this.value === value : true;
   }
 
   private safeInputType(): AeliqoTextFieldInputType {

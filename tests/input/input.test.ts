@@ -59,6 +59,11 @@ describe("input locale and date semantics", () => {
     expect(parseLocalizedDecimal("1.234.567,890", "de-DE")).toEqual({canonical: "1234567.890", valid: true});
     expect(parseLocalizedDecimal("12,345,678,901,234,567,890.123", "en-US")).toEqual({canonical: "12345678901234567890.123", valid: true});
     expect(formatLocalizedDecimal("12345678901234567890.123", "de-DE")).toBe("12.345.678.901.234.567.890,123");
+    expect(parseLocalizedDecimal(".5", "en-US")).toEqual({canonical: "0.5", valid: true});
+    expect(parseLocalizedDecimal("1,2", "en-US").valid).toBe(false);
+    expect(parseLocalizedDecimal("1 2", "en-US").valid).toBe(false);
+    expect(parseLocalizedDecimal("12,34,567.89", "en-IN")).toEqual({canonical: "1234567.89", valid: true});
+    expect(parseLocalizedDecimal("123,456,78.9", "en-IN").valid).toBe(false);
     expect(parseLocalizedDecimal("", "en-US")).toEqual({canonical: undefined, valid: true});
     expect(parseLocalizedDecimal("nope", "en-US").valid).toBe(false);
   });

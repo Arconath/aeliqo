@@ -39,7 +39,7 @@ export class AeliqoSliderElement extends AeliqoFieldElement<AeliqoSliderValue> {
 
   protected override render() {
     const valid = this.isValid(this.value);
-    const describedBy = this.describedByIds();
+    const describedBy = [this.describedByIds(), this.unit ? "unit" : ""].filter((id) => id.length > 0).join(" ");
     return html`
       <div part="field">
         <label part="label" for="slider-control"><span class="label-text">${this.label}</span></label>
@@ -72,7 +72,7 @@ export class AeliqoSliderElement extends AeliqoFieldElement<AeliqoSliderValue> {
             @input=${this.handleText}
             @change=${this.handleCommit}
           />
-          ${this.unit ? html`<span part="unit" aria-hidden="true">${this.unit}</span>` : nothing}
+          ${this.unit ? html`<span id="unit" part="unit">${this.unit}</span>` : nothing}
         </div>
         ${this.renderMessages()}
       </div>

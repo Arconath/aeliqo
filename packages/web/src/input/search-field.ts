@@ -1,4 +1,3 @@
-import type {PropertyValues} from "lit";
 import {AeliqoTextFieldElement} from "./text-field.js";
 import {AeliqoSearchEvent} from "./events.js";
 
@@ -33,11 +32,6 @@ export class AeliqoSearchFieldElement extends AeliqoTextFieldElement {
     this.removeEventListener("keydown", this.handleSearchKeyDown as EventListener);
     this.clearQueryTimer();
     super.disconnectedCallback();
-  }
-
-  protected override updated(changed: PropertyValues<this>): void {
-    super.updated(changed);
-    if (changed.has("value") && this.queryOnInput && !this.compositionActive) this.scheduleQuery(this.value);
   }
 
   /** Commit the current query from a host action or a keyboard Enter. */

@@ -125,6 +125,8 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
   private currentFormValue: string | File | FormData | null = null;
   private validationSequence = 0;
   private validationAbort: AbortController | undefined;
+  private validationValue: T | undefined;
+  private hasValidationValue = false;
 
   constructor() {
     super();
@@ -159,6 +161,8 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
     this.resetField();
     this.validationAbort?.abort();
     this.validationSequence += 1;
+    this.validationAbort = undefined;
+    this.hasValidationValue = false;
     this.validationState = "idle";
     this.error = "";
     this.requestUpdate();
@@ -174,6 +178,7 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
     this.validationAbort?.abort();
     this.validationAbort = undefined;
     this.validationSequence += 1;
+    this.hasValidationValue = false;
     super.disconnectedCallback();
   }
 
@@ -219,6 +224,24 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
       this.internals.setValidity({customError: true}, this.error, anchor);
       return;
     }
+    const nativeValidity = anchor !== undefined && "validity" in anchor ? (anchor as HTMLInputElement).validity : undefined;
+    if (nativeValidity !== undefined && !nativeValidity.valid) {
+      const flags: ValidityStateFlags = {};
+      if (nativeValidity.badInput) flags.badInput = true;
+      if (nativeValidity.patternMismatch) flags.patternMismatch = true;
+      if (nativeValidity.rangeOverflow) flags.rangeOverflow = true;
+      if (nativeValidity.rangeUnderflow) flags.rangeUnderflow = true;
+      if (nativeValidity.stepMismatch) flags.stepMismatch = true;
+      if (nativeValidity.tooLong) flags.tooLong = true;
+      if (nativeValidity.tooShort) flags.tooShort = true;
+      if (nativeValidity.typeMismatch) flags.typeMismatch = true;
+      if (nativeValidity.valueMissing) flags.valueMissing = true;
+      const message = anchor !== undefined && "validationMessage" in anchor && typeof (anchor as HTMLInputElement).validationMessage === "string"
+        ? (anchor as HTMLInputElement).validationMessage
+        : "Enter a valid value.";
+      this.internals.setValidity(flags, message || "Enter a valid value.", anchor);
+      return;
+    }
     this.internals.setValidity({});
   }
 
@@ -243,8 +266,11 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
     this.validationAbort = undefined;
     this.validationSequence += 1;
     const sequence = this.validationSequence;
+    this.validationValue = value;
+    this.hasValidationValue = true;
     if (validator === undefined) {
       this.validationState = "idle";
+      this.hasValidationValue = false;
       this.dispatchValidation("idle", "");
       return;
     }
@@ -257,18 +283,48 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
     try {
       const result = await validator(value, controller.signal);
       if (controller.signal.aborted || sequence !== this.validationSequence || !this.isConnected) return;
+      if (!this.isCurrentValidationValue(value)) {
+        this.invalidateValidation();
+        return;
+      }
       const normalized = this.normalizeValidationResult(result);
       this.validationState = normalized.valid ? "valid" : "invalid";
       this.error = normalized.valid ? "" : normalized.message;
+      this.hasValidationValue = false;
       this.dispatchValidation(this.validationState, this.error);
       this.requestUpdate();
     } catch {
       if (controller.signal.aborted || sequence !== this.validationSequence || !this.isConnected) return;
+      if (!this.isCurrentValidationValue(value)) {
+        this.invalidateValidation();
+        return;
+      }
       this.validationState = "invalid";
       this.error = "Validation failed.";
+      this.hasValidationValue = false;
       this.dispatchValidation("invalid", this.error);
       this.requestUpdate();
     }
+  }
+
+  /** Cancel a result that no longer describes the current host value. */
+  protected invalidateValidation(schedule = true): void {
+    if (!this.hasValidationValue && this.validationAbort === undefined) return;
+    this.validationAbort?.abort();
+    this.validationAbort = undefined;
+    this.validationSequence += 1;
+    this.hasValidationValue = false;
+    this.validationState = "idle";
+    this.error = "";
+    if (schedule) this.requestUpdate();
+  }
+
+  protected invalidateStaleValidation(value: T, schedule = true): void {
+    if (this.hasValidationValue && !Object.is(this.validationValue, value)) this.invalidateValidation(schedule);
+  }
+
+  protected isCurrentValidationValue(_value: T): boolean {
+    return true;
   }
 
   private normalizeValidationResult(result: AeliqoValidationResult): {readonly valid: boolean; readonly message: string} {

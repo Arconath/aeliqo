@@ -84,3 +84,133 @@ test("form wrapper validates drafts before emitting its explicit host action", a
   expect(result.submits).toBe(1);
   expect(result.entries).toEqual(expect.arrayContaining([["app-field", "accepted"]]));
 });
+
+test("form wrapper bridges slotted native buttons, Enter and form data", async ({page}) => {
+  const result = await page.evaluate(async () => {
+    const root = document.querySelector<HTMLElement>("#fixture");
+    if (root === null) throw new Error("fixture missing");
+    const form = document.createElement("aeliqo-form") as HTMLElement & {formData: () => FormData | undefined; updateComplete: Promise<unknown>};
+    const input = document.createElement("input");
+    input.name = "native-name";
+    input.required = true;
+    input.value = "Ada";
+    input.defaultValue = "Ada";
+    const submit = document.createElement("button");
+    submit.type = "submit";
+    submit.name = "save";
+    submit.textContent = "Save";
+    const reset = document.createElement("button");
+    reset.type = "reset";
+    reset.textContent = "Reset";
+    let submits = 0;
+    form.addEventListener("aeliqo-form-submit", () => { submits += 1; });
+    form.append(input, submit, reset);
+    root.append(form);
+    await form.updateComplete;
+    submit.click();
+    const clickSubmit = submits;
+    input.focus();
+    input.dispatchEvent(new KeyboardEvent("keydown", {key: "Enter", bubbles: true, cancelable: true}));
+    const enterSubmit = submits;
+    const data = [...(form.formData()?.entries() ?? [])].map(([key, value]) => [key, String(value)]);
+    input.value = "changed";
+    reset.click();
+    return {clickSubmit, enterSubmit, data, resetValue: input.value};
+  });
+  expect(result).toEqual({clickSubmit: 1, enterSubmit: 2, data: [["native-name", "Ada"]], resetValue: "Ada"});
+});
+
+test("combobox keeps its selected label and active descendant synchronized", async ({page}) => {
+  const state = await page.locator("#combo").evaluate(async (element) => {
+    const combo = element as HTMLElement & {
+      options: readonly {value: string; label: string}[];
+      value: string;
+      updateComplete: Promise<unknown>;
+    };
+    combo.options = [
+      {value: "a", label: "Alpha"},
+      {value: "b", label: "Beta"},
+    ];
+    combo.value = "a";
+    await combo.updateComplete;
+    const input = combo.shadowRoot?.querySelector<HTMLInputElement>("input[part=input]");
+    if (input === null || input === undefined) throw new Error("combobox input missing");
+    const selectedLabel = input.value;
+    input.focus();
+    await combo.updateComplete;
+    const focused = input.getAttribute("aria-activedescendant");
+    input.dispatchEvent(new KeyboardEvent("keydown", {key: "ArrowDown", bubbles: true, cancelable: true}));
+    await combo.updateComplete;
+    const moved = input.getAttribute("aria-activedescendant");
+    input.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape", bubbles: true, cancelable: true}));
+    await combo.updateComplete;
+    return {selectedLabel, focused, moved, closed: input.getAttribute("aria-activedescendant"), list: combo.shadowRoot?.querySelector("[role=listbox]") !== null};
+  });
+  expect(state).toEqual({selectedLabel: "Alpha", focused: "option-0", moved: "option-1", closed: null, list: false});
+});
+
+test("text fields are uncontrolled by default and searches only commit user proposals", async ({page}) => {
+  const state = await page.evaluate(async () => {
+    const root = document.querySelector<HTMLElement>("#fixture");
+    if (root === null) throw new Error("fixture missing");
+    const field = document.createElement("aeliqo-text-field") as HTMLElement & {defaultValue: string; updateComplete: Promise<unknown>};
+    field.defaultValue = "Ada";
+    root.append(field);
+    const search = document.createElement("aeliqo-search-field") as HTMLElement & {queryOnInput: boolean; debounceMs: number; value: string; updateComplete: Promise<unknown>};
+    search.queryOnInput = true;
+    search.debounceMs = 0;
+    let searches = 0;
+    search.addEventListener("aeliqo-search", () => { searches += 1; });
+    root.append(search);
+    await Promise.all([field.updateComplete, search.updateComplete]);
+    const native = field.shadowRoot?.querySelector<HTMLInputElement>("input");
+    if (native === null || native === undefined) throw new Error("text input missing");
+    native.value = "Lin";
+    native.dispatchEvent(new InputEvent("input", {bubbles: true, inputType: "insertText", data: "Lin"}));
+    await field.updateComplete;
+    const afterEdit = {native: native.value, value: (field as HTMLElement & {value: string}).value};
+    await search.updateComplete;
+    const afterMount = searches;
+    search.value = "programmatic";
+    await search.updateComplete;
+    const afterProgrammatic = searches;
+    const searchInput = search.shadowRoot?.querySelector<HTMLInputElement>("input");
+    if (searchInput === null || searchInput === undefined) throw new Error("search input missing");
+    searchInput.value = "user";
+    searchInput.dispatchEvent(new InputEvent("input", {bubbles: true, inputType: "insertText", data: "user"}));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    return {afterEdit, afterMount, afterProgrammatic, afterUser: searches};
+  });
+  expect(state).toEqual({afterEdit: {native: "Lin", value: "Lin"}, afterMount: 0, afterProgrammatic: 0, afterUser: 1});
+});
+
+test("stale text validation cannot mark a newer programmatic value invalid", async ({page}) => {
+  const state = await page.evaluate(async () => {
+    const root = document.querySelector<HTMLElement>("#fixture");
+    if (root === null) throw new Error("fixture missing");
+    const field = document.createElement("aeliqo-text-field") as HTMLElement & {
+      value: string;
+      validator: (value: string, signal: AbortSignal) => Promise<string | boolean>;
+      updateComplete: Promise<unknown>;
+      error: string;
+    };
+    const pending: Array<(result: string | boolean) => void> = [];
+    field.validator = (value) => new Promise((resolve) => {
+      if (value === "old") pending.push(resolve);
+      else resolve(true);
+    });
+    root.append(field);
+    await field.updateComplete;
+    const input = field.shadowRoot?.querySelector<HTMLInputElement>("input");
+    if (input === null || input === undefined) throw new Error("text input missing");
+    input.value = "old";
+    input.dispatchEvent(new InputEvent("input", {bubbles: true, inputType: "insertText", data: "old"}));
+    await field.updateComplete;
+    field.value = "new";
+    await field.updateComplete;
+    for (const resolve of pending) resolve("Old value invalid");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    return {value: field.value, error: field.error, state: (field as HTMLElement & {validationState: string}).validationState};
+  });
+  expect(state).toEqual({value: "new", error: "", state: "idle"});
+});

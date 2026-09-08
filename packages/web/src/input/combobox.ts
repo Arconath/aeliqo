@@ -39,18 +39,21 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
   private activeIndex = -1;
   private loadSequence = 0;
   private loadAbort: AbortController | undefined;
+  private composing = false;
+
+  protected override willUpdate(changed: Map<PropertyKey, unknown>): void {
+    if (changed.has("value") && !changed.has("query")) this.query = this.labelForValue(this.value);
+  }
 
   protected override updated(changed: Map<PropertyKey, unknown>): void {
-    if (changed.has("value") && !changed.has("query")) this.query = this.labelForValue(this.value);
+    if (changed.has("optionsLoader")) this.cancelLoader();
     if (changed.has("options") || changed.has("value") || changed.has("disabled") || changed.has("required") || changed.has("error")) {
       this.syncNative();
     }
   }
 
   override disconnectedCallback(): void {
-    this.loadAbort?.abort();
-    this.loadAbort = undefined;
-    this.loadSequence += 1;
+    this.cancelLoader();
     super.disconnectedCallback();
   }
 
@@ -59,6 +62,7 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
     this.query = this.labelForValue(this.value);
     this.open = false;
     this.activeIndex = -1;
+    this.cancelLoader();
     this.syncNative();
   }
 
@@ -68,6 +72,9 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
     const describedBy = this.describedByIds();
     const listId = "options";
     const selected = options.find((option) => option.value === this.value);
+    const activeDescendant = this.open && this.activeIndex >= 0 && filtered[this.activeIndex] !== undefined
+      ? `option-${this.activeIndex}`
+      : nothing;
     return html`
       <div part="field">
         <label part="label" for="control"><span class="label-text">${this.label}</span></label>
@@ -78,20 +85,22 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
             type="text"
             role="combobox"
             autocomplete=${this.autocomplete || "off"}
-            .value=${this.query}
+            .value=${this.displayQuery()}
             placeholder=${this.placeholder || nothing}
             ?disabled=${this.fieldDisabled}
             ?readonly=${this.readOnly}
             aria-expanded=${this.open ? "true" : "false"}
             aria-controls=${this.open ? listId : nothing}
             aria-autocomplete="list"
-            aria-activedescendant=${this.activeIndex >= 0 && filtered[this.activeIndex] ? `option-${this.activeIndex}` : nothing}
+            aria-activedescendant=${activeDescendant}
             aria-invalid=${this.error || (this.value.length > 0 && selected === undefined) ? "true" : nothing}
             aria-describedby=${describedBy || nothing}
             @input=${this.handleInput}
             @keydown=${this.handleKeyDown}
             @focus=${this.handleFocus}
             @blur=${this.handleBlur}
+            @compositionstart=${this.handleCompositionStart}
+            @compositionend=${this.handleCompositionEnd}
           />
           ${this.open ? html`
             <ul id=${listId} part="listbox" role="listbox">
@@ -132,6 +141,7 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
     if (!this.fieldDisabled && !this.readOnly) {
       this.open = true;
       this.activeIndex = this.firstEnabledIndex(this.filteredOptions(this.safeOptions()));
+      this.requestUpdate();
     }
   };
 
@@ -142,7 +152,11 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
       if (!this.isConnected) return;
       const root = this.renderRoot;
       const active = this.shadowRoot?.activeElement;
-      if (active !== this.native()) this.open = false;
+      if (active !== this.native()) {
+        this.open = false;
+        this.activeIndex = -1;
+        this.requestUpdate();
+      }
     }, 0);
   };
 
@@ -156,27 +170,32 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
     this.dispatchEvent(new AeliqoInputChangeEvent({source: "user", value: this.query}));
     void this.loadForQuery(this.query);
     this.syncNative();
+    this.requestUpdate();
   };
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
-    if (this.fieldDisabled || this.readOnly) return;
+    if (this.fieldDisabled || this.readOnly || event.isComposing || this.composing) return;
     const options = this.filteredOptions(this.safeOptions());
     if (event.key === "ArrowDown") {
       event.preventDefault();
       this.open = true;
       this.activeIndex = this.nextEnabledIndex(options, this.activeIndex, 1);
+      this.requestUpdate();
       return;
     }
     if (event.key === "ArrowUp") {
       event.preventDefault();
       this.open = true;
       this.activeIndex = this.nextEnabledIndex(options, this.activeIndex, -1);
+      this.requestUpdate();
       return;
     }
     if (event.key === "Escape") {
       if (this.open) {
         event.preventDefault();
         this.open = false;
+        this.activeIndex = -1;
+        this.requestUpdate();
       }
       return;
     }
@@ -198,8 +217,17 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
     this.dispatchEvent(new AeliqoInputChangeEvent({source: "user", value: this.value}));
     void this.validateProposed(this.value);
     this.syncNative();
+    this.requestUpdate();
     this.native()?.focus();
   }
+
+  private readonly handleCompositionStart = (): void => {
+    this.composing = true;
+  };
+
+  private readonly handleCompositionEnd = (): void => {
+    this.composing = false;
+  };
 
   private async loadForQuery(query: string): Promise<void> {
     const loader = this.optionsLoader;
@@ -210,6 +238,7 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
     const sequence = ++this.loadSequence;
     if (query.length < Math.max(0, this.minQueryLength)) {
       this.validationState = "idle";
+      this.requestUpdate();
       return;
     }
     this.validationState = "pending";
@@ -234,13 +263,22 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
   }
 
   private filteredOptions(options: readonly AeliqoOption[]): readonly AeliqoOption[] {
-    const query = this.query.trim().toLocaleLowerCase(this.locale || undefined);
+    const displayed = this.displayQuery();
+    const selectedLabel = this.labelForValue(this.value);
+    if (this.value.length > 0 && displayed === selectedLabel) return options;
+    const query = displayed.trim().toLocaleLowerCase(this.locale || undefined);
     if (query.length === 0) return options;
     return options.filter((option) => `${option.label} ${option.description ?? ""}`.toLocaleLowerCase(this.locale || undefined).includes(query));
   }
 
   private labelForValue(value: string): string {
     return this.safeOptions().find((option) => option.value === value)?.label ?? value;
+  }
+
+  private displayQuery(): string {
+    const label = this.labelForValue(this.value);
+    if (this.value.length > 0 && (this.query.length === 0 || this.query === this.value)) return label;
+    return this.query;
   }
 
   private firstEnabledIndex(options: readonly AeliqoOption[]): number {
@@ -266,6 +304,12 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
     const selected = this.safeOptions().some((option) => option.value === this.value && option.disabled !== true);
     this.setFormValue(this.fieldDisabled || !selected ? null : this.value);
     this.updateValidity(this.native(), this.value.length === 0 || !selected);
+  }
+
+  private cancelLoader(): void {
+    this.loadAbort?.abort();
+    this.loadAbort = undefined;
+    this.loadSequence += 1;
   }
 
   static readonly styles = [...aeliqoInputStyles, css`
