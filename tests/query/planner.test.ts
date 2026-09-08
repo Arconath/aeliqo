@@ -6,8 +6,9 @@ import type {RelationalQuery, QuerySource} from '../../packages/core/src/query/t
 
 const registry = createQueryFunctionRegistry();
 if (!registry.ok) throw new Error('query registry fixture failed');
+const queryRegistry = registry.value;
 const catalog: Catalog = {
-  version: '1', revision: 'query-catalog-1', functionRegistryDigest: registry.value.digest,
+  version: '1', revision: 'query-catalog-1', functionRegistryDigest: queryRegistry.digest,
   entities: [{id: 'events', label: 'Events', identity: ['id'], rowGrain: ['id'], fields: [
     {id: 'id', label: 'ID', type: {value: 'text', nullable: false}, role: 'identity'},
     {id: 'partition', label: 'Partition', type: {value: 'text', nullable: false}, role: 'attribute'},
@@ -24,9 +25,9 @@ const source: QuerySource = {revision: 'source-1', catalogRevision: catalog.revi
   {id: 'a4', partition: 'A', sequence: 4, score: 80, value: 5},
   {id: 'b1', partition: 'B', sequence: 1, score: 50, value: 7},
 ]}}};
-const pins = {catalogRevision: catalog.revision, functionRegistryDigest: registry.value.digest};
+const pins = {catalogRevision: catalog.revision, functionRegistryDigest: queryRegistry.digest};
 
-function query(catalogRevision = catalog.revision, functionRegistryDigest = registry.value.digest): RelationalQuery {
+function query(catalogRevision = catalog.revision, functionRegistryDigest = queryRegistry.digest): RelationalQuery {
   return {root: 'events', pins: {catalogRevision, functionRegistryDigest}, select: [
     {id: 'id', expression: field('id')}, {id: 'windowSum', expression: {kind: 'field', ref: 'windowSum'}}, {id: 'rank', expression: {kind: 'field', ref: 'rank'}},
   ], windows: [
@@ -41,7 +42,7 @@ function query(catalogRevision = catalog.revision, functionRegistryDigest = regi
 
 describe('bounded query planner/evaluator', () => {
   it('executes window null propagation and competition rank', () => {
-    const planner = createQueryPlanner({catalog, registry: registry.value});
+    const planner = createQueryPlanner({catalog, registry: queryRegistry});
     expect(planner.ok).toBe(true);
     if (!planner.ok) return;
     const plan = planner.value.plan(query());
@@ -55,7 +56,7 @@ describe('bounded query planner/evaluator', () => {
   });
 
   it('rejects an altered plan even when its canonical strings are retained', () => {
-    const planner = createQueryPlanner({catalog, registry: registry.value});
+    const planner = createQueryPlanner({catalog, registry: queryRegistry});
     expect(planner.ok).toBe(true);
     if (!planner.ok) return;
     const plan = planner.value.plan(query());
@@ -65,6 +66,37 @@ describe('bounded query planner/evaluator', () => {
     const result = planner.value.evaluate(altered, source);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.diagnostics[0]?.code).toBe('query.plan');
+  });
+
+  it('snapshots caller-owned query input and deeply freezes the accepted plan', () => {
+    const planner = createQueryPlanner({catalog, registry: queryRegistry});
+    expect(planner.ok).toBe(true);
+    if (!planner.ok) return;
+    const input = query();
+    const plan = planner.value.plan(input);
+    expect(plan.ok).toBe(true);
+    if (!plan.ok) return;
+    const canonical = plan.value.canonical;
+    (input.select as Array<{id: string}>)[0]!.id = 'forged';
+    (input.windows as Array<{frame: {preceding: number; following: number}}>)[0]!.frame.preceding = 99;
+    expect(plan.value.canonical).toBe(canonical);
+    expect(plan.value.nodes[0]?.op).toBe('scan');
+    expect(Object.isFrozen(plan.value)).toBe(true);
+    expect(Object.isFrozen(plan.value.nodes)).toBe(true);
+    expect(Object.isFrozen(plan.value.nodes[0])).toBe(true);
+    expect(Object.isFrozen(plan.value.nodes[0]?.inputs)).toBe(true);
+  });
+
+  it.each([0, -1, 1.5, Infinity, NaN])('rejects invalid maxRows execution budget %s', (maxRows) => {
+    const planner = createQueryPlanner({catalog, registry: queryRegistry});
+    expect(planner.ok).toBe(true);
+    if (!planner.ok) return;
+    const plan = planner.value.plan(query());
+    expect(plan.ok).toBe(true);
+    if (!plan.ok) return;
+    const result = planner.value.evaluate(plan.value, source, {maxRows});
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.diagnostics[0]?.code).toBe('query.budget');
   });
 
   it('does not execute a redefined trusted function reference', () => {
@@ -92,7 +124,7 @@ describe('bounded query planner/evaluator', () => {
         {kind: 'call', function: {id: 'core.aggregate.sum', revision: '1'}, arguments: [field('sequence')]},
       ]}],
     };
-    const planner = createQueryPlanner({catalog, registry: registry.value});
+    const planner = createQueryPlanner({catalog, registry: queryRegistry});
     expect(planner.ok).toBe(true);
     if (!planner.ok) return;
     const plan = planner.value.plan(aggregateQuery);
@@ -111,10 +143,10 @@ describe('bounded query planner/evaluator', () => {
           {kind: 'call', function: {id: 'core.aggregate.sum', revision: '1'}, arguments: [field('score')]},
           {kind: 'call', function: {id: 'core.aggregate.sum', revision: '1'}, arguments: [field('sequence')]},
         ],
-      }}, dependencies: [], functionRegistryDigest: registry.value.digest, origin: 'manual', lifecycle: 'active', scope: 'organization', authority: 'approved', aggregation: 'additive', aggregationDimensions: [], missingPolicy: 'propagate',
+      }}, dependencies: [], functionRegistryDigest: queryRegistry.digest, origin: 'manual', lifecycle: 'active', scope: 'organization', authority: 'approved', aggregation: 'additive', aggregationDimensions: [], missingPolicy: 'propagate',
     }]};
     const querySpec: QuerySpec = {entity: 'events', fields: ['partition'], measures: [{id: 'net', revision: '1'}], relations: [], groupBy: ['partition'], population: {kind: 'all-authorized'}, order: []};
-    const planner = createQueryPlanner({catalog: meaningCatalog, registry: registry.value});
+    const planner = createQueryPlanner({catalog: meaningCatalog, registry: queryRegistry});
     expect(planner.ok).toBe(true);
     if (!planner.ok) return;
     const plan = planner.value.plan(querySpec);

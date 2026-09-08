@@ -11,6 +11,7 @@ import type {
   VersionRef,
 } from '../contracts/types.js';
 import {checkExpression} from '../expressions/check.js';
+import {createFunctionRegistry} from '../expressions/registry.js';
 import {createCatalogIndex} from '../semantics/catalog.js';
 import type {FunctionRegistry, TypedExpression} from '../expressions/types.js';
 import {
@@ -44,9 +45,9 @@ type CatalogRelationship = Catalog['relationships'][number];
 const DEFAULT_LIMITS: QueryLimits = Object.freeze({
   maxNodes: 256,
   maxDepth: 64,
-  maxRows: 100_000,
+  maxRows: 10_000,
   maxBytes: WIRE_LIMITS.bytes,
-  maxJoinRows: 100_000,
+  maxJoinRows: 10_000,
   maxOperations: 1_000_000,
 });
 
@@ -64,6 +65,41 @@ function safeId(value: unknown): value is string {
 
 function safePositive(value: unknown): value is number {
   return typeof value === 'number' && Number.isSafeInteger(value) && value > 0;
+}
+
+/**
+ * Query inputs cross a public boundary. Keep the accepted plan independent of
+ * caller-owned arrays and objects, including nested expression metadata.
+ * Contract values are JSON-like; rejecting other object kinds also avoids
+ * retaining mutable class instances or executable values in a plan.
+ */
+function cloneSnapshot(value: unknown, active = new WeakSet<object>(), seen = new WeakMap<object, unknown>()): unknown {
+  if (value === null || typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number' || typeof value === 'undefined') return value;
+  if (typeof value !== 'object') throw new Error('query snapshots may contain only data values');
+  const existing = seen.get(value);
+  if (existing !== undefined) {
+    if (active.has(value)) throw new Error('query snapshots may not contain cycles');
+    return existing;
+  }
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null && !Array.isArray(value)) throw new Error('query snapshots may contain only plain objects');
+  const copy: Record<string, unknown> | unknown[] = Array.isArray(value) ? [] : Object.create(prototype);
+  seen.set(value, copy);
+  active.add(value);
+  for (const key of Object.keys(value)) (copy as Record<string, unknown>)[key] = cloneSnapshot((value as Record<string, unknown>)[key], active, seen);
+  active.delete(value);
+  return copy;
+}
+
+function deepFreeze<T>(value: T, seen = new WeakSet<object>()): T {
+  if (value === null || typeof value !== 'object' || seen.has(value)) return value;
+  seen.add(value);
+  for (const child of Object.values(value as Record<string, unknown>)) deepFreeze(child, seen);
+  return Object.freeze(value);
+}
+
+function immutableSnapshot<T>(value: T): T {
+  return deepFreeze(cloneSnapshot(value) as T);
 }
 
 function stable(value: unknown): string {
@@ -171,6 +207,7 @@ function resolveExpression(expression: Expression, schema: QuerySchema, registry
 function sameTypeFamily(left: SemanticType, right: SemanticType): boolean {
   if (left.value !== right.value) return false;
   if (left.unit?.dimension !== right.unit?.dimension || left.unit?.currency !== right.unit?.currency) return false;
+  if (left.temporal?.calendar !== right.temporal?.calendar || left.temporal?.timezone !== right.temporal?.timezone || left.temporal?.grain !== right.temporal?.grain) return false;
   return true;
 }
 
@@ -281,8 +318,46 @@ function lowerQuerySpec(query: QuerySpec, catalog: Catalog, registry: FunctionRe
   if (query.population.kind !== 'all-authorized') return unsupported('query.population-lineage', 'Fixed and live populations require an authorized result lineage input.', ['Provide a complete cohort source.'], ['population']);
   const where = querySpecPredicate(query.where, query.entity, catalog);
   if (!where.ok) return where;
-  const select: ProjectionSpec[] = query.fields.map((field) => ({id: field, expression: fieldExpression(query.entity, field)}));
-  const groupBy: GroupKeySpec[] = query.groupBy.map((field) => ({id: field, expression: fieldExpression(query.entity, field)}));
+  const entityDefinition = catalog.entities.find((candidate) => candidate.id === query.entity);
+  if (entityDefinition === undefined) return failure('query.entity', `Entity ${query.entity} is not declared.`, ['entity']);
+  let bucketId: string | undefined;
+  let timeBuckets: TimeBucketSpec[] = [];
+  if (query.timeBucket !== undefined) {
+    if (query.period === undefined) return unsupported('query.time-bucket-policy', 'QuerySpec time buckets do not carry an explicit calendar and timezone policy.', ['Provide a period policy or use a typed RelationalQuery TimeBucketSpec.'], ['timeBucket']);
+    const temporalField = entityDefinition.fields.find((candidate) => candidate.id === query.timeBucket!.field);
+    if (temporalField === undefined) return failure('query.field', `Field ${query.timeBucket.field} is not declared on ${query.entity}.`, ['timeBucket', 'field']);
+    if (temporalField.type.value !== 'instant') return unsupported('query.period-type', 'QuerySpec period bounds are instants and require an instant-valued time bucket field.', ['Use a typed RelationalQuery date predicate for local dates.'], ['period']);
+    if (!['day', 'week', 'month', 'quarter', 'year'].includes(query.timeBucket.grain)) return unsupported('temporal-grain', 'The requested temporal grain is not in the bounded evaluator subset.', ['Use day, week, month, quarter or year.'], ['timeBucket', 'grain']);
+    if (query.timeBucket.grain === 'week') return unsupported('temporal-week-start', 'QuerySpec weekly buckets do not pin a week start.', ['Use a RelationalQuery TimeBucketSpec with weekStartsOn.'], ['timeBucket']);
+    bucketId = `__aeliqo_bucket_${query.timeBucket.field}_${query.timeBucket.grain}`;
+    if (entityDefinition.fields.some((field) => field.id === bucketId)) return failure('query.time-bucket', 'Generated time bucket identifier collides with a source field.', ['timeBucket', 'field']);
+    timeBuckets = [{id: bucketId, expression: fieldExpression(query.entity, query.timeBucket.field), grain: query.timeBucket.grain as TimeBucketSpec['grain'], calendar: 'gregorian', timezone: 'UTC', weekStartsOn: 1, label: temporalField.label}];
+  }
+  const measureIds = new Set(query.measures.map((measure) => measure.id));
+  const windowIds = new Set((query.windows ?? []).map((window) => window.id));
+  const expressionForField = (field: string): Expression => bucketId !== undefined && query.timeBucket !== undefined && field === query.timeBucket.field
+    ? query.groupBy.includes(field) ? {kind: 'field', ref: field} : {kind: 'field', ref: bucketId}
+    : measureIds.has(field) || windowIds.has(field) ? {kind: 'field', ref: field} : fieldExpression(query.entity, field);
+  const expressionForGroupField = (field: string): Expression => bucketId !== undefined && query.timeBucket !== undefined && field === query.timeBucket.field
+    ? {kind: 'field', ref: bucketId}
+    : fieldExpression(query.entity, field);
+  const rewriteWindowExpression = (expression: Expression): Expression => {
+    if (expression.kind === 'field') return bucketId !== undefined && query.timeBucket !== undefined && expression.ref === query.timeBucket.field && (expression.entity === undefined || expression.entity === query.entity)
+      ? {kind: 'field', ref: bucketId}
+      : expression;
+    if (expression.kind !== 'call') return expression;
+    return {kind: 'call', function: expression.function, arguments: expression.arguments.map(rewriteWindowExpression)};
+  };
+  const select: ProjectionSpec[] = [];
+  const selected = new Set<string>();
+  const addSelect = (field: string): void => {
+    if (selected.has(field)) return;
+    selected.add(field);
+    select.push({id: field, expression: expressionForField(field)});
+  };
+  for (const field of query.fields) addSelect(field);
+  const groupBy: GroupKeySpec[] = query.groupBy.map((field) => ({id: field, expression: expressionForGroupField(field)}));
+  for (const field of query.groupBy) addSelect(field);
   const aggregates: AggregateSpec[] = [];
   for (let index = 0; index < query.measures.length; index += 1) {
     const meaning = meaningByRef(catalog, definitions, query.measures[index]!);
@@ -296,12 +371,9 @@ function lowerQuerySpec(query: QuerySpec, catalog: Catalog, registry: FunctionRe
     if (groupBy.length > 0 && !groupBy.some((group) => group.id === field)) return failure('query.group-grain', `Projected field ${field} is not part of the requested grouping grain.`, ['fields']);
   }
   if (query.period !== undefined && query.timeBucket === undefined) return unsupported('query.period-field', 'A period needs an explicit temporal field or time bucket.', ['Provide timeBucket.field with period.'], ['period']);
-  if (query.timeBucket !== undefined && query.period === undefined) return unsupported('query.time-bucket-policy', 'QuerySpec time buckets do not carry an explicit calendar and timezone policy.', ['Provide a period policy or use a RelationalQuery TimeBucketSpec.'], ['timeBucket']);
   if (query.period !== undefined && (query.period.calendar !== 'gregorian' || query.period.timezone !== 'UTC')) return unsupported('temporal-policy', 'Only explicit Gregorian UTC periods are implemented in the pure evaluator.', ['Supply a host temporal policy for the requested calendar and timezone.'], ['period']);
   let filter = where.value;
-  let timeBuckets: TimeBucketSpec[] = [];
   if (query.period !== undefined && query.timeBucket !== undefined) {
-    const entityDefinition = catalog.entities.find((candidate) => candidate.id === query.entity)!;
     const temporalField = entityDefinition.fields.find((candidate) => candidate.id === query.timeBucket!.field);
     if (temporalField === undefined) return failure('query.field', `Field ${query.timeBucket.field} is not declared on ${query.entity}.`, ['timeBucket', 'field']);
     if (temporalField.type.value !== 'instant') return unsupported('query.period-type', 'QuerySpec period bounds are instants and require an instant-valued time bucket field.', ['Use a typed RelationalQuery date predicate for local dates.'], ['period']);
@@ -311,14 +383,23 @@ function lowerQuerySpec(query: QuerySpec, catalog: Catalog, registry: FunctionRe
       {op: 'compare', left: fieldExpression(query.entity, temporalField.id), comparison: 'lt', right: literalExpression(query.period.toExclusive, {...type, nullable: false})},
     ]};
     filter = filter === undefined ? range : {op: 'and', predicates: [filter, range]};
-    if (query.timeBucket.grain === 'week') return unsupported('temporal-week-start', 'QuerySpec weekly buckets do not pin a week start.', ['Use a RelationalQuery TimeBucketSpec with weekStartsOn.'], ['timeBucket']);
-    timeBuckets = [{id: query.timeBucket.field, expression: fieldExpression(query.entity, query.timeBucket.field), grain: query.timeBucket.grain as TimeBucketSpec['grain'], calendar: 'gregorian', timezone: 'UTC', weekStartsOn: 1}];
   }
   if (query.page?.cursor !== undefined) return unsupported('query.cursor', 'Cursor continuation requires an authorized source cursor and stable source revision.', ['Use a bounded top-K page without a cursor.'], ['page', 'cursor']);
-  const orderBy: SortSpec[] = query.order.map((entry) => ({expression: {kind: 'field', ref: entry.field}, direction: entry.direction, nulls: entry.nulls}));
+  const orderBy: SortSpec[] = query.order.map((entry) => ({expression: bucketId !== undefined && query.timeBucket !== undefined && entry.field === query.timeBucket.field
+    ? {kind: 'field', ref: bucketId}
+    : measureIds.has(entry.field) ? {kind: 'field', ref: entry.field} : fieldExpression(query.entity, entry.field), direction: entry.direction, nulls: entry.nulls}));
+  const windows: WindowSpec[] = (query.windows ?? []).map((window) => ({
+    id: window.id,
+    function: window.function,
+    arguments: window.arguments.map(rewriteWindowExpression),
+    partitionBy: window.partitionBy.map(rewriteWindowExpression),
+    orderBy: window.orderBy.map((entry) => ({...entry, expression: rewriteWindowExpression(entry.expression)})),
+    frame: {preceding: window.frame.preceding, following: window.frame.following},
+  }));
   return {ok: true, value: {
     root: query.entity, select, ...(filter === undefined ? {} : {filter}),
     ...(joins.length === 0 ? {} : {joins}), ...(semiJoins.length === 0 ? {} : {semiJoins}),
+    ...(timeBuckets.length === 0 ? {} : {timeBuckets}), ...(windows.length === 0 ? {} : {windows}),
     ...(groupBy.length === 0 ? {} : {groupBy}), ...(aggregates.length === 0 ? {} : {aggregates}),
     ...(orderBy.length === 0 ? {} : {orderBy}),
     ...(query.page === undefined ? {} : {topK: query.page.size}),
@@ -349,6 +430,20 @@ function nodeDetail(operation: PlanOperation): string {
 
 function relationshipFor(catalog: Catalog, ref: VersionRef): CatalogRelationship | undefined {
   return catalog.relationships.find((relationship) => relationship.id === ref.id && relationship.revision === ref.revision);
+}
+
+function validateRelationshipKeyTypes(catalog: Catalog, relationship: CatalogRelationship, path: readonly (string | number)[]): QueryOutcome<void> {
+  const source = catalog.entities.find((entity) => entity.id === relationship.sourceEntity);
+  const target = catalog.entities.find((entity) => entity.id === relationship.targetEntity);
+  if (source === undefined || target === undefined) return failure('query.relationship-key', 'Relationship key entities are not declared.', path);
+  for (let index = 0; index < relationship.keys.length; index += 1) {
+    const key = relationship.keys[index]!;
+    const left = source.fields.find((field) => field.id === key.sourceField);
+    const right = target.fields.find((field) => field.id === key.targetField);
+    if (left === undefined || right === undefined) return failure('query.relationship-key', 'Relationship key fields are not declared on their entities.', [...path, 'keys', index]);
+    if (!sameTypeFamily(left.type, right.type)) return failure('query.relationship-key-type', 'Relationship key fields must have compatible semantic types, units and temporal policies.', [...path, 'keys', index]);
+  }
+  return {ok: true, value: undefined};
 }
 
 function schemaFieldBySource(schema: QuerySchema, entity: string, field: string): QueryField | undefined {
@@ -527,6 +622,8 @@ function buildPlan(input: RelationalQuery, catalog: Catalog, registry: FunctionR
     if (relationship === undefined) return failure('query.relationship', `Relationship ${relationKey(spec.relationship)} is not declared.`, ['semiJoins', index]);
     if (relationship.sourceEntity !== input.root || relationship.targetEntity !== spec.rightEntity) return failure('query.relationship-direction', 'A semijoin must follow the declared relationship direction from the root entity.', ['semiJoins', index]);
     if (relationship.joinPolicy !== 'validated') return unsupported('query.relationship-policy', 'The declared relationship is not approved for local semijoin evaluation.', ['Use a validated relationship or a host capability.'], ['semiJoins', index]);
+    const keyTypes = validateRelationshipKeyTypes(catalog, relationship, ['semiJoins', index]);
+    if (!keyTypes.ok) return keyTypes;
     const right = catalog.entities.find((candidate) => candidate.id === spec.rightEntity)!;
     if (spec.where !== undefined) {
       const checkedWhere = validatePredicate(spec.where, scanSchema(right), registry, ['semiJoins', index, 'where']);
@@ -550,6 +647,8 @@ function buildPlan(input: RelationalQuery, catalog: Catalog, registry: FunctionR
     if (relationship === undefined) return failure('query.relationship', `Relationship ${relationKey(spec.relationship)} is not declared.`, ['joins', index]);
     if (relationship.sourceEntity !== input.root || relationship.targetEntity !== spec.rightEntity) return failure('query.relationship-direction', 'A join must follow the declared relationship direction from the root entity.', ['joins', index]);
     if (relationship.joinPolicy !== 'validated') return unsupported('query.relationship-policy', 'The declared relationship is not approved for local join evaluation.', ['Use a validated relationship or a host capability.'], ['joins', index]);
+    const keyTypes = validateRelationshipKeyTypes(catalog, relationship, ['joins', index]);
+    if (!keyTypes.ok) return keyTypes;
     if (relationship.cardinality === 'one-to-many' || relationship.cardinality === 'many-to-many') return unsupported('query.fanout', 'A regular join could multiply source facts under the declared cardinality.', ['Use a semijoin or pre-aggregate the many-side facts before joining.'], ['joins', index]);
     const right = catalog.entities.find((candidate) => candidate.id === spec.rightEntity)!;
     if (spec.where !== undefined) {
@@ -609,12 +708,25 @@ function buildPlan(input: RelationalQuery, catalog: Catalog, registry: FunctionR
     }
   }
 
+  let sortedBeforeProjection = false;
+  if ((input.orderBy ?? []).length > 0) {
+    let canSortBeforeProjection = true;
+    for (const item of input.orderBy!) {
+      const checked = resolveExpression(item.expression, state.schema, registry);
+      if (!checked.ok) { canSortBeforeProjection = false; break; }
+    }
+    if (canSortBeforeProjection) {
+      const sorted = addNode(state, 'sort', state.schema, {items: input.orderBy!}, limits, [state.current], state.cost.estimatedRows);
+      if (!sorted.ok) return sorted;
+      sortedBeforeProjection = true;
+    }
+  }
   const projected = projectSchema(state.schema, input.select, registry);
   if (!projected.ok) return projected;
   const projection = addNode(state, 'project', projected.value, {items: input.select}, limits, [state.current], state.cost.estimatedRows);
   if (!projection.ok) return projection;
 
-  if ((input.orderBy ?? []).length > 0) {
+  if ((input.orderBy ?? []).length > 0 && !sortedBeforeProjection) {
     for (let index = 0; index < input.orderBy!.length; index += 1) {
       const checked = resolveExpression(input.orderBy![index]!.expression, state.schema, registry);
       if (!checked.ok) return checked;
@@ -628,16 +740,30 @@ function buildPlan(input: RelationalQuery, catalog: Catalog, registry: FunctionR
     if (!top.ok) return top;
   }
   const canonical = stable({version: '1', pins, root: state.current, nodes: state.nodes});
-  const plan: LogicalPlan = Object.freeze({version: '1', pins, root: state.current, nodes: Object.freeze(state.nodes), output: state.schema, cost: state.cost, canonical, planKey: `query-${canonical}`, explain: Object.freeze(state.nodes.map((node) => ({nodeId: node.id, operation: node.op, inputIds: node.inputs, detail: nodeDetail(node.op), estimatedRows: node.cost.estimatedRows, estimatedBytes: node.cost.estimatedBytes})))});
-  return {ok: true, value: plan};
+  const plan: LogicalPlan = {version: '1', pins, root: state.current, nodes: state.nodes, output: state.schema, cost: state.cost, canonical, planKey: `query-${canonical}`, explain: state.nodes.map((node) => ({nodeId: node.id, operation: node.op, inputIds: node.inputs, detail: nodeDetail(node.op), estimatedRows: node.cost.estimatedRows, estimatedBytes: node.cost.estimatedBytes}))};
+  return {ok: true, value: deepFreeze(plan)};
 }
 
 export function createQueryPlanner(options: QueryPlannerOptions): QueryOutcome<import('./types.js').QueryPlanner> {
   const parsed = parseCatalog(options.catalog);
   if (!parsed.ok) return parsed;
-  const indexed = createCatalogIndex(parsed.value);
+  let catalog: Catalog;
+  try {
+    catalog = immutableSnapshot(parsed.value);
+  } catch {
+    return failure('query.catalog', 'Catalog snapshot failed safely at the untrusted boundary.');
+  }
+  const indexed = createCatalogIndex(catalog);
   if (!indexed.ok) return indexed;
-  if (options.registry.digest !== parsed.value.functionRegistryDigest) return failure('query.stale-registry', 'The function registry does not match the catalog function registry pin.', ['registry']);
+  let registryOutcome: QueryOutcome<FunctionRegistry>;
+  try {
+    registryOutcome = createFunctionRegistry({digest: options.registry.digest, signatures: options.registry.signatures});
+  } catch {
+    return failure('query.registry', 'Function registry snapshot failed safely at the untrusted boundary.', ['registry']);
+  }
+  if (!registryOutcome.ok) return failure('query.registry', 'Function registry snapshot failed safely at the untrusted boundary.', ['registry']);
+  const registry = registryOutcome.value;
+  if (registry.digest !== catalog.functionRegistryDigest) return failure('query.stale-registry', 'The function registry does not match the catalog function registry pin.', ['registry']);
   const limits: QueryLimits = Object.freeze({
     maxNodes: options.limits?.maxNodes ?? DEFAULT_LIMITS.maxNodes,
     maxDepth: options.limits?.maxDepth ?? DEFAULT_LIMITS.maxDepth,
@@ -647,18 +773,29 @@ export function createQueryPlanner(options: QueryPlannerOptions): QueryOutcome<i
     maxOperations: options.limits?.maxOperations ?? DEFAULT_LIMITS.maxOperations,
   });
   for (const [key, value] of Object.entries(limits)) if (!safePositive(value)) return failure('query.budget', `Query limit ${key} must be a bounded positive safe integer.`, ['limits', key]);
-  const definitions = options.definitions ?? [];
+  let definitions: readonly MeaningDefinition[];
+  try {
+    definitions = immutableSnapshot(options.definitions ?? []);
+  } catch {
+    return failure('query.definitions', 'Meaning definition snapshot failed safely at the untrusted boundary.', ['definitions']);
+  }
   const planner: import('./types.js').QueryPlanner = {
-    catalog: parsed.value,
-    registry: options.registry,
+    catalog,
+    registry,
     limits,
     plan(input) {
-      const lowered = 'root' in input ? {ok: true as const, value: input} : lowerQuerySpec(input, parsed.value, options.registry, definitions);
+      let snapshot: QueryInput;
+      try {
+        snapshot = immutableSnapshot(input);
+      } catch {
+        return failure('query.input', 'Query input snapshot failed safely at the untrusted boundary.');
+      }
+      const lowered = 'root' in snapshot ? {ok: true as const, value: snapshot} : lowerQuerySpec(snapshot, catalog, registry, definitions);
       if (!lowered.ok) return lowered;
-      return buildPlan(lowered.value, parsed.value, options.registry, limits);
+      return buildPlan(lowered.value, catalog, registry, limits);
     },
     evaluate(plan, source, context) {
-      return evaluateLogicalPlan(plan, source, parsed.value, options.registry, context);
+      return evaluateLogicalPlan(plan, source, catalog, registry, context);
     },
   };
   return {ok: true, value: Object.freeze(planner)};
