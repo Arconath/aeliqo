@@ -7,6 +7,7 @@ import type {
 export const DEFAULT_MAX_RESULT_EVENTS = 256;
 export const DEFAULT_MAX_RESULT_ROWS = 10_000;
 export const DEFAULT_RESULT_COLLECTION_TIMEOUT_MS = 10_000;
+const MAX_TIMER_MS = 2_147_483_647;
 
 export interface CollectResultEventsOptions {
   /** Maximum number of events retained, including terminal events. */
@@ -43,6 +44,17 @@ function limitError(name: string, limit: number): Error {
   return error;
 }
 
+function timeoutLimit(value: number | undefined): number {
+  const result = nonNegativeLimit(value, DEFAULT_RESULT_COLLECTION_TIMEOUT_MS, 'timeoutMs');
+  if (result > MAX_TIMER_MS) throw new RangeError(`timeoutMs must not exceed ${MAX_TIMER_MS}ms.`);
+  return result;
+}
+
+function monotonicNow(): number {
+  const now = globalThis.performance?.now;
+  return typeof now === 'function' ? now.call(globalThis.performance) : Date.now();
+}
+
 function timeoutError(timeoutMs: number): Error {
   const error = new Error(`Result collection exceeded its ${timeoutMs}ms deadline.`);
   error.name = 'ResultCollectionTimeoutError';
@@ -61,10 +73,10 @@ export async function collectResultEvents(
 ): Promise<readonly ResultEvent[]> {
   const maxEvents = positiveLimit(options.maxEvents, DEFAULT_MAX_RESULT_EVENTS, 'maxEvents');
   const maxRows = nonNegativeLimit(options.maxRows, DEFAULT_MAX_RESULT_ROWS, 'maxRows');
-  const timeoutMs = nonNegativeLimit(options.timeoutMs, DEFAULT_RESULT_COLLECTION_TIMEOUT_MS, 'timeoutMs');
+  const timeoutMs = timeoutLimit(options.timeoutMs);
   const signal = options.signal;
   const iterator = events[Symbol.asyncIterator]();
-  const deadline = Date.now() + timeoutMs;
+  const deadline = monotonicNow() + timeoutMs;
   const collected: ResultEvent[] = [];
   let rows = 0;
   let exhausted = false;
@@ -74,10 +86,17 @@ export async function collectResultEvents(
       if (closing === undefined) return;
       // A hostile iterator may never settle return() after a pending next().
       // Give normal cleanup a chance while retaining a bounded failure path.
-      await Promise.race([
-        Promise.resolve(closing).then(() => undefined, () => undefined),
-        new Promise<void>((resolve) => setTimeout(resolve, Math.min(100, timeoutMs))),
-      ]);
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      try {
+        await Promise.race([
+          Promise.resolve(closing).then(() => undefined, () => undefined),
+          new Promise<void>((resolve) => {
+            timer = setTimeout(resolve, Math.min(100, timeoutMs));
+          }),
+        ]);
+      } finally {
+        if (timer !== undefined) clearTimeout(timer);
+      }
     } catch {
       // A source's close failure must not hide the authorization/limit failure.
     }
@@ -86,7 +105,7 @@ export async function collectResultEvents(
   try {
     while (true) {
       if (signal?.aborted) throw abortError(signal.reason);
-      const remaining = deadline - Date.now();
+      const remaining = deadline - monotonicNow();
       if (remaining < 0) throw timeoutError(timeoutMs);
       const next = await new Promise<IteratorResult<ResultEvent>>((resolve, reject) => {
         let settled = false;
@@ -107,7 +126,14 @@ export async function collectResultEvents(
           }
         }
         timer = setTimeout(() => finish(() => reject(timeoutError(timeoutMs))), remaining);
-        Promise.resolve(iterator.next()).then(
+        let pending: Promise<IteratorResult<ResultEvent>>;
+        try {
+          pending = Promise.resolve(iterator.next());
+        } catch (error) {
+          finish(() => reject(error));
+          return;
+        }
+        pending.then(
           (value) => finish(() => resolve(value)),
           (error: unknown) => finish(() => reject(error)),
         );
