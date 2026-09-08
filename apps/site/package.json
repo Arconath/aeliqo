@@ -1,0 +1,8 @@
+{
+  "name": "@aeliqo/site",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {"dev": "vite --host 127.0.0.1", "build": "vite build"},
+  "dependencies": {"@aeliqo/web": "workspace:*", "@aeliqo/core": "workspace:*", "@aeliqo/runtime": "workspace:*", "@aeliqo/agent": "workspace:*"}
+}
