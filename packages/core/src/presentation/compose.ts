@@ -1,3 +1,4 @@
+import {stateMappingFor} from './state.js';
 import * as z from 'zod/mini';
 import {parseContract} from '../contracts/parse.js';
 import {inspectWire} from '../contracts/ingress.js';
@@ -11,6 +12,7 @@ import type {
 import {freezePresentation, isThenable, presentationFailure as fail, versionKey} from './registry.js';
 import {preparePresentationContext, validatePresentationPlan, type PresentationValidationOptions, type PreparedPresentationContext} from './validate.js';
 
+const compareText = (left: string, right: string): number => left < right ? -1 : left > right ? 1 : 0;
 const stateIdentity = {id: 'aeliqo.state.identity', revision: '1'} as const;
 const suggestionSchema = z.record(z.string(), jsonSchema);
 
@@ -44,7 +46,7 @@ function sameRef(left: VersionRef, right: VersionRef): boolean {
 }
 
 function planTopology(plan: PresentationPlan): string {
-  return canonical(plan.nodes.map(node => [node.id, node.role, node.children]).sort((a, b) => String(a[0]).localeCompare(String(b[0]))));
+  return canonical(plan.nodes.map(node => [node.id, node.role, node.children]).sort((a, b) => compareText(String(a[0]), String(b[0]))));
 }
 
 function planVariants(plan: PresentationPlan): string {
@@ -129,7 +131,7 @@ function stableNodeId(
   const coverage = context.incumbent?.coverage.find(entry => entry.needId === need.id);
   const existing = coverage?.nodeIds.find(id => {
     const node = context.incumbent?.nodes.find(candidate => candidate.id === id);
-    return node !== undefined && node.role === role && sameRef(node.representation, representation) && !used.has(id);
+    return node !== undefined && node.role === role && !used.has(id);
   });
   if (existing !== undefined) { used.add(existing); return existing; }
   const base = `view.${need.id}`;
@@ -146,7 +148,7 @@ function stableRootId(
   context: PresentationCompositionRequest['context'],
 ): string {
   const currentRoot = context.incumbent?.nodes.find(node => node.id === context.incumbent?.rootId);
-  if (currentRoot !== undefined && currentRoot.role === role && sameRef(currentRoot.representation, representation) && !used.has(currentRoot.id)) {
+  if (currentRoot !== undefined && currentRoot.role === role && !used.has(currentRoot.id)) {
     used.add(currentRoot.id); return currentRoot.id;
   }
   const base = 'layout';
@@ -158,20 +160,25 @@ function stableRootId(
 
 function transfersFor(
   nodes: readonly PresentationPlan['nodes'][number][],
-  incumbent: PresentationPlan | undefined,
+  incumbent: PresentationPlan | undefined, registry: PresentationRegistry, context: PresentationCompositionRequest['context'], rootId: string,
 ): PresentationPlan['stateTransfer'] {
   if (incumbent === undefined) return [];
   const next = new Map(nodes.map(node => [node.id, node]));
   return incumbent.nodes.flatMap(previous => {
     const candidate = next.get(previous.id);
-    if (candidate === undefined || candidate.role !== previous.role || !sameRef(candidate.representation, previous.representation)) return [];
-    return [{fromNode: previous.id, toNode: previous.id, mapping: stateIdentity}];
+    if (candidate !== undefined && candidate.role === previous.role && sameRef(candidate.representation, previous.representation))
+      return [{fromNode: previous.id, toNode: previous.id, mapping: stateIdentity}];
+    const target = candidate ?? next.get(rootId);
+    if (target === undefined) return [];
+    const mapping = stateMappingFor(previous, target, registry, context, candidate === undefined ? 'archive' : 'transfer');
+    return mapping === undefined ? [] : [{fromNode: previous.id, toNode: target.id, mapping: mapping.ref}];
   });
 }
 
 function buildPlan(
   request: PresentationCompositionRequest,
   prepared: PreparedPresentationContext,
+  registry: PresentationRegistry,
   layout: PresentationManifest | undefined,
   selected: readonly PresentationManifest[],
   suggest: (manifest: PresentationManifest, needs: readonly Task['needs'][number][], result: Result | undefined) => Outcome<PresentationValues>,
@@ -208,7 +215,7 @@ function buildPlan(
   return {ok: true, value: {
     id: request.id, revision: request.revision, rootId, preconditions: request.preconditions,
     nodes, links: [], coverage: required.map((need, index) => ({needId: need.id, nodeIds: [nodes[layout === undefined ? index : index + 1]!.id], operations: [need.operation]})),
-    stateTransfer: transfersFor(nodes, request.context.incumbent), diagnostics: [],
+    stateTransfer: transfersFor(nodes, request.context.incumbent, registry, request.context, rootId), diagnostics: [],
   }};
 }
 
@@ -254,7 +261,7 @@ export function composePresentation(request: PresentationCompositionRequest, reg
     consider(checked.value, candidateIsIncumbent);
     return true;
   };
-  if (request.context.incumbent !== undefined) validateCandidate(request.context.incumbent, 'incumbent', {}, true);
+  if (request.context.incumbent !== undefined) validateCandidate({...request.context.incumbent, stateTransfer: []}, 'incumbent', {}, true);
 
   const patterns = registry.patterns ?? [];
   const patternContext = prepared.value.patternContext;
@@ -285,7 +292,7 @@ export function composePresentation(request: PresentationCompositionRequest, reg
     && contextHasRenderer(request.context.rendererCapabilities, manifest.ref)
     && manifest.suggestConfig !== undefined
     && (!manifest.extension || constraints.extensionAllowlist.some(ref => sameRef(ref, manifest.ref))))
-    .sort((a, b) => versionKey(a.ref).localeCompare(versionKey(b.ref)));
+    .sort((a, b) => compareText(versionKey(a.ref), versionKey(b.ref)));
   const required = constraints.taskNeeds.filter(need => need.required);
   for (const need of required) {
     if (need.outputId !== undefined && prepared.value.results.filter(result => result.ref.outputId === need.outputId).length > 1)
@@ -307,11 +314,18 @@ export function composePresentation(request: PresentationCompositionRequest, reg
   };
   const tryBuild = (layout: PresentationManifest | undefined, selected: readonly PresentationManifest[], label: string): boolean => {
     if (!spend()) return false;
-    const built = buildPlan(request, prepared.value, layout, selected, suggest);
+    const built = buildPlan(request, prepared.value, registry, layout, selected, suggest);
     if (!built.ok) { reject(label, built.diagnostics); return false; }
     return validateCandidate(built.value, label, {}, false);
   };
-  if (!budgetBlocked && required.length === 1 && choices[0]!.length > 0) {
+  if (!budgetBlocked && required.length === 0) {
+    const emptyRoots = allowed.filter(manifest => manifest.result !== 'required' && manifest.children.min === 0);
+    for (const root of emptyRoots) {
+      tryBuild(root, [], `registered.queryless.${root.ref.id}`);
+      if (budgetBlocked) break;
+    }
+    if (emptyRoots.length === 0) reject('registered-queryless', [{code: 'presentation.no-suggestion', message: 'No queryless root suggestion is registered.', retryable: false}]);
+  } else if (!budgetBlocked && required.length === 1 && choices[0]!.length > 0) {
     for (const leaf of choices[0]!) {
       tryBuild(undefined, [leaf], `registered.leaf.${leaf.ref.id}`);
       if (budgetBlocked) break;

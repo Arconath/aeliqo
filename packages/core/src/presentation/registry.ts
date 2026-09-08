@@ -5,7 +5,7 @@ import {WIRE_LIMITS} from '../contracts/limits.js';
 import type {Outcome} from '../contracts/types.js';
 import {validateInteractionGraph, interactionMappingManifestSchema} from '../interaction/graph.js';
 import type {InteractionMappingManifest} from '../interaction/graph.js';
-import type {PresentationManifest, PresentationPatternManifest, PresentationRegistry} from './types.js';
+import type {PresentationManifest, PresentationPatternManifest, PresentationRegistry, PresentationStateMappingManifest} from './types.js';
 
 export const presentationFailure = (code: string, message: string): Outcome<never> => ({ok: false,
   diagnostics: [{code: `presentation.${code}`, message, retryable: false}]});
@@ -32,12 +32,14 @@ const manifestSchema = z.strictObject({
   result: z.enum(['required', 'optional', 'none']), children: z.strictObject({min: bound, max: bound}),
   visibility: z.enum(['simultaneous', 'exclusive', 'leaf']), extension: z.boolean(),
 });
+export const stateMappingSchema = z.strictObject({ref:versionRefSchema,from:versionRefSchema,to:versionRefSchema,fromRole:idSchema,toRole:idSchema,kind:z.enum(['transfer','archive'])});
 const patternSchema = z.strictObject({ref: versionRefSchema});
 
 /** Registry installation is trusted local code, not a serializable proposal operation. */
 export function createPresentationRegistry(
   input: readonly PresentationManifest[], mappings: readonly InteractionMappingManifest[] = [],
   patterns: readonly PresentationPatternManifest[] = [],
+  stateMappings: readonly PresentationStateMappingManifest[] = [],
 ): Outcome<PresentationRegistry> {
   if (!Array.isArray(input) || input.length === 0 || input.length > WIRE_LIMITS.presentationNodes)
     return presentationFailure('registry', 'A bounded nonempty representation registry is required.');
@@ -83,6 +85,14 @@ export function createPresentationRegistry(
   } catch {
     return presentationFailure('registry', 'Pattern registration failed.');
   }
+  const stateWire = inspectWire(stateMappings); if (!stateWire.ok) return stateWire;
+  const stateParsed = z.safeParse(z.array(stateMappingSchema).check(z.maxLength(128)), stateWire.value);
+  if (!stateParsed.success || new Set(stateParsed.data.map(m => versionKey(m.ref))).size !== stateParsed.data.length
+    || stateParsed.data.some(m => m.ref.id === 'aeliqo.state.identity' || !seen.has(versionKey(m.from)) || !seen.has(versionKey(m.to))
+      || !manifests.find(n => versionKey(n.ref) === versionKey(m.from))!.roles.includes(m.fromRole)
+      || !manifests.find(n => versionKey(n.ref) === versionKey(m.to))!.roles.includes(m.toRole)
+      || (m.kind === 'transfer' && m.fromRole !== m.toRole)))
+    return presentationFailure('registry', 'State mappings must be unique registered representation/role pairs.');
   const mappingWire = inspectWire(mappings);
   if (!mappingWire.ok) return mappingWire;
   const ownedMappings = z.safeParse(z.array(interactionMappingManifestSchema), mappingWire.value);
@@ -90,5 +100,5 @@ export function createPresentationRegistry(
   const mappingValues = ownedMappings.data as unknown as readonly InteractionMappingManifest[];
   const graph = validateInteractionGraph({nodes: [], links: []}, mappingValues);
   if (!graph.ok) return graph;
-  return {ok: true, value: freezePresentation({manifests, mappings: mappingValues, patterns: ownedPatterns})};
+  return {ok: true, value: freezePresentation({manifests, mappings: mappingValues, patterns: ownedPatterns, stateMappings: stateParsed.data})};
 }

@@ -239,3 +239,49 @@ describe('configuration-dependent child layout',()=>{
   expect(checked({...p,nodes:[{...p.nodes[0]!,children:[leaf.id,'extra']},leaf,{...leaf,id:'extra'}]},context(),r)).toMatchObject({ok:false,diagnostics:[{code:'presentation.configuration'}]});
  });
 });
+
+ it('rejects forbidden enabled operations even when coverage only claims an allowed read', () => {
+   const write = {id:'data.write',revision:'1'};
+   const c = {...context(), restrictions:[{id:'read-only',allowedOperations:[read]}]};
+   expect(checked(plan(), c, registry([{...table, operations:[read,write]},stack]))).toMatchObject({ok:false,diagnostics:[{code:'presentation.restricted'}]});
+ });
+ it('composes a registered no-result root for a queryless task without required needs', () => {
+   const c = {...context(), task:{...presentationTask,needs:[]}};
+   const composed = composePresentation({id:'queryless',revision:'1',preconditions:c.current,context:c}, registry());
+   expect(composed).toMatchObject({ok:true,value:{status:'composed',presentation:{plan:{coverage:[],nodes:[{representation:stack.ref}]}}}});
+ });
+ it('requires an exact renderer-implemented mapping for equivalent representation replacement',()=>{
+  const list:PresentationManifest={...table,ref:{id:'data.list',revision:'1'},assess:()=>({ok:true,value:{taskFit:100,informationDensity:50,interactionEffort:0,legibilityPenalty:0}})};
+  const mapping={ref:{id:'state.table-list',revision:'1'},from:table.ref,to:list.ref,fromRole:'table',toRole:'table',kind:'transfer' as const};
+  const installed=createPresentationRegistry([table,list,stack],[],[],[mapping]);expect(installed.ok).toBe(true);if(!installed.ok)return;
+  const c:PresentationContext={...context(),incumbent:plan(),experience:{...context().experience,mode:'adaptive',allowedRepresentations:['data.table','data.list','layout.stack']},rendererCapabilities:[table.ref,list.ref,stack.ref],stateMappingCapabilities:[mapping.ref]};
+  const candidate:PresentationPlan={...plan(),nodes:[{...plan().nodes[0]!,representation:list.ref}],stateTransfer:[{fromNode:'table-1',toNode:'table-1',mapping:mapping.ref}]};
+  expect(checked(candidate,c,installed.value).ok).toBe(true);
+  expect(checked(candidate,{...c,stateMappingCapabilities:[]},installed.value)).toMatchObject({ok:false,diagnostics:[{code:'presentation.state-transfer'}]});
+  expect(checked(candidate,{...c,transitionBlocked:true},installed.value).ok).toBe(false);
+  expect(checked({...candidate,stateTransfer:[{...candidate.stateTransfer[0]!,mapping:{...mapping.ref,revision:'stale'}}]},c,installed.value).ok).toBe(false);
+  const composed=composePresentation({id:'replacement',revision:'2',preconditions:c.current,context:c},installed.value);
+  expect(composed).toMatchObject({ok:true,value:{presentation:{plan:{nodes:[{id:'table-1',representation:list.ref}],stateTransfer:[{mapping:mapping.ref}]}}}});
+ });
+ it('requires a registered archival owner before removing a composable view',()=>{
+  const archive={ref:{id:'state.archive-table',revision:'1'},from:table.ref,to:stack.ref,fromRole:'table',toRole:'structure',kind:'archive' as const};
+  const installed=createPresentationRegistry([table,stack],[],[],[archive]);expect(installed.ok).toBe(true);if(!installed.ok)return;
+  const root={id:'layout',role:'structure',representation:stack.ref,config:{schema:stack.configSchema,values:{}},children:['table-1','secondary']};
+  const incumbent:PresentationPlan={...plan(),rootId:'layout',nodes:[root,...plan().nodes,{...plan().nodes[0]!,id:'secondary'}]};
+  const c={...context(),incumbent,stateMappingCapabilities:[archive.ref]};
+  const candidate:PresentationPlan={...incumbent,nodes:[{...root,children:['table-1']},...plan().nodes],stateTransfer:[{fromNode:'layout',toNode:'layout',mapping:{id:'aeliqo.state.identity',revision:'1'}},{fromNode:'table-1',toNode:'table-1',mapping:{id:'aeliqo.state.identity',revision:'1'}},{fromNode:'secondary',toNode:'layout',mapping:archive.ref}]};
+  expect(checked(candidate,c,installed.value).ok).toBe(true);
+  const retained=composePresentation({id:'retained',revision:'2',preconditions:c.current,context:{...c,incumbent:candidate}},installed.value);
+  expect(retained).toMatchObject({ok:true,value:{presentation:{plan:{nodes:candidate.nodes,stateTransfer:[]}}}});
+  expect(checked(candidate,{...c,stateMappingCapabilities:[]},installed.value).ok).toBe(false);
+  expect(checked({...candidate,stateTransfer:candidate.stateTransfer.slice(0,2)},c,installed.value).ok).toBe(false);
+ });
+ it('preserves a custom root identity when generated layouts use a registered transfer',()=>{
+  const alternate:PresentationManifest={...stack,ref:{id:'layout.alternate',revision:'1'},assess:()=>({ok:true,value:{taskFit:100,informationDensity:100,interactionEffort:0,legibilityPenalty:0}})};
+  const mapping={ref:{id:'state.layout-layout',revision:'1'},from:stack.ref,to:alternate.ref,fromRole:'structure',toRole:'structure',kind:'transfer' as const};
+  const installed=createPresentationRegistry([table,stack,alternate],[],[],[mapping]);expect(installed.ok).toBe(true);if(!installed.ok)return;
+  const old:PresentationPlan={...plan(),rootId:'custom-root',nodes:[{id:'custom-root',role:'structure',representation:stack.ref,config:{schema:stack.configSchema,values:{}},children:['table-1','second']},...plan().nodes,{...plan().nodes[0]!,id:'second'}],coverage:[...plan().coverage,{needId:'other',nodeIds:['second'],operations:[read]}]};
+  const c:PresentationContext={...context(),task:{...context().task,needs:[...context().task.needs,{...context().task.needs[0]!,id:'other'}]},incumbent:old,experience:{...context().experience,allowedRepresentations:['data.table','layout.stack','layout.alternate']},rendererCapabilities:[table.ref,stack.ref,alternate.ref],stateMappingCapabilities:[mapping.ref]};
+  const composed=composePresentation({id:'root-replacement',revision:'2',preconditions:c.current,context:c},installed.value);
+  expect(composed).toMatchObject({ok:true,value:{presentation:{plan:{rootId:'custom-root',stateTransfer:expect.arrayContaining([{fromNode:'custom-root',toNode:'custom-root',mapping:mapping.ref}])}}}});
+ });

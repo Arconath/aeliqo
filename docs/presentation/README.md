@@ -8,7 +8,7 @@ model, fetch data, or grant runtime effects.
 ## Registry entries
 
 `createPresentationRegistry` installs versioned representation manifests,
-interaction mappings, and optional tested patterns. Registration is local trusted
+interaction mappings, optional tested patterns, and exact state mappings. Registration is local trusted
 code. Metadata is checked as bounded wire data, callbacks must be synchronous
 functions, and the resulting registry is deeply frozen. Representation and
 pattern identities are unique. Pattern IDs are unique even when their revisions
@@ -59,3 +59,19 @@ is retained in the result's diagnostics so the host can explain incompatibilitie
 
 The composition result is an immutable value. Runtime code decides whether and
 how to render or commit it after this pure feasibility pass.
+
+State mappings are the optional fourth registry argument. A `transfer` maps the
+same semantic view ID and role between registered representations. An `archive`
+moves a removed view's state into a retained owner; it does not discard drafts,
+selection or navigation. Both require exact from/to representations and roles,
+and the host must list the renderer's implemented mapping refs in
+`stateMappingCapabilities`. Unregistered, unadvertised or stale mappings fail.
+The pure compiler validates declarations; transactional state application and
+rollback belong to the runtime. Active focus/draft/IME blocking and explicit-only
+transition policy still apply. Same-representation identity transfer uses the
+existing `aeliqo.state.identity@1` mapping.
+
+Operation restrictions apply to every enabled resolved operation, even if a
+coverage annotation omits it. Queryless tasks with zero required needs can use a
+registered no-result root suggestion. This does not invent form configuration:
+the installed resolver remains authoritative about supported bounded values.

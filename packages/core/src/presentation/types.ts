@@ -74,10 +74,23 @@ export interface PresentationManifest {
   readonly suggestConfig?: (needs: readonly Task['needs'][number][], result: Result | undefined) => Outcome<PresentationValues>;
 }
 
+/** Trusted declaration of a renderer-implemented transition. `archive` moves a
+ * removed view's state into a retained owner; it does not authorize state loss.
+ * Runtime must advertise the exact mapping and apply it transactionally. */
+export interface PresentationStateMappingManifest {
+  readonly ref: VersionRef;
+  readonly from: VersionRef;
+  readonly to: VersionRef;
+  readonly fromRole: string;
+  readonly toRole: string;
+  readonly kind: 'transfer' | 'archive';
+}
+
 export interface PresentationRegistry {
   readonly manifests: readonly PresentationManifest[];
   readonly mappings: readonly InteractionMappingManifest[];
   readonly patterns?: readonly PresentationPatternManifest[];
+  readonly stateMappings?: readonly PresentationStateMappingManifest[];
 }
 
 export interface PresentationContext {
@@ -89,6 +102,8 @@ export interface PresentationContext {
   readonly current: CommitPreconditions;
   readonly environment: PresentationEnvironment;
   readonly rendererCapabilities: readonly VersionRef[];
+  /** Exact registered state mappings implemented by the committing renderer. */
+  readonly stateMappingCapabilities?: readonly VersionRef[];
   /** Current presentation for fixed/adaptive mode and state transfer checks. */
   readonly incumbent?: PresentationPlan;
   /** Host blocks structural replacement while focus/draft/IME owns the active view. */

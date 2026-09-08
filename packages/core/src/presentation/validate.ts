@@ -1,3 +1,4 @@
+import {stateMappingFor} from './state.js';
 import * as z from 'zod/mini';
 import {parseContract, parseResult} from '../contracts/parse.js';
 import {inspectWire} from '../contracts/ingress.js';
@@ -224,6 +225,8 @@ export function validatePresentationPlan(
     const enabled = (config.data.operations ?? m.operations) as readonly VersionRef[];
     if (new Set(enabled.map(versionKey)).size !== enabled.length || enabled.some(op => !m.operations.some((declared: VersionRef) => versionKey(op) === versionKey(declared))))
       return fail('configuration', 'Enabled operations must be a unique subset of the registered manifest.');
+    if (c.allowedOperations !== undefined && enabled.some(op => !c.allowedOperations!.some(allowed => versionKey(allowed) === versionKey(op))))
+      return fail('restricted', 'The representation exposes an operation restricted by the active experience.');
     if (config.data.fields.some(field => !result?.fields.some(f => f.id === field))) return fail('field', 'A representation refers to a field absent from its result.');
     const portGraph = validateInteractionGraph({nodes: [{id: node.id, ports: config.data.ports}], links: []}, registry.mappings);
     if (!portGraph.ok) return portGraph;
@@ -290,7 +293,8 @@ export function validatePresentationPlan(
     const oldReadSet = validateCommitReadSet(old.value.preconditions, current,
       old.value.nodes.flatMap(n => n.result === undefined ? [] : [n.result]));
     if (!oldReadSet.ok) return oldReadSet;
-    const topology = (p: typeof plan) => JSON.stringify(p.nodes.map(n => [n.id, n.role, n.children]).sort((a, b) => String(a[0]).localeCompare(String(b[0]))));
+    const stateCapabilities = parseRendererCapabilities(context.stateMappingCapabilities ?? []); if (!stateCapabilities.ok) return stateCapabilities;
+    const topology = (p: typeof plan) => JSON.stringify(p.nodes.map(n => [n.id, n.role, n.children]).sort((a, b) => (String(a[0]) < String(b[0]) ? -1 : String(a[0]) > String(b[0]) ? 1 : 0)));
     const variants = (p: typeof plan) => JSON.stringify(p.nodes.map(n => [n.id, versionKey(n.representation)]).sort());
     const structural = topology(old.value) !== topology(plan);
     const replacing = variants(old.value) !== variants(plan);
@@ -303,8 +307,8 @@ export function validatePresentationPlan(
       return fail('transition', 'The presentation change must wait for the active interaction or an explicit user transition.');
     if (structural || replacing || configurationChanged || semanticChanged) {
       for (const previous of old.value.nodes) {
-        if (!nodes.has(previous.id) || !plan.stateTransfer.some(t => t.fromNode === previous.id && t.toNode === previous.id))
-          return fail('state-transfer', 'Changing a presentation requires an explicit transfer for every existing view identity.');
+        if (!plan.stateTransfer.some(t => t.fromNode === previous.id))
+          return fail('state-transfer', 'Changing a presentation requires an explicit transfer or registered archival owner for every existing view identity.');
       }
     }
     const transferred = new Set<string>();
@@ -312,8 +316,13 @@ export function validatePresentationPlan(
       if (transferred.has(transfer.fromNode)) return fail('state-transfer', 'A view identity cannot be transferred twice.');
       transferred.add(transfer.fromNode);
       const from = old.value.nodes.find(n => n.id === transfer.fromNode); const to = nodes.get(transfer.toNode);
-      if (from === undefined || to === undefined || from.id !== to.id || from.role !== to.role || versionKey(from.representation) !== versionKey(to.representation)
-        || transfer.mapping.id !== 'aeliqo.state.identity' || transfer.mapping.revision !== '1') return fail('state-transfer', 'This state transfer has no supported identity-preserving contract.');
+      if (from === undefined || to === undefined) return fail('state-transfer', 'The state transfer endpoint is unavailable.');
+      const identity = from.id === to.id && from.role === to.role && versionKey(from.representation) === versionKey(to.representation)
+        && transfer.mapping.id === 'aeliqo.state.identity' && transfer.mapping.revision === '1';
+      const registered = stateMappingFor(from, to, registry, context, nodes.has(from.id) ? 'transfer' : 'archive');
+      if (!identity && (registered === undefined || versionKey(registered.ref) !== versionKey(transfer.mapping)
+        || (registered.kind === 'transfer' && from.id !== to.id)))
+        return fail('state-transfer', 'This state transfer has no exact registered renderer capability.');
     }
   } else if (plan.stateTransfer.length) return fail('state-transfer', 'State transfer requires an existing presentation.');
   const graph = validateInteractionGraph({nodes: resolved.map(n => ({id: n.node.id, ports: n.config.ports})), links: plan.links}, registry.mappings);
