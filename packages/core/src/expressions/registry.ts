@@ -266,7 +266,7 @@ export const queryFunctionSignatures: readonly FunctionSignature[] = Object.free
   signature({id: 'core.window.rank', revision: '1'}, [], countType(false), 'other', 'none', {contexts: ['window'], nullResult: 'non-null'}),
 ].map(cloneSignature));
 
-const queryFunctionSignaturesV2: readonly FunctionSignature[] = Object.freeze([
+export const queryFunctionSignaturesV2: readonly FunctionSignature[] = Object.freeze([
   ...queryFunctionSignatures,
   signature({id: 'core.equal', revision: '1'}, [{constraint: any}, {constraint: any}], booleanType(false), 'comparison'),
   signature({id: 'core.if', revision: '1'}, [{constraint: {kind: 'boolean'}}, {constraint: any}, {constraint: any}], {kind: 'same-as', argument: 1}, 'conditional'),
