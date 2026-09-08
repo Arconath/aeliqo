@@ -652,9 +652,10 @@
       "acceptance": [
         "Wide/narrow/zoom/resize transitions preserve task, focus, draft, selection and navigation; no model call on resize."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "T19 acceptance frozen; parent owns T20 runtime/web region, isolated independent worker owns T22 agent capabilities/session. Canonical wire contracts and root integration remain parent-owned."
     },
     {
       "id": "T21",
@@ -697,9 +698,10 @@
         "Manual/tool parity, schema limits, bounded turns, untrusted metadata treatment and recovery receipts proven.",
         "AI may propose bounded expression/query/view graphs; shared validation; evaluate and visible presentation are different operations."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "T19 acceptance frozen; parent owns T20 runtime/web region, isolated independent worker owns T22 agent capabilities/session. Canonical wire contracts and root integration remain parent-owned."
     },
     {
       "id": "T23",
