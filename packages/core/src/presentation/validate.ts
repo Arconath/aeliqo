@@ -241,7 +241,9 @@ export function validatePresentationPlan(
       if (!parsedQuality.ok) return parsedQuality;
       quality = parsedQuality.value;
     }
-    resolved.push({node: {...node, config: {schema: node.config.schema, values}}, manifest: m.ref,
+    // Preserve the validated wire proposal for replay; resolved values may
+    // contain host-only labels/defaults that the input schema correctly rejects.
+    resolved.push({node, manifest: m.ref,
       config: resolvedConfig, result, ...(quality === undefined ? {} : {quality})});
   }
   const byId = new Map(resolved.map(n => [n.node.id, n]));

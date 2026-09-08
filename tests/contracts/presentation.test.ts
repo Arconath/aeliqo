@@ -299,3 +299,20 @@ describe('configuration-dependent child layout',()=>{
   const bounded={...c,experience:{...c.experience,composition:{...c.experience.composition,maxExpansions:3}}};
   expect(composePresentation({id:'combined',revision:'1',context:bounded,preconditions:c.current},r)).toMatchObject({ok:true,value:{status:'search-exhausted',expansions:3}});
  });
+
+
+describe('presentation plan replay',()=>{
+ it('retains wire bindings separately from trusted resolved configuration',()=>{
+  const manifest:PresentationManifest={...table,resolveConfig:(values,descriptor)=>Object.keys(values).length===1&&values.bindingRef==='employees'&&descriptor!==undefined
+   ?{ok:true,value:{values:{bindingRef:'employees',label:'Trusted host label',columns:descriptor.fields.map(f=>f.id)},fields:descriptor.fields.map(f=>f.id),ports:[]}}
+   :{ok:false,diagnostics:[{code:'binding.invalid',message:'Only the registered reference may be proposed.',retryable:false}]}};
+  const r=registry([manifest]);const p={...plan(),nodes:plan().nodes.map(n=>({...n,config:{...n.config,values:{bindingRef:'employees'}}}))};
+  const first=checked(p,context(),r);expect(first.ok).toBe(true);if(!first.ok)return;
+  expect(first.value.plan.nodes[0]!.config.values).toEqual({bindingRef:'employees'});
+  expect(first.value.nodes[0]!.config.values.label).toBe('Trusted host label');
+  const replay=checked(JSON.parse(JSON.stringify(first.value.plan)),context(),r);expect(replay.ok).toBe(true);
+  if(replay.ok)expect(replay.value).toEqual(first.value);
+  const forged={...p,nodes:p.nodes.map(n=>({...n,config:{...n.config,values:first.value.nodes[0]!.config.values}}))};
+  expect(checked(forged,context(),r).ok).toBe(false);
+ });
+});

@@ -112,6 +112,7 @@ export interface PresentationContext {
 }
 
 export interface ResolvedPresentationNode {
+  /** Replayable wire configuration; renderer values are in the sibling config. */
   readonly node: PresentationNode;
   readonly manifest: VersionRef;
   readonly config: ResolvedPresentationConfig;
