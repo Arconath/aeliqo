@@ -14,7 +14,7 @@ import {
   AeliqoTextElement,
 } from "@aeliqo/web";
 import {appendSlottedText, cleanupCatalogRoot, createCatalogElement, createCatalogRoot} from "./fixture.js";
-import {catalogSource} from "./source.js";
+import {catalogMountSource, catalogSource} from "./source.js";
 import type {CatalogExampleDefinition, CatalogExampleId, CatalogExampleMetadata} from "./types.js";
 
 const sourceImports = `import {
@@ -65,7 +65,7 @@ const mount = (id: CatalogExampleId, fn: (root: HTMLElement) => void): CatalogEx
     events: ["aeliqo-action where the primitive is actionable"],
     expectedOutcome: "The primitive renders directly in the supplied host and preserves its native interaction boundary.",
     ...componentNotes[id],
-    source: catalogSource({imports: sourceImports, mount: fn}),
+    source: catalogSource({imports: sourceImports, mount: catalogMountSource(id)}),
   },
   mount(container) {
     const root = createCatalogRoot(container);

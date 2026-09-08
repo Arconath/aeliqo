@@ -10,7 +10,7 @@ import {
   type AeliqoTreeNavNode,
 } from "@aeliqo/web";
 import {cleanupCatalogRoot, createCatalogElement, createCatalogRoot} from "./fixture.js";
-import {catalogSource} from "./source.js";
+import {catalogMountSource, catalogSource} from "./source.js";
 import type {CatalogExampleDefinition, CatalogExampleId, CatalogExampleMetadata} from "./types.js";
 
 const sourceImports = `import {
@@ -69,7 +69,7 @@ const mount = (id: CatalogExampleId, fn: (root: HTMLElement) => void): CatalogEx
     events: ["aeliqo-navigation", "component-specific change event"],
     expectedOutcome: "Navigation state remains addressable by stable IDs and user intent is emitted as a cancellable host request.",
     ...componentNotes[id],
-    source: catalogSource({imports: sourceImports, setup: sourceSetup, mount: fn}),
+    source: catalogSource({imports: sourceImports, setup: sourceSetup, mount: catalogMountSource(id)}),
   },
   mount(container) {
     const root = createCatalogRoot(container);

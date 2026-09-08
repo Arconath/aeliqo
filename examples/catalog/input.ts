@@ -17,7 +17,7 @@ import {
   type AeliqoOption,
 } from "@aeliqo/web";
 import {cleanupCatalogRoot, createCatalogElement, createCatalogRoot} from "./fixture.js";
-import {catalogSource} from "./source.js";
+import {catalogMountSource, catalogSource} from "./source.js";
 import type {CatalogExampleDefinition, CatalogExampleId, CatalogExampleMetadata} from "./types.js";
 
 const sourceImports = `import {
@@ -85,7 +85,7 @@ const mount = (id: CatalogExampleId, fn: (root: HTMLElement) => void): CatalogEx
     events: ["aeliqo-input-change", "aeliqo-input-commit", "aeliqo-validation"],
     expectedOutcome: "The control renders with an explicit label and leaves authoritative validation and submission with the host.",
     ...componentNotes[id],
-    source: catalogSource({imports: sourceImports, setup: sourceSetup, mount: fn}),
+    source: catalogSource({imports: sourceImports, setup: sourceSetup, mount: catalogMountSource(id)}),
   },
   mount(container) {
     const root = createCatalogRoot(container);

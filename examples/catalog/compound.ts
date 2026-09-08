@@ -24,7 +24,7 @@ import {
   createCatalogRoot,
 } from "./fixture.js";
 import type {CatalogExampleDefinition, CatalogExampleId, CatalogExampleMetadata} from "./types.js";
-import {catalogSource} from "./source.js";
+import {catalogMountSource, catalogSource} from "./source.js";
 
 const sourceImports = `import {
   AeliqoBreakdownElement,
@@ -39,35 +39,40 @@ const sourceImports = `import {
   AeliqoTextFieldElement,
   registerAeliqoElements,
 } from "@aeliqo/web";`;
+const sourceTypeImports = `import type {ResultRef, Scalar, VisualizationBindingContext, VisualizationSpec} from "@aeliqo/core";
+import type {AeliqoDataColumn, AeliqoDataScope, AeliqoFieldOption} from "@aeliqo/web/data";
+import type {VisualizationDataset} from "@aeliqo/web/visualization";`;
 
-const sourceSetup = `const catalogRef: any = {
+const sourceSetup = `${sourceTypeImports}
+
+const catalogRef: ResultRef = {
   id: "aeliqo-catalog-example",
   revision: "1",
   outputId: "people",
   queryDigest: "catalog-query",
   scopeDigest: "catalog-scope",
 };
-const catalogRows: any = [
+const catalogRows: readonly Readonly<Record<string, Scalar>>[] = [
   {id: "ada", name: "Ada Lovelace", team: "Research", date: "2026-09-08", amount: 120},
   {id: "lin", name: "Lin Chen", team: "Product", date: "2026-09-09", amount: 96},
   {id: "grace", name: "Grace Hopper", team: "Research", date: "2026-09-10", amount: 144},
 ];
-const catalogColumns: any = [
+const catalogColumns: readonly AeliqoDataColumn[] = [
   {key: "id", label: "ID", type: "text", sortable: true},
   {key: "name", label: "Name", type: "text", sortable: true},
   {key: "team", label: "Team", type: "text"},
   {key: "date", label: "Date", type: "date", sortable: true},
   {key: "amount", label: "Amount", type: "integer", align: "end"},
 ];
-const catalogFields: any = [
+const catalogFields: readonly AeliqoFieldOption[] = [
   {id: "name", label: "Name", type: "text"},
   {id: "team", label: "Team", type: "text"},
   {id: "amount", label: "Amount", type: "integer"},
 ];
-const catalogScope: any = {loaded: catalogRows.length, filteredTotal: catalogRows.length, populationDigest: catalogRef.scopeDigest, kind: "filtered", label: "Authorized people"};
-const catalogVisualizationContext: any = {results: [], catalog: {entities: [], relationships: []}};
-const catalogVisualizationDataset: any = {result: catalogRef, rows: catalogRows};
-const catalogVisualizationSpecs: any = {trend: {version: "1", view: "trend", plot: {version: "1", root: {kind: "unit", mark: "line", result: catalogRef, missing: "gap", encoding: {x: {field: "date", scale: "temporal"}, y: {field: "amount", scale: "linear"}}}}}};`;
+const catalogScope: AeliqoDataScope = {loaded: catalogRows.length, filteredTotal: catalogRows.length, populationDigest: catalogRef.scopeDigest, kind: "filtered", label: "Authorized people"};
+const catalogVisualizationContext: VisualizationBindingContext = {results: []};
+const catalogVisualizationDataset: VisualizationDataset = {result: catalogRef, rows: catalogRows};
+const catalogVisualizationSpecs: Readonly<Record<"trend", VisualizationSpec>> = {trend: {version: "1", view: "trend", plot: {version: "1", root: {kind: "unit", mark: "line", result: catalogRef, missing: "gap", encoding: {x: {field: "date", scale: "temporal"}, y: {field: "amount", scale: "linear"}}}}}};`;
 
 type MetadataNotes = Pick<CatalogExampleMetadata, "fixture" | "props" | "propsNotes" | "states" | "keyboard" | "events" | "expectedOutcome">;
 const componentNotes: Record<string, Partial<MetadataNotes>> = {
@@ -95,7 +100,7 @@ const mount = (id: CatalogExampleId, fn: (root: HTMLElement) => void): CatalogEx
     events: ["compound-specific typed interaction events", "aeliqo-record-editor-save", "aeliqo-form-flow-step", "aeliqo-form-flow-commit"],
     expectedOutcome: "The compound shares one scope and result lineage across its child primitives while leaving business actions with the host.",
     ...componentNotes[id],
-    source: catalogSource({imports: sourceImports, setup: sourceSetup, mount: fn}),
+    source: catalogSource({imports: sourceImports, setup: sourceSetup, mount: catalogMountSource(id)}),
     result: catalogRef,
   },
   mount(container) {

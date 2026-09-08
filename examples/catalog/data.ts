@@ -13,7 +13,7 @@ import {
   type AeliqoTableRow,
 } from "@aeliqo/web";
 import {catalogColumns, catalogFields, catalogRef, catalogRows, catalogScope, cleanupCatalogRoot, createCatalogElement, createCatalogRoot} from "./fixture.js";
-import {catalogSource} from "./source.js";
+import {catalogMountSource, catalogSource} from "./source.js";
 import type {CatalogExampleDefinition, CatalogExampleId, CatalogExampleMetadata} from "./types.js";
 
 const sourceImports = `import {
@@ -31,41 +31,45 @@ const sourceImports = `import {
   type AeliqoTableColumn,
   type AeliqoTableRow,
 } from "@aeliqo/web";`;
+const sourceTypeImports = `import type {ResultRef, Scalar} from "@aeliqo/core";
+import type {AeliqoDataColumn, AeliqoDataScope, AeliqoFieldOption} from "@aeliqo/web/data";`;
 
-const sourceSetup = `const catalogRef: any = {
+const sourceSetup = `${sourceTypeImports}
+
+const catalogRef: ResultRef = {
   id: "aeliqo-catalog-example",
   revision: "1",
   outputId: "people",
   queryDigest: "catalog-query",
   scopeDigest: "catalog-scope",
 };
-const catalogRows: any = [
+const catalogRows: readonly Readonly<Record<string, Scalar>>[] = [
   {id: "ada", name: "Ada Lovelace", team: "Research", date: "2026-09-08", amount: 120},
   {id: "lin", name: "Lin Chen", team: "Product", date: "2026-09-09", amount: 96},
   {id: "grace", name: "Grace Hopper", team: "Research", date: "2026-09-10", amount: 144},
 ];
-const catalogColumns: any = [
+const catalogColumns: readonly AeliqoDataColumn[] = [
   {key: "id", label: "ID", type: "text", sortable: true},
   {key: "name", label: "Name", type: "text", sortable: true},
   {key: "team", label: "Team", type: "text"},
   {key: "date", label: "Date", type: "date", sortable: true},
   {key: "amount", label: "Amount", type: "integer", align: "end"},
 ];
-const catalogFields: any = [
+const catalogFields: readonly AeliqoFieldOption[] = [
   {id: "name", label: "Name", type: "text"},
   {id: "team", label: "Team", type: "text"},
   {id: "amount", label: "Amount", type: "integer"},
 ];
-const catalogScope: any = {
+const catalogScope: AeliqoDataScope = {
   loaded: catalogRows.length,
   filteredTotal: catalogRows.length,
   populationDigest: catalogRef.scopeDigest,
   kind: "filtered",
   label: "Authorized people",
 };
-const tableColumns: any = catalogColumns.map(({key, label, sortable, align}: any) => ({key, label, ...(sortable === undefined ? {} : {sortable}), ...(align === undefined ? {} : {align})}));
-const tableRows: any = catalogRows.map((row: any) => ({id: row.id ?? null, name: row.name ?? null, team: row.team ?? null, date: row.date ?? null, amount: row.amount ?? null}));
-const personKeys = ["string:3:ada", "string:5:grace"];`;
+const tableColumns: readonly AeliqoTableColumn[] = catalogColumns.map(({key, label, sortable, align}) => ({key, label, ...(sortable === undefined ? {} : {sortable}), ...(align === undefined ? {} : {align})}));
+const tableRows: readonly AeliqoTableRow[] = catalogRows.map((row) => ({id: row.id ?? null, name: row.name ?? null, team: row.team ?? null, date: row.date ?? null, amount: row.amount ?? null}));
+const personKeys = ["string:3:ada", "string:5:grace"] as const;`;
 
 type MetadataNotes = Pick<CatalogExampleMetadata, "fixture" | "props" | "propsNotes" | "states" | "keyboard" | "events" | "expectedOutcome">;
 const componentNotes: Record<string, Partial<MetadataNotes>> = {
@@ -108,7 +112,7 @@ const mount = (id: CatalogExampleId, fn: (root: HTMLElement) => void): CatalogEx
     events: ["aeliqo-data-selection", "aeliqo-filter-change", "aeliqo-data-load-more", "aeliqo-table-sort"],
     expectedOutcome: "The view renders only the supplied authorized scope and labels any incomplete or unavailable data explicitly.",
     ...componentNotes[id],
-    source: catalogSource({imports: sourceImports, setup: sourceSetup, mount: fn}),
+    source: catalogSource({imports: sourceImports, setup: sourceSetup, mount: catalogMountSource(id)}),
     result: catalogRef,
   },
   mount(container) {

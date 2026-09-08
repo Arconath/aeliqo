@@ -32,7 +32,7 @@ import {
   treemapSpec,
 } from "./fixture.js";
 import type {CatalogExampleDefinition, CatalogExampleId, CatalogExampleMetadata} from "./types.js";
-import {catalogSource} from "./source.js";
+import {catalogMountSource, catalogSource} from "./source.js";
 
 const sourceImports = `import {
   AeliqoAreaElement,
@@ -49,50 +49,65 @@ const sourceImports = `import {
   AeliqoTreemapElement,
   registerAeliqoElements,
 } from "@aeliqo/web";
-import type {VisualizationBindingContext, VisualizationSpec} from "@aeliqo/core";
+`;
+
+const sourceTypeImports = `import type {PlotUnit, ResultRef, Scalar, VisualizationBindingContext, VisualizationSpec} from "@aeliqo/core";
 import type {VisualizationDataset} from "@aeliqo/web/visualization";`;
 
-const sourceSetup = `const catalogRef: any = {
+const sourceSetup = `${sourceTypeImports}
+
+const catalogRef: ResultRef = {
   id: "aeliqo-catalog-example",
   revision: "1",
   outputId: "people",
   queryDigest: "catalog-query",
   scopeDigest: "catalog-scope",
 };
-const rows: any = [
+const rows: readonly Readonly<Record<string, Scalar>>[] = [
   {id: "ada", name: "Ada Lovelace", team: "Research", date: "2026-09-08", amount: 120, low: 80, high: 100, zero: 0},
   {id: "lin", name: "Lin Chen", team: "Product", date: "2026-09-09", amount: 96, low: 100, high: 140, zero: 0},
   {id: "grace", name: "Grace Hopper", team: "Research", date: "2026-09-10", amount: 144, low: 140, high: 160, zero: 0},
 ];
-const plot = (mark: string, encoding: any): any => ({kind: "unit", mark, result: catalogRef, missing: "gap", encoding});
-const cartesian = (view: string, mark: string): any => ({version: "1", view, plot: {version: "1", root: plot(mark, {x: {field: "date", scale: "temporal"}, y: {field: "amount", scale: "linear", zero: true}})}});
-const catalogVisualizationSpecs: any = {
+const plot = (mark: PlotUnit["mark"], encoding: PlotUnit["encoding"]): PlotUnit => ({kind: "unit", mark, result: catalogRef, missing: "gap", encoding});
+type CartesianView = "trend" | "bar" | "area" | "scatter" | "histogram" | "heatmap";
+const cartesian = (view: CartesianView, mark: PlotUnit["mark"]): VisualizationSpec => ({version: "1", view, plot: {version: "1", root: plot(mark, {x: {field: "date", scale: "temporal"}, y: {field: "amount", scale: "linear", zero: true}})}} as VisualizationSpec);
+const catalogVisualizationSpecs: Readonly<Record<CartesianView, VisualizationSpec>> = {
   trend: cartesian("trend", "line"),
   bar: cartesian("bar", "bar"),
-  area: cartesian("area", "area"),
+  area: {...cartesian("area", "area"), stack: "none", meaning: {id: "amount", revision: "1"}} as VisualizationSpec,
   scatter: cartesian("scatter", "point"),
-  histogram: {...cartesian("histogram", "rect"), bins: {start: "low", end: "high", value: "amount", measure: "count", boundary: "start-inclusive-end-exclusive"}},
+  histogram: {...cartesian("histogram", "rect"), bins: {start: "low", end: "high", value: "amount", measure: "count", boundary: "start-inclusive-end-exclusive"}} as VisualizationSpec,
   heatmap: cartesian("heatmap", "cell"),
 };
-const catalogTemporalSpecs: any = {
+const catalogTemporalSpecs: Readonly<Record<"matrix" | "timeline" | "calendar-grid", VisualizationSpec>> = {
   matrix: {version: "1", view: "matrix", result: catalogRef, columns: ["name", "team", "amount"]},
   timeline: {version: "1", view: "timeline", result: catalogRef, start: "date"},
   "calendar-grid": {version: "1", view: "calendar-grid", result: catalogRef, date: "date"},
 };
-const catalogVisualizationDataset: any = {result: catalogRef, rows};
-const catalogVisualizationContext: any = {results: [], catalog: {entities: [], relationships: []}};
-const histogramSpec: any = catalogVisualizationSpecs.histogram;
-const histogramContext: any = {...catalogVisualizationContext, histograms: [{result: catalogRef, bins: histogramSpec.bins}]};
-const hierarchyRef: any = {...catalogRef, id: "aeliqo-catalog-hierarchy", outputId: "nodes"};
-const hierarchyDataset: any = {result: hierarchyRef, rows: [{id: "company", parent: null, label: "Company", amount: 3}]};
-const hierarchySpec: any = {version: "1", view: "tree", result: hierarchyRef, node: ["id"], parent: ["parent"], label: "label"};
-const treemapSpec: any = {...hierarchySpec, view: "treemap", value: "amount", meaning: {id: "amount", revision: "1"}};
-const hierarchyContext: any = {results: [], catalog: {entities: [], relationships: []}};
-const relationshipRef: any = {...catalogRef, id: "aeliqo-catalog-relationship", outputId: "edges"};
-const relationshipDataset: any = {result: relationshipRef, rows: [{edge: "e1", source: "research", target: "company"}]};
-const relationshipSpec: any = {version: "1", view: "relationship", result: relationshipRef, source: ["source"], target: ["target"], relationship: {id: "reports-to", revision: "1"}};
-const relationshipContext: any = {results: [], catalog: {entities: [], relationships: []}, relationships: []};
-function configure(element: any, visualization: VisualizationSpec, context: VisualizationBindingContext, datasets: readonly VisualizationDataset[] = [catalogVisualizationDataset]): any {
+const catalogVisualizationDataset: VisualizationDataset = {result: catalogRef, rows};
+const catalogVisualizationContext: VisualizationBindingContext = {results: []};
+const histogramSpec = catalogVisualizationSpecs.histogram as Extract<VisualizationSpec, {view: "histogram"}>;
+const histogramContext: VisualizationBindingContext = {...catalogVisualizationContext, histograms: [{result: catalogRef, bins: histogramSpec.bins}]};
+const hierarchyRef: ResultRef = {...catalogRef, id: "aeliqo-catalog-hierarchy", outputId: "nodes"};
+const hierarchyDataset: VisualizationDataset = {result: hierarchyRef, rows: [{id: "company", parent: null, label: "Company", amount: 3}]};
+const hierarchySpec: VisualizationSpec = {version: "1", view: "tree", result: hierarchyRef, node: ["id"], parent: ["parent"], label: "label"};
+const treemapSpec: VisualizationSpec = {...hierarchySpec, view: "treemap", value: "amount", meaning: {id: "amount", revision: "1"}};
+const hierarchyContext: VisualizationBindingContext = {results: []};
+const relationshipRef: ResultRef = {...catalogRef, id: "aeliqo-catalog-relationship", outputId: "edges"};
+const relationshipDataset: VisualizationDataset = {result: relationshipRef, rows: [{edge: "e1", source: "research", target: "company"}]};
+const relationshipSpec: VisualizationSpec = {version: "1", view: "relationship", result: relationshipRef, source: ["source"], target: ["target"], relationship: {id: "reports-to", revision: "1"}};
+const relationshipContext: VisualizationBindingContext = {results: [], relationships: [{result: relationshipRef, relationship: {id: "reports-to", revision: "1"}, source: ["source"], target: ["target"]}]};
+type CatalogVisualizationElement = HTMLElement & {
+  visualization: VisualizationSpec | undefined;
+  context: VisualizationBindingContext;
+  datasets: readonly VisualizationDataset[];
+  label: string;
+  width: number;
+  height: number;
+  maxMarks: number;
+  selectionEnabled: boolean;
+};
+function configure<T extends CatalogVisualizationElement>(element: T, visualization: VisualizationSpec, context: VisualizationBindingContext, datasets: readonly VisualizationDataset[] = [catalogVisualizationDataset]): T {
   element.visualization = visualization;
   element.context = context;
   element.datasets = datasets;
@@ -134,7 +149,7 @@ const mount = (id: CatalogExampleId, fn: (root: HTMLElement) => void): CatalogEx
     events: ["aeliqo-visualization-select"],
     expectedOutcome: "The actual renderer shows the typed view, preserves Result scope, and exposes an equivalent accessible data representation.",
     ...componentNotes[id],
-    source: catalogSource({imports: sourceImports, setup: sourceSetup, mount: fn}),
+    source: catalogSource({imports: sourceImports, setup: sourceSetup, mount: catalogMountSource(id)}),
     result: catalogRef,
   },
   mount(container) {

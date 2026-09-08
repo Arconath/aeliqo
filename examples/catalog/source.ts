@@ -7,18 +7,11 @@
 export interface CatalogSourceOptions {
   readonly imports: string;
   readonly setup?: string;
-  readonly mount: Function;
+  /** Authored mount expression preserved as source data. */
+  readonly mount: string;
 }
 
 export function catalogSource({imports, setup = "", mount}: CatalogSourceOptions): string {
-  // Vite's SSR transform rewrites imported bindings inside function source
-  // strings.  Restore ordinary lexical references so the copied snippet uses
-  // the helper and fixture declarations included below instead of an
-  // internal Vite namespace that does not exist in a consumer bundle.
-  const mountSource = mount.toString()
-    .replace(/\(0,__vite_ssr_import_\d+__\./g, "(")
-    .replace(/__vite_ssr_import_\d+__\./g, "")
-    .replace(/document\.createElement\(([\"'`]aeliqo-[^\"'`]+[\"'`])\)/g, "document.createElement($1) as any");
   return `${imports.trim()}
 
 ${setup.trim()}
@@ -41,10 +34,8 @@ function createCatalogRoot(container: HTMLElement): HTMLElement {
   return root;
 }
 
-type CatalogElement = HTMLElement & Record<string, any>;
-
-function createCatalogElement<T extends HTMLElement = CatalogElement>(tagName: string, container: HTMLElement): T & CatalogElement {
-  const element = document.createElement(tagName) as T & CatalogElement;
+function createCatalogElement<T extends HTMLElement>(tagName: string, container: HTMLElement): T {
+  const element = document.createElement(tagName) as T;
   container.append(element);
   return element;
 }
@@ -57,6 +48,8 @@ function appendSlottedText(root: HTMLElement, slot: string, textContent: string)
 }
 
 const root = createCatalogRoot(host);
-(${mountSource})(root);
+(${mount})(root);
 `;
 }
+
+export {catalogMountSource, CATALOG_MOUNT_SOURCES} from "./source-snippets.js";
