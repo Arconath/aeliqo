@@ -62,7 +62,8 @@ export interface ActionPreview<T extends ActionPayload = ActionPayload> {
   readonly requestId: string;
   readonly action: VersionRef;
   readonly descriptor: ActionDescriptor;
-  readonly input: T;
+  /** The normalized input is available while the preview is live and becomes unavailable when it is consumed or revoked. */
+  readonly input?: T;
   readonly entity?: ActionEntity;
   readonly idempotencyKey?: string;
   readonly sideEffect: ActionSideEffect;

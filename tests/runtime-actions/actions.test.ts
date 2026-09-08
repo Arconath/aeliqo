@@ -172,6 +172,29 @@ describe('action registry and authority boundary', () => {
 });
 
 describe('confirmation and execute rechecks', () => {
+  it('does not admit a preview when input normalization revokes authority', async () => {
+    const registry = new ActionRegistry();
+    const descriptor: ActionDescriptor = {
+      ref: {id: 'normalize-revoke', revision: '1'}, input: inputRef('normalize-revoke'), output: outputRef('normalize-revoke'),
+      sideEffect: 'domain-write', confirmation: 'none', idempotency: 'optional', entityRevision: 'none',
+    };
+    let port: ReturnType<typeof createActionPort> | undefined;
+    const registration: ActionRegistration = {
+      descriptor,
+      inputSchema: schema(descriptor.input, (value) => {
+        port!.revoke('input normalization revoked authority');
+        return outcome(value as ActionPayload);
+      }),
+      outputSchema: schema(descriptor.output),
+      dispatch: () => ({state: 'completed', output: {ok: true, value: {saved: true}}}),
+    };
+    expect(registry.register(registration).ok).toBe(true);
+    port = createActionPort({registry, host: {readContext: () => outcome(context())}});
+    const preview = await port.preview({requestId: 'normalize-revoke-request', action: descriptor.ref, input: {amount: 1}});
+    expect(preview.ok).toBe(false);
+    if (!preview.ok) expect(preview.diagnostics[0]!.code).toBe('action.revoked');
+  });
+
   it('requires a trusted positive confirmation for required actions and rechecks after it', async () => {
     const registry = new ActionRegistry();
     const descriptor = register(registry, {id: 'delete', confirmation: 'required', idempotency: 'required', entityRevision: 'required', sideEffect: 'irreversible'});
@@ -234,6 +257,24 @@ describe('confirmation and execute rechecks', () => {
     const ambiguous = await state.port.execute(invalidReceipt);
     expect(ambiguous.ok).toBe(true);
     if (ambiguous.ok) expect(ambiguous.value.state).toBe('ambiguous');
+  });
+
+  it('exposes preview input to trusted confirmation only while the preview is live', async () => {
+    const registry = new ActionRegistry();
+    const descriptor = register(registry, {id: 'confirmation-input', confirmation: 'required'});
+    let seen: ActionPayload | undefined;
+    const state = makePort({registry, confirm: ({preview}) => {
+      seen = preview.input;
+      return outcome(undefined);
+    }});
+    const preview = await state.port.preview({requestId: 'confirmation-input-request', action: descriptor.ref, input: {amount: 2}});
+    expect(preview.ok).toBe(true);
+    if (!preview.ok) return;
+    expect(preview.value.input).toEqual({amount: 2});
+    const confirmed = await state.port.confirm(preview.value);
+    expect(confirmed.ok).toBe(true);
+    expect(seen).toEqual({amount: 2});
+    expect(preview.value.input).toBeUndefined();
   });
 });
 
@@ -478,6 +519,77 @@ describe('bounded idempotency and lifecycle', () => {
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.value.state).toBe('ambiguous');
     expect(port.inspect('schema-1')).toBeUndefined();
+  });
+
+  it('returns a structured failure when the pre-dispatch clock fails', async () => {
+    const registry = new ActionRegistry();
+    let dispatches = 0;
+    const descriptor = register(registry, {id: 'clock-before-dispatch', dispatch: () => {
+      dispatches++;
+      return {state: 'completed', output: {ok: true, value: {saved: true}}};
+    }});
+    let failClock = false;
+    const port = createActionPort({registry, now: () => {
+      if (failClock) throw new Error('clock unavailable');
+      return 1;
+    }, host: {readContext: () => outcome(context())}});
+    const receipt = await previewAndConfirm(port, descriptor);
+    failClock = true;
+    const failed = await port.execute(receipt);
+    expect(failed.ok).toBe(false);
+    if (!failed.ok) expect(failed.diagnostics[0]!.code).toBe('action.callback');
+    expect(dispatches).toBe(0);
+    const replay = await port.execute(receipt);
+    expect(replay.ok).toBe(false);
+    if (!replay.ok) expect(replay.diagnostics[0]!.code).toBe('action.replay');
+  });
+
+  it('returns ambiguity without retaining output when the post-dispatch clock fails', async () => {
+    const registry = new ActionRegistry();
+    let dispatches = 0;
+    const descriptor = register(registry, {id: 'clock-after-dispatch', idempotency: 'required', dispatch: () => {
+      dispatches++;
+      return {state: 'completed', output: {ok: true, value: {saved: true}}};
+    }});
+    let clockCalls = 0;
+    const port = createActionPort({registry, now: () => {
+      clockCalls++;
+      if (clockCalls === 5) throw new Error('clock unavailable after dispatch');
+      return clockCalls;
+    }, host: {readContext: () => outcome(context())}});
+    const first = await previewAndConfirm(port, descriptor, {}, {idempotencyKey: 'clock-after-1'});
+    const ambiguous = await port.execute(first);
+    expect(ambiguous.ok).toBe(true);
+    if (ambiguous.ok) expect(ambiguous.value.state).toBe('ambiguous');
+    expect(dispatches).toBe(1);
+    expect(port.inspect('clock-after-1')).toMatchObject({state: 'ambiguous', outputAvailable: false});
+    const replay = await previewAndConfirm(port, descriptor, {}, {idempotencyKey: 'clock-after-1'});
+    const replayResult = await port.execute(replay);
+    expect(replayResult.ok).toBe(true);
+    if (replayResult.ok) expect(replayResult.value.state).toBe('ambiguous');
+    expect(dispatches).toBe(1);
+  });
+
+  it('treats a reentrant clock revocation after dispatch as ambiguous', async () => {
+    const registry = new ActionRegistry();
+    let dispatches = 0;
+    const descriptor = register(registry, {id: 'clock-revoke-after-dispatch', idempotency: 'required', dispatch: () => {
+      dispatches++;
+      return {state: 'completed', output: {ok: true, value: {saved: true}}};
+    }});
+    let port: ReturnType<typeof createActionPort> | undefined;
+    let clockCalls = 0;
+    port = createActionPort({registry, now: () => {
+      clockCalls++;
+      if (clockCalls === 5) port!.revoke('clock revoked authority');
+      return clockCalls;
+    }, host: {readContext: () => outcome(context())}});
+    const receipt = await previewAndConfirm(port, descriptor, {}, {idempotencyKey: 'clock-revoke-1'});
+    const result = await port.execute(receipt);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.state).toBe('ambiguous');
+    expect(dispatches).toBe(1);
+    expect(port.inspect('clock-revoke-1')).toBeUndefined();
   });
 });
 
