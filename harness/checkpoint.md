@@ -263,3 +263,10 @@ explicit authorized histogram/relationship mappings, additive and temporal
 semantics, scoped Result binding. 132 contract tests, strict types and installed
 core consumer pass. Evidence: harness/evidence/t18-contract/0a907974cbc6. T18 remains active; this is not renderer
 acceptance. T19 is independently active on codex/t19-presentation-compiler.
+
+T19 accepted at source b1d193e with frozen evidence harness/evidence/t19/291ba1f603ae.
+142 contracts, strict types and installed core tarball runtime/Chromium pass.
+Independent review closed operation restrictions, queryless composition, exact
+state mapping, custom root identity, one-expansion feasible-first and bounded
+combined-alternative search gaps. T20 runtime application and T22 agent binding
+are ready; T18 Cartesian/hierarchy review is still active.

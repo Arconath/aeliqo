@@ -1,0 +1,41 @@
+{
+  "task": "T19",
+  "status": "pass",
+  "sourceCommit": "b1d193ec6d429a4b7a5ec760e6626195b84392b9",
+  "sourceDigest": "291ba1f603aea7c183e97f9bb1b382878366eda2f9fd2efef12dce0101f7407b",
+  "installedCoreSourceDigest": "cc3c557917e3bd3c8013c03cfa600d3f5c6bb78ca5b21e6faaff8deb44ca9ff6",
+  "checks": {
+    "contractTests": 142,
+    "strictTypes": true,
+    "installedPackageRuntimeTypesBrowser": true,
+    "oneExpansionFeasibleFirst": true,
+    "combinedAlternativesWithinBudget": true,
+    "independentReview": true
+  },
+  "limits": [
+    "Pure compiler feasibility only; runtime transactional application and state mapping execution remain T20.",
+    "Trusted callbacks and ordinal quality are not proof of business intent or universal visual quality."
+  ],
+  "artifacts": [
+    {
+      "path": "consumer-report.json",
+      "sha256": "d5f4f28b1d879bde9ee5674f9970f4a08e7e48320563a8db651fe8789ae4c2e8"
+    },
+    {
+      "path": "consumer.log",
+      "sha256": "827c73af12db942746a37f9d4b4d2d746ae1b8374187476b17cf4465b46a8257"
+    },
+    {
+      "path": "contracts.log",
+      "sha256": "9cd9fe404f267729d752fb277dbfc7e3bdf3e3374f0580cdd678781d6870e06d"
+    },
+    {
+      "path": "review.json",
+      "sha256": "84b187e2a361b21dc5e4f19eddf2f1b1accef63330bf4cfe61034a429d62ecfe"
+    },
+    {
+      "path": "strict-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

@@ -625,10 +625,15 @@
         "Bounded candidate search, task-operation coverage, explicit preferences, incompatibility reports and incremental incumbency work.",
         "Patterns are candidate shortcuts, not a mandatory gate. Distinguish search budget exhaustion from proven invalidity."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "Independent core/presentation workstream after T16. Parent owns public local type packet; isolated writer implements registry/validator/composer/tests. No canonical wire schema changes. Independent review required."
+      "evidence": [
+        {
+          "path": "harness/evidence/t19/291ba1f603ae/manifest.json",
+          "sha256": "c1e6bc00e59fe6958a9ce4f9057d7528e450219b2b6c3941a1c221c48f7ad897"
+        }
+      ],
+      "notes": "Deterministic registry/pattern/quality composition and bounded complete candidates implemented. Exact registered state mappings, enabled-operation restrictions, queryless generation and feasible-first one-expansion regression independently reviewed. 142 contracts, strict types and actual installed core consumer pass. Runtime transition execution remains T20."
     },
     {
       "id": "T20",
