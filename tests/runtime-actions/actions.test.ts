@@ -335,6 +335,38 @@ describe('confirmation and execute rechecks', () => {
     expect(dispatches).toBe(1);
   });
 
+  it('cancels before dispatch when the final clock barrier aborts the caller', async () => {
+    const registry = new ActionRegistry();
+    const abort = new AbortController();
+    let clocks = 0;
+    let dispatches = 0;
+    const descriptor = register(registry, {
+      id: 'clock-abort-before-dispatch', idempotency: 'required',
+      dispatch: () => {
+        dispatches++;
+        return {state: 'completed', output: {ok: true, value: {saved: true}}};
+      },
+    });
+    const port = createActionPort({registry, now: () => {
+      clocks++;
+      // preview clock, confirmation clock, idempotency reservation clock,
+      // then the final pre-dispatch clock barrier.
+      if (clocks === 4) abort.abort();
+      return clocks;
+    }, host: {readContext: () => outcome(context())}});
+    const receipt = await previewAndConfirm(port, descriptor, {}, {idempotencyKey: 'clock-abort-before-dispatch-1'});
+    const cancelled = await port.execute(receipt, {signal: abort.signal});
+    expect(cancelled.ok).toBe(false);
+    if (!cancelled.ok) expect(cancelled.diagnostics[0]!.code).toBe('action.cancelled');
+    expect(dispatches).toBe(0);
+    const inspection = await port.inspect('clock-abort-before-dispatch-1');
+    expect(inspection).toEqual({ok: true, value: undefined});
+
+    const replayReceipt = await previewAndConfirm(port, descriptor, {}, {idempotencyKey: 'clock-abort-before-dispatch-1'});
+    expect((await port.execute(replayReceipt)).ok).toBe(true);
+    expect(dispatches).toBe(1);
+  });
+
   it('exposes preview input to trusted confirmation only while the preview is live', async () => {
     const registry = new ActionRegistry();
     const descriptor = register(registry, {id: 'confirmation-input', confirmation: 'required'});

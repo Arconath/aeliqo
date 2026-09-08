@@ -595,6 +595,15 @@ class ActionPortImpl implements ActionPort {
       this.consumeReceipt(matched);
       return this.outcome('action.budget', 'The action callback budget is full.');
     }
+    // The synchronous dispatch barrier may itself abort the caller signal
+    // (for example, a host clock callback can cancel the operation). Recheck
+    // immediately before invoking the domain callback so this remains a
+    // pre-dispatch cancellation with no ambiguous idempotency tombstone.
+    if (options.signal?.aborted) {
+      if (ledgerKey !== undefined) this.removeLedger(ledgerKey);
+      this.consumeReceipt(matched);
+      return this.outcome('action.cancelled', 'The action execution was cancelled before dispatch.');
+    }
     const input = matched.input;
     const dispatchCall = await this.callHost((signal) => matched.registration.dispatch({descriptor: matched.registration.descriptor, input: input!,
       ...(matched.entity === undefined ? {} : {entity: matched.entity}), ...(matched.idempotencyKey === undefined ? {} : {idempotencyKey: matched.idempotencyKey}), context: current.value, signal}), options.signal);
