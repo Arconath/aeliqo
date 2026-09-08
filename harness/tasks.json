@@ -721,10 +721,15 @@
       "acceptance": [
         "Every compound is a typed macro/recipe over shared primitives, not a duplicate runtime."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "Isolated preflight_diagnosis writer owns compounds, focused tests/docs at codex/t21-compounds. Root owns canonical integration/config/exports; independent T23 work continues."
+      "evidence": [
+        {
+          "path": "harness/evidence/t21/8ddad0da180c/manifest.json",
+          "sha256": "501044e6580e1b6534ac231c94fb57d6c39fe7652c7c715e5f74d44cf8a31df4"
+        }
+      ],
+      "notes": "Accepted compound source e00492c after independent review: eight direct shared-primitive compounds and canonical validated macros, bounded comparisons, scoped details, form drafts/focus, actual SSR and installed web/React consumers. Full release matrix remains T29/T30."
     },
     {
       "id": "T22",

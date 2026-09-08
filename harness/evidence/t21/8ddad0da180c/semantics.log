@@ -1,0 +1,17 @@
+$ pnpm build:platform && vitest run --config tests/compound-semantic/vitest.config.mjs && tsc -p tests/compound-semantic/tsconfig.json
+$ pnpm build:runtime && pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/react build
+$ pnpm build:core && pnpm --filter @aeliqo/runtime build
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+
+ RUN  v5.0.0 /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo
+
+
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+   Start at  03:36:51
+   Duration  995ms (transform 65%, import 24%, tests 10%)
+

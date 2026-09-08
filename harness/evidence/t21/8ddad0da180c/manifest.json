@@ -1,0 +1,54 @@
+{
+  "task": "T21",
+  "status": "pass",
+  "sourceCommit": "e00492c54468a594cc798440b0fcda3aa5e76a22",
+  "sourceDigest": "8ddad0da180c5fb089f33c4a7333a744cc4b68ba364f2c6ace15113a44b084f8",
+  "checks": {
+    "directRecipeTests": 4,
+    "canonicalMacroTests": 13,
+    "directBrowserTests": 9,
+    "semanticBrowserTests": 2,
+    "strictTypesAndBuild": true,
+    "SSR": true,
+    "installedTarballs": true
+  },
+  "limits": [
+    "Full release visual/device/manual assistive technology matrix remains T29/T30.",
+    "Compounds use host-evaluated values and explicit canonical primitive parts; macro names are authoring helpers, not renderer registrations.",
+    "Installed screenshot is an integration fixture, not the public site design."
+  ],
+  "artifacts": [
+    {
+      "path": "browser.log",
+      "sha256": "d154f79f250ff78a671839516ad18190484060d07a4e00121c2921192a4ad062"
+    },
+    {
+      "path": "consumer-report.json",
+      "sha256": "b689f9ad7d54c9a2ea3b8100cce7a50c3ac3428dd64c7c84361a0753fee4b2d7"
+    },
+    {
+      "path": "consumer.log",
+      "sha256": "ffd783f2013587331d5c321bd3970f431538706835c1e03986b15e31174d0211"
+    },
+    {
+      "path": "detail-regression.log",
+      "sha256": "3d822a6fc5d989c8287fc00ebc73c709e074e52bae23827533e47399b44a660a"
+    },
+    {
+      "path": "review.json",
+      "sha256": "c1985df8655d208915d290f21e9d9f8b826b62ab11b14d6f7e103440fa562148"
+    },
+    {
+      "path": "semantic-browser.log",
+      "sha256": "098333c861a9cbef7d41bbe6c8cac09038e18dfdfe916e24d54b1e3a295956b6"
+    },
+    {
+      "path": "semantics.log",
+      "sha256": "f4c6a4a45cb60c4c764ec3656abc05b6a020609a9d7553bc93fbd406fb42943a"
+    },
+    {
+      "path": "source.log",
+      "sha256": "2ea06e4d646ada3dfee625aa1dc74e61c60985862d51f030dae636d5f1e7f089"
+    }
+  ]
+}
