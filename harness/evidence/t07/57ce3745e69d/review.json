@@ -1,0 +1,24 @@
+{
+  "status": "pass",
+  "reviews": [
+    {
+      "reviewer": "platform_proof (Luna Max)",
+      "source": [
+        "69ea45c",
+        "54354f1"
+      ],
+      "scope": "Independent root math/budget review; exact integer/decimal, aggregate schema, ratios/windows, trusted registry and row/byte/deadline work accounting.",
+      "outcome": "No concrete correctness issue; minor indentation only."
+    },
+    {
+      "reviewer": "preflight_diagnosis (Luna Max)",
+      "source": [
+        "9570c8b",
+        "262f1a7"
+      ],
+      "scope": "Independent transported predicate validation, row ceilings, integer division inference, relationship-key substitution.",
+      "outcome": "Previous three findings fixed. New join-key finding fixed and persistent join+semijoin regressions pass.11boundary tests and query strict types pass; no remaining concrete finding in requested scope."
+    }
+  ],
+  "limitations": "Scoped engineering review and exact fixture checks, not business-truth certification or release acceptance."
+}

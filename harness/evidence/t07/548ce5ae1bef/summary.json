@@ -1,0 +1,22 @@
+{
+  "task": "T07",
+  "status": "superseded",
+  "sourceCommit": "2ae320dd7013a6e8c51f3d68fb508eb567410258",
+  "candidateDigest": "548ce5ae1befbbe292abf696fdc50bde180472b22bcd4f6eee0756f5174b106c",
+  "timestamp": "2026-09-08T03:56:42.515466+00:00",
+  "checks": {
+    "query": 85,
+    "contracts": 54,
+    "semantics": 34,
+    "taskExperience": 23,
+    "runtimeData": 83,
+    "workspaceTypes": "pass",
+    "installedCoreNodeNoCodegenChromium": "pass",
+    "kitReference": "pass"
+  },
+  "scope": "Bounded pure relational planner/evaluator and canonical QuerySpec lowering; independent exact arithmetic/HR oracle binding. Host analytical execution and local/HTTP parity are T08; result handles/cohorts and named-output orchestration are T09/T10. No publication or deployment.",
+  "freshness": "Core source stayed unchanged after54354f1 throughout final gates. Query regression additions at2ae320d were run in final85-test query suite. Installed consumer ran at41dfbd6 against the same production source. Kit/reference run binds final candidate.",
+  "ownership": "Root owns contracts/configuration/consumer integration and final query corrections; isolated test writers and independent source review. Task source ownership helper passes; test/docs integration is root-owned.",
+  "acceptance": false,
+  "subsequentFinding": "Independent transported-plan review found relationship key substitution; fix and fresh regression/evidence required."
+}

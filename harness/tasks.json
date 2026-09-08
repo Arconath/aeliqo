@@ -252,10 +252,15 @@
       "acceptance": [
         "Fanout-safe joins, group/filter/project/aggregate/order/topK/time operators have an independent numerical oracle."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "Planner author owns packages/core/src/query and planner tests in codex/t07-query-planner; independent oracle author owns tests/query/oracle in codex/t07-query-oracle. Root owns contracts/config/API/integration."
+      "evidence": [
+        {
+          "path": "harness/evidence/t07/57ce3745e69d/manifest.json",
+          "sha256": "b93d0ebb25570eb31ea49b32afd3c0264707c340e004221609c95a4f329de6ef"
+        }
+      ],
+      "notes": "Accepted source262f1a7 with87query tests, installedNode/no-codegen/Chromium and finalkit checks. Related54contracts/34semantics/23tasks/83data/workspaceTypes pass. Independent scoped review closed transported schema/budget/division/join-key findings. Host parity T08 and result/cohort/task lifecycle T09/T10 remain separate."
     },
     {
       "id": "T08",

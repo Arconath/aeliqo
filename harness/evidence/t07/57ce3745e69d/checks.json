@@ -1,0 +1,42 @@
+[
+  {
+    "check": "contracts",
+    "command": [
+      "pnpm",
+      "test:contracts"
+    ],
+    "exitCode": 0
+  },
+  {
+    "check": "semantics",
+    "command": [
+      "pnpm",
+      "test:semantics"
+    ],
+    "exitCode": 0
+  },
+  {
+    "check": "task",
+    "command": [
+      "pnpm",
+      "test:task-experience"
+    ],
+    "exitCode": 0
+  },
+  {
+    "check": "data",
+    "command": [
+      "pnpm",
+      "test:data"
+    ],
+    "exitCode": 0
+  },
+  {
+    "check": "workspace-types",
+    "command": [
+      "pnpm",
+      "typecheck"
+    ],
+    "exitCode": 0
+  }
+]

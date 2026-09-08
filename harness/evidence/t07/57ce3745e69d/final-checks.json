@@ -1,0 +1,26 @@
+[
+  {
+    "check": "query",
+    "command": [
+      "pnpm",
+      "test:query"
+    ],
+    "exitCode": 0
+  },
+  {
+    "check": "installed-core",
+    "command": [
+      "pnpm",
+      "test:core:consumers"
+    ],
+    "exitCode": 0
+  },
+  {
+    "check": "kit",
+    "command": [
+      "python3",
+      "scripts/validate_all.py"
+    ],
+    "exitCode": 0
+  }
+]

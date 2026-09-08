@@ -1,0 +1,20 @@
+{
+  "task": "T07",
+  "status": "pass",
+  "sourceCommit": "262f1a78d303b205c36d65caf92392d44f69d2ed",
+  "candidateDigest": "57ce3745e69d142f7685793dd1aad7ef48651de6ff7be38ffe252e2f28f2c3b0",
+  "timestamp": "2026-09-08T04:03:26.069825+00:00",
+  "checks": {
+    "query": 87,
+    "contracts": 54,
+    "semantics": 34,
+    "taskExperience": 23,
+    "runtimeData": 83,
+    "workspaceTypes": "pass",
+    "installedCoreNodeNoCodegenChromium": "pass",
+    "kitReference": "pass"
+  },
+  "scope": "Bounded pure relational planner/evaluator; canonical QuerySpec lowering; independent arithmetic/raw HR binding. T08 owns analytical host parity; T09/T10 own result/cohort/task lifecycle. No publication/deployment.",
+  "freshness": "87query suite, query types, installed tarball Node/no-codegen/Chromium and kit/reference rerun on final262f1a7. Other core/data/workspace gates ran on41dfbd6; subsequent production change9570c8b adds only exact declared relationship-key comparison and is covered by final boundary/consumer tests. No unrelated UI test expansion.",
+  "supersedes": "548ce5ae1bef pre-acceptance run: transported join-key substitution found and fixed."
+}

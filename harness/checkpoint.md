@@ -126,3 +126,20 @@ contract tests and strict types; hosted run34179383070 succeeds for that exact
 commit. It provides pure shared scalar validation, exact decimal/instant ordering
 and normalized identity semantics for the query engine. T07 is still active;
 production oracle binding and plan boundary tests await a compiling engine packet.
+
+T07 final pre-acceptance run at2ae320d passed85query and related gates, but an
+independent transported-plan recheck found join-key substitution not rejected.
+T07 remains active while root fixes this with a persistent regression. Evidence
+548ce5ae1bef is retained as a superseded run, not acceptance.
+
+T07 accepted at source262f1a7, immutable evidence harness/evidence/t07/57ce3745e69d.
+The final join/semijoin guard binds every transported key to the declared
+relationship, with persistent forgery tests.87query tests and strict types,
+installed Node/no-codegen/Chromium consumer and kit/reference gates pass on the
+final candidate. Related54contract,34semantic,23Task/Experience,83data and full
+workspace type checks passed before the final two-line join-key guard. Independent
+review closed all concrete findings within scope. Exact integer cancellation,
+unsafe intermediate refusal, mixed decimal arithmetic and raw HR rates/mutations
+are proven. Source/intermediate row/byte and operation ceilings remain enforced.
+T08 host execution and T09 result lifecycle are ready independent workstreams.
+No publication, main cutover or production deployment occurred.
