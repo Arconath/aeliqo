@@ -240,13 +240,16 @@ export function createTaskEvaluator(options: TaskEvaluatorOptions): {evaluate(in
           if (!bound.ok) return bound;
           const budget = budgetFor(context, options, remaining(outer.deadlineAt, currentNow));
           const requestId = safeRequestId(sequence, output.id);
-          const planRequest: PlanRequest = {version: '1', requestId, catalogRevision: context.catalogRevision, target: {outputId: output.id}, query: bound.value, budget};
+          const planRequest: PlanRequest = {version: '1', requestId, catalogRevision: context.catalogRevision,
+            target: {taskId: requested.id, outputId: output.id}, query: bound.value, budget};
           const planned = await context.data.plan(planRequest, contextRead(context, outer.signal, cohortCapability));
           if (!planned.ok) return planned;
           const accepted = planned.value;
-          if (accepted.catalogRevision !== context.catalogRevision || accepted.scopeDigest !== context.scopeDigest || accepted.functionRegistryDigest !== context.functionRegistryDigest || accepted.target.outputId !== output.id)
+          if (accepted.catalogRevision !== context.catalogRevision || accepted.scopeDigest !== context.scopeDigest
+            || accepted.functionRegistryDigest !== context.functionRegistryDigest || accepted.policyRevision !== context.policyRevision
+            || accepted.target.taskId !== requested.id || accepted.target.outputId !== output.id)
             return failure('runtime.evaluation-stale', 'The ADC plan does not match the fresh trusted task authority.');
-          const key = {principalKey: context.principalKey, scopeDigest: context.scopeDigest, ...(accepted.policyRevision === undefined ? {} : {policyRevision: accepted.policyRevision}), populationDigest: accepted.populationDigest, queryDigest: accepted.queryDigest, catalogRevision: accepted.catalogRevision, functionRegistryDigest: accepted.functionRegistryDigest, sourceRevision: accepted.sourceRevision, outputId: output.id, taskId: accepted.requestId, requestId};
+          const key = {principalKey: context.principalKey, scopeDigest: context.scopeDigest, ...(accepted.policyRevision === undefined ? {} : {policyRevision: accepted.policyRevision}), populationDigest: accepted.populationDigest, queryDigest: accepted.queryDigest, catalogRevision: accepted.catalogRevision, functionRegistryDigest: accepted.functionRegistryDigest, sourceRevision: accepted.sourceRevision, outputId: output.id, taskId: accepted.target.taskId ?? accepted.requestId, requestId};
           let handle: ResultHandle;
           try { handle = context.resultStore.begin(key); } catch { return failure('runtime.evaluation-budget', 'The result store could not allocate the task output.'); }
           owned.add(handle);
@@ -266,7 +269,7 @@ export function createTaskEvaluator(options: TaskEvaluatorOptions): {evaluate(in
             return failure('runtime.evaluation-failed', 'The ADC result stream could not be materialized.');
           }
           const snapshot = handle.snapshot();
-          if (snapshot.status !== 'ready' || snapshot.descriptor === undefined) {
+          if ((snapshot.status !== 'ready' && snapshot.status !== 'partial') || snapshot.descriptor === undefined) {
             const diagnostic = snapshot.diagnostics[0];
             return failure(diagnostic?.code ?? 'runtime.evaluation-failed', diagnostic?.message ?? 'The task output did not become a complete result.');
           }

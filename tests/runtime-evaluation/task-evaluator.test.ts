@@ -172,6 +172,34 @@ describe('runtime named-output and cohort evaluation', () => {
     }
   });
 
+  it('publishes honest partial on-demand pages but never uses them as cohort sources', async () => {
+    const service = createLocalDataService({snapshot: snapshot()});
+    const store = createResultStore();
+    const context = hostContext(service, store, () => undefined);
+    const evaluator = createTaskEvaluator({host: {readContext: () => ({ok: true, value: context})}});
+    const detail = {
+      id: 'detail', kind: 'query' as const,
+      query: query('facts', ['fact_id', 'employee_id', 'week', 'amount'], undefined, {page: {size: 2}}),
+      dependsOn: [] as const, delivery: 'on-demand' as const,
+    };
+    const paged = await evaluator.evaluate({task: task([detail]), requestedOutputs: ['detail']});
+    expect(paged.ok).toBe(true);
+    if (!paged.ok) throw new Error(paged.diagnostics[0]?.message);
+    const partial = paged.value.get('detail')!;
+    expect(partial.handle.snapshot().status).toBe('partial');
+    expect(partial.descriptor?.coverage.kind).toBe('partial');
+    paged.value.release();
+
+    const cohortDependent = {
+      id: 'trend', kind: 'query' as const,
+      query: query('facts', ['fact_id', 'employee_id'], {kind: 'live-output', outputId: 'detail', identityKeys: ['employee_id']}),
+      dependsOn: ['detail'] as const, delivery: 'eager' as const,
+    };
+    const rejected = await evaluator.evaluate({task: task([detail, cohortDependent]), requestedOutputs: ['trend']});
+    expect(rejected.ok).toBe(false);
+    if (!rejected.ok) expect(rejected.diagnostics[0]?.code).toBe('runtime.evaluation-incomplete');
+  });
+
   it('releases evaluator ownership without disposing retained outputs and holds reuse leases until release', async () => {
     const service = createLocalDataService({snapshot: snapshot()});
     const store = createResultStore({maxEntries: 1});
