@@ -2,7 +2,33 @@
 
 Optional agent boundaries for the Aeliqo 0.1.0 rewrite. The package depends on the
 pure core and effect-owning runtime; direct components and normal interactions do
-not import it. Provider/protocol adapters are a later implementation task.
+not import it. Capability registrations are host-owned and protocol-neutral;
+manual, direct and protocol ports all call the same authority-checked dispatcher.
+
+## Capability dispatcher and sessions
+
+`createAgentCapabilityRegistry` accepts only trusted local manifests. A manifest
+names one versioned operation grant, a bounded parser and a local handler. Model
+or tool input can select an existing reference, but cannot install a handler or
+provide actor, approval, principal or grant fields. `createAgentCapabilityDispatcher`
+checks fresh host grants, input/output byte limits, cancellation and a
+post-handler authority recheck. `experience.commit` and `renderer-ready`
+receipts carry an exact region revision; authority changes after a handler yield
+an ambiguous `partial` receipt for host recovery.
+
+`createAgentSession` runs one explicit operation at a time with bounded turns,
+repairs, bytes and elapsed time. It records runtime-computed fingerprints and
+compact attempts, stops repeated candidates, and returns a recovery receipt.
+Evaluation (`task.evaluate`/`result.inspect`) and visible presentation
+(`experience.propose`/`experience.commit`) remain separate operations. External
+MCP, WebMCP and BYOK ports additionally require `model.egress` before returning
+result values.
+
+`validateAgentComposition` accepts only the canonical presentation-plan shape,
+registered representation and configuration schema references, acyclic reachable
+nodes and trusted local configuration checks. It rejects executable code,
+remote-module fields and forged authority metadata. The validator does not
+execute a query or commit a presentation.
 
 ## Structured narrative evidence
 
