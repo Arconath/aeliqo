@@ -159,7 +159,7 @@ function operationsFor(component: DataManifestComponent | "table", config: Aeliq
   const add = (operation: VersionRef): void => {
     if (!operations.some((candidate) => versionKey(candidate) === versionKey(operation))) operations.push(operation);
   };
-  if (component !== "selectionSummary" || config.fields.length > 0 || config.ports.some((port) => port.payload === "selection")) add(AELIQO_DATA_PRESENTATION_OPERATIONS.read);
+  if (component !== "filterBuilder" && (component !== "selectionSummary" || config.fields.length > 0 || config.ports.some((port) => port.payload === "selection"))) add(AELIQO_DATA_PRESENTATION_OPERATIONS.read);
   if (component === "delta") add(AELIQO_DATA_PRESENTATION_OPERATIONS.compare);
   if (component === "filterBuilder") add(AELIQO_DATA_PRESENTATION_OPERATIONS.filter);
   if (component === "table" || component === "recordList" || component === "cardCollection" || component === "selectionSummary") {

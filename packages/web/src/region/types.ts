@@ -1,3 +1,4 @@
+import type {AeliqoDataHostRequest} from "./data-renderer.js";
 import type {InteractionPayload, ResultRef, ValidatedPresentation} from "@aeliqo/core";
 import type {AeliqoTableColumn, AeliqoTableRow} from "../types.js";
 
@@ -21,3 +22,7 @@ export interface AeliqoRegionSnapshot {
   readonly presentation: ValidatedPresentation;
   readonly results: readonly AeliqoRegionResult[];
 }
+
+/** Component-level data requests with no implicit query or runtime effect. */
+export type AeliqoRegionDataRequest = Exclude<AeliqoDataHostRequest, {readonly kind: "selection" | "filter"}>;
+export type AeliqoRegionDataRequestHandler = (request: AeliqoRegionDataRequest) => void;

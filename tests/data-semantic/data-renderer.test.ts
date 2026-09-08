@@ -87,7 +87,7 @@ function source(template: unknown): string {
 
 describe("data renderer projection", () => {
   it("projects every validated data node to its shared owned element", () => {
-    const tags: Record<string, string> = {
+    const tags = {
       metric: "aeliqo-metric",
       delta: "aeliqo-delta",
       keyValue: "aeliqo-key-value",

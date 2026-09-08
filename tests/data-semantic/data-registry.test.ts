@@ -3,6 +3,7 @@ import type { Result } from "@aeliqo/core";
 import {
   createAeliqoDataRegistry,
   validateAeliqoDataBinding,
+  type AeliqoDataBinding,
 } from "../../packages/web/src/region/data-registry.js";
 
 const ref = {
@@ -95,7 +96,7 @@ const rows = [
   },
 ] as const;
 const binding = (
-  override: Partial<{ result: Result; rows: typeof rows }> = {},
+  override: Partial<AeliqoDataBinding> = {},
 ) => ({ result: override.result ?? result(), rows: override.rows ?? rows });
 
 const registry = createAeliqoDataRegistry({ resolveEntity: () => "person" });

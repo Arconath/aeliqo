@@ -7,6 +7,7 @@ import {
   type PresentationValues,
   type ResultRef,
   validatePresentationPlan,
+  createPresentationRegistry,
 } from "../../packages/core/src/index.js";
 import {
   AELIQO_DATA_REFS,
@@ -305,6 +306,14 @@ describe("data presentation bridge", () => {
         result.fields.some((descriptor) => descriptor.id === field),
       )).toBe(true);
       expect(Object.isFrozen(resolved.value.values)).toBe(true);
+      const registry=createPresentationRegistry(created.value);
+      if(!registry.ok)throw new Error(JSON.stringify(registry.diagnostics));
+      const operation=manifest.ref.id==='control.filter-builder'?AELIQO_DATA_PRESENTATION_OPERATIONS.filter:AELIQO_DATA_PRESENTATION_OPERATIONS.read;
+      const context=contextFor(manifest.ref,manifest.roles[0]!,manifest.configSchema,operation);
+      const actualContext={...context,task:{...context.task,needs:context.task.needs.map(need=>({...need,fields:resolved.value.fields}))}};
+      const plan=planFor(manifest.ref,manifest.roles[0]!,manifest.configSchema,configs[manifest.ref.id]!,operation);
+      expect(validatePresentationPlan(plan,actualContext,registry.value).ok,manifest.ref.id).toBe(true);
+
     }
   });
 

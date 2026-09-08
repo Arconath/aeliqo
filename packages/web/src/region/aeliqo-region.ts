@@ -1,3 +1,6 @@
+import {renderAeliqoDataPresentationNode} from "./data-presentation.js";
+import {AELIQO_DATA_REFS} from "./data-registry.js";
+import type {AeliqoRegionDataRequestHandler} from "./types.js";
 import {renderNavigationFeedbackNode} from "./navigation-feedback-renderer.js";
 import {renderInputNode} from "./input-renderer.js";
 import {renderFoundationNode} from "./foundation-renderer.js";
@@ -127,6 +130,7 @@ export class AeliqoRegionElement extends LitElement {
     results: {attribute: false},
     interaction: {attribute: false},
     onSemanticInteraction: {attribute: false},
+    onDataRequest: {attribute: false},
   };
 
   static readonly aeliqoVersion = "0.1.0-m0";
@@ -135,6 +139,7 @@ export class AeliqoRegionElement extends LitElement {
   results: readonly AeliqoRegionResult[] = [];
   interaction: InteractionState | undefined = undefined;
   onSemanticInteraction: AeliqoSemanticInteractionHandler | undefined = undefined;
+  onDataRequest: AeliqoRegionDataRequestHandler | undefined = undefined;
   private focusedNodeId: string | undefined;
   private focusedElement: HTMLElement | undefined;
 
@@ -201,8 +206,23 @@ export class AeliqoRegionElement extends LitElement {
       case "data.table": return this.renderTable(resolved, values);
       case "data.trend": return this.renderTrend(resolved, values);
       case "control.filter": return this.renderFilter(resolved, values);
-      default: return renderFoundationNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? renderInputNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload), this.presentation?.environment.locale) ?? renderNavigationFeedbackNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? html`<div part="unsupported">Unsupported registered representation.</div>`;
+      default: return renderFoundationNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? renderInputNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload), this.presentation?.environment.locale) ?? renderNavigationFeedbackNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? this.renderData(resolved) ?? html`<div part="unsupported">Unsupported registered representation.</div>`;
     }
+  }
+
+  private renderData(node: ValidatedPresentation["nodes"][number]): TemplateResult | typeof nothing | undefined {
+    if (!Object.values(AELIQO_DATA_REFS).some(ref => ref.id === node.manifest.id && ref.revision === node.manifest.revision)) return undefined;
+    const current = resultFor(node, this.results);
+    if (current === undefined || node.result === undefined) return html`<p part="status">Data unavailable.</p>`;
+    const entity = node.config.ports.find(port => port.payload === "selection")?.entity;
+    const rendered = renderAeliqoDataPresentationNode(node, {result: node.result, rows: current.rows, ...(current.columns === undefined ? {} : {columns: current.columns})}, {
+      ...(this.interaction === undefined ? {} : {interaction: this.interaction}),
+      onRequest: request => {
+        if (request.kind === "selection" || request.kind === "filter") this.emitFoundation(node, request.portId, request.payload);
+        else this.onDataRequest?.(request);
+      },
+    }, {resolveEntity: () => entity});
+    return rendered === nothing ? html`<p part="status">Data unavailable.</p>` : rendered;
   }
 
   private emitFoundation(node: ValidatedPresentation["nodes"][number], portId: string, payload: InteractionPayload): void {

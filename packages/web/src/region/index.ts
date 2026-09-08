@@ -22,3 +22,8 @@ export type {AeliqoInputBindings, AeliqoInputBinding, AeliqoInputDraftBinding, A
 
 export {createNavigationFeedbackPresentationManifests, AELIQO_NAVIGATION_FEEDBACK_REFS, AELIQO_NAVIGATION_FEEDBACK_CONFIG_SCHEMAS} from "./navigation-feedback-registry.js";
 export type {AeliqoNavigationFeedbackBindings} from "./navigation-feedback-registry.js";
+
+export {createAeliqoDataPresentationManifests} from "./data-presentation.js";
+export type {AeliqoAuthorizedDataBindings} from "./data-presentation.js";
+export type {AeliqoDataBinding} from "./data-registry.js";
+export type {AeliqoRegionDataRequest, AeliqoRegionDataRequestHandler} from "./types.js";
