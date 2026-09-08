@@ -38,7 +38,8 @@ export class AeliqoLinkElement extends AeliqoFoundationElement {
   }
 
   private readonly handleClick = (event: Event): void => {
-    const accepted = this.dispatchEvent(new AeliqoLinkEvent({source: "user", target: this.target === "_blank" ? "_blank" : "_self"}));
+    const modified = event instanceof MouseEvent && (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0);
+    const accepted = this.dispatchEvent(new AeliqoLinkEvent({source: "user", target: this.target === "_blank" ? "_blank" : "_self", ...(modified ? {modified: true} : {})}));
     if (!accepted) event.preventDefault();
   };
 

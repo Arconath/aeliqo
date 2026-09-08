@@ -1,3 +1,4 @@
+import {AeliqoButtonElement, AeliqoIconButtonElement, AeliqoLinkElement, AeliqoTextElement, AeliqoHeadingElement, AeliqoBadgeElement, AeliqoAvatarElement, AeliqoSeparatorElement, AeliqoSurfaceElement, AeliqoStackElement, AeliqoGridElement, AeliqoSplitPaneElement, AeliqoScrollAreaElement} from "./foundation/index.js";
 import {AeliqoChartElement} from "./elements/aeliqo-chart.js";
 import {AeliqoInputElement} from "./elements/aeliqo-input.js";
 import {AeliqoTableElement} from "./elements/aeliqo-table.js";
@@ -15,6 +16,20 @@ interface ElementRegistration {
 }
 
 const REGISTRATIONS: readonly ElementRegistration[] = [
+  {name: "aeliqo-button", constructor: AeliqoButtonElement},
+  {name: "aeliqo-icon-button", constructor: AeliqoIconButtonElement},
+  {name: "aeliqo-link", constructor: AeliqoLinkElement},
+  {name: "aeliqo-text", constructor: AeliqoTextElement},
+  {name: "aeliqo-heading", constructor: AeliqoHeadingElement},
+  {name: "aeliqo-badge", constructor: AeliqoBadgeElement},
+  {name: "aeliqo-avatar", constructor: AeliqoAvatarElement},
+  {name: "aeliqo-separator", constructor: AeliqoSeparatorElement},
+  {name: "aeliqo-surface", constructor: AeliqoSurfaceElement},
+  {name: "aeliqo-stack", constructor: AeliqoStackElement},
+  {name: "aeliqo-grid", constructor: AeliqoGridElement},
+  {name: "aeliqo-split-pane", constructor: AeliqoSplitPaneElement},
+  {name: "aeliqo-scroll-area", constructor: AeliqoScrollAreaElement},
+
   {name: "aeliqo-input", constructor: AeliqoInputElement},
   {name: "aeliqo-table", constructor: AeliqoTableElement},
   {name: "aeliqo-chart", constructor: AeliqoChartElement},

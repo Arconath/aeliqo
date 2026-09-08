@@ -10,6 +10,7 @@ const origin = `http://127.0.0.1:${port}`;
 
 export default defineConfig({
   testDir: configDirectory,
+  outputDir: resolve(repositoryRoot, `artifacts/foundation-browser/run-${Date.now()}`),
   testMatch: "browser.spec.ts",
   timeout: 30_000,
   use: {baseURL: origin, browserName: "chromium", trace: "retain-on-failure"},

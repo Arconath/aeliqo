@@ -1,5 +1,6 @@
 /** Build, install and execute the actual M0 packages outside the workspace. */
 import assert from 'node:assert/strict';
+import {foundationProbe} from './foundation-probe.mjs';
 import {mkdtemp, mkdir, readFile, writeFile, readdir, lstat, unlink, rmdir} from 'node:fs/promises';
 import {tmpdir, platform, release, arch} from 'node:os';
 import {resolve, join, extname} from 'node:path';
@@ -167,6 +168,7 @@ const server=createServer(async (request,response)=>{
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 let browser;
 let browserVersion;
+let foundation;
 const viewport={width:1280,height:720};
 try {
  browser=await chromium.launch();browserVersion=browser.version();const page=await browser.newPage({viewport,locale:'en-US',deviceScaleFactor:1});const failures=[];
@@ -182,13 +184,15 @@ try {
  assert.equal(await page.locator('form').evaluate(form=>new FormData(form).get('person')),'Lin');
  await input.focus();assert(await input.evaluate(element=>element.getRootNode().activeElement===element));
  assert.deepEqual(failures,[]);await page.screenshot({path:join(runDirectory,'installed-input.png')});
+ foundation=await foundationProbe({consumer,runDirectory,run,page,origin:`http://127.0.0.1:${server.address().port}`});
+ assert.deepEqual(failures,[]);
 } finally {await browser?.close();await new Promise(resolve=>server.close(resolve));}
 assert.equal(run(['python3','scripts/gate.py','digest'],root).trim(),sourceDigest,'Source changed during consumer test');
 await writeFile(join(runDirectory,'report.json'),JSON.stringify({sourceDigest,
- scope:'M0 and T12 installed web/React/style types and SSR; locale metadata; Chromium direct input/form/focus/theme; standalone bundle. Full React/Vue hydration matrix is separate.',
+ scope:'M0/T12 installed web/React/styles and direct input/form/focus/theme; T13 all thirteen installed foundation types, Lit SSR, React client rendering/action events and standalone Button bundle. Full React/Vue hydration and manual assistive-technology matrix are separate.',
  artifacts,consumerDirectory:consumer,consumerLock:{path:join(runDirectory,'consumer-package-lock.json'),sha256:hash(lockBytes)},
  screenshot:{path:join(runDirectory,'installed-input.png'),sha256:hash(await readFile(join(runDirectory,'installed-input.png')))},
  environment:{node:process.version,npm:run(['npm','--version'],consumer).trim(),pnpm:run(['pnpm','--version'],root).trim(),typescript:'7.0.2',vite:'8.2.2',playwright:JSON.parse(await readFile(join(root,'node_modules/@playwright/test/package.json'),'utf8')).version,chromium:browserVersion,os:platform(),release:release(),arch:arch(),viewport,locale:'en-US',deviceScaleFactor:1},
- stdout,browserBundles,standaloneModules:modules,moduleCheckScope:'Vite module-ID graph allowlist; not arbitrary generated-code certification',passed:true,
+ foundation,stdout,browserBundles,standaloneModules:modules,moduleCheckScope:'Vite module-ID graph allowlist; not arbitrary generated-code certification',passed:true,
 },null,2)+'\n');
 console.log(stdout.trim());console.log(`Evidence: ${join(runDirectory,'report.json')}`);

@@ -166,7 +166,7 @@ const separatorValidators = {
 const surfaceValidators = {
   as: optionalEnum(["div", "section", "article"] as const),
   tone: optionalEnum(["canvas", "surface", "raised"] as const),
-  labelledByRef: optionalString,
+  labelRef: optionalString,
 } satisfies Readonly<Record<string, ConfigFieldValidator>>;
 const stackValidators = {
   direction: optionalEnum(["row", "column"] as const),
@@ -210,7 +210,7 @@ export const AELIQO_FOUNDATION_MANIFESTS: readonly AeliqoFoundationManifest[] = 
   manifest(AELIQO_FOUNDATION_REFS.badge, "aeliqo-badge", "content", ["badge"], [], ["contentRef", "tone"], (input) => requiredReference(AELIQO_FOUNDATION_REFS.badge, ["contentRef", "tone"], input, "contentRef", badgeValidators)),
   manifest(AELIQO_FOUNDATION_REFS.avatar, "aeliqo-avatar", "content", ["avatar", "image", "initials"], [], ["identityRef", "size", "decorative"], (input) => requiredReference(AELIQO_FOUNDATION_REFS.avatar, ["identityRef", "size", "decorative"], input, "identityRef", avatarValidators)),
   manifest(AELIQO_FOUNDATION_REFS.separator, "aeliqo-separator", "structure", ["separator"], [], ["orientation", "decorative"], (input) => validate(AELIQO_FOUNDATION_REFS.separator, ["orientation", "decorative"], input, separatorValidators)),
-  manifest(AELIQO_FOUNDATION_REFS.surface, "aeliqo-surface", "structure", ["surface"], [], ["as", "tone", "labelledByRef"], (input) => validate(AELIQO_FOUNDATION_REFS.surface, ["as", "tone", "labelledByRef"], input, surfaceValidators)),
+  manifest(AELIQO_FOUNDATION_REFS.surface, "aeliqo-surface", "structure", ["surface"], [], ["as", "tone", "labelRef"], (input) => validate(AELIQO_FOUNDATION_REFS.surface, ["as", "tone", "labelRef"], input, surfaceValidators)),
   manifest(AELIQO_FOUNDATION_REFS.stack, "aeliqo-stack", "structure", ["stack"], [], ["direction", "gap", "align", "justify", "wrap"], (input) => validate(AELIQO_FOUNDATION_REFS.stack, ["direction", "gap", "align", "justify", "wrap"], input, stackValidators)),
   manifest(AELIQO_FOUNDATION_REFS.grid, "aeliqo-grid", "structure", ["grid"], [], ["columns", "gap", "minItem"], (input) => validate(AELIQO_FOUNDATION_REFS.grid, ["columns", "gap", "minItem"], input, gridValidators)),
   manifest(AELIQO_FOUNDATION_REFS.splitPane, "aeliqo-split-pane", "structure", ["split", "start", "splitter", "end"], ["aeliqo-split-change"], ["orientation", "position", "min", "max", "step"], splitConfig),

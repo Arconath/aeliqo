@@ -60,5 +60,8 @@ export class AeliqoAvatarElement extends AeliqoFoundationElement {
     .size-medium { block-size: 2.75rem; font-size: var(--aeliqo-typography-font-size-body, 0.875rem); inline-size: 2.75rem; }
     .size-large { block-size: 3.5rem; font-size: var(--aeliqo-typography-font-size-body-large, 1rem); inline-size: 3.5rem; }
     [part="image"] { block-size: 100%; inline-size: 100%; object-fit: cover; }
+    @media (forced-colors: active) {
+      [part="avatar"] { background: Canvas; color: CanvasText; border: 1px solid CanvasText; }
+    }
   `];
 }

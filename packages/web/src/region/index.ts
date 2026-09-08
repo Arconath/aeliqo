@@ -14,3 +14,5 @@ export type {
   AeliqoSemanticInteractionRequest,
 } from "./types.js";
 export type {AeliqoPresentationRegistryOptions} from "./registry.js";
+export {createFoundationPresentationManifests} from "./foundation-registry.js";
+export type {AeliqoFoundationBindings} from "./foundation-registry.js";

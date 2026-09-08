@@ -40,6 +40,66 @@
     "./region": {
       "types": "./dist/region/index.d.ts",
       "import": "./dist/region/index.js"
+    },
+    "./foundation": {
+      "types": "./dist/foundation/index.d.ts",
+      "import": "./dist/foundation/index.js"
+    },
+    "./foundation/manifest": {
+      "types": "./dist/foundation/manifest.d.ts",
+      "import": "./dist/foundation/manifest.js"
+    },
+    "./button": {
+      "types": "./dist/foundation/button.d.ts",
+      "import": "./dist/foundation/button.js"
+    },
+    "./icon-button": {
+      "types": "./dist/foundation/icon-button.d.ts",
+      "import": "./dist/foundation/icon-button.js"
+    },
+    "./link": {
+      "types": "./dist/foundation/link.d.ts",
+      "import": "./dist/foundation/link.js"
+    },
+    "./text": {
+      "types": "./dist/foundation/text.d.ts",
+      "import": "./dist/foundation/text.js"
+    },
+    "./heading": {
+      "types": "./dist/foundation/heading.d.ts",
+      "import": "./dist/foundation/heading.js"
+    },
+    "./badge": {
+      "types": "./dist/foundation/badge.d.ts",
+      "import": "./dist/foundation/badge.js"
+    },
+    "./avatar": {
+      "types": "./dist/foundation/avatar.d.ts",
+      "import": "./dist/foundation/avatar.js"
+    },
+    "./separator": {
+      "types": "./dist/foundation/separator.d.ts",
+      "import": "./dist/foundation/separator.js"
+    },
+    "./surface": {
+      "types": "./dist/foundation/surface.d.ts",
+      "import": "./dist/foundation/surface.js"
+    },
+    "./stack": {
+      "types": "./dist/foundation/stack.d.ts",
+      "import": "./dist/foundation/stack.js"
+    },
+    "./grid": {
+      "types": "./dist/foundation/grid.d.ts",
+      "import": "./dist/foundation/grid.js"
+    },
+    "./split-pane": {
+      "types": "./dist/foundation/split-pane.d.ts",
+      "import": "./dist/foundation/split-pane.js"
+    },
+    "./scroll-area": {
+      "types": "./dist/foundation/scroll-area.d.ts",
+      "import": "./dist/foundation/scroll-area.js"
     }
   },
   "files": [

@@ -43,3 +43,5 @@ export const AeliqoChart = createComponent({
 export function registerAeliqoReactElements(): void {
   registerAeliqoElements();
 }
+
+export * from "./foundation.js";

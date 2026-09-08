@@ -43,6 +43,8 @@ export class AeliqoActionEvent extends EventBase {
 }
 
 export interface AeliqoLinkDetail {
+  /** Preserve browser new-tab/download modifier behavior in semantic hosts. */
+  readonly modified?: boolean;
   readonly source: "user";
   readonly target: "_self" | "_blank";
 }

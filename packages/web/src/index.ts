@@ -15,3 +15,4 @@ export type {
   AeliqoTableSelectionDetail,
   TableCell,
 } from "./types.js";
+export * from "./foundation/index.js";

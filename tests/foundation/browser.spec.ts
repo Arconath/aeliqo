@@ -1,4 +1,5 @@
 import {expect, test} from "@playwright/test";
+import AxeBuilder from '@axe-core/playwright';
 
 test.beforeEach(async ({page}) => {
   await page.goto("/tests/foundation/index.html");
@@ -210,3 +211,40 @@ test("forced colors, RTL and large text preserve visible controls", async ({page
   const overflow = await page.locator("#fixture").evaluate((element) => element.scrollWidth > element.clientWidth);
   expect(overflow).toBe(false);
 });
+
+test('validated foundation composition dispatches host requests and preserves focused nodes',async({page})=>{
+  await page.goto('/tests/foundation/semantic.html');
+  const region=page.locator('#semantic');
+  await expect(region.locator('[data-aeliqo-node-id]')).toHaveCount(13);
+  await expect(region.locator('aeliqo-heading')).toHaveText('Account preferences');
+  const button=region.locator('aeliqo-button button');
+  await button.click();
+  await region.locator('aeliqo-link a').click();
+  const state=()=>page.evaluate(()=>{const f=(window as any).foundationSemantic;return {requests:f.requests,submits:f.stats().submits};});
+  expect(await state()).toEqual({submits:0,requests:[
+    {nodeId:'button',portId:'action',payload:{kind:'action-request',action:{id:'profile.save',revision:'1'},input:{profileId:'self'}}},
+    {nodeId:'link',portId:'navigate',payload:{kind:'navigate',route:{id:'profile.open',revision:'1'},params:{profileId:'self'}}},
+  ]});
+  expect(new URL(page.url()).pathname).toBe('/tests/foundation/semantic.html');
+  const splitter=region.locator('aeliqo-split-pane [part=splitter]');
+  await splitter.focus();await splitter.press('ArrowRight');
+  await expect(splitter).toHaveAttribute('aria-valuenow','55');
+  await page.evaluate(()=>{(window as any).foundationSemantic.rerender();});
+  await expect(splitter).toBeFocused();
+  await expect(splitter).toHaveAttribute('aria-valuenow','55');
+});
+
+for(const variant of ['light','dark','mobile','rtl-large','forced-colors'] as const){
+  test(`foundation semantic visual and accessibility matrix: ${variant}`,async({page},testInfo)=>{
+    if(variant==='mobile')await page.setViewportSize({width:360,height:800});
+    if(variant==='forced-colors')await page.emulateMedia({forcedColors:'active'});
+    await page.goto('/tests/foundation/semantic.html');
+    await expect(page.locator('#semantic aeliqo-button button')).toBeVisible();
+    if(variant==='dark')await page.locator('#semantic').evaluate(e=>e.setAttribute('data-aeliqo-theme','dark'));
+    if(variant==='rtl-large')await page.evaluate(()=>{document.documentElement.dir='rtl';document.documentElement.style.fontSize='200%';});
+    const result=await new AxeBuilder({page}).include('#semantic').analyze();
+    expect(result.violations).toEqual([]);
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);
+    await page.screenshot({path:testInfo.outputPath(`foundation-${variant}.png`),fullPage:true});
+  });
+}

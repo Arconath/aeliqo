@@ -64,7 +64,6 @@ export class AeliqoButtonElement extends AeliqoActionElement {
       max-inline-size: 100%;
       min-block-size: var(--aeliqo-control-min-target, 2.75rem);
       padding-inline: var(--aeliqo-control-inline-padding, 0.75rem);
-      transition: background-color var(--aeliqo-motion-duration-fast, 120ms) var(--aeliqo-motion-easing-standard, ease), color var(--aeliqo-motion-duration-fast, 120ms) var(--aeliqo-motion-easing-standard, ease), border-color var(--aeliqo-motion-duration-fast, 120ms) var(--aeliqo-motion-easing-standard, ease);
       white-space: normal;
     }
 
@@ -123,6 +122,15 @@ export class AeliqoButtonElement extends AeliqoActionElement {
 
     @media (prefers-reduced-motion: reduce) {
       [part="pending"] { animation-duration: 0ms; }
+    }
+    @media (forced-colors: active) {
+      button:is(.variant-solid, .variant-outline, .variant-ghost, .variant-danger) {
+        background: ButtonFace;
+        color: ButtonText;
+        border-color: ButtonText;
+      }
+      button:not(:disabled):hover { filter: none; }
+      button:disabled { color: GrayText; border-color: GrayText; }
     }
   `];
 }

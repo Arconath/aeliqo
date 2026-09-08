@@ -60,7 +60,6 @@ export class AeliqoIconButtonElement extends AeliqoActionElement {
       justify-content: center;
       min-block-size: var(--aeliqo-control-min-target, 2.75rem);
       padding: var(--aeliqo-space-8, 0.5rem);
-      transition: background-color var(--aeliqo-motion-duration-fast, 120ms) var(--aeliqo-motion-easing-standard, ease), color var(--aeliqo-motion-duration-fast, 120ms) var(--aeliqo-motion-easing-standard, ease);
     }
 
     button.size-small {
