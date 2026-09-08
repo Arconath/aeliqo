@@ -99,3 +99,26 @@ Rank uses competition ranking (1,1,3) by explicit order values. Stable identity
 breaks ties for row positions without changing rank equality. Empty order is
 invalid for lag/rank. Window values preserve input row identity/grain; grouping
 and ranking an incomplete population cannot acquire exact global scope.
+
+### Conditional expression registry
+
+`createQueryFunctionRegistry({version: '2'})` opts into `core-query-2`.
+The default and string overload retain the `core-query-1` signatures. The new
+registry adds `core.equal@1` and `core.if@1` while retaining every prior signature.
+Catalogs pin the selected registry digest; changing it invalidates existing plans.
+This is an additive, unreleased expression capability, not a wire version change.
+
+Equality compares compatible typed values, preserving SQL-style unknown when
+either input is null. Units, temporal policy and grain must be compatible.
+`core.if(condition, whenTrue, whenFalse)` requires a boolean condition and branches
+with the same value type, unit and temporal policy. Scalar literal branches may
+broadcast over the condition's row grain. A null condition yields null; otherwise
+only the selected branch is evaluated. An unselected branch cannot cause an
+arithmetic error or consume its execution budget. Type checking remains
+conservative about potential null values and does not constant-fold conditions.
+These functions describe general expressions, never HR-specific rules.
+
+The semantic checker supports this registry first. A physical evaluator must
+explicitly implement and negotiate these function revisions before executing
+them; signature acceptance alone does not provide execution capability. Custom
+host signatures retain their declared `nullResult` policy and output nullability.

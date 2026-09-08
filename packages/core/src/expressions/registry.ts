@@ -147,7 +147,7 @@ function isAggregationKind(value: unknown): value is FunctionSignature['aggregat
 }
 
 function isFunctionOperation(value: unknown): value is FunctionSignature['operation'] {
-  return value === 'arithmetic' || value === 'comparison' || value === 'boolean' || value === 'coalesce' || value === 'cast' || value === 'aggregate' || value === 'divide' || value === 'ratio-of-sums' || value === 'mean-of-rates' || value === 'temporal' || value === 'other';
+  return value === 'arithmetic' || value === 'comparison' || value === 'boolean' || value === 'coalesce' || value === 'conditional' || value === 'cast' || value === 'aggregate' || value === 'divide' || value === 'ratio-of-sums' || value === 'mean-of-rates' || value === 'temporal' || value === 'other';
 }
 
 function isNullPolicy(value: unknown): value is FunctionSignature['nullPolicy'] {
@@ -266,6 +266,15 @@ export const queryFunctionSignatures: readonly FunctionSignature[] = Object.free
   signature({id: 'core.window.rank', revision: '1'}, [], countType(false), 'other', 'none', {contexts: ['window'], nullResult: 'non-null'}),
 ].map(cloneSignature));
 
-export function createQueryFunctionRegistry(digest = 'core-query-1'): Outcome<FunctionRegistry> {
-  return createFunctionRegistry({digest, signatures: queryFunctionSignatures});
+const queryFunctionSignaturesV2: readonly FunctionSignature[] = Object.freeze([
+  ...queryFunctionSignatures,
+  signature({id: 'core.equal', revision: '1'}, [{constraint: any}, {constraint: any}], booleanType(false), 'comparison'),
+  signature({id: 'core.if', revision: '1'}, [{constraint: {kind: 'boolean'}}, {constraint: any}, {constraint: any}], {kind: 'same-as', argument: 1}, 'conditional'),
+].map(cloneSignature));
+
+export function createQueryFunctionRegistry(input: string | {readonly version: '2'; readonly digest?: string} = 'core-query-1'): Outcome<FunctionRegistry> {
+  if (typeof input === 'string') return createFunctionRegistry({digest: input, signatures: queryFunctionSignatures});
+  if (input === null || typeof input !== 'object' || input.version !== '2')
+    return semanticFailure('semantic.registry-version', 'Unsupported query function registry version.', ['version']);
+  return createFunctionRegistry({digest: input.digest ?? 'core-query-2', signatures: queryFunctionSignaturesV2});
 }

@@ -271,6 +271,24 @@ function checkCall(
         return semanticFailure('semantic.temporal-mismatch', 'Comparison requires compatible calendar, timezone and temporal grain.', [...path, 'arguments', index]);
     }
   }
+  if (signature.operation === 'conditional') {
+    if (args.length !== 3 || args[0]!.type.value !== 'boolean')
+      return semanticFailure('semantic.conditional-shape', 'Conditional expressions require a boolean condition and two branches.', [...path, 'arguments']);
+    const thenBranch = args[1]!;
+    const elseBranch = args[2]!;
+    if (thenBranch.type.value !== elseBranch.type.value)
+      return semanticFailure('semantic.type-mismatch', 'Conditional branches require the same value type.', [...path, 'arguments', 2]);
+    if (!sameUnit(thenBranch.type, elseBranch.type))
+      return semanticFailure('semantic.unit-mismatch', 'Conditional branches require the same registered unit.', [...path, 'arguments', 2]);
+    if (!sameTemporal(thenBranch.type, elseBranch.type))
+      return semanticFailure('semantic.temporal-mismatch', 'Conditional branches require the same temporal policy.', [...path, 'arguments', 2]);
+    for (let index = 0; index < args.length; index += 1)
+      for (let other = index + 1; other < args.length; other += 1)
+        if (!sameOrBroadcastGrain(args[index]!, args[other]!) &&
+            !(args[index]!.expression.kind === 'literal' && grainOf(args[index]!.type).length === 0) &&
+            !(args[other]!.expression.kind === 'literal' && grainOf(args[other]!.type).length === 0))
+          return semanticFailure('semantic.grain-mismatch', 'Conditional arguments require compatible grains.', [...path, 'arguments', other]);
+  }
 
   const output = outputType(signature.output, signature.operation, signature.nullResult, args, path);
   if (!output.ok) return output;
@@ -280,11 +298,18 @@ function checkCall(
   if (entityIds.length > 1)
     return semanticFailure('semantic.entity-grain', 'An expression cannot combine fields from different entity bindings without an explicit registered relation.', [...path, 'arguments']);
   const aggregation = signature.operation === 'ratio-of-sums' ? 'ratio-of-sums' : signature.operation === 'mean-of-rates' ? 'non-additive' : signature.aggregation.kind;
+  const inheritedGrain = args.find((argument) => grainOf(argument.type).length > 0)?.type.grain;
+  const resultType = signature.operation === 'conditional' || signature.operation === 'comparison'
+    ? {...output.value, ...(inheritedGrain === undefined ? {} : {grain: inheritedGrain}),
+      ...(signature.operation === 'conditional' ? {nullable: signature.nullResult === 'non-null' ? false
+        : signature.nullResult === 'preserve' ? output.value.nullable
+        : output.value.nullable || args.some((argument) => argument.type.nullable)} : {})}
+    : signature.operation === 'coalesce'
+      ? {...output.value, nullable: args.every((argument) => argument.type.nullable)}
+      : output.value;
   return {ok: true, value: {
     expression: node,
-    type: signature.operation === 'coalesce'
-      ? {...output.value, nullable: args.every((argument) => argument.type.nullable)}
-      : output.value,
+    type: resultType,
     context,
     ...(entityIds.length === 1 ? {entityId: entityIds[0]} : {}),
     aggregation,

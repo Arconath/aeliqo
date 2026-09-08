@@ -31,6 +31,7 @@ export type FunctionOperation =
   | 'comparison'
   | 'boolean'
   | 'coalesce'
+  | 'conditional'
   | 'cast'
   | 'aggregate'
   | 'divide'
