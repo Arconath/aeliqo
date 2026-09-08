@@ -5,7 +5,7 @@ test("native table preserves exact values, stable identity and scope", async ({p
   const table = page.locator("#table");
   await expect(table.locator("table")).toHaveCount(1);
   await expect(table.locator("td").filter({hasText: "100000000000000000.01"})).toHaveCount(1);
-  await expect(table.locator("[part=scope]")).toHaveText("Showing 2 of 100 rows.");
+  await expect(table.locator("[part=scope]")).toHaveText("2 of 100 matching records loaded");
   await table.locator("input[type=checkbox]").first().check();
   await expect.poll(() => page.evaluate(() => (window as unknown as {dataFixture: {events: {type: string; detail: {keys?: string[]}}[]}}).dataFixture.events.findLast((event) => event.type === "aeliqo-table-selection")?.detail.keys)).toEqual(["string:1:a"]);
   const selection = await table.locator("input[type=checkbox]").first().evaluate((input) => (input as HTMLInputElement).getAttribute("aria-label"));
@@ -20,7 +20,7 @@ test("grid mode is explicit and virtualization remains bounded", async ({page}) 
   await expect(grid.locator("[role=row][aria-rowindex='1']")).toHaveCount(1);
   await expect(grid.locator("[role=gridcell][data-col-index='0']").first()).toHaveAttribute("aria-colindex", "1");
   await expect(grid.locator("[role=row][data-row-index]")).toHaveCount(1);
-  await expect(grid.locator("[part=scope]")).toHaveText("Showing 1 rendered of 2 loaded rows; 100 matching rows.");
+  await expect(grid.locator("[part=scope]")).toHaveText("Showing 1 rendered of 2 loaded rows; 2 of 100 matching records loaded.");
   const firstCell = grid.locator("[role=gridcell][data-row-index='0'][data-col-index='0']");
   await firstCell.focus();
   await page.keyboard.press("ArrowRight");
