@@ -292,7 +292,7 @@ function aggregateFromMeaning(meaning: MeaningDefinition, _definitions: readonly
   if (meaning.implementation.kind === 'host-capability') return unsupported('host-capability', `Meaning ${meaning.id}@${meaning.revision} is host-backed and has no local expression.`, ['Use the source capability executor.']);
   const expression = meaning.implementation.expression;
   if (expression.kind !== 'call') return unsupported('meaning-aggregate', `Meaning ${meaning.id}@${meaning.revision} is not an explicit aggregate call.`, ['Supply an approved aggregate meaning.']);
-  return {ok: true, value: {id: meaning.id, function: expression.function, arguments: expression.arguments}};
+  return {ok: true, value: {id: meaning.id, label: meaning.label, function: expression.function, arguments: expression.arguments}};
 }
 
 function lowerQuerySpec(query: QuerySpec, catalog: Catalog, registry: FunctionRegistry, definitions: readonly MeaningDefinition[]): QueryOutcome<RelationalQuery> {
