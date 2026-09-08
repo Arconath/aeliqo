@@ -25,6 +25,8 @@ const catalog: Catalog = {
   entities: [{id: 'facts', label: 'Facts', identity: ['id'], rowGrain: ['id'], fields: [
     {id: 'id', label: 'ID', role: 'identity', type: {value: 'text', nullable: false}},
     {id: 'value', label: 'Value', role: 'measure', type: {value: 'integer', nullable: false}},
+    {id: 'numerator', label: 'Numerator', role: 'measure', type: {value: 'integer', nullable: true}},
+    {id: 'denominator', label: 'Denominator', role: 'measure', type: {value: 'integer', nullable: true}},
     {id: 'amount', label: 'Amount', role: 'measure', type: {value: 'decimal', nullable: false}},
     {id: 'floatValue', label: 'Float value', role: 'measure', type: {value: 'float', nullable: false}},
   ]}], relationships: [], meanings: [], capabilities: [],
@@ -58,9 +60,9 @@ describe('query numeric exactness', () => {
       aggregates: [{id: 'total', function: ref('core.aggregate.sum'), arguments: [field('value')]}],
     });
     const result = evaluate(query, [
-      {id: 'a', value: MAX_SAFE, amount: {decimal: '0'}, floatValue: 0},
-      {id: 'b', value: 2, amount: {decimal: '0'}, floatValue: 0},
-      {id: 'c', value: -MAX_SAFE, amount: {decimal: '0'}, floatValue: 0},
+      {id: 'a', value: MAX_SAFE, amount: {decimal: '0'}, floatValue: 0, numerator: 0, denominator: 0},
+      {id: 'b', value: 2, amount: {decimal: '0'}, floatValue: 0, numerator: 0, denominator: 0},
+      {id: 'c', value: -MAX_SAFE, amount: {decimal: '0'}, floatValue: 0, numerator: 0, denominator: 0},
     ]);
     expect(result).toMatchObject({ok: true, value: {rows: [{total: 2}], precision: {kind: 'exact'}}});
   });
@@ -75,7 +77,21 @@ describe('query numeric exactness', () => {
         literal(MAX_SAFE, 'integer'),
       ])}],
     });
-    const result = evaluate(query, [{id: 'a', value: MAX_SAFE, amount: {decimal: '0'}, floatValue: 0}]);
+    const result = evaluate(query, [{id: 'a', value: MAX_SAFE, amount: {decimal: '0'}, floatValue: 0, numerator: 0, denominator: 0}]);
+    expect(result).toMatchObject({ok: false, diagnostics: [{code: 'query.numeric-overflow'}]});
+  });
+
+  it('rejects an oversized integer aggregate before an outer subtraction can hide it', () => {
+    const query = projectionQuery([{id: 'result', expression: {kind: 'field', ref: 'result'}}], {
+      aggregates: [{id: 'result', function: ref('core.subtract'), arguments: [
+        call('core.aggregate.sum', [field('value')]),
+        literal(MAX_SAFE, 'integer'),
+      ]}],
+    });
+    const result = evaluate(query, [
+      {id: 'a', value: MAX_SAFE, amount: {decimal: '0'}, floatValue: 0, numerator: 0, denominator: 0},
+      {id: 'b', value: 2, amount: {decimal: '0'}, floatValue: 0, numerator: 0, denominator: 0},
+    ]);
     expect(result).toMatchObject({ok: false, diagnostics: [{code: 'query.numeric-overflow'}]});
   });
 
@@ -94,7 +110,7 @@ describe('query numeric exactness', () => {
         {id: 'integerMinusDecimal', expression: call('core.subtract', [literal(2, 'integer'), field('amount')])},
       ],
     });
-    const result = evaluate(query, [{id: 'a', value: 0, amount: {decimal: '1.25'}, floatValue: 0}]);
+    const result = evaluate(query, [{id: 'a', value: 0, amount: {decimal: '1.25'}, floatValue: 0, numerator: 0, denominator: 0}]);
     expect(result).toMatchObject({ok: true, value: {rows: [{
       decimalPlusInteger: {decimal: '3.25'},
       integerPlusDecimal: {decimal: '3.25'},
@@ -110,7 +126,42 @@ describe('query numeric exactness', () => {
     ], {
       derives: [{id: 'sum', expression: call('core.add', [field('floatValue'), literal(0.2, 'float')])}],
     });
-    const result = evaluate(query, [{id: 'a', value: 0, amount: {decimal: '0'}, floatValue: 0.1}]);
+    const result = evaluate(query, [{id: 'a', value: 0, amount: {decimal: '0'}, floatValue: 0.1, numerator: 0, denominator: 0}]);
     expect(result).toMatchObject({ok: true, value: {rows: [{id: 'a', sum: 0.30000000000000004}], precision: {kind: 'approximate'}}});
+  });
+
+  it('keeps window integer cancellation exact when each frame result is safe', () => {
+    const query = projectionQuery([
+      {id: 'id', expression: field('id')},
+      {id: 'windowSum', expression: {kind: 'field', ref: 'windowSum'}},
+    ], {
+      windows: [{id: 'windowSum', function: ref('core.window.sum'), arguments: [field('value')], partitionBy: [], orderBy: [
+        {expression: field('id'), direction: 'asc', nulls: 'last'},
+      ], frame: {preceding: 0, following: 2}}],
+    });
+    const result = evaluate(query, [
+      {id: 'a', value: MAX_SAFE, amount: {decimal: '0'}, floatValue: 0, numerator: 0, denominator: 0},
+      {id: 'b', value: 2, amount: {decimal: '0'}, floatValue: 0, numerator: 0, denominator: 0},
+      {id: 'c', value: -MAX_SAFE, amount: {decimal: '0'}, floatValue: 0, numerator: 0, denominator: 0},
+    ]);
+    expect(result).toMatchObject({ok: true, value: {rows: [
+      {id: 'a', windowSum: 2},
+      {id: 'b', windowSum: -9007199254740989},
+      {id: 'c', windowSum: -9007199254740991},
+    ], precision: {kind: 'exact'}}});
+  });
+
+  it('accumulates wide integer ratio inputs exactly before documented float division', () => {
+    const query = projectionQuery([{id: 'ratio', expression: {kind: 'field', ref: 'ratio'}}], {
+      aggregates: [{id: 'ratio', function: ref('core.ratio-of-sums'), arguments: [field('numerator'), field('denominator')]}],
+    });
+    const result = evaluate(query, [
+      {id: 'a', value: 0, amount: {decimal: '0'}, floatValue: 0, numerator: MAX_SAFE, denominator: 1},
+      {id: 'b', value: 0, amount: {decimal: '0'}, floatValue: 0, numerator: 2, denominator: 0},
+      {id: 'c', value: 0, amount: {decimal: '0'}, floatValue: 0, numerator: 2, denominator: 0},
+    ]);
+    // Exact integer total is 2^53+3; conversion to the declared approximate
+    // ratio output rounds that value to the nearest representable float.
+    expect(result).toMatchObject({ok: true, value: {rows: [{ratio: 9007199254740996}], precision: {kind: 'approximate'}}});
   });
 });
