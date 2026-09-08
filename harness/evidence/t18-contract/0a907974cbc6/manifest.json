@@ -1,0 +1,36 @@
+{
+  "task": "T18",
+  "slice": "canonical visualization contract",
+  "status": "pass",
+  "sourceCommit": "e40e9e85c80f1e5ad4daa883ac77c4b04089c226",
+  "sourceDigest": "0a907974cbc6c151c6f9fb8a870536da405878ac7db1312f42862f69907a9550",
+  "checks": {
+    "contractTests": 132,
+    "strictTypes": true,
+    "schemaParity": true,
+    "installedPackageTypesAndRuntime": true,
+    "independentReview": true
+  },
+  "limits": [
+    "T18 remains active: twelve owned renderers, semantic/region integration, browser/visual/a11y/performance proof remain to implement.",
+    "Binding does not inspect row payloads or prove business truth. Geometry and current authorization must be rechecked by the owning host/renderer."
+  ],
+  "artifacts": [
+    {
+      "path": "consumer-report.json",
+      "sha256": "2c12dd068cc7d5af5a2374d29d0b7b41fb847e01e07804604da3b8d00008a396"
+    },
+    {
+      "path": "consumer.log",
+      "sha256": "9b4f9328732e215d312c36e5738c885174122858c402a381662dcf475df28d74"
+    },
+    {
+      "path": "contracts.log",
+      "sha256": "aa39c6a5ff5b7a7f59a1ae3f533636a5c3fc271bf094fd6a5db7722e7e9b347f"
+    },
+    {
+      "path": "review.json",
+      "sha256": "0be5c941443650c357cc529ecf1472d97b304e1a46f11c5fad9d93b97f02cff1"
+    }
+  ]
+}

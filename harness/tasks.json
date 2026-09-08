@@ -597,7 +597,12 @@
       ],
       "status": "active",
       "stage": "ready",
-      "evidence": [],
+      "evidence": [
+        {
+          "path": "harness/evidence/t18-contract/0a907974cbc6/manifest.json",
+          "sha256": "0f46541dbf3226994d76eadd0de759b90960d6477624a42ff1d6d7a867318fae"
+        }
+      ],
       "notes": "Parent owns canonical VisualizationSpec/schema/binder contracts first. Isolated family writers follow only after the contract packet is committed. T16 and T17 evidence accepted."
     },
     {

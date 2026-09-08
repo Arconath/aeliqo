@@ -257,3 +257,9 @@ bytes excluding Lit. Independent reviews closed; actual desktop/RTL/installed
 captures inspected. Evidence: harness/evidence/t16/f5d5dd06c2c6.
 T18 visualization family and T19 bounded presentation compiler are next.
 Manual AT, cross-browser, integrated performance and release gates remain open.
+
+T18 contract packet e40e9e8 is reviewed: 12 typed visualization families,
+explicit authorized histogram/relationship mappings, additive and temporal
+semantics, scoped Result binding. 132 contract tests, strict types and installed
+core consumer pass. Evidence: harness/evidence/t18-contract/0a907974cbc6. T18 remains active; this is not renderer
+acceptance. T19 is independently active on codex/t19-presentation-compiler.
