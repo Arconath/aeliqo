@@ -88,7 +88,8 @@ export class AeliqoTableElement extends LitElement {
   private renderRow(row: AeliqoTableRow, selectable: boolean) {
     const key = stableTableRowKey(row, this.identity);
     const selected = key !== undefined && this.selectedKeys.includes(key);
-    const label = key === undefined ? "Row cannot be selected" : `${selected ? "Deselect" : "Select"} ${this.entity} ${tableIdentityLabel(row, this.identity)}`;
+    const action = selected && this.selection !== "single" ? "Deselect" : "Select";
+    const label = key === undefined ? "Row cannot be selected" : `${action} ${this.entity} ${tableIdentityLabel(row, this.identity)}`;
     return html`
       <tr ?data-selected=${selected} aria-selected=${selectable ? String(selected) : nothing}>
         ${selectable ? html`

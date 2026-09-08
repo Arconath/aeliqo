@@ -67,6 +67,14 @@ test("region emits trusted table selection, clears explicitly, and keeps long fo
   const radioNames = await page.locator('aeliqo-table[data-aeliqo-node-id="table"] input[type="radio"]').evaluateAll((inputs) => inputs.map((input) => input.getAttribute("name")));
   expect(radioNames.length).toBe(2);
   expect(new Set(radioNames).size).toBe(1);
+  await page.evaluate(async () => {
+    const region = document.querySelector("aeliqo-region") as HTMLElement;
+    const table = region.shadowRoot?.querySelector('aeliqo-table[data-aeliqo-node-id="table"]') as (HTMLElement & {selectedKeys: readonly string[]; updateComplete: Promise<unknown>}) | null;
+    if (table === null || table === undefined) throw new Error("table did not mount");
+    table.selectedKeys = ["string:2:e2"];
+    await table.updateComplete;
+  });
+  await expect(page.locator('aeliqo-table[data-aeliqo-node-id="table"] input[type="radio"]').nth(1)).toHaveAttribute("aria-label", "Select employees e2");
 
   await page.evaluate(async () => {
     const app = window as typeof window & {mountFilters: () => void};
