@@ -390,21 +390,30 @@ async function exerciseInteraction() {
     catalogRevision: catalog.revision, functionRegistryDigest: authority.functionRegistryDigest,
     kind: 'data', goal: 'Filter employees', needs: [], assumptions: [],
     outputs: [{id: 'employees', kind: 'query', query, dependsOn: [], delivery: 'eager'}]};
-  const store = createRegionStore({readAuthority: () => ({ok: true, value: authority}), authorizeCommit: () => ({ok: true, value: undefined})});
+  let authorizationGate;
+  let authorizationEntered;
+  const store = createRegionStore({readAuthority: () => ({ok: true, value: authority}), authorizeCommit: async () => {
+    if (authorizationGate) { authorizationEntered(); await authorizationGate; }
+    return {ok: true, value: undefined};
+  }});
   const region = value(store.create({id: task.regionId, state: {task}}));
   const selection = {payload: 'selection', entity: 'employees', identity: ['id'], grain: ['id']};
   const mapping = {ref: {id: 'selection.identity', revision: '1'}, source: selection, target: selection, kind: 'identity'};
   const graph = createInteractionGraph({nodes: [{id: 'filter', ports: [{id: 'filter', direction: 'output', payload: 'filter'}]},
+    {id: 'form', ports: [{id: 'edit', direction: 'output', payload: 'draft'}]},
     ...['table', 'detail'].map(id => ({id, ports: [{id: 'selection', direction: 'inout', ...selection}]}))],
     links: [{id: 'selection-link', source: {node: 'table', port: 'selection'}, target: {node: 'detail', port: 'selection'},
       mapping: mapping.ref, propagation: 'identity-equivalence'}], mappings: [mapping]});
+  let grants = ['experience.commit', 'result.inspect', 'draft.edit'];
+  const actor = {id: 'owner', kind: 'user'};
   const controller = createInteractionController({region, graph,
-    readContext: () => ({...authority, results: [current.ref], draftDomain: 'directory', actor: {id: 'owner', kind: 'user'}, grants: ['experience.commit', 'result.inspect']}),
+    readContext: () => ({...authority, results: [current.ref], draftDomain: 'directory', actor, grants}),
     resolveResult: ref => handles.find(handle => handle.snapshot().descriptor?.ref.id === ref.id),
     validateScope: payload => payload.kind === 'filter' && payload.outputId === 'employees'
       ? {ok: true, value: undefined} : {ok: false, diagnostics: [{code: 'host.scope', message: 'Unknown output.', retryable: false}]},
     validateSelection: selected => selected.mode === 'ids' && selected.keys.every(key => current.handle.snapshot().batches.some(batch => batch.rows.some(row => row.id === key)))
       ? {ok: true, value: undefined} : {ok: false, diagnostics: [{code: 'host.selection', message: 'Selection unavailable.', retryable: false}]},
+    validateDraft: () => ({ok: true, value: undefined}),
     materialize: async (payloads, context, next) => {
       check(payloads.length === 1, 'Unexpected materialization fanout');
       const nextQuery = {...query, where: {op: 'and', predicates: payloads[0].predicates}};
@@ -432,11 +441,30 @@ async function exerciseInteraction() {
   check(!forged.ok, 'Wire interaction forged actor authority');
   const unavailable = await controller.dispatch(event('unavailable', 'table', {...selected.payload, selection: {...selected.payload.selection, keys: ['e-2']}}));
   check(!unavailable.ok, 'Selection crossed the filtered population');
+  const draft = {kind: 'draft', entity: 'employees', key: 'e-1', field: 'name', value: 'pending edit', entityRevision: '1'};
+  for (const reason of ['cancel', 'permission', 'actor']) {
+    let release;
+    authorizationGate = new Promise(resolve => { release = resolve; });
+    const entered = new Promise(resolve => { authorizationEntered = resolve; });
+    const before = JSON.stringify(region.snapshot());
+    const dispatched = controller.dispatch(event('pending-' + reason, 'form', draft));
+    const reached = await Promise.race([entered.then(() => true), dispatched.then(() => false)]);
+    check(reached, 'Draft did not reach authorization');
+    if (reason === 'cancel') check(controller.cancel('pending-' + reason), 'Pending interaction was not cancellable');
+    else if (reason === 'permission') grants = [];
+    else actor.id = 'different-actor';
+    release();
+    const stopped = await dispatched;
+    check(!stopped.ok && JSON.stringify(region.snapshot()) === before, 'Pending ' + reason + ' change published an unauthorized draft');
+    authorizationGate = undefined;
+    grants = ['experience.commit', 'result.inspect', 'draft.edit'];
+    actor.id = 'owner';
+  }
   region.revoke();
   check(!(await controller.dispatch(event('after-revoke', 'filter', filter.payload))).ok && region.snapshot().state === undefined,
     'Interaction survived region revocation');
   controller.dispose(); graph.dispose(); store.dispose(); for (const handle of handles) handle.release(); cache.dispose();
-  return {queryCount, filteredRows: 1, linkedSelection: true, staleRejected: true, revoked: true};
+  return {queryCount, filteredRows: 1, linkedSelection: true, staleRejected: true, cancelledBeforeCommit: true, latePermissionRejected: true, revoked: true};
 }
 `;
 
