@@ -1,0 +1,869 @@
+[WebServer] (node:55020) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:55025) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 426 tests using 1 worker
+
+(node:55031) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 5:32:16 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓    1 [chromium] › tests/visual/catalog.spec.ts:7:6 › button desktop-light (751ms)
+[WebServer] 5:32:16 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓    2 [chromium] › tests/visual/catalog.spec.ts:7:6 › button narrow-dark-rtl (500ms)
+[WebServer] 5:32:17 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓    3 [chromium] › tests/visual/catalog.spec.ts:7:6 › icon-button desktop-light (506ms)
+[WebServer] 5:32:17 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓    4 [chromium] › tests/visual/catalog.spec.ts:7:6 › icon-button narrow-dark-rtl (474ms)
+[WebServer] 5:32:18 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓    5 [chromium] › tests/visual/catalog.spec.ts:7:6 › link desktop-light (465ms)
+[WebServer] 5:32:18 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓    6 [chromium] › tests/visual/catalog.spec.ts:7:6 › link narrow-dark-rtl (553ms)
+[WebServer] 5:32:19 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓    7 [chromium] › tests/visual/catalog.spec.ts:7:6 › text desktop-light (482ms)
+[WebServer] 5:32:19 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓    8 [chromium] › tests/visual/catalog.spec.ts:7:6 › text narrow-dark-rtl (457ms)
+[WebServer] 5:32:20 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓    9 [chromium] › tests/visual/catalog.spec.ts:7:6 › heading desktop-light (457ms)
+[WebServer] 5:32:20 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   10 [chromium] › tests/visual/catalog.spec.ts:7:6 › heading narrow-dark-rtl (463ms)
+[WebServer] 5:32:21 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   11 [chromium] › tests/visual/catalog.spec.ts:7:6 › badge desktop-light (400ms)
+[WebServer] 5:32:21 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   12 [chromium] › tests/visual/catalog.spec.ts:7:6 › badge narrow-dark-rtl (428ms)
+[WebServer] 5:32:21 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   13 [chromium] › tests/visual/catalog.spec.ts:7:6 › avatar desktop-light (436ms)
+[WebServer] 5:32:22 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   14 [chromium] › tests/visual/catalog.spec.ts:7:6 › avatar narrow-dark-rtl (462ms)
+[WebServer] 5:32:22 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   15 [chromium] › tests/visual/catalog.spec.ts:7:6 › separator desktop-light (444ms)
+[WebServer] 5:32:23 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   16 [chromium] › tests/visual/catalog.spec.ts:7:6 › separator narrow-dark-rtl (430ms)
+[WebServer] 5:32:23 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   17 [chromium] › tests/visual/catalog.spec.ts:7:6 › surface desktop-light (451ms)
+[WebServer] 5:32:24 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   18 [chromium] › tests/visual/catalog.spec.ts:7:6 › surface narrow-dark-rtl (427ms)
+[WebServer] 5:32:24 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   19 [chromium] › tests/visual/catalog.spec.ts:7:6 › stack desktop-light (437ms)
+[WebServer] 5:32:24 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   20 [chromium] › tests/visual/catalog.spec.ts:7:6 › stack narrow-dark-rtl (409ms)
+[WebServer] 5:32:25 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   21 [chromium] › tests/visual/catalog.spec.ts:7:6 › grid desktop-light (441ms)
+[WebServer] 5:32:25 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   22 [chromium] › tests/visual/catalog.spec.ts:7:6 › grid narrow-dark-rtl (432ms)
+[WebServer] 5:32:26 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   23 [chromium] › tests/visual/catalog.spec.ts:7:6 › split-pane desktop-light (459ms)
+[WebServer] 5:32:26 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   24 [chromium] › tests/visual/catalog.spec.ts:7:6 › split-pane narrow-dark-rtl (482ms)
+[WebServer] 5:32:27 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   25 [chromium] › tests/visual/catalog.spec.ts:7:6 › scroll-area desktop-light (437ms)
+[WebServer] 5:32:27 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   26 [chromium] › tests/visual/catalog.spec.ts:7:6 › scroll-area narrow-dark-rtl (455ms)
+[WebServer] 5:32:28 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   27 [chromium] › tests/visual/catalog.spec.ts:7:6 › text-field desktop-light (452ms)
+[WebServer] 5:32:28 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   28 [chromium] › tests/visual/catalog.spec.ts:7:6 › text-field narrow-dark-rtl (481ms)
+[WebServer] 5:32:29 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   29 [chromium] › tests/visual/catalog.spec.ts:7:6 › text-area desktop-light (467ms)
+[WebServer] 5:32:29 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   30 [chromium] › tests/visual/catalog.spec.ts:7:6 › text-area narrow-dark-rtl (463ms)
+[WebServer] 5:32:30 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   31 [chromium] › tests/visual/catalog.spec.ts:7:6 › number-field desktop-light (451ms)
+[WebServer] 5:32:30 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   32 [chromium] › tests/visual/catalog.spec.ts:7:6 › number-field narrow-dark-rtl (461ms)
+[WebServer] 5:32:30 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   33 [chromium] › tests/visual/catalog.spec.ts:7:6 › checkbox desktop-light (442ms)
+[WebServer] 5:32:31 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   34 [chromium] › tests/visual/catalog.spec.ts:7:6 › checkbox narrow-dark-rtl (446ms)
+[WebServer] 5:32:31 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   35 [chromium] › tests/visual/catalog.spec.ts:7:6 › radio-group desktop-light (453ms)
+[WebServer] 5:32:32 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   36 [chromium] › tests/visual/catalog.spec.ts:7:6 › radio-group narrow-dark-rtl (447ms)
+[WebServer] 5:32:32 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   37 [chromium] › tests/visual/catalog.spec.ts:7:6 › switch desktop-light (450ms)
+[WebServer] 5:32:33 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   38 [chromium] › tests/visual/catalog.spec.ts:7:6 › switch narrow-dark-rtl (429ms)
+[WebServer] 5:32:33 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   39 [chromium] › tests/visual/catalog.spec.ts:7:6 › select desktop-light (460ms)
+[WebServer] 5:32:34 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   40 [chromium] › tests/visual/catalog.spec.ts:7:6 › select narrow-dark-rtl (434ms)
+[WebServer] 5:32:34 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   41 [chromium] › tests/visual/catalog.spec.ts:7:6 › combobox desktop-light (466ms)
+[WebServer] 5:32:35 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   42 [chromium] › tests/visual/catalog.spec.ts:7:6 › combobox narrow-dark-rtl (464ms)
+[WebServer] 5:32:35 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   43 [chromium] › tests/visual/catalog.spec.ts:7:6 › date-field desktop-light (476ms)
+[WebServer] 5:32:35 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   44 [chromium] › tests/visual/catalog.spec.ts:7:6 › date-field narrow-dark-rtl (495ms)
+[WebServer] 5:32:36 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   45 [chromium] › tests/visual/catalog.spec.ts:7:6 › date-range desktop-light (450ms)
+[WebServer] 5:32:36 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   46 [chromium] › tests/visual/catalog.spec.ts:7:6 › date-range narrow-dark-rtl (465ms)
+[WebServer] 5:32:37 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   47 [chromium] › tests/visual/catalog.spec.ts:7:6 › slider desktop-light (470ms)
+[WebServer] 5:32:37 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   48 [chromium] › tests/visual/catalog.spec.ts:7:6 › slider narrow-dark-rtl (503ms)
+[WebServer] 5:32:38 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   49 [chromium] › tests/visual/catalog.spec.ts:7:6 › search-field desktop-light (552ms)
+[WebServer] 5:32:38 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   50 [chromium] › tests/visual/catalog.spec.ts:7:6 › search-field narrow-dark-rtl (505ms)
+[WebServer] 5:32:39 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   51 [chromium] › tests/visual/catalog.spec.ts:7:6 › file-input desktop-light (503ms)
+[WebServer] 5:32:40 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   52 [chromium] › tests/visual/catalog.spec.ts:7:6 › file-input narrow-dark-rtl (503ms)
+[WebServer] 5:32:40 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   53 [chromium] › tests/visual/catalog.spec.ts:7:6 › field-group desktop-light (525ms)
+[WebServer] 5:32:41 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   54 [chromium] › tests/visual/catalog.spec.ts:7:6 › field-group narrow-dark-rtl (505ms)
+[WebServer] 5:32:41 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   55 [chromium] › tests/visual/catalog.spec.ts:7:6 › form desktop-light (505ms)
+[WebServer] 5:32:42 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   56 [chromium] › tests/visual/catalog.spec.ts:7:6 › form narrow-dark-rtl (485ms)
+[WebServer] 5:32:42 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   57 [chromium] › tests/visual/catalog.spec.ts:7:6 › tabs desktop-light (522ms)
+[WebServer] 5:32:43 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   58 [chromium] › tests/visual/catalog.spec.ts:7:6 › tabs narrow-dark-rtl (500ms)
+[WebServer] 5:32:43 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   59 [chromium] › tests/visual/catalog.spec.ts:7:6 › breadcrumb desktop-light (478ms)
+[WebServer] 5:32:44 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   60 [chromium] › tests/visual/catalog.spec.ts:7:6 › breadcrumb narrow-dark-rtl (467ms)
+[WebServer] 5:32:44 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   61 [chromium] › tests/visual/catalog.spec.ts:7:6 › pagination desktop-light (450ms)
+[WebServer] 5:32:44 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   62 [chromium] › tests/visual/catalog.spec.ts:7:6 › pagination narrow-dark-rtl (466ms)
+[WebServer] 5:32:45 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   63 [chromium] › tests/visual/catalog.spec.ts:7:6 › menu desktop-light (455ms)
+[WebServer] 5:32:45 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   64 [chromium] › tests/visual/catalog.spec.ts:7:6 › menu narrow-dark-rtl (499ms)
+[WebServer] 5:32:46 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   65 [chromium] › tests/visual/catalog.spec.ts:7:6 › tree-nav desktop-light (495ms)
+[WebServer] 5:32:46 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   66 [chromium] › tests/visual/catalog.spec.ts:7:6 › tree-nav narrow-dark-rtl (490ms)
+[WebServer] 5:32:47 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   67 [chromium] › tests/visual/catalog.spec.ts:7:6 › tooltip desktop-light (457ms)
+[WebServer] 5:32:47 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   68 [chromium] › tests/visual/catalog.spec.ts:7:6 › tooltip narrow-dark-rtl (449ms)
+[WebServer] 5:32:48 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   69 [chromium] › tests/visual/catalog.spec.ts:7:6 › popover desktop-light (456ms)
+[WebServer] 5:32:48 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   70 [chromium] › tests/visual/catalog.spec.ts:7:6 › popover narrow-dark-rtl (468ms)
+[WebServer] 5:32:49 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   71 [chromium] › tests/visual/catalog.spec.ts:7:6 › dialog desktop-light (564ms)
+[WebServer] 5:32:49 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   72 [chromium] › tests/visual/catalog.spec.ts:7:6 › dialog narrow-dark-rtl (493ms)
+[WebServer] 5:32:50 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   73 [chromium] › tests/visual/catalog.spec.ts:7:6 › drawer desktop-light (488ms)
+[WebServer] 5:32:50 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   74 [chromium] › tests/visual/catalog.spec.ts:7:6 › drawer narrow-dark-rtl (465ms)
+[WebServer] 5:32:51 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   75 [chromium] › tests/visual/catalog.spec.ts:7:6 › toast desktop-light (423ms)
+[WebServer] 5:32:51 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   76 [chromium] › tests/visual/catalog.spec.ts:7:6 › toast narrow-dark-rtl (469ms)
+[WebServer] 5:32:52 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   77 [chromium] › tests/visual/catalog.spec.ts:7:6 › alert desktop-light (470ms)
+[WebServer] 5:32:52 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   78 [chromium] › tests/visual/catalog.spec.ts:7:6 › alert narrow-dark-rtl (483ms)
+[WebServer] 5:32:53 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   79 [chromium] › tests/visual/catalog.spec.ts:7:6 › progress desktop-light (492ms)
+[WebServer] 5:32:53 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   80 [chromium] › tests/visual/catalog.spec.ts:7:6 › progress narrow-dark-rtl (472ms)
+[WebServer] 5:32:54 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   81 [chromium] › tests/visual/catalog.spec.ts:7:6 › skeleton desktop-light (507ms)
+[WebServer] 5:32:54 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   82 [chromium] › tests/visual/catalog.spec.ts:7:6 › skeleton narrow-dark-rtl (467ms)
+[WebServer] 5:32:55 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   83 [chromium] › tests/visual/catalog.spec.ts:7:6 › empty-state desktop-light (492ms)
+[WebServer] 5:32:55 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   84 [chromium] › tests/visual/catalog.spec.ts:7:6 › empty-state narrow-dark-rtl (523ms)
+[WebServer] 5:32:56 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   85 [chromium] › tests/visual/catalog.spec.ts:7:6 › metric desktop-light (501ms)
+[WebServer] 5:32:56 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   86 [chromium] › tests/visual/catalog.spec.ts:7:6 › metric narrow-dark-rtl (490ms)
+[WebServer] 5:32:57 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   87 [chromium] › tests/visual/catalog.spec.ts:7:6 › delta desktop-light (478ms)
+[WebServer] 5:32:57 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   88 [chromium] › tests/visual/catalog.spec.ts:7:6 › delta narrow-dark-rtl (501ms)
+[WebServer] 5:32:58 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   89 [chromium] › tests/visual/catalog.spec.ts:7:6 › key-value desktop-light (504ms)
+[WebServer] 5:32:58 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   90 [chromium] › tests/visual/catalog.spec.ts:7:6 › key-value narrow-dark-rtl (449ms)
+[WebServer] 5:32:59 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   91 [chromium] › tests/visual/catalog.spec.ts:7:6 › detail desktop-light (467ms)
+[WebServer] 5:32:59 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   92 [chromium] › tests/visual/catalog.spec.ts:7:6 › detail narrow-dark-rtl (500ms)
+[WebServer] 5:33:00 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   93 [chromium] › tests/visual/catalog.spec.ts:7:6 › record-list desktop-light (508ms)
+[WebServer] 5:33:00 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   94 [chromium] › tests/visual/catalog.spec.ts:7:6 › record-list narrow-dark-rtl (554ms)
+[WebServer] 5:33:01 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   95 [chromium] › tests/visual/catalog.spec.ts:7:6 › card-collection desktop-light (577ms)
+[WebServer] 5:33:01 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   96 [chromium] › tests/visual/catalog.spec.ts:7:6 › card-collection narrow-dark-rtl (637ms)
+[WebServer] 5:33:02 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   97 [chromium] › tests/visual/catalog.spec.ts:7:6 › table desktop-light (724ms)
+[WebServer] 5:33:03 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   98 [chromium] › tests/visual/catalog.spec.ts:7:6 › table narrow-dark-rtl (765ms)
+[WebServer] 5:33:03 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   99 [chromium] › tests/visual/catalog.spec.ts:7:6 › filter-builder desktop-light (566ms)
+[WebServer] 5:33:04 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  100 [chromium] › tests/visual/catalog.spec.ts:7:6 › filter-builder narrow-dark-rtl (535ms)
+[WebServer] 5:33:04 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  101 [chromium] › tests/visual/catalog.spec.ts:7:6 › selection-summary desktop-light (472ms)
+[WebServer] 5:33:05 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  102 [chromium] › tests/visual/catalog.spec.ts:7:6 › selection-summary narrow-dark-rtl (487ms)
+[WebServer] 5:33:05 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  103 [chromium] › tests/visual/catalog.spec.ts:7:6 › trend desktop-light (604ms)
+[WebServer] 5:33:06 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  104 [chromium] › tests/visual/catalog.spec.ts:7:6 › trend narrow-dark-rtl (646ms)
+[WebServer] 5:33:07 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  105 [chromium] › tests/visual/catalog.spec.ts:7:6 › bar desktop-light (558ms)
+[WebServer] 5:33:07 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  106 [chromium] › tests/visual/catalog.spec.ts:7:6 › bar narrow-dark-rtl (553ms)
+[WebServer] 5:33:08 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  107 [chromium] › tests/visual/catalog.spec.ts:7:6 › area desktop-light (538ms)
+[WebServer] 5:33:08 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  108 [chromium] › tests/visual/catalog.spec.ts:7:6 › area narrow-dark-rtl (533ms)
+[WebServer] 5:33:09 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  109 [chromium] › tests/visual/catalog.spec.ts:7:6 › scatter desktop-light (527ms)
+[WebServer] 5:33:09 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  110 [chromium] › tests/visual/catalog.spec.ts:7:6 › scatter narrow-dark-rtl (565ms)
+[WebServer] 5:33:10 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  111 [chromium] › tests/visual/catalog.spec.ts:7:6 › histogram desktop-light (546ms)
+[WebServer] 5:33:11 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  112 [chromium] › tests/visual/catalog.spec.ts:7:6 › histogram narrow-dark-rtl (571ms)
+[WebServer] 5:33:11 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  113 [chromium] › tests/visual/catalog.spec.ts:7:6 › heatmap desktop-light (529ms)
+[WebServer] 5:33:12 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  114 [chromium] › tests/visual/catalog.spec.ts:7:6 › heatmap narrow-dark-rtl (552ms)
+[WebServer] 5:33:12 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  115 [chromium] › tests/visual/catalog.spec.ts:7:6 › matrix desktop-light (475ms)
+[WebServer] 5:33:13 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  116 [chromium] › tests/visual/catalog.spec.ts:7:6 › matrix narrow-dark-rtl (466ms)
+[WebServer] 5:33:13 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  117 [chromium] › tests/visual/catalog.spec.ts:7:6 › relationship desktop-light (505ms)
+[WebServer] 5:33:14 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  118 [chromium] › tests/visual/catalog.spec.ts:7:6 › relationship narrow-dark-rtl (517ms)
+[WebServer] 5:33:14 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  119 [chromium] › tests/visual/catalog.spec.ts:7:6 › tree desktop-light (503ms)
+[WebServer] 5:33:15 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  120 [chromium] › tests/visual/catalog.spec.ts:7:6 › tree narrow-dark-rtl (549ms)
+[WebServer] 5:33:15 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  121 [chromium] › tests/visual/catalog.spec.ts:7:6 › treemap desktop-light (493ms)
+[WebServer] 5:33:16 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  122 [chromium] › tests/visual/catalog.spec.ts:7:6 › treemap narrow-dark-rtl (533ms)
+[WebServer] 5:33:16 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  123 [chromium] › tests/visual/catalog.spec.ts:7:6 › timeline desktop-light (526ms)
+[WebServer] 5:33:17 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  124 [chromium] › tests/visual/catalog.spec.ts:7:6 › timeline narrow-dark-rtl (540ms)
+[WebServer] 5:33:17 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  125 [chromium] › tests/visual/catalog.spec.ts:7:6 › calendar-grid desktop-light (539ms)
+[WebServer] 5:33:18 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  126 [chromium] › tests/visual/catalog.spec.ts:7:6 › calendar-grid narrow-dark-rtl (557ms)
+[WebServer] 5:33:18 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  127 [chromium] › tests/visual/catalog.spec.ts:7:6 › explorer desktop-light (573ms)
+[WebServer] 5:33:19 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  128 [chromium] › tests/visual/catalog.spec.ts:7:6 › explorer narrow-dark-rtl (587ms)
+[WebServer] 5:33:20 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  129 [chromium] › tests/visual/catalog.spec.ts:7:6 › comparison desktop-light (477ms)
+[WebServer] 5:33:20 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  130 [chromium] › tests/visual/catalog.spec.ts:7:6 › comparison narrow-dark-rtl (483ms)
+[WebServer] 5:33:21 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  131 [chromium] › tests/visual/catalog.spec.ts:7:6 › breakdown desktop-light (483ms)
+[WebServer] 5:33:21 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  132 [chromium] › tests/visual/catalog.spec.ts:7:6 › breakdown narrow-dark-rtl (499ms)
+[WebServer] 5:33:22 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  133 [chromium] › tests/visual/catalog.spec.ts:7:6 › investigation desktop-light (643ms)
+[WebServer] 5:33:22 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  134 [chromium] › tests/visual/catalog.spec.ts:7:6 › investigation narrow-dark-rtl (654ms)
+[WebServer] 5:33:23 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  135 [chromium] › tests/visual/catalog.spec.ts:7:6 › search-results desktop-light (493ms)
+[WebServer] 5:33:23 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  136 [chromium] › tests/visual/catalog.spec.ts:7:6 › search-results narrow-dark-rtl (444ms)
+[WebServer] 5:33:24 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  137 [chromium] › tests/visual/catalog.spec.ts:7:6 › record-editor desktop-light (502ms)
+[WebServer] 5:33:24 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  138 [chromium] › tests/visual/catalog.spec.ts:7:6 › record-editor narrow-dark-rtl (501ms)
+[WebServer] 5:33:25 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  139 [chromium] › tests/visual/catalog.spec.ts:7:6 › form-flow desktop-light (485ms)
+[WebServer] 5:33:25 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  140 [chromium] › tests/visual/catalog.spec.ts:7:6 › form-flow narrow-dark-rtl (484ms)
+[WebServer] 5:33:26 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  141 [chromium] › tests/visual/catalog.spec.ts:7:6 › quality-panel desktop-light (462ms)
+[WebServer] 5:33:26 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  142 [chromium] › tests/visual/catalog.spec.ts:7:6 › quality-panel narrow-dark-rtl (496ms)
+(node:55607) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 5:33:30 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  143 [firefox] › tests/visual/catalog.spec.ts:7:6 › button desktop-light (1.5s)
+[WebServer] 5:33:31 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  144 [firefox] › tests/visual/catalog.spec.ts:7:6 › button narrow-dark-rtl (643ms)
+[WebServer] 5:33:31 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  145 [firefox] › tests/visual/catalog.spec.ts:7:6 › icon-button desktop-light (712ms)
+[WebServer] 5:33:32 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  146 [firefox] › tests/visual/catalog.spec.ts:7:6 › icon-button narrow-dark-rtl (709ms)
+[WebServer] 5:33:33 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  147 [firefox] › tests/visual/catalog.spec.ts:7:6 › link desktop-light (744ms)
+[WebServer] 5:33:33 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  148 [firefox] › tests/visual/catalog.spec.ts:7:6 › link narrow-dark-rtl (626ms)
+[WebServer] 5:33:34 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  149 [firefox] › tests/visual/catalog.spec.ts:7:6 › text desktop-light (625ms)
+[WebServer] 5:33:35 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  150 [firefox] › tests/visual/catalog.spec.ts:7:6 › text narrow-dark-rtl (608ms)
+[WebServer] 5:33:35 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  151 [firefox] › tests/visual/catalog.spec.ts:7:6 › heading desktop-light (626ms)
+[WebServer] 5:33:36 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  152 [firefox] › tests/visual/catalog.spec.ts:7:6 › heading narrow-dark-rtl (1.2s)
+[WebServer] 5:33:37 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  153 [firefox] › tests/visual/catalog.spec.ts:7:6 › badge desktop-light (810ms)
+[WebServer] 5:33:38 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  154 [firefox] › tests/visual/catalog.spec.ts:7:6 › badge narrow-dark-rtl (631ms)
+[WebServer] 5:33:39 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  155 [firefox] › tests/visual/catalog.spec.ts:7:6 › avatar desktop-light (654ms)
+[WebServer] 5:33:39 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  156 [firefox] › tests/visual/catalog.spec.ts:7:6 › avatar narrow-dark-rtl (618ms)
+[WebServer] 5:33:40 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  157 [firefox] › tests/visual/catalog.spec.ts:7:6 › separator desktop-light (615ms)
+[WebServer] 5:33:40 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  158 [firefox] › tests/visual/catalog.spec.ts:7:6 › separator narrow-dark-rtl (616ms)
+[WebServer] 5:33:41 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  159 [firefox] › tests/visual/catalog.spec.ts:7:6 › surface desktop-light (632ms)
+[WebServer] 5:33:42 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  160 [firefox] › tests/visual/catalog.spec.ts:7:6 › surface narrow-dark-rtl (625ms)
+[WebServer] 5:33:42 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  161 [firefox] › tests/visual/catalog.spec.ts:7:6 › stack desktop-light (662ms)
+[WebServer] 5:33:43 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  162 [firefox] › tests/visual/catalog.spec.ts:7:6 › stack narrow-dark-rtl (1.3s)
+[WebServer] 5:33:44 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  163 [firefox] › tests/visual/catalog.spec.ts:7:6 › grid desktop-light (610ms)
+[WebServer] 5:33:45 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  164 [firefox] › tests/visual/catalog.spec.ts:7:6 › grid narrow-dark-rtl (597ms)
+[WebServer] 5:33:46 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  165 [firefox] › tests/visual/catalog.spec.ts:7:6 › split-pane desktop-light (675ms)
+[WebServer] 5:33:46 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  166 [firefox] › tests/visual/catalog.spec.ts:7:6 › split-pane narrow-dark-rtl (666ms)
+[WebServer] 5:33:47 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  167 [firefox] › tests/visual/catalog.spec.ts:7:6 › scroll-area desktop-light (625ms)
+[WebServer] 5:33:47 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  168 [firefox] › tests/visual/catalog.spec.ts:7:6 › scroll-area narrow-dark-rtl (634ms)
+[WebServer] 5:33:48 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  169 [firefox] › tests/visual/catalog.spec.ts:7:6 › text-field desktop-light (642ms)
+[WebServer] 5:33:49 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  170 [firefox] › tests/visual/catalog.spec.ts:7:6 › text-field narrow-dark-rtl (619ms)
+[WebServer] 5:33:49 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  171 [firefox] › tests/visual/catalog.spec.ts:7:6 › text-area desktop-light (633ms)
+[WebServer] 5:33:50 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  172 [firefox] › tests/visual/catalog.spec.ts:7:6 › text-area narrow-dark-rtl (1.2s)
+[WebServer] 5:33:51 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  173 [firefox] › tests/visual/catalog.spec.ts:7:6 › number-field desktop-light (601ms)
+[WebServer] 5:33:52 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  174 [firefox] › tests/visual/catalog.spec.ts:7:6 › number-field narrow-dark-rtl (603ms)
+[WebServer] 5:33:52 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  175 [firefox] › tests/visual/catalog.spec.ts:7:6 › checkbox desktop-light (598ms)
+[WebServer] 5:33:53 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  176 [firefox] › tests/visual/catalog.spec.ts:7:6 › checkbox narrow-dark-rtl (593ms)
+[WebServer] 5:33:54 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  177 [firefox] › tests/visual/catalog.spec.ts:7:6 › radio-group desktop-light (605ms)
+[WebServer] 5:33:54 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  178 [firefox] › tests/visual/catalog.spec.ts:7:6 › radio-group narrow-dark-rtl (630ms)
+[WebServer] 5:33:55 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  179 [firefox] › tests/visual/catalog.spec.ts:7:6 › switch desktop-light (595ms)
+[WebServer] 5:33:55 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  180 [firefox] › tests/visual/catalog.spec.ts:7:6 › switch narrow-dark-rtl (596ms)
+[WebServer] 5:33:56 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  181 [firefox] › tests/visual/catalog.spec.ts:7:6 › select desktop-light (633ms)
+[WebServer] 5:33:57 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  182 [firefox] › tests/visual/catalog.spec.ts:7:6 › select narrow-dark-rtl (1.2s)
+[WebServer] 5:33:58 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  183 [firefox] › tests/visual/catalog.spec.ts:7:6 › combobox desktop-light (648ms)
+[WebServer] 5:33:59 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  184 [firefox] › tests/visual/catalog.spec.ts:7:6 › combobox narrow-dark-rtl (623ms)
+[WebServer] 5:33:59 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  185 [firefox] › tests/visual/catalog.spec.ts:7:6 › date-field desktop-light (628ms)
+[WebServer] 5:34:00 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  186 [firefox] › tests/visual/catalog.spec.ts:7:6 › date-field narrow-dark-rtl (624ms)
+[WebServer] 5:34:00 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  187 [firefox] › tests/visual/catalog.spec.ts:7:6 › date-range desktop-light (626ms)
+[WebServer] 5:34:01 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  188 [firefox] › tests/visual/catalog.spec.ts:7:6 › date-range narrow-dark-rtl (622ms)
+[WebServer] 5:34:02 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  189 [firefox] › tests/visual/catalog.spec.ts:7:6 › slider desktop-light (608ms)
+[WebServer] 5:34:02 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  190 [firefox] › tests/visual/catalog.spec.ts:7:6 › slider narrow-dark-rtl (601ms)
+[WebServer] 5:34:03 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  191 [firefox] › tests/visual/catalog.spec.ts:7:6 › search-field desktop-light (611ms)
+[WebServer] 5:34:04 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  192 [firefox] › tests/visual/catalog.spec.ts:7:6 › search-field narrow-dark-rtl (1.2s)
+[WebServer] 5:34:05 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  193 [firefox] › tests/visual/catalog.spec.ts:7:6 › file-input desktop-light (590ms)
+[WebServer] 5:34:05 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  194 [firefox] › tests/visual/catalog.spec.ts:7:6 › file-input narrow-dark-rtl (600ms)
+[WebServer] 5:34:06 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  195 [firefox] › tests/visual/catalog.spec.ts:7:6 › field-group desktop-light (608ms)
+[WebServer] 5:34:07 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  196 [firefox] › tests/visual/catalog.spec.ts:7:6 › field-group narrow-dark-rtl (628ms)
+[WebServer] 5:34:07 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  197 [firefox] › tests/visual/catalog.spec.ts:7:6 › form desktop-light (605ms)
+[WebServer] 5:34:08 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  198 [firefox] › tests/visual/catalog.spec.ts:7:6 › form narrow-dark-rtl (581ms)
+[WebServer] 5:34:08 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  199 [firefox] › tests/visual/catalog.spec.ts:7:6 › tabs desktop-light (615ms)
+[WebServer] 5:34:09 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  200 [firefox] › tests/visual/catalog.spec.ts:7:6 › tabs narrow-dark-rtl (632ms)
+[WebServer] 5:34:10 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  201 [firefox] › tests/visual/catalog.spec.ts:7:6 › breadcrumb desktop-light (671ms)
+[WebServer] 5:34:10 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  202 [firefox] › tests/visual/catalog.spec.ts:7:6 › breadcrumb narrow-dark-rtl (1.2s)
+[WebServer] 5:34:12 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  203 [firefox] › tests/visual/catalog.spec.ts:7:6 › pagination desktop-light (609ms)
+[WebServer] 5:34:12 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  204 [firefox] › tests/visual/catalog.spec.ts:7:6 › pagination narrow-dark-rtl (589ms)
+[WebServer] 5:34:13 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  205 [firefox] › tests/visual/catalog.spec.ts:7:6 › menu desktop-light (635ms)
+[WebServer] 5:34:13 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  206 [firefox] › tests/visual/catalog.spec.ts:7:6 › menu narrow-dark-rtl (676ms)
+[WebServer] 5:34:14 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  207 [firefox] › tests/visual/catalog.spec.ts:7:6 › tree-nav desktop-light (641ms)
+[WebServer] 5:34:15 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  208 [firefox] › tests/visual/catalog.spec.ts:7:6 › tree-nav narrow-dark-rtl (648ms)
+[WebServer] 5:34:15 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  209 [firefox] › tests/visual/catalog.spec.ts:7:6 › tooltip desktop-light (606ms)
+[WebServer] 5:34:16 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  210 [firefox] › tests/visual/catalog.spec.ts:7:6 › tooltip narrow-dark-rtl (599ms)
+[WebServer] 5:34:17 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  211 [firefox] › tests/visual/catalog.spec.ts:7:6 › popover desktop-light (634ms)
+[WebServer] 5:34:17 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  212 [firefox] › tests/visual/catalog.spec.ts:7:6 › popover narrow-dark-rtl (1.3s)
+[WebServer] 5:34:19 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  213 [firefox] › tests/visual/catalog.spec.ts:7:6 › dialog desktop-light (998ms)
+[WebServer] 5:34:20 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  214 [firefox] › tests/visual/catalog.spec.ts:7:6 › dialog narrow-dark-rtl (690ms)
+[WebServer] 5:34:20 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  215 [firefox] › tests/visual/catalog.spec.ts:7:6 › drawer desktop-light (696ms)
+[WebServer] 5:34:21 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  216 [firefox] › tests/visual/catalog.spec.ts:7:6 › drawer narrow-dark-rtl (611ms)
+[WebServer] 5:34:22 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  217 [firefox] › tests/visual/catalog.spec.ts:7:6 › toast desktop-light (612ms)
+[WebServer] 5:34:22 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  218 [firefox] › tests/visual/catalog.spec.ts:7:6 › toast narrow-dark-rtl (610ms)
+[WebServer] 5:34:23 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  219 [firefox] › tests/visual/catalog.spec.ts:7:6 › alert desktop-light (624ms)
+[WebServer] 5:34:23 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  220 [firefox] › tests/visual/catalog.spec.ts:7:6 › alert narrow-dark-rtl (638ms)
+[WebServer] 5:34:24 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  221 [firefox] › tests/visual/catalog.spec.ts:7:6 › progress desktop-light (653ms)
+[WebServer] 5:34:25 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  222 [firefox] › tests/visual/catalog.spec.ts:7:6 › progress narrow-dark-rtl (1.3s)
+[WebServer] 5:34:26 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  223 [firefox] › tests/visual/catalog.spec.ts:7:6 › skeleton desktop-light (643ms)
+[WebServer] 5:34:27 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  224 [firefox] › tests/visual/catalog.spec.ts:7:6 › skeleton narrow-dark-rtl (611ms)
+[WebServer] 5:34:27 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  225 [firefox] › tests/visual/catalog.spec.ts:7:6 › empty-state desktop-light (624ms)
+[WebServer] 5:34:28 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  226 [firefox] › tests/visual/catalog.spec.ts:7:6 › empty-state narrow-dark-rtl (608ms)
+[WebServer] 5:34:28 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  227 [firefox] › tests/visual/catalog.spec.ts:7:6 › metric desktop-light (600ms)
+[WebServer] 5:34:29 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  228 [firefox] › tests/visual/catalog.spec.ts:7:6 › metric narrow-dark-rtl (607ms)
+[WebServer] 5:34:30 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  229 [firefox] › tests/visual/catalog.spec.ts:7:6 › delta desktop-light (618ms)
+[WebServer] 5:34:30 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  230 [firefox] › tests/visual/catalog.spec.ts:7:6 › delta narrow-dark-rtl (623ms)
+[WebServer] 5:34:31 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  231 [firefox] › tests/visual/catalog.spec.ts:7:6 › key-value desktop-light (684ms)
+[WebServer] 5:34:32 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  232 [firefox] › tests/visual/catalog.spec.ts:7:6 › key-value narrow-dark-rtl (1.2s)
+[WebServer] 5:34:33 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  233 [firefox] › tests/visual/catalog.spec.ts:7:6 › detail desktop-light (635ms)
+[WebServer] 5:34:33 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  234 [firefox] › tests/visual/catalog.spec.ts:7:6 › detail narrow-dark-rtl (608ms)
+[WebServer] 5:34:34 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  235 [firefox] › tests/visual/catalog.spec.ts:7:6 › record-list desktop-light (706ms)
+[WebServer] 5:34:35 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  236 [firefox] › tests/visual/catalog.spec.ts:7:6 › record-list narrow-dark-rtl (677ms)
+[WebServer] 5:34:35 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  237 [firefox] › tests/visual/catalog.spec.ts:7:6 › card-collection desktop-light (668ms)
+[WebServer] 5:34:36 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  238 [firefox] › tests/visual/catalog.spec.ts:7:6 › card-collection narrow-dark-rtl (694ms)
+[WebServer] 5:34:37 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  239 [firefox] › tests/visual/catalog.spec.ts:7:6 › table desktop-light (667ms)
+[WebServer] 5:34:38 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  240 [firefox] › tests/visual/catalog.spec.ts:7:6 › table narrow-dark-rtl (691ms)
+[WebServer] 5:34:38 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  241 [firefox] › tests/visual/catalog.spec.ts:7:6 › filter-builder desktop-light (688ms)
+[WebServer] 5:34:39 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  242 [firefox] › tests/visual/catalog.spec.ts:7:6 › filter-builder narrow-dark-rtl (1.2s)
+[WebServer] 5:34:40 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  243 [firefox] › tests/visual/catalog.spec.ts:7:6 › selection-summary desktop-light (633ms)
+[WebServer] 5:34:41 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  244 [firefox] › tests/visual/catalog.spec.ts:7:6 › selection-summary narrow-dark-rtl (620ms)
+[WebServer] 5:34:41 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  245 [firefox] › tests/visual/catalog.spec.ts:7:6 › trend desktop-light (727ms)
+[WebServer] 5:34:42 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  246 [firefox] › tests/visual/catalog.spec.ts:7:6 › trend narrow-dark-rtl (728ms)
+[WebServer] 5:34:43 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  247 [firefox] › tests/visual/catalog.spec.ts:7:6 › bar desktop-light (731ms)
+[WebServer] 5:34:44 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  248 [firefox] › tests/visual/catalog.spec.ts:7:6 › bar narrow-dark-rtl (719ms)
+[WebServer] 5:34:44 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  249 [firefox] › tests/visual/catalog.spec.ts:7:6 › area desktop-light (719ms)
+[WebServer] 5:34:45 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  250 [firefox] › tests/visual/catalog.spec.ts:7:6 › area narrow-dark-rtl (732ms)
+[WebServer] 5:34:46 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  251 [firefox] › tests/visual/catalog.spec.ts:7:6 › scatter desktop-light (750ms)
+[WebServer] 5:34:47 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  252 [firefox] › tests/visual/catalog.spec.ts:7:6 › scatter narrow-dark-rtl (1.3s)
+[WebServer] 5:34:48 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  253 [firefox] › tests/visual/catalog.spec.ts:7:6 › histogram desktop-light (760ms)
+[WebServer] 5:34:49 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  254 [firefox] › tests/visual/catalog.spec.ts:7:6 › histogram narrow-dark-rtl (756ms)
+[WebServer] 5:34:49 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  255 [firefox] › tests/visual/catalog.spec.ts:7:6 › heatmap desktop-light (755ms)
+[WebServer] 5:34:50 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 5:34:51 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  256 [firefox] › tests/visual/catalog.spec.ts:7:6 › heatmap narrow-dark-rtl (966ms)
+[WebServer] 5:34:51 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  257 [firefox] › tests/visual/catalog.spec.ts:7:6 › matrix desktop-light (1.1s)
+[WebServer] 5:34:52 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  258 [firefox] › tests/visual/catalog.spec.ts:7:6 › matrix narrow-dark-rtl (906ms)
+[WebServer] 5:34:54 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  259 [firefox] › tests/visual/catalog.spec.ts:7:6 › relationship desktop-light (1.6s)
+[WebServer] 5:34:55 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  260 [firefox] › tests/visual/catalog.spec.ts:7:6 › relationship narrow-dark-rtl (879ms)
+[WebServer] 5:34:56 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  261 [firefox] › tests/visual/catalog.spec.ts:7:6 › tree desktop-light (773ms)
+[WebServer] 5:34:56 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  262 [firefox] › tests/visual/catalog.spec.ts:7:6 › tree narrow-dark-rtl (1.3s)
+[WebServer] 5:34:58 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  263 [firefox] › tests/visual/catalog.spec.ts:7:6 › treemap desktop-light (715ms)
+[WebServer] 5:34:58 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  264 [firefox] › tests/visual/catalog.spec.ts:7:6 › treemap narrow-dark-rtl (698ms)
+[WebServer] 5:34:59 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  265 [firefox] › tests/visual/catalog.spec.ts:7:6 › timeline desktop-light (719ms)
+[WebServer] 5:35:00 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  266 [firefox] › tests/visual/catalog.spec.ts:7:6 › timeline narrow-dark-rtl (740ms)
+[WebServer] 5:35:01 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  267 [firefox] › tests/visual/catalog.spec.ts:7:6 › calendar-grid desktop-light (723ms)
+[WebServer] 5:35:01 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  268 [firefox] › tests/visual/catalog.spec.ts:7:6 › calendar-grid narrow-dark-rtl (723ms)
+[WebServer] 5:35:02 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  269 [firefox] › tests/visual/catalog.spec.ts:7:6 › explorer desktop-light (773ms)
+[WebServer] 5:35:03 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  270 [firefox] › tests/visual/catalog.spec.ts:7:6 › explorer narrow-dark-rtl (778ms)
+[WebServer] 5:35:04 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  271 [firefox] › tests/visual/catalog.spec.ts:7:6 › comparison desktop-light (712ms)
+[WebServer] 5:35:04 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  272 [firefox] › tests/visual/catalog.spec.ts:7:6 › comparison narrow-dark-rtl (1.3s)
+[WebServer] 5:35:06 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  273 [firefox] › tests/visual/catalog.spec.ts:7:6 › breakdown desktop-light (695ms)
+[WebServer] 5:35:06 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  274 [firefox] › tests/visual/catalog.spec.ts:7:6 › breakdown narrow-dark-rtl (620ms)
+[WebServer] 5:35:07 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  275 [firefox] › tests/visual/catalog.spec.ts:7:6 › investigation desktop-light (806ms)
+[WebServer] 5:35:08 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  276 [firefox] › tests/visual/catalog.spec.ts:7:6 › investigation narrow-dark-rtl (807ms)
+[WebServer] 5:35:09 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  277 [firefox] › tests/visual/catalog.spec.ts:7:6 › search-results desktop-light (601ms)
+[WebServer] 5:35:09 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  278 [firefox] › tests/visual/catalog.spec.ts:7:6 › search-results narrow-dark-rtl (597ms)
+[WebServer] 5:35:10 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  279 [firefox] › tests/visual/catalog.spec.ts:7:6 › record-editor desktop-light (667ms)
+[WebServer] 5:35:10 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  280 [firefox] › tests/visual/catalog.spec.ts:7:6 › record-editor narrow-dark-rtl (660ms)
+[WebServer] 5:35:11 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  281 [firefox] › tests/visual/catalog.spec.ts:7:6 › form-flow desktop-light (696ms)
+[WebServer] 5:35:12 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  282 [firefox] › tests/visual/catalog.spec.ts:7:6 › form-flow narrow-dark-rtl (1.3s)
+[WebServer] 5:35:13 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  283 [firefox] › tests/visual/catalog.spec.ts:7:6 › quality-panel desktop-light (641ms)
+[WebServer] 5:35:14 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  284 [firefox] › tests/visual/catalog.spec.ts:7:6 › quality-panel narrow-dark-rtl (634ms)
+(node:56212) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 5:35:16 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  285 [webkit] › tests/visual/catalog.spec.ts:7:6 › button desktop-light (963ms)
+[WebServer] 5:35:17 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  286 [webkit] › tests/visual/catalog.spec.ts:7:6 › button narrow-dark-rtl (612ms)
+[WebServer] 5:35:17 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  287 [webkit] › tests/visual/catalog.spec.ts:7:6 › icon-button desktop-light (679ms)
+[WebServer] 5:35:18 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  288 [webkit] › tests/visual/catalog.spec.ts:7:6 › icon-button narrow-dark-rtl (629ms)
+[WebServer] 5:35:19 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  289 [webkit] › tests/visual/catalog.spec.ts:7:6 › link desktop-light (608ms)
+[WebServer] 5:35:19 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  290 [webkit] › tests/visual/catalog.spec.ts:7:6 › link narrow-dark-rtl (587ms)
+[WebServer] 5:35:20 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  291 [webkit] › tests/visual/catalog.spec.ts:7:6 › text desktop-light (607ms)
+[WebServer] 5:35:21 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  292 [webkit] › tests/visual/catalog.spec.ts:7:6 › text narrow-dark-rtl (582ms)
+[WebServer] 5:35:21 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  293 [webkit] › tests/visual/catalog.spec.ts:7:6 › heading desktop-light (600ms)
+[WebServer] 5:35:22 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  294 [webkit] › tests/visual/catalog.spec.ts:7:6 › heading narrow-dark-rtl (578ms)
+[WebServer] 5:35:22 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  295 [webkit] › tests/visual/catalog.spec.ts:7:6 › badge desktop-light (621ms)
+[WebServer] 5:35:23 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  296 [webkit] › tests/visual/catalog.spec.ts:7:6 › badge narrow-dark-rtl (612ms)
+[WebServer] 5:35:24 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  297 [webkit] › tests/visual/catalog.spec.ts:7:6 › avatar desktop-light (604ms)
+[WebServer] 5:35:24 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  298 [webkit] › tests/visual/catalog.spec.ts:7:6 › avatar narrow-dark-rtl (584ms)
+[WebServer] 5:35:25 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  299 [webkit] › tests/visual/catalog.spec.ts:7:6 › separator desktop-light (594ms)
+[WebServer] 5:35:25 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  300 [webkit] › tests/visual/catalog.spec.ts:7:6 › separator narrow-dark-rtl (585ms)
+[WebServer] 5:35:26 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  301 [webkit] › tests/visual/catalog.spec.ts:7:6 › surface desktop-light (604ms)
+[WebServer] 5:35:27 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  302 [webkit] › tests/visual/catalog.spec.ts:7:6 › surface narrow-dark-rtl (611ms)
+[WebServer] 5:35:27 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  303 [webkit] › tests/visual/catalog.spec.ts:7:6 › stack desktop-light (681ms)
+[WebServer] 5:35:28 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  304 [webkit] › tests/visual/catalog.spec.ts:7:6 › stack narrow-dark-rtl (660ms)
+[WebServer] 5:35:29 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  305 [webkit] › tests/visual/catalog.spec.ts:7:6 › grid desktop-light (699ms)
+[WebServer] 5:35:29 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  306 [webkit] › tests/visual/catalog.spec.ts:7:6 › grid narrow-dark-rtl (696ms)
+[WebServer] 5:35:30 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  307 [webkit] › tests/visual/catalog.spec.ts:7:6 › split-pane desktop-light (688ms)
+[WebServer] 5:35:31 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 5:35:31 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  308 [webkit] › tests/visual/catalog.spec.ts:7:6 › split-pane narrow-dark-rtl (729ms)
+[WebServer] 5:35:31 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  309 [webkit] › tests/visual/catalog.spec.ts:7:6 › scroll-area desktop-light (701ms)
+[WebServer] 5:35:32 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  310 [webkit] › tests/visual/catalog.spec.ts:7:6 › scroll-area narrow-dark-rtl (700ms)
+[WebServer] 5:35:33 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  311 [webkit] › tests/visual/catalog.spec.ts:7:6 › text-field desktop-light (817ms)
+[WebServer] 5:35:34 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  312 [webkit] › tests/visual/catalog.spec.ts:7:6 › text-field narrow-dark-rtl (773ms)
+[WebServer] 5:35:34 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  313 [webkit] › tests/visual/catalog.spec.ts:7:6 › text-area desktop-light (698ms)
+[WebServer] 5:35:35 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  314 [webkit] › tests/visual/catalog.spec.ts:7:6 › text-area narrow-dark-rtl (631ms)
+[WebServer] 5:35:36 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  315 [webkit] › tests/visual/catalog.spec.ts:7:6 › number-field desktop-light (686ms)
+[WebServer] 5:35:37 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  316 [webkit] › tests/visual/catalog.spec.ts:7:6 › number-field narrow-dark-rtl (760ms)
+[WebServer] 5:35:37 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  317 [webkit] › tests/visual/catalog.spec.ts:7:6 › checkbox desktop-light (693ms)
+[WebServer] 5:35:38 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  318 [webkit] › tests/visual/catalog.spec.ts:7:6 › checkbox narrow-dark-rtl (692ms)
+[WebServer] 5:35:39 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  319 [webkit] › tests/visual/catalog.spec.ts:7:6 › radio-group desktop-light (923ms)
+[WebServer] 5:35:40 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  320 [webkit] › tests/visual/catalog.spec.ts:7:6 › radio-group narrow-dark-rtl (697ms)
+[WebServer] 5:35:40 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  321 [webkit] › tests/visual/catalog.spec.ts:7:6 › switch desktop-light (691ms)
+[WebServer] 5:35:41 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  322 [webkit] › tests/visual/catalog.spec.ts:7:6 › switch narrow-dark-rtl (692ms)
+[WebServer] 5:35:42 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  323 [webkit] › tests/visual/catalog.spec.ts:7:6 › select desktop-light (736ms)
+[WebServer] 5:35:42 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  324 [webkit] › tests/visual/catalog.spec.ts:7:6 › select narrow-dark-rtl (668ms)
+[WebServer] 5:35:43 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  325 [webkit] › tests/visual/catalog.spec.ts:7:6 › combobox desktop-light (689ms)
+[WebServer] 5:35:44 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  326 [webkit] › tests/visual/catalog.spec.ts:7:6 › combobox narrow-dark-rtl (817ms)
+[WebServer] 5:35:45 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  327 [webkit] › tests/visual/catalog.spec.ts:7:6 › date-field desktop-light (724ms)
+[WebServer] 5:35:45 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  328 [webkit] › tests/visual/catalog.spec.ts:7:6 › date-field narrow-dark-rtl (683ms)
+[WebServer] 5:35:46 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  329 [webkit] › tests/visual/catalog.spec.ts:7:6 › date-range desktop-light (709ms)
+[WebServer] 5:35:47 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  330 [webkit] › tests/visual/catalog.spec.ts:7:6 › date-range narrow-dark-rtl (738ms)
+[WebServer] 5:35:47 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  331 [webkit] › tests/visual/catalog.spec.ts:7:6 › slider desktop-light (644ms)
+[WebServer] 5:35:48 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  332 [webkit] › tests/visual/catalog.spec.ts:7:6 › slider narrow-dark-rtl (607ms)
+[WebServer] 5:35:49 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  333 [webkit] › tests/visual/catalog.spec.ts:7:6 › search-field desktop-light (598ms)
+[WebServer] 5:35:49 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  334 [webkit] › tests/visual/catalog.spec.ts:7:6 › search-field narrow-dark-rtl (603ms)
+[WebServer] 5:35:50 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  335 [webkit] › tests/visual/catalog.spec.ts:7:6 › file-input desktop-light (598ms)
+[WebServer] 5:35:50 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  336 [webkit] › tests/visual/catalog.spec.ts:7:6 › file-input narrow-dark-rtl (593ms)
+[WebServer] 5:35:51 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  337 [webkit] › tests/visual/catalog.spec.ts:7:6 › field-group desktop-light (595ms)
+[WebServer] 5:35:52 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  338 [webkit] › tests/visual/catalog.spec.ts:7:6 › field-group narrow-dark-rtl (608ms)
+[WebServer] 5:35:52 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  339 [webkit] › tests/visual/catalog.spec.ts:7:6 › form desktop-light (631ms)
+[WebServer] 5:35:53 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  340 [webkit] › tests/visual/catalog.spec.ts:7:6 › form narrow-dark-rtl (597ms)
+[WebServer] 5:35:54 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  341 [webkit] › tests/visual/catalog.spec.ts:7:6 › tabs desktop-light (619ms)
+[WebServer] 5:35:54 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  342 [webkit] › tests/visual/catalog.spec.ts:7:6 › tabs narrow-dark-rtl (613ms)
+[WebServer] 5:35:55 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  343 [webkit] › tests/visual/catalog.spec.ts:7:6 › breadcrumb desktop-light (625ms)
+[WebServer] 5:35:55 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  344 [webkit] › tests/visual/catalog.spec.ts:7:6 › breadcrumb narrow-dark-rtl (602ms)
+[WebServer] 5:35:56 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  345 [webkit] › tests/visual/catalog.spec.ts:7:6 › pagination desktop-light (615ms)
+[WebServer] 5:35:57 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  346 [webkit] › tests/visual/catalog.spec.ts:7:6 › pagination narrow-dark-rtl (604ms)
+[WebServer] 5:35:57 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  347 [webkit] › tests/visual/catalog.spec.ts:7:6 › menu desktop-light (625ms)
+[WebServer] 5:35:58 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  348 [webkit] › tests/visual/catalog.spec.ts:7:6 › menu narrow-dark-rtl (602ms)
+[WebServer] 5:35:58 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  349 [webkit] › tests/visual/catalog.spec.ts:7:6 › tree-nav desktop-light (675ms)
+[WebServer] 5:35:59 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  350 [webkit] › tests/visual/catalog.spec.ts:7:6 › tree-nav narrow-dark-rtl (629ms)
+[WebServer] 5:36:00 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  351 [webkit] › tests/visual/catalog.spec.ts:7:6 › tooltip desktop-light (606ms)
+[WebServer] 5:36:00 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  352 [webkit] › tests/visual/catalog.spec.ts:7:6 › tooltip narrow-dark-rtl (607ms)
+[WebServer] 5:36:01 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  353 [webkit] › tests/visual/catalog.spec.ts:7:6 › popover desktop-light (642ms)
+[WebServer] 5:36:02 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  354 [webkit] › tests/visual/catalog.spec.ts:7:6 › popover narrow-dark-rtl (652ms)
+[WebServer] 5:36:02 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  355 [webkit] › tests/visual/catalog.spec.ts:7:6 › dialog desktop-light (628ms)
+[WebServer] 5:36:03 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  356 [webkit] › tests/visual/catalog.spec.ts:7:6 › dialog narrow-dark-rtl (604ms)
+[WebServer] 5:36:04 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  357 [webkit] › tests/visual/catalog.spec.ts:7:6 › drawer desktop-light (613ms)
+[WebServer] 5:36:04 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  358 [webkit] › tests/visual/catalog.spec.ts:7:6 › drawer narrow-dark-rtl (601ms)
+[WebServer] 5:36:05 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  359 [webkit] › tests/visual/catalog.spec.ts:7:6 › toast desktop-light (619ms)
+[WebServer] 5:36:05 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  360 [webkit] › tests/visual/catalog.spec.ts:7:6 › toast narrow-dark-rtl (592ms)
+[WebServer] 5:36:06 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  361 [webkit] › tests/visual/catalog.spec.ts:7:6 › alert desktop-light (598ms)
+[WebServer] 5:36:07 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  362 [webkit] › tests/visual/catalog.spec.ts:7:6 › alert narrow-dark-rtl (597ms)
+[WebServer] 5:36:07 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  363 [webkit] › tests/visual/catalog.spec.ts:7:6 › progress desktop-light (609ms)
+[WebServer] 5:36:08 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  364 [webkit] › tests/visual/catalog.spec.ts:7:6 › progress narrow-dark-rtl (593ms)
+[WebServer] 5:36:08 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  365 [webkit] › tests/visual/catalog.spec.ts:7:6 › skeleton desktop-light (604ms)
+[WebServer] 5:36:09 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  366 [webkit] › tests/visual/catalog.spec.ts:7:6 › skeleton narrow-dark-rtl (597ms)
+[WebServer] 5:36:10 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  367 [webkit] › tests/visual/catalog.spec.ts:7:6 › empty-state desktop-light (618ms)
+[WebServer] 5:36:10 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  368 [webkit] › tests/visual/catalog.spec.ts:7:6 › empty-state narrow-dark-rtl (597ms)
+[WebServer] 5:36:11 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  369 [webkit] › tests/visual/catalog.spec.ts:7:6 › metric desktop-light (614ms)
+[WebServer] 5:36:11 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  370 [webkit] › tests/visual/catalog.spec.ts:7:6 › metric narrow-dark-rtl (612ms)
+[WebServer] 5:36:12 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  371 [webkit] › tests/visual/catalog.spec.ts:7:6 › delta desktop-light (614ms)
+[WebServer] 5:36:13 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  372 [webkit] › tests/visual/catalog.spec.ts:7:6 › delta narrow-dark-rtl (609ms)
+[WebServer] 5:36:13 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  373 [webkit] › tests/visual/catalog.spec.ts:7:6 › key-value desktop-light (610ms)
+[WebServer] 5:36:14 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  374 [webkit] › tests/visual/catalog.spec.ts:7:6 › key-value narrow-dark-rtl (603ms)
+[WebServer] 5:36:15 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  375 [webkit] › tests/visual/catalog.spec.ts:7:6 › detail desktop-light (637ms)
+[WebServer] 5:36:15 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  376 [webkit] › tests/visual/catalog.spec.ts:7:6 › detail narrow-dark-rtl (610ms)
+[WebServer] 5:36:16 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  377 [webkit] › tests/visual/catalog.spec.ts:7:6 › record-list desktop-light (671ms)
+[WebServer] 5:36:16 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  378 [webkit] › tests/visual/catalog.spec.ts:7:6 › record-list narrow-dark-rtl (664ms)
+[WebServer] 5:36:17 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  379 [webkit] › tests/visual/catalog.spec.ts:7:6 › card-collection desktop-light (696ms)
+[WebServer] 5:36:18 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  380 [webkit] › tests/visual/catalog.spec.ts:7:6 › card-collection narrow-dark-rtl (653ms)
+[WebServer] 5:36:18 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  381 [webkit] › tests/visual/catalog.spec.ts:7:6 › table desktop-light (683ms)
+[WebServer] 5:36:19 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  382 [webkit] › tests/visual/catalog.spec.ts:7:6 › table narrow-dark-rtl (645ms)
+[WebServer] 5:36:20 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  383 [webkit] › tests/visual/catalog.spec.ts:7:6 › filter-builder desktop-light (644ms)
+[WebServer] 5:36:20 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  384 [webkit] › tests/visual/catalog.spec.ts:7:6 › filter-builder narrow-dark-rtl (617ms)
+[WebServer] 5:36:21 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  385 [webkit] › tests/visual/catalog.spec.ts:7:6 › selection-summary desktop-light (594ms)
+[WebServer] 5:36:22 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  386 [webkit] › tests/visual/catalog.spec.ts:7:6 › selection-summary narrow-dark-rtl (597ms)
+[WebServer] 5:36:22 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  387 [webkit] › tests/visual/catalog.spec.ts:7:6 › trend desktop-light (697ms)
+[WebServer] 5:36:23 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  388 [webkit] › tests/visual/catalog.spec.ts:7:6 › trend narrow-dark-rtl (669ms)
+[WebServer] 5:36:24 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  389 [webkit] › tests/visual/catalog.spec.ts:7:6 › bar desktop-light (690ms)
+[WebServer] 5:36:24 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  390 [webkit] › tests/visual/catalog.spec.ts:7:6 › bar narrow-dark-rtl (688ms)
+[WebServer] 5:36:25 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  391 [webkit] › tests/visual/catalog.spec.ts:7:6 › area desktop-light (692ms)
+[WebServer] 5:36:26 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  392 [webkit] › tests/visual/catalog.spec.ts:7:6 › area narrow-dark-rtl (704ms)
+[WebServer] 5:36:26 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  393 [webkit] › tests/visual/catalog.spec.ts:7:6 › scatter desktop-light (692ms)
+[WebServer] 5:36:27 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  394 [webkit] › tests/visual/catalog.spec.ts:7:6 › scatter narrow-dark-rtl (688ms)
+[WebServer] 5:36:28 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  395 [webkit] › tests/visual/catalog.spec.ts:7:6 › histogram desktop-light (694ms)
+[WebServer] 5:36:29 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  396 [webkit] › tests/visual/catalog.spec.ts:7:6 › histogram narrow-dark-rtl (686ms)
+[WebServer] 5:36:29 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  397 [webkit] › tests/visual/catalog.spec.ts:7:6 › heatmap desktop-light (708ms)
+[WebServer] 5:36:30 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  398 [webkit] › tests/visual/catalog.spec.ts:7:6 › heatmap narrow-dark-rtl (688ms)
+[WebServer] 5:36:31 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  399 [webkit] › tests/visual/catalog.spec.ts:7:6 › matrix desktop-light (644ms)
+[WebServer] 5:36:31 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  400 [webkit] › tests/visual/catalog.spec.ts:7:6 › matrix narrow-dark-rtl (639ms)
+[WebServer] 5:36:32 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  401 [webkit] › tests/visual/catalog.spec.ts:7:6 › relationship desktop-light (681ms)
+[WebServer] 5:36:33 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  402 [webkit] › tests/visual/catalog.spec.ts:7:6 › relationship narrow-dark-rtl (642ms)
+[WebServer] 5:36:33 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  403 [webkit] › tests/visual/catalog.spec.ts:7:6 › tree desktop-light (690ms)
+[WebServer] 5:36:34 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  404 [webkit] › tests/visual/catalog.spec.ts:7:6 › tree narrow-dark-rtl (659ms)
+[WebServer] 5:36:35 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  405 [webkit] › tests/visual/catalog.spec.ts:7:6 › treemap desktop-light (687ms)
+[WebServer] 5:36:35 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  406 [webkit] › tests/visual/catalog.spec.ts:7:6 › treemap narrow-dark-rtl (673ms)
+[WebServer] 5:36:36 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  407 [webkit] › tests/visual/catalog.spec.ts:7:6 › timeline desktop-light (682ms)
+[WebServer] 5:36:37 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  408 [webkit] › tests/visual/catalog.spec.ts:7:6 › timeline narrow-dark-rtl (693ms)
+[WebServer] 5:36:37 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  409 [webkit] › tests/visual/catalog.spec.ts:7:6 › calendar-grid desktop-light (692ms)
+[WebServer] 5:36:38 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  410 [webkit] › tests/visual/catalog.spec.ts:7:6 › calendar-grid narrow-dark-rtl (677ms)
+[WebServer] 5:36:39 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  411 [webkit] › tests/visual/catalog.spec.ts:7:6 › explorer desktop-light (728ms)
+[WebServer] 5:36:39 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  412 [webkit] › tests/visual/catalog.spec.ts:7:6 › explorer narrow-dark-rtl (739ms)
+[WebServer] 5:36:40 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  413 [webkit] › tests/visual/catalog.spec.ts:7:6 › comparison desktop-light (799ms)
+[WebServer] 5:36:41 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  414 [webkit] › tests/visual/catalog.spec.ts:7:6 › comparison narrow-dark-rtl (744ms)
+[WebServer] 5:36:42 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  415 [webkit] › tests/visual/catalog.spec.ts:7:6 › breakdown desktop-light (712ms)
+[WebServer] 5:36:43 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  416 [webkit] › tests/visual/catalog.spec.ts:7:6 › breakdown narrow-dark-rtl (653ms)
+[WebServer] 5:36:43 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  417 [webkit] › tests/visual/catalog.spec.ts:7:6 › investigation desktop-light (736ms)
+[WebServer] 5:36:44 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  418 [webkit] › tests/visual/catalog.spec.ts:7:6 › investigation narrow-dark-rtl (711ms)
+[WebServer] 5:36:45 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  419 [webkit] › tests/visual/catalog.spec.ts:7:6 › search-results desktop-light (590ms)
+[WebServer] 5:36:45 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  420 [webkit] › tests/visual/catalog.spec.ts:7:6 › search-results narrow-dark-rtl (603ms)
+[WebServer] 5:36:46 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  421 [webkit] › tests/visual/catalog.spec.ts:7:6 › record-editor desktop-light (647ms)
+[WebServer] 5:36:46 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  422 [webkit] › tests/visual/catalog.spec.ts:7:6 › record-editor narrow-dark-rtl (651ms)
+[WebServer] 5:36:47 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  423 [webkit] › tests/visual/catalog.spec.ts:7:6 › form-flow desktop-light (694ms)
+[WebServer] 5:36:48 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  424 [webkit] › tests/visual/catalog.spec.ts:7:6 › form-flow narrow-dark-rtl (643ms)
+[WebServer] 5:36:48 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  425 [webkit] › tests/visual/catalog.spec.ts:7:6 › quality-panel desktop-light (658ms)
+[WebServer] 5:36:49 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  426 [webkit] › tests/visual/catalog.spec.ts:7:6 › quality-panel narrow-dark-rtl (721ms)
+
+  426 passed (4.6m)

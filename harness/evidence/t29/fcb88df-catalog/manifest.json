@@ -1,0 +1,55 @@
+{
+  "task": "T29",
+  "status": "partial",
+  "testedSourceCommit": "fcb88df04afdec6a84e238ee8a359091e0aee24b",
+  "sourceContinuity": "git diff fcb88df -- packages/web packages/core examples/catalog tests/visual was empty after the run. Unrelated runtime/testkit work continued; no latency claims use this concurrent run.",
+  "stats": {
+    "startTime": "2026-09-08T22:32:14.148Z",
+    "duration": 276263.777,
+    "expected": 426,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "scope": "71 executable catalog examples x2 variants x3 browsers; actual render, no page/console errors, axe violations empty; raw screenshot capture",
+  "variants": [
+    {
+      "name": "desktop-light",
+      "width": 1280,
+      "height": 900,
+      "rootFontPixels": 16
+    },
+    {
+      "name": "narrow-dark-rtl",
+      "width": 360,
+      "height": 800,
+      "rootFontPixels": 32
+    }
+  ],
+  "browsers": [
+    "chromium",
+    "firefox",
+    "webkit"
+  ],
+  "baselineApproval": "unapproved review captures",
+  "limits": [
+    "No human screen-reader or human design approval",
+    "Not the full component data/interaction state matrix",
+    "Root font scaling is not a claim of browser400percentzoom support",
+    "No universal pixel equality or production accessibility certification"
+  ],
+  "artifacts": [
+    {
+      "path": "browser-run.log",
+      "sha256": "289de5b5b7a0747d7a5f0af1c807acdc898295c82f37d6b5f14d93d71374d06f"
+    },
+    {
+      "path": "capture-index.json",
+      "sha256": "986a02802bbf1df5941c38942e2989dce92b597ef141bcfb073ace942416b7d2"
+    },
+    {
+      "path": "catalog-review-captures.zip",
+      "sha256": "d7ecc0e8c84e5426562e14867434f791ed0559c8c90a88b64aa48c3d8cda419a"
+    }
+  ]
+}
