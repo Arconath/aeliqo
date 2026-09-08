@@ -153,7 +153,7 @@ export class AeliqoRegionElement extends LitElement {
     onDataRequest: {attribute: false},
   };
 
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
 
   presentation: ValidatedPresentation | undefined = undefined;
   results: readonly AeliqoRegionResult[] = [];

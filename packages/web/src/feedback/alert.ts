@@ -5,7 +5,7 @@ import {aeliqoFeedbackStyles, type AeliqoFeedbackTone, toneColor} from "./shared
 
 export class AeliqoAlertElement extends AeliqoFoundationElement {
   static readonly properties = {open: {type: Boolean, reflect: true}, message: {type: String}, heading: {type: String}, tone: {type: String}, actionLabel: {type: String, attribute: "action-label"}, dismissible: {type: Boolean}};
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
   static readonly styles = [...aeliqoFoundationThemeStyles, ...aeliqoFeedbackStyles, css`
     :host { display: block; }
     [part="alert"] { background: color-mix(in srgb, var(--aeliqo-color-surface, #f8fafc) 92%, var(--aeliqo-color-info, #1d4ed8)); border-inline-start: 0.25rem solid var(--aeliqo-color-info, #1d4ed8); border-radius: var(--aeliqo-radius-medium, 0.625rem); display: grid; gap: var(--aeliqo-space-4, 0.25rem); grid-template-columns: 1fr auto; padding: var(--aeliqo-space-12, 0.75rem) var(--aeliqo-space-16, 1rem); }

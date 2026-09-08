@@ -5,7 +5,7 @@ import {aeliqoFeedbackStyles} from "./shared.js";
 
 export class AeliqoPopoverElement extends AeliqoFoundationElement {
   static readonly properties = {label: {type: String}, content: {type: String}, open: {type: Boolean, reflect: true}, modal: {type: Boolean}, closeOnOutside: {type: Boolean, attribute: "close-on-outside"}};
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
   static readonly styles = [...aeliqoFoundationThemeStyles, ...aeliqoFeedbackStyles, css`
     :host { display: inline-block; position: relative; }
     [part="trigger"] { background: var(--aeliqo-color-surface, #f8fafc); border: 0.0625rem solid var(--aeliqo-color-border, #64748b); border-radius: var(--aeliqo-radius-small, 0.375rem); cursor: pointer; min-block-size: var(--aeliqo-control-min-target, 2.75rem); padding-inline: var(--aeliqo-space-12, 0.75rem); }

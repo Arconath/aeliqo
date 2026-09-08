@@ -10,7 +10,7 @@ export class AeliqoBadgeElement extends AeliqoFoundationElement {
     tone: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
 
   text = "";
   tone: AeliqoBadgeTone = "neutral";

@@ -281,7 +281,7 @@ export class AeliqoFilterBuilderElement extends LitElement {
     message: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
 
   fields: readonly AeliqoFieldOption[] = [];
   predicate: AeliqoFilterPredicate | undefined = undefined;

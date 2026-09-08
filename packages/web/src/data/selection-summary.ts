@@ -27,7 +27,7 @@ export class AeliqoSelectionSummaryElement extends LitElement {
     message: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
 
   selectedKeys: readonly string[] = [];
   selectionScope: AeliqoSelectionScope | undefined = undefined;

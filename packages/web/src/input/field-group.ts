@@ -11,7 +11,7 @@ export class AeliqoFieldGroupElement extends AeliqoFoundationElement {
     disabled: {type: Boolean, reflect: true},
   };
 
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
 
   legend = "";
   description = "";

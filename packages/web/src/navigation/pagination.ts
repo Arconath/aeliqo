@@ -11,7 +11,7 @@ export class AeliqoPaginationElement extends AeliqoFoundationElement {
     label: {type: String},
     pending: {type: Boolean, reflect: true},
   };
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
   static readonly styles = [...aeliqoFoundationThemeStyles, aeliqoNavigationStyles, css`
     :host { align-items: center; display: flex; flex-wrap: wrap; gap: var(--aeliqo-space-8, 0.5rem); justify-content: space-between; }
     nav { align-items: center; display: inline-flex; gap: var(--aeliqo-space-4, 0.25rem); }

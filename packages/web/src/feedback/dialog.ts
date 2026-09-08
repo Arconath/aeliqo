@@ -5,7 +5,7 @@ import {aeliqoFeedbackStyles} from "./shared.js";
 
 export class AeliqoDialogElement extends AeliqoFoundationElement {
   static readonly properties = {open: {type: Boolean, reflect: true}, heading: {type: String}, modal: {type: Boolean}, closeOnEscape: {type: Boolean, attribute: "close-on-escape"}};
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
   static readonly styles = [...aeliqoFoundationThemeStyles, ...aeliqoFeedbackStyles, css`
     dialog { background: var(--aeliqo-color-surface, #f8fafc); border: 0.0625rem solid var(--aeliqo-color-border, #64748b); border-radius: var(--aeliqo-radius-large, 0.875rem); box-shadow: var(--aeliqo-elevation-raised, 0 0.25rem 0.75rem -0.5rem #0f172a33); color: inherit; inline-size: min(40rem, calc(100vw - 2rem)); max-block-size: min(80vh, 48rem); padding: 0; }
     dialog::backdrop { background: rgb(15 23 42 / 0.55); }

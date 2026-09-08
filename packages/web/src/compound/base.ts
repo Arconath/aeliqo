@@ -2,7 +2,7 @@ import {css, LitElement} from "lit";
 import {aeliqoFoundationThemeStyles} from "../foundation/base.js";
 import type {AeliqoDataStatus} from "../data/types.js";
 
-export const COMPOUND_VERSION = "0.1.0-m0";
+export const COMPOUND_VERSION = "0.1.0";
 export const compoundStyles = css`
   :host { box-sizing: border-box; color: var(--aeliqo-color-text, #111827); display: block; min-inline-size: 0; max-inline-size: 100%; }
   :host, :host * { box-sizing: border-box; }

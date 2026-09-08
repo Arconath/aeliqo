@@ -10,7 +10,7 @@ export function defineHierarchyElements(registry: CustomElementRegistry | undefi
   for(const [name,constructor] of [['aeliqo-tree',AeliqoTreeElement],['aeliqo-treemap',AeliqoTreemapElement],['aeliqo-relationship',AeliqoRelationshipElement]] as const){
     const current=registry.get(name);
     if(current===undefined)registry.define(name,constructor);
-    else if(current!==constructor&&(current as typeof constructor).aeliqoVersion!=='0.1.0-m0')throw new Error(`Cannot register ${name}: an incompatible custom element is already defined.`);
+    else if(current!==constructor&&(current as typeof constructor).aeliqoVersion!=='0.1.0')throw new Error(`Cannot register ${name}: an incompatible custom element is already defined.`);
   }
 }
 export type {AeliqoVisualizationSelectionDetail, AeliqoVisualizationSelectionEvent, VisualizationDataset, VisualizationInputs} from '../types.js';

@@ -8,7 +8,7 @@ export type AeliqoDrawerSide = "start" | "end";
 
 export class AeliqoDrawerElement extends AeliqoFoundationElement {
   static readonly properties = {open: {type: Boolean, reflect: true}, heading: {type: String}, mode: {type: String}, side: {type: String}};
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
   static readonly styles = [...aeliqoFoundationThemeStyles, ...aeliqoFeedbackStyles, css`
     :host { display: block; }
     [part="inline"] { background: var(--aeliqo-color-surface, #f8fafc); border-inline-start: 0.0625rem solid var(--aeliqo-color-border, #64748b); border-inline-end: 0.0625rem solid var(--aeliqo-color-border, #64748b); max-block-size: 100%; overflow: auto; }

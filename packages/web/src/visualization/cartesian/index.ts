@@ -31,7 +31,7 @@ export function defineCartesianElements(registry?: CustomElementRegistry): void 
     const current = target.get(name);
     if (current === undefined) {
       target.define(name, constructor);
-    } else if (current !== constructor && (current as typeof constructor).aeliqoVersion !== "0.1.0-m0") {
+    } else if (current !== constructor && (current as typeof constructor).aeliqoVersion !== "0.1.0") {
       throw new Error(`Cannot register ${name}: an incompatible custom element is already defined.`);
     }
   }

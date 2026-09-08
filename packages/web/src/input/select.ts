@@ -15,7 +15,7 @@ export class AeliqoSelectElement extends AeliqoFieldElement<string> {
     unknownLabel: {attribute: "unknown-label", type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
 
   options: readonly AeliqoOption[] = [];
   value = "";

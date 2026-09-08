@@ -4,7 +4,7 @@ import {aeliqoFeedbackStyles} from "./shared.js";
 
 export class AeliqoProgressElement extends AeliqoFoundationElement {
   static readonly properties = {value: {type: Number}, max: {type: Number}, label: {type: String}};
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
   static readonly styles = [...aeliqoFoundationThemeStyles, ...aeliqoFeedbackStyles, css`
     :host { display: block; min-inline-size: 8rem; }
     [part="label"] { display: block; margin-block-end: var(--aeliqo-space-4, 0.25rem); }

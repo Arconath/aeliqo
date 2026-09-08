@@ -12,7 +12,7 @@ export class AeliqoSkeletonElement extends AeliqoFoundationElement {
     variant: {type: String},
     animated: {type: Boolean},
   };
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
   static readonly styles = [...aeliqoFoundationThemeStyles, ...aeliqoFeedbackStyles, css`
     :host { display: block; }
     [part="skeleton"] { display: grid; gap: var(--aeliqo-space-8, 0.5rem); }

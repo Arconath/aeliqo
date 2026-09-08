@@ -69,7 +69,7 @@ export class AeliqoTableElement extends LitElement {
     overscan: {type: Number}, scope: {attribute: false}, status: {type: String}, message: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
   columns: readonly AeliqoTableColumn[] = [];
   rows: readonly AeliqoTableRow[] = [];
   caption = "";

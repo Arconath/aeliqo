@@ -4,7 +4,7 @@ import {aeliqoFeedbackStyles} from "./shared.js";
 
 export class AeliqoTooltipElement extends AeliqoFoundationElement {
   static readonly properties = {label: {type: String}, content: {type: String}, open: {type: Boolean, reflect: true}};
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
   static readonly styles = [...aeliqoFoundationThemeStyles, ...aeliqoFeedbackStyles, css`
     :host { display: inline-block; position: relative; }
     [part="trigger"] { background: transparent; border: 0; cursor: help; display: inline-flex; min-block-size: var(--aeliqo-control-min-target, 2.75rem); padding: var(--aeliqo-space-4, 0.25rem); }

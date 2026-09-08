@@ -13,7 +13,7 @@ export type AeliqoPlotSelectionEvent = CustomEvent<AeliqoPlotSelectionDetail>;
 /** Direct plot surface: no runtime, query evaluator or model instance is constructed. */
 const tickText=(text:string):string=>text.length>10?`${text.slice(0,4)}…${text.slice(-4)}`:text;
 export class AeliqoPlotElement extends AeliqoFoundationElement {
- static readonly aeliqoVersion="0.1.0-m0";
+ static readonly aeliqoVersion="0.1.0";
  static readonly properties={spec:{attribute:false},results:{attribute:false},datasets:{attribute:false},unit:{attribute:false},result:{attribute:false},rows:{attribute:false},
    renderer:{type:String},width:{type:Number},height:{type:Number},maxMarks:{type:Number,attribute:'max-marks'},
    label:{type:String},page:{state:true},selectedIdentity:{type:String,attribute:'selected-identity'},selectedResult:{attribute:false}};

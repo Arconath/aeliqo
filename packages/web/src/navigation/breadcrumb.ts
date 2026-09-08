@@ -12,7 +12,7 @@ export interface AeliqoBreadcrumbItem {
 
 export class AeliqoBreadcrumbElement extends AeliqoFoundationElement {
   static readonly properties = {items: {attribute: false}, label: {type: String}};
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
   static readonly styles = [...aeliqoFoundationThemeStyles, aeliqoNavigationStyles, css`
     nav { max-inline-size: 100%; overflow-x: auto; }
     ol { align-items: center; display: flex; flex-wrap: wrap; gap: var(--aeliqo-space-8, 0.5rem); list-style: none; margin: 0; padding: 0; }

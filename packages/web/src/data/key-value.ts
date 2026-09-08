@@ -23,7 +23,7 @@ export class AeliqoKeyValueElement extends LitElement {
     message: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
 
   items: readonly AeliqoKeyValueItem[] = [];
   scope: AeliqoDataScope | undefined = undefined;

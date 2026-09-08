@@ -27,7 +27,7 @@ export class AeliqoDateRangeElement extends AeliqoFieldElement<AeliqoDateRangeVa
     calendar: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
 
   start = "";
   end = "";

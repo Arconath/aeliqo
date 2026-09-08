@@ -5,7 +5,7 @@ import {aeliqoFeedbackStyles, type AeliqoFeedbackTone, toneColor} from "./shared
 
 export class AeliqoToastElement extends AeliqoFoundationElement {
   static readonly properties = {open: {type: Boolean, reflect: true}, message: {type: String}, tone: {type: String}, duration: {type: Number}, dismissible: {type: Boolean}};
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
   static readonly styles = [...aeliqoFoundationThemeStyles, ...aeliqoFeedbackStyles, css`
     :host { display: block; max-inline-size: min(28rem, calc(100vw - 2rem)); }
     [part="toast"] { align-items: start; background: var(--aeliqo-color-surface, #f8fafc); border-inline-start: 0.25rem solid var(--aeliqo-color-info, #1d4ed8); border-radius: var(--aeliqo-radius-medium, 0.625rem); box-shadow: var(--aeliqo-elevation-raised, 0 0.25rem 0.75rem -0.5rem #0f172a33); display: flex; gap: var(--aeliqo-space-12, 0.75rem); padding: var(--aeliqo-space-12, 0.75rem) var(--aeliqo-space-16, 1rem); }

@@ -14,7 +14,7 @@ export class AeliqoFileInputElement extends AeliqoFieldElement<readonly AeliqoFi
     selected: {attribute: false},
   };
 
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
 
   accept = "";
   multiple = false;

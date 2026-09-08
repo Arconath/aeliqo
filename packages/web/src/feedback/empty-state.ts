@@ -13,7 +13,7 @@ export class AeliqoEmptyStateElement extends AeliqoFoundationElement {
     message: {type: String},
     actionLabel: {type: String, attribute: "action-label"},
   };
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
   static readonly styles = [...aeliqoFoundationThemeStyles, ...aeliqoFeedbackStyles, css`
     :host { display: block; }
     [part="state"] { align-items: center; border: 0.0625rem dashed var(--aeliqo-color-border, #64748b); border-radius: var(--aeliqo-radius-medium, 0.625rem); display: grid; gap: var(--aeliqo-space-8, 0.5rem); justify-items: center; min-block-size: 8rem; padding: var(--aeliqo-space-24, 1.5rem); text-align: center; }

@@ -19,7 +19,7 @@ export class AeliqoSplitPaneElement extends AeliqoFoundationElement {
     separatorLabel: {attribute: "separator-label", type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
 
   orientation: AeliqoSplitOrientation = "horizontal";
   position: number | undefined = undefined;

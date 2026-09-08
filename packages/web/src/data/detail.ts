@@ -18,7 +18,7 @@ export class AeliqoDetailElement extends LitElement {
     message: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
 
   record: AeliqoDataRecord | undefined = undefined;
   fields: readonly AeliqoDataColumn[] = [];

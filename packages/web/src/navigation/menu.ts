@@ -10,7 +10,7 @@ export interface AeliqoMenuItem {
 
 export class AeliqoMenuElement extends AeliqoFoundationElement {
   static readonly properties = {items: {attribute: false}, label: {type: String}, open: {type: Boolean, reflect: true}};
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
   static readonly styles = [...aeliqoFoundationThemeStyles, aeliqoNavigationStyles, css`
     :host { display: inline-block; position: relative; }
     [part="trigger"] { align-items: center; background: var(--aeliqo-color-surface, #f8fafc); border: 0.0625rem solid var(--aeliqo-color-border, #64748b); border-radius: var(--aeliqo-radius-small, 0.375rem); cursor: pointer; display: inline-flex; min-block-size: var(--aeliqo-control-min-target, 2.75rem); padding-inline: var(--aeliqo-space-12, 0.75rem); }

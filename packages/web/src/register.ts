@@ -13,7 +13,7 @@ import {AeliqoInputElement} from "./elements/aeliqo-input.js";
 import {AeliqoTableElement} from "./elements/aeliqo-table.js";
 import {AeliqoRegionElement} from "./region/aeliqo-region.js";
 
-export const AELIQO_WEB_VERSION = "0.1.0-m0";
+export const AELIQO_WEB_VERSION = "0.1.0";
 
 type AeliqoElementConstructor = CustomElementConstructor & {
   readonly aeliqoVersion?: string;

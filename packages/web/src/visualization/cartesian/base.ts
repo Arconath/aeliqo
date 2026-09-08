@@ -33,7 +33,7 @@ const inputChanged = (changed: Map<string, unknown>): boolean => ["visualization
  * state: the host supplies a bound visualization and exact current rows.
  */
 export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
   static readonly properties = {
     visualization: {attribute: false},
     context: {attribute: false},

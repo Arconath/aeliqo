@@ -153,18 +153,18 @@ export abstract class AeliqoHierarchyElementBase extends AeliqoFoundationElement
 
 export class AeliqoTreeElement extends AeliqoHierarchyElementBase {
   protected readonly expectedView='tree' as const;
-  static readonly aeliqoVersion = '0.1.0-m0';
+  static readonly aeliqoVersion = '0.1.0';
   protected selectionEventName(): string { return 'aeliqo-visualization-select'; }
 }
 
 export class AeliqoTreemapElement extends AeliqoHierarchyElementBase {
   protected readonly expectedView='treemap' as const;
-  static readonly aeliqoVersion = '0.1.0-m0';
+  static readonly aeliqoVersion = '0.1.0';
   protected selectionEventName(): string { return 'aeliqo-visualization-select'; }
 }
 
 export class AeliqoRelationshipElement extends AeliqoHierarchyElementBase {
   protected readonly expectedView='relationship' as const;
-  static readonly aeliqoVersion = '0.1.0-m0';
+  static readonly aeliqoVersion = '0.1.0';
   protected selectionEventName(): string { return 'aeliqo-visualization-select'; }
 }

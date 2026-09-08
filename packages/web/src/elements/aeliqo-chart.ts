@@ -231,7 +231,7 @@ export class AeliqoChartElement extends LitElement {
     series: {attribute: false},
   };
 
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
 
   title = "Chart";
   summary = "";

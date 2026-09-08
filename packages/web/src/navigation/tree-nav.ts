@@ -9,7 +9,7 @@ const MAX_TREE_NODES = 512;
 
 export class AeliqoTreeNavElement extends AeliqoFoundationElement {
   static readonly properties = {nodes: {attribute: false}, expandedIds: {attribute: false}, selectedId: {type: String}, label: {type: String}};
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
   static readonly styles = [...aeliqoFoundationThemeStyles, aeliqoNavigationStyles, css`
     [part="tree"] { list-style: none; margin: 0; padding: var(--aeliqo-space-4, 0.25rem); }
     [role="treeitem"] { align-items: center; border-radius: var(--aeliqo-radius-small, 0.375rem); cursor: pointer; display: flex; gap: var(--aeliqo-space-8, 0.5rem); min-block-size: var(--aeliqo-control-min-target, 2.75rem); padding-block: var(--aeliqo-space-4, 0.25rem); padding-inline: var(--aeliqo-space-8, 0.5rem); }

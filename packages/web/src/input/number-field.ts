@@ -59,7 +59,7 @@ export class AeliqoNumberFieldElement extends AeliqoFieldElement<AeliqoNumberCha
     unit: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
 
   text = "";
   value: string | undefined;

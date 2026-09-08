@@ -21,7 +21,7 @@ export class AeliqoMetricElement extends LitElement {
     locale: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0-m0";
+  static readonly aeliqoVersion = "0.1.0";
 
   label = "";
   value: AeliqoDataValue | undefined = undefined;
