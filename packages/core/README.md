@@ -148,7 +148,7 @@ revalidates the plan and pins; this comparison cannot authenticate the host that
 supplies them. A plan key is a content identity, never a permission credential.
 Source completeness is explicit; grouping, global ranking and windows cannot
 silently treat a partial population as complete. Decimal arithmetic retains its
-decimal representation, and result precision reports arithmetic approximation.
+decimal representation, and result precision reports arithmetic approximation. Integer sums accumulate exactly, including cancellation; public integer outputs and integer expression intermediates outside the safe scalar range fail explicitly. Mixed decimal/integer addition, subtraction and multiplication promote integers exactly. Ratio totals may use wide exact accumulators before the documented floating division.
 
 Row, byte, join, plan-size and operation ceilings bound local work. The execution
 context can tighten budgets and provide a cancellation view and monotonic clock

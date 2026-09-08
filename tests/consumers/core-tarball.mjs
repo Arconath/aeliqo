@@ -508,6 +508,14 @@ function runInstalledQuery() {
   const total = factory.value.evaluate(aggregate.value,source);
   if (!total.ok || total.value.rows[0]?.total?.decimal !== '20.03' || total.value.precision.kind !== 'exact')
     throw new Error('Installed exact decimal sum failed');
+  const mixedPlan = factory.value.plan({root:'sales',pins:{catalogRevision:catalog.revision,functionRegistryDigest:registry.value.digest},
+    select:[{id:'id',expression:{kind:'field',entity:'sales',ref:'id'}},{id:'adjusted',expression:{kind:'call',function:{id:'core.subtract',revision:'1'},arguments:[
+      {kind:'field',entity:'sales',ref:'amount'}, {kind:'literal',value:2,type:{value:'integer',nullable:false}},
+    ]}}]});
+  if (!mixedPlan.ok) throw new Error(JSON.stringify(mixedPlan.diagnostics));
+  const mixed = factory.value.evaluate(mixedPlan.value,source);
+  if (!mixed.ok || mixed.value.rows[0]?.adjusted?.decimal !== '8.01' || mixed.value.precision.kind !== 'exact')
+    throw new Error('Installed mixed decimal/integer arithmetic failed');
   const cancelled = factory.value.evaluate(aggregate.value,source,{cancellation:{aborted:true}});
   if (cancelled.ok) throw new Error('Installed query ignored cancellation');
   return {ranked:ranked.value.rows,total:total.value.rows,precision:total.value.precision};
