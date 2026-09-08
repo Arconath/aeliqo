@@ -1,6 +1,7 @@
 import {AeliqoChartElement} from "./elements/aeliqo-chart.js";
 import {AeliqoInputElement} from "./elements/aeliqo-input.js";
 import {AeliqoTableElement} from "./elements/aeliqo-table.js";
+import {AeliqoRegionElement} from "./region/aeliqo-region.js";
 
 export const AELIQO_WEB_VERSION = "0.1.0-m0";
 
@@ -17,6 +18,7 @@ const REGISTRATIONS: readonly ElementRegistration[] = [
   {name: "aeliqo-input", constructor: AeliqoInputElement},
   {name: "aeliqo-table", constructor: AeliqoTableElement},
   {name: "aeliqo-chart", constructor: AeliqoChartElement},
+  {name: "aeliqo-region", constructor: AeliqoRegionElement},
 ];
 
 /** Register the shared elements exactly once in the supplied browser registry. */

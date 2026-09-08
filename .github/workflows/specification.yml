@@ -67,10 +67,14 @@ jobs:
           pnpm test:regions
           pnpm test:actions
           pnpm test:interaction
+          pnpm test:evaluation
+          pnpm test:vertical
+          pnpm test:vertical:browser
           pnpm --filter @aeliqo/reference-host test
           pnpm test:data:auth-retention
           pnpm test:core:consumers
           pnpm test:runtime:consumers
+          pnpm test:vertical:consumers
       - name: Verify external installed packages
         run: pnpm test:platform:consumers
       - name: Verify production Next SSR and hydration

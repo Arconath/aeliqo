@@ -36,6 +36,10 @@
     "./styles": {
       "types": "./dist/styles/index.d.ts",
       "import": "./dist/styles/index.js"
+    },
+    "./region": {
+      "types": "./dist/region/index.d.ts",
+      "import": "./dist/region/index.js"
     }
   },
   "files": [
@@ -49,6 +53,7 @@
   "dependencies": {
     "@lit-labs/ssr": "4.1.0",
     "@lit-labs/ssr-client": "1.1.8",
-    "lit": "3.3.3"
+    "lit": "3.3.3",
+    "@aeliqo/core": "workspace:*"
   }
 }

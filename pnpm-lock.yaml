@@ -121,6 +121,24 @@ importers:
         specifier: workspace:*
         version: link:../../packages/runtime
 
+  examples/vertical-slice:
+    dependencies:
+      '@aeliqo/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@aeliqo/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
+      '@aeliqo/web':
+        specifier: workspace:*
+        version: link:../../packages/web
+      '@lit-labs/ssr-client':
+        specifier: 1.1.8
+        version: 1.1.8
+      lit:
+        specifier: 3.3.3
+        version: 3.3.3
+
   packages/core:
     dependencies:
       zod:
@@ -153,6 +171,9 @@ importers:
 
   packages/web:
     dependencies:
+      '@aeliqo/core':
+        specifier: workspace:*
+        version: link:../core
       '@lit-labs/ssr':
         specifier: 4.1.0
         version: 4.1.0(@types/node@24.13.3)

@@ -1,0 +1,16 @@
+{
+  "name": "@aeliqo/vertical-slice",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite"
+  },
+  "dependencies": {
+    "@aeliqo/core": "workspace:*",
+    "@aeliqo/runtime": "workspace:*",
+    "@aeliqo/web": "workspace:*",
+    "lit": "3.3.3",
+    "@lit-labs/ssr-client": "1.1.8"
+  }
+}

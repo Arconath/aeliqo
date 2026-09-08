@@ -10,11 +10,11 @@
     "kit:test": "python3 scripts/validate_all.py",
     "kit:reference": "python3 scripts/test_reference.py",
     "typecheck": "pnpm build:runtime && pnpm build:platform && tsc --project tsconfig.json",
-    "build:platform": "pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/react build",
+    "build:platform": "pnpm build:core && pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/react build",
     "test:platform": "vitest run --config tests/platform/vitest.config.mjs",
     "test:platform:browser": "pnpm build:platform && playwright test --config tests/platform/playwright.config.mjs",
     "test:platform:consumers": "node tests/consumers/platform-tarballs.mjs",
-    "test:next-platform": "pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/next-platform-fixture build && playwright test --config tests/next-platform/playwright.config.mjs",
+    "test:next-platform": "pnpm build:core && pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/next-platform-fixture build && playwright test --config tests/next-platform/playwright.config.mjs",
     "build:core": "pnpm --filter @aeliqo/core build",
     "test:contracts": "pnpm build:core && vitest run --config tests/contracts/vitest.config.mjs && tsc -p tests/contracts/tsconfig.json --noEmit",
     "test:core:consumers": "node tests/consumers/core-tarball.mjs",
@@ -31,7 +31,11 @@
     "test:results": "pnpm build:runtime && vitest run --config tests/runtime-results/vitest.config.mjs && tsc -p tests/runtime-results/tsconfig.json",
     "test:regions": "pnpm build:runtime && vitest run --config tests/runtime-regions/vitest.config.mjs && tsc -p tests/runtime-regions/tsconfig.json",
     "test:actions": "pnpm build:runtime && vitest run --config tests/runtime-actions/vitest.config.mjs && tsc -p tests/runtime-actions/tsconfig.json",
-    "test:interaction": "pnpm build:runtime && vitest run --config tests/runtime-interaction/vitest.config.mjs && tsc -p tests/runtime-interaction/tsconfig.json"
+    "test:interaction": "pnpm build:runtime && vitest run --config tests/runtime-interaction/vitest.config.mjs && tsc -p tests/runtime-interaction/tsconfig.json",
+    "test:evaluation": "pnpm build:runtime && vitest run --config tests/runtime-evaluation/vitest.config.mjs && tsc -p tests/runtime-evaluation/tsconfig.json",
+    "test:vertical": "pnpm build:runtime && pnpm build:platform && vitest run --config tests/vertical-slice/vitest.config.mjs && tsc -p tests/vertical-slice/tsconfig.json",
+    "test:vertical:browser": "pnpm build:runtime && pnpm build:platform && playwright test --config tests/vertical-slice/playwright.config.mjs && playwright test --config tests/vertical-slice/web/playwright.config.mjs",
+    "test:vertical:consumers": "node tests/consumers/vertical-tarballs.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

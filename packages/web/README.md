@@ -16,3 +16,22 @@ The SSR renderer emits trusted static style tags without rewriting them, so a
 server must include matching style hashes or its own nonce policy in the
 response headers. The platform fixture exercises the browser nonce path and
 blocks inline scripts; it is not a manual assistive-technology certification.
+
+
+`@aeliqo/web/region` adds `createAeliqoPresentationRegistry` and
+`AeliqoRegionElement`. The registry connects the pure presentation compiler to
+the shared table, trend, filter, and stack implementations. The host supplies
+`resolveEntity` for authorized result identities. No-preset composition uses the
+same registry and validation as explicitly proposed plans.
+
+Assign a validated presentation to the region's `presentation` property, exact
+result-reference row sets to `results`, and committed interaction state to
+`interaction`. Handle `onSemanticInteraction` by passing the typed request to the host's
+interaction controller. The renderer does not authorize data access or execute
+queries. When permission is revoked, clear the presentation and rows alongside
+revoking runtime state. Registering Aeliqo elements also registers the region.
+
+The early region supports the deterministic vertical proof; it is not the
+completed 71-component catalog. Server rendering accepts an unknown environment;
+the application owns hydration wiring and must provide trusted properties before
+resuming the deferred custom element.

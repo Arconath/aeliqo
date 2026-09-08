@@ -211,3 +211,17 @@ uses the same canonical source import as other tests; fresh49region/27action tes
 and strict types pass. Hosted CI34205677504 on exactab376bb passed both jobs, including
 interaction/actions, installed consumers and platform/NextSSR. Evidence:
 harness/evidence/t11/hosted-ab376bb.json. T39 core presentation is now in progress.
+
+
+T39 implementation now includes a pure no-preset presentation compiler, reusable
+named-output evaluator and fixed-cohort resolver, shared web region, and a real
+synthetic HR raw-data integration. Source commits through064bc91 plus uncommitted
+package/example integration remain under review. Fresh local integration tests
+and strict types pass17 cases; evaluator7 and data98 cases pass. Existing installed
+web/React consumer passes with the new core dependency included. These are interim
+checks, not T39 acceptance evidence: review still requires precise chart timestamp
+preservation, malformed custom-event rejection, radio grouping and decimal row
+identity fixes. Installed vertical proof now copies only allowlisted example source
+and checks package resolution to avoid workspace links. Final combined browsers,
+installed consumers, immutable evidence and hosted CI remain pending. T39 is active;
+no npm publication, main promotion or production deployment occurred.

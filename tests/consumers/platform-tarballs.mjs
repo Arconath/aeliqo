@@ -40,7 +40,7 @@ async function clearCompiledOutput(directory) {
 }
 const sourceDigest = run(['python3', 'scripts/gate.py', 'digest'], root).trim();
 const artifacts = [];
-for (const name of ['web', 'react']) {
+for (const name of ['core', 'web', 'react']) {
   const directory = join(root, 'packages', name);
   const manifest = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
   assert.equal(manifest.name, `@aeliqo/${name}`);
@@ -62,6 +62,7 @@ for (const name of ['web', 'react']) {
   for (const field of ['dependencies','peerDependencies','optionalDependencies']) {
     assert(!JSON.stringify(packed[field] ?? {}).includes('workspace:'), 'Unresolved workspace dependency');
   }
+  if (name === 'web') assert.equal(packed.dependencies['@aeliqo/core'], '0.1.0');
   if (name === 'react') assert.equal(packed.dependencies['@aeliqo/web'], '0.1.0');
   artifacts.push({name: packed.name, version: packed.version, path: tarball,
     sha256: hash(bytes), integrity: `sha512-${hash(bytes, 'sha512', 'base64')}`});

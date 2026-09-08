@@ -182,7 +182,7 @@ view.onSemanticInteraction = async request => {
   const receipt = await session.dispatch(request);
   if (!receipt.ok) { status.textContent = receipt.diagnostics[0]?.message ?? 'Selection failed.'; return; }
   status.textContent = request.payload.kind === 'selection' && request.payload.selection.mode === 'ids'
-    ? 'Selected employee ' + request.payload.selection.keys.join(', ') + '.' : 'Selection cleared.';
+    ? 'Selected employee ' + request.payload.selection.keys.map(key => session.selectionLabel(key) ?? 'Unknown employee').join(', ') + '.' : 'Selection cleared.';
 };
 reorder.addEventListener('click', async () => {
   reorder.disabled = true;
@@ -232,7 +232,7 @@ try {
   assert.equal(await page.evaluate(() => window.hrFixture.data.queryCount), 2);
   await page.getByRole("button", {name: "Swap view order"}).click();
   await page.waitForFunction(() => document.querySelector("#status")?.textContent?.includes("same results and selection"));
-  assert(await table.getByRole("radio", {name: "Deselect employees e2", exact: true}).isChecked());
+  assert(await table.getByRole("radio", {name: "Select employees e2", exact: true}).isChecked());
   assert.equal(await page.evaluate(() => window.hrFixture.data.queryCount), 2);
   const stale = await page.evaluate(async () => {
     const before = JSON.stringify(window.hrFixture.presentation.plan);
@@ -241,7 +241,7 @@ try {
   });
   assert.deepEqual(stale, {code: "runtime.region-stale", preserved: true});
   browserReport.rows = await table.locator("tbody tr").count();
-  browserReport.selection = await table.getByRole("radio", {name: "Deselect employees e2", exact: true}).isChecked();
+  browserReport.selection = await table.getByRole("radio", {name: "Select employees e2", exact: true}).isChecked();
   browserReport.queryCount = await page.evaluate(() => window.hrFixture.data.queryCount);
   browserReport.stale = stale;
   browserReport.failures = failures;

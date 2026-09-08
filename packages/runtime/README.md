@@ -266,3 +266,28 @@ entry becomes ambiguous and subsequent attempts cannot dispatch it again.
 Revocation and disposal are terminal and clear retained ledger inputs/outputs.
 Host callbacks must honor their `AbortSignal`; a timeout stops the port waiting
 but cannot terminate an application's external operation.
+
+
+## Named task evaluation
+
+`@aeliqo/runtime/evaluation` exposes `createTaskEvaluator` and
+`createResultCohortResolver`. The evaluator validates a Task, evaluates selected
+outputs in dependency order through the host's data service, and returns leased
+result handles with their original descriptors and lineage. It does not commit
+or render a view. By default it evaluates eager query outputs and reused outputs,
+including their dependencies. Use `requestedOutputs` for an on-demand read.
+
+The host supplies the authenticated context, catalog, data service, result store,
+and exact-reference handle resolver. `task.evaluate` is required independently
+of `result.inspect`, which is also needed for reused results and cohorts.
+Authority is checked again before returning an evaluation. Pass an AbortSignal
+and bounded budget; call the evaluation's `release()` once the region has retained
+its handles, or when discarding the evaluation.
+
+A live-output cohort resolves membership from the dependency evaluated during
+that task. A fixed cohort resolves its pinned, complete source result and can
+retain those members across a source-data revision. This does not retain revoked
+read authority. Cohort resolution checks scope, identities, grain, completeness,
+and current host permission; arbitrary result references are not capabilities.
+See `examples/vertical-slice` in the source repository for an application-owned
+catalog and the full evaluate, validate, stage, commit, and interaction sequence.
