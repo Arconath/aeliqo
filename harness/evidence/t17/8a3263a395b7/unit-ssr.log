@@ -1,0 +1,17 @@
+$ pnpm build:platform && vitest run --config tests/plot/vitest.config.mjs && tsc -p tests/plot/tsconfig.json && node tests/plot/ssr.mjs
+$ pnpm build:core && pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/react build
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+
+ RUN  v5.0.0 /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo
+
+
+ Test Files  3 passed (3)
+      Tests  11 passed (11)
+   Start at  21:25:54
+   Duration  283ms (transform 51%, import 44%, tests 3%, worker 1%)
+
+Plot SSR exact values, SVG marks and request isolation passed.
+Plot composition SSR facets, layered marks and exact data passed.

@@ -1,0 +1,18 @@
+$ playwright test --config tests/plot/playwright.config.mjs
+[WebServer] (node:70822) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:70831) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 9:25:57 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  1 tests/plot/browser.spec.ts:3:5 › SVG and Canvas use the same coordinates and retain the missing interval (273ms)
+[WebServer] 9:25:57 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  2 tests/plot/browser.spec.ts:13:5 › geometry budget keeps the data alternative and selection emits exact result identity (185ms)
+[WebServer] 9:25:57 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  3 tests/plot/browser.spec.ts:24:5 › facet and layer compose real marks, data partitions and Canvas, then clear stale scope (217ms)
+[WebServer] 9:25:58 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  4 tests/plot/browser.spec.ts:40:5 › composition selection cannot resurrect under a replaced or revoked result scope (231ms)
+
+  4 passed (1.7s)

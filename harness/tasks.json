@@ -555,10 +555,15 @@
       "acceptance": [
         "Same spec/geometry feeds SVG and bounded Canvas; axes, units, gaps and accessible exact values proven."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "Parent owns canonical schema, semantic scale validation and shared plot integration; source implementation underway, no acceptance claim."
+      "evidence": [
+        {
+          "path": "harness/evidence/t17/8a3263a395b7/manifest.json",
+          "sha256": "c7fd49a715879c2bf3d8a7d8912cf063abdecd3f05e83b6bab44360c8904e4f4"
+        }
+      ],
+      "notes": "Accepted source528d052 after independent review and frozen Node24 build/types,11 geometry/composition,30 core/schema,4 Chromium,actual Lit/React SSR and installed tarball checks. T18 chart families and T29/T30 full matrix remain mandatory."
     },
     {
       "id": "T18",

@@ -1,0 +1,20 @@
+{
+  "recordedBy": "root orchestrator",
+  "independentReviewers": [
+    "platform_proof (Luna Max)",
+    "release_inventory (Luna Max)"
+  ],
+  "findingsResolved": [
+    "Require identical scalar representation for shared axes.",
+    "Reject undeclared row cells.",
+    "Preserve exact ResultRef and loaded scope in facet partitions.",
+    "Clear selection on replaced/revoked result scope; selectedResult disambiguates sources.",
+    "Bound expanded nodes, rows, cells, geometry and display pixels."
+  ],
+  "independentBrowserEvidence": "Reviewer reported actual Chromium stale-scope fix verified; axe 4.13 legacy/composition zero violations. Automated evidence is not manual assistive-technology review.",
+  "remainingLimits": [
+    "T18 chart-family semantics and T29/T30 full visual/performance matrices remain mandatory.",
+    "Framework-specific hydration and manual assistive technology remain separate.",
+    "No model, publication or deployment claims."
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "sourceDigest": "8a3263a395b770c4bbbab0148c87c9763af9da1a9569c08b00ef40eed97b51ce",
+  "sourceChangedDuringRun": false,
+  "scope": "Installed PlotSpec/geometry/web/React declarations, actual React SSR composition and request isolation, Chromium exact values/SVG/Canvas/facets/selection/revocation",
+  "artifacts": [
+    {
+      "name": "@aeliqo/core",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/plot-consumers/run-iFanYX/aeliqo-core-0.1.0.tgz",
+      "sha256": "b99e88b5ea93d9c57884dc2e75e2f5abfceb77af231c479fd1d667de711d298a",
+      "integrity": "sha512-BsE5Ex++x5beKZtXcH0r+5/kVArrMlGx1t3GUXT53avTYJ4Bkp8ngxPG93cM1Hyq/iuF202/mIuGkVYOjCM2Hg=="
+    },
+    {
+      "name": "@aeliqo/web",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/plot-consumers/run-iFanYX/aeliqo-web-0.1.0.tgz",
+      "sha256": "8901e13829709dc4cffffdbc8053a4c81a80e5d75baf3896ac87d6b890b28ed0",
+      "integrity": "sha512-rGXg+JQGT3q3K4ERhkIA34EnRgKBqkjOPs3orIov2DV4Y1KKmtp+TNYBtvF3PBe2K7m7t2eUaw6rWzYQRTprvw=="
+    },
+    {
+      "name": "@aeliqo/react",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/plot-consumers/run-iFanYX/aeliqo-react-0.1.0.tgz",
+      "sha256": "7c43aff8e5335c46719fd8a131b617d9c76f31d8a608e2ffae8a14df41fecfed",
+      "integrity": "sha512-LNpcbAmXs9fHL1X9nAf/q+k2ahlvRYw3bWgrWWh7I6n34nxx7D0yp71gdkPx23b7fzCRDJ9Q1//86ysU28tBOA=="
+    }
+  ],
+  "consumerDirectory": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-plot-consumer-8qBBQO",
+  "consumerLock": {
+    "sha256": "f123b30248e098e591414ed8f547b9d0924ec9d488d34646fe5d02bdea6a1369"
+  },
+  "ssr": "Installed React composition SSR exact values and request isolation passed.\n",
+  "failures": [],
+  "environment": {
+    "node": "v24.20.0",
+    "chromium": "153.0.8010.12"
+  },
+  "passed": true
+}

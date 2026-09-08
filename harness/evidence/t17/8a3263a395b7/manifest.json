@@ -1,0 +1,57 @@
+{
+  "tasks": [
+    "T17"
+  ],
+  "status": "pass",
+  "sourceCommit": "528d052043c16598286fe5e2efa6abab4e7bb7e8",
+  "sourceDigest": "8a3263a395b770c4bbbab0148c87c9763af9da1a9569c08b00ef40eed97b51ce",
+  "scope": "Typed PlotSpec, shared D3 geometry, SVG/Canvas unit/layer/facet/concat, scoped exact alternatives and controlled selection.",
+  "checks": {
+    "plotUnit": 11,
+    "contractAndSchemaParity": 30,
+    "browser": 4,
+    "strictTypes": true,
+    "litSSR": true,
+    "installedReactSSR": true,
+    "installedTarballConsumer": true
+  },
+  "limits": [
+    "T18 chart-family semantics and T29/T30 full visual/performance matrices remain mandatory.",
+    "Framework-specific hydration and manual assistive technology remain separate.",
+    "No model, publication or deployment claims."
+  ],
+  "artifacts": [
+    {
+      "path": "browser.log",
+      "sha256": "23c8d37f1043b951fbf1300f1d1b6691f49e2274e9880175825570e25f9ab634"
+    },
+    {
+      "path": "consumer-package-lock.json",
+      "sha256": "f123b30248e098e591414ed8f547b9d0924ec9d488d34646fe5d02bdea6a1369"
+    },
+    {
+      "path": "consumer-report.json",
+      "sha256": "6f9ea98961b5957653ac9fba2b8ee6b8fec7909d0d197b86c0b8ac9159d10b8b"
+    },
+    {
+      "path": "consumer.log",
+      "sha256": "caabe624f5ad1243b8e1ba4ef935c7510ecc4031c8be7ee0ee4459c26fd52b70"
+    },
+    {
+      "path": "contracts.log",
+      "sha256": "1656a0f6a1d8a3455045b04d4b426154c5f2287e90de505092f9e1023ad57423"
+    },
+    {
+      "path": "installed-plot.png",
+      "sha256": "6949de5d8cca57fd4e00cbd966ad9c2699ebd551c873901451d808769f831988"
+    },
+    {
+      "path": "review.json",
+      "sha256": "063f24b334bcff78dfe15b925e5c8d1ea9fc2f574275d497a8c6da54d2cd7501"
+    },
+    {
+      "path": "unit-ssr.log",
+      "sha256": "301fbb002b3ba826eaf75e14346a99e075f8be93127e404547ee13c4891a7b0e"
+    }
+  ]
+}
