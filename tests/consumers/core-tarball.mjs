@@ -1,10 +1,11 @@
 /**
  * Build and consume the actual @aeliqo/core package outside the workspace.
  *
- * This is a bounded T03/T04/T05/T07 package-boundary check. It proves the four
+ * This is a bounded T03/T04/T05/T07/T11 package-boundary check. It proves the four
  * public document parsers, generated schema files, task structure, experience
  * constraint and semantic meaning passes, the installed package graph and a
- * small core bundle, plus exact decimal queries, ranking and cancellation.
+ * small core bundle, plus exact decimal queries, ranking, cancellation and
+ * registered typed interaction graph validation.
  * It does not certify the full planner,
  * the complete product, universal browser performance, or a universal
  * secret/code scanner.
@@ -526,19 +527,49 @@ function runInstalledQuery() {
 `;
 
 
+function runInstalledInteractionGraph(validateInteractionGraph) {
+  const shape = {payload: 'selection', entity: 'employee', identity: ['employee-id'], grain: ['employee-id']};
+  const mapping = {ref: {id: 'selection.identity', revision: '1'}, source: shape, target: shape, kind: 'identity'};
+  const nodes = ['table', 'chart', 'detail'].map(id => ({id, ports: [{id: 'selection', direction: 'inout', ...shape}]}));
+  const links = nodes.map((node, index) => ({id: 'link-' + index,
+    source: {node: node.id, port: 'selection'}, target: {node: nodes[(index + 1) % nodes.length].id, port: 'selection'},
+    mapping: mapping.ref, propagation: 'identity-equivalence'}));
+  const valid = validateInteractionGraph({nodes, links}, [mapping]);
+  if (!valid.ok || !Object.isFrozen(valid.value.nodes[0].ports[0].identity)) throw new Error('Installed selection equivalence validation failed');
+  const directed = validateInteractionGraph({nodes, links: links.map(link => ({...link, propagation: 'directed'}))}, [mapping]);
+  if (directed.ok || directed.diagnostics[0].code !== 'interaction.feedback') throw new Error('Installed graph accepted arbitrary feedback');
+  if (validateInteractionGraph({nodes, links}, []).ok) throw new Error('Installed graph accepted an unregistered mapping');
+  if (validateInteractionGraph({nodes, links, actor: 'human'}, [mapping]).ok) throw new Error('Installed graph accepted forged authority');
+  return {ports: 3, selectionEquivalence: true, directedFeedbackRejected: true, unknownMappingRejected: true};
+}
+const graphConsumerSource = runInstalledInteractionGraph.toString();
+
 await writeFile(join(consumerDirectory, "consumer-types.ts"), `
 import {
   parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue,
-  validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet,
+  validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph,
   checkExpression, createStandardFunctionRegistry, createTypedAuthoring, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
 import type {
   Catalog, Task, Result, Experience, CommitPreconditions, Outcome, TaskStructure, Wire,
+  Interaction, InteractionPayload, InteractionSelection, InteractionLink, InteractionGraphInput, InteractionGraph, InteractionMappingManifest,
   ExperienceRestriction, ExperienceConstraints, TypedAuthoring, TypedExpression,
   FunctionRegistry, MeaningDefinition, MeaningBundle, QueryPlanner, LogicalPlan, QueryResult, QuerySpec, QuerySource,
 } from '@aeliqo/core';
 const commitPins: CommitPreconditions = ${JSON.stringify(commitPins)};
 const checkedPins: Outcome<CommitPreconditions> = validateCommitReadSet(commitPins, commitPins, commitPins.results);
+const checkedGraph: Outcome<InteractionGraph> = validateInteractionGraph({nodes: [], links: []} satisfies InteractionGraphInput, [] satisfies readonly InteractionMappingManifest[]);
+declare const interaction: Interaction;
+const interactionPayload: InteractionPayload = interaction.payload;
+const clearSelection: InteractionSelection = {mode: 'clear'};
+declare const interactionLink: InteractionLink;
+// @ts-expect-error Typed event data cannot claim a privileged actor.
+const forgedInteraction: Interaction = {...interaction, actor: 'human'};
+if (checkedGraph.ok) {
+  // @ts-expect-error Validated graphs are immutable.
+  checkedGraph.value.links.push(interactionLink);
+}
+void [interactionPayload, clearSelection, forgedInteraction];
 // @ts-expect-error Read sets are immutable.
 commitPins.results.push(commitPins.results[0]!);
 void checkedPins;
@@ -645,7 +676,7 @@ import {createRequire} from 'node:module';
 import {readFile} from 'node:fs/promises';
 import {
   parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue,
-  validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet,
+  validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph,
   checkExpression, createStandardFunctionRegistry, createTypedAuthoring, authorizeMeaningActivation, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
 assert.deepEqual(parseWireValue('{"requestId":"one"}'), {ok:true,value:{requestId:'one'}});
@@ -805,6 +836,8 @@ const runtimeSchema = await import('@aeliqo/core/schema');
 assert(Object.keys(runtimeSchema).length > 0);
 ${queryConsumerSource}
 assert.deepEqual(runInstalledQuery().total, [{total:{decimal:'20.03'}}]);
+${graphConsumerSource}
+assert.equal(runInstalledInteractionGraph(validateInteractionGraph).selectionEquivalence, true);
 console.log('Installed @aeliqo/core query planning, exact evaluation and cancellation pass.');
 console.log('Installed @aeliqo/core parsers, schema exports, and round trips pass.');
 console.log('Installed @aeliqo/core task structure and experience constraint passes pass.');
@@ -820,6 +853,8 @@ const core = await import('@aeliqo/core');
 const {parseWireValue, checkExpression, createQueryPlanner, createQueryFunctionRegistry} = core;
 ${queryConsumerSource}
 assert.equal(runInstalledQuery().precision.kind, 'exact');
+${graphConsumerSource}
+assert.equal(runInstalledInteractionGraph(core.validateInteractionGraph).directedFeedbackRejected, true);
 assert.deepEqual(parseWireValue('{"requestId":"one"}'), {ok:true,value:{requestId:'one'}});
 assert.equal(parseWireValue('{"requestId":"one","requestId":"two"}').ok, false);
 assert.equal(parseWireValue({requestId:undefined}).ok, false);
@@ -854,7 +889,7 @@ await writeFile(join(consumerDirectory, "index.html"), '<!doctype html><html><bo
 await writeFile(join(consumerDirectory, "bundle-entry.js"), `
 import {
   parseCatalog, parseTask, parseResult, parseExperience, parseWireValue,
-  validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet,
+  validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph,
   checkExpression, createStandardFunctionRegistry, createTypedAuthoring, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
 const validWire = parseWireValue('{"requestId":"one"}');
@@ -867,6 +902,8 @@ const t05 = ${t05FixtureSource};
 const t04 = ${t04FixtureSource};
 ${queryConsumerSource}
 const installedQueryResult = runInstalledQuery();
+${graphConsumerSource}
+const installedInteractionGraph = runInstalledInteractionGraph(validateInteractionGraph);
 const semanticRegistry = createStandardFunctionRegistry();
 const semanticAuthoring = semanticRegistry.ok
   ? createTypedAuthoring({catalog: t04.semanticCatalogInput, registry: semanticRegistry.value})
@@ -877,6 +914,7 @@ const parsed = [
   validateTaskStructure(t05.namedOutputTaskInput), resolveExperienceConstraints(t05.noPresetExperienceInput, t05.taskInput),
   semanticRegistry, semanticAuthoring, semanticField, {ok:true,value:installedQueryResult},
   validateCommitReadSet(commitPins, commitPins, commitPins.results),
+  {ok: true, value: installedInteractionGraph},
 ];
 globalThis.__aeliqoParsed = parsed;
 export {parsed};
@@ -960,14 +998,14 @@ const report = {
   sourceDigestBefore: sourceBefore,
   sourceDigestAfter: sourceAfter,
   sourceChangedDuringRun: sourceBefore !== sourceAfter,
-  scope: "@aeliqo/core 0.1.0 installed tarball; four document parsers/round trips; TaskStructure, ExperienceConstraints, semantic checker and typed authoring passes; generated schemas; Vite core graph and 70 KiB gzip budget. Includes installed exact decimal aggregate, canonical query ranking and cancellation in Node/no-codegen/Chromium. Full planner and product certification are outside this scoped check.",
+  scope: "@aeliqo/core 0.1.0 installed tarball; four document parsers/round trips; TaskStructure, ExperienceConstraints, semantic checker and typed authoring passes; generated schemas; Vite core graph and 70 KiB gzip budget. Includes installed exact decimal aggregate, canonical query ranking, cancellation and registered interaction graph validation in Node/no-codegen/Chromium. Full planner and product certification are outside this scoped check.",
   artifact: {name: packedManifest.name, version: packedManifest.version, path: tarballPath, sha256: tarballSha256, integrity: tarballIntegrity},
   consumer: {directory: consumerDirectory, lockPath: join(runDirectory, "consumer-package-lock.json"), lockSha256: hash(lockBytes)},
   schemas: expectedSchemas.map((name) => `schemas/${name}.schema.json`),
   browserOutcomes,
   consumerOutput: consumerOutput.trim(),
   parserProbeOutput: parserProbeOutput.trim(),
-  bundle: {initialGzipBytes, files: bundleMetrics, modules, moduleGraphScope: "installed package parser, semantic and query graph; no universal dependency/security certification"},
+  bundle: {initialGzipBytes, files: bundleMetrics, modules, moduleGraphScope: "installed package parser, semantics, query and interaction graph validation; no universal dependency/security certification"},
   environment: {
     node: process.version,
     npm: run(["npm", "--version"], consumerDirectory).trim(),
@@ -982,5 +1020,5 @@ const report = {
   passed: true,
 };
 await writeFile(join(runDirectory, "report.json"), JSON.stringify(report, null, 2) + "\n");
-console.log("Installed @aeliqo/core types, parsers, semantic authoring, schemas, no-codegen probe, Vite graph, and Chromium execution pass.");
+console.log("Installed @aeliqo/core types, parsers, semantic authoring, schemas, interaction graph, no-codegen probe, Vite graph, and Chromium execution pass.");
 console.log(`Evidence: ${join(runDirectory, "report.json")}`);
