@@ -57,6 +57,15 @@ export interface ReadContext {
   readonly principal?: unknown;
   /** Optional transport metadata for host policy; never used as wire authority. */
   readonly metadata?: Readonly<Record<string, string>>;
+  /**
+   * In-process host-owned cohort capability. HTTP transport deliberately
+   * omits this field; the server supplies its own trusted resolver context.
+   */
+  readonly cohort?: {
+    readonly resolver: import('../evaluation/types.js').CohortResolver;
+    readonly resultStore: import('../results/types.js').ResultStore;
+    readonly resolveResult: (ref: import('@aeliqo/core').ResultRef) => import('../results/types.js').ResultHandle | undefined;
+  };
 }
 
 export type DataOperation = 'describe' | 'plan' | 'execute';
@@ -119,6 +128,27 @@ export interface LocalDataServiceOptions {
     readonly registry: FunctionRegistry;
     readonly policy: MeaningActivationPolicy;
   };
+  /**
+   * Host-owned result lineage resolver used by Task evaluation. It is kept
+   * outside the ADC wire protocol; HTTP services receive this port from the
+   * trusted evaluator context instead.
+   */
+  readonly cohortResolver?: import('../evaluation/types.js').CohortResolver;
+  /**
+   * Host-owned handles used by the resolver for fixed cohort source results.
+   * The service fills authority and catalog fields from the current plan
+   * request before invoking the resolver; these handles never cross ADC.
+   */
+  readonly cohortContext?: (input: {
+    readonly readContext: ReadContext;
+    readonly principalKey: string;
+    readonly scopeDigest: string;
+    readonly policyRevision?: string;
+    readonly catalogRevision: string;
+    readonly functionRegistryDigest: string;
+    readonly catalog: Catalog;
+    readonly now: () => number;
+  }) => Pick<import('../evaluation/types.js').CohortResolverContext, 'resultStore' | 'resolveResult'>;
 }
 
 export interface DataService {
@@ -130,6 +160,7 @@ export interface DataService {
 export interface LocalDataService extends DataService {
   readonly catalog: Catalog;
   readonly sourceRevision: string;
+  readonly cohortResolver?: import('../evaluation/types.js').CohortResolver;
   replaceSnapshot(snapshot: LocalSnapshot): Outcome<void>;
   registerMeaningBundle(bundle: MeaningBundle): Outcome<MeaningRegistration>;
 }

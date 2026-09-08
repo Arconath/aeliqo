@@ -54,6 +54,8 @@ import type {
   UnsupportedCapability,
 } from './types.js';
 import type {ResultEvent as DataResultEvent} from './types.js';
+import {lowerCohortQuery} from '../evaluation/cohort.js';
+import type {CohortMembership, CohortRequest, CohortResolverContext} from '../evaluation/types.js';
 
 const DEFAULT_BUDGET: QueryBudget = Object.freeze({
   maxRows: 10_000,
@@ -78,6 +80,13 @@ interface StoredPlan {
   readonly dependencies: PlanDependencies;
   readonly scanEntities: readonly string[];
   readonly policyRevision?: string;
+  readonly lineage: readonly {readonly output: string; readonly inputs: readonly ResultRef[]}[];
+}
+
+interface ResolvedPopulation {
+  readonly query: QuerySpec;
+  readonly membership?: CohortMembership;
+  readonly lineage: readonly ResultRef[];
 }
 
 interface RuntimeQueryOptions {
@@ -622,7 +631,7 @@ function normalizedQuery(query: QuerySpec): QuerySpec {
   return {...query, page: {size: query.page.size}};
 }
 
-function validateQuery(query: QuerySpec, catalog: Catalog, grant: ReadGrant): Outcome<void> {
+function validateQuery(query: QuerySpec, catalog: Catalog, grant: ReadGrant, allowFixedCohort = false): Outcome<void> {
   const indexOutcome = createCatalogIndex(catalog);
   if (!indexOutcome.ok) return indexOutcome;
   if (!allowedEntity(grant, query.entity)) return failure('data.denied', 'The requested data is not available in the current authorization scope.', ['query', 'entity']);
@@ -642,7 +651,8 @@ function validateQuery(query: QuerySpec, catalog: Catalog, grant: ReadGrant): Ou
       if (!query.fields.includes(entry.field)) return unsupported({kind: 'operator', id: 'order-projection', reason: 'Ordering by an unprojected field is outside the bounded projection subset.', alternatives: ['Project every order field.']}, ['query', 'order', index, 'field']);
     }
   }
-  if (query.population.kind !== 'all-authorized') return unsupported({kind: 'source', id: 'population', reason: 'Only the current bounded authorized source population is available locally.', alternatives: ['Use a host source with a stable cohort contract.']}, ['query', 'population']);
+  if (query.population.kind === 'live-output' || (query.population.kind === 'fixed' && !allowFixedCohort))
+    return unsupported({kind: 'source', id: 'population', reason: query.population.kind === 'live-output' ? 'Live named-output population binding belongs to the trusted task evaluator.' : 'A fixed population requires a host-owned complete cohort resolver.', alternatives: ['Use a host source with a stable cohort contract.']}, ['query', 'population']);
   return {ok: true, value: undefined};
 }
 
@@ -812,7 +822,7 @@ function supportedOperations(plan: LogicalPlan, query: QuerySpec): readonly stri
     if (node.op === 'project') operations.add('projection');
     else if (node.op === 'filter') operations.add('predicates');
     else if (node.op === 'sort') operations.add('order');
-    else if (node.op === 'top-k') operations.add('paging');
+    else if (node.op === 'top-k') operations.add('top-k');
     else if (node.op === 'join' || node.op === 'semijoin') operations.add('relation');
     else if (node.op === 'group') operations.add('grouping');
     else if (node.op === 'aggregate') operations.add('aggregation');
@@ -823,7 +833,7 @@ function supportedOperations(plan: LogicalPlan, query: QuerySpec): readonly stri
   if (query.page !== undefined) operations.add('paging');
   // Keep the wire list deterministic and retain the established ADC ordering;
   // plan node order is an implementation detail (filters and sorts precede projection).
-  const order = ['projection', 'predicates', 'order', 'paging', 'relation', 'grouping', 'aggregation', 'temporal', 'window', 'derive'];
+  const order = ['projection', 'predicates', 'order', 'top-k', 'paging', 'relation', 'grouping', 'aggregation', 'temporal', 'window', 'derive'];
   return Object.freeze(order.filter((operation) => operations.has(operation)));
 }
 
@@ -936,7 +946,69 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
     }
   };
 
+  const resolvePopulation = async (
+    query: QuerySpec,
+    grant: ReadGrant,
+    context: ReadContext,
+    budget: QueryBudget,
+    startedAt: number,
+  ): Promise<Outcome<ResolvedPopulation>> => {
+    if (query.population.kind === 'all-authorized') return {ok: true, value: {query, lineage: []}};
+    if (query.population.kind === 'live-output')
+      return unsupported({kind: 'source', id: 'population', reason: 'Live named-output population binding belongs to the trusted task evaluator.', alternatives: ['Bind the live output to a complete fixed cohort before calling this ADC service.']}, ['query', 'population']);
+    const resolver = context.cohort?.resolver ?? options.cohortResolver;
+    const contextFactory = options.cohortContext;
+    if (resolver === undefined || (context.cohort === undefined && contextFactory === undefined))
+      return unsupported({kind: 'source', id: 'population', reason: 'A fixed population requires a host-owned complete cohort resolver and result handle context.', alternatives: ['Configure cohortResolver and cohortContext on the host service.']}, ['query', 'population']);
+    const remaining = budget.maxMilliseconds - (Date.now() - startedAt);
+    if (remaining <= 0) return failure('data.budget', 'Cohort resolution exceeded the effective time budget.', ['budget']);
+    const principalKey = context.metadata?.['aeliqo-principal-key'] ?? 'local-principal';
+    let handles: Pick<CohortResolverContext, 'resultStore' | 'resolveResult'>;
+    if (context.cohort !== undefined) handles = context.cohort;
+    else {
+      try {
+        handles = contextFactory!({readContext: context, principalKey, scopeDigest: grant.scopeDigest, ...(grant.policyRevision === undefined ? {} : {policyRevision: grant.policyRevision}), catalogRevision: currentCatalog.revision, functionRegistryDigest: currentCatalog.functionRegistryDigest, catalog: currentCatalog, now: () => Date.now()});
+      } catch {
+        return failure('data.authorization', 'The host cohort context could not be initialized.');
+      }
+    }
+    const resolverContext: CohortResolverContext = {
+      readContext: context,
+      principalKey,
+      scopeDigest: grant.scopeDigest,
+      ...(grant.policyRevision === undefined ? {} : {policyRevision: grant.policyRevision}),
+      catalogRevision: currentCatalog.revision,
+      functionRegistryDigest: currentCatalog.functionRegistryDigest,
+      catalog: currentCatalog,
+      grants: ['result.inspect'],
+      ...handles,
+      now: () => Date.now(),
+    };
+    const population = query.population;
+    const request: CohortRequest = {
+      source: population.source,
+      identityKeys: population.identityKeys,
+      ...(currentCatalog.entities.find((entity) => entity.id === query.entity) === undefined ? {} : {targetGrain: currentCatalog.entities.find((entity) => entity.id === query.entity)!.rowGrain}),
+      scopeDigest: grant.scopeDigest,
+      ...(grant.policyRevision === undefined ? {} : {policyRevision: grant.policyRevision}),
+      catalogRevision: currentCatalog.revision,
+      sourceRevision: population.source.revision,
+      deadlineAt: Date.now() + remaining,
+      ...(context.signal === undefined ? {} : {signal: context.signal}),
+    };
+    let resolved: Outcome<CohortMembership>;
+    try { resolved = await resolver.resolve(request, resolverContext); }
+    catch { return failure('data.authorization', 'The host cohort resolver failed.'); }
+    if (!resolved.ok) return resolved;
+    if (resolved.value.tupleDigest !== population.cohortDigest)
+      return failure('data.stale-cohort', 'The fixed population digest does not match the host-owned cohort membership.', ['query', 'population', 'cohortDigest']);
+    const lowered = lowerCohortQuery(query, resolved.value, currentCatalog);
+    if (!lowered.ok) return lowered;
+    return {ok: true, value: {query: lowered.value, membership: resolved.value, lineage: resolved.value.lineage}};
+  };
+
   const service: LocalDataService = {
+    ...(options.cohortResolver === undefined ? {} : {cohortResolver: options.cohortResolver}),
     get catalog() { return currentCatalog; },
     get sourceRevision() { return snapshot.sourceRevision; },
 
@@ -997,7 +1069,7 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
         return failure('data.stale-plan', 'The catalog or source changed while authorization was being resolved.');
       if (grant.value.rowPolicy !== undefined && grant.value.policyRevision === undefined)
         return failure('data.authorization', 'A row policy must declare a policy revision before a plan can be accepted.');
-      const checked = validateQuery(input.query, currentCatalog, grant.value);
+      const checked = validateQuery(input.query, currentCatalog, grant.value, context.cohort !== undefined || (options.cohortResolver !== undefined && options.cohortContext !== undefined));
       if (!checked.ok) return checked;
       const effectiveBudget = minBudget(input.budget, options.hostBudget ?? DEFAULT_BUDGET, grant.value.maxBudget);
       const capability = currentCatalog.capabilities.find((candidate) => candidate.entity === input.query.entity);
@@ -1010,10 +1082,12 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
       if (Date.now() - startedAt > boundedBudget.maxMilliseconds)
         return failure('data.budget', 'Planning exceeded the effective time budget.', ['budget']);
 
+      const resolvedPopulation = await resolvePopulation(input.query, grant.value, context, boundedBudget, startedAt);
+      if (!resolvedPopulation.ok) return resolvedPopulation;
       const plannerOutcome = queryPlanner(options, currentCatalog, sourceLimits);
       if (!plannerOutcome.ok) return plannerOutcome;
       const planner = plannerOutcome.value;
-      const logicalInput = queryWithoutPage(input.query);
+      const logicalInput = queryWithoutPage(resolvedPopulation.value.query);
       const lowered = lowerQuerySpec(logicalInput, currentCatalog, planner.registry, currentCatalog.meanings);
       if (!lowered.ok) return plannerFailure(lowered);
       const relational = {
@@ -1046,10 +1120,12 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
         if (cursor?.kind !== 'data' || cursor.queryDigest !== queryDigest || cursor.scopeDigest !== grant.value.scopeDigest || cursor.policyRevision !== grant.value.policyRevision || cursor.sourceRevision !== snapshot.sourceRevision || cursor.catalogRevision !== currentCatalog.revision || cursor.target !== input.target.outputId)
           return failure('data.stale-cursor', 'The query cursor does not belong to this query, scope, target or source revision.', ['query', 'page', 'cursor']);
       }
-      const populationDigestOutcome = await digestWithDeadline(
-        {queryDigest, planKey: logical.planKey, scopeDigest: grant.value.scopeDigest, sourceRevision: snapshot.sourceRevision, catalogRevision: currentCatalog.revision, ...(grant.value.policyRevision === undefined ? {} : {policyRevision: grant.value.policyRevision})},
-        'population', context, boundedBudget.maxMilliseconds - (Date.now() - startedAt),
-      );
+      const populationDigestOutcome = resolvedPopulation.value.membership === undefined
+        ? await digestWithDeadline(
+          {queryDigest, planKey: logical.planKey, scopeDigest: grant.value.scopeDigest, sourceRevision: snapshot.sourceRevision, catalogRevision: currentCatalog.revision, ...(grant.value.policyRevision === undefined ? {} : {policyRevision: grant.value.policyRevision})},
+          'population', context, boundedBudget.maxMilliseconds - (Date.now() - startedAt),
+        )
+        : {ok: true as const, value: resolvedPopulation.value.membership.tupleDigest};
       if (!populationDigestOutcome.ok) return populationDigestOutcome;
       const populationDigest = populationDigestOutcome.value;
       const expiresAt = Date.now() + planTtlMs;
@@ -1076,6 +1152,7 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
         dependencies,
         scanEntities: scanEntityIds(logical),
         ...(grant.value.policyRevision === undefined ? {} : {policyRevision: grant.value.policyRevision}),
+        lineage: resolvedPopulation.value.membership === undefined ? [] : [{output: input.target.outputId, inputs: resolvedPopulation.value.lineage}],
       });
       return {ok: true, value: storedAccepted};
     },
@@ -1118,7 +1195,7 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
         yield resultError(input.requestId, 'data.aborted', 'The result execution was cancelled.');
         return;
       }
-      const checked = validateQuery(input.query, currentCatalog, grant.value);
+      const checked = validateQuery(input.query, currentCatalog, grant.value, context.cohort !== undefined || (options.cohortResolver !== undefined && options.cohortContext !== undefined));
       if (!checked.ok) {
         yield resultError(input.requestId, checked.diagnostics[0]?.code ?? 'data.invalid-query', checked.diagnostics[0]?.message ?? 'The execution query is no longer authorized.');
         return;
@@ -1135,6 +1212,16 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
       }
       if (Date.now() - startedAt > executionBudget.maxMilliseconds) {
         yield resultError(input.requestId, 'data.budget', 'Execution exceeded the effective time budget before reading rows.');
+        return;
+      }
+      const resolvedPopulation = await resolvePopulation(input.query, grant.value, context, executionBudget, startedAt);
+      if (!resolvedPopulation.ok) {
+        const first = resolvedPopulation.diagnostics[0];
+        yield resultError(input.requestId, first?.code ?? 'data.unsupported', first?.message ?? 'The fixed population could not be resolved.');
+        return;
+      }
+      if (resolvedPopulation.value.membership !== undefined && resolvedPopulation.value.membership.tupleDigest !== stored.accepted.populationDigest) {
+        yield resultError(input.requestId, 'data.stale-cohort', 'The fixed population changed after planning.');
         return;
       }
       const plannerOutcome = queryPlanner(options, currentCatalog, sourceLimits);
@@ -1197,7 +1284,7 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
         evidence: resultEvidence(result, stored.logical, input.query, stored.accepted.queryDigest),
         filters: input.query.where === undefined ? [] : [input.query.where],
         ...(input.query.period === undefined ? {} : {period: input.query.period}),
-        warnings: resultWarnings(result), lineage: [],
+        warnings: resultWarnings(result), lineage: stored.lineage,
       };
       const population = result.complete ? {kind: 'exact' as const, value: result.rows.length, populationDigest: stored.accepted.populationDigest} : {kind: 'unknown' as const};
       const makeCoverage = () => partialReason === undefined
