@@ -205,6 +205,13 @@ read dependencies in host authority while adding the fresh results; activate the
 new view only after commit succeeds. A callback that only changes control state
 cannot establish that query rows changed.
 
+`maxEventMilliseconds` covers processing after the event leaves the bounded
+queue. The controller checks elapsed time as well as cancellation before publishing.
+It cannot interrupt synchronous application code while that code is running;
+callbacks must yield for responsive cancellation. Failed events can retry, while
+successful events are deduplicated within a bounded retention window. Reusing a
+retained event ID with different event data or a different source port is rejected.
+
 Provide `validateSelection` for permitted population membership and `validateDraft`
 for editable fields/current entity revisions. Navigation uses application-declared
 destinations and explicit host callbacks. Action interaction callbacks only propose
@@ -240,6 +247,10 @@ timeout cannot prove that an external write failed. Durable idempotency and
 transactional business checks remain the application's responsibility. Histories
 contain metadata rather than action input. Call `revoke` on authority withdrawal
 and `dispose` when the owning application scope ends.
+`await port.inspect(idempotencyKey)` and `await port.history()` return Outcomes
+after reading fresh host context. They expose only metadata for the current
+principal, actor, scope, policy and domain revision. A closed port returns a
+failure; it does not expose retained entries from an earlier context.
 
 `maxPreviews`, `maxPending` and `maxInFlight` bound pending records and awaited
 host calls. `maxIdentityBytes`, `maxOutputBytes` and `maxLedgerBytes` bound

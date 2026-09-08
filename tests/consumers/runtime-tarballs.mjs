@@ -519,16 +519,24 @@ async function exerciseActions() {
   const replay = value(await port.confirm(value(await port.preview({...request, requestId: 'action-idempotent-replay'}))));
   const replayed = value(await port.execute(replay));
   check(replayed.state === 'executed' && writes === 1, 'Idempotency replay repeated the business callback');
+  const inspection = value(await port.inspect('action-once'));
+  check(inspection?.state === 'executed' && inspection.outputAvailable && !Object.hasOwn(inspection, 'output'), 'Own action inspection did not return metadata');
+  const ownHistory = value(await port.history());
+  check(ownHistory.length > 0 && !JSON.stringify(ownHistory).includes('delta'), 'Action history was missing or retained raw input');
+  const ownContext = context;
+  context = {...context, principalKey: 'other-principal', actorKey: 'other-actor', scopeDigest: 'other-scope'};
+  check(value(await port.inspect('action-once')) === undefined && value(await port.history()).length === 0,
+    'Action status or history crossed the current host context');
+  context = ownContext;
   const changed = value(await port.confirm(value(await port.preview({...request, requestId: 'action-changed-input', input: {delta: 4}}))));
   check(!(await port.execute(changed)).ok && writes === 1, 'Changed input reused an idempotency key');
   const stale = value(await port.confirm(value(await port.preview({...request, requestId: 'action-stale-policy', idempotencyKey: 'action-stale'}))));
   context = {...context, policyRevision: 'policy-2'};
   check(!(await port.execute(stale)).ok && writes === 1, 'Stale action confirmation executed');
-  check(!JSON.stringify(port.history()).includes('delta'), 'Action history retained raw input');
   const retainedPreview = value(await port.preview({...request, requestId: 'action-held-preview'}));
   check(retainedPreview.input?.delta === 3, 'Live preview input was unavailable');
   port.revoke();
-  check(retainedPreview.input === undefined && port.inspect('action-once') === undefined,
+  check(retainedPreview.input === undefined && !(await port.inspect('action-once')).ok && !(await port.history()).ok,
     'Revoked action port retained preview input or ledger data');
   check(!(await port.preview({...request, requestId: 'action-after-revoke'})).ok, 'Revoked action port accepted a proposal');
   port.dispose();
@@ -551,6 +559,17 @@ declare const interactionEvent: InteractionEvent;
 createInteractionController(interactionOptions).dispatch(interactionEvent);
 declare const actionPort: ActionPort;
 declare const actionRequest: ActionRequest;
+const historyResult = await actionPort.history();
+if (historyResult.ok) {
+  const entry = historyResult.value[0];
+  // @ts-expect-error Action history exposes no raw input.
+  if (entry) void entry.input;
+}
+const inspectedAction = await actionPort.inspect('key');
+if (inspectedAction.ok && inspectedAction.value) {
+  // @ts-expect-error Action inspection exposes no business output.
+  void inspectedAction.value.output;
+}
 // @ts-expect-error Action requests cannot claim a trusted actor.
 const forgedActionRequest: ActionRequest = {...actionRequest, actor: 'human'};
 // @ts-expect-error Execution only accepts a boundary-issued receipt, not an arbitrary request.
