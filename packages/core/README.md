@@ -193,3 +193,25 @@ The required-dependency list may repeat a reference used by several views. The r
 This comparator does not authenticate either input, grant an effect, determine
 business intent, or check a renderer's readiness. The runtime captures trusted
 versions, handles data materialization revisions, and rechecks before committing.
+
+## Interaction graph validation
+
+`validateInteractionGraph({nodes, links}, registeredMappings)` checks explicit
+port connections independently from containment and query dependencies. Resolve
+node ports from trusted component registrations and supply the mapping registry
+from application code; a proposed plan cannot register its own capabilities.
+Port shapes bind payload, entity, ordered identity, grain, scalar/unit/temporal
+semantics and optional registered extension version. Registered conversions
+declare both their source and target shapes. Grain order is irrelevant; composite
+identity order is significant.
+
+Selection identity-equivalence links form bidirectional equivalence classes.
+Directed links between classes must be acyclic, and ordinary directed feedback
+inside a class is rejected. Runtime must implement identity propagation itself;
+an arbitrary mapping callback cannot claim convergence through a flag. The pass
+does not invent forwarding between different ports on the same node.
+
+The helper returns a bounded immutable graph with its used mapping manifests.
+It runs no callbacks, grants no effects and does not establish population
+membership or field edit permission. Those contextual checks belong to the
+runtime and host before a typed interaction can affect state.

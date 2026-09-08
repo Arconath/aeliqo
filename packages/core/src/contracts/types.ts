@@ -5,6 +5,10 @@ import type {commitPreconditionsSchema, contractSchemas, diagnosticSchema, expre
 export type Wire<T> = T extends object ? {readonly [K in keyof T]: Wire<Exclude<T[K], undefined>>} : T;
 export type CommitPreconditions = Wire<z.infer<typeof commitPreconditionsSchema>>;
 export type PresentationPlan = Contract<'presentation-plan'>;
+export type Interaction = Contract<'interaction'>;
+export type InteractionPayload = Interaction['payload'];
+export type InteractionSelection = Extract<InteractionPayload, {readonly kind: 'selection'}>['selection'];
+export type InteractionLink = PresentationPlan['links'][number];
 export type ContractKind = keyof typeof contractSchemas;
 export type Contract<K extends ContractKind> = Wire<z.infer<(typeof contractSchemas)[K]>>;
 export type Catalog = Contract<'catalog'>;

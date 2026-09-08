@@ -391,9 +391,10 @@
         "Typed causal events converge; selection/filter/range and host action preview/confirm/recheck do not cross authority.",
         "Trusted actor derives from host context; typed event schema cannot self-assign human privilege."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "Two bounded Luna Max authors: platform_proof owns runtime/interaction plus tests/runtime-interaction in codex/t11-interaction; release_inventory owns runtime/actions plus tests/runtime-actions in codex/t11-actions. Root owns canonical core contracts, shared boundaries, package exports/config/lockfile/integration/evidence. preflight_diagnosis independent reviewer. No overlapping writers or grandchildren."
     },
     {
       "id": "T12",
