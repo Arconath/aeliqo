@@ -70,15 +70,40 @@ test("menu returns focus and tree navigation keeps stable node identity", async 
 
   const tree = page.locator("#tree");
   const reports = tree.getByRole("treeitem", {name: "Reports"});
-  await reports.focus();
-  await reports.press("ArrowRight");
+  await reports.getByRole("button", {name: "Expand"}).click();
   await expect(tree.getByRole("treeitem", {name: "Weekly"})).toBeVisible();
+  await reports.focus();
   await reports.press("ArrowDown");
   await expect(tree.getByRole("treeitem", {name: "Weekly"})).toBeFocused();
   await tree.getByRole("treeitem", {name: "Weekly"}).press("Enter");
   await expect(tree.getByRole("treeitem", {name: "Weekly"})).toHaveAttribute("aria-selected", "true");
   await expect(tree.getByRole("treeitem", {name: "Settings"})).toHaveAttribute("aria-disabled", "true");
   await expect.poll(() => page.evaluate(() => {const events = (window as typeof window & {aeliqoNavigationEvents: CustomEvent[]}).aeliqoNavigationEvents.filter((event) => event.type === "aeliqo-tree-nav-select"); return events?.[events.length - 1]?.detail;})).toMatchObject({id: "weekly", source: "user"});
+
+  await reports.getByRole("button", {name: "Collapse"}).click();
+  await expect(tree.getByRole("treeitem", {name: "Weekly"})).toBeHidden();
+  await expect(reports).toHaveAttribute("tabindex", "0");
+  await trigger.focus();
+  await trigger.press("Tab");
+  await expect(reports).toBeFocused();
+});
+
+test("tree bounds recursive input and duplicate identities", async ({page}) => {
+  const tree = page.locator("#tree");
+  await tree.evaluate((element) => {
+    const loop: {id: string; label: string; children?: unknown[]} = {id: "loop", label: "Loop"};
+    loop.children = [loop];
+    (element as HTMLElement & {nodes: readonly unknown[]}).nodes = [loop];
+  });
+  await expect(tree.getByRole("status")).toContainText("cycle");
+  await tree.evaluate((element) => {
+    (element as HTMLElement & {nodes: readonly unknown[]}).nodes = [{id: "duplicate", label: "One"}, {id: "duplicate", label: "Two"}];
+  });
+  await expect(tree.getByRole("status")).toContainText("unique");
+  await tree.evaluate((element) => {
+    (element as HTMLElement & {nodes: readonly unknown[]}).nodes = Array.from({length: 513}, (_, index) => ({id: `node-${index}`, label: `Node ${index}`}));
+  });
+  await expect(tree.getByRole("status")).toContainText("exceeds");
 });
 
 test("navigation remains readable on a narrow RTL viewport", async ({page}) => {
