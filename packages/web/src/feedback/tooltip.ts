@@ -29,7 +29,7 @@ export class AeliqoTooltipElement extends AeliqoFoundationElement {
   protected override render() {
     const tooltipId = `${this.id || "aeliqo-tooltip"}-content`;
     return html`<button part="trigger" type="button" aria-label=${this.label} aria-describedby=${this.open ? tooltipId : nothing}
-      @mouseenter=${this.show} @focus=${this.show} @mouseleave=${this.hide} @blur=${this.hide} @keydown=${this.keydown}>${this.label}</button>
-      <span part="tooltip" id=${tooltipId} role="tooltip" ?hidden=${!this.open} @mouseenter=${this.show} @mouseleave=${this.hide}>${this.content || html`<slot></slot>`}</span>`;
+      @mouseenter=${this.show} @focus=${this.show} @mouseleave=${() => this.hide()} @blur=${() => this.hide()} @keydown=${this.keydown}>${this.label}</button>
+      <span part="tooltip" id=${tooltipId} role="tooltip" ?hidden=${!this.open} @mouseenter=${this.show} @mouseleave=${() => this.hide()}>${this.content || html`<slot></slot>`}</span>`;
   }
 }

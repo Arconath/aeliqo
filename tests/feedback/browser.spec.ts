@@ -13,9 +13,14 @@ test("tooltip is supplemental, focusable and dismissible", async ({page}) => {
   await expect(tooltip.locator("[role=tooltip]")).toBeVisible();
   await expect(trigger).toHaveAttribute("aria-describedby", /content/);
   await trigger.hover();
-  await tooltip.locator("[role=tooltip]").hover();
+  const surface = tooltip.locator("[role=tooltip]");
+  const triggerBox = await trigger.boundingBox();
+  const surfaceBox = await surface.boundingBox();
+  if (triggerBox === null || surfaceBox === null) throw new Error("Tooltip geometry is unavailable.");
+  await page.mouse.move(triggerBox.x + triggerBox.width / 2, triggerBox.y + triggerBox.height + 2);
+  await page.mouse.move(surfaceBox.x + surfaceBox.width / 2, surfaceBox.y + surfaceBox.height / 2);
   await page.waitForTimeout(150);
-  await expect(tooltip.locator("[role=tooltip]")).toBeVisible();
+  await expect(surface).toBeVisible();
   await trigger.press("Escape");
   await expect(tooltip.locator("[role=tooltip]")).toBeHidden();
   await expect(trigger).toHaveAccessibleName("Help");
