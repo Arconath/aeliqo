@@ -1,0 +1,78 @@
+{
+  "sourceDigest": "5fc97e0ce95ec774f6248dd7dd8f65561740f348dff5d9472676e4c5c58fb6df",
+  "scope": "M0 and T12 installed web/React/style types and SSR; locale metadata; Chromium direct input/form/focus/theme; standalone bundle. Full React/Vue hydration matrix is separate.",
+  "artifacts": [
+    {
+      "name": "@aeliqo/core",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/platform-consumers/run-aBwlR3/aeliqo-core-0.1.0.tgz",
+      "sha256": "4ef2483917f1069b71589cc6e7eaaa048557a19bcec72ccbeaa134995380a60e",
+      "integrity": "sha512-uD6LsKmGwfSnRVDKs3P99er1qu/DFwTRRL+3laNL+xyx1dsLh8mUzzKL4b3kHlc2Va6lQ+VPk4r/ThmZmaDY/A=="
+    },
+    {
+      "name": "@aeliqo/web",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/platform-consumers/run-aBwlR3/aeliqo-web-0.1.0.tgz",
+      "sha256": "b215e031f96e40a5bd5bab3048ef7291ab04a6aa2407143ae888198a9f5c0dfa",
+      "integrity": "sha512-W0NnA+ctxT6uPErw0KImOTiRHIzjo6h+OFvTJUlQdNSHvAmADUJmIhL24Ugc1XY0AMTd0ONwFcPpyPQ/HJIKnA=="
+    },
+    {
+      "name": "@aeliqo/react",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/platform-consumers/run-aBwlR3/aeliqo-react-0.1.0.tgz",
+      "sha256": "8269daf665fdaaf5a844056eb3554bc43311f0952990416de5f3af1cb839f313",
+      "integrity": "sha512-wNK/0x80HzD9m5RkQ6BRXFVsdqau5SpUGG/sEtVuHuLsTDvJXPLCtMPu7gauACBugQsfhBgwM55Wyq5OtthZtA=="
+    }
+  ],
+  "consumerDirectory": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-985EYA",
+  "consumerLock": {
+    "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/platform-consumers/run-aBwlR3/consumer-package-lock.json",
+    "sha256": "ad670b2b12dd22bfb63f43cf7b49afc234a8d6a8720f45d921b098e66471c794"
+  },
+  "screenshot": {
+    "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/platform-consumers/run-aBwlR3/installed-input.png",
+    "sha256": "a547a084028d14c0a8a87f7e2fa4a1891c1e70daee20e4bfb0ecfaeadc4191dd"
+  },
+  "environment": {
+    "node": "v24.20.0",
+    "npm": "11.19.0",
+    "pnpm": "11.24.0",
+    "typescript": "7.0.2",
+    "vite": "8.2.2",
+    "playwright": "1.63.0",
+    "chromium": "153.0.8010.12",
+    "os": "darwin",
+    "release": "25.6.0",
+    "arch": "arm64",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "locale": "en-US",
+    "deviceScaleFactor": 1
+  },
+  "stdout": "Installed web/React types, Node import and Lit SSR content pass.\n",
+  "browserBundles": [
+    {
+      "file": "index-CPgaopAN.js",
+      "bytes": 29649,
+      "gzipBytes": 9873
+    }
+  ],
+  "standaloneModules": [
+    "\u0000vite/modulepreload-polyfill.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-985EYA/node_modules/@lit/reactive-element/css-tag.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-985EYA/node_modules/@lit/reactive-element/reactive-element.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-985EYA/node_modules/lit-html/lit-html.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-985EYA/node_modules/lit-element/lit-element.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-985EYA/node_modules/lit/index.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-985EYA/node_modules/@aeliqo/web/dist/styles/tokens.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-985EYA/node_modules/@aeliqo/web/dist/styles/theme.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-985EYA/node_modules/@aeliqo/web/dist/events.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-985EYA/node_modules/@aeliqo/web/dist/elements/aeliqo-input.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-985EYA/browser.js",
+    "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-installed-consumer-985EYA/index.html"
+  ],
+  "moduleCheckScope": "Vite module-ID graph allowlist; not arbitrary generated-code certification",
+  "passed": true
+}

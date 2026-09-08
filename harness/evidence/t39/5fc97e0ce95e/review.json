@@ -1,0 +1,43 @@
+{
+  "status": "pass",
+  "sourceCommit": "2a503802a9e652676c12fe3a2baff4ee73195abe",
+  "authors": [
+    "root core contracts/compiler and example integration",
+    "release_inventory runtime evaluation/cohorts",
+    "platform_proof shared web region/components"
+  ],
+  "independentReviewers": [
+    "preflight_diagnosis core/runtime/web and final integration",
+    "release_inventory root civil-week query policy and example lifecycle"
+  ],
+  "finalReviewedCommits": [
+    "48f698a",
+    "f77a3de",
+    "d12b095",
+    "f43c752",
+    "190c00e",
+    "487fbd8",
+    "da73ee5",
+    "f2ecf99",
+    "f014d39",
+    "d24cefb",
+    "2a50380"
+  ],
+  "findingsClosed": [
+    "source topK is distinct from transport paging",
+    "explicit civil-week calendar/timezone policy",
+    "original ADC task identity and result lineage",
+    "complete typed fixed cohort and fresh independent grants",
+    "feasible-first bounded no-preset composition and state preservation",
+    "registered fields/operations and metadata labels",
+    "SVG namespace and forced-colors series distinctions",
+    "canonical exact instant/date alignment, gaps and duplicate points",
+    "collision-safe normalized row keys and readable labels",
+    "malformed event rejection and clear entity checks",
+    "native radio grouping and actionable labels",
+    "installed consumer excludes workspace links and verifies actual tarball bytes",
+    "clean core-before-web build and ESM platform test loading"
+  ],
+  "validationNote": "Parent frozen checks use Node24.20.0/pnpm11.24.0. Reviewer supplemental web runs included Node22; they are source-review support, not pinned-toolchain certification.",
+  "limits": "Scoped deterministic T39 integration review. No certification of intent, full component catalog, manual assistive technology, provider quality or production readiness."
+}

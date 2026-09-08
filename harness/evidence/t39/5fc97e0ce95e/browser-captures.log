@@ -1,0 +1,12 @@
+[WebServer] (node:64825) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:64826) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 6:13:41 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  1 tests/vertical-slice/hr-browser.spec.ts:7:5 › actual raw-data view supports selection, queryless reorder, stale refusal and revocation (1.2s)
+  ✓  2 tests/vertical-slice/hr-browser.spec.ts:54:5 › unknown server measurements render real HR output and hydrate without replacing the table (1.0s)
+
+  2 passed (3.1s)

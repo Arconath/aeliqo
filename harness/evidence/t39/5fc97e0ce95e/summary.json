@@ -1,0 +1,48 @@
+{
+  "task": "T39",
+  "status": "pass",
+  "sourceCommit": "2a503802a9e652676c12fe3a2baff4ee73195abe",
+  "sourceDigest": "5fc97e0ce95ec774f6248dd7dd8f65561740f348dff5d9472676e4c5c58fb6df",
+  "sourceAfter": "5fc97e0ce95ec774f6248dd7dd8f65561740f348dff5d9472676e4c5c58fb6df",
+  "sourceChangedDuringRun": false,
+  "allChecksPassed": true,
+  "timestamp": "2026-09-08T11:16:30.765024+00:00",
+  "checks": {
+    "contracts": 92,
+    "query": 94,
+    "data": 98,
+    "evaluation": 7,
+    "vertical": 18,
+    "workspaceStrictTypes": "pass",
+    "verticalChromium": 4,
+    "platformChromium": 10,
+    "installedCoreRuntimeWebReact": "pass",
+    "kitReference": "pass"
+  },
+  "scope": "Synthetic raw HR records through reusable query/evaluation, named ranking and weekly trend, fixed cohort across source revisions, no-preset composition, real shared web rendering, typed selection, queryless reorder, stale refusal, revocation and unknown-environment SSR/hydration.",
+  "consumerEvidence": {
+    "core": "core-consumers/run-uhQXvZ",
+    "runtime": "runtime-consumers/run-ie6kv5",
+    "platform": "platform-consumers/run-aBwlR3",
+    "vertical": "vertical-consumers/run-l4pPx7"
+  },
+  "visualInspection": [
+    "hr-light.png",
+    "hr-dark.png",
+    "hr-mobile.png"
+  ],
+  "notClaimed": [
+    "full71components",
+    "finished PlotSpec axes/formatters and visual catalog",
+    "manual screen-reader certification",
+    "live external HTTP backend (HR HTTP test uses serialized in-process handler)",
+    "SSR client runtime recreation (hydration callback receipt only)",
+    "detail/drill-down UI",
+    "model/provider/native WebMCP evaluation",
+    "universal bundle/performance targets",
+    "npm publication",
+    "main cutover",
+    "production deployment",
+    "release readiness"
+  ]
+}

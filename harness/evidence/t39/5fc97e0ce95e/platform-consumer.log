@@ -1,0 +1,3 @@
+$ node tests/consumers/platform-tarballs.mjs
+Installed web/React types, Node import and Lit SSR content pass.
+Evidence: /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/platform-consumers/run-aBwlR3/report.json

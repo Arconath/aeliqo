@@ -1016,10 +1016,15 @@
         "Unknown SSR environment, typed selection and stale proposal refusal exercised in actual browser.",
         "No model required for deterministic slice; production code is extended later, not thrown away for a demo."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "Root owns presentation contracts/compiler and integration. release_inventory isolated codex/t39-data owns runtime data/evaluation support and focused tests. platform_proof will own shared web region after contract handoff. preflight_diagnosis independent review. T41 remains ready, source work deferred while these independent T39 streams run."
+      "evidence": [
+        {
+          "path": "harness/evidence/t39/5fc97e0ce95e/manifest.json",
+          "sha256": "547403bfd5bf6dac70ce1b1bd0df1efd85eea6a684ec059ec6793911a779ecab"
+        }
+      ],
+      "notes": "Accepted at source2a50380 after independent source review and frozen pinned-toolchain integration/installed-consumer/browser gates. Early reusable deterministic slice; full catalog, PlotSpec, agent/provider and release work remain separate required tasks."
     },
     {
       "id": "T40",
@@ -1068,9 +1073,10 @@
         "Valid-but-wrong intent is evaluated as residual risk, not magically detected. No model-quality privilege escalation.",
         "Bounded repair/no-progress, scoped numerical narrative checks, authorized fallback and revoked-data clearing; port reference counterexamples to real runtime."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "Parent owns canonical agent contracts in isolated codex/t41-contracts while T39 frozen checks run. Runtime implementation waits for exact contract handoff and independent review; no provider or business effects are introduced by binding."
     },
     {
       "id": "T42",

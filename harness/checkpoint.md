@@ -225,3 +225,12 @@ identity fixes. Installed vertical proof now copies only allowlisted example sou
 and checks package resolution to avoid workspace links. Final combined browsers,
 installed consumers, immutable evidence and hosted CI remain pending. T39 is active;
 no npm publication, main promotion or production deployment occurred.
+
+T39 accepted at source2a50380 with immutable evidence harness/evidence/t39/5fc97e0ce95e.
+Fresh92contract,94query,98data,7evaluation,18vertical tests and strict types pass;
+4vertical and10platform Chromium cases pass, plus installed core/runtime/web/React
+consumers and kit/reference checks. Source digest 5fc97e0ce95ec774f6248dd7dd8f65561740f348dff5d9472676e4c5c58fb6df stayed unchanged.
+Light/dark/mobile captures were inspected; this is the early compositional slice,
+not the finished plot/catalog or manual AT/provider/release certification.
+T41 contracts are active in isolated codex/t41-contracts; T13-T17 are now ready.
+Hosted CI for this candidate remains pending. Main/npm/production are unchanged.

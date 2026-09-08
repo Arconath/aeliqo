@@ -1,0 +1,147 @@
+[
+  {
+    "name": "evaluation",
+    "command": [
+      "pnpm",
+      "test:evaluation"
+    ],
+    "exitCode": 0,
+    "seconds": 4.68,
+    "log": "evaluation.log"
+  },
+  {
+    "name": "vertical",
+    "command": [
+      "pnpm",
+      "test:vertical"
+    ],
+    "exitCode": 0,
+    "seconds": 10.89,
+    "log": "vertical.log"
+  },
+  {
+    "name": "workspace-types",
+    "command": [
+      "pnpm",
+      "typecheck"
+    ],
+    "exitCode": 0,
+    "seconds": 6.82,
+    "log": "workspace-types.log"
+  },
+  {
+    "name": "contracts",
+    "command": [
+      "pnpm",
+      "test:contracts"
+    ],
+    "exitCode": 0,
+    "seconds": 2.12,
+    "log": "contracts.log"
+  },
+  {
+    "name": "query",
+    "command": [
+      "pnpm",
+      "test:query"
+    ],
+    "exitCode": 0,
+    "seconds": 2.23,
+    "log": "query.log"
+  },
+  {
+    "name": "data",
+    "command": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "--config",
+      "tests/runtime-data/vitest.config.mjs"
+    ],
+    "exitCode": 0,
+    "seconds": 0.94,
+    "log": "data.log"
+  },
+  {
+    "name": "vertical-browser",
+    "command": [
+      "pnpm",
+      "test:vertical:browser"
+    ],
+    "exitCode": 0,
+    "seconds": 8.05,
+    "log": "vertical-browser.log"
+  },
+  {
+    "name": "platform-browser",
+    "command": [
+      "pnpm",
+      "test:platform:browser"
+    ],
+    "exitCode": 0,
+    "seconds": 6.42,
+    "log": "platform-browser.log"
+  },
+  {
+    "name": "core-consumer",
+    "command": [
+      "pnpm",
+      "test:core:consumers"
+    ],
+    "exitCode": 0,
+    "seconds": 10.55,
+    "log": "core-consumer.log"
+  },
+  {
+    "name": "runtime-consumer",
+    "command": [
+      "pnpm",
+      "test:runtime:consumers"
+    ],
+    "exitCode": 0,
+    "seconds": 6.69,
+    "log": "runtime-consumer.log"
+  },
+  {
+    "name": "platform-consumer",
+    "command": [
+      "pnpm",
+      "test:platform:consumers"
+    ],
+    "exitCode": 0,
+    "seconds": 9.71,
+    "log": "platform-consumer.log"
+  },
+  {
+    "name": "vertical-consumer",
+    "command": [
+      "pnpm",
+      "test:vertical:consumers"
+    ],
+    "exitCode": 0,
+    "seconds": 10.89,
+    "log": "vertical-consumer.log"
+  },
+  {
+    "name": "kit",
+    "command": [
+      "python3",
+      "scripts/validate_all.py"
+    ],
+    "exitCode": 0,
+    "seconds": 13.57,
+    "log": "kit.log"
+  },
+  {
+    "name": "diff",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exitCode": 0,
+    "seconds": 0.04,
+    "log": "diff.log"
+  }
+]
