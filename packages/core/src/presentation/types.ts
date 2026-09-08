@@ -19,6 +19,41 @@ export interface ResolvedPresentationConfig {
   readonly operations?: readonly VersionRef[];
 }
 
+/** Trusted ordinal assessments, never model confidence or proof of business truth.
+ * Ordinal fields are integers in 0..100. Cost requires a recorded measurement ref.
+ */
+export interface PresentationQuality {
+  readonly taskFit: number;
+  readonly informationDensity: number;
+  readonly interactionEffort: number;
+  readonly legibilityPenalty: number;
+  readonly cost?: {readonly microseconds: number; readonly measurement: VersionRef};
+}
+
+/** Parsed, owned inputs supplied to trusted local pattern callbacks. */
+export interface PresentationPatternContext {
+  readonly task: Task;
+  readonly experience: Experience;
+  readonly results: readonly Result[];
+  readonly current: CommitPreconditions;
+  readonly environment: PresentationEnvironment;
+}
+export interface PresentationPatternRequest {
+  readonly id: string;
+  readonly revision: string;
+  readonly preconditions: CommitPreconditions;
+  readonly context: PresentationPatternContext;
+}
+/** A tested local macro. Registry installation rejects duplicate pattern IDs,
+ * including multiple revisions: Experience allowlists currently contain IDs.
+ * Matching never grants permission or bypasses normal plan feasibility.
+ */
+export interface PresentationPatternManifest {
+  readonly ref: VersionRef;
+  readonly expand: (request: PresentationPatternRequest) => Outcome<PresentationPlan>;
+  readonly matches: (plan: PresentationPlan, context: PresentationPatternContext) => boolean;
+}
+
 /** Trusted local registry entry. Callbacks must be pure, synchronous and bounded. */
 export interface PresentationManifest {
   readonly ref: VersionRef;
@@ -32,6 +67,9 @@ export interface PresentationManifest {
   readonly extension: boolean;
   /** The validator supplies the parsed node so config-dependent child layouts can reject omitted content. */
   readonly resolveConfig: (values: PresentationValues, result: Result | undefined, node?: PresentationNode) => Outcome<ResolvedPresentationConfig>;
+  /** Optional tested environment envelope and ordinal assessment. A failure is
+   * infeasible; an absent assessment conveys no measured quality claim. */
+  readonly assess?: (config: ResolvedPresentationConfig, result: Result | undefined, environment: PresentationEnvironment) => Outcome<PresentationQuality>;
   /** Optional deterministic candidate authoring. Explicit candidates use the same validator. */
   readonly suggestConfig?: (needs: readonly Task['needs'][number][], result: Result | undefined) => Outcome<PresentationValues>;
 }
@@ -39,6 +77,7 @@ export interface PresentationManifest {
 export interface PresentationRegistry {
   readonly manifests: readonly PresentationManifest[];
   readonly mappings: readonly InteractionMappingManifest[];
+  readonly patterns?: readonly PresentationPatternManifest[];
 }
 
 export interface PresentationContext {
@@ -62,6 +101,7 @@ export interface ResolvedPresentationNode {
   readonly manifest: VersionRef;
   readonly config: ResolvedPresentationConfig;
   readonly result: Result | undefined;
+  readonly quality?: PresentationQuality;
 }
 
 export interface ValidatedPresentation {

@@ -595,9 +595,10 @@
       "acceptance": [
         "Every visualization inventory entry passes adversarial semantics, interaction, pixel and performance matrix."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "Parent owns canonical VisualizationSpec/schema/binder contracts first. Isolated family writers follow only after the contract packet is committed. T16 and T17 evidence accepted."
     },
     {
       "id": "T19",
@@ -619,9 +620,10 @@
         "Bounded candidate search, task-operation coverage, explicit preferences, incompatibility reports and incremental incumbency work.",
         "Patterns are candidate shortcuts, not a mandatory gate. Distinguish search budget exhaustion from proven invalidity."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "Independent core/presentation workstream after T16. Parent owns public local type packet; isolated writer implements registry/validator/composer/tests. No canonical wire schema changes. Independent review required."
     },
     {
       "id": "T20",
