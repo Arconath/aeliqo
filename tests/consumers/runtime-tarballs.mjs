@@ -2,9 +2,9 @@
  * Build and consume the actual @aeliqo/core and @aeliqo/runtime packages
  * outside the workspace.
  *
- * This is a bounded data/results/regions package-boundary check. It proves
+ * This is a bounded data/results/regions/actions package-boundary check. It proves
  * strict consumer declarations, local execution, HTTP transport, region commits,
- * fresh-query restore, result leases, and browser integration. It does not certify
+ * fresh-query restore, result leases, action confirmation and browser integration. It does not certify
  * every source adapter, the full query planner, or universal browser support.
  */
 import assert from 'node:assert/strict';
@@ -300,13 +300,24 @@ async function exerciseRegions() {
       return {ok: true, value: {state: {task: {...document.task, inputs: [fresh.ref]}}, resultHandles: [fresh.handle]}};
     }});
   const region = value(store.create({id: task.regionId, state: {task}}));
+  const interaction = {version: '1', values: [{nodeId: 'employees-table', portId: 'selection',
+    payload: {kind: 'selection', selection: {mode: 'ids', entity: 'employees', keys: ['e-1'], result: first.ref}}}],
+    drafts: [{domain: 'employee-directory', entity: 'employees', key: 'e-1', field: 'name', value: 'private-draft', entityRevision: '1'}]};
+  const observations = [];
+  region.observe(update => { observations.push(update.snapshot.state?.interaction); });
   const originalRevision = region.snapshot().regionRevision;
   const token = value(await region.stage({requestId: 'consumer-stage', expected: region.snapshot().readSet,
-    state: {task}, resultHandles: [first.handle]}));
+    state: {task, interaction}, resultHandles: [first.handle]}));
   const committed = value(await region.commit(token));
   check(committed.regionRevision !== originalRevision, 'Commit reused a region revision');
   check(region.history().at(-1).regionRevision === committed.regionRevision, 'Commit history has the wrong revision');
+  check(JSON.stringify(observations[0]) === JSON.stringify(interaction), 'Observer did not see atomic interaction state');
   first.handle.release();
+  const layout = value(await region.stage({requestId: 'consumer-layout', expected: region.snapshot().readSet,
+    state: {task: {...region.snapshot().state.task, viewPreference: {representation: 'table', strength: 'explicit'}}}}));
+  value(await region.commit(layout));
+  check(JSON.stringify(region.snapshot().state.interaction) === JSON.stringify(interaction) && queryCount === 1,
+    'Layout did not preserve control/draft state without requery');
   let capacityBlocked = false;
   try { cache.begin({...first.handle.key, sourceRevision: 'eviction-probe', requestId: 'eviction-probe'}); }
   catch (error) { capacityBlocked = error instanceof RangeError; }
@@ -318,7 +329,7 @@ async function exerciseRegions() {
   check(!stale.ok && stale.diagnostics[0].code === 'runtime.region-stale', 'Same-reference refresh did not invalidate commit');
   const persisted = serializeRegionDocument(region.snapshot(), region.history());
   const document = value(parseRegionDocument(persisted));
-  check(document.dataRevision === 1 && !persisted.includes('region-original-data') && !persisted.includes('batches'),
+  check(document.dataRevision === 1 && !persisted.includes('region-original-data') && !persisted.includes('batches') && !persisted.includes('private-draft'),
     'Persistence did not preserve metadata-only materialization state');
   const savedRevision = region.snapshot().regionRevision;
   region.dispose();
@@ -343,6 +354,71 @@ async function exerciseRegions() {
 }
 `;
 
+const actionExerciseSource = `
+async function exerciseActions() {
+  const check = (condition, message) => { if (!condition) throw new Error(message); };
+  const value = outcome => { check(outcome.ok, JSON.stringify(outcome)); return outcome.value; };
+  const accepted = value => ({ok: true, value});
+  const denied = () => ({ok: false, diagnostics: [{code: 'consumer.denied', message: 'Confirmation was declined.', retryable: false}]});
+  const registry = createActionRegistry();
+  const ref = {id: 'counter.increment', revision: '1'};
+  const inputSchema = {id: 'counter.increment.input', revision: '1'};
+  const outputSchema = {id: 'counter.increment.output', revision: '1'};
+  const parseNumberRecord = field => input => {
+    if (!input || typeof input !== 'object' || Array.isArray(input) || Object.keys(input).length !== 1 ||
+        !Number.isSafeInteger(input[field]) || input[field] < 0 || input[field] > 10) return denied();
+    return accepted({[field]: input[field]});
+  };
+  let writes = 0;
+  let total = 0;
+  let confirmations = 0;
+  let confirmationAllowed = false;
+  let context = {principalKey: 'action-consumer-principal', actorKey: 'action-consumer-host',
+    scopeDigest: 'action-scope', policyRevision: 'policy-1', domainRevision: 'domain-1',
+    confirmationEpoch: 'confirmation-1', grants: ['action.propose']};
+  value(registry.register({
+    descriptor: {ref, input: inputSchema, output: outputSchema, sideEffect: 'domain-write',
+      confirmation: 'required', idempotency: 'required', entityRevision: 'none'},
+    inputSchema: {ref: inputSchema, parse: parseNumberRecord('delta')},
+    outputSchema: {ref: outputSchema, parse: parseNumberRecord('total')},
+    dispatch: ({input}) => { writes++; total += input.delta; return {state: 'completed', output: {total}}; },
+  }));
+  const port = createActionPort({registry, host: {
+    readContext: () => accepted(context),
+    issueConfirmation: () => { confirmations++; return confirmationAllowed ? accepted(undefined) : denied(); },
+  }});
+  const request = {requestId: 'action-first', action: ref, input: {delta: 3}, idempotencyKey: 'action-once'};
+  check(!(await port.preview({...request, actor: 'human', approved: true})).ok, 'Action wire accepted forged authority');
+  const ungranted = value(await port.preview(request));
+  check(writes === 0 && !(await port.confirm(ungranted)).ok, 'Proposal permission granted execution');
+  context = {...context, grants: ['action.propose', 'action.execute']};
+  const declined = value(await port.preview({...request, requestId: 'action-declined'}));
+  check(!(await port.confirm(declined)).ok && writes === 0, 'Invoking confirm bypassed the trusted confirmation decision');
+  confirmationAllowed = true;
+  const preview = value(await port.preview({...request, requestId: 'action-approved'}));
+  check(writes === 0, 'Action preview caused a write');
+  const receipt = value(await port.confirm(preview));
+  check(writes === 0, 'Action confirmation caused a write');
+  const executions = await Promise.all([port.execute(receipt), port.execute(receipt)]);
+  check(executions.filter(result => result.ok && result.value.state === 'executed').length === 1 && writes === 1 && total === 3,
+    'Concurrent action receipt execution did not remain one-use');
+  const replay = value(await port.confirm(value(await port.preview({...request, requestId: 'action-idempotent-replay'}))));
+  const replayed = value(await port.execute(replay));
+  check(replayed.state === 'executed' && writes === 1, 'Idempotency replay repeated the business callback');
+  const changed = value(await port.confirm(value(await port.preview({...request, requestId: 'action-changed-input', input: {delta: 4}}))));
+  check(!(await port.execute(changed)).ok && writes === 1, 'Changed input reused an idempotency key');
+  const stale = value(await port.confirm(value(await port.preview({...request, requestId: 'action-stale-policy', idempotencyKey: 'action-stale'}))));
+  context = {...context, policyRevision: 'policy-2'};
+  check(!(await port.execute(stale)).ok && writes === 1, 'Stale action confirmation executed');
+  check(!JSON.stringify(port.history()).includes('delta'), 'Action history retained raw input');
+  port.revoke();
+  check(!(await port.preview({...request, requestId: 'action-after-revoke'})).ok, 'Revoked action port accepted a proposal');
+  port.dispose();
+  return {writes, total, confirmations, independentGrant: true, confirmationRequired: true,
+    oneUseReceipt: true, idempotentReplay: true, staleExecutionRejected: true};
+}
+`;
+
 await writeFile(join(consumerDirectory, 'consumer-types.ts'), `
 import {createDataHttpHandler, createHttpDataService, createLocalDataService, parseBudget, parseResultEvent} from '@aeliqo/runtime/data';
 import type {DataHttpHandler, DataRecord, DataService, LocalSnapshot, QueryBudget, ReadContext, ResultEvent} from '@aeliqo/runtime/data';
@@ -350,6 +426,14 @@ import type {Catalog, QuerySpec} from '@aeliqo/core';
 import {createResultStore, type ResultStore, type ResultCacheKey} from '@aeliqo/runtime/results';
 import {createRegionStore, type RegionHandle, type RegionStore} from '@aeliqo/runtime/regions';
 import {parseRegionDocument} from '@aeliqo/runtime/persistence';
+import {createActionPort, createActionRegistry, type ActionRequest, type ActionPort} from '@aeliqo/runtime/actions';
+declare const actionPort: ActionPort;
+declare const actionRequest: ActionRequest;
+// @ts-expect-error Action requests cannot claim a trusted actor.
+const forgedActionRequest: ActionRequest = {...actionRequest, actor: 'human'};
+// @ts-expect-error Execution only accepts a boundary-issued receipt, not an arbitrary request.
+actionPort.execute(actionRequest);
+void [createActionPort, createActionRegistry, forgedActionRequest];
 declare const region: RegionHandle;
 // @ts-expect-error Only a runtime-staged opaque token can be committed.
 region.commit({regionRevision: '1'});
@@ -404,6 +488,7 @@ import {
 import {createResultStore} from '@aeliqo/runtime/results';
 import {createRegionStore} from '@aeliqo/runtime/regions';
 import {parseRegionDocument, serializeRegionDocument} from '@aeliqo/runtime/persistence';
+import {createActionPort, createActionRegistry} from '@aeliqo/runtime/actions';
 
 const run = (argv, cwd) => {
   const result = spawnSync(argv[0], argv.slice(1), {cwd, encoding: 'utf8'});
@@ -474,6 +559,8 @@ assert.deepEqual(resultHandle.snapshot().batches, []);
 resultStore.dispose();
 ${regionExerciseSource}
 const regionProof = await exerciseRegions();
+${actionExerciseSource}
+const actionProof = await exerciseActions();
 assert(observations.some(item => item.operation === 'execute' && item.principal === 'alice'));
 
 authMode = 'policy-change';
@@ -550,9 +637,11 @@ import {createDataHttpHandler, createHttpDataService, createLocalDataService} fr
 import {createResultStore} from '@aeliqo/runtime/results';
 import {createRegionStore} from '@aeliqo/runtime/regions';
 import {parseRegionDocument, serializeRegionDocument} from '@aeliqo/runtime/persistence';
+import {createActionPort, createActionRegistry} from '@aeliqo/runtime/actions';
 const fixture = ${fixtureSource};
 const {catalog, rows, budget, query} = fixture;
 ${regionExerciseSource}
+${actionExerciseSource}
 const describeRequest = requestId => ({version:'1',requestId,catalogRevision:null,target:{kind:'catalog'},budget,pageSize:1});
 const planRequest = requestId => ({version:'1',requestId,catalogRevision:'catalog-1',target:{outputId:'employees-output'},query,budget});
 const collect = async iterable => {const events=[];for await (const event of iterable) events.push(event);return events;};
@@ -587,7 +676,8 @@ const network = await runFlow(networkClient);
 const transportFlows = 21;
 for (let flow = 1; flow < transportFlows; flow++) await runFlow(networkClient);
 const regions = await exerciseRegions();
-globalThis.__aeliqoBrowserData = {local,network,transportFlows,regions};
+const actions = await exerciseActions();
+globalThis.__aeliqoBrowserData = {local,network,transportFlows,regions,actions};
 \`);
   await writeFile('vite.config.mjs', \`export default {build:{minify:true,outDir:'dist',rollupOptions:{input:'index.html'}},plugins:[{name:'record-runtime-modules',generateBundle(_,bundle){const modules=Object.values(bundle).filter(item=>item.type==='chunk').flatMap(item=>Object.keys(item.modules));this.emitFile({type:'asset',fileName:'modules.json',source:JSON.stringify(modules)});}}]};\`);
   run(['node_modules/.bin/vite', 'build'], process.cwd());
@@ -663,6 +753,7 @@ globalThis.__aeliqoBrowserData = {local,network,transportFlows,regions};
     browser: {result: browserResult, modules: browserModules, bundle: bundleFiles, initialGzipBytes, browserVersion},
     observations,
     regions: regionProof,
+    actions: actionProof,
   };
   await writeFile(${JSON.stringify(join(runDirectory, 'runtime-report.json'))}, JSON.stringify(report, null, 2) + '\\n');
   console.log('Installed runtime data, results, region transactions, restore, HTTP and Chromium pass.');

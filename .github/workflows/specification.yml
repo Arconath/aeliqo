@@ -65,6 +65,7 @@ jobs:
           pnpm test:data
           pnpm test:results
           pnpm test:regions
+          pnpm test:actions
           pnpm --filter @aeliqo/reference-host test
           pnpm test:data:auth-retention
           pnpm test:core:consumers

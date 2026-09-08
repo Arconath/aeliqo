@@ -173,3 +173,36 @@ content and result handles. Only the validated fresh state becomes active.
 Restoration starts a new materialization revision and history; saved references
 do not grant access to data. The callback remains responsible for its original
 result-handle ownership after the restored region acquires its own leases.
+
+`RegionContent.interaction` holds versioned port values and domain/entity/field
+drafts. A commit publishes this state together with its Task and presentation,
+before notifying observers. Omitting it in a later layout or Task update preserves
+the current values; explicitly supplying empty `values` and `drafts` clears them.
+Layout revisions alone do not imply an entity-edit conflict. An explicit selection
+keeps its exact Result reference in the commit dependency set, and a layout-only
+commit preserves leases for results still referenced by the new state.
+Persistence exports Task metadata only; it does not automatically save these
+potentially sensitive selections or drafts.
+
+## Host actions
+
+`@aeliqo/runtime/actions` exposes `createActionRegistry` and `createActionPort`.
+The application registers versioned input/output schemas and its business dispatch
+callback. Requests contain an action reference, scalar input, and any required
+entity revision or idempotency key. They cannot supply an actor or approval.
+The port obtains its principal, actor, permissions and current revisions from
+the host's `readContext` callback.
+
+Call `preview(request)`, then `confirm(preview)`, then `execute(receipt)`, checking
+each Outcome. Preview requires `action.propose`; execution separately requires
+`action.execute`. Required confirmation comes only from the host's
+`issueConfirmation` callback. Preview and confirmation perform no business write.
+Opaque previews and receipts are one-use and cannot be recreated from JSON.
+Execution rechecks current authority and entity revisions before dispatch.
+
+The in-memory idempotency ledger prevents repeated dispatch within the port's
+lifetime. An ambiguous outcome must be reconciled by the application, because a
+timeout cannot prove that an external write failed. Durable idempotency and
+transactional business checks remain the application's responsibility. Histories
+contain metadata rather than action input. Call `revoke` on authority withdrawal
+and `dispose` when the owning application scope ends.
