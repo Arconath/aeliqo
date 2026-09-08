@@ -104,6 +104,7 @@ export interface QuerySpec {
   readonly fields:readonly Id[];
   readonly measures:readonly VersionRef[];
   readonly relations:readonly VersionRef[];
+  readonly relationUsage?:readonly {readonly relation:VersionRef; readonly kind:'inner'|'left'|'semi'; readonly where?:Predicate}[];
   readonly groupBy:readonly Id[];
   readonly where?:Predicate;
   readonly period?:Period;

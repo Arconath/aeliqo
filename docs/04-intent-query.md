@@ -69,3 +69,20 @@ A view-only request changes representation over existing result handles; it does
 Predicted output schemas can be used before execution to prepare a presentation; the returned actual schema must match accepted versions or fail the affected output. Materialization requests can alter transfer/window strategy, never covertly alter the question. Filters/refinements are Task parameters with visible scope.
 
 Budget refusal, missing semantic definition, unsupported executor operator and search exhaustion have different error codes. Budget exhaustion is not proof no valid query/view exists.
+
+## Explicit relation usage (0.1.0 implementation)
+
+`QuerySpec.relations` pins the permitted relation revisions; optional
+`relationUsage` states how each declared relation participates: `inner`, `left`,
+or `semi`, with an optional target-side predicate. Relation metadata alone does
+not choose a join kind. Every usage must match a pinned, authorized relationship;
+duplicate or conflicting usage is invalid. A left join filters its target before
+matching, preserving unmatched source rows; a semijoin tests membership and never
+expands source identities. Field identifiers remain opaque; ambiguous references
+require explicit resolution and are never split on punctuation.
+
+This additive field is part of the unreleased contract version1. Existing strict
+consumers reject it until upgraded; producers must negotiate relation capability
+before sending it. The initial T06 flat evaluator explicitly rejects all relation
+usage; T07/T08 implement and integrate its validated execution. Shape acceptance
+does not authorize a relationship or prove its cardinality.

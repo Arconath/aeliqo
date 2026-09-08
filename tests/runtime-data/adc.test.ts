@@ -68,6 +68,11 @@ describe('in-process ADC data service', () => {
       query: query({measures: [{id: 'metric.total', revision: '1'}]}), budget,
     });
     expect(unsupported).toMatchObject({ok: false, diagnostics: [{code: 'data.unsupported', remedies: expect.any(Array)}]});
+    const relationUsage = await service.plan({
+      version: '1', requestId: 'plan-relations', catalogRevision: 'catalog-1', target: {outputId: 'employees-output'},
+      query: query({relationUsage: [{relation: {id: 'employees.orders', revision: '1'}, kind: 'semi'}]}), budget,
+    });
+    expect(relationUsage).toMatchObject({ok: false, diagnostics: [{code: 'data.unsupported'}]});
   });
 
   it('re-authorizes row policies for each principal and keeps principal populations disjoint', async () => {

@@ -575,6 +575,11 @@ assert.equal(parseWireValue({requestId:undefined}).ok, false);
 const documents = ${fixtureSource};
 const t05 = ${t05FixtureSource};
 const t04 = ${t04FixtureSource};
+const relationQuery = {...t05.namedOutputTaskInput.outputs[0].query,
+  relations: [{id: 'employees.orders', revision: '1'}],
+  relationUsage: [{relation: {id: 'employees.orders', revision: '1'}, kind: 'semi'}]};
+assert.equal(parseContract('query', relationQuery).ok, true);
+assert.equal(parseContract('query', {...relationQuery, relationUsage: [{...relationQuery.relationUsage[0], approved: true}]}).ok, false);
 function unwrap(outcome) {
   assert.equal(outcome.ok, true);
   return outcome.value;

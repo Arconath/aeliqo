@@ -93,6 +93,8 @@ export const populationSchema = z.discriminatedUnion('kind', [
 ]);
 export const querySchema = object({
   entity: idSchema, fields: ids, measures: refs, relations: refs, groupBy: ids,
+  relationUsage: optional(array(object({relation: versionRefSchema,
+    kind: z.enum(['inner','left','semi']), where: optional(predicateSchema)}))),
   where: optional(predicateSchema), period: optional(periodSchema),
   timeBucket: optional(object({field: idSchema, grain: idSchema})), population: populationSchema,
   order: array(object({field: idSchema, direction: z.enum(['asc','desc']), nulls: z.enum(['first','last'])})),
