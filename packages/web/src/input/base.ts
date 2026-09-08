@@ -276,6 +276,7 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
     if (validator === undefined) {
       this.validationState = "idle";
       this.hasValidationValue = false;
+      this.error = "";
       this.dispatchValidation("idle", "");
       return;
     }
@@ -314,7 +315,7 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
 
   /** Cancel a result that no longer describes the current host value. */
   protected invalidateValidation(schedule = true): void {
-    if (!this.hasValidationValue && this.validationAbort === undefined) return;
+    if (!this.hasValidationValue && this.validationAbort === undefined && this.validationState === "idle" && this.error.length === 0) return;
     this.validationAbort?.abort();
     this.validationAbort = undefined;
     this.validationSequence += 1;
@@ -325,7 +326,8 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
   }
 
   protected invalidateStaleValidation(value: T, schedule = true): void {
-    if (this.hasValidationValue && !Object.is(this.validationValue, value)) this.invalidateValidation(schedule);
+    const hasValidation = this.hasValidationValue || this.validationAbort !== undefined || this.validationState !== "idle" || this.error.length > 0;
+    if (hasValidation && !Object.is(this.validationValue, value)) this.invalidateValidation(schedule);
   }
 
   protected isCurrentValidationValue(_value: T): boolean {

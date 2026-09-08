@@ -425,3 +425,29 @@ test("stale text validation cannot mark a newer programmatic value invalid", asy
   });
   expect(state).toEqual({value: "new", error: "", state: "idle"});
 });
+
+test("completed validation is cleared when the host value changes", async ({page}) => {
+  const state = await page.evaluate(async () => {
+    const root = document.querySelector<HTMLElement>("#fixture");
+    if (root === null) throw new Error("fixture missing");
+    const field = document.createElement("aeliqo-text-field") as HTMLElement & {
+      value: string;
+      validator: (value: string, signal: AbortSignal) => Promise<string | boolean>;
+      updateComplete: Promise<unknown>;
+      error: string;
+    };
+    field.validator = async (value) => value === "accepted" ? true : "Old value invalid";
+    root.append(field);
+    await field.updateComplete;
+    const input = field.shadowRoot?.querySelector<HTMLInputElement>("input");
+    if (input === null || input === undefined) throw new Error("text input missing");
+    input.value = "old";
+    input.dispatchEvent(new InputEvent("input", {bubbles: true, inputType: "insertText", data: "old"}));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const completed = {error: field.error, state: (field as HTMLElement & {validationState: string}).validationState};
+    field.value = "accepted";
+    await field.updateComplete;
+    return {completed, afterChange: {error: field.error, state: (field as HTMLElement & {validationState: string}).validationState}};
+  });
+  expect(state).toEqual({completed: {error: "Old value invalid", state: "invalid"}, afterChange: {error: "", state: "idle"}});
+});
