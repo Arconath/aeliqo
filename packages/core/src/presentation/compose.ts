@@ -252,8 +252,8 @@ export function composePresentation(request: PresentationCompositionRequest, reg
       tie: canonical(presentation.plan), incumbent: candidateIsIncumbent};
     if (betterCandidate(rank, best)) best = rank;
   };
-  const validateCandidate = (input: unknown, label: string, options: PresentationValidationOptions = {}, candidateIsIncumbent = false): boolean => {
-    if (!spend()) return false;
+  const validateCandidate = (input: unknown, label: string, options: PresentationValidationOptions = {}, candidateIsIncumbent = false, expansionReserved = false): boolean => {
+    if (!expansionReserved && !spend()) return false;
     const normalized = normalizePlan(input, identity.data.id, identity.data.revision, requestPins.value);
     if (!normalized.ok) { reject(label, normalized.diagnostics); return false; }
     const checked = validatePresentationPlan(normalized.value, request.context, registry, options);
@@ -284,7 +284,7 @@ export function composePresentation(request: PresentationCompositionRequest, reg
       if (!expansion.ok) { reject(`pattern.${candidate.pattern!.id}`, expansion.diagnostics); continue; }
       const selectedPattern = pattern.value;
       if (selectedPattern === undefined) { reject(`pattern.${candidate.pattern!.id}`, [{code: 'presentation.pattern', message: 'The registered pattern is unavailable.', retryable: false}]); continue; }
-      validateCandidate(expansion.value, `pattern.${candidate.pattern!.id}`, {requiredPattern: selectedPattern}, false);
+      validateCandidate(expansion.value, `pattern.${candidate.pattern!.id}`, {requiredPattern: selectedPattern}, false, true);
     } else validateCandidate(candidate.plan, `candidate.${index}`, {}, false);
     if (budgetBlocked) break;
   }
@@ -316,7 +316,7 @@ export function composePresentation(request: PresentationCompositionRequest, reg
     if (!spend()) return false;
     const built = buildPlan(request, prepared.value, registry, layout, selected, suggest);
     if (!built.ok) { reject(label, built.diagnostics); return false; }
-    return validateCandidate(built.value, label, {}, false);
+    return validateCandidate(built.value, label, {}, false, true);
   };
   if (!budgetBlocked && required.length === 0) {
     const emptyRoots = allowed.filter(manifest => manifest.result !== 'required' && manifest.children.min === 0);
@@ -331,23 +331,18 @@ export function composePresentation(request: PresentationCompositionRequest, reg
       if (budgetBlocked) break;
     }
   } else if (!budgetBlocked && required.length > 1 && layouts.length > 0 && choices.every(list => list.length > 0)) {
-    const selected = choices.map(list => list[0]!);
-    const proposals: readonly {layout: PresentationManifest; selected: readonly PresentationManifest[]}[] = [{layout: layouts[0]!, selected}];
-    const mutable = [...proposals];
-    for (let index = 0; index < choices.length && mutable.length < constraints.maxExpansions; index++) {
-      for (const alternate of choices[index]!.slice(1)) {
-        if (mutable.length >= constraints.maxExpansions) break;
-        mutable.push({layout: layouts[0]!, selected: selected.map((manifest, position) => position === index ? alternate : manifest)});
-      }
-    }
-    for (const layout of layouts.slice(1)) {
-      if (mutable.length >= constraints.maxExpansions) break;
-      mutable.push({layout, selected});
-    }
-    for (let index = 0; index < mutable.length; index++) {
-      const proposal = mutable[index]!;
-      tryBuild(proposal.layout, proposal.selected, `registered.${index}`);
+    // Enumerate complete assignments lazily. Never allocate the Cartesian product;
+    // every attempted assignment is bounded by the same expansion counter.
+    const indices = choices.map(() => 0);
+    let layoutIndex = 0;
+    let candidateIndex = 0;
+    while (layoutIndex < layouts.length) {
+      tryBuild(layouts[layoutIndex]!, choices.map((list, index) => list[indices[index]!]!), `registered.${candidateIndex++}`);
       if (budgetBlocked) break;
+      let position = indices.length - 1;
+      while (position >= 0 && indices[position]! + 1 >= choices[position]!.length) { indices[position] = 0; position--; }
+      if (position >= 0) indices[position] = indices[position]! + 1;
+      else layoutIndex++;
     }
   } else if (!budgetBlocked) {
     reject('registered-composition', [{code: 'presentation.no-suggestion', message: 'No complete suggestion is available from the installed registry. Explicit registered configurations may still be feasible.', retryable: false}]);

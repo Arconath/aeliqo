@@ -45,15 +45,19 @@ same validator. Pattern candidates are expanded only through the matching
 registered pattern, and the expanded plan is then normalized to the composition
 request identity and current preconditions before validation. A generated
 candidate uses only installed manifests and suggestions, satisfies all required
-needs, and avoids Cartesian-product enumeration. Node identities are retained
+needs, and visits complete assignments lazily within the expansion budget without
+materializing a Cartesian product. Node identities are retained
 when an incumbent has a compatible view; new views use stable need-based IDs.
 
 Search is bounded by the Experience expansion limit (capped by the core wire
-limit). Build and validation work both consume budget. The compiler keeps the
+limit). A complete generated candidate (suggestion, build and validation) consumes one
+expansion, so a one-expansion budget can finish a feasible candidate. Explicit
+validation and a registered pattern expansion plus validation each consume one
+expansion. Callback payload/work limits remain in force. The compiler keeps the
 best feasible candidate found so far, ranking task fit, information density,
 interaction effort, legibility, measured cost, explicit preferences, optional
 coverage, and change cost with deterministic tie-breaking. Reaching the bound is
-reported as `search-exhausted`; when the bounded installed registry is fully
+reported as `search-exhausted`; when all generated assignments in the bounded installed registry are
 checked without a feasible plan, the result is `conflict`. A rejected candidate
 is retained in the result's diagnostics so the host can explain incompatibilities.
 

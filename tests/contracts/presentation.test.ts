@@ -184,24 +184,24 @@ describe('registered presentation feasibility', () => {
       needs: [baseNeed, {...baseNeed, id: 'compare', simultaneousGroup: 'comparison'}]},
       experience: {...context().experience, composition: {...context().experience.composition, maxExpansions: 8}}};
     const composed = composePresentation({id: 'multi-compose', revision: '1', context: c, preconditions: c.current}, registry());
-    expect(composed).toMatchObject({ok: true, value: {status: 'composed', expansions: 2,
+    expect(composed).toMatchObject({ok: true, value: {status: 'composed', expansions: 1,
       presentation: {plan: {rootId: 'layout', nodes: [{id: 'layout'}, {id: 'view.browse'}, {id: 'view.compare'}]}}}});
     if (!composed.ok || composed.value.presentation === undefined) return;
     expect(validatePresentationPlan(composed.value.presentation.plan, c, registry()).ok).toBe(true);
   });
   it('constructs a complete no-preset candidate within a one-expansion budget', () => {
-    const c: PresentationContext = {...context(), experience: {...context().experience, composition: {...context().experience.composition, maxExpansions: 2}}};
+    const c: PresentationContext = {...context(), experience: {...context().experience, composition: {...context().experience.composition, maxExpansions: 1}}};
     const composed = composePresentation({id: 'composed', revision: '1', preconditions: c.current, context: c}, registry());
-    expect(composed).toMatchObject({ok: true, value: {status: 'composed', expansions: 2, presentation: {plan: {rootId: 'view.browse'}}}});
+    expect(composed).toMatchObject({ok: true, value: {status: 'composed', expansions: 1, presentation: {plan: {rootId: 'view.browse'}}}});
     if (!composed.ok || composed.value.presentation === undefined) return;
     expect(checked(composed.value.presentation.plan, c).ok).toBe(true);
     expect(composed.value.presentation.plan.coverage).toEqual([{needId: 'browse', nodeIds: ['view.browse'], operations: [read]}]);
   });
   it('uses the same validator for explicit candidates and retains a feasible incumbent', () => {
     const r = registry(); const c = {...context(), incumbent: plan()};
-    expect(composePresentation({id: 'compose', revision: '1', context: c, preconditions: c.current}, r)).toMatchObject({ok: true, value: {status: 'composed', expansions: 3, presentation: {plan: {id: 'compose'}}}});
+    expect(composePresentation({id: 'compose', revision: '1', context: c, preconditions: c.current}, r)).toMatchObject({ok: true, value: {status: 'composed', expansions: 2, presentation: {plan: {id: 'compose'}}}});
     const explicit = composePresentation({id: 'compose', revision: '1', context: context(), preconditions: c.current, candidates: [{source: 'explicit', plan: {...plan(), coverage: []}}]}, r);
-    expect(explicit).toMatchObject({ok: true, value: {status: 'composed', expansions: 3, rejected: [{candidate: 'candidate.0'}]}});
+    expect(explicit).toMatchObject({ok: true, value: {status: 'composed', expansions: 2, rejected: [{candidate: 'candidate.0'}]}});
   });
   it('rejects stale or invalid composition requests even with a feasible incumbent', () => {
     const c = {...context(), incumbent: plan()};
@@ -223,7 +223,7 @@ describe('registered presentation feasibility', () => {
     const r = registry();
     const c: PresentationContext = {...context(), experience: {...context().experience,
       composition: {...context().experience.composition, maxExpansions: 1}}};
-    expect(composePresentation({id: 'compose', revision: '1', context: c, preconditions: c.current}, r)).toMatchObject({ok: true, value: {status: 'search-exhausted', expansions: 1}});
+    expect(composePresentation({id: 'compose', revision: '1', context: c, preconditions: c.current, candidates: [{source:'explicit',plan:plan()}]}, r)).toMatchObject({ok: true, value: {status: 'search-exhausted', expansions: 1, presentation: {plan: {coverage: plan().coverage}}}});
     expect(createPresentationRegistry([table, table]).ok).toBe(false);
   });
 });
@@ -284,4 +284,18 @@ describe('configuration-dependent child layout',()=>{
   const c:PresentationContext={...context(),task:{...context().task,needs:[...context().task.needs,{...context().task.needs[0]!,id:'other'}]},incumbent:old,experience:{...context().experience,allowedRepresentations:['data.table','layout.stack','layout.alternate']},rendererCapabilities:[table.ref,stack.ref,alternate.ref],stateMappingCapabilities:[mapping.ref]};
   const composed=composePresentation({id:'root-replacement',revision:'2',preconditions:c.current,context:c},installed.value);
   expect(composed).toMatchObject({ok:true,value:{presentation:{plan:{rootId:'custom-root',stateTransfer:expect.arrayContaining([{fromNode:'custom-root',toNode:'custom-root',mapping:mapping.ref}])}}}});
+ });
+ it('finishes a feasible first candidate within one expansion instead of spending the budget on preparation',()=>{
+  const c={...context(),experience:{...context().experience,composition:{...context().experience.composition,maxExpansions:1}}};
+  const composed=composePresentation({id:'one-expansion',revision:'1',preconditions:c.current,context:c},registry());
+  expect(composed).toMatchObject({ok:true,value:{status:'composed',expansions:1,presentation:{plan:{coverage:[{needId:'browse'}]}}}});
+ });
+ it('reaches combined alternatives lazily and reports unvisited assignments as exhaustion',()=>{
+  const bad:PresentationManifest={...table,ref:{id:'data.a-bad',revision:'1'},resolveConfig:values=>({ok:true,value:{values,fields:[],ports:[]}})};
+  const good:PresentationManifest={...table,ref:{id:'data.b-good',revision:'1'}};
+  const r=registry([bad,good,stack]);const base=context();
+  const c:PresentationContext={...base,task:{...base.task,needs:[...base.task.needs,{...base.task.needs[0]!,id:'second'}]},experience:{...base.experience,allowedRepresentations:[bad.ref.id,good.ref.id,stack.ref.id],composition:{...base.experience.composition,maxExpansions:4}},rendererCapabilities:[bad.ref,good.ref,stack.ref]};
+  expect(composePresentation({id:'combined',revision:'1',context:c,preconditions:c.current},r)).toMatchObject({ok:true,value:{status:'composed',expansions:4,presentation:{plan:{nodes:[{representation:stack.ref},{representation:good.ref},{representation:good.ref}]}}}});
+  const bounded={...c,experience:{...c.experience,composition:{...c.experience.composition,maxExpansions:3}}};
+  expect(composePresentation({id:'combined',revision:'1',context:bounded,preconditions:c.current},r)).toMatchObject({ok:true,value:{status:'search-exhausted',expansions:3}});
  });
