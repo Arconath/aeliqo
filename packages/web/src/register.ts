@@ -1,3 +1,5 @@
+import {AeliqoTreeElement, AeliqoTreemapElement, AeliqoRelationshipElement} from "./visualization/hierarchy/index.js";
+import {AeliqoTrendElement, AeliqoBarElement, AeliqoAreaElement, AeliqoScatterElement, AeliqoHistogramElement, AeliqoHeatmapElement} from "./visualization/cartesian/index.js";
 import {AeliqoMatrixElement, AeliqoTimelineElement, AeliqoCalendarGridElement} from "./visualization/temporal/index.js";
 import {AeliqoMetricElement, AeliqoDeltaElement, AeliqoKeyValueElement, AeliqoDetailElement, AeliqoRecordListElement, AeliqoCardCollectionElement, AeliqoSelectionSummaryElement, AeliqoFilterBuilderElement} from "./data/index.js";
 import {AeliqoDialogElement, AeliqoDrawerElement, AeliqoPopoverElement, AeliqoTooltipElement, AeliqoAlertElement, AeliqoToastElement, AeliqoProgressElement, AeliqoSkeletonElement, AeliqoEmptyStateElement} from "./feedback/index.js";
@@ -22,6 +24,17 @@ interface ElementRegistration {
 }
 
 const REGISTRATIONS: readonly ElementRegistration[] = [
+  {name: "aeliqo-tree", constructor: AeliqoTreeElement},
+  {name: "aeliqo-treemap", constructor: AeliqoTreemapElement},
+  {name: "aeliqo-relationship", constructor: AeliqoRelationshipElement},
+
+  {name: "aeliqo-trend", constructor: AeliqoTrendElement},
+  {name: "aeliqo-bar", constructor: AeliqoBarElement},
+  {name: "aeliqo-area", constructor: AeliqoAreaElement},
+  {name: "aeliqo-scatter", constructor: AeliqoScatterElement},
+  {name: "aeliqo-histogram", constructor: AeliqoHistogramElement},
+  {name: "aeliqo-heatmap", constructor: AeliqoHeatmapElement},
+
   {name: "aeliqo-matrix", constructor: AeliqoMatrixElement},
   {name: "aeliqo-timeline", constructor: AeliqoTimelineElement},
   {name: "aeliqo-calendar-grid", constructor: AeliqoCalendarGridElement},

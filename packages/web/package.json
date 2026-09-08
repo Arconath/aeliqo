@@ -280,6 +280,14 @@
     "./visualization/temporal": {
       "types": "./dist/visualization/temporal/index.d.ts",
       "import": "./dist/visualization/temporal/index.js"
+    },
+    "./visualization/cartesian": {
+      "types": "./dist/visualization/cartesian/index.d.ts",
+      "import": "./dist/visualization/cartesian/index.js"
+    },
+    "./visualization/hierarchy": {
+      "types": "./dist/visualization/hierarchy/index.d.ts",
+      "import": "./dist/visualization/hierarchy/index.js"
     }
   },
   "files": [

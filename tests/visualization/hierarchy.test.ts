@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import type {Catalog, MeaningDefinition, Result, VisualizationSpec} from '../../packages/core/src/index.js';
+import type {Catalog, MeaningDefinition, Result, Scalar, VisualizationSpec} from '../../packages/core/src/index.js';
 import {compileRelationshipGeometry, compileTreeGeometry, compileTreemapGeometry} from '../../packages/web/src/visualization/hierarchy/geometry.js';
 import {result as source} from '../contracts/fixtures.js';
 
@@ -14,7 +14,7 @@ const hierarchyFields = [
   {id: 'amount', label: 'Amount', role: 'measure' as const, type: integer, derivation: {id: 'amount', revision: '1'}},
 ];
 const hierarchyResult = (rows: number): Result => ({...source, ref, fields: hierarchyFields, identity: ['id'], rowGrain: ['id'], counts: {loaded: rows, population: {kind: 'unknown'}}, coverage: {kind: 'unknown', reason: 'Observed rows only'}});
-const input = (visualization: VisualizationSpec, result: Result, rows: readonly Readonly<Record<string, unknown>>[], context: Record<string, unknown> = {}) => ({visualization, context: {results: [result], ...context}, datasets: [{result: result.ref, rows}], label: 'Hierarchy', width: 640, height: 360, maxMarks: 100});
+const input = (visualization: VisualizationSpec, result: Result, rows: readonly Readonly<Record<string, Scalar>>[], context: Record<string, unknown> = {}) => ({visualization, context: {results: [result], ...context}, datasets: [{result: result.ref, rows}], label: 'Hierarchy', width: 640, height: 360, maxMarks: 100});
 
 const treeSpec = (result: Result): VisualizationSpec => ({version: '1', view: 'tree', result: result.ref, node: ['id'], parent: ['parent'], label: 'label'});
 const treemapSpec = (result: Result): VisualizationSpec => ({version: '1', view: 'treemap', result: result.ref, node: ['id'], parent: ['parent'], label: 'label', value: 'amount', meaning: {id: 'amount', revision: '1'}});
@@ -120,8 +120,10 @@ describe('hierarchy visualization geometry', () => {
     const result = hierarchyResult(rows.length);
     const checked = compileTreemapGeometry({...input(treemapSpec(result), result, rows, {catalog: catalogFor(result)}), maxMarks: 10_000});
     expect(checked.ok).toBe(true); if (!checked.ok) return;
-    expect(checked.value.state).toBe('geometry');
-    expect(checked.value.nodes).toHaveLength(rows.length);
+    expect(checked.value.state).toBe('data-only');
+    expect(checked.value.reason).toContain('density');
+    expect(checked.value.rows).toHaveLength(rows.length);
+    expect(checked.value.nodes).toHaveLength(0);
   });
 
   it('checks relationship endpoint namespaces and declared cardinality', () => {
@@ -130,7 +132,7 @@ describe('hierarchy visualization geometry', () => {
       {id: 'source', label: 'Source', role: 'dimension', type: text},
       {id: 'target', label: 'Target', role: 'dimension', type: text},
     ], identity: ['edge'], rowGrain: ['edge']};
-    const relation = {id: 'edge-rel', revision: '1', sourceEntity: 'sources', targetEntity: 'targets', keys: [{sourceField: 'id', targetField: 'id'}], cardinality: 'many-to-one' as const, optional: false, joinPolicy: 'validated' as const};
+    const relation: Catalog['relationships'][number] = {id: 'edge-rel', revision: '1', sourceEntity: 'sources', targetEntity: 'targets', keys: [{sourceField: 'id', targetField: 'id'}], cardinality: 'many-to-one' as const, optional: false, joinPolicy: 'validated' as const};
     const catalog: Catalog = {...catalogFor(result), meanings: [], entities: [
       {id: 'sources', label: 'Sources', identity: ['id'], rowGrain: ['id'], fields: [{id: 'id', label: 'ID', role: 'identity', type: text}]},
       {id: 'targets', label: 'Targets', identity: ['id'], rowGrain: ['id'], fields: [{id: 'id', label: 'ID', role: 'identity', type: text}]},

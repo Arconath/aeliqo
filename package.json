@@ -60,9 +60,10 @@
     "test:data-semantic": "pnpm build:platform && vitest run --config tests/data-semantic/vitest.config.mjs && tsc -p tests/data-semantic/tsconfig.json --noEmit",
     "test:navigation-feedback-semantic:browser": "playwright test --config tests/navigation-feedback-semantic/playwright.config.mjs",
     "test:data-semantic:browser": "playwright test --config tests/data-semantic/playwright.config.mjs",
-    "test:visualization": "pnpm build:platform && vitest run --config tests/visualization/vitest.config.mjs && tsc -p tests/visualization/tsconfig.json && node tests/visualization/temporal-ssr.mjs",
+    "test:visualization": "pnpm build:platform && vitest run --config tests/visualization/vitest.config.mjs && tsc -p tests/visualization/tsconfig.json && node tests/visualization/temporal-ssr.mjs && node tests/visualization/hierarchy-ssr.mjs && node tests/visualization/cartesian-ssr.mjs",
     "test:visualization:temporal:browser": "playwright test --config tests/visualization/temporal.playwright.config.mjs",
-    "test:visualization:consumers": "node tests/consumers/visualization-tarballs.mjs"
+    "test:visualization:consumers": "node tests/consumers/visualization-tarballs.mjs",
+    "test:visualization:browser": "playwright test --config tests/visualization/temporal.playwright.config.mjs && playwright test --config tests/visualization/cartesian.playwright.config.mjs && playwright test --config tests/visualization/playwright.config.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

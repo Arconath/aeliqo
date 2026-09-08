@@ -19,6 +19,7 @@ export interface HierarchyGeometryOptions {
 
 export interface HierarchyNodeGeometry {
   readonly identity: string;
+  readonly rowIdentity: string;
   readonly label: string;
   readonly parentIdentity?: string;
   readonly depth: number;
@@ -347,7 +348,7 @@ function treeLayout(nodes: Map<string, CheckedNode>, roots: readonly string[], w
   const output: HierarchyNodeGeometry[] = [];
   for (const [depth, list] of levels) {
     const gap = 2; const cellWidth = Math.max(1, (width - pad * 2 - gap * Math.max(0, list.length - 1)) / Math.max(1, list.length));
-    list.forEach((node, index) => output.push({identity: node.identity, label: node.label, ...(node.parentIdentity === undefined ? {} : {parentIdentity: node.parentIdentity}), depth, children: Object.freeze([...node.children]), x: pad + index * (cellWidth + gap), y: pad + depth * levelHeight, width: cellWidth, height: Math.max(1, levelHeight - 2), leaf: node.children.length === 0}));
+    list.forEach((node, index) => output.push({identity: node.identity, rowIdentity: node.row.identity, label: node.label, ...(node.parentIdentity === undefined ? {} : {parentIdentity: node.parentIdentity}), depth, children: Object.freeze([...node.children]), x: pad + index * (cellWidth + gap), y: pad + depth * levelHeight, width: cellWidth, height: Math.max(1, levelHeight - 2), leaf: node.children.length === 0}));
   }
   return Object.freeze(output);
 }
@@ -430,7 +431,7 @@ function treemapLayout(nodes: Map<string, CheckedNode>, roots: readonly string[]
   for (const node of [...nodes.values()].sort((left, right) => left.depth - right.depth || compareIdentity(left.identity, right.identity))) {
     const box = boxes.get(node.identity);
     if (box === undefined) return {state: 'data-only', reason: 'Treemap geometry could not cover every authorized node. Exact values remain available in the data table.', nodes: Object.freeze([])};
-    output.push({identity: node.identity, label: node.label, ...(node.parentIdentity === undefined ? {} : {parentIdentity: node.parentIdentity}), depth: node.depth, children: Object.freeze([...node.children]), x: box.x, y: box.y, width: box.width, height: box.height, value: numericValues.get(node.identity) ?? 0, leaf: node.children.length === 0});
+    output.push({identity: node.identity, rowIdentity: node.row.identity, label: node.label, ...(node.parentIdentity === undefined ? {} : {parentIdentity: node.parentIdentity}), depth: node.depth, children: Object.freeze([...node.children]), x: box.x, y: box.y, width: box.width, height: box.height, value: numericValues.get(node.identity) ?? 0, leaf: node.children.length === 0});
   }
   return {state: 'geometry', nodes: Object.freeze(output)};
 }
@@ -439,7 +440,7 @@ export function compileTreeGeometry(inputs: VisualizationInputs, options: Hierar
   const prepared = prepareHierarchy(inputs, 'tree', options); if (!prepared.ok) return prepared;
   const checked = checkedHierarchyNodes(prepared.value.prepared, 'tree', prepared.value.dimensions.maxDepth); if (!checked.ok) return checked;
   const nodes = treeLayout(checked.value.nodes, checked.value.roots, prepared.value.dimensions.width, prepared.value.dimensions.height);
-  if (nodes.length > prepared.value.dimensions.maxMarks) return {ok: true, value: Object.freeze({kind: 'tree', state: 'data-only', reason: 'The hierarchy exceeds the configured mark budget. Exact values remain available in the data table.', bound: prepared.value.prepared.bound, result: prepared.value.prepared.result, rows: prepared.value.prepared.rows, nodes: Object.freeze([]), width: prepared.value.dimensions.width, height: prepared.value.dimensions.height, maxDepth: checked.value.maxDepth})};
+  if (nodes.length > prepared.value.dimensions.maxMarks || nodes.some(node=>node.width<24||node.height<24||node.x+node.width>prepared.value.dimensions.width||node.y+node.height>prepared.value.dimensions.height)) return {ok: true, value: Object.freeze({kind: 'tree', state: 'data-only', reason: 'The hierarchy exceeds the configured mark budget or readable graphic density. Exact values remain available in the data table.', bound: prepared.value.prepared.bound, result: prepared.value.prepared.result, rows: prepared.value.prepared.rows, nodes: Object.freeze([]), width: prepared.value.dimensions.width, height: prepared.value.dimensions.height, maxDepth: checked.value.maxDepth})};
   return {ok: true, value: Object.freeze({kind: 'tree', state: 'geometry', bound: prepared.value.prepared.bound, result: prepared.value.prepared.result, rows: prepared.value.prepared.rows, nodes, width: prepared.value.dimensions.width, height: prepared.value.dimensions.height, maxDepth: checked.value.maxDepth})};
 }
 
@@ -447,7 +448,7 @@ export function compileTreemapGeometry(inputs: VisualizationInputs, options: Hie
   const prepared = prepareHierarchy(inputs, 'treemap', options); if (!prepared.ok) return prepared;
   const checked = checkedHierarchyNodes(prepared.value.prepared, 'treemap', prepared.value.dimensions.maxDepth); if (!checked.ok) return checked;
   const layout = treemapLayout(checked.value.nodes, checked.value.roots, prepared.value.dimensions.width, prepared.value.dimensions.height);
-  if (layout.state === 'data-only' || layout.nodes.length > prepared.value.dimensions.maxMarks) return {ok: true, value: Object.freeze({kind: 'treemap', state: 'data-only', reason: layout.reason ?? 'The treemap exceeds the configured mark budget. Exact values remain available in the data table.', bound: prepared.value.prepared.bound, result: prepared.value.prepared.result, rows: prepared.value.prepared.rows, nodes: Object.freeze([]), width: prepared.value.dimensions.width, height: prepared.value.dimensions.height, maxDepth: checked.value.maxDepth, leafValuePolicy: 'leaf-only'})};
+  if (layout.state === 'data-only' || layout.nodes.length > prepared.value.dimensions.maxMarks || layout.nodes.some(node=>node.width>0&&node.height>0&&(node.width<24||node.height<24))) return {ok: true, value: Object.freeze({kind: 'treemap', state: 'data-only', reason: layout.reason ?? 'The treemap exceeds the configured mark budget or readable graphic density. Exact values remain available in the data table.', bound: prepared.value.prepared.bound, result: prepared.value.prepared.result, rows: prepared.value.prepared.rows, nodes: Object.freeze([]), width: prepared.value.dimensions.width, height: prepared.value.dimensions.height, maxDepth: checked.value.maxDepth, leafValuePolicy: 'leaf-only'})};
   return {ok: true, value: Object.freeze({kind: 'treemap', state: 'geometry', bound: prepared.value.prepared.bound, result: prepared.value.prepared.result, rows: prepared.value.prepared.rows, nodes: layout.nodes, width: prepared.value.dimensions.width, height: prepared.value.dimensions.height, maxDepth: checked.value.maxDepth, leafValuePolicy: 'leaf-only'})};
 }
 
@@ -489,11 +490,11 @@ export function compileRelationshipGeometry(inputs: VisualizationInputs, options
   if (relation.cardinality === 'many-to-one' && [...sourceCounts.values()].some(targets => targets.size > 1)) return fail('cardinality', 'The materialized relationship violates many-to-one cardinality.');
   if (relation.cardinality === 'one-to-many' && [...targetCounts.values()].some(sources => sources.size > 1)) return fail('cardinality', 'The materialized relationship violates one-to-many cardinality.');
   if (sourceNodes.size > MAX_GROUPS || targetNodes.size > MAX_GROUPS) return {ok: true, value: Object.freeze({kind: 'relationship', state: 'data-only', reason: `Relationship endpoint groups exceed the ${MAX_GROUPS} group bound. Exact values remain available in the data table.`, bound: checked.value.bound, result: checked.value.result, rows: checked.value.rows, nodes: Object.freeze([]), edges: Object.freeze([]), width: dimensions.width, height: dimensions.height, cardinality: relation.cardinality})};
-  const arrange = (values: readonly RelationshipNodeGeometry[], x: number): readonly RelationshipNodeGeometry[] => {const gap = values.length > 1 ? (dimensions.height - 32) / (values.length - 1) : 0; return values.map((node, index) => ({...node, x, y: 16 + index * gap}));};
+  const arrange = (values: readonly RelationshipNodeGeometry[], x: number): readonly RelationshipNodeGeometry[] => {const gap = values.length > 1 ? (dimensions.height - 56) / (values.length - 1) : 0; return values.map((node, index) => ({...node, x, y: 40 + index * gap}));};
   const sourceList = [...sourceNodes.values()].sort((left, right) => compareIdentity(left.identity, right.identity));
   const targetList = [...targetNodes.values()].sort((left, right) => compareIdentity(left.identity, right.identity));
   const nodes = Object.freeze([...arrange(sourceList, dimensions.width * 0.25), ...arrange(targetList, dimensions.width * 0.75)]);
-  if (edges.length + nodes.length > dimensions.maxMarks) return {ok: true, value: Object.freeze({kind: 'relationship', state: 'data-only', reason: 'The relationship exceeds the configured mark budget. Exact values remain available in the data table.', bound: checked.value.bound, result: checked.value.result, rows: checked.value.rows, nodes: Object.freeze([]), edges: Object.freeze([]), width: dimensions.width, height: dimensions.height, cardinality: relation.cardinality})};
+  if (edges.length + nodes.length > dimensions.maxMarks || Math.max(sourceList.length,targetList.length)>Math.floor((dimensions.height-56)/24)+1) return {ok: true, value: Object.freeze({kind: 'relationship', state: 'data-only', reason: 'The relationship exceeds the configured mark budget or readable graphic density. Exact values remain available in the data table.', bound: checked.value.bound, result: checked.value.result, rows: checked.value.rows, nodes: Object.freeze([]), edges: Object.freeze([]), width: dimensions.width, height: dimensions.height, cardinality: relation.cardinality})};
   return {ok: true, value: Object.freeze({kind: 'relationship', state: 'geometry', bound: checked.value.bound, result: checked.value.result, rows: checked.value.rows, nodes, edges: Object.freeze(edges), width: dimensions.width, height: dimensions.height, cardinality: relation.cardinality})};
 }
 
