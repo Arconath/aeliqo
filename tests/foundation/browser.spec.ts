@@ -41,6 +41,43 @@ test("links, identity fallback, hierarchy and composed foundations retain semant
   await expect(page.locator("#scroll").locator("[part=scroll]")).toHaveAttribute("aria-label", "Results");
 });
 
+test("scroll areas constrain their viewport, separators follow properties, and surfaces expose names", async ({page}) => {
+  const scroll = page.locator("#constrained-scroll").locator("[part=scroll]");
+  const scrollMetrics = await scroll.evaluate((element) => ({
+    clientHeight: element.clientHeight,
+    scrollHeight: element.scrollHeight,
+    scrollTop: element.scrollTop,
+  }));
+  expect(scrollMetrics.clientHeight).toBeLessThan(scrollMetrics.scrollHeight);
+  await scroll.focus();
+  await scroll.press("PageDown");
+  await expect.poll(() => scroll.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+
+  const separatorHost = page.locator("#vertical-separator");
+  const separator = separatorHost.locator("[part=separator]");
+  const horizontalBox = await separator.boundingBox();
+  if (horizontalBox === null) throw new Error("separator is not measurable");
+  expect(horizontalBox.width).toBeGreaterThan(15);
+  expect(horizontalBox.height).toBeLessThan(5);
+  await separatorHost.evaluate((element) => {
+    (element as HTMLElement & {orientation: "horizontal" | "vertical"}).orientation = "vertical";
+  });
+  await expect.poll(async () => {
+    const box = await separator.boundingBox();
+    return box === null ? {width: 0, height: 0} : {width: box.width, height: box.height};
+  }).toEqual({width: 1, height: 100});
+
+  const surface = page.locator("#labelled-surface");
+  await expect(surface).toHaveAttribute("role", "region");
+  await expect(surface).toHaveAccessibleName("Panel title");
+  await surface.evaluate((element) => {
+    const surfaceElement = element as HTMLElement & {labelledBy: string; label: string};
+    surfaceElement.labelledBy = "";
+    surfaceElement.label = "Explicit panel";
+  });
+  await expect(surface).toHaveAccessibleName("Explicit panel");
+});
+
 test("split pane provides keyboard and RTL pointer semantics", async ({page}) => {
   const split = page.locator("#split");
   const splitter = split.locator("[part=splitter]");

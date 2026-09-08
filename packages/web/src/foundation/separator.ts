@@ -6,7 +6,7 @@ export type AeliqoSeparatorOrientation = "horizontal" | "vertical";
 /** Native hr for semantic horizontal separation; a nonfocusable div for decorative/vertical rules. */
 export class AeliqoSeparatorElement extends AeliqoFoundationElement {
   static readonly properties = {
-    orientation: {type: String},
+    orientation: {type: String, reflect: true},
     decorative: {type: Boolean, reflect: true},
   };
 

@@ -25,7 +25,7 @@ export class AeliqoScrollAreaElement extends AeliqoFoundationElement {
 
   static readonly styles = [...aeliqoFoundationThemeStyles, css`
     :host { display: block; min-block-size: 0; min-inline-size: 0; }
-    [part="scroll"] { min-block-size: 0; min-inline-size: 0; outline-offset: var(--aeliqo-focus-offset, 0.125rem); }
+    [part="scroll"] { block-size: 100%; inline-size: 100%; max-block-size: 100%; max-inline-size: 100%; min-block-size: 0; min-inline-size: 0; outline-offset: var(--aeliqo-focus-offset, 0.125rem); }
     .axis-x { overflow-x: auto; overflow-y: hidden; }
     .axis-y { overflow-x: hidden; overflow-y: auto; }
     .axis-both { overflow: auto; }

@@ -1,4 +1,4 @@
-import {css, html, nothing} from "lit";
+import {css, html} from "lit";
 import {AeliqoFoundationElement, aeliqoFoundationThemeStyles} from "./base.js";
 
 export type AeliqoSurfaceAs = "div" | "section" | "article";
@@ -10,6 +10,7 @@ export class AeliqoSurfaceElement extends AeliqoFoundationElement {
     as: {type: String},
     tone: {type: String},
     labelledBy: {attribute: "labelled-by", type: String},
+    label: {type: String},
   };
 
   static readonly aeliqoVersion = "0.1.0-m0";
@@ -17,15 +18,33 @@ export class AeliqoSurfaceElement extends AeliqoFoundationElement {
   as: AeliqoSurfaceAs = "div";
   tone: AeliqoSurfaceTone = "surface";
   labelledBy = "";
+  label = "";
+
+  protected override willUpdate(): void {
+    const labelledBy = this.labelledBy.trim();
+    const label = this.label.trim();
+    if (labelledBy.length > 0) {
+      this.setAttribute("role", "region");
+      this.setAttribute("aria-labelledby", labelledBy);
+      this.removeAttribute("aria-label");
+    } else if (label.length > 0) {
+      this.setAttribute("role", "region");
+      this.setAttribute("aria-label", label);
+      this.removeAttribute("aria-labelledby");
+    } else {
+      this.removeAttribute("role");
+      this.removeAttribute("aria-label");
+      this.removeAttribute("aria-labelledby");
+    }
+  }
 
   protected override render() {
     const tone = this.tone === "canvas" || this.tone === "raised" ? this.tone : "surface";
     const content = html`<slot></slot>`;
-    const labelled = this.labelledBy || nothing;
     switch (this.as) {
-      case "section": return html`<section part="surface" class=${`tone-${tone}`} aria-labelledby=${labelled}>${content}</section>`;
-      case "article": return html`<article part="surface" class=${`tone-${tone}`} aria-labelledby=${labelled}>${content}</article>`;
-      default: return html`<div part="surface" class=${`tone-${tone}`} aria-labelledby=${labelled}>${content}</div>`;
+      case "section": return html`<section part="surface" class=${`tone-${tone}`}>${content}</section>`;
+      case "article": return html`<article part="surface" class=${`tone-${tone}`}>${content}</article>`;
+      default: return html`<div part="surface" class=${`tone-${tone}`}>${content}</div>`;
     }
   }
 

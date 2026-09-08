@@ -55,9 +55,20 @@ content.innerHTML = `
   <aeliqo-link id="unsafe-link" href="javascript:alert(1)" label="Unsafe"></aeliqo-link>
   <aeliqo-link id="external-link" href="/approved" target="_blank" label="Open approved"></aeliqo-link>
   <aeliqo-scroll-area id="scroll" label="Results"><p>Scrollable content</p></aeliqo-scroll-area>
+  <aeliqo-scroll-area id="constrained-scroll" label="Constrained results" style="block-size: 100px; inline-size: 240px"><div style="block-size: 400px">Tall scroll content</div></aeliqo-scroll-area>
+  <aeliqo-separator id="vertical-separator" style="block-size: 100px; inline-size: 20px"></aeliqo-separator>
   <aeliqo-split-pane id="split" style="block-size: 120px; inline-size: 320px"><span slot="start">Start</span><span slot="end">End</span></aeliqo-split-pane>
   <aeliqo-split-pane id="vertical-split" orientation="vertical" style="block-size: 240px; inline-size: 320px"><span slot="start">Top</span><span slot="end">Bottom</span></aeliqo-split-pane>`;
 fixture.append(content);
+const surfaceLabel = document.createElement("h2");
+surfaceLabel.id = "surface-label";
+surfaceLabel.textContent = "Panel title";
+fixture.prepend(surfaceLabel);
+const labelledSurface = document.createElement("aeliqo-surface");
+labelledSurface.id = "labelled-surface";
+labelledSurface.setAttribute("labelled-by", surfaceLabel.id);
+labelledSurface.textContent = "Panel content";
+fixture.prepend(labelledSurface);
 content.addEventListener("aeliqo-split-change", (event) => events.push({kind: "split", event}));
 
 form.addEventListener("aeliqo-action", (event) => events.push({kind: "action", event}));
