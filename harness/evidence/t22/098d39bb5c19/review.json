@@ -1,0 +1,26 @@
+{
+  "status": "pass",
+  "author": "release_inventory; parent integration and fixes",
+  "independentReviewers": [
+    "platform_proof (capability/session/composition)",
+    "release_inventory (parent diagnostic-egress fixes)"
+  ],
+  "findingsClosed": [
+    "Untrusted request transport weakened session egress.",
+    "Duplicate composition validator omitted canonical coverage and context checks.",
+    "Repair history included prior receipt payloads.",
+    "Output references were not required to belong to final authorized read set.",
+    "Handler prose and diagnostic paths could leak private data externally without current egress.",
+    "Disposed in-flight sessions restored retained state."
+  ],
+  "freshChecks": [
+    "77 agent tests, package builds and strict TypeScript",
+    "Installed tarball runtime/Chromium/type consumer",
+    "Independent final diagnostic review: 15 focused checks and strict types/build"
+  ],
+  "limits": [
+    "Real provider/MCP adapters and model evaluation remain T24/T40.",
+    "Host receipts need a fresh egress check before external forwarding.",
+    "Bound interpretation is not proof of business intent."
+  ]
+}

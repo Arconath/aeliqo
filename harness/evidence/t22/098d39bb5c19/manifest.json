@@ -1,0 +1,36 @@
+{
+  "task": "T22",
+  "status": "pass",
+  "sourceCommit": "d41432da5e44362a1e3a77b77843262f41084311",
+  "sourceDigest": "098d39bb5c19222d68fa698b9a800cf31553a6de5e4a015176f2fb5e00b4d13d",
+  "checks": {
+    "agentTests": 77,
+    "strictTypes": true,
+    "installedTarballNodeChromium": true,
+    "canonicalCompositionParity": true,
+    "independentReview": true
+  },
+  "limits": [
+    "Real provider/MCP adapters and model evaluation remain T24/T40.",
+    "Host receipts need a fresh egress check before external forwarding.",
+    "Bound interpretation is not proof of business intent."
+  ],
+  "artifacts": [
+    {
+      "path": "agents.log",
+      "sha256": "af5b5e47c592d4822fe8195732cd4b7990de8dc928e95a93fdfd2a60c995e105"
+    },
+    {
+      "path": "consumer-report.json",
+      "sha256": "24faca62c45f647cacc3aaf4683c773fe2e080f0b7bafb1c6bbdfc8168251961"
+    },
+    {
+      "path": "consumer.log",
+      "sha256": "516fe9b93505ba4fd16844870bd04316f764efd4853d01cbd69e007914e9e0d4"
+    },
+    {
+      "path": "review.json",
+      "sha256": "047eb211b146e1186be896c95911dff192b1f955611961fd43a4e812636c60d2"
+    }
+  ]
+}

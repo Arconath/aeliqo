@@ -698,10 +698,15 @@
         "Manual/tool parity, schema limits, bounded turns, untrusted metadata treatment and recovery receipts proven.",
         "AI may propose bounded expression/query/view graphs; shared validation; evaluate and visible presentation are different operations."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "T19 acceptance frozen; parent owns T20 runtime/web region, isolated independent worker owns T22 agent capabilities/session. Canonical wire contracts and root integration remain parent-owned."
+      "evidence": [
+        {
+          "path": "harness/evidence/t22/098d39bb5c19/manifest.json",
+          "sha256": "f08d2b6e3edd1db57bc2699920773cb084b99a957a3925d3fa1283587edf3d2e"
+        }
+      ],
+      "notes": "Accepted at source d41432d after independent reviews: canonical composition validation, trusted transport, separate effect/egress checks, exact result scope, bounded repair and disposal. 77 agent tests, strict types, installed core/runtime/agent Node and Chromium consumer pass. Actual protocols/providers remain T24/T40."
     },
     {
       "id": "T23",

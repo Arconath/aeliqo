@@ -1,0 +1,57 @@
+{
+  "sourceDigest": "098d39bb5c19222d68fa698b9a800cf31553a6de5e4a015176f2fb5e00b4d13d",
+  "passed": true,
+  "scope": "Installed core/runtime/agent shared capability/manual binding, trusted session transport, external egress rejection, bounded repair and narrative verification; strict declarations, Node without code generation, Chromium, exact decimals, actual local analytical metric versions, false claims, unverified prose and real revoked handles.",
+  "artifacts": [
+    {
+      "name": "@aeliqo/core",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/agent-consumers/run-GdQVkR/aeliqo-core-0.1.0.tgz",
+      "sha256": "6acf5ed3d6b7e088d8697745d3a109cbd066029043b533422370a24f5f075d98",
+      "integrity": "sha512-P1A3ix08JnMakSx0SwVuJWxFWBF5tXQIBviWDyvLPZZjtNe/oVNstmIIphTbtmwXELEZs3POM8wvS7GTt5OcHw=="
+    },
+    {
+      "name": "@aeliqo/runtime",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/agent-consumers/run-GdQVkR/aeliqo-runtime-0.1.0.tgz",
+      "sha256": "30d0c899e1794e106d88ec155d70c2e15124a6efd77c451e1f9c47a4fca81925",
+      "integrity": "sha512-Sg0HK1OSFjnnJoqcu9egtjqrmCsj9H7TV3G9y2+GcJ0zXUi428/CaCogo0CIO0gPcd62ezS2afDxtag62HmOVw=="
+    },
+    {
+      "name": "@aeliqo/agent",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/agent-consumers/run-GdQVkR/aeliqo-agent-0.1.0.tgz",
+      "sha256": "4ecbcb8c760174a6f81e218d64806756e033403378aa47ae5c3d0864638849b9",
+      "integrity": "sha512-BgcIQMKmLu5Raf2xw81qCsNH+4F7qyNezpW90aptiLNUrniae90nIKtEJT9XEKlKaLQbIXGOL5519exyKdv+uA=="
+    }
+  ],
+  "consumerDirectory": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-agent-consumer-adKqMb",
+  "node": {
+    "canonicalCompositionParity": true,
+    "capabilityParity": true,
+    "trustedSessionTransport": true,
+    "externalEgress": true,
+    "guardedRepair": true,
+    "exact": true,
+    "falseValueRejected": true,
+    "proseUnverified": true,
+    "revokedCleared": true,
+    "computedMetricVersion": true
+  },
+  "browser": {
+    "canonicalCompositionParity": true,
+    "capabilityParity": true,
+    "trustedSessionTransport": true,
+    "externalEgress": true,
+    "guardedRepair": true,
+    "exact": true,
+    "falseValueRejected": true,
+    "proseUnverified": true,
+    "revokedCleared": true,
+    "computedMetricVersion": true
+  },
+  "environment": {
+    "node": "v24.20.0",
+    "chromium": "153.0.8010.12"
+  }
+}

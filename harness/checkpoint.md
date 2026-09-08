@@ -283,3 +283,10 @@ T18 remains active: canonical semantic/region integration is being implemented
 in isolated codex/t18-semantic. T20 adaptation and T22 dispatcher remain active;
 parent review identified text-scale hysteresis and current model-egress recheck
 issues that their authors are addressing. No publication or deployment occurred.
+
+T22 accepted at source d41432d; frozen evidence harness/evidence/t22/098d39bb5c19.
+77 agent tests/build/strict types and installed core/runtime/agent tarball Node/Chromium checks pass.
+Independent reviews closed transport spoofing, canonical composition bypass,
+repair receipt leakage, unauthorized result references and external diagnostic egress.
+T18 semantic browser tests and T20 scheduler/lifecycle checks remain active; T23 ready.
+No real provider claim, npm publication, main promotion or production deployment.
