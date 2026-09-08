@@ -23,7 +23,15 @@ export class AeliqoFieldGroupElement extends AeliqoFoundationElement {
   override connectedCallback(): void {
     super.connectedCallback();
     if (typeof MutationObserver === "function") {
-      this.disabledObserver = new MutationObserver(() => this.syncDisabledDescendants());
+      this.disabledObserver = new MutationObserver((records) => {
+        if (this.disabled) {
+          for (const record of records) {
+            const control = record.target;
+            if (control instanceof HTMLElement && this.restoredDisabled.has(control) && !control.disabled) this.restoredDisabled.set(control, false);
+          }
+        }
+        this.syncDisabledDescendants();
+      });
       this.disabledObserver.observe(this, {subtree: true, childList: true, attributes: true, attributeFilter: ["disabled"]});
     }
     this.syncDisabledDescendants();
@@ -75,7 +83,7 @@ export class AeliqoFieldGroupElement extends AeliqoFoundationElement {
     if (this.disabled) {
       for (const control of controls) {
         if (!this.restoredDisabled.has(control)) this.restoredDisabled.set(control, control.disabled);
-        control.disabled = true;
+        if (!control.disabled) control.disabled = true;
       }
       return;
     }
