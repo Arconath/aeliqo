@@ -34,7 +34,7 @@ is exposed training material for the harness, not a held-out evaluation case.
 Live execution additionally requires `--config OWNER_CONFIG.json --live` and
 `AELIQO_EVAL_OPENAI_API_KEY` in the process environment. The owner configuration
 must explicitly authorize the exact corpus SHA-256, two distinct weak/strong
-model IDs, repeated trial count, token/request/time limits, a maximum USD spend
+model IDs with exact expected reported snapshots, repeated trial count, token/request/time limits, a maximum USD spend
 reservation, and positive reviewed input/output prices with their source. The
 configuration has no credential field. No live run has been authorized or run.
 The existing official OpenAI adapter uses provider-default sampling/reasoning
@@ -44,7 +44,7 @@ Before each trial, the runner reserves a conservative bound using all permitted
 model requests, input tokens, turns, output tokens, and the supplied rates. It
 records reservation and usage-derived estimates separately from charged cost,
 which remains unknown. Price changes or extra provider fees are outside this
-estimate; live approval must use current reviewed rates. It captures reported
+estimate; live approval must use current reviewed rates. It rejects missing or mismatched expected reported snapshots and captures
 model snapshots and response IDs without storing raw provider reasoning or
 headers. Source and corpus hashes accompany every report. A changed source
 invalidates candidate qualification.
@@ -54,3 +54,12 @@ completeness, and scope against fixture answers excluded from model context.
 Wilson intervals show sample size and uncertainty; unrun groups have null
 intervals. UI completion and prose grounding remain null until those independent
 checks are supplied. Provider failures stay in the model trial denominator.
+
+The current scorer rejects extra selected fields, unexpected row keys, and duplicate
+output identities. Corpus parsing requires unique output/field identities and
+complete expected row values with bounded execution budgets. Population identity,
+counts, precision, consistency, and evidence metadata still need independent
+oracles; the data score does not currently qualify those dimensions. The owner
+configuration is a reviewed CLI input, not an authentication credential or proof
+of consent. Live execution still requires explicit owner authorization in the
+controlling session before any provider call.
