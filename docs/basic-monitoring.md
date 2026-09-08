@@ -16,21 +16,26 @@ The image ships /browser-monitoring.json with enabled=false. The platform mounts
 
 Only HTTPS on `aeliqo.com` may send from this product's integration. Browser
 failure, disabled configuration or unavailable collection must never block the
-application. Existing consented analytics remain a separate feature; this
-setting does not enable them or the older Faro transport.
+application. Google Analytics has a separate, deployment-owned
+`/google-analytics.json` configuration. It is disabled in the image. When the
+platform enables a valid measurement ID, the public site still waits for an
+explicit visitor choice. The tracker sends only the origin and pathname (never
+query or hash), disables Google Signals and ad personalization, and does not
+run on preview or SDK origins. This setting does not enable the older Faro
+transport.
 
 ## Signals and units
 
-| Signal | Type | Meaning |
-|---|---|---|
-| browser.page_views | Delta monotonic sum, unit 1 | One instrumented document initialization |
-| browser.errors | Delta monotonic sum, unit 1 | Script errors or unhandled rejections, capped at 3 per document |
-| browser.web_vital.lcp | Delta histogram, milliseconds | Largest Contentful Paint |
-| browser.web_vital.inp | Delta histogram, milliseconds | Interaction to Next Paint |
-| browser.web_vital.cls | Delta histogram, unit 1 | Cumulative Layout Shift |
-| browser.web_vital.fcp | Delta histogram, milliseconds | First Contentful Paint |
-| browser.web_vital.ttfb | Delta histogram, milliseconds | Time to First Byte |
-| browser.navigation | Internal span | Navigation start to loadEventEnd |
+| Signal                 | Type                          | Meaning                                                         |
+| ---------------------- | ----------------------------- | --------------------------------------------------------------- |
+| browser.page_views     | Delta monotonic sum, unit 1   | One instrumented document initialization                        |
+| browser.errors         | Delta monotonic sum, unit 1   | Script errors or unhandled rejections, capped at 3 per document |
+| browser.web_vital.lcp  | Delta histogram, milliseconds | Largest Contentful Paint                                        |
+| browser.web_vital.inp  | Delta histogram, milliseconds | Interaction to Next Paint                                       |
+| browser.web_vital.cls  | Delta histogram, unit 1       | Cumulative Layout Shift                                         |
+| browser.web_vital.fcp  | Delta histogram, milliseconds | First Contentful Paint                                          |
+| browser.web_vital.ttfb | Delta histogram, milliseconds | Time to First Byte                                              |
+| browser.navigation     | Internal span                 | Navigation start to loadEventEnd                                |
 
 The standard, pinned [web-vitals](https://github.com/GoogleChrome/web-vitals)
 library supplies the browser algorithms; no attribution build is used. The
