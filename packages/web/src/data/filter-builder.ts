@@ -54,10 +54,10 @@ function fieldSemanticType(field: AeliqoFieldOption | undefined) {
 }
 
 function parseValue(raw: string, field: AeliqoFieldOption | undefined): AeliqoFilterValue | undefined {
-  const value = raw.trim();
-  if (value.length === 0) return undefined;
   const semanticType = fieldSemanticType(field);
   if (semanticType === undefined) return undefined;
+  const value = semanticType.value === "text" ? raw : raw.trim();
+  if (semanticType.value !== "text" && value.length === 0) return undefined;
   let candidate: unknown = value;
   if (semanticType.value === "boolean") {
     if (value.toLowerCase() === "true") return true;

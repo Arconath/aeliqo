@@ -196,3 +196,31 @@ test("membership values preserve commas and inherited predicates are visibly rea
     ],
   });
 });
+
+test("text compare and membership values preserve whitespace and empty strings", async ({page}) => {
+  await page.goto("/tests/data-components/index.html");
+  await page.evaluate(async () => {
+    const filter = document.querySelector("#filter") as any;
+    filter.fields = [{id: "name", label: "Name", type: "text"}];
+    filter.inherited = undefined;
+    filter.predicate = {op: "compare", field: "name", comparison: "eq", value: " ACME "};
+    await filter.updateComplete;
+  });
+  const filter = page.locator("#filter");
+  await expect(filter.locator("input[part=value]")).toHaveValue(" ACME ");
+  await filter.locator("button[part=apply]").click();
+  await expect.poll(() => page.evaluate(() => (window as any).dataFixture.events.findLast((event: any) => event.type === "aeliqo-filter-change")?.detail.predicate)).toEqual({
+    op: "compare", field: "name", comparison: "eq", value: " ACME ",
+  });
+
+  await page.evaluate(async () => {
+    const filter = document.querySelector("#filter") as any;
+    filter.predicate = {op: "in", field: "name", values: [" ACME ", ""]};
+    await filter.updateComplete;
+  });
+  await expect(filter.locator("input[part=value]")).toHaveValue('[" ACME ",""]');
+  await filter.locator("button[part=apply]").click();
+  await expect.poll(() => page.evaluate(() => (window as any).dataFixture.events.findLast((event: any) => event.type === "aeliqo-filter-change")?.detail.predicate)).toEqual({
+    op: "in", field: "name", values: [" ACME ", ""],
+  });
+});
