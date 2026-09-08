@@ -51,6 +51,10 @@ function canonical(value: unknown): string {
   return `{${Object.keys(object).sort().map((key) => `${JSON.stringify(key)}:${canonical(object[key])}`).join(',')}}`;
 }
 
+function eventIdentity(event: InteractionEvent, sourcePortId: string | undefined): string {
+  return `${canonical(event)}\u0000${sourcePortId === undefined ? '' : sourcePortId}`;
+}
+
 function refKey(ref: ResultRef): string {
   return JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
 }
@@ -61,6 +65,12 @@ function routeKey(route: InteractionRoute): string {
 
 function validText(value: unknown): value is string {
   return typeof value === 'string' && value.length > 0 && value.length <= WIRE_LIMITS.text && !/[\u0000-\u001f\u007f]/u.test(value);
+}
+
+function monotonicNow(): number {
+  const clock = globalThis.performance;
+  if (clock !== undefined && typeof clock.now === 'function') return clock.now();
+  return Date.now();
 }
 
 function hasGrant(context: InteractionHostContext, grant: string): boolean {
@@ -144,7 +154,8 @@ function materializationOutcome(value: unknown): InteractionOutcome<InteractionM
 
 interface ResolvedResult { readonly ref: ResultRef; readonly handle: ResultHandle; }
 interface AppliedPayload { readonly state: CoreInteractionState; readonly result?: ResolvedResult; }
-interface EventDeadline { expired: boolean; }
+interface EventDeadline { readonly expiresAt: number; expired: boolean; }
+interface SeenEvent { readonly identity: string; readonly bytes: number; }
 
 class InteractionControllerImpl implements InteractionController {
   private readonly queue: SerialQueue;
@@ -152,8 +163,9 @@ class InteractionControllerImpl implements InteractionController {
   private readonly maxHops: number;
   private readonly maxQueuedEvents: number;
   private readonly pending = new Map<string, AbortController>();
-  private readonly seen = new Set<string>();
+  private readonly seen = new Map<string, SeenEvent>();
   private readonly seenOrder: string[] = [];
+  private seenBytes = 0;
   private readonly graph: InteractionGraph;
   private readonly region: RegionHandle;
   private readonly options: InteractionControllerOptions;
@@ -206,6 +218,10 @@ class InteractionControllerImpl implements InteractionController {
     const parsed = parseContract('interaction', input);
     if (!parsed.ok) return Promise.resolve(failure('runtime.interaction-invalid', 'The interaction event is not a valid canonical wire event.'));
     const event = parsed.value;
+    const identity = eventIdentity(event, options.sourcePortId);
+    const seen = this.seen.get(event.eventId);
+    if (seen !== undefined && seen.identity !== identity)
+      return Promise.resolve(failure('runtime.interaction-invalid', 'The interaction event ID was already completed with different canonical input.'));
     if (this.pending.has(event.eventId)) return Promise.resolve(failure('runtime.interaction-stale', 'An interaction with this event ID is already pending.'));
     // Admission must be synchronous: a flood of callers cannot create more
     // pending entries than the queue budget while rejected promises settle.
@@ -248,13 +264,29 @@ class InteractionControllerImpl implements InteractionController {
 
   private abortPending(): void { for (const controller of this.pending.values()) controller.abort(); }
 
-  private remember(eventId: string): void {
+  private deadlineExpired(deadline: EventDeadline, controller: AbortController): boolean {
+    if (deadline.expired) return true;
+    if (monotonicNow() >= deadline.expiresAt) {
+      deadline.expired = true;
+      controller.abort();
+      return true;
+    }
+    return false;
+  }
+
+  private remember(eventId: string, identity: string): void {
     if (this.seen.has(eventId)) return;
-    this.seen.add(eventId);
+    const bytes = new TextEncoder().encode(`${eventId}\u0000${identity}`).byteLength;
+    this.seen.set(eventId, {identity, bytes});
     this.seenOrder.push(eventId);
-    while (this.seenOrder.length > this.maxQueuedEvents * 4) {
+    this.seenBytes += bytes;
+    while ((this.seenOrder.length > this.maxQueuedEvents * 4 || this.seenBytes > WIRE_LIMITS.bytes) && this.seenOrder.length > 0) {
       const old = this.seenOrder.shift();
-      if (old !== undefined) this.seen.delete(old);
+      if (old !== undefined) {
+        const entry = this.seen.get(old);
+        if (entry !== undefined) this.seenBytes -= entry.bytes;
+        this.seen.delete(old);
+      }
     }
   }
 
@@ -320,7 +352,7 @@ class InteractionControllerImpl implements InteractionController {
 
   private async callHost<T>(callback: InteractionHostCallback<T> | undefined, value: T, context: InteractionResolutionContext, controller: AbortController, deadline?: EventDeadline): Promise<InteractionOutcome<void>> {
     if (callback === undefined) return failure('runtime.interaction-denied', 'The host has not registered the required interaction callback.');
-    if (deadline?.expired) return failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.');
+    if (deadline !== undefined && this.deadlineExpired(deadline, controller)) return failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.');
     if (controller.signal.aborted) return failure('runtime.interaction-cancelled', 'The interaction was cancelled.');
     let timer: ReturnType<typeof setTimeout> | undefined;
     let timedOut = false;
@@ -334,6 +366,7 @@ class InteractionControllerImpl implements InteractionController {
     });
     try {
       const result = await Promise.race([pending, timeout, aborted]);
+      if (deadline !== undefined && this.deadlineExpired(deadline, controller)) return failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.');
       if (result === 'timeout' || timedOut) { controller.abort(); return failure('runtime.interaction-budget', 'The host interaction callback exceeded its bounded time budget.'); }
       if (result === 'aborted') return deadline?.expired
         ? failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.')
@@ -352,7 +385,7 @@ class InteractionControllerImpl implements InteractionController {
 
   private async callMaterialize(payloads: readonly InteractionQueryPayload[], context: InteractionResolutionContext, next: CoreInteractionState, controller: AbortController, deadline?: EventDeadline): Promise<InteractionOutcome<InteractionMaterialization>> {
     if (this.options.materialize === undefined) return failure('runtime.interaction-denied', 'The host has not registered a materializer for query-affecting interaction state.');
-    if (deadline?.expired) return failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.');
+    if (deadline !== undefined && this.deadlineExpired(deadline, controller)) return failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.');
     if (controller.signal.aborted) return failure('runtime.interaction-cancelled', 'The interaction was cancelled.');
     let timer: ReturnType<typeof setTimeout> | undefined;
     let timedOut = false;
@@ -366,6 +399,7 @@ class InteractionControllerImpl implements InteractionController {
     });
     try {
       const result = await Promise.race([pending, timeout, aborted]);
+      if (deadline !== undefined && this.deadlineExpired(deadline, controller)) return failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.');
       if (result === 'timeout' || timedOut) { controller.abort(); return failure('runtime.interaction-budget', 'The host materializer exceeded its bounded time budget.'); }
       if (result === 'aborted') return deadline?.expired
         ? failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.')
@@ -560,7 +594,7 @@ class InteractionControllerImpl implements InteractionController {
     deadline: EventDeadline,
     recheck: () => InteractionOutcome<void>,
   ): Promise<InteractionOutcome<RegionSnapshot>> {
-    if (deadline.expired) return failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.');
+    if (this.deadlineExpired(deadline, controller)) return failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.');
     if (before.readSet === undefined || before.state === undefined) return failure('runtime.interaction-disposed', 'The region has no active state or read set.');
     if (this.region.snapshot().regionRevision !== before.regionRevision) return failure('runtime.interaction-stale', 'The region changed while the interaction was being prepared.');
     const state = candidate ?? {...before.state, interaction: next};
@@ -570,6 +604,10 @@ class InteractionControllerImpl implements InteractionController {
     try {
       const staged = await this.region.stage({requestId: event.eventId, expected, state, ...(resultHandles.length === 0 ? {} : {resultHandles})});
       if (!staged.ok) return failure('runtime.interaction-stale', staged.diagnostics[0]!.message);
+      if (this.deadlineExpired(deadline, controller)) {
+        this.region.discard(staged.value);
+        return failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.');
+      }
       if (controller.signal.aborted) {
         this.region.discard(staged.value);
         return deadline.expired
@@ -579,12 +617,13 @@ class InteractionControllerImpl implements InteractionController {
       const committed = await this.region.commit(staged.value, {
         signal: controller.signal,
         recheck: () => {
+          if (this.deadlineExpired(deadline, controller)) return failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.');
           const checked = recheck();
           return checked.ok ? {ok: true, value: undefined} : checked;
         },
       });
       if (!committed.ok) {
-        if (deadline.expired) return failure('runtime.interaction-budget', committed.diagnostics[0]!.message);
+        if (deadline.expired || this.deadlineExpired(deadline, controller)) return failure('runtime.interaction-budget', committed.diagnostics[0]!.message);
         if (controller.signal.aborted || committed.diagnostics[0]?.code === 'runtime.region-cancelled')
           return failure('runtime.interaction-cancelled', committed.diagnostics[0]!.message);
         return failure('runtime.interaction-stale', committed.diagnostics[0]!.message);
@@ -604,7 +643,7 @@ class InteractionControllerImpl implements InteractionController {
     // Queue admission is intentionally outside this deadline. Once the event
     // starts processing, every callback, materializer and region commit shares
     // one abort signal and one bounded wall-clock budget.
-    const deadline: EventDeadline = {expired: false};
+    const deadline: EventDeadline = {expiresAt: monotonicNow() + this.maxEventMilliseconds, expired: false};
     const timer = setTimeout(() => { deadline.expired = true; controller.abort(); }, this.maxEventMilliseconds);
     try {
       return await this.processEvent(event, sourcePortId, controller, deadline);
@@ -623,15 +662,19 @@ class InteractionControllerImpl implements InteractionController {
     if (!host.ok) return host;
     // Idempotent receipts still expose state, so authorize the current host
     // before returning a remembered event's snapshot.
-    if (this.seen.has(event.eventId)) {
+    const identity = eventIdentity(event, sourcePortId);
+    const seen = this.seen.get(event.eventId);
+    if (seen !== undefined && seen.identity !== identity)
+      return failure('runtime.interaction-invalid', 'The interaction event ID was already completed with different canonical input.');
+    if (seen !== undefined) {
       return {ok: true, value: freeze({eventId: event.eventId, state: publicState(before), region: before, routed: [], effects: [], noop: true})};
     }
     if (event.regionId !== before.id || event.regionRevision !== before.regionRevision) return failure('runtime.interaction-stale', 'The interaction event is stale against the current region revision.');
-    this.remember(event.eventId);
     const source = this.sourceRoute(event, sourcePortId);
     if (!source.ok) return source;
     const routed = this.graph.route(event, source.value, controller.signal, this.maxHops);
     if (!routed.ok) return routed;
+    if (this.deadlineExpired(deadline, controller)) return failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.');
     const routedItems: InteractionRoutedPayload[] = [{route: source.value, payload: event.payload, causationId: event.causationId}, ...routed.value];
     let state = persistedState(before);
     const effects: InteractionEffectReceipt[] = [];
@@ -641,6 +684,7 @@ class InteractionControllerImpl implements InteractionController {
     const requiredGrants = new Set<string>();
     const applied = new Set<string>();
     for (const item of routedItems) {
+      if (this.deadlineExpired(deadline, controller)) return failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.');
       const key = `${routeKey(item.route)}\u0000${canonical(item.payload)}`;
       if (applied.has(key)) continue;
       applied.add(key);
@@ -659,6 +703,7 @@ class InteractionControllerImpl implements InteractionController {
       if (!materialized.ok) return materialized;
       const current = this.currentHost(before, host.value, [...requiredGrants]);
       if (!current.ok) return current;
+      if (this.deadlineExpired(deadline, controller)) return failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.');
       const expected = this.expectedReadSet(before, resultHandles);
       if (!expected.ok) return expected;
       candidate = materialized.value;
@@ -670,14 +715,18 @@ class InteractionControllerImpl implements InteractionController {
       if (!committed.ok) return committed;
       region = committed.value;
       if (this.revoked) return failure('runtime.interaction-revoked', 'The region was revoked during the interaction.');
-    } else if (controller.signal.aborted) return failure('runtime.interaction-cancelled', 'The interaction was cancelled.');
+    } else if (this.deadlineExpired(deadline, controller)) return failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.');
+    else if (controller.signal.aborted) return failure('runtime.interaction-cancelled', 'The interaction was cancelled.');
     for (const navigate of navigations) {
       const current = this.currentHost(region, host.value, ['navigation.propose']);
       if (!current.ok) return current;
       const callback = await this.callHost(this.options.onNavigate, navigate, this.resolutionContext(event, current.value, region, controller.signal), controller, deadline);
       if (!callback.ok) return callback;
     }
-    return {ok: true, value: freeze({eventId: event.eventId, state: publicState(region), region, routed: routed.value, effects, noop: !changed && effects.length === 0})};
+    if (this.deadlineExpired(deadline, controller)) return failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.');
+    const receipt = freeze({eventId: event.eventId, state: publicState(region), region, routed: routed.value, effects, noop: !changed && effects.length === 0});
+    this.remember(event.eventId, identity);
+    return {ok: true, value: receipt};
   }
 }
 

@@ -142,6 +142,46 @@ describe('runtime interaction controller', () => {
     expect(stale).toMatchObject({ok: false, diagnostics: [{code: 'runtime.interaction-stale'}]});
   });
 
+  it('allows a failed event ID to retry and commit on a later attempt', async () => {
+    const {region, result, authority, store} = await harness();
+    let attempts = 0;
+    const controller = createInteractionController({
+      region,
+      graph: createInteractionGraph(graphFor()),
+      readContext: () => ({principalKey: authority.principalKey, draftDomain: 'events', actor: {id: 'user-a', kind: 'user'}, grants: ['experience.commit', 'result.inspect'],
+        scopeDigest: authority.scopeDigest, policyRevision: authority.policyRevision, catalogRevision: catalog.revision,
+        experienceRevision: authority.experienceRevision, functionRegistryDigest: authority.functionRegistryDigest, results: [result.ref]}),
+      resolveResult: () => result.handle,
+      validateSelection: () => {
+        attempts++;
+        return attempts === 1
+          ? {ok: false, diagnostics: [{code: 'host.retryable', message: 'Try again.', retryable: true}]}
+          : {ok: true, value: undefined};
+      },
+    });
+    const input = event(region.snapshot().regionRevision,
+      {kind: 'selection', selection: {mode: 'ids', entity: 'events', keys: ['a'], result: result.ref}}, 'retry-event');
+    expect(await controller.dispatch(input, {sourcePortId: 'input'})).toMatchObject({ok: false, diagnostics: [{code: 'host.retryable'}]});
+    expect(await controller.dispatch(input, {sourcePortId: 'input'})).toMatchObject({ok: true, value: {noop: false}});
+    expect(attempts).toBe(2);
+    controller.dispose();
+    store.dispose();
+  });
+
+  it('deduplicates an exact successful event and rejects an event ID collision', async () => {
+    const {region, controller, result, store} = await harness();
+    const input = event(region.snapshot().regionRevision,
+      {kind: 'selection', selection: {mode: 'ids', entity: 'events', keys: ['a'], result: result.ref}}, 'dedupe-event');
+    const first = await controller.dispatch(input, {sourcePortId: 'input'});
+    expect(first).toMatchObject({ok: true, value: {noop: false}});
+    const duplicate = await controller.dispatch(input, {sourcePortId: 'input'});
+    expect(duplicate).toMatchObject({ok: true, value: {noop: true, effects: []}});
+    const collision = await controller.dispatch({...input, payload: {kind: 'selection', selection: {mode: 'clear'}}}, {sourcePortId: 'input'});
+    expect(collision).toMatchObject({ok: false, diagnostics: [{code: 'runtime.interaction-invalid'}]});
+    controller.dispose();
+    store.dispose();
+  });
+
   it('admits no more synchronous pending events than the queue budget', async () => {
     const {region, result, authority, store} = await harness();
     let release!: () => void;
@@ -265,6 +305,32 @@ describe('runtime interaction controller', () => {
     expect(await pending).toMatchObject({ok: false, diagnostics: [{code: 'runtime.interaction-budget'}]});
     resolveValidation({ok: true, value: undefined});
     await Promise.resolve();
+    expect(region.snapshot().regionRevision).toBe(before.regionRevision);
+    expect(region.snapshot().state?.interaction).toBeUndefined();
+    controller.dispose();
+    store.dispose();
+  });
+
+  it('rejects a synchronous callback that blocks past the event deadline', async () => {
+    const {region, result, authority, store} = await harness();
+    const controller = createInteractionController({
+      region,
+      graph: createInteractionGraph(graphFor()),
+      maxEventMilliseconds: 10,
+      readContext: () => ({principalKey: authority.principalKey, draftDomain: 'events', actor: {id: 'user-a', kind: 'user'}, grants: ['experience.commit', 'result.inspect'],
+        scopeDigest: authority.scopeDigest, policyRevision: authority.policyRevision, catalogRevision: catalog.revision,
+        experienceRevision: authority.experienceRevision, functionRegistryDigest: authority.functionRegistryDigest, results: [result.ref]}),
+      resolveResult: () => result.handle,
+      validateSelection: () => {
+        const until = Date.now() + 30;
+        while (Date.now() < until) { /* deliberately block the event loop */ }
+        return {ok: true, value: undefined};
+      },
+    });
+    const before = region.snapshot();
+    const rejected = await controller.dispatch(event(before.regionRevision,
+      {kind: 'selection', selection: {mode: 'ids', entity: 'events', keys: ['a'], result: result.ref}}, 'sync-deadline'), {sourcePortId: 'input'});
+    expect(rejected).toMatchObject({ok: false, diagnostics: [{code: 'runtime.interaction-budget'}]});
     expect(region.snapshot().regionRevision).toBe(before.regionRevision);
     expect(region.snapshot().state?.interaction).toBeUndefined();
     controller.dispose();
