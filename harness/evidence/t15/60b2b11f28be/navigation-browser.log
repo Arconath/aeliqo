@@ -1,0 +1,20 @@
+$ playwright test --config tests/navigation/playwright.config.mjs
+[WebServer] (node:33882) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 5 tests using 1 worker
+
+(node:33888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 10:35:56 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  1 tests/navigation/browser.spec.ts:8:5 › tabs preserve named panels and keyboard activation policy (203ms)
+[WebServer] 10:35:56 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  2 tests/navigation/browser.spec.ts:39:5 › breadcrumb and pagination retain approved navigation and page scope (150ms)
+[WebServer] 10:35:56 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  3 tests/navigation/browser.spec.ts:57:5 › menu returns focus and tree navigation keeps stable node identity (213ms)
+[WebServer] 10:35:56 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  4 tests/navigation/browser.spec.ts:91:5 › tree bounds recursive input and duplicate identities (87ms)
+[WebServer] 10:35:56 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  5 tests/navigation/browser.spec.ts:109:5 › navigation remains readable on a narrow RTL viewport (92ms)
+
+  5 passed (1.5s)

@@ -515,10 +515,15 @@
       "acceptance": [
         "Every navigation/feedback entry passes focus/dismissal, keyboard and nonmodal/modal distinction."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "release_inventory owns isolated codex/t15-navigation-feedback navigation/feedback source, tests and docs. Parent owns contracts, root/package exports, shared region integration, task state and installed consumers. Independent review required before integration."
+      "evidence": [
+        {
+          "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
+          "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        }
+      ],
+      "notes": "Accepted source339457a after independent review, canonical semantic/SSR23, native navigation5/feedback9 and semantic3 Chromium cases, four visual/a11y variants and byte-verified installed core/web/React consumer. Full T29/T30 matrix remains mandatory."
     },
     {
       "id": "T16",

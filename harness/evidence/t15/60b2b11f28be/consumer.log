@@ -1,0 +1,2 @@
+$ node tests/consumers/navigation-feedback-tarballs.mjs
+Installed navigation/feedback consumer proof passed. Evidence: /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/navigation-feedback-consumers/run-xZioOS/report.json

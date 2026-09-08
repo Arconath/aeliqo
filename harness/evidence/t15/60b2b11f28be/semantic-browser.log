@@ -1,0 +1,16 @@
+$ playwright test --config tests/navigation-feedback-semantic/playwright.config.mjs
+[WebServer] (node:33976) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:33982) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 10:36:01 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  1 tests/navigation-feedback-semantic/browser.spec.ts:13:5 › renders dialog and tab slots from one validated semantic region (239ms)
+[WebServer] 10:36:01 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  2 tests/navigation-feedback-semantic/browser.spec.ts:28:5 › maps route, action and page events while native navigation stays suppressed (429ms)
+[WebServer] 10:36:01 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  3 tests/navigation-feedback-semantic/browser.spec.ts:56:5 › keeps a keyed overlay instance and local open state when tab children move (277ms)
+
+  3 passed (1.6s)

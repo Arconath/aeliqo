@@ -790,7 +790,7 @@
       "id": "navigation.tabs",
       "name": "Tabs",
       "family": "navigation",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Named panels with stable selection; automatic activation only when latency permits.",
@@ -807,13 +807,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
+          "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        }
+      ]
     },
     {
       "id": "navigation.breadcrumb",
       "name": "Breadcrumb",
       "family": "navigation",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Reversible context path; approved routes and current-location semantics.",
@@ -830,13 +835,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
+          "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        }
+      ]
     },
     {
       "id": "navigation.pagination",
       "name": "Pagination",
       "family": "navigation",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Stable cursor/page scope; loaded rows are not misrepresented as global selection.",
@@ -853,13 +863,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
+          "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        }
+      ]
     },
     {
       "id": "navigation.menu",
       "name": "Menu",
       "family": "navigation",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Action menu with focus return and keyboard behavior; no layout-generated business actions.",
@@ -876,13 +891,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
+          "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        }
+      ]
     },
     {
       "id": "navigation.tree-nav",
       "name": "TreeNav",
       "family": "navigation",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Hierarchical navigation with stable node identities, expansion and keyboard semantics.",
@@ -899,13 +919,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
+          "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        }
+      ]
     },
     {
       "id": "feedback.tooltip",
       "name": "Tooltip",
       "family": "feedback",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Supplemental nonessential information; works on focus, dismisses, not the sole label.",
@@ -922,13 +947,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
+          "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        }
+      ]
     },
     {
       "id": "feedback.popover",
       "name": "Popover",
       "family": "feedback",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Contextual nonmodal surface with explicit focus/dismiss behavior and viewport containment.",
@@ -945,13 +975,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
+          "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        }
+      ]
     },
     {
       "id": "feedback.dialog",
       "name": "Dialog",
       "family": "feedback",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Native-first modal semantics, focus containment/return and escape policy.",
@@ -968,13 +1003,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
+          "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        }
+      ]
     },
     {
       "id": "feedback.drawer",
       "name": "Drawer",
       "family": "feedback",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Inline or modal detail according to an explicit mode; do not mix the two focus models.",
@@ -991,13 +1031,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
+          "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        }
+      ]
     },
     {
       "id": "feedback.toast",
       "name": "Toast",
       "family": "feedback",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Bounded transient feedback; essential errors remain persistently available elsewhere.",
@@ -1014,13 +1059,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
+          "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        }
+      ]
     },
     {
       "id": "feedback.alert",
       "name": "Alert",
       "family": "feedback",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Persistent status/error with severity semantics and actionable recovery.",
@@ -1037,13 +1087,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
+          "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        }
+      ]
     },
     {
       "id": "feedback.progress",
       "name": "Progress",
       "family": "feedback",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Determinate or unknown progress honestly; no invented completion percentages.",
@@ -1060,13 +1115,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
+          "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        }
+      ]
     },
     {
       "id": "feedback.skeleton",
       "name": "Skeleton",
       "family": "feedback",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Stable reserved geometry with reduced motion and a named loading state.",
@@ -1083,13 +1143,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
+          "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        }
+      ]
     },
     {
       "id": "feedback.empty-state",
       "name": "EmptyState",
       "family": "feedback",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Distinguish no records, no matches, forbidden data, loading and failure.",
@@ -1106,7 +1171,12 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
+          "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        }
+      ]
     },
     {
       "id": "data.metric",

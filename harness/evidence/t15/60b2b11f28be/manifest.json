@@ -1,0 +1,81 @@
+{
+  "tasks": [
+    "T15"
+  ],
+  "status": "pass",
+  "sourceCommit": "339457aee5c8be1c99f19bdd0f7eb24ab529ae76",
+  "sourceDigest": "60b2b11f28be2d7ef5970dff47dbd9c9080cb35df129507b7c317cadd228c9ea",
+  "scope": "All14 owned navigation and feedback components; canonical queryless bindings and region; native focus, keyboard, cancellation, reachable operations and state retention.",
+  "checks": {
+    "semanticAndLitSSR": 23,
+    "navigationBrowser": 5,
+    "feedbackBrowser": 9,
+    "semanticBrowser": 3,
+    "visualA11yVariants": 4,
+    "strictTypes": true,
+    "installedTarballConsumer": true,
+    "installedReactSSR": true
+  },
+  "limits": [
+    "Full manual assistive technology and cross-browser/hydration matrices remain T29/T30.",
+    "No publication, deployment or overall readiness claim."
+  ],
+  "artifacts": [
+    {
+      "path": "consumer-package-lock.json",
+      "sha256": "395af96a4a426df48e930b7dd234d3b68afc1ee151e37a057fc7a43cec8e8dcd"
+    },
+    {
+      "path": "consumer-report.json",
+      "sha256": "a59fb94bd60ce93f6cd965b786a664737106b9cc24411096d63c91b4ee797bd0"
+    },
+    {
+      "path": "consumer.log",
+      "sha256": "19d622f6d5c142d434bf89f096e929a56197bd30f41327afae39af377a2afe5d"
+    },
+    {
+      "path": "feedback-browser.log",
+      "sha256": "af289bd9740cefc86e25009133125cb8435737c156d48cd5b7770df533518ee0"
+    },
+    {
+      "path": "feedback-desktop.png",
+      "sha256": "7993055c12155df76a8f5b8754337f77630ae92839036ebe8868e830da96ed52"
+    },
+    {
+      "path": "feedback-narrow-dark-rtl.png",
+      "sha256": "c8eb10cce154ed00c8b0281819e6eb8db7a5c10468a9b2b744038658a6573f43"
+    },
+    {
+      "path": "installed.png",
+      "sha256": "c089933950d3d736a4e2835237ffc78eee5e016e8dddf90516678fc067f09912"
+    },
+    {
+      "path": "navigation-browser.log",
+      "sha256": "fd40392c5320a6f8ad41a837cb24b648feb1e08769d0dc233fa3a4906503b8d9"
+    },
+    {
+      "path": "navigation-desktop.png",
+      "sha256": "08027559a16e063e74cdd849af643c7d14a78a4dbcbbae149d4d60ede49a9e59"
+    },
+    {
+      "path": "navigation-narrow-dark-rtl.png",
+      "sha256": "c26ab17a0e7073575fb295224cae4f3a537506351d45f626520ca0b42d8284d3"
+    },
+    {
+      "path": "review.json",
+      "sha256": "ddb49f551730c19c9c960808ea5a9b6142bebcb69b1e68bf16807726d85929d0"
+    },
+    {
+      "path": "semantic-browser.log",
+      "sha256": "6b589cc6618d5bc5779faf4177052033bbba6127c8e3287c31fce9dc8a654be4"
+    },
+    {
+      "path": "semantic.log",
+      "sha256": "bd0e427bbf69b2283f406827af8b9c7c7a96a0b84eb21eb2cf5a0f3a07b9640f"
+    },
+    {
+      "path": "visual.log",
+      "sha256": "31d634259d169a59641c6705a60a11d471f82968077ae3d014c2327ea71dd9f7"
+    }
+  ]
+}

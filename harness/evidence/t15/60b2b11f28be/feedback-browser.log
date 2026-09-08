@@ -1,0 +1,28 @@
+$ playwright test --config tests/feedback/playwright.config.mjs
+[WebServer] (node:33929) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:33935) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 10:35:58 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  1 tests/feedback/browser.spec.ts:8:5 › tooltip is supplemental, focusable and dismissible (346ms)
+[WebServer] 10:35:58 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  2 tests/feedback/browser.spec.ts:29:5 › popover distinguishes nonmodal dismissal from modal focus containment (249ms)
+[WebServer] 10:35:58 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  3 tests/feedback/browser.spec.ts:62:5 › dialog uses native modal semantics and returns focus (160ms)
+[WebServer] 10:35:58 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  4 tests/feedback/browser.spec.ts:92:5 › dialog focus containment skips hidden slotted controls (90ms)
+[WebServer] 10:35:58 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  5 tests/feedback/browser.spec.ts:102:5 › dialog focus containment follows nested shadow controls (96ms)
+[WebServer] 10:35:58 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  6 tests/feedback/browser.spec.ts:114:5 › drawer keeps inline and modal modes separate (141ms)
+[WebServer] 10:35:59 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  7 tests/feedback/browser.spec.ts:132:5 › toast, alert and progress expose honest status states (402ms)
+[WebServer] 10:35:59 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  8 tests/feedback/browser.spec.ts:174:5 › feedback remains usable at narrow RTL text scale (90ms)
+[WebServer] 10:35:59 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  9 tests/feedback/browser.spec.ts:184:5 › nonmodal popover does not steal focus on open or listener policy updates (173ms)
+
+  9 passed (2.2s)
