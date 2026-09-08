@@ -142,7 +142,9 @@ export async function* readResultStream(
     if (terminalEvent !== undefined) yield terminalEvent;
   } finally {
     signal?.removeEventListener('abort', abort);
-    await reader.cancel().catch(() => {});
+    // Cancelling closes the reader immediately; external cleanup may never settle.
+    // Do not let that cleanup prevent a consumer from leaving the stream.
+    void reader.cancel().catch(() => {});
     reader.releaseLock();
   }
 }

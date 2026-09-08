@@ -80,6 +80,14 @@ describe('bounded result stream', () => {
     expect(cancelled).toBe(true);
     expect(stream.locked).toBe(false);
   });
+  it('finishes an early exit even when upstream cleanup never settles', async () => {
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {controller.enqueue(encode([resultEvents.descriptor]));},
+      cancel() {return new Promise(() => {});},
+    });
+    for await (const _event of readResultStream(stream, context)) break;
+    expect(stream.locked).toBe(false);
+  }, 500);
   it('cancels upstream when the consumer stops after a descriptor', async () => {
     let cancelled = false;
     const stream = new ReadableStream<Uint8Array>({
