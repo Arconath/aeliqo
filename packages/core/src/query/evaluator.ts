@@ -6,7 +6,7 @@ import type {
   VersionRef,
 } from '../contracts/types.js';
 import type {FunctionRegistry, FunctionSignature} from '../expressions/types.js';
-import {queryFunctionSignatures, standardFunctionSignatures} from '../expressions/registry.js';
+import {queryFunctionSignaturesV2, standardFunctionSignatures} from '../expressions/registry.js';
 import {validateSemanticType} from '../semantics/type-utils.js';
 import {compareScalars, scalarIdentity, scalarInstantParts, validateScalar} from '../contracts/scalars.js';
 import {inspectWire} from '../contracts/ingress.js';
@@ -85,7 +85,7 @@ function stable(value: unknown, seen = new WeakSet<object>()): string {
 }
 
 const trustedLocalSignatures = new Map<string, FunctionSignature>(
-  [...standardFunctionSignatures, ...queryFunctionSignatures].map((signature) => [relationKey(signature.ref), signature]),
+  [...standardFunctionSignatures, ...queryFunctionSignaturesV2].map((signature) => [relationKey(signature.ref), signature]),
 );
 
 function trustedLocalSignature(state: EvalState, candidate: FunctionSignature): Outcome<FunctionSignature> {
@@ -535,10 +535,38 @@ function isDecimal(value: QueryValue | undefined): value is {readonly decimal: s
   return value !== null && value !== undefined && typeof value === 'object';
 }
 
-function compareValue(left: QueryValue | undefined, right: QueryValue | undefined, type: SemanticType['value']): number | undefined {
+function compareValue(left: QueryValue | undefined, right: QueryValue | undefined, type: SemanticType | SemanticType['value']): number | undefined {
   if (left === undefined || right === undefined || left === null || right === null) return undefined;
-  const compared = compareScalars(left, right, {value: type, nullable: true});
+  const semantic = typeof type === 'string' ? {value: type, nullable: true} : {...type, nullable: true};
+  const compared = compareScalars(left, right, semantic);
   return compared.ok && compared.value !== null ? compared.value : undefined;
+}
+
+function expressionSemanticType(expression: Expression, schema: QuerySchema, registry: FunctionRegistry): SemanticType | undefined {
+  if (expression.kind === 'field') return sourceField(schema, expression)?.type;
+  if (expression.kind === 'literal') return expression.type;
+  if (expression.kind === 'definition') return undefined;
+  const signature = registry.resolve(expression.function);
+  if (signature === undefined) return undefined;
+  const arguments_ = expression.arguments.map((argument) => expressionSemanticType(argument, schema, registry));
+  if ('value' in signature.output) {
+    return {...signature.output, nullable: signature.nullResult === 'non-null' ? false : signature.output.nullable || arguments_.some((argument) => argument?.nullable)};
+  }
+  if (signature.output.kind === 'same-as' || signature.output.kind === 'nullable-same-as') {
+    const source = arguments_[signature.output.argument];
+    return source === undefined ? undefined : {...source, nullable: signature.output.kind === 'nullable-same-as' ? true : source.nullable};
+  }
+  const first = arguments_.find((argument): argument is SemanticType => argument !== undefined);
+  const value = signature.output.forceFloat === true || arguments_.some((argument) => argument?.value === 'float')
+    ? 'float'
+    : arguments_.some((argument) => argument?.value === 'decimal') ? 'decimal' : 'integer';
+  return {value, nullable: arguments_.some((argument) => argument?.nullable), ...(signature.output.unit === undefined ? (first?.unit === undefined ? {} : {unit: first.unit}) : {unit: signature.output.unit})};
+}
+
+function inferredRuntimeType(value: QueryValue): SemanticType {
+  return isDecimal(value) ? {value: 'decimal', nullable: true}
+    : typeof value === 'number' ? {value: 'float', nullable: true}
+      : typeof value === 'boolean' ? {value: 'boolean', nullable: true} : {value: 'text', nullable: true};
 }
 
 function expressionValueType(expression: Expression, schema: QuerySchema, registry: FunctionRegistry): SemanticType['value'] | undefined {
@@ -583,6 +611,19 @@ function evaluateExpression(state: EvalState, expression: Expression, row: Query
   const trusted = trustedLocalSignature(state, supplied);
   if (!trusted.ok) return trusted;
   const signature = trusted.value;
+  if (signature.ref.id === 'core.if') {
+    const charged = tick(state);
+    if (!charged.ok) return charged;
+    const conditionExpression = expression.arguments[0];
+    const whenTrue = expression.arguments[1];
+    const whenFalse = expression.arguments[2];
+    if (conditionExpression === undefined || whenTrue === undefined || whenFalse === undefined) return failure('query.conditional-shape', 'Conditional expressions require a condition and two branches.');
+    const condition = evaluateExpression(state, conditionExpression, row, schema);
+    if (!condition.ok) return condition;
+    if (condition.value === null || condition.value === undefined) return {ok: true, value: null};
+    if (typeof condition.value !== 'boolean') return failure('query.conditional-type', 'Conditional condition did not evaluate to a boolean.');
+    return evaluateExpression(state, condition.value ? whenTrue : whenFalse, row, schema);
+  }
   const arguments_: QueryValue[] = [];
   for (const argument of expression.arguments) {
     const value = evaluateExpression(state, argument, row, schema);
@@ -590,13 +631,21 @@ function evaluateExpression(state: EvalState, expression: Expression, row: Query
     arguments_.push(value.value === undefined ? null : value.value);
   }
   if (signature.operation === 'aggregate' || signature.operation === 'ratio-of-sums' || signature.operation === 'mean-of-rates') return unsupported('aggregate-context', 'Aggregate functions require a group evaluation context.');
-  return evaluateCall(state, signature, arguments_);
+  return evaluateCall(state, signature, arguments_, expression.arguments.map((argument) => expressionSemanticType(argument, schema, state.registry)));
 }
 
-function evaluateCall(state: EvalState, signature: FunctionSignature, args: readonly QueryValue[]): QueryOutcome<QueryValue | undefined> {
+function evaluateCall(state: EvalState, signature: FunctionSignature, args: readonly QueryValue[], argumentTypes: readonly (SemanticType | undefined)[] = []): QueryOutcome<QueryValue | undefined> {
+  const charged = tick(state);
+  if (!charged.ok) return charged;
   const id = signature.ref.id;
   if (id === 'core.is-null') return {ok: true, value: args[0] === null ? true : false};
   if (id === 'core.coalesce') return {ok: true, value: args.find((value) => value !== null) ?? null};
+  if (id === 'core.equal') {
+    const left = args[0]; const right = args[1];
+    if (left === null || right === null || left === undefined || right === undefined) return {ok: true, value: null};
+    const compared = compareValue(left, right, argumentTypes[0] ?? argumentTypes[1] ?? inferredRuntimeType(left));
+    return compared === undefined ? failure('query.equal-type', 'Equality received incompatible runtime values.') : {ok: true, value: compared === 0};
+  }
   if (id === 'core.add' || id === 'core.subtract' || id === 'core.multiply') {
     const left = args[0]; const right = args[1];
     if (left === null || right === null || left === undefined || right === undefined) return {ok: true, value: null};
@@ -785,6 +834,7 @@ function aggregateValues(state: EvalState, item: AggregateSpec, group: EvalGroup
   const trusted = trustedLocalSignature(state, supplied);
   if (!trusted.ok) return trusted;
   const signature = trusted.value;
+  if (signature.ref.id === 'core.if') return evaluateAggregateExpression(state, {kind: 'call', function: item.function, arguments: item.arguments}, group);
   if (signature.operation !== 'aggregate' && signature.operation !== 'ratio-of-sums' && signature.operation !== 'mean-of-rates') {
     const arguments_: QueryValue[] = [];
     for (const argument of item.arguments) {
@@ -792,8 +842,10 @@ function aggregateValues(state: EvalState, item: AggregateSpec, group: EvalGroup
       if (!value.ok) return value;
       arguments_.push(value.value === undefined ? null : value.value);
     }
-    return evaluateCall(state, signature, arguments_);
+    return evaluateCall(state, signature, arguments_, item.arguments.map((argument) => expressionSemanticType(argument, group.schema, state.registry)));
   }
+  const charged = tick(state);
+  if (!charged.ok) return charged;
   const values: QueryValue[][] = item.arguments.map(() => []);
   for (const row of group.rows) {
     for (let index = 0; index < item.arguments.length; index += 1) {
@@ -861,6 +913,7 @@ function aggregateValues(state: EvalState, item: AggregateSpec, group: EvalGroup
 }
 
 function evaluateAggregateExpression(state: EvalState, expression: Expression, group: EvalGroup): QueryOutcome<QueryValue | undefined> {
+  if (expression.kind === 'literal') return {ok: true, value: expression.value};
   if (expression.kind !== 'call') {
     if (group.rows.length !== 1) return unsupported('aggregate-expression', 'A non-aggregate expression cannot be evaluated over multiple group rows.');
     return evaluateExpression(state, expression, group.rows[0]!, group.schema);
@@ -870,6 +923,19 @@ function evaluateAggregateExpression(state: EvalState, expression: Expression, g
   const trusted = trustedLocalSignature(state, supplied);
   if (!trusted.ok) return trusted;
   const signature = trusted.value;
+  if (signature.ref.id === 'core.if') {
+    const charged = tick(state);
+    if (!charged.ok) return charged;
+    const conditionExpression = expression.arguments[0];
+    const whenTrue = expression.arguments[1];
+    const whenFalse = expression.arguments[2];
+    if (conditionExpression === undefined || whenTrue === undefined || whenFalse === undefined) return failure('query.conditional-shape', 'Conditional expressions require a condition and two branches.');
+    const condition = evaluateAggregateExpression(state, conditionExpression, group);
+    if (!condition.ok) return condition;
+    if (condition.value === null || condition.value === undefined) return {ok: true, value: null};
+    if (typeof condition.value !== 'boolean') return failure('query.conditional-type', 'Conditional condition did not evaluate to a boolean.');
+    return evaluateAggregateExpression(state, condition.value ? whenTrue : whenFalse, group);
+  }
   if (signature.operation === 'aggregate' || signature.operation === 'ratio-of-sums' || signature.operation === 'mean-of-rates')
     return aggregateValues(state, {id: `nested-${expression.function.id}`, function: expression.function, arguments: expression.arguments}, group);
   const arguments_: QueryValue[] = [];
@@ -878,7 +944,7 @@ function evaluateAggregateExpression(state: EvalState, expression: Expression, g
     if (!value.ok) return value;
     arguments_.push(value.value === undefined ? null : value.value);
   }
-  return evaluateCall(state, signature, arguments_);
+  return evaluateCall(state, signature, arguments_, expression.arguments.map((argument) => expressionSemanticType(argument, group.schema, state.registry)));
 }
 
 function sumValues(state: EvalState, values: readonly QueryValue[]): Outcome<QueryValue | null> {
