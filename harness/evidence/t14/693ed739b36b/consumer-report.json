@@ -1,0 +1,123 @@
+{
+  "sourceDigest": "693ed739b36b6b5189c97f8b1eda3984d86ee6d3cdc62c2d9978c88a6932bf9e",
+  "sourceChangedDuringRun": false,
+  "scope": "Installed @aeliqo/core, @aeliqo/web input-family entry points and @aeliqo/react input wrappers from actual tarballs; strict TypeScript; Node Lit SSR and React SSR; Chromium native forms, defaults/reset, IME, controlled value/query events, search, file metadata and submit/reset.",
+  "artifacts": [
+    {
+      "name": "@aeliqo/core",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/input-consumers/run-YCk3tk/aeliqo-core-0.1.0.tgz",
+      "sha256": "e2538f79ee7d7a830b04279242d1e2298fa14dfe2a749a72576331acf09c3cf7",
+      "integrity": "sha512-bwnDyUgTyZnbirRAST+60hBI1fTOoAB+PCojYBuceCJoKSIHRXBbofloohS0I/Rq9WPG5pSCNy+qwuXoicP26A=="
+    },
+    {
+      "name": "@aeliqo/web",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/input-consumers/run-YCk3tk/aeliqo-web-0.1.0.tgz",
+      "sha256": "0fed3c05b7e8e44aae64f66fdb664a31d8df7f7f5689c42c37d506dee4e38aa5",
+      "integrity": "sha512-wSV/nVY4CV9HOPN4lqHCR9nEX2zU8rOX2H4HXol+4A7xO3TiyVu7+Mzw18bHemv4K6W6zP8wOJg8PmnSmSEM1A=="
+    },
+    {
+      "name": "@aeliqo/react",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/input-consumers/run-YCk3tk/aeliqo-react-0.1.0.tgz",
+      "sha256": "7c43aff8e5335c46719fd8a131b617d9c76f31d8a608e2ffae8a14df41fecfed",
+      "integrity": "sha512-LNpcbAmXs9fHL1X9nAf/q+k2ahlvRYw3bWgrWWh7I6n34nxx7D0yp71gdkPx23b7fzCRDJ9Q1//86ysU28tBOA=="
+    }
+  ],
+  "consumerDirectory": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-input-consumer-JJjP0x",
+  "consumerLock": {
+    "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/input-consumers/run-YCk3tk/consumer-package-lock.json",
+    "sha256": "c7e86881f9e43db8cec43469cad305f418d1f87920f10565658891166a6c8661"
+  },
+  "resolution": {
+    "@aeliqo/web/input": "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-input-consumer-JJjP0x/node_modules/@aeliqo/web/dist/elements/aeliqo-input.js",
+    "@aeliqo/web/server": "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-input-consumer-JJjP0x/node_modules/@aeliqo/web/dist/server.js",
+    "@aeliqo/web/inputs": "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-input-consumer-JJjP0x/node_modules/@aeliqo/web/dist/input/index.js",
+    "@aeliqo/web/text-field": "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-input-consumer-JJjP0x/node_modules/@aeliqo/web/dist/input/text-field.js",
+    "@aeliqo/web/text-area": "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-input-consumer-JJjP0x/node_modules/@aeliqo/web/dist/input/text-area.js",
+    "@aeliqo/web/number-field": "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-input-consumer-JJjP0x/node_modules/@aeliqo/web/dist/input/number-field.js",
+    "@aeliqo/web/checkbox": "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-input-consumer-JJjP0x/node_modules/@aeliqo/web/dist/input/checkbox.js",
+    "@aeliqo/web/radio-group": "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-input-consumer-JJjP0x/node_modules/@aeliqo/web/dist/input/radio-group.js",
+    "@aeliqo/web/switch": "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-input-consumer-JJjP0x/node_modules/@aeliqo/web/dist/input/switch.js",
+    "@aeliqo/web/select": "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-input-consumer-JJjP0x/node_modules/@aeliqo/web/dist/input/select.js",
+    "@aeliqo/web/combobox": "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-input-consumer-JJjP0x/node_modules/@aeliqo/web/dist/input/combobox.js",
+    "@aeliqo/web/date-field": "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-input-consumer-JJjP0x/node_modules/@aeliqo/web/dist/input/date-field.js",
+    "@aeliqo/web/date-range": "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-input-consumer-JJjP0x/node_modules/@aeliqo/web/dist/input/date-range.js",
+    "@aeliqo/web/slider": "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-input-consumer-JJjP0x/node_modules/@aeliqo/web/dist/input/slider.js",
+    "@aeliqo/web/search-field": "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-input-consumer-JJjP0x/node_modules/@aeliqo/web/dist/input/search-field.js",
+    "@aeliqo/web/file-input": "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-input-consumer-JJjP0x/node_modules/@aeliqo/web/dist/input/file-input.js",
+    "@aeliqo/web/field-group": "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-input-consumer-JJjP0x/node_modules/@aeliqo/web/dist/input/field-group.js",
+    "@aeliqo/web/form": "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-input-consumer-JJjP0x/node_modules/@aeliqo/web/dist/input/form.js",
+    "@aeliqo/react": "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-input-consumer-JJjP0x/node_modules/@aeliqo/react/dist/index.js",
+    "@aeliqo/react/inputs": "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-input-consumer-JJjP0x/node_modules/@aeliqo/react/dist/inputs.js"
+  },
+  "ssr": "{\"webBytes\":200254,\"reactBytes\":27924}",
+  "screenshot": {
+    "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/input-consumers/run-YCk3tk/installed-inputs.png",
+    "sha256": "0ba0495f97674a971aa522c76b63e330db97811882a598bacf0ae4f633123b6d"
+  },
+  "browser": {
+    "defaults": {
+      "text": "Ada",
+      "area": "Draft",
+      "number": "1234.50",
+      "checked": true,
+      "radio": "admin",
+      "switch": true,
+      "select": "id",
+      "combo": "ada",
+      "date": "2026-09-08",
+      "range": [
+        "2026-09-01",
+        "2026-09-08"
+      ],
+      "slider": 40,
+      "search": "Ada"
+    },
+    "formEntries": 13,
+    "interactions": {
+      "during": {
+        "queries": [],
+        "valueEvents": [
+          "Lin"
+        ]
+      },
+      "textEvent": "Lin",
+      "textValue": "Lin",
+      "queryEvents": [
+        "あ"
+      ],
+      "comboValue": "",
+      "comboQuery": "あ",
+      "searchEvents": [
+        "new"
+      ],
+      "files": [
+        "proof.txt"
+      ],
+      "submitted": 1,
+      "resetCount": 1
+    },
+    "failures": []
+  },
+  "environment": {
+    "node": "v24.20.0",
+    "npm": "11.19.0",
+    "pnpm": "11.24.0",
+    "typescript": "7.0.2",
+    "vite": "8.2.2",
+    "playwright": "1.63.0",
+    "chromium": "153.0.8010.12",
+    "os": "darwin",
+    "release": "25.6.0",
+    "arch": "arm64",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "locale": "en-US",
+    "deviceScaleFactor": 1
+  },
+  "passed": true
+}

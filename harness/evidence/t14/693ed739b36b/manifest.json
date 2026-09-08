@@ -1,0 +1,73 @@
+{
+  "tasks": [
+    "T14"
+  ],
+  "status": "pass",
+  "sourceCommit": "ff2befec6f9006069b2619a62769b5fd0a122bbf",
+  "sourceDigest": "693ed739b36b6b5189c97f8b1eda3984d86ee6d3cdc62c2d9978c88a6932bf9e",
+  "scope": "All15 owned input primitives; canonical queryless binding/region rendering; native forms, validation, IME, bounded loading, metadata events, locale and accessibility.",
+  "checks": {
+    "unit": 5,
+    "semanticAndLitSSR": 12,
+    "nativeBrowser": 20,
+    "semanticBrowser": 1,
+    "visualA11yVariants": 2,
+    "strictTypes": true,
+    "installedTarballConsumer": true,
+    "installedReactSSR": true
+  },
+  "limits": [
+    "Full manual assistive-technology, framework-specific hydration and T29/T30 matrices remain separate.",
+    "No publication, deployment, model or overall readiness claim."
+  ],
+  "artifacts": [
+    {
+      "path": "browser.log",
+      "sha256": "9f70e7f26fef13931ef33eb594945089057a5f052a659659409b5870c033a566"
+    },
+    {
+      "path": "consumer-package-lock.json",
+      "sha256": "c7e86881f9e43db8cec43469cad305f418d1f87920f10565658891166a6c8661"
+    },
+    {
+      "path": "consumer-report.json",
+      "sha256": "78e0302f0a86001f813480370dd89a70f3a547ed8b36d4f08757bb319e2f54c5"
+    },
+    {
+      "path": "consumer.log",
+      "sha256": "fadeb96466edb514a8c2d0e4397916a0fbdf74c5f06b330063b767dcb96b8ebf"
+    },
+    {
+      "path": "desktop.png",
+      "sha256": "5d22ce8e799c4b60ecb09f21933c6ab4afd1f619b20ad2b5ed8fa066f59b32d2"
+    },
+    {
+      "path": "installed-inputs.png",
+      "sha256": "0ba0495f97674a971aa522c76b63e330db97811882a598bacf0ae4f633123b6d"
+    },
+    {
+      "path": "narrow-dark-rtl.png",
+      "sha256": "f977acf093d5a858dd16bc4ce8758dac454d5f3b006e7ec7652b4cdc26418d63"
+    },
+    {
+      "path": "review.json",
+      "sha256": "548c24bf5a58ca9258ebeeb7818ffb690513cdec3733f385170d7dc4dcc55ebf"
+    },
+    {
+      "path": "semantic-browser.log",
+      "sha256": "0955bb23c8c5e09aa28fe8154916f8d37d47452ac45e666e5ebbc13ea9d4195a"
+    },
+    {
+      "path": "semantic-build-types-ssr.log",
+      "sha256": "6c059013156354c24cf74bd3aa7777b1aec1cc974ff40c45e6ddaefb978f90d2"
+    },
+    {
+      "path": "unit.log",
+      "sha256": "9776f676810619b52f24c8a193901f6bac42a8be8a2fa70d6043881e38f758d0"
+    },
+    {
+      "path": "visual-a11y.log",
+      "sha256": "057451125d25f779ffaea247b3193d48c4f66cc9f040569d336c00670511998d"
+    }
+  ]
+}

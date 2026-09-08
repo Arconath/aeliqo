@@ -370,7 +370,7 @@
       "id": "input.text-field",
       "name": "TextField",
       "family": "input",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Label, description, validation, autocomplete and IME-safe controlled/uncontrolled value.",
@@ -387,13 +387,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t14/693ed739b36b/manifest.json",
+          "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        }
+      ]
     },
     {
       "id": "input.text-area",
       "name": "TextArea",
       "family": "input",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Multiline editing preserves draft, selection and composition across unrelated updates.",
@@ -410,13 +415,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t14/693ed739b36b/manifest.json",
+          "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        }
+      ]
     },
     {
       "id": "input.number-field",
       "name": "NumberField",
       "family": "input",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Locale-aware editing separates display text from exact numeric value; do not silently round money.",
@@ -433,13 +443,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t14/693ed739b36b/manifest.json",
+          "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        }
+      ]
     },
     {
       "id": "input.checkbox",
       "name": "Checkbox",
       "family": "input",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Native checked/indeterminate state; group ownership and submitted value are explicit.",
@@ -456,13 +471,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t14/693ed739b36b/manifest.json",
+          "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        }
+      ]
     },
     {
       "id": "input.radio-group",
       "name": "RadioGroup",
       "family": "input",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "One selected option; native semantics or APG-equivalent keyboard behavior.",
@@ -479,13 +499,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t14/693ed739b36b/manifest.json",
+          "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        }
+      ]
     },
     {
       "id": "input.switch",
       "name": "Switch",
       "family": "input",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Binary setting with visible label; changing setting is not implicit business submission.",
@@ -502,13 +527,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t14/693ed739b36b/manifest.json",
+          "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        }
+      ]
     },
     {
       "id": "input.select",
       "name": "Select",
       "family": "input",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Bounded enumerated choice with native-first semantics; empty and unknown value are distinct.",
@@ -525,13 +555,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t14/693ed739b36b/manifest.json",
+          "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        }
+      ]
     },
     {
       "id": "input.combobox",
       "name": "Combobox",
       "family": "input",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Searchable choice with APG behavior; stale remote options cannot overwrite current input.",
@@ -548,13 +583,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t14/693ed739b36b/manifest.json",
+          "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        }
+      ]
     },
     {
       "id": "input.date-field",
       "name": "DateField",
       "family": "input",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Calendar date rather than timezone-shifted timestamp; typed entry and picker agree.",
@@ -571,13 +611,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t14/693ed739b36b/manifest.json",
+          "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        }
+      ]
     },
     {
       "id": "input.date-range",
       "name": "DateRange",
       "family": "input",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Explicit inclusive/exclusive boundaries, timezone/calendar policy and keyboard operation.",
@@ -594,13 +639,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t14/693ed739b36b/manifest.json",
+          "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        }
+      ]
     },
     {
       "id": "input.slider",
       "name": "Slider",
       "family": "input",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Bounded quantity with keyboard and text alternative; steps and units are declared.",
@@ -617,13 +667,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t14/693ed739b36b/manifest.json",
+          "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        }
+      ]
     },
     {
       "id": "input.search-field",
       "name": "SearchField",
       "family": "input",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Explicit/debounced query policy; composition input is not submitted mid-IME.",
@@ -640,13 +695,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t14/693ed739b36b/manifest.json",
+          "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        }
+      ]
     },
     {
       "id": "input.file-input",
       "name": "FileInput",
       "family": "input",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Native file selection; host owns upload and validation; no file bytes enter agent by default.",
@@ -663,13 +723,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t14/693ed739b36b/manifest.json",
+          "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        }
+      ]
     },
     {
       "id": "input.field-group",
       "name": "FieldGroup",
       "family": "input",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Group related controls with legend, descriptions and coordinated validation.",
@@ -686,13 +751,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t14/693ed739b36b/manifest.json",
+          "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        }
+      ]
     },
     {
       "id": "input.form",
       "name": "Form",
       "family": "input",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Native submission semantics, draft validation, error summary and explicit host action; rerender never submits.",
@@ -709,7 +779,12 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t14/693ed739b36b/manifest.json",
+          "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        }
+      ]
     },
     {
       "id": "navigation.tabs",

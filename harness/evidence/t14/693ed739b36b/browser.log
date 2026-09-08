@@ -1,0 +1,51 @@
+$ playwright test --config tests/input/playwright.config.mjs
+[WebServer] (node:3402) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 20 tests using 1 worker
+
+(node:3408) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 10:06:21 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   1 tests/input/browser.spec.ts:8:5 › all input primitives render labeled native controls and preserve form data (149ms)
+[WebServer] 10:06:21 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   2 tests/input/browser.spec.ts:20:5 › combobox ignores stale async option responses and supports keyboard choice (251ms)
+[WebServer] 10:06:21 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   3 tests/input/browser.spec.ts:35:5 › IME drafts remain visible and search commits only after composition (163ms)
+[WebServer] 10:06:21 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 10:06:21 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   4 tests/input/browser.spec.ts:55:5 › date range boundaries, slider keyboard, validation and cleanup are bounded (153ms)
+[WebServer] 10:06:21 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   5 tests/input/browser.spec.ts:69:5 › form wrapper validates drafts before emitting its explicit host action (98ms)
+[WebServer] 10:06:22 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   6 tests/input/browser.spec.ts:88:5 › form wrapper bridges slotted native buttons, Enter and form data (91ms)
+[WebServer] 10:06:22 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   7 tests/input/browser.spec.ts:124:5 › form wrapper honors a trusted child-cancelled submit click (128ms)
+[WebServer] 10:06:22 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   8 tests/input/browser.spec.ts:147:5 › field groups propagate disabled through nested and dynamic children (92ms)
+[WebServer] 10:06:22 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   9 tests/input/browser.spec.ts:198:5 › input defaults initialize before mount and survive reset (89ms)
+[WebServer] 10:06:22 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  10 tests/input/browser.spec.ts:280:5 › readonly native controls reconcile user attempts (92ms)
+[WebServer] 10:06:22 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  11 tests/input/browser.spec.ts:326:5 › form wrapper defers child Enter behavior and respects native ownership (209ms)
+[WebServer] 10:06:22 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  12 tests/input/browser.spec.ts:402:5 › nested and externally owned controls stay with their owning form (126ms)
+[WebServer] 10:06:22 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  13 tests/input/browser.spec.ts:462:5 › combobox keeps its selected label and active descendant synchronized (93ms)
+[WebServer] 10:06:23 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  14 tests/input/browser.spec.ts:491:5 › combobox loader removal settles pending state (85ms)
+[WebServer] 10:06:23 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  15 tests/input/browser.spec.ts:516:5 › combobox keeps query drafts separate and defers IME loading until composition ends (90ms)
+[WebServer] 10:06:23 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  16 tests/input/browser.spec.ts:555:5 › text fields are uncontrolled by default and searches only commit user proposals (87ms)
+[WebServer] 10:06:23 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  17 tests/input/browser.spec.ts:590:5 › search debounce is cancelled by a host value replacement (209ms)
+[WebServer] 10:06:23 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  18 tests/input/browser.spec.ts:614:5 › stale text validation cannot mark a newer programmatic value invalid (87ms)
+[WebServer] 10:06:23 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  19 tests/input/browser.spec.ts:645:5 › completed validation is cleared when the host value changes (86ms)
+[WebServer] 10:06:23 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  20 tests/input/browser.spec.ts:671:5 › host supplied errors survive mount and value changes (86ms)
+
+  20 passed (3.3s)

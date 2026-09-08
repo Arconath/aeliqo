@@ -484,10 +484,15 @@
       "acceptance": [
         "Every input entry proves native forms, IME/draft/focus, locale and async validation."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "Isolated Luna Max writer codex/t14-input from reviewed foundation source12df3f3. Owns15 input entries and narrow existing Input compatibility refactor to reuse one native/IME/form engine; parent owns contracts/root config/exports/lockfile/integration. T13 semantic registry and external/visual evidence remain parent work. No source imports of runtime/planner/agent."
+      "evidence": [
+        {
+          "path": "harness/evidence/t14/693ed739b36b/manifest.json",
+          "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        }
+      ],
+      "notes": "Accepted at sourceff2befe after independent review and frozen Node24 unit, all15 canonical/LitSSR, native/semantic Chromium, desktop/narrow-dark-RTL a11y and installed core/web/React tarball evidence. Manual AT and full cross-family release matrices remain T29/T30."
     },
     {
       "id": "T15",
