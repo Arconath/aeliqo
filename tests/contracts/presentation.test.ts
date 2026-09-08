@@ -68,6 +68,16 @@ describe('registered presentation feasibility', () => {
       {...plan(), nodes: [{...plan().nodes[0]!, children: ['child']}, {...child, children: ['table-1']}]},
     ]) expect(checked(p).ok).toBe(false);
   });
+  it('requires the claimed operation to be enabled by the resolved configuration', () => {
+    const configured = (operations: readonly {id: string; revision: string}[]): PresentationManifest => ({...table,
+      resolveConfig: (values, descriptor) => ({ok: true, value: {values, fields: descriptor!.fields.map(f => f.id), ports: [], operations}})});
+    expect(checked(plan(), context(), registry([configured([]), stack]))).toMatchObject({ok: false, diagnostics: [{code: 'presentation.coverage'}]});
+    expect(checked(plan(), context(), registry([configured([read]), stack])).ok).toBe(true);
+    expect(checked(plan(), context(), registry([configured([{id: 'undeclared', revision: '1'}]), stack]))).toMatchObject({ok: false, diagnostics: [{code: 'presentation.configuration'}]});
+    expect(checked(plan(), context(), registry([configured([read, read]), stack]))).toMatchObject({ok: false, diagnostics: [{code: 'presentation.configuration'}]});
+    const composed = composePresentation({id: 'disabled-read', revision: '1', preconditions: plan().preconditions, context: context()}, registry([configured([]), stack]));
+    expect(composed).toMatchObject({ok: true, value: {status: 'search-exhausted'}});
+  });
   it('intersects profile and explicit restrictions, including no-preset prohibition', () => {
     expect(checked(plan(), {...context(), experience: {...context().experience, allowedRepresentations: []}}).ok).toBe(false);
     expect(checked(plan(), {...context(), restrictions: [{id: 'deny-read', allowedOperations: []}]}).ok).toBe(false);

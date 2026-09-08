@@ -15,6 +15,8 @@ export interface ResolvedPresentationConfig {
   readonly fields: readonly string[];
   /** Trusted registry code derives ports from the bound result, never the proposed wire graph. */
   readonly ports: readonly InteractionPort[];
+  /** Actual operations enabled by this configuration; if omitted, every manifest operation is enabled. */
+  readonly operations?: readonly VersionRef[];
 }
 
 /** Trusted local registry entry. Callbacks must be pure, synchronous and bounded. */

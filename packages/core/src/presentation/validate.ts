@@ -1,7 +1,7 @@
 import * as z from 'zod/mini';
 import {parseContract, parseResult} from '../contracts/parse.js';
 import {inspectWire} from '../contracts/ingress.js';
-import {idSchema, jsonSchema} from '../contracts/schemas.js';
+import {idSchema, jsonSchema, versionRefSchema} from '../contracts/schemas.js';
 import {WIRE_LIMITS} from '../contracts/limits.js';
 import {validateCommitReadSet} from '../contracts/commit.js';
 import {validateTaskStructure} from '../contracts/task/index.js';
@@ -13,7 +13,8 @@ import {freezePresentation, presentationFailure as fail, versionKey} from './reg
 
 const refKey = (r: ResultRef): string => JSON.stringify([r.id, r.revision, r.outputId, r.queryDigest, r.scopeDigest]);
 const resolvedSchema = z.strictObject({values: z.record(z.string(), jsonSchema),
-  fields: z.array(idSchema).check(z.maxLength(WIRE_LIMITS.array)), ports: z.array(z.unknown()).check(z.maxLength(128))});
+  fields: z.array(idSchema).check(z.maxLength(WIRE_LIMITS.array)), ports: z.array(z.unknown()).check(z.maxLength(128)),
+  operations: z.optional(z.array(versionRefSchema).check(z.maxLength(WIRE_LIMITS.array)))});
 
 /** Validate feasibility against trusted descriptors/registry. This grants no runtime effects. */
 export function validatePresentationPlan(
@@ -96,12 +97,15 @@ export function validatePresentationPlan(
     if (outcome === null || typeof outcome !== 'object' || outcome.ok !== true) return fail('configuration', 'The configuration does not satisfy its registered semantic contract.');
     const config = z.safeParse(resolvedSchema, outcome.value);
     if (!config.success || new Set(config.data.fields).size !== config.data.fields.length) return fail('configuration', 'The registered configuration result is malformed.');
+    const enabled = config.data.operations ?? m.operations;
+    if (new Set(enabled.map(versionKey)).size !== enabled.length || enabled.some(op => !m.operations.some(declared => versionKey(op) === versionKey(declared))))
+      return fail('configuration', 'Enabled operations must be a unique subset of the registered manifest.');
     if (config.data.fields.some(field => !result?.fields.some(f => f.id === field))) return fail('field', 'A representation refers to a field absent from its result.');
     const portGraph = validateInteractionGraph({nodes: [{id: node.id, ports: config.data.ports}], links: []}, []);
     if (!portGraph.ok) return portGraph;
     const values: PresentationValues = config.data.values;
     resolved.push({node: {...node, config: {schema: node.config.schema, values}}, manifest: m.ref,
-      config: {values, fields: config.data.fields, ports: portGraph.value.nodes[0]!.ports}, result});
+      config: {values, fields: config.data.fields, ports: portGraph.value.nodes[0]!.ports, operations: enabled}, result});
   }
   const byId = new Map(resolved.map(n => [n.node.id, n]));
   const coverage = new Map<string, typeof plan.coverage[number]>();
@@ -115,9 +119,8 @@ export function validatePresentationPlan(
     for (const id of entry.nodeIds) {
       const n = byId.get(id);
       if (n === undefined) return fail('coverage', 'Coverage points to a missing node.');
-      const m = manifests.get(versionKey(n.manifest))!;
       if (need.outputId !== undefined && n.result?.ref.outputId !== need.outputId) return fail('coverage', 'The operation is bound to a different task output.');
-      if (!entry.operations.every(op => m.operations.some(supported => versionKey(supported) === versionKey(op)))) return fail('coverage', 'The representation does not support the claimed operation.');
+      if (!entry.operations.every(op => n.config.operations!.some(supported => versionKey(supported) === versionKey(op)))) return fail('coverage', 'The representation configuration does not support the claimed operation.');
       if (c.allowedOperations !== undefined && !entry.operations.every(op => c.allowedOperations!.some(allowed => versionKey(allowed) === versionKey(op)))) return fail('restricted', 'An operation is restricted by the active experience.');
       n.config.fields.forEach(field => fields.add(field));
     }
