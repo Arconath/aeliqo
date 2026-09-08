@@ -1,4 +1,5 @@
 import {registerAeliqoElements} from '@aeliqo/web';
+import {detectWebMcp} from '@aeliqo/agent/webmcp';
 import {AeliqoRegionElement} from '@aeliqo/web/region';
 import {AeliqoComparisonElement} from '@aeliqo/web/comparison';
 import {AeliqoDetailElement} from '@aeliqo/web/detail';
@@ -66,6 +67,6 @@ function mountCommerce(output:DemoOutput|undefined){
  if(!$('commerce-form').children.length){const form=document.createElement('form');const name=new AeliqoTextFieldElement();name.name='name';name.label='Your name';name.required=true;const note=new AeliqoTextFieldElement();note.name='note';note.label='Enquiry note';const button=document.createElement('button');button.type='submit';button.textContent='Review local enquiry';const receipt=document.createElement('p');receipt.setAttribute('role','status');form.append(name,note,button,receipt);form.addEventListener('aeliqo-input-change',()=>{productFormDirty=true;});form.addEventListener('submit',event=>{event.preventDefault();if(!form.reportValidity())return;receipt.textContent=`Draft reviewed for ${String(new FormData(form).get('name')??'')}. This remains local; no enquiry was sent.`;productFormDirty=false;});$('commerce-form').append(form);}
 }
 dataset.addEventListener('change',()=>{const commerce=dataset.value==='products';$('people-actions').hidden=commerce;$('team-control').hidden=commerce;$('cohort-status').hidden=commerce;$('commerce').hidden=!commerce;void browse();});
-const navigatorWithModel=navigator as Navigator&{modelContext?:unknown};$('webmcp-status').textContent=navigatorWithModel.modelContext?'WebMCP experimental API detected · unpaired':'WebMCP unavailable in this browser';
+$('webmcp-status').textContent=detectWebMcp().supported?'WebMCP experimental API detected · unpaired':'WebMCP unavailable in this browser';
 window.addEventListener('pagehide',event=>{engine.cancel();if(!event.persisted){for(const lease of presentedLeases)lease.release();presentedLeases=[];engine.dispose();}});
 void browse();
