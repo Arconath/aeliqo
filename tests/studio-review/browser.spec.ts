@@ -33,6 +33,41 @@ test.describe('T26 Studio browser boundary review', () => {
     await expect(page.locator('.section-heading .badge')).toHaveText('fixed');
   });
 
+  test('binds evaluated data to real preview components at each declared width', async ({page}) => {
+    await page.goto('/');
+    await page.getByRole('button', {name: 'Experience'}).click();
+    for (const width of [320, 360, 768, 1280]) {
+      const frame = page.locator(`[data-preview-frame="${width}"]`);
+      expect(await frame.evaluate((element) => Math.round(element.getBoundingClientRect().width))).toBe(width);
+      await expect(frame.locator('aeliqo-metric')).toContainText('79');
+    }
+    await expect(page.locator('[data-preview-metric="320"]')).not.toContainText('42');
+
+    await page.getByRole('button', {name: 'loading'}).click();
+    await expect(page.locator('[data-preview-metric="320"]')).toContainText('Loading');
+    await expect(page.locator('[data-preview-metric="320"]')).not.toContainText('79');
+    await page.getByRole('button', {name: 'stale'}).click();
+    await expect(page.locator('[data-preview-metric="320"]')).toContainText('Showing the last authorized value.');
+    await page.locator('#preview-direction').selectOption('rtl');
+    await expect(page.locator('[data-preview-frame="320"]')).toHaveAttribute('dir', 'rtl');
+    await page.locator('#preview-long-label').check();
+    await expect(page.locator('[data-preview-metric="320"]')).toContainText('Authorized employee amount after normalization');
+    await page.getByRole('button', {name: 'Dark'}).click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  });
+
+  test('mounts the selected executable catalog example for all 71 component choices', async ({page}) => {
+    await page.goto('/');
+    await page.getByRole('button', {name: 'Component Gallery'}).click();
+    const chooser = page.locator('#gallery-component-select');
+    await expect(chooser.locator('option')).toHaveCount(71);
+    await expect(page.locator('[data-gallery-preview="metric"] aeliqo-metric')).toBeVisible();
+    await chooser.selectOption('form-flow');
+    await expect(page.locator('[data-gallery-preview="form-flow"] aeliqo-form-flow')).toBeVisible();
+    await expect(page.locator('[data-gallery-component="form-flow"]')).toBeVisible();
+    await expect(page.locator('#gallery-component-description')).not.toHaveText('');
+  });
+
   test('defers visible rerender until an IME composition ends', async ({page}) => {
     await page.goto('/');
     const meaningId = page.getByLabel('Meaning ID');

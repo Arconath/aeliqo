@@ -2,6 +2,7 @@ import {parseExperience, createStandardFunctionRegistry, type Catalog, type Expe
 import {createMeaningAuthoring, meaningDigest} from '@aeliqo/runtime/meaning';
 import {createStudioDocument, createStudioSession, type StudioArea, type StudioDocument, type StudioSession} from '@aeliqo/devtools';
 import {registerAeliqoElements} from '@aeliqo/web/register';
+import {catalogExample, catalogExamples, type CatalogExampleId} from '../../../examples/catalog/index.js';
 import './styles.css';
 
 registerAeliqoElements();
@@ -67,6 +68,9 @@ let lastEditableControl: string | undefined;
 let lastEditableSelection: {readonly start: number | null; readonly end: number | null} | undefined;
 let composing = false;
 let deferredState: StudioState | undefined;
+let previewDirection: 'ltr' | 'rtl' = 'ltr';
+let previewLongLabel = false;
+let galleryCleanup: (() => void) | undefined;
 
 function controlKey(control: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement): string | undefined {
   const form = control.closest('form')?.id;
@@ -176,16 +180,19 @@ function renderDataMeaning(state: ReturnType<StudioSession['getState']>): string
 
 function renderExperience(state: ReturnType<StudioSession['getState']>): string {
   const active = state.document.profiles.find((entry) => entry.experience.id === state.document.activeProfile.id && entry.experience.revision === state.document.activeProfile.revision) ?? state.document.profiles[0]!;
+  const previewWidths = [320, 360, 768, 1280] as const;
   return `<section class="workspace-section" aria-labelledby="experience-title"><div class="section-heading"><div><p class="eyebrow">Bounded design choices</p><h2 id="experience-title">Experience</h2><p class="lede">Preview approved patterns across size and data states.</p></div><span class="badge">${esc(active.experience.mode)}</span></div>
-    <div class="panel experience-controls"><label>Profile<select id="profile-select">${state.document.profiles.map((entry) => `<option value="${esc(entry.experience.id)}@${esc(entry.experience.revision)}" ${entry.experience.id === active.experience.id && entry.experience.revision === active.experience.revision ? 'selected' : ''}>${esc(entry.label)}</option>`).join('')}</select></label><div class="segmented" role="group" aria-label="Theme"><button data-theme="light" class="${state.document.tokens.theme === 'light' ? 'selected' : ''}">Light</button><button data-theme="dark" class="${state.document.tokens.theme === 'dark' ? 'selected' : ''}">Dark</button></div></div>
+    <div class="panel experience-controls"><label>Profile<select id="profile-select">${state.document.profiles.map((entry) => `<option value="${esc(entry.experience.id)}@${esc(entry.experience.revision)}" ${entry.experience.id === active.experience.id && entry.experience.revision === active.experience.revision ? 'selected' : ''}>${esc(entry.label)}</option>`).join('')}</select></label><div class="segmented" role="group" aria-label="Theme"><button data-theme="light" class="${state.document.tokens.theme === 'light' ? 'selected' : ''}">Light</button><button data-theme="dark" class="${state.document.tokens.theme === 'dark' ? 'selected' : ''}">Dark</button></div><label>Direction<select id="preview-direction"><option value="ltr" ${previewDirection === 'ltr' ? 'selected' : ''}>LTR</option><option value="rtl" ${previewDirection === 'rtl' ? 'selected' : ''}>RTL</option></select></label><label class="checkbox-label"><input id="preview-long-label" aria-label="Use long preview text" type="checkbox" ${previewLongLabel ? 'checked' : ''} /> Long preview text</label></div>
     <form class="panel experience-edit" id="experience-edit-form"><div><h3>Edit a validated profile</h3><p class="muted">Changes create a new personal revision and leave code-owned profiles intact.</p></div><label>Label<input name="profile-label" value="${esc(active.label)}" required /></label><label>Revision<input name="profile-revision" value="${esc(`${active.experience.revision}-studio`)}" required /></label><label>Mode<select name="profile-mode"><option value="fixed" ${active.experience.mode === 'fixed' ? 'selected' : ''}>fixed</option><option value="adaptive" ${active.experience.mode === 'adaptive' ? 'selected' : ''}>adaptive</option><option value="composable" ${active.experience.mode === 'composable' ? 'selected' : ''}>composable</option></select></label><button class="primary" type="submit">Save profile revision</button></form>
-    <div class="matrix" aria-label="Preview matrix">${['320px', '768px', '1280px'].map((size) => `<article class="matrix-cell"><div class="matrix-label"><strong>${size}</strong><span>${state.previewState}</span></div><div class="mini-preview ${state.document.tokens.theme}"><span class="mini-line wide"></span><span class="mini-line"></span><span class="mini-value">42</span></div></article>`).join('')}</div>
+    <div class="matrix" aria-label="Preview matrix">${previewWidths.map((width) => `<article class="matrix-cell" data-preview-width="${width}"><div class="matrix-label"><strong>${width}px</strong><span>${state.previewState}</span></div><div class="preview-viewport"><div class="preview-frame" data-preview-frame="${width}" dir="${previewDirection}" style="width: ${width}px"><aeliqo-metric data-preview-metric="${width}"></aeliqo-metric></div></div></article>`).join('')}</div>
     <div class="panel state-panel"><h3>Data states</h3><div class="state-buttons" role="group" aria-label="Preview data state">${(['ready', 'loading', 'empty', 'partial', 'stale', 'error'] as const).map((value) => `<button data-preview="${value}" class="${state.previewState === value ? 'selected' : ''}">${value}</button>`).join('')}</div><p class="muted">State previews are local and do not claim provider or model execution.</p></div>
   </section>`;
 }
 
-function renderGallery(): string {
-  return `<section class="workspace-section" aria-labelledby="gallery-title"><div class="section-heading"><div><p class="eyebrow">Actual shared elements</p><h2 id="gallery-title">Component Gallery</h2><p class="lede">These previews use the same registered web components shipped to consumers.</p></div><span class="badge">OSS · local</span></div><div class="gallery-grid"><article class="panel gallery-card"><h3>Metric</h3><p class="muted">Ready and stale states retain scope labels.</p><aeliqo-metric id="gallery-metric"></aeliqo-metric></article><article class="panel gallery-card gallery-wide"><h3>Table</h3><p class="muted">Native table semantics keep records inspectable.</p><aeliqo-table id="gallery-table"></aeliqo-table></article><article class="panel gallery-card"><h3>Trend</h3><p class="muted">A bounded chart preview from explicit points.</p><aeliqo-chart id="gallery-chart"></aeliqo-chart></article></div></section>`;
+function renderGallery(state: StudioState): string {
+  const selected = (state.selectedComponent ?? 'metric') as CatalogExampleId;
+  const definition = catalogExamples.find((entry) => entry.id === selected) ?? catalogExamples[0]!;
+  return `<section class="workspace-section" aria-labelledby="gallery-title"><div class="section-heading"><div><p class="eyebrow">Actual shared elements</p><h2 id="gallery-title">Component Gallery</h2><p class="lede">Choose one of the 71 executable catalog examples. Each preview mounts the same registered web component shipped to consumers.</p></div><span class="badge">OSS · local</span></div><div class="panel gallery-controls"><label>Component<select id="gallery-component-select">${catalogExamples.map((entry) => `<option value="${esc(entry.id)}" ${entry.id === definition.id ? 'selected' : ''}>${esc(entry.name)}</option>`).join('')}</select></label><p id="gallery-component-description" class="muted">${esc(definition.description)}</p></div><article class="panel gallery-card gallery-selected"><div class="gallery-selected-heading"><div><h3>${esc(definition.name)}</h3><p class="muted">${esc(definition.fixture)}</p></div><code data-gallery-component="${esc(definition.id)}">${esc(definition.id)}</code></div><div id="gallery-preview" data-gallery-preview="${esc(definition.id)}"></div></article></section>`;
 }
 
 function renderInspect(state: ReturnType<StudioSession['getState']>): string {
@@ -201,25 +208,46 @@ function render(state: ReturnType<StudioSession['getState']>): void {
   }
   captureControls();
   const activeLabel = areaLabels[state.area];
-  root.innerHTML = `<header class="app-header"><a class="brand" href="/" aria-label="Aeliqo home"><span class="brand-mark">A</span><span>Aeliqo <b>Studio</b></span></a><div class="header-actions"><span class="local-indicator"><i></i>Local workspace</span><button id="import-button" class="quiet">Import</button><input id="import-file" type="file" accept="application/json,.json" hidden /><button id="export-button" class="primary">Export document</button><button id="export-code-button" class="quiet">Export code</button></div></header><div class="app-shell"><aside class="sidebar" aria-label="Studio areas"><p class="sidebar-label">Workspace</p><nav>${(Object.keys(areaLabels) as StudioArea[]).map((area) => `<button class="nav-item ${area === state.area ? 'active' : ''}" data-area="${area}" aria-current="${area === state.area ? 'page' : 'false'}"><span class="nav-icon">${area === 'data-meaning' ? '◇' : area === 'experience' ? '◈' : area === 'gallery' ? '▦' : '⌁'}</span>${areaLabels[area]}</button>`).join('')}</nav><div class="sidebar-footer"><p>Document</p><code>${esc(state.document.id)}@${esc(state.document.revision)}</code><span>${state.dirty ? 'Unsaved local changes' : 'Saved snapshot'}</span></div></aside><main class="main-content"><div class="content-topline"><span>Local authoring</span><span>·</span><strong>${activeLabel}</strong></div>${diagnosticPanel(state)}<div id="announcement" class="sr-only" role="status" aria-live="polite">${esc(diagnosticText(state))}</div>${state.area === 'data-meaning' ? renderDataMeaning(state) : state.area === 'experience' ? renderExperience(state) : state.area === 'gallery' ? renderGallery() : renderInspect(state)}</main></div>`;
+  if (state.area !== 'gallery') { galleryCleanup?.(); galleryCleanup = undefined; }
+  root.innerHTML = `<header class="app-header"><a class="brand" href="/" aria-label="Aeliqo home"><img class="brand-mark" src="/aeliqo.png" alt="" /><span>Aeliqo <b>Studio</b></span></a><div class="header-actions"><span class="local-indicator"><i></i>Local workspace</span><button id="import-button" class="quiet">Import</button><input id="import-file" type="file" accept="application/json,.json" hidden /><button id="export-button" class="primary">Export document</button><button id="export-code-button" class="quiet">Export code</button></div></header><div class="app-shell"><aside class="sidebar" aria-label="Studio areas"><p class="sidebar-label">Workspace</p><nav>${(Object.keys(areaLabels) as StudioArea[]).map((area) => `<button class="nav-item ${area === state.area ? 'active' : ''}" data-area="${area}" aria-current="${area === state.area ? 'page' : 'false'}"><span class="nav-icon">${area === 'data-meaning' ? '◇' : area === 'experience' ? '◈' : area === 'gallery' ? '▦' : '⌁'}</span>${areaLabels[area]}</button>`).join('')}</nav><div class="sidebar-footer"><p>Document</p><code>${esc(state.document.id)}@${esc(state.document.revision)}</code><span>${state.dirty ? 'Unsaved local changes' : 'Saved snapshot'}</span></div></aside><main class="main-content"><div class="content-topline"><span>Local authoring</span><span>·</span><strong>${activeLabel}</strong></div>${diagnosticPanel(state)}<div id="announcement" class="sr-only" role="status" aria-live="polite">${esc(diagnosticText(state))}</div>${state.area === 'data-meaning' ? renderDataMeaning(state) : state.area === 'experience' ? renderExperience(state) : state.area === 'gallery' ? renderGallery(state) : renderInspect(state)}</main></div>`;
   bindEvents();
-  if (state.area === 'gallery') bindGallery();
+  if (state.area === 'experience') bindExperiencePreview(state);
+  if (state.area === 'gallery') bindGallery(state);
   restoreControls();
 }
 
-function bindGallery(): void {
-  const metric = document.querySelector<HTMLElement>('#gallery-metric');
-  if (metric !== null) Object.assign(metric, {label: 'Employees', value: 42, displayValue: '42', description: 'Current local preview', status: 'ready'});
-  const table = document.querySelector<HTMLElement>('#gallery-table');
-  if (table !== null) Object.assign(table, {caption: 'Employee records', columns: [{key: 'name', label: 'Name'}, {key: 'amount', label: 'Amount', align: 'end'}], rows: [{name: 'Ada', amount: 42}, {name: 'Grace', amount: 37}], entity: 'employees', identity: ['name']});
-  const chart = document.querySelector<HTMLElement>('#gallery-chart');
-  if (chart !== null) Object.assign(chart, {label: 'Amount trend', series: [{id: 'amount', label: 'Amount', points: [{label: 'Jan', x: '2026-01-01', y: 28}, {label: 'Feb', x: '2026-02-01', y: 42}, {label: 'Mar', x: '2026-03-01', y: 37}]}]});
+function bindExperiencePreview(state: StudioState): void {
+  const entity = state.document.catalog.entities[0];
+  const meaning = state.document.meanings[0]?.meaning ?? state.document.catalog.meanings[0];
+  const evaluation = entity === undefined || meaning === undefined ? undefined : session.evaluateMeaning({meaning: {id: meaning.id, revision: meaning.revision}, entity: entity.id, source: localSource});
+  const evaluatedValue = evaluation?.ok ? evaluation.value.rows[0]?.[meaning?.id ?? ''] : undefined;
+  const value = state.previewState === 'loading' || state.previewState === 'empty' || state.previewState === 'error' ? undefined : evaluatedValue;
+  const scope = {kind: 'filtered', loaded: localSource.relations.employees?.rows.length ?? 0, filteredTotal: localSource.relations.employees?.rows.length ?? 0, populationDigest: localSource.scopeDigest, label: 'Authorized employees'};
+  root.querySelectorAll<HTMLElement>('[data-preview-metric]').forEach((metric) => Object.assign(metric, {
+    label: previewLongLabel ? 'Authorized employee amount after normalization' : 'Total employee amount',
+    value,
+    description: evaluation?.ok ? 'Evaluated from the bounded local source.' : 'Local evaluation unavailable.',
+    status: state.previewState,
+    message: state.previewState === 'stale' ? 'Showing the last authorized value.' : undefined,
+    unit: 'employees', scope, format: 'number',
+  }));
+}
+
+function bindGallery(state: StudioState): void {
+  const selected = (state.selectedComponent ?? 'metric') as CatalogExampleId;
+  const container = document.querySelector<HTMLElement>('#gallery-preview');
+  if (container === null) return;
+  galleryCleanup?.();
+  galleryCleanup = catalogExample(selected, container);
 }
 
 function bindEvents(): void {
   root.querySelectorAll<HTMLButtonElement>('[data-area]').forEach((button) => button.addEventListener('click', () => session.selectArea(button.dataset.area as StudioArea)));
   root.querySelectorAll<HTMLButtonElement>('[data-preview]').forEach((button) => button.addEventListener('click', () => session.setPreviewState(button.dataset.preview as ReturnType<StudioSession['getState']>['previewState'])));
   root.querySelectorAll<HTMLButtonElement>('[data-theme]').forEach((button) => button.addEventListener('click', () => session.setTheme(button.dataset.theme as 'light' | 'dark')));
+  root.querySelector<HTMLSelectElement>('#preview-direction')?.addEventListener('change', (event) => { const select = event.currentTarget; if (!(select instanceof HTMLSelectElement)) return; previewDirection = select.value === 'rtl' ? 'rtl' : 'ltr'; render(session.getState()); });
+  root.querySelector<HTMLInputElement>('#preview-long-label')?.addEventListener('change', (event) => { const checkbox = event.currentTarget; if (!(checkbox instanceof HTMLInputElement)) return; previewLongLabel = checkbox.checked; render(session.getState()); });
+  root.querySelector<HTMLSelectElement>('#gallery-component-select')?.addEventListener('change', (event) => { const select = event.currentTarget; if (!(select instanceof HTMLSelectElement)) return; session.selectComponent(select.value); });
   root.querySelectorAll<HTMLButtonElement>('[data-meaning]').forEach((button) => button.addEventListener('click', () => { const [id, revision] = button.dataset.meaning!.split('@'); session.selectMeaning({id: id!, revision: revision!}); session.selectArea('inspect'); }));
   const profileSelect = root.querySelector<HTMLSelectElement>('#profile-select');
   profileSelect?.addEventListener('change', () => { const [id, revision] = profileSelect.value.split('@'); session.setActiveProfile({id: id!, revision: revision!}); });

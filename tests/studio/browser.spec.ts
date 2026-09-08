@@ -24,7 +24,9 @@ test.describe('local Studio', () => {
 
     await page.getByRole('button', {name: 'Component Gallery'}).click();
     await expect(page.getByRole('heading', {name: 'Component Gallery'})).toBeVisible();
+    await expect(page.locator('#gallery-component-select option')).toHaveCount(71);
     await expect(page.locator('aeliqo-metric')).toBeVisible();
+    await page.locator('#gallery-component-select').selectOption('table');
     await expect(page.locator('aeliqo-table')).toBeVisible();
 
     await page.getByRole('button', {name: 'Data & Meaning'}).click();
