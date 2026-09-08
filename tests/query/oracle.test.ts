@@ -51,6 +51,7 @@ const oracleDirectory = fileURLToPath(new URL('./oracle/', import.meta.url));
 const oraclePath = `${oracleDirectory}oracle.py`;
 const expectedPath = `${oracleDirectory}expected.json`;
 const casesPath = `${oracleDirectory}cases.json`;
+const hrBindingPath = `${oracleDirectory}hr-binding.json`;
 
 function runOracle(...args: string[]): OracleOutput {
   const result = spawnSync('python3', [oraclePath, '--json', ...args], {
@@ -162,5 +163,31 @@ describe('independent T07 numerical oracle', () => {
     const output = runOracle();
     expect(cases.seededFanout.seed).toBe(17);
     expect(output.seededFanout.seed).toBe(17);
+  });
+
+  it('retains the HR unknown-versus-approved-leave binding mutations', () => {
+    const binding = JSON.parse(readFileSync(hrBindingPath, 'utf8')) as {
+      source: string;
+      policy: {calendar: string; timezone: string; from: string; toExclusive: string};
+      mutations: Array<{
+        id: string;
+        removeObservation: {employee_id: string; date: string};
+        expected: {sameAsBaseline?: boolean; employee: {employee_id: string; absent: number; expected: number; unknown: number; rate: string | null}; topFive: string[]};
+      }>;
+    };
+    expect(binding.source).toBe('fixtures/hr/raw.json');
+    expect(binding.policy).toEqual({calendar: 'iso8601', timezone: 'Asia/Jakarta', from: '2026-01-05', toExclusive: '2026-03-30'});
+    expect(binding.mutations).toEqual([
+      expect.objectContaining({
+        id: 'missing-required-observation',
+        removeObservation: {employee_id: 'e1', date: '2026-01-05'},
+        expected: expect.objectContaining({employee: {employee_id: 'e1', absent: 20, expected: 60, unknown: 1, rate: null}}),
+      }),
+      expect.objectContaining({
+        id: 'missing-approved-leave-observation',
+        removeObservation: {employee_id: 'e2', date: '2026-01-05'},
+        expected: expect.objectContaining({sameAsBaseline: true, employee: {employee_id: 'e2', absent: 14, expected: 56, unknown: 0, rate: '1/4'}}),
+      }),
+    ]);
   });
 });

@@ -21,6 +21,12 @@ The fixtures cover:
 - bounded `core-query-1` window vectors for unknown-propagating sum, partition
   lag and competition rank (`1, 1, 3`), plus the lag frame precondition.
 
+`hr-binding.json` keeps two production-binding mutations against the existing
+HR raw fixture. Removing a required-day observation produces an unknown rate;
+removing an observation on an approved-leave day leaves the baseline unchanged.
+It stores mutation keys and expected aggregates only, so it does not duplicate
+the fixture or act as a second production executor.
+
 Run `python3 tests/query/oracle/oracle.py --check` to verify the checked-in
 expected output. The sibling Vitest bridge invokes the same script and also
 asserts independent literals and deliberate wrong results. A future query
