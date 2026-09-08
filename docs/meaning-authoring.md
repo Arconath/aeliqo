@@ -82,3 +82,40 @@ allowlisted canonical definition, scope and policy pins. The context is read
 before and after authorization; changes, revocation or cancellation return a
 stale/denied outcome and no active entry is published. Activation never
 elevates an AI hypothesis or infers authority from its origin.
+
+## Registry lifetime and immutable activation
+
+Create a registry for one authorized catalog, principal and data scope. The first
+successful activation pins its principal and scope digest; create another registry
+when switching either. A definition's `scope` (`session`, `personal`, `workspace`
+or `organization`) describes where the meaning is authored and reused. It is
+separate from the authorization `scopeDigest`; a single authorized scope can
+contain definitions from several authoring scopes.
+
+Registration preserves the complete definition at an immutable ID and revision.
+An allowlist cannot replace that content during activation. To review a draft,
+create a new immutable revision carrying its reviewed lifecycle/authority, register
+it, and activate that exact revision through the trusted host. This is a domain
+review step, not a requirement for end users to approve built-in meanings per
+question. Code-deployed catalog definitions remain available when an identical
+local draft is registered, until explicitly revoked in that registry.
+
+Bundles validate their entire dependency graph before registration changes any
+entry. Activation requires active dependencies. Revoking a definition also revokes
+registered dependents, and the registry's definition view excludes revoked catalog
+entries and unavailable dependency closures. Scope revocation reports every newly
+revoked entry, invalidates pending activation, and prevents later activation in
+that scope. Locally registered draft bytes are bounded in aggregate, including revoked
+entries. Scope revocation records are separately capped at `maxEntries`. Reauthorization
+uses a new registry with a fresh authorized catalog/context.
+
+A calling adapter can pass trusted `expectedAuthority` pins to activation. The
+agent capability does this using its dispatcher's principal and optional read set;
+these pins never come from a model proposal. Both authority reads are copied,
+checked for matching policy/context pins, and compared before publication.
+
+AI-assisted developer definitions may retain `origin: 'ai-assisted'` while their
+source is code-owned and read-only. Exporting or reviewing a definition does not
+automatically relabel its origin as manual. Authoring, evaluator and registry
+construction take private snapshots; edits to the original catalog, definitions
+or policies require a new instance.

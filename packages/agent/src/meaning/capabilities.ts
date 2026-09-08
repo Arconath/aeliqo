@@ -77,7 +77,7 @@ export function createMeaningProposalCapability<C extends import('@aeliqo/core')
     parse: parseMeaningProposalInput,
     invoke(input: MeaningProposalInput, _context: AgentCapabilityContext): AgentCapabilityHandlerResult<MeaningDraftJson> {
       const proposed = options.authoring.propose(input);
-      if (!proposed.ok) return {state: 'invalid', diagnostics: proposed.diagnostics};
+      if (!proposed.ok) return {state: proposed.diagnostics.some((item) => item.code === 'agent.meaning-scope') ? 'denied' : 'invalid', diagnostics: proposed.diagnostics};
       return output('accepted', proposed.value as unknown as MeaningDraftJson);
     },
   });
@@ -95,8 +95,16 @@ export function createMeaningActivationCapability(options: MeaningActivationCapa
     parse: parseMeaningActivationInput,
     async invoke(input: VersionRef, context: AgentCapabilityContext): Promise<AgentCapabilityHandlerResult<MeaningActivationJson>> {
       try {
-        const activated = await options.registry.activate(input, {signal: context.signal});
-        if (!activated.ok) return {state: activated.diagnostics.some((item) => item.code.includes('stale')) ? 'stale' : 'denied', diagnostics: activated.diagnostics};
+        const activated = await options.registry.activate(input, {signal: context.signal, expectedAuthority: {principalKey: context.authority.principalKey, ...(context.authority.current === undefined ? {} : {readSet: context.authority.current})}});
+        if (!activated.ok) {
+          const codes = activated.diagnostics.map((item) => item.code);
+          const state = codes.some((code) => code.includes('cancelled')) ? 'cancelled'
+            : codes.some((code) => code.includes('stale') || code.includes('revoked')) ? 'stale'
+            : codes.some((code) => code.includes('unsupported')) ? 'unsupported'
+            : codes.some((code) => code.includes('unknown') || code.includes('invalid') || code.includes('conflict') || code.includes('shape')) ? 'invalid'
+            : 'denied';
+          return {state, diagnostics: activated.diagnostics};
+        }
         return output('accepted', activated.value as unknown as MeaningActivationJson);
       } catch {
         return {state: 'failed', diagnostics: [{code: 'agent.meaning-activation', message: 'Meaning activation failed safely.', retryable: false}]};

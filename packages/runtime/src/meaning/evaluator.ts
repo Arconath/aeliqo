@@ -1,4 +1,5 @@
 import {
+  parseWireValue,
   createQueryPlanner,
   validateMeaning,
   type Catalog,
@@ -13,6 +14,7 @@ import {
   type VersionRef,
 } from '@aeliqo/core';
 import type {MeaningEvaluationInput, MeaningEvaluator, MeaningEvaluatorOptions} from './types.js';
+import {freezeMeaningValue, snapshotMeaningAuthoringOptions} from './authoring.js';
 
 function failure<T>(code: string, message: string, path?: readonly (string | number)[]): Outcome<T> {
   return {ok: false, diagnostics: [{code, message, retryable: false, ...(path === undefined ? {} : {path: [...path]})}]};
@@ -20,6 +22,12 @@ function failure<T>(code: string, message: string, path?: readonly (string | num
 
 function sameRef(left: VersionRef, right: VersionRef): boolean {
   return left.id === right.id && left.revision === right.revision;
+}
+
+function validRef(value: unknown): value is VersionRef {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+    && typeof (value as Record<string, unknown>).id === 'string'
+    && typeof (value as Record<string, unknown>).revision === 'string';
 }
 
 function isMeaningDefinition(value: VersionRef | MeaningDefinition): value is MeaningDefinition {
@@ -37,6 +45,7 @@ function resolveMeaning(
   input: VersionRef | MeaningDefinition,
   options: MeaningEvaluatorOptions,
 ): Outcome<MeaningDefinition> {
+  if (!validRef(input)) return failure('runtime.meaning-input', 'Meaning evaluation requires a canonical meaning reference or definition.', ['meaning']);
   const definitions = meaningDefinitions(options);
   const candidate = isMeaningDefinition(input)
     ? input
@@ -86,18 +95,34 @@ function sourceContext(input: MeaningEvaluationInput, source: QuerySource): Outc
  */
 export function createMeaningEvaluator(options: MeaningEvaluatorOptions): Outcome<MeaningEvaluator> {
   if (options === null || typeof options !== 'object' || Array.isArray(options)) return failure('runtime.meaning-evaluator', 'Meaning evaluator options are required.');
-  const limits: Partial<QueryLimits> | undefined = options.limits;
+  const context = snapshotMeaningAuthoringOptions(options);
+  if (!context.ok) return context;
+  let limits: Partial<QueryLimits> | undefined;
+  if (options.limits !== undefined) {
+    const inspected = parseWireValue(options.limits);
+    if (!inspected.ok) return inspected;
+    if (inspected.value === null || typeof inspected.value !== 'object' || Array.isArray(inspected.value))
+      return failure('runtime.meaning-evaluator', 'Meaning evaluator limits must be a bounded object.', ['limits']);
+    limits = freezeMeaningValue(inspected.value) as Partial<QueryLimits>;
+  }
+  const snapshot: MeaningEvaluatorOptions = {
+    catalog: context.value.catalog,
+    registry: context.value.registry,
+    ...(context.value.definitions === undefined ? {} : {definitions: context.value.definitions}),
+    ...(context.value.policy === undefined ? {} : {policy: context.value.policy}),
+    ...(limits === undefined ? {} : {limits}),
+  };
   const planner = createQueryPlanner({
-    catalog: options.catalog,
-    registry: options.registry,
-    ...(options.definitions === undefined ? {} : {definitions: options.definitions}),
+    catalog: snapshot.catalog,
+    registry: snapshot.registry,
+    ...(snapshot.definitions === undefined ? {} : {definitions: snapshot.definitions}),
     ...(limits === undefined ? {} : {limits}),
   });
   if (!planner.ok) return planner;
 
   const evaluate = (input: MeaningEvaluationInput): Outcome<QueryResult> => {
-    if (input === null || typeof input !== 'object') return failure('runtime.meaning-evaluation', 'Meaning evaluation input is required.');
-    const meaning = resolveMeaning(input.meaning, options);
+    if (input === null || typeof input !== 'object' || Array.isArray(input)) return failure('runtime.meaning-evaluation', 'Meaning evaluation input is required.');
+    const meaning = resolveMeaning(input.meaning, snapshot);
     if (!meaning.ok) return meaning;
     const source = input.source;
     if (source === null || typeof source !== 'object' || !source.relations || typeof source.relations !== 'object')
@@ -108,11 +133,11 @@ export function createMeaningEvaluator(options: MeaningEvaluatorOptions): Outcom
     // A direct draft is allowed for preview even when it has not yet been
     // inserted into the host catalog. Include it in this immutable planner
     // snapshot so manual, Studio and AI previews use one lowering path.
-    const definitions = [...(options.definitions ?? [])];
+    const definitions = [...(snapshot.definitions ?? [])];
     if (!definitions.some((candidate) => sameRef(candidate, meaning.value))) definitions.push(meaning.value);
     const evaluationPlanner = createQueryPlanner({
-      catalog: options.catalog,
-      registry: options.registry,
+      catalog: snapshot.catalog,
+      registry: snapshot.registry,
       definitions,
       ...(limits === undefined ? {} : {limits}),
     });

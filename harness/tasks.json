@@ -721,9 +721,10 @@
       "acceptance": [
         "Every compound is a typed macro/recipe over shared primitives, not a duplicate runtime."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "Isolated preflight_diagnosis writer owns compounds, focused tests/docs at codex/t21-compounds. Root owns canonical integration/config/exports; independent T23 work continues."
     },
     {
       "id": "T22",

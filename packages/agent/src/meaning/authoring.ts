@@ -1,6 +1,7 @@
 import {
   createMeaningAuthoring,
   createMeaningEvaluator,
+  freezeMeaningValue,
   type MeaningAuthoring,
   type MeaningDefinitionInput,
   type MeaningDraft,
@@ -13,6 +14,7 @@ import type {
   Outcome,
   VersionRef,
 } from '@aeliqo/core';
+import {parseWireValue} from '@aeliqo/core';
 import type {
   AgentMeaningAuthoring,
   AgentMeaningAuthoringOptions,
@@ -30,7 +32,34 @@ function sameRef(left: VersionRef, right: VersionRef): boolean {
 
 const DEFAULT_SCOPES: readonly MeaningDefinition['scope'][] = Object.freeze(['session', 'personal']);
 
+function snapshotProposalPolicy(policy: MeaningProposalPolicy | undefined): Outcome<MeaningProposalPolicy | undefined> {
+  if (policy === undefined) return {ok: true, value: undefined};
+  if (policy === null || typeof policy !== 'object' || Array.isArray(policy))
+    return failure('agent.meaning-policy', 'AI meaning proposal policy must be a bounded object.', ['proposalPolicy']);
+  if (policy.allowedScopes !== undefined && !Array.isArray(policy.allowedScopes))
+    return failure('agent.meaning-policy', 'AI meaning proposal scopes must be an array.', ['proposalPolicy', 'allowedScopes']);
+  if (policy.requireHypothesis !== undefined && typeof policy.requireHypothesis !== 'boolean')
+    return failure('agent.meaning-policy', 'AI meaning hypothesis policy must be boolean.', ['proposalPolicy', 'requireHypothesis']);
+  if (policy.requireDraft !== undefined && typeof policy.requireDraft !== 'boolean')
+    return failure('agent.meaning-policy', 'AI meaning draft policy must be boolean.', ['proposalPolicy', 'requireDraft']);
+  let allowedScopes: readonly MeaningDefinition['scope'][] | undefined;
+  if (policy.allowedScopes !== undefined) {
+    const inspected = parseWireValue(policy.allowedScopes);
+    if (!inspected.ok) return {ok: false, diagnostics: inspected.diagnostics};
+    if (!Array.isArray(inspected.value) || !inspected.value.every((scope): scope is MeaningDefinition['scope'] => typeof scope === 'string'))
+      return failure('agent.meaning-policy', 'AI meaning proposal scopes must be bounded strings.', ['proposalPolicy', 'allowedScopes']);
+    allowedScopes = Object.freeze([...inspected.value]);
+  }
+  return {ok: true, value: Object.freeze({
+    ...(allowedScopes === undefined ? {} : {allowedScopes}),
+    ...(policy.requireHypothesis === undefined ? {} : {requireHypothesis: policy.requireHypothesis}),
+    ...(policy.requireDraft === undefined ? {} : {requireDraft: policy.requireDraft}),
+  }) as MeaningProposalPolicy};
+}
+
 function checkPolicy(meaning: MeaningDefinition, policy: MeaningProposalPolicy | undefined): Outcome<void> {
+  if (meaning === null || typeof meaning !== 'object' || Array.isArray(meaning))
+    return failure('agent.meaning-proposal', 'An AI meaning proposal requires a canonical definition.', ['meaning']);
   const allowedScopes = policy?.allowedScopes ?? DEFAULT_SCOPES;
   if (!allowedScopes.includes(meaning.scope)) return failure('agent.meaning-scope', 'AI meaning proposals are limited to the configured low-risk scope.', ['scope']);
   if ((policy?.requireHypothesis ?? true) && meaning.authority !== 'hypothesis')
@@ -53,8 +82,12 @@ function aiSource(meaning: MeaningDefinition): {readonly surface: 'ai-assisted';
 export function createAgentMeaningAuthoring<const C extends Catalog>(options: AgentMeaningAuthoringOptions<C>): Outcome<AgentMeaningAuthoring<C>> {
   const manual = createMeaningAuthoring(options);
   if (!manual.ok) return manual;
-  const policy = options.proposalPolicy;
+  const policyResult = snapshotProposalPolicy(options.proposalPolicy);
+  if (!policyResult.ok) return policyResult;
+  const policy = policyResult.value;
   const defineMeaning = (input: MeaningDefinitionInput): Outcome<MeaningDraft> => {
+    if (input === null || typeof input !== 'object' || Array.isArray(input))
+      return failure('agent.meaning-proposal', 'An AI meaning definition requires a bounded input object.');
     if (input.origin !== undefined && input.origin !== 'ai-assisted') return failure('agent.meaning-origin', 'The AI authoring route cannot claim manual or system provenance.', ['origin']);
     if (input.lifecycle !== undefined && input.lifecycle !== 'draft') return failure('agent.meaning-lifecycle', 'The AI authoring route can only create drafts.', ['lifecycle']);
     if (input.authority !== undefined && input.authority !== 'hypothesis') return failure('agent.meaning-authority', 'The AI authoring route can only create hypothesis definitions.', ['authority']);
@@ -69,7 +102,7 @@ export function createAgentMeaningAuthoring<const C extends Catalog>(options: Ag
     });
   };
   const propose = (input: MeaningProposalInput): Outcome<MeaningDraft> => {
-    if (input === null || typeof input !== 'object' || input.meaning === undefined)
+    if (input === null || typeof input !== 'object' || Array.isArray(input) || input.meaning === undefined)
       return failure('agent.meaning-proposal', 'An AI meaning proposal requires one canonical definition.', ['meaning']);
     const checked = checkPolicy(input.meaning, policy);
     if (!checked.ok) return checked;

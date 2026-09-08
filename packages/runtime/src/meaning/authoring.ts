@@ -1,9 +1,12 @@
 import {
   WIRE_LIMITS,
   createTypedAuthoring,
+  createFunctionRegistry,
+  parseWireValue,
   validateMeaning,
   type Catalog,
   type DefineMetricInput,
+  type FunctionRegistry,
   type MeaningDefinition,
   type Outcome,
   type TypedAuthoring,
@@ -20,6 +23,10 @@ import type {
 
 function failure<T>(code: string, message: string, path?: readonly (string | number)[]): Outcome<T> {
   return {ok: false, diagnostics: [{code, message, retryable: false, ...(path === undefined ? {} : {path: [...path]})}]};
+}
+
+function outcomeCast<T>(outcome: Outcome<unknown>): Outcome<T> {
+  return outcome.ok ? {ok: true, value: outcome.value as T} : {ok: false, diagnostics: outcome.diagnostics};
 }
 
 /** Stable object ordering is used only for equality and local registry identities. */
@@ -53,6 +60,82 @@ export function freezeMeaningValue<T>(value: T): T {
   return Object.freeze(copy) as T;
 }
 
+function snapshotWireValue<T>(value: T): Outcome<T> {
+  const inspected = parseWireValue(value);
+  if (!inspected.ok) return outcomeCast(inspected);
+  return {ok: true, value: freezeMeaningValue(inspected.value) as T};
+}
+
+function snapshotRegistry(input: FunctionRegistry): Outcome<FunctionRegistry> {
+  if (input === null || typeof input !== 'object' || Array.isArray(input) || !Array.isArray(input.signatures))
+    return failure('runtime.meaning-registry', 'A canonical function registry is required.', ['registry']);
+  const signatures = snapshotWireValue(input.signatures);
+  if (!signatures.ok) return signatures;
+  const created = createFunctionRegistry({digest: input.digest, signatures: signatures.value});
+  if (!created.ok) return created;
+  // The core registry already validates the declared signature shape. Deeply
+  // freeze the returned signatures again so unknown wire members cannot retain
+  // an alias to caller-owned nested data, and close resolve over that snapshot.
+  const frozenSignatures = Object.freeze(created.value.signatures.map((signature) => freezeMeaningValue(signature)));
+  const snapshot: FunctionRegistry = {
+    digest: created.value.digest,
+    signatures: frozenSignatures,
+    resolve(ref: VersionRef) {
+      return frozenSignatures.find((signature) => signature.ref.id === ref.id && signature.ref.revision === ref.revision);
+    },
+  };
+  return {ok: true, value: Object.freeze(snapshot)};
+}
+
+/**
+ * Normalize the mutable host inputs once at the authoring boundary. This is
+ * intentionally kept out of the public meaning barrel; the runtime registry
+ * can reuse it while preserving one canonical catalog/registry snapshot.
+ */
+export function snapshotMeaningAuthoringOptions<const C extends Catalog>(options: MeaningAuthoringOptions<C>): Outcome<MeaningAuthoringOptions<C>> {
+  if (options === null || typeof options !== 'object' || Array.isArray(options))
+    return failure('runtime.meaning-authoring', 'Meaning authoring options are required.');
+  const registry = snapshotRegistry(options.registry);
+  if (!registry.ok) return registry;
+  const definitions = options.definitions === undefined ? undefined : snapshotWireValue(options.definitions);
+  if (definitions !== undefined && !definitions.ok) return definitions;
+  const policy = options.policy === undefined ? undefined : snapshotWireValue(options.policy);
+  if (policy !== undefined && !policy.ok) return policy;
+  const source = options.source === undefined ? undefined : snapshotWireValue(options.source);
+  if (source !== undefined && !source.ok) return source;
+  const assumptions = options.assumptions === undefined ? undefined : snapshotWireValue(options.assumptions);
+  if (assumptions !== undefined && !assumptions.ok) return assumptions;
+  if (definitions !== undefined && !Array.isArray(definitions.value))
+    return failure('runtime.meaning-definitions', 'Meaning definitions must be an array.', ['definitions']);
+  if (policy !== undefined && (policy.value === null || typeof policy.value !== 'object' || Array.isArray(policy.value)))
+    return failure('runtime.meaning-policy', 'Meaning policy must be a plain object.', ['policy']);
+  if (source !== undefined && (source.value === null || typeof source.value !== 'object' || Array.isArray(source.value)))
+    return failure('runtime.meaning-source', 'Meaning source must be a plain object.', ['source']);
+  if (assumptions !== undefined && !Array.isArray(assumptions.value))
+    return failure('runtime.meaning-assumptions', 'Meaning assumptions must be an array.', ['assumptions']);
+
+  const candidate = {
+    catalog: options.catalog,
+    registry: registry.value,
+    ...(definitions === undefined ? {} : {definitions: definitions.value}),
+    ...(policy === undefined ? {} : {policy: policy.value}),
+    ...(source === undefined ? {} : {source: source.value}),
+    ...(assumptions === undefined ? {} : {assumptions: assumptions.value}),
+  } as MeaningAuthoringOptions<C>;
+  let typed: Outcome<TypedAuthoring<C>>;
+  try {
+    typed = createTypedAuthoring(candidate);
+  } catch {
+    return failure('runtime.meaning-authoring', 'Meaning authoring options failed safely at the canonical boundary.');
+  }
+  if (!typed.ok) return typed;
+  return {ok: true, value: Object.freeze({
+    ...candidate,
+    catalog: typed.value.catalog,
+    registry: typed.value.registry,
+  })};
+}
+
 function validText(value: unknown, maximum: number): value is string {
   return typeof value === 'string' && value.length > 0 && value.length <= maximum && !/[\u0000-\u001f\u007f]/u.test(value);
 }
@@ -79,8 +162,6 @@ function normalizeSource(source: MeaningSource | undefined, meaning: MeaningDefi
     return failure('runtime.meaning-source', 'Meaning ownership is unsupported.', ['source', 'ownership']);
   if (value.surface === 'ai-assisted' && meaning.origin !== 'ai-assisted')
     return failure('runtime.meaning-origin', 'AI-assisted source must preserve ai-assisted origin.', ['origin']);
-  if (value.surface === 'code' && meaning.origin === 'ai-assisted')
-    return failure('runtime.meaning-origin', 'Code-owned source cannot hide AI-assisted provenance.', ['origin']);
   if (value.ownerId !== undefined && !validText(value.ownerId, WIRE_LIMITS.id))
     return failure('runtime.meaning-source', 'Meaning owner identity is not bounded.', ['source', 'ownerId']);
   return {ok: true, value: freezeMeaningValue({
@@ -145,8 +226,9 @@ function changedFields(left: MeaningDefinition, right: MeaningDefinition): reado
  * type/grain/dependency checks to core's canonical typed authoring helper.
  */
 export function createMeaningAuthoring<const C extends Catalog>(options: MeaningAuthoringOptions<C>): Outcome<MeaningAuthoring<C>> {
-  if (options === null || typeof options !== 'object' || Array.isArray(options)) return failure('runtime.meaning-authoring', 'Meaning authoring options are required.');
-  const typed = createTypedAuthoring(options);
+  const snapshot = snapshotMeaningAuthoringOptions(options);
+  if (!snapshot.ok) return snapshot;
+  const typed = createTypedAuthoring(snapshot.value);
   if (!typed.ok) return typed;
   const value: TypedAuthoring<C> = typed.value;
   const defineMeaning = (input: MeaningDefinitionInput): Outcome<MeaningDraft> => {
@@ -168,10 +250,10 @@ export function createMeaningAuthoring<const C extends Catalog>(options: Meaning
       ...(input.authority === undefined ? {} : {authority: input.authority}),
       ...(input.scope === undefined ? {} : {scope: input.scope}),
     };
-    return makeDraft(meaning, options, input.assumptions === undefined ? {} : {assumptions: input.assumptions});
+    return makeDraft(meaning, snapshot.value, input.assumptions === undefined ? {} : {assumptions: input.assumptions});
   };
   const draft = (meaning: MeaningDefinition, draftOptions: {readonly source?: MeaningSource; readonly assumptions?: readonly string[]; readonly base?: VersionRef} = {}): Outcome<MeaningDraft> =>
-    makeDraft(meaning, options, draftOptions);
+    makeDraft(meaning, snapshot.value, draftOptions);
   const edit = (base: MeaningDraft | MeaningDefinition, meaning: MeaningDefinition, editOptions: {readonly source?: MeaningSource; readonly assumptions?: readonly string[]} = {}): Outcome<MeaningDraft> => {
     if (!validMeaningBase(base)) return failure('runtime.meaning-base', 'Meaning edit requires a canonical base definition.', ['base']);
     const previous = meaningFromBase(base);
@@ -183,7 +265,7 @@ export function createMeaningAuthoring<const C extends Catalog>(options: Meaning
       ...(editOptions.assumptions === undefined && previous.assumptions === undefined ? {} : {assumptions: editOptions.assumptions ?? previous.assumptions}),
       base: {id: previous.meaning.id, revision: previous.meaning.revision},
     };
-    return makeDraft(meaning, options, draftOptions);
+    return makeDraft(meaning, snapshot.value, draftOptions);
   };
   const proposeDiff = (base: MeaningDraft | MeaningDefinition, meaning: MeaningDefinition, diffOptions: {readonly source?: MeaningSource; readonly assumptions?: readonly string[]} = {}): Outcome<MeaningDiff> => {
     if (!validMeaningBase(base)) return failure('runtime.meaning-base', 'Meaning diff requires a canonical base definition.', ['base']);
@@ -193,7 +275,7 @@ export function createMeaningAuthoring<const C extends Catalog>(options: Meaning
       ...(diffOptions.assumptions === undefined && previous.assumptions === undefined ? {} : {assumptions: diffOptions.assumptions ?? previous.assumptions}),
       base: {id: previous.meaning.id, revision: previous.meaning.revision},
     };
-    const candidate = makeDraft(meaning, options, candidateOptions);
+    const candidate = makeDraft(meaning, snapshot.value, candidateOptions);
     if (!candidate.ok) return candidate;
     if (meaningRefKey(previous.meaning) === meaningRefKey(candidate.value.meaning) && canonicalMeaning(previous.meaning) === canonicalMeaning(candidate.value.meaning))
       return failure('runtime.meaning-no-change', 'The proposed meaning diff does not change its canonical definition.', ['meaning']);
@@ -203,7 +285,7 @@ export function createMeaningAuthoring<const C extends Catalog>(options: Meaning
     };
     const priorResult = 'meaning' in base && 'source' in base
       ? {ok: true as const, value: base}
-      : makeDraft(previous.meaning, options, priorOptions);
+      : makeDraft(previous.meaning, snapshot.value, priorOptions);
     const priorDraft = priorResult.ok ? priorResult.value : undefined;
     if (priorDraft === undefined) return failure('runtime.meaning-diff', 'The base meaning could not be normalized for diffing.', ['meaning']);
     return {ok: true, value: freezeMeaningValue({version: '1' as const, state: 'proposed-diff' as const, base: priorDraft, candidate: candidate.value, changed: changedFields(previous.meaning, candidate.value.meaning)})};

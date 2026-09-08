@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {createStandardFunctionRegistry, type Catalog, type MeaningDefinition} from '../../packages/core/src/index.js';
+import {createStandardFunctionRegistry, type Catalog, type MeaningDefinition} from '@aeliqo/core';
 import {
   createMeaningAuthoring,
   createMeaningEvaluator,
@@ -10,15 +10,17 @@ import {
   createMeaningProposalCapability,
 } from '../../packages/agent/src/meaning/index.js';
 
-const registry = createStandardFunctionRegistry('meaning-test-functions').value;
-const catalog: Catalog = {
+const registryResult = createStandardFunctionRegistry('meaning-test-functions');
+if (!registryResult.ok) throw new Error('Registry fixture failed.');
+const registry = registryResult.value;
+const catalog = {
   version: '1', revision: 'meaning-test-catalog', functionRegistryDigest: registry.digest,
   entities: [{id: 'items', label: 'Items', identity: ['id'], rowGrain: ['id'], fields: [
     {id: 'id', label: 'ID', role: 'identity', type: {value: 'text', nullable: false}},
     {id: 'amount', label: 'Amount', role: 'measure', type: {value: 'integer', nullable: false}},
   ]}],
   relationships: [], meanings: [], capabilities: [],
-};
+} as const satisfies Catalog;
 
 const source = {
   revision: 'meaning-test-source', catalogRevision: catalog.revision, scopeDigest: 'scope-1', policyRevision: 'policy-1',
@@ -106,6 +108,6 @@ describe('canonical manual and AI meaning authoring', () => {
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) return;
     const result = capability.invoke(parsed.value, {requestId: 'r', targetRegionId: 'region', goalEpoch: 'epoch', transport: 'direct', signal: new AbortController().signal, authority: {principalKey: 'p', regionId: 'region', goalEpoch: 'epoch', grants: ['meaning.propose']}});
-    expect(result.state).toBe('invalid');
+    expect(result).toMatchObject({state: 'invalid'});
   });
 });

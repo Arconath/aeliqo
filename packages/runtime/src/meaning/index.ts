@@ -3,6 +3,7 @@ export {createMeaningEvaluator} from './evaluator.js';
 export {createMeaningRegistry} from './registry.js';
 export type {
   MeaningActivationContext,
+  MeaningActivationOptions,
   MeaningActivationHost,
   MeaningActivationContextRequest,
   MeaningActivationOutcome,

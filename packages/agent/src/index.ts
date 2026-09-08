@@ -6,3 +6,4 @@ export type {AgentBinder, AgentBinderOptions, AgentHost, AgentHostContext, Agent
 export type {AgentContainmentInput, AgentContainmentReceipt, AgentContainmentOutcome, AgentAttempt, AgentAttemptProgress, AgentRepairRequest} from './loop-types.js';
 export * from './capabilities/index.js';
 export * from './session/index.js';
+export * from './meaning/index.js';

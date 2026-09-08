@@ -97,12 +97,20 @@ export interface MeaningRegistryOptions {
   readonly policy?: SemanticPolicy;
   readonly activationHost?: MeaningActivationHost;
   readonly maxEntries?: number;
+  /** Aggregate UTF-8 bytes retained in locally registered drafts, including tombstones. */
+  readonly maxBytes?: number;
 }
 
 export interface MeaningRegistrationInput {
   readonly draft: MeaningDraft;
   /** Code bundles may be registered before a later trusted activation pass. */
   readonly activate?: boolean;
+}
+
+export interface MeaningActivationOptions {
+  readonly signal?: AbortSignal;
+  /** Trusted calling adapter pins; never supplied by an untrusted proposal. */
+  readonly expectedAuthority?: {readonly principalKey: string; readonly readSet?: CommitPreconditions};
 }
 
 export interface MeaningRegistry {
@@ -113,7 +121,7 @@ export interface MeaningRegistry {
   readonly get: (ref: VersionRef) => MeaningEntry | undefined;
   readonly list: (options?: {readonly includeRevoked?: boolean; readonly activeOnly?: boolean}) => readonly MeaningEntry[];
   readonly definitions: (options?: {readonly activeOnly?: boolean}) => readonly MeaningDefinition[];
-  readonly activate: (ref: VersionRef, options?: {readonly signal?: AbortSignal}) => Promise<Outcome<MeaningActivationReceipt>>;
+  readonly activate: (ref: VersionRef, options?: MeaningActivationOptions) => Promise<Outcome<MeaningActivationReceipt>>;
   readonly revoke: (ref: VersionRef) => Outcome<MeaningRevocationReceipt>;
   readonly revokeScope: (scopeDigest: string) => Outcome<readonly MeaningRevocationReceipt[]>;
 }
