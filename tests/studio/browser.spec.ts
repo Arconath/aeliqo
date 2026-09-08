@@ -19,6 +19,8 @@ test.describe('local Studio', () => {
     await page.getByRole('button', {name: 'Save profile revision'}).click();
     await expect(page.locator('.experience-edit input[name="profile-label"]')).toHaveValue('Fixed employee inspection');
     await expect(page.locator('.section-heading .badge')).toHaveText('fixed');
+    await expect(page.locator('#profile-select')).toHaveValue('employee-inspection@2');
+    await expect(page.locator('#profile-select option')).toHaveCount(2);
 
     await page.getByRole('button', {name: 'Component Gallery'}).click();
     await expect(page.getByRole('heading', {name: 'Component Gallery'})).toBeVisible();

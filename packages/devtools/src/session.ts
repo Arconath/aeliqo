@@ -257,8 +257,10 @@ export function createStudioSession(initial: StudioDocument, options: StudioDocu
     const collision = document.profiles.find((entry) => sameRef(entry.experience, experience) && canonical(entry.experience) !== canonical(experience));
     if (collision !== undefined) return fail('studio.experience-conflict', 'The proposed Experience revision conflicts with an existing profile.', ['input', 'experience']);
     const nextProfile: StudioProfile = Object.freeze({label: candidate.label as string, source: {surface: 'studio' as const, ownership: 'personal' as const}, experience});
-    const profiles = document.profiles.filter((entry) => !sameRef(entry.experience, prior.experience));
-    profiles.push(nextProfile);
+    // Experience revisions are immutable. Keep the original profile available
+    // for inspection and selection while appending the new Studio-owned
+    // revision.
+    const profiles = [...document.profiles, nextProfile];
     const next = {...document, revision: `${document.revision}-experience`, profiles: Object.freeze(profiles), activeProfile: sameRef(document.activeProfile, prior.experience) ? {id: experience.id, revision: experience.revision} : document.activeProfile};
     const checked = createStudioDocument(next, options);
     if (!checked.ok) return {ok: false, diagnostics: checked.diagnostics};

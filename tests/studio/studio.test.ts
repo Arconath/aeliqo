@@ -52,6 +52,11 @@ describe('local Studio document and session', () => {
     expect(edited.value.source).toEqual({surface: 'studio', ownership: 'personal'});
     expect(edited.value.experience.mode).toBe('fixed');
     expect(session.getState().document.activeProfile).toEqual({id: base.id, revision: '2'});
+    expect(session.getState().document.profiles.map((entry) => `${entry.experience.id}@${entry.experience.revision}`)).toEqual([
+      `${base.id}@${base.revision}`,
+      `${base.id}@2`,
+    ]);
+    expect(session.getState().document.profiles[0]!.source).toEqual({surface: 'code', ownership: 'code', readOnly: true});
     const codeSession = createStudioSession(document(), {registry});
     const readOnly = codeSession.editExperience({base, label: 'Code mutation', experience: {...base, mode: 'fixed'}});
     expect(readOnly.ok).toBe(false);

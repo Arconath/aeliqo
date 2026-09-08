@@ -106,7 +106,12 @@ function restoreControls(): void {
     const saved = savedControls.get(key);
     if (saved === undefined) return;
     if (control instanceof HTMLInputElement && (control.type === 'checkbox' || control.type === 'radio') && saved.checked !== undefined) control.checked = saved.checked;
-    else control.value = saved.value;
+    else if (control instanceof HTMLSelectElement) {
+      // A save can replace the active profile with a new immutable revision.
+      // Preserve a saved selection only when that option still exists; an old
+      // value must not clear the freshly rendered active revision.
+      if (control.id !== 'profile-select' && [...control.options].some((option) => option.value === saved.value)) control.value = saved.value;
+    } else control.value = saved.value;
   });
   if (focusedControl === undefined) return;
   const control = [...root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input,textarea,select')].find((candidate) => controlKey(candidate) === focusedControl);
