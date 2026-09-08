@@ -14,7 +14,7 @@ import argparse
 import json
 import random
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -211,6 +211,42 @@ def incomplete_and_adversarial(spec: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def time_buckets(spec: dict[str, Any]) -> dict[str, Any]:
+    """Bucket explicit instants in the initially supported UTC Gregorian policy.
+
+    Inputs may carry a fixed numeric offset; normalizing them to UTC before
+    bucketing proves that an instant is not treated as a local wall-clock
+    string. IANA timezone resolution is intentionally outside this oracle's
+    supported policy and is reported as an explicit capability gap.
+    """
+    if spec["calendar"] != "gregorian" or spec["timezone"] != "UTC":
+        raise AssertionError("fixture must use the supported UTC Gregorian policy")
+    if spec["weekStartsOn"] != 1:
+        raise AssertionError("fixture expects ISO/Monday week starts")
+
+    normalized = []
+    for event in spec["instants"]:
+        instant = datetime.fromisoformat(event["instant"].replace("Z", "+00:00"))
+        utc = instant.astimezone(timezone.utc)
+        iso = utc.isocalendar()
+        normalized.append({
+            "id": event["id"],
+            "utc": utc.isoformat().replace("+00:00", "Z"),
+            "day": utc.strftime("%Y-%m-%d"),
+            "week": f"{iso.year:04d}-W{iso.week:02d}",
+            "month": utc.strftime("%Y-%m"),
+            "quarter": f"{utc.year:04d}-Q{((utc.month - 1) // 3) + 1}",
+            "year": f"{utc.year:04d}",
+        })
+    return {
+        "calendar": spec["calendar"],
+        "timezone": spec["timezone"],
+        "weekStartsOn": spec["weekStartsOn"],
+        "instants": normalized,
+        "unsupportedTimezone": {"state": "unsupported", "timezone": spec["unsupportedTimezone"]},
+    }
+
+
 def calculate(cases: dict[str, Any]) -> dict[str, Any]:
     return {
         "seededFanout": seeded_fanout(cases["seededFanout"]),
@@ -219,6 +255,7 @@ def calculate(cases: dict[str, Any]) -> dict[str, Any]:
         "exactArithmetic": exact_arithmetic(cases["exactArithmetic"]),
         "ranking": ranking(cases["ranking"]),
         "incompleteAndAdversarial": incomplete_and_adversarial(cases["incompleteAndAdversarial"]),
+        "timeBuckets": time_buckets(cases["timeBuckets"]),
     }
 
 

@@ -256,5 +256,61 @@
         "label": "other-1"
       }
     ]
+  },
+  "timeBuckets": {
+    "calendar": "gregorian",
+    "instants": [
+      {
+        "day": "2024-02-29",
+        "id": "leap-day-end",
+        "month": "2024-02",
+        "quarter": "2024-Q1",
+        "utc": "2024-02-29T23:59:59Z",
+        "week": "2024-W09",
+        "year": "2024"
+      },
+      {
+        "day": "2024-03-01",
+        "id": "march-start",
+        "month": "2024-03",
+        "quarter": "2024-Q1",
+        "utc": "2024-03-01T00:00:00Z",
+        "week": "2024-W09",
+        "year": "2024"
+      },
+      {
+        "day": "2024-12-31",
+        "id": "year-end",
+        "month": "2024-12",
+        "quarter": "2024-Q4",
+        "utc": "2024-12-31T23:59:59Z",
+        "week": "2025-W01",
+        "year": "2024"
+      },
+      {
+        "day": "2025-01-01",
+        "id": "new-year",
+        "month": "2025-01",
+        "quarter": "2025-Q1",
+        "utc": "2025-01-01T00:00:00Z",
+        "week": "2025-W01",
+        "year": "2025"
+      },
+      {
+        "day": "2024-02-29",
+        "id": "fixed-offset-leap",
+        "month": "2024-02",
+        "quarter": "2024-Q1",
+        "utc": "2024-02-29T17:30:00Z",
+        "week": "2024-W09",
+        "year": "2024"
+      }
+    ],
+    "timezone": "UTC",
+    "unsupportedTimezone": {
+      "state": "unsupported",
+      "timezone": "Asia/Jakarta"
+    },
+    "weekStartsOn": 1
   }
 }

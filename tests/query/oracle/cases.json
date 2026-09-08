@@ -172,5 +172,33 @@
       }
     ],
     "invalidDecimal": "1.2.3"
+  },
+  "timeBuckets": {
+    "calendar": "gregorian",
+    "timezone": "UTC",
+    "weekStartsOn": 1,
+    "instants": [
+      {
+        "id": "leap-day-end",
+        "instant": "2024-02-29T23:59:59Z"
+      },
+      {
+        "id": "march-start",
+        "instant": "2024-03-01T00:00:00Z"
+      },
+      {
+        "id": "year-end",
+        "instant": "2024-12-31T23:59:59Z"
+      },
+      {
+        "id": "new-year",
+        "instant": "2025-01-01T00:00:00Z"
+      },
+      {
+        "id": "fixed-offset-leap",
+        "instant": "2024-03-01T00:30:00+07:00"
+      }
+    ],
+    "unsupportedTimezone": "Asia/Jakarta"
   }
 }

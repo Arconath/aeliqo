@@ -32,6 +32,13 @@ type OracleOutput = {
     halfOpenPeriod: {included: string[]; excluded: string[]};
     invalidDecimal: {state: string; value: string};
   };
+  timeBuckets: {
+    calendar: string;
+    timezone: string;
+    weekStartsOn: number;
+    instants: Array<{id: string; utc: string; day: string; week: string; month: string; quarter: string; year: string}>;
+    unsupportedTimezone: {state: string; timezone: string};
+  };
 };
 
 const oracleDirectory = fileURLToPath(new URL('./oracle/', import.meta.url));
@@ -114,6 +121,21 @@ describe('independent T07 numerical oracle', () => {
     });
     expect(output.incompleteAndAdversarial.halfOpenPeriod).toEqual({included: ['at-start', 'inside'], excluded: ['at-end']});
     expect(output.incompleteAndAdversarial.invalidDecimal).toEqual({state: 'rejected', value: '1.2.3'});
+  });
+
+  it('buckets UTC Gregorian instants exactly across leap and year boundaries', () => {
+    const {timeBuckets} = runOracle();
+    expect(timeBuckets).toMatchObject({calendar: 'gregorian', timezone: 'UTC', weekStartsOn: 1});
+    expect(timeBuckets.instants.find((row) => row.id === 'leap-day-end')).toMatchObject({
+      utc: '2024-02-29T23:59:59Z', day: '2024-02-29', week: '2024-W09', month: '2024-02', quarter: '2024-Q1', year: '2024',
+    });
+    expect(timeBuckets.instants.find((row) => row.id === 'year-end')).toMatchObject({
+      week: '2025-W01', month: '2024-12', quarter: '2024-Q4', year: '2024',
+    });
+    expect(timeBuckets.instants.find((row) => row.id === 'fixed-offset-leap')).toMatchObject({
+      utc: '2024-02-29T17:30:00Z', day: '2024-02-29',
+    });
+    expect(timeBuckets.unsupportedTimezone).toEqual({state: 'unsupported', timezone: 'Asia/Jakarta'});
   });
 
   it('uses the checked deterministic fixture seed', () => {

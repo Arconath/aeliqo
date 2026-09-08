@@ -14,7 +14,10 @@ The fixtures cover:
 - grouped ranking with stable tie order, fixed top-K population before weekly
   trend evaluation, and a partial-page ranking counterexample;
 - violated many-to-one cardinality, half-open time boundaries and malformed
-  decimal input.
+  decimal input;
+- UTC Gregorian day/week/month/quarter/year buckets across leap and year
+  boundaries, including a fixed-offset instant and an explicit unsupported
+  IANA timezone result.
 
 Run `python3 tests/query/oracle/oracle.py --check` to verify the checked-in
 expected output. The sibling Vitest bridge invokes the same script and also
