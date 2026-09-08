@@ -77,7 +77,10 @@ describe('production conditional query evaluator', () => {
     ]);
     const planner = plannerFor();
     const plan = unwrap(planner.plan(query));
-    const result = planner.evaluate(plan, source, {maxOperations: 5});
+    // Two plan nodes, and 14 operations per row including source validation,
+    // projection and the four expression nodes actually evaluated.
+    const result = planner.evaluate(plan, source, {maxOperations: 44});
+    expect(planner.evaluate(plan, source, {maxOperations: 43}).ok).toBe(false);
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.value.rows.map((row) => row.chosen)).toEqual([7, 7, 7]);
@@ -93,7 +96,9 @@ describe('production conditional query evaluator', () => {
     const planner = plannerFor();
     const plan = unwrap(planner.plan(query));
     const unknownSource: QuerySource = {...source, relations: {facts: {...source.relations.facts!, rows: [source.relations.facts!.rows[2]!]}}};
-    const result = planner.evaluate(plan, unknownSource, {maxOperations: 3});
+    // The null condition skips both branches, including their literal nodes.
+    const result = planner.evaluate(plan, unknownSource, {maxOperations: 15});
+    expect(planner.evaluate(plan, unknownSource, {maxOperations: 14}).ok).toBe(false);
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.value.rows.map((row) => row.chosen)).toEqual([null]);
   });

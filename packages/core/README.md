@@ -155,6 +155,19 @@ context can tighten budgets and provide a cancellation view and monotonic clock
 for a deadline. Core does not read a global clock or introduce browser APIs.
 Use the runtime data path for source access and asynchronous cancellation.
 
+The default row ceiling is 10,000 across the source relations actually scanned.
+Source bytes and each intermediate materialization are bounded; a small final
+projection does not exempt a large source. Context overrides cannot enlarge the
+planner's configured ceilings. Operation accounting includes source validation,
+row visits and evaluated expressions; skipped conditional branches incur no
+execution charge. These are cooperative checks within synchronous local work.
+
+`createQueryFunctionRegistry({version: '2'})` selects `core-query-2`, adding typed
+equality and lazy conditional expressions. The default keeps `core-query-1`.
+The raw synthetic HR tests exercise employee/department counts, conditional rates
+and ranking against an independent fixture. Division is marked approximate;
+fixed-cohort weekly Task execution remains separate integration work.
+
 This API is an implementation slice, not full Task execution. Authorized prior
 result populations, named-output orchestration and HTTP execution of these plans
 remain separate integration work. Unsupported temporal policies, cursors and

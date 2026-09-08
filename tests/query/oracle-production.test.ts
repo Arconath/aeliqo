@@ -24,7 +24,7 @@ type OracleExpected = {
   seededFanout: {eligibleEmployees: readonly string[]};
   ratioOfSums: {ratioOfSums: string};
   emptyUnknown: {empty: {rate: string | null}; missingNumerator: {rate: string | null}; zeroDenominator: {rate: string | null}; zeroValid: {rate: string}};
-  exactArithmetic: {decimalTotal: string; integerTotal: string; unsafeIntegerInput: {state: string}};
+  exactArithmetic: {decimalTotal: string; integerTotal: string; safeIntegerMaximum: number; unsafeIntegerInput: {state: string}};
   ranking: {fixedTopK: readonly string[]; fullTop: string};
   incompleteAndAdversarial: {halfOpenPeriod: {included: readonly string[]; excluded: readonly string[]}};
   timeBuckets: {instants: readonly {id: string; day: string; month: string; quarter: string; week: string; year: string; utc: string}[]};
@@ -221,8 +221,12 @@ describe('production query engine against the independent oracle', () => {
       select: [{id: 'total', expression: plainField('total')}],
       aggregates: [{id: 'total', function: {id: 'core.aggregate.sum', revision: '1'}, arguments: [field('integerRows', 'amount')]}],
     };
-    const integerResult = execute(integerCatalog, integerQuery, {integerRows: {entity: 'integerRows', complete: true, rows: oracleCases.exactArithmetic.integerValues.map((amount, index) => ({id: `i${index}`, amount}))}});
-    expect(integerResult.rows).toEqual([{total: Number(oracleExpected.exactArithmetic.integerTotal)}]);
+    // The independent total is mathematically exact, but exceeds the declared
+    // safe-integer scalar range. The SDK must refuse that output instead of
+    // emitting a value outside its predicted type or silently coercing it.
+    expect(BigInt(oracleExpected.exactArithmetic.integerTotal) > BigInt(oracleExpected.exactArithmetic.safeIntegerMaximum)).toBe(true);
+    expect(() => execute(integerCatalog, integerQuery, {integerRows: {entity: 'integerRows', complete: true,
+      rows: oracleCases.exactArithmetic.integerValues.map((amount, index) => ({id: `i${index}`, amount}))}})).toThrow(/query\.output-value/);
     const unsafeSource = {integerRows: {entity: 'integerRows', complete: true, rows: [
       {id: 'a', amount: Number(oracleCases.exactArithmetic.unsafeIntegerInput)},
     ]}};

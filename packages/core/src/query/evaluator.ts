@@ -10,7 +10,8 @@ import {queryFunctionSignaturesV2, standardFunctionSignatures} from '../expressi
 import {validateSemanticType} from '../semantics/type-utils.js';
 import {compareScalars, scalarIdentity, scalarInstantParts, validateScalar} from '../contracts/scalars.js';
 import {inspectWire} from '../contracts/ingress.js';
-import {validatePlanSemantics} from './planner.js';
+import {WIRE_LIMITS} from '../contracts/limits.js';
+import {DEFAULT_LIMITS, validatePlanSemantics} from './planner.js';
 import {
   type AggregateSpec,
   type LogicalPlan,
@@ -18,6 +19,7 @@ import {
   type PredicateSpec,
   type QueryExecutionContext,
   type QueryField,
+  type QueryLimits,
   type QueryOutcome,
   type QueryResult,
   type QueryRow,
@@ -56,6 +58,9 @@ interface EvalState {
   readonly unknown: Array<{readonly field: string; readonly reason: string}>;
   approximate: boolean;
   operations: number;
+  scannedRows: number;
+  sourceBytes: number;
+  readonly materializedBytes: WeakMap<QueryRow[], number>;
 }
 
 function failure<T>(code: string, message: string, path: readonly (string | number)[] = []): Outcome<T> {
@@ -120,12 +125,15 @@ function validDate(value: string): boolean {
   return day <= days[month - 1]!;
 }
 
-function normalizeSourceRelation(source: QuerySourceRelation, catalog: Catalog, expectedEntity?: string): Outcome<EvalRelation> {
+function normalizeSourceRelation(source: QuerySourceRelation, catalog: Catalog, expectedEntity: string, state: EvalState): Outcome<EvalRelation> {
   if (!isPlainDataRecord(source) || typeof source.entity !== 'string' || typeof source.complete !== 'boolean') return failure('query.source-shape', 'Source relation metadata is invalid.');
   if (expectedEntity !== undefined && source.entity !== expectedEntity) return failure('query.source-entity', `Source relation is labelled ${source.entity} but the plan requested ${expectedEntity}.`);
   const definition = entity(catalog, source.entity);
   if (definition === undefined) return failure('query.source-entity', `Source relation ${source.entity} is not declared.`);
   if (!Array.isArray(source.rows)) return failure('query.source-shape', `Source relation ${source.entity} rows must be an array.`);
+  if (state.scannedRows + source.rows.length > state.context.maxRows!)
+    return failure('query.budget', 'Source population exceeds the effective row budget before scanning.');
+  state.scannedRows += source.rows.length;
   const schema: QuerySchema = {
     fields: definition.fields.map((field) => ({id: fieldKey(definition.id, field.id), label: field.label, type: field.type.grain === undefined ? {...field.type, grain: definition.rowGrain.map((grain) => fieldKey(definition.id, grain))} : field.type, role: field.role, source: {entity: definition.id, field: field.id}})),
     identity: definition.identity.map((field) => fieldKey(definition.id, field)),
@@ -134,7 +142,11 @@ function normalizeSourceRelation(source: QuerySourceRelation, catalog: Catalog, 
   const rows: QueryRow[] = [];
   const identities = new Set<string>();
   for (let index = 0; index < source.rows.length; index += 1) {
-    const input = source.rows[index];
+    const step = tick(state, 1 + definition.fields.length + definition.identity.length);
+    if (!step.ok) return step;
+    const descriptor = Object.getOwnPropertyDescriptor(source.rows, String(index));
+    if (descriptor === undefined || !('value' in descriptor)) return failure('query.source-shape', 'Source rows must be dense arrays of data values.');
+    const input: unknown = descriptor.value;
     if (!isPlainDataRecord(input)) return failure('query.source-shape', `Source row ${index} for ${source.entity} must be a plain object with data properties.`);
     const output: Record<string, QueryValue> = {};
     for (const key of Object.keys(input)) {
@@ -157,6 +169,8 @@ function normalizeSourceRelation(source: QuerySourceRelation, catalog: Catalog, 
     const identity = stable(tuple);
     if (identities.has(identity)) return failure('query.source-identity', `Source relation ${source.entity} contains duplicate identity tuples.`);
     identities.add(identity);
+    state.sourceBytes += outputBytes([output]);
+    if (state.sourceBytes > state.context.maxBytes!) return failure('query.budget', 'Source population exceeds the effective byte budget.');
     rows.push(Object.freeze(output));
   }
   return {ok: true, value: {schema, rows: Object.freeze(rows), complete: source.complete}};
@@ -433,10 +447,20 @@ function validateNode(node: PlanRecord, inputRelations: readonly PlanNode[], cat
   return failure('query.plan', 'Unknown plan node operation.');
 }
 
-function validateLogicalPlan(input: unknown, catalog: Catalog, registry: FunctionRegistry): Outcome<LogicalPlan> {
-  const ingress = inspectWire(input);
+function validateLogicalPlan(input: unknown, catalog: Catalog, registry: FunctionRegistry, limits: QueryLimits): Outcome<LogicalPlan> {
+  if (!isPlainDataRecord(input) || typeof input.canonical !== 'string' || typeof input.planKey !== 'string')
+    return failure('query.plan', 'Logical plan must contain data properties and canonical identity strings.');
+  if (Object.getOwnPropertyNames(input).some((key) => Object.getOwnPropertyDescriptor(input, key)?.enumerable !== true))
+    return failure('query.plan', 'Logical plan properties must be enumerable JSON data.');
+  if (input.canonical.length > WIRE_LIMITS.bytes || input.planKey.length > WIRE_LIMITS.bytes)
+    return failure('query.budget', 'Logical plan identity exceeds the bounded plan size.');
+  // These two strings encode the whole plan, rather than an application scalar.
+  // Inspect the actual fields with scalar bounds and the complete plan with the
+  // unchanged document byte bound; do not raise the user-value text limit.
+  const ingress = inspectWire({...input, canonical: '', planKey: ''});
   if (!ingress.ok) return ingress;
-  input = ingress.value;
+  if (new TextEncoder().encode(JSON.stringify(input)).byteLength > WIRE_LIMITS.bytes)
+    return failure('query.budget', 'Logical plan exceeds the bounded document byte size.');
   if (!isRecord(input) || input.version !== '1' || !isRecord(input.pins) || !planId(input.pins.catalogRevision) || !planId(input.pins.functionRegistryDigest) ||
     !planId(input.root) || !Array.isArray(input.nodes) || input.nodes.length === 0 || !validQuerySchema(input.output, catalog) || !validNodeCost(input.cost) ||
     typeof input.canonical !== 'string' || typeof input.planKey !== 'string' || !Array.isArray(input.explain)) return failure('query.plan', 'Logical plan shape is invalid.');
@@ -445,6 +469,7 @@ function validateLogicalPlan(input: unknown, catalog: Catalog, registry: Functio
     if (input.pins[key] !== undefined && !planId(input.pins[key])) return failure('query.plan', `Plan pin ${key} is invalid.`);
   }
   const nodes = input.nodes as PlanNode[];
+  if (nodes.length > limits.maxNodes) return failure('query.budget', 'Logical plan exceeds the effective node budget.');
   const map = new Map<string, PlanNode>();
   for (const candidate of input.nodes as readonly unknown[]) {
     if (!isRecord(candidate) || !planId(candidate.id) || map.has(candidate.id)) return failure('query.plan', 'Logical plan node identifiers must be unique and bounded.');
@@ -459,12 +484,13 @@ function validateLogicalPlan(input: unknown, catalog: Catalog, registry: Functio
     if (!checked.ok) return checked;
   }
   const visiting = new Set<string>(); const visited = new Set<string>();
-  const visit = (id: string): Outcome<void> => {
+  const visit = (id: string, depth = 1): Outcome<void> => {
+    if (depth > limits.maxDepth) return failure('query.budget', 'Logical plan exceeds the effective depth budget.');
     if (visiting.has(id)) return failure('query.plan', 'Logical plan contains a cycle.');
     if (visited.has(id)) return {ok: true, value: undefined};
     visiting.add(id);
     const node = map.get(id)!;
-    for (const inputId of node.inputs) { const checked = visit(inputId); if (!checked.ok) return checked; }
+    for (const inputId of node.inputs) { const checked = visit(inputId, depth + 1); if (!checked.ok) return checked; }
     visiting.delete(id); visited.add(id); return {ok: true, value: undefined};
   };
   const acyclic = visit(input.root); if (!acyclic.ok) return acyclic;
@@ -557,7 +583,7 @@ function expressionSemanticType(expression: Expression, schema: QuerySchema, reg
     return source === undefined ? undefined : {...source, nullable: signature.output.kind === 'nullable-same-as' ? true : source.nullable};
   }
   const first = arguments_.find((argument): argument is SemanticType => argument !== undefined);
-  const value = signature.output.forceFloat === true || arguments_.some((argument) => argument?.value === 'float')
+  const value = signature.output.forceFloat === true || signature.operation === 'divide' || signature.operation === 'ratio-of-sums' || signature.operation === 'mean-of-rates' || arguments_.some((argument) => argument?.value === 'float')
     ? 'float'
     : arguments_.some((argument) => argument?.value === 'decimal') ? 'decimal' : 'integer';
   return {value, nullable: arguments_.some((argument) => argument?.nullable), ...(signature.output.unit === undefined ? (first?.unit === undefined ? {} : {unit: first.unit}) : {unit: signature.output.unit})};
@@ -570,22 +596,7 @@ function inferredRuntimeType(value: QueryValue): SemanticType {
 }
 
 function expressionValueType(expression: Expression, schema: QuerySchema, registry: FunctionRegistry): SemanticType['value'] | undefined {
-  if (expression.kind === 'field') return sourceField(schema, expression)?.type.value;
-  if (expression.kind === 'literal') return expression.type.value;
-  if (expression.kind === 'call') {
-    const signature = registry.resolve(expression.function);
-    const output = signature?.output;
-    if (output === undefined) return undefined;
-    if ('value' in output) return output.value;
-    if (output.kind === 'same-as' || output.kind === 'nullable-same-as') {
-      const argument = expression.arguments[output.argument];
-      return argument === undefined ? undefined : expressionValueType(argument, schema, registry);
-    }
-    const argumentTypes = expression.arguments.map((argument) => expressionValueType(argument, schema, registry));
-    return output.forceFloat || signature?.operation === 'divide' || signature?.operation === 'ratio-of-sums' || signature?.operation === 'mean-of-rates' || argumentTypes.includes('float') ? 'float'
-      : argumentTypes.includes('decimal') ? 'decimal' : 'integer';
-  }
-  return undefined;
+  return expressionSemanticType(expression, schema, registry)?.value;
 }
 
 /** Canonical typed equality key for grouping, joins and distinct values. */
@@ -603,6 +614,7 @@ function rowValue(state: EvalState, expression: Extract<Expression, {kind: 'fiel
 }
 
 function evaluateExpression(state: EvalState, expression: Expression, row: QueryRow, schema: QuerySchema): QueryOutcome<QueryValue | undefined> {
+  if (expression.kind === 'literal' || expression.kind === 'field') {const step = tick(state); if (!step.ok) return step;}
   if (expression.kind === 'literal') return {ok: true, value: expression.value};
   if (expression.kind === 'field') return rowValue(state, expression, row, schema);
   if (expression.kind === 'definition') return unsupported('definition-expression', 'Definition expressions must be expanded by the authorized host before local evaluation.');
@@ -692,6 +704,7 @@ function evaluateCall(state: EvalState, signature: FunctionSignature, args: read
 type Truth = 'true' | 'false' | 'unknown';
 
 function evaluatePredicate(state: EvalState, predicate: PredicateSpec, row: QueryRow, schema: QuerySchema): QueryOutcome<Truth> {
+  const step = tick(state); if (!step.ok) return step;
   if (predicate.op === 'and' || predicate.op === 'or') {
     const values: Truth[] = [];
     for (const child of predicate.predicates) {
@@ -717,7 +730,7 @@ function evaluatePredicate(state: EvalState, predicate: PredicateSpec, row: Quer
     const right = evaluateExpression(state, predicate.right, row, schema);
     if (!right.ok) return right;
     const field = predicate.left.kind === 'field' ? sourceField(schema, predicate.left) : undefined;
-    const compared = compareValue(value.value, right.value, field?.type.value ?? (typeof value.value === 'number' ? 'float' : typeof value.value === 'string' ? 'text' : typeof value.value === 'boolean' ? 'boolean' : 'decimal'));
+    const compared = compareValue(value.value, right.value, field?.type.value ?? expressionValueType(predicate.left, schema, state.registry) ?? (typeof value.value === 'number' ? 'float' : typeof value.value === 'string' ? 'text' : typeof value.value === 'boolean' ? 'boolean' : 'decimal'));
     if (compared === undefined) return {ok: true, value: 'unknown'};
     const matched = predicate.comparison === 'eq' ? compared === 0 : predicate.comparison === 'ne' ? compared !== 0 : predicate.comparison === 'lt' ? compared < 0 : predicate.comparison === 'lte' ? compared <= 0 : predicate.comparison === 'gt' ? compared > 0 : compared >= 0;
     return {ok: true, value: matched ? 'true' : 'false'};
@@ -738,7 +751,7 @@ function evaluatePredicate(state: EvalState, predicate: PredicateSpec, row: Quer
 
 function tick(state: EvalState, amount = 1): Outcome<void> {
   state.operations += amount;
-  const limit = state.context.maxOperations ?? Number.MAX_SAFE_INTEGER;
+  const limit = state.context.maxOperations ?? DEFAULT_LIMITS.maxOperations;
   if (state.operations > limit) return failure('query.budget', 'Query evaluation exceeded its operation budget.');
   if (state.context.cancellation?.aborted) return failure('query.cancelled', 'Query evaluation was cancelled.');
   if (state.context.clock !== undefined && state.lastClock !== undefined) {
@@ -761,7 +774,23 @@ function outputBytes(rows: readonly QueryRow[]): number {
   return encoded === undefined ? Number.MAX_SAFE_INTEGER : new TextEncoder().encode(encoded).byteLength;
 }
 
+function appendRow(state: EvalState, rows: QueryRow[], row: QueryRow): Outcome<void> {
+  if (rows.length >= state.context.maxRows!) return failure('query.budget', 'Intermediate rows exceed the effective row budget.');
+  const bytes = (state.materializedBytes.get(rows) ?? 0) + outputBytes([row]);
+  if (bytes > state.context.maxBytes!) return failure('query.budget', 'Intermediate rows exceed the effective byte budget.');
+  state.materializedBytes.set(rows, bytes);
+  rows.push(row);
+  return {ok: true, value: undefined};
+}
+
+function outputValue(value: QueryValue | undefined, field: QueryField | undefined): Outcome<QueryValue> {
+  if (field === undefined) return failure('query.output-schema', 'Computed value has no declared output field.');
+  const checked = validateScalar(value ?? null, field.type);
+  return checked.ok ? checked : failure('query.output-value', 'Computed value is incompatible with its declared output type.');
+}
+
 function compareRows(left: QueryRow, right: QueryRow, schema: QuerySchema, specs: readonly SortSpec[], state: EvalState, appendIdentity = true): QueryOutcome<number> {
+  const step = tick(state); if (!step.ok) return step;
   for (const spec of specs) {
     const a = evaluateExpression(state, spec.expression, left, schema);
     const b = evaluateExpression(state, spec.expression, right, schema);
@@ -770,7 +799,7 @@ function compareRows(left: QueryRow, right: QueryRow, schema: QuerySchema, specs
     const field = spec.expression.kind === 'field' ? sourceField(schema, spec.expression) : undefined;
     const aNull = a.value === null || a.value === undefined;
     const bNull = b.value === null || b.value === undefined;
-    let compared = aNull || bNull ? aNull && bNull ? 0 : aNull ? spec.nulls === 'first' ? -1 : 1 : spec.nulls === 'first' ? 1 : -1 : compareValue(a.value, b.value, field?.type.value ?? 'text') ?? 0;
+    let compared = aNull || bNull ? aNull && bNull ? 0 : aNull ? spec.nulls === 'first' ? -1 : 1 : spec.nulls === 'first' ? 1 : -1 : compareValue(a.value, b.value, field?.type.value ?? expressionValueType(spec.expression, schema, state.registry) ?? 'text') ?? 0;
     if (compared !== 0) {
       if (!aNull && !bNull && spec.direction === 'desc') compared = -compared;
       return {ok: true, value: compared};
@@ -913,7 +942,7 @@ function aggregateValues(state: EvalState, item: AggregateSpec, group: EvalGroup
 }
 
 function evaluateAggregateExpression(state: EvalState, expression: Expression, group: EvalGroup): QueryOutcome<QueryValue | undefined> {
-  if (expression.kind === 'literal') return {ok: true, value: expression.value};
+  if (expression.kind === 'literal') {const step = tick(state); return step.ok ? {ok: true, value: expression.value} : step;}
   if (expression.kind !== 'call') {
     if (group.rows.length !== 1) return unsupported('aggregate-expression', 'A non-aggregate expression cannot be evaluated over multiple group rows.');
     return evaluateExpression(state, expression, group.rows[0]!, group.schema);
@@ -973,7 +1002,13 @@ function nullResult(schema: QuerySchema, row: QueryRow, fields: readonly QueryFi
 }
 
 function executeWindow(state: EvalState, input: EvalRelation, items: readonly WindowSpec[], output: QuerySchema): Outcome<EvalRelation> {
-  const rows = input.rows.map((row) => ({...row}));
+  const rows: Record<string, QueryValue>[] = [];
+  const rowSizes: number[] = [];
+  for (const row of input.rows) {
+    const step = tick(state); if (!step.ok) return step;
+    rows.push({...row}); rowSizes.push(outputBytes([row]));
+  }
+  let totalBytes = rowSizes.reduce((sum, bytes) => sum + bytes, 0);
   for (const item of items) {
     const supplied = state.registry.resolve(item.function);
     if (supplied === undefined) return failure('query.function', `Window function ${relationKey(item.function)} is not registered.`);
@@ -985,6 +1020,7 @@ function executeWindow(state: EvalState, input: EvalRelation, items: readonly Wi
     if (item.function.id === 'core.window.lag' && item.frame.preceding < 1) return failure('query.window-frame', 'lag requires at least one preceding row.');
     const partitions = new Map<string, number[]>();
     for (let index = 0; index < rows.length; index += 1) {
+      const step = tick(state); if (!step.ok) return step;
       const values: QueryValue[] = [];
       for (const expression of item.partitionBy) {
         const value = evaluateExpression(state, expression, rows[index]!, input.schema);
@@ -1004,11 +1040,16 @@ function executeWindow(state: EvalState, input: EvalRelation, items: readonly Wi
     }
     if (identitySet.size > 0) return failure('query.window-order', 'Window order must include every stable identity field.', []);
     for (const indexes of partitions.values()) {
+      let sortError: Extract<Outcome<number>, {ok: false}> | undefined;
       indexes.sort((left, right) => {
+        if (sortError !== undefined) return 0;
         const compared = compareRows(rows[left]!, rows[right]!, input.schema, item.orderBy, state);
-        return compared.ok ? compared.value : 0;
+        if (!compared.ok) {sortError = compared; return 0;}
+        return compared.value;
       });
+      if (sortError !== undefined) return sortError;
       for (let position = 0; position < indexes.length; position += 1) {
+        const step = tick(state); if (!step.ok) return step;
         const rowIndex = indexes[position]!;
         const row = rows[rowIndex]!;
         let value: QueryValue | undefined;
@@ -1017,7 +1058,8 @@ function executeWindow(state: EvalState, input: EvalRelation, items: readonly Wi
           const rankSpecs = item.orderBy.filter((spec) => spec.expression.kind !== 'field' || !input.schema.identity.includes(sourceField(input.schema, spec.expression)?.id ?? ''));
           for (let prior = 0; prior < position; prior += 1) {
             const compared = compareRows(rows[indexes[prior]!]!, row, input.schema, rankSpecs, state, false);
-            if (compared.ok && compared.value !== 0) rank = prior + 2;
+            if (!compared.ok) return compared;
+            if (compared.value !== 0) rank = prior + 2;
           }
           value = rank;
         } else if (item.function.id === 'core.window.lag') {
@@ -1046,20 +1088,31 @@ function executeWindow(state: EvalState, input: EvalRelation, items: readonly Wi
             value = summed.value;
           }
         } else return unsupported('window-runtime', `No trusted local implementation exists for ${item.function.id}@${item.function.revision}.`);
-        rows[rowIndex]![item.id] = value ?? null;
+        const checkedValue = outputValue(value, output.fields.find((field) => field.id === item.id));
+        if (!checkedValue.ok) return checkedValue;
+        rows[rowIndex]![item.id] = checkedValue.value;
+        const bytes = outputBytes([rows[rowIndex]!]);
+        totalBytes += bytes - rowSizes[rowIndex]!;
+        rowSizes[rowIndex] = bytes;
+        if (totalBytes > state.context.maxBytes!) return failure('query.budget', 'Window output exceeds the effective byte budget.');
       }
     }
   }
   return {ok: true, value: {schema: output, rows: rows.map((row) => Object.freeze(row)), complete: input.complete}};
 }
 
-export function evaluateLogicalPlan(plan: LogicalPlan, source: QuerySource, catalog: Catalog, registry: FunctionRegistry, context: QueryExecutionContext = {}): Outcome<QueryResult> {
+export function evaluateLogicalPlan(plan: LogicalPlan, source: QuerySource, catalog: Catalog, registry: FunctionRegistry, context: QueryExecutionContext = {}, limits: QueryLimits = DEFAULT_LIMITS): Outcome<QueryResult> {
   const validContext = validateExecutionContext(context);
   if (!validContext.ok) return validContext;
+  if (!isPlainDataRecord(limits) || Object.keys(DEFAULT_LIMITS).some((key) => !safePositiveCount(limits[key])))
+    return failure('query.budget', 'Evaluator host limits must be positive safe integers.');
+  context = {...context, maxRows: Math.min(context.maxRows ?? limits.maxRows, limits.maxRows),
+    maxBytes: Math.min(context.maxBytes ?? limits.maxBytes, limits.maxBytes),
+    maxOperations: Math.min(context.maxOperations ?? limits.maxOperations, limits.maxOperations)};
   if (!isPlainDataRecord(source) || typeof source.revision !== 'string' || !isPlainDataRecord(source.relations)) return failure('query.source-shape', 'Query source must be a plain data object with a plain relations map.');
   let verified: Outcome<LogicalPlan>;
   try {
-    verified = validateLogicalPlan(plan as unknown, catalog, registry);
+    verified = validateLogicalPlan(plan as unknown, catalog, registry, limits);
   } catch {
     return failure('query.plan', 'Logical plan validation failed safely at the untrusted boundary.');
   }
@@ -1070,7 +1123,7 @@ export function evaluateLogicalPlan(plan: LogicalPlan, source: QuerySource, cata
   if (plan.pins.scopeDigest !== undefined && ((context.scopeDigest ?? source.scopeDigest) !== plan.pins.scopeDigest || (source.scopeDigest !== undefined && source.scopeDigest !== plan.pins.scopeDigest))) return failure('query.denied', 'The logical plan scope is not authorized for this source.');
   if (plan.pins.policyRevision !== undefined && ((context.policyRevision ?? source.policyRevision) !== plan.pins.policyRevision || (source.policyRevision !== undefined && source.policyRevision !== plan.pins.policyRevision))) return failure('query.denied', 'The logical plan policy revision is not current.');
   if (context.catalogRevision !== undefined && context.catalogRevision !== catalog.revision) return failure('query.stale-catalog', 'The evaluator context catalog revision is stale.');
-  const state: EvalState = {source, catalog, registry, context, ...(validContext.value.startedAt === undefined ? {} : {startedAt: validContext.value.startedAt, lastClock: validContext.value.startedAt}), unknown: [], approximate: false, operations: 0};
+  const state: EvalState = {source, catalog, registry, context, ...(validContext.value.startedAt === undefined ? {} : {startedAt: validContext.value.startedAt, lastClock: validContext.value.startedAt}), unknown: [], approximate: false, operations: 0, scannedRows: 0, sourceBytes: 0, materializedBytes: new WeakMap()};
   const nodes = new Map(plan.nodes.map((node) => [node.id, node] as const));
   const cache = new Map<string, Outcome<EvalRelation>>();
   const evaluateNode = (id: string): Outcome<EvalRelation> => {
@@ -1089,14 +1142,15 @@ export function evaluateLogicalPlan(plan: LogicalPlan, source: QuerySource, cata
     let result: Outcome<EvalRelation>;
     if (node.op === 'scan') {
       const relation = source.relations[node.entity];
-      result = relation === undefined ? failure('query.source', `Source relation ${node.entity} is missing.`) : normalizeSourceRelation(relation, catalog, node.entity);
+      result = relation === undefined ? failure('query.source', `Source relation ${node.entity} is missing.`) : normalizeSourceRelation(relation, catalog, node.entity, state);
     } else if (node.op === 'filter') {
       const input = inputs[0]!;
       const rows: QueryRow[] = [];
       for (const row of input.rows) {
+        const step = tick(state); if (!step.ok) return step;
         const checkedPredicate = evaluatePredicate(state, node.predicate, row, input.schema);
         if (!checkedPredicate.ok) { result = checkedPredicate; cache.set(id, result); return result; }
-        if (checkedPredicate.value === 'true') rows.push(row);
+        if (checkedPredicate.value === 'true') { const added = appendRow(state, rows, row); if (!added.ok) return added; }
       }
       result = {ok: true, value: {schema: node.output, rows, complete: input.complete}};
     } else if (node.op === 'project' || node.op === 'derive' || node.op === 'time-bucket') {
@@ -1104,20 +1158,22 @@ export function evaluateLogicalPlan(plan: LogicalPlan, source: QuerySource, cata
       const rows: QueryRow[] = [];
       const items = node.op === 'time-bucket' ? node.items : node.items;
       for (const row of input.rows) {
+        const step = tick(state); if (!step.ok) return step;
         const projected: Record<string, QueryValue> = {...row};
         for (const item of items) {
           const value = node.op === 'time-bucket'
             ? (() => { const timeItem = item as TimeBucketSpec; const expression = evaluateExpression(state, timeItem.expression, row, input.schema); return expression.ok ? bucket(expression.value, timeItem) : expression; })()
             : evaluateExpression(state, item.expression, row, input.schema);
           if (!value.ok) { result = value; cache.set(id, result); return result; }
-          if (node.op === 'project') projected[item.id] = value.value ?? null;
-          else projected[item.id] = value.value ?? null;
+          const checkedValue = outputValue(value.value, node.output.fields.find((field) => field.id === item.id));
+          if (!checkedValue.ok) return checkedValue;
+          projected[item.id] = checkedValue.value;
         }
         if (node.op === 'project') {
           const output: Record<string, QueryValue> = {};
           for (const field of node.output.fields) output[field.id] = projected[field.id] ?? null;
-          rows.push(Object.freeze(output));
-        } else rows.push(Object.freeze(projected));
+          const added = appendRow(state, rows, Object.freeze(output)); if (!added.ok) return added;
+        } else { const added = appendRow(state, rows, Object.freeze(projected)); if (!added.ok) return added; }
       }
       result = {ok: true, value: {schema: node.output, rows, complete: input.complete}};
     } else if (node.op === 'join' || node.op === 'semijoin') {
@@ -1126,6 +1182,7 @@ export function evaluateLogicalPlan(plan: LogicalPlan, source: QuerySource, cata
       const keys = node.keys;
       const rightRows: QueryRow[] = [];
       for (const row of right.rows) {
+        const step = tick(state); if (!step.ok) return step;
         if (node.spec.where === undefined) {
           rightRows.push(row);
           continue;
@@ -1136,6 +1193,7 @@ export function evaluateLogicalPlan(plan: LogicalPlan, source: QuerySource, cata
       }
       const rightMap = new Map<string, QueryRow[]>();
       for (const row of rightRows) {
+        const step = tick(state); if (!step.ok) return step;
         const values = keys.map((key) => row[key.right]);
         if (values.some((value) => value === null || value === undefined)) continue;
         const key = keys.map((joinKey, index) => scalarKey(values[index], right.schema.fields.find((field) => field.id === joinKey.right)?.type.value)).join('|');
@@ -1149,6 +1207,7 @@ export function evaluateLogicalPlan(plan: LogicalPlan, source: QuerySource, cata
       const leftKeyCounts = new Map<string, number>();
       if (node.op === 'join' && declaredRelationship?.cardinality === 'one-to-one') {
         for (const leftRow of left.rows) {
+        const step = tick(state); if (!step.ok) return step;
           const values = keys.map((key) => leftRow[key.left]);
           if (values.some((value) => value === null || value === undefined)) continue;
           const key = keys.map((joinKey, index) => scalarKey(values[index], left.schema.fields.find((field) => field.id === joinKey.left)?.type.value)).join('|');
@@ -1160,14 +1219,15 @@ export function evaluateLogicalPlan(plan: LogicalPlan, source: QuerySource, cata
       }
       const rows: QueryRow[] = [];
       for (const leftRow of left.rows) {
+        const step = tick(state); if (!step.ok) return step;
         const values = keys.map((key) => leftRow[key.left]);
         const key = keys.map((joinKey, index) => scalarKey(values[index], left.schema.fields.find((field) => field.id === joinKey.left)?.type.value)).join('|');
         const matches = values.some((value) => value === null || value === undefined) ? [] : rightMap.get(key) ?? [];
-        if (node.op === 'semijoin') { if (matches.length > 0) rows.push(leftRow); continue; }
+        if (node.op === 'semijoin') { if (matches.length > 0) { const added = appendRow(state, rows, leftRow); if (!added.ok) return added; } continue; }
         if (matches.length > 1) { result = failure('query.cardinality', 'Declared one-to-one or many-to-one cardinality was violated by source rows.'); cache.set(id, result); return result; }
         if (matches.length === 0) {
-          if (node.spec.kind === 'left') rows.push(nullResult(left.schema, leftRow, right.schema.fields));
-        } else rows.push(Object.freeze({...leftRow, ...matches[0]}));
+          if (node.spec.kind === 'left') { const added = appendRow(state, rows, nullResult(left.schema, leftRow, right.schema.fields)); if (!added.ok) return added; }
+        } else { const added = appendRow(state, rows, Object.freeze({...leftRow, ...matches[0]})); if (!added.ok) return added; }
       }
       result = {ok: true, value: {schema: node.output, rows, complete: true}};
     } else if (node.op === 'group') {
@@ -1175,8 +1235,14 @@ export function evaluateLogicalPlan(plan: LogicalPlan, source: QuerySource, cata
       if (!input.complete) { result = failure('query.incomplete-input', 'Grouping requires a complete source population.'); cache.set(id, result); return result; }
       const groups = new Map<string, {keys: Record<string, QueryValue>; rows: QueryRow[]}>();
       for (const row of input.rows) {
+        const step = tick(state); if (!step.ok) return step;
         const values: QueryValue[] = [];
-        for (const key of node.keys) { const value = evaluateExpression(state, key.expression, row, input.schema); if (!value.ok) {result = value; cache.set(id, result); return result;} values.push(value.value ?? null); }
+        for (const key of node.keys) {
+          const value = evaluateExpression(state, key.expression, row, input.schema); if (!value.ok) return value;
+          const checkedValue = outputValue(value.value, node.output.fields.find((field) => field.id === key.id));
+          if (!checkedValue.ok) return checkedValue;
+          values.push(checkedValue.value);
+        }
         const key = values.map((value, index) => scalarKey(value, node.output.fields[index]?.type.value)).join('|'); const current = groups.get(key) ?? {keys: {}, rows: []};
         node.keys.forEach((groupKey, index) => { current.keys[groupKey.id] = values[index] ?? null; });
         current.rows.push(row); groups.set(key, current);
@@ -1189,21 +1255,29 @@ export function evaluateLogicalPlan(plan: LogicalPlan, source: QuerySource, cata
       if (input.groups === undefined) { result = failure('query.aggregate', 'Aggregate node requires a preceding group node.'); cache.set(id, result); return result; }
       const rows: QueryRow[] = [];
       for (const group of input.groups) {
+        const step = tick(state); if (!step.ok) return step;
         const output: Record<string, QueryValue> = {...group.keyRow};
-        for (const item of node.items) { const value = aggregateValues(state, item, group); if (!value.ok) {result = value; cache.set(id, result); return result;} output[item.id] = value.value ?? null; }
-        rows.push(Object.freeze(output));
+        for (const item of node.items) {
+          const value = aggregateValues(state, item, group); if (!value.ok) return value;
+          const checkedValue = outputValue(value.value, node.output.fields.find((field) => field.id === item.id));
+          if (!checkedValue.ok) return checkedValue;
+          output[item.id] = checkedValue.value;
+        }
+        const added = appendRow(state, rows, Object.freeze(output)); if (!added.ok) return added;
       }
       result = {ok: true, value: {schema: node.output, rows, complete: true}};
     } else if (node.op === 'sort') {
       const input = inputs[0]!;
       if (!input.complete) { result = failure('query.incomplete-input', 'Exact sorting requires a complete source population.'); cache.set(id, result); return result; }
       const rows = [...input.rows];
-      for (let left = 0; left < rows.length; left += 1) for (let right = left + 1; right < rows.length; right += 1) {
-        const compared = compareRows(rows[left]!, rows[right]!, input.schema, node.items, state);
-        if (!compared.ok) {result = compared; cache.set(id, result); return result;}
-        if (compared.value > 0) [rows[left], rows[right]] = [rows[right]!, rows[left]!];
-        const step = tick(state); if (!step.ok) {result = step; cache.set(id, result); return result;}
-      }
+      let sortError: Extract<Outcome<number>, {ok: false}> | undefined;
+      rows.sort((left, right) => {
+        if (sortError !== undefined) return 0;
+        const compared = compareRows(left, right, input.schema, node.items, state);
+        if (!compared.ok) {sortError = compared; return 0;}
+        return compared.value;
+      });
+      if (sortError !== undefined) return sortError;
       result = {ok: true, value: {schema: node.output, rows, complete: true}};
     } else if (node.op === 'top-k') {
       const input = inputs[0]!;
@@ -1214,6 +1288,9 @@ export function evaluateLogicalPlan(plan: LogicalPlan, source: QuerySource, cata
       if (!input.complete) { result = failure('query.incomplete-input', 'Window evaluation requires a complete source population.'); cache.set(id, result); return result; }
       result = executeWindow(state, input, node.items, node.output);
     } else result = failure('query.plan', 'Unknown logical plan operation.');
+    if (result.ok && (result.value.rows.length > context.maxRows! || outputBytes(result.value.rows) > context.maxBytes! ||
+        ((node.op === 'join' || node.op === 'semijoin') && result.value.rows.length > limits.maxJoinRows)))
+      result = failure('query.budget', 'Query intermediate exceeds its effective materialization budget.');
     cache.set(id, result);
     return result;
   };

@@ -118,7 +118,16 @@ arithmetic error or consume its execution budget. Type checking remains
 conservative about potential null values and does not constant-fold conditions.
 These functions describe general expressions, never HR-specific rules.
 
-The semantic checker supports this registry first. A physical evaluator must
-explicitly implement and negotiate these function revisions before executing
-them; signature acceptance alone does not provide execution capability. Custom
-host signatures retain their declared `nullResult` policy and output nullability.
+The bounded local evaluator implements these two revisions, including lazy
+branches in grouped expressions. Other physical evaluators must explicitly
+negotiate them; signature acceptance alone does not provide execution capability.
+Custom host signatures retain their declared `nullResult` policy and output
+nullability and are not executable through a substituted local implementation.
+
+Aggregate subexpressions in group context share that group's logical grain.
+The planner applies the actual grouping keys to output field metadata. A window
+aggregate preserves row grain. Empty grouped sums may be null, while count is
+non-null; division with a null/unknown zero-denominator policy is nullable even
+when its inputs are non-null. Division and means produce a float result with
+explicit arithmetic approximation, including when their inputs are decimals.
+Ordinary decimal addition and multiplication retain decimal results.

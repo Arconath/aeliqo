@@ -68,11 +68,10 @@ export function numericOutput(
   const grain = representative === undefined ? [] : grainOf(representative.type);
   const hasDecimal = args.some((arg) => arg.type.value === 'decimal');
   const hasFloat = args.some((arg) => arg.type.value === 'float');
-  // A decimal remains decimal; mixed decimal/float is rejected by the
-  // expression checker before this helper is called.  Integer operations may
-  // therefore stay exact unless a function (division/mean) explicitly needs
-  // a fractional result.
-  const value = hasDecimal ? 'decimal' : options.forceFloat || hasFloat ? 'float' : 'integer';
+  // Fractional operators explicitly request a float result. Ordinary decimal
+  // arithmetic remains decimal; mixed decimal/float input is rejected by the
+  // expression checker before this helper is called.
+  const value = options.forceFloat ? 'float' : hasDecimal ? 'decimal' : hasFloat ? 'float' : 'integer';
   return {
     value,
     nullable,

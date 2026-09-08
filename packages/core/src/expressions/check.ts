@@ -307,9 +307,12 @@ function checkCall(
     : signature.operation === 'coalesce'
       ? {...output.value, nullable: args.every((argument) => argument.type.nullable)}
       : output.value;
+  const reducesGroup = context === 'group' && (signature.operation === 'aggregate' || signature.operation === 'ratio-of-sums' || signature.operation === 'mean-of-rates');
+  const mayReturnNull = signature.nullResult !== 'non-null' && signature.nullResult !== 'preserve' &&
+    (reducesGroup || signature.zeroDenominator === 'null' || signature.zeroDenominator === 'unknown');
   return {ok: true, value: {
     expression: node,
-    type: resultType,
+    type: {...resultType, ...(reducesGroup ? {grain: []} : {}), ...(mayReturnNull ? {nullable: true} : {})},
     context,
     ...(entityIds.length === 1 ? {entityId: entityIds[0]} : {}),
     aggregation,

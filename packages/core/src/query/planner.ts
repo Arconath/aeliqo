@@ -583,7 +583,8 @@ function groupSchema(input: QuerySchema, keys: readonly GroupKeySpec[], registry
     if (!expression.ok) return expression;
     fields.push(outputField(key.id, expression.value, key.label, 'dimension'));
   }
-  return {ok: true, value: {fields, identity: fields.map((field) => field.id), grain: fields.map((field) => field.id)}};
+  const grain = fields.map((field) => field.id);
+  return {ok: true, value: {fields: fields.map((field) => ({...field, type: {...field.type, grain}})), identity: grain, grain}};
 }
 
 function aggregateSchema(input: QuerySchema, groupOutput: QuerySchema, items: readonly AggregateSpec[], registry: FunctionRegistry): QueryOutcome<QuerySchema> {
@@ -600,7 +601,8 @@ function aggregateSchema(input: QuerySchema, groupOutput: QuerySchema, items: re
       return signature !== undefined && (signature.operation === 'aggregate' || signature.operation === 'ratio-of-sums' || signature.operation === 'mean-of-rates' || expression.arguments.some(containsAggregate));
     };
     if (checked.value.typed.operation !== 'aggregate' && checked.value.typed.operation !== 'ratio-of-sums' && checked.value.typed.operation !== 'mean-of-rates' && !containsAggregate(call)) return unsupported('aggregate-function', `Function ${item.function.id}@${item.function.revision} is not an aggregate operation.`, ['Use an approved aggregate function.'], ['aggregates']);
-    fields.push(outputField(item.id, checked.value, item.label, 'measure'));
+    const field = outputField(item.id, checked.value, item.label, 'measure');
+    fields.push({...field, type: {...field.type, grain: groupOutput.grain}});
     ids.add(item.id);
   }
   return {ok: true, value: {fields, identity: groupOutput.identity, grain: groupOutput.grain}};
@@ -859,7 +861,7 @@ export function createQueryPlanner(options: QueryPlannerOptions): QueryOutcome<i
       }
     },
     evaluate(plan, source, context) {
-      return evaluateLogicalPlan(plan, source, catalog, registry, context);
+      return evaluateLogicalPlan(plan, source, catalog, registry, context, limits);
     },
   };
   return {ok: true, value: Object.freeze(planner)};
