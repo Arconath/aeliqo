@@ -739,6 +739,7 @@ class RegionHandleImpl implements RegionHandle {
   async commit(token: RegionCommitToken, options: RegionCommitOptions = {}): Promise<RegionOutcome<RegionSnapshot>> {
     if (this.status !== 'active') return this.closedOutcome();
     const signal = options.signal;
+    const recheck = options.recheck;
     const recordCheck = this.validateToken(token);
     if (!recordCheck.ok) return recordCheck;
     const record = recordCheck.value;
@@ -791,6 +792,25 @@ class RegionHandleImpl implements RegionHandle {
         const at = this.now();
         if (!this.live(queuedEpoch)) return this.closedOutcome();
         if (signal?.aborted) return failure('runtime.region-cancelled', 'The region commit was cancelled before publication.');
+        // A controller may have narrower, independently changing grants than
+        // the region. Check them after all awaited work and injected callbacks.
+        // This guard can only restrict the already-authorized commit.
+        if (recheck !== undefined) {
+          try {
+            const raw: unknown = recheck();
+            if (raw !== null && typeof raw === 'object' && typeof (raw as PromiseLike<unknown>).then === 'function') {
+              void Promise.resolve(raw).catch(() => {});
+              return failure('runtime.region-denied', 'The final commit recheck must return a synchronous outcome.');
+            }
+            const checked = normalizeHostOutcome<unknown>(raw);
+            if (!checked.ok) return checked as RegionOutcome<RegionSnapshot>;
+            if (checked.value !== undefined) return failure('runtime.region-denied', 'The final commit recheck must return an empty success value.');
+          } catch {
+            return failure('runtime.region-denied', 'The final commit recheck failed.');
+          }
+          if (!this.live(queuedEpoch)) return this.closedOutcome();
+          if (signal?.aborted) return failure('runtime.region-cancelled', 'The region commit was cancelled before publication.');
+        }
         const nextReadSet = authorityReadSet(afterAuthority.value, nextTaskRevision, nextRegionRevision, this.dataRevision);
         this.taskRevision = nextTaskRevision;
         this.principalKey = afterAuthority.value.principalKey;

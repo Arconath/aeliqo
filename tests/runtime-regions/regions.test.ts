@@ -68,6 +68,70 @@ beforeEach(() => {
 });
 
 describe('transactional region store', () => {
+  it('rechecks narrower permissions after asynchronous region authorization', async () => {
+    let started!: () => void;
+    let finish!: () => void;
+    const entered = new Promise<void>(resolve => { started = resolve; });
+    const waiting = new Promise<void>(resolve => { finish = resolve; });
+    let permitted = true;
+    let checks = 0;
+    const {region} = create({authorizeCommit: async () => { started(); await waiting; return {ok: true, value: undefined}; }});
+    const before = region.snapshot();
+    const staged = await region.stage({requestId: 'late-permission', expected: before.readSet!, state: {task: task()}});
+    if (!staged.ok) throw new Error('Stage failed');
+    const committing = region.commit(staged.value, {recheck: () => {
+      checks++;
+      return permitted ? {ok: true, value: undefined} : {ok: false, diagnostics: [{code: 'host.permission', message: 'Permission withdrawn.', retryable: false}]};
+    }});
+    await entered; permitted = false; finish();
+    await expect(committing).resolves.toMatchObject({ok: false, diagnostics: [{code: 'host.permission'}]});
+    expect(checks).toBe(1);
+    expect(region.snapshot()).toEqual(before);
+    region.dispose();
+  });
+
+  it('runs the final permission recheck after the injected clock and cannot bypass host denial', async () => {
+    let permitted = true;
+    let armed = false;
+    const {region} = create({now: () => { if (armed) permitted = false; return 1; }});
+    const before = region.snapshot();
+    const staged = await region.stage({requestId: 'clock-permission', expected: before.readSet!, state: {task: task()}});
+    if (!staged.ok) throw new Error('Stage failed');
+    armed = true;
+    await expect(region.commit(staged.value, {recheck: () => permitted ? {ok: true, value: undefined} : {ok: false, diagnostics: [{code: 'host.permission', message: 'Permission withdrawn.', retryable: false}]}}))
+      .resolves.toMatchObject({ok: false});
+    expect(region.snapshot()).toEqual(before);
+    region.dispose();
+    let checks = 0;
+    const denied = create({authorizeCommit: () => ({ok: false, diagnostics: [{code: 'host.denied', message: 'Denied.', retryable: false}]})});
+    const candidate = await denied.region.stage({requestId: 'denied', expected: denied.region.snapshot().readSet!, state: {task: task()}});
+    if (!candidate.ok) throw new Error('Stage failed');
+    await expect(denied.region.commit(candidate.value, {recheck: () => { checks++; return {ok: true, value: undefined}; }})).resolves.toMatchObject({ok: false});
+    expect(checks).toBe(0);
+    denied.region.dispose();
+  });
+
+  it('rejects malformed and asynchronous guards and honors reentrant cancellation', async () => {
+    for (const recheck of [() => undefined, () => true, () => ({ok: true}), () => ({ok: true, value: 'approval'}), () => Promise.resolve({ok: true, value: undefined}), () => { throw new Error('guard'); }]) {
+      const {region} = create();
+      const before = region.snapshot();
+      const staged = await region.stage({requestId: 'invalid-guard', expected: before.readSet!, state: {task: task()}});
+      if (!staged.ok) throw new Error('Stage failed');
+      await expect(region.commit(staged.value, {recheck: recheck as never})).resolves.toMatchObject({ok: false});
+      expect(region.snapshot()).toEqual(before);
+      region.dispose();
+    }
+    const abort = new AbortController();
+    const {region} = create();
+    const before = region.snapshot();
+    const staged = await region.stage({requestId: 'guard-abort', expected: before.readSet!, state: {task: task()}});
+    if (!staged.ok) throw new Error('Stage failed');
+    await expect(region.commit(staged.value, {signal: abort.signal, recheck: () => { abort.abort(); return {ok: true, value: undefined}; }}))
+      .resolves.toMatchObject({ok: false, diagnostics: [{code: 'runtime.region-cancelled'}]});
+    expect(region.snapshot()).toEqual(before);
+    region.dispose();
+  });
+
   it('cancels pending commit authorization without changing state and releases staged leases', async () => {
     let started!: () => void;
     let finish!: () => void;
