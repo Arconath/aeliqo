@@ -325,7 +325,16 @@ export function createHttpDataService(options: HttpDataServiceOptions): DataServ
         method: 'POST', headers: outgoingHeaders, body: JSON.stringify(value), redirect: 'error', signal: life.signal,
       });
       if (life.signal.aborted) {void received.body?.cancel().catch(() => {}); life.check();}
-      return received;
+      if (received.body === null || received.url === '') return received;
+      // Keep native streaming completion independent of the reader's cleanup.
+      // Chromium can report a completed direct body read as ERR_ABORTED. A
+      // synthetic in-process Response has no URL or native network loader. Tee
+      // through Response.clone and immediately discard the unused branch, so
+      // only the consumed branch can queue bytes. Never await the discard:
+      // its cancellation promise may wait for the consumed branch to finish.
+      const readable = received.clone();
+      void received.body.cancel().catch(() => {});
+      return readable;
     });
     if (response.redirected || (response.url && new URL(response.url).origin !== base.origin)) {
       void response.body?.cancel().catch(() => {});
@@ -382,6 +391,7 @@ export function createHttpDataService(options: HttpDataServiceOptions): DataServ
       if (!parsed.ok) {yield asError('unknown-request', parsed.diagnostics); return;}
       const accepted = parsed.value;
       const life = new Lifetime(Math.min(milliseconds, accepted.effectiveBudget.maxMilliseconds), context.signal);
+      let transportComplete = false;
       try {
         const response = await send(paths.execute, accepted, 'application/x-ndjson', life);
         if (!response.ok) {
@@ -396,6 +406,9 @@ export function createHttpDataService(options: HttpDataServiceOptions): DataServ
         if (response.body === null) reject('data.http-body', 'The ADC host returned no result stream.');
         for await (const event of readResultStream(response.body, streamContext(accepted, life, limits))) {
           life.check();
+          // readResultStream withholds terminal events until EOF is validated.
+          // Mark completion before yielding: a handle may stop at that event.
+          if (event.kind === 'complete' || event.kind === 'error') transportComplete = true;
           yield event;
         }
       } catch (error) {
@@ -403,7 +416,7 @@ export function createHttpDataService(options: HttpDataServiceOptions): DataServ
         try {life.check();} catch (reason) {errors = diagnostics(reason);}
         yield asError(accepted.requestId, errors);
       }
-      finally {life.cancel(); life.dispose();}
+      finally {if (!transportComplete) life.cancel(); life.dispose();}
     },
   };
 }

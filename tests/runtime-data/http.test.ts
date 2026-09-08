@@ -198,4 +198,34 @@ describe('ADC HTTP boundary', () => {
     expect(seen.some(event => event.kind === 'complete')).toBe(false);
     expect(seen.at(-1)?.kind).toBe('error');
   });
+  it('releases successful HTTP streams without aborting their completed fetch', async () => {
+    for (const stopAtTerminal of [false, true]) {
+      let signal: AbortSignal | null | undefined;
+      const client = createHttpDataService({baseUrl: 'https://app.test', fetch: async (_url, init) => {
+        signal = init?.signal;
+        return ndjson(valid);
+      }});
+      const seen: ResultEvent[] = [];
+      for await (const event of client.execute(accepted)) {
+        seen.push(event);
+        if (stopAtTerminal && event.kind === 'complete') break;
+      }
+      expect(seen).toEqual(valid);
+      expect(signal?.aborted).toBe(false);
+    }
+  });
+
+  it('still aborts the fetch when a consumer leaves before its terminal event', async () => {
+    let signal: AbortSignal | null | undefined;
+    const client = createHttpDataService({baseUrl: 'https://app.test', fetch: async (_url, init) => {
+      signal = init?.signal;
+      return ndjson(valid);
+    }});
+    for await (const event of client.execute(accepted)) {
+      expect(event.kind).toBe('descriptor');
+      break;
+    }
+    expect(signal?.aborted).toBe(true);
+  });
+
 });

@@ -478,7 +478,11 @@ const localClient = createHttpDataService({baseUrl:'http://in-memory.invalid',fe
 const networkClient = createHttpDataService({baseUrl:location.origin,headers:{authorization:'Bearer browser'}});
 const local = await runFlow(localClient);
 const network = await runFlow(networkClient);
-globalThis.__aeliqoBrowserData = {local,network};
+// Exercise the native browser loader repeatedly: completed direct stream reads
+// previously raced its completion notification on Linux Chromium.
+const transportFlows = 21;
+for (let flow = 1; flow < transportFlows; flow++) await runFlow(networkClient);
+globalThis.__aeliqoBrowserData = {local,network,transportFlows};
 \`);
   await writeFile('vite.config.mjs', \`export default {build:{minify:true,outDir:'dist',rollupOptions:{input:'index.html'}},plugins:[{name:'record-runtime-modules',generateBundle(_,bundle){const modules=Object.values(bundle).filter(item=>item.type==='chunk').flatMap(item=>Object.keys(item.modules));this.emitFile({type:'asset',fileName:'modules.json',source:JSON.stringify(modules)});}}]};\`);
   run(['node_modules/.bin/vite', 'build'], process.cwd());
@@ -540,6 +544,7 @@ globalThis.__aeliqoBrowserData = {local,network};
     browserResult = await page.evaluate(() => globalThis.__aeliqoBrowserData);
     assert.equal(browserResult.local.rows, 3);
     assert.equal(browserResult.network.rows, 1);
+    assert.equal(browserResult.transportFlows, 21);
     assert.deepEqual(browserFailures, []);
   } finally {
     await browser?.close();

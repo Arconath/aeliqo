@@ -74,6 +74,13 @@ source callbacks receive a cancellation signal, and stalled callbacks are
 detached when the signal aborts. Accepted query and population pins are checked
 at the transport boundary; they do not prove business truth.
 
+Native fetch responses use one consumed clone branch, with the original branch
+immediately canceled. This preserves streaming and avoids a reproduced Chromium
+completion/cancellation race. In-process responses with an empty `url` retain
+their direct reader path; custom fetch adapters that reconstruct a native
+response and erase its URL also take that path. The client still enforces byte
+budgets, deadlines and caller cancellation on the consumed stream.
+
 A completion event is withheld until EOF validates that no trailing event exists.
 A dropped stream throws a structured error; already delivered batches remain
 provisional. The caller must not mark those batches complete before receiving a
