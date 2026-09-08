@@ -23,7 +23,63 @@ import {
   createCatalogElement,
   createCatalogRoot,
 } from "./fixture.js";
-import type {CatalogExampleDefinition, CatalogExampleId} from "./types.js";
+import type {CatalogExampleDefinition, CatalogExampleId, CatalogExampleMetadata} from "./types.js";
+import {catalogSource} from "./source.js";
+
+const sourceImports = `import {
+  AeliqoBreakdownElement,
+  AeliqoComparisonElement,
+  AeliqoDateRangeElement,
+  AeliqoExplorerElement,
+  AeliqoFormFlowElement,
+  AeliqoInvestigationElement,
+  AeliqoQualityPanelElement,
+  AeliqoRecordEditorElement,
+  AeliqoSearchResultsElement,
+  AeliqoTextFieldElement,
+  registerAeliqoElements,
+} from "@aeliqo/web";`;
+
+const sourceSetup = `const catalogRef: any = {
+  id: "aeliqo-catalog-example",
+  revision: "1",
+  outputId: "people",
+  queryDigest: "catalog-query",
+  scopeDigest: "catalog-scope",
+};
+const catalogRows: any = [
+  {id: "ada", name: "Ada Lovelace", team: "Research", date: "2026-09-08", amount: 120},
+  {id: "lin", name: "Lin Chen", team: "Product", date: "2026-09-09", amount: 96},
+  {id: "grace", name: "Grace Hopper", team: "Research", date: "2026-09-10", amount: 144},
+];
+const catalogColumns: any = [
+  {key: "id", label: "ID", type: "text", sortable: true},
+  {key: "name", label: "Name", type: "text", sortable: true},
+  {key: "team", label: "Team", type: "text"},
+  {key: "date", label: "Date", type: "date", sortable: true},
+  {key: "amount", label: "Amount", type: "integer", align: "end"},
+];
+const catalogFields: any = [
+  {id: "name", label: "Name", type: "text"},
+  {id: "team", label: "Team", type: "text"},
+  {id: "amount", label: "Amount", type: "integer"},
+];
+const catalogScope: any = {loaded: catalogRows.length, filteredTotal: catalogRows.length, populationDigest: catalogRef.scopeDigest, kind: "filtered", label: "Authorized people"};
+const catalogVisualizationContext: any = {results: [], catalog: {entities: [], relationships: []}};
+const catalogVisualizationDataset: any = {result: catalogRef, rows: catalogRows};
+const catalogVisualizationSpecs: any = {trend: {version: "1", view: "trend", plot: {version: "1", root: {kind: "unit", mark: "line", result: catalogRef, missing: "gap", encoding: {x: {field: "date", scale: "temporal"}, y: {field: "amount", scale: "linear"}}}}}};`;
+
+type MetadataNotes = Pick<CatalogExampleMetadata, "fixture" | "props" | "propsNotes" | "states" | "keyboard" | "events" | "expectedOutcome">;
+const componentNotes: Record<string, Partial<MetadataNotes>> = {
+  explorer: {fixture: "A people explorer combining authorized filters, a single-select record collection, and selected detail.", props: ["fields", "predicate", "rows", "columns", "identity", "entity", "selectedKey", "detailRecord", "result", "scope", "selection", "status"], propsNotes: "Filter and selection requests retain result lineage and scope; persistence, navigation, and query execution remain with the host.", states: ["ready", "loading", "empty", "partial", "stale", "error"], keyboard: ["Tab", "Arrow keys in child controls", "Enter or Space", "focus follows stable identity"], events: ["aeliqo-explorer-filter", "aeliqo-explorer-selection"], expectedOutcome: "The three panels share one scope and stable identity while emitting typed filter and selection requests."},
+  comparison: {fixture: "A two-person comparison with amount metrics in one authorized scope.", props: ["compareSet", "compareKeys", "metrics", "entity", "result", "scope", "compatible", "status"], propsNotes: "Comparison keys and compatible metric meanings are host supplied; the component does not infer a causal difference.", states: ["ready", "partial", "stale", "error", "invalid"], keyboard: ["Tab", "Arrow keys across comparison controls", "Enter or Space"], events: ["aeliqo-comparison-set"], expectedOutcome: "The selected comparison set stays bounded and emits a typed set request with scope lineage."},
+  breakdown: {fixture: "Two authorized team groups with exact record counts and selectable group rows.", props: ["groups", "rows", "columns", "identity", "entity", "result", "scope", "selectedGroup", "status"], propsNotes: "Group keys and values are supplied by the host; group selection does not expand result scope.", states: ["ready", "empty", "partial", "loading", "stale", "error"], keyboard: ["Tab", "Arrow keys", "Enter or Space"], events: ["aeliqo-breakdown-group"], expectedOutcome: "The breakdown preserves group identity and emits a host request when a group is selected."},
+  investigation: {fixture: "A people investigation with baseline, trend evidence, and selected record detail.", props: ["trend", "trendContext", "trendDatasets", "events", "eventContext", "eventDatasets", "baseline", "detailRecord", "detailFields", "result", "scope", "status"], propsNotes: "Trend and event specs remain evidence in the selected scope; associations are not upgraded to causal claims.", states: ["ready", "loading", "empty", "partial", "stale", "error"], keyboard: ["Tab", "Arrow keys in child visualizations", "Enter selects evidence"], events: ["Child aeliqo-visualization-select events"], expectedOutcome: "The investigation aligns baseline, evidence visualizations, and detail without changing their lineage."},
+  "search-results": {fixture: "A research query result with revision metadata and one selected record.", props: ["query", "queryRevision", "resultRevision", "rows", "columns", "identity", "selectedKey", "result", "scope", "count", "detailRecord", "status"], propsNotes: "Query and result revisions expose stale results explicitly; selection remains an identity request.", states: ["ready", "stale", "empty", "loading", "partial", "error"], keyboard: ["Tab", "Enter", "Space", "focus follows stable identity"], events: ["aeliqo-search-results-selection"], expectedOutcome: "The result window labels stale revisions and emits selection requests only for supplied rows."},
+  "record-editor": {fixture: "An Ada record editor with name and reporting-period fields plus explicit entity revision.", props: ["entity", "entityKey", "entityRevision", "action", "status", "disabled", "invalid", "saveLabel", "cancelLabel"], propsNotes: "The entity key and revision are required evidence for save/cancel requests; the host authorizes the resulting action.", states: ["ready", "invalid", "pending", "error", "disabled"], keyboard: ["Tab follows slotted field order", "Enter on save", "Escape or cancel preserves draft", "IME composition"], events: ["aeliqo-record-editor-save", "aeliqo-record-editor-cancel"], expectedOutcome: "The editor validates its fields and emits a versioned save or cancel proposal without persisting it."},
+  "form-flow": {fixture: "A two-step identity/review flow with a slotted field for each step.", props: ["steps", "activeStep", "draft", "validation", "status", "nextLabel", "backLabel", "commitLabel"], propsNotes: "Draft and validation are host-visible; step transitions and commit are typed requests with preserved focus.", states: ["ready", "invalid", "pending", "error", "disabled"], keyboard: ["Tab follows current step", "Enter on next/commit", "Arrow keys within controls", "focus moves to new step"], events: ["aeliqo-form-flow-step", "aeliqo-form-flow-commit"], expectedOutcome: "The flow preserves drafts and focus while emitting step or commit proposals after validation."},
+  "quality-panel": {fixture: "A quality panel reporting source, freshness, completeness, provenance, and one unsupported claim.", props: ["source", "freshness", "completeness", "provenance", "unsupportedClaims", "state", "status"], propsNotes: "Quality metadata is host evidence; unsupported claims remain visible as cautions and are never presented as facts.", states: ["ready", "loading", "partial", "stale", "error"], keyboard: ["Tab reaches any host-provided links", "Not otherwise interactive"], events: ["None; read-only evidence surface"], expectedOutcome: "The panel makes freshness, completeness, provenance, and unsupported claims explicit."},
+};
 
 const mount = (id: CatalogExampleId, fn: (root: HTMLElement) => void): CatalogExampleDefinition => ({
   metadata: {
@@ -38,7 +94,8 @@ const mount = (id: CatalogExampleId, fn: (root: HTMLElement) => void): CatalogEx
     keyboard: ["Tab", "Arrow keys within child controls", "Enter or Space commits the focused host action", "focus and draft are preserved across steps"],
     events: ["compound-specific typed interaction events", "aeliqo-record-editor-save", "aeliqo-form-flow-step", "aeliqo-form-flow-commit"],
     expectedOutcome: "The compound shares one scope and result lineage across its child primitives while leaving business actions with the host.",
-    source: `import {registerAeliqoElements} from "@aeliqo/web";\nregisterAeliqoElements();\n\n${fn.toString()}`,
+    ...componentNotes[id],
+    source: catalogSource({imports: sourceImports, setup: sourceSetup, mount: fn}),
     result: catalogRef,
   },
   mount(container) {
@@ -119,7 +176,7 @@ export const compoundExamples: readonly CatalogExampleDefinition[] = [
   mount("record-editor", (root) => {
     const element = createCatalogElement<AeliqoRecordEditorElement>("aeliqo-record-editor", root);
     element.entity = "person";
-    element.entityKey = "text:ada";
+    element.entityKey = "string:3:ada";
     element.entityRevision = "person-revision-1";
     const name = document.createElement("aeliqo-text-field") as AeliqoTextFieldElement;
     name.label = "Name";

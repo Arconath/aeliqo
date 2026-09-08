@@ -10,6 +10,10 @@ describe("catalog examples", () => {
       const definition = getCatalogExample(id);
       expect(definition.metadata.source).toContain("registerAeliqoElements");
       expect(definition.metadata.source).toContain(`aeliqo-${id}`);
+      expect(definition.metadata.source).toContain("function createCatalogRoot");
+      expect(definition.metadata.source).toContain("function createCatalogElement");
+      expect(definition.metadata.source).toContain("const root = createCatalogRoot(host)");
+      expect(definition.metadata.source).not.toContain("__vite_ssr_import_");
       expect(definition.metadata.props.length).toBeGreaterThan(0);
       expect(definition.metadata.fixture.length).toBeGreaterThan(0);
       expect(definition.metadata.propsNotes.length).toBeGreaterThan(0);

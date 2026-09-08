@@ -10,7 +10,34 @@ import {
   AeliqoTooltipElement,
 } from "@aeliqo/web";
 import {cleanupCatalogRoot, createCatalogElement, createCatalogRoot} from "./fixture.js";
-import type {CatalogExampleDefinition, CatalogExampleId} from "./types.js";
+import {catalogSource} from "./source.js";
+import type {CatalogExampleDefinition, CatalogExampleId, CatalogExampleMetadata} from "./types.js";
+
+const sourceImports = `import {
+  AeliqoAlertElement,
+  AeliqoDialogElement,
+  AeliqoDrawerElement,
+  AeliqoEmptyStateElement,
+  AeliqoPopoverElement,
+  AeliqoProgressElement,
+  AeliqoSkeletonElement,
+  AeliqoToastElement,
+  AeliqoTooltipElement,
+  registerAeliqoElements,
+} from "@aeliqo/web";`;
+
+type MetadataNotes = Pick<CatalogExampleMetadata, "fixture" | "props" | "propsNotes" | "states" | "keyboard" | "events" | "expectedOutcome">;
+const componentNotes: Record<string, Partial<MetadataNotes>> = {
+  tooltip: {fixture: "One focused report-details trigger with a short explanatory tooltip.", props: ["label", "content", "open"], propsNotes: "The label names the trigger; content supplements it and is not the only place to put essential meaning.", states: ["ready", "disabled"], keyboard: ["Tab", "Enter or Space where trigger semantics apply", "Escape dismisses the tooltip"], events: ["None; visibility follows focus/hover"], expectedOutcome: "The explanation appears on focus or hover without stealing focus from the trigger."},
+  popover: {fixture: "One non-modal report-details popover opened beside its trigger.", props: ["label", "content", "open", "modal", "closeOnOutside"], propsNotes: "The host controls open state and chooses modal behavior; the popover does not execute actions itself.", states: ["ready", "disabled"], keyboard: ["Tab", "Enter or Space", "Escape", "focus returns to trigger"], events: ["aeliqo-popover-close"], expectedOutcome: "The bounded surface exposes a labelled dialog boundary and emits a close request when dismissed."},
+  dialog: {fixture: "One modal archive confirmation with a host-owned action in its content.", props: ["heading", "open", "modal", "closeOnEscape"], propsNotes: "The host decides when to open and what the slotted action means; the dialog only owns focus and dismissal mechanics.", states: ["ready", "disabled"], keyboard: ["Tab focus trap", "Escape", "Enter on slotted action", "focus returns to trigger"], events: ["aeliqo-dialog-close"], expectedOutcome: "The modal announces its heading, traps focus while open, and emits a cancellable close request."},
+  drawer: {fixture: "One inline end-side report detail drawer that keeps surrounding context visible.", props: ["heading", "open", "mode", "side"], propsNotes: "Inline mode participates in layout; modal mode is chosen by the host when a separate focus boundary is needed.", states: ["ready", "disabled"], keyboard: ["Tab", "Escape where modal", "focus returns to trigger"], events: ["aeliqo-drawer-close"], expectedOutcome: "The detail surface adapts to inline or overlay mode and emits a close request."},
+  toast: {fixture: "One persistent success toast with an explicit dismiss button.", props: ["message", "tone", "open", "duration", "dismissible"], propsNotes: "Keep essential information outside transient notifications; duration zero makes this fixture reviewable.", states: ["ready", "pending", "error"], keyboard: ["Tab to dismiss", "Enter or Space", "Escape where host handles it"], events: ["aeliqo-toast-dismiss"], expectedOutcome: "The status is announced as transient feedback and can be dismissed by the user."},
+  alert: {fixture: "One warning alert with an inspect action and optional dismissal.", props: ["heading", "message", "tone", "actionLabel", "dismissible", "open"], propsNotes: "The message remains visible; action and dismiss requests are handed to the host.", states: ["ready", "error", "pending"], keyboard: ["Tab", "Enter or Space on action", "Escape where host handles it"], events: ["aeliqo-alert-action", "aeliqo-alert-dismiss"], expectedOutcome: "The warning is exposed as an alert with separately typed action and dismissal requests."},
+  progress: {fixture: "One determinate report-loading progress bar at 62 percent.", props: ["label", "value", "max"], propsNotes: "Leave value absent for an indeterminate operation; the host owns the operation and completion meaning.", states: ["ready", "pending", "error"], keyboard: ["Not focusable by default"], events: ["None; status is conveyed by progress semantics"], expectedOutcome: "Progress exposes the current bounded value and accessible label without claiming completion."},
+  skeleton: {fixture: "Three static loading lines representing report rows.", props: ["label", "lines", "variant", "animated"], propsNotes: "Skeleton is a temporary visual placeholder; it must be replaced by an explicit ready, empty, or error result.", states: ["loading", "ready", "error"], keyboard: ["Not focusable"], events: ["None; placeholder has no action"], expectedOutcome: "The loading placeholder communicates pending content without inventing data."},
+  "empty-state": {fixture: "A no-matches result with a clear-filters action.", props: ["kind", "heading", "message", "actionLabel"], propsNotes: "The kind describes the honest empty condition; the action is a host request to change filters.", states: ["empty", "loading", "error"], keyboard: ["Tab", "Enter", "Space"], events: ["aeliqo-empty-state-action"], expectedOutcome: "The absence of matching data is explicit and the host can receive a typed recovery request."},
+};
 
 const mount = (id: CatalogExampleId, fn: (root: HTMLElement) => void): CatalogExampleDefinition => ({
   metadata: {
@@ -25,7 +52,8 @@ const mount = (id: CatalogExampleId, fn: (root: HTMLElement) => void): CatalogEx
     keyboard: ["Tab", "Enter or Space", "Escape dismisses transient surfaces when enabled", "focus returns to the trigger"],
     events: ["aeliqo-dialog-close", "aeliqo-drawer-close", "aeliqo-popover-close", "aeliqo-toast-dismiss", "aeliqo-alert-action"],
     expectedOutcome: "The feedback state is visible and announced with an explicit recovery or dismissal boundary.",
-    source: `import {registerAeliqoElements} from "@aeliqo/web";\nregisterAeliqoElements();\n\n${fn.toString()}`,
+    ...componentNotes[id],
+    source: catalogSource({imports: sourceImports, mount: fn}),
   },
   mount(container) {
     const root = createCatalogRoot(container);

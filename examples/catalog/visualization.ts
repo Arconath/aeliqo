@@ -31,7 +31,94 @@ import {
   relationshipSpec,
   treemapSpec,
 } from "./fixture.js";
-import type {CatalogExampleDefinition, CatalogExampleId} from "./types.js";
+import type {CatalogExampleDefinition, CatalogExampleId, CatalogExampleMetadata} from "./types.js";
+import {catalogSource} from "./source.js";
+
+const sourceImports = `import {
+  AeliqoAreaElement,
+  AeliqoBarElement,
+  AeliqoCalendarGridElement,
+  AeliqoHeatmapElement,
+  AeliqoHistogramElement,
+  AeliqoMatrixElement,
+  AeliqoRelationshipElement,
+  AeliqoScatterElement,
+  AeliqoTimelineElement,
+  AeliqoTrendElement,
+  AeliqoTreeElement,
+  AeliqoTreemapElement,
+  registerAeliqoElements,
+} from "@aeliqo/web";
+import type {VisualizationBindingContext, VisualizationSpec} from "@aeliqo/core";
+import type {VisualizationDataset} from "@aeliqo/web/visualization";`;
+
+const sourceSetup = `const catalogRef: any = {
+  id: "aeliqo-catalog-example",
+  revision: "1",
+  outputId: "people",
+  queryDigest: "catalog-query",
+  scopeDigest: "catalog-scope",
+};
+const rows: any = [
+  {id: "ada", name: "Ada Lovelace", team: "Research", date: "2026-09-08", amount: 120, low: 80, high: 100, zero: 0},
+  {id: "lin", name: "Lin Chen", team: "Product", date: "2026-09-09", amount: 96, low: 100, high: 140, zero: 0},
+  {id: "grace", name: "Grace Hopper", team: "Research", date: "2026-09-10", amount: 144, low: 140, high: 160, zero: 0},
+];
+const plot = (mark: string, encoding: any): any => ({kind: "unit", mark, result: catalogRef, missing: "gap", encoding});
+const cartesian = (view: string, mark: string): any => ({version: "1", view, plot: {version: "1", root: plot(mark, {x: {field: "date", scale: "temporal"}, y: {field: "amount", scale: "linear", zero: true}})}});
+const catalogVisualizationSpecs: any = {
+  trend: cartesian("trend", "line"),
+  bar: cartesian("bar", "bar"),
+  area: cartesian("area", "area"),
+  scatter: cartesian("scatter", "point"),
+  histogram: {...cartesian("histogram", "rect"), bins: {start: "low", end: "high", value: "amount", measure: "count", boundary: "start-inclusive-end-exclusive"}},
+  heatmap: cartesian("heatmap", "cell"),
+};
+const catalogTemporalSpecs: any = {
+  matrix: {version: "1", view: "matrix", result: catalogRef, columns: ["name", "team", "amount"]},
+  timeline: {version: "1", view: "timeline", result: catalogRef, start: "date"},
+  "calendar-grid": {version: "1", view: "calendar-grid", result: catalogRef, date: "date"},
+};
+const catalogVisualizationDataset: any = {result: catalogRef, rows};
+const catalogVisualizationContext: any = {results: [], catalog: {entities: [], relationships: []}};
+const histogramSpec: any = catalogVisualizationSpecs.histogram;
+const histogramContext: any = {...catalogVisualizationContext, histograms: [{result: catalogRef, bins: histogramSpec.bins}]};
+const hierarchyRef: any = {...catalogRef, id: "aeliqo-catalog-hierarchy", outputId: "nodes"};
+const hierarchyDataset: any = {result: hierarchyRef, rows: [{id: "company", parent: null, label: "Company", amount: 3}]};
+const hierarchySpec: any = {version: "1", view: "tree", result: hierarchyRef, node: ["id"], parent: ["parent"], label: "label"};
+const treemapSpec: any = {...hierarchySpec, view: "treemap", value: "amount", meaning: {id: "amount", revision: "1"}};
+const hierarchyContext: any = {results: [], catalog: {entities: [], relationships: []}};
+const relationshipRef: any = {...catalogRef, id: "aeliqo-catalog-relationship", outputId: "edges"};
+const relationshipDataset: any = {result: relationshipRef, rows: [{edge: "e1", source: "research", target: "company"}]};
+const relationshipSpec: any = {version: "1", view: "relationship", result: relationshipRef, source: ["source"], target: ["target"], relationship: {id: "reports-to", revision: "1"}};
+const relationshipContext: any = {results: [], catalog: {entities: [], relationships: []}, relationships: []};
+function configure(element: any, visualization: VisualizationSpec, context: VisualizationBindingContext, datasets: readonly VisualizationDataset[] = [catalogVisualizationDataset]): any {
+  element.visualization = visualization;
+  element.context = context;
+  element.datasets = datasets;
+  element.label = "Catalog example";
+  element.width = 640;
+  element.height = 360;
+  element.maxMarks = 500;
+  element.selectionEnabled = true;
+  return element;
+}`;
+
+type MetadataNotes = Pick<CatalogExampleMetadata, "fixture" | "props" | "propsNotes" | "states" | "keyboard" | "events" | "expectedOutcome">;
+const componentNotes: Record<string, Partial<MetadataNotes>> = {
+  trend: {fixture: "A line trend over the authorized date and amount fields.", props: ["visualization", "context", "datasets", "label", "width", "height", "maxMarks", "selectionEnabled"], propsNotes: "The spec declares temporal x and measure y; dataset rows and Result lineage are supplied by the host.", states: ["ready", "partial", "loading", "empty", "error"], keyboard: ["Tab", "Arrow keys across marks", "Enter selects a mark", "Accessible table remains available"], events: ["aeliqo-visualization-select"], expectedOutcome: "The trend renders only the supplied Result scope and selection identifies the chosen row."},
+  bar: {fixture: "A bar comparison by team with amount and person series.", props: ["visualization", "context", "datasets", "label", "width", "height", "maxMarks", "selectionEnabled"], propsNotes: "Ordinal dimensions and exact measure encodings come from the typed spec; the component does not aggregate new data.", states: ["ready", "partial", "loading", "empty", "error"], keyboard: ["Tab", "Arrow keys across bars", "Enter selects a bar", "Accessible table remains available"], events: ["aeliqo-visualization-select"], expectedOutcome: "Bars reflect the supplied team/person encodings and preserve result scope."},
+  area: {fixture: "An area view over the authorized date and amount fields with an explicit non-stacked policy.", props: ["visualization", "context", "datasets", "label", "width", "height", "maxMarks", "selectionEnabled"], propsNotes: "The spec states stacking and missing-value policy; rendering never fills or invents missing rows.", states: ["ready", "partial", "loading", "empty", "error"], keyboard: ["Tab", "Arrow keys across marks", "Enter selects a mark", "Accessible table remains available"], events: ["aeliqo-visualization-select"], expectedOutcome: "The area preserves the declared missing-value treatment and exposes equivalent data access."},
+  scatter: {fixture: "A point view comparing amount against amount for the bounded people rows.", props: ["visualization", "context", "datasets", "label", "width", "height", "maxMarks", "selectionEnabled"], propsNotes: "Both axes are explicit measure encodings; no trend or causal claim is inferred from position.", states: ["ready", "partial", "loading", "empty", "error"], keyboard: ["Tab", "Arrow keys across points", "Enter selects a point", "Accessible table remains available"], events: ["aeliqo-visualization-select"], expectedOutcome: "Points are drawn from supplied rows and any selection remains tied to Result identity."},
+  histogram: {fixture: "Bounded low/high bins with amount as the exact value and count as the declared measure.", props: ["visualization", "context", "datasets", "label", "width", "height", "maxMarks", "selectionEnabled"], propsNotes: "Bin boundaries and measure are declared in the spec; the renderer does not silently choose a binning policy.", states: ["ready", "partial", "loading", "empty", "error"], keyboard: ["Tab", "Arrow keys across bins", "Enter selects a bin", "Accessible table remains available"], events: ["aeliqo-visualization-select"], expectedOutcome: "Bins render according to the declared boundary policy and remain scope-labelled."},
+  heatmap: {fixture: "A team by person heatmap colored by exact amount.", props: ["visualization", "context", "datasets", "label", "width", "height", "maxMarks", "selectionEnabled"], propsNotes: "Both ordinal dimensions and the color measure are explicit; color does not replace text labels.", states: ["ready", "partial", "loading", "empty", "error"], keyboard: ["Tab", "Arrow keys across cells", "Enter selects a cell", "Accessible table remains available"], events: ["aeliqo-visualization-select"], expectedOutcome: "Cells preserve both dimensions and expose an accessible equivalent representation."},
+  matrix: {fixture: "A temporal matrix of person, team, and amount columns.", props: ["visualization", "context", "datasets", "label", "width", "height", "maxMarks", "selectionEnabled"], propsNotes: "Column IDs come from the temporal spec and rows remain tied to the supplied result.", states: ["ready", "partial", "loading", "empty", "error"], keyboard: ["Tab", "Arrow keys across cells", "Enter selects a row", "Accessible table remains available"], events: ["aeliqo-visualization-select"], expectedOutcome: "The matrix exposes the declared temporal columns without changing grain."},
+  timeline: {fixture: "A timeline keyed by the authorized date field.", props: ["visualization", "context", "datasets", "label", "width", "height", "maxMarks", "selectionEnabled"], propsNotes: "The timeline start field is explicit and dates retain calendar semantics from the Result descriptor.", states: ["ready", "partial", "loading", "empty", "error"], keyboard: ["Tab", "Arrow keys across events", "Enter selects an event", "Accessible table remains available"], events: ["aeliqo-visualization-select"], expectedOutcome: "Events are placed on the declared date axis and remain linked to result identities."},
+  "calendar-grid": {fixture: "A calendar grid keyed by the authorized date field.", props: ["visualization", "context", "datasets", "label", "width", "height", "maxMarks", "selectionEnabled"], propsNotes: "Calendar placement follows the spec and declared calendar descriptor; missing dates are not invented.", states: ["ready", "partial", "loading", "empty", "error"], keyboard: ["Tab", "Arrow keys across days", "Enter selects a day", "Accessible table remains available"], events: ["aeliqo-visualization-select"], expectedOutcome: "The calendar preserves date meaning and exposes the supplied rows through accessible data."},
+  tree: {fixture: "A company-to-team hierarchy with explicit parent and node identity fields.", props: ["visualization", "context", "datasets", "label", "width", "height", "maxMarks", "selectionEnabled"], propsNotes: "Parent and node fields define hierarchy; the renderer does not infer relationships from labels.", states: ["ready", "partial", "loading", "empty", "error"], keyboard: ["Tab", "Arrow keys across nodes", "Enter selects a node", "Accessible table remains available"], events: ["aeliqo-visualization-select"], expectedOutcome: "The hierarchy preserves parent relationships and emits stable node selections."},
+  treemap: {fixture: "A hierarchy treemap sized by the declared amount meaning.", props: ["visualization", "context", "datasets", "label", "width", "height", "maxMarks", "selectionEnabled"], propsNotes: "The amount meaning and hierarchy fields are explicit; area is not treated as an unqualified metric.", states: ["ready", "partial", "loading", "empty", "error"], keyboard: ["Tab", "Arrow keys across nodes", "Enter selects a node", "Accessible table remains available"], events: ["aeliqo-visualization-select"], expectedOutcome: "Treemap area follows the declared amount meaning and retains hierarchy scope."},
+  relationship: {fixture: "Two explicit reports-to edges with source and target fields.", props: ["visualization", "context", "datasets", "label", "width", "height", "maxMarks", "selectionEnabled"], propsNotes: "Relationship identity and cardinality come from the catalog context; an edge does not establish causation.", states: ["ready", "partial", "loading", "empty", "error"], keyboard: ["Tab", "Arrow keys across edges", "Enter selects an edge", "Accessible table remains available"], events: ["aeliqo-visualization-select"], expectedOutcome: "The graph displays only declared edges and labels them as evidence within the supplied scope."},
+};
 
 const mount = (id: CatalogExampleId, fn: (root: HTMLElement) => void): CatalogExampleDefinition => ({
   metadata: {
@@ -46,7 +133,8 @@ const mount = (id: CatalogExampleId, fn: (root: HTMLElement) => void): CatalogEx
     keyboard: ["Tab", "Arrow keys move between marks or rows", "Enter selects the focused mark", "accessible data table remains available"],
     events: ["aeliqo-visualization-select"],
     expectedOutcome: "The actual renderer shows the typed view, preserves Result scope, and exposes an equivalent accessible data representation.",
-    source: `import {registerAeliqoElements} from "@aeliqo/web";\nregisterAeliqoElements();\n\n${fn.toString()}`,
+    ...componentNotes[id],
+    source: catalogSource({imports: sourceImports, setup: sourceSetup, mount: fn}),
     result: catalogRef,
   },
   mount(container) {
