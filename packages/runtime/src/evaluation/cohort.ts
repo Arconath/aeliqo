@@ -36,17 +36,32 @@ function sameType(left: SemanticType, right: SemanticType): boolean {
   return true;
 }
 
-function valueType(value: DataValue): SemanticType['value'] {
-  if (value === null) return 'text';
-  if (typeof value === 'string') return 'text';
-  if (typeof value === 'boolean') return 'boolean';
-  if (typeof value === 'number') return Number.isSafeInteger(value) ? 'integer' : 'float';
-  return 'decimal';
+function daysInMonth(year: number, month: number): number {
+  if (month === 2) return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0) ? 29 : 28;
+  return [4, 6, 9, 11].includes(month) ? 30 : 31;
+}
+
+function validDate(value: string): boolean {
+  const matched = /^(\d{4})-(\d{2})-(\d{2})$/u.exec(value);
+  if (matched === null) return false;
+  const year = Number(matched[1]);
+  const month = Number(matched[2]);
+  const day = Number(matched[3]);
+  return month >= 1 && month <= 12 && day >= 1 && day <= daysInMonth(year, month);
+}
+
+function validInstant(value: string): boolean {
+  const matched = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(Z|[+-](\d{2}):(\d{2}))$/u.exec(value);
+  if (matched === null || !validDate(`${matched[1]}-${matched[2]}-${matched[3]}`)) return false;
+  if (Number(matched[4]) > 23 || Number(matched[5]) > 59 || Number(matched[6]) > 59) return false;
+  return matched[8] === 'Z' || (Number(matched[9]) <= 23 && Number(matched[10]) <= 59);
 }
 
 function validValue(value: DataValue, type: SemanticType): boolean {
   if (value === null) return type.nullable;
-  if (type.value === 'text' || type.value === 'date' || type.value === 'instant') return typeof value === 'string';
+  if (type.value === 'text') return typeof value === 'string';
+  if (type.value === 'date') return typeof value === 'string' && validDate(value);
+  if (type.value === 'instant') return typeof value === 'string' && validInstant(value);
   if (type.value === 'boolean') return typeof value === 'boolean';
   if (type.value === 'integer') return typeof value === 'number' && Number.isSafeInteger(value);
   if (type.value === 'float') return typeof value === 'number' && Number.isFinite(value);
