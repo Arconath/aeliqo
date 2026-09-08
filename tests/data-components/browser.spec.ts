@@ -92,3 +92,67 @@ test("filter typing is draft-only and Apply emits the typed predicate", async ({
   await filter.locator("button[part=apply]").click();
   await expect.poll(() => page.evaluate(() => (window as unknown as {dataFixture: {events: {type: string; detail: {predicate?: {op: string; field: string; value: string}}}[]}}).dataFixture.events.findLast((event) => event.type === "aeliqo-filter-change")?.detail.predicate)).toEqual({op: "compare", field: "name", value: "Ada", comparison: "eq"});
 });
+
+test("compound predicates and multiple clauses remain visible and intact on Apply", async ({page}) => {
+  await page.goto("/tests/data-components/index.html");
+  await page.evaluate(async () => {
+    const filter = document.querySelector("#filter") as any;
+    filter.fields = [
+      {id: "name", label: "Name", type: "text"},
+      {id: "amount", label: "Amount", type: "decimal"},
+    ];
+    filter.predicate = {
+      op: "and",
+      predicates: [
+        {op: "compare", field: "name", comparison: "eq", value: "Ada"},
+        {op: "compare", field: "amount", comparison: "gt", value: {decimal: "2.50"}},
+      ],
+    };
+    filter.clauses = [];
+    await filter.updateComplete;
+  });
+  const filter = page.locator("#filter");
+  await expect(filter.locator("[part=clause]")).toHaveCount(2);
+  await expect(filter.locator("select[part=field]").nth(0)).toHaveValue("name");
+  await expect(filter.locator("select[part=field]").nth(1)).toHaveValue("amount");
+  await expect(filter.locator("input[part=value]").nth(1)).toHaveValue("2.50");
+  await filter.locator("button[part=apply]").click();
+  await expect.poll(() => page.evaluate(() => (window as any).dataFixture.events.findLast((event: any) => event.type === "aeliqo-filter-change")?.detail.predicate)).toEqual({
+    op: "and",
+    predicates: [
+      {op: "compare", field: "name", comparison: "eq", value: "Ada"},
+      {op: "compare", field: "amount", comparison: "gt", value: {decimal: "2.50"}},
+    ],
+  });
+});
+
+test("explicit clauses stay visible and unsupported nested predicates stay read-only", async ({page}) => {
+  await page.goto("/tests/data-components/index.html");
+  await page.evaluate(async () => {
+    const filter = document.querySelector("#filter") as any;
+    filter.fields = [
+      {id: "name", label: "Name", type: "text"},
+      {id: "amount", label: "Amount", type: "decimal"},
+    ];
+    filter.predicate = undefined;
+    filter.logical = "or";
+    filter.clauses = [
+      {field: "name", operator: "eq", value: "Ada"},
+      {field: "amount", operator: "gt", value: "2.50"},
+    ];
+    await filter.updateComplete;
+  });
+  const filter = page.locator("#filter");
+  await expect(filter.locator("[part=clause]")).toHaveCount(2);
+  await expect(filter.locator("select[part=field]").nth(0)).toHaveValue("name");
+  await expect(filter.locator("select[part=field]").nth(1)).toHaveValue("amount");
+
+  await page.evaluate(async () => {
+    const filter = document.querySelector("#filter") as any;
+    filter.clauses = [];
+    filter.predicate = {op: "not", predicate: {op: "compare", field: "name", comparison: "eq", value: "Ada"}};
+    await filter.updateComplete;
+  });
+  await expect(filter.locator("[part=unsupported-predicate]")).toBeVisible();
+  await expect(filter.locator("button[part=apply]")).toBeDisabled();
+});
