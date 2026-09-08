@@ -1,0 +1,32 @@
+{
+  "status": "pass",
+  "author": "platform_proof (Luna Max), root contracts/integration",
+  "reviewer": "preflight_diagnosis (independent Luna Max)",
+  "sourceCommit": "3669ea1101af963487a48e66545df9ecd03022f9",
+  "scope": "Transactional regions, complete dependency read-set checks, bounded asynchronous authority, leases, targeted data revisions and fresh-query persistence restore.",
+  "findingsClosed": [
+    "partial staging lease cleanup",
+    "revocation/reentrant callback barriers",
+    "bounded authorizations and cancellation",
+    "exact historical reference leases and retirement",
+    "principal/semantic handle pins",
+    "required initial result references",
+    "opaque incarnation identity and revision bounds",
+    "strict host outcomes and persisted metadata",
+    "fresh exact changed-result metadata",
+    "pending restore admission including clock reentrancy"
+  ],
+  "independentChecks": {
+    "node": "v24.20.0",
+    "pnpm": "11.24.0",
+    "regions": 38,
+    "runtimeBuild": "pass",
+    "regionTypes": "pass",
+    "admissionProbe": {
+      "created": false,
+      "pendingRestoreCallbacks": 1,
+      "active": false
+    }
+  },
+  "limitations": "Scoped source review and explicit regressions; no full UI, business-truth, cross-browser, npm or deployment certification."
+}

@@ -1,0 +1,10 @@
+import {createRegionStore} from '/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/packages/runtime/dist/regions/index.js';
+const task = regionId => ({version:'1',id:'task-1',revision:'1',catalogRevision:'catalog-1',functionRegistryDigest:'functions-1',regionId,goal:'Read',kind:'presentation',needs:[],assumptions:[],inputs:[]});
+const authority={principalKey:'p',scopeDigest:'s',policyRevision:'p1',catalogRevision:'catalog-1',experienceRevision:'e1',functionRegistryDigest:'functions-1',results:[]};
+const shared={readAuthority:()=>({ok:true,value:authority}),authorizeCommit:()=>({ok:true,value:undefined})};
+const seed=createRegionStore(shared).create({id:'restored',state:{task:task('restored')}}); if(!seed.ok) throw Error('seed');
+const doc=seed.value.export(); let owner, pending, entered=false, started=0;
+owner=createRegionStore({...shared,maxRegions:1,restoreRegion:()=>{started++; return new Promise(()=>{});},now:()=>{if(!entered){entered=true;pending=owner.restore(doc);}return 1;}});
+const created=owner.create({id:'outer',state:{task:task('outer')}});
+console.log(JSON.stringify({created:created.ok,pendingRestoreCallbacks:started,active:!!owner.get('outer')}));
+owner.dispose(); await pending;

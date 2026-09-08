@@ -354,10 +354,26 @@
         "Atomic per-region commits, stable IDs, histories and separate data revision with targeted notifications.",
         "Commit verifies authorization scope and entire dependency read set, not just region revision."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "Luna Max author platform_proof owns isolated codex/t10-regions runtime region/task/scheduling/persistence and tests/runtime-regions; root owns canonical core read-set validation/config/exports/integration; preflight_diagnosis independent reviewer. No shared writers."
+      "evidence": [
+        {
+          "path": "harness/evidence/t10/2524bf9a4d46/manifest.json",
+          "sha256": "1930bbb546784a01c995a33ba150b3c627df397f28507d1ea1b5b6b78f57dafa"
+        }
+      ],
+      "notes": "Accepted source3669ea1 with38region/60contract/97data/23result tests, strict types, real installedNode/Chromium query/lease/restore flows and independent final review. Immutable evidence harness/evidence/t10/2524bf9a4d46. T11 typed interactions/actions is next; no publication/deployment claim.",
+      "review": {
+        "status": "approved",
+        "author": "platform_proof (Luna Max), root contracts/integration",
+        "reviewer": "preflight_diagnosis (independent Luna Max)",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t10/2524bf9a4d46/review.json",
+            "sha256": "8b31cabb6a29f4dc756478795557e2418b329168c4454599d743dd72b963053b"
+          }
+        ]
+      }
     },
     {
       "id": "T11",

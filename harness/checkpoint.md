@@ -170,3 +170,12 @@ flows, independent real-network streaming/cancellation/budget probes and hosted
 CI34191687282 passed. Custom fetch wrappers that erase Response.url bypass the
 compatibility path; this limitation is documented. Main, npm and production remain
 unchanged. Continue T10 review/integration, then the actual DAG.
+
+T10 accepted at source3669ea1 with immutable evidence harness/evidence/t10/2524bf9a4d46.
+Fresh38region,60contract,97data,23result tests, strict workspace types, installed
+Node/Chromium region/query/lease/fresh-restore flows and kit/reference checks pass.
+Independent review closed stale read sets, revocation and callback races, staged
+resource cleanup, historical leases, exact change metadata, strict persistence
+and pending restore admission. Final source digest remained2524bf9a4d46d0b2bd74d0fe5ed4203f5d95eed2d89c7e80bc4ad78cd4dadec3.
+T11 typed interaction graph and action boundary is next; full catalog and earlyT39
+remain ahead. No npm publication, main cutover or deployment occurred.

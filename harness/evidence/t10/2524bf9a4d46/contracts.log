@@ -1,0 +1,12 @@
+$ pnpm build:core && vitest run --config tests/contracts/vitest.config.mjs && tsc -p tests/contracts/tsconfig.json --noEmit
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+
+ RUN  v5.0.0 /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo
+
+
+ Test Files  6 passed (6)
+      Tests  60 passed (60)
+   Start at  13:43:57
+   Duration  578ms (tests 40%, transform 35%, import 24%, worker 1%)
+

@@ -1,0 +1,31 @@
+{
+  "sourceDigest": "2524bf9a4d46d0b2bd74d0fe5ed4203f5d95eed2d89c7e80bc4ad78cd4dadec3",
+  "sourceCommit": "3669ea1101af963487a48e66545df9ecd03022f9",
+  "sourceAfter": "2524bf9a4d46d0b2bd74d0fe5ed4203f5d95eed2d89c7e80bc4ad78cd4dadec3",
+  "sourceChangedDuringRun": false,
+  "allChecksPassed": true,
+  "task": "T10",
+  "status": "pass",
+  "timestamp": "2026-09-08T06:46:04.882601+00:00",
+  "checks": {
+    "regions": 38,
+    "contracts": 60,
+    "data": 97,
+    "results": 23,
+    "workspaceTypes": "pass",
+    "installedNodeAndChromium": "pass",
+    "kitReference": "pass"
+  },
+  "consumerEvidence": "artifacts/runtime-consumers/run-bOrAZ8",
+  "scope": "Transactional regions, complete dependency read-set checks, bounded asynchronous authority, leases, targeted data revisions and fresh-query persistence restore.",
+  "notClaimed": [
+    "full71components",
+    "interaction/action runtime (T11)",
+    "full renderer/planner bundle budgets",
+    "cross-browser region proof",
+    "npm publication",
+    "main cutover",
+    "production deployment",
+    "release readiness"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "operation": "new-branch-one-clean-tree-commit",
+  "repo": "Arconath/aeliqo",
+  "branch": "rewrite/v0.1.0-master-foundation",
+  "files": 657,
+  "mutatesMain": false,
+  "publishesNpm": false,
+  "deploys": false,
+  "applied": false
+}

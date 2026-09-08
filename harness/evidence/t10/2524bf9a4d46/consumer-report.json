@@ -1,0 +1,45 @@
+{
+  "passed": true,
+  "scope": "@aeliqo/core and @aeliqo/runtime 0.1.0 installed tarballs; strict declarations; local/HTTP ADC roundtrip; authorization and stale-plan checks; region commits, result leases and fresh-query restore in Node and Chromium.",
+  "artifacts": [
+    {
+      "name": "@aeliqo/core",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/runtime-consumers/run-bOrAZ8/aeliqo-core-0.1.0.tgz",
+      "sha256": "fa10eb6f820d55e958a540196c96070cf52228b7aa8d2170f2546583aae99690",
+      "integrity": "sha512-zdtJCocdZX9GSMocvm2Sm84VqRRFgU8qjfvFmKxuWgf27Jxxg69CjSTgjL7DnS2lCe0wzgXq5aU2Fy8iVZKwBA=="
+    },
+    {
+      "name": "@aeliqo/runtime",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/runtime-consumers/run-bOrAZ8/aeliqo-runtime-0.1.0.tgz",
+      "sha256": "99b58574802ae3f71dfb9c01f75e537aa571391eb2404050cc194e029c8b9e90",
+      "integrity": "sha512-DfFeeJwWGoHvnyJ7Z7zQrZeV0nyXuRlNly3RymI4ODJaHbcOV3/zg535pbbjT17l5kX06YJO6E3/JiYJ6dMg3Q=="
+    }
+  ],
+  "consumer": {
+    "directory": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-uQUKxY",
+    "lockPath": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/runtime-consumers/run-bOrAZ8/consumer-package-lock.json",
+    "lockSha256": "f014ae1e8b365605305e4a22727c1ae189e77ee11a8b3cdd390eb37dc8fd790e"
+  },
+  "sourceDigestBefore": {
+    "core": "c1bc6f62223319937f58ca0432911fe3f03f69cebce30c4f217a472d243af151",
+    "runtime": "ea6f2414b57684209186a6165be3e3780b5a4e8b7919b8903f2e57a8eae9d71e"
+  },
+  "sourceDigestAfter": {
+    "core": "c1bc6f62223319937f58ca0432911fe3f03f69cebce30c4f217a472d243af151",
+    "runtime": "ea6f2414b57684209186a6165be3e3780b5a4e8b7919b8903f2e57a8eae9d71e"
+  },
+  "consumerOutput": "Installed runtime data, results, region transactions, restore, HTTP and Chromium pass.",
+  "environment": {
+    "node": "v24.20.0",
+    "npm": "11.19.0",
+    "pnpm": "11.24.0",
+    "typescript": "7.0.2",
+    "vite": "8.2.2",
+    "playwright": "1.63.0",
+    "os": "darwin",
+    "release": "25.6.0",
+    "arch": "arm64"
+  }
+}
