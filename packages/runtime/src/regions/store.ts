@@ -9,6 +9,7 @@ import type {
   ReadAuthority,
   RegionAuthority,
   RegionCommitAuthorizationInput,
+  RegionCommitOptions,
   RegionCommitToken,
   RegionCreateInput,
   RegionDataPublication,
@@ -674,8 +675,10 @@ class RegionHandleImpl implements RegionHandle {
   private authorizeWithDeadline(
     input: Omit<RegionCommitAuthorizationInput, 'signal'>,
     expectedEpoch: number,
+    callerSignal?: AbortSignal,
   ): Promise<RegionOutcome<void>> {
     if (!this.live(expectedEpoch)) return Promise.resolve(this.closedOutcome());
+    if (callerSignal?.aborted) return Promise.resolve(failure('runtime.region-cancelled', 'The region commit was cancelled before publication.'));
     const controller = new AbortController();
     this.authorizationControllers.add(controller);
     let timedOut = false;
@@ -687,15 +690,21 @@ class RegionHandleImpl implements RegionHandle {
       settled = true;
       if (timer !== undefined) clearTimeout(timer);
       controller.signal.removeEventListener('abort', onAbort);
+      callerSignal?.removeEventListener('abort', onCallerAbort);
       this.authorizationControllers.delete(controller);
       resolveResult(result);
     };
     const onAbort = (): void => {
-      if (timedOut) finish(failure('runtime.region-budget', FAILURE.authorizationTimeout));
+      if (!this.live(expectedEpoch)) finish(this.closedOutcome());
+      else if (callerSignal?.aborted) finish(failure('runtime.region-cancelled', 'The region commit was cancelled before publication.'));
+      else if (timedOut) finish(failure('runtime.region-budget', FAILURE.authorizationTimeout));
       else finish(this.closedOutcome());
     };
+    const onCallerAbort = (): void => { controller.abort(); };
     const result = new Promise<RegionOutcome<void>>((resolve) => { resolveResult = resolve; });
     controller.signal.addEventListener('abort', onAbort, {once: true});
+    callerSignal?.addEventListener('abort', onCallerAbort, {once: true});
+    if (callerSignal?.aborted) { onCallerAbort(); return result; }
     timer = setTimeout(() => {
       timedOut = true;
       controller.abort();
@@ -712,7 +721,9 @@ class RegionHandleImpl implements RegionHandle {
         if (timedOut || settled) return;
         if (!this.live(expectedEpoch)) { finish(this.closedOutcome()); return; }
         const normalized = normalizeHostOutcome<void>(authorized);
-        finish(this.live(expectedEpoch) ? normalized : this.closedOutcome());
+        if (!this.live(expectedEpoch)) finish(this.closedOutcome());
+        else if (callerSignal?.aborted) finish(failure('runtime.region-cancelled', 'The region commit was cancelled before publication.'));
+        else finish(normalized);
       } catch {
         finish(failure('runtime.region-denied', FAILURE.denied));
       }
@@ -725,8 +736,9 @@ class RegionHandleImpl implements RegionHandle {
     if (!transferred) releaseLeases(record.resultLeases);
   }
 
-  async commit(token: RegionCommitToken): Promise<RegionOutcome<RegionSnapshot>> {
+  async commit(token: RegionCommitToken, options: RegionCommitOptions = {}): Promise<RegionOutcome<RegionSnapshot>> {
     if (this.status !== 'active') return this.closedOutcome();
+    const signal = options.signal;
     const recordCheck = this.validateToken(token);
     if (!recordCheck.ok) return recordCheck;
     const record = recordCheck.value;
@@ -736,6 +748,7 @@ class RegionHandleImpl implements RegionHandle {
       let transferred = false;
       try {
         if (!this.live(queuedEpoch)) return this.closedOutcome();
+        if (signal?.aborted) return failure('runtime.region-cancelled', 'The region commit was cancelled before publication.');
         if (this.taskRevision !== record.baseTaskRevision || this.regionRevision !== record.baseRegionRevision || this.dataRevision !== record.baseDataRevision)
           return failure('runtime.region-stale', FAILURE.stale);
         const beforeAuthority = this.currentAuthority(queuedEpoch);
@@ -746,7 +759,7 @@ class RegionHandleImpl implements RegionHandle {
         const current = this.snapshotValue();
         if (!this.authorizationConfigured) return failure('runtime.region-denied', FAILURE.denied);
         const authorizationInput: Omit<RegionCommitAuthorizationInput, 'signal'> = {regionId: this.id, token, state: record.state, current, authority: beforeAuthority.value};
-        const authorized = await this.authorizeWithDeadline(authorizationInput, queuedEpoch);
+        const authorized = await this.authorizeWithDeadline(authorizationInput, queuedEpoch, signal);
         if (!authorized.ok) return authorized as RegionOutcome<RegionSnapshot>;
         if (!this.live(queuedEpoch)) return this.closedOutcome();
         const afterAuthority = this.currentAuthority(queuedEpoch);
@@ -777,6 +790,7 @@ class RegionHandleImpl implements RegionHandle {
         // Obtain host clock metadata before changing state; injected clocks are callbacks too.
         const at = this.now();
         if (!this.live(queuedEpoch)) return this.closedOutcome();
+        if (signal?.aborted) return failure('runtime.region-cancelled', 'The region commit was cancelled before publication.');
         const nextReadSet = authorityReadSet(afterAuthority.value, nextTaskRevision, nextRegionRevision, this.dataRevision);
         this.taskRevision = nextTaskRevision;
         this.principalKey = afterAuthority.value.principalKey;

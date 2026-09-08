@@ -4,6 +4,7 @@ export type {
   ReadAuthority,
   RegionAuthority,
   RegionCommitAuthorizationInput,
+  RegionCommitOptions,
   RegionCommitToken,
   RegionContent,
   RegionCreateInput,

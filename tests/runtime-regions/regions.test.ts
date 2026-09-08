@@ -68,6 +68,77 @@ beforeEach(() => {
 });
 
 describe('transactional region store', () => {
+  it('cancels pending commit authorization without changing state and releases staged leases', async () => {
+    let started!: () => void;
+    let finish!: () => void;
+    const entered = new Promise<void>(resolve => { started = resolve; });
+    const waiting = new Promise<void>(resolve => { finish = resolve; });
+    let hostSignal: AbortSignal | undefined;
+    const {region} = create({authorizeCommit: async ({signal}) => {
+      hostSignal = signal;
+      started();
+      await waiting;
+      return {ok: true, value: undefined};
+    }});
+    const cache = createResultStore({maxEntries: 1});
+    const handle = cache.begin(resultKey);
+    for await (const _update of handle.subscribe(resultEvents())) { /* materialize a leased result */ }
+    const before = region.snapshot();
+    const staged = await region.stage({requestId: 'cancel-pending', expected: before.readSet!, state: {task: task()}, resultHandles: [handle]});
+    expect(staged.ok).toBe(true);
+    if (!staged.ok) return;
+    handle.release();
+    const abort = new AbortController();
+    const committing = region.commit(staged.value, {signal: abort.signal});
+    await entered;
+    abort.abort();
+    await expect(committing).resolves.toMatchObject({ok: false, diagnostics: [{code: 'runtime.region-cancelled'}]});
+    expect(hostSignal?.aborted).toBe(true);
+    expect(region.snapshot()).toEqual(before);
+    expect(cache.begin({...resultKey, requestId: 'after-cancel'}).snapshot().status).toBe('refreshing');
+    finish();
+    await Promise.resolve();
+    expect(region.snapshot()).toEqual(before);
+    region.dispose(); cache.dispose();
+  });
+
+  it('does not invoke authorization for a pre-cancelled commit', async () => {
+    let calls = 0;
+    const {region} = create({authorizeCommit: () => { calls++; return {ok: true, value: undefined}; }});
+    const staged = await region.stage({requestId: 'cancel-before', expected: region.snapshot().readSet!, state: {task: task()}});
+    if (!staged.ok) throw new Error('Stage failed');
+    const abort = new AbortController(); abort.abort();
+    await expect(region.commit(staged.value, {signal: abort.signal})).resolves.toMatchObject({ok: false, diagnostics: [{code: 'runtime.region-cancelled'}]});
+    expect(calls).toBe(0);
+    expect(region.discard(staged.value)).toBe(false);
+    region.dispose();
+  });
+
+  it('honors cancellation reentered from the final pre-commit clock', async () => {
+    const abort = new AbortController();
+    let armed = false;
+    const {region} = create({now: () => { if (armed) abort.abort(); return 1; }});
+    const before = region.snapshot();
+    const staged = await region.stage({requestId: 'cancel-clock', expected: before.readSet!, state: {task: task()}});
+    if (!staged.ok) throw new Error('Stage failed');
+    armed = true;
+    await expect(region.commit(staged.value, {signal: abort.signal})).resolves.toMatchObject({ok: false, diagnostics: [{code: 'runtime.region-cancelled'}]});
+    expect(region.snapshot()).toEqual(before);
+    region.dispose();
+  });
+
+  it('does not undo an atomic commit when an observer cancels afterward', async () => {
+    const abort = new AbortController();
+    const {region} = create();
+    const staged = await region.stage({requestId: 'cancel-after', expected: region.snapshot().readSet!, state: {task: task()}});
+    if (!staged.ok) throw new Error('Stage failed');
+    region.observe(update => { if (update.kind === 'commit') abort.abort(); });
+    await expect(region.commit(staged.value, {signal: abort.signal})).resolves.toMatchObject({ok: true});
+    expect(abort.signal.aborted).toBe(true);
+    expect(region.history().at(-1)?.kind).toBe('commit');
+    region.dispose();
+  });
+
   it('stages an opaque token, commits atomically and owns task/region revisions', async () => {
     const {region} = create();
     const initialRegionRevision = region.snapshot().regionRevision;

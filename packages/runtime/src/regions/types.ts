@@ -64,6 +64,7 @@ export type RegionFailureCode =
   | 'runtime.region-invalid'
   | 'runtime.region-stale'
   | 'runtime.region-denied'
+  | 'runtime.region-cancelled'
   | 'runtime.region-revoked'
   | 'runtime.region-disposed'
   | 'runtime.region-budget'
@@ -149,12 +150,17 @@ export interface RegionStoreOptions {
   readonly now?: () => number;
 }
 
+export interface RegionCommitOptions {
+  /** Cancels before the atomic state swap; cancellation after commit cannot undo it. */
+  readonly signal?: AbortSignal;
+}
+
 export interface RegionHandle {
   readonly id: string;
   snapshot(): RegionSnapshot;
   stage(input: RegionStageInput): Promise<RegionOutcome<RegionCommitToken>>;
   discard(token: RegionCommitToken): boolean;
-  commit(token: RegionCommitToken): Promise<RegionOutcome<RegionSnapshot>>;
+  commit(token: RegionCommitToken, options?: RegionCommitOptions): Promise<RegionOutcome<RegionSnapshot>>;
   publishData(publication?: RegionDataPublication): Promise<RegionOutcome<RegionSnapshot>>;
   observe(listener: (update: RegionUpdate) => void, options?: RegionObserverOptions): RegionObserverFunction;
   history(): readonly RegionHistoryEntry[];
