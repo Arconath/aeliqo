@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import type {InteractionState, Task} from '@aeliqo/core';
+import type {InteractionState, Task} from '../../packages/core/src/index.js';
 import {createRegionStore} from '../../packages/runtime/src/regions/index.js';
 
 const ref = {id: 'result', revision: '1', outputId: 'employees', queryDigest: 'query', scopeDigest: 'scope'} as const;

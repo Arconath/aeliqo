@@ -11,8 +11,8 @@ import type {
   ActionSideEffect,
   TrustedActionContext,
 } from '../../packages/runtime/src/actions/types.js';
-import {WIRE_LIMITS} from '@aeliqo/core';
-import type {Outcome, Scalar, VersionRef} from '@aeliqo/core';
+import {WIRE_LIMITS} from '../../packages/core/src/index.js';
+import type {Outcome, Scalar, VersionRef} from '../../packages/core/src/index.js';
 
 const outcome = <T>(value: T): Outcome<T> => ({ok: true, value});
 const fail = <T = never>(code = 'test.denied'): Outcome<T> => ({ok: false, diagnostics: [{code, message: 'Rejected by test host.', retryable: false}]});
