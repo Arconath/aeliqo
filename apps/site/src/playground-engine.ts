@@ -5,7 +5,7 @@ import {
   type Task, type ValidatedPresentation, type VisualizationSpec,
 } from '@aeliqo/core';
 import {createLocalDataService, type DataRecord, type QueryBudget} from '@aeliqo/runtime/data';
-import {createResultStore, type ResultHandle} from '@aeliqo/runtime/results';
+import {createResultStore, type ResultHandle, type ResultLease} from '@aeliqo/runtime/results';
 import {createResultCohortResolver, createTaskEvaluator, type TrustedEvaluationContext} from '@aeliqo/runtime/evaluation';
 import {createMeaningAuthoring} from '@aeliqo/runtime/meaning';
 import {createAeliqoPresentationRegistry, AELIQO_OPERATION_REFS} from '@aeliqo/web/region';
@@ -53,6 +53,8 @@ export function createDemoEngine(){
  let closed=false;
  const store=createResultStore({maxEntries:32,maxBytes:1_000_000,ttlMs:120_000});
  const handles=new Map<string,ResultHandle>();
+ const ownedOutputs=new WeakSet<DemoOutput>();
+ let cohortLease:ResultLease|undefined;
  const resolver=createResultCohortResolver();
  let cohort:FixedDemoCohort|undefined;
  const service=createLocalDataService({snapshot:{catalog,sourceRevision:'synthetic-source-1',records:{employees,absences,products}},hostBudget:budget,sourceLimits:{rows:100,bytes:250_000},authorize:()=>closed?failure('demo.closed','The demo session is closed.'):{ok:true,value:{scopeDigest:DEMO_SCOPE,policyRevision:'demo-policy-1'}}});
@@ -81,25 +83,27 @@ export function createDemoEngine(){
   const defined=authoring.value.defineMeaning({id:ABSENCE_MEANING,revision:'1',label:'Absence days',description:'Sum of the supplied weekly absence-day values. This is not an absence rate or a count of people.',expression,aggregation:'additive',aggregationDimensions:[],missingPolicy:'exclude-pair',origin:'system',lifecycle:'active',authority:'approved',scope:'workspace'});if(!defined.ok)return defined;
   const next={...catalog,revision:'demo-catalog-2',meanings:[defined.value.meaning]};
   const replaced=service.replaceSnapshot({catalog:next,sourceRevision:'synthetic-source-1',records:{employees,absences,products}});if(!replaced.ok)return replaced;
-  catalog=next;cohort=undefined;return{ok:true,value:defined.value.meaning};
+  catalog=next;cohort=undefined;cohortLease?.release();cohortLease=undefined;return{ok:true,value:defined.value.meaning};
  }
  async function evaluate(input:unknown,signal?:AbortSignal):Promise<Outcome<readonly DemoOutput[]>>{
   if(closed)return failure('demo.closed','The demo session is closed.');const parsed=parseTask(input);if(!parsed.ok)return parsed;
   if(parsed.value.regionId!==DEMO_REGION||parsed.value.kind!=='data'||parsed.value.outputs.length>4)return failure('demo.task-scope','Use a data Task with at most four outputs in the public demo region.');
   active?.abort();const controller=new AbortController();active=controller;const abort=()=>controller.abort();signal?.addEventListener('abort',abort,{once:true});if(signal?.aborted)controller.abort();
   try{const result=await evaluator.evaluate({task:parsed.value,signal:controller.signal});if(!result.ok)return result;
-   try{if(controller.signal.aborted||active!==controller)return failure('demo.cancelled','The evaluation was cancelled or superseded.');const outputs:DemoOutput[]=[];for(const output of result.value.outputs){const snapshot=output.handle.snapshot();if(snapshot.status!=='ready'||!snapshot.descriptor)return failure('demo.incomplete','A complete authorized result is required by this demonstration.');handles.set(refKey(snapshot.descriptor.ref),output.handle);outputs.push({task:parsed.value,descriptor:snapshot.descriptor,rows:snapshot.batches.flatMap(batch=>batch.rows) as readonly DataRecord[],handle:output.handle});}while(handles.size>64){const key=[...handles.keys()].find(id=>cohort===undefined||id!==refKey(cohort.source));if(!key)break;handles.delete(key);}return{ok:true,value:outputs};}finally{result.value.release();}
+   try{if(controller.signal.aborted||active!==controller)return failure('demo.cancelled','The evaluation was cancelled or superseded.');const outputs:DemoOutput[]=[];for(const output of result.value.outputs){const snapshot=output.handle.snapshot();if(snapshot.status!=='ready'||!snapshot.descriptor)return failure('demo.incomplete','A complete authorized result is required by this demonstration.');handles.set(refKey(snapshot.descriptor.ref),output.handle);const published:DemoOutput=Object.freeze({task:parsed.value,descriptor:snapshot.descriptor,get rows(){const current=output.handle.snapshot();return current.status==='ready'&&current.descriptor&&refKey(current.descriptor.ref)===refKey(snapshot.descriptor!.ref)?current.batches.flatMap(batch=>batch.rows) as readonly DataRecord[]:[];},handle:output.handle});ownedOutputs.add(published);outputs.push(published);}while(handles.size>64){const key=[...handles.keys()].find(id=>cohort===undefined||id!==refKey(cohort.source));if(!key)break;handles.delete(key);}return{ok:true,value:outputs};}finally{result.value.release();}
   }finally{signal?.removeEventListener('abort',abort);if(active===controller)active=undefined;}
  }
  async function freezeCohort(output:DemoOutput,label:string):Promise<Outcome<FixedDemoCohort>>{
   if(!output.descriptor.fields.some(field=>field.id==='employee_id'))return failure('demo.cohort-grain','Choose an employee collection or employee ranking to freeze.');
   const current=context();const resolved=await resolver.resolve({source:output.descriptor.ref,identityKeys:['employee_id'],scopeDigest:DEMO_SCOPE,policyRevision:'demo-policy-1',catalogRevision:catalog.revision,deadlineAt:Date.now()+5000},{readContext:current.readContext,principalKey:current.principalKey,scopeDigest:DEMO_SCOPE,policyRevision:'demo-policy-1',catalogRevision:catalog.revision,functionRegistryDigest:functions.digest,catalog,grants:current.grants,resultStore:store,resolveResult,now:()=>Date.now()});if(!resolved.ok)return resolved;
 
+  cohortLease?.release();cohortLease=output.handle.retain();
   cohort={source:output.descriptor.ref,cohortDigest:resolved.value.tupleDigest,label,members:resolved.value.tuples.length};return{ok:true,value:cohort};
  }
  function present(output:DemoOutput,view:DemoView='table'):Outcome<DemoPresentation>{
   if(closed||output.descriptor.ref.scopeDigest!==DEMO_SCOPE||output.task.catalogRevision!==catalog.revision)return failure('demo.stale','Refresh this output before presenting it in the current catalog and scope.');
-  const result=output.descriptor;const dependencies:Result[]=[result];
+  const live=output.handle.snapshot();if(!ownedOutputs.has(output)||live.status!=='ready'||!live.descriptor||refKey(live.descriptor.ref)!==refKey(output.descriptor.ref))return failure('demo.stale-result','This result is no longer materialized. Evaluate the task again.');
+  const result=live.descriptor;const dependencies:Result[]=[result];
   for(let index=0;index<dependencies.length;index++){if(dependencies.length>64)return failure('demo.lineage-budget','The result lineage exceeds the demo budget.');for(const entry of dependencies[index]!.lineage){for(const ref of entry.inputs){if(dependencies.some(item=>refKey(item.ref)===refKey(ref)))continue;const snapshot=resolveResult(ref)?.snapshot();if(snapshot?.status!=='ready'||!snapshot.descriptor||ref.scopeDigest!==DEMO_SCOPE)return failure('demo.stale-lineage','A required result dependency is unavailable. Refresh the collection and cohort.');dependencies.push(snapshot.descriptor);}}}
   let spec:VisualizationSpec|undefined;
   if(view==='trend'){if(!result.fields.some(field=>field.id==='week')||!result.fields.some(field=>field.id===ABSENCE_MEANING))return failure('demo.unsupported-view','The trend requires a weekly absence result.');spec={version:'1',view:'trend',plot:{version:'1',root:{kind:'unit',mark:'line',result:result.ref,missing:'gap',encoding:{x:{field:'week',scale:'temporal'},y:{field:ABSENCE_MEANING,scale:'linear',zero:true}}}}};}
@@ -117,5 +121,5 @@ export function createDemoEngine(){
   const plan:PresentationPlan={id:'demo-presentation',revision:String(revision),preconditions:current,rootId:spec?'root':'exact-values',nodes,links:[],coverage:[{needId:'read',nodeIds:['exact-values'],operations:[AELIQO_OPERATION_REFS.read]}],stateTransfer:[],diagnostics:[]};
   const validated=validatePresentationPlan(plan,context,installed.value);return validated.ok?{ok:true,value:{validated:validated.value,experience,plan:validated.value.plan}}:validated;
  }
- return{get catalog(){return catalog;},get cohort(){return cohort;},budget,peopleTask,productTask,rankingTask,trendTask,comparisonTask,contributorTask,defineAbsenceMeaning,evaluate,freezeCohort,present,cancel(){active?.abort();},dispose(){closed=true;active?.abort();handles.clear();store.dispose();}};
+ return{get catalog(){return catalog;},get cohort(){return cohort;},budget,peopleTask,productTask,rankingTask,trendTask,comparisonTask,contributorTask,defineAbsenceMeaning,evaluate,freezeCohort,present,cancel(){active?.abort();},dispose(){closed=true;active?.abort();cohortLease?.release();cohortLease=undefined;handles.clear();store.dispose();}};
 }
