@@ -7,7 +7,7 @@ export {validateTaskStructure} from './contracts/task/index.js';
 export type {TaskStructure} from './contracts/task/index.js';
 export {resolveExperienceConstraints, PRESENTATION_EXPANSION_LIMIT} from './contracts/experience/index.js';
 export type {ExperienceRestriction, ExperienceConstraints} from './contracts/experience/index.js';
-export type {Catalog, Task, Result, Experience, CommitPreconditions, PresentationPlan, Interaction, InteractionPayload, InteractionSelection, InteractionLink, Contract, ContractKind, Diagnostic, Outcome, Wire,
+export type {Catalog, Task, Result, Experience, CommitPreconditions, PresentationPlan, Interaction, InteractionPayload, InteractionSelection, InteractionLink, InteractionState, InteractionDraft, RetainedInteractionPayload, Contract, ContractKind, Diagnostic, Outcome, Wire,
   Expression, FieldDefinition, MeaningDefinition, QuerySpec, ResultRef, Scalar, SemanticType, VersionRef} from './contracts/types.js';
 export * from './expressions/index.js';
 export * from './semantics/index.js';

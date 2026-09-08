@@ -215,17 +215,29 @@ export const selectionSchema = z.discriminatedUnion('mode', [
   object({mode: z.literal('predicate'), entity: idSchema, predicate: predicateSchema,
     queryDigest: idSchema, populationDigest: idSchema}),
 ]);
-export const interactionPayloadSchema = z.discriminatedUnion('kind', [
+const retainedInteractionPayloads = [
   object({kind: z.literal('selection'), selection: selectionSchema}),
   object({kind: z.literal('filter'), predicates: array(predicateSchema), outputId: idSchema}),
   object({kind: z.literal('range'), field: idSchema, range: z.nullable(periodSchema), outputId: idSchema}),
   object({kind: z.literal('group'), field: idSchema, value: valueSchema, outputId: idSchema}),
   object({kind: z.literal('page'), outputId: idSchema, cursor: text, queryDigest: idSchema}),
+] as const;
+export const retainedInteractionPayloadSchema = z.discriminatedUnion('kind', retainedInteractionPayloads);
+export const interactionPayloadSchema = z.discriminatedUnion('kind', [
+  ...retainedInteractionPayloads,
   object({kind: z.literal('navigate'), route: versionRefSchema, params: record(valueSchema)}),
   object({kind: z.literal('draft'), entity: idSchema, key: text, field: idSchema, value: valueSchema, entityRevision: revisionSchema}),
   object({kind: z.literal('action-request'), action: versionRefSchema, input: record(valueSchema)}),
   object({kind: z.literal('extension'), schema: versionRefSchema, value: jsonSchema}),
 ]);
+export const interactionStateSchema = object({
+  version,
+  values: array(object({nodeId: idSchema, portId: idSchema, payload: retainedInteractionPayloadSchema}), L.links),
+  drafts: array(object({domain: idSchema, entity: idSchema, key: text, field: idSchema,
+    value: valueSchema, entityRevision: revisionSchema,
+    conflict: optional(object({kind: z.literal('entity-stale'), entityRevision: revisionSchema})),
+  }), L.presentationNodes),
+});
 export const interactionSchema = object({
   eventId: idSchema, causationId: idSchema, regionId: idSchema, regionRevision: revisionSchema,
   originNodeId: idSchema, payload: interactionPayloadSchema,

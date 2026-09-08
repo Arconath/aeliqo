@@ -342,6 +342,27 @@ describe('transactional region store', () => {
     expect(resultHandle.snapshot().status).toBe('disposed');
   });
 
+  it('preserves a referenced result lease across a layout-only commit without new handles', async () => {
+    const resultStore = createResultStore({maxEntries: 1});
+    const handle = resultStore.begin(resultKey);
+    for await (const _update of handle.subscribe(resultEvents())) { /* materialize the result */ }
+    const {region} = create();
+    const first = await region.stage({requestId: 'initial-result', expected: region.snapshot().readSet!, state: {task: task('1', 'region-1', [refA])}, resultHandles: [handle]});
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+    await expect(region.commit(first.value)).resolves.toMatchObject({ok: true});
+    handle.release();
+    const layout = await region.stage({requestId: 'layout-only', expected: region.snapshot().readSet!, state: {task: task('2', 'region-1', [refA])}});
+    expect(layout.ok).toBe(true);
+    if (!layout.ok) return;
+    await expect(region.commit(layout.value)).resolves.toMatchObject({ok: true});
+    expect(() => resultStore.begin({...resultKey, requestId: 'eviction-probe'})).toThrow(RangeError);
+    expect(handle.snapshot().status).toBe('ready');
+    region.dispose();
+    expect(resultStore.begin({...resultKey, requestId: 'eviction-probe'}).snapshot().status).toBe('refreshing');
+    resultStore.dispose();
+  });
+
   it('retains two authorized historical generations used for comparison', async () => {
     const resultStore = createResultStore({maxEntries: 2});
     const handleA = resultStore.begin(resultKey);

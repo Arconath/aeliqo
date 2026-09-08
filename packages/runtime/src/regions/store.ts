@@ -1,4 +1,4 @@
-import {parseContract, parseWireValue, validateCommitReadSet, WIRE_LIMITS} from '@aeliqo/core';
+import {parseContract, parseInteractionState, parseWireValue, validateCommitReadSet, WIRE_LIMITS} from '@aeliqo/core';
 import type {ResultRef} from '@aeliqo/core';
 import type {ResultHandle, ResultLease} from '../results/types.js';
 import {createSerialQueue, type SerialQueue} from '../scheduling/index.js';
@@ -139,17 +139,22 @@ function normalizeRefs(value: readonly ResultRef[], scopeDigest: string): Region
 }
 
 function validateState(value: unknown, regionId: string): RegionOutcome<RegionContent> {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return failure('runtime.region-invalid', FAILURE.invalid);
-  const record = value as Record<string, unknown>;
-  if (Object.keys(record).some((field) => field !== 'task' && field !== 'presentation') || !Object.hasOwn(record, 'task'))
-    return failure('runtime.region-invalid', 'A region state requires a Task and may contain one PresentationPlan.');
+  const wire = parseWireValue(value);
+  if (!wire.ok || wire.value === null || typeof wire.value !== 'object' || Array.isArray(wire.value)) return failure('runtime.region-invalid', FAILURE.invalid);
+  const record = wire.value as Record<string, unknown>;
+  if (Object.keys(record).some((field) => field !== 'task' && field !== 'presentation' && field !== 'interaction') || !Object.hasOwn(record, 'task'))
+    return failure('runtime.region-invalid', 'A region state requires a Task and may contain a PresentationPlan and typed interaction state.');
   const task = parseContract('task', record.task);
   if (!task.ok) return failure('runtime.region-invalid', 'The region Task is not a valid canonical contract.');
   if (task.value.regionId !== regionId) return failure('runtime.region-invalid', 'The Task regionId must match the owning region.');
-  if (record.presentation === undefined) return {ok: true, value: frozen({task: frozen(task.value)})};
-  const presentation = parseContract('presentation-plan', record.presentation);
-  if (!presentation.ok) return failure('runtime.region-invalid', 'The region PresentationPlan is not a valid canonical contract.');
-  return {ok: true, value: frozen({task: frozen(task.value), presentation: frozen(presentation.value)})};
+  const presentation = record.presentation === undefined ? undefined : parseContract('presentation-plan', record.presentation);
+  if (presentation !== undefined && !presentation.ok) return failure('runtime.region-invalid', 'The region PresentationPlan is not a valid canonical contract.');
+  const interaction = record.interaction === undefined ? undefined : parseInteractionState(record.interaction);
+  if (interaction !== undefined && !interaction.ok) return failure('runtime.region-invalid', 'The interaction state is not a valid canonical contract.');
+  return {ok: true, value: frozen({task: task.value,
+    ...(presentation === undefined ? {} : {presentation: presentation.value}),
+    ...(interaction === undefined ? {} : {interaction: interaction.value}),
+  })};
 }
 
 function validateAuthority(value: unknown): RegionOutcome<RegionAuthority> {
@@ -218,6 +223,9 @@ function requiredResultReferences(state: RegionContent): readonly ResultRef[] {
   }
   for (const node of state.presentation?.nodes ?? []) if (node.result !== undefined) refs.push(node.result);
   if (state.presentation !== undefined) refs.push(...state.presentation.preconditions.results);
+  for (const entry of state.interaction?.values ?? []) {
+    if (entry.payload.kind === 'selection' && entry.payload.selection.mode === 'ids') refs.push(entry.payload.selection.result);
+  }
   return refs;
 }
 
@@ -539,8 +547,14 @@ class RegionHandleImpl implements RegionHandle {
     if (input === null || typeof input !== 'object') return failure('runtime.region-invalid', FAILURE.invalid);
     const allowed = ['requestId', 'expected', 'state', 'resultHandles'];
     if (Object.keys(input).some((key) => !allowed.includes(key)) || !validId(input.requestId)) return failure('runtime.region-invalid', FAILURE.invalid);
-    const checkedState = validateState(input.state, this.id);
+    let checkedState = validateState(input.state, this.id);
     if (!checkedState.ok) return checkedState;
+    // Layout/Task updates do not implicitly discard semantic controls or drafts.
+    // Explicit controller transactions supply the replacement interaction state.
+    if (checkedState.value.interaction === undefined && this.state?.interaction !== undefined) {
+      checkedState = validateState({...checkedState.value, interaction: this.state.interaction}, this.id);
+      if (!checkedState.ok) return checkedState;
+    }
     const expected = validateReadSet(input.expected);
     if (!expected.ok) return expected;
     const binding = bindCandidateToReadSet(checkedState.value, expected.value);
@@ -755,7 +769,10 @@ class RegionHandleImpl implements RegionHandle {
           ...record.state.presentation,
           preconditions: frozen({...record.state.presentation.preconditions, taskRevision: nextTaskRevision, regionRevision: nextRegionRevision}),
         });
-        const nextState = validateState({task: nextTask, ...(nextPresentation === undefined ? {} : {presentation: nextPresentation})}, this.id);
+        const nextState = validateState({task: nextTask,
+          ...(nextPresentation === undefined ? {} : {presentation: nextPresentation}),
+          ...(record.state.interaction === undefined ? {} : {interaction: record.state.interaction}),
+        }, this.id);
         if (!nextState.ok) return nextState;
         // Obtain host clock metadata before changing state; injected clocks are callbacks too.
         const at = this.now();
@@ -768,7 +785,9 @@ class RegionHandleImpl implements RegionHandle {
         this.readSet = nextReadSet;
         this.entries = [...this.entries, this.makeHistory('commit', undefined, record.requestId, undefined, at)];
         this.trimHistory();
-        const transferLive = this.transferResultLeases(record.resultLeases, queuedEpoch);
+        // Reusing an existing view must retain the result leases its committed
+        // state still references, even when this command adds no new handles.
+        const transferLive = this.mergeResultLeases(record.resultLeases, record.requiredResults, queuedEpoch);
         transferred = true;
         if (!transferLive) return this.closedOutcome();
         const snapshot = this.snapshotValue();
