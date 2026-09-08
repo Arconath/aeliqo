@@ -1,0 +1,48 @@
+{
+  "task": "T27",
+  "status": "pass",
+  "sourceCommit": "c55a9a971d74c200a040b7ac259d8e499fe0cd0e",
+  "sourceDigest": "3edaa47d2bb27e33d86d02b62fa24cc44dcae739900b2e111aaf75ecfbfb8a5c",
+  "scope": "Site/docs/blog/content routes and actual evaluator playground; standalone copied examples for all71 catalog entries",
+  "checks": [
+    "Installed 71-source consumer with strict declarations and no workspace shortcuts",
+    "6 site unit tests, app/test TypeScript",
+    "5 browser journeys including71routes, no-script docs, search/theme,404,cohort and responsive inspector",
+    "Independent clean frozen installation and direct site build/test"
+  ],
+  "limits": [
+    "No public publication/deployment claim",
+    "Manual design/AT, full state matrix, live model evaluation and performance qualification remain separate",
+    "Individual logs pin their own observed run; site/catalog/core/web source unchanged from independently reviewed29ac210. Later testkit-only code differs."
+  ],
+  "artifacts": [
+    {
+      "path": "example-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "independent-review.json",
+      "sha256": "372254becd6d5df1e9ba59ea476633c29d39b80d40c13506b6acda4c455e8778"
+    },
+    {
+      "path": "site-browser.log",
+      "sha256": "26220a335f65e7e630649e650bbc335c8c49cc7f7306f2d3028f58d0ed23bfe9"
+    },
+    {
+      "path": "site-build.log",
+      "sha256": "7df7baf8882c204a1fa732d8375fb6fe43afbfe3bb5fff852361aef9ab9c1ebf"
+    },
+    {
+      "path": "site-tests.log",
+      "sha256": "95fda876be18b3c6aa15b7b7b9663d7170aa5c3a698418e97acc6e0ecaa396a6"
+    },
+    {
+      "path": "source-consumer-report.json",
+      "sha256": "fb705fbd3d5a50c93b4e1f838ea4a7a475294dc5625f939466fdee0228d2c8ee"
+    },
+    {
+      "path": "source-consumer.log",
+      "sha256": "ad5f6bf21ca9c50bc68241e82c0d64de3abce31fbf1a58008de08d5f2295c113"
+    }
+  ]
+}

@@ -931,10 +931,15 @@
         "Clean coherent routes, source-copy examples, honest support status, actual end-to-end demos, app-shell ownership.",
         "All chapter38 routes, real per-component snippets, source/agent disclosure, responsive inspector and actual preview behavior pass browser/DX checks."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "Real evaluator playground, all71 component routes, static source/API docs and lifecycle fixes implemented. Source-copy minification and actual packed consumer proof added; drift/receipt hardening plus independent final review active."
+      "evidence": [
+        {
+          "path": "harness/evidence/t27/3edaa47d2bb2/manifest.json",
+          "sha256": "714b16dfd93142d3f1f4d89506843caa89f44703d6b4a50323b2cb93850cad16"
+        }
+      ],
+      "notes": "Accepted after independent clean-install29ac210 review and fresh c55a9a9 sourcecopyconsumer:71actualpackage renders match,3exampletests+strict,6site+strict,5browserroutes/journeys. No public deployment/live-model/manualAT/performance claim."
     },
     {
       "id": "T28",
@@ -975,9 +980,10 @@
       "acceptance": [
         "Every required component done with evidence; pinned screenshot baselines and real manual assistive-tech review."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "Initial426 real catalog captures/axe checks pass acrossChromium/Firefox/WebKit; all71 atdesktoplight/narrowdarkRTL32pxrootfont. KeyValue/hierarchy defects fixedfcb88df. Fullstate/visualapproval/manualAT remain open; not accepted."
     },
     {
       "id": "T30",
@@ -997,9 +1003,10 @@
         "Documented actual hardware/browser workloads; p50/p95, bytes, geometry, DOM, memory and cleanup budgets pass.",
         "Measure cold/warm and user-perceived latency, network, model, DOM/layout/paint separately; no reference-model benchmark claimed as product."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "Installedtarballselectedexports byte+graph budgets pass; real timing/workload/lifecycle harness in independent writer. No timing/mobilehardware/performance acceptance yet."
     },
     {
       "id": "T31",
