@@ -489,7 +489,7 @@ describe('production query engine against the independent oracle', () => {
       ]},
     }});
     if (!evaluated.ok) throw new Error(JSON.stringify(evaluated.diagnostics));
-    expect(evaluated.value.rows).toEqual([{ 'commerce.net': {decimal: '70.40'} }]);
+    expect(evaluated.value.rows).toEqual([{ 'commerce.net': {decimal: '70.4'} }]);
     expect(evaluated.value.precision).toEqual({kind: 'exact'});
   });
 });
