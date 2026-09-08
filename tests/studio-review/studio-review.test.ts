@@ -61,11 +61,25 @@ describe('T26 Studio independent boundary review', () => {
   });
 
   it('rejects a changed canonical definition for an accepted immutable ID/revision', () => {
-    const sourceSession = createStudioSession(document(), {registry});
-    const codeDraft = sourceSession.defineMeaning({id: 'employees.total', label: 'Total amount', description: 'Sum of employee amounts.', entity: 'employees', field: 'amount', source: {surface: 'code', ownership: 'code', readOnly: true}});
+    // `StudioSession.defineMeaning` must reject caller-declared provenance.
+    // Construct this code-owned fixture through the canonical host authoring
+    // path instead, which is the trusted route for a code bundle.
+    const hostAuthoring = createMeaningAuthoring({catalog, registry});
+    expect(hostAuthoring.ok).toBe(true);
+    if (!hostAuthoring.ok) return;
+    const field = hostAuthoring.value.field('employees' as never, 'amount' as never);
+    expect(field.ok).toBe(true);
+    if (!field.ok) return;
+    const defined = hostAuthoring.value.defineMeaning({id: 'employees.total', label: 'Total amount', description: 'Sum of employee amounts.', expression: field});
+    expect(defined.ok).toBe(true);
+    if (!defined.ok) return;
+    const codeDraft = hostAuthoring.value.draft(defined.value.meaning, {source: {surface: 'code', ownership: 'code', readOnly: true}, assumptions: []});
     expect(codeDraft.ok).toBe(true);
     if (!codeDraft.ok) return;
-    const first = sourceSession.getState().document;
+    const codeDocument = createStudioDocument({...input, revision: 'studio-demo-code-1', meanings: [codeDraft.value]}, {registry});
+    expect(codeDocument.ok).toBe(true);
+    if (!codeDocument.ok) return;
+    const first = codeDocument.value;
     const session = createStudioSession(document(), {registry});
     expect(session.importDocument(first).ok).toBe(true);
     const altered = {...codeDraft.value.meaning, label: 'Hacked canonical meaning'};
