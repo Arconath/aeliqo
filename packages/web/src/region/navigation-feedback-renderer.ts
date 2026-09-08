@@ -1,3 +1,4 @@
+import {parseWireValue} from "@aeliqo/core";
 import type {InteractionPayload, ValidatedPresentation} from "@aeliqo/core";
 import {html, nothing, type TemplateResult} from "lit";
 import {repeat} from "lit/directives/repeat.js";
@@ -37,9 +38,14 @@ function declared(node: Node, portId: string, payload: InteractionPayload["kind"
 
 function ownedEvent(event: Event, type: string, keys: readonly string[]): Values | undefined {
   if (event.type !== type || typeof CustomEvent === "undefined" || !(event instanceof CustomEvent)) return undefined;
-  const detail = record(event.detail);
-  if (detail === undefined || detail.source !== "user" || Object.keys(detail).some((key) => !keys.includes(key))) return undefined;
-  return detail;
+  try {
+    const parsed = parseWireValue(event.detail);
+    const detail = parsed.ok ? record(parsed.value) : undefined;
+    if (detail === undefined || detail.source !== "user" || Object.keys(detail).some((key) => !keys.includes(key))) return undefined;
+    return detail;
+  } catch {
+    return undefined;
+  }
 }
 
 function routePayload(value: unknown): Extract<InteractionPayload, {readonly kind: "navigate"}> | undefined {

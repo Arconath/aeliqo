@@ -88,3 +88,13 @@ describe("navigation and feedback region renderer", () => {
     expect(emitted).toEqual([]);
   });
 });
+
+
+it("ignores accessor-backed event payloads without invoking their getters",()=>{
+  let reads=0; const emitted:unknown[]=[];
+  const target=node("navigation.menu",{items:[{id:"open",action:{id:"action.open",revision:"1"},input:{}}]},[{id:"action",direction:"output",payload:"action-request"}],[{id:"action.open",revision:"1"}]);
+  const payload={id:"open",get source(){reads++;throw new Error("untrusted getter");}};
+  const receive=handler(renderNavigationFeedbackNode(target,()=>undefined,(_node,_port,value)=>emitted.push(value)));
+  expect(()=>receive(new CustomEvent("aeliqo-menu-action",{detail:payload}))).not.toThrow();
+  expect(reads).toBe(0); expect(emitted).toEqual([]);
+});

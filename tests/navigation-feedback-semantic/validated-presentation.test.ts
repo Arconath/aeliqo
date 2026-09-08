@@ -55,3 +55,12 @@ describe("canonical navigation and feedback presentation", () => {
     expect(registry.value.manifests.find((manifest) => manifest.ref.id === AELIQO_NAVIGATION_FEEDBACK_REFS.menu.id)).toBeDefined();
   });
 });
+
+it('uses the public shared registry without duplicate representations',async()=>{
+  const {createAeliqoPresentationRegistry}=await import('../../packages/web/src/region/registry.js');
+  const {navigationFeedbackBindings,navigationFeedbackPresentationPlan,navigationFeedbackPresentationContext}=await import('./fixtures.js');
+  const registry=createAeliqoPresentationRegistry({navigationFeedback:navigationFeedbackBindings});
+  expect(registry.ok).toBe(true);if(!registry.ok)return;
+  expect(new Set(registry.value.manifests.map(m=>m.ref.id)).size).toBe(registry.value.manifests.length);
+  expect(validatePresentationPlan(navigationFeedbackPresentationPlan(),navigationFeedbackPresentationContext(),registry.value).ok).toBe(true);
+});

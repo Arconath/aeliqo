@@ -57,7 +57,8 @@
     "test:input-semantic": "pnpm build:platform && vitest run --config tests/input-semantic/vitest.config.mjs && tsc -p tests/input-semantic/tsconfig.json --noEmit",
     "test:input-semantic:browser": "playwright test --config tests/input-semantic/playwright.config.mjs",
     "test:navigation-feedback-semantic": "pnpm build:platform && vitest run --config tests/navigation-feedback-semantic/vitest.config.mjs && tsc -p tests/navigation-feedback-semantic/tsconfig.json --noEmit",
-    "test:data-semantic": "pnpm build:platform && vitest run --config tests/data-semantic/vitest.config.mjs && tsc -p tests/data-semantic/tsconfig.json --noEmit"
+    "test:data-semantic": "pnpm build:platform && vitest run --config tests/data-semantic/vitest.config.mjs && tsc -p tests/data-semantic/tsconfig.json --noEmit",
+    "test:navigation-feedback-semantic:browser": "playwright test --config tests/navigation-feedback-semantic/playwright.config.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
