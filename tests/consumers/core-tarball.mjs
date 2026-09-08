@@ -527,7 +527,7 @@ function runInstalledQuery() {
 `;
 
 
-function runInstalledInteractionGraph(validateInteractionGraph) {
+function runInstalledInteractionGraph(validateInteractionGraph, parseInteractionState) {
   const shape = {payload: 'selection', entity: 'employee', identity: ['employee-id'], grain: ['employee-id']};
   const mapping = {ref: {id: 'selection.identity', revision: '1'}, source: shape, target: shape, kind: 'identity'};
   const nodes = ['table', 'chart', 'detail'].map(id => ({id, ports: [{id: 'selection', direction: 'inout', ...shape}]}));
@@ -540,6 +540,12 @@ function runInstalledInteractionGraph(validateInteractionGraph) {
   if (directed.ok || directed.diagnostics[0].code !== 'interaction.feedback') throw new Error('Installed graph accepted arbitrary feedback');
   if (validateInteractionGraph({nodes, links}, []).ok) throw new Error('Installed graph accepted an unregistered mapping');
   if (validateInteractionGraph({nodes, links, actor: 'human'}, [mapping]).ok) throw new Error('Installed graph accepted forged authority');
+  const state = {version: '1', values: [{nodeId: 'table', portId: 'selection', payload: {kind: 'selection', selection: {mode: 'clear'}}}],
+    drafts: [{domain: 'directory', entity: 'employee', key: 'employee-1', field: 'name', value: 'Draft', entityRevision: '1'}]};
+  const retained = parseInteractionState(JSON.parse(JSON.stringify(state)));
+  if (!retained.ok || !Object.isFrozen(retained.value.drafts[0])) throw new Error('Installed interaction state is not an immutable wire round trip');
+  if (parseInteractionState({...state, values: [...state.values, ...state.values]}).ok) throw new Error('Installed interaction state accepted duplicate routes');
+  if (parseInteractionState({...state, approved: true}).ok) throw new Error('Installed interaction state accepted authority');
   return {ports: 3, selectionEquivalence: true, directedFeedbackRejected: true, unknownMappingRejected: true};
 }
 const graphConsumerSource = runInstalledInteractionGraph.toString();
@@ -547,7 +553,7 @@ const graphConsumerSource = runInstalledInteractionGraph.toString();
 await writeFile(join(consumerDirectory, "consumer-types.ts"), `
 import {
   parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue,
-  validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph,
+  validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph, parseInteractionState,
   checkExpression, createStandardFunctionRegistry, createTypedAuthoring, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
 import type {
@@ -676,7 +682,7 @@ import {createRequire} from 'node:module';
 import {readFile} from 'node:fs/promises';
 import {
   parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue,
-  validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph,
+  validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph, parseInteractionState,
   checkExpression, createStandardFunctionRegistry, createTypedAuthoring, authorizeMeaningActivation, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
 assert.deepEqual(parseWireValue('{"requestId":"one"}'), {ok:true,value:{requestId:'one'}});
@@ -837,7 +843,7 @@ assert(Object.keys(runtimeSchema).length > 0);
 ${queryConsumerSource}
 assert.deepEqual(runInstalledQuery().total, [{total:{decimal:'20.03'}}]);
 ${graphConsumerSource}
-assert.equal(runInstalledInteractionGraph(validateInteractionGraph).selectionEquivalence, true);
+assert.equal(runInstalledInteractionGraph(validateInteractionGraph, parseInteractionState).selectionEquivalence, true);
 console.log('Installed @aeliqo/core query planning, exact evaluation and cancellation pass.');
 console.log('Installed @aeliqo/core parsers, schema exports, and round trips pass.');
 console.log('Installed @aeliqo/core task structure and experience constraint passes pass.');
@@ -854,7 +860,7 @@ const {parseWireValue, checkExpression, createQueryPlanner, createQueryFunctionR
 ${queryConsumerSource}
 assert.equal(runInstalledQuery().precision.kind, 'exact');
 ${graphConsumerSource}
-assert.equal(runInstalledInteractionGraph(core.validateInteractionGraph).directedFeedbackRejected, true);
+assert.equal(runInstalledInteractionGraph(core.validateInteractionGraph, core.parseInteractionState).directedFeedbackRejected, true);
 assert.deepEqual(parseWireValue('{"requestId":"one"}'), {ok:true,value:{requestId:'one'}});
 assert.equal(parseWireValue('{"requestId":"one","requestId":"two"}').ok, false);
 assert.equal(parseWireValue({requestId:undefined}).ok, false);
@@ -889,7 +895,7 @@ await writeFile(join(consumerDirectory, "index.html"), '<!doctype html><html><bo
 await writeFile(join(consumerDirectory, "bundle-entry.js"), `
 import {
   parseCatalog, parseTask, parseResult, parseExperience, parseWireValue,
-  validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph,
+  validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph, parseInteractionState,
   checkExpression, createStandardFunctionRegistry, createTypedAuthoring, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
 const validWire = parseWireValue('{"requestId":"one"}');
@@ -903,7 +909,7 @@ const t04 = ${t04FixtureSource};
 ${queryConsumerSource}
 const installedQueryResult = runInstalledQuery();
 ${graphConsumerSource}
-const installedInteractionGraph = runInstalledInteractionGraph(validateInteractionGraph);
+const installedInteractionGraph = runInstalledInteractionGraph(validateInteractionGraph, parseInteractionState);
 const semanticRegistry = createStandardFunctionRegistry();
 const semanticAuthoring = semanticRegistry.ok
   ? createTypedAuthoring({catalog: t04.semanticCatalogInput, registry: semanticRegistry.value})
