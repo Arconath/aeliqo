@@ -399,7 +399,19 @@
           "sha256": "362e17076931e38d965b99fba6f0623b779dacca642f7d0f3a447ab1219f9c60"
         }
       ],
-      "notes": "Accepted at source14bea8d after independent reviews and frozen integrated gates. Canonical graph/state plus interaction/action runtime; installed Node/Chromium consumers. Full UI composition remains T39."
+      "notes": "Accepted at source14bea8d after independent reviews and frozen integrated gates. Canonical graph/state plus interaction/action runtime; installed Node/Chromium consumers. Full UI composition remains T39.",
+      "review": {
+        "status": "approved",
+        "author": "root contracts/integration; platform_proof interaction; release_inventory actions",
+        "reviewer": "preflight_diagnosis final interaction/actions/contracts",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t11/1fb2bf0b46df/review.json",
+            "sha256": "04bc1f9a215077425339a260a6e56f5b4f5f0b0a26480ffb9891d128690ddcb1"
+          }
+        ],
+        "scope": "Indexes the existing frozen independent review only; no fresh source acceptance or broader qualification."
+      }
     },
     {
       "id": "T12",
@@ -523,7 +535,19 @@
           "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
         }
       ],
-      "notes": "Accepted source339457a after independent review, canonical semantic/SSR23, native navigation5/feedback9 and semantic3 Chromium cases, four visual/a11y variants and byte-verified installed core/web/React consumer. Full T29/T30 matrix remains mandatory."
+      "notes": "Accepted source339457a after independent review, canonical semantic/SSR23, native navigation5/feedback9 and semantic3 Chromium cases, four visual/a11y variants and byte-verified installed core/web/React consumer. Full T29/T30 matrix remains mandatory.",
+      "review": {
+        "status": "approved",
+        "author": "release_inventory",
+        "reviewer": "platform_proof",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t15/60b2b11f28be/review.json",
+            "sha256": "ddb49f551730c19c9c960808ea5a9b6142bebcb69b1e68bf16807726d85929d0"
+          }
+        ],
+        "scope": "Indexes the existing frozen independent review only; no fresh source acceptance or broader qualification."
+      }
     },
     {
       "id": "T16",
@@ -655,7 +679,19 @@
           "sha256": "c1e6bc00e59fe6958a9ce4f9057d7528e450219b2b6c3941a1c221c48f7ad897"
         }
       ],
-      "notes": "Deterministic registry/pattern/quality composition and bounded complete candidates implemented. Exact registered state mappings, enabled-operation restrictions, queryless generation and feasible-first one-expansion regression independently reviewed. 142 contracts, strict types and actual installed core consumer pass. Runtime transition execution remains T20."
+      "notes": "Deterministic registry/pattern/quality composition and bounded complete candidates implemented. Exact registered state mappings, enabled-operation restrictions, queryless generation and feasible-first one-expansion regression independently reviewed. 142 contracts, strict types and actual installed core consumer pass. Runtime transition execution remains T20.",
+      "review": {
+        "status": "approved",
+        "author": "preflight_diagnosis; root fixes",
+        "reviewer": "release_inventory",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t19/291ba1f603ae/review.json",
+            "sha256": "84b187e2a361b21dc5e4f19eddf2f1b1accef63330bf4cfe61034a429d62ecfe"
+          }
+        ],
+        "scope": "Indexes the existing frozen independent review only; no fresh source acceptance or broader qualification."
+      }
     },
     {
       "id": "T20",
@@ -769,7 +805,19 @@
           "sha256": "f08d2b6e3edd1db57bc2699920773cb084b99a957a3925d3fa1283587edf3d2e"
         }
       ],
-      "notes": "Accepted at source d41432d after independent reviews: canonical composition validation, trusted transport, separate effect/egress checks, exact result scope, bounded repair and disposal. 77 agent tests, strict types, installed core/runtime/agent Node and Chromium consumer pass. Actual protocols/providers remain T24/T40."
+      "notes": "Accepted at source d41432d after independent reviews: canonical composition validation, trusted transport, separate effect/egress checks, exact result scope, bounded repair and disposal. 77 agent tests, strict types, installed core/runtime/agent Node and Chromium consumer pass. Actual protocols/providers remain T24/T40.",
+      "review": {
+        "status": "approved",
+        "author": "release_inventory; root integration/fixes",
+        "reviewer": "platform_proof capability/session/composition; release_inventory root-only diagnostic fixes",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t22/098d39bb5c19/review.json",
+            "sha256": "047eb211b146e1186be896c95911dff192b1f955611961fd43a4e812636c60d2"
+          }
+        ],
+        "scope": "Indexes the existing frozen independent review only; no fresh source acceptance or broader qualification."
+      }
     },
     {
       "id": "T23",
@@ -910,7 +958,19 @@
           "sha256": "7e241c0c90e11cd77a1093042348df7ca2f4ad41c7cd07a0d72e9f702833e2f9"
         }
       ],
-      "notes": "Accepted Studio source db7f33d after independent review; actual installed consumer,12units/types,7reviewbrowser,1productbrowser and build frozen. Real evaluated widths/themes/gallery and immutable code-owned export proven. T29 manualAT/visual matrix remains separate."
+      "notes": "Accepted Studio source db7f33d after independent review; actual installed consumer,12units/types,7reviewbrowser,1productbrowser and build frozen. Real evaluated widths/themes/gallery and immutable code-owned export proven. T29 manualAT/visual matrix remains separate.",
+      "review": {
+        "status": "approved",
+        "author": "root final Studio fixes",
+        "reviewer": "platform_proof",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t26/344e5c28b787/independent-review.json",
+            "sha256": "a0b41bf440c16586432cae531b48c2a1c36e8079745a84d98614153e929c3c0b"
+          }
+        ],
+        "scope": "Indexes the existing frozen independent review only; no fresh source acceptance or broader qualification."
+      }
     },
     {
       "id": "T27",
@@ -939,7 +999,19 @@
           "sha256": "714b16dfd93142d3f1f4d89506843caa89f44703d6b4a50323b2cb93850cad16"
         }
       ],
-      "notes": "Accepted after independent clean-install29ac210 review and fresh c55a9a9 sourcecopyconsumer:71actualpackage renders match,3exampletests+strict,6site+strict,5browserroutes/journeys. No public deployment/live-model/manualAT/performance claim."
+      "notes": "Accepted after independent clean-install29ac210 review and fresh c55a9a9 sourcecopyconsumer:71actualpackage renders match,3exampletests+strict,6site+strict,5browserroutes/journeys. No public deployment/live-model/manualAT/performance claim.",
+      "review": {
+        "status": "approved",
+        "author": "release_inventory site/docs; root integration/fixes",
+        "reviewer": "platform_proof",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t27/3edaa47d2bb2/independent-review.json",
+            "sha256": "372254becd6d5df1e9ba59ea476633c29d39b80d40c13506b6acda4c455e8778"
+          }
+        ],
+        "scope": "Indexes the existing frozen independent review only; no fresh source acceptance or broader qualification."
+      }
     },
     {
       "id": "T28",
@@ -1227,7 +1299,19 @@
           "sha256": "547403bfd5bf6dac70ce1b1bd0df1efd85eea6a684ec059ec6793911a779ecab"
         }
       ],
-      "notes": "Accepted at source2a50380 after independent source review and frozen pinned-toolchain integration/installed-consumer/browser gates. Early reusable deterministic slice; full catalog, PlotSpec, agent/provider and release work remain separate required tasks."
+      "notes": "Accepted at source2a50380 after independent source review and frozen pinned-toolchain integration/installed-consumer/browser gates. Early reusable deterministic slice; full catalog, PlotSpec, agent/provider and release work remain separate required tasks.",
+      "review": {
+        "status": "approved",
+        "author": "root core/example integration; release_inventory evaluator; platform_proof web",
+        "reviewer": "preflight_diagnosis final integration",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t39/5fc97e0ce95e/review.json",
+            "sha256": "975cba612826058a2eb40a5122d6e509c9816846fbd085e60c74ad3046aeabfc"
+          }
+        ],
+        "scope": "Indexes the existing frozen independent review only; no fresh source acceptance or broader qualification."
+      }
     },
     {
       "id": "T40",

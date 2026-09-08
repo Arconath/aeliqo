@@ -1,0 +1,25 @@
+{
+  "task": "T40",
+  "status": "blocked",
+  "sourceCommit": "6e0ed7c",
+  "sourceDigest": "aa7671c27d04b548f8b445ed58cac92e83af8459f3a362f3aa623d3f4001d12e",
+  "sourceChangedDuringRun": false,
+  "corpusSha256": "9b2fd53f8f9e15fdef2afd121e48ba22bad591ffd8b1ded1e5b5517fae5cbfa8",
+  "explicitDataCorrect": 18,
+  "explicitCases": 18,
+  "hostTestsPassed": 12,
+  "liveTrials": 0,
+  "blocks": [
+    "Live trials were not requested. No provider request was made.",
+    "This data-only runner does not establish full T40: UI completion, narrative review, fixed-template ablation, actual MCP-client trials, and independently accepted held-out coverage remain separate requirements."
+  ],
+  "limits": [
+    "Explicit data correctness is not language, UI completion, narrative grounding or real-MCP qualification.",
+    "Independent corpus review and oracle provenance are preserved in fixtures/evaluation; the implementation author did not inspect prompts, rows or expected answers."
+  ],
+  "artifacts": {
+    "preflight.log": "9b5c70d083c43a7a71c60a686e2ddb028b056c8e9950447c87fb7ce0dd78fc6b",
+    "report.json": "e0c7c9ebe57c9751527b5ce53e7708590f2653fe7368f51ad6210ee135826a19",
+    "host.log": "23890888503b0275adf06feecd414baf02681fad1136c1e2695890fc7785d64d"
+  }
+}
