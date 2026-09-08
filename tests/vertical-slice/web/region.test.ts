@@ -108,6 +108,9 @@ describe("T39 registered web region", () => {
     expect(stableTableRowKey({amount: {decimal: "1.0"}}, ["amount"])).toBe(stableTableRowKey({amount: {decimal: "1"}}, ["amount"]));
     expect(stableTableRowKey({value: null}, ["value"])).not.toBe(stableTableRowKey({value: "null"}, ["value"]));
     expect(stableTableRowKey({value: 1}, ["value"])).not.toBe(stableTableRowKey({value: "1"}, ["value"]));
+    expect(stableTableRowKey({value: -0}, ["value"])).toBe(stableTableRowKey({value: 0}, ["value"]));
+    expect(stableTableRowKey({value: Number.NaN}, ["value"])).toBeUndefined();
+    expect(stableTableRowKey({value: Number.POSITIVE_INFINITY}, ["value"])).toBeUndefined();
     expect(createSelectionIdentityMapping("employees", ["employee.id"])).toEqual({
       ref: {id: "selection.identity", revision: "1"},
       source: {payload: "selection", entity: "employees", identity: ["employee.id"], grain: ["employee.id"]},
@@ -133,6 +136,22 @@ describe("T39 registered web region", () => {
     expect(buildAeliqoChartDomain(temporal)).toHaveLength(2);
     expect(alignAeliqoChartSeries(temporal)[1]?.points.map((point) => point.value)).toEqual([3, null]);
     expect(buildAeliqoChartGeometry(temporal).circles).toHaveLength(3);
+
+    const dates = [
+      {id: "a", label: "A", points: [{x: "2026-01-01", label: "Jan 1", value: 1}, {x: "2026-01-15", label: "Jan 15", value: 3}]},
+      {id: "b", label: "B", points: [{x: "2026-01-08", label: "Jan 8", value: 2}]},
+    ];
+    expect(buildAeliqoChartDomain(dates).map((point) => point.x)).toEqual(["2026-01-01", "2026-01-08", "2026-01-15"]);
+    expect(alignAeliqoChartSeries(dates).map((series) => series.points.map((point) => point.value))).toEqual([[1, null, 3], [null, 2, null]]);
+
+    const halfSecond = buildAeliqoChartGeometry([{
+      id: "timed", label: "Timed", points: [
+        {x: "2026-01-01T00:00:00.0Z", label: "zero", value: 0},
+        {x: "2026-01-01T00:00:00.5Z", label: "half", value: 1},
+        {x: "2026-01-01T00:00:01.0Z", label: "one", value: 2},
+      ],
+    }]);
+    expect(halfSecond.circles.map((circle) => circle.x)).toEqual([24, 164, 304]);
   });
 
   it("builds separate SVG segments for null gaps and keeps multiple series distinct", () => {

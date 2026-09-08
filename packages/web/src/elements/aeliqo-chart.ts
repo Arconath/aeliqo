@@ -38,7 +38,9 @@ function pointBaseKey(point: AeliqoChartPoint, index: number, explicitX: boolean
   // Date.parse only retains milliseconds; use the core instant identity so
   // sub-millisecond rows cannot collide and equivalent offsets align.
   const instant = scalarIdentity(point.x, {value: "instant", nullable: false});
-  return instant.ok ? `instant:${instant.value}` : `string:${point.x}`;
+  if (instant.ok) return `instant:${instant.value}`;
+  const date = scalarIdentity(point.x, {value: "date", nullable: false});
+  return date.ok ? `date:${date.value}` : `string:${point.x}`;
 }
 
 function instantParts(value: string): {readonly milliseconds: number; readonly fraction: string} | undefined {
@@ -51,6 +53,11 @@ function instantParts(value: string): {readonly milliseconds: number; readonly f
   } catch {
     return undefined;
   }
+}
+
+function dateIdentity(value: string): string | undefined {
+  const identity = scalarIdentity(value, {value: "date", nullable: false});
+  return identity.ok ? identity.value : undefined;
 }
 
 function occurrenceKey(baseKey: string, occurrence: number): string {
@@ -85,8 +92,10 @@ export function buildAeliqoChartDomain(series: readonly AeliqoChartSeries[]): re
   const output = domain;
   const numeric = output.length > 0 && output.every((entry) => typeof entry.x === "number" && Number.isFinite(entry.x));
   const temporal = output.length > 0 && output.every((entry) => typeof entry.x === "string" && instantParts(entry.x) !== undefined);
+  const dates = output.length > 0 && output.every((entry) => typeof entry.x === "string" && dateIdentity(entry.x) !== undefined);
   if (numeric) output.sort((left, right) => (left.x as number) - (right.x as number));
   else if (temporal) output.sort((left, right) => compareTemporal(left.x as string, right.x as string));
+  else if (dates) output.sort((left, right) => (left.x as string) < (right.x as string) ? -1 : (left.x as string) > (right.x as string) ? 1 : 0);
   return output;
 }
 
@@ -140,17 +149,18 @@ function xCoordinates(domain: readonly AeliqoChartDomainPoint[]): readonly numbe
   const numeric = domain.map((entry) => typeof entry.x === "number" && Number.isFinite(entry.x) ? entry.x : undefined);
   const parsedInstants = domain.map((entry) => typeof entry.x === "string" ? instantParts(entry.x) : undefined);
   const temporal = parsedInstants.every((value) => value !== undefined) ? parsedInstants as NonNullable<typeof parsedInstants[number]>[] : undefined;
-  const parsed = domain.map((entry) => temporalX(entry.x));
+  const parsedDates = domain.map((entry) => typeof entry.x === "string" && dateIdentity(entry.x) !== undefined ? temporalX(entry.x) : undefined);
+  const dateValues = parsedDates.every((value) => value !== undefined) ? parsedDates as number[] : undefined;
   const temporalBase = temporal?.[0]?.milliseconds;
   const temporalValues = temporal !== undefined && temporalBase !== undefined
-    ? temporal.map((value) => value.milliseconds - temporalBase + (value.fraction.length > 0 ? Number(`0.${value.fraction}`) : 0))
+    ? temporal.map((value) => value.milliseconds - temporalBase + (value.fraction.length > 0 ? Number(`0.${value.fraction}`) * 1000 : 0))
     : undefined;
   const usableTemporalValues = temporalValues !== undefined && temporalValues.every(Number.isFinite) && new Set(temporalValues).size === temporalValues.length
     ? temporalValues
     : undefined;
   const values = numeric.every((value) => value !== undefined) ? numeric as number[]
     : usableTemporalValues !== undefined ? usableTemporalValues
-    : parsed.every((value) => value !== undefined) ? parsed as number[] : undefined;
+    : dateValues !== undefined && new Set(dateValues).size === dateValues.length ? dateValues : undefined;
   if (values === undefined) {
     const step = domain.length === 1 ? 0 : PLOT_WIDTH / (domain.length - 1);
     return domain.map((_, index) => PLOT_LEFT + step * index);

@@ -14,7 +14,7 @@ function stableTableCellKey(value: TableCell): string | undefined {
   if (value === null) return "null:";
   if (typeof value === "string") return `string:${value.length}:${value}`;
   if (typeof value === "boolean") return `boolean:${value ? "true" : "false"}`;
-  if (typeof value === "number") return `number:${Object.is(value, -0) ? "-0" : String(value)}`;
+  if (typeof value === "number") return Number.isFinite(value) ? `number:${String(value)}` : undefined;
   if (typeof value !== "object" || Array.isArray(value) || Object.keys(value).length !== 1 || typeof value.decimal !== "string") return undefined;
   const identity = scalarIdentity(value, {value: "decimal", nullable: false});
   return identity.ok ? `decimal:${identity.value}` : undefined;
