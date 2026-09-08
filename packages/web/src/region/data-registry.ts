@@ -138,6 +138,8 @@ const MAX_ITEMS = 128;
 const MAX_LABEL = 160;
 const MAX_NODE_ID = 128;
 const MAX_VALUE_KEYS = 256;
+const MAX_FILTER_PREDICATE_DEPTH = 32;
+const MAX_FILTER_PREDICATE_NODES = 128;
 
 const failure = <T>(code: string, message: string): Outcome<T> => ({
   ok: false,
@@ -487,6 +489,43 @@ function filterPredicate(
   } catch {
     return failure("config", "The filter predicate could not be validated.");
   }
+}
+
+/**
+ * The editable filter builder can project leaves, `not(is-null)` and
+ * homogeneous logical groups into its bounded clause editor. Inherited
+ * predicates remain fully typed and read-only; only an initial predicate must
+ * be reachable through that editor.
+ */
+function isEditableFilterPredicate(
+  predicate: AeliqoFilterPredicate,
+  depth = 0,
+  traversal: {nodes: number} = {nodes: 0},
+  parentLogical?: "and" | "or",
+): boolean {
+  if (
+    depth > MAX_FILTER_PREDICATE_DEPTH ||
+    traversal.nodes >= MAX_FILTER_PREDICATE_NODES
+  )
+    return false;
+  traversal.nodes += 1;
+  if (predicate.op === "compare") return predicate.value !== null;
+  if (predicate.op === "is-null" || predicate.op === "in")
+    return true;
+  if (predicate.op === "not")
+    return (
+      predicate.predicate.op === "is-null" &&
+      isEditableFilterPredicate(predicate.predicate, depth + 1, traversal, parentLogical)
+    );
+  if (parentLogical !== undefined && predicate.op !== parentLogical) return false;
+  if (
+    predicate.predicates.length === 0 ||
+    predicate.predicates.length > MAX_ITEMS
+  )
+    return false;
+  return predicate.predicates.every((child) =>
+    isEditableFilterPredicate(child, depth + 1, traversal, predicate.op),
+  );
 }
 
 function paginationPort(
@@ -1184,6 +1223,14 @@ function resolveFilterBuilder(
       ? {ok: true as const, value: undefined}
       : filterPredicate(input.predicate, binding.result, fields.value);
   if (!predicate.ok) return predicate;
+  if (
+    predicate.value !== undefined &&
+    !isEditableFilterPredicate(predicate.value)
+  )
+    return failure(
+      "unsupported",
+      "The initial filter predicate cannot be represented by the editable filter builder.",
+    );
   const inherited =
     input.inherited === undefined
       ? {ok: true as const, value: undefined}

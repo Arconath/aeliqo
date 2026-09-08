@@ -590,4 +590,97 @@ describe("data registry semantics", () => {
       }).ok,
     ).toBe(true);
   });
+
+  it("guards initial filters to the editable canonical predicate subset", () => {
+    const compare = {
+      op: "compare" as const,
+      field: "department",
+      comparison: "eq" as const,
+      value: "Sales",
+    };
+    const notEmpty = {
+      op: "not" as const,
+      predicate: {op: "is-null" as const, field: "department", negate: false},
+    };
+    const homogeneous = {
+      op: "and" as const,
+      predicates: [
+        {op: "and" as const, predicates: [compare, notEmpty]},
+        {op: "is-null" as const, field: "department", negate: true},
+      ],
+    };
+    const editable = resolve("filterBuilder", {
+      field: "department",
+      outputId: "people",
+      predicate: homogeneous,
+    });
+    expect(editable.ok).toBe(true);
+    if (editable.ok)
+      expect(editable.value.config.values.predicate).toEqual(homogeneous);
+
+    expect(
+      resolve("filterBuilder", {
+        field: "department",
+        outputId: "people",
+        predicate: {op: "or", predicates: [compare, notEmpty]},
+      }).ok,
+    ).toBe(true);
+    const mixed = resolve("filterBuilder", {
+      field: "department",
+      outputId: "people",
+      predicate: {
+        op: "and",
+        predicates: [
+          {op: "or", predicates: [compare, notEmpty]},
+          compare,
+        ],
+      },
+    });
+    expect(mixed.ok).toBe(false);
+    if (!mixed.ok)
+      expect(mixed.diagnostics[0]?.code).toBe("web.data.unsupported");
+    expect(
+      resolve("filterBuilder", {
+        field: "department",
+        outputId: "people",
+        predicate: {op: "not", predicate: compare},
+      }).ok,
+    ).toBe(false);
+    expect(
+      resolve("filterBuilder", {
+        field: "name",
+        outputId: "people",
+        predicate: {
+          op: "compare",
+          field: "name",
+          comparison: "eq",
+          value: null,
+        },
+      }).ok,
+    ).toBe(false);
+    expect(
+      resolve("filterBuilder", {
+        field: "name",
+        outputId: "people",
+        predicate: {
+          op: "in",
+          field: "name",
+          values: [null, "Ada"],
+        },
+      }).ok,
+    ).toBe(true);
+
+    const inherited = resolve("filterBuilder", {
+      field: "department",
+      outputId: "people",
+      inherited: {
+        op: "and",
+        predicates: [
+          {op: "or", predicates: [compare, notEmpty]},
+          {op: "not", predicate: compare},
+        ],
+      },
+    });
+    expect(inherited.ok).toBe(true);
+  });
 });
