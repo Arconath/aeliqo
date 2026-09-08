@@ -9,3 +9,4 @@ export type {Catalog, Task, Result, Experience, Contract, ContractKind, Diagnost
   Expression, FieldDefinition, MeaningDefinition, QuerySpec, ResultRef, SemanticType, VersionRef} from './contracts/types.js';
 export * from './expressions/index.js';
 export * from './semantics/index.js';
+export * from './query/index.js';
