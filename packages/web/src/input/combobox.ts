@@ -90,6 +90,7 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
     return html`
       <div part="field">
         <label part="label" for="control"><span class="label-text">${this.label}</span></label>
+        ${this.renderMessages()}
         <div class="combobox-wrap">
           <input
             part="input"
@@ -116,8 +117,6 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
           />
           ${this.open ? html`
             <ul id=${listId} part="listbox" role="listbox">
-              ${this.loading ? html`<li part="status" role="status">Loading…</li>` : nothing}
-              ${filtered.length === 0 && !this.loading ? html`<li part="status">No options</li>` : nothing}
               ${filtered.map((option, index) => html`
                 <li
                   id=${`option-${index}`}
@@ -134,9 +133,9 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
                 </li>
               `)}
             </ul>
+            ${filtered.length === 0 && !this.loading ? html`<span part="status">No options</span>` : nothing}
           ` : nothing}
         </div>
-        ${this.renderMessages()}
       </div>
     `;
   }
@@ -366,6 +365,7 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
     .combobox-wrap { position: relative; }
     [part=listbox] { background: var(--aeliqo-color-canvas, #fff); border: 1px solid var(--aeliqo-color-border, #64748b); border-radius: var(--aeliqo-radius-small, 0.375rem); box-shadow: 0 0.25rem 0.75rem rgb(15 23 42 / 18%); list-style: none; margin: 0.25rem 0 0; max-block-size: 16rem; overflow: auto; padding: 0.25rem; position: absolute; inset-inline: 0; z-index: 1; }
     [part=option], [part=status] { cursor: default; display: flex; gap: 0.5rem; justify-content: space-between; min-block-size: var(--aeliqo-control-min-target, 2.75rem); padding: 0.65rem 0.75rem; }
+    [part=option] { flex-direction: column; align-items: flex-start; }
     [part=option] small { color: var(--aeliqo-color-muted, #4b5563); }
     [part=option].active { background: var(--aeliqo-color-surface, #f1f5f9); }
     [part=option][aria-disabled=true] { color: var(--aeliqo-color-muted, #4b5563); }

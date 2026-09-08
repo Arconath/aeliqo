@@ -57,7 +57,7 @@ export class AeliqoDateRangeElement extends AeliqoFieldElement<AeliqoDateRangeVa
     const valid = this.isValid();
     const describedBy = this.describedByIds();
     return html`
-      <fieldset part="field" ?disabled=${this.fieldDisabled} aria-invalid=${valid ? nothing : "true"}>
+      <fieldset part="field" ?disabled=${this.fieldDisabled} aria-invalid=${!this.error && valid ? nothing : "true"}>
         <legend part="label">${this.label}</legend>
         <div class="range-inputs">
           <label part="start-label">Start
@@ -145,7 +145,7 @@ export class AeliqoDateRangeElement extends AeliqoFieldElement<AeliqoDateRangeVa
     } else {
       this.internals?.setFormValue(null);
     }
-    if (valid || this.fieldDisabled) this.removeAttribute("aria-invalid");
+    if ((!this.error && valid && !missing) || this.fieldDisabled) this.removeAttribute("aria-invalid");
     else this.setAttribute("aria-invalid", "true");
     const anchor = this.nativeStart();
     if (this.internals !== undefined && !this.fieldDisabled && !valid) this.internals.setValidity({customError: true}, this.valueMissingMessage() || "Enter a valid date range.", anchor);

@@ -51,6 +51,7 @@ export class AeliqoRadioGroupElement extends AeliqoFieldElement<string> {
               .checked=${this.value === option.value}
               ?disabled=${this.fieldDisabled || option.disabled === true}
               aria-readonly=${this.readOnly ? "true" : nothing}
+              aria-invalid=${this.error ? "true" : nothing}
               aria-describedby=${describedBy || nothing}
               @change=${this.handleChange}
             />

@@ -92,7 +92,8 @@
     "test:agent-evaluation:host": "pnpm build:agent && vitest run --config tests/agent-evaluation/vitest.config.mjs && tsc -p tests/agent-evaluation/tsconfig.json",
     "test:security": "pnpm build:agent && pnpm --filter @aeliqo/testkit build && vitest run --config tests/security/vitest.config.mjs && tsc -p tests/security/tsconfig.json",
     "test:performance:bundles": "node tests/performance/bundles.mjs",
-    "build:testkit": "pnpm build:runtime && pnpm --filter @aeliqo/testkit build"
+    "build:testkit": "pnpm build:runtime && pnpm --filter @aeliqo/testkit build",
+    "test:visual": "pnpm build:platform && tsc -p tests/visual/tsconfig.json && playwright test --config tests/visual/playwright.config.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
