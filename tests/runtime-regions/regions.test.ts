@@ -163,8 +163,11 @@ describe('transactional region store', () => {
     await expect(region.publishData()).resolves.toMatchObject({ok: true, value: {dataRevision: 1}});
     expect(events).toEqual(['all', 'rows', 'trend']);
     events.length = 0;
-    authority = {...authority, results: [{...refA, revision: 'result-2'}, {...refB, revision: 'result-2'}]};
-    await expect(region.publishData({results: [{...refA, revision: 'result-2'}]})).resolves.toMatchObject({ok: true, value: {dataRevision: 2}});
+    const refreshedA = {...refA, revision: 'result-2'};
+    const refreshedB = {...refB, revision: 'result-2'};
+    authority = {...authority, results: [refreshedA, refreshedB]};
+    await expect(region.publishData({results: [refreshedA]})).resolves.toMatchObject({ok: true, value: {dataRevision: 2}});
+    expect(region.history().at(-1)?.changedResults).toEqual([refreshedA, refreshedB]);
     expect(events).toEqual(['all', 'rows', 'trend']);
   });
 
