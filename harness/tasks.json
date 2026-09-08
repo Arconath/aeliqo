@@ -354,9 +354,10 @@
         "Atomic per-region commits, stable IDs, histories and separate data revision with targeted notifications.",
         "Commit verifies authorization scope and entire dependency read set, not just region revision."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "Luna Max author platform_proof owns isolated codex/t10-regions runtime region/task/scheduling/persistence and tests/runtime-regions; root owns canonical core read-set validation/config/exports/integration; preflight_diagnosis independent reviewer. No shared writers."
     },
     {
       "id": "T11",

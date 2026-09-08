@@ -169,8 +169,8 @@ and ranking against an independent fixture. Division is marked approximate;
 fixed-cohort weekly Task execution remains separate integration work.
 
 This API is an implementation slice, not full Task execution. Authorized prior
-result populations, named-output orchestration and HTTP execution of these plans
-remain separate integration work. Unsupported temporal policies, cursors and
+result populations and named-output orchestration remain separate integration work.
+The runtime data entry provides bounded local and HTTP execution. Unsupported temporal policies, cursors and
 operators return diagnostics; they do not trigger a download of a larger source
 or a hidden fallback to executable query text.
 
@@ -179,3 +179,17 @@ share the query engine's bounded value rules with host/runtime consumers. The
 latter returns an opaque normalized scalar key, including exact instant fraction
 and decimal equivalence; encode composite keys as tuples of those keys. Neither
 helper authenticates data or grants access.
+
+
+`validateCommitReadSet(expected, current, requiredResults)` checks the canonical
+`CommitPreconditions` against current host-owned versions, including every referenced
+result ID/revision/output/query/scope. Reference order does not matter. Unrelated
+current results do not invalidate a candidate; changed or missing dependencies do.
+The runtime derives `requiredResults` from the actual task and presentation reads,
+so a proposal cannot omit a dependency merely by supplying a smaller list. Duplicate
+references within staged/current read sets and mismatched scopes are rejected.
+The required-dependency list may repeat a reference used by several views. The result is immutable.
+
+This comparator does not authenticate either input, grant an effect, determine
+business intent, or check a renderer's readiness. The runtime captures trusted
+versions, handles data materialization revisions, and rechecks before committing.

@@ -1,8 +1,10 @@
 import type * as z from 'zod/mini';
-import type {contractSchemas, diagnosticSchema, expressionSchema, fieldSchema, meaningSchema,
+import type {commitPreconditionsSchema, contractSchemas, diagnosticSchema, expressionSchema, fieldSchema, meaningSchema,
   querySchema, resultRefSchema, semanticTypeSchema, valueSchema, versionRefSchema} from './schemas.js';
 /** JSON optional members may be absent; present `undefined` is not wire data. */
 export type Wire<T> = T extends object ? {readonly [K in keyof T]: Wire<Exclude<T[K], undefined>>} : T;
+export type CommitPreconditions = Wire<z.infer<typeof commitPreconditionsSchema>>;
+export type PresentationPlan = Contract<'presentation-plan'>;
 export type ContractKind = keyof typeof contractSchemas;
 export type Contract<K extends ContractKind> = Wire<z.infer<(typeof contractSchemas)[K]>>;
 export type Catalog = Contract<'catalog'>;

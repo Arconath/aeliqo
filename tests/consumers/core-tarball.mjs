@@ -276,6 +276,9 @@ const experienceInput = {
   transitionPolicy: "stable",
 };
 const documents = {catalog: catalogInput, task: taskInput, result: resultInput, experience: experienceInput};
+const commitPins = {scopeDigest: resultInput.ref.scopeDigest, policyRevision: 'policy-1', taskRevision: taskInput.revision,
+  regionRevision: 'region-1', catalogRevision: catalogInput.revision, experienceRevision: experienceInput.revision,
+  functionRegistryDigest: catalogInput.functionRegistryDigest, results: [resultInput.ref]};
 
 const {inputs: _presentationInputs, ...taskBaseInput} = taskInput;
 const queryInput = {
@@ -526,14 +529,19 @@ function runInstalledQuery() {
 await writeFile(join(consumerDirectory, "consumer-types.ts"), `
 import {
   parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue,
-  validateTaskStructure, resolveExperienceConstraints,
+  validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet,
   checkExpression, createStandardFunctionRegistry, createTypedAuthoring, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
 import type {
-  Catalog, Task, Result, Experience, Outcome, TaskStructure, Wire,
+  Catalog, Task, Result, Experience, CommitPreconditions, Outcome, TaskStructure, Wire,
   ExperienceRestriction, ExperienceConstraints, TypedAuthoring, TypedExpression,
   FunctionRegistry, MeaningDefinition, MeaningBundle, QueryPlanner, LogicalPlan, QueryResult, QuerySpec, QuerySource,
 } from '@aeliqo/core';
+const commitPins: CommitPreconditions = ${JSON.stringify(commitPins)};
+const checkedPins: Outcome<CommitPreconditions> = validateCommitReadSet(commitPins, commitPins, commitPins.results);
+// @ts-expect-error Read sets are immutable.
+commitPins.results.push(commitPins.results[0]!);
+void checkedPins;
 const unknownWire: Outcome<unknown> = parseWireValue('{}');
 if (unknownWire.ok) {
   // @ts-expect-error Ingress is unknown until an envelope schema validates it.
@@ -637,12 +645,13 @@ import {createRequire} from 'node:module';
 import {readFile} from 'node:fs/promises';
 import {
   parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue,
-  validateTaskStructure, resolveExperienceConstraints,
+  validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet,
   checkExpression, createStandardFunctionRegistry, createTypedAuthoring, authorizeMeaningActivation, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
 assert.deepEqual(parseWireValue('{"requestId":"one"}'), {ok:true,value:{requestId:'one'}});
 assert.equal(parseWireValue('{"requestId":"one","requestId":"two"}').ok, false);
 assert.equal(parseWireValue({requestId:undefined}).ok, false);
+const commitPins = ${JSON.stringify(commitPins)};
 const documents = ${fixtureSource};
 const t05 = ${t05FixtureSource};
 const t04 = ${t04FixtureSource};
@@ -654,6 +663,8 @@ assert.equal(parseContract('query', {...relationQuery, relations: [], relationUs
   {id: 'rank', function: {id: 'core.window.rank', revision: '1'}, arguments: [], partitionBy: [], orderBy: [], frame: {preceding: 0, following: 0}},
 ]}).ok, true);
 assert.equal(parseContract('query', {...relationQuery, relationUsage: [{...relationQuery.relationUsage[0], approved: true}]}).ok, false);
+assert.equal(validateCommitReadSet(commitPins, commitPins, commitPins.results).ok, true);
+assert.equal(validateCommitReadSet(commitPins, {...commitPins, results: []}).ok, false);
 function unwrap(outcome) {
   assert.equal(outcome.ok, true);
   return outcome.value;
@@ -812,9 +823,12 @@ assert.equal(runInstalledQuery().precision.kind, 'exact');
 assert.deepEqual(parseWireValue('{"requestId":"one"}'), {ok:true,value:{requestId:'one'}});
 assert.equal(parseWireValue('{"requestId":"one","requestId":"two"}').ok, false);
 assert.equal(parseWireValue({requestId:undefined}).ok, false);
+const commitPins = ${JSON.stringify(commitPins)};
 const documents = ${fixtureSource};
 const t05 = ${t05FixtureSource};
 const t04 = ${t04FixtureSource};
+assert.equal(core.validateCommitReadSet(commitPins, {...commitPins, policyRevision: 'changed'}).ok, false);
+assert.equal(core.validateCommitReadSet(commitPins, commitPins, commitPins.results).ok, true);
 assert.equal(core.parseCatalog(documents.catalog).ok, true);
 assert.equal(core.parseTask(documents.task).ok, true);
 assert.equal(core.parseResult(documents.result).ok, true);
@@ -840,13 +854,14 @@ await writeFile(join(consumerDirectory, "index.html"), '<!doctype html><html><bo
 await writeFile(join(consumerDirectory, "bundle-entry.js"), `
 import {
   parseCatalog, parseTask, parseResult, parseExperience, parseWireValue,
-  validateTaskStructure, resolveExperienceConstraints,
+  validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet,
   checkExpression, createStandardFunctionRegistry, createTypedAuthoring, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
 const validWire = parseWireValue('{"requestId":"one"}');
 if (!validWire.ok || validWire.value.requestId !== 'one' ||
     parseWireValue('{"requestId":"one","requestId":"two"}').ok ||
     parseWireValue({requestId:undefined}).ok) throw new Error('Browser wire parser regression');
+const commitPins = ${JSON.stringify(commitPins)};
 const documents = ${fixtureSource};
 const t05 = ${t05FixtureSource};
 const t04 = ${t04FixtureSource};
@@ -861,6 +876,7 @@ const parsed = [
   parseCatalog(documents.catalog), parseTask(documents.task), parseResult(documents.result), parseExperience(documents.experience),
   validateTaskStructure(t05.namedOutputTaskInput), resolveExperienceConstraints(t05.noPresetExperienceInput, t05.taskInput),
   semanticRegistry, semanticAuthoring, semanticField, {ok:true,value:installedQueryResult},
+  validateCommitReadSet(commitPins, commitPins, commitPins.results),
 ];
 globalThis.__aeliqoParsed = parsed;
 export {parsed};
