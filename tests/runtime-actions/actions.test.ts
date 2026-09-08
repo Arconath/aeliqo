@@ -1,0 +1,354 @@
+import {describe, expect, it} from 'vitest';
+import {createActionPort} from '../../packages/runtime/src/actions/boundary.js';
+import {ActionRegistry} from '../../packages/runtime/src/actions/registry.js';
+import type {
+  ActionDescriptor,
+  ActionDispatchResult,
+  ActionEntity,
+  ActionPayload,
+  ActionRegistration,
+  ActionSchema,
+  ActionSideEffect,
+  TrustedActionContext,
+} from '../../packages/runtime/src/actions/types.js';
+import type {Outcome, Scalar, VersionRef} from '@aeliqo/core';
+
+const outcome = <T>(value: T): Outcome<T> => ({ok: true, value});
+const fail = <T = never>(code = 'test.denied'): Outcome<T> => ({ok: false, diagnostics: [{code, message: 'Rejected by test host.', retryable: false}]});
+const inputRef = (id: string): VersionRef => ({id: `${id}-input`, revision: '1'});
+const outputRef = (id: string): VersionRef => ({id: `${id}-output`, revision: '1'});
+
+const context = (overrides: Partial<TrustedActionContext> = {}): TrustedActionContext => ({
+  principalKey: 'principal-a', actorKey: 'actor-a', scopeDigest: 'scope-a', policyRevision: 'policy-a',
+  domainRevision: 'domain-a', confirmationEpoch: 'confirmation-a', grants: ['action.propose', 'action.execute'],
+  ...overrides,
+});
+
+function schema(ref: VersionRef, parse: (value: unknown) => Outcome<ActionPayload> = (value) => outcome(value as ActionPayload)): ActionSchema {
+  return {ref, parse};
+}
+
+function register(
+  registry: ActionRegistry,
+  options: {
+    readonly id?: string;
+    readonly revision?: string;
+    readonly sideEffect?: ActionSideEffect;
+    readonly confirmation?: 'none' | 'required';
+    readonly idempotency?: 'optional' | 'required';
+    readonly entityRevision?: 'none' | 'required';
+    readonly dispatch?: ActionRegistration['dispatch'];
+    readonly outputParse?: (value: unknown) => Outcome<ActionPayload>;
+  } = {},
+): ActionDescriptor {
+  const id = options.id ?? 'save';
+  const revision = options.revision ?? '1';
+  const input = inputRef(`${id}-${revision}`);
+  const output = outputRef(`${id}-${revision}`);
+  const descriptor: ActionDescriptor = {
+    ref: {id, revision}, input, output,
+    sideEffect: options.sideEffect ?? 'domain-write', confirmation: options.confirmation ?? 'none',
+    idempotency: options.idempotency ?? 'optional', entityRevision: options.entityRevision ?? 'none',
+  };
+  const outputParse = options.outputParse ?? ((value: unknown): Outcome<ActionPayload> => {
+    if (value !== null && typeof value === 'object' && !Array.isArray(value) && (value as Record<string, unknown>).ok === true && Object.hasOwn(value, 'value'))
+      return value as Outcome<ActionPayload>;
+    return fail('test.output');
+  });
+  const registration: ActionRegistration = {
+    descriptor, inputSchema: schema(input), outputSchema: schema(output, outputParse),
+    dispatch: options.dispatch ?? (() => ({state: 'completed', output: {ok: true, value: {saved: true}}})),
+  };
+  const registered = registry.register(registration);
+  expect(registered.ok).toBe(true);
+  return descriptor;
+}
+
+function makePort(options: {
+  readonly registry?: ActionRegistry;
+  readonly current?: TrustedActionContext;
+  readonly confirm?: (input: Parameters<NonNullable<import('../../packages/runtime/src/actions/types.js').ActionHost['issueConfirmation']>>[0]) => Outcome<void> | Promise<Outcome<void>>;
+} = {}) {
+  const registry = options.registry ?? new ActionRegistry();
+  let current = options.current ?? context();
+  const host = {
+    readContext: () => outcome(current),
+    ...(options.confirm === undefined ? {} : {issueConfirmation: options.confirm}),
+  };
+  const port = createActionPort({host, registry});
+  return {port, registry, setContext: (next: TrustedActionContext) => { current = next; }, getContext: () => current};
+}
+
+async function previewAndConfirm(port: ReturnType<typeof makePort>['port'], descriptor: ActionDescriptor, input: ActionPayload = {id: 'entity-1'}, extra: Record<string, unknown> = {}) {
+  const proposed = await port.preview({requestId: `request-${Math.random()}`, action: descriptor.ref, input, ...extra});
+  expect(proposed.ok).toBe(true);
+  if (!proposed.ok) throw new Error('preview setup failed');
+  const confirmed = await port.confirm(proposed.value);
+  expect(confirmed.ok).toBe(true);
+  if (!confirmed.ok) throw new Error('confirmation setup failed');
+  return confirmed.value;
+}
+
+async function waitFor(predicate: () => boolean): Promise<void> {
+  for (let attempt = 0; attempt < 20 && !predicate(); attempt++) await new Promise<void>((resolve) => setTimeout(resolve, 0));
+}
+
+describe('action registry and authority boundary', () => {
+  it('keeps dispatch callbacks behind a module-private registry and replaces only the active version', () => {
+    const registry = new ActionRegistry(1);
+    const first = register(registry, {id: 'publish', revision: '1'});
+    expect(Object.keys(registry)).toEqual([]);
+    expect((registry as unknown as {entries?: unknown}).entries).toBeUndefined();
+    expect(registry.describe(first.ref)).toEqual(first);
+    expect(registry.register({
+      descriptor: first,
+      inputSchema: schema(first.input), outputSchema: schema(first.output),
+      dispatch: () => ({state: 'completed', output: {ok: true, value: {}}}),
+    }).ok).toBe(false);
+
+    const second = register(registry, {id: 'publish', revision: '2'});
+    expect(registry.describe(first.ref)).toBeUndefined();
+    expect(registry.describe(second.ref)).toEqual(second);
+    expect(registry.size).toBe(1);
+    expect(registry.register({
+      descriptor: {...second, ref: {id: 'other', revision: '1'}}, inputSchema: schema(second.input), outputSchema: schema(second.output),
+      dispatch: () => ({state: 'completed', output: {ok: true, value: {}}}),
+    }).ok).toBe(false);
+    expect(registry.unregister('publish')).toBe(true);
+    expect(registry.describe(second.ref)).toBeUndefined();
+  });
+
+  it('requires proposal and execution grants independently and derives actor from host context', async () => {
+    const registry = new ActionRegistry();
+    const descriptor = register(registry, {id: 'archive'});
+    const state = makePort({registry, current: context({grants: ['action.propose']})});
+    const allowedPreview = await state.port.preview({requestId: 'request-1', action: descriptor.ref, input: {}});
+    expect(allowedPreview.ok).toBe(true);
+    if (!allowedPreview.ok) return;
+    const denied = await state.port.confirm(allowedPreview.value);
+    expect(denied.ok).toBe(false);
+    if (!denied.ok) expect(denied.diagnostics[0]!.code).toBe('action.denied');
+
+    state.setContext(context({actorKey: 'trusted-actor'}));
+    const preview = await state.port.preview({requestId: 'request-2', action: descriptor.ref, input: {amount: 3}});
+    expect(preview.ok).toBe(true);
+    if (!preview.ok) return;
+    expect((preview.value as unknown as Record<string, unknown>).actorKey).toBeUndefined();
+    const receipt = await state.port.confirm(preview.value);
+    expect(receipt.ok).toBe(true);
+    if (!receipt.ok) return;
+    expect(Object.keys(receipt.value)).toEqual(['state', 'id', 'previewId', 'action', 'sideEffect', 'confirmation']);
+    const execution = await state.port.execute(receipt.value);
+    expect(execution.ok).toBe(true);
+    if (execution.ok && execution.value.state === 'executed') expect(execution.value.output).toEqual({saved: true});
+  });
+
+  it('does not accept forged preview or receipt objects', async () => {
+    const registry = new ActionRegistry();
+    const descriptor = register(registry);
+    const {port} = makePort({registry});
+    const preview = await port.preview({requestId: 'request-forge', action: descriptor.ref, input: {}});
+    expect(preview.ok).toBe(true);
+    if (!preview.ok) return;
+    const forgedPreview = {...preview.value};
+    expect((await port.confirm(forgedPreview)).ok).toBe(false);
+    const confirmed = await port.confirm(preview.value);
+    expect(confirmed.ok).toBe(true);
+    if (!confirmed.ok) return;
+    const forgedReceipt = {...confirmed.value};
+    expect((await port.execute(forgedReceipt)).ok).toBe(false);
+    expect((await port.execute(confirmed.value)).ok).toBe(true);
+    expect((await port.execute(confirmed.value)).ok).toBe(false);
+  });
+});
+
+describe('confirmation and execute rechecks', () => {
+  it('requires a trusted positive confirmation for required actions and rechecks after it', async () => {
+    const registry = new ActionRegistry();
+    const descriptor = register(registry, {id: 'delete', confirmation: 'required', idempotency: 'required', entityRevision: 'required', sideEffect: 'irreversible'});
+    const calls: string[] = [];
+    const state = makePort({
+      registry,
+      current: context({entityRevisions: {'row-1': 'rev-1'}}),
+      confirm: ({context: trusted, preview}) => { calls.push(`${trusted.actorKey}:${preview.entity?.key}`); return outcome(undefined); },
+    });
+    const preview = await state.port.preview({requestId: 'request-delete', action: descriptor.ref, input: {ok: true}, entity: {key: 'row-1', revision: 'rev-1'}, idempotencyKey: 'delete-1'});
+    expect(preview.ok).toBe(true);
+    if (!preview.ok) return;
+    const receipt = await state.port.confirm(preview.value);
+    expect(receipt.ok).toBe(true);
+    expect(calls).toEqual(['actor-a:row-1']);
+    if (!receipt.ok) return;
+
+    state.setContext(context({entityRevisions: {'row-1': 'rev-2'}}));
+    const stale = await state.port.execute(receipt.value);
+    expect(stale.ok).toBe(false);
+    if (!stale.ok) expect(stale.diagnostics[0]!.code).toBe('action.stale');
+  });
+
+  it('invalidates a preview when confirmation changes authority before receipt creation', async () => {
+    const registry = new ActionRegistry();
+    const descriptor = register(registry, {id: 'approve', confirmation: 'required'});
+    let reads = 0;
+    let current = context();
+    const host = {
+      readContext: () => {
+        reads++;
+        if (reads === 3) current = context({policyRevision: 'policy-b'});
+        return outcome(current);
+      },
+      issueConfirmation: () => outcome(undefined),
+    };
+    const port = createActionPort({registry, host});
+    const preview = await port.preview({requestId: 'request-approve', action: descriptor.ref, input: {}});
+    expect(preview.ok).toBe(true);
+    if (!preview.ok) return;
+    const stale = await port.confirm(preview.value);
+    expect(stale.ok).toBe(false);
+    if (!stale.ok) expect(stale.diagnostics[0]!.code).toBe('action.stale');
+    expect((await port.confirm(preview.value)).ok).toBe(false);
+  });
+
+  it('treats malformed callback diagnostics and output as bounded ambiguity', async () => {
+    const registry = new ActionRegistry();
+    const malformed = register(registry, {id: 'malformed', dispatch: () => ({state: 'rejected', diagnostics: [null] as never})});
+    const invalidOutput = register(registry, {
+      id: 'invalid-output',
+      dispatch: () => ({state: 'completed', output: {ok: true, value: {nested: {bad: true}}}}),
+    });
+    const state = makePort({registry});
+    const malformedReceipt = await previewAndConfirm(state.port, malformed);
+    const rejected = await state.port.execute(malformedReceipt);
+    expect(rejected.ok).toBe(false);
+    if (!rejected.ok) expect(rejected.diagnostics[0]!.code).toBe('action.callback');
+    const invalidReceipt = await previewAndConfirm(state.port, invalidOutput);
+    const ambiguous = await state.port.execute(invalidReceipt);
+    expect(ambiguous.ok).toBe(true);
+    if (ambiguous.ok) expect(ambiguous.value.state).toBe('ambiguous');
+  });
+});
+
+describe('bounded idempotency and lifecycle', () => {
+  it('replays only the complete identity within the trusted principal scope', async () => {
+    const registry = new ActionRegistry();
+    let dispatches = 0;
+    const descriptor = register(registry, {
+      id: 'charge', idempotency: 'required',
+      dispatch: ({context: trusted}) => { dispatches++; return {state: 'completed', output: {ok: true, value: {principal: trusted.principalKey, count: dispatches}}}; },
+    });
+    const state = makePort({registry});
+    const first = await previewAndConfirm(state.port, descriptor, {amount: 10}, {idempotencyKey: 'charge-1'});
+    const firstExecution = await state.port.execute(first);
+    expect(firstExecution.ok).toBe(true);
+    const replay = await previewAndConfirm(state.port, descriptor, {amount: 10}, {idempotencyKey: 'charge-1'});
+    const replayExecution = await state.port.execute(replay);
+    expect(replayExecution.ok).toBe(true);
+    if (firstExecution.ok && replayExecution.ok) {
+      expect(replayExecution.value.state).toBe(firstExecution.value.state);
+      expect(replayExecution.value.action).toEqual(firstExecution.value.action);
+      if (replayExecution.value.state === 'executed' && firstExecution.value.state === 'executed') expect(replayExecution.value.output).toEqual(firstExecution.value.output);
+    }
+    expect(dispatches).toBe(1);
+
+    const changed = await previewAndConfirm(state.port, descriptor, {amount: 11}, {idempotencyKey: 'charge-1'});
+    const changedExecution = await state.port.execute(changed);
+    expect(changedExecution.ok).toBe(false);
+    if (!changedExecution.ok) expect(changedExecution.diagnostics[0]!.code).toBe('action.idempotency');
+
+    state.setContext(context({principalKey: 'principal-b', actorKey: 'actor-b', scopeDigest: 'scope-b'}));
+    const other = await previewAndConfirm(state.port, descriptor, {amount: 10}, {idempotencyKey: 'charge-1'});
+    const otherExecution = await state.port.execute(other);
+    expect(otherExecution.ok).toBe(true);
+    expect(dispatches).toBe(2);
+    expect(state.port.inspect('charge-1')?.outputAvailable).toBe(true);
+  });
+
+  it('refuses new idempotency admission when the bounded ledger is full', async () => {
+    const registry = new ActionRegistry();
+    const descriptor = register(registry, {id: 'bounded', idempotency: 'required'});
+    const state = makePort({registry});
+    const first = await previewAndConfirm(state.port, descriptor, {}, {idempotencyKey: 'key-1'});
+    expect((await state.port.execute(first)).ok).toBe(true);
+    const second = await previewAndConfirm(state.port, descriptor, {}, {idempotencyKey: 'key-2'});
+    const thirdPreview = await state.port.preview({requestId: 'third', action: descriptor.ref, input: {}, idempotencyKey: 'key-3'});
+    expect(thirdPreview.ok).toBe(true);
+    if (!thirdPreview.ok) return;
+    const third = await state.port.confirm(thirdPreview.value);
+    expect(third.ok).toBe(true);
+    if (!third.ok) return;
+    const limited = createActionPort({host: {readContext: () => outcome(context())}, registry, maxIdempotencyEntries: 2});
+    // Fill the bounded ledger on a separate port to exercise its admission check.
+    const a = await previewAndConfirm(limited, descriptor, {}, {idempotencyKey: 'a'});
+    const b = await previewAndConfirm(limited, descriptor, {}, {idempotencyKey: 'b'});
+    expect((await limited.execute(a)).ok).toBe(true);
+    expect((await limited.execute(b)).ok).toBe(true);
+    const c = await previewAndConfirm(limited, descriptor, {}, {idempotencyKey: 'c'});
+    const refused = await limited.execute(c);
+    expect(refused.ok).toBe(false);
+    if (!refused.ok) expect(refused.diagnostics[0]!.code).toBe('action.budget');
+    expect((await limited.execute(c)).ok).toBe(false);
+    void second; void third;
+  });
+
+  it('allows only one execution for a receipt even without an idempotency key', async () => {
+    const registry = new ActionRegistry();
+    const descriptor = register(registry, {id: 'slow'});
+    let resolveDispatch: ((value: ActionDispatchResult) => void) | undefined;
+    let dispatches = 0;
+    const replacement = register(registry, {id: 'slow-2'});
+    void replacement;
+    // Register a fresh action with the deferred callback so the active receipt can be held open.
+    const slow = register(registry, {id: 'slow-deferred', dispatch: () => {
+      dispatches++;
+      return new Promise<ActionDispatchResult>((resolve) => { resolveDispatch = resolve; });
+    }});
+    const state = makePort({registry});
+    const receipt = await previewAndConfirm(state.port, slow);
+    const first = state.port.execute(receipt);
+    await waitFor(() => resolveDispatch !== undefined);
+    const duplicate = await state.port.execute(receipt);
+    expect(duplicate.ok).toBe(false);
+    if (!duplicate.ok) expect(duplicate.diagnostics[0]!.code).toBe('action.in-flight');
+    resolveDispatch!({state: 'completed', output: {ok: true, value: {done: true}}});
+    const executed = await first;
+    expect(executed.ok).toBe(true);
+    expect(dispatches).toBe(1);
+    void descriptor;
+  });
+
+  it('clears pending receipts on revoke and ignores late callback completion', async () => {
+    const registry = new ActionRegistry();
+    let resolveDispatch: ((value: ActionDispatchResult) => void) | undefined;
+    const descriptor = register(registry, {id: 'revoke', idempotency: 'required', dispatch: () => new Promise<ActionDispatchResult>((resolve) => { resolveDispatch = resolve; })});
+    const state = makePort({registry});
+    const receipt = await previewAndConfirm(state.port, descriptor, {}, {idempotencyKey: 'revoke-1'});
+    const running = state.port.execute(receipt);
+    await waitFor(() => resolveDispatch !== undefined);
+    expect(state.port.revoke('test revoke')).toBe(true);
+    const result = await running;
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.state).toBe('ambiguous');
+    resolveDispatch!({state: 'completed', output: {ok: true, value: {late: true}}});
+    expect(state.port.inspect('revoke-1')?.state).toBe('ambiguous');
+    expect((await state.port.execute(receipt)).ok).toBe(false);
+  });
+});
+
+describe('interaction action ingress', () => {
+  it('accepts only the typed action-request interaction payload', async () => {
+    const registry = new ActionRegistry();
+    const descriptor = register(registry, {id: 'from-interaction'});
+    const {port} = makePort({registry});
+    const preview = await port.previewInteraction({
+      eventId: 'event-1', causationId: 'event-0', regionId: 'region-1', regionRevision: 'region-rev', originNodeId: 'button-1',
+      payload: {kind: 'action-request', action: descriptor.ref, input: {amount: 2}},
+    });
+    expect(preview.ok).toBe(true);
+    const wrong = await port.previewInteraction({
+      eventId: 'event-2', causationId: 'event-1', regionId: 'region-1', regionRevision: 'region-rev', originNodeId: 'button-1',
+      payload: {kind: 'navigate', route: {id: 'route', revision: '1'}, params: {}},
+    });
+    expect(wrong.ok).toBe(false);
+    if (!wrong.ok) expect(wrong.diagnostics[0]!.code).toMatch(/action.invalid|wire/);
+  });
+});
