@@ -76,7 +76,10 @@
     "test:protocol-model": "pnpm build:agent && vitest run --config tests/protocol-model/vitest.config.mjs && tsc -p tests/protocol-model/tsconfig.json",
     "test:compounds": "pnpm build:platform && vitest run --config tests/compound/vitest.config.mjs && tsc -p tests/compound/tsconfig.json && node tests/compound/ssr.mjs",
     "test:compounds:browser": "playwright test --config tests/compound/playwright.config.mjs",
-    "test:protocol:consumers": "node tests/consumers/protocol-tarballs.mjs"
+    "test:protocol:consumers": "node tests/consumers/protocol-tarballs.mjs",
+    "test:compounds:consumers": "node tests/consumers/compound-tarballs.mjs",
+    "test:compound-semantic": "pnpm build:platform && vitest run --config tests/compound-semantic/vitest.config.mjs && tsc -p tests/compound-semantic/tsconfig.json",
+    "test:compound-semantic:browser": "playwright test --config tests/compound-semantic/playwright.config.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

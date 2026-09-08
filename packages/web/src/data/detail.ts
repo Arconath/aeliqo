@@ -45,9 +45,9 @@ export class AeliqoDetailElement extends LitElement {
                 <dd>${dataValueText(this.record?.[field.key], this.missingLabel)}</dd>
               </div>
             `)}
-            ${scope ? html`<div part="scope">${scope}</div>` : nothing}
           </dl>
         ` : nothing}
+        ${scope ? html`<p part="scope">${scope}</p>` : nothing}
         ${status === "loading" || status === "empty" || status === "partial" || status === "stale" || status === "error" || status === "unavailable" ? statusTemplate(status, this.message) : nothing}
       </section>
     `;

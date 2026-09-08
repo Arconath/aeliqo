@@ -1,4 +1,4 @@
-import {css, html, nothing} from "lit";
+import {css, html, nothing, type PropertyValues} from "lit";
 import type {ResultRef, Scalar, VersionRef, VisualizationBindingContext, VisualizationSpec} from "@aeliqo/core";
 import {AeliqoCompoundElement, aeliqoCompoundThemeStyles} from "./base.js";
 import {dataValueText, stableDataRecordKey, stableDataValueKey} from "../data/shared.js";
@@ -142,7 +142,7 @@ export class AeliqoExplorerElement extends AeliqoCompoundElement {
   fields: readonly AeliqoFieldOption[] = []; predicate: AeliqoFilterPredicate | undefined; rows: readonly AeliqoDataRecord[] = []; columns: readonly AeliqoDataColumn[] = []; identity: readonly string[] = []; entity = "record"; selectedKey = ""; detailRecord: AeliqoDataRecord | undefined; detailFields: readonly AeliqoDataColumn[] = []; result: ResultRef | undefined; scope: AeliqoDataScope | undefined; status: AeliqoCompoundStatus = "ready"; message = ""; title = "Explore"; filterLabel = "Filter"; collectionLabel = "Records"; detailLabel = "Selected detail"; selection: "none" | "single" | "multiple" = "single";
   protected override render() {
     const current = status(this.status); const detail = this.detailRecord ?? this.rows.find(row => this.rowKey(row) === this.selectedKey); const statusText = this.statusTemplate(current, this.message);
-    return html`<section part="root" data-status=${current} aria-label=${this.title}><div part="header"><h2>${this.title}</h2>${this.scope ? html`<span part="scope">${this.scopeLabel(this.scope)}</span>` : nothing}</div><div part="panels"><section part="filter" aria-label=${this.filterLabel}><h3>${this.filterLabel}</h3><aeliqo-filter-builder .fields=${this.fields} .predicate=${this.predicate} .entity=${this.entity} .status=${current} @aeliqo-filter-change=${this.forwardFilter}></aeliqo-filter-builder></section><section part="collection" aria-label=${this.collectionLabel}><h3>${this.collectionLabel}</h3><aeliqo-record-list .rows=${this.rows} .columns=${this.columns} .identity=${this.identity} .entity=${this.entity} .selectedKeys=${this.selectedKey ? [this.selectedKey] : []} .result=${this.result} .scope=${this.scope} .selection=${this.selection} .status=${current} @aeliqo-record-list-selection=${this.forwardSelection}></aeliqo-record-list></section><section part="detail"><h3>${this.detailLabel}</h3><aeliqo-detail .title=${this.detailLabel} .record=${detail} .fields=${this.detailFields.length ? this.detailFields : this.columns} .identity=${this.identity} .entity=${this.entity} .status=${current}></aeliqo-detail></section></div>${statusText ? html`<p part="status" role="status">${statusText}</p>` : nothing}</section>`;
+    return html`<section part="root" data-status=${current} aria-label=${this.title}><div part="header"><h2>${this.title}</h2>${this.scope ? html`<span part="scope">${this.scopeLabel(this.scope)}</span>` : nothing}</div><div part="panels"><section part="filter" aria-label=${this.filterLabel}><h3>${this.filterLabel}</h3><aeliqo-filter-builder .fields=${this.fields} .predicate=${this.predicate} .entity=${this.entity} .status=${current} @aeliqo-filter-change=${this.forwardFilter}></aeliqo-filter-builder></section><section part="collection" aria-label=${this.collectionLabel}><h3>${this.collectionLabel}</h3><aeliqo-record-list .rows=${this.rows} .columns=${this.columns} .identity=${this.identity} .entity=${this.entity} .selectedKeys=${this.selectedKey ? [this.selectedKey] : []} .result=${this.result} .scope=${this.scope} .selection=${this.selection} .status=${current} @aeliqo-record-list-selection=${this.forwardSelection}></aeliqo-record-list></section><section part="detail"><h3>${this.detailLabel}</h3><aeliqo-detail .title=${this.detailLabel} .record=${detail} .fields=${this.detailFields.length ? this.detailFields : this.columns} .identity=${this.identity} .entity=${this.entity} .scope=${this.scope} .status=${current}></aeliqo-detail></section></div>${statusText ? html`<p part="status" role="status">${statusText}</p>` : nothing}</section>`;
   }
   private rowKey(row: AeliqoDataRecord): string | undefined { return stableDataRecordKey(row, this.identity); }
   private readonly forwardFilter = (raw: Event): void => { const detail = (raw as CustomEvent<AeliqoFilterChangeDetail>).detail; if (detail) this.dispatchEvent(event("aeliqo-explorer-filter", detail)); };
@@ -154,11 +154,12 @@ export class AeliqoComparisonElement extends AeliqoCompoundElement {
   static readonly styles = [...aeliqoCompoundThemeStyles, css`[part="table"] { max-inline-size: 100%; overflow-x: auto; }`];
   compareKeys: readonly string[] = []; compareSet: readonly {readonly key: string; readonly label?: string}[] = []; metrics: readonly AeliqoComparisonMetric[] = []; entity = "record"; status: AeliqoCompoundStatus = "ready"; message = ""; title = "Comparison"; result: ResultRef | undefined; scope: AeliqoDataScope | undefined; identity: readonly string[] = []; compatible = true; selectedKey = "";
   protected override render() {
-    const requestedKeys = this.compareKeys.length ? this.compareKeys : this.compareSet.map(item => item.key);
-    const keys = bounded(requestedKeys, MAX_COMPARISON_KEYS);
+    const requestedKeys = this.compareKeys.length ? this.compareKeys : bounded(this.compareSet, MAX_COMPARISON_KEYS).map(item => item.key);
+    const overflow = (this.compareKeys.length || this.compareSet.length) > MAX_COMPARISON_KEYS;
+    const keys = [...new Set(bounded(requestedKeys, MAX_COMPARISON_KEYS))];
     const metrics = bounded(this.metrics, MAX_COMPARISON_METRICS);
-    const labels = new Map(this.compareSet.map(item => [item.key, item.label ?? item.key]));
-    const selectedKeys = new Set(requestedKeys);
+    const labels = new Map(bounded(this.compareSet, MAX_COMPARISON_KEYS).map(item => [item.key, item.label ?? item.key]));
+    const selectedKeys = new Set(keys);
     const columns: readonly AeliqoTableColumn[] = [{key: "metric", label: "Metric"}, ...keys.map(key => ({key: `comparison:${key}`, label: labels.get(key) ?? key}))];
     const rows: readonly AeliqoTableRow[] = metrics.map(metric => ({
       metricId: metric.id,
@@ -166,19 +167,20 @@ export class AeliqoComparisonElement extends AeliqoCompoundElement {
       ...Object.fromEntries(keys.map(key => [`comparison:${key}`, tableCell(metric.values[key])])),
     }));
     const current = status(this.status);
-    const boundedNotice = requestedKeys.length > keys.length || this.metrics.length > metrics.length;
+    const boundedNotice = overflow || this.metrics.length > metrics.length;
     return html`<section part="root" data-status=${current} aria-label=${this.title}>
       <div part="header"><h2>${this.title}</h2>${this.scope ? html`<span part="scope">${this.scopeLabel(this.scope)}</span>` : nothing}</div>
       ${!this.compatible ? html`<p part="status" role="alert">These metrics cannot be compared because their units or grain are incompatible.</p>` : html`
-        <div part="actions" aria-label="Compare set">${keys.map(key => html`<button part="compare-button" type="button" aria-pressed=${String(selectedKeys.has(key))} @click=${() => this.requestCompare(key)}>${labels.get(key) ?? key}</button>`)}</div>
+        <div part="actions" aria-label="Compare set">${keys.map(key => html`<button part="compare-button" type="button" ?disabled=${overflow} aria-pressed=${String(selectedKeys.has(key))} @click=${() => this.requestCompare(key)}>${labels.get(key) ?? key}</button>`)}</div>
         <div part="table" role="region" aria-label="Simultaneous comparison"><aeliqo-table .caption=${`${this.title}: ${keys.length} ${this.entity}${keys.length === 1 ? "" : "s"}`} .columns=${columns} .rows=${rows} .identity=${["metricId"]} .result=${this.result} .scope=${this.scope} status=${current}></aeliqo-table></div>
-        ${boundedNotice ? html`<p part="hint">Showing a bounded comparison window.</p>` : nothing}
+        ${boundedNotice ? html`<p part="hint">Showing a bounded comparison window. Narrow the compare set to edit it.</p>` : nothing}
       `}
       ${current !== "ready" ? html`<p part="status" role="status">${this.statusText(current, this.message)}</p>` : nothing}
     </section>`;
   }
   private readonly requestCompare = (key: string): void => {
-    const current = this.compareKeys.length ? [...this.compareKeys] : this.compareSet.map(item => item.key);
+    if ((this.compareKeys.length || this.compareSet.length) > MAX_COMPARISON_KEYS) return;
+    const current = [...new Set(this.compareKeys.length ? this.compareKeys : this.compareSet.map(item => item.key))];
     const next = current.includes(key) ? current.filter(item => item !== key) : [...current, key];
     if (next.length === 0) return;
     this.dispatchEvent(event<AeliqoComparisonSetDetail>("aeliqo-comparison-set", {source: "user", entity: this.entity, keys: next, ...(this.result === undefined ? {} : {result: this.result}), ...(this.scope === undefined ? {} : {scope: this.scope})}));
@@ -227,7 +229,7 @@ export class AeliqoInvestigationElement extends AeliqoCompoundElement {
   static readonly properties = {trendContext: {attribute: false}, trendDatasets: {attribute: false}, eventContext: {attribute: false}, eventDatasets: {attribute: false}, trend: {attribute: false}, baseline: {attribute: false}, events: {attribute: false}, detailRecord: {attribute: false}, detailFields: {attribute: false}, result: {attribute: false}, eventResult: {attribute: false}, identity: {attribute: false}, entity: {type: String}, scope: {attribute: false}, status: {type: String}, message: {type: String}, title: {type: String}, label: {type: String}};
   static readonly styles = [...aeliqoCompoundThemeStyles, css`[part="caution"] { border-inline-start: .25rem solid var(--aeliqo-color-warning, #b54708); padding-inline-start: var(--aeliqo-space-12, .75rem); }`];
   trendContext: VisualizationBindingContext = {results: []}; trendDatasets: readonly VisualizationDataset[] = []; eventContext: VisualizationBindingContext = {results: []}; eventDatasets: readonly VisualizationDataset[] = []; trend: VisualizationSpec | undefined; baseline: Scalar | undefined; events: VisualizationSpec | undefined; detailRecord: AeliqoDataRecord | undefined; detailFields: readonly AeliqoDataColumn[] = []; result: ResultRef | undefined; eventResult: ResultRef | undefined; identity: readonly string[] = []; entity = "record"; scope: AeliqoDataScope | undefined; status: AeliqoCompoundStatus = "ready"; message = ""; title = "Investigation"; label = "Trend";
-  protected override render() { const current = status(this.status); return html`<section part="root" data-status=${current} aria-label=${this.title}><div part="header"><h2>${this.title}</h2>${this.scope ? html`<span part="scope">${this.scopeLabel(this.scope)}</span>` : nothing}</div><div part="grid"><section part="trend" aria-label="Trend"><h3>${this.label}</h3>${this.trend ? html`<aeliqo-trend .visualization=${this.trend} .context=${this.trendContext} .datasets=${this.trendDatasets}></aeliqo-trend>` : html`<p part="hint">No trend is available.</p>`}</section><section part="baseline" aria-label="Baseline"><h3>Baseline</h3><aeliqo-metric label="Baseline" .value=${this.baseline}></aeliqo-metric></section><section part="events" aria-label="Event timeline"><h3>Event timeline</h3>${this.events ? html`<aeliqo-timeline .visualization=${this.events} .context=${this.eventContext} .datasets=${this.eventDatasets}></aeliqo-timeline>` : html`<p part="hint">No events are available.</p>`}</section><section part="detail"><h3>Detail</h3><aeliqo-detail .title=${"Investigation detail"} .record=${this.detailRecord} .fields=${this.detailFields} .identity=${this.identity} .entity=${this.entity}></aeliqo-detail></section></div><p part="caution">Associations are displayed as evidence in the selected scope. They do not establish causal claims.</p>${current !== "ready" ? html`<p part="status" role="status">${this.statusText(current, this.message)}</p>` : nothing}</section>`; }
+  protected override render() { const current = status(this.status); return html`<section part="root" data-status=${current} aria-label=${this.title}><div part="header"><h2>${this.title}</h2>${this.scope ? html`<span part="scope">${this.scopeLabel(this.scope)}</span>` : nothing}</div><div part="grid"><section part="trend" aria-label="Trend"><h3>${this.label}</h3>${this.trend ? html`<aeliqo-trend .visualization=${this.trend} .context=${this.trendContext} .datasets=${this.trendDatasets}></aeliqo-trend>` : html`<p part="hint">No trend is available.</p>`}</section><section part="baseline" aria-label="Baseline"><h3>Baseline</h3><aeliqo-metric label="Baseline" .value=${this.baseline}></aeliqo-metric></section><section part="events" aria-label="Event timeline"><h3>Event timeline</h3>${this.events ? html`<aeliqo-timeline .visualization=${this.events} .context=${this.eventContext} .datasets=${this.eventDatasets}></aeliqo-timeline>` : html`<p part="hint">No events are available.</p>`}</section><section part="detail"><h3>Detail</h3><aeliqo-detail .title=${"Investigation detail"} .record=${this.detailRecord} .fields=${this.detailFields} .identity=${this.identity} .entity=${this.entity} .scope=${this.scope} .status=${current}></aeliqo-detail></section></div><p part="caution">Associations are displayed as evidence in the selected scope. They do not establish causal claims.</p>${current !== "ready" ? html`<p part="status" role="status">${this.statusText(current, this.message)}</p>` : nothing}</section>`; }
 }
 
 export class AeliqoSearchResultsElement extends AeliqoCompoundElement {
@@ -243,7 +245,7 @@ export class AeliqoSearchResultsElement extends AeliqoCompoundElement {
         ${stale ? html`<p part="status" role="status">Results are out of date for this query. Refresh to view them.</p>` : html`
           <p part="scope">${total === undefined ? "Matching count unavailable" : `${total.toLocaleString()} matching results`}</p>
           <aeliqo-card-collection .rows=${this.rows} .columns=${this.columns} .identity=${this.identity} .entity=${this.entity} .selectedKeys=${this.selectedKey ? [this.selectedKey] : []} .result=${this.result} .scope=${this.scope} selection="single" @aeliqo-card-selection=${this.forwardSelection}></aeliqo-card-collection>
-          ${this.detailRecord ? html`<aeliqo-detail part="detail" .record=${this.detailRecord} .fields=${this.detailFields.length ? this.detailFields : this.columns} .identity=${this.identity} .entity=${this.entity}></aeliqo-detail>` : nothing}
+          ${this.detailRecord ? html`<aeliqo-detail part="detail" .record=${this.detailRecord} .fields=${this.detailFields.length ? this.detailFields : this.columns} .identity=${this.identity} .entity=${this.entity} .scope=${this.scope} .status=${current}></aeliqo-detail>` : nothing}
         `}
       </section>
     `;
@@ -292,6 +294,26 @@ export class AeliqoFormFlowElement extends AeliqoCompoundElement {
   private transientDraft: FormDraftRecord = nullRecord<FormDraftValue>();
   private transientDraftSource: Readonly<Record<string, FormDraftValue>> | undefined;
 
+  private pendingFocus: {readonly target: string; readonly trigger: Element} | undefined;
+  private focusStepAfterUpdate = false;
+
+  protected override willUpdate(changes: PropertyValues): void {
+    super.willUpdate(changes);
+    if (changes.has('activeStep') && this.pendingFocus !== undefined) {
+      this.focusStepAfterUpdate = this.activeStep === this.pendingFocus.target && (this.shadowRoot?.activeElement ?? null) === this.pendingFocus.trigger;
+      this.pendingFocus = undefined;
+    }
+  }
+
+  protected override updated(changes: PropertyValues): void {
+    super.updated(changes);
+    if (!this.focusStepAfterUpdate) return;
+    this.focusStepAfterUpdate = false;
+    const first = this.controlsForStep(this.activeStep).find(control => !isDisabledControl(control) && control.getAttribute('type') !== 'hidden');
+    if (first !== undefined) first.focus();
+    else this.renderRoot.querySelector<HTMLElement>('[part="step-panel"]')?.focus();
+  }
+
   protected override render() {
     const active = this.activeStep || this.steps[0]?.id || "";
     const index = this.steps.findIndex(step => step.id === active);
@@ -303,7 +325,7 @@ export class AeliqoFormFlowElement extends AeliqoCompoundElement {
       <div part="header"><h2>${this.title}</h2><span part="meta">Step ${index < 0 ? 0 : index + 1} of ${this.steps.length}</span></div>
       <ol part="step-list">${this.steps.map(step => html`<li part="step" data-active=${String(step.id === active)}><button type="button" aria-current=${step.id === active ? "step" : nothing} @click=${() => this.moveTo(step.id, this.steps.findIndex(item => item.id === step.id) > index ? "next" : "back")}>${step.label}</button></li>`)}</ol>
       ${error ? html`<p part="status" role="alert">${error}</p>` : current !== "ready" ? html`<p part="status" role="status">${this.statusText(current, this.message)}</p>` : nothing}
-      <div part="step-panel" data-step=${active}>${named ? html`<slot name=${slotName}></slot>` : html`<slot></slot>`}</div>
+      <div part="step-panel" data-step=${active} tabindex="-1" role="group" aria-label=${this.steps[index]?.label ?? this.title}>${named ? html`<slot name=${slotName}></slot>` : html`<slot></slot>`}</div>
       <div part="navigation"><button type="button" ?disabled=${index <= 0} @click=${() => this.moveRelative(-1)}>${this.backLabel}</button>${index >= 0 && index < this.steps.length - 1 ? html`<button type="button" @click=${() => this.moveRelative(1)}>${this.nextLabel}</button>` : html`<button type="button" @click=${this.commit}>${this.commitLabel}</button>`}</div>
     </section>`;
   }
@@ -377,7 +399,11 @@ export class AeliqoFormFlowElement extends AeliqoCompoundElement {
     if (direction === "next") {
       for (let index = fromIndex; index < targetIndex; index += 1) if (!this.stepValid(this.steps[index]!.id, true)) return;
     }
-    this.dispatchEvent(event<AeliqoFormFlowStepDetail>("aeliqo-form-flow-step", {source: "user", from, to: target, direction, draft: this.captureDraft()}));
+    const trigger = (this.shadowRoot?.activeElement ?? null);
+    this.pendingFocus = trigger === null ? undefined : {target, trigger};
+    const change = event<AeliqoFormFlowStepDetail>("aeliqo-form-flow-step", {source: "user", from, to: target, direction, draft: this.captureDraft()});
+    this.dispatchEvent(change);
+    if (change.defaultPrevented) this.pendingFocus = undefined;
   }
 
   private readonly commit = (): void => {

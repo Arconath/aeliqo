@@ -20,6 +20,7 @@ test("explorer forwards filter and stable identity selection to the host", async
   await page.keyboard.press("Enter");
   await expect.poll(() => page.evaluate(() => (window as unknown as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-explorer-selection")?.detail.keys)).toEqual(["string:1:a"]);
   await expect(explorer.locator("aeliqo-detail").locator("[part=identity]")).toContainText("string:1:a");
+  await expect(explorer.locator("aeliqo-detail")).toContainText("Authorized people");
 });
 
 test("comparison and breakdown use shared bounded tables and host evaluated values", async ({page}) => {
@@ -42,6 +43,17 @@ test("comparison and breakdown use shared bounded tables and host evaluated valu
   await expect.poll(() => page.evaluate(() => (window as unknown as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-breakdown-group")?.detail)).toMatchObject({key: "north", scope: {label: "Authorized people"}});
 });
 
+test("comparison interactions reject overflow and normalize duplicate keys", async ({page}) => {
+  const comparison = page.locator("#comparison");
+  await comparison.evaluate(element => {Object.assign(element, {compareKeys: Array.from({length: 34}, (_, index) => `k${index}`)});});
+  await expect(comparison.locator('[part="compare-button"]')).toHaveCount(32);
+  await expect(comparison.locator('[part="compare-button"]').first()).toBeDisabled();
+  await comparison.evaluate(element => {Object.assign(element, {compareKeys: ['a', 'a', 'b']});});
+  await expect(comparison.locator('[part="compare-button"]')).toHaveCount(2);
+  await comparison.getByRole('button', {name: 'Alpha', exact: true}).click();
+  await expect.poll(() => page.evaluate(() => (window as unknown as FixtureWindow).compoundFixture.events.findLast(event => event.type === 'aeliqo-comparison-set')?.detail.keys)).toEqual(['b']);
+});
+
 test("search results hide stale materialization and restore the matching revision", async ({page}) => {
   const search = page.locator("#search");
   await expect(search).toContainText("out of date");
@@ -53,6 +65,12 @@ test("search results hide stale materialization and restore the matching revisio
   });
   await expect(search.locator("aeliqo-card-collection")).toHaveCount(1);
   await expect(search.locator("[part=scope]").first()).toContainText("2 matching results");
+});
+
+test("current search detail retains its authorized scope", async ({page}) => {
+  const search = page.locator('#search');
+  await search.evaluate(element => {const host = element as any; host.resultRevision = host.queryRevision; host.detailRecord = host.rows[0];});
+  await expect(search.locator('aeliqo-detail')).toContainText('Authorized people');
 });
 
 test("record editor validates slotted fields and includes the explicit draft receipt", async ({page}) => {
@@ -100,12 +118,29 @@ test("form flow keeps step scoped controls mounted, blocks invalid progression, 
   })).toEqual({keys: ["draftOnly", "displayName", "tags", "__proto__", "constructor", "plan", "consent", "choices", "window[start]", "window[end]"], ignored: undefined, proto: "draft-proto", constructor: "draft-constructor"});
 });
 
+test("form flow preserves keyboard focus through forward and back navigation", async ({page}) => {
+  const flow = page.locator('#flow');
+  await flow.locator('aeliqo-text-field').locator('input').fill('Ada');
+  await flow.getByRole('button', {name: 'Next', exact: true}).focus();
+  await page.keyboard.press('Enter');
+  await expect(flow.locator('[part="step-panel"]')).toHaveAttribute('data-step', 'two');
+  await expect(flow.getByRole('radio', {name: 'Standard plan', exact: true})).toBeFocused();
+  await flow.getByRole('button', {name: 'Back', exact: true}).focus();
+  await page.keyboard.press('Enter');
+  await expect(flow.locator('aeliqo-text-field').locator('input')).toBeFocused();
+  await flow.evaluate(element => {element.querySelector('[slot="step-two"]')?.replaceChildren(document.createTextNode('Review draft'));});
+  await flow.getByRole('button', {name: 'Next', exact: true}).focus();
+  await page.keyboard.press('Enter');
+  await expect(flow.locator('[part="step-panel"]')).toBeFocused();
+});
+
 test("compound states keep caution copy and remain accessible under RTL, zoom and forced colors", async ({page}) => {
   await page.evaluate(() => { document.documentElement.dir = "rtl"; document.documentElement.style.fontSize = "200%"; });
   await page.emulateMedia({forcedColors: "active"});
   await expect(page.locator("#investigation")).toContainText("do not establish causal claims");
   await expect(page.locator("#investigation aeliqo-trend [part=data] table")).toHaveCount(1);
   await expect(page.locator("#quality")).toContainText("Unsupported claims are shown explicitly");
+  await expect(page.locator("#investigation aeliqo-detail")).toContainText("Authorized people");
   const results = await new AxeBuilder({page}).include("#fixture").analyze();
   expect(results.violations).toEqual([]);
   await page.screenshot({path: "artifacts/compound-browser/rtl-forced-colors.png", fullPage: true});
