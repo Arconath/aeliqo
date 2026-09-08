@@ -584,6 +584,36 @@ describe('transactional region store', () => {
     await expect(pending).resolves.toMatchObject({ok: true});
   });
 
+  it('rechecks pending restore admission after construction callbacks', async () => {
+    const source = create();
+    const document = source.region.export();
+    let owner!: ReturnType<typeof createRegionStore>;
+    let pending: Promise<unknown> | undefined;
+    let entered = false;
+    let restoreCalls = 0;
+    owner = createRegionStore(options({
+      maxRegions: 1,
+      restoreRegion: () => {
+        restoreCalls++;
+        return new Promise(() => {});
+      },
+      now: () => {
+        if (!entered) {
+          entered = true;
+          pending = owner.restore(document);
+        }
+        return 1;
+      },
+    }));
+
+    const created = owner.create({id: 'outer', state: {task: task('1', 'outer')}});
+    expect(created).toMatchObject({ok: false, diagnostics: [{code: 'runtime.region-budget'}]});
+    expect(owner.get('outer')).toBeUndefined();
+    expect(restoreCalls).toBe(1);
+    owner.dispose();
+    await expect(pending).resolves.toMatchObject({ok: false, diagnostics: [{code: 'runtime.region-disposed'}]});
+  });
+
   it('rejects persistence revision mismatches and malformed history references', () => {
     const {region} = create();
     const document = region.export();

@@ -1106,7 +1106,12 @@ export class RegionStoreImpl implements RegionStore {
       // Construction can invoke the injected clock, so recheck admission before
       // transferring caller-owned leases into the handle.
       if (this.disposed) { handle.dispose(); return failure('runtime.region-disposed', FAILURE.disposed); }
-      if (this.regions.has(input.id) || this.regions.size >= this.maxRegions) { handle.dispose(); return failure(this.regions.has(input.id) ? 'runtime.region-invalid' : 'runtime.region-budget', this.regions.has(input.id) ? 'A region with this stable ID already exists.' : FAILURE.budget); }
+      const duplicate = this.regions.has(input.id);
+      const otherPendingRestoresAfterConstruction = this.pendingRestores - (reservedRestore ? 1 : 0);
+      if (duplicate || this.regions.size + otherPendingRestoresAfterConstruction >= this.maxRegions) {
+        handle.dispose();
+        return failure(duplicate ? 'runtime.region-invalid' : 'runtime.region-budget', duplicate ? 'A region with this stable ID already exists.' : FAILURE.budget);
+      }
       handle.adoptInitialResultLeases(initialResultLeases);
       this.regions.set(input.id, handle);
       return {ok: true, value: handle};
