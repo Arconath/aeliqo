@@ -128,6 +128,13 @@ function failure<T>(code: string, message: string, path?: readonly (string | num
   return {ok: false, diagnostics: [diagnostic(code, message, path, remedies)]};
 }
 
+/** Keep the in-process cohort capability out of application row-policy hooks. */
+function policyContext(context: ReadContext): ReadContext {
+  if (context.cohort === undefined) return context;
+  const {cohort: _cohort, ...rest} = context;
+  return rest;
+}
+
 function unsupported<T>(capability: UnsupportedCapability, path?: readonly (string | number)[]): Outcome<T> {
   return failure(
     'data.unsupported',
@@ -973,7 +980,7 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
       }
     }
     const resolverContext: CohortResolverContext = {
-      readContext: context,
+      readContext: policyContext(context),
       principalKey,
       scopeDigest: grant.scopeDigest,
       ...(grant.policyRevision === undefined ? {} : {policyRevision: grant.policyRevision}),
@@ -1021,7 +1028,7 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
       const input = parsed.value;
       if (input.catalogRevision !== null && input.catalogRevision !== currentCatalog.revision)
         return failure('data.stale-catalog', 'The requested catalog revision is no longer current.', ['catalogRevision']);
-      const grant = await authorizeWithDeadline(options.authorize, 'describe', input.requestId, input.target, context, Math.min(input.budget.maxMilliseconds, options.hostBudget?.maxMilliseconds ?? DEFAULT_BUDGET.maxMilliseconds));
+      const grant = await authorizeWithDeadline(options.authorize, 'describe', input.requestId, input.target, policyContext(context), Math.min(input.budget.maxMilliseconds, options.hostBudget?.maxMilliseconds ?? DEFAULT_BUDGET.maxMilliseconds));
       if (!grant.ok) return grant;
       if (context.signal?.aborted) return failure('data.aborted', 'The catalog request was cancelled.');
       if (currentCatalog !== initialCatalog || snapshot !== initialSnapshot) return failure('data.stale-catalog', 'The catalog or source changed while authorization was being resolved.');
@@ -1062,7 +1069,7 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
       const input = parsed.value;
       if (input.catalogRevision !== currentCatalog.revision)
         return failure('data.stale-catalog', 'The plan must pin the current catalog revision.', ['catalogRevision']);
-      const grant = await authorizeWithDeadline(options.authorize, 'plan', input.requestId, input.target, context, Math.min(input.budget.maxMilliseconds, options.hostBudget?.maxMilliseconds ?? DEFAULT_BUDGET.maxMilliseconds), input.query);
+      const grant = await authorizeWithDeadline(options.authorize, 'plan', input.requestId, input.target, policyContext(context), Math.min(input.budget.maxMilliseconds, options.hostBudget?.maxMilliseconds ?? DEFAULT_BUDGET.maxMilliseconds), input.query);
       if (!grant.ok) return grant;
       if (context.signal?.aborted) return failure('data.aborted', 'The ADC plan was cancelled.');
       if (currentCatalog !== initialCatalog || snapshot !== initialSnapshot)
@@ -1182,7 +1189,7 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
         return;
       }
       const initialRemaining = input.effectiveBudget.maxMilliseconds - (Date.now() - startedAt);
-      const grant = await authorizeWithDeadline(options.authorize, 'execute', input.requestId, input.target, context, initialRemaining, input.query);
+      const grant = await authorizeWithDeadline(options.authorize, 'execute', input.requestId, input.target, policyContext(context), initialRemaining, input.query);
       if (currentCatalog !== initialCatalog || snapshot !== initialSnapshot) {
         yield resultError(input.requestId, 'data.stale-plan', 'The catalog or source changed while authorization was being resolved.');
         return;
@@ -1240,7 +1247,7 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
         return;
       }
       const ref = resultReference(stored.accepted, resultIdOutcome.value);
-      const sourceOutcome = await authorizedSource(stored, snapshot, grant.value, input.query, context, startedAt, executionBudget, () => currentCatalog === initialCatalog && snapshot === initialSnapshot);
+      const sourceOutcome = await authorizedSource(stored, snapshot, grant.value, input.query, policyContext(context), startedAt, executionBudget, () => currentCatalog === initialCatalog && snapshot === initialSnapshot);
       if (!sourceOutcome.ok) {
         yield resultError(input.requestId, sourceOutcome.diagnostics[0]?.code ?? 'data.denied', sourceOutcome.diagnostics[0]?.message ?? 'The authorized source could not be prepared.');
         return;
