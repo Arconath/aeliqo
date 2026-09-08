@@ -148,7 +148,9 @@ export default {build:{minify:true},plugins:[{name:'record-modules',generateBund
 `);
 run([join(consumer,'node_modules/.bin/vite'),'build'],consumer);
 const modules=JSON.parse(await readFile(join(consumer,'dist/modules.json'),'utf8'));
-const allowed=/(?:\/browser\.js$|\/index\.html$|vite\/modulepreload-polyfill|\/node_modules\/(?:lit(?:-html|-element)?\/|@lit\/reactive-element\/|@aeliqo\/web\/dist\/(?:elements\/aeliqo-input|events|styles\/(?:theme|tokens))\.js$))/;
+// AeliqoInput delegates to the shared TextField; these are its exact required bases/events.
+// Runtime, planner, agent, chart, and other component modules remain excluded.
+const allowed=/(?:\/browser\.js$|\/index\.html$|vite\/modulepreload-polyfill|\/node_modules\/(?:lit(?:-html|-element)?\/|@lit\/reactive-element\/|@aeliqo\/web\/dist\/(?:elements\/aeliqo-input|events|input\/(?:events|base|text-control|text-field)|foundation\/base|styles\/(?:theme|tokens))\.js$))/;
 assert.deepEqual(modules.filter(id=>!allowed.test(id)),[], 'Unexpected standalone input module');
 const browserBundles=[];
 for (const file of await readdir(join(consumer,'dist/assets'))) {

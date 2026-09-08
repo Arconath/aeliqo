@@ -79,7 +79,8 @@
     "test:protocol:consumers": "node tests/consumers/protocol-tarballs.mjs",
     "test:compounds:consumers": "node tests/consumers/compound-tarballs.mjs",
     "test:compound-semantic": "pnpm build:platform && vitest run --config tests/compound-semantic/vitest.config.mjs && tsc -p tests/compound-semantic/tsconfig.json",
-    "test:compound-semantic:browser": "playwright test --config tests/compound-semantic/playwright.config.mjs"
+    "test:compound-semantic:browser": "playwright test --config tests/compound-semantic/playwright.config.mjs",
+    "test:framework:consumers": "node tests/framework-consumers/framework-tarballs.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
