@@ -1,0 +1,59 @@
+{
+  "reviewer": "platform_proof (Luna Max), independent source-bound T28 review",
+  "scope": [
+    "Clean checkout at 54bb823",
+    "Node 24 frozen-install and tests/security (14 tests plus strict security TypeScript)",
+    "Installed core/runtime/testkit consumer proof",
+    "Source continuity for core/runtime/agent/testkit against c1e0a10 and installed-consumer scope against d4bbb25"
+  ],
+  "sourceCommit": "54bb82364f8d1408d0b2a3a0f7dfe84a52439315",
+  "sourceDigest": "5c66e87873def88d5015effa644d1e604e275ec87afae99b66ee3bfca11fdb10",
+  "versions": {
+    "node": "v24.20.0",
+    "npm": "11.19.0",
+    "pnpm": "11.24.0",
+    "typescript": "7.0.2",
+    "os": "darwin arm64",
+    "cpus": 12
+  },
+  "checks": {
+    "frozenInstall": true,
+    "securityTests": "5 files, 14 passed",
+    "securityStrictTypeScript": true,
+    "installedConsumer": true,
+    "installedConsumerSourceCleanBeforeAfter": true,
+    "installedConsumerSourceDigestStable": true,
+    "installedConsumerPackageLockSha256": "74f41cc95eb081212cac31d28ad26027b86f45f7eb9f0e4b6f0c680ced9f78ea",
+    "installedConsumerPackageCount": 26,
+    "installedBoundary": {
+      "fullApacheLicenses": true,
+      "noWorkspaceAliases": true,
+      "noInstalledSymlinks": true,
+      "strictTypeScript": true,
+      "resultStoreRevocation": true,
+      "boundedCollectionDefault": true,
+      "overflowCleanup": true,
+      "abortCleanup": true,
+      "synchronousThrowCleanup": true
+    },
+    "sourceContinuity": {
+      "coreRuntimeAgentTestkitSinceC1e0a10": "clean",
+      "coreRuntimeAgentTestkitConsumerSinceD4bbb25": "clean",
+      "testkitConsumerScriptSinceD4bbb25": "clean"
+    }
+  },
+  "evidence": {
+    "securityLog": "test-security-node24.log",
+    "consumerLog": "testkit-consumer-node24.log",
+    "consumerReport": "installed-consumer-report.json",
+    "consumerPackageLock": "consumer-package-lock.json",
+    "continuityLog": "source-continuity.log",
+    "versionsLog": "versions.log"
+  },
+  "limits": [
+    "This is a source-bound package, AST-boundary and installed-consumer review, not a full security certification or penetration test.",
+    "The package-boundary AST suite covers core/runtime/web; agent and testkit source graphs were compared for continuity and exercised through the installed consumer, not re-audited by that AST suite.",
+    "Prior broad 98-data, 7-evaluation, 95-agent, MCP11, WebMCP12, actions27, regions49 and results23 suites were not rerun; their previously logged evidence is not regenerated here.",
+    "AST probes intentionally cover the declared static import/export, relative path, selected dynamic edge and ambient-effect patterns; they do not prove absence of every runtime loader or platform escape."
+  ]
+}

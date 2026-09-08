@@ -1,0 +1,42 @@
+v24.20.0
+11.19.0
+11.24.0
+[
+  {
+    "name": "aeliqo-v0-1-0-master-foundation",
+    "version": "0.1.0-dev.0",
+    "path": "/private/tmp/aeliqo-t28-sourcebound-54bb823",
+    "private": true
+  },
+  {
+    "name": "@aeliqo/site",
+    "version": "0.1.0",
+    "path": "/private/tmp/aeliqo-t28-sourcebound-54bb823/apps/site",
+    "private": true
+  },
+  {
+    "name": "@aeliqo/studio",
+    "version": "0.1.0",
+    "path": "/private/tmp/aeliqo-t28-sourcebound-54bb823/apps/studio",
+    "private": true
+  },
+  {
+    "name": "@aeliqo/catalog-examples",
+    "version": "0.1.0",
+    "path": "/private/tmp/aeliqo-t28-sourcebound-54bb823/examples/catalog",
+    "private": true
+  },
+  {
+    "name": "@aeliqo/next-platform-fixture",
+    "version": "0.1.0",
+    "path": "/private/tmp/aeliqo-t28-sourcebound-54bb823/examples/next-platform",
+    "private": true
+  },
+  {
+    "name": "@aeliqo/platform-fixture",
+    "version": "0.1.0",
+    "path": "/private/tmp/aeliqo-t28-sourcebound-54bb823/examples/platform",
+    "private": true
+  },
+  {
+    "n
