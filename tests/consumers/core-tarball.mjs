@@ -9,6 +9,8 @@
  * secret/code scanner.
  */
 import assert from "node:assert/strict";
+import {createServer} from "node:http";
+import {chromium} from "@playwright/test";
 import {createHash} from "node:crypto";
 import {gzipSync} from "node:zlib";
 import {
@@ -753,13 +755,14 @@ const parserProbeOutput = run([
 await writeFile(join(consumerDirectory, "index.html"), '<!doctype html><html><body><script type="module" src="/bundle-entry.js"></script></body></html>');
 await writeFile(join(consumerDirectory, "bundle-entry.js"), `
 import {
-  parseCatalog, parseTask, parseResult, parseExperience,
+  parseCatalog, parseTask, parseResult, parseExperience, parseWireValue,
   validateTaskStructure, resolveExperienceConstraints,
   createStandardFunctionRegistry, createTypedAuthoring,
 } from '@aeliqo/core';
-assert.deepEqual(parseWireValue('{"requestId":"one"}'), {ok:true,value:{requestId:'one'}});
-assert.equal(parseWireValue('{"requestId":"one","requestId":"two"}').ok, false);
-assert.equal(parseWireValue({requestId:undefined}).ok, false);
+const validWire = parseWireValue('{"requestId":"one"}');
+if (!validWire.ok || validWire.value.requestId !== 'one' ||
+    parseWireValue('{"requestId":"one","requestId":"two"}').ok ||
+    parseWireValue({requestId:undefined}).ok) throw new Error('Browser wire parser regression');
 const documents = ${fixtureSource};
 const t05 = ${t05FixtureSource};
 const t04 = ${t04FixtureSource};
@@ -816,6 +819,39 @@ for (const path of bundleFiles) {
 const initialGzipBytes = bundleMetrics.reduce((sum, item) => sum + item.gzipBytes, 0);
 assert(initialGzipBytes <= 70 * 1024, `Core consumer entry exceeds 70 KiB gzip: ${initialGzipBytes}`);
 
+// Execute the packed consumer in a real browser: a successful bundle alone
+// cannot detect missing globals or runtime-only import failures.
+const servedFiles = new Map();
+for (const path of await sortedFiles(join(consumerDirectory, "dist"))) {
+  servedFiles.set('/' + relative(join(consumerDirectory, "dist"), path).split("\\").join("/"), {
+    bytes: await readFile(path),
+    type: extname(path) === '.js' ? 'text/javascript' : extname(path) === '.html' ? 'text/html' : 'application/json',
+  });
+}
+const server = createServer((request, response) => {
+  const file = servedFiles.get(request.url === '/' ? '/index.html' : request.url);
+  response.writeHead(file ? 200 : 404, {'Content-Type': file?.type ?? 'text/plain'});
+  response.end(file?.bytes ?? 'Not found');
+});
+await new Promise((resolve, reject) => {server.once('error', reject); server.listen(0, '127.0.0.1', resolve);});
+let browser;
+let browserOutcomes;
+try {
+  browser = await chromium.launch();
+  const page = await browser.newPage();
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto(`http://127.0.0.1:${server.address().port}/`);
+  assert.deepEqual(errors, [], 'Installed browser consumer raised an exception');
+  await page.waitForFunction(() => Array.isArray(globalThis.__aeliqoParsed), null, {timeout: 10_000});
+  browserOutcomes = await page.evaluate(() => globalThis.__aeliqoParsed.map(value => value.ok));
+  assert.deepEqual(errors, [], 'Installed browser consumer raised an exception');
+  assert(browserOutcomes.length > 0 && browserOutcomes.every(Boolean), 'Installed browser consumer rejected a valid fixture');
+} finally {
+  await browser?.close();
+  await new Promise(resolve => server.close(resolve));
+}
+
 const sourceAfter = await sourceDigest();
 assert.equal(sourceAfter, sourceBefore, "Core source changed during consumer verification");
 const report = {
@@ -826,6 +862,7 @@ const report = {
   artifact: {name: packedManifest.name, version: packedManifest.version, path: tarballPath, sha256: tarballSha256, integrity: tarballIntegrity},
   consumer: {directory: consumerDirectory, lockPath: join(runDirectory, "consumer-package-lock.json"), lockSha256: hash(lockBytes)},
   schemas: expectedSchemas.map((name) => `schemas/${name}.schema.json`),
+  browserOutcomes,
   consumerOutput: consumerOutput.trim(),
   parserProbeOutput: parserProbeOutput.trim(),
   bundle: {initialGzipBytes, files: bundleMetrics, modules, moduleGraphScope: "installed package parser graph; no universal dependency/security certification"},
@@ -843,5 +880,5 @@ const report = {
   passed: true,
 };
 await writeFile(join(runDirectory, "report.json"), JSON.stringify(report, null, 2) + "\n");
-console.log("Installed @aeliqo/core types, parsers, semantic authoring, schemas, no-codegen probe, and Vite graph pass.");
+console.log("Installed @aeliqo/core types, parsers, semantic authoring, schemas, no-codegen probe, Vite graph, and Chromium execution pass.");
 console.log(`Evidence: ${join(runDirectory, "report.json")}`);

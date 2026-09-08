@@ -74,3 +74,10 @@ Browser checks now select isolated ports and leave unrelated local projects alon
 
 T42 publication remains blocked on npm namespace access/history(E401), not source
 work. Main and production remain unchanged. Continue the DAG and earlyT39.
+
+During T06 integration, the installed core consumer now executes its built bundle
+in Chromium. This reproduced and fixed a browser-only fixture error from the wire
+helper check (missing imports and Node assertions). The fresh external-package
+run artifacts/core-consumers/run-x98TZ5/report.json passed all checks and every
+browser outcome. No product source changed; browser certification remains scoped
+to these parser/semantic fixtures.
