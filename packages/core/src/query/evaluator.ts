@@ -429,6 +429,8 @@ function validateNode(node: PlanRecord, inputRelations: readonly PlanNode[], cat
     if (node.inputs.length !== 2 || second === undefined || !isRecord(node.spec) || !isRecord(node.spec.relationship) || !Array.isArray(node.keys)) return failure('query.plan', `${node.op} node shape is invalid.`);
     const relation = relationship(catalog, node.spec.relationship as VersionRef);
     if (relation === undefined || relation.joinPolicy !== 'validated' || relation.sourceEntity !== input.output.fields.find((field) => field.source !== undefined)?.source?.entity || relation.targetEntity !== node.spec.rightEntity) return failure('query.plan', 'Join relationship is not declared or has the wrong direction.');
+    const declaredKeys = relation.keys.map((key) => ({left: fieldKey(relation.sourceEntity, key.sourceField), right: fieldKey(relation.targetEntity, key.targetField)}));
+    if (stable(node.keys) !== stable(declaredKeys)) return failure('query.relationship-keys', 'Plan join keys must exactly match the declared relationship keys.');
     if ((relation.cardinality === 'one-to-many' || relation.cardinality === 'many-to-many') && node.op === 'join') return failure('query.plan', 'A regular join cannot use a fanout relationship.');
     if (node.op === 'join' && !['inner', 'left'].includes(String(node.spec.kind))) return failure('query.plan', 'Join kind is invalid.');
     for (const key of node.keys) {
