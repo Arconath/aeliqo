@@ -1,4 +1,4 @@
-import type {AeliqoFilterChangeDetail, AeliqoPageRequest, AeliqoSelectionDetail, AeliqoTableSortDetail} from "./types.js";
+import type {AeliqoFilterChangeDetail, AeliqoPageRequest, AeliqoSelectionDetail, AeliqoTableSortDetail, AeliqoTableWindowDetail} from "./types.js";
 
 export class AeliqoDataSelectionEvent extends CustomEvent<AeliqoSelectionDetail> {
   constructor(name: "aeliqo-record-list-selection" | "aeliqo-card-selection" | "aeliqo-selection-clear", detail: AeliqoSelectionDetail) {
@@ -21,6 +21,12 @@ export class AeliqoTableSortEvent extends CustomEvent<AeliqoTableSortDetail> {
 export class AeliqoTablePageEvent extends CustomEvent<AeliqoPageRequest> {
   constructor(detail: AeliqoPageRequest) {
     super("aeliqo-table-page", {bubbles: true, composed: true, detail});
+  }
+}
+
+export class AeliqoTableWindowEvent extends CustomEvent<AeliqoTableWindowDetail> {
+  constructor(detail: AeliqoTableWindowDetail) {
+    super("aeliqo-table-window", {bubbles: true, composed: true, detail});
   }
 }
 

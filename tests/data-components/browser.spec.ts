@@ -31,6 +31,58 @@ test("grid mode is explicit and virtualization remains bounded", async ({page}) 
   await expect(grid.locator("[role=gridcell][data-row-index='1'][data-col-index='0']")).toBeFocused();
 });
 
+test("malformed virtual windows remain bounded and keyboard requests reach the host", async ({page}) => {
+  await page.goto("/tests/data-components/index.html");
+  const grid = page.locator("#grid");
+  await page.evaluate(async () => {
+    const table = document.querySelector("#grid") as any;
+    table.rows = Array.from({length: 250}, (_, index) => ({id: `row-${index}`, name: `Row ${index}`, amount: {decimal: String(index)}}));
+    table.virtualized = true;
+    table.virtualStart = Number.POSITIVE_INFINITY;
+    table.virtualCount = Number.POSITIVE_INFINITY;
+    table.overscan = Number.NaN;
+    await table.updateComplete;
+  });
+  const mountedRows = grid.locator("[role=row][data-row-index]");
+  await expect(mountedRows).toHaveCount(44);
+  await expect(grid.locator("[role=gridcell][tabindex='0']")).toHaveCount(1);
+  await grid.locator("[role=gridcell][data-row-index='43'][data-col-index='0']").focus();
+  await page.keyboard.press("ArrowDown");
+  await expect.poll(() => page.evaluate(() => (window as any).dataFixture.events.findLast((event: any) => event.type === "aeliqo-table-window")?.detail)).toEqual({
+    start: 44, count: 40, overscan: 4, row: 44, column: 0, reason: "keyboard",
+  });
+  await page.evaluate(async () => {
+    const table = document.querySelector("#grid") as any;
+    table.virtualStart = 44;
+    await table.updateComplete;
+  });
+  await expect(grid.locator("[role=gridcell][data-row-index='44'][data-col-index='0']")).toBeFocused();
+});
+
+test("grid focus follows stable identity across reorder and falls back after removal", async ({page}) => {
+  await page.goto("/tests/data-components/index.html");
+  const grid = page.locator("#grid");
+  await page.evaluate(async () => {
+    const table = document.querySelector("#grid") as any;
+    table.virtualized = false;
+    await table.updateComplete;
+  });
+  await grid.locator("[role=gridcell][data-row-index='1'][data-col-index='0']").focus();
+  await page.evaluate(async () => {
+    const table = document.querySelector("#grid") as any;
+    table.rows = [table.rows[1], table.rows[0], {id: "row-c", name: "Row C", amount: {decimal: "3"}}];
+    await table.updateComplete;
+  });
+  await expect(grid.locator("[role=gridcell][data-row-index='0'][data-col-index='0']")).toHaveAttribute("tabindex", "0");
+  await page.evaluate(async () => {
+    const table = document.querySelector("#grid") as any;
+    table.rows = table.rows.slice(1);
+    await table.updateComplete;
+  });
+  await expect(grid.locator("[role=gridcell][tabindex='0']")).toHaveCount(1);
+  await expect(grid.locator("[role=gridcell][data-row-index='0'][data-col-index='0']")).toHaveAttribute("tabindex", "0");
+});
+
 test("filter typing is draft-only and Apply emits the typed predicate", async ({page}) => {
   await page.goto("/tests/data-components/index.html");
   const filter = page.locator("#filter");

@@ -22,10 +22,17 @@ an explicit bounded **Load more** event and disclose the current scope.
 
 `Table` uses a native `table` by default. `mode="grid"` is an explicit
 interactive mode with roving cell keyboard navigation and explicit row and
-column positions. Sorting and paging emit typed
-requests for the host. Virtualization is bounded by `virtualStart`,
-`virtualCount` and `overscan`, and known loaded/total counts remain visible in
-the scope text and ARIA row count. Exact decimal cells remain display strings.
+column positions. Sorting and paging emit typed requests for the host.
+Virtualization is host controlled: `virtualStart` addresses the loaded `rows`
+window, and a keyboard move beyond the mounted window emits
+`aeliqo-table-window` so the host can provide the requested window. The host
+also updates `virtualStart` in response to its own scroll or pointer window
+logic; the component does not pretend that a bounded slice is the whole
+source. Non-finite values are sanitized, and at most 100 body rows including
+overscan are mounted. Focus follows a stable identity when rows reorder and
+uses a deterministic visible row when the focused identity is removed. Known
+loaded/total counts remain visible in the scope text and ARIA row count. Exact
+decimal cells remain display strings.
 
 `FilterBuilder` builds the canonical typed predicate vocabulary, shows the
 inherited scope, and emits only after the user activates **Apply**. Field

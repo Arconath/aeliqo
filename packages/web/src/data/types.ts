@@ -120,6 +120,17 @@ export interface AeliqoTableSortDetail {
 
 export interface AeliqoTablePageDetail extends AeliqoPageRequest {}
 
+/** A host-controlled request to make a virtualized row window available. */
+export interface AeliqoTableWindowDetail {
+  readonly start: number;
+  readonly count: number;
+  readonly overscan: number;
+  readonly row: number;
+  readonly column: number;
+  readonly reason: "keyboard";
+  readonly result?: ResultRef;
+}
+
 export interface AeliqoDeltaResult {
   readonly status: "ready" | "unavailable";
   readonly value?: number | string;

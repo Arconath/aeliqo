@@ -1,7 +1,7 @@
 import {aeliqoThemeStyles} from "../styles/theme.js";
 import {css, html, LitElement, nothing} from "lit";
 import {AeliqoTableSelectionEvent} from "../events.js";
-import {AeliqoTablePageEvent, AeliqoTableSortEvent} from "../data/events.js";
+import {AeliqoTablePageEvent, AeliqoTableSortEvent, AeliqoTableWindowEvent} from "../data/events.js";
 import {scalarIdentity} from "@aeliqo/core";
 import type {ResultRef} from "@aeliqo/core";
 import type {AeliqoDataScope, AeliqoDataStatus, AeliqoSortState} from "../data/types.js";
@@ -36,6 +36,24 @@ function tableIdentityLabel(row: AeliqoTableRow, identity: readonly string[]): s
 }
 
 export type AeliqoTableMode = "table" | "grid";
+
+/** Maximum number of body rows a virtualized table may mount at once. */
+export const AELIQO_TABLE_MAX_VIRTUAL_ROWS = 100;
+
+const DEFAULT_VIRTUAL_START = 0;
+const DEFAULT_VIRTUAL_COUNT = 40;
+const DEFAULT_VIRTUAL_OVERSCAN = 4;
+
+function boundedInteger(value: number, fallback: number, minimum: number, maximum: number): number {
+  if (!Number.isFinite(value)) return fallback;
+  return Math.min(maximum, Math.max(minimum, Math.trunc(value)));
+}
+
+interface GridFocus {
+  readonly rowIndex: number;
+  readonly rowKey?: string;
+  readonly column: number;
+}
 
 /** Native table-first collection; grid mode is an explicit opt-in. */
 export class AeliqoTableElement extends LitElement {
@@ -121,8 +139,7 @@ export class AeliqoTableElement extends LitElement {
 
   private renderGrid(rows: readonly {readonly row: AeliqoTableRow; readonly index: number}[], selectable: boolean, rowCount: number | undefined) {
     const gridRowCount = rowCount === undefined ? undefined : rowCount + 1;
-    const focus = this.gridFocus !== undefined && rows.some((entry) => entry.index === this.gridFocus?.row)
-      ? this.gridFocus : {row: rows[0]?.index ?? 0, column: 0};
+    const focus = this.resolveGridFocus(rows, this.gridColumnCount(selectable));
     return html`<div part="grid" role="grid" aria-label=${this.caption || "Data grid"} aria-rowcount=${gridRowCount === undefined ? nothing : String(gridRowCount)} aria-colcount=${String(this.columns.length + (selectable ? 1 : 0))}>
       <div role="rowgroup" part="grid-head"><div role="row" part="grid-row" aria-rowindex="1" style=${this.gridTemplate(selectable)}>
         ${selectable ? html`<div role="columnheader" aria-colindex="1" part="selection-heading"><span class="visually-hidden">Select</span></div>` : nothing}
@@ -134,7 +151,7 @@ export class AeliqoTableElement extends LitElement {
     </div>`;
   }
 
-  private renderGridRow(row: AeliqoTableRow, rowIndex: number, selectable: boolean, focus: {readonly row: number; readonly column: number}) {
+  private renderGridRow(row: AeliqoTableRow, rowIndex: number, selectable: boolean, focus: GridFocus) {
     const key = stableTableRowKey(row, this.identity);
     const selected = key !== undefined && this.selectedKeys.includes(key);
     return html`<div role="row" part="grid-row" style=${this.gridTemplate(selectable)} data-row-index=${rowIndex} ?data-selected=${selected} aria-selected=${selectable ? String(selected) : nothing} aria-rowindex=${rowIndex + 2}>
@@ -143,8 +160,8 @@ export class AeliqoTableElement extends LitElement {
     </div>`;
   }
 
-  private renderGridCell(columnIndex: number, rowIndex: number, focus: {readonly row: number; readonly column: number}, content: unknown, align?: AeliqoTableColumn["align"]) {
-    return html`<div role="gridcell" part="${columnIndex === 0 && this.selection !== "none" ? "selection-cell" : "cell"}" data-row-index=${rowIndex} data-col-index=${columnIndex} aria-colindex=${columnIndex + 1} tabindex=${focus.row === rowIndex && focus.column === columnIndex ? "0" : "-1"} style=${align ? `text-align:${align}` : nothing} @focus=${() => this.rememberGridFocus(rowIndex, columnIndex)} @keydown=${this.handleGridCellKeyDown}>${content}</div>`;
+  private renderGridCell(columnIndex: number, rowIndex: number, focus: GridFocus, content: unknown, align?: AeliqoTableColumn["align"]) {
+    return html`<div role="gridcell" part="${columnIndex === 0 && this.selection !== "none" ? "selection-cell" : "cell"}" data-row-index=${rowIndex} data-col-index=${columnIndex} aria-colindex=${columnIndex + 1} tabindex=${focus.rowIndex === rowIndex && focus.column === columnIndex ? "0" : "-1"} style=${align ? `text-align:${align}` : nothing} @focus=${() => this.rememberGridFocus(rowIndex, columnIndex)} @keydown=${this.handleGridCellKeyDown}>${content}</div>`;
   }
 
   private renderGridHeader(column: AeliqoTableColumn, columnIndex: number) {
@@ -173,13 +190,25 @@ export class AeliqoTableElement extends LitElement {
     return row === undefined ? key : tableIdentityLabel(row, this.identity);
   }
 
-  private visibleRows(): readonly {readonly row: AeliqoTableRow; readonly index: number}[] {
-    if (!this.virtualized) return this.rows.map((row, index) => ({row, index}));
-    const start = Math.max(0, Math.trunc(this.virtualStart));
-    const count = Math.max(1, Math.trunc(this.virtualCount));
-    const overscan = Math.max(0, Math.trunc(this.overscan));
+  private gridColumnCount(selectable = this.selection !== "none"): number {
+    return this.columns.length + (selectable ? 1 : 0);
+  }
+
+  private virtualWindow(): {readonly start: number; readonly count: number; readonly overscan: number; readonly from: number; readonly to: number} {
+    const maximumStart = Math.max(0, this.rows.length - 1);
+    const start = boundedInteger(this.virtualStart, DEFAULT_VIRTUAL_START, 0, maximumStart);
+    const count = boundedInteger(this.virtualCount, DEFAULT_VIRTUAL_COUNT, 1, AELIQO_TABLE_MAX_VIRTUAL_ROWS);
+    const requestedOverscan = boundedInteger(this.overscan, DEFAULT_VIRTUAL_OVERSCAN, 0, AELIQO_TABLE_MAX_VIRTUAL_ROWS);
+    // The body window, including both overscan sides, is always bounded.
+    const overscan = Math.min(requestedOverscan, Math.floor((AELIQO_TABLE_MAX_VIRTUAL_ROWS - count) / 2));
     const from = Math.max(0, start - overscan);
     const to = Math.min(this.rows.length, start + count + overscan);
+    return {start, count, overscan, from, to};
+  }
+
+  private visibleRows(): readonly {readonly row: AeliqoTableRow; readonly index: number}[] {
+    if (!this.virtualized) return this.rows.map((row, index) => ({row, index}));
+    const {from, to} = this.virtualWindow();
     return this.rows.slice(from, to).map((row, index) => ({row, index: from + index}));
   }
 
@@ -233,10 +262,77 @@ export class AeliqoTableElement extends LitElement {
     this.dispatchEvent(new AeliqoTableSelectionEvent(detail));
   };
 
-  private gridFocus: {readonly row: number; readonly column: number} | undefined;
+  private gridFocus: GridFocus | undefined;
+  private pendingGridFocus: GridFocus | undefined;
 
-  private rememberGridFocus(row: number, column: number): void {
-    this.gridFocus = {row, column};
+  protected override updated(): void {
+    if (this.mode !== "grid") return;
+    const rows = this.visibleRows();
+    if (rows.length > 0) {
+      const focus = this.resolveGridFocus(rows, this.gridColumnCount());
+      this.gridFocus = focus;
+      if (this.pendingGridFocus !== undefined) {
+        const target = this.findGridCell(this.pendingGridFocus);
+        if (target !== undefined) {
+          this.pendingGridFocus = undefined;
+          target.focus();
+        }
+      }
+    }
+  }
+
+  private resolveGridFocus(rows: readonly {readonly row: AeliqoTableRow; readonly index: number}[], columnCount: number): GridFocus {
+    const column = Math.min(Math.max(0, this.gridFocus?.column ?? 0), Math.max(0, columnCount - 1));
+    const keyed = this.gridFocus?.rowKey === undefined
+      ? undefined
+      : rows.find((entry) => stableTableRowKey(entry.row, this.identity) === this.gridFocus?.rowKey);
+    const fallbackIndex = this.gridFocus?.rowIndex ?? rows[0]?.index ?? 0;
+    const fallback = rows.find((entry) => entry.index >= fallbackIndex) ?? rows.at(-1);
+    const entry = keyed ?? fallback;
+    const rowIndex = entry?.index ?? 0;
+    const rowKey = entry === undefined ? undefined : stableTableRowKey(entry.row, this.identity);
+    return rowKey === undefined ? {rowIndex, column} : {rowIndex, rowKey, column};
+  }
+
+  private rememberGridFocus(rowIndex: number, column: number): void {
+    this.gridFocus = this.gridFocusAt(rowIndex, column);
+    this.pendingGridFocus = undefined;
+  }
+
+  private rowKeyAt(rowIndex: number): string | undefined {
+    const row = this.rows[rowIndex];
+    return row === undefined ? undefined : stableTableRowKey(row, this.identity);
+  }
+
+  private gridFocusAt(rowIndex: number, column: number): GridFocus {
+    const rowKey = this.rowKeyAt(rowIndex);
+    return rowKey === undefined ? {rowIndex, column} : {rowIndex, rowKey, column};
+  }
+
+  private findGridCell(focus: GridFocus): HTMLElement | undefined {
+    const cells = [...(this.shadowRoot?.querySelectorAll<HTMLElement>("[role='gridcell'][data-row-index]") ?? [])];
+    return cells.find((entry) => {
+      const rowIndex = Number(entry.dataset.rowIndex);
+      if (Number(entry.dataset.colIndex) !== focus.column) return false;
+      if (focus.rowKey !== undefined) return this.rowKeyAt(rowIndex) === focus.rowKey;
+      return rowIndex === focus.rowIndex;
+    });
+  }
+
+  private availableRowCount(): number {
+    const total = this.totalRows ?? this.scope?.filteredTotal ?? this.scope?.populationTotal;
+    return Math.max(this.rows.length, Number.isFinite(total) ? Math.trunc(total!) : this.rows.length);
+  }
+
+  private requestGridWindow(row: number, column: number): void {
+    const {count, overscan} = this.virtualWindow();
+    const focus = this.gridFocusAt(row, column);
+    this.gridFocus = focus;
+    this.pendingGridFocus = focus;
+    this.dispatchEvent(new AeliqoTableWindowEvent({
+      start: Math.max(0, row), count, overscan, row, column, reason: "keyboard",
+      ...(this.result === undefined ? {} : {result: this.result}),
+    }));
   }
 
   private readonly handleGridCellKeyDown = (event: KeyboardEvent): void => {
@@ -247,25 +343,39 @@ export class AeliqoTableElement extends LitElement {
     const column = Number(cell.dataset.colIndex);
     const cells = [...(this.shadowRoot?.querySelectorAll<HTMLElement>("[role='gridcell'][data-row-index]") ?? [])];
     const rows = [...new Set(cells.map((entry) => Number(entry.dataset.rowIndex)))].sort((left, right) => left - right);
-    const columns = this.columns.length + (this.selection === "none" ? 0 : 1);
+    const columns = this.gridColumnCount();
     const rowPosition = rows.indexOf(row);
     if (rowPosition < 0 || columns < 1) return;
+    const firstRow = rows[0]!;
+    const lastRow = rows.at(-1)!;
+    const rowCount = this.availableRowCount();
+    const {count} = this.virtualWindow();
     let nextRow = row;
     let nextColumn = column;
-    if (event.key === "ArrowRight") nextColumn < columns - 1 ? nextColumn++ : (nextRow = rows[Math.min(rows.length - 1, rowPosition + 1)]!, nextColumn = 0);
-    else if (event.key === "ArrowLeft") nextColumn > 0 ? nextColumn-- : (nextRow = rows[Math.max(0, rowPosition - 1)]!, nextColumn = columns - 1);
-    else if (event.key === "ArrowDown") nextRow = rows[Math.min(rows.length - 1, rowPosition + 1)]!;
-    else if (event.key === "ArrowUp") nextRow = rows[Math.max(0, rowPosition - 1)]!;
-    else if (event.key === "Home" && event.ctrlKey) {nextRow = rows[0]!; nextColumn = 0;}
-    else if (event.key === "End" && event.ctrlKey) {nextRow = rows.at(-1)!; nextColumn = columns - 1;}
+    if (event.key === "ArrowRight") {
+      if (nextColumn < columns - 1) nextColumn++;
+      else { nextRow = rowPosition + 1 < rows.length ? rows[rowPosition + 1]! : Math.min(rowCount - 1, lastRow + 1); nextColumn = 0; }
+    } else if (event.key === "ArrowLeft") {
+      if (nextColumn > 0) nextColumn--;
+      else { nextRow = rowPosition > 0 ? rows[rowPosition - 1]! : Math.max(0, firstRow - 1); nextColumn = columns - 1; }
+    } else if (event.key === "ArrowDown") nextRow = rowPosition + 1 < rows.length ? rows[rowPosition + 1]! : Math.min(rowCount - 1, lastRow + 1);
+    else if (event.key === "ArrowUp") nextRow = rowPosition > 0 ? rows[rowPosition - 1]! : Math.max(0, firstRow - 1);
+    else if (event.key === "Home" && event.ctrlKey) {nextRow = 0; nextColumn = 0;}
+    else if (event.key === "End" && event.ctrlKey) {nextRow = Math.max(0, rowCount - 1); nextColumn = columns - 1;}
     else if (event.key === "Home") nextColumn = 0;
     else if (event.key === "End") nextColumn = columns - 1;
-    else if (event.key === "PageDown") nextRow = rows[Math.min(rows.length - 1, rowPosition + Math.max(1, this.virtualCount))]!;
-    else if (event.key === "PageUp") nextRow = rows[Math.max(0, rowPosition - Math.max(1, this.virtualCount))]!;
+    else if (event.key === "PageDown") nextRow = Math.min(Math.max(0, rowCount - 1), row + count);
+    else if (event.key === "PageUp") nextRow = Math.max(0, row - count);
     else return;
-    const target = this.shadowRoot?.querySelector<HTMLElement>(`[role='gridcell'][data-row-index="${nextRow}"][data-col-index="${nextColumn}"]`);
-    if (target === undefined || target === null) return;
-    this.gridFocus = {row: nextRow, column: nextColumn};
+    const target = this.findGridCell({rowIndex: nextRow, column: nextColumn});
+    if (target === undefined) {
+      if (this.virtualized && nextRow !== row) {
+        this.requestGridWindow(nextRow, nextColumn);
+        event.preventDefault();
+      }
+      return;
+    }
+    this.gridFocus = this.gridFocusAt(nextRow, nextColumn);
     target.focus();
     event.preventDefault();
   };

@@ -47,6 +47,7 @@ summary.id = "summary"; summary.entity = "person"; summary.selectedKeys = ["stri
 const events: {readonly type: string; readonly detail: unknown}[] = [];
 fixture.addEventListener("aeliqo-record-list-selection", (event) => events.push({type: event.type, detail: (event as CustomEvent).detail}));
 fixture.addEventListener("aeliqo-table-selection", (event) => events.push({type: event.type, detail: (event as CustomEvent).detail}));
+fixture.addEventListener("aeliqo-table-window", (event) => events.push({type: event.type, detail: (event as CustomEvent).detail}));
 fixture.addEventListener("aeliqo-filter-change", (event) => events.push({type: event.type, detail: (event as CustomEvent).detail}));
 fixture.addEventListener("aeliqo-data-load-more", (event) => events.push({type: event.type, detail: (event as CustomEvent).detail}));
 (window as unknown as {dataFixture: {events: typeof events}}).dataFixture = {events};
