@@ -660,6 +660,10 @@ class InteractionControllerImpl implements InteractionController {
     if (before.status !== 'active') return failure(before.status === 'revoked' ? 'runtime.interaction-revoked' : 'runtime.interaction-disposed', 'The region is no longer active.');
     const host = this.readHost(before);
     if (!host.ok) return host;
+    // The initial host read is part of the event's bounded work. A synchronous
+    // host context reader can consume the entire budget before the idempotent
+    // receipt path below; never let that path bypass the event deadline.
+    if (this.deadlineExpired(deadline, controller)) return failure('runtime.interaction-budget', 'The interaction exceeded its bounded event time budget.');
     // Idempotent receipts still expose state, so authorize the current host
     // before returning a remembered event's snapshot.
     const identity = eventIdentity(event, sourcePortId);

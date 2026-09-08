@@ -4,7 +4,7 @@ import {createRegionStore, type RegionAuthority} from '../../packages/runtime/sr
 import {createResultStore, type ResultBeginInput, type ResultEvent, type ResultHandle} from '../../packages/runtime/src/results/index.js';
 import {createLocalDataService, type DataRecord, type LocalSnapshot, type QueryBudget} from '../../packages/runtime/src/data/index.js';
 import {createStandardFunctionRegistry} from '../../packages/core/src/index.js';
-import type {Catalog, QuerySpec, ResultRef} from '../../packages/core/src/index.js';
+import type {Catalog, QuerySpec, ResultRef, Task} from '../../packages/core/src/index.js';
 
 const budget: QueryBudget = {maxRows: 100, maxBytes: 500_000, maxMessages: 32, maxMilliseconds: 10_000, maxColumns: 20};
 const registry = createStandardFunctionRegistry();
@@ -45,6 +45,48 @@ async function localResult(): Promise<{readonly handle: ResultHandle; readonly r
   return {handle, ref};
 }
 
+const temporalCatalog: Catalog = {
+  version: '1', revision: 'interaction-temporal-catalog-1', functionRegistryDigest: functionRegistry.digest,
+  entities: [{id: 'events', label: 'Events', identity: ['id'], rowGrain: ['id'], fields: [
+    {id: 'id', label: 'ID', type: {value: 'text', nullable: false}, role: 'identity'},
+    {id: 'occurredAt', label: 'Occurred at', type: {value: 'instant', nullable: false, temporal: {calendar: 'gregorian', timezone: 'UTC', grain: 'day'}}, role: 'time'},
+    {id: 'department', label: 'Department', type: {value: 'text', nullable: false}, role: 'dimension'},
+  ]}], relationships: [], meanings: [], capabilities: [],
+};
+const temporalRows: DataRecord[] = [
+  {id: 'a', occurredAt: '2026-01-05T00:00:00Z', department: 'A'},
+  {id: 'b', occurredAt: '2026-02-05T00:00:00Z', department: 'B'},
+];
+const temporalQuery = (period?: NonNullable<QuerySpec['period']>): QuerySpec => ({entity: 'events', fields: ['id', 'occurredAt', 'department'], measures: [], relations: [], groupBy: [], population: {kind: 'all-authorized'}, order: [],
+  ...(period === undefined ? {} : {period, timeBucket: {field: 'occurredAt', grain: 'day'}})});
+const temporalTask = (querySpec: QuerySpec): Extract<Task, {readonly kind: 'data'}> => ({version: '1', id: 'temporal-interaction-task', revision: '1', catalogRevision: temporalCatalog.revision,
+  functionRegistryDigest: temporalCatalog.functionRegistryDigest, regionId: 'temporal-region', goal: 'Filter events by period', kind: 'data',
+  needs: [], assumptions: [], outputs: [{id: 'rows', kind: 'query', query: querySpec, dependsOn: [], delivery: 'eager'}]});
+
+async function temporalResult(querySpec: QuerySpec): Promise<{readonly handle: ResultHandle; readonly ref: ResultRef}> {
+  const service = createLocalDataService({snapshot: {catalog: temporalCatalog, sourceRevision: 'interaction-temporal-source', records: {events: temporalRows}}, functionRegistry});
+  const planned = await service.plan({version: '1', requestId: 'interaction-temporal-query', target: {outputId: 'rows'}, catalogRevision: temporalCatalog.revision, query: querySpec, budget});
+  if (!planned.ok) throw new Error(planned.diagnostics[0]!.message);
+  const events: ResultEvent[] = [];
+  for await (const event of service.execute(planned.value)) events.push(event);
+  const descriptor = events.find((event) => event.kind === 'descriptor');
+  if (descriptor?.kind !== 'descriptor') throw new Error('Temporal local data did not produce a descriptor.');
+  const ref = descriptor.descriptor.ref;
+  const population = descriptor.descriptor.counts.population;
+  const populationDigest = population.kind === 'unknown' ? undefined : population.populationDigest;
+  const input: ResultBeginInput = {
+    principalKey: 'principal-temporal', scopeDigest: ref.scopeDigest, policyRevision: 'policy-temporal', queryDigest: ref.queryDigest,
+    catalogRevision: temporalCatalog.revision, functionRegistryDigest: temporalCatalog.functionRegistryDigest, sourceRevision: 'interaction-temporal-source',
+    outputId: ref.outputId, taskId: descriptor.descriptor.taskId, requestId: 'interaction-temporal-result', ...(populationDigest === undefined ? {} : {populationDigest}),
+  };
+  const store = createResultStore();
+  const handle = store.begin(input);
+  async function* source(): AsyncGenerator<unknown> { yield* events; }
+  for await (const _update of handle.subscribe(source())) { /* consume the real ResultStore stream */ }
+  if (!['ready', 'partial'].includes(handle.snapshot().status)) throw new Error(`Temporal result did not materialize: ${handle.snapshot().status}`);
+  return {handle, ref};
+}
+
 function graphFor(payload: InteractionPayload['kind'] = 'selection'): InteractionGraphDefinition {
   const selection = {payload: 'selection' as const, entity: 'events', identity: ['id'], grain: ['id'], type: {value: 'text' as const, nullable: false}};
   const other = {payload};
@@ -54,8 +96,8 @@ function graphFor(payload: InteractionPayload['kind'] = 'selection'): Interactio
   return {nodes: [{id: 'view', ports: [{id: 'input', direction: 'output', ...other}]}], links: [], mappings: []};
 }
 
-function event(regionRevision: string, payload: InteractionPayload, eventId: string, originNodeId = 'view'): InteractionEvent {
-  return {eventId, causationId: `cause-${eventId}`, regionId: 'region-1', regionRevision, originNodeId, payload};
+function event(regionRevision: string, payload: InteractionPayload, eventId: string, originNodeId = 'view', regionId = 'region-1'): InteractionEvent {
+  return {eventId, causationId: `cause-${eventId}`, regionId, regionRevision, originNodeId, payload};
 }
 
 async function harness() {
@@ -95,6 +137,44 @@ async function harness() {
   return {authority, result, store, region, controller};
 }
 
+async function temporalHarness() {
+  const initial = await temporalResult(temporalQuery());
+  let authority: RegionAuthority = {
+    principalKey: 'principal-temporal', scopeDigest: initial.ref.scopeDigest, policyRevision: 'policy-temporal', catalogRevision: temporalCatalog.revision,
+    experienceRevision: 'experience-temporal-1', functionRegistryDigest: temporalCatalog.functionRegistryDigest, results: [initial.ref],
+  };
+  const task = temporalTask(temporalQuery());
+  const store = createRegionStore({readAuthority: () => ({ok: true as const, value: authority}), authorizeCommit: async () => ({ok: true as const, value: undefined})});
+  const created = store.create({id: 'temporal-region', state: {task}});
+  if (!created.ok) throw new Error(created.diagnostics[0]!.message);
+  const region = created.value;
+  const rangeShape = {payload: 'range' as const};
+  const graph = createInteractionGraph({nodes: [{id: 'calendar', ports: [{id: 'range', direction: 'output', ...rangeShape}]}], links: [], mappings: []});
+  let current = initial;
+  let materializeCalls = 0;
+  const readContext = (): InteractionHostContext => ({principalKey: authority.principalKey, draftDomain: 'events', actor: {id: 'user-temporal', kind: 'user'}, grants: ['experience.commit', 'result.inspect'],
+    scopeDigest: authority.scopeDigest, policyRevision: authority.policyRevision, catalogRevision: temporalCatalog.revision,
+    experienceRevision: authority.experienceRevision, functionRegistryDigest: temporalCatalog.functionRegistryDigest, results: [initial.ref]});
+  const controller = createInteractionController({
+    region, graph, readContext,
+    resolveResult: (ref) => ref.id === initial.ref.id ? initial.handle : undefined,
+    validateScope: (payload) => payload.kind === 'range' && payload.outputId === 'rows' && payload.range?.calendar === 'gregorian' && payload.range.timezone === 'UTC'
+      ? {ok: true, value: undefined}
+      : {ok: false, diagnostics: [{code: 'host.calendar-policy', message: 'The range calendar is not authorized.', retryable: false}]},
+    materialize: async (payloads, context, next) => {
+      materializeCalls++;
+      const range = payloads[0];
+      if (range?.kind !== 'range') throw new Error('Expected a range payload.');
+      const fresh = await temporalResult(temporalQuery(range.range ?? undefined));
+      current = fresh;
+      authority = {...authority, results: [initial.ref, fresh.ref]};
+      const nextTask = temporalTask(temporalQuery(range.range ?? undefined));
+      return {ok: true, value: {state: {task: nextTask, interaction: next}, resultHandles: [initial.handle, fresh.handle]}};
+    },
+  });
+  return {authority: () => authority, initial, get current() { return current; }, get materializeCalls() { return materializeCalls; }, store, region, controller};
+}
+
 describe('runtime interaction controller', () => {
   it('uses a real local-data and ResultStore population for selection and filter state', async () => {
     const {region, controller, result} = await harness();
@@ -104,6 +184,107 @@ describe('runtime interaction controller', () => {
     expect(filtered.ok).toBe(true);
     if (filtered.ok) expect(filtered.value.state.values.some((entry) => entry.payload.kind === 'filter' && entry.payload.outputId === 'rows')).toBe(true);
     expect(controller.state().regionRevision).toBe(region.snapshot().regionRevision);
+  });
+
+  it('materializes a temporal range through the real local ADC and changes rows', async () => {
+    const temporal = await temporalHarness();
+    const period = {from: '2026-01-01T00:00:00Z', toExclusive: '2026-02-01T00:00:00Z', calendar: 'gregorian', timezone: 'UTC', interpretation: 'UTC calendar month'} as const;
+    const before = temporal.region.snapshot();
+    expect(temporal.initial.handle.snapshot().batches.flatMap((batch) => batch.rows)).toHaveLength(2);
+    const accepted = await temporal.controller.dispatch(event(before.regionRevision,
+      {kind: 'range', field: 'occurredAt', range: period, outputId: 'rows'}, 'temporal-range', 'calendar', 'temporal-region'), {sourcePortId: 'range'});
+    expect(accepted).toMatchObject({ok: true, value: {noop: false}});
+    expect(temporal.current.handle.snapshot().batches.flatMap((batch) => batch.rows)).toHaveLength(1);
+    const temporalTaskState = temporal.region.snapshot().state?.task;
+    expect(temporalTaskState?.kind).toBe('data');
+    const temporalOutput = temporalTaskState?.kind === 'data' ? temporalTaskState.outputs[0] : undefined;
+    expect(temporalOutput?.kind).toBe('query');
+    if (temporalOutput?.kind === 'query') expect(temporalOutput.query.period).toEqual(period);
+    expect(temporal.controller.state().values.some((entry) => entry.payload.kind === 'range' && entry.payload.field === 'occurredAt')).toBe(true);
+    expect(temporal.materializeCalls).toBe(1);
+    temporal.controller.dispose();
+    temporal.store.dispose();
+  });
+
+  it('denies a mismatched range calendar before materialization and preserves state', async () => {
+    const temporal = await temporalHarness();
+    const before = temporal.region.snapshot();
+    const rejected = await temporal.controller.dispatch(event(before.regionRevision,
+      {kind: 'range', field: 'occurredAt', range: {from: '2026-01-01T00:00:00Z', toExclusive: '2026-02-01T00:00:00Z', calendar: 'iso8601', timezone: 'UTC', interpretation: 'Wrong calendar'}, outputId: 'rows'}, 'wrong-calendar', 'calendar', 'temporal-region'), {sourcePortId: 'range'});
+    expect(rejected).toMatchObject({ok: false, diagnostics: [{code: 'host.calendar-policy'}]});
+    expect(temporal.materializeCalls).toBe(0);
+    expect(temporal.region.snapshot()).toEqual(before);
+    temporal.controller.dispose();
+    temporal.store.dispose();
+  });
+
+  it('rejects a page cursor from a different query generation before validation', async () => {
+    const {region, result, authority, store} = await harness();
+    let validated = false;
+    const controller = createInteractionController({
+      region,
+      graph: createInteractionGraph(graphFor('page')),
+      readContext: () => ({principalKey: authority.principalKey, draftDomain: 'events', actor: {id: 'user-a', kind: 'user'}, grants: ['experience.commit', 'result.inspect'],
+        scopeDigest: authority.scopeDigest, policyRevision: authority.policyRevision, catalogRevision: catalog.revision,
+        experienceRevision: authority.experienceRevision, functionRegistryDigest: catalog.functionRegistryDigest, results: [result.ref]}),
+      resolveResult: () => result.handle,
+      validateScope: () => { validated = true; return {ok: true, value: undefined}; },
+    });
+    const before = region.snapshot();
+    const rejected = await controller.dispatch(event(before.regionRevision,
+      {kind: 'page', outputId: result.ref.outputId, cursor: 'cursor-next', queryDigest: 'stale-query'}, 'stale-page'), {sourcePortId: 'input'});
+    expect(rejected).toMatchObject({ok: false, diagnostics: [{code: 'runtime.interaction-stale'}]});
+    expect(validated).toBe(false);
+    expect(region.snapshot().state).toEqual(before.state);
+    controller.dispose();
+    store.dispose();
+  });
+
+  it('preserves the committed draft and task layout on an entity revision conflict', async () => {
+    const {region, result, authority, store} = await harness();
+    const controller = createInteractionController({
+      region,
+      graph: createInteractionGraph(graphFor('draft')),
+      readContext: () => ({principalKey: authority.principalKey, draftDomain: 'events', actor: {id: 'user-a', kind: 'user'}, grants: ['experience.commit', 'draft.edit'],
+        scopeDigest: authority.scopeDigest, policyRevision: authority.policyRevision, catalogRevision: catalog.revision,
+        experienceRevision: authority.experienceRevision, functionRegistryDigest: catalog.functionRegistryDigest, results: [result.ref]}),
+      validateDraft: () => ({ok: true, value: undefined}),
+    });
+    const firstRevision = region.snapshot().regionRevision;
+    const firstDraft = {kind: 'draft' as const, entity: 'events', key: 'a', field: 'department', value: 'C', entityRevision: 'entity-1'};
+    const first = await controller.dispatch(event(firstRevision, firstDraft, 'draft-first'), {sourcePortId: 'input'});
+    expect(first).toMatchObject({ok: true, value: {noop: false}});
+    const afterFirst = region.snapshot();
+    const taskAfterFirst = afterFirst.state?.task;
+    const conflictingDraft = {kind: 'draft' as const, entity: 'events', key: 'a', field: 'department', value: 'D', entityRevision: 'entity-2'};
+    const rejected = await controller.dispatch(event(afterFirst.regionRevision, conflictingDraft, 'draft-conflict'), {sourcePortId: 'input'});
+    expect(rejected).toMatchObject({ok: false, diagnostics: [{code: 'runtime.interaction-stale'}]});
+    expect(region.snapshot().state?.task).toEqual(taskAfterFirst);
+    expect(region.snapshot().state?.interaction?.drafts).toMatchObject([{domain: 'events', entity: 'events', key: 'a', field: 'department', value: 'C', entityRevision: 'entity-1'}]);
+    controller.dispose();
+    store.dispose();
+  });
+
+  it('denies an undeclared navigation destination before emitting a navigation effect', async () => {
+    const {region, result, authority, store} = await harness();
+    let navigated = false;
+    const controller = createInteractionController({
+      region,
+      graph: createInteractionGraph(graphFor('navigate')),
+      readContext: () => ({principalKey: authority.principalKey, draftDomain: 'events', actor: {id: 'user-a', kind: 'user'}, grants: ['navigation.propose'],
+        scopeDigest: authority.scopeDigest, policyRevision: authority.policyRevision, catalogRevision: catalog.revision,
+        experienceRevision: authority.experienceRevision, functionRegistryDigest: catalog.functionRegistryDigest, results: [result.ref]}),
+      validateNavigation: () => ({ok: false, diagnostics: [{code: 'host.navigation', message: 'The destination is not declared by the application.', retryable: false}]}),
+      onNavigate: () => { navigated = true; return {ok: true, value: undefined}; },
+    });
+    const before = region.snapshot();
+    const rejected = await controller.dispatch(event(before.regionRevision,
+      {kind: 'navigate', route: {id: 'screen.unknown', revision: '1'}, params: {}}, 'unknown-navigation'), {sourcePortId: 'input'});
+    expect(rejected).toMatchObject({ok: false, diagnostics: [{code: 'host.navigation'}]});
+    expect(navigated).toBe(false);
+    expect(region.snapshot()).toEqual(before);
+    controller.dispose();
+    store.dispose();
   });
 
   it('rejects an identity outside the real materialized result population', async () => {
@@ -180,6 +361,35 @@ describe('runtime interaction controller', () => {
     expect(collision).toMatchObject({ok: false, diagnostics: [{code: 'runtime.interaction-invalid'}]});
     controller.dispose();
     store.dispose();
+  });
+
+  it('applies the event deadline to a successful duplicate receipt', async () => {
+    const fixture = await harness();
+    fixture.controller.dispose();
+    let slow = false;
+    const controller = createInteractionController({
+      region: fixture.region,
+      graph: createInteractionGraph(graphFor()),
+      maxEventMilliseconds: 10,
+      readContext: () => {
+        if (slow) {
+          const until = Date.now() + 30;
+          while (Date.now() < until) { /* deliberately block the event loop */ }
+        }
+        return {principalKey: fixture.authority.principalKey, draftDomain: 'events', actor: {id: 'user-a', kind: 'user'}, grants: ['experience.commit', 'result.inspect'],
+          scopeDigest: fixture.authority.scopeDigest, policyRevision: fixture.authority.policyRevision, catalogRevision: catalog.revision,
+          experienceRevision: fixture.authority.experienceRevision, functionRegistryDigest: fixture.authority.functionRegistryDigest, results: [fixture.result.ref]};
+      },
+      resolveResult: () => fixture.result.handle,
+      validateSelection: () => ({ok: true, value: undefined}),
+    });
+    const input = event(fixture.region.snapshot().regionRevision,
+      {kind: 'selection', selection: {mode: 'ids', entity: 'events', keys: ['a'], result: fixture.result.ref}}, 'deadline-duplicate');
+    expect(await controller.dispatch(input, {sourcePortId: 'input'})).toMatchObject({ok: true, value: {noop: false}});
+    slow = true;
+    expect(await controller.dispatch(input, {sourcePortId: 'input'})).toMatchObject({ok: false, diagnostics: [{code: 'runtime.interaction-budget'}]});
+    controller.dispose();
+    fixture.store.dispose();
   });
 
   it('admits no more synchronous pending events than the queue budget', async () => {
