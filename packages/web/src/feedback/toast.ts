@@ -23,7 +23,8 @@ export class AeliqoToastElement extends AeliqoFoundationElement {
   protected override updated(changed: Map<string, unknown>): void {
     if (!changed.has("open") && !changed.has("duration") && !changed.has("tone")) return;
     clearTimeout(this.timer);
-    if (this.open && this.tone !== "danger" && this.duration > 0) this.timer = setTimeout(() => this.dismiss(), this.duration);
+    const duration = Number.isFinite(this.duration) ? Math.min(60_000, Math.max(0, this.duration)) : 0;
+    if (this.open && this.tone !== "danger" && duration > 0) this.timer = setTimeout(() => this.dismiss(), duration);
   }
   disconnectedCallback(): void { clearTimeout(this.timer); super.disconnectedCallback(); }
   private dismiss(): void { if (emitAction(this, "aeliqo-toast-dismiss", {})) this.open = false; }

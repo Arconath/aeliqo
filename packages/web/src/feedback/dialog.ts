@@ -1,6 +1,6 @@
 import {css, html, nothing} from "lit";
 import {AeliqoFoundationElement, aeliqoFoundationThemeStyles} from "../foundation/base.js";
-import {activeElement, focusFirst, focusLast, nextFrame, restoreFocus, emitAction} from "../navigation/shared.js";
+import {activeElement, focusFirst, focusLast, nextFrame, restoreFocus, emitAction, safeElementId} from "../navigation/shared.js";
 import {aeliqoFeedbackStyles} from "./shared.js";
 
 export class AeliqoDialogElement extends AeliqoFoundationElement {
@@ -51,7 +51,7 @@ export class AeliqoDialogElement extends AeliqoFoundationElement {
   }
 
   protected override render() {
-    const headingId = `${this.id || "aeliqo-dialog"}-heading`;
+    const headingId = safeElementId(`${this.id || "aeliqo-dialog"}-heading`, "aeliqo-dialog-heading");
     return html`<dialog part="dialog" aria-labelledby=${headingId} @cancel=${this.cancel} @keydown=${this.keydown}>
       <header part="header"><h2 id=${headingId}>${this.heading}</h2><button part="close" type="button" aria-label="Close" @click=${() => this.close()}>×</button></header>
       <div part="content"><slot></slot></div>

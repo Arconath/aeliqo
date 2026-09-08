@@ -1,6 +1,6 @@
 import {css, html, nothing} from "lit";
 import {AeliqoFoundationElement, aeliqoFoundationThemeStyles} from "../foundation/base.js";
-import {aeliqoNavigationStyles, activeElement, focusFirst, focusLast, restoreFocus, listenOutside, emitAction} from "./shared.js";
+import {aeliqoNavigationStyles, activeElement, focusFirst, focusLast, restoreFocus, listenOutside, emitAction, safeElementId} from "./shared.js";
 
 export interface AeliqoMenuItem {
   readonly id: string;
@@ -68,7 +68,7 @@ export class AeliqoMenuElement extends AeliqoFoundationElement {
   }
 
   protected override render() {
-    const menuId = `${this.id || "aeliqo-menu"}-items`;
+    const menuId = safeElementId(`${this.id || "aeliqo-menu"}-items`, "aeliqo-menu-items");
     return html`<button part="trigger" type="button" aria-haspopup="menu" aria-expanded=${this.open ? "true" : "false"} aria-controls=${menuId} @click=${() => { this.returnFocus ??= activeElement(this); this.open = !this.open; }}>${this.label}</button>
       <div part="menu" id=${menuId} role="menu" aria-label=${this.label} ?hidden=${!this.open}>
         ${this.items.map((item, index) => html`<button part="item" type="button" role="menuitem" data-menu-id=${item.id} ?disabled=${item.disabled ?? false} tabindex=${index === 0 ? "0" : "-1"} @click=${() => this.activate(item)} @keydown=${(event: KeyboardEvent) => this.keydown(event, index)}>${item.label}</button>`)}

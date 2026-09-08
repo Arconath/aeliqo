@@ -1,6 +1,6 @@
 import {css, html} from "lit";
 import {AeliqoFoundationElement, aeliqoFoundationThemeStyles} from "../foundation/base.js";
-import {activeElement, focusFirst, nextFrame, restoreFocus, emitAction} from "../navigation/shared.js";
+import {activeElement, focusFirst, nextFrame, restoreFocus, emitAction, safeElementId} from "../navigation/shared.js";
 import {aeliqoFeedbackStyles} from "./shared.js";
 
 export type AeliqoDrawerMode = "inline" | "modal";
@@ -44,7 +44,7 @@ export class AeliqoDrawerElement extends AeliqoFoundationElement {
 
   private close(): void { if (emitAction(this, "aeliqo-drawer-close", {})) this.open = false; }
   protected override render() {
-    const headingId = `${this.id || "aeliqo-drawer"}-heading`;
+    const headingId = safeElementId(`${this.id || "aeliqo-drawer"}-heading`, "aeliqo-drawer-heading");
     if (this.mode === "modal") return html`<dialog part="modal" data-side=${this.side} aria-labelledby=${headingId} @cancel=${(event: Event) => { event.preventDefault(); this.close(); }}>
       <header part="header"><h2 id=${headingId}>${this.heading}</h2><button part="close" type="button" aria-label="Close" @click=${() => this.close()}>×</button></header><div part="content"><slot></slot></div>
     </dialog>`;
