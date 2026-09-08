@@ -85,13 +85,14 @@
     "build:studio": "pnpm build:platform && pnpm build:devtools && tsc -p apps/studio/tsconfig.json && pnpm --filter @aeliqo/studio build",
     "test:studio": "pnpm build:devtools && vitest run --config tests/studio/vitest.config.mjs && tsc -p tests/studio/tsconfig.json",
     "test:studio:browser": "playwright test --config tests/studio/playwright.config.mjs",
-    "build:site": "pnpm build:platform && pnpm --filter @aeliqo/site build",
-    "test:site": "pnpm build:platform && vitest run --config tests/site/vitest.config.mjs && tsc -p tests/site/tsconfig.json && tsc -p apps/site/tsconfig.json",
+    "build:site": "pnpm build:platform && pnpm build:agent && pnpm --filter @aeliqo/site build",
+    "test:site": "pnpm build:platform && pnpm build:agent && vitest run --config tests/site/vitest.config.mjs && tsc -p tests/site/tsconfig.json && tsc -p apps/site/tsconfig.json",
     "test:site:browser": "playwright test --config tests/site/playwright.config.mjs",
     "test:studio:consumers": "node tests/studio-consumers/studio-tarballs.mjs",
     "test:agent-evaluation:host": "pnpm build:agent && vitest run --config tests/agent-evaluation/vitest.config.mjs && tsc -p tests/agent-evaluation/tsconfig.json",
-    "test:security": "pnpm build:agent && vitest run --config tests/security/vitest.config.mjs && tsc -p tests/security/tsconfig.json",
-    "test:performance:bundles": "node tests/performance/bundles.mjs"
+    "test:security": "pnpm build:agent && pnpm --filter @aeliqo/testkit build && vitest run --config tests/security/vitest.config.mjs && tsc -p tests/security/tsconfig.json",
+    "test:performance:bundles": "node tests/performance/bundles.mjs",
+    "build:testkit": "pnpm build:runtime && pnpm --filter @aeliqo/testkit build"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
@@ -118,7 +119,8 @@
     "@aeliqo/web": "workspace:*",
     "@aeliqo/react": "workspace:*",
     "@aeliqo/agent": "workspace:*",
-    "@aeliqo/devtools": "workspace:*"
+    "@aeliqo/devtools": "workspace:*",
+    "@aeliqo/testkit": "workspace:*"
   },
   "packageManager": "pnpm@11.24.0",
   "engines": {
