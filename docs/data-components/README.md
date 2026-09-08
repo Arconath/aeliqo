@@ -8,8 +8,9 @@ states where those states apply.
 
 `Metric` renders one validated value with its unit and visible scope.
 `Delta` requires an explicitly compatible baseline. Its `absolute`, `relative`
-and `percentage-point` modes remain distinct, and a missing or zero baseline
-is unavailable instead of being treated as zero. Terminating decimal ratios
+and `percentage-point` modes remain distinct. A missing baseline is unavailable;
+a zero baseline is valid for absolute and percentage-point changes, but relative
+change is unavailable because its denominator would be zero. Terminating decimal ratios
 remain exact; repeating ratios are unavailable instead of being silently
 rounded. `KeyValue` uses a native definition list. `Detail` keeps the selected
 record's stable identity and renders declared fields even when a field is
@@ -49,7 +50,12 @@ inherited scope, and emits only after the user activates **Apply**. Field
 options may include the complete core `semanticType`; when only the convenience
 `type` is supplied, entered values are still validated before emission. Unknown
 fields, invalid dates and unsafe integers are rejected. Typing and IME
-composition update a local draft and never execute a query. `SelectionSummary`
+composition update a local draft and never execute a query. Supported compound
+clauses remain visible individually; inherited predicates are visibly read-only.
+Mixed nested predicates or predicates for another entity remain read-only with
+Apply disabled rather than being reduced to a different meaning. Membership
+values use a lossless JSON array when necessary to preserve commas, empty
+strings and typed null values. `SelectionSummary`
 distinguishes observed identity selection from a server predicate selection so
 it cannot imply that loaded rows represent an unobserved global set.
 
@@ -125,3 +131,9 @@ pnpm test:data-semantic
 pnpm test:data-semantic:browser
 pnpm test:data-components:consumers
 ```
+
+The installed consumer also measures JavaScript bundles for all nine direct
+entries, including and excluding Lit. It checks the existing Metric and Table
+budgets and rejects planner, runtime, visualization or agent modules in the
+rendered component bundles. These measurements do not establish browser parse,
+execution or whole-page performance; those remain separate release checks.
