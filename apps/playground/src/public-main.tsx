@@ -6,7 +6,7 @@ import "./changelog-page.css";
 import { SiteFrame } from "./site-chrome";
 
 // Deployment-owned static configuration; local previews and SDK consumers stay off.
-if (window.location.hostname === "aeliqo.com" && window.location.protocol === "https:") {
+if (["aeliqo.com", "www.aeliqo.com"].includes(window.location.hostname) && window.location.protocol === "https:") {
   void fetch("/browser-monitoring.json", { credentials: "omit", referrerPolicy: "no-referrer", cache: "no-store" })
     .then((response) => response.ok ? response.json() : null)
     .then(async (config: { enabled?: boolean; version?: string } | null) => {
