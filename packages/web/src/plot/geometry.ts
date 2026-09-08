@@ -45,7 +45,7 @@ export function compilePlotUnit(unit:PlotUnit,result:Result,inputRows:unknown,op
    if(Object.keys(row).some(key=>!fields.has(key)))return fail('row-field','A plot row contains a field outside the authorized descriptor.');
    const values:Record<string,Scalar>=Object.create(null) as Record<string,Scalar>;
    for(const field of descriptor.fields){
-     const raw=(row as Record<string,unknown>)[field.id];
+     const raw=Object.hasOwn(row,field.id)?(row as Record<string,unknown>)[field.id]:undefined;
      const value=validateScalar(raw===undefined&&field.type.nullable?null:raw,field.type);
      if(!value.ok)return value;values[field.id]=value.value;
    }

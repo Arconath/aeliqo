@@ -65,3 +65,8 @@ Geometry budgets retain the plot limits: 10,000 loaded rows, 100,000 cells/work
 units, 50,000 marks, 4,000,000 pixels and bounded display groups. Safe density
 fallbacks retain exact accessible data and scope. No silent row dropping,
 rounding, invisible per-row DOM expansion or force simulation is permitted.
+
+Ordinary property-like field IDs such as `constructor` and `toString` remain
+valid; absent nullable fields are read as null using own-property checks. The
+wire-reserved key `__proto__` cannot be a materialized field ID; the host must
+supply a safe alias while retaining the original display label.

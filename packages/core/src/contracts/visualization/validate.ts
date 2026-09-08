@@ -65,6 +65,7 @@ export function bindVisualizationSpec(input: unknown, context: VisualizationBind
     const result = parsedResult.value;
     if (results.has(key(result.ref))) return fail('results', 'An exact result reference is repeated.');
     const fieldIds = result.fields.map(field => field.id);
+    if (fieldIds.includes('__proto__')) return fail('field', 'The reserved wire key __proto__ requires a safe host field alias.');
     if (new Set(fieldIds).size !== fieldIds.length || result.identity.length === 0 || new Set(result.identity).size !== result.identity.length
       || new Set(result.rowGrain).size !== result.rowGrain.length || result.rowGrain.length === 0
       || [...result.identity, ...result.rowGrain].some(id => !fieldIds.includes(id))

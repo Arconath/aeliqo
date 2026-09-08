@@ -69,6 +69,7 @@ describe('owned visualization family contracts', () => {
   it('rejects stale, duplicate, identity-free and falsely complete descriptors', () => {
     for (const changed of [
       {...descriptor, ref: {...descriptor.ref, revision: 'old'}}, {...descriptor, identity: []},
+      {...descriptor, fields: [...descriptor.fields, {id: '__proto__', label: 'Reserved', role: 'attribute' as const, type: {...text, nullable: true}}]},
       {...descriptor, rowGrain: ['missing']}, {...descriptor, fields: [...descriptor.fields, descriptor.fields[0]!]},
       {...descriptor, counts: {...descriptor.counts, loaded: 1, population: {kind: 'exact' as const, value: 2, populationDigest: 'population'}}},
     ]) expect(bindVisualizationSpec(fixtures[0], {results: [changed]}).ok).toBe(false);
