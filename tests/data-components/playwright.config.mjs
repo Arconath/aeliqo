@@ -8,7 +8,7 @@ const repositoryRoot = resolve(configDirectory, "../..");
 const port = await testPort("AELIQO_DATA_COMPONENTS_TEST_PORT");
 const origin = `http://127.0.0.1:${port}`;
 
-export default defineConfig({
+export default defineConfig({outputDir:"../../artifacts/data-components-browser",
   testDir: configDirectory,
   testMatch: "browser.spec.ts",
   timeout: 30_000,

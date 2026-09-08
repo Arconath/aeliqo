@@ -25,13 +25,6 @@ export const AeliqoInput = createComponent({
   displayName: "AeliqoInput",
 });
 
-export const AeliqoTable = createComponent({
-  react: React,
-  tagName: "aeliqo-table",
-  elementClass: AeliqoTableElement,
-  displayName: "AeliqoTable",
-});
-
 export const AeliqoChart = createComponent({
   react: React,
   tagName: "aeliqo-chart",
@@ -45,3 +38,12 @@ export function registerAeliqoReactElements(): void {
 }
 
 export * from "./foundation.js";
+export * from "./inputs.js";
+
+export * from "./navigation.js";
+
+export * from "./feedback.js";
+
+export * from "./data.js";
+
+export * from "./plot.js";

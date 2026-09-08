@@ -294,7 +294,30 @@ export const narrativeClaimSchema = z.discriminatedUnion('kind', [
   object({version, id: idSchema, kind: z.enum(['inference', 'hypothesis']), text: label,
     references: array(resultRefSchema)}),
 ]);
+/** Plot shape only. Fields, scales, result scope and renderer support bind separately. */
+export const plotEncodingSchema = object({
+  field: idSchema, scale: z.enum(['ordinal', 'linear', 'log', 'temporal']),
+  zero: optional(z.boolean()),
+});
+export const plotNodeSchema = z.discriminatedUnion('kind', [
+  object({kind: z.literal('unit'), mark: z.enum(['point', 'line', 'bar', 'area', 'cell', 'link', 'rect']),
+    result: resultRefSchema,
+    encoding: object({x: plotEncodingSchema, y: plotEncodingSchema,
+      x2: optional(plotEncodingSchema), y2: optional(plotEncodingSchema),
+      color: optional(plotEncodingSchema), size: optional(plotEncodingSchema),
+      series: optional(plotEncodingSchema)}),
+    missing: z.literal('gap'),
+  }),
+  object({kind: z.literal('layer'), scales: z.enum(['shared-compatible', 'independent']),
+    get children() {return nonEmpty(plotNodeSchema, 32);}}),
+  object({kind: z.literal('facet'), field: idSchema, scales: z.enum(['shared-compatible', 'independent']),
+    get child() {return plotNodeSchema;}}),
+  object({kind: z.literal('concat'), direction: z.enum(['inline', 'block']),
+    get children() {return nonEmpty(plotNodeSchema, 32);}}),
+]);
+export const plotSpecSchema = object({version, root: plotNodeSchema});
 export const contractSchemas = Object.freeze({
+  'plot-spec': plotSpecSchema,
   catalog: catalogSchema, task: taskSchema, result: resultSchema, experience: experienceSchema,
   expression: expressionSchema, query: querySchema, interaction: interactionSchema,
   'result-event': resultEventSchema, environment: environmentSchema,

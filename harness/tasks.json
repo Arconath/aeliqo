@@ -548,14 +548,17 @@
       ],
       "paths": [
         "packages/core/src/contracts/plot",
-        "packages/web/src/plot"
+        "packages/web/src/plot",
+        "tests/plot",
+        "docs/plot"
       ],
       "acceptance": [
         "Same spec/geometry feeds SVG and bounded Canvas; axes, units, gaps and accessible exact values proven."
       ],
-      "status": "planned",
+      "status": "active",
       "stage": "ready",
-      "evidence": []
+      "evidence": [],
+      "notes": "Parent owns canonical schema, semantic scale validation and shared plot integration; source implementation underway, no acceptance claim."
     },
     {
       "id": "T18",

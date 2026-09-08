@@ -1,3 +1,4 @@
+import type {PlotSpec} from './plot/index.js';
 import type * as z from 'zod/mini';
 import type {commitPreconditionsSchema, contractSchemas, diagnosticSchema, expressionSchema, fieldSchema, interactionStateSchema, meaningSchema,
   querySchema, resultRefSchema, semanticTypeSchema, valueSchema, versionRefSchema} from './schemas.js';
@@ -16,7 +17,7 @@ export type InteractionState = Wire<z.infer<typeof interactionStateSchema>>;
 export type RetainedInteractionPayload = InteractionState['values'][number]['payload'];
 export type InteractionDraft = InteractionState['drafts'][number];
 export type ContractKind = keyof typeof contractSchemas;
-export type Contract<K extends ContractKind> = Wire<z.infer<(typeof contractSchemas)[K]>>;
+export type Contract<K extends ContractKind> = K extends 'plot-spec' ? PlotSpec : Wire<z.infer<(typeof contractSchemas)[K]>>;
 export type Catalog = Contract<'catalog'>;
 export type Task = Contract<'task'>;
 export type Result = Contract<'result'>;

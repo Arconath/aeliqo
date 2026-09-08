@@ -1,7 +1,7 @@
 export {CONTRACT_VERSION, WIRE_LIMITS} from './contracts/limits.js';
 export {parseContract, parseCatalog, parseTask, parseResult, parseExperience, serializeContract} from './contracts/parse.js';
 export {inspectWire as parseWireValue} from './contracts/ingress.js';
-export {validateScalar, scalarIdentity, compareScalars} from './contracts/scalars.js';
+export {validateScalar, scalarIdentity, scalarInstantParts, compareScalars} from './contracts/scalars.js';
 export {validateCommitReadSet} from './contracts/commit.js';
 export {validateTaskStructure} from './contracts/task/index.js';
 export type {TaskStructure} from './contracts/task/index.js';
@@ -15,3 +15,4 @@ export * from './query/index.js';
 export * from './interaction/index.js';
 export * from './presentation/index.js';
 export type {OperationGrant, AgentTaskProposal, AgentBindingOutcome, AgentLoopBudget, AgentStopReason, NarrativeClaim, NarrativeCell} from './contracts/agent/index.js';
+export * from './contracts/plot/index.js';

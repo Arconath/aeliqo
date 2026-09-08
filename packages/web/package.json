@@ -100,6 +100,178 @@
     "./scroll-area": {
       "types": "./dist/foundation/scroll-area.d.ts",
       "import": "./dist/foundation/scroll-area.js"
+    },
+    "./plot": {
+      "types": "./dist/plot/index.d.ts",
+      "import": "./dist/plot/index.js"
+    },
+    "./inputs": {
+      "types": "./dist/input/index.d.ts",
+      "import": "./dist/input/index.js"
+    },
+    "./inputs/manifest": {
+      "types": "./dist/input/manifest.d.ts",
+      "import": "./dist/input/manifest.js"
+    },
+    "./text-field": {
+      "types": "./dist/input/text-field.d.ts",
+      "import": "./dist/input/text-field.js"
+    },
+    "./text-area": {
+      "types": "./dist/input/text-area.d.ts",
+      "import": "./dist/input/text-area.js"
+    },
+    "./number-field": {
+      "types": "./dist/input/number-field.d.ts",
+      "import": "./dist/input/number-field.js"
+    },
+    "./checkbox": {
+      "types": "./dist/input/checkbox.d.ts",
+      "import": "./dist/input/checkbox.js"
+    },
+    "./radio-group": {
+      "types": "./dist/input/radio-group.d.ts",
+      "import": "./dist/input/radio-group.js"
+    },
+    "./switch": {
+      "types": "./dist/input/switch.d.ts",
+      "import": "./dist/input/switch.js"
+    },
+    "./select": {
+      "types": "./dist/input/select.d.ts",
+      "import": "./dist/input/select.js"
+    },
+    "./combobox": {
+      "types": "./dist/input/combobox.d.ts",
+      "import": "./dist/input/combobox.js"
+    },
+    "./date-field": {
+      "types": "./dist/input/date-field.d.ts",
+      "import": "./dist/input/date-field.js"
+    },
+    "./date-range": {
+      "types": "./dist/input/date-range.d.ts",
+      "import": "./dist/input/date-range.js"
+    },
+    "./slider": {
+      "types": "./dist/input/slider.d.ts",
+      "import": "./dist/input/slider.js"
+    },
+    "./search-field": {
+      "types": "./dist/input/search-field.d.ts",
+      "import": "./dist/input/search-field.js"
+    },
+    "./file-input": {
+      "types": "./dist/input/file-input.d.ts",
+      "import": "./dist/input/file-input.js"
+    },
+    "./field-group": {
+      "types": "./dist/input/field-group.d.ts",
+      "import": "./dist/input/field-group.js"
+    },
+    "./form": {
+      "types": "./dist/input/form.d.ts",
+      "import": "./dist/input/form.js"
+    },
+    "./navigation": {
+      "types": "./dist/navigation/index.d.ts",
+      "import": "./dist/navigation/index.js"
+    },
+    "./tabs": {
+      "types": "./dist/navigation/tabs.d.ts",
+      "import": "./dist/navigation/tabs.js"
+    },
+    "./breadcrumb": {
+      "types": "./dist/navigation/breadcrumb.d.ts",
+      "import": "./dist/navigation/breadcrumb.js"
+    },
+    "./pagination": {
+      "types": "./dist/navigation/pagination.d.ts",
+      "import": "./dist/navigation/pagination.js"
+    },
+    "./menu": {
+      "types": "./dist/navigation/menu.d.ts",
+      "import": "./dist/navigation/menu.js"
+    },
+    "./tree-nav": {
+      "types": "./dist/navigation/tree-nav.d.ts",
+      "import": "./dist/navigation/tree-nav.js"
+    },
+    "./feedback": {
+      "types": "./dist/feedback/index.d.ts",
+      "import": "./dist/feedback/index.js"
+    },
+    "./dialog": {
+      "types": "./dist/feedback/dialog.d.ts",
+      "import": "./dist/feedback/dialog.js"
+    },
+    "./drawer": {
+      "types": "./dist/feedback/drawer.d.ts",
+      "import": "./dist/feedback/drawer.js"
+    },
+    "./popover": {
+      "types": "./dist/feedback/popover.d.ts",
+      "import": "./dist/feedback/popover.js"
+    },
+    "./tooltip": {
+      "types": "./dist/feedback/tooltip.d.ts",
+      "import": "./dist/feedback/tooltip.js"
+    },
+    "./alert": {
+      "types": "./dist/feedback/alert.d.ts",
+      "import": "./dist/feedback/alert.js"
+    },
+    "./toast": {
+      "types": "./dist/feedback/toast.d.ts",
+      "import": "./dist/feedback/toast.js"
+    },
+    "./progress": {
+      "types": "./dist/feedback/progress.d.ts",
+      "import": "./dist/feedback/progress.js"
+    },
+    "./skeleton": {
+      "types": "./dist/feedback/skeleton.d.ts",
+      "import": "./dist/feedback/skeleton.js"
+    },
+    "./empty-state": {
+      "types": "./dist/feedback/empty-state.d.ts",
+      "import": "./dist/feedback/empty-state.js"
+    },
+    "./data": {
+      "types": "./dist/data/index.d.ts",
+      "import": "./dist/data/index.js"
+    },
+    "./metric": {
+      "types": "./dist/data/metric.d.ts",
+      "import": "./dist/data/metric.js"
+    },
+    "./delta": {
+      "types": "./dist/data/delta.d.ts",
+      "import": "./dist/data/delta.js"
+    },
+    "./key-value": {
+      "types": "./dist/data/key-value.d.ts",
+      "import": "./dist/data/key-value.js"
+    },
+    "./detail": {
+      "types": "./dist/data/detail.d.ts",
+      "import": "./dist/data/detail.js"
+    },
+    "./record-list": {
+      "types": "./dist/data/record-list.d.ts",
+      "import": "./dist/data/record-list.js"
+    },
+    "./card-collection": {
+      "types": "./dist/data/card-collection.d.ts",
+      "import": "./dist/data/card-collection.js"
+    },
+    "./selection-summary": {
+      "types": "./dist/data/selection-summary.d.ts",
+      "import": "./dist/data/selection-summary.js"
+    },
+    "./filter-builder": {
+      "types": "./dist/data/filter-builder.d.ts",
+      "import": "./dist/data/filter-builder.js"
     }
   },
   "files": [
@@ -111,9 +283,15 @@
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "@aeliqo/core": "workspace:*",
     "@lit-labs/ssr": "4.1.0",
     "@lit-labs/ssr-client": "1.1.8",
-    "lit": "3.3.3",
-    "@aeliqo/core": "workspace:*"
+    "d3-scale": "4.0.2",
+    "d3-shape": "3.2.0",
+    "lit": "3.3.3"
+  },
+  "devDependencies": {
+    "@types/d3-scale": "4.0.9",
+    "@types/d3-shape": "3.2.0"
   }
 }

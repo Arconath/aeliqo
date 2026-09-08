@@ -8,5 +8,5 @@
     "sourceMap": true,
     "noEmit": false
   },
-  "include": ["src/**/*.tsx"]
+  "include": ["src/**/*.tsx", "src/**/*.ts"]
 }

@@ -1,3 +1,8 @@
+import {AeliqoMetricElement, AeliqoDeltaElement, AeliqoKeyValueElement, AeliqoDetailElement, AeliqoRecordListElement, AeliqoCardCollectionElement, AeliqoSelectionSummaryElement, AeliqoFilterBuilderElement} from "./data/index.js";
+import {AeliqoDialogElement, AeliqoDrawerElement, AeliqoPopoverElement, AeliqoTooltipElement, AeliqoAlertElement, AeliqoToastElement, AeliqoProgressElement, AeliqoSkeletonElement, AeliqoEmptyStateElement} from "./feedback/index.js";
+import {AeliqoTabsElement, AeliqoBreadcrumbElement, AeliqoPaginationElement, AeliqoMenuElement, AeliqoTreeNavElement} from "./navigation/index.js";
+import {AeliqoTextFieldElement, AeliqoTextAreaElement, AeliqoNumberFieldElement, AeliqoCheckboxElement, AeliqoRadioGroupElement, AeliqoSwitchElement, AeliqoSelectElement, AeliqoComboboxElement, AeliqoDateFieldElement, AeliqoDateRangeElement, AeliqoSliderElement, AeliqoSearchFieldElement, AeliqoFileInputElement, AeliqoFieldGroupElement, AeliqoFormElement} from "./input/index.js";
+import {AeliqoPlotElement} from "./plot/index.js";
 import {AeliqoButtonElement, AeliqoIconButtonElement, AeliqoLinkElement, AeliqoTextElement, AeliqoHeadingElement, AeliqoBadgeElement, AeliqoAvatarElement, AeliqoSeparatorElement, AeliqoSurfaceElement, AeliqoStackElement, AeliqoGridElement, AeliqoSplitPaneElement, AeliqoScrollAreaElement} from "./foundation/index.js";
 import {AeliqoChartElement} from "./elements/aeliqo-chart.js";
 import {AeliqoInputElement} from "./elements/aeliqo-input.js";
@@ -16,6 +21,48 @@ interface ElementRegistration {
 }
 
 const REGISTRATIONS: readonly ElementRegistration[] = [
+  {name: "aeliqo-metric", constructor: AeliqoMetricElement},
+  {name: "aeliqo-delta", constructor: AeliqoDeltaElement},
+  {name: "aeliqo-key-value", constructor: AeliqoKeyValueElement},
+  {name: "aeliqo-detail", constructor: AeliqoDetailElement},
+  {name: "aeliqo-record-list", constructor: AeliqoRecordListElement},
+  {name: "aeliqo-card-collection", constructor: AeliqoCardCollectionElement},
+  {name: "aeliqo-selection-summary", constructor: AeliqoSelectionSummaryElement},
+  {name: "aeliqo-filter-builder", constructor: AeliqoFilterBuilderElement},
+
+  {name: "aeliqo-dialog", constructor: AeliqoDialogElement},
+  {name: "aeliqo-drawer", constructor: AeliqoDrawerElement},
+  {name: "aeliqo-popover", constructor: AeliqoPopoverElement},
+  {name: "aeliqo-tooltip", constructor: AeliqoTooltipElement},
+  {name: "aeliqo-alert", constructor: AeliqoAlertElement},
+  {name: "aeliqo-toast", constructor: AeliqoToastElement},
+  {name: "aeliqo-progress", constructor: AeliqoProgressElement},
+  {name: "aeliqo-skeleton", constructor: AeliqoSkeletonElement},
+  {name: "aeliqo-empty-state", constructor: AeliqoEmptyStateElement},
+
+  {name: "aeliqo-tabs", constructor: AeliqoTabsElement},
+  {name: "aeliqo-breadcrumb", constructor: AeliqoBreadcrumbElement},
+  {name: "aeliqo-pagination", constructor: AeliqoPaginationElement},
+  {name: "aeliqo-menu", constructor: AeliqoMenuElement},
+  {name: "aeliqo-tree-nav", constructor: AeliqoTreeNavElement},
+
+  {name: "aeliqo-text-field", constructor: AeliqoTextFieldElement},
+  {name: "aeliqo-text-area", constructor: AeliqoTextAreaElement},
+  {name: "aeliqo-number-field", constructor: AeliqoNumberFieldElement},
+  {name: "aeliqo-checkbox", constructor: AeliqoCheckboxElement},
+  {name: "aeliqo-radio-group", constructor: AeliqoRadioGroupElement},
+  {name: "aeliqo-switch", constructor: AeliqoSwitchElement},
+  {name: "aeliqo-select", constructor: AeliqoSelectElement},
+  {name: "aeliqo-combobox", constructor: AeliqoComboboxElement},
+  {name: "aeliqo-date-field", constructor: AeliqoDateFieldElement},
+  {name: "aeliqo-date-range", constructor: AeliqoDateRangeElement},
+  {name: "aeliqo-slider", constructor: AeliqoSliderElement},
+  {name: "aeliqo-search-field", constructor: AeliqoSearchFieldElement},
+  {name: "aeliqo-file-input", constructor: AeliqoFileInputElement},
+  {name: "aeliqo-field-group", constructor: AeliqoFieldGroupElement},
+  {name: "aeliqo-form", constructor: AeliqoFormElement},
+
+  {name: "aeliqo-plot", constructor: AeliqoPlotElement},
   {name: "aeliqo-button", constructor: AeliqoButtonElement},
   {name: "aeliqo-icon-button", constructor: AeliqoIconButtonElement},
   {name: "aeliqo-link", constructor: AeliqoLinkElement},

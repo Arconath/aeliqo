@@ -23,9 +23,9 @@ const consumer = await mkdtemp(join(tmpdir(), "aeliqo-input-consumer-"));
 const consumerReal = await realpath(consumer);
 
 function run(argv, cwd, encoding = "utf8") {
-  const result = spawnSync(argv[0], argv.slice(1), {cwd, encoding, timeout: 180_000});
+  const result = spawnSync(argv[0], argv.slice(1), {cwd, encoding, timeout: 180_000, maxBuffer:64*1024*1024});
   if (result.error || result.status !== 0) {
-    throw new Error(`${argv.join(" ")} failed: ${result.error ?? ""}\n${result.stdout ?? ""}\n${result.stderr ?? ""}`);
+    throw new Error(`${argv.join(" ")} failed: ${result.error ?? ""}\n${String(result.stdout ?? "").slice(-12000)}\n${String(result.stderr ?? "").slice(-12000)}`);
   }
   return result.stdout;
 }
@@ -183,6 +183,7 @@ run([join(consumer, "node_modules/.bin/tsc"), "--project", "tsconfig.json"], con
 
 await writeFile(join(consumer, "ssr.mjs"), `
 import assert from 'node:assert/strict';
+import '@aeliqo/react/ssr';
 import {createElement} from 'react';
 import {renderToString} from 'react-dom/server';
 import {html} from 'lit';
@@ -194,6 +195,10 @@ for (const text of ['SSR name','SSR amount','SSR agree','SSR role','SSR switch',
 const reactMarkup = renderToString(createElement(AeliqoTextField, {label: 'React SSR name', value: 'Ada'}));
 assert.match(reactMarkup, /aeliqo-text-field/);
 assert.match(reactMarkup, /React SSR name/);
+assert.match(reactMarkup, /shadowrootmode="open"/);
+const secondRequest=renderToString(createElement(AeliqoTextField,{label:'Second request'}));
+assert(!secondRequest.includes('Ada'));
+assert(!secondRequest.includes('React SSR name'));
 const reactForm = renderToString(createElement(AeliqoForm, {label: 'React SSR form'}));
 assert.match(reactForm, /aeliqo-form/);
 console.log(JSON.stringify({webBytes: markup.length, reactBytes: reactMarkup.length + reactForm.length}));
@@ -299,7 +304,7 @@ try {
     const during = {queries: [...f.queryEvents], valueEvents: [...f.valueEvents]};
     comboInput.dispatchEvent(new CompositionEvent('compositionend', {bubbles: true, data: 'あ'})); await f.combo.updateComplete; await new Promise(resolve => setTimeout(resolve, 0));
     comboInput.dispatchEvent(new InputEvent('input', {bubbles: true, inputType: 'insertText', data: 'あ'})); await f.combo.updateComplete;
-    const searchInput = f.search.shadowRoot.querySelector('input[part=input]'); searchInput.value = 'new'; searchInput.dispatchEvent(new InputEvent('input', {bubbles: true, inputType: 'insertText', data: 'new'})); searchInput.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter', bubbles: true})); await f.search.updateComplete;
+    const searchInput = f.search.shadowRoot.querySelector('input[part=input]'); searchInput.value = 'new'; searchInput.dispatchEvent(new InputEvent('input', {bubbles: true, inputType: 'insertText', data: 'new'})); searchInput.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter', bubbles: true, composed: true})); await f.search.updateComplete;
     const transfer = new DataTransfer(); transfer.items.add(new File(['abc'], 'proof.txt', {type: 'text/plain'})); const fileInput = f.file.shadowRoot.querySelector('input[type=file]'); fileInput.files = transfer.files; fileInput.dispatchEvent(new Event('change', {bubbles: true})); await f.file.updateComplete;
     f.submit.click(); await f.appForm.updateComplete; f.reset.click(); await f.appForm.updateComplete;
     return {during, textEvent: f.valueEvents.at(-1), textValue: f.text.value, queryEvents: [...f.queryEvents], comboValue: f.combo.value, comboQuery: f.combo.query, searchEvents: [...f.searchEvents], files: [...f.files], submitted: f.submitted, resetCount: f.resetCount};

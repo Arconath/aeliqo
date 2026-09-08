@@ -16,3 +16,12 @@ export type {
   TableCell,
 } from "./types.js";
 export * from "./foundation/index.js";
+export * from "./plot/index.js";
+export * from "./input/index.js";
+export type {AeliqoInputChangeDetail as AeliqoFieldChangeDetail} from "./input/events.js";
+
+export * from "./navigation/index.js";
+
+export * from "./feedback/index.js";
+
+export * from "./data/index.js";

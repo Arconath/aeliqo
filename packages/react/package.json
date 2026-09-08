@@ -4,7 +4,9 @@
   "description": "Thin React bindings for Aeliqo web elements",
   "license": "Apache-2.0",
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/ssr.js"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -13,6 +15,30 @@
     "./foundation": {
       "types": "./dist/foundation.d.ts",
       "import": "./dist/foundation.js"
+    },
+    "./inputs": {
+      "types": "./dist/inputs.d.ts",
+      "import": "./dist/inputs.js"
+    },
+    "./navigation": {
+      "types": "./dist/navigation.d.ts",
+      "import": "./dist/navigation.js"
+    },
+    "./feedback": {
+      "types": "./dist/feedback.d.ts",
+      "import": "./dist/feedback.js"
+    },
+    "./data": {
+      "types": "./dist/data.d.ts",
+      "import": "./dist/data.js"
+    },
+    "./ssr": {
+      "types": "./dist/ssr.d.ts",
+      "import": "./dist/ssr.js"
+    },
+    "./plot": {
+      "types": "./dist/plot.d.ts",
+      "import": "./dist/plot.js"
     }
   },
   "files": [
@@ -29,6 +55,7 @@
   },
   "dependencies": {
     "@aeliqo/web": "workspace:*",
+    "@lit-labs/ssr-react": "0.3.4",
     "@lit/react": "1.0.8"
   }
 }
