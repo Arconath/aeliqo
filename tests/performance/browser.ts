@@ -1,15 +1,16 @@
 import {AeliqoInputElement} from "@aeliqo/web/input";
 import {AeliqoTableElement} from "@aeliqo/web/table";
 import {
-  LARGE_POPULATION_COUNT,
   LARGE_TRANSFERRED_ROW_COUNT,
   MEDIUM_ROW_COUNT,
+  MEDIUM_FIELD_COUNT,
   MEDIUM_VIEW_COUNT,
   SMALL_ROW_COUNT,
-  coldWarm,
+  firstSubsequent,
   environmentSnapshot,
   makeRows,
   runMediumPlanner,
+  runRuntimeResourceCycles,
   runTargetedReducer,
 } from "./workloads.mjs";
 
@@ -19,9 +20,9 @@ declare global {
       smallStandalone: (options?: {timed?: boolean}) => Promise<unknown>;
       mediumViews: (options?: {timed?: boolean}) => Promise<unknown>;
       targetedReducer: (options?: {timed?: boolean}) => Promise<unknown>;
-      boundedGeometry: () => Promise<unknown>;
+      boundedGeometry: (sourceUrl: string) => Promise<unknown>;
       mountDispose: () => Promise<unknown>;
-      runAll: (options?: {timed?: boolean}) => Promise<unknown>;
+      runAll: (options: {timed?: boolean; sourceUrl: string}) => Promise<unknown>;
       ready: boolean;
     };
   }
@@ -74,34 +75,40 @@ async function smallOnce(): Promise<{readonly rowCount: number; readonly rendere
   return {rowCount: rows.length, renderedRows, inputValue: input?.value ?? ""};
 }
 
-async function mediumOnce(): Promise<{readonly rowCount: number; readonly views: number; readonly virtualRows: number; readonly plan: ReturnType<typeof runMediumPlanner>}> {
+async function mediumOnce(): Promise<{readonly rowCount: number; readonly rowFieldCount: number; readonly views: number; readonly virtualRows: number; readonly plan: ReturnType<typeof runMediumPlanner>}> {
   resetFixture();
-  const rows = makeRows(MEDIUM_ROW_COUNT);
+  const rows = makeRows(MEDIUM_ROW_COUNT, MEDIUM_FIELD_COUNT);
   const views = Array.from({length: MEDIUM_VIEW_COUNT}, () => table(rows, true, MEDIUM_ROW_COUNT));
   await Promise.all(views.map((view) => settle(view)));
   const virtualRows = views.reduce((total, view) => total + (view.shadowRoot?.querySelectorAll("tbody tr").length ?? 0), 0);
   const plan = runMediumPlanner();
-  return {rowCount: rows.length, views: views.length, virtualRows, plan};
+  return {rowCount: rows.length, rowFieldCount: MEDIUM_FIELD_COUNT, views: views.length, virtualRows, plan};
 }
 
-async function largeOnce(): Promise<{readonly populationRows: number; readonly transferredRows: number; readonly mountedRows: number; readonly totalRows: number}> {
+async function largeOnce(sourceUrl: string): Promise<{readonly populationRows: number; readonly requestedRows: number; readonly transferredRows: number; readonly mountedRows: number; readonly totalRows: number; readonly executedRows: number; readonly examinedRows: number; readonly transportBytes: number; readonly responseBodyBytes: number}> {
   resetFixture();
-  const rows = makeRows(LARGE_TRANSFERRED_ROW_COUNT);
-  const dataTable = table(rows, true, LARGE_POPULATION_COUNT);
+  const response = await fetch(`${sourceUrl.replace(/\/$/u, "")}/rows?limit=${LARGE_TRANSFERRED_ROW_COUNT}&cursor=page-1`, {cache: "no-store"});
+  if (!response.ok) throw new Error(`large source fixture returned ${response.status}`);
+  const responseBuffer = await response.arrayBuffer();
+  const payload = JSON.parse(new TextDecoder().decode(responseBuffer)) as {populationRows: number; requestedRows: number; executedRows: number; examinedRows: number; records: Array<Record<string, string | number>>};
+  const rows = payload.records;
+  const dataTable = table(rows, true, payload.populationRows);
   await settle(dataTable);
   const mountedRows = dataTable.shadowRoot?.querySelectorAll("tbody tr").length ?? 0;
-  return {populationRows: LARGE_POPULATION_COUNT, transferredRows: rows.length, mountedRows, totalRows: dataTable.totalRows ?? 0};
+  return {populationRows: payload.populationRows, requestedRows: payload.requestedRows, transferredRows: rows.length, mountedRows,
+    totalRows: dataTable.totalRows ?? 0, executedRows: payload.executedRows, examinedRows: payload.examinedRows,
+    transportBytes: Number(response.headers.get("content-length") ?? 0), responseBodyBytes: responseBuffer.byteLength};
 }
 
 async function measured(label: string, once: () => Promise<unknown>, timed: boolean): Promise<unknown> {
   if (!timed) return once();
-  const measurement = await coldWarm(label, async () => { await once(); }, {coldCount: 2, warmCount: 5});
+  const measurement = await firstSubsequent(label, async () => { await once(); });
   const sample = await once();
   return {sample, measurement};
 }
 
-async function boundedGeometry(): Promise<unknown> {
-  const result = await largeOnce();
+async function boundedGeometry(sourceUrl: string): Promise<unknown> {
+  const result = await largeOnce(sourceUrl);
   const dataTable = root.querySelector("aeliqo-table") as TestTable | null;
   const bodyRows = dataTable?.shadowRoot?.querySelectorAll("tbody tr") ?? [];
   const rects = [...bodyRows].map((row) => row.getBoundingClientRect());
@@ -110,6 +117,12 @@ async function boundedGeometry(): Promise<unknown> {
 
 async function mountDispose(): Promise<unknown> {
   resetFixture();
+  const heapMemory = (): number | undefined => {
+    const memory = (performance as Performance & {memory?: {readonly usedJSHeapSize?: number}}).memory;
+    return memory?.usedJSHeapSize;
+  };
+  const heapBefore = heapMemory();
+  const heapSamples: Array<{readonly cycle: number; readonly usedBytes?: number}> = [];
   let activeListeners = 0;
   let trackedRegistrations = 0;
   let listenerId = 0;
@@ -144,6 +157,7 @@ async function mountDispose(): Promise<unknown> {
       root.append(field);
       await field.updateComplete;
       field.remove();
+      if ((cycle + 1) % 20 === 0) heapSamples.push({cycle: cycle + 1, usedBytes: heapMemory()});
     }
   } finally {
     EventTarget.prototype.addEventListener = originalAdd;
@@ -156,25 +170,31 @@ async function mountDispose(): Promise<unknown> {
   }
   const detachedRegistrations = Math.max(0, trackedRegistrations - activeListeners);
   trackedTargets.clear();
-  return {cycles: 100, activeListeners, detachedRegistrations, remainingElements: root.children.length, bounded: activeListeners === 0 && root.children.length === 0};
+  const resources = runRuntimeResourceCycles(100);
+  const heapAfter = heapMemory();
+  return {cycles: 100, activeListeners, detachedRegistrations, remainingElements: root.children.length, resources,
+    heap: {supported: heapBefore !== undefined && heapAfter !== undefined, beforeBytes: heapBefore, afterBytes: heapAfter, samples: heapSamples,
+      deltaBytes: heapBefore === undefined || heapAfter === undefined ? undefined : heapAfter - heapBefore},
+    bounded: activeListeners === 0 && root.children.length === 0 && resources.bounded};
 }
 
 async function targetedReducer(options: {timed?: boolean} = {}): Promise<unknown> {
   if (!options.timed) return runTargetedReducer();
-  return coldWarm("targeted-reducer", () => runTargetedReducer(), {coldCount: 2, warmCount: 5});
+  return firstSubsequent("targeted-reducer", () => runTargetedReducer());
 }
 
-async function runAll(options: {timed?: boolean} = {}): Promise<unknown> {
+async function runAll(options: {timed?: boolean; sourceUrl?: string} = {}): Promise<unknown> {
+  if (options.sourceUrl === undefined) throw new Error("A large workload source URL is required; metadata-only population probes are not accepted.");
   const timed = options.timed === true;
   const started = performance.now();
   const small = await measured("small-standalone", smallOnce, timed);
   const medium = await measured("medium-planner-and-views", mediumOnce, timed);
-  const large = await measured("large-bounded-window", largeOnce, timed);
+  const large = await measured("large-bounded-source-window", () => largeOnce(options.sourceUrl!), timed);
   const reducer = await targetedReducer({timed});
-  const geometry = await boundedGeometry();
+  const geometry = await boundedGeometry(options.sourceUrl);
   const cleanup = await mountDispose();
   return {environment: environmentSnapshot(), elapsedMs: performance.now() - started, small, medium, large, reducer, geometry, cleanup,
-    notes: ["Cold and warm samples are isolated within one browser tab.", "Layout and paint evidence belongs to the Playwright trace; requestAnimationFrame is not used as a paint measurement.", "Large workload transfers 100 rows while declaring a 1,000,000-row population.", "The teardown probe counts connected listeners separately from detached shadow-root registrations released with their owning elements."]};
+    notes: ["First/subsequent samples reuse one already-loaded browser page; they do not claim a process or HTTP-cache cold start.", "Layout and paint evidence belongs to the Chromium timeline trace; requestAnimationFrame/updateComplete is not used as a paint measurement.", "Large workload fetches 100 records from a local HTTP source fixture whose declared population is 1,000,000 rows, and records executed rows and Content-Length.", "The teardown probe counts connected listeners separately from detached shadow-root registrations released with their owning elements, and checks ResultStore leases plus Region observers/controllers."]};
 }
 
 window.aeliqoPerformance = {smallStandalone: (options = {}) => measured("small-standalone", smallOnce, options.timed === true),

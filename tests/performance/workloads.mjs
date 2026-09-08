@@ -9,6 +9,7 @@ import {composePresentation} from '@aeliqo/core';
 import {createAeliqoPresentationRegistry, AELIQO_CONFIG_SCHEMAS, AELIQO_OPERATION_REFS, AELIQO_PRESENTATION_REFS} from '@aeliqo/web/region';
 import {createInteractionController, createInteractionGraph} from '@aeliqo/runtime/interaction';
 import {createRegionStore} from '@aeliqo/runtime/regions';
+import {createResultStore} from '@aeliqo/runtime/results';
 
 export const SMALL_ROW_COUNT = 100;
 export const MEDIUM_ROW_COUNT = 10_000;
@@ -19,6 +20,8 @@ export const LARGE_POPULATION_COUNT = 1_000_000;
 export const LARGE_TRANSFERRED_ROW_COUNT = 100;
 
 const now = () => (globalThis.performance?.now ? globalThis.performance.now() : Date.now());
+export const FIRST_SAMPLE_COUNT = 10;
+export const SUBSEQUENT_SAMPLE_COUNT = 30;
 
 export function percentile(values, percentileValue) {
   if (values.length === 0) return 0;
@@ -37,29 +40,36 @@ export function summary(values) {
   };
 }
 
-export async function coldWarm(label, operation, options = {}) {
-  const coldCount = options.coldCount ?? 3;
-  const warmCount = options.warmCount ?? 7;
-  const coldMs = [];
-  const warmMs = [];
-  for (let index = 0; index < coldCount; index += 1) {
+/**
+ * First/subsequent observations deliberately avoid claiming a process or
+ * browser-cache cold start. The caller owns the page/context lifecycle when
+ * a true cold-cache measurement is needed; this helper measures a repeatable
+ * first invocation and reuse of one already-loaded page/process.
+ */
+export async function firstSubsequent(label, operation, options = {}) {
+  const firstCount = options.firstCount ?? FIRST_SAMPLE_COUNT;
+  const subsequentCount = options.subsequentCount ?? SUBSEQUENT_SAMPLE_COUNT;
+  const firstMs = [];
+  const subsequentMs = [];
+  for (let index = 0; index < firstCount; index += 1) {
     const started = now();
-    await operation('cold', index);
-    coldMs.push(now() - started);
+    await operation('first', index);
+    firstMs.push(now() - started);
   }
-  for (let index = 0; index < warmCount; index += 1) {
+  for (let index = 0; index < subsequentCount; index += 1) {
     const started = now();
-    await operation('warm', index);
-    warmMs.push(now() - started);
+    await operation('subsequent', index);
+    subsequentMs.push(now() - started);
   }
-  return {label, cold: {rawMs: coldMs, ...summary(coldMs)}, warm: {rawMs: warmMs, ...summary(warmMs)}};
+  return {label, first: {rawMs: firstMs, ...summary(firstMs)}, subsequent: {rawMs: subsequentMs, ...summary(subsequentMs)},
+    sampleCounts: {first: firstCount, subsequent: subsequentCount}, condition: 'first/subsequent reuse in one process or page'};
 }
 
 export function makeRows(count, fieldCount = 4) {
   const rows = [];
   for (let index = 0; index < count; index += 1) {
     const row = {id: `row-${index + 1}`, label: `Row ${index + 1}`, value: index};
-    for (let field = 3; field < fieldCount; field += 1) row[`field-${String(field).padStart(3, '0')}`] = `v-${index}-${field}`;
+    for (let field = 1; field < fieldCount; field += 1) row[`field-${String(field).padStart(3, '0')}`] = `v-${index}-${field}`;
     rows.push(row);
   }
   return rows;
@@ -136,7 +146,7 @@ export function mediumPlan() {
   const context = {task, experience, results: [result], current, environment,
     rendererCapabilities: [AELIQO_PRESENTATION_REFS.stack, AELIQO_PRESENTATION_REFS.table]};
   const candidates = Array.from({length: MEDIUM_CANDIDATE_COUNT}, () => ({source: 'explicit', plan}));
-  return {context, registry: registryResult.value, plan, candidates, rows: makeRows(MEDIUM_ROW_COUNT, 4)};
+  return {context, registry: registryResult.value, plan, candidates, rows: makeRows(MEDIUM_ROW_COUNT, MEDIUM_FIELD_COUNT), rowFieldCount: MEDIUM_FIELD_COUNT};
 }
 
 export function runMediumPlanner() {
@@ -147,7 +157,8 @@ export function runMediumPlanner() {
   const durationMs = now() - started;
   if (!composed.ok) throw new Error(`medium composition failed: ${JSON.stringify(composed.diagnostics)}`);
   return {durationMs, status: composed.value.status, expansions: composed.value.expansions, nodes: composed.value.presentation?.plan.nodes.length ?? 0,
-    candidateCount: MEDIUM_CANDIDATE_COUNT, rowCount: MEDIUM_ROW_COUNT, viewCount: MEDIUM_VIEW_COUNT, fieldCount: MEDIUM_FIELD_COUNT};
+    candidateCount: MEDIUM_CANDIDATE_COUNT, rowCount: MEDIUM_ROW_COUNT, viewCount: MEDIUM_VIEW_COUNT, fieldCount: MEDIUM_FIELD_COUNT,
+    rowFieldCount: workload.rowFieldCount};
 }
 
 export async function runTargetedReducer(iterations = 100) {
@@ -188,6 +199,48 @@ export async function runTargetedReducer(iterations = 100) {
   graph.dispose();
   store.dispose();
   return {iterations, successful, unrelatedRoutes, finalDraftCount: finalState.drafts.length, rawMs: durations, ...summary(durations)};
+}
+
+/** Exercise the owning runtime leases/observers/controllers, not only DOM removal. */
+export function runRuntimeResourceCycles(cycles = 100) {
+  let retainedHandles = 0;
+  let liveRegions = 0;
+  let openObservers = 0;
+  for (let index = 0; index < cycles; index += 1) {
+    const resultStore = createResultStore({maxEntries: 1});
+    const cacheKey = {
+      principalKey: 'performance-cleanup-principal', scopeDigest: 'performance-cleanup-scope', policyRevision: 'performance-cleanup-policy',
+      queryDigest: 'performance-cleanup-query', catalogRevision: 'performance-cleanup-catalog', functionRegistryDigest: 'performance-cleanup-functions',
+      sourceRevision: 'performance-cleanup-source', outputId: 'rows', taskId: 'performance-cleanup-task',
+    };
+    const handle = resultStore.begin({...cacheKey, requestId: `cleanup-${index + 1}`});
+    handle.dispose();
+    if (resultStore.get(cacheKey) !== undefined) retainedHandles += 1;
+    resultStore.dispose();
+
+    const regionId = `performance-cleanup-region-${index + 1}`;
+    const authority = {principalKey: 'performance-cleanup-principal', scopeDigest: 'performance-cleanup-scope', policyRevision: 'performance-cleanup-policy',
+      catalogRevision: 'performance-cleanup-catalog', experienceRevision: 'performance-cleanup-experience', functionRegistryDigest: 'performance-cleanup-functions', results: []};
+    const task = {version: '1', id: 'performance-cleanup-task', revision: 'performance-cleanup-task-1', catalogRevision: authority.catalogRevision,
+      functionRegistryDigest: authority.functionRegistryDigest, regionId, goal: 'Own a disposable region', kind: 'presentation', needs: [], assumptions: [], inputs: []};
+    const regionStore = createRegionStore({readAuthority: () => ({ok: true, value: authority}), authorizeCommit: async () => ({ok: true, value: undefined})});
+    const created = regionStore.create({id: regionId, state: {task}});
+    if (!created.ok) throw new Error(`cleanup region failed: ${created.diagnostics[0]?.message ?? 'unknown error'}`);
+    const region = created.value;
+    const observer = region.observe(() => {});
+    const graph = createInteractionGraph({nodes: [{id: 'editor', ports: [{id: 'draft', direction: 'output', payload: 'draft'}]}], links: [], mappings: []});
+    const controller = createInteractionController({region, graph, readContext: () => ({principalKey: authority.principalKey, draftDomain: 'performance',
+      actor: {id: 'performance-user', kind: 'user'}, grants: ['experience.commit', 'draft.edit'], scopeDigest: authority.scopeDigest,
+      policyRevision: authority.policyRevision, catalogRevision: authority.catalogRevision, experienceRevision: authority.experienceRevision,
+      functionRegistryDigest: authority.functionRegistryDigest, results: []})});
+    controller.dispose();
+    graph.dispose();
+    region.dispose();
+    if (!observer.closed) openObservers += 1;
+    if (regionStore.get(regionId) !== undefined) liveRegions += 1;
+    regionStore.dispose();
+  }
+  return {cycles, retainedHandles, liveRegions, openObservers, bounded: retainedHandles === 0 && liveRegions === 0 && openObservers === 0};
 }
 
 export function environmentSnapshot() {
