@@ -1,6 +1,6 @@
 import {css, html} from "lit";
 import {AeliqoFoundationElement, aeliqoFoundationThemeStyles} from "../foundation/base.js";
-import {activeElement, focusFirst, nextFrame, restoreFocus, emitAction, safeElementId} from "../navigation/shared.js";
+import {activeElement, focusFirst, focusableElements, nextFrame, restoreFocus, emitAction, safeElementId} from "../navigation/shared.js";
 import {aeliqoFeedbackStyles} from "./shared.js";
 
 export type AeliqoDrawerMode = "inline" | "modal";
@@ -26,6 +26,13 @@ export class AeliqoDrawerElement extends AeliqoFoundationElement {
   mode: AeliqoDrawerMode = "inline";
   side: AeliqoDrawerSide = "end";
   private returnFocus: HTMLElement | undefined = undefined;
+  private pendingFocus: HTMLElement | undefined = undefined;
+
+  protected override willUpdate(changed: Map<string, unknown>): void {
+    if (!changed.has("mode") || !this.open) return;
+    const active = focusableElements(this).find((candidate) => candidate.matches(":focus"));
+    if (active !== undefined) this.pendingFocus = active;
+  }
 
   protected override updated(changed: Map<string, unknown>): void {
     if (!changed.has("open") && !changed.has("mode")) return;
@@ -34,11 +41,19 @@ export class AeliqoDrawerElement extends AeliqoFoundationElement {
       if (this.open) {
         this.returnFocus ??= activeElement(this);
         if (!dialog.open) typeof dialog.showModal === "function" ? dialog.showModal() : dialog.setAttribute("open", "");
-        nextFrame(() => focusFirst(dialog));
+        const target = this.pendingFocus;
+        this.pendingFocus = undefined;
+        const focusTarget = (): void => { if (target?.isConnected) target.focus(); else focusFirst(dialog); };
+        focusTarget();
+        nextFrame(focusTarget);
       } else {
         if (dialog.open && typeof dialog.close === "function") dialog.close(); else dialog.removeAttribute("open");
         restoreFocus(this.returnFocus); this.returnFocus = undefined;
       }
+    } else if (this.mode === "inline" && this.open) {
+      const target = this.pendingFocus;
+      this.pendingFocus = undefined;
+      if (target?.isConnected) nextFrame(() => target.focus());
     }
   }
 

@@ -24,8 +24,16 @@ test("tabs preserve named panels and keyboard activation policy", async ({page})
   await details.press("ArrowLeft");
   await expect(overview).toBeFocused();
   await expect(details).toHaveAttribute("aria-selected", "true");
+  const beforeEnter = await page.evaluate(() => (window as typeof window & {aeliqoNavigationEvents: CustomEvent[]}).aeliqoNavigationEvents.length);
   await overview.press("Enter");
   await expect(overview).toHaveAttribute("aria-selected", "true");
+  await expect.poll(() => page.evaluate(() => (window as typeof window & {aeliqoNavigationEvents: CustomEvent[]}).aeliqoNavigationEvents.length)).toBe(beforeEnter + 1);
+  await details.click();
+  await tabs.evaluate((element) => {const value = element as HTMLElement & {items: readonly {id: string; label: string; content: string}[]}; value.items = value.items.map((item) => ({...item}));});
+  await expect(details).toHaveAttribute("aria-selected", "true");
+  await tabs.evaluate((element) => {const value = element as HTMLElement & {items: readonly {id: string; label: string; content: string}[]}; value.items = [{id: "a b", label: "Space", content: "Space"}, {id: "a?b", label: "Question", content: "Question"}];});
+  const tabControls = await tabs.getByRole("tab").evaluateAll((elements) => elements.map((element) => element.getAttribute("aria-controls")));
+  expect(new Set(tabControls).size).toBe(2);
 });
 
 test("breadcrumb and pagination retain approved navigation and page scope", async ({page}) => {

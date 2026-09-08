@@ -44,7 +44,8 @@ export class AeliqoTabsElement extends AeliqoFoundationElement {
   protected override willUpdate(changed: Map<string, unknown>): void {
     if (changed.has("items") || changed.has("defaultValue")) {
       const first = this.items.find((item) => !item.disabled)?.id ?? "";
-      this.internalValue = this.defaultValue || first;
+      const preferred = changed.has("defaultValue") && this.defaultValue.length > 0 ? this.defaultValue : this.internalValue;
+      this.internalValue = this.items.some((item) => item.id === preferred && !item.disabled) ? preferred : first;
     }
   }
 
@@ -74,7 +75,7 @@ export class AeliqoTabsElement extends AeliqoFoundationElement {
     else if (backward) next = (current - 1 + enabled.length) % enabled.length;
     else if (event.key === "Home") next = 0;
     else if (event.key === "End") next = enabled.length - 1;
-    else if (event.key === "Enter" || event.key === " ") { this.setSelected(this.items[index]!.id); return; }
+    else if (event.key === "Enter" || event.key === " ") return;
     else return;
     event.preventDefault();
     const button = this.renderRoot.querySelector<HTMLElement>(`[data-tab-id="${CSS.escape(enabled[next]!.item.id)}"]`);

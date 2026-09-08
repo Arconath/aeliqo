@@ -17,8 +17,12 @@ export class AeliqoTooltipElement extends AeliqoFoundationElement {
   private closeTimer: ReturnType<typeof setTimeout> | undefined = undefined;
 
   private show(): void { clearTimeout(this.closeTimer); this.open = true; }
-  private hide(): void { clearTimeout(this.closeTimer); this.open = false; }
-  private keydown(event: KeyboardEvent): void { if (event.key === "Escape") { event.preventDefault(); this.hide(); } }
+  private hide(immediate = false): void {
+    clearTimeout(this.closeTimer);
+    if (immediate) { this.open = false; return; }
+    this.closeTimer = setTimeout(() => { this.open = false; }, 100);
+  }
+  private keydown(event: KeyboardEvent): void { if (event.key === "Escape") { event.preventDefault(); this.hide(true); } }
 
   disconnectedCallback(): void { clearTimeout(this.closeTimer); super.disconnectedCallback(); }
 
@@ -26,6 +30,6 @@ export class AeliqoTooltipElement extends AeliqoFoundationElement {
     const tooltipId = `${this.id || "aeliqo-tooltip"}-content`;
     return html`<button part="trigger" type="button" aria-label=${this.label} aria-describedby=${this.open ? tooltipId : nothing}
       @mouseenter=${this.show} @focus=${this.show} @mouseleave=${this.hide} @blur=${this.hide} @keydown=${this.keydown}>${this.label}</button>
-      <span part="tooltip" id=${tooltipId} role="tooltip" ?hidden=${!this.open}>${this.content || html`<slot></slot>`}</span>`;
+      <span part="tooltip" id=${tooltipId} role="tooltip" ?hidden=${!this.open} @mouseenter=${this.show} @mouseleave=${this.hide}>${this.content || html`<slot></slot>`}</span>`;
   }
 }

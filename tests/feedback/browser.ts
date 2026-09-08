@@ -28,7 +28,7 @@ fixture.innerHTML = `
   <aeliqo-tooltip id="tooltip" label="Help" content="Helpful context"></aeliqo-tooltip>
   <aeliqo-popover id="popover" label="Details" content="Popover context"></aeliqo-popover>
   <aeliqo-dialog id="dialog" heading="Confirm details"><button id="dialog-action" type="button">Continue</button></aeliqo-dialog>
-  <aeliqo-drawer id="drawer" heading="More details"><p>Drawer content</p></aeliqo-drawer>
+  <aeliqo-drawer id="drawer" heading="More details"><p>Drawer content</p><button id="drawer-action" type="button">Drawer action</button></aeliqo-drawer>
   <aeliqo-toast id="toast" message="Saved" duration="60"></aeliqo-toast>
   <aeliqo-alert id="alert" heading="Notice" message="Review this item" tone="warning" action-label="Review" dismissible></aeliqo-alert>
   <aeliqo-progress id="determinate" label="Upload" value="120" max="100"></aeliqo-progress>

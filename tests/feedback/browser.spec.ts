@@ -12,6 +12,10 @@ test("tooltip is supplemental, focusable and dismissible", async ({page}) => {
   await trigger.focus();
   await expect(tooltip.locator("[role=tooltip]")).toBeVisible();
   await expect(trigger).toHaveAttribute("aria-describedby", /content/);
+  await trigger.hover();
+  await tooltip.locator("[role=tooltip]").hover();
+  await page.waitForTimeout(150);
+  await expect(tooltip.locator("[role=tooltip]")).toBeVisible();
   await trigger.press("Escape");
   await expect(tooltip.locator("[role=tooltip]")).toBeHidden();
   await expect(trigger).toHaveAccessibleName("Help");
@@ -21,7 +25,17 @@ test("popover distinguishes nonmodal dismissal from modal focus containment", as
   const popover = page.locator("#popover");
   const trigger = popover.getByRole("button", {name: "Details"});
   await trigger.click();
-  await expect(popover.locator("[part=popover]")).toBeVisible();
+  const firstSurface = popover.locator("[part=popover]");
+  await expect(firstSurface).toBeVisible();
+  const action = popover.getByRole("button", {name: "Popover action"});
+  await action.focus();
+  await popover.evaluate((element) => {(element as HTMLElement & {modal: boolean}).modal = true;});
+  const modalSurface = popover.locator("[part=popover]");
+  await expect(modalSurface).toHaveAttribute("aria-modal", "true");
+  await expect(action).toBeFocused();
+  await popover.evaluate((element) => {(element as HTMLElement & {modal: boolean}).modal = false;});
+  await expect(popover.locator("[part=popover]")).toHaveAttribute("aria-modal", "false");
+  await expect(action).toBeFocused();
   await page.locator("#after").click();
   await expect(popover.locator("[part=popover]")).toBeHidden();
 
@@ -29,8 +43,12 @@ test("popover distinguishes nonmodal dismissal from modal focus containment", as
   await trigger.click();
   const surface = popover.locator("[part=popover]");
   await expect(surface).toHaveAttribute("aria-modal", "true");
-  const action = popover.getByRole("button", {name: "Popover action"});
+  const close = popover.getByRole("button", {name: "Close"});
   await action.focus();
+  await action.press("Tab");
+  await expect(close).toBeFocused();
+  await close.press("Shift+Tab");
+  await expect(action).toBeFocused();
   await action.press("Escape");
   await expect(surface).toBeHidden();
   await expect(trigger).toBeFocused();
@@ -44,14 +62,25 @@ test("dialog uses native modal semantics and returns focus", async ({page}) => {
   const nativeDialog = dialog.locator("dialog");
   await expect(nativeDialog).toBeVisible();
   await expect.poll(() => nativeDialog.evaluate((element) => element.matches(":modal"))).toBe(true);
-  await dialog.getByRole("button", {name: "Continue"}).focus();
+  const action = dialog.getByRole("button", {name: "Continue"});
+  const close = dialog.getByRole("button", {name: "Close"});
+  await action.focus();
+  await action.press("Tab");
+  await expect(close).toBeFocused();
+  await close.press("Shift+Tab");
+  await expect(action).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(nativeDialog).toBeHidden();
   await expect(before).toBeFocused();
 
   await dialog.evaluate((element) => {const value = element as HTMLElement & {modal: boolean; open: boolean}; value.modal = false; value.open = true;});
   await expect.poll(() => nativeDialog.evaluate((element) => element.matches(":modal"))).toBe(false);
-  await dialog.getByRole("button", {name: "Close"}).click();
+  await expect(action).toBeVisible();
+  await action.focus();
+  await dialog.evaluate((element) => {(element as HTMLElement & {modal: boolean}).modal = true;});
+  await expect.poll(() => nativeDialog.evaluate((element) => element.matches(":modal"))).toBe(true);
+  await expect(action).toBeFocused();
+  await close.click();
   await expect(nativeDialog).toBeHidden();
 });
 
@@ -60,9 +89,15 @@ test("drawer keeps inline and modal modes separate", async ({page}) => {
   await drawer.evaluate((element) => {(element as HTMLElement & {open: boolean}).open = true;});
   await expect(drawer.locator("[part=inline]")).toBeVisible();
   await expect(drawer.locator("dialog")).toHaveCount(0);
+  const drawerAction = drawer.getByRole("button", {name: "Drawer action"});
+  await drawerAction.focus();
   await drawer.evaluate((element) => {const value = element as HTMLElement & {mode: string}; value.mode = "modal";});
   await expect(drawer.locator("[part=modal]")).toBeVisible();
   await expect.poll(() => drawer.locator("dialog").evaluate((element) => element.matches(":modal"))).toBe(true);
+  await expect(drawerAction).toBeFocused();
+  await drawer.evaluate((element) => {const value = element as HTMLElement & {mode: string}; value.mode = "inline";});
+  await expect(drawer.locator("[part=inline]")).toBeVisible();
+  await expect(drawerAction).toBeFocused();
   await drawer.getByRole("button", {name: "Close"}).click();
   await expect(drawer.locator("dialog")).toBeHidden();
 });

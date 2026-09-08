@@ -1,6 +1,6 @@
 import {css, html, nothing} from "lit";
 import {AeliqoFoundationElement, aeliqoFoundationThemeStyles} from "../foundation/base.js";
-import {activeElement, focusFirst, focusLast, nextFrame, restoreFocus, emitAction, safeElementId} from "../navigation/shared.js";
+import {activeElement, focusFirst, focusableElements, nextFrame, restoreFocus, emitAction, safeElementId} from "../navigation/shared.js";
 import {aeliqoFeedbackStyles} from "./shared.js";
 
 export class AeliqoDialogElement extends AeliqoFoundationElement {
@@ -19,6 +19,14 @@ export class AeliqoDialogElement extends AeliqoFoundationElement {
   modal = true;
   closeOnEscape = true;
   private returnFocus: HTMLElement | undefined = undefined;
+  private pendingFocus: HTMLElement | undefined = undefined;
+  private shownModal: boolean | undefined = undefined;
+
+  protected override willUpdate(changed: Map<string, unknown>): void {
+    if (!changed.has("modal") || !this.open) return;
+    const active = focusableElements(this).find((candidate) => candidate.matches(":focus"));
+    if (active !== undefined) this.pendingFocus = active;
+  }
 
   protected override updated(changed: Map<string, unknown>): void {
     if (!changed.has("open") && !changed.has("modal")) return;
@@ -30,10 +38,23 @@ export class AeliqoDialogElement extends AeliqoFoundationElement {
         if (this.modal && typeof dialog.showModal === "function") dialog.showModal();
         else if (typeof dialog.show === "function") dialog.show();
         else dialog.setAttribute("open", "");
+        this.shownModal = this.modal;
+      } else if (this.shownModal !== undefined && this.shownModal !== this.modal) {
+        if (dialog.open && typeof dialog.close === "function") dialog.close();
+        this.shownModal = undefined;
+        if (this.modal && typeof dialog.showModal === "function") dialog.showModal();
+        else if (typeof dialog.show === "function") dialog.show();
+        else dialog.setAttribute("open", "");
+        this.shownModal = this.modal;
       }
-      nextFrame(() => focusFirst(dialog));
+      const target = this.pendingFocus;
+      this.pendingFocus = undefined;
+      const focusTarget = (): void => { if (target?.isConnected) target.focus(); else focusFirst(dialog); };
+      focusTarget();
+      nextFrame(focusTarget);
     } else {
       if (dialog.open && typeof dialog.close === "function") dialog.close(); else dialog.removeAttribute("open");
+      this.shownModal = undefined;
       restoreFocus(this.returnFocus); this.returnFocus = undefined;
     }
   }
@@ -41,15 +62,18 @@ export class AeliqoDialogElement extends AeliqoFoundationElement {
   private close(): void { if (emitAction(this, "aeliqo-dialog-close", {})) this.open = false; }
   private cancel(event: Event): void { if (!this.closeOnEscape) { event.preventDefault(); return; } event.preventDefault(); this.close(); }
   private keydown(event: KeyboardEvent): void {
-    if (event.key !== "Tab") return;
+    if (!this.modal || event.key !== "Tab") return;
     const dialog = this.renderRoot.querySelector<HTMLDialogElement>("dialog");
     if (dialog === null) return;
-    const focusables = [...dialog.querySelectorAll<HTMLElement>("button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])")];
-    const first = focusables[0]; const last = focusables.at(-1);
-    if (event.shiftKey && this.shadowRoot?.activeElement === first) { event.preventDefault(); last?.focus(); }
-    else if (!event.shiftKey && this.shadowRoot?.activeElement === last) { event.preventDefault(); first?.focus(); }
+    const focusables = focusableElements(dialog);
+    const first = focusables[0];
+    const last = focusables.at(-1);
+    const eventTarget = event.target instanceof HTMLElement && focusables.includes(event.target) ? event.target : undefined;
+    const active = eventTarget ?? activeElement(this);
+    if (first === undefined || last === undefined) return;
+    if (event.shiftKey && active === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && active === last) { event.preventDefault(); first.focus(); }
   }
-
   protected override render() {
     const headingId = safeElementId(`${this.id || "aeliqo-dialog"}-heading`, "aeliqo-dialog-heading");
     return html`<dialog part="dialog" aria-labelledby=${headingId} @cancel=${this.cancel} @keydown=${this.keydown}>

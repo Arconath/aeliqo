@@ -28,21 +28,48 @@ export const interactiveSelector = [
   "[tabindex]:not([tabindex='-1'])",
 ].join(",");
 
+/** Collect focusable controls through slots and nested open shadow roots. */
+export function focusableElements(root: ParentNode): HTMLElement[] {
+  const result: HTMLElement[] = [];
+  const visit = (node: ParentNode): void => {
+    if (node instanceof HTMLElement && node.matches(interactiveSelector)) result.push(node);
+    if (node instanceof HTMLSlotElement) {
+      for (const assigned of node.assignedElements({flatten: true})) visit(assigned);
+    }
+    if (node instanceof HTMLElement && node.shadowRoot !== null) {
+      visit(node.shadowRoot);
+      return;
+    }
+    for (const child of Array.from(node.children)) {
+      visit(child);
+    }
+  };
+  visit(root);
+  return result;
+}
+
 export function focusFirst(root: ParentNode): HTMLElement | undefined {
-  const target = root.querySelector<HTMLElement>(interactiveSelector);
+  const target = focusableElements(root)[0];
   target?.focus();
   return target ?? undefined;
 }
 
 export function focusLast(root: ParentNode): HTMLElement | undefined {
-  const targets = [...root.querySelectorAll<HTMLElement>(interactiveSelector)];
+  const targets = focusableElements(root);
   const target = targets.at(-1);
   target?.focus();
   return target ?? undefined;
 }
 
 export function activeElement(owner?: HTMLElement): HTMLElement | undefined {
-  const element = owner?.shadowRoot?.activeElement ?? globalThis.document?.activeElement;
+  const shadowElement = owner?.shadowRoot?.activeElement;
+  if (shadowElement instanceof HTMLElement && shadowElement !== owner) return shadowElement;
+  const documentElement = globalThis.document?.activeElement;
+  if (owner !== undefined && documentElement === owner) {
+    const focused = focusableElements(owner).find((candidate) => candidate.matches(":focus"));
+    if (focused !== undefined) return focused;
+  }
+  const element = documentElement;
   return element instanceof HTMLElement ? element : undefined;
 }
 
@@ -78,6 +105,10 @@ export function emitAction(
 }
 
 export function safeElementId(value: string, fallback: string): string {
-  const normalized = value.replace(/[^a-zA-Z0-9_-]/gu, "-");
+  const normalized = [...value].map((character) => {
+    if (/^[a-zA-Z0-9]$/u.test(character)) return character;
+    const codePoint = character.codePointAt(0);
+    return `_x${codePoint === undefined ? "0" : codePoint.toString(16)}_`;
+  }).join("");
   return normalized.length > 0 ? normalized : fallback;
 }
