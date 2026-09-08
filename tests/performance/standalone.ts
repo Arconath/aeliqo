@@ -8,33 +8,33 @@ type StandaloneRow = {readonly id: string; readonly label: string; readonly valu
 type NavigationObservation = {
   readonly name: string;
   readonly type: string;
-  readonly startTime: number;
-  readonly duration: number;
-  readonly domInteractive: number;
-  readonly domContentLoadedEventEnd: number;
-  readonly loadEventEnd: number;
-  readonly transferSize: number;
-  readonly encodedBodySize: number;
-  readonly decodedBodySize: number;
+  readonly startTime: number | null;
+  readonly duration: number | null;
+  readonly domInteractive: number | null;
+  readonly domContentLoadedEventEnd: number | null;
+  readonly loadEventEnd: number | null;
+  readonly transferSize: number | null;
+  readonly encodedBodySize: number | null;
+  readonly decodedBodySize: number | null;
 };
 
 type ResourceObservation = {
   readonly name: string;
   readonly initiatorType: string;
-  readonly startTime: number;
-  readonly duration: number;
-  readonly transferSize: number;
-  readonly encodedBodySize: number;
-  readonly decodedBodySize: number;
+  readonly startTime: number | null;
+  readonly duration: number | null;
+  readonly transferSize: number | null;
+  readonly encodedBodySize: number | null;
+  readonly decodedBodySize: number | null;
 };
 
-type PaintObservation = {readonly name: string; readonly startTime: number; readonly duration: number};
+type PaintObservation = {readonly name: string; readonly startTime: number | null; readonly duration: number | null};
 
 type TimingObservation = {
-  readonly navigation: NavigationObservation | undefined;
+  readonly navigation: NavigationObservation | null;
   readonly resources: readonly ResourceObservation[];
   readonly paints: readonly PaintObservation[];
-  readonly fixtureReadyMs: number | undefined;
+  readonly fixtureReadyMs: number | null;
 };
 
 type StandaloneObservation = {
@@ -55,18 +55,18 @@ type StandaloneObservation = {
   };
   readonly timing: TimingObservation;
   readonly resourceBytes: {
-    readonly totalTransferBytes: number;
-    readonly totalEncodedBytes: number;
-    readonly totalDecodedBytes: number;
-    readonly javascriptTransferBytes: number;
-    readonly javascriptEncodedBytes: number;
-    readonly javascriptDecodedBytes: number;
+    readonly totalTransferBytes: number | null;
+    readonly totalEncodedBytes: number | null;
+    readonly totalDecodedBytes: number | null;
+    readonly javascriptTransferBytes: number | null;
+    readonly javascriptEncodedBytes: number | null;
+    readonly javascriptDecodedBytes: number | null;
     readonly resourceCount: number;
     readonly javascriptResourceCount: number;
     readonly cachedResourceCount: number;
     readonly cachedJavascriptResourceCount: number;
-    readonly revalidatedResourceCount: number;
-    readonly revalidatedJavascriptResourceCount: number;
+    readonly resourceTimingUnavailableCount: number;
+    readonly javascriptResourceTimingUnavailableCount: number;
   };
 };
 
@@ -93,24 +93,24 @@ function makeRows(): readonly StandaloneRow[] {
   }));
 }
 
-function toNumber(value: unknown): number {
-  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+function finiteOrNull(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
-function navigationObservation(): NavigationObservation | undefined {
+function navigationObservation(): NavigationObservation | null {
   const entry = performance.getEntriesByType("navigation").at(-1) as PerformanceNavigationTiming | undefined;
-  if (entry === undefined) return undefined;
+  if (entry === undefined) return null;
   return {
     name: entry.name,
     type: entry.type,
-    startTime: toNumber(entry.startTime),
-    duration: toNumber(entry.duration),
-    domInteractive: toNumber(entry.domInteractive),
-    domContentLoadedEventEnd: toNumber(entry.domContentLoadedEventEnd),
-    loadEventEnd: toNumber(entry.loadEventEnd),
-    transferSize: toNumber(entry.transferSize),
-    encodedBodySize: toNumber(entry.encodedBodySize),
-    decodedBodySize: toNumber(entry.decodedBodySize),
+    startTime: finiteOrNull(entry.startTime),
+    duration: finiteOrNull(entry.duration),
+    domInteractive: finiteOrNull(entry.domInteractive),
+    domContentLoadedEventEnd: finiteOrNull(entry.domContentLoadedEventEnd),
+    loadEventEnd: finiteOrNull(entry.loadEventEnd),
+    transferSize: finiteOrNull(entry.transferSize),
+    encodedBodySize: finiteOrNull(entry.encodedBodySize),
+    decodedBodySize: finiteOrNull(entry.decodedBodySize),
   };
 }
 
@@ -120,11 +120,11 @@ function resourceObservations(): readonly ResourceObservation[] {
     return {
       name: resource.name,
       initiatorType: resource.initiatorType,
-      startTime: toNumber(resource.startTime),
-      duration: toNumber(resource.duration),
-      transferSize: toNumber(resource.transferSize),
-      encodedBodySize: toNumber(resource.encodedBodySize),
-      decodedBodySize: toNumber(resource.decodedBodySize),
+      startTime: finiteOrNull(resource.startTime),
+      duration: finiteOrNull(resource.duration),
+      transferSize: finiteOrNull(resource.transferSize),
+      encodedBodySize: finiteOrNull(resource.encodedBodySize),
+      decodedBodySize: finiteOrNull(resource.decodedBodySize),
     };
   });
 }
@@ -132,8 +132,8 @@ function resourceObservations(): readonly ResourceObservation[] {
 function paintObservations(): readonly PaintObservation[] {
   return performance.getEntriesByType("paint").map((entry) => ({
     name: entry.name,
-    startTime: toNumber(entry.startTime),
-    duration: toNumber(entry.duration),
+    startTime: finiteOrNull(entry.startTime),
+    duration: finiteOrNull(entry.duration),
   }));
 }
 
@@ -148,7 +148,7 @@ function timingObservation(): TimingObservation {
     navigation: navigationObservation(),
     resources,
     paints: paintObservations(),
-    fixtureReadyMs: readyMark === undefined ? undefined : toNumber(readyMark.startTime),
+    fixtureReadyMs: readyMark === undefined ? null : finiteOrNull(readyMark.startTime),
   };
 }
 
@@ -157,7 +157,12 @@ function collect(): StandaloneObservation {
   const table = document.querySelector("aeliqo-table") as AeliqoTableElement | null;
   const resources = resourceObservations();
   const javascript = resources.filter(isJavascript);
-  const sum = (values: readonly number[]) => values.reduce((total, value) => total + value, 0);
+  const sum = (values: readonly (number | null)[]): number | null => {
+    if (values.some((value) => value === null)) return null;
+    return values.reduce<number>((total, value) => total + (value ?? 0), 0);
+  };
+  const unavailable = (values: readonly ResourceObservation[]) =>
+    values.filter((resource) => resource.transferSize === null || resource.encodedBodySize === null || resource.decodedBodySize === null).length;
   return {
     environment: {
       userAgent: navigator.userAgent,
@@ -184,10 +189,10 @@ function collect(): StandaloneObservation {
       javascriptDecodedBytes: sum(javascript.map((resource) => resource.decodedBodySize)),
       resourceCount: resources.length,
       javascriptResourceCount: javascript.length,
-      cachedResourceCount: resources.filter((resource) => resource.transferSize === 0 && resource.encodedBodySize > 0).length,
-      cachedJavascriptResourceCount: javascript.filter((resource) => resource.transferSize === 0 && resource.encodedBodySize > 0).length,
-      revalidatedResourceCount: resources.filter((resource) => resource.transferSize > 0 && resource.encodedBodySize === 0).length,
-      revalidatedJavascriptResourceCount: javascript.filter((resource) => resource.transferSize > 0 && resource.encodedBodySize === 0).length,
+      cachedResourceCount: resources.filter((resource) => resource.transferSize === 0 && resource.encodedBodySize !== null && resource.encodedBodySize > 0).length,
+      cachedJavascriptResourceCount: javascript.filter((resource) => resource.transferSize === 0 && resource.encodedBodySize !== null && resource.encodedBodySize > 0).length,
+      resourceTimingUnavailableCount: unavailable(resources),
+      javascriptResourceTimingUnavailableCount: unavailable(javascript),
     },
   };
 }

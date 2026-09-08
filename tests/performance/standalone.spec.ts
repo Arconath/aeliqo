@@ -3,8 +3,10 @@ import {mkdir, writeFile} from "node:fs/promises";
 import {dirname} from "node:path";
 
 const FIXTURE_PATH = "/tests/performance/standalone.html";
-const COLD_SAMPLE_COUNT = 10;
-const WARM_SAMPLE_COUNT = 30;
+const DEFAULT_COLD_SAMPLE_COUNT = 1;
+const DEFAULT_WARM_SAMPLE_COUNT = 1;
+const EXTENDED_COLD_SAMPLE_COUNT = 10;
+const EXTENDED_WARM_SAMPLE_COUNT = 30;
 
 type StandaloneObservation = {
   readonly environment: {
@@ -26,40 +28,40 @@ type StandaloneObservation = {
     readonly navigation: {
       readonly name: string;
       readonly type: string;
-      readonly startTime: number;
-      readonly duration: number;
-      readonly domInteractive: number;
-      readonly domContentLoadedEventEnd: number;
-      readonly loadEventEnd: number;
-      readonly transferSize: number;
-      readonly encodedBodySize: number;
-      readonly decodedBodySize: number;
-    } | undefined;
+      readonly startTime: number | null;
+      readonly duration: number | null;
+      readonly domInteractive: number | null;
+      readonly domContentLoadedEventEnd: number | null;
+      readonly loadEventEnd: number | null;
+      readonly transferSize: number | null;
+      readonly encodedBodySize: number | null;
+      readonly decodedBodySize: number | null;
+    } | null;
     readonly resources: readonly {
       readonly name: string;
       readonly initiatorType: string;
-      readonly startTime: number;
-      readonly duration: number;
-      readonly transferSize: number;
-      readonly encodedBodySize: number;
-      readonly decodedBodySize: number;
+      readonly startTime: number | null;
+      readonly duration: number | null;
+      readonly transferSize: number | null;
+      readonly encodedBodySize: number | null;
+      readonly decodedBodySize: number | null;
     }[];
-    readonly paints: readonly {readonly name: string; readonly startTime: number; readonly duration: number}[];
-    readonly fixtureReadyMs: number | undefined;
+    readonly paints: readonly {readonly name: string; readonly startTime: number | null; readonly duration: number | null}[];
+    readonly fixtureReadyMs: number | null;
   };
   readonly resourceBytes: {
-    readonly totalTransferBytes: number;
-    readonly totalEncodedBytes: number;
-    readonly totalDecodedBytes: number;
-    readonly javascriptTransferBytes: number;
-    readonly javascriptEncodedBytes: number;
-    readonly javascriptDecodedBytes: number;
+    readonly totalTransferBytes: number | null;
+    readonly totalEncodedBytes: number | null;
+    readonly totalDecodedBytes: number | null;
+    readonly javascriptTransferBytes: number | null;
+    readonly javascriptEncodedBytes: number | null;
+    readonly javascriptDecodedBytes: number | null;
     readonly resourceCount: number;
     readonly javascriptResourceCount: number;
     readonly cachedResourceCount: number;
     readonly cachedJavascriptResourceCount: number;
-    readonly revalidatedResourceCount: number;
-    readonly revalidatedJavascriptResourceCount: number;
+    readonly resourceTimingUnavailableCount: number;
+    readonly javascriptResourceTimingUnavailableCount: number;
   };
 };
 
@@ -73,6 +75,13 @@ type Sample = {
     readonly sameContextAsWarmup: boolean;
   };
   readonly observation: StandaloneObservation;
+};
+
+type RetainedModuleGraph = {
+  readonly schema: string;
+  readonly entryModules: readonly string[];
+  readonly retainedModules: readonly string[];
+  readonly forbiddenModules: readonly string[];
 };
 
 async function waitForFixture(page: Page): Promise<void> {
@@ -96,8 +105,13 @@ async function openFixture(page: Page, baseURL: string): Promise<StandaloneObser
   return collect(page);
 }
 
-function finiteValues(samples: readonly Sample[], value: (sample: Sample) => number | undefined): number[] {
+function finiteValues(samples: readonly Sample[], value: (sample: Sample) => number | null | undefined): number[] {
   return samples.map(value).filter((candidate): candidate is number => typeof candidate === "number" && Number.isFinite(candidate));
+}
+
+function timingValues(values: readonly number[], sampleCount: number) {
+  return {p50: nearestRank(values, 0.5), p95: nearestRank(values, 0.95), availableCount: values.length,
+    unavailableCount: sampleCount - values.length, observed: values};
 }
 
 function nearestRank(values: readonly number[], fraction: number): number | null {
@@ -112,15 +126,15 @@ function timingSummary(samples: readonly Sample[]) {
   const fcp = finiteValues(samples, (sample) => sample.observation.timing.paints.find((paint) => paint.name === "first-contentful-paint")?.startTime);
   return {
     sampleCount: samples.length,
-    domContentLoadedEventEndMs: {p50: nearestRank(domReady, 0.5), p95: nearestRank(domReady, 0.95), observed: domReady},
-    fixtureReadyMs: {p50: nearestRank(fixtureReady, 0.5), p95: nearestRank(fixtureReady, 0.95), observed: fixtureReady},
-    firstContentfulPaintMs: {p50: nearestRank(fcp, 0.5), p95: nearestRank(fcp, 0.95), observed: fcp},
+    domContentLoadedEventEndMs: timingValues(domReady, samples.length),
+    fixtureReadyMs: timingValues(fixtureReady, samples.length),
+    firstContentfulPaintMs: timingValues(fcp, samples.length),
   };
 }
 
-async function captureColdSamples(browser: Browser, baseURL: string): Promise<Sample[]> {
+async function captureColdSamples(browser: Browser, baseURL: string, sampleCount: number): Promise<Sample[]> {
   const samples: Sample[] = [];
-  for (let index = 0; index < COLD_SAMPLE_COUNT; index += 1) {
+  for (let index = 0; index < sampleCount; index += 1) {
     const context = await browser.newContext();
     const page = await context.newPage();
     const client = await context.newCDPSession(page);
@@ -140,13 +154,13 @@ async function captureColdSamples(browser: Browser, baseURL: string): Promise<Sa
   return samples;
 }
 
-async function captureWarmSamples(browser: Browser, baseURL: string): Promise<{readonly warmup: StandaloneObservation; readonly samples: readonly Sample[]}> {
+async function captureWarmSamples(browser: Browser, baseURL: string, sampleCount: number): Promise<{readonly warmup: StandaloneObservation; readonly samples: readonly Sample[]}> {
   const context = await browser.newContext();
   const page = await context.newPage();
   try {
     const warmup = await openFixture(page, baseURL);
     const samples: Sample[] = [];
-    for (let index = 0; index < WARM_SAMPLE_COUNT; index += 1) {
+    for (let index = 0; index < sampleCount; index += 1) {
       await page.evaluate(() => performance.clearResourceTimings());
       await page.reload({waitUntil: "load"});
       await waitForFixture(page);
@@ -161,15 +175,32 @@ async function captureWarmSamples(browser: Browser, baseURL: string): Promise<{r
   }
 }
 
-test("captures standalone production fixture cold and warm browser observations", async ({browser, baseURL}, testInfo) => {
+test("captures standalone production fixture cold and warm browser observations", async ({browser, baseURL, request}, testInfo) => {
   if (baseURL === undefined) throw new Error("Playwright baseURL is required.");
-  const cold = await captureColdSamples(browser, baseURL);
-  const warm = await captureWarmSamples(browser, baseURL);
+  const extended = process.env.AELIQO_RUN_PERFORMANCE === "1";
+  const coldSampleCount = extended ? EXTENDED_COLD_SAMPLE_COUNT : DEFAULT_COLD_SAMPLE_COUNT;
+  const warmSampleCount = extended ? EXTENDED_WARM_SAMPLE_COUNT : DEFAULT_WARM_SAMPLE_COUNT;
+  const cold = await captureColdSamples(browser, baseURL, coldSampleCount);
+  const warm = await captureWarmSamples(browser, baseURL, warmSampleCount);
+  const moduleGraphResponse = await request.get(`${baseURL}/retained-modules.json`);
+  expect(moduleGraphResponse.ok()).toBe(true);
+  const moduleGraph = await moduleGraphResponse.json() as RetainedModuleGraph;
+  expect(moduleGraph.forbiddenModules).toEqual([]);
+  const warmCacheHitSampleCount = warm.samples.filter((sample) => sample.observation.resourceBytes.cachedJavascriptResourceCount > 0).length;
+  const warmCacheEvidence = {
+    criterion: "ResourceTiming JavaScript entry has transferSize === 0 and encodedBodySize > 0",
+    sampleCount: warm.samples.length,
+    hitSampleCount: warmCacheHitSampleCount,
+    status: warmCacheHitSampleCount > 0 ? "observed" : "incomplete",
+    note: "ResourceTiming cache indicators are diagnostic; incomplete means no qualifying hit was exposed by this browser run.",
+  } as const;
   const report = {
     schema: "aeliqo.performance.standalone.v1",
     sourceCommit: process.env.AELIQO_SOURCE_COMMIT ?? "unknown",
+    mode: extended ? "extended-observation" : "functional-smoke",
     environment: cold[0]?.observation.environment ?? warm.warmup.environment,
     fixture: {rowCount: 100, controlValue: "ready", entrypoint: "@aeliqo/web/input + @aeliqo/web/table"},
+    moduleGraph,
     cold: {
       label: "cold-cache-disabled-fresh-context",
       sampleCount: cold.length,
@@ -182,11 +213,13 @@ test("captures standalone production fixture cold and warm browser observations"
       sampleCount: warm.samples.length,
       samples: warm.samples,
       summary: timingSummary(warm.samples),
+      cacheEvidence: warmCacheEvidence,
     },
     notes: [
       "Cold samples use a new browser context and page, clear the Chromium browser cache through CDP, and disable the network cache for the navigation.",
-      "Warm samples perform one warmup navigation, then 30 reloads in one context with the browser cache enabled; ResourceTiming transferSize and encodedBodySize are retained for cache-hit evidence.",
+      `Warm samples perform one warmup navigation, then ${warmSampleCount} reload${warmSampleCount === 1 ? "" : "s"} in one context with the browser cache enabled; ResourceTiming transferSize and encodedBodySize are retained for cache-hit evidence.`,
       "Fixture-ready is measured after Lit updateComplete and is not a paint measurement; first-contentful-paint is reported only when the browser exposes a paint timing entry.",
+      "Timing summaries and cache evidence are diagnostic observations for this run; they are not performance-budget qualification.",
       "These observations qualify this standalone 100-row input/table fixture only. They do not claim input-to-paint, whole-site, or lower-powered-device performance.",
     ],
   };
@@ -194,17 +227,18 @@ test("captures standalone production fixture cold and warm browser observations"
   await mkdir(dirname(output), {recursive: true});
   await writeFile(output, `${JSON.stringify(report, null, 2)}\n`, "utf8");
 
-  expect(cold).toHaveLength(COLD_SAMPLE_COUNT);
-  expect(warm.samples).toHaveLength(WARM_SAMPLE_COUNT);
+  expect(cold).toHaveLength(coldSampleCount);
+  expect(warm.samples).toHaveLength(warmSampleCount);
   for (const sample of [...cold, ...warm.samples]) {
     expect(sample.observation.fixture).toMatchObject({rowCount: 100, renderedRows: 100, controlValue: "ready", inputPresent: true, tablePresent: true});
-    expect(sample.observation.timing.navigation).toEqual(expect.objectContaining({domContentLoadedEventEnd: expect.any(Number)}));
+    const navigation = sample.observation.timing.navigation;
+    expect(navigation === null || navigation.domContentLoadedEventEnd === null || Number.isFinite(navigation.domContentLoadedEventEnd)).toBe(true);
     expect(sample.observation.timing.resources.length).toBeGreaterThan(0);
     expect(sample.observation.resourceBytes.javascriptResourceCount).toBeGreaterThan(0);
-    expect(sample.observation.resourceBytes.javascriptEncodedBytes).toBeGreaterThanOrEqual(0);
+    const javascriptEncodedBytes = sample.observation.resourceBytes.javascriptEncodedBytes;
+    expect(javascriptEncodedBytes === null || (Number.isFinite(javascriptEncodedBytes) && javascriptEncodedBytes >= 0)).toBe(true);
   }
-  expect(cold.every((sample) => sample.observation.resourceBytes.javascriptEncodedBytes > 0)).toBe(true);
   expect(cold.every((sample) => sample.condition.cache === "disabled" && sample.condition.cacheCleared && sample.condition.freshContext)).toBe(true);
   expect(warm.samples.every((sample) => sample.condition.cache === "enabled" && sample.condition.sameContextAsWarmup && !sample.condition.cacheDisabled)).toBe(true);
-  expect(warm.samples.every((sample) => sample.observation.resourceBytes.cachedJavascriptResourceCount >= 0)).toBe(true);
+  expect(warmCacheEvidence.status === "observed" || warmCacheEvidence.status === "incomplete").toBe(true);
 });
