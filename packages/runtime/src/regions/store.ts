@@ -564,6 +564,8 @@ class RegionHandleImpl implements RegionHandle {
     for (const ref of required) capturedRefs.set(refKey(ref), ref);
     const capturedResults = normalizeRefs([...capturedRefs.values()], actual.scopeDigest);
     if (!capturedResults.ok) { releaseLeases(leases); return capturedResults as RegionOutcome<RegionCommitToken>; }
+    // Capture the verified host pins and only the declared/required result refs;
+    // unrelated authorized outputs are not dependencies of this proposal.
     const capturedReadSet = frozen({...actual, results: capturedResults.value});
     const bytes = new TextEncoder().encode(canonical(checkedState.value)).byteLength + new TextEncoder().encode(canonical(capturedReadSet)).byteLength;
     if (this.staged.size >= this.maxStagedCommits || this.stagedBytes + bytes > this.maxStagedBytes) {

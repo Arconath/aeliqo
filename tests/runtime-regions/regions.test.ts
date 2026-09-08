@@ -156,6 +156,16 @@ describe('transactional region store', () => {
     expect(events).toEqual(['all', 'rows', 'trend']);
   });
 
+  it('allows a disjoint result refresh when the proposal read set omits that output', async () => {
+    const {region} = create();
+    const expected = {...region.snapshot().readSet!, results: [refA]};
+    const staged = await region.stage({requestId: 'disjoint-refresh', expected, state: {task: task()}});
+    expect(staged.ok).toBe(true);
+    if (!staged.ok) return;
+    authority = {...authority, results: [refA, {...refB, revision: 'result-2'}]};
+    await expect(region.commit(staged.value)).resolves.toMatchObject({ok: true, value: {taskRevision: '2'}});
+  });
+
   it('makes a staged token stale after a same-reference refresh', async () => {
     const {region} = create();
     const staged = await region.stage({requestId: 'request-1', expected: region.snapshot().readSet!, state: {task: task()}});
