@@ -49,3 +49,5 @@ export * from "./data.js";
 export * from "./plot.js";
 
 export * from "./visualization.js";
+
+export * from "./compound.js";

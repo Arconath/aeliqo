@@ -64,6 +64,8 @@ test("record editor validates slotted fields and includes the explicit draft rec
   await editor.locator("aeliqo-text-field").locator("input").fill("Ada Lovelace");
   await editor.getByRole("button", {name: "Save", exact: true}).click();
   await expect.poll(() => page.evaluate(() => (window as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-record-editor-save")?.detail)).toMatchObject({key: "a", entityRevision: "rev-1", values: {name: "Ada Lovelace"}});
+  await editor.getByRole("button", {name: "Cancel", exact: true}).click();
+  await expect.poll(() => page.evaluate(() => (window as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-record-editor-cancel")?.detail)).toMatchObject({key: "a", entityRevision: "rev-1", values: {name: "Ada Lovelace"}});
 });
 
 test("form flow keeps step scoped controls mounted, blocks invalid progression, and commits all steps", async ({page}) => {

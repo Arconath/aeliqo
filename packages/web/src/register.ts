@@ -1,3 +1,4 @@
+import {AELIQO_COMPOUND_ELEMENTS} from "./compound/index.js";
 import {AeliqoTreeElement, AeliqoTreemapElement, AeliqoRelationshipElement} from "./visualization/hierarchy/index.js";
 import {AeliqoTrendElement, AeliqoBarElement, AeliqoAreaElement, AeliqoScatterElement, AeliqoHistogramElement, AeliqoHeatmapElement} from "./visualization/cartesian/index.js";
 import {AeliqoMatrixElement, AeliqoTimelineElement, AeliqoCalendarGridElement} from "./visualization/temporal/index.js";
@@ -24,6 +25,7 @@ interface ElementRegistration {
 }
 
 const REGISTRATIONS: readonly ElementRegistration[] = [
+  ...AELIQO_COMPOUND_ELEMENTS.map(([name, constructor]) => ({name, constructor})),
   {name: "aeliqo-tree", constructor: AeliqoTreeElement},
   {name: "aeliqo-treemap", constructor: AeliqoTreemapElement},
   {name: "aeliqo-relationship", constructor: AeliqoRelationshipElement},

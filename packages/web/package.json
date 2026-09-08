@@ -292,6 +292,42 @@
     "./region/adaptation": {
       "types": "./dist/region/adaptation.d.ts",
       "import": "./dist/region/adaptation.js"
+    },
+    "./compound": {
+      "types": "./dist/compound/index.d.ts",
+      "import": "./dist/compound/index.js"
+    },
+    "./explorer": {
+      "types": "./dist/compound/explorer.d.ts",
+      "import": "./dist/compound/explorer.js"
+    },
+    "./comparison": {
+      "types": "./dist/compound/comparison.d.ts",
+      "import": "./dist/compound/comparison.js"
+    },
+    "./breakdown": {
+      "types": "./dist/compound/breakdown.d.ts",
+      "import": "./dist/compound/breakdown.js"
+    },
+    "./investigation": {
+      "types": "./dist/compound/investigation.d.ts",
+      "import": "./dist/compound/investigation.js"
+    },
+    "./search-results": {
+      "types": "./dist/compound/search-results.d.ts",
+      "import": "./dist/compound/search-results.js"
+    },
+    "./record-editor": {
+      "types": "./dist/compound/record-editor.d.ts",
+      "import": "./dist/compound/record-editor.js"
+    },
+    "./form-flow": {
+      "types": "./dist/compound/form-flow.d.ts",
+      "import": "./dist/compound/form-flow.js"
+    },
+    "./quality-panel": {
+      "types": "./dist/compound/quality-panel.d.ts",
+      "import": "./dist/compound/quality-panel.js"
     }
   },
   "files": [

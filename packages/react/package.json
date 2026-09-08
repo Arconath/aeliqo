@@ -43,6 +43,10 @@
     "./visualization": {
       "types": "./dist/visualization.d.ts",
       "import": "./dist/visualization.js"
+    },
+    "./compound": {
+      "types": "./dist/compound.d.ts",
+      "import": "./dist/compound.js"
     }
   },
   "files": [
