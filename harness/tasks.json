@@ -772,10 +772,26 @@
         "Both paths generate same typed definition; draft/activation/scope/approval and low-risk hypothesis policy work.",
         "Studio/manual and AI-assisted authoring share code definitions/evaluator; code-owned entries are read-only or proposed diffs, not silent repo overwrites. Preserve origin, version/scope, and no implicit shadowing."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "Isolated worker owns runtime/agent meaning source and focused tests in codex/t23-meaning. Root owns contracts/config/lock/integration; T18 and T20 remain independent."
+      "evidence": [
+        {
+          "path": "harness/evidence/t23/26f15f38f12a/manifest.json",
+          "sha256": "56200003ddc46350d530c7c9b0c9e3ff5cb54f4ef36d8419104b38b4f36ea3c4"
+        }
+      ],
+      "notes": "Accepted sourcec7d24e2 after independent review,36meaning/77agent/34semantic tests,strict declarations/build,and actual installed Node/Chromium consumer. Canonical manual/AI authoring and evaluator, immutable versions, scope/grants/revoke and code-owned provenance verified. Real provider/protocol work remains T24/T40.",
+      "review": {
+        "status": "approved",
+        "author": "release_inventory; parent integration and boundary fixes",
+        "reviewer": "platform_proof",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t23/26f15f38f12a/review.json",
+            "sha256": "16d1952e74c1597933fecbb2dfc9c5ed5944daf19e284a60899f656a03745988"
+          }
+        ]
+      }
     },
     {
       "id": "T24",

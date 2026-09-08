@@ -1,0 +1,45 @@
+{
+  "task": "T23",
+  "status": "pass",
+  "sourceCommit": "c7d24e286cbc5999af3bfba02f38d33ac86d8022",
+  "sourceDigest": "26f15f38f12a2accd9fb7131a8fc51bfdb4fd2788e6f2bbbf61d67cb0847a544",
+  "checks": {
+    "meaningTests": 36,
+    "agentTests": 77,
+    "semanticTests": 34,
+    "strictTypesAndBuild": true,
+    "installedTarballs": true
+  },
+  "limits": [
+    "One activated principal and authorization scope per registry lifetime; scope reauthorization creates a new registry.",
+    "Meaning authoring scopes are separate from authorization scope digests.",
+    "Host-backed metric execution requires the application executor; local expression previews reuse core evaluation.",
+    "No model/provider call is required or claimed; actual protocols/providers remain T24/T40."
+  ],
+  "artifacts": [
+    {
+      "path": "agents.log",
+      "sha256": "3441fab2a1c4d9f9600bd2a1486c96597c69e2e951c95bbee2359a81a66c90e1"
+    },
+    {
+      "path": "consumer-report.json",
+      "sha256": "6ca001ab3f042ebc4c5a8b4e6e9a320d2a51540694f710b85be8afd5c091c72b"
+    },
+    {
+      "path": "consumer.log",
+      "sha256": "52eb706998b4a66a456f1d20bfc85099f61b064f2e8e62d92dcce3c933430eaf"
+    },
+    {
+      "path": "meaning.log",
+      "sha256": "7150f4c86f114f2fc295029d87267fb403b609cd1d420d28d3acd426fffebfc7"
+    },
+    {
+      "path": "review.json",
+      "sha256": "16d1952e74c1597933fecbb2dfc9c5ed5944daf19e284a60899f656a03745988"
+    },
+    {
+      "path": "semantics.log",
+      "sha256": "53a6ee4cb592a7c6b946dbc35c58d590a34fe049915c12b6a7307278146ffc5e"
+    }
+  ]
+}

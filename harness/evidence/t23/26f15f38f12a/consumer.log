@@ -1,0 +1,2 @@
+$ node tests/consumers/meaning-tarballs.mjs
+Installed meaning consumer proof passed. Evidence: /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/meaning-consumers/run-MH1cyt/report.json
