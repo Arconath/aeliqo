@@ -210,6 +210,11 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
     return this.fieldDisabled ? null : this.currentFormValue;
   }
 
+  /** Native form owner, when the host placed this field in an ordinary form. */
+  get formOwner(): HTMLFormElement | null {
+    return this.internals?.form ?? null;
+  }
+
   protected updateValidity(anchor?: HTMLElement, valueMissing = false): void {
     if (this.internals === undefined) return;
     if (this.fieldDisabled) {

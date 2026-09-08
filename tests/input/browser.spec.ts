@@ -111,6 +111,7 @@ test("form wrapper bridges slotted native buttons, Enter and form data", async (
     const clickSubmit = submits;
     input.focus();
     input.dispatchEvent(new KeyboardEvent("keydown", {key: "Enter", bubbles: true, cancelable: true}));
+    await new Promise((resolve) => setTimeout(resolve, 0));
     const enterSubmit = submits;
     const data = [...(form.formData()?.entries() ?? [])].map(([key, value]) => [key, String(value)]);
     input.value = "changed";
@@ -118,6 +119,142 @@ test("form wrapper bridges slotted native buttons, Enter and form data", async (
     return {clickSubmit, enterSubmit, data, resetValue: input.value};
   });
   expect(result).toEqual({clickSubmit: 1, enterSubmit: 2, data: [["native-name", "Ada"]], resetValue: "Ada"});
+});
+
+test("form wrapper defers child Enter behavior and respects native ownership", async ({page}) => {
+  await page.evaluate(async () => {
+    const root = document.querySelector<HTMLElement>("#fixture");
+    if (root === null) throw new Error("fixture missing");
+    const form = document.createElement("aeliqo-form") as HTMLElement & {formData: () => FormData | undefined; updateComplete: Promise<unknown>};
+    form.id = "semantics-form";
+    const notes = document.createElement("textarea");
+    notes.name = "notes";
+    notes.defaultValue = "draft";
+    notes.value = "draft";
+    const required = document.createElement("input");
+    required.name = "required";
+    required.required = true;
+    const fieldset = document.createElement("fieldset");
+    fieldset.disabled = true;
+    const disabled = document.createElement("input");
+    disabled.name = "disabled-field";
+    disabled.value = "secret";
+    fieldset.append(disabled);
+    const normal = document.createElement("button");
+    normal.type = "submit";
+    normal.textContent = "Normal";
+    const bypass = document.createElement("button");
+    bypass.type = "submit";
+    bypass.formNoValidate = true;
+    const bypassLabel = document.createElement("span");
+    bypassLabel.textContent = "Bypass";
+    bypass.append(bypassLabel);
+    const customNotes = document.createElement("aeliqo-text-area") as HTMLElement & {value: string; updateComplete: Promise<unknown>};
+    customNotes.name = "custom-notes";
+    customNotes.value = "draft";
+    const combo = document.createElement("aeliqo-combobox") as HTMLElement & {options: readonly {value: string; label: string}[]; updateComplete: Promise<unknown>};
+    combo.options = [{value: "a", label: "Alpha"}, {value: "b", label: "Beta"}];
+    const select = document.createElement("aeliqo-select") as HTMLElement & {options: readonly {value: string; label: string}[]; updateComplete: Promise<unknown>};
+    select.options = [{value: "a", label: "Alpha"}, {value: "b", label: "Beta"}];
+    const submits = {form: 0, nested: 0};
+    form.addEventListener("aeliqo-form-submit", () => { submits.form += 1; });
+    form.append(notes, required, fieldset, normal, bypass, customNotes, combo, select);
+    root.append(form);
+    await Promise.all([form.updateComplete, customNotes.updateComplete, combo.updateComplete, select.updateComplete]);
+    (window as Window & {formSemantics?: {form: HTMLElement; submits: typeof submits}}).formSemantics = {form, submits};
+  });
+
+  const notes = page.locator("#semantics-form > textarea");
+  await notes.press("Enter");
+  await page.waitForTimeout(10);
+  const afterTextarea = await page.locator("#semantics-form").evaluate((element) => {
+    const state = (window as Window & {formSemantics?: {submits: {form: number}}}).formSemantics;
+    return {value: (element.querySelector("textarea") as HTMLTextAreaElement).value, submits: state?.submits.form ?? -1};
+  });
+  expect(afterTextarea.submits).toBe(0);
+  expect(afterTextarea.value.replace("\n", "")).toBe("draft");
+
+  await page.locator("#semantics-form").locator("button").filter({hasText: "Normal"}).click();
+  const afterBlocked = await page.locator("#semantics-form").evaluate(() => (window as Window & {formSemantics?: {submits: {form: number}}}).formSemantics?.submits.form ?? -1);
+  expect(afterBlocked).toBe(0);
+  await page.locator("#semantics-form").locator("button").filter({hasText: "Bypass"}).locator("span").click();
+  const afterBypass = await page.locator("#semantics-form").evaluate(() => (window as Window & {formSemantics?: {submits: {form: number}}}).formSemantics?.submits.form ?? -1);
+  expect(afterBypass).toBe(1);
+
+  await page.locator("#semantics-form aeliqo-text-area").locator("textarea").press("Enter");
+  await page.locator("#semantics-form aeliqo-combobox").locator("input").press("ArrowDown");
+  await page.locator("#semantics-form aeliqo-combobox").locator("input").press("Enter");
+  await page.locator("#semantics-form aeliqo-select").locator("select").press("Enter");
+  await page.waitForTimeout(10);
+  const final = await page.locator("#semantics-form").evaluate((element) => {
+    const state = (window as Window & {formSemantics?: {submits: {form: number}}}).formSemantics;
+    const data = element instanceof HTMLElement && "formData" in element ? (element as HTMLElement & {formData: () => FormData | undefined}).formData() : undefined;
+    return {submits: state?.submits.form ?? -1, customNotes: (element.querySelector("aeliqo-text-area") as HTMLElement & {value: string}).value, combo: (element.querySelector("aeliqo-combobox") as HTMLElement & {value: string}).value, disabled: data?.get("disabled-field") ?? null};
+  });
+  expect(final.submits).toBe(1);
+  expect(final.customNotes.replace("\n", "")).toBe("draft");
+  expect(final.combo).toBe("b");
+  expect(final.disabled).toBeNull();
+});
+
+test("nested and externally owned controls stay with their owning form", async ({page}) => {
+  await page.evaluate(async () => {
+    const root = document.querySelector<HTMLElement>("#fixture");
+    if (root === null) throw new Error("fixture missing");
+    const submits = {outer: 0, inner: 0, external: 0};
+    const outer = document.createElement("aeliqo-form") as HTMLElement & {updateComplete: Promise<unknown>};
+    outer.id = "nested-outer";
+    const inner = document.createElement("aeliqo-form") as HTMLElement & {updateComplete: Promise<unknown>};
+    inner.id = "nested-inner";
+    const innerInput = document.createElement("input");
+    innerInput.name = "inner";
+    innerInput.value = "inner";
+    inner.append(innerInput);
+    outer.append(inner);
+    outer.addEventListener("aeliqo-form-submit", (event) => { if (event.target === outer) submits.outer += 1; });
+    inner.addEventListener("aeliqo-form-submit", (event) => { if (event.target === inner) submits.inner += 1; });
+    root.append(outer);
+
+    const external = document.createElement("form");
+    external.id = "external-owner";
+    const wrapped = document.createElement("aeliqo-form") as HTMLElement & {updateComplete: Promise<unknown>};
+    wrapped.id = "nested-external-wrapper";
+    const externalInput = document.createElement("input");
+    externalInput.name = "external";
+    externalInput.value = "external";
+    const externalSubmit = document.createElement("button");
+    externalSubmit.type = "submit";
+    externalSubmit.textContent = "External";
+    wrapped.append(externalInput, externalSubmit);
+    external.addEventListener("submit", (event) => { event.preventDefault(); submits.external += 1; });
+    external.append(wrapped);
+    root.append(external);
+    await Promise.all([outer.updateComplete, inner.updateComplete, wrapped.updateComplete]);
+    (window as Window & {nestedFormSubmits?: typeof submits}).nestedFormSubmits = submits;
+  });
+
+  await page.locator("#nested-inner > input").press("Enter");
+  await page.waitForTimeout(10);
+  const nested = await page.evaluate(() => (window as Window & {nestedFormSubmits?: {outer: number; inner: number; external: number}}).nestedFormSubmits);
+  expect(nested).toEqual({outer: 0, inner: 1, external: 0});
+
+  await page.locator("#external-owner input").press("Enter");
+  await page.waitForTimeout(10);
+  const counts = await page.evaluate(() => {
+    const external = document.querySelector<HTMLFormElement>("#external-owner");
+    const wrapped = document.querySelector<HTMLElement>("#nested-external-wrapper");
+    const submits = (window as Window & {nestedFormSubmits?: {outer: number; inner: number; external: number}}).nestedFormSubmits;
+    return {
+      submits,
+      externalData: [...new FormData(external as HTMLFormElement).entries()].map(([key, value]) => [key, String(value)]),
+      wrappedData: wrapped && "formData" in wrapped ? [...((wrapped as HTMLElement & {formData: () => FormData}).formData()).entries()] : [],
+    };
+  });
+  expect(counts).toEqual({
+    submits: {outer: 0, inner: 1, external: 1},
+    externalData: [["external", "external"]],
+    wrappedData: [],
+  });
 });
 
 test("combobox keeps its selected label and active descendant synchronized", async ({page}) => {

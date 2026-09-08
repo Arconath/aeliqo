@@ -21,3 +21,12 @@ partial query.
 Direct imports are available from `packages/web/src/input/index.ts`. The
 package root and custom-element registration remain thin integration layers;
 applications can register only the tags they use.
+
+`<aeliqo-form>` is an explicit host boundary for its slotted controls. It
+validates and serializes native controls that are owned by the boundary and
+merges the `formValue` of slotted Aeliqo fields. A native control already
+owned by an outer `<form>`, a disabled fieldset, or a nested `<aeliqo-form>`
+remains with that owner and is not duplicated. Submit buttons respect their
+`formNoValidate` flag; Enter is deferred long enough for a child combobox,
+select, or textarea to keep its own keyboard behavior. Use an ordinary native
+`<form>` when the browser should own submission directly.
