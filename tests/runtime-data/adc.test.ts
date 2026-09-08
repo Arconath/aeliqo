@@ -14,7 +14,7 @@ const fields = [
   {id: 'active', label: 'Active', type: {value: 'boolean' as const, nullable: true}, role: 'attribute' as const},
 ];
 const catalog: Catalog = {
-  version: '1', revision: 'catalog-1', functionRegistryDigest: 'functions-1',
+  version: '1', revision: 'catalog-1', functionRegistryDigest: 'core-standard-1',
   entities: [
     {id: 'employees', label: 'Employees', identity: ['id'], rowGrain: ['id'], fields},
     {id: 'teams', label: 'Teams', identity: ['id'], rowGrain: ['id'], fields: [fields[0]!]},
@@ -62,7 +62,7 @@ describe('in-process ADC data service', () => {
     expect(accepted.ok).toBe(true);
     if (!accepted.ok) return;
     expect(accepted.value.effectiveBudget.maxRows).toBe(2);
-    expect(accepted.value.supported).toEqual(['projection', 'predicates', 'order', 'paging']);
+    expect(accepted.value.supported).toEqual(['projection']);
     const unsupported = await service.plan({
       version: '1', requestId: 'plan-2', catalogRevision: 'catalog-1', target: {outputId: 'employees-output'},
       query: query({measures: [{id: 'metric.total', revision: '1'}]}), budget,

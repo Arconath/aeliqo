@@ -5,6 +5,9 @@ import {
   serializeContract,
   authorizeMeaningActivation,
   validateMeaningBundle,
+  createQueryPlanner,
+  createStandardFunctionRegistry,
+  lowerQuerySpec,
 } from '@aeliqo/core';
 import type {
   Catalog,
@@ -16,6 +19,17 @@ import type {
   Outcome,
   QuerySpec,
   ResultRef,
+  FunctionRegistry,
+  LogicalPlan,
+  QueryPlanner,
+  QuerySource,
+  QueryLimits,
+  QueryResult,
+  QueryField,
+  PlanNode,
+  QuerySchema,
+  Expression,
+  PredicateSpec,
 } from '@aeliqo/core';
 import {WIRE_LIMITS} from '@aeliqo/core';
 import {parseAcceptedQuery, parseCatalogRequest, parsePlanRequest} from './schema.js';
@@ -49,7 +63,6 @@ const DEFAULT_BUDGET: QueryBudget = Object.freeze({
   maxColumns: 128,
 });
 const DEFAULT_SCOPE = 'scope-public';
-const SUPPORTED_OPERATIONS = Object.freeze(['projection', 'predicates', 'order', 'paging']);
 const DEFAULT_PLAN_TTL_MS = 5 * 60_000;
 const DEFAULT_MAX_PLANS = 256;
 
@@ -57,6 +70,23 @@ interface StoredSnapshot {
   readonly catalog: Catalog;
   readonly sourceRevision: string;
   readonly records: Readonly<Record<string, readonly DataRecord[]>>;
+}
+
+interface StoredPlan {
+  readonly accepted: PlanAcceptance;
+  readonly logical: LogicalPlan;
+  readonly dependencies: PlanDependencies;
+  readonly scanEntities: readonly string[];
+  readonly policyRevision?: string;
+}
+
+interface RuntimeQueryOptions {
+  readonly functionRegistry?: FunctionRegistry;
+  readonly queryLimits?: Partial<QueryLimits>;
+}
+
+function asRuntimeQueryOptions(options: LocalDataServiceOptions): RuntimeQueryOptions {
+  return options as LocalDataServiceOptions & RuntimeQueryOptions;
 }
 
 interface SourceLimits {
@@ -74,23 +104,6 @@ interface CursorValue {
   readonly sourceRevision?: string;
   readonly offset: number;
 }
-
-interface EvaluationRow {
-  readonly row: DataRecord;
-  readonly index: number;
-}
-
-interface PredicateResult {
-  readonly state: 'true' | 'false' | 'unknown';
-}
-
-type Predicate =
-  | {readonly op: 'compare'; readonly field: string; readonly comparison: 'eq' | 'ne' | 'lt' | 'lte' | 'gt' | 'gte'; readonly value: DataValue}
-  | {readonly op: 'is-null'; readonly field: string; readonly negate: boolean}
-  | {readonly op: 'in'; readonly field: string; readonly values: readonly DataValue[]}
-  | {readonly op: 'and'; readonly predicates: readonly Predicate[]}
-  | {readonly op: 'or'; readonly predicates: readonly Predicate[]}
-  | {readonly op: 'not'; readonly predicate: Predicate};
 
 function diagnostic(code: string, message: string, path?: readonly (string | number)[], remedies?: readonly string[]): Diagnostic {
   return {
@@ -603,107 +616,6 @@ function mergeCatalogPage(catalog: Catalog, target: CatalogTarget, grant: ReadGr
   };
 }
 
-function fieldValue(row: DataRecord, field: string): DataValue | undefined {
-  return Object.hasOwn(row, field) ? row[field] : undefined;
-}
-
-function decimalParts(value: {readonly decimal: string}): {coefficient: bigint; scale: number} {
-  const negative = value.decimal.startsWith('-');
-  const unsigned = negative ? value.decimal.slice(1) : value.decimal;
-  const [whole, fraction = ''] = unsigned.split('.');
-  const digits = `${whole}${fraction}`;
-  const coefficient = BigInt(digits) * (negative ? -1n : 1n);
-  return {coefficient, scale: fraction.length};
-}
-
-function compareDecimal(left: {readonly decimal: string}, right: {readonly decimal: string}): number {
-  const a = decimalParts(left);
-  const b = decimalParts(right);
-  if (a.scale === b.scale) return a.coefficient < b.coefficient ? -1 : a.coefficient > b.coefficient ? 1 : 0;
-  const scale = Math.max(a.scale, b.scale);
-  const aa = a.coefficient * 10n ** BigInt(scale - a.scale);
-  const bb = b.coefficient * 10n ** BigInt(scale - b.scale);
-  return aa < bb ? -1 : aa > bb ? 1 : 0;
-}
-
-function compareCodePoints(left: string, right: string): number {
-  const a = [...left];
-  const b = [...right];
-  const length = Math.min(a.length, b.length);
-  for (let index = 0; index < length; index += 1) {
-    const aa = a[index]!.codePointAt(0)!;
-    const bb = b[index]!.codePointAt(0)!;
-    if (aa !== bb) return aa < bb ? -1 : 1;
-  }
-  return a.length < b.length ? -1 : a.length > b.length ? 1 : 0;
-}
-
-function compareValues(left: DataValue, right: DataValue, type: string): number | undefined {
-  if (left === null || right === null) return undefined;
-  if (type === 'decimal') {
-    if (typeof left !== 'object' || typeof right !== 'object') return undefined;
-    return compareDecimal(left, right);
-  }
-  if (type === 'instant') {
-    if (typeof left !== 'string' || typeof right !== 'string') return undefined;
-    const a = instantParts(left);
-    const b = instantParts(right);
-    if (a === undefined || b === undefined) return undefined;
-    if (a.epochMilliseconds !== b.epochMilliseconds) return a.epochMilliseconds < b.epochMilliseconds ? -1 : 1;
-    const digits = Math.max(a.fraction.length, b.fraction.length);
-    const fractionA = a.fraction.padEnd(digits, '0');
-    const fractionB = b.fraction.padEnd(digits, '0');
-    return fractionA < fractionB ? -1 : fractionA > fractionB ? 1 : 0;
-  }
-  if (type === 'date') {
-    if (typeof left !== 'string' || typeof right !== 'string') return undefined;
-    const a = Date.parse(left);
-    const b = Date.parse(right);
-    if (!Number.isFinite(a) || !Number.isFinite(b)) return undefined;
-    return a < b ? -1 : a > b ? 1 : 0;
-  }
-  if (typeof left === 'string' && typeof right === 'string') return compareCodePoints(left, right);
-  if (typeof left === 'boolean' && typeof right === 'boolean') return left === right ? 0 : left ? 1 : -1;
-  if (typeof left === 'number' && typeof right === 'number') return left < right ? -1 : left > right ? 1 : 0;
-  return undefined;
-}
-
-function sameValue(left: DataValue, right: DataValue, type: string): boolean | undefined {
-  if (left === null || right === null) return left === right;
-  const compared = compareValues(left, right, type);
-  return compared === undefined ? undefined : compared === 0;
-}
-
-function expectedValueType(type: string, value: DataValue): boolean {
-  if (value === null) return true;
-  if (type === 'text') return typeof value === 'string';
-  if (type === 'date') return typeof value === 'string' && validDate(value);
-  if (type === 'instant') return typeof value === 'string' && validInstant(value);
-  if (type === 'boolean') return typeof value === 'boolean';
-  if (type === 'integer') return typeof value === 'number' && Number.isSafeInteger(value);
-  if (type === 'float') return typeof value === 'number' && Number.isFinite(value);
-  if (type === 'decimal') return typeof value === 'object' && value !== null && typeof value.decimal === 'string';
-  return false;
-}
-
-function predicateFields(predicate: Predicate | undefined, result: string[] = []): string[] {
-  if (predicate === undefined) return result;
-  if (predicate.op === 'and' || predicate.op === 'or') {
-    for (const child of predicate.predicates) predicateFields(child, result);
-    return result;
-  }
-  if (predicate.op === 'not') {
-    predicateFields(predicate.predicate, result);
-    return result;
-  }
-  result.push(predicate.field);
-  return result;
-}
-
-function queryFields(query: QuerySpec): string[] {
-  return [...query.fields, ...query.order.map((entry) => entry.field), ...predicateFields(query.where as unknown as Predicate | undefined)];
-}
-
 /** Cursor position is a continuation token, not part of the logical query identity. */
 function normalizedQuery(query: QuerySpec): QuerySpec {
   if (query.page === undefined || query.page.cursor === undefined) return query;
@@ -720,115 +632,18 @@ function validateQuery(query: QuerySpec, catalog: Catalog, grant: ReadGrant): Ou
     return failure('data.denied', 'The requested data is not available in the current authorization scope.', ['query', 'entity']);
   if (query.fields.length === 0) return failure('data.invalid-projection', 'A query must project at least one field.', ['query', 'fields']);
   if (new Set(query.fields).size !== query.fields.length) return failure('data.invalid-projection', 'Projection fields must be unique.', ['query', 'fields']);
-  for (const identity of entity.identity) {
-    if (!query.fields.includes(identity)) return unsupported({kind: 'source', id: 'identity-projection', reason: `Identity field ${identity} must be projected for stable result lineage.`, alternatives: ['Include all identity fields in the projection.']}, ['query', 'fields']);
+  const isGroupedOrDerived = query.measures.length > 0 || query.groupBy.length > 0 || query.relations.length > 0 || (query.windows?.length ?? 0) > 0 || query.timeBucket !== undefined;
+  if (!isGroupedOrDerived) {
+    for (const identity of entity.identity) {
+      if (!query.fields.includes(identity)) return unsupported({kind: 'source', id: 'identity-projection', reason: `Identity field ${identity} must be projected for stable result lineage.`, alternatives: ['Include all identity fields in the projection.']}, ['query', 'fields']);
+    }
+    for (const index of query.order.keys()) {
+      const entry = query.order[index]!;
+      if (!query.fields.includes(entry.field)) return unsupported({kind: 'operator', id: 'order-projection', reason: 'Ordering by an unprojected field is outside the bounded projection subset.', alternatives: ['Project every order field.']}, ['query', 'order', index, 'field']);
+    }
   }
-  if ((query.windows?.length ?? 0) > 0) return unsupported({kind: 'operator', id: 'window', reason: 'Window functions require a negotiated relational execution path.', alternatives: ['Use an analytical host capability.']}, ['query', 'windows']);
-  if (query.measures.length > 0) return unsupported({kind: 'aggregation', id: 'measures', reason: 'The bounded local evaluator has no aggregate execution path.', alternatives: ['Use a host analytical capability.', 'Project source fields only.']}, ['query', 'measures']);
-  if (query.relations.length > 0 || (query.relationUsage?.length ?? 0) > 0) return unsupported({kind: 'relation', id: 'relations', reason: 'Joins and relation expansion require an explicit host plan.', alternatives: ['Use an analytical host capability.']}, ['query', 'relations']);
-  if (query.groupBy.length > 0) return unsupported({kind: 'grouping', id: 'groupBy', reason: 'Grouping is not part of the bounded local subset.', alternatives: ['Use a host analytical capability.']}, ['query', 'groupBy']);
-  if (query.period !== undefined || query.timeBucket !== undefined) return unsupported({kind: 'operator', id: 'temporal', reason: 'Temporal filtering and bucketing are not inferred by the local evaluator.', alternatives: ['Provide a host capability with declared calendar semantics.']}, ['query', query.period === undefined ? 'timeBucket' : 'period']);
   if (query.population.kind !== 'all-authorized') return unsupported({kind: 'source', id: 'population', reason: 'Only the current bounded authorized source population is available locally.', alternatives: ['Use a host source with a stable cohort contract.']}, ['query', 'population']);
-  for (let index = 0; index < query.fields.length; index += 1) {
-    const field = query.fields[index]!;
-    if (!allowedField(grant, query.entity, field)) return failure('data.denied', 'The requested data is not available in the current authorization scope.', ['query', 'fields', index]);
-    const resolved = indexOutcome.value.resolveField(query.entity, field);
-    if (!resolved.ok) return failure('data.invalid-field', `Field ${field} is not available on ${query.entity}.`, ['query', 'fields', index]);
-  }
-  for (const field of queryFields(query)) {
-    if (!allowedField(grant, query.entity, field)) return failure('data.denied', 'The requested data is not available in the current authorization scope.', ['query']);
-    const resolved = indexOutcome.value.resolveField(query.entity, field);
-    if (!resolved.ok) return failure('data.invalid-field', `Field ${field} is not available on ${query.entity}.`, ['query']);
-  }
-  for (let index = 0; index < query.order.length; index += 1) {
-    const entry = query.order[index]!;
-    if (!query.fields.includes(entry.field)) return unsupported({kind: 'operator', id: 'order-projection', reason: 'Ordering by an unprojected field is outside the bounded projection subset.', alternatives: ['Project every order field.']}, ['query', 'order', index, 'field']);
-  }
-  const validatePredicateNode = (predicate: Predicate, path: readonly (string | number)[]): Outcome<void> => {
-    if (predicate.op === 'and' || predicate.op === 'or') {
-      for (let index = 0; index < predicate.predicates.length; index += 1) {
-        const checked = validatePredicateNode(predicate.predicates[index]!, [...path, 'predicates', index]);
-        if (!checked.ok) return checked;
-      }
-      return {ok: true, value: undefined};
-    }
-    if (predicate.op === 'not') return validatePredicateNode(predicate.predicate, [...path, 'predicate']);
-    if (!allowedField(grant, query.entity, predicate.field)) return failure('data.denied', 'The requested data is not available in the current authorization scope.', path);
-    const resolved = indexOutcome.value.resolveField(query.entity, predicate.field);
-    if (!resolved.ok) return failure('data.invalid-field', `Field ${predicate.field} is not available on ${query.entity}.`, [...path, 'field']);
-    if (predicate.op === 'compare') {
-      if (predicate.value === null) return unsupported({kind: 'operator', id: 'compare-null', reason: 'Null comparisons are unknown; use is-null for explicit null checks.', alternatives: ['Use an is-null predicate.']}, [...path, 'value']);
-      if (!expectedValueType(resolved.value.type.value, predicate.value)) return unsupported({kind: 'operator', id: 'typed-compare', reason: `Value type does not match field ${predicate.field}.`, alternatives: ['Use a value with the declared field type.']}, [...path, 'value']);
-    } else if (predicate.op === 'in') {
-      for (let index = 0; index < predicate.values.length; index += 1) {
-        const value = predicate.values[index]!;
-        if (value === null || !expectedValueType(resolved.value.type.value, value)) return unsupported({kind: 'operator', id: 'typed-in', reason: `Every membership value must match field ${predicate.field}; null membership is unknown.`, alternatives: ['Use typed non-null values or is-null.']}, [...path, 'values', index]);
-      }
-    }
-    return {ok: true, value: undefined};
-  };
-  if (query.where !== undefined) return validatePredicateNode(query.where as unknown as Predicate, ['query', 'where']);
   return {ok: true, value: undefined};
-}
-
-function evaluatePredicate(predicate: Predicate, row: DataRecord, entity: CatalogEntity): PredicateResult {
-  if (predicate.op === 'and' || predicate.op === 'or') {
-    const children = predicate.predicates.map((child) => evaluatePredicate(child, row, entity).state);
-    if (predicate.op === 'and') {
-      if (children.includes('false')) return {state: 'false'};
-      return {state: children.includes('unknown') ? 'unknown' : 'true'};
-    }
-    if (children.includes('true')) return {state: 'true'};
-    return {state: children.includes('unknown') ? 'unknown' : 'false'};
-  }
-  if (predicate.op === 'not') {
-    const child = evaluatePredicate(predicate.predicate, row, entity).state;
-    return {state: child === 'true' ? 'false' : child === 'false' ? 'true' : 'unknown'};
-  }
-  const field = entity.fields.find((candidate) => candidate.id === predicate.field);
-  if (field === undefined) return {state: 'unknown'};
-  const actual = fieldValue(row, predicate.field);
-  if (predicate.op === 'is-null') {
-    const matched = actual === null;
-    return {state: (predicate.negate ? !matched : matched) ? 'true' : 'false'};
-  }
-  if (actual === undefined || actual === null) return {state: 'unknown'};
-  if (predicate.op === 'compare') {
-    const compared = compareValues(actual, predicate.value, field.type.value);
-    if (compared === undefined) return {state: 'unknown'};
-    const matched = predicate.comparison === 'eq' ? compared === 0 : predicate.comparison === 'ne' ? compared !== 0 : predicate.comparison === 'lt' ? compared < 0 : predicate.comparison === 'lte' ? compared <= 0 : predicate.comparison === 'gt' ? compared > 0 : compared >= 0;
-    return {state: matched ? 'true' : 'false'};
-  }
-  if (predicate.op !== 'in') return {state: 'unknown'};
-  const matched = predicate.values.some((candidate: DataValue) => sameValue(actual, candidate, field.type.value) === true);
-  return {state: matched ? 'true' : 'false'};
-}
-
-function compareRows(left: EvaluationRow, right: EvaluationRow, query: QuerySpec, entity: CatalogEntity): number {
-  for (const order of query.order) {
-    const field = entity.fields.find((candidate) => candidate.id === order.field);
-    if (field === undefined) continue;
-    const a = fieldValue(left.row, order.field);
-    const b = fieldValue(right.row, order.field);
-    let compared: number;
-    if (a === undefined || a === null) compared = b === undefined || b === null ? 0 : order.nulls === 'first' ? -1 : 1;
-    else if (b === undefined || b === null) compared = order.nulls === 'first' ? 1 : -1;
-    else compared = compareValues(a, b, field.type.value) ?? 0;
-    if (compared !== 0) {
-      const eitherNull = a === undefined || a === null || b === undefined || b === null;
-      return eitherNull || order.direction === 'asc' ? compared : -compared;
-    }
-  }
-  for (const identity of entity.identity) {
-    const field = entity.fields.find((candidate) => candidate.id === identity);
-    if (field === undefined) continue;
-    const a = fieldValue(left.row, identity);
-    const b = fieldValue(right.row, identity);
-    if (a === undefined || b === undefined) continue;
-    const compared = compareValues(a, b, field.type.value);
-    if (compared !== undefined && compared !== 0) return compared;
-  }
-  return left.index - right.index;
 }
 
 function resultError(requestId: string, code: string, message: string): DataResultEvent {
@@ -856,20 +671,257 @@ function sameAccepted(left: AcceptedQuery | PlanAcceptance, right: AcceptedQuery
   return canonical(acceptedParts(left)) === canonical(acceptedParts(right));
 }
 
+function queryWithoutPage(query: QuerySpec): QuerySpec {
+  const {page: _page, ...logical} = query;
+  return logical as QuerySpec;
+}
+
+function plannerFailure<T>(outcome: Outcome<T>): Outcome<T> {
+  if (outcome.ok) return outcome;
+  const first = outcome.diagnostics[0];
+  if (first === undefined) return failure('data.unsupported', 'The requested query cannot be executed by this source.');
+  if (first.code === 'query.budget') return failure('data.budget', first.message, first.path, first.remedies);
+  if (first.code === 'query.denied') return failure('data.denied', first.message, first.path, first.remedies);
+  if (first.code === 'query.stale-catalog' || first.code === 'query.stale-source' || first.code === 'query.stale-registry')
+    return failure('data.stale-plan', first.message, first.path, first.remedies);
+  return failure('data.unsupported', first.message, first.path, first.remedies ?? ['Use a source capability that declares this operation.']);
+}
+
+function queryRegistry(options: LocalDataServiceOptions, catalog: Catalog): Outcome<FunctionRegistry> {
+  const runtime = asRuntimeQueryOptions(options);
+  const registry = runtime.functionRegistry ?? options.meaningActivation?.registry;
+  if (registry !== undefined) {
+    if (registry.digest !== catalog.functionRegistryDigest)
+      return failure('data.unsupported', 'The host function registry does not match the catalog function registry revision.', ['functionRegistryDigest']);
+    return {ok: true, value: registry};
+  }
+  const standard = createStandardFunctionRegistry();
+  if (!standard.ok) return failure('data.unsupported', 'The default function registry could not be initialized.');
+  if (standard.value.digest !== catalog.functionRegistryDigest)
+    return failure('data.unsupported', 'The catalog requires a host function registry that was not supplied.', ['functionRegistryDigest'], ['Provide a registry whose digest matches the catalog.']);
+  return standard;
+}
+
+function queryPlanner(options: LocalDataServiceOptions, catalog: Catalog, sourceLimits: SourceLimits): Outcome<QueryPlanner> {
+  const registry = queryRegistry(options, catalog);
+  if (!registry.ok) return registry;
+  const runtime = asRuntimeQueryOptions(options);
+  const requested = runtime.queryLimits ?? {};
+  const limits: Partial<QueryLimits> = {
+    ...requested,
+    maxRows: Math.min(sourceLimits.rows, requested.maxRows ?? sourceLimits.rows),
+    maxBytes: Math.min(sourceLimits.bytes, requested.maxBytes ?? sourceLimits.bytes),
+  };
+  const planner = createQueryPlanner({catalog, registry: registry.value, definitions: catalog.meanings, limits});
+  return plannerFailure(planner);
+}
+
+interface PlanDependencies {
+  readonly entities: ReadonlySet<string>;
+  readonly fields: ReadonlyMap<string, ReadonlySet<string>>;
+}
+
+function dependenciesForPlan(plan: LogicalPlan, catalog: Catalog): PlanDependencies {
+  const entities = new Set<string>();
+  const fields = new Map<string, Set<string>>();
+  const addEntity = (entity: string): void => {entities.add(entity); if (!fields.has(entity)) fields.set(entity, new Set());};
+  const addField = (entity: string, field: string): void => {addEntity(entity); fields.get(entity)!.add(field);};
+  const nodes = new Map(plan.nodes.map((node) => [node.id, node] as const));
+  const inputSchema = (node: PlanNode, index = 0): QuerySchema => nodes.get(node.inputs[index] ?? '')?.output ?? node.output;
+  const collectExpression = (expression: Expression, schema: QuerySchema, seenDefinitions: Set<string> = new Set()): void => {
+    if (expression.kind === 'field') {
+      const source = expression.entity === undefined ? schema.fields.find((field) => field.id === expression.ref)?.source : {entity: expression.entity, field: expression.ref};
+      if (source !== undefined) addField(source.entity, source.field);
+      return;
+    }
+    if (expression.kind === 'call') {
+      for (const argument of expression.arguments) collectExpression(argument as Expression, schema, seenDefinitions);
+      return;
+    }
+    if (expression.kind !== 'definition') return;
+    const key = `${expression.ref.id}@${expression.ref.revision}`;
+    if (seenDefinitions.has(key)) return;
+    seenDefinitions.add(key);
+    const meaning = catalog.meanings.find((candidate) => candidate.id === expression.ref.id && candidate.revision === expression.ref.revision);
+    if (meaning?.implementation.kind === 'expression') collectExpression(meaning.implementation.expression, schema, seenDefinitions);
+  };
+  const collectPredicate = (predicate: PredicateSpec, schema: QuerySchema): void => {
+    if (predicate.op === 'and' || predicate.op === 'or') {for (const child of predicate.predicates) collectPredicate(child, schema); return;}
+    if (predicate.op === 'not') {collectPredicate(predicate.predicate, schema); return;}
+    if (predicate.op === 'compare') {
+      collectExpression(predicate.left, schema);
+      collectExpression(predicate.right, schema);
+    } else if (predicate.op === 'is-null' || predicate.op === 'in') {
+      collectExpression(predicate.expression, schema);
+      if (predicate.op === 'in') for (const value of predicate.values) collectExpression(value, schema);
+    }
+  };
+  for (const node of plan.nodes) {
+    if (node.op === 'scan') {
+      addEntity(node.entity);
+      const definition = catalog.entities.find((candidate) => candidate.id === node.entity);
+      if (definition !== undefined) for (const field of [...definition.identity, ...definition.rowGrain]) addField(node.entity, field);
+      continue;
+    }
+    if (node.op === 'filter') collectPredicate(node.predicate, inputSchema(node));
+    else if (node.op === 'project' || node.op === 'derive') for (const item of node.items) collectExpression(item.expression, inputSchema(node));
+    else if (node.op === 'time-bucket') for (const item of node.items) collectExpression(item.expression, inputSchema(node));
+    else if (node.op === 'window') {
+      const schema = inputSchema(node);
+      for (const item of node.items) {
+        for (const expression of [...item.arguments, ...item.partitionBy]) collectExpression(expression, schema);
+        for (const order of item.orderBy) collectExpression(order.expression, schema);
+      }
+    } else if (node.op === 'group') {
+      const schema = inputSchema(node);
+      for (const item of node.keys) collectExpression(item.expression, schema);
+    } else if (node.op === 'aggregate') {
+      const schema = inputSchema(node);
+      for (const item of node.items) for (const argument of item.arguments) collectExpression(argument, schema);
+    } else if (node.op === 'sort') {
+      const schema = inputSchema(node);
+      for (const item of node.items) collectExpression(item.expression, schema);
+    }
+    if (node.op !== 'join' && node.op !== 'semijoin') continue;
+    const relationship = catalog.relationships.find((candidate) => candidate.id === node.spec.relationship.id && candidate.revision === node.spec.relationship.revision);
+    if (relationship === undefined) continue;
+    addEntity(relationship.sourceEntity);
+    addEntity(relationship.targetEntity);
+    for (const key of relationship.keys) {
+      addField(relationship.sourceEntity, key.sourceField);
+      addField(relationship.targetEntity, key.targetField);
+    }
+    if (node.spec.where !== undefined) collectPredicate(node.spec.where, inputSchema(node, 1));
+  }
+  return {entities, fields};
+}
+
+function checkPlanDependencies(dependencies: PlanDependencies, grant: ReadGrant): Outcome<void> {
+  for (const entity of dependencies.entities) {
+    if (!allowedEntity(grant, entity)) return failure('data.denied', 'The requested query relation is not available in the current authorization scope.', ['query']);
+    for (const field of dependencies.fields.get(entity) ?? []) {
+      if (!allowedField(grant, entity, field)) return failure('data.denied', 'The requested query field is not available in the current authorization scope.', ['query']);
+    }
+  }
+  return {ok: true, value: undefined};
+}
+
+function supportedOperations(plan: LogicalPlan, query: QuerySpec): readonly string[] {
+  const operations = new Set<string>();
+  for (const node of plan.nodes) {
+    if (node.op === 'project') operations.add('projection');
+    else if (node.op === 'filter') operations.add('predicates');
+    else if (node.op === 'sort') operations.add('order');
+    else if (node.op === 'top-k') operations.add('paging');
+    else if (node.op === 'join' || node.op === 'semijoin') operations.add('relation');
+    else if (node.op === 'group') operations.add('grouping');
+    else if (node.op === 'aggregate') operations.add('aggregation');
+    else if (node.op === 'time-bucket') operations.add('temporal');
+    else if (node.op === 'window') operations.add('window');
+    else if (node.op === 'derive') operations.add('derive');
+  }
+  if (query.page !== undefined) operations.add('paging');
+  // Keep the wire list deterministic and retain the established ADC ordering;
+  // plan node order is an implementation detail (filters and sorts precede projection).
+  const order = ['projection', 'predicates', 'order', 'paging', 'relation', 'grouping', 'aggregation', 'temporal', 'window', 'derive'];
+  return Object.freeze(order.filter((operation) => operations.has(operation)));
+}
+
+function scanEntityIds(plan: LogicalPlan): readonly string[] {
+  return Object.freeze([...new Set(plan.nodes.filter((node): node is Extract<PlanNode, {readonly op: 'scan'}> => node.op === 'scan').map((node) => node.entity))]);
+}
+
+function queryFieldDefinition(field: QueryField): CatalogEntity['fields'][number] {
+  return {id: field.id, label: field.label, type: field.type, role: field.role};
+}
+
+function resultWarnings(result: QueryResult): readonly Diagnostic[] {
+  return Object.freeze(result.unknown.map((unknown) => diagnostic('data.unknown', `Output ${unknown.field} is unknown: ${unknown.reason}.`, ['result', unknown.field])));
+}
+
+function resultPrecision(result: QueryResult): {readonly kind: 'exact'} | {readonly kind: 'approximate'; readonly method: string; readonly uncertainty: {readonly kind: 'unquantified'; readonly reason: string}} {
+  return result.precision.kind === 'exact'
+    ? {kind: 'exact'}
+    : {kind: 'approximate', method: result.precision.method, uncertainty: {kind: 'unquantified', reason: 'The bounded evaluator does not quantify numerical uncertainty.'}};
+}
+
+type ResultEvidence =
+  | {readonly kind: 'observed'; readonly source: {readonly id: string; readonly revision: string}}
+  | {readonly kind: 'computed'; readonly queryDigest: string; readonly definitions: readonly {readonly id: string; readonly revision: string}[]};
+
+function resultEvidence(result: QueryResult, plan: LogicalPlan, query: QuerySpec, queryDigest: string): ResultEvidence {
+  const computed = plan.nodes.some((node) => node.op === 'derive' || node.op === 'time-bucket' || node.op === 'window' || node.op === 'join' || node.op === 'semijoin' || node.op === 'group' || node.op === 'aggregate');
+  if (!computed) return {kind: 'observed', source: {id: 'local-source', revision: result.sourceRevision}};
+  return {kind: 'computed', queryDigest, definitions: query.measures};
+}
+
+async function authorizedSource(
+  plan: StoredPlan,
+  snapshot: StoredSnapshot,
+  grant: ReadGrant,
+  query: QuerySpec,
+  context: ReadContext,
+  startedAt: number,
+  budget: QueryBudget,
+  current: () => boolean,
+): Promise<Outcome<QuerySource>> {
+  const relations: Record<string, {readonly entity: string; readonly rows: readonly DataRecord[]; readonly complete: boolean}> = Object.create(null) as Record<string, {readonly entity: string; readonly rows: readonly DataRecord[]; readonly complete: boolean}>;
+  for (const entityId of plan.scanEntities) {
+    const input = snapshot.records[entityId] ?? [];
+    const allowed: DataRecord[] = [];
+    for (const row of input) {
+      if (context.signal?.aborted) return failure('data.aborted', 'The result execution was cancelled.');
+      if (Date.now() - startedAt > budget.maxMilliseconds) return failure('data.budget', 'Execution exceeded the effective time budget while authorizing rows.');
+      if (grant.rowPolicy !== undefined) {
+        const remaining = budget.maxMilliseconds - (Date.now() - startedAt);
+        if (remaining <= 0) return failure('data.budget', 'Execution exceeded the effective time budget while authorizing rows.');
+        const deadline = makeDeadline(context, remaining);
+        let decision: Promise<boolean> | boolean;
+        try {
+          decision = grant.rowPolicy({entityId, row, query, context: {...context, signal: deadline.signal}});
+        } catch {
+          deadline.cleanup();
+          return failure('data.denied', 'The host row policy could not authorize the requested row.');
+        }
+        const permission = await resolveValueWithAbort(decision, deadline.signal, 'data.denied', 'The host row policy could not authorize the requested row.');
+        const timedOut = deadline.timedOut();
+        deadline.cleanup();
+        if (timedOut && !context.signal?.aborted) return failure('data.budget', 'Execution exceeded the effective time budget while authorizing rows.');
+        if (!permission.ok) return permission;
+        if (typeof permission.value !== 'boolean') return failure('data.denied', 'The host row policy could not authorize the requested row.');
+        if (!current()) return failure('data.stale-plan', 'The catalog or source changed while row authorization was being resolved.');
+        if (!permission.value) continue;
+      }
+      allowed.push(row);
+    }
+    relations[entityId] = Object.freeze({entity: entityId, rows: Object.freeze(allowed), complete: true});
+  }
+  return {
+    ok: true,
+    value: Object.freeze({
+      revision: snapshot.sourceRevision,
+      catalogRevision: snapshot.catalog.revision,
+      scopeDigest: grant.scopeDigest,
+      ...(grant.policyRevision === undefined ? {} : {policyRevision: grant.policyRevision}),
+      relations: Object.freeze(relations),
+    }),
+  };
+}
+
 export function createLocalDataService(options: LocalDataServiceOptions): LocalDataService {
   const sourceLimits = normalizeSourceLimits(options.sourceLimits);
   let snapshot = normalizeSnapshot(options.snapshot, sourceLimits);
   let currentCatalog = snapshot.catalog;
-  const plans = new Map<string, PlanAcceptance>();
+  const plans = new Map<string, StoredPlan>();
   const registeredBundles = new Map<string, MeaningRegistration>();
   const planTtlMs = options.planTtlMs ?? DEFAULT_PLAN_TTL_MS;
   const maxPlans = options.maxPlans ?? DEFAULT_MAX_PLANS;
   if (!isSafePositive(planTtlMs) || planTtlMs > 86_400_000) throw new TypeError('planTtlMs must be a bounded positive duration.');
   if (!isSafePositive(maxPlans) || maxPlans > 10_000) throw new TypeError('maxPlans must be a bounded positive count.');
   const reapPlans = (now: number) => {
-    for (const [key, plan] of plans) if (plan.expiresAt <= now) plans.delete(key);
+    for (const [key, plan] of plans) if (plan.accepted.expiresAt <= now) plans.delete(key);
     while (plans.size >= maxPlans) {
-      const oldest = [...plans.entries()].sort((left, right) => left[1].expiresAt - right[1].expiresAt)[0];
+      const oldest = [...plans.entries()].sort((left, right) => left[1].accepted.expiresAt - right[1].accepted.expiresAt)[0];
       if (oldest === undefined) break;
       plans.delete(oldest[0]);
     }
@@ -938,63 +990,82 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
         return failure('data.authorization', 'A row policy must declare a policy revision before a plan can be accepted.');
       const checked = validateQuery(input.query, currentCatalog, grant.value);
       if (!checked.ok) return checked;
-      const selected = new Set(input.query.fields);
-      if (selected.size > Math.min(input.budget.maxColumns, options.hostBudget?.maxColumns ?? DEFAULT_BUDGET.maxColumns, grant.value.maxBudget?.maxColumns ?? Number.MAX_SAFE_INTEGER))
-        return failure('data.budget', 'The requested projection exceeds the effective column budget.', ['query', 'fields']);
-      const hostBudget = options.hostBudget ?? DEFAULT_BUDGET;
-      const effectiveBudget = minBudget(input.budget, hostBudget, grant.value.maxBudget);
+      const effectiveBudget = minBudget(input.budget, options.hostBudget ?? DEFAULT_BUDGET, grant.value.maxBudget);
       const capability = currentCatalog.capabilities.find((candidate) => candidate.entity === input.query.entity);
-      const maxOutputRows = capability?.maxOutputRows;
       const boundedBudget = Object.freeze({
         ...effectiveBudget,
-        ...(maxOutputRows === undefined ? {} : {maxRows: Math.min(effectiveBudget.maxRows, maxOutputRows)}),
+        ...(capability === undefined ? {} : {maxRows: Math.min(effectiveBudget.maxRows, capability.maxOutputRows)}),
       });
-      if (boundedBudget.maxMessages < 3 || boundedBudget.maxRows < 1 || boundedBudget.maxColumns < selected.size)
-        return failure('data.budget', 'The effective budget cannot carry a descriptor and a bounded result.', ['budget']);
-      if (Date.now() - startedAt > boundedBudget.maxMilliseconds) return failure('data.budget', 'Planning exceeded the effective time budget.', ['budget']);
+      if (boundedBudget.maxMessages < 3 || boundedBudget.maxRows < 1)
+        return failure('data.budget', 'The effective budget cannot carry a bounded result.', ['budget']);
+      if (Date.now() - startedAt > boundedBudget.maxMilliseconds)
+        return failure('data.budget', 'Planning exceeded the effective time budget.', ['budget']);
+
+      const plannerOutcome = queryPlanner(options, currentCatalog, sourceLimits);
+      if (!plannerOutcome.ok) return plannerOutcome;
+      const planner = plannerOutcome.value;
+      const logicalInput = queryWithoutPage(input.query);
+      const lowered = lowerQuerySpec(logicalInput, currentCatalog, planner.registry, currentCatalog.meanings);
+      if (!lowered.ok) return plannerFailure(lowered);
+      const relational = {
+        ...lowered.value,
+        pins: {
+          ...lowered.value.pins,
+          sourceRevision: snapshot.sourceRevision,
+          scopeDigest: grant.value.scopeDigest,
+          ...(grant.value.policyRevision === undefined ? {} : {policyRevision: grant.value.policyRevision}),
+        },
+      };
+      const logicalOutcome = planner.plan(relational);
+      if (!logicalOutcome.ok) return plannerFailure(logicalOutcome);
+      const logical = logicalOutcome.value;
+      const dependencies = dependenciesForPlan(logical, currentCatalog);
+      const dependencyCheck = checkPlanDependencies(dependencies, grant.value);
+      if (!dependencyCheck.ok) return dependencyCheck;
+      if (logical.output.fields.length > boundedBudget.maxColumns)
+        return failure('data.budget', 'The query output exceeds the effective column budget.', ['budget', 'maxColumns']);
+      if (currentCatalog !== initialCatalog || snapshot !== initialSnapshot)
+        return failure('data.stale-plan', 'The catalog or source changed while the logical plan was being built.');
+
       const querySerialized = serializeContract('query', normalizedQuery(input.query));
       if (!querySerialized.ok) return querySerialized;
       const queryDigestOutcome = await digestWithDeadline(querySerialized.value, 'query', context, boundedBudget.maxMilliseconds - (Date.now() - startedAt));
       if (!queryDigestOutcome.ok) return queryDigestOutcome;
       const queryDigest = queryDigestOutcome.value;
-      if (context.signal?.aborted) return failure('data.aborted', 'The ADC plan was cancelled.');
-      if (currentCatalog !== initialCatalog || snapshot !== initialSnapshot) return failure('data.stale-plan', 'The catalog or source changed while the plan identity was being computed.');
       if (input.query.page?.cursor !== undefined) {
         const cursor = decodeCursor(input.query.page.cursor);
         if (cursor?.kind !== 'data' || cursor.queryDigest !== queryDigest || cursor.scopeDigest !== grant.value.scopeDigest || cursor.policyRevision !== grant.value.policyRevision || cursor.sourceRevision !== snapshot.sourceRevision || cursor.catalogRevision !== currentCatalog.revision || cursor.target !== input.target.outputId)
           return failure('data.stale-cursor', 'The query cursor does not belong to this query, scope, target or source revision.', ['query', 'page', 'cursor']);
       }
       const populationDigestOutcome = await digestWithDeadline(
-        {queryDigest, scopeDigest: grant.value.scopeDigest, sourceRevision: snapshot.sourceRevision, catalogRevision: currentCatalog.revision, ...(grant.value.policyRevision === undefined ? {} : {policyRevision: grant.value.policyRevision})},
-        'population',
-        context,
-        boundedBudget.maxMilliseconds - (Date.now() - startedAt),
+        {queryDigest, planKey: logical.planKey, scopeDigest: grant.value.scopeDigest, sourceRevision: snapshot.sourceRevision, catalogRevision: currentCatalog.revision, ...(grant.value.policyRevision === undefined ? {} : {policyRevision: grant.value.policyRevision})},
+        'population', context, boundedBudget.maxMilliseconds - (Date.now() - startedAt),
       );
       if (!populationDigestOutcome.ok) return populationDigestOutcome;
       const populationDigest = populationDigestOutcome.value;
-      if (context.signal?.aborted) return failure('data.aborted', 'The ADC plan was cancelled.');
-      if (currentCatalog !== initialCatalog || snapshot !== initialSnapshot) return failure('data.stale-plan', 'The catalog or source changed while the plan population identity was being computed.');
-      if (Date.now() - startedAt > boundedBudget.maxMilliseconds) return failure('data.budget', 'Planning exceeded the effective time budget.', ['budget']);
       const expiresAt = Date.now() + planTtlMs;
       const acceptedBase: AcceptedQuery = {
         version: '1', requestId: input.requestId, target: input.target, catalogRevision: currentCatalog.revision,
         sourceRevision: snapshot.sourceRevision, scopeDigest: grant.value.scopeDigest, queryDigest, populationDigest,
-        planDigest: '', expiresAt, functionRegistryDigest: currentCatalog.functionRegistryDigest,
+        planDigest: '', expiresAt, functionRegistryDigest: planner.registry.digest,
         ...(grant.value.policyRevision === undefined ? {} : {policyRevision: grant.value.policyRevision}),
         query: input.query, effectiveBudget: boundedBudget,
       };
-      const planDigestOutcome = await digestWithDeadline({...acceptedBase, planDigest: ''}, 'plan', context, boundedBudget.maxMilliseconds - (Date.now() - startedAt));
+      const planDigestOutcome = await digestWithDeadline({accepted: acceptedBase, planKey: logical.planKey}, 'plan', context, boundedBudget.maxMilliseconds - (Date.now() - startedAt));
       if (!planDigestOutcome.ok) return planDigestOutcome;
       const planDigest = planDigestOutcome.value;
-      if (context.signal?.aborted) return failure('data.aborted', 'The ADC plan was cancelled.');
-      if (currentCatalog !== initialCatalog || snapshot !== initialSnapshot) return failure('data.stale-plan', 'The catalog or source changed while the plan identity was being computed.');
-      if (Date.now() - startedAt > boundedBudget.maxMilliseconds) return failure('data.budget', 'Planning exceeded the effective time budget.', ['budget']);
       const accepted: PlanAcceptance = {
-        ...acceptedBase, kind: 'accepted', planDigest, supported: SUPPORTED_OPERATIONS,
+        ...acceptedBase, kind: 'accepted', planDigest, supported: supportedOperations(logical, input.query),
       };
       const storedAccepted = freezeDeep(accepted);
       reapPlans(Date.now());
-      plans.set(planDigest, storedAccepted);
+      plans.set(planDigest, {
+        accepted: storedAccepted,
+        logical,
+        dependencies,
+        scanEntities: scanEntityIds(logical),
+        ...(grant.value.policyRevision === undefined ? {} : {policyRevision: grant.value.policyRevision}),
+      });
       return {ok: true, value: storedAccepted};
     },
 
@@ -1010,15 +1081,15 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
       }
       const input = parsed.value;
       const stored = plans.get(input.planDigest);
-      if (stored === undefined || Date.now() >= stored.expiresAt || !sameAccepted(stored, input)) {
-        yield resultError(input.requestId, stored !== undefined && Date.now() >= stored.expiresAt ? 'data.expired-plan' : 'data.stale-plan', stored !== undefined && Date.now() >= stored.expiresAt ? 'The accepted plan handle has expired.' : 'The accepted plan handle is unknown, changed or expired.');
+      if (stored === undefined || Date.now() >= stored.accepted.expiresAt || !sameAccepted(stored.accepted, input)) {
+        yield resultError(input.requestId, stored !== undefined && Date.now() >= stored.accepted.expiresAt ? 'data.expired-plan' : 'data.stale-plan', stored !== undefined && Date.now() >= stored.accepted.expiresAt ? 'The accepted plan handle has expired.' : 'The accepted plan handle is unknown, changed or expired.');
         return;
       }
-      if (stored.functionRegistryDigest !== currentCatalog.functionRegistryDigest) {
+      if (stored.accepted.functionRegistryDigest !== currentCatalog.functionRegistryDigest || stored.logical.pins.functionRegistryDigest !== currentCatalog.functionRegistryDigest) {
         yield resultError(input.requestId, 'data.stale-plan', 'The accepted plan is pinned to a different function registry digest.');
         return;
       }
-      if (snapshot.sourceRevision !== stored.sourceRevision || currentCatalog.revision !== stored.catalogRevision) {
+      if (snapshot.sourceRevision !== stored.accepted.sourceRevision || currentCatalog.revision !== stored.accepted.catalogRevision) {
         yield resultError(input.requestId, 'data.stale-plan', 'The accepted plan is stale for the current catalog or source revision.');
         return;
       }
@@ -1041,12 +1112,13 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
         yield resultError(input.requestId, checked.diagnostics[0]?.code ?? 'data.invalid-query', checked.diagnostics[0]?.message ?? 'The execution query is no longer authorized.');
         return;
       }
-      if (grant.value.scopeDigest !== stored.scopeDigest || grant.value.policyRevision !== stored.policyRevision || !allowedEntity(grant.value, input.query.entity)) {
-        yield resultError(input.requestId, 'data.denied', 'The execution authorization scope or policy revision changed.');
+      const dependencyCheck = checkPlanDependencies(stored.dependencies, grant.value);
+      if (!dependencyCheck.ok || grant.value.scopeDigest !== stored.accepted.scopeDigest || grant.value.policyRevision !== stored.accepted.policyRevision) {
+        yield resultError(input.requestId, dependencyCheck.ok ? 'data.denied' : (dependencyCheck.diagnostics[0]?.code ?? 'data.denied'), dependencyCheck.ok ? 'The execution authorization scope or policy revision changed.' : (dependencyCheck.diagnostics[0]?.message ?? 'The execution query is no longer authorized.'));
         return;
       }
-      const executionBudget = minBudget(stored.effectiveBudget, options.hostBudget ?? DEFAULT_BUDGET, grant.value.maxBudget);
-      if (executionBudget.maxColumns < input.query.fields.length) {
+      const executionBudget = minBudget(stored.accepted.effectiveBudget, options.hostBudget ?? DEFAULT_BUDGET, grant.value.maxBudget);
+      if (executionBudget.maxColumns < stored.logical.output.fields.length) {
         yield resultError(input.requestId, 'data.budget', 'The current authorization has a tighter projection budget.');
         return;
       }
@@ -1054,181 +1126,115 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
         yield resultError(input.requestId, 'data.budget', 'Execution exceeded the effective time budget before reading rows.');
         return;
       }
-      if (context.signal?.aborted) {
-        yield resultError(input.requestId, 'data.aborted', 'The result execution was cancelled.');
+      const plannerOutcome = queryPlanner(options, currentCatalog, sourceLimits);
+      if (!plannerOutcome.ok) {
+        yield resultError(input.requestId, plannerOutcome.diagnostics[0]?.code ?? 'data.unsupported', plannerOutcome.diagnostics[0]?.message ?? 'The query planner is unavailable.');
         return;
       }
-      const entity = getEntity(currentCatalog, input.query.entity);
-      if (entity === undefined) {
-        yield resultError(input.requestId, 'data.invalid-entity', 'The accepted plan refers to an unavailable entity.');
-        return;
-      }
-      const populationDigest = stored.populationDigest;
-      const resultIdOutcome = await digestWithDeadline({planDigest: stored.planDigest, requestId: input.requestId}, 'result', context, executionBudget.maxMilliseconds - (Date.now() - startedAt));
+      const planner = plannerOutcome.value;
+      const resultIdOutcome = await digestWithDeadline({planDigest: stored.accepted.planDigest, requestId: input.requestId}, 'result', context, executionBudget.maxMilliseconds - (Date.now() - startedAt));
       if (!resultIdOutcome.ok) {
         yield resultError(input.requestId, resultIdOutcome.diagnostics[0]?.code ?? 'data.crypto', resultIdOutcome.diagnostics[0]?.message ?? 'The result identity could not be computed.');
         return;
       }
-      const resultId = resultIdOutcome.value;
-      if (context.signal?.aborted) {
-        yield resultError(input.requestId, 'data.aborted', 'The result execution was cancelled.');
+      const ref = resultReference(stored.accepted, resultIdOutcome.value);
+      const sourceOutcome = await authorizedSource(stored, snapshot, grant.value, input.query, context, startedAt, executionBudget, () => currentCatalog === initialCatalog && snapshot === initialSnapshot);
+      if (!sourceOutcome.ok) {
+        yield resultError(input.requestId, sourceOutcome.diagnostics[0]?.code ?? 'data.denied', sourceOutcome.diagnostics[0]?.message ?? 'The authorized source could not be prepared.');
         return;
       }
-      if (currentCatalog !== initialCatalog || snapshot !== initialSnapshot) {
-        yield resultError(input.requestId, 'data.stale-plan', 'The catalog or source changed while the result identity was being computed.');
+      const now = () => typeof globalThis.performance?.now === 'function' ? globalThis.performance.now() : Date.now();
+      const cancellation = {aborted: context.signal?.aborted === true};
+      const evalResult = planner.evaluate(stored.logical, sourceOutcome.value, {
+        cancellation,
+        clock: now,
+        maxMilliseconds: Math.max(1, executionBudget.maxMilliseconds - (Date.now() - startedAt)),
+        maxRows: planner.limits.maxRows,
+        maxBytes: planner.limits.maxBytes,
+        maxOperations: planner.limits.maxOperations,
+        catalogRevision: currentCatalog.revision,
+        scopeDigest: grant.value.scopeDigest,
+        ...(grant.value.policyRevision === undefined ? {} : {policyRevision: grant.value.policyRevision}),
+      });
+      if (!evalResult.ok) {
+        const first = evalResult.diagnostics[0];
+        yield resultError(input.requestId, first?.code === 'query.budget' ? 'data.budget' : 'data.unsupported', first?.message ?? 'The query could not be evaluated.');
         return;
       }
-      const ref = resultReference(stored, resultId);
-      const sourceRows = snapshot.records[input.query.entity] ?? [];
-      const evaluated: EvaluationRow[] = [];
-      for (let index = 0; index < sourceRows.length; index += 1) {
-        if (context.signal?.aborted) {
-          yield resultError(input.requestId, 'data.aborted', 'The result execution was cancelled.');
-          return;
-        }
-        if (Date.now() - startedAt > executionBudget.maxMilliseconds) {
-          yield resultError(input.requestId, 'data.budget', 'Execution exceeded the effective time budget while scanning rows.');
-          return;
-        }
-        const row = sourceRows[index]!;
-        if (grant.value.rowPolicy !== undefined) {
-          const remaining = executionBudget.maxMilliseconds - (Date.now() - startedAt);
-          if (remaining <= 0) {
-            yield resultError(input.requestId, 'data.budget', 'Execution exceeded the effective time budget while authorizing rows.');
-            return;
-          }
-          const policyDeadline = makeDeadline(context, remaining);
-          let decision: Promise<boolean> | boolean;
-          try { decision = grant.value.rowPolicy({entityId: input.query.entity, row, query: input.query, context: {...context, signal: policyDeadline.signal}}); }
-          catch {
-            policyDeadline.cleanup();
-            yield resultError(input.requestId, 'data.denied', 'The host row policy could not authorize the requested row.');
-            return;
-          }
-          const permission = await resolveValueWithAbort(
-            decision,
-            policyDeadline.signal,
-            'data.denied',
-            'The host row policy could not authorize the requested row.',
-          );
-          const policyTimedOut = policyDeadline.timedOut();
-          policyDeadline.cleanup();
-          if (policyTimedOut && !context.signal?.aborted) {
-            yield resultError(input.requestId, 'data.budget', 'Execution exceeded the effective time budget while authorizing rows.');
-            return;
-          }
-          if (!permission.ok) {
-            yield resultError(input.requestId, permission.diagnostics[0]?.code ?? 'data.denied', permission.diagnostics[0]?.message ?? 'The host row policy could not authorize the requested row.');
-            return;
-          }
-          const permitted = permission.value;
-          if (typeof permitted !== 'boolean') {
-            yield resultError(input.requestId, 'data.denied', 'The host row policy could not authorize the requested row.');
-            return;
-          }
-          if (currentCatalog !== initialCatalog || snapshot !== initialSnapshot) {
-            yield resultError(input.requestId, 'data.stale-plan', 'The catalog or source changed while row authorization was being resolved.');
-            return;
-          }
-          if (!permitted) continue;
-        }
-        if (input.query.where !== undefined && evaluatePredicate(input.query.where as unknown as Predicate, row, entity).state !== 'true') continue;
-        evaluated.push({row, index});
-      }
-      if (Date.now() - startedAt > executionBudget.maxMilliseconds) {
-        yield resultError(input.requestId, 'data.budget', 'Execution exceeded the effective time budget while filtering rows.');
-        return;
-      }
-      evaluated.sort((left, right) => compareRows(left, right, input.query, entity));
-      if (context.signal?.aborted) {
-        yield resultError(input.requestId, 'data.aborted', 'The result execution was cancelled.');
-        return;
-      }
-      if (Date.now() - startedAt > executionBudget.maxMilliseconds) {
-        yield resultError(input.requestId, 'data.budget', 'Execution exceeded the effective time budget while ordering rows.');
-        return;
-      }
+      const result = evalResult.value;
       const requestedOffset = input.query.page?.cursor === undefined ? 0 : (decodeCursor(input.query.page.cursor)?.offset ?? 0);
       const pageLimit = input.query.page?.size ?? Number.MAX_SAFE_INTEGER;
-      const available = evaluated.slice(requestedOffset);
-      let outputRows: DataRecord[] = [];
-      let partialReason: string | undefined = requestedOffset > 0 ? 'page' : undefined;
-      for (const evaluatedRow of available) {
-        if (outputRows.length >= pageLimit) { partialReason = 'page'; break; }
-        if (outputRows.length >= executionBudget.maxRows) { partialReason = 'row budget'; break; }
-        if (Date.now() - startedAt > executionBudget.maxMilliseconds) { partialReason = 'time budget'; break; }
-        const projected: Record<string, DataValue> = {};
-        for (const field of input.query.fields) {
-          const value = fieldValue(evaluatedRow.row, field);
-          if (value !== undefined) projected[field] = value;
-        }
-        outputRows.push(Object.freeze(projected));
+      const candidates = result.rows.slice(requestedOffset);
+      let outputRows: readonly DataRecord[] = candidates.slice(0, Math.min(pageLimit, executionBudget.maxRows)) as readonly DataRecord[];
+      let partialReason: string | undefined;
+      if (requestedOffset > 0 || requestedOffset + outputRows.length < result.rows.length) {
+        partialReason = outputRows.length >= executionBudget.maxRows && executionBudget.maxRows <= pageLimit ? 'row budget' : 'page';
       }
-      if (requestedOffset + outputRows.length < evaluated.length && partialReason === undefined) partialReason = 'page';
+      if (result.complete === false) partialReason ??= 'incomplete source';
+      if (Date.now() - startedAt > executionBudget.maxMilliseconds) partialReason = 'time budget';
+      const refFields = result.schema.fields.map(queryFieldDefinition);
+      const sourceRevisions: Record<string, string> = Object.fromEntries(stored.scanEntities.map((entity) => [entity, stored.accepted.sourceRevision]));
       const descriptorBase = {
         version: '1' as const, ref, taskId: input.requestId,
-        fields: entity.fields.filter((field) => input.query.fields.includes(field.id)),
-        identity: entity.identity, rowGrain: entity.rowGrain,
-        precision: {kind: 'exact' as const},
-        consistency: {kind: 'snapshot' as const, snapshotId: stored.sourceRevision, sourceRevisions: {[entity.id]: stored.sourceRevision}},
-        evidence: {kind: 'observed' as const, source: {id: 'local-source', revision: stored.sourceRevision}},
-        filters: input.query.where === undefined ? [] : [input.query.where], warnings: [], lineage: [],
+        fields: refFields, identity: result.schema.identity, rowGrain: result.schema.grain,
+        precision: resultPrecision(result),
+        consistency: {kind: 'snapshot' as const, snapshotId: stored.accepted.sourceRevision, sourceRevisions},
+        evidence: resultEvidence(result, stored.logical, input.query, stored.accepted.queryDigest),
+        filters: input.query.where === undefined ? [] : [input.query.where],
+        ...(input.query.period === undefined ? {} : {period: input.query.period}),
+        warnings: resultWarnings(result), lineage: [],
       };
+      const population = result.complete ? {kind: 'exact' as const, value: result.rows.length, populationDigest: stored.accepted.populationDigest} : {kind: 'unknown' as const};
       const makeCoverage = () => partialReason === undefined
-        ? {kind: 'complete' as const, populationDigest}
-        : {kind: 'partial' as const, populationDigest, reason: partialReason};
+        ? {kind: 'complete' as const, populationDigest: stored.accepted.populationDigest}
+        : {kind: 'partial' as const, populationDigest: stored.accepted.populationDigest, reason: partialReason};
       const makeDescriptor = (): DataResultEvent => ({kind: 'descriptor', descriptor: {
-        ...descriptorBase, counts: {loaded: outputRows.length, population: {kind: 'exact', value: evaluated.length, populationDigest}}, coverage: makeCoverage(),
+        ...descriptorBase, counts: {loaded: outputRows.length, population}, coverage: makeCoverage(),
       }});
       const nextOffset = () => requestedOffset + outputRows.length;
-      const makeComplete = (): DataResultEvent => ({kind: 'complete', result: ref, finalCoverage: makeCoverage(), ...(partialReason === undefined || nextOffset() >= evaluated.length ? {} : {cursor: pageCursor(stored, nextOffset())})});
+      const makeComplete = (): DataResultEvent => ({kind: 'complete', result: ref, finalCoverage: makeCoverage(), ...(partialReason === undefined || nextOffset() >= result.rows.length ? {} : {cursor: pageCursor(stored.accepted, nextOffset())})});
       const includeProgress = executionBudget.maxMessages >= 4;
       let descriptor = makeDescriptor();
       let batch: DataResultEvent | undefined = outputRows.length > 0 ? {kind: 'batch', result: ref, sequence: 0, rows: outputRows} : undefined;
-      let progress: DataResultEvent | undefined = includeProgress ? {kind: 'progress', result: ref, completed: outputRows.length, total: evaluated.length, unit: 'rows'} : undefined;
+      let progress: DataResultEvent | undefined = includeProgress
+        ? (result.complete
+          ? {kind: 'progress', result: ref, completed: outputRows.length, total: result.rows.length, unit: 'rows'}
+          : {kind: 'progress', result: ref, completed: outputRows.length, unit: 'rows'})
+        : undefined;
       let complete = makeComplete();
       let fitFailure: 'aborted' | 'budget' | undefined;
-      const fits = () => {
+      const fits = (): boolean => {
         if (context.signal?.aborted) { fitFailure = 'aborted'; return false; }
         if (Date.now() - startedAt > executionBudget.maxMilliseconds) { fitFailure = 'budget'; return false; }
         descriptor = makeDescriptor();
         batch = outputRows.length > 0 ? {kind: 'batch', result: ref, sequence: 0, rows: outputRows} : undefined;
-        progress = includeProgress ? {kind: 'progress', result: ref, completed: outputRows.length, total: evaluated.length, unit: 'rows'} : undefined;
+        progress = includeProgress
+          ? (result.complete
+            ? {kind: 'progress', result: ref, completed: outputRows.length, total: result.rows.length, unit: 'rows'}
+            : {kind: 'progress', result: ref, completed: outputRows.length, unit: 'rows'})
+          : undefined;
         complete = makeComplete();
         return eventBytes(descriptor) + (batch === undefined ? 0 : eventBytes(batch)) + (progress === undefined ? 0 : eventBytes(progress)) + eventBytes(complete) <= executionBudget.maxBytes;
       };
       let responseFits = fits();
       if (!responseFits && fitFailure === undefined && outputRows.length > 0) {
-        const candidates = outputRows;
+        const candidatesToTrim = outputRows;
         let low = 0;
-        let high = candidates.length;
+        let high = candidatesToTrim.length;
         let best = -1;
         partialReason = 'byte budget';
         while (low <= high && fitFailure === undefined) {
           const middle = Math.ceil((low + high) / 2);
-          outputRows = candidates.slice(0, middle);
-          if (fits()) {
-            best = middle;
-            low = middle + 1;
-          } else {
-            high = middle - 1;
-          }
+          outputRows = candidatesToTrim.slice(0, middle);
+          if (fits()) { best = middle; low = middle + 1; }
+          else high = middle - 1;
         }
-        if (best >= 0) outputRows = candidates.slice(0, best);
+        if (best >= 0) outputRows = candidatesToTrim.slice(0, best);
         responseFits = fitFailure === undefined && fits();
       }
-      if (fitFailure === 'aborted') {
-        yield resultError(input.requestId, 'data.aborted', 'The result execution was cancelled.');
-        return;
-      }
-      if (fitFailure === 'budget') {
-        yield resultError(input.requestId, 'data.budget', 'Execution exceeded the effective time budget while bounding the response.');
-        return;
-      }
-      if (!responseFits) {
-        yield resultError(input.requestId, 'data.budget', 'The bounded result cannot fit the effective response byte budget.');
-        return;
-      }
+      if (fitFailure === 'aborted') { yield resultError(input.requestId, 'data.aborted', 'The result execution was cancelled.'); return; }
+      if (fitFailure === 'budget') { yield resultError(input.requestId, 'data.budget', 'Execution exceeded the effective time budget while bounding the response.'); return; }
+      if (!responseFits) { yield resultError(input.requestId, 'data.budget', 'The bounded result cannot fit the effective response byte budget.'); return; }
       const yieldFailure = (): DataResultEvent | undefined => {
         if (context.signal?.aborted) return resultError(input.requestId, 'data.aborted', 'The result execution was cancelled.');
         if (Date.now() - startedAt > executionBudget.maxMilliseconds) return resultError(input.requestId, 'data.budget', 'Execution exceeded the effective time budget while emitting the response.');

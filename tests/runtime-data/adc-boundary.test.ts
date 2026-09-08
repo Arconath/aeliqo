@@ -21,7 +21,7 @@ const teamFields = [
   {id: 'name', label: 'Name', type: {value: 'text' as const, nullable: true}, role: 'attribute' as const},
 ];
 const catalog: Catalog = {
-  version: '1', revision: 'catalog-1', functionRegistryDigest: 'functions-1',
+  version: '1', revision: 'catalog-1', functionRegistryDigest: 'core-standard-1',
   entities: [
     {id: 'employees', label: 'Employees', identity: ['id'], rowGrain: ['id'], fields},
     {id: 'teams', label: 'Teams', identity: ['id'], rowGrain: ['id'], fields: teamFields},

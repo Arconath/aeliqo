@@ -5,7 +5,7 @@ import type {DataRecord, QueryBudget} from '../../packages/runtime/src/data/type
 
 const budget: QueryBudget = {maxRows: 100, maxBytes: 100_000, maxColumns: 10, maxMessages: 10, maxMilliseconds: 2000};
 function catalog(identityType: 'text' | 'float' | 'instant' = 'text'): Catalog {
-  return {version: '1', revision: 'catalog-1', functionRegistryDigest: 'functions-1', entities: [{
+  return {version: '1', revision: 'catalog-1', functionRegistryDigest: 'core-standard-1', entities: [{
     id: 'events', label: 'Events', identity: ['id'], rowGrain: ['id'], fields: [
       {id: 'id', label: 'ID', type: {value: identityType, nullable: false}, role: 'identity'},
       {id: 'at', label: 'Time', type: {value: 'instant', nullable: false}, role: 'time'},
