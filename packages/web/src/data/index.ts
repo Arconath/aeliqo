@@ -4,7 +4,7 @@ export {AeliqoKeyValueElement} from "./key-value.js";
 export {AeliqoDetailElement} from "./detail.js";
 export {AeliqoRecordListElement} from "./record-list.js";
 export {AeliqoCardCollectionElement} from "./card-collection.js";
-export {AeliqoTableElement, stableTableRowKey} from "./table.js";
+export {AeliqoTableElement, AELIQO_TABLE_MAX_VIRTUAL_ROWS, stableTableRowKey} from "./table.js";
 export {AeliqoSelectionSummaryElement} from "./selection-summary.js";
 export {AeliqoFilterBuilderElement, buildAeliqoPredicate, combineAeliqoPredicates, validateAeliqoPredicate} from "./filter-builder.js";
 export {AeliqoDataLoadMoreEvent, AeliqoDataSelectionEvent, AeliqoFilterChangeEvent, AeliqoTablePageEvent, AeliqoTableSortEvent, AeliqoTableWindowEvent} from "./events.js";

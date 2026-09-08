@@ -214,13 +214,13 @@ const columns = [{key: 'id', label: 'ID'}, {key: 'name', label: 'Name'}, {key: '
 const webMarkup = await renderAeliqo(html\`<aeliqo-table caption="SSR people" .columns=\${columns} .rows=\${rows} .identity=\${['id']}></aeliqo-table><aeliqo-delta label="SSR delta" .current=\${{decimal: '0.0001'}} .baseline=\${{decimal: '0'}} mode="percentage-point"></aeliqo-delta>\`);
 assert.match(webMarkup, /shadowrootmode="open"/);
 assert.match(webMarkup, /100000000000000000\.01/);
-assert.match(webMarkup, /\+0\.01 pp/);
+assert(webMarkup.includes('+0.01 pp'));
 const reactMarkup = renderToString(createElement(AeliqoTable, {caption: 'React SSR people', columns, rows, identity: ['id']}));
 assert.match(reactMarkup, /aeliqo-table/);
 assert.match(reactMarkup, /shadowrootmode="open"/);
 assert.match(reactMarkup, /100000000000000000\.01/);
 const reactDelta = renderToString(createElement(AeliqoDelta, {label: 'React SSR delta', current: {decimal: '0.0001'}, baseline: {decimal: '0'}, mode: 'percentage-point'}));
-assert.match(reactDelta, /\+0\.01 pp/);
+assert(reactDelta.includes('+0.01 pp'));
 const secondRequest = renderToString(createElement(AeliqoDelta, {label: 'Second request', current: {decimal: '1'}, baseline: {decimal: '0'}, mode: 'absolute'}));
 assert(!secondRequest.includes('SSR people'));
 console.log(JSON.stringify({webBytes: webMarkup.length, reactBytes: reactMarkup.length + reactDelta.length + secondRequest.length}));

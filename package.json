@@ -40,7 +40,18 @@
     "test:agents": "pnpm build:agent && vitest run --config tests/agents/vitest.config.mjs && tsc -p tests/agents/tsconfig.json --noEmit",
     "test:agent:consumers": "node tests/consumers/agent-tarballs.mjs",
     "test:foundation": "pnpm build:platform && vitest run --config tests/foundation/vitest.config.mjs && tsc -p tests/foundation/tsconfig.json",
-    "test:foundation:browser": "pnpm build:platform && playwright test --config tests/foundation/playwright.config.mjs"
+    "test:foundation:browser": "pnpm build:platform && playwright test --config tests/foundation/playwright.config.mjs",
+    "test:inputs": "pnpm build:platform && vitest run --config tests/input/vitest.config.mjs",
+    "test:inputs:browser": "playwright test --config tests/input/playwright.config.mjs",
+    "test:inputs:consumers": "node tests/consumers/input-tarballs.mjs",
+    "test:navigation:browser": "playwright test --config tests/navigation/playwright.config.mjs",
+    "test:feedback:browser": "playwright test --config tests/feedback/playwright.config.mjs",
+    "test:data-components": "pnpm build:platform && vitest run --config tests/data-components/vitest.config.mjs",
+    "test:data-components:browser": "playwright test --config tests/data-components/playwright.config.mjs",
+    "test:data-components:consumers": "node tests/consumers/data-tarballs.mjs",
+    "test:plot": "pnpm build:platform && vitest run --config tests/plot/vitest.config.mjs && tsc -p tests/plot/tsconfig.json && node tests/plot/ssr.mjs",
+    "test:plot:browser": "playwright test --config tests/plot/playwright.config.mjs",
+    "test:plot:consumers": "node tests/consumers/plot-tarballs.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
