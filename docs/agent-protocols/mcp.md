@@ -55,7 +55,9 @@ endpoint.close();
 The client bypasses the SDK's private tool-list cache on every discovery. This
 keeps revocation and scope changes visible. Tool metadata is treated as
 untrusted wire data and must contain an Aeliqo capability reference and exact
-operation; the adapter never invents missing authority.
+operation; the adapter never invents missing authority. A tool call must refer
+to a tool from the endpoint's latest successful discovery, and the returned
+receipt must repeat that tool's capability and operation binding.
 
 ## Authenticated Streamable HTTP
 

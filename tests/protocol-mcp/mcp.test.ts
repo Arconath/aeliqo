@@ -11,7 +11,7 @@ import {
 import {toNodeHandler, type NodeIncomingMessageLike, type NodeServerResponseLike} from '../../packages/agent/node_modules/@modelcontextprotocol/node';
 import {parseWireValue, type OperationGrant, type Outcome} from '../../packages/core/src/index.js';
 import {createAgentCapabilityRegistry} from '../../packages/agent/src/capabilities/registry.js';
-import type {AgentCapabilityManifest} from '../../packages/agent/src/capabilities/types.js';
+import type {AgentCapabilityManifest, AgentCapabilityReceipt} from '../../packages/agent/src/capabilities/types.js';
 import {createAgentToolEndpoint} from '../../packages/agent/src/protocol/endpoint.js';
 import type {AgentToolEndpoint, AgentToolEndpointOptions} from '../../packages/agent/src/protocol/types.js';
 import {
@@ -50,6 +50,14 @@ function newEndpoint(invoke?: AgentCapabilityManifest['invoke']): AgentToolEndpo
   const outcome = createAgentToolEndpoint(endpointOptions(invoke));
   if (!outcome.ok) throw new Error(JSON.stringify(outcome));
   return outcome.value;
+}
+
+function receiptFor(requestId: string, overrides: Partial<AgentCapabilityReceipt> = {}): AgentCapabilityReceipt {
+  return {
+    version: '1', requestId, targetRegionId: 'region', goalEpoch: 'goal', capability: {id: 'summary', revision: '1'},
+    operation: 'catalog.read', transport: 'mcp', state: 'data-ready', status: 'data-ready', stage: 'data-ready',
+    diagnostics: [], ...overrides,
+  };
 }
 
 function authGate(overrides: Partial<{resource: URL; issuer: string; expiresAt: number}> = {}) {
@@ -150,6 +158,109 @@ describe('MCP adapter', () => {
     expect((await createMcpHttpHandler({...base, authenticate: authGate({resource: new URL('https://attacker.example/')})}).fetch(request({authorization: 'Bearer fixture-token'}))).status).toBe(401);
     expect((await createMcpHttpHandler({...base, authenticate: authGate({issuer: 'https://other.example'})}).fetch(request({authorization: 'Bearer fixture-token'}))).status).toBe(401);
     expect((await createMcpHttpHandler({...base, authenticate: authGate({expiresAt: Math.floor(Date.now() / 1000) - 1})}).fetch(request({authorization: 'Bearer fixture-token'}))).status).toBe(401);
+    expect((await createMcpHttpHandler({...base, authenticate: () => null as never}).fetch(request({authorization: 'Bearer fixture-token'}))).status).toBe(401);
+    expect((await createMcpHttpHandler({...base, now: () => Number.NaN, authenticate: authGate()}).fetch(request({authorization: 'Bearer fixture-token'}))).status).toBe(401);
+    expect((await createMcpHttpHandler({...base, authenticate: () => ({token: 'fixture-token', clientId: 'fixture-client', scopes: ['mcp'], expiresAt: Math.floor(Date.now() / 1000) + 60, resource: {href: '%%%'}} as never)}).fetch(request({authorization: 'Bearer fixture-token'}))).status).toBe(401);
+  });
+
+  it('rejects uncorrelated, incomplete and malformed receipts from the actual SDK path', async () => {
+    const variants: readonly Partial<AgentCapabilityReceipt>[] = [
+      {capability: {id: 'other', revision: '1'}},
+      {operation: 'action.execute'},
+      {affectedResults: [{id: 'only-id'}] as never},
+      {regionRevision: 42 as never},
+      {reason: {private: true} as never},
+      {state: 'renderer-ready', status: 'renderer-ready', stage: 'renderer-ready'},
+      {diagnostics: [{code: 'bad', message: 'bad', retryable: false, path: {not: 'an-array'}}] as never},
+      {diagnostics: Array.from({length: 17}, () => ({code: 'too-many', message: 'bad', retryable: false}))},
+    ];
+    for (const variant of variants) {
+      const fixture = await startHttp({
+        createEndpoint: () => ({
+          ...newEndpoint(),
+          invoke: (async (_name: string, _input: unknown, options: {readonly requestId: string}) => ({ok: true, value: receiptFor(options.requestId, variant)})) as AgentToolEndpoint['invoke'],
+        }),
+        authenticate: authGate(),
+        allowedHostnames: ['127.0.0.1'],
+        resourceServerUrl: new URL('http://127.0.0.1/'),
+        issuer: 'https://issuer.example',
+      });
+      const client = await connectMcpHttpClient({url: fixture.url, targetRegionId: 'region', goalEpoch: 'goal', authProvider: {token: async () => 'fixture-token'}});
+      expect((await client.discover()).ok).toBe(true);
+      expect(await client.invoke('summary', {}, {requestId: 'malformed-receipt'})).toMatchObject({ok: false, diagnostics: [{code: 'agent.mcp.receipt'}]});
+      client.close();
+      await fixture.handler.close();
+    }
+  });
+
+  it('rejects late results after the client closes during an actual SDK invocation', async () => {
+    let entered!: () => void;
+    const enteredPromise = new Promise<void>(resolve => {entered = resolve;});
+    let release!: () => void;
+    const pending = new Promise<void>(resolve => {release = resolve;});
+    const fixture = await startHttp({
+      createEndpoint: () => newEndpoint(async (_input, context) => {
+        entered();
+        await pending;
+        return {state: 'data-ready', value: {count: 2}};
+      }),
+      authenticate: authGate(),
+      allowedHostnames: ['127.0.0.1'],
+      resourceServerUrl: new URL('http://127.0.0.1/'),
+      issuer: 'https://issuer.example',
+    });
+    const client = await connectMcpHttpClient({url: fixture.url, targetRegionId: 'region', goalEpoch: 'goal', authProvider: {token: async () => 'fixture-token'}});
+    expect((await client.discover()).ok).toBe(true);
+    const call = client.invoke('summary', {}, {requestId: 'close-during-call'});
+    await enteredPromise;
+    client.close();
+    release();
+    expect(await call).toMatchObject({ok: false, diagnostics: [{code: 'agent.mcp.closed'}]});
+    await fixture.handler.close();
+  });
+
+  it('rejects a late discovery result after the client closes', async () => {
+    let entered!: () => void;
+    const enteredPromise = new Promise<void>(resolve => {entered = resolve;});
+    let release!: () => void;
+    const pending = new Promise<void>(resolve => {release = resolve;});
+    const fixture = await startHttp({
+      createEndpoint: () => newEndpoint(),
+      authenticate: authGate(),
+      allowedHostnames: ['127.0.0.1'],
+      resourceServerUrl: new URL('http://127.0.0.1/'),
+      issuer: 'https://issuer.example',
+    });
+    const client = await connectMcpHttpClient({
+      url: fixture.url, targetRegionId: 'region', goalEpoch: 'goal', authProvider: {token: async () => 'fixture-token'},
+      fetch: async (input, init) => {
+        const request = new Request(input, init);
+        if ((await request.clone().text()).includes('tools/list')) {
+          entered();
+          await pending;
+        }
+        return fetch(request);
+      },
+    });
+    const discovery = client.discover();
+    await enteredPromise;
+    client.close();
+    release();
+    expect(await discovery).toMatchObject({ok: false, diagnostics: [{code: 'agent.mcp.closed'}]});
+    await fixture.handler.close();
+  });
+
+  it('closes the HTTP transport when SDK connection setup fails', async () => {
+    let signal: AbortSignal | undefined;
+    await expect(connectMcpHttpClient({
+      url: 'http://127.0.0.1:1/mcp',
+      targetRegionId: 'region', goalEpoch: 'goal',
+      fetch: async (_input, init) => {
+        signal = init?.signal ?? undefined;
+        throw new Error('fixture connection failure');
+      },
+    })).rejects.toThrow('fixture connection failure');
+    expect(signal?.aborted).toBe(true);
   });
 
   it('maps cancellation and malformed remote receipts to bounded outcomes', async () => {
@@ -166,6 +277,7 @@ describe('MCP adapter', () => {
       issuer: 'https://issuer.example',
     });
     const client = await connectMcpHttpClient({url: fixture.url, targetRegionId: 'region', goalEpoch: 'goal', authProvider: {token: async () => 'fixture-token'}});
+    expect((await client.discover()).ok).toBe(true);
     const signal = new AbortController();
     const pending = client.invoke('summary', {}, {requestId: 'cancel-me', signal: signal.signal});
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -185,6 +297,7 @@ describe('MCP adapter', () => {
       issuer: 'https://issuer.example',
     });
     const malformedClient = await connectMcpHttpClient({url: malformed.url, targetRegionId: 'region', goalEpoch: 'goal', authProvider: {token: async () => 'fixture-token'}});
+    expect((await malformedClient.discover()).ok).toBe(true);
     expect(await malformedClient.invoke('summary', {}, {requestId: 'bad-receipt'})).toMatchObject({ok: false, diagnostics: [{code: 'agent.mcp.receipt'}]});
     malformedClient.close();
     await malformed.handler.close();
