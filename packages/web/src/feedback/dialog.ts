@@ -20,6 +20,7 @@ export class AeliqoDialogElement extends AeliqoFoundationElement {
   closeOnEscape = true;
   private returnFocus: HTMLElement | undefined = undefined;
   private pendingFocus: HTMLElement | undefined = undefined;
+  private focusEpoch = 0;
   private shownModal: boolean | undefined = undefined;
 
   protected override willUpdate(changed: Map<string, unknown>): void {
@@ -30,6 +31,7 @@ export class AeliqoDialogElement extends AeliqoFoundationElement {
 
   protected override updated(changed: Map<string, unknown>): void {
     if (!changed.has("open") && !changed.has("modal")) return;
+    const epoch = ++this.focusEpoch;
     const dialog = this.renderRoot.querySelector<HTMLDialogElement>("dialog");
     if (dialog === null) return;
     if (this.open) {
@@ -49,15 +51,18 @@ export class AeliqoDialogElement extends AeliqoFoundationElement {
       }
       const target = this.pendingFocus;
       this.pendingFocus = undefined;
-      const focusTarget = (preserveCurrent: boolean): void => {
+      const focusIfNeeded = (restoreTarget: boolean): void => {
+        if (epoch !== this.focusEpoch || !this.open || !dialog.isConnected) return;
         const focusables = focusableElements(dialog);
-        const current = activeElement(this);
-        if (preserveCurrent && current !== undefined && focusables.includes(current)) return;
-        if (target?.isConnected && focusables.includes(target)) target.focus();
-        else focusFirst(dialog);
+        const current = focusables.find((candidate) => candidate.matches(":focus"));
+        if (restoreTarget && target?.isConnected && focusables.includes(target)) {
+          target.focus();
+          return;
+        }
+        if (current === undefined) focusFirst(dialog);
       };
-      focusTarget(false);
-      nextFrame(() => focusTarget(true));
+      focusIfNeeded(true);
+      nextFrame(() => focusIfNeeded(false));
     } else {
       if (dialog.open && typeof dialog.close === "function") dialog.close(); else dialog.removeAttribute("open");
       this.shownModal = undefined;

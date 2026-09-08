@@ -23,6 +23,7 @@ export class AeliqoPopoverElement extends AeliqoFoundationElement {
   closeOnOutside = true;
   private returnFocus: HTMLElement | undefined = undefined;
   private pendingFocus: HTMLElement | undefined = undefined;
+  private focusEpoch = 0;
   private stopOutside: (() => void) | undefined = undefined;
 
   protected override willUpdate(changed: Map<string, unknown>): void {
@@ -33,6 +34,7 @@ export class AeliqoPopoverElement extends AeliqoFoundationElement {
 
   protected override updated(changed: Map<string, unknown>): void {
     if (!changed.has("open") && !changed.has("closeOnOutside") && !changed.has("modal")) return;
+    const epoch = ++this.focusEpoch;
     this.stopOutside?.(); this.stopOutside = undefined;
     if (this.open) {
       this.returnFocus ??= activeElement(this);
@@ -45,10 +47,21 @@ export class AeliqoPopoverElement extends AeliqoFoundationElement {
       }
       const pending = this.pendingFocus;
       this.pendingFocus = undefined;
-      if (this.modal && surface !== null) nextFrame(() => {
-        if (pending?.isConnected) pending.focus(); else focusFirst(surface);
-      });
-      else if (!this.modal && pending?.isConnected) nextFrame(() => pending.focus());
+      const focusIfNeeded = (restorePending: boolean): void => {
+        if (epoch !== this.focusEpoch || !this.open || surface === null || !surface.isConnected) return;
+        const focusables = focusableElements(surface);
+        const current = focusables.find((candidate) => candidate.matches(":focus"));
+        if (restorePending && pending?.isConnected && focusables.includes(pending)) {
+          pending.focus();
+          return;
+        }
+        if (current === undefined) focusFirst(surface);
+      };
+      // Preserve a focused slotted control during a mode switch synchronously.
+      // The queued fallback only fills an empty focus surface and cannot steal a
+      // focus that the consumer moved after opening.
+      focusIfNeeded(true);
+      if (surface !== null) nextFrame(() => focusIfNeeded(false));
     } else {
       this.pendingFocus = undefined;
       const surface = this.renderRoot.querySelector<HTMLDialogElement>("dialog[part='popover']");

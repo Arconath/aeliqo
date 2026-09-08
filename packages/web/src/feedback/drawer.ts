@@ -27,6 +27,7 @@ export class AeliqoDrawerElement extends AeliqoFoundationElement {
   side: AeliqoDrawerSide = "end";
   private returnFocus: HTMLElement | undefined = undefined;
   private pendingFocus: HTMLElement | undefined = undefined;
+  private focusEpoch = 0;
 
   protected override willUpdate(changed: Map<string, unknown>): void {
     if (!changed.has("mode") || !this.open) return;
@@ -36,6 +37,7 @@ export class AeliqoDrawerElement extends AeliqoFoundationElement {
 
   protected override updated(changed: Map<string, unknown>): void {
     if (!changed.has("open") && !changed.has("mode")) return;
+    const epoch = ++this.focusEpoch;
     const dialog = this.renderRoot.querySelector<HTMLDialogElement>("dialog");
     if (this.mode === "modal" && dialog !== null) {
       if (this.open) {
@@ -43,9 +45,15 @@ export class AeliqoDrawerElement extends AeliqoFoundationElement {
         if (!dialog.open) typeof dialog.showModal === "function" ? dialog.showModal() : dialog.setAttribute("open", "");
         const target = this.pendingFocus;
         this.pendingFocus = undefined;
-        const focusTarget = (): void => { if (target?.isConnected) target.focus(); else focusFirst(dialog); };
-        focusTarget();
-        nextFrame(focusTarget);
+        const focusIfNeeded = (restoreTarget: boolean): void => {
+          if (epoch !== this.focusEpoch || !this.open || !dialog.isConnected) return;
+          const focusables = focusableElements(dialog);
+          const current = focusables.find((candidate) => candidate.matches(":focus"));
+          if (restoreTarget && target?.isConnected && focusables.includes(target)) { target.focus(); return; }
+          if (current === undefined) focusFirst(dialog);
+        };
+        focusIfNeeded(true);
+        nextFrame(() => focusIfNeeded(false));
       } else {
         if (dialog.open && typeof dialog.close === "function") dialog.close(); else dialog.removeAttribute("open");
         restoreFocus(this.returnFocus); this.returnFocus = undefined;
@@ -53,7 +61,7 @@ export class AeliqoDrawerElement extends AeliqoFoundationElement {
     } else if (this.mode === "inline" && this.open) {
       const target = this.pendingFocus;
       this.pendingFocus = undefined;
-      if (target?.isConnected) nextFrame(() => target.focus());
+      if (target?.isConnected) target.focus();
     }
   }
 
