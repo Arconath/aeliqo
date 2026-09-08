@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "partially-implemented",
+  "status": "implemented-release-matrix-pending",
   "components": [
     {
       "id": "foundation.button",
@@ -1434,7 +1434,7 @@
       "id": "visualization.trend",
       "name": "Trend",
       "family": "visualization",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Temporal metric series, declared grain, gaps and exact accessible summaries.",
@@ -1451,13 +1451,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t18/d55929134cdc/manifest.json",
+          "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        }
+      ]
     },
     {
       "id": "visualization.bar",
       "name": "Bar",
       "family": "visualization",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Comparable quantitative categories; baseline and negative values correctly represented.",
@@ -1474,13 +1479,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t18/d55929134cdc/manifest.json",
+          "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        }
+      ]
     },
     {
       "id": "visualization.area",
       "name": "Area",
       "family": "visualization",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Temporal area/stack with compatible additive measures; reject misleading nonadditive stacking.",
@@ -1497,13 +1507,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t18/d55929134cdc/manifest.json",
+          "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        }
+      ]
     },
     {
       "id": "visualization.scatter",
       "name": "Scatter",
       "family": "visualization",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Two quantitative axes, declared units, stable point selection and noncausal interpretation.",
@@ -1520,13 +1535,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t18/d55929134cdc/manifest.json",
+          "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        }
+      ]
     },
     {
       "id": "visualization.histogram",
       "name": "Histogram",
       "family": "visualization",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Declared binning, count/density labeling and missing-population disclosure.",
@@ -1543,13 +1563,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t18/d55929134cdc/manifest.json",
+          "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        }
+      ]
     },
     {
       "id": "visualization.heatmap",
       "name": "Heatmap",
       "family": "visualization",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Two dimensions and one measure; accessible exact cell values and readable color key.",
@@ -1566,13 +1591,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t18/d55929134cdc/manifest.json",
+          "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        }
+      ]
     },
     {
       "id": "visualization.matrix",
       "name": "Matrix",
       "family": "visualization",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Entity-feature comparison preserving row/column association and useful comparison at narrow width.",
@@ -1589,13 +1619,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t18/d55929134cdc/manifest.json",
+          "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        }
+      ]
     },
     {
       "id": "visualization.relationship",
       "name": "Relationship",
       "family": "visualization",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Declared edges/cardinality only; deterministic bounded layout with accessible adjacency view.",
@@ -1612,13 +1647,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t18/d55929134cdc/manifest.json",
+          "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        }
+      ]
     },
     {
       "id": "visualization.tree",
       "name": "Tree",
       "family": "visualization",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Explicit hierarchy, cycle validation, stable expansion and equivalent text navigation.",
@@ -1635,13 +1675,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t18/d55929134cdc/manifest.json",
+          "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        }
+      ]
     },
     {
       "id": "visualization.treemap",
       "name": "Treemap",
       "family": "visualization",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Nonnegative additive hierarchy; area meaning and tiny-node access preserved.",
@@ -1658,13 +1703,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t18/d55929134cdc/manifest.json",
+          "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        }
+      ]
     },
     {
       "id": "visualization.timeline",
       "name": "Timeline",
       "family": "visualization",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Dated events/intervals with timezone semantics, explicit overlaps and chronological alternative.",
@@ -1681,13 +1731,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t18/d55929134cdc/manifest.json",
+          "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        }
+      ]
     },
     {
       "id": "visualization.calendar-grid",
       "name": "CalendarGrid",
       "family": "visualization",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Calendar-aligned 2D values/events; locale week boundaries and noncolor exact values.",
@@ -1704,13 +1759,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t18/d55929134cdc/manifest.json",
+          "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        }
+      ]
     },
     {
       "id": "compound.explorer",
       "name": "Explorer",
       "family": "compound",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Filter plus collection plus selected detail using shared parameter/selection state.",
@@ -1727,13 +1787,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t21/8ddad0da180c/manifest.json",
+          "sha256": "501044e6580e1b6534ac231c94fb57d6c39fe7652c7c715e5f74d44cf8a31df4"
+        }
+      ]
     },
     {
       "id": "compound.comparison",
       "name": "Comparison",
       "family": "compound",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "A stable compare-set with compatible metrics and simultaneous comparison affordances.",
@@ -1750,13 +1815,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t21/8ddad0da180c/manifest.json",
+          "sha256": "501044e6580e1b6534ac231c94fb57d6c39fe7652c7c715e5f74d44cf8a31df4"
+        }
+      ]
     },
     {
       "id": "compound.breakdown",
       "name": "Breakdown",
       "family": "compound",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Group a declared metric and inspect contributing records; recompute ratios from sufficient statistics.",
@@ -1773,13 +1843,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t21/8ddad0da180c/manifest.json",
+          "sha256": "501044e6580e1b6534ac231c94fb57d6c39fe7652c7c715e5f74d44cf8a31df4"
+        }
+      ]
     },
     {
       "id": "compound.investigation",
       "name": "Investigation",
       "family": "compound",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Trend, baseline, event timeline and detail; associations never imply causes.",
@@ -1796,13 +1871,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t21/8ddad0da180c/manifest.json",
+          "sha256": "501044e6580e1b6534ac231c94fb57d6c39fe7652c7c715e5f74d44cf8a31df4"
+        }
+      ]
     },
     {
       "id": "compound.search-results",
       "name": "SearchResults",
       "family": "compound",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Query state, collection, scoped result count and details with stale-result protection.",
@@ -1819,13 +1899,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t21/8ddad0da180c/manifest.json",
+          "sha256": "501044e6580e1b6534ac231c94fb57d6c39fe7652c7c715e5f74d44cf8a31df4"
+        }
+      ]
     },
     {
       "id": "compound.record-editor",
       "name": "RecordEditor",
       "family": "compound",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Existing primitive form over a host-owned action with entity revision and explicit save/cancel.",
@@ -1842,13 +1927,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t21/8ddad0da180c/manifest.json",
+          "sha256": "501044e6580e1b6534ac231c94fb57d6c39fe7652c7c715e5f74d44cf8a31df4"
+        }
+      ]
     },
     {
       "id": "compound.form-flow",
       "name": "FormFlow",
       "family": "compound",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Task-based steps, draft persistence, validation and reversible navigation before commit.",
@@ -1865,13 +1955,18 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t21/8ddad0da180c/manifest.json",
+          "sha256": "501044e6580e1b6534ac231c94fb57d6c39fe7652c7c715e5f74d44cf8a31df4"
+        }
+      ]
     },
     {
       "id": "compound.quality-panel",
       "name": "QualityPanel",
       "family": "compound",
-      "status": "planned",
+      "status": "done",
       "requiredFor": "0.1.0",
       "license": "Apache-2.0",
       "contract": "Source, freshness, completeness, provenance and unsupported claims displayed honestly.",
@@ -1888,7 +1983,12 @@
         "package-import",
         "cleanup"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t21/8ddad0da180c/manifest.json",
+          "sha256": "501044e6580e1b6534ac231c94fb57d6c39fe7652c7c715e5f74d44cf8a31df4"
+        }
+      ]
     }
   ]
 }
