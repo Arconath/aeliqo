@@ -3,7 +3,6 @@ import {createComponent, type EventName} from "@lit/react";
 import {
   AeliqoChartElement,
   AeliqoInputElement,
-  AeliqoTableElement,
   AeliqoInputEvent,
   registerAeliqoElements,
 } from "@aeliqo/web";

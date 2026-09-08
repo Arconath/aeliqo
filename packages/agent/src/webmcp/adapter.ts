@@ -13,7 +13,6 @@ import type {
   WebMcpToolAnnotations,
 } from './types.js';
 
-const MAX_NAME = 64;
 const MAX_REFERENCE = 256;
 const MAX_DESCRIPTION = 4096;
 const TOOL_NAME = /^[A-Za-z0-9_.-]{1,64}$/u;

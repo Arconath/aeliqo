@@ -1,7 +1,6 @@
 import {
   createMeaningAuthoring,
   createMeaningEvaluator,
-  freezeMeaningValue,
   type MeaningAuthoring,
   type MeaningDefinitionInput,
   type MeaningDraft,
@@ -24,10 +23,6 @@ import type {
 
 function failure<T>(code: string, message: string, path?: readonly (string | number)[]): Outcome<T> {
   return {ok: false, diagnostics: [{code, message, retryable: false, ...(path === undefined ? {} : {path: [...path]})}]};
-}
-
-function sameRef(left: VersionRef, right: VersionRef): boolean {
-  return left.id === right.id && left.revision === right.revision;
 }
 
 const DEFAULT_SCOPES: readonly MeaningDefinition['scope'][] = Object.freeze(['session', 'personal']);

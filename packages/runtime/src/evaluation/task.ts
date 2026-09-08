@@ -4,7 +4,6 @@ import type {
   Outcome,
   QuerySpec,
   ResultRef,
-  Task,
 } from '@aeliqo/core';
 import type {
   DataService,
@@ -18,7 +17,6 @@ import type {
   CohortRequest,
   CohortResolver,
   CohortResolverContext,
-  EvaluationHost,
   MaterializedTaskOutput,
   TaskEvaluation,
   TaskEvaluationInput,

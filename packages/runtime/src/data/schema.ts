@@ -14,7 +14,6 @@ import type {ResultEvent} from './types.js';
 
 const strictObject = z.strictObject;
 const text = z.string().check(z.maxLength(16_384));
-const count = z.int().check(z.minimum(0));
 const positive = z.int().check(z.minimum(1), z.maximum(Number.MAX_SAFE_INTEGER));
 const budgetSchema = strictObject({
   maxRows: positive,
@@ -166,7 +165,7 @@ export function parseResultEvent(input: unknown): Outcome<ResultEvent> {
   return parsed.ok ? parsed : failure('data.result-event.shape', 'The result event does not match the bounded result-event contract.');
 }
 
-export function parseJSON(input: string, name: string): Outcome<unknown> {
+export function parseJSON(input: string, _name: string): Outcome<unknown> {
   const parsed = parseWireValue(input);
   if (!parsed.ok) return parsed;
   return {ok: true, value: parsed.value};

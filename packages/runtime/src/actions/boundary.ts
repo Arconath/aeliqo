@@ -1,5 +1,5 @@
 import {parseContract, parseWireValue, WIRE_LIMITS} from '@aeliqo/core';
-import type {Contract, Diagnostic, Outcome, Scalar, VersionRef} from '@aeliqo/core';
+import type {Diagnostic, Outcome, Scalar, VersionRef} from '@aeliqo/core';
 import {resolveRegisteredAction} from './registry.js';
 import type {
   ActionBoundaryOptions,
@@ -15,7 +15,6 @@ import type {
   ActionPreview,
   ActionReceipt,
   ActionRegistration,
-  ActionRequest,
   ActionExecution,
   ActionGrant,
   TrustedActionContext,
@@ -39,7 +38,6 @@ const validText = (value: unknown): value is string => typeof value === 'string'
 const validKey = (value: unknown): value is string => typeof value === 'string' && value.length > 0 && value.length <= WIRE_LIMITS.text;
 const validRef = (value: unknown): value is VersionRef => value !== null && typeof value === 'object' && !Array.isArray(value) &&
   Object.keys(value as object).length === 2 && validId((value as Record<string, unknown>).id) && validId((value as Record<string, unknown>).revision);
-const sameRef = (left: VersionRef, right: VersionRef): boolean => left.id === right.id && left.revision === right.revision;
 const failure = <T>(code: string, message: string, path: readonly (string | number)[] = []): ActionOutcome<T> => ({ok: false, diagnostics: [{code, message, path, retryable: false}]});
 const diagnostic = (code: string, message: string): ActionFailure => ({code, message, retryable: false});
 

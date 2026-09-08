@@ -11,7 +11,6 @@ import {
   type Catalog,
   type CommitPreconditions,
   type Diagnostic,
-  type FunctionRegistry,
   type OperationGrant,
   type Outcome,
   type QueryPlanner,
@@ -24,7 +23,6 @@ import type {
   AgentBinder,
   AgentBinderOptions,
   AgentBindingDecision,
-  AgentContextRequest,
   AgentHostContext,
 } from './binder-types.js';
 
@@ -108,11 +106,6 @@ function stateOutcome(state: BindingFailureState, diagnostics: readonly Diagnost
   });
   if (checked.ok) return checked;
   return failure('agent.internal', 'The runtime produced an invalid binding diagnostic.');
-}
-
-function inspectionFromOutcome(outcome: Outcome<AgentBindingOutcome>): InspectionFailure {
-  if (outcome.ok) return {ok: false, diagnostics: [diagnostic('agent.internal', 'The binding state was unexpectedly successful.')]};
-  return {ok: false, diagnostics: outcome.diagnostics};
 }
 
 function inspectionState(outcome: Outcome<AgentBindingOutcome>): InspectionFailure {

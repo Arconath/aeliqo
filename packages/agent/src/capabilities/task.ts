@@ -4,10 +4,6 @@ import type {AgentCapabilityContext, AgentCapabilityHandlerResult, AgentCapabili
 
 const DEFAULT_REF: VersionRef = Object.freeze({id: 'aeliqo.task.binding', revision: '1'});
 
-function failure<T>(code: string, message: string): Outcome<T> {
-  return {ok: false, diagnostics: [{code, message, retryable: false}]};
-}
-
 function stateResult(outcome: AgentBindingOutcome): AgentCapabilityHandlerResult<Task | AgentBindingOutcome> {
   if (outcome.state === 'bound') return {state: 'bound', value: outcome.value};
   if (outcome.state === 'needs-choice') return {state: 'needs-choice', value: outcome, diagnostics: []};

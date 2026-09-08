@@ -12,7 +12,6 @@ import {
   type VersionRef,
 } from '@aeliqo/core';
 import {
-  createMeaningAuthoring,
   createMeaningDraft,
   meaningDigest,
   type MeaningDraft,

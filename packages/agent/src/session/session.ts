@@ -1,7 +1,6 @@
 import {normalizeAgentCapabilityRequest} from '../capabilities/dispatcher.js';
 import {parseContract, parseWireValue, type AgentStopReason, type Diagnostic, type Outcome} from '@aeliqo/core';
 import type {
-  AgentCapabilityDispatcher,
   AgentCapabilityReceipt,
   AgentCapabilityRequest,
 } from '../capabilities/types.js';
@@ -18,7 +17,6 @@ import type {
 
 const DEADLINE = Symbol('agent-session-deadline');
 const ABORTED = Symbol('agent-session-aborted');
-const FAILED = Symbol('agent-session-failed');
 
 function failure<T>(code: string, message: string): Outcome<T> {
   return {ok: false, diagnostics: [{code, message, retryable: false}]};

@@ -17,7 +17,6 @@ import type {
   AgentCapabilityDispatcherOptions,
   AgentJsonValue,
   AgentCapabilityHandlerResult,
-  AgentCapabilityManifest,
   AgentCapabilityPort,
   AgentCapabilityReceipt,
   AgentCapabilityRequest,
@@ -27,7 +26,6 @@ import type {
 
 const DEADLINE = Symbol('agent-capability-deadline');
 const ABORTED = Symbol('agent-capability-aborted');
-const FAILED = Symbol('agent-capability-failed');
 const DEFAULT_MAX_PENDING = 8;
 const DEFAULT_MAX_MILLISECONDS = 30_000;
 const MAX_METADATA_BYTES = 64 * 1024;
