@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "oracle": "independent-python-decimal-query-v1",
+  "oracleScriptSha256": "f432597a5e26d9866fc02a7f16a3470248bef5276c96728ffd1aa0bd016e3233",
+  "corpusSha256": "9b2fd53f8f9e15fdef2afd121e48ba22bad591ffd8b1ded1e5b5517fae5cbfa8",
+  "caseCount": 18,
+  "outputCount": 21,
+  "matchedOutputCount": 21,
+  "mismatchCount": 0,
+  "mismatches": [],
+  "qualityChecks": {
+    "recordFields": true,
+    "taskRevisions": true,
+    "outputIds": true,
+    "rowShapes": true,
+    "qualityPopulation": true,
+    "qualitySources": true,
+    "definitionRefs": true
+  },
+  "providerRequests": 0,
+  "sdkImports": 0
+}
