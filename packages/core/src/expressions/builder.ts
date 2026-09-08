@@ -9,7 +9,11 @@ import type {ExpressionInput, FunctionRegistry, TypedExpression} from './types.j
 
 type Entity<C extends Catalog> = C['entities'][number];
 type EntityId<C extends Catalog> = Entity<C>['id'];
-type EntityWithId<C extends Catalog, E extends string> = Extract<Entity<C>, {readonly id: E}>;
+// Schema-loaded catalogs have string IDs; their membership is checked by the
+// runtime index. Literal catalogs still narrow fields to the selected entity.
+type EntityWithId<C extends Catalog, E extends string> = string extends EntityId<C>
+  ? Entity<C>
+  : Extract<Entity<C>, {readonly id: E}>;
 type FieldId<C extends Catalog, E extends EntityId<C>> = EntityWithId<C, E>['fields'][number]['id'];
 
 export interface AuthoringOptions<C extends Catalog> extends MeaningBundleContext {

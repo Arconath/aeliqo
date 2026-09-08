@@ -176,7 +176,7 @@ createApp(Fixture).mount(document.body);
 `);
 
 const catalogQuickstart = `
-import {createStandardFunctionRegistry, type Catalog} from "@aeliqo/core";
+import {createStandardFunctionRegistry, parseCatalog, type Catalog} from "@aeliqo/core";
 import {createMeaningAuthoring} from "@aeliqo/runtime/meaning";
 const registry = createStandardFunctionRegistry("framework-meaning-consumer");
 if (!registry.ok) throw new Error("function registry");
@@ -196,6 +196,11 @@ if (!total.ok) throw new Error("typed aggregate");
 const meaning = authoring.value.defineMeaning({id: "orders.total", label: "Order total", description: "Sum of order amounts", expression: total.value});
 if (!meaning.ok) throw new Error("meaning");
 void meaning.value;
+const loaded = parseCatalog(catalog);
+if (!loaded.ok) throw new Error("loaded catalog");
+const dynamic = createMeaningAuthoring({catalog: loaded.value, registry: registry.value});
+if (!dynamic.ok) throw new Error("dynamic authoring");
+dynamic.value.field("orders", "amount");
 `;
 await writeFile(join(consumer, "meaning-quickstart.ts"), catalogQuickstart);
 assert(!/@aeliqo\/(agent|studio)|model|chart|layout/i.test(catalogQuickstart), "Manual meaning path coupled to model, Studio, chart, or layout");
