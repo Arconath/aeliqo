@@ -91,3 +91,15 @@ Independent HTTP/stream review passed. Local review9tests passed but source
 normalization, discovery budgets and registration-cache followup remain active;
 T06 is not accepted yet. Additional adversarial boundary regressions are in an
 isolated consumer-author worktree. Parent owns HTTP/config/integration.
+
+T06 accepted at source0f67cf4 with immutable evidence
+harness/evidence/t06/040ab3e78d7e/manifest.json. All83data tests, strict
+workspace types, actual installed core/runtime tarballs and Chromium local/HTTP
+consumer pass; independent final review passed. Candidate digest remained
+040ab3e78d7e451fda30fd4d3f0fbe6e7bed3877231dbe545b31300c8065e219.
+Source normalization, exact fractional instants, identity, policy cursor pins,
+authorization replay, global source/discovery limits and final-page partial
+coverage are covered. Measured installed browser data subset37437gzip bytes;
+not full interactive-path certification. Kit/reference checks pass while product
+readiness/release remain correctly blocked. Next ready task T07, then T08.
+No npm publication, main cutover or production deployment performed.

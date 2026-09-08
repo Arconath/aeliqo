@@ -228,10 +228,15 @@
         "Scoped discovery/plan/execute streaming contract, abort, revisions and structured unsupported capability work.",
         "Register reviewed code-owned meaning bundles through the local data/catalog path without model calls or end-user reauthoring; authorize activation, make identical registration idempotent, and reject conflicting ID/revision contents."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "Exclusive Luna Max writer platform_proof in /tmp/aeliqo-t06-data from6d959f9; runtime/data, reference host and ADC conformance tests. Parent owns configuration/lockfile/integration; bounded stream prep accepted separately. Full query planner followsT07."
+      "evidence": [
+        {
+          "path": "harness/evidence/t06/040ab3e78d7e/manifest.json",
+          "sha256": "97b9793d4fde6ecb8b8c6cb4f70c55b9d06ebbb2ebc7da3e17c0275c5830f2c8"
+        }
+      ],
+      "notes": "Bounded local ADC and authenticated HTTP completed. Frozen source 0f67cf4 passed 83 data tests, strict types, installed tarballs/real Chromium fetch and independent review. Relational query planning/evaluation remains T07/T08. No publication/deployment claim."
     },
     {
       "id": "T07",

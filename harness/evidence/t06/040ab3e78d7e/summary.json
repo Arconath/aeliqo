@@ -1,0 +1,48 @@
+{
+  "sourceDigest": "040ab3e78d7e451fda30fd4d3f0fbe6e7bed3877231dbe545b31300c8065e219",
+  "sourceAfter": "040ab3e78d7e451fda30fd4d3f0fbe6e7bed3877231dbe545b31300c8065e219",
+  "sourceChangedDuringRun": false,
+  "commands": [
+    {
+      "argv": [
+        "pnpm",
+        "test:data"
+      ],
+      "exitCode": 0,
+      "log": "00.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "typecheck"
+      ],
+      "exitCode": 0,
+      "log": "01.log"
+    },
+    {
+      "argv": [
+        "pnpm",
+        "test:runtime:consumers"
+      ],
+      "exitCode": 0,
+      "log": "02.log"
+    },
+    {
+      "argv": [
+        "python3",
+        "scripts/validate_all.py"
+      ],
+      "exitCode": 0,
+      "log": "03.log"
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0,
+      "log": "04.log"
+    }
+  ]
+}

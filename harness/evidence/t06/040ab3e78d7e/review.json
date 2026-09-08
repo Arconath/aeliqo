@@ -1,0 +1,27 @@
+{
+  "task": "T06",
+  "candidateCommit": "0f67cf4",
+  "reviewer": "preflight_diagnosis",
+  "independent": true,
+  "result": "pass",
+  "checks": [
+    "83 data tests",
+    "runtime strict TypeScript",
+    "final frozen source inspection"
+  ],
+  "closedFindings": [
+    "source normalization and exact instant ordering",
+    "source and discovery bounds",
+    "row and field authorization revalidation",
+    "meaning registration replay",
+    "policy-bound cursor and population identity",
+    "partial final page coverage",
+    "HTTP correlation, cancellation and stream completion"
+  ],
+  "limits": [
+    "Flat projection, predicates, ordering and paging only; full relational planning is T07 and evaluator parity T08.",
+    "Kit/reference validation does not prove SDK release readiness.",
+    "Browser bundle measurement covers the installed data subset, not the full interactive experience.",
+    "No npm publication or deployment performed."
+  ]
+}
