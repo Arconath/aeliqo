@@ -579,6 +579,9 @@ const relationQuery = {...t05.namedOutputTaskInput.outputs[0].query,
   relations: [{id: 'employees.orders', revision: '1'}],
   relationUsage: [{relation: {id: 'employees.orders', revision: '1'}, kind: 'semi'}]};
 assert.equal(parseContract('query', relationQuery).ok, true);
+assert.equal(parseContract('query', {...relationQuery, relations: [], relationUsage: [], windows: [
+  {id: 'rank', function: {id: 'core.window.rank', revision: '1'}, arguments: [], partitionBy: [], orderBy: [], frame: {preceding: 0, following: 0}},
+]}).ok, true);
 assert.equal(parseContract('query', {...relationQuery, relationUsage: [{...relationQuery.relationUsage[0], approved: true}]}).ok, false);
 function unwrap(outcome) {
   assert.equal(outcome.ok, true);

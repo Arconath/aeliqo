@@ -9,7 +9,7 @@ export type {
   RatioOfSumsInput,
   TypedAuthoring,
 } from './builder.js';
-export {createFunctionRegistry, createStandardFunctionRegistry, standardFunctionSignatures} from './registry.js';
+export {createFunctionRegistry, createStandardFunctionRegistry, standardFunctionSignatures, createQueryFunctionRegistry, queryFunctionSignatures} from './registry.js';
 export type {
   ExpressionInput,
   FunctionOperation,

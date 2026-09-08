@@ -723,6 +723,7 @@ function validateQuery(query: QuerySpec, catalog: Catalog, grant: ReadGrant): Ou
   for (const identity of entity.identity) {
     if (!query.fields.includes(identity)) return unsupported({kind: 'source', id: 'identity-projection', reason: `Identity field ${identity} must be projected for stable result lineage.`, alternatives: ['Include all identity fields in the projection.']}, ['query', 'fields']);
   }
+  if ((query.windows?.length ?? 0) > 0) return unsupported({kind: 'operator', id: 'window', reason: 'Window functions require a negotiated relational execution path.', alternatives: ['Use an analytical host capability.']}, ['query', 'windows']);
   if (query.measures.length > 0) return unsupported({kind: 'aggregation', id: 'measures', reason: 'The bounded local evaluator has no aggregate execution path.', alternatives: ['Use a host analytical capability.', 'Project source fields only.']}, ['query', 'measures']);
   if (query.relations.length > 0 || (query.relationUsage?.length ?? 0) > 0) return unsupported({kind: 'relation', id: 'relations', reason: 'Joins and relation expansion require an explicit host plan.', alternatives: ['Use an analytical host capability.']}, ['query', 'relations']);
   if (query.groupBy.length > 0) return unsupported({kind: 'grouping', id: 'groupBy', reason: 'Grouping is not part of the bounded local subset.', alternatives: ['Use a host analytical capability.']}, ['query', 'groupBy']);

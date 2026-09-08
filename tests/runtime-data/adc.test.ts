@@ -73,6 +73,12 @@ describe('in-process ADC data service', () => {
       query: query({relationUsage: [{relation: {id: 'employees.orders', revision: '1'}, kind: 'semi'}]}), budget,
     });
     expect(relationUsage).toMatchObject({ok: false, diagnostics: [{code: 'data.unsupported'}]});
+    const windows = await service.plan({
+      version: '1', requestId: 'plan-windows', catalogRevision: 'catalog-1', target: {outputId: 'employees-output'},
+      query: query({windows: [{id: 'rank', function: {id: 'core.window.rank', revision: '1'},
+        arguments: [], partitionBy: [], orderBy: [], frame: {preceding: 0, following: 0}}]}), budget,
+    });
+    expect(windows).toMatchObject({ok: false, diagnostics: [{code: 'data.unsupported'}]});
   });
 
   it('re-authorizes row policies for each principal and keeps principal populations disjoint', async () => {

@@ -105,6 +105,10 @@ export interface QuerySpec {
   readonly measures:readonly VersionRef[];
   readonly relations:readonly VersionRef[];
   readonly relationUsage?:readonly {readonly relation:VersionRef; readonly kind:'inner'|'left'|'semi'; readonly where?:Predicate}[];
+  readonly windows?:readonly {readonly id:Id; readonly function:VersionRef; readonly arguments:readonly Expression[];
+    readonly partitionBy:readonly Expression[];
+    readonly orderBy:readonly {readonly expression:Expression; readonly direction:'asc'|'desc'; readonly nulls:'first'|'last'}[];
+    readonly frame:{readonly preceding:number; readonly following:number}}[];
   readonly groupBy:readonly Id[];
   readonly where?:Predicate;
   readonly period?:Period;

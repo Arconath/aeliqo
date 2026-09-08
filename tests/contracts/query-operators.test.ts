@@ -38,3 +38,19 @@ describe('explicit relation usage wire boundary', () => {
     }
   });
 });
+
+it('accepts bounded window specifications and rejects unbounded or executable frames', () => {
+  const window = {id: 'running-total', function: {id: 'core.window.sum', revision: '1'},
+    arguments: [{kind: 'field', entity: 'orders', ref: 'amount'}], partitionBy: [], orderBy: [],
+    frame: {preceding: 2, following: 0}};
+  const value = {...query, windows: [window]};
+  expect(parseContract('query', value).ok).toBe(true);
+  expect(validate(value)).toBe(true);
+  for (const frame of [{preceding: -1, following: 0}, {preceding: 1.5, following: 0},
+    {preceding: 10001, following: 0}, {preceding: 'unbounded', following: 0},
+    {preceding: 1, following: 0, evaluate: 'return rows'}]) {
+    const bad = {...value, windows: [{...window, frame}]};
+    expect(parseContract('query', bad).ok).toBe(false);
+    expect(validate(bad)).toBe(false);
+  }
+});

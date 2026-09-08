@@ -257,3 +257,15 @@ export const standardFunctionSignatures: readonly FunctionSignature[] = [
 export function createStandardFunctionRegistry(digest = 'core-standard-1'): Outcome<FunctionRegistry> {
   return createFunctionRegistry({digest, signatures: standardFunctionSignatures});
 }
+
+/** Query registry revision adds bounded window functions without changing core-standard-1. */
+export const queryFunctionSignatures: readonly FunctionSignature[] = Object.freeze([
+  ...standardFunctionSignatures,
+  signature({id: 'core.window.sum', revision: '1'}, [{constraint: numeric}], {kind: 'same-as', argument: 0}, 'aggregate', 'additive', {contexts: ['window']}),
+  signature({id: 'core.window.lag', revision: '1'}, [{constraint: any}], {kind: 'nullable-same-as', argument: 0}, 'other', 'none', {contexts: ['window']}),
+  signature({id: 'core.window.rank', revision: '1'}, [], countType(false), 'other', 'none', {contexts: ['window'], nullResult: 'non-null'}),
+].map(cloneSignature));
+
+export function createQueryFunctionRegistry(digest = 'core-query-1'): Outcome<FunctionRegistry> {
+  return createFunctionRegistry({digest, signatures: queryFunctionSignatures});
+}

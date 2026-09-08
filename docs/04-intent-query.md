@@ -86,3 +86,16 @@ consumers reject it until upgraded; producers must negotiate relation capability
 before sending it. The initial T06 flat evaluator explicitly rejects all relation
 usage; T07/T08 implement and integrate its validated execution. Shape acceptance
 does not authorize a relationship or prove its cardinality.
+
+`QuerySpec.windows` contains versioned function expressions, partition expressions,
+explicit ordering and a bounded row frame (`preceding`, `following`, inclusive of
+current row). T07 validates the frame against its execution budget. The opt-in
+`core-query-1` registry retains the standard signatures and adds `core.window.sum`,
+`core.window.lag` and `core.window.rank` revision1. The immutable `core-standard-1`
+registry remains unchanged. Sum uses the specified frame and propagates unknown
+values. Lag returns the previous row within the partition (null at its start),
+requires a frame including one preceding row, and preserves the input type/unit.
+Rank uses competition ranking (1,1,3) by explicit order values. Stable identity
+breaks ties for row positions without changing rank equality. Empty order is
+invalid for lag/rank. Window values preserve input row identity/grain; grouping
+and ranking an incomplete population cannot acquire exact global scope.
