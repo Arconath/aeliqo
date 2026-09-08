@@ -550,19 +550,48 @@ function runInstalledInteractionGraph(validateInteractionGraph, parseInteraction
 }
 const graphConsumerSource = runInstalledInteractionGraph.toString();
 
+function runInstalledPresentation(createPresentationRegistry, composePresentation, validatePresentationPlan, documents, current) {
+  const operation = {id: 'read', revision: '1'};
+  const resultDescriptor = {...documents.result, fields: documents.catalog.entities[0].fields};
+  const manifest = (id, container) => ({ref:{id,revision:'1'},configSchema:{id:id+'.config',revision:'1'},roles:[container?'structure':'table'],operations:container?[]:[operation],
+    result:container?'none':'required',children:{min:0,max:container?32:0},visibility:container?'simultaneous':'leaf',extension:false,
+    resolveConfig: (values, result) => ({ok:true,value:{values,fields:result?.fields.map(field=>field.id)??[],ports:[]}}),suggestConfig:()=>({ok:true,value:{}})});
+  const manifests=[manifest('table',false),manifest('stack',true)];
+  const registered=createPresentationRegistry(manifests);
+  if(!registered.ok)throw new Error('Installed presentation registry failed');
+  const context={task:{...documents.task,needs:[{id:'read',operation,outputId:documents.result.ref.outputId,fields:[resultDescriptor.fields[0].id],required:true}]},
+    experience:{...documents.experience,mode:'composable',allowedRepresentations:['table','stack'],composition:{allowWithoutPreset:true,maxNodes:8,maxExpansions:1}},
+    current,results:[resultDescriptor],rendererCapabilities:manifests.map(m=>m.ref),
+    environment:{inlineSize:{state:'unknown'},blockSize:{state:'unknown'},textScale:{state:'unknown'},pointer:'unknown',hover:'unknown',keyboard:'unknown',locale:'en-US',direction:'ltr',reducedMotion:false,forcedColors:false}};
+  const composed=composePresentation({id:'installed',revision:'1',preconditions:current,context},registered.value);
+  if(!composed.ok||composed.value.status!=='composed'||composed.value.expansions!==1)throw new Error('Installed no-preset composition failed');
+  const presentation=composed.value.presentation;
+  if(presentation.environment.inlineSize.state!=='unknown'||!Object.isFrozen(presentation.plan))throw new Error('Installed presentation lost unknown environment or ownership');
+  if(validatePresentationPlan({...presentation.plan,coverage:[]},context,registered.value).ok)throw new Error('Installed presentation accepted missing coverage');
+  if(validatePresentationPlan(presentation.plan,{...context,current:{...current,regionRevision:'changed'}},registered.value).ok)throw new Error('Installed presentation accepted stale state');
+  return {noPreset:true,unknownSSR:true,coverageChecked:true,staleRejected:true};
+}
+const presentationConsumerSource = runInstalledPresentation.toString();
+
+
 await writeFile(join(consumerDirectory, "consumer-types.ts"), `
 import {
   parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue,
-  validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph, parseInteractionState,
+  validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph, parseInteractionState, createPresentationRegistry, composePresentation, validatePresentationPlan,
   checkExpression, createStandardFunctionRegistry, createTypedAuthoring, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
 import type {
-  Catalog, Task, Result, Experience, CommitPreconditions, Outcome, TaskStructure, Wire,
+  Catalog, Task, Result, Experience, CommitPreconditions, Outcome, TaskStructure, Wire, PresentationPlan, PresentationValues,
   Interaction, InteractionPayload, InteractionSelection, InteractionLink, InteractionGraphInput, InteractionGraph, InteractionMappingManifest,
   ExperienceRestriction, ExperienceConstraints, TypedAuthoring, TypedExpression,
   FunctionRegistry, MeaningDefinition, MeaningBundle, QueryPlanner, LogicalPlan, QueryResult, QuerySpec, QuerySource,
 } from '@aeliqo/core';
 const commitPins: CommitPreconditions = ${JSON.stringify(commitPins)};
+const nestedPresentationValues: PresentationValues = {nested: [{value: 'text'}, null, 1]};
+const presentationLiteral: PresentationPlan = {id:'typed',revision:'1',rootId:'node',preconditions:commitPins,nodes:[{id:'node',role:'table',representation:{id:'table',revision:'1'},config:{schema:{id:'table.config',revision:'1'},values:nestedPresentationValues},children:[]}],links:[],coverage:[],stateTransfer:[],diagnostics:[]};
+// @ts-expect-error Wire presentation config does not accept executable functions.
+const invalidPresentationValues: PresentationValues = {render: () => 'bad'};
+void [presentationLiteral, invalidPresentationValues];
 const checkedPins: Outcome<CommitPreconditions> = validateCommitReadSet(commitPins, commitPins, commitPins.results);
 const checkedGraph: Outcome<InteractionGraph> = validateInteractionGraph({nodes: [], links: []} satisfies InteractionGraphInput, [] satisfies readonly InteractionMappingManifest[]);
 declare const interaction: Interaction;
@@ -682,7 +711,7 @@ import {createRequire} from 'node:module';
 import {readFile} from 'node:fs/promises';
 import {
   parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue,
-  validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph, parseInteractionState,
+  validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph, parseInteractionState, createPresentationRegistry, composePresentation, validatePresentationPlan,
   checkExpression, createStandardFunctionRegistry, createTypedAuthoring, authorizeMeaningActivation, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
 assert.deepEqual(parseWireValue('{"requestId":"one"}'), {ok:true,value:{requestId:'one'}});
@@ -844,6 +873,8 @@ ${queryConsumerSource}
 assert.deepEqual(runInstalledQuery().total, [{total:{decimal:'20.03'}}]);
 ${graphConsumerSource}
 assert.equal(runInstalledInteractionGraph(validateInteractionGraph, parseInteractionState).selectionEquivalence, true);
+${presentationConsumerSource}
+assert.equal(runInstalledPresentation(createPresentationRegistry, composePresentation, validatePresentationPlan, documents, commitPins).noPreset, true);
 console.log('Installed @aeliqo/core query planning, exact evaluation and cancellation pass.');
 console.log('Installed @aeliqo/core parsers, schema exports, and round trips pass.');
 console.log('Installed @aeliqo/core task structure and experience constraint passes pass.');
@@ -895,7 +926,7 @@ await writeFile(join(consumerDirectory, "index.html"), '<!doctype html><html><bo
 await writeFile(join(consumerDirectory, "bundle-entry.js"), `
 import {
   parseCatalog, parseTask, parseResult, parseExperience, parseWireValue,
-  validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph, parseInteractionState,
+  validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph, parseInteractionState, createPresentationRegistry, composePresentation, validatePresentationPlan,
   checkExpression, createStandardFunctionRegistry, createTypedAuthoring, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
 const validWire = parseWireValue('{"requestId":"one"}');
@@ -910,6 +941,8 @@ ${queryConsumerSource}
 const installedQueryResult = runInstalledQuery();
 ${graphConsumerSource}
 const installedInteractionGraph = runInstalledInteractionGraph(validateInteractionGraph, parseInteractionState);
+${presentationConsumerSource}
+const installedPresentation = runInstalledPresentation(createPresentationRegistry, composePresentation, validatePresentationPlan, documents, commitPins);
 const semanticRegistry = createStandardFunctionRegistry();
 const semanticAuthoring = semanticRegistry.ok
   ? createTypedAuthoring({catalog: t04.semanticCatalogInput, registry: semanticRegistry.value})
@@ -920,7 +953,7 @@ const parsed = [
   validateTaskStructure(t05.namedOutputTaskInput), resolveExperienceConstraints(t05.noPresetExperienceInput, t05.taskInput),
   semanticRegistry, semanticAuthoring, semanticField, {ok:true,value:installedQueryResult},
   validateCommitReadSet(commitPins, commitPins, commitPins.results),
-  {ok: true, value: installedInteractionGraph},
+  {ok: true, value: installedInteractionGraph}, {ok:true,value:installedPresentation},
 ];
 globalThis.__aeliqoParsed = parsed;
 export {parsed};

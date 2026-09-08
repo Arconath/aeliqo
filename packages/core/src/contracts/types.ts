@@ -2,7 +2,10 @@ import type * as z from 'zod/mini';
 import type {commitPreconditionsSchema, contractSchemas, diagnosticSchema, expressionSchema, fieldSchema, interactionStateSchema, meaningSchema,
   querySchema, resultRefSchema, semanticTypeSchema, valueSchema, versionRefSchema} from './schemas.js';
 /** JSON optional members may be absent; present `undefined` is not wire data. */
-export type Wire<T> = T extends object ? {readonly [K in keyof T]: Wire<Exclude<T[K], undefined>>} : T;
+export type ReadonlyJsonValue = null | boolean | number | string | readonly ReadonlyJsonValue[] | {readonly [key: string]: ReadonlyJsonValue};
+type WireMember<T> = T extends object ? {readonly [K in keyof T]: Wire<Exclude<T[K], undefined>>} : T;
+/** Keep recursive JSON as a named recursive type; expanding its schema recursively exhausts consumer type checking. */
+export type Wire<T> = [z.JSONType] extends [T] ? ([T] extends [z.JSONType] ? ReadonlyJsonValue : WireMember<T>) : WireMember<T>;
 export type CommitPreconditions = Wire<z.infer<typeof commitPreconditionsSchema>>;
 export type PresentationPlan = Contract<'presentation-plan'>;
 export type Interaction = Contract<'interaction'>;

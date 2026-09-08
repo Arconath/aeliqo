@@ -215,3 +215,32 @@ The helper returns a bounded immutable graph with its used mapping manifests.
 It runs no callbacks, grants no effects and does not establish population
 membership or field edit permission. Those contextual checks belong to the
 runtime and host before a typed interaction can affect state.
+
+## Registered presentation composition (early T39 subset)
+
+`createPresentationRegistry` installs trusted versioned manifests. Each manifest
+has a synchronous, pure configuration validator, actual operation metadata and
+result-derived ports. `validatePresentationPlan` checks the containment tree,
+registered renderer/configuration, exact task result bindings, required fields
+and operations, simultaneous comparisons, typed links and current read set.
+Application-authorized descriptors and renderer capabilities come from the host;
+these pure functions never grant access, execute a query or commit a region.
+
+`composePresentation` tries complete candidates with a bounded expansion count.
+A feasible incumbent is considered first, followed by explicit candidates and a
+complete deterministic no-preset composition before bounded single substitutions.
+An exhausted suggestion search is not proof that no valid configuration exists.
+The request read set is always checked, including when an incumbent is reused;
+the returned plan uses the requested plan ID/revision and validated request pins.
+Named outputs with multiple available revisions require explicit descriptor
+selection before automatic composition. Unknown SSR measurements remain unknown.
+
+This early subset requires `allowWithoutPreset: true`. Pattern-only profiles are
+reported unsupported until actual registered pattern expansion is implemented;
+a caller-supplied pattern label cannot establish that a graph is an approved
+expansion. T39 supports only explicit `aeliqo.state.identity@1` transfers between
+the same view ID, role and representation. Representation replacement needs a
+later registered transfer implementation. Structural, configuration, result and
+interaction/coverage changes respect the host's focus/draft/IME transition lock.
+The host supplies a previously committed incumbent for transition comparison;
+reuse as a new candidate still requires current feasibility validation.

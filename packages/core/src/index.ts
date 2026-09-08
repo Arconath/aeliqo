@@ -13,3 +13,4 @@ export * from './expressions/index.js';
 export * from './semantics/index.js';
 export * from './query/index.js';
 export * from './interaction/index.js';
+export * from './presentation/index.js';
