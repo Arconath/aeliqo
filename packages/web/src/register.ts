@@ -1,3 +1,4 @@
+import {AeliqoMatrixElement, AeliqoTimelineElement, AeliqoCalendarGridElement} from "./visualization/temporal/index.js";
 import {AeliqoMetricElement, AeliqoDeltaElement, AeliqoKeyValueElement, AeliqoDetailElement, AeliqoRecordListElement, AeliqoCardCollectionElement, AeliqoSelectionSummaryElement, AeliqoFilterBuilderElement} from "./data/index.js";
 import {AeliqoDialogElement, AeliqoDrawerElement, AeliqoPopoverElement, AeliqoTooltipElement, AeliqoAlertElement, AeliqoToastElement, AeliqoProgressElement, AeliqoSkeletonElement, AeliqoEmptyStateElement} from "./feedback/index.js";
 import {AeliqoTabsElement, AeliqoBreadcrumbElement, AeliqoPaginationElement, AeliqoMenuElement, AeliqoTreeNavElement} from "./navigation/index.js";
@@ -21,6 +22,9 @@ interface ElementRegistration {
 }
 
 const REGISTRATIONS: readonly ElementRegistration[] = [
+  {name: "aeliqo-matrix", constructor: AeliqoMatrixElement},
+  {name: "aeliqo-timeline", constructor: AeliqoTimelineElement},
+  {name: "aeliqo-calendar-grid", constructor: AeliqoCalendarGridElement},
   {name: "aeliqo-metric", constructor: AeliqoMetricElement},
   {name: "aeliqo-delta", constructor: AeliqoDeltaElement},
   {name: "aeliqo-key-value", constructor: AeliqoKeyValueElement},

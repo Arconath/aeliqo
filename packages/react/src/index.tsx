@@ -47,3 +47,5 @@ export * from "./feedback.js";
 export * from "./data.js";
 
 export * from "./plot.js";
+
+export * from "./visualization.js";

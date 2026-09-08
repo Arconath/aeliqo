@@ -25,3 +25,5 @@ export * from "./navigation/index.js";
 export * from "./feedback/index.js";
 
 export * from "./data/index.js";
+
+export * from "./visualization/index.js";

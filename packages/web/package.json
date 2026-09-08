@@ -272,6 +272,14 @@
     "./filter-builder": {
       "types": "./dist/data/filter-builder.d.ts",
       "import": "./dist/data/filter-builder.js"
+    },
+    "./visualization": {
+      "types": "./dist/visualization/index.d.ts",
+      "import": "./dist/visualization/index.js"
+    },
+    "./visualization/temporal": {
+      "types": "./dist/visualization/temporal/index.d.ts",
+      "import": "./dist/visualization/temporal/index.js"
     }
   },
   "files": [

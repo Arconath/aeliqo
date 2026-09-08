@@ -39,6 +39,10 @@
     "./plot": {
       "types": "./dist/plot.d.ts",
       "import": "./dist/plot.js"
+    },
+    "./visualization": {
+      "types": "./dist/visualization.d.ts",
+      "import": "./dist/visualization.js"
     }
   },
   "files": [
