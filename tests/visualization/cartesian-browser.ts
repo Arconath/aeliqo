@@ -29,19 +29,23 @@ const catalog: Catalog = {version: '1', revision: 'catalog', functionRegistryDig
 const plot = (mark: PlotUnit['mark'], encoding: PlotUnit['encoding']) => ({version: '1' as const, root: {kind: 'unit' as const, mark, result: ref, missing: 'gap' as const, encoding}});
 const specs: Record<string, VisualizationSpec> = {
   trend: {version: '1', view: 'trend', plot: plot('line', {x: {field: 'date', scale: 'temporal'}, y: {field: 'y', scale: 'linear'}})},
-  bar: {version: '1', view: 'bar', plot: plot('bar', {x: {field: 'category', scale: 'ordinal'}, y: {field: 'y', scale: 'linear', zero: true}})},
-  area: {version: '1', view: 'area', plot: plot('area', {x: {field: 'date', scale: 'temporal'}, y: {field: 'y', scale: 'linear', zero: true}, series: {field: 'category', scale: 'ordinal'}}), meaning: {id: 'amount', revision: '1'}, stack: 'zero'},
+  bar: {version: '1', view: 'bar', plot: plot('bar', {x: {field: 'category', scale: 'ordinal'}, y: {field: 'y', scale: 'linear', zero: true}, series: {field: 'feature', scale: 'ordinal'}})},
+  area: {version: '1', view: 'area', plot: plot('area', {x: {field: 'date', scale: 'temporal'}, y: {field: 'y', scale: 'linear', zero: true}, series: {field: 'feature', scale: 'ordinal'}}), meaning: {id: 'amount', revision: '1'}, stack: 'zero'},
   scatter: {version: '1', view: 'scatter', plot: plot('point', {x: {field: 'x', scale: 'linear'}, y: {field: 'y', scale: 'linear'}})},
   histogram: {version: '1', view: 'histogram', plot: plot('rect', {x: {field: 'low', scale: 'linear'}, x2: {field: 'high', scale: 'linear'}, y: {field: 'y', scale: 'linear', zero: true}, y2: {field: 'zero', scale: 'linear', zero: true}}), bins: {start: 'low', end: 'high', value: 'y', measure: 'count', boundary: 'start-inclusive-end-exclusive'}},
   heatmap: {version: '1', view: 'heatmap', plot: plot('cell', {x: {field: 'category', scale: 'ordinal'}, y: {field: 'feature', scale: 'ordinal'}, color: {field: 'color', scale: 'linear'}})},
 };
 const tags = ['trend', 'bar', 'area', 'scatter', 'histogram', 'heatmap'] as const;
+const mount = document.querySelector('main') ?? document.body;
 for (const tag of tags) {
   const element = document.createElement(`aeliqo-${tag}`) as HTMLElement & {visualization: VisualizationSpec; context: unknown; datasets: unknown};
   element.visualization = specs[tag]!;
   element.context = {results: [result], catalog, histograms: tag === 'histogram' ? [{result: ref, bins: (specs.histogram as Extract<VisualizationSpec, {view: 'histogram'}>).bins}] : []};
-  element.datasets = [{result: ref, rows}];
+  const sourceRows = tag === 'area'
+    ? rows.map((row, index) => ({...row, date: index < 2 ? rows[0]!.date : rows[2]!.date, feature: index % 2 === 0 ? 'I' : 'II'}))
+    : rows;
+  element.datasets = [{result: ref, rows: sourceRows}];
   element.setAttribute('aria-label', `${tag} fixture`);
-  document.body.append(element);
+  mount.append(element);
 }
 Object.assign(window, {result, rows, specs});

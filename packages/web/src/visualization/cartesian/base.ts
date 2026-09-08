@@ -1,10 +1,12 @@
-import {css, html, nothing, svg} from "lit";
+import {css, html, nothing, svg, unsafeCSS} from "lit";
+import {repeat} from "lit/directives/repeat.js";
 import type {Diagnostic, Result, ResultRef, Scalar, VisualizationSpec, BoundVisualization} from "@aeliqo/core";
 import {bindVisualizationSpec} from "@aeliqo/core";
 import {AeliqoFoundationElement, aeliqoFoundationThemeStyles} from "../../foundation/base.js";
 import {compilePlotComposition} from "../../plot/composition.js";
 import type {CompiledPlot, CompiledPlotNode, PlotDataset} from "../../plot/composition.js";
 import type {PlotGeometry} from "../../plot/geometry.js";
+import {QUANTITATIVE_COLOR_END, QUANTITATIVE_COLOR_START} from "../../plot/palette.js";
 import {exactLabel} from "../../plot/scales.js";
 import {seriesColor, seriesSymbol, svgPlotMarks} from "../../plot/render.js";
 import {materializeVisualizationRows} from "../materialization.js";
@@ -45,11 +47,11 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
   };
 
   static readonly styles = [...aeliqoFoundationThemeStyles, css`
-    :host { color: var(--aeliqo-color-text, #111827); display: block; max-inline-size: 100%; }
+    :host { color: var(--aeliqo-color-text, #111827); display: block; max-inline-size: 100%; min-inline-size: 0; }
     figure { margin: 0; }
     figcaption { font-weight: var(--aeliqo-typography-font-weight-semibold, 600); margin-block-end: var(--aeliqo-space-8, .5rem); }
     [part="scope"], [part="note"], [part="error"], [part="color-key"] { color: var(--aeliqo-color-muted, #475569); font-size: var(--aeliqo-typography-font-size-caption, .8125rem); }
-    [part="viewport"] { max-inline-size: 100%; overflow: auto; position: relative; }
+    [part="viewport"] { max-inline-size: 100%; min-inline-size: 0; overflow: auto; position: relative; }
     [part="viewport"] svg { background: var(--aeliqo-color-canvas, #fff); display: block; }
     [part="viewport"] svg text { fill: currentColor; font: 11px system-ui, sans-serif; }
     [part="data"] { max-inline-size: 100%; overflow: auto; }
@@ -61,7 +63,8 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
     [part="legend"], [part="color-key-ticks"] { display: flex; flex-wrap: wrap; gap: var(--aeliqo-space-8, .5rem) var(--aeliqo-space-16, 1rem); list-style: none; margin: var(--aeliqo-space-8, .5rem) 0 0; padding: 0; }
     [part="legend"] li { align-items: center; display: inline-flex; gap: var(--aeliqo-space-4, .25rem); }
     [part="legend-marker"] { block-size: .75rem; inline-size: .75rem; }
-    [part="color-key-bar"] { background: linear-gradient(to right, var(--aeliqo-color-info, #bfdbfe), var(--aeliqo-color-accent, #4338ca)); block-size: .75rem; inline-size: min(24rem, 100%); }
+    [part="warnings"] { color: var(--aeliqo-color-warning, #92400e); margin: var(--aeliqo-space-8, .5rem) 0 0; padding-inline-start: 1.25rem; }
+    [part="color-key-bar"] { background: linear-gradient(to right, ${unsafeCSS(QUANTITATIVE_COLOR_START)}, ${unsafeCSS(QUANTITATIVE_COLOR_END)}); block-size: .75rem; inline-size: min(24rem, 100%); }
     [part="pagination"] { align-items: center; display: flex; flex-wrap: wrap; gap: var(--aeliqo-space-8, .5rem); margin-block-start: var(--aeliqo-space-8, .5rem); }
     [part="facet"], [part="concat-inline"], [part="concat-block"] { display: flex; flex-wrap: wrap; gap: var(--aeliqo-space-16, 1rem); }
     [part="concat-inline"] { overflow-inline: auto; flex-wrap: nowrap; }
@@ -84,11 +87,24 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
   private page = 0;
   private selectionScope = "";
   private singleResult = true;
+  private focusedIdentity: string | undefined;
+  private focusedResult: string | undefined;
+  private focusedElement: HTMLElement | undefined;
 
   protected abstract readonly expectedView: CartesianView;
 
   protected override willUpdate(changed: Map<string, unknown>): void {
     if (!inputChanged(changed)) return;
+    const active = this.shadowRoot?.activeElement;
+    const elementConstructor = globalThis.HTMLElement;
+    if (elementConstructor !== undefined && active instanceof elementConstructor) {
+      const button = active.closest<HTMLButtonElement>("button[data-aeliqo-row-identity]");
+      if (button !== null && button.dataset.aeliqoRowIdentity !== undefined && button.dataset.aeliqoResult !== undefined) {
+        this.focusedIdentity = button.dataset.aeliqoRowIdentity;
+        this.focusedResult = button.dataset.aeliqoResult;
+        this.focusedElement = button;
+      }
+    }
     this.page = 0;
     this.state = {kind: "empty"};
     if (this.visualization === undefined) {
@@ -133,6 +149,23 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
     this.retainSelection(compiled.value);
   }
 
+  protected override updated(changed: Map<string, unknown>): void {
+    if (!inputChanged(changed) || this.focusedIdentity === undefined || this.focusedResult === undefined) return;
+    const identity = this.focusedIdentity;
+    const result = this.focusedResult;
+    const focusedElement = this.focusedElement;
+    this.focusedIdentity = undefined;
+    this.focusedResult = undefined;
+    this.focusedElement = undefined;
+    if (focusedElement?.isConnected) {
+      focusedElement.focus();
+      return;
+    }
+    const target = [...(this.shadowRoot?.querySelectorAll<HTMLButtonElement>("button[data-aeliqo-row-identity]") ?? [])]
+      .find((candidate) => candidate.dataset.aeliqoRowIdentity === identity && candidate.dataset.aeliqoResult === result);
+    target?.focus();
+  }
+
   protected override render() {
     if (this.state.kind === "empty") return html`<p role="status">No ${this.expectedView} visualization is available.</p>`;
     if (this.state.kind === "error") return html`<p part="error" role="status">${message(this.state.diagnostics)}</p>`;
@@ -149,24 +182,28 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
   }
 
   private renderGeometry(geometry: PlotGeometry, label: string, graphic: boolean, data: boolean, displayedIdentities?: readonly string[]): unknown {
-    const displayed = displayedIdentities === undefined ? geometry.rows : geometry.rows.filter((row) => displayedIdentities.includes(row.identity));
+    const displayedSet = displayedIdentities === undefined ? undefined : new Set(displayedIdentities);
+    const displayed = displayedSet === undefined ? geometry.rows : geometry.rows.filter((row) => displayedSet.has(row.identity));
     const pageCount = Math.max(1, Math.ceil(displayed.length / 25));
     const page = Math.min(this.page, pageCount - 1);
     const pageRows = displayed.slice(page * 25, page * 25 + 25);
     const axes = geometry.axes;
+    const abbreviatedTicks = axes !== undefined && [...axes.x.ticks, ...axes.y.ticks].some((tick) => tick.label.length > 12);
     const scope = this.scopeText(geometry.result);
-    const valueLabel = geometry.result.precision.kind === "exact" ? "Exact loaded values" : `Approximate values: ${geometry.result.precision.method}`;
+    const valueLabel = geometry.result.precision.kind === "exact" ? "Exact loaded values" : "Loaded approximate values";
     const histogramMeasure = this.expectedView === "histogram" && this.state.kind === "ready" && this.state.bound.spec.view === "histogram" ? this.state.bound.spec.bins.measure : undefined;
     const tableLabel = histogramMeasure === undefined ? valueLabel : `${valueLabel}; executor-produced ${histogramMeasure} bins`;
     return html`<figure part="figure">
-      ${data ? html`<figcaption>${label}</figcaption><p part="scope">${scope} ${geometry.rows.length} loaded rows.</p>` : nothing}
+      ${data ? html`<figcaption>${label}</figcaption><p part="scope">${scope} ${geometry.rows.length} loaded rows.${displayed.length !== geometry.rows.length ? ` ${displayed.length} rows in this display partition.` : nothing}</p>` : nothing}
       ${geometry.result.period && data ? html`<p part="note">${geometry.result.period.interpretation} (${geometry.result.period.timezone}).</p>` : nothing}
       ${geometry.result.filters.length > 0 && data ? html`<p part="note">Filtered result (${geometry.result.filters.length} applied conditions).</p>` : nothing}
-      ${geometry.result.precision.kind === "approximate" && data ? html`<p part="note">${valueLabel}. Exact decimal rendering is unavailable for this result.</p>` : nothing}
+      ${abbreviatedTicks && data ? html`<p part="note">Axis labels are shortened for display; full values are listed in the data table.</p>` : nothing}
+      ${geometry.result.precision.kind === "approximate" && data ? html`<p part="note">${valueLabel}: ${geometry.result.precision.method}. ${this.uncertaintyText(geometry.result.precision.uncertainty)}</p>` : nothing}
+      ${geometry.result.warnings.length > 0 && data ? html`<ul part="warnings" aria-label="Result warnings">${geometry.result.warnings.map((warning) => html`<li>${warning.message}</li>`)}</ul>` : nothing}
       ${histogramMeasure !== undefined && data ? html`<p part="note">Executor-produced ${histogramMeasure} bins. Bin delivery does not establish source observation coverage.</p>` : nothing}
       ${geometry.state === "data-only" ? html`<p part="error" role="status">${geometry.reason ?? "The chart geometry is unavailable."}</p>` : nothing}
-      ${graphic && axes && geometry.state === "plot" ? html`<div part="viewport" style=${`inline-size: ${this.width}px; block-size: ${this.height}px`}>
-        <svg viewBox=${`0 0 ${geometry.width} ${geometry.height}`} width=${geometry.width} height=${geometry.height} role="img" aria-label=${`${label}. ${scope} Values and selection are available in the exact data table below.`}>
+      ${graphic && axes && geometry.state === "plot" ? html`<div part="viewport" role="region" tabindex="0" aria-label=${`${label} ${this.expectedView} chart. Scroll to view the full graphic.`} style=${`inline-size: ${this.width}px; block-size: ${this.height}px`}>
+        <svg viewBox=${`0 0 ${geometry.width} ${geometry.height}`} width=${geometry.width} height=${geometry.height} role="img" aria-label=${`${label}. ${scope} Values and selection are available in the data table below.`}>
           ${svgPlotMarks(geometry)}
           <path d=${`M64,24V${geometry.height - 48}H${geometry.width - 24}`} fill="none" stroke="currentColor"></path>
           ${axes.x.ticks.map((tick) => svg`<text x=${tick.position} y=${geometry.height - 30} text-anchor="middle" aria-label=${tick.label}>${this.tickText(tick.label)}</text>`)}
@@ -177,7 +214,7 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
       </div>` : nothing}
       ${data ? html`${this.renderLegend(geometry)}${this.renderColorKey(geometry)}<div part="data"><table>
         <caption>${label}: ${tableLabel}</caption><thead><tr><th scope="col">Select</th>${geometry.result.fields.map((field) => html`<th scope="col">${field.label}${field.type.unit ? ` (${field.type.unit.symbol})` : nothing}</th>`)}</tr></thead>
-        <tbody>${pageRows.map((row) => html`<tr><td><button type="button" aria-pressed=${this.isSelected(row.identity, geometry.result.ref) ? "true" : "false"} aria-label=${`Select ${this.identityLabel(row, geometry.result)}`} @click=${() => this.select(row.identity, geometry.result.ref)}>Select</button></td>${geometry.result.fields.map((field) => html`<td>${exactLabel(row.values[field.id]!)}</td>`)}</tr>`)}</tbody>
+        <tbody>${repeat(pageRows, (row) => row.identity, (row) => html`<tr><td><button type="button" data-aeliqo-row-identity=${row.identity} data-aeliqo-result=${resultKey(geometry.result.ref)} aria-pressed=${this.isSelected(row.identity, geometry.result.ref) ? "true" : "false"} aria-label=${`Select ${this.identityLabel(row, geometry.result)}`} @click=${() => this.select(row.identity, geometry.result.ref)}>Select</button></td>${geometry.result.fields.map((field) => html`<td>${exactLabel(row.values[field.id]!)}</td>`)}</tr>`)}</tbody>
       </table></div>${displayed.length > 25 ? html`<nav part="pagination" aria-label="${label} data pages"><button type="button" ?disabled=${page === 0} @click=${() => { this.page = page - 1; this.requestUpdate(); }}>Previous</button><span>Rows ${page * 25 + 1}–${Math.min((page + 1) * 25, displayed.length)} of ${displayed.length}</span><button type="button" ?disabled=${page + 1 >= pageCount} @click=${() => { this.page = page + 1; this.requestUpdate(); }}>Next</button></nav>` : nothing}` : nothing}
     </figure>`;
   }
@@ -202,6 +239,11 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
   }
 
   private tickText(text: string): string { return text.length > 12 ? `${text.slice(0, 5)}…${text.slice(-5)}` : text; }
+  private uncertaintyText(uncertainty: {readonly kind: "quantified"; readonly lower: number; readonly upper: number; readonly interpretation: string} | {readonly kind: "unquantified"; readonly reason: string}): string {
+    return uncertainty.kind === "quantified"
+      ? `${uncertainty.interpretation} (range ${uncertainty.lower}–${uncertainty.upper}).`
+      : uncertainty.reason;
+  }
   private identityLabel(row: {readonly values: Readonly<Record<string, Scalar>>}, result: Result): string { return result.identity.map((field) => exactLabel(row.values[field]!)).join(", "); }
   private isSelected(identity: string, result: ResultRef): boolean {
     return identity === this.selectedIdentity && (this.selectedResult === undefined ? this.singleResult : resultKey(result) === resultKey(this.selectedResult));

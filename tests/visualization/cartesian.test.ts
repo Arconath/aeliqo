@@ -61,7 +61,7 @@ describe('Cartesian geometry family', () => {
     expect(line.ok).toBe(true);
     if (line.ok) expect(line.value.marks.filter(mark => mark.kind === 'path')[0]?.path.match(/M/gu)).toHaveLength(2);
     const bar = compile(unit('bar', {x: {field: 'category', scale: 'ordinal'}, y: {field: 'y', scale: 'linear', zero: true}}), {...result, fields: result.fields.map(field => field.id === 'y' ? {...field, type: {...field.type, nullable: false}} : field)} as Result,
-      rows.slice(0, 3).map((row, index) => ({...row, y: index === 1 ? -3 : row.y})), 'bar');
+      rows.slice(0, 3).map((row, index) => ({...row, category: `Category ${index}`, y: index === 1 ? -3 : row.y})), 'bar');
     expect(bar.ok).toBe(true);
     if (bar.ok) expect(bar.value.marks.some(mark => mark.kind === 'rect' && mark.y > 100 && mark.height > 0)).toBe(true);
   });
@@ -69,7 +69,7 @@ describe('Cartesian geometry family', () => {
   it('stacks positive area series independently from negative series and rejects duplicate temporal cells', () => {
     const result = descriptor(4);
     const area = unit('area', {x: {field: 'date', scale: 'temporal'}, y: {field: 'y', scale: 'linear', zero: true}, series: {field: 'category', scale: 'ordinal'}});
-    const stacked = rows.map((row, index) => ({...row, y: index % 2 === 0 ? row.y : -row.y}));
+    const stacked = rows.map((row, index) => ({...row, date: rows[Math.floor(index / 2)]!.date, category: index % 2 === 0 ? 'A' : 'B', y: index % 2 === 0 ? row.y : -row.y}));
     const geometry = compile(area, result, stacked, 'area', 'zero');
     expect(geometry.ok).toBe(true);
     if (geometry.ok) expect(geometry.value.marks.filter(mark => mark.kind === 'path')).toHaveLength(2);
@@ -93,5 +93,32 @@ describe('Cartesian geometry family', () => {
       expect(colored.value.colorTicks?.length).toBeGreaterThan(0);
       expect(colored.value.marks.some(mark => mark.kind === 'rect' && mark.color !== undefined)).toBe(true);
     }
+  });
+
+  it('rejects ambiguous or overcrowded bars and preserves unplottable rows for the data view', () => {
+    const result = descriptor();
+    const bar = unit('bar', {x: {field: 'category', scale: 'ordinal'}, y: {field: 'y', scale: 'linear', zero: true}});
+    const duplicateX = compile(bar, result, rows.map((row, index) => ({...row, category: index < 2 ? 'A' : 'B'})), 'bar');
+    expect(duplicateX.ok).toBe(true);
+    if (duplicateX.ok) expect(duplicateX.value.state).toBe('data-only');
+    const denseRows = Array.from({length: 1_000}, (_, index) => ({...rows[index % rows.length]!, id: `dense-${index}`, category: `C${index}`, date: `2025-01-${String((index % 28) + 1).padStart(2, '0')}`}));
+    const dense = compilePlotUnit(bar, descriptor(denseRows.length), denseRows, {...options, maxRows: 2_000, maxMarks: 2_000, family: 'bar'});
+    expect(dense.ok).toBe(true);
+    if (dense.ok) expect(dense.value.state).toBe('data-only');
+    const nullable = {...result, fields: result.fields.map(field => field.id === 'y' ? {...field, type: {...field.type, nullable: true}} : field)} as Result;
+    const empty = compile(unit('line', {x: {field: 'date', scale: 'temporal'}, y: {field: 'y', scale: 'linear'}}), nullable, rows.map(row => ({...row, y: null})), 'trend');
+    expect(empty.ok).toBe(true);
+    if (empty.ok) expect(empty.value.reason).toContain('No plottable observations');
+  });
+
+  it('does not silently drop quantitative color semantics from line paths or missing marks', () => {
+    const result = descriptor();
+    const coloredLine = compile(unit('line', {x: {field: 'date', scale: 'temporal'}, y: {field: 'y', scale: 'linear'}, color: {field: 'color', scale: 'linear'}}), result, rows, 'trend');
+    expect(coloredLine.ok).toBe(true);
+    if (coloredLine.ok) expect(coloredLine.value.state).toBe('data-only');
+    const nullableColor = {...result, fields: result.fields.map(field => field.id === 'color' ? {...field, type: {...field.type, nullable: true}} : field)} as Result;
+    const missingColor = compile(unit('point', {x: {field: 'x', scale: 'linear'}, y: {field: 'y', scale: 'linear'}, color: {field: 'color', scale: 'linear'}}), nullableColor, rows.map((row, index) => index === 0 ? {...row, color: null} : row), 'scatter');
+    expect(missingColor.ok).toBe(true);
+    if (missingColor.ok) expect(missingColor.value.state).toBe('data-only');
   });
 });

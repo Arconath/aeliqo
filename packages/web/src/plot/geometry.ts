@@ -3,6 +3,7 @@ import {bindPlotSpec,parseWireValue,scalarIdentity,validateScalar,compareScalars
 import type {PlotUnit,Result,Scalar,Outcome} from '@aeliqo/core';
 import {makePlotScale,exactLabel} from './scales.js';
 import type {PlotScale,PlotTick} from './scales.js';
+import {quantitativeColor} from './palette.js';
 
 export interface PlotRow {readonly [field:string]:Scalar}
 export interface PlotDatum {readonly identity:string;readonly values:PlotRow}
@@ -78,24 +79,25 @@ export function compilePlotUnit(unit:PlotUnit,result:Result,inputRows:unknown,op
   const colorScale=e.color&&e.color.scale!=='ordinal'
     ? makePlotScale(e.color,fields.get(e.color.field)!.type,displayed.map(d=>d.values[e.color!.field]!),[0,1])
     : undefined;
+  if(e.color&&e.color.scale!=='ordinal'&&['line','area'].includes(normalizedUnit.mark))return dataOnly('Quantitative color is not representable on a single line or area path. Use an ordinal series or the exact data table.');
+  if(e.color&&e.color.scale!=='ordinal'&&displayed.some(d=>d.values[e.color!.field]===null))return dataOnly('Quantitative color requires a value for every displayed mark.');
   const colorAt=(value:Scalar):string|undefined=>{
     if(colorScale===undefined||value===null)return undefined;
     const position=colorScale.at(value);if(position===undefined)return undefined;
     const first=colorScale.ticks[0]?.position??0;const last=colorScale.ticks[colorScale.ticks.length-1]?.position??1;
     const ratio=last===first?0.5:Math.min(1,Math.max(0,(position-first)/(last-first)));
-    const red=Math.round(191+(67-191)*ratio),green=Math.round(219+(56-219)*ratio),blue=Math.round(254+(202-254)*ratio);
-    return `rgb(${red} ${green} ${blue})`;
+    return quantitativeColor(ratio);
   };
   const series=new Map<string,PlotDatum[]>();
   const legend=new Map<string,string>();
   for(const d of displayed){
     const parts:string[]=[];
-    for(const encoding of [e.series])if(encoding){
+    for(const encoding of [e.series, ...(e.color?.scale==='ordinal'?[e.color]:[])] )if(encoding){
       const identity=scalarIdentity(d.values[encoding.field],fields.get(encoding.field)!.type);
       if(!identity.ok)return identity;parts.push(identity.value);
     }
     const id=JSON.stringify(parts);
-    legend.set(id,[e.series].filter(v=>v!==undefined).map(v=>`${fields.get(v.field)!.label}: ${exactLabel(d.values[v.field]!)}`).join(', '));
+    legend.set(id,[e.series, ...(e.color?.scale==='ordinal'?[e.color]:[])].filter(v=>v!==undefined).map(v=>`${fields.get(v.field)!.label}: ${exactLabel(d.values[v.field]!)}`).join(', '));
     const group=series.get(id)??[];group.push(d);series.set(id,group);
   }
   if(series.size>12)return dataOnly('The plot exceeds 12 distinguishable series; use the data view.');
@@ -141,23 +143,27 @@ export function compilePlotUnit(unit:PlotUnit,result:Result,inputRows:unknown,op
   if(normalizedUnit.mark==='area'&&stack==='zero'){
     if(e.series===undefined)return dataOnly('Stacked areas require an explicit series dimension.');
     const offsets=new Map<string,{positive:Scalar;negative:Scalar}>();
+    let cohort: Set<string>|undefined;
     for(const group of series.values()){
       const seenX=new Set<string>();
       for(const datum of group){
         const value=datum.values[e.y.field];
-        if(value===null||value===undefined)continue;
         const xIdentity=scalarIdentity(datum.values[e.x.field]!,fields.get(e.x.field)!.type);
         if(!xIdentity.ok)return xIdentity;
         if(seenX.has(xIdentity.value))return dataOnly('Stacked area series must contain one value per temporal grain.');
         seenX.add(xIdentity.value);
+        if(value===null||value===undefined)continue;
         const existing=offsets.get(xIdentity.value)??{positive:zero,negative:zero};
+        const sign=compareScalars(value,zero,yType);if(!sign.ok||sign.value===null)return dataOnly('Stacked area magnitudes must be ordered numeric values.');
         const amount=numericValue(value);
-        const baseline=amount<0?existing.negative:existing.positive;
+        const negative=sign.value<0;
+        const baseline=negative?existing.negative:existing.positive;
         const top=addNumeric(baseline,value);
         stackCoordinates.set(datum.identity,{baseline,top});
-        offsets.set(xIdentity.value,amount<0?{positive:existing.positive,negative:top}:{positive:top,negative:existing.negative});
+        offsets.set(xIdentity.value,negative?{positive:existing.positive,negative:top}:{positive:top,negative:existing.negative});
         stackExtras.push(top);
       }
+      if(cohort===undefined)cohort=seenX;else if(cohort.size!==seenX.size||[...cohort].some(key=>!seenX.has(key)))return dataOnly('Stacked area series must share the same temporal cohorts.');
     }
   }
   if(family==='histogram'){
@@ -188,15 +194,38 @@ export function compilePlotUnit(unit:PlotUnit,result:Result,inputRows:unknown,op
   const baselineY=zeroY??0;
   // Quantitative color and size require explicit legend geometry; never silently ignore them.
   const size=e.size?makePlotScale(e.size,fields.get(e.size.field)!.type,displayed.map(d=>d.values[e.size!.field]!),[3,12]):undefined;
-  const xPositions=x.ticks.map(t=>t.position),yPositions=y.ticks.map(t=>t.position);
   const minStep=(positions:readonly number[],fallback:number):number=>{
     const sorted=[...positions].sort((a,b)=>a-b);let step=Number.POSITIVE_INFINITY;
     for(let index=1;index<sorted.length;index+=1)step=Math.min(step,sorted[index]!-(sorted[index-1]!));
     return Number.isFinite(step)&&step>0?step:fallback;
   };
-  const cellWidth=Math.max(1,Math.min(160,minStep(xPositions,(width-88)/Math.max(1,xPositions.length))*0.9));
-  const cellHeight=Math.max(1,Math.min(96,minStep(yPositions,(height-72)/Math.max(1,yPositions.length))*0.9));
+  const actualXPositions=[...new Set(displayed.map(d=>x.at(d.values[e.x.field]!)).filter((position):position is number=>position!==undefined))];
+  const actualYPositions=[...new Set(displayed.map(d=>y.at(d.values[e.y.field]!)).filter((position):position is number=>position!==undefined))];
+  const cellWidth=Math.max(1,Math.min(160,minStep(actualXPositions,(width-88)/Math.max(1,actualXPositions.length))*0.9));
+  const cellHeight=Math.max(1,Math.min(96,minStep(actualYPositions,(height-72)/Math.max(1,actualYPositions.length))*0.9));
   const cellKeys=new Set<string>();
+  const barLayout=new Map<string,{readonly center:number;readonly width:number}>();
+  if(normalizedUnit.mark==='bar'){
+    const byX=new Map<string,{readonly group:string;readonly datum:PlotDatum}[]>();
+    for(const [groupId,group] of series)for(const datum of group){
+      const identity=scalarIdentity(datum.values[e.x.field]!,fields.get(e.x.field)!.type);
+      if(!identity.ok)return identity;
+      const entries=byX.get(identity.value)??[];
+      if(entries.some(entry=>entry.group===groupId))return dataOnly('Bar rows must contain one value per x and series grain.');
+      entries.push({group:groupId,datum});byX.set(identity.value,entries);
+    }
+    const xStep=minStep([...byX.values()].map(entries=>x.at(entries[0]!.datum.values[e.x.field]!)!).filter((position):position is number=>position!==undefined),0);
+    if(byX.size>1&&xStep<1)return dataOnly('Bar categories are too dense for distinct marks at this width; exact data is available below.');
+    for(const entries of byX.values()){
+      const capacity=byX.size>1?xStep*0.8:Math.min(28,(width-88)/Math.max(1,displayed.length)*0.7);
+      const barWidth=Math.min(28,capacity/entries.length);
+      if(!Number.isFinite(barWidth)||barWidth<1)return dataOnly('Bar groups are too dense for distinct marks at this width; exact data is available below.');
+      const center=x.at(entries[0]!.datum.values[e.x.field]!);
+      if(center===undefined)return dataOnly('A bar category has no display position.');
+      const start=center-(barWidth*entries.length)/2+barWidth/2;
+      entries.forEach((entry,index)=>barLayout.set(entry.datum.identity,{center:start+index*barWidth,width:barWidth}));
+    }
+  }
   const marks:PlotMark[]=[];
   const px=(d:PlotDatum)=>x.at(d.values[e.x.field]!);
   const py=(d:PlotDatum)=>y.at(d.values[e.y.field]!);
@@ -230,7 +259,9 @@ export function compilePlotUnit(unit:PlotUnit,result:Result,inputRows:unknown,op
       } else if(normalizedUnit.mark==='bar'||normalizedUnit.mark==='cell'){
         const zero=fields.get(e.y.field)!.type.value==='decimal'?{decimal:'0'}:0;
         const baseline=normalizedUnit.mark==='bar'?y.at(zero)!:y0;
-        const barWidth=Math.max(1,Math.min(28,(width-88)/Math.max(1,displayed.length)*0.7));
+        const layout=normalizedUnit.mark==='bar'?barLayout.get(d.identity):undefined;
+        const barWidth=layout?.width??Math.max(1,Math.min(28,(width-88)/Math.max(1,displayed.length)*0.7));
+        const markX=layout?.center??x0;
         if(normalizedUnit.mark==='cell'){
           const xIdentity=scalarIdentity(d.values[e.x.field]!,fields.get(e.x.field)!.type);
           const yIdentity=scalarIdentity(d.values[e.y.field]!,fields.get(e.y.field)!.type);
@@ -240,7 +271,7 @@ export function compilePlotUnit(unit:PlotUnit,result:Result,inputRows:unknown,op
           cellKeys.add(cellKey);
           marks.push({kind:'rect',x:x0-cellWidth/2,y:y0-cellHeight/2,width:cellWidth,height:cellHeight,series:groupId,identity:d.identity,...(markColor===undefined?{}:{color:markColor})});
         } else {
-          marks.push({kind:'rect',x:x0-barWidth/2,y:Math.min(y0,baseline),width:barWidth,height:Math.max(1,Math.abs(baseline-y0)),series:groupId,identity:d.identity,...(markColor===undefined?{}:{color:markColor})});
+          marks.push({kind:'rect',x:markX-barWidth/2,y:Math.min(y0,baseline),width:barWidth,height:Math.max(1,Math.abs(baseline-y0)),series:groupId,identity:d.identity,...(markColor===undefined?{}:{color:markColor})});
         }
       } else if(normalizedUnit.mark==='rect'||normalizedUnit.mark==='link'){
         const x1=x.at(d.values[e.x2!.field]!),y1=y.at(d.values[e.y2!.field]!);if(x1===undefined||y1===undefined)continue;
@@ -249,11 +280,12 @@ export function compilePlotUnit(unit:PlotUnit,result:Result,inputRows:unknown,op
       }
     }
   }
+  if(displayed.length===0||marks.length===0)return dataOnly(displayed.length===0?'No displayed observations are available for the requested plot partition.':'No plottable observations are available; exact values are shown below.');
   const geometryCost=marks.reduce((n,m)=>n+(m.kind==='path'?m.identities.length:1),0);
   if(geometryCost>maxMarks)return dataOnly('The exact geometry exceeds the mark budget.');
   const colorPresentation=e.color&&e.color.scale!=='ordinal'&&colorScale!==undefined
     ? {colorField:e.color.field,colorTicks:colorScale.ticks}
     : {};
   return {ok:true,value:{state:'plot',width,height,marks,rows:data,axes:{x,y,xLabel:label(e.x.field),yLabel:label(e.y.field)},...colorPresentation,series:[...series.keys()],legend:[...legend].map(([id,label])=>({id,label})),result:descriptor}};
- }catch{return dataOnly('The scale cannot safely represent these observations. Exact values are available below.');}
+ }catch{return dataOnly('The scale cannot safely represent these observations. Loaded values are available below.');}
 }
