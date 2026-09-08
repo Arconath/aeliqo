@@ -5,7 +5,7 @@ export const seriesColor=(g:PlotGeometry,series:string):string=>colors[g.series.
 export const seriesSymbol=(g:PlotGeometry,s:string):string=>['●','■','▲','◆'][g.series.indexOf(s)%4]??'●';
 const dash=(g:PlotGeometry,s:string):number[]=>[[],[6,3],[2,2],[8,2,2,2]][g.series.indexOf(s)%4]??[];
 export function svgPlotMarks(geometry:PlotGeometry){return geometry.marks.map(mark=>{
- const color=seriesColor(geometry,mark.series);
+ const color=mark.color??seriesColor(geometry,mark.series);
  switch(mark.kind){
  case 'point':{const r=mark.radius,x=mark.x,y=mark.y;switch(seriesSymbol(geometry,mark.series)){
   case '■':return svg`<rect x=${x-r} y=${y-r} width=${r*2} height=${r*2} fill=${color}></rect>`;
@@ -21,7 +21,7 @@ export function svgPlotMarks(geometry:PlotGeometry){return geometry.marks.map(ma
 export function paintPlotCanvas(context:CanvasRenderingContext2D,geometry:PlotGeometry):void {
  context.clearRect(0,0,geometry.width,geometry.height);
  for(const mark of geometry.marks){
-   context.fillStyle=seriesColor(geometry,mark.series);context.strokeStyle=context.fillStyle;context.lineWidth=2;context.setLineDash(dash(geometry,mark.series));
+   context.fillStyle=mark.color??seriesColor(geometry,mark.series);context.strokeStyle=context.fillStyle;context.lineWidth=2;context.setLineDash(dash(geometry,mark.series));
    switch(mark.kind){
    case 'point':{const r=mark.radius,x=mark.x,y=mark.y;context.beginPath();switch(seriesSymbol(geometry,mark.series)){
  case '■':context.rect(x-r,y-r,r*2,r*2);break;
