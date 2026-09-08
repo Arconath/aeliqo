@@ -143,3 +143,16 @@ unsafe intermediate refusal, mixed decimal arithmetic and raw HR rates/mutations
 are proven. Source/intermediate row/byte and operation ceilings remain enforced.
 T08 host execution and T09 result lifecycle are ready independent workstreams.
 No publication, main cutover or production deployment occurred.
+
+T08 and T09 accepted at source0248900, immutable evidence
+harness/evidence/t08/7beeab22ef99 and harness/evidence/t09/7beeab22ef99.
+Fresh95data tests,23result lifecycle tests,strict workspace types,actualHTTP
+commerce/rawHR reference parity and installedNode/Chromium consumers pass.
+Independent review closed warning overflow, hashing source races, lease/TTL and
+capacity faults,population isolation,count/coverage/provenance inconsistencies,
+idle cancellation and cleanup reentrancy. Nullable grouping identities remain
+typed and unique. Frozen source digest remained unchanged throughout verification.
+Inherited hosted34185639265 request-abort investigation is still open; the isolated
+Linux pinned browser download remains in progress. No Linux fix or release
+readiness claimed. T10 region transactions is the next ready implementation task.
+No npm publication,main cutover or production deployment occurred.

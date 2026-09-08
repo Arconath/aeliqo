@@ -1,0 +1,3 @@
+$ node tests/consumers/runtime-tarballs.mjs
+Installed @aeliqo/core/runtime data types, packages, local/HTTP service and Chromium browser fetch path pass.
+Evidence: /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/runtime-consumers/run-ixftsP/report.json

@@ -1,0 +1,8 @@
+$ pnpm build:runtime && pnpm build:platform && tsc --project tsconfig.json
+$ pnpm build:core && pnpm --filter @aeliqo/runtime build
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+$ pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/react build
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json

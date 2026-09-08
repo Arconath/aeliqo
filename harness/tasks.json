@@ -277,10 +277,26 @@
       "acceptance": [
         "Local and HTTP parity; unsupported query fails explicitly; no download-all fallback or vendor SDK in core."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "Luna Max writer release_inventory prepares host integration in isolated codex/t08-host; owns runtime/data local evaluator integration and analytical tests. Root owns types/contracts/config/exports/referencehost integration. T09 isolated results writer does not edit data."
+      "evidence": [
+        {
+          "path": "harness/evidence/t08/7beeab22ef99/manifest.json",
+          "sha256": "1fbb683d07f2bac02c42432a3959462925bf5690c45c9b19a43d3c5981e57699"
+        }
+      ],
+      "notes": "Accepted source 0248900 with independent review,95data/23result tests,strict types,actual HTTP reference parity and installedNode/Chromium consumer. Evidence harness/evidence/t08/7beeab22ef99. Inherited hosted request-abort investigation remains explicit; no publication/deployment claim.",
+      "review": {
+        "status": "approved",
+        "author": "release_inventory (T08) / platform_proof (T09), root integration",
+        "reviewer": "platform_proof (T08) / preflight_diagnosis (T09)",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t08/7beeab22ef99/review.json",
+            "sha256": "9ae74699488cc8432112bc00476f57d6fc57f5079941410748f74c4fb5cf3ca2"
+          }
+        ]
+      }
     },
     {
       "id": "T09",
@@ -298,10 +314,26 @@
         "Principal-scoped immutable handles, completeness, backpressure, cancellation and stale-result ordering proven.",
         "Results distinguish count value/scope, precision, completeness, inference evidence and consistency."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "Luna Max writer platform_proof prepares isolated codex/t09-results result handle/cache/lifecycle implementation and tests. Root owns contracts/config/exports. T08 writer owns runtime/data; no overlapping source paths."
+      "evidence": [
+        {
+          "path": "harness/evidence/t09/7beeab22ef99/manifest.json",
+          "sha256": "cd80b7820cfc07d6756e5aab55260b068fa2dd6b100db0ca2c6b457031600e40"
+        }
+      ],
+      "notes": "Accepted source 0248900 with independent review,95data/23result tests,strict types,actual HTTP reference parity and installedNode/Chromium consumer. Evidence harness/evidence/t09/7beeab22ef99. Inherited hosted request-abort investigation remains explicit; no publication/deployment claim.",
+      "review": {
+        "status": "approved",
+        "author": "release_inventory (T08) / platform_proof (T09), root integration",
+        "reviewer": "platform_proof (T08) / preflight_diagnosis (T09)",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t09/7beeab22ef99/review.json",
+            "sha256": "c34d6a817311dcb972349d1288c5289f4e5912b5ea37623d4157942264d7815a"
+          }
+        ]
+      }
     },
     {
       "id": "T10",

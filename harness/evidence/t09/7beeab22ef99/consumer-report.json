@@ -1,0 +1,45 @@
+{
+  "passed": true,
+  "scope": "@aeliqo/core and @aeliqo/runtime 0.1.0 installed tarballs; strict declarations; local/HTTP ADC roundtrip; authorization and stale-plan checks; browser bundle and fetch path.",
+  "artifacts": [
+    {
+      "name": "@aeliqo/core",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/runtime-consumers/run-ixftsP/aeliqo-core-0.1.0.tgz",
+      "sha256": "ddae72384dabc457e9db456b0ee498d925b20beddd5499eeb72e9b60879bdd41",
+      "integrity": "sha512-6g/H20ICrqAL60TDwyqavkWVfXCrLwKhge9/tVDYaCAnOBJ3LYUbPWDAeLfY6nZKpCccmOU1QpDFzSfh/X91Fg=="
+    },
+    {
+      "name": "@aeliqo/runtime",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/runtime-consumers/run-ixftsP/aeliqo-runtime-0.1.0.tgz",
+      "sha256": "26aac3051574a4a28d2afb5566e9476dba45aa386b7c319307231ce86b756506",
+      "integrity": "sha512-pVCW2lrkjDQQge9Cm/QTX0QxQfAov/zrASiomqEHvy0lccQDTop77vJw3gU6RHFDKFG/u5c1MGJvS1vVEk+XSQ=="
+    }
+  ],
+  "consumer": {
+    "directory": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-runtime-consumer-CqNS5y",
+    "lockPath": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/runtime-consumers/run-ixftsP/consumer-package-lock.json",
+    "lockSha256": "3239cb77bedb2292ade95b17bd6a8c0584267e105a7487dc670f68c4cd28e13c"
+  },
+  "sourceDigestBefore": {
+    "core": "e18f335ed8885f153130408a93107ef052cc830f756999c6924b14d92ec8b5b6",
+    "runtime": "2e829192ac441446f0ba1b69e461f7202fa37554b7536d90c656f0e56831fc43"
+  },
+  "sourceDigestAfter": {
+    "core": "e18f335ed8885f153130408a93107ef052cc830f756999c6924b14d92ec8b5b6",
+    "runtime": "2e829192ac441446f0ba1b69e461f7202fa37554b7536d90c656f0e56831fc43"
+  },
+  "consumerOutput": "Installed @aeliqo/runtime/data local, HTTP, auth revalidation, Vite and Chromium passes.",
+  "environment": {
+    "node": "v24.20.0",
+    "npm": "11.19.0",
+    "pnpm": "11.24.0",
+    "typescript": "7.0.2",
+    "vite": "8.2.2",
+    "playwright": "1.63.0",
+    "os": "darwin",
+    "release": "25.6.0",
+    "arch": "arm64"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "task": "T08",
+  "status": "pass",
+  "sourceCommit": "024890077539fcdd0263f2854422438f0f50c80e",
+  "candidateDigest": "7beeab22ef9900fc51ffcd0dfcf8fbc0911d706a550ddf524e2f2c3efd1bb188",
+  "timestamp": "2026-09-08T05:00:56.805621+00:00",
+  "scope": "Local/HTTP analytical host parity, negotiated capabilities, exact commerce and raw HR arithmetic, bounded source/evaluation/response work, authorization and source revision races.",
+  "checks": {
+    "runtimeData": 95,
+    "results": 23,
+    "referenceHostLocalHTTP": "pass",
+    "workspaceTypes": "pass",
+    "installedCoreRuntimeNodeAndChromium": "pass",
+    "kitReference": "pass"
+  },
+  "sourceChangedDuringRun": false,
+  "knownUnresolved": [
+    "Earlier hosted CI run34185639265 at14a0042 reported a Chromium /adc/describe net::ERR_ABORTED although browser flow completed. Current macOS installed consumer passes; isolated Linux diagnostic is still downloading its pinned browser. No Linux fix or broad CI acceptance claimed."
+  ],
+  "notClaimed": [
+    "npm publication",
+    "main cutover",
+    "production deployment",
+    "full71componentcatalog",
+    "release readiness"
+  ]
+}

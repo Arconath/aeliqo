@@ -1,0 +1,2 @@
+$ node verify.mjs
+Actual local/HTTP reference parity passes: exact commerce totals, raw HR rates, both missing-observation mutations, scoped descriptors, and server cleanup.

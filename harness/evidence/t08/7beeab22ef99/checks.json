@@ -1,0 +1,60 @@
+[
+  {
+    "name": "data",
+    "command": [
+      "pnpm",
+      "test:data"
+    ],
+    "exitCode": 0,
+    "seconds": 3.286
+  },
+  {
+    "name": "results",
+    "command": [
+      "pnpm",
+      "test:results"
+    ],
+    "exitCode": 0,
+    "seconds": 2.646
+  },
+  {
+    "name": "reference-host",
+    "command": [
+      "pnpm",
+      "--filter",
+      "@aeliqo/reference-host",
+      "test"
+    ],
+    "exitCode": 0,
+    "seconds": 0.698
+  },
+  {
+    "name": "workspace-types",
+    "command": [
+      "pnpm",
+      "typecheck"
+    ],
+    "exitCode": 0,
+    "seconds": 3.746
+  },
+  {
+    "name": "runtime-consumer",
+    "command": [
+      "pnpm",
+      "test:runtime:consumers"
+    ],
+    "exitCode": 0,
+    "seconds": 5.696
+  },
+  {
+    "name": "kit",
+    "command": [
+      "python3",
+      "scripts/validate_all.py",
+      "--output",
+      "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-t08-t09-final-1u6n303n/kit-reference"
+    ],
+    "exitCode": 0,
+    "seconds": 12.692
+  }
+]
