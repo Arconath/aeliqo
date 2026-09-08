@@ -89,7 +89,9 @@
     "test:site": "pnpm build:platform && vitest run --config tests/site/vitest.config.mjs && tsc -p tests/site/tsconfig.json && tsc -p apps/site/tsconfig.json",
     "test:site:browser": "playwright test --config tests/site/playwright.config.mjs",
     "test:studio:consumers": "node tests/studio-consumers/studio-tarballs.mjs",
-    "test:agent-evaluation:host": "pnpm build:agent && vitest run --config tests/agent-evaluation/vitest.config.mjs && tsc -p tests/agent-evaluation/tsconfig.json"
+    "test:agent-evaluation:host": "pnpm build:agent && vitest run --config tests/agent-evaluation/vitest.config.mjs && tsc -p tests/agent-evaluation/tsconfig.json",
+    "test:security": "pnpm build:agent && vitest run --config tests/security/vitest.config.mjs && tsc -p tests/security/tsconfig.json",
+    "test:performance:bundles": "node tests/performance/bundles.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
