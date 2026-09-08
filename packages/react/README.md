@@ -1,9 +1,13 @@
 # @aeliqo/react
 
-Thin React 19 bindings for the shared `@aeliqo/web` elements. Call
-`registerAeliqoReactElements()` at the application boundary, then use
-`AeliqoInput`, `AeliqoTable`, and `AeliqoChart`. Properties remain controlled by
-React; input edits are delivered through the typed `onAeliqoInput` callback.
+Thin React 19 bindings for the shared `@aeliqo/web` elements. The package
+exports wrappers for all 71 catalog components from the root entry and from
+the `foundation`, `inputs`, `navigation`, `feedback`, `data`, `plot`,
+`visualization`, and `compound` family entries. Call
+`registerAeliqoReactElements()` at the browser application boundary. Properties
+remain controlled by React and custom-element events are exposed as typed
+callback props. `AeliqoInput` and `AeliqoChart` remain small compatibility
+entries for the original platform fixture.
 
 ### Server rendering
 
