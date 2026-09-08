@@ -464,17 +464,35 @@ class RegionHandleImpl implements RegionHandle {
   }
 
   private transferResultLeases(next: readonly OwnedResultLease[], expectedEpoch = this.epoch): boolean {
+    const byLogical = new Map<string, OwnedResultLease>();
+    const replaced: OwnedResultLease[] = [];
+    for (const owned of next) {
+      const key = logicalRefKey(owned.ref);
+      const previous = byLogical.get(key);
+      if (previous !== undefined && previous !== owned) replaced.push(previous);
+      byLogical.set(key, owned);
+    }
     const previous = this.currentResultLeases;
-    this.currentResultLeases = Object.freeze([...next]);
-    releaseLeases(previous);
+    this.currentResultLeases = Object.freeze([...byLogical.values()]);
+    releaseLeases([...previous, ...replaced]);
     return this.live(expectedEpoch);
   }
 
-  private mergeResultLeases(next: readonly OwnedResultLease[], expectedEpoch = this.epoch): boolean {
+  private mergeResultLeases(next: readonly OwnedResultLease[], authorized: readonly ResultRef[], expectedEpoch = this.epoch): boolean {
     if (!this.live(expectedEpoch)) return false;
+    const authorizedKeys = new Set(authorized.map(refKey));
     const byLogical = new Map<string, OwnedResultLease>();
-    for (const owned of this.currentResultLeases) byLogical.set(logicalRefKey(owned.ref), owned);
     const replaced: OwnedResultLease[] = [];
+    for (const owned of this.currentResultLeases) {
+      if (!authorizedKeys.has(refKey(owned.ref))) {
+        replaced.push(owned);
+        continue;
+      }
+      const key = logicalRefKey(owned.ref);
+      const previous = byLogical.get(key);
+      if (previous !== undefined && previous !== owned) replaced.push(previous);
+      byLogical.set(key, owned);
+    }
     for (const owned of next) {
       const key = logicalRefKey(owned.ref);
       const previous = byLogical.get(key);
@@ -840,11 +858,12 @@ class RegionHandleImpl implements RegionHandle {
         this.readSet = authorityReadSet(authority.value, this.taskRevision, this.regionRevision, this.dataRevision);
         this.entries = [...this.entries, this.makeHistory('data', effectiveChangedResults, undefined, publication?.reason, at)];
         this.trimHistory();
-        if (publication?.resultHandles !== undefined) {
-          const transferLive = this.mergeResultLeases(publicationLeases, queuedEpoch);
-          transferred = true;
-          if (!transferLive) return this.closedOutcome();
-        }
+        // Reconcile every publication against the fresh authority set. This
+        // releases revoked/retired refs even when no replacement handle was
+        // supplied, while retaining unrelated outputs still authorized.
+        const transferLive = this.mergeResultLeases(publicationLeases, authority.value.results, queuedEpoch);
+        transferred = true;
+        if (!transferLive) return this.closedOutcome();
         if (!this.live(queuedEpoch)) return this.closedOutcome();
         const snapshot = this.snapshotValue();
         const update: RegionUpdate = frozen({kind: 'data', snapshot, ...(effectiveChangedResults.length === 0 ? {} : {changedResults: effectiveChangedResults}), ...(publication?.reason === undefined ? {} : {reason: publication.reason})});

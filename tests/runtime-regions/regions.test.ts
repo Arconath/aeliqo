@@ -9,11 +9,12 @@ import {
 import {createResultStore} from '../../packages/runtime/src/results/index.js';
 import {parseRegionDocument, serializeRegionDocument} from '../../packages/runtime/src/persistence/index.js';
 
-const task = (revision = '1', regionId = 'region-1'): RegionContent['task'] => ({
-  version: '1', id: 'task-1', revision, catalogRevision: 'catalog-1', functionRegistryDigest: 'functions-1',
-  regionId, goal: 'Show the rows', kind: 'presentation', needs: [], assumptions: [], inputs: [],
-});
 type TestResultRef = {readonly id: string; readonly revision: string; readonly outputId: string; readonly queryDigest: string; readonly scopeDigest: string};
+type PresentationTask = Extract<RegionContent['task'], {readonly kind: 'presentation'}>;
+const task = (revision = '1', regionId = 'region-1', inputs: PresentationTask['inputs'] = []): PresentationTask => ({
+  version: '1', id: 'task-1', revision, catalogRevision: 'catalog-1', functionRegistryDigest: 'functions-1',
+  regionId, goal: 'Show the rows', kind: 'presentation', needs: [], assumptions: [], inputs,
+});
 const refA = {id: 'result-a', revision: 'result-1', outputId: 'rows', queryDigest: 'query-1', scopeDigest: 'scope-1'} as const;
 const refB = {id: 'result-b', revision: 'result-1', outputId: 'trend', queryDigest: 'query-2', scopeDigest: 'scope-1'} as const;
 const resultField = {id: 'id', label: 'ID', type: {value: 'text' as const, nullable: false}, role: 'identity' as const};
@@ -90,7 +91,7 @@ describe('transactional region store', () => {
   it('rejects initial state dependencies outside the authorized result read set', () => {
     const store = createRegionStore(options());
     const unauthorized = {...refA, revision: 'missing-result'};
-    const created = store.create({id: 'region-1', state: {task: {...task(), inputs: [unauthorized]}}});
+    const created = store.create({id: 'region-1', state: {task: task('1', 'region-1', [unauthorized])}});
     expect(created.ok).toBe(false);
     if (!created.ok) expect(created.diagnostics[0]?.code).toBe('runtime.region-stale');
   });
@@ -354,6 +355,11 @@ describe('transactional region store', () => {
     spare.release();
     resultStore.begin({...resultKey, outputId: 'other', requestId: 'other'});
     expect(handleB.snapshot().status).toBe('ready');
+    authority = {...authority, results: [refA]};
+    await expect(region.publishData({results: [refA]})).resolves.toMatchObject({ok: true});
+    const replacementB = resultStore.begin({...resultKeyB, requestId: 'replacement-b'});
+    expect(replacementB.snapshot().status).toBe('refreshing');
+    replacementB.release();
   });
 
   it('bounds staged candidate retention', async () => {
