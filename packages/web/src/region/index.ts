@@ -16,3 +16,6 @@ export type {
 export type {AeliqoPresentationRegistryOptions} from "./registry.js";
 export {createFoundationPresentationManifests} from "./foundation-registry.js";
 export type {AeliqoFoundationBindings} from "./foundation-registry.js";
+
+export {createInputPresentationManifests} from "./input-registry.js";
+export type {AeliqoInputBindings, AeliqoInputBinding, AeliqoInputDraftBinding, AeliqoInputActionBinding, AeliqoInputFileBinding} from "./input-registry.js";

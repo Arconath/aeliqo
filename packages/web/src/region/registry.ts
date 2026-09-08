@@ -1,3 +1,4 @@
+import {createInputPresentationManifests, type AeliqoInputBindings} from "./input-registry.js";
 import {createFoundationPresentationManifests, type AeliqoFoundationBindings} from "./foundation-registry.js";
 import {
   createPresentationRegistry,
@@ -20,6 +21,7 @@ const MAX_LABEL = 160;
 export interface AeliqoPresentationRegistryOptions {
   /** Reviewed static content/action/route bindings; changes require a new Experience revision. */
   readonly foundation?: AeliqoFoundationBindings;
+  readonly inputs?: AeliqoInputBindings;
   /** Resolve the entity represented by an authorized result. Never take this from presentation config. */
   readonly resolveEntity?: (result: Result) => string | undefined;
 }
@@ -253,7 +255,9 @@ function buildManifests(options: AeliqoPresentationRegistryOptions): readonly Pr
 /** Default registry has no trusted entity bindings, so selection remains unavailable until the host supplies one. */
 const defaultFoundation = createFoundationPresentationManifests();
 if (!defaultFoundation.ok) throw new Error('Default foundation manifests are invalid.');
-export const AELIQO_PRESENTATION_MANIFESTS: readonly PresentationManifest[] = Object.freeze([...buildManifests({}), ...defaultFoundation.value]);
+const defaultInputs = createInputPresentationManifests();
+if (!defaultInputs.ok) throw new Error("Default input manifests are invalid.");
+export const AELIQO_PRESENTATION_MANIFESTS: readonly PresentationManifest[] = Object.freeze([...buildManifests({}), ...defaultFoundation.value, ...defaultInputs.value]);
 
 export function createSelectionIdentityMapping(entity: string, identity: readonly string[], grain: readonly string[] = identity): InteractionMappingManifest {
   const shape = {payload: "selection" as const, entity, identity: [...identity], grain: [...grain]};
@@ -271,5 +275,7 @@ export function createAeliqoPresentationRegistry(
   const registeredMappings: readonly InteractionMappingManifest[] = isMappings ? optionsOrMappings as readonly InteractionMappingManifest[] : mappings;
   const foundation = createFoundationPresentationManifests(options.foundation);
   if (!foundation.ok) return foundation;
-  return createPresentationRegistry([...buildManifests(options), ...foundation.value], registeredMappings);
+  const inputs = createInputPresentationManifests(options.inputs);
+  if (!inputs.ok) return inputs;
+  return createPresentationRegistry([...buildManifests(options), ...foundation.value, ...inputs.value], registeredMappings);
 }

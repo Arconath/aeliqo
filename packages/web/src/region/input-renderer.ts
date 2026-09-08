@@ -273,6 +273,6 @@ export function renderInputNode(node: Node, child: (id: string) => unknown, emit
     case "input.file-input": return html`<aeliqo-file-input data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .label=${label} .description=${description} .required=${required} .disabled=${disabled} .readOnly=${readOnly} .name=${name} .accept=${text(v.accept)} .multiple=${bool(v.multiple)} .capture=${text(v.capture)} .maxFiles=${typeof v.maxFiles === "number" ? v.maxFiles : 0} .maxBytes=${typeof v.maxBytes === "number" ? v.maxBytes : 0} @aeliqo-file-change=${handle}></aeliqo-file-input>`;
     case "input.field-group": return html`<aeliqo-field-group data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .legend=${text(v.legend)} .description=${description} .error=${text(v.error)} .disabled=${disabled}>${children()}</aeliqo-field-group>`;
     case "input.form": return html`<aeliqo-form data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .label=${text(v.label)} .noValidate=${bool(v.noValidate)} @aeliqo-form-submit=${handle}>${children()}</aeliqo-form>`;
-    default: return nothing;
+    default: return undefined;
   }
 }

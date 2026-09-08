@@ -359,7 +359,7 @@ function manifestFor(ref: AeliqoInputRef, bindings: AeliqoInputBindings): Presen
       const checked = validateInputBinding(binding); if (!checked.ok) return checked;
       const resolved = bindingValues(checked.value); if (!resolved.ok) return resolved;
       const output = {...resolved.value, bindingRevision: bindings.revision};
-      return {ok: true, value: {values: output as PresentationValues, fields: binding.draft === undefined ? binding.range === undefined ? [] : [binding.range.start.field, binding.range.end.field] : [binding.draft.field], ports: portsFor(binding), operations: binding.action === undefined ? [] : [binding.action.action]}};
+      return {ok: true, value: {values: output as PresentationValues, fields: [], ports: portsFor(binding), operations: binding.action === undefined ? [] : [binding.action.action]}};
     },
   };
 }
