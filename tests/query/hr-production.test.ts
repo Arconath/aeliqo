@@ -3,7 +3,7 @@ import {describe, expect, it} from 'vitest';
 import {createQueryFunctionRegistry} from '../../packages/core/src/expressions/registry.js';
 import {createQueryPlanner} from '../../packages/core/src/query/planner.js';
 import type {Catalog, Expression, FieldDefinition, SemanticType} from '../../packages/core/src/contracts/types.js';
-import type {QueryResult, QueryRow, QuerySource, RelationalQuery} from '../../packages/core/src/query/types.js';
+import type {QueryResult, QuerySource, RelationalQuery} from '../../packages/core/src/query/types.js';
 
 type Employee = {readonly id: string; readonly name: string; readonly department: string};
 type Schedule = {readonly employee_id: string; readonly date: string};
@@ -19,7 +19,7 @@ type HrRaw = {
   readonly observations: readonly Observation[];
   readonly leave: readonly Leave[];
 };
-type HrExpectedEmployee = {readonly employee_id: string; readonly absent: number; readonly expected: number; readonly unknown: number; readonly rate: string};
+type HrExpectedEmployee = {readonly employee_id: string; readonly absent: number; readonly expected: number; readonly unknown: number; readonly rate: string | null};
 type HrExpected = {readonly synthetic: boolean; readonly employees: readonly HrExpectedEmployee[]; readonly topFive: readonly string[]; readonly weekly: readonly unknown[]};
 type HrBinding = {
   readonly source: string;
@@ -114,12 +114,6 @@ const catalog: Catalog = {
   capabilities: [],
 };
 
-const baseRelations = (): QuerySource['relations'] => ({
-  schedules: {entity: 'schedules', complete: true, rows: raw.schedules},
-  observations: {entity: 'observations', complete: true, rows: raw.observations},
-  leave: {entity: 'leave', complete: true, rows: raw.leave},
-});
-
 function sourceFor(removeObservation?: {readonly employee_id: string; readonly date: string}): QuerySource {
   const observations = removeObservation === undefined
     ? raw.observations
@@ -150,9 +144,12 @@ function countQuery(kind: 'absent' | 'expected' | 'unknown'): RelationalQuery {
     : kind === 'unknown'
       ? {op: 'is-null', expression: field('observations', 'status'), negate: false}
       : undefined;
-  const filter: Predicate = statusFilter === undefined
-    ? leaveEligible
-    : {op: 'and', predicates: [leaveEligible, statusFilter]};
+  const filter: Predicate = {op: 'and', predicates: [
+    leaveEligible,
+    {op: 'compare', left: field('schedules', 'date'), comparison: 'gte', right: literal(binding.policy.from, {value: 'date', nullable: false})},
+    {op: 'compare', left: field('schedules', 'date'), comparison: 'lt', right: literal(binding.policy.toExclusive, {value: 'date', nullable: false})},
+    ...(statusFilter === undefined ? [] : [statusFilter]),
+  ]};
   return {
     root: 'schedules',
     pins: queryPins,
@@ -185,49 +182,54 @@ function execute(query: RelationalQuery, source: QuerySource): QueryResult {
   return evaluated.value;
 }
 
-function byEmployee(result: QueryResult, fieldName: 'absent' | 'expected' | 'unknown'): Map<string, number> {
-  return new Map(result.rows.map((row) => [String(row.employee_id), Number(row[fieldName])]));
+// This slice binds counts only. Conditional rates, full-period ranking and fixed
+// cohort weekly results in the fixture remain explicit integration obligations.
+function assertCounts(source: QuerySource, expectedRows: readonly HrExpectedEmployee[]): void {
+  for (const kind of ['absent', 'expected', 'unknown'] as const) {
+    const result = execute(countQuery(kind), source);
+    const wanted = expectedRows.filter((row) => row[kind] > 0)
+      .map((row) => ({employee_id: row.employee_id, [kind]: row[kind]}));
+    const ordered = (rows: readonly Record<string, unknown>[]) => [...rows]
+      .sort((a, b) => String(a.employee_id).localeCompare(String(b.employee_id)));
+    expect(ordered(result.rows)).toEqual(ordered(wanted));
+    expect(result.complete).toBe(true);
+    expect(result.precision.kind).toBe('exact');
+  }
 }
 
-function expectedByEmployee(): Map<string, HrExpectedEmployee> {
-  return new Map(expected.employees.map((row) => [row.employee_id, row]));
-}
-
-describe('production query engine against raw HR fixture', () => {
+describe('production query engine raw HR counts (rates and fixed-cohort trends pending)', () => {
   it('binds generic left joins, approved-leave exclusion and missing observation state', () => {
     expect(raw.synthetic).toBe(true);
     expect(binding.source).toBe('fixtures/hr/raw.json');
     expect(raw.policy.period).toMatchObject(binding.policy);
-    const expectedRows = expectedByEmployee();
-    const source = sourceFor();
-    const absent = byEmployee(execute(countQuery('absent'), source), 'absent');
-    const eligible = byEmployee(execute(countQuery('expected'), source), 'expected');
-    const unknown = byEmployee(execute(countQuery('unknown'), source), 'unknown');
-    for (const row of expected.employees) {
-      expect(absent.get(row.employee_id)).toBe(row.absent);
-      expect(eligible.get(row.employee_id)).toBe(row.expected);
-      expect(unknown.get(row.employee_id) ?? 0).toBe(row.unknown);
-    }
-    expect([...expectedRows.keys()]).toEqual([...absent.keys()]);
+    assertCounts(sourceFor(), expected.employees);
   });
 
-  it('applies both checked missing observation mutations through the same production plans', () => {
-    const expectedRows = expectedByEmployee();
+  it('applies both missing observation mutations without changing unrelated employees', () => {
     for (const mutation of binding.mutations) {
-      const source = sourceFor(mutation.removeObservation);
-      const absent = byEmployee(execute(countQuery('absent'), source), 'absent');
-      const eligible = byEmployee(execute(countQuery('expected'), source), 'expected');
-      const unknown = byEmployee(execute(countQuery('unknown'), source), 'unknown');
       const employee = mutation.expected.employee;
-      expect(absent.get(employee.employee_id)).toBe(employee.absent);
-      expect(eligible.get(employee.employee_id)).toBe(employee.expected);
-      expect(unknown.get(employee.employee_id) ?? 0).toBe(employee.unknown);
-      if (mutation.expected.sameAsBaseline === true) {
-        const baseline = expectedRows.get(employee.employee_id);
-        expect(baseline).toBeDefined();
-        expect(baseline).toMatchObject(employee);
-      }
+      const expectedRows = expected.employees.map((row) => row.employee_id === employee.employee_id ? {...row, ...employee} : row);
+      assertCounts(sourceFor(mutation.removeObservation), expectedRows);
+      if (mutation.expected.sameAsBaseline === true)
+        expect(expectedRows).toEqual(expected.employees);
     }
   });
 
+  it('excludes scheduled dates outside the declared half-open period', () => {
+    const source = sourceFor();
+    const employee_id = raw.employees[0]!.id;
+    const outside = {...source, relations: {...source.relations, schedules: {
+      ...source.relations.schedules!, rows: [...raw.schedules,
+        {employee_id, date: '2026-01-04'}, {employee_id, date: binding.policy.toExclusive}],
+    }}};
+    assertCounts(outside, expected.employees);
+  });
+
+  it('rejects duplicate observation join keys before counting a fanout population', () => {
+    const source = sourceFor();
+    const duplicate = {...source, relations: {...source.relations, observations: {
+      ...source.relations.observations!, rows: [...raw.observations, {...raw.observations[0]!, id: 'synthetic-duplicate-observation'}],
+    }}};
+    expect(() => execute(countQuery('expected'), duplicate)).toThrow(/query\.cardinality/);
+  });
 });
