@@ -18,6 +18,8 @@ The fixtures cover:
 - UTC Gregorian day/week/month/quarter/year buckets across leap and year
   boundaries, including a fixed-offset instant and an explicit unsupported
   IANA timezone result.
+- bounded `core-query-1` window vectors for unknown-propagating sum, partition
+  lag and competition rank (`1, 1, 3`), plus the lag frame precondition.
 
 Run `python3 tests/query/oracle/oracle.py --check` to verify the checked-in
 expected output. The sibling Vitest bridge invokes the same script and also

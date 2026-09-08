@@ -200,5 +200,50 @@
       }
     ],
     "unsupportedTimezone": "Asia/Jakarta"
+  },
+  "windows": {
+    "registry": "core-query-1",
+    "frame": {
+      "preceding": 1,
+      "following": 1
+    },
+    "rows": [
+      {
+        "id": "a1",
+        "partition": "A",
+        "sequence": 1,
+        "score": 100,
+        "value": 10
+      },
+      {
+        "id": "a2",
+        "partition": "A",
+        "sequence": 2,
+        "score": 100,
+        "value": null
+      },
+      {
+        "id": "a3",
+        "partition": "A",
+        "sequence": 3,
+        "score": 90,
+        "value": 30
+      },
+      {
+        "id": "a4",
+        "partition": "A",
+        "sequence": 4,
+        "score": 80,
+        "value": 5
+      },
+      {
+        "id": "b1",
+        "partition": "B",
+        "sequence": 1,
+        "score": 50,
+        "value": 7
+      }
+    ],
+    "lagRequiresPreceding": 1
   }
 }

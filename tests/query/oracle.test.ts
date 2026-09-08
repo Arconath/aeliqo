@@ -39,6 +39,12 @@ type OracleOutput = {
     instants: Array<{id: string; utc: string; day: string; week: string; month: string; quarter: string; year: string}>;
     unsupportedTimezone: {state: string; timezone: string};
   };
+  windows: {
+    registry: string;
+    frame: {preceding: number; following: number};
+    rows: Array<{id: string; partition: string; sequence: number; score: number; value: number | null; sum: number | null; lag: number | null; rank: number}>;
+    invalidLagFrame: {state: string; reason: string; requiredPreceding: number};
+  };
 };
 
 const oracleDirectory = fileURLToPath(new URL('./oracle/', import.meta.url));
@@ -136,6 +142,19 @@ describe('independent T07 numerical oracle', () => {
       utc: '2024-02-29T17:30:00Z', day: '2024-02-29',
     });
     expect(timeBuckets.unsupportedTimezone).toEqual({state: 'unsupported', timezone: 'Asia/Jakarta'});
+  });
+
+  it('computes bounded sum, partition lag and competition rank with unknown propagation', () => {
+    const {windows} = runOracle();
+    expect(windows).toMatchObject({registry: 'core-query-1', frame: {preceding: 1, following: 1}});
+    expect(windows.rows.map((row) => row.id)).toEqual(['a1', 'a2', 'a3', 'a4', 'b1']);
+    expect(windows.rows.map((row) => row.rank)).toEqual([1, 1, 3, 4, 1]);
+    expect(windows.rows.find((row) => row.id === 'a1')).toMatchObject({sum: null, lag: null});
+    expect(windows.rows.find((row) => row.id === 'a2')).toMatchObject({sum: null, lag: 10});
+    expect(windows.rows.find((row) => row.id === 'a3')).toMatchObject({sum: null, lag: null});
+    expect(windows.rows.find((row) => row.id === 'a4')).toMatchObject({sum: 35, lag: 30});
+    expect(windows.rows.find((row) => row.id === 'b1')).toMatchObject({sum: 7, lag: null});
+    expect(windows.invalidLagFrame).toEqual({state: 'rejected', reason: 'lag-frame-requires-preceding', requiredPreceding: 1});
   });
 
   it('uses the checked deterministic fixture seed', () => {

@@ -247,6 +247,55 @@ def time_buckets(spec: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def bounded_windows(spec: dict[str, Any]) -> dict[str, Any]:
+    """Calculate bounded sum/lag/rank windows without using production code."""
+    frame = spec["frame"]
+    preceding = frame["preceding"]
+    following = frame["following"]
+    if preceding < 0 or following < 0:
+        raise AssertionError("window frame bounds must be nonnegative")
+
+    partitions: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in spec["rows"]:
+        partitions[row["partition"]].append(row)
+
+    output: list[dict[str, Any]] = []
+    for partition in sorted(partitions):
+        ordered = sorted(partitions[partition], key=lambda row: (row["sequence"], row["id"]))
+        ranked = sorted(ordered, key=lambda row: (-row["score"], row["id"]))
+        rank_by_id: dict[str, int] = {}
+        for position, row in enumerate(ranked):
+            if position == 0 or row["score"] != ranked[position - 1]["score"]:
+                rank_by_id[row["id"]] = position + 1
+            else:
+                rank_by_id[row["id"]] = rank_by_id[ranked[position - 1]["id"]]
+        for index, row in enumerate(ordered):
+            start = max(0, index - preceding)
+            end = min(len(ordered), index + following + 1)
+            frame_values = [candidate["value"] for candidate in ordered[start:end]]
+            frame_sum = None if any(value is None for value in frame_values) else sum(frame_values)
+            output.append({
+                "id": row["id"],
+                "partition": partition,
+                "sequence": row["sequence"],
+                "score": row["score"],
+                "value": row["value"],
+                "sum": frame_sum,
+                "lag": None if index == 0 else ordered[index - 1]["value"],
+                "rank": rank_by_id[row["id"]],
+            })
+    return {
+        "registry": spec["registry"],
+        "frame": frame,
+        "rows": output,
+        "invalidLagFrame": {
+            "state": "rejected",
+            "reason": "lag-frame-requires-preceding",
+            "requiredPreceding": spec["lagRequiresPreceding"],
+        },
+    }
+
+
 def calculate(cases: dict[str, Any]) -> dict[str, Any]:
     return {
         "seededFanout": seeded_fanout(cases["seededFanout"]),
@@ -256,6 +305,7 @@ def calculate(cases: dict[str, Any]) -> dict[str, Any]:
         "ranking": ranking(cases["ranking"]),
         "incompleteAndAdversarial": incomplete_and_adversarial(cases["incompleteAndAdversarial"]),
         "timeBuckets": time_buckets(cases["timeBuckets"]),
+        "windows": bounded_windows(cases["windows"]),
     }
 
 

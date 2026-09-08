@@ -312,5 +312,69 @@
       "timezone": "Asia/Jakarta"
     },
     "weekStartsOn": 1
+  },
+  "windows": {
+    "frame": {
+      "following": 1,
+      "preceding": 1
+    },
+    "invalidLagFrame": {
+      "reason": "lag-frame-requires-preceding",
+      "requiredPreceding": 1,
+      "state": "rejected"
+    },
+    "registry": "core-query-1",
+    "rows": [
+      {
+        "id": "a1",
+        "lag": null,
+        "partition": "A",
+        "rank": 1,
+        "score": 100,
+        "sequence": 1,
+        "sum": null,
+        "value": 10
+      },
+      {
+        "id": "a2",
+        "lag": 10,
+        "partition": "A",
+        "rank": 1,
+        "score": 100,
+        "sequence": 2,
+        "sum": null,
+        "value": null
+      },
+      {
+        "id": "a3",
+        "lag": null,
+        "partition": "A",
+        "rank": 3,
+        "score": 90,
+        "sequence": 3,
+        "sum": null,
+        "value": 30
+      },
+      {
+        "id": "a4",
+        "lag": 30,
+        "partition": "A",
+        "rank": 4,
+        "score": 80,
+        "sequence": 4,
+        "sum": 35,
+        "value": 5
+      },
+      {
+        "id": "b1",
+        "lag": null,
+        "partition": "B",
+        "rank": 1,
+        "score": 50,
+        "sequence": 1,
+        "sum": 7,
+        "value": 7
+      }
+    ]
   }
 }
