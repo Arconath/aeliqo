@@ -127,6 +127,13 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
   private validationAbort: AbortController | undefined;
   private validationValue: T | undefined;
   private hasValidationValue = false;
+  /**
+   * The last error text written by the validator. An error supplied by the
+   * host must survive a value update; matching the text lets invalidation
+   * clear only validator-owned state while preserving host state.
+   */
+  private validationErrorText: string | undefined;
+  private validationErrorOwned = false;
 
   constructor() {
     super();
@@ -163,6 +170,8 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
     this.validationSequence += 1;
     this.validationAbort = undefined;
     this.hasValidationValue = false;
+    this.validationErrorText = undefined;
+    this.validationErrorOwned = false;
     this.validationState = "idle";
     this.error = "";
     this.requestUpdate();
@@ -179,6 +188,8 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
     this.validationAbort = undefined;
     this.validationSequence += 1;
     this.hasValidationValue = false;
+    this.validationErrorText = undefined;
+    this.validationErrorOwned = false;
     super.disconnectedCallback();
   }
 
@@ -273,17 +284,18 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
     const sequence = this.validationSequence;
     this.validationValue = value;
     this.hasValidationValue = true;
+    this.clearOwnedValidationError();
     if (validator === undefined) {
       this.validationState = "idle";
       this.hasValidationValue = false;
-      this.error = "";
       this.dispatchValidation("idle", "");
       return;
     }
     const controller = new AbortController();
     this.validationAbort = controller;
     this.validationState = "pending";
-    this.error = "";
+    this.validationErrorText = "";
+    this.validationErrorOwned = this.error.length === 0;
     this.dispatchValidation("pending", "");
     this.requestUpdate();
     try {
@@ -295,7 +307,7 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
       }
       const normalized = this.normalizeValidationResult(result);
       this.validationState = normalized.valid ? "valid" : "invalid";
-      this.error = normalized.valid ? "" : normalized.message;
+      this.setValidatorError(normalized.message);
       this.hasValidationValue = false;
       this.dispatchValidation(this.validationState, this.error);
       this.requestUpdate();
@@ -306,7 +318,7 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
         return;
       }
       this.validationState = "invalid";
-      this.error = "Validation failed.";
+      this.setValidatorError("Validation failed.");
       this.hasValidationValue = false;
       this.dispatchValidation("invalid", this.error);
       this.requestUpdate();
@@ -315,19 +327,33 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
 
   /** Cancel a result that no longer describes the current host value. */
   protected invalidateValidation(schedule = true): void {
-    if (!this.hasValidationValue && this.validationAbort === undefined && this.validationState === "idle" && this.error.length === 0) return;
+    if (!this.hasValidationValue && this.validationAbort === undefined && this.validationState === "idle" && this.validationErrorText === undefined) return;
     this.validationAbort?.abort();
     this.validationAbort = undefined;
     this.validationSequence += 1;
     this.hasValidationValue = false;
+    this.clearOwnedValidationError();
     this.validationState = "idle";
-    this.error = "";
     if (schedule) this.requestUpdate();
   }
 
   protected invalidateStaleValidation(value: T, schedule = true): void {
-    const hasValidation = this.hasValidationValue || this.validationAbort !== undefined || this.validationState !== "idle" || this.error.length > 0;
+    const hasValidation = this.hasValidationValue || this.validationAbort !== undefined || this.validationState !== "idle" || this.validationErrorText !== undefined;
     if (hasValidation && !Object.is(this.validationValue, value)) this.invalidateValidation(schedule);
+  }
+
+  /** Clear a validator message without erasing an independently supplied host error. */
+  private clearOwnedValidationError(): void {
+    if (this.validationErrorOwned && this.validationErrorText !== undefined && this.error === this.validationErrorText) this.error = "";
+    this.validationErrorText = undefined;
+    this.validationErrorOwned = false;
+  }
+
+  /** Apply validator output only while the host has not supplied another error. */
+  private setValidatorError(message: string): void {
+    if (this.validationErrorOwned && this.error === this.validationErrorText) this.error = message;
+    else this.validationErrorOwned = false;
+    this.validationErrorText = message;
   }
 
   protected isCurrentValidationValue(_value: T): boolean {

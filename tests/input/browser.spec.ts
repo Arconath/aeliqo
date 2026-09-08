@@ -628,3 +628,28 @@ test("completed validation is cleared when the host value changes", async ({page
   });
   expect(state).toEqual({completed: {error: "Old value invalid", state: "invalid"}, afterChange: {error: "", state: "idle"}});
 });
+
+test("host supplied errors survive mount and value changes", async ({page}) => {
+  const state = await page.evaluate(async () => {
+    const root = document.querySelector<HTMLElement>("#fixture");
+    if (root === null) throw new Error("fixture missing");
+    const field = document.createElement("aeliqo-text-field") as HTMLElement & {
+      value: string;
+      error: string;
+      updateComplete: Promise<unknown>;
+      checkValidity: () => boolean;
+    };
+    field.value = "initial";
+    field.error = "Host error";
+    root.append(field);
+    await field.updateComplete;
+    const mounted = {error: field.error, valid: field.checkValidity()};
+    field.value = "changed";
+    await field.updateComplete;
+    return {mounted, afterChange: {error: field.error, valid: field.checkValidity()}};
+  });
+  expect(state).toEqual({
+    mounted: {error: "Host error", valid: false},
+    afterChange: {error: "Host error", valid: false},
+  });
+});
