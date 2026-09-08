@@ -46,6 +46,9 @@ class Lifetime {
   private deadline: number;
   private timer: ReturnType<typeof setTimeout> | undefined;
   private code = 'data.aborted';
+  // Request implementations may weakly retain dependent signals. Keep their
+  // owning Request reachable until the operation, including abort delivery, ends.
+  private readonly requests = new Set<Request>();
   private readonly external: AbortSignal | undefined;
   private readonly forward = () => this.controller.abort();
   constructor(milliseconds: number, signal?: AbortSignal) {
@@ -94,8 +97,9 @@ class Lifetime {
       } catch (error) {finish(() => rejectPromise(error));}
     });
   }
+  retainRequest(request: Request) {this.requests.add(request);}
   cancel() {this.controller.abort();}
-  dispose() {clearTimeout(this.timer); this.external?.removeEventListener('abort', this.forward);}
+  dispose() {this.requests.clear(); clearTimeout(this.timer); this.external?.removeEventListener('abort', this.forward);}
 }
 
 async function readText(body: ReadableStream<Uint8Array> | null, limit: number, life: Lifetime): Promise<string> {
@@ -224,7 +228,9 @@ export function createDataHttpHandler(options: DataHttpServerOptions): DataHttpH
       let principal: unknown;
       if (authenticate !== undefined) {
         let auth;
-        try {auth = await life.wait(() => authenticate(new Request(request.url, {method: request.method, headers: request.headers, signal: life.signal})));}
+        const authRequest = new Request(request.url, {method: request.method, headers: request.headers, signal: life.signal});
+        life.retainRequest(authRequest);
+        try {auth = await life.wait(() => authenticate(authRequest));}
         catch (error) {
           if (error instanceof DataStreamError) throw error;
           reject('data.authorization', 'The ADC authentication failed.');

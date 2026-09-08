@@ -25,7 +25,8 @@
     "test:design": "node design/generate-web-tokens.mjs --check && vitest run design/styles.test.ts",
     "test:design:browser": "pnpm build:platform && playwright test --config tests/design/playwright.config.mjs",
     "test:data": "pnpm build:runtime && vitest run --config tests/runtime-data/vitest.config.mjs && tsc -p tests/runtime-data/tsconfig.json",
-    "test:runtime:consumers": "node tests/consumers/runtime-tarballs.mjs"
+    "test:runtime:consumers": "node tests/consumers/runtime-tarballs.mjs",
+    "test:data:auth-retention": "pnpm build:runtime && node tests/runtime-data/auth-timeout-probe.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
