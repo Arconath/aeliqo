@@ -87,6 +87,14 @@ describe('transactional region store', () => {
     expect(Object.keys(region.history()[0]!)).not.toContain('state');
   });
 
+  it('rejects initial state dependencies outside the authorized result read set', () => {
+    const store = createRegionStore(options());
+    const unauthorized = {...refA, revision: 'missing-result'};
+    const created = store.create({id: 'region-1', state: {task: {...task(), inputs: [unauthorized]}}});
+    expect(created.ok).toBe(false);
+    if (!created.ok) expect(created.diagnostics[0]?.code).toBe('runtime.region-stale');
+  });
+
   it('checks host scope/policy/catalog/profile and the complete dependency read set', async () => {
     const {region} = create();
     const expected = region.snapshot().readSet!;
@@ -478,6 +486,26 @@ describe('transactional region store', () => {
     if (restored.ok) expect(restored.value.snapshot().state?.task.revision).toBe('1');
     authority = {...authority, policyRevision: 'policy-2'};
     expect((await createRegionStore(options()).restore(serialized)).ok).toBe(true);
+  });
+
+  it('enforces maxRegions before and after asynchronous restore admission', async () => {
+    const source = create();
+    const document = source.region.export();
+    const full = createRegionStore(options({maxRegions: 1}));
+    const occupied = full.create({id: 'region-2', state: {task: task('1', 'region-2')}});
+    expect(occupied.ok).toBe(true);
+    await expect(full.restore(document)).resolves.toMatchObject({ok: false, diagnostics: [{code: 'runtime.region-budget'}]});
+
+    let release: (() => void) | undefined;
+    const concurrent = createRegionStore(options({maxRegions: 1, restoreRegion: () => new Promise((resolve) => {
+      release = () => resolve({ok: true, value: {state: {task: task()}}});
+    })}));
+    const pending = concurrent.restore(document);
+    await Promise.resolve();
+    const filled = concurrent.create({id: 'region-2', state: {task: task('1', 'region-2')}});
+    expect(filled.ok).toBe(true);
+    release?.();
+    await expect(pending).resolves.toMatchObject({ok: false, diagnostics: [{code: 'runtime.region-budget'}]});
   });
 
   it('fails closed when restore has no host requery callback and does not attach observers after revoke', async () => {

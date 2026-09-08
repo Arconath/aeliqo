@@ -1064,13 +1064,19 @@ export class RegionStoreImpl implements RegionStore {
   }
 
   private createInternal(input: RegionCreateInput, authority: RegionAuthority, seed?: {readonly taskRevision: string; readonly regionRevision: string; readonly dataRevision: number; readonly history: readonly RegionHistoryEntry[]}, initialResultLeases: readonly OwnedResultLease[] = []): RegionOutcome<RegionHandle> {
+    if (this.disposed) return failure('runtime.region-disposed', FAILURE.disposed);
+    if (this.regions.has(input.id)) return failure('runtime.region-invalid', 'A region with this stable ID already exists.');
+    if (this.regions.size >= this.maxRegions) return failure('runtime.region-budget', FAILURE.budget);
     const maxHistory = input.maxHistory ?? this.maxHistory;
     if (!Number.isSafeInteger(maxHistory) || maxHistory < 1 || maxHistory > WIRE_LIMITS.array) return failure('runtime.region-budget', FAILURE.budget);
     try {
       const options = {maxHistory, maxQueuedCommands: this.maxQueuedCommands, maxStagedCommits: this.maxStagedCommits, maxStagedBytes: this.maxStagedBytes, maxCommitAuthorizationMilliseconds: this.maxCommitAuthorizationMilliseconds, now: this.now, readAuthority: this.readAuthority, authorizeCommit: this.authorizeCommit, authorizationConfigured: this.authorizationConfigured};
       const handle = new RegionHandleImpl(this, input, options, {authority, taskRevision: seed?.taskRevision ?? input.state.task.revision, regionRevision: seed?.regionRevision ?? newRegionRevision(), dataRevision: seed?.dataRevision ?? 0, history: seed?.history ?? []});
-      handle.adoptInitialResultLeases(initialResultLeases);
+      // Construction can invoke the injected clock, so recheck admission before
+      // transferring caller-owned leases into the handle.
       if (this.disposed) { handle.dispose(); return failure('runtime.region-disposed', FAILURE.disposed); }
+      if (this.regions.has(input.id) || this.regions.size >= this.maxRegions) { handle.dispose(); return failure(this.regions.has(input.id) ? 'runtime.region-invalid' : 'runtime.region-budget', this.regions.has(input.id) ? 'A region with this stable ID already exists.' : FAILURE.budget); }
+      handle.adoptInitialResultLeases(initialResultLeases);
       this.regions.set(input.id, handle);
       return {ok: true, value: handle};
     } catch (error) { return failure('runtime.region-invalid', error instanceof Error ? error.message : FAILURE.invalid); }
@@ -1093,6 +1099,8 @@ export class RegionStoreImpl implements RegionStore {
     const initialReadSet = authorityReadSet(authority.value, state.value.task.revision, incarnation, 0);
     const binding = bindCandidateToReadSet(state.value, initialReadSet);
     if (!binding.ok) return binding as RegionOutcome<RegionHandle>;
+    const required = validateCommitReadSet(stripData(initialReadSet), stripData(initialReadSet), requiredResultReferences(state.value));
+    if (!required.ok) return failure('runtime.region-stale', required.diagnostics[0]!.message);
     return this.createInternal({...input, state: state.value}, authority.value, {
       taskRevision: state.value.task.revision,
       regionRevision: incarnation,
