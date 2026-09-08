@@ -595,15 +595,37 @@
       "acceptance": [
         "Every visualization inventory entry passes adversarial semantics, interaction, pixel and performance matrix."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
       "evidence": [
         {
           "path": "harness/evidence/t18-contract/0a907974cbc6/manifest.json",
           "sha256": "0f46541dbf3226994d76eadd0de759b90960d6477624a42ff1d6d7a867318fae"
+        },
+        {
+          "path": "harness/evidence/t18/d55929134cdc/manifest.json",
+          "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
         }
       ],
-      "notes": "Parent owns canonical VisualizationSpec/schema/binder contracts first. Isolated family writers follow only after the contract packet is committed. T16 and T17 evidence accepted."
+      "notes": "Accepted source64935ae after independent review and focused source/browser/SSR/installed-consumer evidence. Canonical semantic nodes bind one Result; direct VisualizationSpec supports multiple Results. Installed proof covers direct web/React; canonical semantic region proof uses actual built workspace modules. Full release manual AT, pinned visual baselines and workload percentile matrix remain T29/T30; bounded family behavior and browser checks are recorded here.",
+      "review": {
+        "author": "platform_proof and release_inventory family source; parent integration",
+        "reviewer": "preflight_diagnosis",
+        "status": "approved",
+        "findingsClosed": [
+          "Required field coverage uses exact output scope.",
+          "Readonly selection ignored; trusted entity/node/port/exact ResultRef required.",
+          "Bound visualizationContext preserved by region.",
+          "Safe integer dataset ceiling 1..64 enforced.",
+          "Registry additions preserve previous order."
+        ],
+        "artifacts": [
+          {
+            "path": "harness/evidence/t18/d55929134cdc/review.json",
+            "sha256": "5fcd99eccfdf945ebde2b9bf7a8c381dfd0bf32ac1f7e6dfa85c817c7a7233d1"
+          }
+        ]
+      }
     },
     {
       "id": "T19",
@@ -652,10 +674,34 @@
       "acceptance": [
         "Wide/narrow/zoom/resize transitions preserve task, focus, draft, selection and navigation; no model call on resize."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
-      "evidence": [],
-      "notes": "T19 acceptance frozen; parent owns T20 runtime/web region, isolated independent worker owns T22 agent capabilities/session. Canonical wire contracts and root integration remain parent-owned."
+      "evidence": [
+        {
+          "path": "harness/evidence/t20/d55929134cdc/manifest.json",
+          "sha256": "4ba042624c7d033338563f0628c1b0fb7a989474a80ceae9a91cfc8cffa49dd6"
+        }
+      ],
+      "notes": "Accepted source64935ae after independent review and focused source/browser/SSR/installed-consumer evidence. Visible custom callback renderers must implement clear; default web adapter clears. Real host controls exercise focus, draft, IME, pointer and text scale adaptation; synthetic renderer tests are only unit guards. No full release manual AT or universal performance claim.",
+      "review": {
+        "author": "preflight_diagnosis; parent integration and fixes",
+        "reviewer": "platform_proof",
+        "status": "approved",
+        "findingsClosed": [
+          "Stale scheduler callbacks cannot consume later work.",
+          "Original wire config retained for replay; resolved renderer config remains separate.",
+          "Exact prospective commit revisions passed to renderer.",
+          "Selection and draft port transfer validated; navigation retained.",
+          "Revocation invalidates prepared rollback before clear.",
+          "Already closed regions clear content at adaptation initialization."
+        ],
+        "artifacts": [
+          {
+            "path": "harness/evidence/t20/d55929134cdc/review.json",
+            "sha256": "48d3ab02aaa843d115acdf797275d96986baacb10022d06f61d90049daee3501"
+          }
+        ]
+      }
     },
     {
       "id": "T21",

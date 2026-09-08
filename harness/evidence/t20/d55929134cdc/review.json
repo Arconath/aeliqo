@@ -1,0 +1,13 @@
+{
+  "author": "preflight_diagnosis; parent integration and fixes",
+  "reviewer": "platform_proof",
+  "status": "approved",
+  "findingsClosed": [
+    "Stale scheduler callbacks cannot consume later work.",
+    "Original wire config retained for replay; resolved renderer config remains separate.",
+    "Exact prospective commit revisions passed to renderer.",
+    "Selection and draft port transfer validated; navigation retained.",
+    "Revocation invalidates prepared rollback before clear.",
+    "Already closed regions clear content at adaptation initialization."
+  ]
+}

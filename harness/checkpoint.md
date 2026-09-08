@@ -290,3 +290,5 @@ Independent reviews closed transport spoofing, canonical composition bypass,
 repair receipt leakage, unauthorized result references and external diagnostic egress.
 T18 semantic browser tests and T20 scheduler/lifecycle checks remain active; T23 ready.
 No real provider claim, npm publication, main promotion or production deployment.
+
+T18 and T20 accepted at source64935ae, digest d55929134cdc00c18b56bda20093cefe1fef86d5496068dfe49b6d28fc41028b. Immutable evidence in harness/evidence/t18/d55929134cdc and harness/evidence/t20/d55929134cdc. Twelve visualization families have direct and canonical region behavior, SSR, keyboard and bounded rendering checks; full release matrix remains T29/T30. Adaptive UI preserves wire replay, prospective commit pins, drafts/focus and scoped projection, and clears revoked or initially closed regions without rollback restoration. Installed actual packages passed on unchanged digest. T23 author packet054110e awaits integration and independent review. T21 is ready. No npm publication or production change.

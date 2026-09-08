@@ -1,0 +1,17 @@
+[WebServer] (node:56881) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:56898) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 1:57:11 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  1 tests/visualization/cartesian.browser.spec.ts:9:5 › renders six families with exact tables, histogram scope and heatmap color key (659ms)
+[WebServer] 1:57:11 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  2 tests/visualization/cartesian.browser.spec.ts:21:5 › selection is keyboard reachable and an over-budget graphic retains exact data (327ms)
+[WebServer] 1:57:11 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  3 tests/visualization/cartesian.browser.spec.ts:42:5 › narrow RTL at 24px retains a keyboard scroll region and passes axe (1.2s)
+[WebServer] 1:57:12 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  4 tests/visualization/cartesian.browser.spec.ts:56:5 › keeps result warnings and precision uncertainty visible beside loaded values (266ms)
+
+  4 passed (3.6s)

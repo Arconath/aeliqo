@@ -1,0 +1,66 @@
+{
+  "task": "T18",
+  "status": "pass",
+  "sourceCommit": "64935ae83d8e368efb648421f0ec056c6a812855",
+  "sourceDigest": "d55929134cdc00c18b56bda20093cefe1fef86d5496068dfe49b6d28fc41028b",
+  "checks": {
+    "directTests": 27,
+    "semanticTests": 7,
+    "directBrowserTests": 14,
+    "semanticBrowserTests": 4,
+    "twelveFamilySSR": true,
+    "strictTypes": true,
+    "installedTarballs": true
+  },
+  "limits": [
+    "Canonical semantic nodes bind one Result; direct VisualizationSpec supports multiple Results.",
+    "Installed proof covers direct web/React; canonical semantic region proof uses actual built workspace modules.",
+    "Full release manual AT, pinned visual baselines and workload percentile matrix remain T29/T30; bounded family behavior and browser checks are recorded here."
+  ],
+  "artifacts": [
+    {
+      "path": "cartesian-browser.log",
+      "sha256": "4ebe7c16771a5b42c3f5a1bbf931bd6c24b25245d971379120cce714eda9a5d0"
+    },
+    {
+      "path": "consumer-report.json",
+      "sha256": "7c317ba92dac7958c7234ca9dcb7241ce260131aceef1d3d8de2ccabac417ddd"
+    },
+    {
+      "path": "consumer.log",
+      "sha256": "64c37b3f0ec38dd9f24da1e849febd67c8723214a6c904f6d66e9207ff3b0c65"
+    },
+    {
+      "path": "direct.log",
+      "sha256": "b386b6b964fd06f054adeaefb19f61bbb23b6e4bb07996fed175793c7464a2c6"
+    },
+    {
+      "path": "hierarchy-browser.log",
+      "sha256": "72ddc15b9ca04b566d90e07856c0cda63088846b3eca8babf392663ee9e0a4f4"
+    },
+    {
+      "path": "installed.png",
+      "sha256": "8017e52a74523a61d15fcb796d8dd559e3fa6a6e7566ec678fe8d9ae5dc51000"
+    },
+    {
+      "path": "review.json",
+      "sha256": "5fcd99eccfdf945ebde2b9bf7a8c381dfd0bf32ac1f7e6dfa85c817c7a7233d1"
+    },
+    {
+      "path": "semantic-browser.log",
+      "sha256": "8af0ebcd98055b13fed0980c3149f341d0cbf1745f4230208155fbeb2717872d"
+    },
+    {
+      "path": "semantic-ssr.log",
+      "sha256": "6f7a846a9af71a2d43ea25053824cc92ec5785209647daa4019a68a44f9fb62c"
+    },
+    {
+      "path": "semantic.log",
+      "sha256": "78833bf5ddd2e1090a47bfe69ac83b8711391690982746877b712a3d0a6efa78"
+    },
+    {
+      "path": "temporal-browser.log",
+      "sha256": "6830a25f98f956b454ee4fcdd18ad917e064ddf37cfa6b930f62906b4b82480f"
+    }
+  ]
+}

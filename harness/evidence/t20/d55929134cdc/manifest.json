@@ -1,0 +1,53 @@
+{
+  "task": "T20",
+  "status": "pass",
+  "sourceCommit": "64935ae83d8e368efb648421f0ec056c6a812855",
+  "sourceDigest": "d55929134cdc00c18b56bda20093cefe1fef86d5496068dfe49b6d28fc41028b",
+  "checks": {
+    "runtimeTests": 23,
+    "actualSemanticBrowserTests": 2,
+    "regionTests": 49,
+    "contractTests": 143,
+    "strictTypes": true,
+    "installedTarballs": true
+  },
+  "limits": [
+    "Visible custom callback renderers must implement clear; default web adapter clears.",
+    "Real host controls exercise focus, draft, IME, pointer and text scale adaptation; synthetic renderer tests are only unit guards.",
+    "No full release manual AT or universal performance claim."
+  ],
+  "artifacts": [
+    {
+      "path": "browser.log",
+      "sha256": "cd9354867c01498654c0f6434e545e8466752f735fa514b2741fcf3ec4463e2b"
+    },
+    {
+      "path": "consumer-report.json",
+      "sha256": "c50ac63fe966385b94f02530ef44e912e0c0a01d41534ec3f71ccfd5d54ca602"
+    },
+    {
+      "path": "consumer.log",
+      "sha256": "86981baf20c225fe3827835514e5e8bb278b868a1030d5630b9dfec3540fb2a7"
+    },
+    {
+      "path": "core-replay.log",
+      "sha256": "5096f615fafe53a60c0e9e27bb2bae47247c3f2a9955ae5162135d6f20bf02fb"
+    },
+    {
+      "path": "installed.png",
+      "sha256": "9734e31bcc3eb5613beb3f221d267822b420be36d999bf62778c58e3822d02e9"
+    },
+    {
+      "path": "regions.log",
+      "sha256": "46d0fcb6d37ceee52dcd30f59a4f0a09767f5e70fdd8643aeb81a10eba9e0012"
+    },
+    {
+      "path": "review.json",
+      "sha256": "48d3ab02aaa843d115acdf797275d96986baacb10022d06f61d90049daee3501"
+    },
+    {
+      "path": "runtime.log",
+      "sha256": "7f3267b776759af11e37a3eaf3624d2ea3887afeff0d423214d3632f32713b58"
+    }
+  ]
+}

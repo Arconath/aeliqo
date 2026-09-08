@@ -1,0 +1,14 @@
+$ playwright test --config tests/adaptation-semantic/playwright.config.mjs
+[WebServer] (node:62673) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:62679) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 2:15:41 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  1 tests/adaptation-semantic/browser.spec.ts:3:5 › real registered components adapt through the default renderer and preserve drafts inside nested shadow roots (519ms)
+[WebServer] 2:15:42 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  2 tests/adaptation-semantic/browser.spec.ts:21:5 › IME and active pointer defer changes until their native event ends (268ms)
+
+  2 passed (1.6s)

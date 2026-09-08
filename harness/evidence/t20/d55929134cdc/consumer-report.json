@@ -1,0 +1,27 @@
+{
+  "passed": true,
+  "sourceDigest": "d55929134cdc00c18b56bda20093cefe1fef86d5496068dfe49b6d28fc41028b",
+  "artifacts": [
+    {
+      "name": "@aeliqo/core",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/adaptation-consumers/run-SLXOKY/core.tgz",
+      "sha256": "ae8b89bc2a0b48aae1dc3168979448b622500b8beba454c70a877f692aa83413"
+    },
+    {
+      "name": "@aeliqo/runtime",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/adaptation-consumers/run-SLXOKY/runtime.tgz",
+      "sha256": "b23194dddf6e99945a722041eb3bc3cd0fc7bcc1c6398ec0fc431d50ff202c3d"
+    },
+    {
+      "name": "@aeliqo/web",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/adaptation-consumers/run-SLXOKY/web.tgz",
+      "sha256": "2d5e3a097ad16a542f7a1f29d5c272692d2438bddd91afadb5fda7754b12482f"
+    }
+  ],
+  "consumerDirectory": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-adaptation-consumer-PrZH0Z",
+  "scope": "Actual core/runtime/web tarballs, optional web runtime peer, strict public declarations, Node SSR measurement without code generation, production-built Chromium default region draft/focus/replay/revoke.",
+  "environment": {
+    "node": "v24.20.0",
+    "chromium": "153.0.8010.12"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "sourceDigest": "d55929134cdc00c18b56bda20093cefe1fef86d5496068dfe49b6d28fc41028b",
+  "sourceChangedDuringRun": false,
+  "scope": "Installed twelve-family public web/React strict declarations, React SSR exact data/warnings/isolation, Chromium geometry/keyboard selection/revocation",
+  "artifacts": [
+    {
+      "name": "@aeliqo/core",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/visualization-consumers/run-K7NzNB/aeliqo-core-0.1.0.tgz",
+      "sha256": "ae8b89bc2a0b48aae1dc3168979448b622500b8beba454c70a877f692aa83413",
+      "integrity": "sha512-3JMaJIUW7gi1A4FEvXYS0J3sqGXZ0MdirqnarakFzomT7wDNLL9PoDihcxt2W8o+sclkGjtAyCLKaxyDgvDB6Q=="
+    },
+    {
+      "name": "@aeliqo/web",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/visualization-consumers/run-K7NzNB/aeliqo-web-0.1.0.tgz",
+      "sha256": "2d5e3a097ad16a542f7a1f29d5c272692d2438bddd91afadb5fda7754b12482f",
+      "integrity": "sha512-zD2HYlGrlhSpijPmKNw7L/vWzxvHmO7qQ2hbrNd0uk3Cj1V1ObGXrsyQJVQmDEXpX4TzZB/rbaj6MRKGS65ARA=="
+    },
+    {
+      "name": "@aeliqo/react",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/visualization-consumers/run-K7NzNB/aeliqo-react-0.1.0.tgz",
+      "sha256": "a8d37260667d6d22e0e0d936d06fa036a56a2f522c68b50fa5150350df18e5d0",
+      "integrity": "sha512-30EG6/I1wmoa0JMmJfrFeLN/Vj9ZrglEmCnMrJT7ZKT1XxBRI1xpcrr6pdpZmuXBFnT/oSftUpInM+MN1fQxGg=="
+    }
+  ],
+  "consumerDirectory": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-visualization-consumer-h9LeUr",
+  "consumerLock": {
+    "sha256": "5519c47f2c0414b63496913ffe092d45c0e81a0b634b965bb52d01aa21e5a0b8"
+  },
+  "ssr": "Installed React twelve-family plus Matrix, Timeline, CalendarGrid SSR exact values, warnings and request isolation passed.\n",
+  "failures": [],
+  "environment": {
+    "node": "v24.20.0",
+    "chromium": "153.0.8010.12"
+  },
+  "passed": true
+}
