@@ -123,7 +123,8 @@ function context(value: unknown): ActionOutcome<TrustedActionContext> {
   if (Object.keys(record).some((key) => !allowed.includes(key)) ||
       !validId(record.principalKey) || !validId(record.actorKey) || !validId(record.scopeDigest) ||
       !validId(record.policyRevision) || !validId(record.domainRevision) || !validId(record.confirmationEpoch) ||
-      !Array.isArray(record.grants) || record.grants.some((grant) => grant !== 'action.propose' && grant !== 'action.execute'))
+      !Array.isArray(record.grants) || record.grants.length > WIRE_LIMITS.array ||
+      record.grants.some((grant) => grant !== 'action.propose' && grant !== 'action.execute'))
     return failure('action.denied', 'The host action context is malformed.');
   const grants = [...new Set(record.grants as ActionGrant[])];
   let entityRevisions: Readonly<Record<string, string>> | undefined;
@@ -470,7 +471,12 @@ class ActionPortImpl implements ActionPort {
       return rechecked;
     }
     if (!this.live()) return retry(this.lifecycle());
-    if (!grantsInclude(rechecked.value, 'action.execute') || !sameContext(current.value, rechecked.value)) {
+    if (!grantsInclude(rechecked.value, 'action.propose') || !grantsInclude(rechecked.value, 'action.execute')) {
+      this.consumePreview(matched);
+      this.tryHistory({state: 'rejected', action: cloneRef(matched.registration.descriptor.ref), previewId: matched.id, reasonCode: 'action.denied'});
+      return this.outcome('action.denied', 'The host no longer grants both proposal and execution for confirmation.');
+    }
+    if (!sameContext(current.value, rechecked.value)) {
       this.consumePreview(matched);
       this.tryHistory({state: 'rejected', action: cloneRef(matched.registration.descriptor.ref), previewId: matched.id, reasonCode: 'action.stale'});
       return this.outcome('action.stale', 'The action confirmation context changed before a receipt was issued.');

@@ -11,6 +11,7 @@ import type {
   ActionSideEffect,
   TrustedActionContext,
 } from '../../packages/runtime/src/actions/types.js';
+import {WIRE_LIMITS} from '@aeliqo/core';
 import type {Outcome, Scalar, VersionRef} from '@aeliqo/core';
 
 const outcome = <T>(value: T): Outcome<T> => ({ok: true, value});
@@ -239,6 +240,41 @@ describe('confirmation and execute rechecks', () => {
     expect(stale.ok).toBe(false);
     if (!stale.ok) expect(stale.diagnostics[0]!.code).toBe('action.stale');
     expect((await port.confirm(preview.value)).ok).toBe(false);
+  });
+
+  it('denies receipt creation when confirmation loses proposal authority without a policy revision', async () => {
+    const registry = new ActionRegistry();
+    let current = context();
+    let dispatches = 0;
+    const descriptor = register(registry, {
+      id: 'withdraw-proposal', confirmation: 'required',
+      dispatch: () => { dispatches++; return {state: 'completed', output: {ok: true, value: {saved: true}}}; },
+    });
+    const port = createActionPort({registry, host: {
+      readContext: () => outcome(current),
+      issueConfirmation: () => {
+        current = context({grants: ['action.execute']});
+        return outcome(undefined);
+      },
+    }});
+    const preview = await port.preview({requestId: 'withdraw-proposal-request', action: descriptor.ref, input: {amount: 1}});
+    expect(preview.ok).toBe(true);
+    if (!preview.ok) return;
+    const denied = await port.confirm(preview.value);
+    expect(denied.ok).toBe(false);
+    if (!denied.ok) expect(denied.diagnostics[0]!.code).toBe('action.denied');
+    expect(dispatches).toBe(0);
+    expect(preview.value.input).toBeUndefined();
+  });
+
+  it('rejects an overbounded host grant list before proposal admission', async () => {
+    const registry = new ActionRegistry();
+    const descriptor = register(registry, {id: 'grant-budget'});
+    const grants = Array.from({length: WIRE_LIMITS.array + 1}, () => 'action.propose' as const);
+    const port = createActionPort({registry, host: {readContext: () => outcome(context({grants}))}});
+    const preview = await port.preview({requestId: 'grant-budget-request', action: descriptor.ref, input: {}});
+    expect(preview.ok).toBe(false);
+    if (!preview.ok) expect(preview.diagnostics[0]!.code).toBe('action.denied');
   });
 
   it('treats malformed callback diagnostics and output as bounded ambiguity', async () => {
