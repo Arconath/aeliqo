@@ -474,14 +474,33 @@ function runInstalledQuery() {
   const factory = createQueryPlanner({catalog, registry:registry.value,
     limits:{maxRows:10,maxBytes:100000,maxJoinRows:10,maxOperations:10000}});
   if (!factory.ok) throw new Error(JSON.stringify(factory.diagnostics));
+  const conditionalRegistry = createQueryFunctionRegistry({version:'2'});
+  if (!conditionalRegistry.ok || conditionalRegistry.value.digest !== 'core-query-2') throw new Error('Conditional registry rejected');
+  const conditional = checkExpression({kind:'call',function:{id:'core.if',revision:'1'},arguments:[
+    {kind:'literal',value:true,type:{value:'boolean',nullable:false}},
+    {kind:'literal',value:1,type:{value:'integer',nullable:false}},
+    {kind:'literal',value:null,type:{value:'integer',nullable:true}},
+  ]},{catalog:{...catalog,functionRegistryDigest:conditionalRegistry.value.digest},registry:conditionalRegistry.value,entityId:'sales'});
+  if (!conditional.ok || conditional.value.type.value !== 'integer' || conditional.value.type.nullable !== true)
+    throw new Error('Installed conditional semantic typing failed');
   const source = {revision:'source-1',relations:{sales:{entity:'sales',complete:true,rows:[
     {id:'first',amount:{decimal:'10.01'}},{id:'second',amount:{decimal:'10.02'}},
   ]}}};
-  const wirePlan = factory.value.plan({entity:'sales',fields:['id','amount'],measures:[],relations:[],groupBy:[],
+  const wirePlan = factory.value.plan({entity:'sales',fields:['id'],measures:[],relations:[],groupBy:[],
     population:{kind:'all-authorized'},order:[{field:'amount',direction:'desc',nulls:'last'}],page:{size:1}});
   if (!wirePlan.ok) throw new Error(JSON.stringify(wirePlan.diagnostics));
   const ranked = factory.value.evaluate(wirePlan.value,source);
   if (!ranked.ok || ranked.value.rows[0]?.id !== 'second') throw new Error('Installed exact ranking failed');
+  if (Object.hasOwn(ranked.value.rows[0], 'amount')) throw new Error('Hidden order field leaked into projection');
+  const windowPlan = factory.value.plan({entity:'sales',fields:['id','previous'],measures:[],relations:[],groupBy:[],
+    population:{kind:'all-authorized'},order:[],windows:[{id:'previous',function:{id:'core.window.lag',revision:'1'},
+      arguments:[{kind:'field',entity:'sales',ref:'amount'}],partitionBy:[],
+      orderBy:[{expression:{kind:'field',entity:'sales',ref:'id'},direction:'asc',nulls:'last'}],
+      frame:{preceding:2,following:0}}]});
+  if (!windowPlan.ok) throw new Error(JSON.stringify(windowPlan.diagnostics));
+  const windowResult = factory.value.evaluate(windowPlan.value,source);
+  if (!windowResult.ok || windowResult.value.rows[0]?.previous !== null || windowResult.value.rows[1]?.previous?.decimal !== '10.01')
+    throw new Error('Installed canonical previous-row window failed');
   const aggregate = factory.value.plan({root:'sales',pins:{catalogRevision:catalog.revision,functionRegistryDigest:registry.value.digest},
     select:[{id:'total',expression:{kind:'field',ref:'total'}}],
     aggregates:[{id:'total',function:{id:'core.aggregate.sum',revision:'1'},arguments:[{kind:'field',entity:'sales',ref:'amount'}]}]});
@@ -500,7 +519,7 @@ await writeFile(join(consumerDirectory, "consumer-types.ts"), `
 import {
   parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue,
   validateTaskStructure, resolveExperienceConstraints,
-  createStandardFunctionRegistry, createTypedAuthoring, createQueryPlanner, createQueryFunctionRegistry,
+  checkExpression, createStandardFunctionRegistry, createTypedAuthoring, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
 import type {
   Catalog, Task, Result, Experience, Outcome, TaskStructure, Wire,
@@ -537,6 +556,7 @@ const typedRestriction: ExperienceRestriction = restriction;
 const typedConstraints: ExperienceConstraints = constraints;
 const typedRegistry: Outcome<FunctionRegistry> = createStandardFunctionRegistry();
 const typedQueryRegistry: Outcome<FunctionRegistry> = createQueryFunctionRegistry();
+const typedConditionalRegistry: Outcome<FunctionRegistry> = createQueryFunctionRegistry({version:'2'});
 const typedQueryPlanner: Outcome<QueryPlanner> = createQueryPlanner({catalog: typedCatalog, registry: unwrap(typedQueryRegistry)});
 const typedQuery: QuerySpec = {entity:'sales',fields:['id'],measures:[],relations:[],groupBy:[],population:{kind:'all-authorized'},order:[]};
 const typedPlan: Outcome<LogicalPlan> = unwrap(typedQueryPlanner).plan(typedQuery);
@@ -778,7 +798,7 @@ import assert from 'node:assert/strict';
 globalThis.Function = () => { throw new Error('Function constructor used by core parser'); };
 globalThis.eval = () => { throw new Error('eval used by core parser'); };
 const core = await import('@aeliqo/core');
-const {parseWireValue, createQueryPlanner, createQueryFunctionRegistry} = core;
+const {parseWireValue, checkExpression, createQueryPlanner, createQueryFunctionRegistry} = core;
 ${queryConsumerSource}
 assert.equal(runInstalledQuery().precision.kind, 'exact');
 assert.deepEqual(parseWireValue('{"requestId":"one"}'), {ok:true,value:{requestId:'one'}});
@@ -813,7 +833,7 @@ await writeFile(join(consumerDirectory, "bundle-entry.js"), `
 import {
   parseCatalog, parseTask, parseResult, parseExperience, parseWireValue,
   validateTaskStructure, resolveExperienceConstraints,
-  createStandardFunctionRegistry, createTypedAuthoring, createQueryPlanner, createQueryFunctionRegistry,
+  checkExpression, createStandardFunctionRegistry, createTypedAuthoring, createQueryPlanner, createQueryFunctionRegistry,
 } from '@aeliqo/core';
 const validWire = parseWireValue('{"requestId":"one"}');
 if (!validWire.ok || validWire.value.requestId !== 'one' ||

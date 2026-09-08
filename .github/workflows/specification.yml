@@ -61,6 +61,7 @@ jobs:
           pnpm test:contracts
           pnpm test:task-experience
           pnpm test:semantics
+          pnpm test:query
           pnpm test:data
           pnpm test:data:auth-retention
           pnpm test:core:consumers

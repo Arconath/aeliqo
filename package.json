@@ -20,6 +20,7 @@
     "test:core:consumers": "node tests/consumers/core-tarball.mjs",
     "test:task-experience": "pnpm build:core && vitest run --config tests/task-experience/vitest.config.mjs && tsc -p tests/task-experience/tsconfig.json",
     "test:semantics": "pnpm build:core && vitest run --config tests/semantics/vitest.config.mjs",
+    "test:query": "pnpm build:core && vitest run --config tests/query/vitest.config.mjs && tsc -p tests/query/tsconfig.json",
     "build:runtime": "pnpm build:core && pnpm --filter @aeliqo/runtime build",
     "test:data-stream": "pnpm test:data",
     "test:design": "node design/generate-web-tokens.mjs --check && vitest run design/styles.test.ts",

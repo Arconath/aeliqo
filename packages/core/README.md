@@ -5,7 +5,8 @@ Pure, versioned Aeliqo wire contracts for **Catalog**, **Task**, **Result**, and
 readonly TypeScript types, bounded parsing, diagnostics, and stable serialization.
 Task structure and Experience restriction intersection are also available.
 Semantic expression checking and typed meaning authoring are available.
-Query execution remains a subsequent implementation slice.
+Bounded in-memory relational planning and evaluation are available through the
+query API described below.
 
 ```ts
 import {parseCatalog, serializeContract} from '@aeliqo/core';
@@ -131,3 +132,31 @@ Data reads, actions and model egress require their own host authorization.
 Expression traversal has explicit node/depth bounds. Function execution-cost
 metadata is reserved for the query planner/evaluator; this module does not claim
 to enforce a source-scan or execution-time budget.
+
+## Bounded relational queries
+
+`createQueryFunctionRegistry()` supplies the versioned `core-query-1` signatures,
+including bounded windows. `createQueryPlanner({catalog, registry, definitions,
+limits})` creates a planner. Call `plan(query)` to validate a canonical `QuerySpec`
+or the internal typed `RelationalQuery`; call `evaluate(plan, source, context)`
+to evaluate supplied rows. Both return `Outcome` values. Plans expose their
+operator graph, predicted output schema, cost estimates and explanations.
+
+The evaluator performs no I/O. The application supplies catalog declarations,
+authorized source relations, source revision and scope/policy pins. Execution
+revalidates the plan and pins; this comparison cannot authenticate the host that
+supplies them. A plan key is a content identity, never a permission credential.
+Source completeness is explicit; grouping, global ranking and windows cannot
+silently treat a partial population as complete. Decimal arithmetic retains its
+decimal representation, and result precision reports arithmetic approximation.
+
+Row, byte, join, plan-size and operation ceilings bound local work. The execution
+context can tighten budgets and provide a cancellation view and monotonic clock
+for a deadline. Core does not read a global clock or introduce browser APIs.
+Use the runtime data path for source access and asynchronous cancellation.
+
+This API is an implementation slice, not full Task execution. Authorized prior
+result populations, named-output orchestration and HTTP execution of these plans
+remain separate integration work. Unsupported temporal policies, cursors and
+operators return diagnostics; they do not trigger a download of a larger source
+or a hidden fallback to executable query text.
