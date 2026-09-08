@@ -43,6 +43,21 @@ composition update a local draft and never execute a query. `SelectionSummary`
 distinguishes observed identity selection from a server predicate selection so
 it cannot imply that loaded rows represent an unobserved global set.
 
+The region data adapter is the boundary between these direct views and a
+validated presentation. `createAeliqoDataRegistry()` accepts an application
+authorized `Result` descriptor together with its exact loaded rows. It checks
+the ResultRef, loaded/population counts, declared scalar types and units, field
+labels, row grain and stable identity tuples before a node can render. It does
+not aggregate rows, discover a source, or turn a loaded page into a population.
+Scalar views (`Metric`, `Delta`, `KeyValue`, and `Detail`) require one row or an
+explicit identity tuple; `Delta` requires two declared numeric observations
+with compatible units and delegates arithmetic to `calculateAeliqoDelta`.
+Collection views retain the authorized rows and identity fields. Filter,
+selection, page, sort, load-more and keyboard-window requests are sent to a
+host callback; only registered selection and filter ports produce canonical
+core interaction payloads. Page and window requests remain typed host requests
+because the core wire contract has no implicit viewport or sort operation.
+
 The components prefer native lists, definition lists, tables, buttons, form
 controls and visible focus. The shared styles include wrapping, RTL-safe
 logical sizing, forced-colors focus and reduced-motion-compatible controls;
