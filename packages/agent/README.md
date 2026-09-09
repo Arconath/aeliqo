@@ -5,19 +5,33 @@ pure core and effect-owning runtime; direct components and normal interactions d
 not import it. Capability registrations are host-owned and protocol-neutral;
 manual, direct and protocol ports all call the same authority-checked dispatcher.
 
-## Model transports
+## Server-owned model connections
 
-`@aeliqo/agent/model` exposes only the provider-neutral `ToolModelPort`. The
-optional `@aeliqo/agent/model/openai` entry is an official SDK reference. For a
-trusted-server OpenAI-compatible Responses endpoint, use
-`@aeliqo/agent/model/responses` and configure an explicit HTTPS base endpoint,
-model ID, opaque credential reference, credential resolver, and request policy.
-The transport never identifies a provider from a key or reference, uses no retries,
-does not retain credentials, and normalizes errors without echoing endpoint,
-headers, credential, or provider response text. It sends `stream: false` and has
-no streaming API; only complete responses and function-call proposals are
-implemented. The host remains responsible for model-egress permission, secret
-resolution, pricing, and tool execution.
+`createToolModelConnection` and `createOpenAICompatibleToolModel` are trusted
+server-only connection helpers. The application explicitly provides a base URL,
+model identifier, opaque server-created secret, authentication scheme, allowed
+origin/egress policy, timeout, byte limits, and the endpoint capabilities it has
+verified. The helpers do not infer any of those from a provider or model name.
+Custom headers cannot replace authentication, cookies, content type, or length.
+
+The included OpenAI-compatible adapter implements a bounded, non-streaming
+chat-completions request with tool calls and normalized usage. It has a local,
+conservative input-token estimate, so it does not call an undocumented token
+counting endpoint before a completion. A host may instead supply an authoritative
+`countInputTokens` port. Abort signals cancel in-flight transport; timeout and
+response/request limits are enforced locally. Streaming is deliberately not
+advertised or enabled by this adapter. Fixture compatibility tests are transport
+tests, not live-provider or reasoning-quality qualification.
+
+For an OpenAI-compatible Responses endpoint, applications may instead use
+`createOpenAICompatibleResponsesToolModel` from `@aeliqo/agent/model/responses`.
+That adapter accepts a server-owned opaque credential reference and resolver,
+explicit HTTPS endpoint/model/request policy, and complete non-streaming function
+calls. It performs no undocumented token-counting request, provider detection, or
+implicit egress authorization. Both adapters normalize failures without exposing
+endpoint details, headers, credential values, or provider response text. The host
+remains responsible for model-egress permission, secret resolution, pricing, and
+tool execution.
 
 ## Capability dispatcher and sessions
 

@@ -11,6 +11,32 @@ export interface ToolModelCall {
   readonly name: string;
   readonly input: AgentJsonValue;
 }
+export type ToolModelTokenSource = 'provider' | 'estimated';
+export interface ToolModelCost {
+  readonly currency: string;
+  readonly estimatedUSD?: number;
+  readonly inputUSDPerMillion?: number;
+  readonly outputUSDPerMillion?: number;
+  readonly source?: string;
+}
+export interface ToolModelUsage {
+  readonly inputTokens: number;
+  readonly outputTokens: number;
+  readonly totalTokens?: number;
+  readonly inputTokenSource?: ToolModelTokenSource;
+  readonly outputTokenSource?: ToolModelTokenSource;
+  readonly cachedInputTokens?: number;
+  readonly reasoningOutputTokens?: number;
+  /** This is a host-side estimate unless the provider explicitly reports a charge. */
+  readonly cost?: ToolModelCost;
+}
+export interface ToolModelProviderSnapshot {
+  /** Protocol identity, not a vendor name or trust level. */
+  readonly protocol: string;
+  readonly model?: string;
+  readonly responseId?: string;
+  readonly usage: ToolModelUsage;
+}
 export interface ToolModelRequest {
   readonly messages: readonly ToolModelMessage[];
   readonly tools: readonly AgentToolDefinition[];
@@ -20,11 +46,18 @@ export interface ToolModelResponse {
   /** Unverified model prose. Hosts must apply their claim/evidence policy before display. */
   readonly text?: string;
   readonly calls: readonly ToolModelCall[];
-  readonly usage: {readonly inputTokens: number; readonly outputTokens: number};
+  readonly usage: ToolModelUsage;
+  /** Sanitized provider metadata; credentials and raw responses never belong here. */
+  readonly provider?: ToolModelProviderSnapshot;
 }
-/** Application-owned model I/O. Counting can itself use a remote service and requires egress. */
+/**
+ * Application-owned model I/O. A host can supply authoritative remote counting,
+ * or a bounded local estimate. A model transport is never allowed to require an
+ * undocumented counting endpoint merely to make a completion request.
+ */
 export interface ToolModelPort {
-  readonly countInputTokens: (request: ToolModelRequest, options: {readonly signal: AbortSignal}) => Promise<number>;
+  readonly estimateInputTokens?: (request: ToolModelRequest) => number;
+  readonly countInputTokens?: (request: ToolModelRequest, options: {readonly signal: AbortSignal}) => Promise<number>;
   readonly complete: (request: ToolModelRequest, options: {readonly signal: AbortSignal}) => Promise<ToolModelResponse>;
 }
 export interface ToolModelBudget {

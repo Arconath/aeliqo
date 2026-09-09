@@ -39,6 +39,7 @@ describe('official OpenAI SDK against a local protocol fixture, not live provide
   it('projects correlated function calls through the official count and Responses HTTP APIs', async () => {
     await localProvider(async (port, bodies) => {
       const signal = new AbortController().signal;
+      if (port.countInputTokens === undefined) throw new Error('The official reference port must expose provider token counting.');
       expect(await port.countInputTokens(request, {signal})).toBe(42);
       expect(await port.complete(request, {signal})).toMatchObject({calls: [{id: 'call_next', name: 'summary', input: {entity: 'orders'}}], usage: {inputTokens: 42, outputTokens: 8}});
       expect(bodies).toHaveLength(2);

@@ -40,11 +40,13 @@ export async function runToolModel(options: ToolModelLoopOptions): Promise<ToolM
   if (!options || !identifier(options.requestId) || !['chat', 'experience'].includes(options.goal)
     || typeof options.prompt !== 'string' || options.prompt.length === 0 || options.prompt.length > WIRE_LIMITS.text
     || !validBudget(options.budget) || options.endpoint?.transport !== 'byok'
-    || typeof options.endpoint.authorizeModel !== 'function' || typeof options.model?.countInputTokens !== 'function'
+    || typeof options.endpoint.authorizeModel !== 'function' || (typeof options.model?.countInputTokens !== 'function' && typeof options.model?.estimateInputTokens !== 'function')
     || typeof options.model.complete !== 'function') return fail('agent.model.invalid', 'The model loop requires bounded input, a BYOK endpoint, and an application-owned model port.');
   const budget = {...options.budget}, requestId = options.requestId, goal = options.goal;
   const endpoint = options.endpoint;
-  const count = options.model.countInputTokens.bind(options.model), complete = options.model.complete.bind(options.model);
+  const count = options.model.countInputTokens?.bind(options.model);
+  const estimate = options.model.estimateInputTokens?.bind(options.model);
+  const complete = options.model.complete.bind(options.model);
   const controller = new AbortController();
   const signal = options.signal === undefined ? controller.signal : AbortSignal.any([controller.signal, options.signal]);
   const started = performance.now();
@@ -89,14 +91,24 @@ export async function runToolModel(options: ToolModelLoopOptions): Promise<ToolM
       if (typeof discovery === 'string') return finish(discovery);
       if (!discovery.ok) return finish('denied');
       const request: ToolModelRequest = snapshot({messages, tools: discovery.value, maxOutputTokens: budget.maxOutputTokens});
-      if (bytes(request) > budget.maxInputBytes || modelRequests + 2 > budget.maxModelRequests) return finish('budget');
-      // Counting is an egress boundary too, even when a specific port counts locally.
-      const countAdmission = await admit();
-      if (countAdmission !== undefined) return finish(countAdmission);
-      modelRequests++;
-      const counted = await boundary(child => count(request, {signal: child}));
-      if (typeof counted === 'string') return finish(counted);
-      if (!integer(counted, 0, 1_000_000)) return finish('failed');
+      const countIsRemote = count !== undefined;
+      if (bytes(request) > budget.maxInputBytes || modelRequests + (countIsRemote ? 2 : 1) > budget.maxModelRequests) return finish('budget');
+      let counted: number | ToolModelStop;
+      if (count !== undefined) {
+        // A remote counter receives model input, so recheck the independent
+        // egress grant before calling it. Local estimation has no transport.
+        const countAdmission = await admit();
+        if (countAdmission !== undefined) return finish(countAdmission);
+        modelRequests++;
+        counted = await boundary(child => count(request, {signal: child}));
+      } else {
+        try {counted = estimate!(request);} catch {return finish('failed');}
+      }
+      if (typeof counted === 'string') {
+        if (['cancelled', 'budget', 'failed'].includes(counted)) return finish(counted as ToolModelStop);
+        return finish('failed');
+      }
+      if (!integer(counted, 1, 1_000_000)) return finish('failed');
       if (counted > budget.maxInputTokens || inputTokens + outputTokens + counted + budget.maxOutputTokens > budget.maxTotalTokens) return finish('budget');
       const modelAdmission = await admit();
       if (modelAdmission !== undefined) return finish(modelAdmission);
