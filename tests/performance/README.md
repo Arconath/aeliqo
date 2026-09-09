@@ -20,11 +20,12 @@ Graph checks prohibit provider/agent/Studio and Node-only modules, and prohibit
 runtime/planner/visualization modules in direct component entries. Gzip uses
 Node's default compression settings on each emitted chunk.
 
-Still required: functional small/medium/large workload measurements, isolated
-cold/warm timing observations and p50/p95, input and layout/paint traces, bounded
-DOM/geometry, cancellation and 100-cycle cleanup/heap observations, whole-site
-metrics, plus the real lower-powered device specified by chapter 12. Run timing
-work without concurrent builds. Do not revise budgets to fit observed results.
+The probes below now cover bounded small/medium/large fixtures, cold/warm
+navigations, keyboard/DOM observations, cancellation and 100-cycle lifecycle
+checks. Their functional passes do not close timing or device qualification.
+Planner p95 still exceeds 16 ms; actual input-to-paint, whole-site field metrics
+and the real lower-powered device specified by chapter 12 remain open. Run
+timing work without concurrent builds. Do not revise budgets to fit results.
 
 
 ## Production workload probes
@@ -55,10 +56,10 @@ raw samples. Resource checks exercise ResultStore and Region ownership and
 100 component mount/dispose cycles. Heap samples require investigation; a zero
 active-resource count does not prove garbage collection.
 
-Still unqualified by these probes: genuine cold/warm cache paths, input-to-paint,
-network/server phase breakdown, dense plots and adverse workloads, final
-installed-package timing, whole-site metrics, and real lower-powered hardware.
-No timing result from this fixture alone marks T30 complete.
+This combined workload fixture does not qualify genuine cold/warm cache paths,
+input-to-paint, network/server phases, installed-package timing, whole-site
+metrics or real lower-powered hardware. Separate cold/warm and adverse probes
+are described below; their observations do not mark T30 complete.
 
 The planner reuses pure registered node resolution only within one synchronous
 composition and one immutable prepared context. Keys include the full parsed
@@ -122,3 +123,18 @@ bounded internal/document geometry, exact paged data alternatives and selection
 retention through all40 pages. Raw mutation-to-DOM-plus-forced-layout times
 are observations, not paint timestamps or a performance-budget pass. The
 configured desktop fixture does not replace real mobile-device qualification.
+
+## Preserved observations
+
+Source-bound reports are in `harness/evidence/t30/ea7957d-extended-browser`
+(30 trusted keyboard inputs, 100 lifecycle cycles, 10 cold/30 warm navigations)
+and `harness/evidence/t30/0d00a01-adverse-probes` (late-source delivery and
+dense visualization). Missing Event Timing values and raw heap trends remain
+visible in those reports. No input-to-paint or leak verdict is inferred from
+DOM update timing or zero open resource counts.
+
+The snapshot and tie-serialization experiments did not improve the planner
+budget. Their patches and paired raw observations were preserved under
+`harness/evidence/t30/0a6ac0b-snapshot-experiment` and
+`harness/evidence/t30/91731d9-tie-memo-experiment`; both experimental source
+changes were reverted. The required planner budget remains unchanged.
