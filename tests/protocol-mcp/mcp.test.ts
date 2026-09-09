@@ -100,7 +100,7 @@ describe('MCP adapter', () => {
       versionNegotiation: {mode: {pin: AELIQO_MCP_MODERN_REVISION}},
     });
     expect(await modern.discover()).toMatchObject({ok: true, value: [{name: 'summary', capability: {id: 'summary', revision: '1'}}]});
-    expect(await modern.invoke('summary', {query: 'stdio'}, {requestId: 'stdio-modern'})).toMatchObject({ok: true, value: {requestId: 'stdio-modern', value: {query: 'stdio'}}});
+    expect(await modern.invoke('summary', {query: 'stdio'}, {requestId: 'stdio-modern'})).toMatchObject({ok: true, value: {requestId: 'stdio-modern', value: {query: 'stdio', era: 'modern'}}});
     modern.close();
 
     const legacy = await connectMcpStdioClient({
@@ -108,7 +108,7 @@ describe('MCP adapter', () => {
       targetRegionId: 'region', goalEpoch: 'goal', versionNegotiation: {mode: 'legacy'},
     });
     expect(await legacy.discover()).toMatchObject({ok: true, value: [{name: 'summary'}]});
-    expect(await legacy.invoke('summary', {}, {requestId: 'stdio-legacy'})).toMatchObject({ok: true, value: {requestId: 'stdio-legacy'}});
+    expect(await legacy.invoke('summary', {}, {requestId: 'stdio-legacy'})).toMatchObject({ok: true, value: {requestId: 'stdio-legacy', value: {era: 'legacy'}}});
     legacy.close();
   });
 
@@ -143,6 +143,26 @@ describe('MCP adapter', () => {
     }
     client.close();
     await fixture.handler.close();
+  });
+
+  it('honors explicit modern and legacy negotiation through the HTTP client helper', async () => {
+    const fixture = await startHttp({
+      createEndpoint: context => newEndpoint(() => ({state: 'data-ready', value: {era: context.era}})),
+      authenticate: authGate(), allowedHostnames: ['127.0.0.1'], allowedOriginHostnames: ['127.0.0.1'],
+      resourceServerUrl: new URL('http://127.0.0.1/'), issuer: 'https://issuer.example',
+    });
+    try {
+      for (const [mode, era] of [[{pin: AELIQO_MCP_MODERN_REVISION}, 'modern'], ['legacy', 'legacy']] as const) {
+        const client = await connectMcpHttpClient({url: fixture.url, targetRegionId: 'region', goalEpoch: 'goal',
+          authProvider: {token: async () => 'fixture-token'}, versionNegotiation: {mode}});
+        try {
+          expect((await client.discover()).ok).toBe(true);
+          expect(await client.invoke('summary', {}, {requestId: `http-${era}`})).toMatchObject({
+            ok: true, value: {value: {era}},
+          });
+        } finally {client.close();}
+      }
+    } finally {await fixture.handler.close();}
   });
 
   it('rejects origin, audience, issuer and expired authentication before endpoint discovery', async () => {

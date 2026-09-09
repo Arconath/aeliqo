@@ -690,8 +690,7 @@ export async function connectMcpStdioClient(options: McpStdioClientOptions): Pro
   const client = new Client({
     name: options.name ?? DEFAULT_SERVER_NAME,
     version: options.version ?? DEFAULT_SERVER_VERSION,
-    ...clientOptions(options),
-  });
+  }, clientOptions(options));
   const transport = new StdioClientTransport(options.server);
   try {
     await client.connect(transport, options.connectOptions);
@@ -719,8 +718,7 @@ export async function connectMcpHttpClient(options: McpHttpClientOptions): Promi
   const client = new Client({
     name: options.name ?? DEFAULT_SERVER_NAME,
     version: options.version ?? DEFAULT_SERVER_VERSION,
-    ...clientOptions(options),
-  });
+  }, clientOptions(options));
   try {
     await client.connect(transport, options.connectOptions);
   } catch (error) {
