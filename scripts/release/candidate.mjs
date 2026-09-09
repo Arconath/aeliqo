@@ -34,6 +34,20 @@ function command(commandName, args, options = {}) {
   if (result.error || result.status !== 0) throw new Error(`${commandName} ${args.join(' ')} failed\n${result.error?.message ?? ''}\n${result.stdout ?? ''}\n${result.stderr ?? ''}`);
   return result.stdout.trim();
 }
+function commandBuffer(commandName, args, options = {}) {
+  const result = spawnSync(commandName, args, {
+    cwd: options.cwd ?? root,
+    encoding: null,
+    maxBuffer: options.maxBuffer ?? 128 * 1024 * 1024,
+    timeout: options.timeout ?? 300_000,
+    env: options.env ?? process.env,
+  });
+  if (result.error || result.status !== 0) {
+    const stderr = Buffer.isBuffer(result.stderr) ? result.stderr.toString('utf8') : String(result.stderr ?? '');
+    throw new Error(`${commandName} ${args.join(' ')} failed\n${result.error?.message ?? ''}\n${stderr}`);
+  }
+  return result.stdout;
+}
 function requireVersion(actual, expected, label) {
   if (actual !== expected) throw new Error(`${label} ${expected} is required; received ${actual}`);
 }
@@ -81,24 +95,66 @@ const SECRET_PATTERNS = [
   ['anthropic-key', /\bsk-ant-[A-Za-z0-9_-]{24,}\b/],
 ];
 function scanContent(label, content, findings) {
-  if (content.includes('\0')) return false;
+  // Credential formats are ASCII. latin1 provides a lossless one-byte mapping,
+  // so binary files are inspected instead of disappearing from the evidence.
+  const searchable = Buffer.isBuffer(content) ? content.toString('latin1') : content;
   for (const [rule, pattern] of SECRET_PATTERNS) {
-    if (pattern.test(content)) findings.push({file: label, rule});
+    if (pattern.test(searchable)) findings.push({file: label, rule});
   }
-  return true;
+}
+function archiveFormat(path) {
+  const lower = path.toLowerCase();
+  if (lower.endsWith('.tar.gz') || lower.endsWith('.tgz')) return 'tar-gzip';
+  if (lower.endsWith('.zip')) return 'zip';
+}
+function archiveEntries(path, format) {
+  const listing = format === 'tar-gzip'
+    ? command('tar', ['-tzf', path])
+    : command('unzip', ['-Z1', path]);
+  return listing.split('\n').filter(entry => entry && !entry.endsWith('/'));
+}
+function archiveEntry(path, format, entry) {
+  return format === 'tar-gzip'
+    ? commandBuffer('tar', ['-xOzf', path, '--', entry])
+    : commandBuffer('unzip', ['-p', path, entry]);
 }
 async function scanReleaseSource() {
   const files = command('git', ['ls-files', '-z'])
     .split('\0').filter(Boolean).sort();
   const findings = [];
   let bytes = 0;
-  let scannedFiles = 0;
+  let expandedBytes = 0;
+  let expandedEntries = 0;
+  const expandedArchives = [];
   for (const file of files) {
-    const content = await readFile(join(root, file), 'utf8');
-    bytes += Buffer.byteLength(content);
-    if (scanContent(file, content, findings)) scannedFiles += 1;
+    const path = join(root, file);
+    const content = await readFile(path);
+    bytes += content.byteLength;
+    scanContent(file, content, findings);
+    const format = archiveFormat(file);
+    if (!format) continue;
+    const entries = archiveEntries(path, format);
+    let archiveBytes = 0;
+    for (const entry of entries) {
+      const payload = archiveEntry(path, format, entry);
+      archiveBytes += payload.byteLength;
+      expandedBytes += payload.byteLength;
+      expandedEntries += 1;
+      scanContent(`${file}!/${entry}`, payload, findings);
+    }
+    expandedArchives.push({file, format, sha256: sha256(content), entries: entries.length, bytes: archiveBytes});
   }
-  return {scope: 'tracked-release-source', scannedFiles, bytes, findings};
+  return {
+    scope: 'tracked-release-source',
+    consideredFiles: files.length,
+    scannedFiles: files.length,
+    excludedFiles: [],
+    bytes,
+    expandedArchives,
+    expandedEntries,
+    expandedBytes,
+    findings,
+  };
 }
 function scanTarballs(packages) {
   const findings = [];
@@ -108,10 +164,11 @@ function scanTarballs(packages) {
     for (const path of item.paths.filter(path => !path.endsWith('/'))) {
       const content = command('tar', ['-xOf', item.path, path]);
       bytes += Buffer.byteLength(content);
-      if (scanContent(`${item.name}:${path}`, content, findings)) scannedFiles += 1;
+      scanContent(`${item.name}:${path}`, content, findings);
+      scannedFiles += 1;
     }
   }
-  return {scope: 'packed-public-artifacts', scannedFiles, bytes, findings};
+  return {scope: 'packed-public-artifacts', consideredFiles: scannedFiles, scannedFiles, excludedFiles: [], bytes, findings};
 }
 
 async function buildAndPack(stagingRoot) {
