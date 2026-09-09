@@ -358,24 +358,37 @@ export class AeliqoFormFlowElement extends AeliqoCompoundElement {
       this.transientDraftSource = this.draft;
     }
     const output = Object.assign(nullRecord<FormDraftValue>(), this.draft, this.transientDraft);
+    const replaced = new Set<string>();
+    const replaceCurrentValue = (name: string): void => {
+      if (replaced.has(name)) return;
+      delete output[name];
+      replaced.add(name);
+    };
     for (const control of compoundControls(this)) {
       const name = control.getAttribute("name") || control.name || "";
       if (!name || isDisabledControl(control) || control instanceof HTMLButtonElement || (control instanceof HTMLInputElement && ["submit", "reset", "button", "image"].includes(control.type))) continue;
       if (control instanceof HTMLInputElement && ["checkbox", "radio"].includes(control.type)) {
+        replaceCurrentValue(name);
         if (!control.checked) continue;
         appendDraftValue(output, name, control.value);
         continue;
       }
       if (control instanceof HTMLSelectElement && control.multiple) {
+        replaceCurrentValue(name);
         appendDraftValue(output, name, [...control.selectedOptions].map(option => option.value));
         continue;
       }
       const range = dateRangeParts(control, name);
       if (range !== undefined) {
+        replaceCurrentValue(range[0]);
+        replaceCurrentValue(`${name}[end]`);
         appendDraftValue(output, range[0], range[1]);
         const end = (control as HTMLElement & {readonly end?: string}).end;
         if (typeof end === "string") appendDraftValue(output, `${name}[end]`, end);
-      } else appendDraftValue(output, name, "formValue" in control ? control.formValue : control.value);
+      } else {
+        replaceCurrentValue(name);
+        appendDraftValue(output, name, "formValue" in control ? control.formValue : control.value);
+      }
     }
     return output;
   }
