@@ -1,0 +1,35 @@
+{
+  "observedAt": "2026-09-09T18:17:14Z",
+  "target": "0.1.0",
+  "registry": "https://registry.npmjs.org",
+  "registryRead": "unverified",
+  "namespaceAuthorized": false,
+  "targetEverPublished": null,
+  "publishedStableVersions": null,
+  "resetMigrationApproved": false,
+  "stagingTag": "next",
+  "packages": [
+    {"name": "@aeliqo/core", "localVersion": "0.1.0", "registryStatus": "visible-0.2.0-only", "exactTarget": "unknown"},
+    {"name": "@aeliqo/runtime", "localVersion": "0.1.0", "registryStatus": "E404", "exactTarget": "unknown"},
+    {"name": "@aeliqo/web", "localVersion": "0.1.0", "registryStatus": "E404", "exactTarget": "unknown"},
+    {"name": "@aeliqo/react", "localVersion": "0.1.0", "registryStatus": "visible-0.2.0-only", "exactTarget": "unknown"},
+    {"name": "@aeliqo/agent", "localVersion": "0.1.0", "registryStatus": "E404", "exactTarget": "unknown"},
+    {"name": "@aeliqo/devtools", "localVersion": "0.1.0", "registryStatus": "E404", "exactTarget": "unknown"},
+    {"name": "@aeliqo/testkit", "localVersion": "0.1.0", "registryStatus": "E404", "exactTarget": "unknown"}
+  ],
+  "authorization": {
+    "whoami": "E401",
+    "accessList": "E401"
+  },
+  "remoteRefs": {
+    "originMain": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e",
+    "originRewriteBranch": "711a9495e3ff634025d88aca973de9297b4527a4",
+    "localCandidate": "3657ce85b6db8ef51fbedbaa9b3bade54667196c"
+  },
+  "mutations": {
+    "registry": false,
+    "remote": false,
+    "production": false
+  },
+  "blockedReason": "registry-not-verified"
+}
