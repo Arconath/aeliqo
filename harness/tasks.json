@@ -1086,9 +1086,13 @@
         {
           "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
           "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "path": "harness/evidence/t29/afa1f19-family-behavior/manifest.json",
+          "sha256": "d100763c319a2fd69460f623df291c0c6a7a7b4ee1fb0163d98f7e1ec748b1f4"
         }
       ],
-      "notes": "Automated catalog matrix: 882 checks passed at source a73b4a9. Added interaction matrix: 255 passed, zero skips/flakes across Chromium/Firefox/WebKit at ea7957d after independently reviewed form/filter/selection/contrast/pointer fixes. A fresh source-bound run at fea7772 passed 1,137/1,137 Playwright cases across Chromium/Firefox/WebKit with zero skips/unexpected/flaky results. Current 86884f8 all-71 catalog source consumer passes 3/3 files with 71/71 source roots and exact installed core/web tarballs; current browser catalog run passes 3/3, including all-71 mount and cleanup. Captures remain automated evidence only. Pinned human visual approval and full manual AT still outstanding; not accepted."
+      "notes": "Automated catalog matrix: 882 checks passed at source a73b4a9. Added interaction matrix: 255 passed, zero skips/flakes across Chromium/Firefox/WebKit at ea7957d after independently reviewed form/filter/selection/contrast/pointer fixes. A fresh source-bound run at fea7772 passed 1,137/1,137 Playwright cases across Chromium/Firefox/WebKit with zero skips/unexpected/flaky results. Current 86884f8 all-71 catalog source consumer passes 3/3 files with 71/71 source roots and exact installed core/web tarballs; current browser catalog run passes 3/3, including all-71 mount and cleanup. A fresh current-source family behavior sweep at afa1f19 passes 105/105 Chromium/cross-browser cases across foundation, input, navigation, feedback, data, visualization and compound suites; automated behavior and keyboard/semantic a11y categories are now evidenced for all 71 entries. Captures remain automated evidence only. Pinned human visual approval, manual AT and exhaustive property/state coverage remain outstanding; not accepted."
     },
     {
       "id": "T30",

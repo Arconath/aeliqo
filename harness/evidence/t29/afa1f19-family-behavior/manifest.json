@@ -1,0 +1,58 @@
+{
+  "task": "T29",
+  "status": "partial-family-behavior-a11y-pass",
+  "testedSourceCommit": "afa1f1986b92b4b854f1ff3772f19b2dd62a9011",
+  "sourceDigest": "9afbd73d926c9a08e1713c2b72c767a9f54d63f1a7fcbf15bd5256cbb94b7e03",
+  "sourceChangedDuringRun": false,
+  "scope": "Fresh maintained family browser suites against the current production build, combined with the source-digest-identical all-component visual/Axe matrix. Coverage is automated behavior, keyboard/focus and semantic accessibility evidence for all 71 catalog entries.",
+  "coverage": {
+    "catalogComponents": 71,
+    "behavior": {
+      "proven": 71,
+      "basis": "Foundation, input, navigation, feedback, data, visualization and compound browser suites exercise public state transitions, events, focus, bounded rendering, stale/revoked data, draft/IME, disposal and responsive behavior across the complete family inventory."
+    },
+    "a11yKeyboard": {
+      "proven": 71,
+      "basis": "Family suites assert native roles/names, keyboard activation or focus retention where applicable, RTL/large-text/forced-colors paths, and Axe checks; the source-digest-identical all-71 visual matrix provides per-entry Axe/semantic attachments."
+    }
+  },
+  "runs": {
+    "foundation": {"command": "pnpm exec playwright test --config tests/foundation/playwright.config.mjs", "tests": 13, "passed": 13, "browsers": ["Chromium"]},
+    "input": {"command": "pnpm exec playwright test --config tests/input/playwright.config.mjs", "tests": 20, "passed": 20, "browsers": ["Chromium"]},
+    "navigation": {"command": "pnpm exec playwright test --config tests/navigation/playwright.config.mjs", "tests": 5, "passed": 5, "browsers": ["Chromium"]},
+    "feedback": {"command": "pnpm exec playwright test --config tests/feedback/playwright.config.mjs", "tests": 9, "passed": 9, "browsers": ["Chromium"]},
+    "data": {"command": "pnpm exec playwright test --config tests/data-components/playwright.config.mjs", "tests": 15, "passed": 15, "browsers": ["Chromium"]},
+    "temporalVisualization": {"command": "pnpm exec playwright test --config tests/visualization/temporal.playwright.config.mjs", "tests": 3, "passed": 3, "browsers": ["Chromium"]},
+    "cartesianVisualization": {"command": "pnpm exec playwright test --config tests/visualization/cartesian.playwright.config.mjs", "tests": 21, "passed": 21, "browsers": ["Chromium", "Firefox", "WebKit"]},
+    "hierarchyVisualization": {"command": "pnpm exec playwright test --config tests/visualization/playwright.config.mjs", "tests": 7, "passed": 7, "browsers": ["Chromium"]},
+    "compound": {"command": "pnpm exec playwright test --config tests/compound/playwright.config.mjs", "tests": 12, "passed": 12, "browsers": ["Chromium"]}
+  },
+  "totalFamilyTests": 105,
+  "sourceDigestIdenticalVisualMatrix": {
+    "command": "pnpm test:visual",
+    "cases": 1137,
+    "passed": 1137,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0,
+    "browsers": ["Chromium 153.0.8010.12", "Firefox 155.0", "WebKit 26.6"]
+  },
+  "qualification": false,
+  "limits": [
+    "This is automated evidence only; it does not claim human visual/design approval, VoiceOver/NVDA review or universal assistive-technology conformance.",
+    "Family fixtures cover the owned entry and representative state paths; exhaustive behavior for every property combination remains outside this run.",
+    "The visual matrix artifact is retained from a source-digest-identical run; its source commit differs because the current change is evidence bookkeeping only."
+  ],
+  "artifacts": [
+    {"path": "artifacts/foundation-browser/run-1788975840724/.last-run.json", "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"},
+    {"path": "test-results/.last-run.json", "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"},
+    {"path": "artifacts/navigation-browser/.last-run.json", "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"},
+    {"path": "artifacts/feedback-browser/.last-run.json", "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"},
+    {"path": "artifacts/data-components-browser/.last-run.json", "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"},
+    {"path": "artifacts/temporal-browser/.last-run.json", "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"},
+    {"path": "artifacts/cartesian-browser/.last-run.json", "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"},
+    {"path": "artifacts/visualization-browser/.last-run.json", "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"},
+    {"path": "artifacts/compound-browser/.last-run.json", "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"},
+    {"path": "artifacts/visual-catalog/results.json", "sha256": "a09b057795c4577596595f94d5e7ced5f5f8dd2f4f41b833eb1760429837bb18"}
+  ]
+}
