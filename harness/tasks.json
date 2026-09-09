@@ -1186,7 +1186,13 @@
       ],
       "status": "planned",
       "stage": "ready",
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t31/5e37b53-explicit-mcp/manifest.json",
+          "sha256": "6bcc89de1abe5f87e0733b98dfff572db567e11e8e9d9fec8f12a6cec4796b8d"
+        }
+      ],
+      "notes": "Partial current-source evidence only: the sealed 18-case corpus passes 18/18 explicit typed tasks and 18/18 local official-SDK MCP tasks, with 21/21 independent Python-oracle outputs verified across HR, commerce and service/support. Natural-language unseen-intent/model/UI/grounding acceptance remains untested; task stays planned."
     },
     {
       "id": "T32",

@@ -1,0 +1,48 @@
+{
+  "task": "T31",
+  "status": "partial-cross-domain-explicit-pass",
+  "sourceCommit": "5e37b53b9d1c354b5cf6c4346755f2649bd4c3f3",
+  "sourceDigest": "9afbd73d926c9a08e1713c2b72c767a9f54d63f1a7fcbf15bd5256cbb94b7e03",
+  "sourceChangedDuringRun": false,
+  "scope": "Sealed held-out explicit data tasks and the local official-SDK MCP transport across HR, commerce and service/support fixtures.",
+  "corpus": {
+    "path": "fixtures/evaluation/t40-data-query-heldout.json",
+    "sha256": "9b2fd53f8f9e15fdef2afd121e48ba22bad591ffd8b1ded1e5b5517fae5cbfa8",
+    "cases": 18,
+    "domains": {"hr": 6, "commerce": 6, "service-support": 6},
+    "independentNamedOutputs": 21
+  },
+  "run": {
+    "command": "node tests/agent-evaluation/run.mjs --corpus fixtures/evaluation/t40-data-query-heldout.json --output artifacts/agent-evaluation/t31-current-explicit-mcp-5e37b53 --mcp-explicit",
+    "status": "pass-for-explicit-modes",
+    "sourceChangedDuringRun": false,
+    "explicitTask": {"trials": 18, "correct": 18},
+    "explicitMcp": {"trials": 18, "correct": 18}
+  },
+  "oracle": {
+    "path": "fixtures/evaluation/t40-independent-oracle-report.json",
+    "sha256": "b195f37e20fd80211c73e8e574ea66b622b7545112ec457743868a6b7ede17cb",
+    "verifiedOutputs": 21,
+    "verifiedCases": 18
+  },
+  "qualification": false,
+  "limits": [
+    "Explicit tasks exercise typed task and local MCP execution, not natural-language unseen-intent generalization.",
+    "No provider request was made; model quality, UI completion, narrative grounding, ablations and live MCP-host reasoning remain unqualified.",
+    "This partial result does not satisfy T31's full acceptance or advance the planned task status by itself."
+  ],
+  "artifacts": [
+    {
+      "path": "artifacts/agent-evaluation/t31-current-explicit-mcp-5e37b53/report.json",
+      "sha256": "6a840317c0c2ebe375602054b55ce0db6c90a22c5a4455ead157194230594a91"
+    },
+    {
+      "path": "fixtures/evaluation/t40-data-query-heldout.manifest.json",
+      "sha256": "38efc8dc1ed1ae326047cb36d3e063b36760c5f432cfb105b9bc89f136a8d85e"
+    },
+    {
+      "path": "fixtures/evaluation/t40-quality-oracle-report.json",
+      "sha256": "3d5a9e9c566f748fe84fae8ea708f7ef0bd6c313f48b2bb49eeb1af1cdabca24"
+    }
+  ]
+}
