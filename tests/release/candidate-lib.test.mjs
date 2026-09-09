@@ -3,7 +3,7 @@ import test from 'node:test';
 import {
   PUBLIC_PACKAGE_NAMES, RELEASE_VERSION, assertExportTargets, assertPublicManifest,
   assertPublishOrder, assertTarballPaths, candidateManifest,
-  classifyRegistryVersionResponse, cyclonedxSbom, packagePurl,
+  classifyRegistryVersionResponse, cyclonedxSbom, exportSpecifiers, packagePurl,
   pnpmLockIntegrities, sha256, sha512Integrity,
 } from '../../scripts/release/candidate-lib.mjs';
 
@@ -18,6 +18,9 @@ test('accepts public manifest and strict packed content', () => {
   assert.doesNotThrow(() => assertPublicManifest(manifest, '@aeliqo/core'));
   assert.doesNotThrow(() => assertTarballPaths(paths, '@aeliqo/core'));
   assert.doesNotThrow(() => assertExportTargets(manifest, paths, '@aeliqo/core'));
+  assert.deepEqual(exportSpecifiers(manifest, paths), [
+    '@aeliqo/core', '@aeliqo/core/schemas/catalog.json',
+  ]);
 });
 test('rejects leaked source, secrets, workspace aliases, and missing exports', () => {
   assert.throws(() => assertTarballPaths([...paths, 'package/src/index.ts'], '@aeliqo/core'), /non-allowlisted/);

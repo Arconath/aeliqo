@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /** Install and verify one exact six-package release directly from npm. */
 import {spawnSync} from 'node:child_process';
-import {mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
+import {mkdir, mkdtemp, readFile, readdir, rm, writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {dirname, join, resolve} from 'node:path';
-import {PUBLIC_PACKAGE_NAMES, readJson, sha256} from './candidate-lib.mjs';
+import {PUBLIC_PACKAGE_NAMES, exportSpecifiers, readJson, sha256} from './candidate-lib.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
 const args = process.argv.slice(2);
@@ -17,8 +17,14 @@ function command(commandName, commandArgs, cwd) {
   const result = spawnSync(commandName, commandArgs, {cwd, encoding: 'utf8', timeout: 300_000});
   if (result.error || result.status !== 0) throw new Error(`${commandName} ${commandArgs.join(' ')} failed\n${result.error?.message ?? ''}\n${result.stdout ?? ''}\n${result.stderr ?? ''}`);
 }
-function literalExports(manifest) {
-  return Object.keys(manifest.exports ?? {}).filter(path => !path.includes('*')).map(path => path === '.' ? manifest.name : `${manifest.name}${path.slice(1)}`);
+async function packedPaths(directory, relative = '') {
+  const paths = [];
+  for (const entry of await readdir(join(directory, relative), {withFileTypes: true})) {
+    const child = join(relative, entry.name);
+    if (entry.isDirectory()) paths.push(...await packedPaths(directory, child));
+    else if (entry.isFile()) paths.push(`package/${child}`);
+  }
+  return paths;
 }
 
 const consumer = await mkdtemp(join(tmpdir(), 'aeliqo-registry-consumer-'));
@@ -47,12 +53,18 @@ try {
     const manifest = await readJson(join(consumer, 'node_modules', name, 'package.json'));
     if (manifest.name !== name || manifest.version !== version) throw new Error(`Registry consumer received unexpected ${name} identity`);
     installedManifests.push(manifest);
-    for (const specifier of literalExports(manifest)) imports.push(`import * as Export${imports.length} from ${JSON.stringify(specifier)}; export type ExportCheck${imports.length} = typeof Export${imports.length};`);
+    const paths = await packedPaths(join(consumer, 'node_modules', name));
+    for (const specifier of exportSpecifiers(manifest, paths)) {
+      const index = imports.length;
+      imports.push(specifier.endsWith('.json')
+        ? `import Export${index} from ${JSON.stringify(specifier)} with { type: "json" }; export type ExportCheck${index} = typeof Export${index};`
+        : `import * as Export${index} from ${JSON.stringify(specifier)}; export type ExportCheck${index} = typeof Export${index};`);
+    }
   }
   await writeFile(join(consumer, 'exports.ts'), imports.join('\n') + '\n');
   await writeFile(join(consumer, 'tsconfig.json'), JSON.stringify({compilerOptions: {
     target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext', strict: true,
-    noEmit: true, skipLibCheck: false, lib: ['ES2022', 'DOM', 'DOM.Iterable'], types: ['node', 'react', 'react-dom'],
+    noEmit: true, skipLibCheck: false, resolveJsonModule: true, lib: ['ES2022', 'DOM', 'DOM.Iterable'], types: ['node', 'react', 'react-dom'],
   }, include: ['exports.ts']}, null, 2) + '\n');
   command(join(consumer, 'node_modules/.bin/tsc'), ['--project', 'tsconfig.json'], consumer);
   await writeFile(join(consumer, 'consumer.mjs'), [

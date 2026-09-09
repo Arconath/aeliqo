@@ -93,6 +93,30 @@ function exportTargets(value, targets = []) {
   return targets;
 }
 
+export function exportSpecifiers(manifest, paths) {
+  const files = paths.filter(path => !path.endsWith('/'));
+  const specifiers = new Set();
+  for (const [key, value] of Object.entries(manifest.exports ?? {})) {
+    if (!key.includes('*')) {
+      specifiers.add(key === '.' ? manifest.name : `${manifest.name}${key.slice(1)}`);
+      continue;
+    }
+    for (const target of exportTargets(value)) {
+      if (!target.includes('*')) continue;
+      const packed = `package/${target.slice(2)}`;
+      const marker = packed.indexOf('*');
+      const prefix = packed.slice(0, marker);
+      const suffix = packed.slice(marker + 1);
+      for (const file of files) {
+        if (!file.startsWith(prefix) || !file.endsWith(suffix)) continue;
+        const wildcard = file.slice(prefix.length, file.length - suffix.length || undefined);
+        specifiers.add(`${manifest.name}${key.slice(1).replace('*', wildcard)}`);
+      }
+    }
+  }
+  return [...specifiers].sort();
+}
+
 export function assertExportTargets(manifest, paths, packageName) {
   const files = new Set(paths.filter(path => !path.endsWith('/')));
   for (const target of exportTargets(manifest.exports)) {

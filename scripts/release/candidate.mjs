@@ -7,7 +7,7 @@ import {basename, join, relative, resolve} from 'node:path';
 import {
   PUBLIC_PACKAGES, PUBLIC_PACKAGE_NAMES, RELEASE_VERSION, assertExportTargets,
   assertPublicManifest, assertTarballPaths, candidateManifest, cyclonedxSbom,
-  packagePurl, pnpmLockIntegrities, readJson, sha256, sha512Integrity,
+  exportSpecifiers, packagePurl, pnpmLockIntegrities, readJson, sha256, sha512Integrity,
 } from './candidate-lib.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
@@ -88,7 +88,7 @@ function scanContent(label, content, findings) {
   return true;
 }
 async function scanReleaseSource() {
-  const files = command('git', ['ls-files', '-z', '--', 'packages', 'apps/site', 'deploy', 'design', 'Dockerfile', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'tsconfig.json'])
+  const files = command('git', ['ls-files', '-z'])
     .split('\0').filter(Boolean).sort();
   const findings = [];
   let bytes = 0;
@@ -155,16 +155,15 @@ async function peerInstallSpecs(packages) {
   }
   return [...peers].sort(([left], [right]) => left.localeCompare(right)).map(([name, requested]) => `${name}@${requested}`);
 }
-function literalExports(manifest) {
-  return Object.keys(manifest.exports).filter(path => !path.includes('*')).map(path => path === '.' ? manifest.name : `${manifest.name}${path.slice(1)}`);
-}
 async function typeCheckInstalledExports(consumer, packages) {
-  const imports = packages.flatMap(item => literalExports(item.manifest)).map((specifier, index) =>
-    `import * as Export${index} from ${JSON.stringify(specifier)}; export type ExportCheck${index} = typeof Export${index};`);
+  const specifiers = packages.flatMap(item => exportSpecifiers(item.manifest, item.paths));
+  const imports = specifiers.map((specifier, index) => specifier.endsWith('.json')
+    ? `import Export${index} from ${JSON.stringify(specifier)} with { type: "json" }; export type ExportCheck${index} = typeof Export${index};`
+    : `import * as Export${index} from ${JSON.stringify(specifier)}; export type ExportCheck${index} = typeof Export${index};`);
   await writeFile(join(consumer, 'exports.ts'), imports.join('\n') + '\n');
   await writeFile(join(consumer, 'tsconfig.json'), JSON.stringify({compilerOptions: {
     target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext', strict: true,
-    noEmit: true, skipLibCheck: false, lib: ['ES2022', 'DOM', 'DOM.Iterable'], types: ['node', 'react', 'react-dom'],
+    noEmit: true, skipLibCheck: false, resolveJsonModule: true, lib: ['ES2022', 'DOM', 'DOM.Iterable'], types: ['node', 'react', 'react-dom'],
   }, include: ['exports.ts']}, null, 2) + '\n');
   command(join(consumer, 'node_modules/.bin/tsc'), ['--project', 'tsconfig.json'], {cwd: consumer});
   return imports.length;
@@ -209,7 +208,7 @@ function sbomGraph(consumerLock, workspaceLockText, packages) {
   const entries = consumerLock.packages;
   const workspace = pnpmLockIntegrities(workspaceLockText);
   const refByPath = new Map();
-  const externalComponents = [];
+  const externalByPath = new Map();
   for (const [path, entry] of Object.entries(entries)) {
     if (!path.includes('node_modules/') || !entry.version) continue;
     const name = packageNameFromLockPath(path);
@@ -220,23 +219,32 @@ function sbomGraph(consumerLock, workspaceLockText, packages) {
     const locked = workspace.get(`${name}@${entry.version}`);
     if (locked !== entry.integrity) throw new Error(`Installed ${name}@${entry.version} differs from the pnpm lock`);
     if (!entry.license) throw new Error(`Installed external package ${name}@${entry.version} has no license metadata`);
-    externalComponents.push({ref, name, version: entry.version, integrity: entry.integrity, license: String(entry.license)});
+    externalByPath.set(path, {ref, name, version: entry.version, integrity: entry.integrity, license: String(entry.license)});
   }
-  const dependencies = [];
+  const edges = new Map();
   for (const [path, entry] of Object.entries(entries)) {
     const ref = refByPath.get(path);
     if (!ref) continue;
-    const dependsOn = [];
+    const childPaths = [];
     for (const dependency of Object.keys({...entry.dependencies, ...entry.optionalDependencies, ...entry.peerDependencies})) {
       const dependencyPath = resolveLockedDependency(entries, path, dependency);
-      if (dependencyPath && refByPath.has(dependencyPath)) dependsOn.push(refByPath.get(dependencyPath));
+      if (dependencyPath && refByPath.has(dependencyPath)) childPaths.push(dependencyPath);
     }
-    dependencies.push({ref, dependsOn});
+    edges.set(path, {ref, childPaths});
   }
-  for (const item of packages) {
-    const ref = packagePurl(item.name, version);
-    if (!dependencies.some(entry => entry.ref === ref)) dependencies.push({ref, dependsOn: []});
+  const reachable = new Set();
+  const queue = packages.map(item => `node_modules/${item.name}`);
+  while (queue.length) {
+    const path = queue.shift();
+    if (!path || reachable.has(path)) continue;
+    reachable.add(path);
+    for (const child of edges.get(path)?.childPaths ?? []) queue.push(child);
   }
+  const externalComponents = [...externalByPath].filter(([path]) => reachable.has(path)).map(([, component]) => component);
+  const dependencies = [...reachable].map(path => ({
+    ref: refByPath.get(path),
+    dependsOn: (edges.get(path)?.childPaths ?? []).filter(child => reachable.has(child)).map(child => refByPath.get(child)),
+  })).filter(item => item.ref);
   return {externalComponents, dependencies};
 }
 
