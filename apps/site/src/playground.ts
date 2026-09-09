@@ -66,7 +66,9 @@ function mountCommerce(output:DemoOutput|undefined){
  selects.forEach(select=>select.addEventListener('change',update));update();
  if(!$('commerce-form').children.length){const form=document.createElement('form');const name=new AeliqoTextFieldElement();name.name='name';name.label='Your name';name.required=true;const note=new AeliqoTextFieldElement();note.name='note';note.label='Enquiry note';const button=document.createElement('button');button.type='submit';button.textContent='Review local enquiry';const receipt=document.createElement('p');receipt.setAttribute('role','status');form.append(name,note,button,receipt);form.addEventListener('aeliqo-input-change',()=>{productFormDirty=true;});form.addEventListener('submit',event=>{event.preventDefault();if(!form.reportValidity())return;receipt.textContent=`Draft reviewed for ${String(new FormData(form).get('name')??'')}. This remains local; no enquiry was sent.`;productFormDirty=false;});$('commerce-form').append(form);}
 }
-dataset.addEventListener('change',()=>{const commerce=dataset.value==='products';$('people-actions').hidden=commerce;$('team-control').hidden=commerce;$('cohort-status').hidden=commerce;$('commerce').hidden=!commerce;void browse();});
+function syncDatasetVisibility(){const commerce=dataset.value==='products';$('people-actions').hidden=commerce;$('team-control').hidden=commerce;$('cohort-status').hidden=commerce;$('commerce').hidden=!commerce;}
+dataset.addEventListener('change',()=>{syncDatasetVisibility();void browse();});
 $('webmcp-status').textContent=detectWebMcp().supported?'WebMCP experimental API detected · unpaired':'WebMCP unavailable in this browser';
 window.addEventListener('pagehide',event=>{engine.cancel();if(!event.persisted){for(const lease of presentedLeases)lease.release();presentedLeases=[];engine.dispose();}});
+syncDatasetVisibility();
 void browse();
