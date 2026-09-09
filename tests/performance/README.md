@@ -29,7 +29,7 @@ work without concurrent builds. Do not revise budgets to fit observed results.
 
 ## Production workload probes
 
-`pnpm exec playwright test --config tests/performance/playwright.config.mjs`
+`pnpm test:performance:browser`
 builds the actual packages and a minified Vite production fixture, then serves it
 with preview. It checks 100-row controls, 10,000 loaded records carrying all 100
 semantic fields, 30 views and 64 distinct presentation candidates, typed draft updates,
@@ -38,7 +38,7 @@ The two display fields supplement those 100 semantic fields. The source is a
 local deterministic fixture, not a database capacity benchmark. Content-Length
 measures response body bytes, excluding headers and other transport overhead.
 
-Set `AELIQO_RUN_PERFORMANCE=1` for the timing gate. It records 10 initial and 30
+The package command forces timing and budget enforcement on. It records 10 initial and 30
 subsequent observations on one already-loaded page; these are not cold-cache
 measurements. Budgets use actual planner duration and individual dispatch
 samples, separately from complete workload duration. Chromium CDP traces retain
@@ -66,3 +66,17 @@ node, including signed zero; every candidate still passes plan-wide validation.
 Wire inspection and public input parsing remain mandatory. The diagnostic
 September 9 optimization run measured five Node samples at 76–93 ms on the
 development machine. This still exceeds 16 ms and is not an isolated p95 gate.
+
+`pnpm test:performance:standalone`
+builds a separate direct input/table entry and rejects retained runtime, planner,
+agent and Studio modules. Its default smoke run uses one cold-cache-disabled
+fresh context and one cache-enabled reload after warmup. Opt in with
+`AELIQO_RUN_PERFORMANCE=1` for ten cold and thirty warm observations. Raw
+Navigation, Resource and PaintTiming entries retain unavailable values and
+sample counts; cache evidence can be incomplete. Fixture-ready is not paint.
+This probe collects diagnostic observations and has no timing-budget pass claim.
+
+Warm-cache evidence distinguishes zero-transfer JavaScript resources, CDP disk
+cache hits, and matched request-ID HTTP 304 revalidations. Revalidation still
+incurs a request; it is not reported as a cache-only load. Raw CDP observations
+retain URLs and status flags, excluding headers and cookies.

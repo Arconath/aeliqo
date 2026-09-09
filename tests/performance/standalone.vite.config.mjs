@@ -2,7 +2,7 @@ import {defineConfig} from "vite";
 import {resolve} from "node:path";
 
 const repositoryRoot = resolve(import.meta.dirname, "../..");
-const forbiddenModulePattern = /(?:^|\/)(?:runtime|planner|agent|studio)(?:\/|$)|@aeliqo\/(?:runtime|agent|studio)(?:\/|$)/iu;
+const forbiddenModulePattern = /(?:^|\/)(?:runtime|planner|agent|studio|presentation|query)(?:\/|$|\.[cm]?[jt]s$)|@aeliqo\/(?:runtime|agent|studio)(?:\/|$)/iu;
 
 function normalizeModuleId(id) {
   return id.replaceAll("\\", "/").replace(/^\0/u, "");

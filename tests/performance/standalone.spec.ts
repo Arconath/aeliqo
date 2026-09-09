@@ -1,4 +1,4 @@
-import {test, expect, type Browser, type Page} from "@playwright/test";
+import {test, expect, type Browser, type Page, type CDPSession} from "@playwright/test";
 import {mkdir, writeFile} from "node:fs/promises";
 import {dirname} from "node:path";
 
@@ -75,7 +75,26 @@ type Sample = {
     readonly sameContextAsWarmup: boolean;
   };
   readonly observation: StandaloneObservation;
+  readonly network: NetworkObservation;
 };
+
+type NetworkObservation = {
+  readonly responses: readonly {requestId: string; url: string; status: number; fromDiskCache: boolean; fromServiceWorker: boolean}[];
+  readonly extraInfo: readonly {requestId: string; statusCode: number}[];
+};
+
+function networkRecorder(client: CDPSession) {
+  let responses: NetworkObservation['responses'][number][] = [];
+  let extraInfo: NetworkObservation['extraInfo'][number][] = [];
+  client.on('Network.responseReceived', event => responses.push({
+    requestId: event.requestId, url: event.response.url, status: event.response.status,
+    fromDiskCache: event.response.fromDiskCache === true, fromServiceWorker: event.response.fromServiceWorker === true,
+  }));
+  // Chromium reports the actual 304 here; responseReceived can expose the
+  // effective cached 200 response. Never retain response headers or cookies.
+  client.on('Network.responseReceivedExtraInfo', event => extraInfo.push({requestId: event.requestId, statusCode: event.statusCode}));
+  return {reset() {responses = []; extraInfo = [];}, snapshot(): NetworkObservation {return {responses: [...responses], extraInfo: [...extraInfo]};}};
+}
 
 type RetainedModuleGraph = {
   readonly schema: string;
@@ -138,6 +157,7 @@ async function captureColdSamples(browser: Browser, baseURL: string, sampleCount
     const context = await browser.newContext();
     const page = await context.newPage();
     const client = await context.newCDPSession(page);
+    const network = networkRecorder(client);
     await client.send("Network.enable");
     await client.send("Network.clearBrowserCache");
     await client.send("Network.setCacheDisabled", {cacheDisabled: true});
@@ -145,7 +165,7 @@ async function captureColdSamples(browser: Browser, baseURL: string, sampleCount
       const observation = await openFixture(page, baseURL);
       samples.push({index: index + 1, condition: {
         cache: "disabled", cacheCleared: true, cacheDisabled: true, freshContext: true, sameContextAsWarmup: false,
-      }, observation});
+      }, observation, network: network.snapshot()});
     } finally {
       await client.detach();
       await context.close();
@@ -157,20 +177,26 @@ async function captureColdSamples(browser: Browser, baseURL: string, sampleCount
 async function captureWarmSamples(browser: Browser, baseURL: string, sampleCount: number): Promise<{readonly warmup: StandaloneObservation; readonly samples: readonly Sample[]}> {
   const context = await browser.newContext();
   const page = await context.newPage();
+  const client = await context.newCDPSession(page);
+  const network = networkRecorder(client);
+  await client.send('Network.enable');
+  await client.send('Network.setCacheDisabled', {cacheDisabled: false});
   try {
     const warmup = await openFixture(page, baseURL);
     const samples: Sample[] = [];
     for (let index = 0; index < sampleCount; index += 1) {
+      network.reset();
       await page.evaluate(() => performance.clearResourceTimings());
       await page.reload({waitUntil: "load"});
       await waitForFixture(page);
       const observation = await collect(page);
       samples.push({index: index + 1, condition: {
         cache: "enabled", cacheCleared: false, cacheDisabled: false, freshContext: false, sameContextAsWarmup: true,
-      }, observation});
+      }, observation, network: network.snapshot()});
     }
     return {warmup, samples};
   } finally {
+    await client.detach();
     await context.close();
   }
 }
@@ -187,12 +213,18 @@ test("captures standalone production fixture cold and warm browser observations"
   const moduleGraph = await moduleGraphResponse.json() as RetainedModuleGraph;
   expect(moduleGraph.forbiddenModules).toEqual([]);
   const warmCacheHitSampleCount = warm.samples.filter((sample) => sample.observation.resourceBytes.cachedJavascriptResourceCount > 0).length;
+  const warmRevalidatedSampleCount = warm.samples.filter(sample => sample.network.responses.some(response =>
+    /\.js(?:[?#]|$)/u.test(response.url) && sample.network.extraInfo.some(extra => extra.requestId === response.requestId && extra.statusCode === 304))).length;
+  const warmDiskCacheSampleCount = warm.samples.filter(sample => sample.network.responses.some(response =>
+    /\.js(?:[?#]|$)/u.test(response.url) && response.fromDiskCache)).length;
   const warmCacheEvidence = {
-    criterion: "ResourceTiming JavaScript entry has transferSize === 0 and encodedBodySize > 0",
+    criterion: "Separate ResourceTiming zero-transfer JS hits, CDP disk-cache responses, and actual matching CDP ExtraInfo 304 statuses",
     sampleCount: warm.samples.length,
     hitSampleCount: warmCacheHitSampleCount,
-    status: warmCacheHitSampleCount > 0 ? "observed" : "incomplete",
-    note: "ResourceTiming cache indicators are diagnostic; incomplete means no qualifying hit was exposed by this browser run.",
+    diskCacheSampleCount: warmDiskCacheSampleCount,
+    revalidatedSampleCount: warmRevalidatedSampleCount,
+    status: warmCacheHitSampleCount + warmDiskCacheSampleCount + warmRevalidatedSampleCount > 0 ? "observed" : "incomplete",
+    note: "Revalidation still incurs a request; it is reported separately from zero-transfer and disk-cache hits. Incomplete means the run exposed no qualifying cache evidence.",
   } as const;
   const report = {
     schema: "aeliqo.performance.standalone.v1",
@@ -220,7 +252,7 @@ test("captures standalone production fixture cold and warm browser observations"
       `Warm samples perform one warmup navigation, then ${warmSampleCount} reload${warmSampleCount === 1 ? "" : "s"} in one context with the browser cache enabled; ResourceTiming transferSize and encodedBodySize are retained for cache-hit evidence.`,
       "Fixture-ready is measured after Lit updateComplete and is not a paint measurement; first-contentful-paint is reported only when the browser exposes a paint timing entry.",
       "Timing summaries and cache evidence are diagnostic observations for this run; they are not performance-budget qualification.",
-      "These observations qualify this standalone 100-row input/table fixture only. They do not claim input-to-paint, whole-site, or lower-powered-device performance.",
+      "These observations cover this standalone 100-row input/table fixture only. They do not claim input-to-paint, whole-site, or lower-powered-device performance.",
     ],
   };
   const output = testInfo.outputPath("standalone-performance-report.json");

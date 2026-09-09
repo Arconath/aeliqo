@@ -96,7 +96,9 @@
     "test:visual": "pnpm build:platform && tsc -p tests/visual/tsconfig.json && playwright test --config tests/visual/playwright.config.mjs",
     "lint": "tsc -p tsconfig.lint.json && tsc -p apps/site/tsconfig.json --noUnusedLocals --noUnusedParameters && tsc -p apps/studio/tsconfig.json --noUnusedLocals --noUnusedParameters",
     "test:boundaries": "vitest run --config tests/security/vitest.config.mjs tests/security/package-boundaries.test.ts",
-    "test:performance:runtime": "pnpm build:platform && AELIQO_RUN_PERFORMANCE=1 node tests/performance/runtime-workload.mjs"
+    "test:performance:runtime": "pnpm build:platform && AELIQO_RUN_PERFORMANCE=1 node tests/performance/runtime-workload.mjs",
+    "test:performance:browser": "AELIQO_RUN_PERFORMANCE=1 AELIQO_ENFORCE_PERFORMANCE_BUDGETS=1 playwright test --config tests/performance/playwright.config.mjs",
+    "test:performance:standalone": "playwright test --config tests/performance/standalone.playwright.config.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
