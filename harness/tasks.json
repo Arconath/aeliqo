@@ -1499,9 +1499,13 @@
         {
           "path": "harness/evidence/t42/3657ce8-release-readonly/manifest.json",
           "sha256": "00e466e038b2187c6cf6e0e7cfc10e5f787370e5bdd9efb240abece987e981e8"
+        },
+        {
+          "path": "harness/evidence/t42/3b7c044-release-readonly/manifest.json",
+          "sha256": "cabef49d4a2eb0f9bebe8fb6babbf733631fb5074bca1dcd3d95bfe8f96b9fb3"
         }
       ],
-      "notes": "Fresh read-only registry preflight at 3657ce8 confirms all seven local public Apache-2.0 packages remain exactly 0.1.0; @aeliqo/core and @aeliqo/react expose 0.2.0/latest; the other five target identities return E404; exact 0.1.0 queries remain E404-or-permission-ambiguous; npm whoami/access return E401. Git ls-remote records origin/main at 6b0c4f0 and the stale remote rewrite branch at 711a949, while the local candidate is 3657ce8. The normalized harness/release-preflight.json now runs through the offline helper and fails closed with registry-not-verified. This records a current publish/remote blocker without any registry, remote or production mutation. Exact 0.1.0 history, migration approval, staging tag and namespace authority remain blocked. Does not block source implementation."
+      "notes": "Fresh read-only registry preflight at 3b7c044 confirms all seven local public Apache-2.0 packages remain exactly 0.1.0; @aeliqo/core and @aeliqo/react expose 0.2.0/latest; the other five target identities return E404; exact 0.1.0 queries remain E404-or-permission-ambiguous; npm whoami/access return E401. Git ls-remote records origin/main at 6b0c4f0 and the stale remote rewrite branch at 711a949, while the local candidate is 3b7c044. The normalized harness/release-preflight.json now runs through the offline helper and fails closed with registry-not-verified. This records a current publish/remote blocker without any registry, remote or production mutation. Exact 0.1.0 history, migration approval, staging tag and namespace authority remain blocked. Does not block source implementation."
     }
   ]
 }

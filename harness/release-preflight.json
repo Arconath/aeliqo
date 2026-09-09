@@ -1,5 +1,5 @@
 {
-  "observedAt": "2026-09-09T18:17:14Z",
+  "observedAt": "2026-09-09T18:35:03Z",
   "target": "0.1.0",
   "registry": "https://registry.npmjs.org",
   "registryRead": "unverified",
@@ -24,7 +24,7 @@
   "remoteRefs": {
     "originMain": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e",
     "originRewriteBranch": "711a9495e3ff634025d88aca973de9297b4527a4",
-    "localCandidate": "3657ce85b6db8ef51fbedbaa9b3bade54667196c"
+    "localCandidate": "3b7c04412d7375b3d43be7522219ebd8c985e8a3"
   },
   "mutations": {
     "registry": false,

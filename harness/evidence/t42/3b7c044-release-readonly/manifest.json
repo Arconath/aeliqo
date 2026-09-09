@@ -1,0 +1,70 @@
+{
+  "task": "T42",
+  "status": "blocked-readonly-release-preflight",
+  "observedAt": "2026-09-09T18:35:03Z",
+  "sourceCommit": "3b7c04412d7375b3d43be7522219ebd8c985e8a3",
+  "target": "0.1.0",
+  "registry": "https://registry.npmjs.org",
+  "localPackages": {
+    "count": 7,
+    "allExactTargetVersion": true,
+    "allPublic": true,
+    "allApache20": true,
+    "names": [
+      "@aeliqo/core",
+      "@aeliqo/runtime",
+      "@aeliqo/web",
+      "@aeliqo/react",
+      "@aeliqo/agent",
+      "@aeliqo/devtools",
+      "@aeliqo/testkit"
+    ]
+  },
+  "registryRead": {
+    "command": "npm view <package> versions dist-tags --json and npm view <package>@0.1.0 version --json",
+    "core": {
+      "status": "visible",
+      "stableVersions": ["0.2.0"],
+      "distTags": {"latest": "0.2.0"},
+      "exactTargetQuery": "E404"
+    },
+    "react": {
+      "status": "visible",
+      "stableVersions": ["0.2.0"],
+      "distTags": {"latest": "0.2.0"},
+      "exactTargetQuery": "E404"
+    },
+    "runtime": {"status": "E404", "stableVersions": null, "exactTargetQuery": "E404"},
+    "web": {"status": "E404", "stableVersions": null, "exactTargetQuery": "E404"},
+    "agent": {"status": "E404", "stableVersions": null, "exactTargetQuery": "E404"},
+    "devtools": {"status": "E404", "stableVersions": null, "exactTargetQuery": "E404"},
+    "testkit": {"status": "E404", "stableVersions": null, "exactTargetQuery": "E404"}
+  },
+  "authorization": {
+    "whoami": "E401",
+    "accessList": "E401",
+    "namespaceAuthorized": false,
+    "publishAttempted": false,
+    "mutations": false
+  },
+  "remoteRefs": {
+    "originMain": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e",
+    "originRewriteBranch": "711a9495e3ff634025d88aca973de9297b4527a4",
+    "localCandidate": "3b7c04412d7375b3d43be7522219ebd8c985e8a3",
+    "candidatePushed": false
+  },
+  "offlineHelper": {
+    "path": "harness/release-preflight.json",
+    "sha256": "abb9c4b452257b5f19bfc22a184a321135c00125d41a789b4ef798986cb51a72",
+    "command": "python3 scripts/version_preflight.py harness/release-preflight.json",
+    "status": "blocked",
+    "reason": "registry-not-verified"
+  },
+  "qualification": false,
+  "limits": [
+    "E404 and an exact-version query failure cannot prove that 0.1.0 was never published and later unpublished.",
+    "E401 prevents namespace-authority, historical-collision and publish-readiness verification.",
+    "The remote rewrite branch is stale relative to this local candidate; no push, source release, registry, dist-tag or deployment mutation was attempted.",
+    "T42 remains blocked until an authorized registry identity and historical availability evidence are supplied."
+  ]
+}
