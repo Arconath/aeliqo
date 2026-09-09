@@ -27,6 +27,26 @@
         {
           "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
           "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -55,6 +75,26 @@
         {
           "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
           "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -83,6 +123,26 @@
         {
           "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
           "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -111,6 +171,26 @@
         {
           "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
           "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -139,6 +219,26 @@
         {
           "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
           "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -167,6 +267,26 @@
         {
           "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
           "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -195,6 +315,26 @@
         {
           "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
           "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -223,6 +363,26 @@
         {
           "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
           "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -251,6 +411,26 @@
         {
           "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
           "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -279,6 +459,26 @@
         {
           "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
           "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -307,6 +507,26 @@
         {
           "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
           "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -335,6 +555,26 @@
         {
           "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
           "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -363,6 +603,26 @@
         {
           "path": "harness/evidence/t13-t41/d149adb10f03/manifest.json",
           "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -391,6 +651,26 @@
         {
           "path": "harness/evidence/t14/693ed739b36b/manifest.json",
           "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -419,6 +699,26 @@
         {
           "path": "harness/evidence/t14/693ed739b36b/manifest.json",
           "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -447,6 +747,26 @@
         {
           "path": "harness/evidence/t14/693ed739b36b/manifest.json",
           "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -475,6 +795,26 @@
         {
           "path": "harness/evidence/t14/693ed739b36b/manifest.json",
           "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -503,6 +843,26 @@
         {
           "path": "harness/evidence/t14/693ed739b36b/manifest.json",
           "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -531,6 +891,26 @@
         {
           "path": "harness/evidence/t14/693ed739b36b/manifest.json",
           "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -559,6 +939,26 @@
         {
           "path": "harness/evidence/t14/693ed739b36b/manifest.json",
           "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -587,6 +987,26 @@
         {
           "path": "harness/evidence/t14/693ed739b36b/manifest.json",
           "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -615,6 +1035,26 @@
         {
           "path": "harness/evidence/t14/693ed739b36b/manifest.json",
           "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -643,6 +1083,26 @@
         {
           "path": "harness/evidence/t14/693ed739b36b/manifest.json",
           "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -671,6 +1131,26 @@
         {
           "path": "harness/evidence/t14/693ed739b36b/manifest.json",
           "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -699,6 +1179,26 @@
         {
           "path": "harness/evidence/t14/693ed739b36b/manifest.json",
           "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -727,6 +1227,26 @@
         {
           "path": "harness/evidence/t14/693ed739b36b/manifest.json",
           "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -755,6 +1275,26 @@
         {
           "path": "harness/evidence/t14/693ed739b36b/manifest.json",
           "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -783,6 +1323,26 @@
         {
           "path": "harness/evidence/t14/693ed739b36b/manifest.json",
           "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -811,6 +1371,26 @@
         {
           "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
           "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -839,6 +1419,26 @@
         {
           "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
           "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -867,6 +1467,26 @@
         {
           "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
           "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -895,6 +1515,26 @@
         {
           "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
           "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -923,6 +1563,26 @@
         {
           "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
           "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -951,6 +1611,26 @@
         {
           "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
           "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -979,6 +1659,26 @@
         {
           "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
           "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1007,6 +1707,26 @@
         {
           "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
           "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1035,6 +1755,26 @@
         {
           "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
           "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1063,6 +1803,26 @@
         {
           "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
           "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1091,6 +1851,26 @@
         {
           "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
           "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1119,6 +1899,26 @@
         {
           "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
           "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1147,6 +1947,26 @@
         {
           "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
           "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1175,6 +1995,26 @@
         {
           "path": "harness/evidence/t15/60b2b11f28be/manifest.json",
           "sha256": "50fe487bdc27607d1576899ad20ab05bc445f53b76b73085a852ecd7156fddd6"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1203,6 +2043,26 @@
         {
           "path": "harness/evidence/t16/f5d5dd06c2c6/manifest.json",
           "sha256": "0dc8eed218b164874cefc36473a8adec9eaf82282462f7329ef226a211f18174"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1231,6 +2091,26 @@
         {
           "path": "harness/evidence/t16/f5d5dd06c2c6/manifest.json",
           "sha256": "0dc8eed218b164874cefc36473a8adec9eaf82282462f7329ef226a211f18174"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1259,6 +2139,26 @@
         {
           "path": "harness/evidence/t16/f5d5dd06c2c6/manifest.json",
           "sha256": "0dc8eed218b164874cefc36473a8adec9eaf82282462f7329ef226a211f18174"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1287,6 +2187,26 @@
         {
           "path": "harness/evidence/t16/f5d5dd06c2c6/manifest.json",
           "sha256": "0dc8eed218b164874cefc36473a8adec9eaf82282462f7329ef226a211f18174"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1315,6 +2235,26 @@
         {
           "path": "harness/evidence/t16/f5d5dd06c2c6/manifest.json",
           "sha256": "0dc8eed218b164874cefc36473a8adec9eaf82282462f7329ef226a211f18174"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1343,6 +2283,26 @@
         {
           "path": "harness/evidence/t16/f5d5dd06c2c6/manifest.json",
           "sha256": "0dc8eed218b164874cefc36473a8adec9eaf82282462f7329ef226a211f18174"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1371,6 +2331,26 @@
         {
           "path": "harness/evidence/t16/f5d5dd06c2c6/manifest.json",
           "sha256": "0dc8eed218b164874cefc36473a8adec9eaf82282462f7329ef226a211f18174"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1399,6 +2379,26 @@
         {
           "path": "harness/evidence/t16/f5d5dd06c2c6/manifest.json",
           "sha256": "0dc8eed218b164874cefc36473a8adec9eaf82282462f7329ef226a211f18174"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1427,6 +2427,26 @@
         {
           "path": "harness/evidence/t16/f5d5dd06c2c6/manifest.json",
           "sha256": "0dc8eed218b164874cefc36473a8adec9eaf82282462f7329ef226a211f18174"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1455,6 +2475,26 @@
         {
           "path": "harness/evidence/t18/d55929134cdc/manifest.json",
           "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1483,6 +2523,26 @@
         {
           "path": "harness/evidence/t18/d55929134cdc/manifest.json",
           "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1511,6 +2571,26 @@
         {
           "path": "harness/evidence/t18/d55929134cdc/manifest.json",
           "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1539,6 +2619,26 @@
         {
           "path": "harness/evidence/t18/d55929134cdc/manifest.json",
           "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1567,6 +2667,26 @@
         {
           "path": "harness/evidence/t18/d55929134cdc/manifest.json",
           "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1595,6 +2715,26 @@
         {
           "path": "harness/evidence/t18/d55929134cdc/manifest.json",
           "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1623,6 +2763,26 @@
         {
           "path": "harness/evidence/t18/d55929134cdc/manifest.json",
           "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1651,6 +2811,26 @@
         {
           "path": "harness/evidence/t18/d55929134cdc/manifest.json",
           "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1679,6 +2859,26 @@
         {
           "path": "harness/evidence/t18/d55929134cdc/manifest.json",
           "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1707,6 +2907,26 @@
         {
           "path": "harness/evidence/t18/d55929134cdc/manifest.json",
           "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1735,6 +2955,26 @@
         {
           "path": "harness/evidence/t18/d55929134cdc/manifest.json",
           "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1763,6 +3003,26 @@
         {
           "path": "harness/evidence/t18/d55929134cdc/manifest.json",
           "sha256": "9d958d8f817d5baa3ad51073d581c963aa4a585936572ffec3764c814b305d93"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1791,6 +3051,26 @@
         {
           "path": "harness/evidence/t21/8ddad0da180c/manifest.json",
           "sha256": "501044e6580e1b6534ac231c94fb57d6c39fe7652c7c715e5f74d44cf8a31df4"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1819,6 +3099,26 @@
         {
           "path": "harness/evidence/t21/8ddad0da180c/manifest.json",
           "sha256": "501044e6580e1b6534ac231c94fb57d6c39fe7652c7c715e5f74d44cf8a31df4"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1847,6 +3147,26 @@
         {
           "path": "harness/evidence/t21/8ddad0da180c/manifest.json",
           "sha256": "501044e6580e1b6534ac231c94fb57d6c39fe7652c7c715e5f74d44cf8a31df4"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1875,6 +3195,26 @@
         {
           "path": "harness/evidence/t21/8ddad0da180c/manifest.json",
           "sha256": "501044e6580e1b6534ac231c94fb57d6c39fe7652c7c715e5f74d44cf8a31df4"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1903,6 +3243,26 @@
         {
           "path": "harness/evidence/t21/8ddad0da180c/manifest.json",
           "sha256": "501044e6580e1b6534ac231c94fb57d6c39fe7652c7c715e5f74d44cf8a31df4"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1931,6 +3291,26 @@
         {
           "path": "harness/evidence/t21/8ddad0da180c/manifest.json",
           "sha256": "501044e6580e1b6534ac231c94fb57d6c39fe7652c7c715e5f74d44cf8a31df4"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1959,6 +3339,26 @@
         {
           "path": "harness/evidence/t21/8ddad0da180c/manifest.json",
           "sha256": "501044e6580e1b6534ac231c94fb57d6c39fe7652c7c715e5f74d44cf8a31df4"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     },
@@ -1987,6 +3387,26 @@
         {
           "path": "harness/evidence/t21/8ddad0da180c/manifest.json",
           "sha256": "501044e6580e1b6534ac231c94fb57d6c39fe7652c7c715e5f74d44cf8a31df4"
+        },
+        {
+          "kind": "typed-api",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "visual-matrix",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "package-import",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
+        },
+        {
+          "kind": "cleanup",
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ]
     }

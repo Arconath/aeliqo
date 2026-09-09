@@ -1,0 +1,111 @@
+{
+  "task": "T29",
+  "status": "partial-all-71-automated-coverage",
+  "testedSourceCommit": "86884f88bda6141b41b769bf5717527ef2519b40",
+  "sourceDigest": "9afbd73d926c9a08e1713c2b72c767a9f54d63f1a7fcbf15bd5256cbb94b7e03",
+  "sourceChangedDuringRun": false,
+  "scope": "Fresh all-71 catalog source consumer and browser mount/cleanup runs on the current candidate, combined with the pinned automated visual matrix whose source digest is identical.",
+  "coverage": {
+    "catalogComponents": 71,
+    "typedApi": {
+      "proven": 71,
+      "basis": "Strict external TypeScript consumer and source-parity/catalog metadata tests; all 71 generated sources compile without workspace links."
+    },
+    "packageImport": {
+      "proven": 71,
+      "basis": "Exact @aeliqo/core and @aeliqo/web 0.1.0 tarballs installed outside the workspace; all 71 source roots execute in Chromium."
+    },
+    "visualMatrix": {
+      "proven": 71,
+      "cases": 1137,
+      "passed": 1137,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "browsers": ["Chromium 153.0.8010.12", "Firefox 155.0", "WebKit 26.6"]
+    },
+    "cleanup": {
+      "proven": 71,
+      "basis": "All 71 executable catalog roots are disposed in one browser test and no mounted catalog roots remain."
+    }
+  },
+  "runs": {
+    "sourceConsumer": {
+      "command": "pnpm exec vitest run --config tests/catalog-examples/vitest.config.mjs",
+      "testFiles": 3,
+      "passed": 3,
+      "tests": 3,
+      "candidateDigestUnchanged": true,
+      "counts": {
+        "catalogExamples": 71,
+        "previews": 71,
+        "manifestSources": 71,
+        "sourceRoots": 71,
+        "fingerprintsCompared": 71,
+        "mismatches": 0,
+        "manifestErrors": 0,
+        "consumerErrors": 0
+      }
+    },
+    "catalogBrowser": {
+      "command": "pnpm exec playwright test --config tests/catalog-examples/playwright.config.mjs",
+      "tests": 3,
+      "passed": 3,
+      "skipped": 0,
+      "unexpected": 0,
+      "checks": [
+        "mount every catalog entry",
+        "real renderer and compound host boundaries",
+        "keyboard focus reaches a direct action",
+        "cleanup removes all mounted catalog roots"
+      ]
+    },
+    "visualMatrix": {
+      "sourceCommit": "fea7772819c9bba519b12618bc9cc4c53eb1b997",
+      "sourceDigestMatchesCurrent": true,
+      "command": "pnpm test:visual",
+      "cases": 1137,
+      "passed": 1137,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  },
+  "qualification": false,
+  "limits": [
+    "This records automated coverage only; it does not claim human visual/design approval or manual VoiceOver/NVDA assistive-technology review.",
+    "The a11y evidence attached by the visual matrix is automated Axe/semantic attachment coverage; full keyboard and assistive-technology qualification remains open.",
+    "Catalog cleanup proves root disposal for the executable examples; it does not establish a universal listener/heap leak verdict for every component state.",
+    "Behavior/state coverage beyond the exercised mounts, family tests and matrix remains part of T29."
+  ],
+  "artifacts": [
+    {
+      "path": "artifacts/catalog-source-consumers/run-MpKMP2/report.json",
+      "sha256": "895e782cee55d2449b06c9ea2fa30f09f52e0ed622b776521b86a316bc32c9f8"
+    },
+    {
+      "path": "artifacts/catalog-source-consumers/run-MpKMP2/consumer-package-lock.json",
+      "sha256": "ac57db4fd5574bc31c08e70f860e1cd565a8c800a697d4c23bd1490498f806af"
+    },
+    {
+      "path": "artifacts/catalog-source-consumers/run-MpKMP2/aeliqo-core-0.1.0.tgz",
+      "sha256": "67910f7786cae6e427c96fdae820fdc2a0921ef8721393a5c363604739d2e32c"
+    },
+    {
+      "path": "artifacts/catalog-source-consumers/run-MpKMP2/aeliqo-web-0.1.0.tgz",
+      "sha256": "c2d74d0c4c97781f9f148690e70349fbcde172aa17822e6c56f7b64b942faebc"
+    },
+    {
+      "path": "artifacts/catalog-examples-browser/run-1788974667325/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11cfa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "artifacts/visual-catalog/results.json",
+      "sha256": "a09b057795c4577596595f94d5e7ced5f5f8dd2f4f41b833eb1760429837bb18"
+    },
+    {
+      "path": "harness/evidence/t29/fea7772-visual-matrix/manifest.json",
+      "sha256": "6239fb10afc8993b8f5e1ba2fcf48c077858b5c77e095951ff3214b7f2137383"
+    }
+  ]
+}

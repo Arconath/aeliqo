@@ -1082,9 +1082,13 @@
         {
           "path": "harness/evidence/t29/fea7772-visual-matrix/manifest.json",
           "sha256": "6239fb10afc8993b8f5e1ba2fcf48c077858b5c77e095951ff3214b7f2137383"
+        },
+        {
+          "path": "harness/evidence/t29/86884f8-catalog-coverage/manifest.json",
+          "sha256": "6ae9e86e4defb70d21ebd4861969f313abfb09c6c9445f6cb36eb0315bb26416"
         }
       ],
-      "notes": "Automated catalog matrix: 882 checks passed at source a73b4a9. Added interaction matrix: 255 passed, zero skips/flakes across Chromium/Firefox/WebKit at ea7957d after independently reviewed form/filter/selection/contrast/pointer fixes. A fresh source-bound run at fea7772 passed 1,137/1,137 Playwright cases across Chromium/Firefox/WebKit with zero skips/unexpected/flaky results. Captures remain automated evidence only. Pinned human visual approval and full manual AT still outstanding; not accepted."
+      "notes": "Automated catalog matrix: 882 checks passed at source a73b4a9. Added interaction matrix: 255 passed, zero skips/flakes across Chromium/Firefox/WebKit at ea7957d after independently reviewed form/filter/selection/contrast/pointer fixes. A fresh source-bound run at fea7772 passed 1,137/1,137 Playwright cases across Chromium/Firefox/WebKit with zero skips/unexpected/flaky results. Current 86884f8 all-71 catalog source consumer passes 3/3 files with 71/71 source roots and exact installed core/web tarballs; current browser catalog run passes 3/3, including all-71 mount and cleanup. Captures remain automated evidence only. Pinned human visual approval and full manual AT still outstanding; not accepted."
     },
     {
       "id": "T30",
