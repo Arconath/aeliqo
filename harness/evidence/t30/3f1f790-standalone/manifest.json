@@ -1,0 +1,70 @@
+{
+  "task": "T30",
+  "status": "partial-standalone-browser-pass",
+  "sourceCommit": "3f1f790af4041915103a5ab436045849478b7d22",
+  "sourceChangedDuringRun": false,
+  "scope": "Production standalone input/table entry with fresh cache-disabled browser contexts and same-context warm reloads.",
+  "environment": {
+    "browser": "Chromium 153.0.8010.12",
+    "runtime": "Node v24.20.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpuModel": "Apple M4 Pro",
+    "hardwareConcurrency": 12,
+    "viewport": "1280x720",
+    "devicePixelRatio": 1
+  },
+  "run": {
+    "command": "AELIQO_RUN_PERFORMANCE=1 AELIQO_SOURCE_COMMIT=3f1f790 pnpm test:performance:standalone",
+    "status": "pass",
+    "coldSamples": 10,
+    "warmSamples": 30,
+    "fixture": "100-row @aeliqo/web/input + @aeliqo/web/table standalone entry"
+  },
+  "observations": {
+    "cold": {
+      "navigationDomContentLoadedP50Ms": 11.1,
+      "navigationDomContentLoadedP95Ms": 12.0,
+      "fixtureReadyP50Ms": 11.0,
+      "fixtureReadyP95Ms": 11.9,
+      "firstContentfulPaintP50Ms": 12.0,
+      "firstContentfulPaintP95Ms": 16.0,
+      "javascriptEncodedBytesP50": 18762,
+      "javascriptTransferBytesP50": 19062,
+      "cachedJavascriptSamples": 0
+    },
+    "warm": {
+      "navigationDomContentLoadedP50Ms": 5.3,
+      "navigationDomContentLoadedP95Ms": 8.2,
+      "fixtureReadyP50Ms": 5.3,
+      "fixtureReadyP95Ms": 8.2,
+      "firstContentfulPaintAvailableSamples": 2,
+      "firstContentfulPaintP50Ms": 12.0,
+      "firstContentfulPaintP95Ms": 12.0,
+      "javascriptEncodedBytesP50": 0,
+      "javascriptTransferBytesP50": 300,
+      "cachedJavascriptSamples": 0,
+      "revalidatedSamples": 30
+    },
+    "moduleGraph": {
+      "forbiddenModules": []
+    }
+  },
+  "qualification": false,
+  "limits": [
+    "The run is a Chromium MacIntel fixture and does not qualify lower-powered hardware or mobile conditions.",
+    "Fixture-ready and navigation timings are not input-to-paint or field INP measurements.",
+    "Warm paint entries were unavailable in 28 of 30 samples; missing observations remain missing and are not treated as zero.",
+    "The standalone smoke does not close the planner, whole-site, manual accessibility or release gates."
+  ],
+  "artifacts": [
+    {
+      "path": "artifacts/performance-standalone/standalone-captures-standa-d768e-d-warm-browser-observations/standalone-performance-report.json",
+      "sha256": "eb53d1d947aceed2110f7e8338a1af9e9b29f73af27b1d03dc108c1aaa1f0142"
+    },
+    {
+      "path": "artifacts/performance-standalone/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    }
+  ]
+}

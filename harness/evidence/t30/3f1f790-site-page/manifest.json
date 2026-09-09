@@ -1,0 +1,54 @@
+{
+  "task": "T30",
+  "status": "partial-whole-site-observation-pass",
+  "sourceCommit": "3f1f790af4041915103a5ab436045849478b7d22",
+  "sourceChangedDuringRun": false,
+  "scope": "Whole-site production build and preview across home, Table documentation and playground routes.",
+  "environment": {
+    "browser": "Chromium 153.0.8010.12",
+    "runtime": "Node v24.20.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpuModel": "Apple M4 Pro",
+    "hardwareConcurrency": 12,
+    "viewport": "1280x720",
+    "devicePixelRatio": 1
+  },
+  "run": {
+    "command": "AELIQO_RUN_PERFORMANCE=1 AELIQO_SOURCE_COMMIT=3f1f790 pnpm test:performance:site-page",
+    "status": "pass",
+    "coldSamplesPerRoute": 10,
+    "warmSamplesPerRoute": 30,
+    "routes": ["/", "/docs/components/data.table/", "/playground/"],
+    "navigationSamples": 120
+  },
+  "observations": {
+    "cold": {
+      "home": {"navigationP95Ms": 22.3, "domContentLoadedP95Ms": 19.8, "firstContentfulPaintP95Ms": 20.0, "lcpCandidateP95Ms": 20.0, "javascriptTransferBytesP95": 13655, "allResourceTransferBytesP95": 454840, "zeroLayoutShiftSamples": 10},
+      "tableDocs": {"navigationP95Ms": 16.9, "domContentLoadedP95Ms": 16.9, "firstContentfulPaintP95Ms": 24.0, "lcpCandidateP95Ms": 24.0, "javascriptTransferBytesP95": 173031, "allResourceTransferBytesP95": 614216, "zeroLayoutShiftSamples": 10},
+      "playground": {"navigationP95Ms": 12.6, "domContentLoadedP95Ms": 12.5, "firstContentfulPaintP95Ms": 20.0, "lcpCandidateP95Ms": 20.0, "javascriptTransferBytesP95": 233883, "allResourceTransferBytesP95": 675068, "zeroLayoutShiftSamples": 10}
+    },
+    "warm": {
+      "home": {"navigationP95Ms": 6.0, "domContentLoadedP95Ms": 4.7, "firstContentfulPaintAvailableSamples": 17, "firstContentfulPaintP95Ms": 16.0, "lcpCandidateAvailableSamples": 17, "lcpCandidateP95Ms": 16.0, "javascriptTransferBytesP95": 300, "allResourceTransferBytesP95": 900, "zeroLayoutShiftSamples": 30},
+      "tableDocs": {"navigationP95Ms": 7.1, "domContentLoadedP95Ms": 5.6, "firstContentfulPaintAvailableSamples": 30, "firstContentfulPaintP95Ms": 16.0, "lcpCandidateAvailableSamples": 30, "lcpCandidateP95Ms": 16.0, "javascriptTransferBytesP95": 1500, "allResourceTransferBytesP95": 2100, "zeroLayoutShiftSamples": 30},
+      "playground": {"navigationP95Ms": 5.5, "domContentLoadedP95Ms": 4.8, "firstContentfulPaintAvailableSamples": 30, "firstContentfulPaintP95Ms": 16.0, "lcpCandidateAvailableSamples": 30, "lcpCandidateP95Ms": 16.0, "javascriptTransferBytesP95": 1200, "allResourceTransferBytesP95": 1800, "zeroLayoutShiftSamples": 30}
+    }
+  },
+  "qualification": false,
+  "limits": [
+    "These are browser observations from one Chromium MacIntel environment, not field Core Web Vitals or lower-powered-device qualification.",
+    "LCP values are latest observer candidates, not final lifecycle or field percentiles; layout-shift entries are retained and not relabeled as CLS.",
+    "No synthetic INP or input-to-paint metric is generated, and no site timing threshold is asserted.",
+    "The run does not close T30 cold-process, device, manual or release requirements."
+  ],
+  "artifacts": [
+    {
+      "path": "artifacts/performance-site-page/site-page-captures-whole-s-72529-or-home-docs-and-playground/site-page-performance-report.json",
+      "sha256": "dea235388fd8ed1b70fbc4e63e4f9011351f4b518a123113c6ef2c72d801f862"
+    },
+    {
+      "path": "artifacts/performance-site-page/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    }
+  ]
+}
