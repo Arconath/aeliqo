@@ -42,9 +42,11 @@ type InteractionCapture = {
 type PerceivedInputApi = {
   readonly ready: boolean;
   readonly fixture: {readonly rowCount: number; readonly directInput: boolean; readonly tableRows: number; readonly retainedModuleGraphPath: string; readonly eventTimingObserverAvailable: boolean; readonly eventTimingThresholdMs: number};
+  readonly armCalibrationHandler: () => {readonly handlerMs: number};
   readonly beginInteraction: () => {readonly sequence: number; readonly queryBefore: string};
   readonly resetFixture: () => {readonly revision: number};
   readonly completeInteraction: () => InteractionCapture;
+  readonly eventTimingEntryCount: () => number;
   readonly visibleUpdateReady: () => boolean;
 };
 
@@ -159,6 +161,48 @@ async function captureInteractions(page: Page, count: number, testInfo: {outputP
   return {interactions, screenshots, requestUrls};
 }
 
+async function captureCalibration(page: Page): Promise<{readonly requestedHandlerMs: number; readonly interaction: InteractionCapture}> {
+  const input = page.locator("#query").locator("input");
+  const output = page.locator("#visible-result");
+  const table = page.locator("#records");
+  const reset = await page.evaluate(() => {
+    const value = (window as Window & {aeliqoPerceivedInput?: PerceivedInputApi}).aeliqoPerceivedInput;
+    if (value?.ready !== true) throw new Error("Perceived input API is unavailable.");
+    return value.resetFixture();
+  });
+  await expect(output).toHaveAttribute("data-visible-revision", String(reset.revision));
+  await expect(input).toHaveValue("");
+  await expect(table.locator("tbody tr")).toHaveCount(100);
+  await input.focus();
+  const calibrationStart = await page.evaluate(() => {
+    const value = (window as Window & {aeliqoPerceivedInput?: PerceivedInputApi}).aeliqoPerceivedInput;
+    if (value?.ready !== true) throw new Error("Perceived input API is unavailable.");
+    const interaction = value.beginInteraction();
+    if (interaction.queryBefore !== "") throw new Error(`Expected reset input, got ${interaction.queryBefore}`);
+    return {requestedHandlerMs: value.armCalibrationHandler().handlerMs, eventTimingEntryCount: value.eventTimingEntryCount()};
+  });
+  await input.press("0");
+  await expect.poll(() => output.getAttribute("data-visible-revision")).not.toBe(String(reset.revision));
+  await expect(table.locator("tbody tr")).toHaveCount(expectedRowsForQuery("0").length, {timeout: 5_000});
+  await page.waitForFunction(() => {
+    const value = (window as Window & {aeliqoPerceivedInput?: PerceivedInputApi}).aeliqoPerceivedInput;
+    return value?.visibleUpdateReady() === true;
+  });
+  // PerformanceObserver delivery is asynchronous; poll the fixture's observer count instead of guessing a delivery delay.
+  await expect.poll(() => page.evaluate(() => {
+    const value = (window as Window & {aeliqoPerceivedInput?: PerceivedInputApi}).aeliqoPerceivedInput;
+    return value?.eventTimingEntryCount() ?? 0;
+  }), {timeout: 5_000}).toBeGreaterThan(calibrationStart.eventTimingEntryCount);
+  const requestedHandlerMs = calibrationStart.requestedHandlerMs;
+  await page.evaluate(() => new Promise<void>((resolve) => setTimeout(resolve, 0)));
+  const interaction = await page.evaluate(() => {
+    const value = (window as Window & {aeliqoPerceivedInput?: PerceivedInputApi}).aeliqoPerceivedInput;
+    if (value?.ready !== true) throw new Error("Perceived input API is unavailable.");
+    return value.completeInteraction();
+  });
+  return {requestedHandlerMs, interaction};
+}
+
 function expectedRowsForQuery(query: string): string[] {
   const normalized = query.toLocaleLowerCase();
   return Array.from({length: 100}, (_, index) => {
@@ -249,4 +293,39 @@ test("measures trusted keyboard to visible DOM update on direct input and local 
       expect(entry.processingDurationMs === null || entry.processingDurationMs >= 0).toBe(true);
     }
   }
+});
+
+test("calibrates exact Event Timing association with a deliberate trusted keyboard handler", async ({page}, testInfo) => {
+  const sourceCommit = process.env.AELIQO_SOURCE_COMMIT ?? "unknown";
+  await openFixture(page);
+  const fixtureApi = await api(page);
+  expect(fixtureApi.fixture.eventTimingObserverAvailable).toBe(true);
+  const calibration = await captureCalibration(page);
+  const keydownEntry = calibration.interaction.eventTiming.entries.find((entry) =>
+    entry.name === "keydown" && entry.startTime === calibration.interaction.keydownEventTimestampMs,
+  );
+  const report = {
+    schema: "aeliqo.performance.perceived-input.calibration.v1",
+    sourceCommit,
+    fixture: fixtureApi.fixture,
+    requestedHandlerMs: calibration.requestedHandlerMs,
+    interaction: calibration.interaction,
+    exactKeydownMatch: keydownEntry ?? null,
+    notes: [
+      "This one-off calibration deliberately occupies the main thread for the requested duration during a trusted keydown so the browser should emit an Event Timing entry above the 16 ms observation threshold.",
+      "The exact match uses the normalized KeyboardEvent.timeStamp and PerformanceEventTiming.startTime; no handler-time tolerance window is used.",
+      "The calibration interaction is reported separately and is excluded from the real interaction samples and their visible-update summary.",
+    ],
+  };
+  const output = testInfo.outputPath("perceived-input-calibration.json");
+  await mkdir(dirname(output), {recursive: true});
+  await writeFile(output, `${JSON.stringify(report, null, 2)}\n`, "utf8");
+  expect(calibration.interaction.trustedKeyboard).toBe(true);
+  expect(calibration.interaction.queryBefore).toBe("");
+  expect(calibration.interaction.queryAfter).toBe("0");
+  expect(calibration.interaction.eventTiming.status).toBe("observed");
+  expect(keydownEntry).toBeDefined();
+  expect(keydownEntry?.duration).not.toBeNull();
+  expect(keydownEntry?.duration ?? 0).toBeGreaterThanOrEqual(calibration.requestedHandlerMs - 5);
+  expect(calibration.interaction.visibleUpdate).not.toBeNull();
 });

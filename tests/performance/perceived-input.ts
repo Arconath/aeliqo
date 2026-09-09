@@ -67,9 +67,11 @@ type PerceivedInputApi = {
     readonly eventTimingObserverAvailable: boolean;
     readonly eventTimingThresholdMs: number;
   };
+  readonly armCalibrationHandler: () => {readonly handlerMs: number};
   readonly beginInteraction: () => {readonly sequence: number; readonly queryBefore: string};
   readonly resetFixture: () => {readonly revision: number};
   readonly completeInteraction: () => InteractionCapture;
+  readonly eventTimingEntryCount: () => number;
   readonly visibleRevision: () => number;
   readonly visibleUpdateReady: () => boolean;
 };
@@ -108,6 +110,8 @@ let sequence = 0;
 let revision = 0;
 const eventTimingEntries: RawEventTiming[] = [];
 const eventTimingThresholdMs = 16;
+const calibrationHandlerMs = 60;
+let calibrationArmed = false;
 
 function finiteOrNull(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
@@ -118,6 +122,13 @@ function eventTimestamp(value: unknown): number | null {
   if (timestamp === null) return null;
   const origin = finiteOrNull(performance.timeOrigin);
   return origin !== null && timestamp > 1_000_000_000 ? timestamp - origin : timestamp;
+}
+
+function runCalibrationHandler(): void {
+  const deadline = performance.now() + calibrationHandlerMs;
+  while (performance.now() < deadline) {
+    // Deliberately occupy the main thread to force a measurable Event Timing entry.
+  }
 }
 
 function rawEventTiming(entry: PerformanceEntry): RawEventTiming {
@@ -220,6 +231,8 @@ if (table.shadowRoot !== null) tableObserver.observe(table.shadowRoot, {subtree:
 
 input.addEventListener("keydown", (event) => {
   if (!event.isTrusted || event.key.length === 0 || event.key === "Tab") return;
+  const runCalibration = calibrationArmed;
+  calibrationArmed = false;
   const queryBefore = input!.shadowRoot?.querySelector<HTMLInputElement>("[part=input]")?.value ?? input!.value;
   activeInteraction = {
     sequence: sequence + 1,
@@ -234,6 +247,7 @@ input.addEventListener("keydown", (event) => {
     tableMutationAtMs: null,
     visibleUpdate: null,
   };
+  if (runCalibration) runCalibrationHandler();
 });
 
 input.addEventListener("keyup", (event) => {
@@ -266,12 +280,18 @@ input.value = "";
 
 function resetFixture(): {readonly revision: number} {
   activeInteraction = undefined;
+  calibrationArmed = false;
   input!.value = "";
   table!.rows = allRows;
   visibleResult!.textContent = "100 matching rows for all records";
   revision += 1;
   visibleResult!.dataset.visibleRevision = String(revision);
   return {revision};
+}
+
+function armCalibrationHandler(): {readonly handlerMs: number} {
+  calibrationArmed = true;
+  return {handlerMs: calibrationHandlerMs};
 }
 
 function beginInteraction(): {readonly sequence: number; readonly queryBefore: string} {
@@ -319,9 +339,11 @@ if (typeof PerformanceObserver !== "undefined") {
 window.aeliqoPerceivedInput = {
   ready: true,
   fixture: {rowCount: allRows.length, directInput: true, tableRows: table.rows.length, retainedModuleGraphPath: "/retained-modules.json", eventTimingObserverAvailable: observerAvailable, eventTimingThresholdMs},
+  armCalibrationHandler,
   beginInteraction,
   resetFixture,
   completeInteraction,
+  eventTimingEntryCount: () => eventTimingEntries.length,
   visibleRevision: () => revision,
   visibleUpdateReady: () => activeInteraction !== undefined && activeInteraction.visibleUpdate !== null,
 };
