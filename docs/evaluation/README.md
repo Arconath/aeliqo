@@ -94,3 +94,18 @@ returns exit1; successful baselines still return exit2 with T40 blocked. These
 are actual local protocol trials, with no model adapter configured. They do not
 measure an external agent's reasoning, hosted HTTP operation, UI completion or
 prose entailment, and they do not enter weak/strong model-score denominators.
+
+## Development UI boundary
+
+`pnpm test:agent-evaluation:ui` exercises a separate, exposed development
+fixture through the built evaluator, capability dispatcher, agent composition
+validator, region transaction and actual web table. Evaluate, propose and commit
+use separate grants. Browser assertions inspect the surface before commit,
+real checkbox selection, malformed and stale proposals, and revoked late work.
+Host tests also cover fresh commit after repeated evaluation.
+
+The fixture has no provider connection or held-out answers. It does not add
+results to the live runner, model denominators, or held-out UI/prose scores.
+Its purpose is to validate the observable UI path before a separately authorized
+evaluation uses it. Draft/IME behavior, varied compositions, task usefulness
+and prose entailment remain outside this small fixture.
