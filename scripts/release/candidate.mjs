@@ -60,6 +60,10 @@ function packedJson(tarball) {
 function stagedManifest(source) {
   const staged = structuredClone(source);
   staged.version = version;
+  // Development dependencies belong to the source workspace, not the public
+  // runtime artifact. Removing them also prevents workspace-only aliases from
+  // leaking into a package assembled outside the monorepo.
+  delete staged.devDependencies;
   for (const field of ['dependencies', 'optionalDependencies', 'peerDependencies']) {
     for (const dependency of Object.keys(staged[field] ?? {})) {
       if (PUBLIC_PACKAGE_NAMES.includes(dependency)) staged[field][dependency] = version;
