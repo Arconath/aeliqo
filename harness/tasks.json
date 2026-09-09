@@ -1371,9 +1371,13 @@
         {
           "path": "harness/evidence/t40/0d00a01-explicit-mcp/manifest.json",
           "sha256": "7888f35967c5fea75df5a7a6671b5eacc51a13cd60c94860e94fda188601acbf"
+        },
+        {
+          "path": "harness/evidence/t40/005153d-local-boundary/manifest.json",
+          "sha256": "270f6586044443851e00252a31b6bee7822b4ac7774ffcf9615816bedec2626d"
         }
       ],
-      "notes": "Independent sealed18-case/21-output HR/commerce/support corpus and two independent Python arithmetic/quality provenance paths integrated. Frozen production-port host/scorer covers data-only explicit preflight. No provider call authorized or made; live models/budget, UI/grounding/ablations/MCP evidence remain required; not accepted. Source0d00a01 actual official-SDK stdio baseline passes18/18, alongside18/18 direct tasks; every child exit observed,15harness tests/types pass. Model denominators remainzero and UI/groundingnull. Development UI host/browser seam now being implemented separately."
+      "notes": "Independent sealed18-case/21-output HR/commerce/support corpus and two independent Python arithmetic/quality provenance paths integrated. Frozen production-port host/scorer covers data-only explicit preflight. A fresh source-bound local boundary run at 005153d passes 20/20 Node host tests and 4/4 Chromium UI tests, covering effect separation, forged-authority rejection, stale commits, revocation and late work. No provider call authorized or made; live models/budget, UI/grounding/ablations/MCP evidence remain required; not accepted. Model denominators remain zero and UI/grounding remain unqualified."
     },
     {
       "id": "T41",

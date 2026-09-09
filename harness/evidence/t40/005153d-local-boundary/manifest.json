@@ -1,0 +1,56 @@
+{
+  "task": "T40",
+  "status": "partial-local-boundary-pass",
+  "sourceCommit": "005153da1b23763d39e394f500a0afd5e50fac5d",
+  "sourceDigest": "9afbd73d926c9a08e1713c2b72c767a9f54d63f1a7fcbf15bd5256cbb94b7e03",
+  "sourceChangedDuringRun": false,
+  "runs": {
+    "host": {
+      "command": "pnpm test:agent-evaluation:host",
+      "testFiles": 6,
+      "passed": 20,
+      "failed": 0,
+      "pending": 0,
+      "coverage": [
+        "production evaluator and dispatcher parity",
+        "forged authority and effect rejection",
+        "revocation and superseded-goal late-call rejection",
+        "explicit data-only baseline and malformed corpus/oracle/budget checks",
+        "scoring and evidence-quality invariants"
+      ]
+    },
+    "ui": {
+      "command": "pnpm test:agent-evaluation:ui",
+      "browser": "Chromium",
+      "passed": 4,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "coverage": [
+        "evaluation/proposal side-effect freedom",
+        "malformed proposal preserves rows, selection and focus",
+        "stale proposal rejection after a real selection revision",
+        "revocation clears the surface and blocks late restoration"
+      ]
+    }
+  },
+  "liveTrials": 0,
+  "providerRequests": 0,
+  "qualification": false,
+  "limits": [
+    "No authorized model or provider request was made.",
+    "No held-out language, model-quality, narrative-grounding, ablation or real external MCP-client score is established.",
+    "Manual accessibility and full production T40 review remain separate requirements.",
+    "Local deterministic fixtures prove boundary behavior, not reasoning generalization."
+  ],
+  "artifacts": [
+    {
+      "path": "artifacts/t40-local/host.json",
+      "sha256": "4ee7fb1ead73bc94a27fa8afc9fef79c15b11154718b4771d69e2c6cf264c1a4"
+    },
+    {
+      "path": "artifacts/t40-local/ui.json",
+      "sha256": "a2855af6cac04c1264a904c8a427e124720aa78b595e690f79eb51de475a65ac"
+    }
+  ]
+}
