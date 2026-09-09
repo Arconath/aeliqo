@@ -27,8 +27,12 @@ try {
   for (const name of PUBLIC_PACKAGE_NAMES) {
     const shortName = name.slice('@aeliqo/'.length);
     const manifest = await readJson(join(root, 'packages', shortName, 'package.json'));
-    for (const [peer, requested] of Object.entries(manifest.peerDependencies ?? {})) {
-      if (!PUBLIC_PACKAGE_NAMES.includes(peer)) peers.set(peer, requested);
+    for (const peer of Object.keys(manifest.peerDependencies ?? {})) {
+      if (PUBLIC_PACKAGE_NAMES.includes(peer)) continue;
+      const installed = await readJson(join(root, 'packages', shortName, 'node_modules', peer, 'package.json'));
+      const previous = peers.get(peer);
+      if (previous && previous !== installed.version) throw new Error(`Conflicting locked peer versions for ${peer}`);
+      peers.set(peer, installed.version);
     }
   }
   const dependencies = Object.fromEntries(PUBLIC_PACKAGE_NAMES.map(name => [name, version]));

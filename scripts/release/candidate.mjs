@@ -137,19 +137,20 @@ async function buildAndPack(stagingRoot) {
     assertTarballPaths(paths, expectedName);
     assertExportTargets(manifest, paths, expectedName);
     const bytes = await readFile(tarball);
-    packages.push({name: expectedName, manifest, paths, file: basename(tarball), path: tarball, sha256: sha256(bytes), integrity: sha512Integrity(bytes), bytes: bytes.byteLength});
+    packages.push({name: expectedName, directory, manifest, paths, file: basename(tarball), path: tarball, sha256: sha256(bytes), integrity: sha512Integrity(bytes), bytes: bytes.byteLength});
   }
   return packages;
 }
 
-function peerInstallSpecs(packages) {
+async function peerInstallSpecs(packages) {
   const peers = new Map();
   for (const item of packages) {
-    for (const [name, requested] of Object.entries(item.manifest.peerDependencies ?? {})) {
+    for (const name of Object.keys(item.manifest.peerDependencies ?? {})) {
       if (PUBLIC_PACKAGE_NAMES.includes(name)) continue;
+      const installed = await readJson(join(item.directory, 'node_modules', name, 'package.json'));
       const previous = peers.get(name);
-      if (previous && previous !== requested) throw new Error(`Conflicting public peer requirements for ${name}: ${previous} and ${requested}`);
-      peers.set(name, requested);
+      if (previous && previous !== installed.version) throw new Error(`Conflicting locked peer versions for ${name}: ${previous} and ${installed.version}`);
+      peers.set(name, installed.version);
     }
   }
   return [...peers].sort(([left], [right]) => left.localeCompare(right)).map(([name, requested]) => `${name}@${requested}`);
@@ -172,7 +173,7 @@ async function externalConsumer(packages) {
   const consumer = await mkdtemp(join(tmpdir(), 'aeliqo-release-consumer-'));
   await writeFile(join(consumer, 'package.json'), JSON.stringify({private: true, type: 'module'}, null, 2) + '\n');
   const tools = ['typescript@7.0.2', '@types/node@24.13.3', '@types/react@19.2.18', '@types/react-dom@19.2.7'];
-  command('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--save-exact', ...packages.map(item => item.path), ...peerInstallSpecs(packages), ...tools], {cwd: consumer});
+  command('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--save-exact', ...packages.map(item => item.path), ...await peerInstallSpecs(packages), ...tools], {cwd: consumer});
   const lock = await readJson(join(consumer, 'package-lock.json'));
   for (const item of packages) {
     const installed = lock.packages[`node_modules/${item.name}`];
