@@ -64,6 +64,11 @@ func TestStaticRoutesApplySecurityAndCachePolicies(t *testing.T) {
 	if got := home.Header().Get("Content-Security-Policy"); got != securityPolicy {
 		t.Fatalf("CSP=%q", got)
 	}
+	for _, source := range []string{"script-src 'self' https://www.googletagmanager.com", "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com"} {
+		if !strings.Contains(home.Header().Get("Content-Security-Policy"), source) {
+			t.Fatalf("CSP missing %q: %q", source, home.Header().Get("Content-Security-Policy"))
+		}
+	}
 	if got := home.Header().Get("X-Content-Type-Options"); got != "nosniff" {
 		t.Fatalf("nosniff=%q", got)
 	}

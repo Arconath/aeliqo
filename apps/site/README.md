@@ -31,5 +31,8 @@ release device, performance, and manual accessibility matrix remain pending.
 
 `public/aeliqo.png` is an unchanged copy of the workspace's canonical
 `assets/logo/aeliqo.png`. Product builds do not reach into the parent workspace.
-The same asset supplies the visible brand and favicon. No visitor analytics or
-provider credential is included.
+The same asset supplies the visible brand and favicon. Browser monitoring and
+Google Analytics configuration files ship disabled. A production host may mount
+an enabled configuration only for the public HTTPS site; monitoring stays
+same-origin and bounded, while Google Analytics still requires a visitor choice.
+No provider credential is included.

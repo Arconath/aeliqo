@@ -1,5 +1,7 @@
 import {mountPeopleExample} from './home-example.js';
 import homeExampleSource from './home-example.ts?raw';
+import {prepareDeploymentAnalytics} from './analytics.js';
+import {startDeploymentTelemetry} from './telemetry.js';
 
 const theme = document.querySelector<HTMLSelectElement>('#theme');
 const media = matchMedia('(prefers-color-scheme: dark)');
@@ -19,6 +21,11 @@ let preference = 'system';
 try { const saved = localStorage.getItem('aeliqo-theme'); if (saved === 'light' || saved === 'dark') preference = saved; } catch {}
 if (theme) { theme.value = preference; applyTheme(preference); theme.addEventListener('change', () => { preference = theme.value; applyTheme(preference); try { localStorage.setItem('aeliqo-theme', preference); } catch {} }); }
 media.addEventListener('change', () => applyTheme(preference));
+
+// Both files are deployment-owned and ship disabled. They are not requested
+// from previews, localhost, SDK examples, or any non-public origin.
+void startDeploymentTelemetry();
+void prepareDeploymentAnalytics();
 
 const source=homeExampleSource+"\nconst host = document.createElement('div');\ndocument.body.append(host);\nconst demo = mountPeopleExample(host);\n// Optional: demo.filter('Engineering');\n";
 const demo = document.querySelector<HTMLElement>('#home-demo');
