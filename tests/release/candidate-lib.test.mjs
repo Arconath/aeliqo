@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  RELEASE_VERSION, assertExportTargets, assertPublicManifest, assertTarballPaths,
-  candidateManifest, cyclonedxSbom, sha256, sha512Integrity,
+  PUBLIC_PACKAGE_NAMES, RELEASE_VERSION, assertExportTargets, assertPublicManifest,
+  assertPublishOrder, assertTarballPaths, candidateManifest,
+  classifyRegistryVersionResponse, cyclonedxSbom, packagePurl,
+  pnpmLockIntegrities, sha256, sha512Integrity,
 } from '../../scripts/release/candidate-lib.mjs';
 
 const manifest = {
@@ -24,15 +26,40 @@ test('rejects leaked source, secrets, workspace aliases, and missing exports', (
   assert.throws(() => assertExportTargets({...manifest, exports: {'.': './dist/missing.js'}}, paths, '@aeliqo/core'), /absent/);
 });
 test('candidate manifest and CycloneDX use exact tarball identities', () => {
-  const packages = [
-    {name: '@aeliqo/runtime', file: 'runtime.tgz', sha256: 'b'.repeat(64), integrity: 'sha512-b', bytes: 2, manifest: {dependencies: {'@aeliqo/core': RELEASE_VERSION}}},
-    {name: '@aeliqo/core', file: 'core.tgz', sha256: 'a'.repeat(64), integrity: 'sha512-a', bytes: 1, manifest: {dependencies: {}}},
-  ];
+  const dependencies = {
+    '@aeliqo/core': {},
+    '@aeliqo/runtime': {'@aeliqo/core': RELEASE_VERSION},
+    '@aeliqo/web': {'@aeliqo/core': RELEASE_VERSION},
+    '@aeliqo/agent': {'@aeliqo/core': RELEASE_VERSION, '@aeliqo/runtime': RELEASE_VERSION},
+    '@aeliqo/devtools': {'@aeliqo/core': RELEASE_VERSION, '@aeliqo/runtime': RELEASE_VERSION},
+    '@aeliqo/react': {'@aeliqo/web': RELEASE_VERSION},
+  };
+  const packages = PUBLIC_PACKAGE_NAMES.map((name, index) => ({
+    name, file: `${name.slice('@aeliqo/'.length)}.tgz`, sha256: String(index).repeat(64),
+    integrity: `sha512-${Buffer.from(String(index)).toString('base64')}`, bytes: index + 1,
+    manifest: {dependencies: dependencies[name]},
+  }));
   const candidate = candidateManifest({sourceRevision: 'deadbeef', packages});
-  assert.deepEqual(candidate.packages.map(item => item.name), ['@aeliqo/core', '@aeliqo/runtime']);
-  const sbom = cyclonedxSbom({sourceRevision: 'deadbeef', packages});
+  assert.deepEqual(candidate.publishOrder, PUBLIC_PACKAGE_NAMES);
+  assert.throws(() => assertPublishOrder([...packages].reverse()), /published after/);
+  const external = {name: 'zod', version: '4.5.4', ref: packagePurl('zod', '4.5.4'), integrity: `sha512-${Buffer.from('zod').toString('base64')}`, license: 'MIT'};
+  const sbom = cyclonedxSbom({sourceRevision: 'deadbeef', packages, externalComponents: [external], dependencies: [
+    {ref: packagePurl('@aeliqo/core', RELEASE_VERSION), dependsOn: [external.ref]},
+  ]});
   assert.equal(sbom.bomFormat, 'CycloneDX');
-  assert.deepEqual(sbom.dependencies.find(item => item.ref.includes('runtime')).dependsOn, ['pkg:npm/%40aeliqo%2Fcore@0.1.0']);
+  assert.equal(sbom.components.length, 7);
+  assert.equal(sbom.components.find(item => item.name === 'zod').hashes[0].alg, 'SHA-512');
+  assert.equal(packagePurl('@aeliqo/core', RELEASE_VERSION), 'pkg:npm/%40aeliqo/core@0.1.0');
   assert.equal(sha256(Buffer.from('x')), '2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881');
   assert.match(sha512Integrity(Buffer.from('x')), /^sha512-/);
+});
+
+test('registry and lock classification fail closed', () => {
+  const integrity = 'sha512-dGVzdA==';
+  assert.deepEqual(classifyRegistryVersionResponse(404, {}, '@aeliqo/core', '0.1.0', integrity), {state: 'absent'});
+  assert.equal(classifyRegistryVersionResponse(200, {name: '@aeliqo/core', version: '0.1.0', dist: {integrity}}, '@aeliqo/core', '0.1.0', integrity).state, 'verified-existing');
+  assert.throws(() => classifyRegistryVersionResponse(503, {}, '@aeliqo/core', '0.1.0', integrity), /HTTP 503/);
+  assert.throws(() => classifyRegistryVersionResponse(200, {name: '@aeliqo/core', version: '0.1.0', dist: {integrity: 'sha512-other'}}, '@aeliqo/core', '0.1.0', integrity), /different bytes/);
+  const lock = pnpmLockIntegrities("packages:\n\n  'zod@4.5.4':\n    resolution: {integrity: sha512-dGVzdA==}\n\nsnapshots:\n");
+  assert.equal(lock.get('zod@4.5.4'), integrity);
 });

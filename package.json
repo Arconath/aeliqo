@@ -6,7 +6,9 @@
   "scripts": {
     "kit:check": "python3 scripts/kit_check.py",
     "check": "python3 scripts/gate.py ci",
+    "release:ready": "python3 scripts/gate.py ready",
     "release:check": "python3 scripts/gate.py release",
+    "test:release-tooling": "node --test tests/release/*.test.mjs",
     "kit:test": "python3 scripts/validate_all.py",
     "kit:reference": "python3 scripts/test_reference.py",
     "typecheck": "pnpm build:runtime && pnpm build:platform && tsc --project tsconfig.json",

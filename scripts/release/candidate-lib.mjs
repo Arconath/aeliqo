@@ -7,6 +7,8 @@ import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 
 export const RELEASE_VERSION = '0.1.0';
+// Dependency order is publication order. Keep this explicit and fail closed if
+// a future manifest introduces an edge to a package later in the list.
 export const PUBLIC_PACKAGES = Object.freeze([
   'core', 'runtime', 'web', 'agent', 'devtools', 'react',
 ]);
@@ -43,6 +45,23 @@ export function assertPublicManifest(manifest, expectedName, expectedVersion = R
       }
       if (!allowWorkspace && typeof version === 'string' && version.startsWith('workspace:')) {
         throw new Error(`${expectedName} retains workspace protocol in ${field}: ${dependency}@${version}`);
+      }
+    }
+  }
+}
+
+export function assertPublishOrder(packages) {
+  const positions = new Map(packages.map((item, index) => [item.name, index]));
+  if (positions.size !== PUBLIC_PACKAGE_NAMES.length || PUBLIC_PACKAGE_NAMES.some(name => !positions.has(name))) {
+    throw new Error('Publish set must contain each public package exactly once');
+  }
+  for (const [index, item] of packages.entries()) {
+    for (const field of ['dependencies', 'optionalDependencies', 'peerDependencies']) {
+      for (const dependency of Object.keys(item.manifest[field] ?? {})) {
+        const dependencyIndex = positions.get(dependency);
+        if (dependencyIndex !== undefined && dependencyIndex >= index) {
+          throw new Error(`${item.name} must be published after internal ${field} dependency ${dependency}`);
+        }
       }
     }
   }
@@ -89,20 +108,50 @@ export function assertExportTargets(manifest, paths, packageName) {
 }
 
 export function candidateManifest({sourceRevision, packages, version = RELEASE_VERSION}) {
-  const sorted = [...packages].sort((left, right) => left.name.localeCompare(right.name));
+  assertPublishOrder(packages);
   return {
     schema: 'aeliqo.release-candidate.v1',
     sourceRevision,
     version,
-    packages: sorted.map(({name, file, sha256: digest, integrity, bytes}) => ({name, version, file, sha256: digest, integrity, bytes})),
+    publishOrder: packages.map(item => item.name),
+    packages: packages.map(({name, file, sha256: digest, integrity, bytes}) => ({name, version, file, sha256: digest, integrity, bytes})),
   };
 }
 
-export function cyclonedxSbom({sourceRevision, packages, version = RELEASE_VERSION}) {
-  const byName = new Map(packages.map(item => [item.name, item]));
-  const components = [...packages].sort((left, right) => left.name.localeCompare(right.name)).map(item => ({
+export function packagePurl(name, version) {
+  const path = name.startsWith('@')
+    ? `${encodeURIComponent(name.slice(0, name.indexOf('/')))}/${encodeURIComponent(name.slice(name.indexOf('/') + 1))}`
+    : encodeURIComponent(name);
+  return `pkg:npm/${path}@${encodeURIComponent(version)}`;
+}
+
+export function integrityToCycloneDxHash(integrity) {
+  const match = /^(sha256|sha512)-([A-Za-z0-9+/=]+)$/.exec(integrity ?? '');
+  if (!match) throw new Error(`Unsupported package integrity ${integrity ?? 'none'}`);
+  return {alg: match[1] === 'sha256' ? 'SHA-256' : 'SHA-512', content: Buffer.from(match[2], 'base64').toString('hex')};
+}
+
+export function pnpmLockIntegrities(lockText) {
+  const result = new Map();
+  let inPackages = false;
+  let current;
+  for (const line of lockText.split(/\r?\n/)) {
+    if (line === 'packages:') { inPackages = true; continue; }
+    if (line === 'snapshots:') break;
+    if (!inPackages) continue;
+    const key = /^  (?:'([^']+)'|([^:\s]+)):\s*$/.exec(line);
+    if (key) { current = key[1] ?? key[2]; continue; }
+    const integrity = /^    resolution: \{integrity: ([^}]+)\}/.exec(line);
+    if (current && integrity) result.set(current, integrity[1]);
+  }
+  return result;
+}
+
+export function cyclonedxSbom({sourceRevision, packages, externalComponents = [], dependencies = [], version = RELEASE_VERSION}) {
+  const internalComponents = [...packages].sort((left, right) => left.name.localeCompare(right.name)).map(item => ({
     type: 'library',
-    'bom-ref': `pkg:npm/${item.name.replace('@', '%40').replace('/', '%2F')}@${version}`,
+    'bom-ref': packagePurl(item.name, version),
+    purl: packagePurl(item.name, version),
     name: item.name,
     version,
     licenses: [{license: {id: 'Apache-2.0'}}],
@@ -112,16 +161,36 @@ export function cyclonedxSbom({sourceRevision, packages, version = RELEASE_VERSI
       {name: 'aeliqo:source-revision', value: sourceRevision},
     ],
   }));
-  const dependencies = [...packages].sort((left, right) => left.name.localeCompare(right.name)).map(item => ({
-    ref: `pkg:npm/${item.name.replace('@', '%40').replace('/', '%2F')}@${version}`,
-    dependsOn: Object.keys(item.manifest.dependencies ?? {}).filter(name => byName.has(name)).sort().map(name =>
-      `pkg:npm/${name.replace('@', '%40').replace('/', '%2F')}@${version}`),
+  const external = [...externalComponents].sort((left, right) => left.ref.localeCompare(right.ref)).map(item => ({
+    type: 'library',
+    'bom-ref': item.ref,
+    purl: item.ref,
+    name: item.name,
+    version: item.version,
+    licenses: [{license: {name: item.license}}],
+    hashes: [integrityToCycloneDxHash(item.integrity)],
   }));
   return {
     bomFormat: 'CycloneDX', specVersion: '1.5', version: 1,
     metadata: {component: {type: 'application', name: 'aeliqo-release-candidate', version, properties: [{name: 'aeliqo:source-revision', value: sourceRevision}]}},
-    components, dependencies,
+    components: [...internalComponents, ...external],
+    dependencies: [...dependencies].sort((left, right) => left.ref.localeCompare(right.ref)).map(item => ({
+      ref: item.ref,
+      dependsOn: [...new Set(item.dependsOn)].sort(),
+    })),
   };
+}
+
+export function classifyRegistryVersionResponse(status, payload, expectedName, expectedVersion, expectedIntegrity) {
+  if (status === 404) return {state: 'absent'};
+  if (status !== 200) throw new Error(`Registry returned HTTP ${status} for ${expectedName}@${expectedVersion}`);
+  if (payload?.name !== expectedName || payload?.version !== expectedVersion) {
+    throw new Error(`Registry returned the wrong identity for ${expectedName}@${expectedVersion}`);
+  }
+  if (payload?.dist?.integrity !== expectedIntegrity) {
+    throw new Error(`${expectedName}@${expectedVersion} exists with different bytes`);
+  }
+  return {state: 'verified-existing', integrity: expectedIntegrity};
 }
 
 export async function readJson(path) {
