@@ -1219,13 +1219,7 @@
       ],
       "status": "planned",
       "stage": "ready",
-      "evidence": [
-        {
-          "path": "harness/evidence/t33/60e1c4d-seven-package-consumer/manifest.json",
-          "sha256": "e5c0c32fa939fe0539d4d199d3e320adc9387cebe96b88fe6f2c9e2d765363df"
-        }
-      ],
-      "notes": "Partial source-bound pack/install audit: all seven local 0.1.0 Apache-2.0 public tarballs passed archive checks, an external npm consumer installed the exact set with lockfile integrity, a CycloneDX 1.5 SBOM covers the consumer dependency graph, and focused framework/Studio external consumers pass. T33 remains planned because unused registry RC verification and independent T32 review are not present. No publication or promotion was attempted."
+      "evidence": []
     },
     {
       "id": "T33",
@@ -1244,7 +1238,13 @@
       ],
       "status": "planned",
       "stage": "ready",
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t33/60e1c4d-seven-package-consumer/manifest.json",
+          "sha256": "e5c0c32fa939fe0539d4d199d3e320adc9387cebe96b88fe6f2c9e2d765363df"
+        }
+      ],
+      "notes": "Partial source-bound pack/install audit: all seven local 0.1.0 Apache-2.0 public tarballs passed archive checks, an external npm consumer installed the exact set with lockfile integrity, a CycloneDX 1.5 SBOM covers the consumer dependency graph, and focused framework/Studio external consumers pass. T33 remains planned because unused registry RC verification and independent T32 review are not present. No publication or promotion was attempted."
     },
     {
       "id": "T34",
