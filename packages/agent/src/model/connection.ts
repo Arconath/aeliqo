@@ -338,7 +338,7 @@ export function createToolModelConnection(options: ToolModelConnectionOptions): 
       let timedOut = false;
       const timer = setTimeout(() => {timedOut = true; controller.abort();}, config.timeoutMs);
       try {
-        const response = await config.fetch(config.url, {method: 'POST', headers: requestHeaders(config), body, signal: controller.signal});
+        const response = await config.fetch(config.url, {method: 'POST', redirect: 'error', headers: requestHeaders(config), body, signal: controller.signal});
         if (!response.ok) throw await httpError(response);
         let decoded: unknown;
         try {decoded = JSON.parse(await boundedText(response, config.maxResponseBytes)) as unknown;}

@@ -103,12 +103,18 @@ import { connectMcpHttpClient } from '@aeliqo/agent/mcp';
 
 const endpoint = await connectMcpHttpClient({
   url: 'https://mcp.example.com/mcp',
+  policy: { allowedOrigins: ['https://mcp.example.com'] },
   authProvider: { token: () => applicationAccessToken() },
   targetRegionId: 'region-1',
   goalEpoch: 'goal-7',
   versionNegotiation: { mode: 'auto' },
 });
 ```
+
+The client requires HTTPS and refuses HTTP redirects. A local development or
+test server may opt into plain HTTP only on `localhost`, `127.0.0.1`, or `::1`
+with `policy: {allowInsecureLoopback: true}`. `allowedOrigins`, when supplied,
+contains exact origins and rejects a mismatched endpoint before authentication.
 
 Request cancellation is forwarded through the SDK's per-request signal. A
 closed or expired endpoint rejects late calls, and every discovery/call creates

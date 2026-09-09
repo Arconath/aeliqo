@@ -25,6 +25,7 @@ import {
 } from '../../packages/agent/src/mcp/index.js';
 
 const servers: Server[] = [];
+const insecureLoopbackPolicy = {allowInsecureLoopback: true} as const;
 
 afterEach(async () => {
   await Promise.all(servers.splice(0).map(async server => {
@@ -126,6 +127,7 @@ describe('MCP adapter', () => {
     const client = await connectMcpHttpClient({
       url: fixture.url,
       targetRegionId: 'region', goalEpoch: 'goal',
+      policy: insecureLoopbackPolicy,
       authProvider: {token: async () => 'fixture-token'},
       fetch: async (input, init) => {
         const request = new Request(input, init);
@@ -153,7 +155,7 @@ describe('MCP adapter', () => {
     });
     try {
       for (const [mode, era] of [[{pin: AELIQO_MCP_MODERN_REVISION}, 'modern'], ['legacy', 'legacy']] as const) {
-        const client = await connectMcpHttpClient({url: fixture.url, targetRegionId: 'region', goalEpoch: 'goal',
+        const client = await connectMcpHttpClient({url: fixture.url, targetRegionId: 'region', goalEpoch: 'goal', policy: insecureLoopbackPolicy,
           authProvider: {token: async () => 'fixture-token'}, versionNegotiation: {mode}});
         try {
           expect((await client.discover()).ok).toBe(true);
@@ -207,7 +209,7 @@ describe('MCP adapter', () => {
         resourceServerUrl: new URL('http://127.0.0.1/'),
         issuer: 'https://issuer.example',
       });
-      const client = await connectMcpHttpClient({url: fixture.url, targetRegionId: 'region', goalEpoch: 'goal', authProvider: {token: async () => 'fixture-token'}});
+      const client = await connectMcpHttpClient({url: fixture.url, targetRegionId: 'region', goalEpoch: 'goal', policy: insecureLoopbackPolicy, authProvider: {token: async () => 'fixture-token'}});
       expect((await client.discover()).ok).toBe(true);
       expect(await client.invoke('summary', {}, {requestId: 'malformed-receipt'})).toMatchObject({ok: false, diagnostics: [{code: 'agent.mcp.receipt'}]});
       client.close();
@@ -231,7 +233,7 @@ describe('MCP adapter', () => {
       resourceServerUrl: new URL('http://127.0.0.1/'),
       issuer: 'https://issuer.example',
     });
-    const client = await connectMcpHttpClient({url: fixture.url, targetRegionId: 'region', goalEpoch: 'goal', authProvider: {token: async () => 'fixture-token'}});
+    const client = await connectMcpHttpClient({url: fixture.url, targetRegionId: 'region', goalEpoch: 'goal', policy: insecureLoopbackPolicy, authProvider: {token: async () => 'fixture-token'}});
     expect((await client.discover()).ok).toBe(true);
     const call = client.invoke('summary', {}, {requestId: 'close-during-call'});
     await enteredPromise;
@@ -255,6 +257,7 @@ describe('MCP adapter', () => {
     });
     const client = await connectMcpHttpClient({
       url: fixture.url, targetRegionId: 'region', goalEpoch: 'goal', authProvider: {token: async () => 'fixture-token'},
+      policy: insecureLoopbackPolicy,
       fetch: async (input, init) => {
         const request = new Request(input, init);
         if ((await request.clone().text()).includes('tools/list')) {
@@ -290,15 +293,34 @@ describe('MCP adapter', () => {
 
   it('closes the HTTP transport when SDK connection setup fails', async () => {
     let signal: AbortSignal | undefined;
+    let redirect: RequestRedirect | undefined;
     await expect(connectMcpHttpClient({
       url: 'http://127.0.0.1:1/mcp',
       targetRegionId: 'region', goalEpoch: 'goal',
+      policy: insecureLoopbackPolicy,
       fetch: async (_input, init) => {
         signal = init?.signal ?? undefined;
+        redirect = init?.redirect;
         throw new Error('fixture connection failure');
       },
     })).rejects.toThrow('fixture connection failure');
     expect(signal?.aborted).toBe(true);
+    expect(redirect).toBe('error');
+  });
+
+  it('requires HTTPS unless a loopback-only policy is explicit and enforces the origin allowlist', async () => {
+    const common = {targetRegionId: 'region', goalEpoch: 'goal'} as const;
+    await expect(connectMcpHttpClient({url: 'http://127.0.0.1:1/mcp', ...common})).rejects.toThrow('requires HTTPS');
+    await expect(connectMcpHttpClient({
+      url: 'http://example.test/mcp', ...common, policy: insecureLoopbackPolicy,
+    })).rejects.toThrow('requires HTTPS');
+    await expect(connectMcpHttpClient({
+      url: 'https://mcp.example.test/mcp', ...common,
+      policy: {allowedOrigins: ['https://other.example.test']},
+    })).rejects.toThrow('not allowlisted');
+    await expect(connectMcpHttpClient({
+      url: 'https://user:secret@mcp.example.test/mcp', ...common,
+    })).rejects.toThrow('must not contain credentials');
   });
 
   it('maps cancellation and malformed remote receipts to bounded outcomes', async () => {
@@ -314,7 +336,7 @@ describe('MCP adapter', () => {
       resourceServerUrl: new URL('http://127.0.0.1/'),
       issuer: 'https://issuer.example',
     });
-    const client = await connectMcpHttpClient({url: fixture.url, targetRegionId: 'region', goalEpoch: 'goal', authProvider: {token: async () => 'fixture-token'}});
+    const client = await connectMcpHttpClient({url: fixture.url, targetRegionId: 'region', goalEpoch: 'goal', policy: insecureLoopbackPolicy, authProvider: {token: async () => 'fixture-token'}});
     expect((await client.discover()).ok).toBe(true);
     const signal = new AbortController();
     const pending = client.invoke('summary', {}, {requestId: 'cancel-me', signal: signal.signal});
@@ -334,7 +356,7 @@ describe('MCP adapter', () => {
       resourceServerUrl: new URL('http://127.0.0.1/'),
       issuer: 'https://issuer.example',
     });
-    const malformedClient = await connectMcpHttpClient({url: malformed.url, targetRegionId: 'region', goalEpoch: 'goal', authProvider: {token: async () => 'fixture-token'}});
+    const malformedClient = await connectMcpHttpClient({url: malformed.url, targetRegionId: 'region', goalEpoch: 'goal', policy: insecureLoopbackPolicy, authProvider: {token: async () => 'fixture-token'}});
     expect((await malformedClient.discover()).ok).toBe(true);
     expect(await malformedClient.invoke('summary', {}, {requestId: 'bad-receipt'})).toMatchObject({ok: false, diagnostics: [{code: 'agent.mcp.receipt'}]});
     malformedClient.close();

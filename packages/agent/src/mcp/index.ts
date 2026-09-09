@@ -134,8 +134,16 @@ export interface McpStdioClientOptions extends McpClientCommonOptions {
   readonly clientOptions?: Omit<ClientOptions, 'versionNegotiation'>;
 }
 
+export interface McpHttpClientPolicy {
+  /** Plain HTTP is limited to an explicitly trusted loopback development/test server. */
+  readonly allowInsecureLoopback?: boolean;
+  /** Optional exact origin allowlist, for example `https://mcp.example.com`. */
+  readonly allowedOrigins?: readonly string[];
+}
+
 export interface McpHttpClientOptions extends McpClientCommonOptions {
   readonly url: URL | string;
+  readonly policy?: McpHttpClientPolicy;
   readonly authProvider?: AuthProvider;
   readonly requestInit?: RequestInit;
   readonly fetch?: FetchLike;
@@ -706,13 +714,36 @@ export async function connectMcpStdioClient(options: McpStdioClientOptions): Pro
   }
 }
 
+function mcpHttpUrl(options: McpHttpClientOptions): URL {
+  const url = options.url instanceof URL ? new URL(options.url.toString()) : new URL(options.url);
+  if (url.username !== '' || url.password !== '' || url.hash !== '')
+    throw new TypeError('The MCP HTTP endpoint must not contain credentials or a fragment.');
+  const loopback = url.hostname === '127.0.0.1' || url.hostname === 'localhost' || url.hostname === '[::1]';
+  if (url.protocol !== 'https:' && !(url.protocol === 'http:' && loopback && options.policy?.allowInsecureLoopback === true))
+    throw new TypeError('The MCP HTTP endpoint requires HTTPS; insecure HTTP needs an explicit loopback-only policy.');
+  if (options.policy?.allowedOrigins !== undefined) {
+    if (options.policy.allowedOrigins.length === 0 || !options.policy.allowedOrigins.includes(url.origin))
+      throw new TypeError('The MCP HTTP endpoint origin is not allowlisted.');
+    for (const origin of options.policy.allowedOrigins) {
+      let parsed: URL;
+      try { parsed = new URL(origin); } catch { throw new TypeError('The MCP HTTP origin allowlist is invalid.'); }
+      if (parsed.origin !== origin || !['http:', 'https:'].includes(parsed.protocol))
+        throw new TypeError('The MCP HTTP origin allowlist is invalid.');
+    }
+  }
+  return url;
+}
+
 export async function connectMcpHttpClient(options: McpHttpClientOptions): Promise<AgentToolEndpoint> {
-  const url = options.url instanceof URL ? options.url : new URL(options.url);
+  const url = mcpHttpUrl(options);
+  const request = options.fetch ?? globalThis.fetch;
+  if (typeof request !== 'function') throw new TypeError('The MCP HTTP client requires a fetch implementation.');
+  const guardedFetch: FetchLike = (input, init) => request(input, {...init, redirect: 'error'});
   const transportOptions: StreamableHTTPClientTransportOptions = {
     ...(options.transportOptions ?? {}),
     ...(options.authProvider === undefined ? {} : {authProvider: options.authProvider}),
     ...(options.requestInit === undefined ? {} : {requestInit: options.requestInit}),
-    ...(options.fetch === undefined ? {} : {fetch: options.fetch}),
+    fetch: guardedFetch,
   };
   const transport = new StreamableHTTPClientTransport(url, transportOptions);
   const client = new Client({

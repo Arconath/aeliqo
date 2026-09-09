@@ -145,6 +145,37 @@ describe('generic OpenAI-compatible model connection', () => {
     });
   });
 
+  it('refuses HTTP redirects before credentials or model input can reach another origin', async () => {
+    let redirectedRequests = 0;
+    const target = createServer((_incoming, outgoing) => {
+      redirectedRequests += 1;
+      outgoing.statusCode = 200;
+      outgoing.end(JSON.stringify(successBody()));
+    });
+    servers.push(target);
+    target.listen(0, '127.0.0.1');
+    await once(target, 'listening');
+    const targetAddress = target.address() as AddressInfo;
+
+    const redirect = createServer((_incoming, outgoing) => {
+      outgoing.statusCode = 307;
+      outgoing.setHeader('location', `http://127.0.0.1:${targetAddress.port}/capture`);
+      outgoing.end();
+    });
+    servers.push(redirect);
+    redirect.listen(0, '127.0.0.1');
+    await once(redirect, 'listening');
+    const redirectAddress = redirect.address() as AddressInfo;
+    const origin = `http://127.0.0.1:${redirectAddress.port}`;
+
+    const port = createOpenAICompatibleToolModel({
+      baseURL: `${origin}/v1`, model: 'fixture-model', secret: createOpaqueModelSecret('redirect-secret'),
+      capabilities: ['tool-calls'], policy: {allowExternalEgress: true, allowInsecureHttp: true, allowedOrigins: [origin]},
+    });
+    await expect(port.complete(request, {signal: new AbortController().signal})).rejects.toMatchObject({kind: 'network'});
+    expect(redirectedRequests).toBe(0);
+  });
+
   it('rejects unsafe client-side construction and unapproved transport policy', () => {
     expect(() => createOpenAICompatibleToolModel({
       baseURL: 'http://example.test/v1', model: 'fixture-model', secret: createOpaqueModelSecret('secret'),
