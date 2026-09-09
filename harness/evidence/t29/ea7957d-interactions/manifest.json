@@ -1,0 +1,42 @@
+{
+  "task": "T29",
+  "status": "partial",
+  "interactionChecks": "pass",
+  "testedSourceCommit": "ea7957dbf6ef145253c7052e2c655d17a18a340b",
+  "sourceDigest": "d4b52e7895fff49449551194432e851cde331480dbe8dc68fef37b07ee0e58d8",
+  "sourceChangedDuringRun": false,
+  "stats": {
+    "startTime": "2026-09-09T01:25:47.549Z",
+    "duration": 135747.946,
+    "expected": 255,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "baselineApproval": "unapproved review captures",
+  "limits": [
+    "Automated interaction checks pass; human design approval and full manual assistive technology qualification remain outstanding."
+  ],
+  "artifacts": [
+    {
+      "path": "browser.log",
+      "sha256": "58916423d8185e2895cd0a4ef1edc0e5a68b3e39141cf872ef921eda15f1135f"
+    },
+    {
+      "path": "build.log",
+      "sha256": "e1d7fee958cc153b9fea9df3ab0ec95ffc45a499fd828a1e7753347d6da57aa0"
+    },
+    {
+      "path": "results.json",
+      "sha256": "14a4c32330f0e7cee6e5a371b3b48b78fe1d7f56ffab6c976b90f0a3b381588c"
+    },
+    {
+      "path": "types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "unapproved-captures.zip",
+      "sha256": "18af8beee0218dbd97619ea72bbc767408d8c6c9ccae84f12d4ff445b9fb016a"
+    }
+  ]
+}

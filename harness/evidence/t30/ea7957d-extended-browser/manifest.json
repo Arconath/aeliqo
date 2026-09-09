@@ -1,0 +1,69 @@
+{
+  "task": "T30",
+  "status": "partial",
+  "probes": "pass",
+  "testedSourceCommit": "ea7957dbf6ef145253c7052e2c655d17a18a340b",
+  "sourceDigest": "d4b52e7895fff49449551194432e851cde331480dbe8dc68fef37b07ee0e58d8",
+  "sourceChangedDuringRun": false,
+  "scope": {
+    "trustedKeyboardSamples": 30,
+    "componentLifecycleCycles": 100,
+    "coldNavigations": 10,
+    "warmReloads": 30
+  },
+  "limits": [
+    "Desktop Chromium local fixture observations only.",
+    "DOM-update timestamps do not prove input-to-paint latency; missing Event Timing entries remain unavailable.",
+    "Planner 16ms budget remains failed in prior measured workload; real mobile and full product performance qualification remain outstanding."
+  ],
+  "artifacts": [
+    {
+      "path": "heap-lifecycle/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "heap-lifecycle/heap-lifecycle-captures-bo-d36c5-ent-lifecycle-heap-evidence/heap-lifecycle-report.json",
+      "sha256": "1ee110d9f1ca719b3bc0fa5981c3700ffb2ea4e47c7bc4628d96a6b8993011ea"
+    },
+    {
+      "path": "heap-lifecycle.log",
+      "sha256": "2671afd2c0c3eb83f42499c2efee6caf11403b465758f0c09d3a643c05fbeea7"
+    },
+    {
+      "path": "perceived-input/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "perceived-input/perceived-input-calibrates-53ac4-te-trusted-keyboard-handler/perceived-input-calibration.json",
+      "sha256": "ecbaeb0ad5f46b484c4bc376bc62d9c6d53dafc02faf0d2a760142d8ee2d88ec"
+    },
+    {
+      "path": "perceived-input/perceived-input-measures-t-b1d75-put-and-local-100-row-table/interaction-1.png",
+      "sha256": "63d80a298babef2aaea0af6c260c2012e4822a17e8f9657f82c173baa0420e45"
+    },
+    {
+      "path": "perceived-input/perceived-input-measures-t-b1d75-put-and-local-100-row-table/interaction-30.png",
+      "sha256": "6415a780f6fc2d92d3088c0d8e26d60cd7bbff71e536f96d97b956c302b6a436"
+    },
+    {
+      "path": "perceived-input/perceived-input-measures-t-b1d75-put-and-local-100-row-table/perceived-input-report.json",
+      "sha256": "eecf0a6a6421942a28a532afded977946f13c7a2fb22ffd1193d5b4044820d14"
+    },
+    {
+      "path": "perceived-input.log",
+      "sha256": "89a0756b6f45ec55da118a6204d8cee1eaf490a921a75007e1403afc410cc3d6"
+    },
+    {
+      "path": "standalone/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "standalone/standalone-captures-standa-d768e-d-warm-browser-observations/standalone-performance-report.json",
+      "sha256": "0889d14073baa92a9c9165c221a723d2e9d6e34bfaee148737fd880101ddb19a"
+    },
+    {
+      "path": "standalone.log",
+      "sha256": "1bd1f73f9e511208fc8a7e31b041d32dd4632eaac2e2aa49ffc7268e5602430a"
+    }
+  ]
+}
