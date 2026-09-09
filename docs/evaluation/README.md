@@ -39,13 +39,18 @@ baseline failed. The development fixture in `tests/agent-evaluation/development.
 is exposed training material for the harness, not a held-out evaluation case.
 
 Live execution additionally requires `--config OWNER_CONFIG.json --live` and
-`AELIQO_EVAL_OPENAI_API_KEY` in the process environment. The owner configuration
+the namespaced opaque credential environment references declared by that file.
+The owner configuration
 must explicitly authorize the exact corpus SHA-256, two distinct weak/strong
-model IDs with exact expected reported snapshots, repeated trial count, token/request/time limits, a maximum USD spend
+model IDs with exact expected reported snapshots, protocol, HTTPS base URL,
+authentication scheme, declared capabilities, repeated trial count,
+token/request/time limits, a maximum USD spend
 reservation, and positive reviewed input/output prices with their source. The
 configuration has no credential field. No live run has been authorized or run.
-The existing official OpenAI adapter uses provider-default sampling/reasoning
-settings; this runner does not silently emulate an unsupported effort setting.
+The runner currently accepts the generic OpenAI-compatible Chat Completions
+protocol and does not infer provider or transport from a credential. It uses
+provider-default sampling/reasoning settings rather than silently emulating an
+unsupported effort setting.
 
 Before each trial, the runner reserves a conservative bound using all permitted
 model requests, input tokens, turns, output tokens, and the supplied rates. It
