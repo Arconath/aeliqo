@@ -52,7 +52,16 @@ function cachedJSONBytes(text: string, cache: Map<string, number>): number {
   return bytes;
 }
 type WirePath = {readonly parent: WirePath | undefined; readonly key: string | number; readonly depth: number};
-type Frame = {value: unknown; path: WirePath | undefined; leave?: boolean};
+/** A completed subtree summary is local to one walk; each alias still pays its full resource cost. */
+type WireSummary = {readonly nodes: number; readonly bytes: number; readonly maxRelativeDepth: number};
+type SummaryScope = {
+  readonly baseDepth: number;
+  readonly startNodes: number;
+  readonly startBytes: number;
+  readonly parent: SummaryScope | undefined;
+  maxRelativeDepth: number;
+};
+type Frame = {value: unknown; path: WirePath | undefined; leave?: boolean; scope?: SummaryScope};
 function pathParts(path: WirePath | undefined): (string | number)[] {
   const parts = new Array<string | number>(path?.depth ?? 0);
   for (let current = path; current !== undefined; current = current.parent) parts[current.depth - 1] = current.key;
@@ -101,6 +110,7 @@ export function inspectWire(input: unknown): Outcome<unknown> {
   }
   const frames: Frame[] = [{value, path: undefined}];
   const ancestors = new Set<object>();
+  const summaries = new WeakMap<object, WireSummary>();
   let nodes = 0;
   let encodedBytes = 0;
   const stringByteCache = new Map<string, number>();
@@ -115,10 +125,38 @@ export function inspectWire(input: unknown): Outcome<unknown> {
       if (frame.leave) {
         ancestors.delete(current as object);
         if (!addEncodedBytes(1)) return wireFailure('wire.bytes', 'The wire document exceeds its byte limit.');
+        const scope = frame.scope!;
+        const summary = {
+          nodes: nodes - scope.startNodes,
+          bytes: encodedBytes - scope.startBytes,
+          maxRelativeDepth: scope.maxRelativeDepth,
+        };
+        summaries.set(current as object, summary);
+        if (scope.parent !== undefined) {
+          const relativeDepth = scope.baseDepth - scope.parent.baseDepth + scope.maxRelativeDepth;
+          scope.parent.maxRelativeDepth = Math.max(scope.parent.maxRelativeDepth, relativeDepth);
+        }
+        continue;
+      }
+      const depth = frame.path?.depth ?? 0;
+      if (depth > L.depth) return wireFailure('wire.depth', 'The wire document exceeds its depth limit.', pathParts(frame.path).slice(0, L.depth));
+      const parentScope = frame.scope;
+      if (parentScope !== undefined) parentScope.maxRelativeDepth = Math.max(parentScope.maxRelativeDepth, depth - parentScope.baseDepth);
+      const isObject = current !== null && typeof current === 'object';
+      if (isObject && ancestors.has(current)) {
+        if (++nodes > L.nodes) return wireFailure('wire.nodes', 'The wire document exceeds its node limit.', pathParts(frame.path));
+        return wireFailure('wire.cycle', 'Cyclic objects are not wire data.', pathParts(frame.path));
+      }
+      const cached = isObject ? summaries.get(current) : undefined;
+      if (cached !== undefined && nodes + cached.nodes <= L.nodes && encodedBytes + cached.bytes <= L.bytes
+        && depth + cached.maxRelativeDepth <= L.depth) {
+        nodes += cached.nodes;
+        encodedBytes += cached.bytes;
+        if (parentScope !== undefined) parentScope.maxRelativeDepth = Math.max(parentScope.maxRelativeDepth,
+          depth - parentScope.baseDepth + cached.maxRelativeDepth);
         continue;
       }
       if (++nodes > L.nodes) return wireFailure('wire.nodes', 'The wire document exceeds its node limit.', pathParts(frame.path));
-      if ((frame.path?.depth ?? 0) > L.depth) return wireFailure('wire.depth', 'The wire document exceeds its depth limit.', pathParts(frame.path).slice(0, L.depth));
       if (current === null || typeof current === 'boolean') {
         if (!addEncodedBytes(jsonPrimitiveBytes(current))) return wireFailure('wire.bytes', 'The wire document exceeds its byte limit.');
         continue;
@@ -134,7 +172,6 @@ export function inspectWire(input: unknown): Outcome<unknown> {
         continue;
       }
       if (typeof current !== 'object') return wireFailure('wire.type', 'Only JSON values are accepted.', pathParts(frame.path));
-      if (ancestors.has(current)) return wireFailure('wire.cycle', 'Cyclic objects are not wire data.', pathParts(frame.path));
       const isArray = Array.isArray(current);
       const prototype = Object.getPrototypeOf(current) as unknown;
       if (prototype !== (isArray ? Array.prototype : Object.prototype) && !(prototype === null && !isArray))
@@ -148,7 +185,8 @@ export function inspectWire(input: unknown): Outcome<unknown> {
         return wireFailure('wire.array', 'Sparse arrays and extra array properties are not accepted.', pathParts(frame.path));
       ancestors.add(current);
       if (!addEncodedBytes(1)) return wireFailure('wire.bytes', 'The wire document exceeds its byte limit.');
-      frames.push({value: current, path: frame.path, leave: true});
+      const scope: SummaryScope = {baseDepth: depth, startNodes: nodes - 1, startBytes: encodedBytes - 1, parent: parentScope, maxRelativeDepth: 0};
+      frames.push({value: current, path: frame.path, leave: true, scope});
       let propertyIndex = 0;
       for (let index = keys.length - 1; index >= 0; index--) {
         const key = keys[index]!;
@@ -165,7 +203,8 @@ export function inspectWire(input: unknown): Outcome<unknown> {
           : cachedJSONBytes(key, stringByteCache) + 1 + (propertyIndex === 0 ? 0 : 1);
         if (!addEncodedBytes(syntaxBytes)) return wireFailure('wire.bytes', 'The wire document exceeds its byte limit.');
         propertyIndex++;
-        frames.push({value: descriptor.value as unknown, path: {parent: frame.path, key: isArray ? Number(key) : key, depth: (frame.path?.depth ?? 0) + 1}});
+        frames.push({value: descriptor.value as unknown, scope,
+          path: {parent: frame.path, key: isArray ? Number(key) : key, depth: depth + 1}});
       }
     }
     if (encodedBytes > L.bytes)

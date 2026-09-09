@@ -15,6 +15,11 @@ test('wire paths distinguish shared references from ancestor cycles', () => {
   cyclic.child = [cyclic];
   expect(inspectWire(cyclic)).toMatchObject({ok: false, diagnostics: [{code: 'wire.cycle', path: ['child', 0]}]});
 });
+test('reused summaries still enforce the depth limit at every occurrence', () => {
+  let shared: unknown = {leaf: true};
+  for (let index = 0; index < 63; index++) shared = {child: shared};
+  expect(inspectWire({first: shared, second: {deep: shared}})).toMatchObject({ok: false, diagnostics: [{code: 'wire.depth'}]});
+});
 test('depth limits retain the bounded diagnostic path', () => {
   let deep: unknown = false;
   for (let index = 0; index < 66; index++) deep = {child: deep};
