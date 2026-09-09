@@ -58,6 +58,18 @@
       ],
       "blocker": "npm CLI authority/history, remote source integration, registry publication and GitOps rollout are unverified.",
       "nextAction": "Publish only from a completed RC gate, then promote an immutable candidate through the existing GitOps route."
+    },
+    {
+      "id": "live-provider-probe",
+      "owner": "root",
+      "status": "blocked",
+      "evidence": [
+        "DeepSeek official Responses documentation verified model deepseek-v4-flash and base endpoint https://api.deepseek.com",
+        "Temporary credential was held only in the macOS keychain for the probe, then deleted; the provider credential was revoked",
+        "Authenticated status-only probes to /models, /responses/input_tokens, and /responses each returned HTTP 494; no response bodies or credentials were retained"
+      ],
+      "blocker": "DeepSeek returned an undocumented HTTP 494 for every authenticated probe, so no actual model response, model evaluation, or T40 claim was recorded.",
+      "nextAction": "Use a provider/account path that produces a successful authorized response before running the held-out T40 evaluation; do not treat this failed probe as model evidence."
     }
   ]
 }
