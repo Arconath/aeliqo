@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "release": "0.1.0",
+  "startedAt": "2026-09-10T00:00:00Z",
+  "source": {
+    "branch": "rewrite/v0.1.0-master-foundation",
+    "baseHead": "076198a",
+    "candidateSourceSha256": "4b9d8fa8cfea0cd19af3a86ad2d8da2fbee116d3db0e88874e5c0d41f4833c8a"
+  },
+  "workstreams": [
+    {
+      "id": "release-orchestration",
+      "owner": "root",
+      "status": "complete",
+      "evidence": [
+        "pnpm typecheck",
+        "pnpm lint",
+        "pnpm test:agents",
+        "pnpm test:protocol-model",
+        "pnpm test:security",
+        "pnpm build:site",
+        "docker clean-context build and smoke",
+        "pnpm check (87/87 commands passed; sourceChangedDuringRun=false)"
+      ],
+      "blocker": "Release gates remain fail-closed: required scenario/task evidence plus authenticated source, registry, and deployment proof are incomplete.",
+      "nextAction": "Commit the validated source candidate. Do not publish or deploy until the required release tasks and authenticated external proof are complete."
+    },
+    {
+      "id": "release-state-audit",
+      "owner": "terra-high",
+      "status": "complete",
+      "evidence": [
+        "read-only repository, registry and live-site audit"
+      ],
+      "blocker": "Rewrite source has no authenticated registry identity or GitOps candidate promotion.",
+      "nextAction": "Use the new image pipeline only after source integration and registry/release gates are complete."
+    },
+    {
+      "id": "product-validation",
+      "owner": "terra-high",
+      "status": "complete",
+      "evidence": [
+        "kit/reference validation",
+        "agent host and browser evaluation checks",
+        "security and performance focused checks"
+      ],
+      "blocker": "Release readiness remains fail-closed despite fresh full CI because required release tasks/evidence are incomplete.",
+      "nextAction": "Retain fresh CI evidence for the frozen source digest; do not characterize CI success as release authorization."
+    },
+    {
+      "id": "registry-deployment",
+      "owner": "terra-high",
+      "status": "complete",
+      "evidence": [
+        "six-public-package NOTICE tarball check",
+        "clean OCI build/export/load/smoke"
+      ],
+      "blocker": "npm CLI authority/history, remote source integration, registry publication and GitOps rollout are unverified.",
+      "nextAction": "Publish only from a completed RC gate, then promote an immutable candidate through the existing GitOps route."
+    }
+  ]
+}

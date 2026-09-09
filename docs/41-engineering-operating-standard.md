@@ -6,7 +6,7 @@ Target kualitas tertinggi diterjemahkan ke correctness, ergonomics, performance,
 
 ## Modul dan dependency
 
-Tetap tujuh target package, tanpa package per widget/operator/vendor. Core berisi contracts/semantics/expressions/query/presentation/diagnostics; runtime mengoordinasikan effects; web memiliki native behavior/layout/geometry realization; React binding tipis; agent memiliki protocol/model ports; devtools/testkit optional. App examples/site memakai built public entry points.
+Tetap enam target package publik, tanpa package per widget/operator/vendor: core berisi contracts/semantics/expressions/query/presentation/diagnostics; runtime mengoordinasikan effects; web memiliki native behavior/layout/geometry realization; React binding tipis; agent memiliki protocol/model ports; devtools adalah package publik optional. Testkit tetap source Apache-2.0 internal (`private: true`) untuk host/security tests, bukan package publik atau artefak rilis. App examples/site memakai built public entry points.
 
 TypeScript strict, exactOptionalPropertyTypes, noUncheckedIndexedAccess; unknown pada ingress divalidasi sebelum digunakan; tidak ada public any, broad catch-ignore, unsafe casts yang menghindari contract atau global mutable singleton. Public APIs tidak mengekspor tipe vendor sebagai core model. Concurrency membutuhkan ownership dari state/lease/request; jangan mengandalkan current global context.
 

@@ -9,7 +9,8 @@
     "dist",
     "schemas",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "NOTICE"
   ],
   "exports": {
     ".": {

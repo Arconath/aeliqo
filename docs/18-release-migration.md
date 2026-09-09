@@ -22,13 +22,13 @@ Version reset memerlukan migration guide eksplisit: API lama tidak kompatibel, i
 
 ## Package dan license
 
-Target tujuh public packages: core, runtime, web, react, agent, devtools, testkit dalam scope `@aeliqo`. Semua version target 0.1.0; exact internal dependency versions. Protocols menjadi subpaths agent. Nama package lama tidak diberi forwarding shim yang mengklaim compatibility palsu. Existing consumers tetap dapat mengambil artefaknya; deprecation yang terarah bisa dilakukan setelah migration notice dan izin pemilik.
+Target enam package publik adalah core, runtime, web, react, agent, dan devtools dalam scope `@aeliqo`. Semua version target 0.1.0; exact internal dependency versions. Protocols menjadi subpaths agent. `@aeliqo/testkit` tetap source Apache-2.0, tetapi adalah workspace internal `private: true`: ia tidak dipreflight, dipublish sebagai RC/stable, atau dihitung dalam claim paket publik. Local security tests boleh mem-pack testkit untuk membuktikan boundary internalnya; artefak itu bukan artefak rilis. Nama package lama tidak diberi forwarding shim yang mengklaim compatibility palsu. Existing consumers tetap dapat mengambil artefak publiknya; deprecation yang terarah bisa dilakukan setelah migration notice dan izin pemilik.
 
-Apache-2.0 berlaku untuk seluruh runtime/catalog/komponen/agent/local Studio/testkit. Jaga NOTICE, licenses dependency dan contribution policy. Existing license grants tidak dibatalkan oleh reset repository. Commercial control plane private tidak disisipkan dalam public tree.
+Apache-2.0 berlaku untuk seluruh runtime/catalog/komponen/agent/local Studio dan source testkit internal. Jaga NOTICE untuk enam package publik, licenses dependency dan contribution policy. Existing license grants tidak dibatalkan oleh reset repository. Commercial control plane private tidak disisipkan dalam public tree.
 
 ## Release gates dan staged publication
 
-Bangun dari source SHA tertentu, exact locked dependencies, reviewed tarballs, declarations/CSS/exports, SBOM dan immutable site image. Test consumer di luar monorepo menggunakan tarball yang sama. Penuhi contract/query/runtime/browser/a11y/manual/model/performance gates. Test mocks tidak boleh menjadi native/provider evidence.
+Bangun enam artefak publik dari source SHA tertentu, exact locked dependencies, reviewed tarballs, declarations/CSS/exports, SBOM dan immutable site image. Test consumer di luar monorepo menggunakan tarball publik yang sama. Penuhi contract/query/runtime/browser/a11y/manual/model/performance gates. Test mocks tidak boleh menjadi native/provider evidence.
 
 Npm beberapa package dan website tidak satu transaksi atomik. Publisher mencatat package yang berhasil bila terhenti; lanjut hanya untuk nama/versi yang belum terbit, jangan mengganti bytes pada version sama. Build semua lebih dahulu, publish dependency order ke tag nonlatest, verifikasi full set, lalu promote secara terkoordinasi. CI actions pinned dan npm trusted publishing hanya bila konfigurasi account/runner sudah diverifikasi. Tidak ada credential yang dibuat atau diambil dari browser tanpa otorisasi.
 

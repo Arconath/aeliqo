@@ -1,0 +1,40 @@
+name: Build Aeliqo rewrite image candidate
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aeliqo-rewrite-image-candidate
+  cancel-in-progress: false
+
+jobs:
+  package-image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Build OCI image candidate from the current rewrite source
+        run: |
+          mkdir -p artifacts/image
+          docker buildx build \
+            --platform linux/amd64 \
+            --build-arg SOURCE_REVISION=${{ github.sha }} \
+            --tag aeliqo-site:${{ github.sha }} \
+            --output type=oci,dest=artifacts/image/aeliqo-site.oci.tar \
+            .
+          test -s artifacts/image/aeliqo-site.oci.tar
+      - name: Smoke the exact exported OCI artifact
+        run: |
+          docker image load --input artifacts/image/aeliqo-site.oci.tar
+          scripts/ci/check-static-image.sh aeliqo-site:${{ github.sha }} ${{ github.sha }}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-rewrite-image-${{ github.sha }}
+          path: artifacts/image/aeliqo-site.oci.tar
+          if-no-files-found: error
+          retention-days: 7

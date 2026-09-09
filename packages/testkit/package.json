@@ -2,7 +2,8 @@
   "name": "@aeliqo/testkit",
   "version": "0.1.0",
   "type": "module",
-  "description": "Small assertions and stream helpers for Aeliqo host and security tests",
+  "description": "Internal assertions and stream helpers for Aeliqo host and security tests",
+  "private": true,
   "license": "Apache-2.0",
   "files": ["dist", "README.md", "LICENSE"],
   "exports": {

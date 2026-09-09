@@ -14,8 +14,14 @@
     {"name": "@aeliqo/web", "localVersion": "0.1.0", "registryStatus": "E404", "exactTarget": "unknown"},
     {"name": "@aeliqo/react", "localVersion": "0.1.0", "registryStatus": "visible-0.2.0-only", "exactTarget": "unknown"},
     {"name": "@aeliqo/agent", "localVersion": "0.1.0", "registryStatus": "E404", "exactTarget": "unknown"},
-    {"name": "@aeliqo/devtools", "localVersion": "0.1.0", "registryStatus": "E404", "exactTarget": "unknown"},
-    {"name": "@aeliqo/testkit", "localVersion": "0.1.0", "registryStatus": "E404", "exactTarget": "unknown"}
+    {"name": "@aeliqo/devtools", "localVersion": "0.1.0", "registryStatus": "E404", "exactTarget": "unknown"}
+  ],
+  "excludedInternalPackages": [
+    {
+      "name": "@aeliqo/testkit",
+      "localVersion": "0.1.0",
+      "reason": "Apache-2.0 internal workspace marked private; it is not a registry-release target."
+    }
   ],
   "authorization": {
     "whoami": "E401",

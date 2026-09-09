@@ -1,5 +1,5 @@
 /**
- * Build, pack, install and exercise the published @aeliqo/testkit boundary.
+ * Build, pack, install and exercise the internal @aeliqo/testkit boundary.
  *
  * The consumer is created in the operating-system temporary directory, outside
  * this pnpm workspace. It installs only exact local tarballs and npm packages,
@@ -88,7 +88,8 @@ assert.deepEqual(
 );
 for (const manifest of Object.values(manifests)) {
   assert.equal(manifest.license, 'Apache-2.0');
-  assert.notEqual(manifest.private, true);
+  if (manifest.name === '@aeliqo/testkit') assert.equal(manifest.private, true);
+  else assert.notEqual(manifest.private, true);
   const exportKey = manifest.name === '@aeliqo/runtime' ? './results' : '.';
   assert.equal(typeof manifest.exports?.[exportKey]?.import, 'string');
   assert.equal(typeof manifest.exports?.[exportKey]?.types, 'string');
@@ -193,8 +194,9 @@ for (const artifact of artifacts) {
 }
 await writeFile(join(runDirectory, 'consumer-package-lock.json'), lockBytes);
 
-// The TypeScript check imports all three installed package boundaries with the
-// consumer's declarations. No workspace source or package aliases are visible.
+// The TypeScript check imports two public package boundaries and the locally
+// packed internal testkit with the consumer's declarations. No workspace source
+// or package aliases are visible.
 await writeFile(join(consumerDirectory, 'consumer.ts'), `
 import {CONTRACT_VERSION, type ResultRef} from '@aeliqo/core';
 import {createResultStore, type ResultEvent, type ResultBeginInput} from '@aeliqo/runtime/results';
@@ -345,6 +347,7 @@ const report = {
   },
   checks: {
     fullApacheLicenses: true,
+    privateTestkit: true,
     noWorkspaceAliases: true,
     noInstalledSymlinks: true,
     strictTypeScript: true,

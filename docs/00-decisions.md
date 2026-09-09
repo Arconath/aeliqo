@@ -21,7 +21,7 @@ The product is an **opinionated adaptive application UI framework**, not a full-
 | UI implementation | One shared web implementation using native web components/Lit; thin React binding; framework-free use mandatory | No separate React/Vue/Svelte copies of the catalog |
 | Platform abstraction | Semantic presentation contracts and renderer capabilities are platform-neutral | Native desktop/mobile are extensibility targets, not falsely claimed v0.1.0 renderers |
 | 2D | Declarative plot specifications, modular D3 calculations, SVG default, bounded Canvas path when measured | No Three.js, 3D, GPU-first rewrite or canvas-rendered forms |
-| OSS | Apache-2.0 for core, runtime, web, React, agents, testkit and local authoring/devtools | No paid row caps, locked primitive families, or safety/accessibility paywall |
+| OSS | Apache-2.0 for core, runtime, web, React, agents, local authoring/devtools, and internal testkit source | Six public packages; testkit remains `private: true`, with no paid row caps, locked primitive families, or safety/accessibility paywall |
 | Commercial | Hosted collaboration and governance operations; enterprise support and private managed deployments | The paid service is separate from the portable runtime |
 | Rewrite | Clean source tree on a new branch, historical parent retained | Existing main/site/registry stay intact until evidence-gated promotion |
 | Version | New unused 0.1.0, RCs under next first | Never overwrite/unpublish an earlier published version as a migration shortcut |
