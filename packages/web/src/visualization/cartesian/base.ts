@@ -241,6 +241,7 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
 
   private tickText(text: string): string { return text.length > 12 ? `${text.slice(0, 5)}…${text.slice(-5)}` : text; }
   private xTickAnchor(index: number, count: number): "start" | "middle" | "end" {
+    if (count === 1) return "middle";
     if (index > 0 && index < count - 1) return "middle";
     const rtl = typeof globalThis.getComputedStyle === "function" && globalThis.getComputedStyle(this).direction === "rtl";
     if (index === 0) return rtl ? "end" : "start";

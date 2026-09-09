@@ -68,6 +68,34 @@ test('keeps date and category edge labels inside LTR and RTL chart viewports', a
   }
 });
 
+test('centers a single category label in a narrow LTR and RTL chart', async ({page}) => {
+  await page.locator('aeliqo-bar').evaluate(async (node) => {
+    const element = node as HTMLElement & {width: number; context: any; datasets: any[]; updateComplete?: Promise<unknown>};
+    const current = element.datasets[0];
+    const contextResult = element.context.results[0];
+    element.width = 160;
+    element.context = {...element.context, results: [{...contextResult, counts: {...contextResult.counts, loaded: 1}}]};
+    element.datasets = [{result: current.result, rows: [{...current.rows[0], category: 'Single category label'}]}];
+    await element.updateComplete;
+  });
+  for (const direction of ['ltr', 'rtl'] as const) {
+    const bounds = await page.locator('aeliqo-bar svg').evaluate(async (svg, nextDirection) => {
+      document.documentElement.dir = nextDirection;
+      const host = document.querySelector('aeliqo-bar') as HTMLElement & {requestUpdate?: () => void; updateComplete?: Promise<unknown>};
+      host.requestUpdate?.();
+      if (host.updateComplete !== undefined) await host.updateComplete;
+      const svgBounds = svg.getBoundingClientRect();
+      const label = svg.querySelector<SVGTextElement>(`text[y="${svg.viewBox.baseVal.height - 30}"]`);
+      if (label === null) throw new Error('Missing single category label');
+      const labelBounds = label.getBoundingClientRect();
+      return {anchor: label.getAttribute('text-anchor'), left: labelBounds.left, right: labelBounds.right, svgLeft: svgBounds.left, svgRight: svgBounds.right};
+    }, direction);
+    expect(bounds.anchor, `${direction} single category should be centered`).toBe('middle');
+    expect(bounds.left, `${direction} single category starts outside the SVG`).toBeGreaterThanOrEqual(bounds.svgLeft - 0.5);
+    expect(bounds.right, `${direction} single category ends outside the SVG`).toBeLessThanOrEqual(bounds.svgRight + 0.5);
+  }
+});
+
 test('selection is keyboard reachable and an over-budget graphic retains exact data', async ({page}) => {
   await page.locator('aeliqo-trend').evaluate((node) => {
     node.addEventListener('aeliqo-visualization-select', (event) => { (window as any).selection = (event as CustomEvent).detail; });
