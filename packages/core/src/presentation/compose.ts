@@ -14,7 +14,7 @@ import type {
   PresentationValues, ValidatedPresentation, ResolvedPresentationNode,
 } from './types.js';
 import {freezePresentation, isThenable, presentationFailure as fail, versionKey} from './registry.js';
-import {preparePresentationContext, preparePresentationRegistry, validatePreparedPresentationPlan, type PresentationValidationOptions, type PreparedPresentationContext} from './validate.js';
+import {preparePresentationContext, preparePresentationRegistry, preparePresentationValidationCache, validatePreparedPresentationPlan, type PresentationValidationOptions, type PreparedPresentationContext} from './validate.js';
 
 const compareText = (left: string, right: string): number => left < right ? -1 : left > right ? 1 : 0;
 const stateIdentity = {id: 'aeliqo.state.identity', revision: '1'} as const;
@@ -36,10 +36,16 @@ interface PresentationParseCache {
   readonly coverage: WeakMap<object, z.infer<typeof presentationCoverageSchema>>;
   readonly stateTransfer: WeakMap<object, z.infer<typeof presentationStateTransferSchema>>;
   readonly diagnostics: WeakMap<object, z.infer<typeof diagnosticSchema>>;
+  readonly nodeArrays: WeakMap<object, readonly z.infer<typeof presentationNodeSchema>[]>;
+  readonly linkArrays: WeakMap<object, readonly z.infer<typeof interactionLinkSchema>[]>;
+  readonly coverageArrays: WeakMap<object, readonly z.infer<typeof presentationCoverageSchema>[]>;
+  readonly stateTransferArrays: WeakMap<object, readonly z.infer<typeof presentationStateTransferSchema>[]>;
+  readonly diagnosticArrays: WeakMap<object, readonly z.infer<typeof diagnosticSchema>[]>;
 }
 
 function createPresentationParseCache(): PresentationParseCache {
-  return {preconditions: new WeakMap(), nodes: new WeakMap(), links: new WeakMap(), coverage: new WeakMap(), stateTransfer: new WeakMap(), diagnostics: new WeakMap()};
+  return {preconditions: new WeakMap(), nodes: new WeakMap(), links: new WeakMap(), coverage: new WeakMap(), stateTransfer: new WeakMap(), diagnostics: new WeakMap(),
+    nodeArrays: new WeakMap(), linkArrays: new WeakMap(), coverageArrays: new WeakMap(), stateTransferArrays: new WeakMap(), diagnosticArrays: new WeakMap()};
 }
 
 function parseCachedObject<S extends z.ZodMiniType>(input: unknown, schema: S, cache: WeakMap<object, z.infer<S>>): z.infer<S> | undefined {
@@ -52,14 +58,18 @@ function parseCachedObject<S extends z.ZodMiniType>(input: unknown, schema: S, c
   return parsed.data;
 }
 
-function parseCachedArray<S extends z.ZodMiniType>(input: unknown, schema: S, maximum: number, cache: WeakMap<object, z.infer<S>>): readonly z.infer<S>[] | undefined {
+function parseCachedArray<S extends z.ZodMiniType>(input: unknown, schema: S, maximum: number, cache: WeakMap<object, z.infer<S>>,
+  arrayCache: WeakMap<object, readonly z.infer<S>[]>): readonly z.infer<S>[] | undefined {
   if (!Array.isArray(input) || input.length > maximum) return undefined;
+  const cached = arrayCache.get(input);
+  if (cached !== undefined) return cached;
   const output: z.infer<S>[] = [];
   for (const item of input) {
     const parsed = parseCachedObject(item, schema, cache);
     if (parsed === undefined) return undefined;
     output.push(parsed);
   }
+  arrayCache.set(input, output);
   return output;
 }
 
@@ -71,16 +81,17 @@ function parseCachedArray<S extends z.ZodMiniType>(input: unknown, schema: S, ma
 function parseInspectedPresentationPlan(input: unknown, cache: PresentationParseCache): Outcome<PresentationPlan> {
   const envelope = z.safeParse(inspectedPlanEnvelopeSchema, input);
   if (!envelope.success) return parseInspectedContract('presentation-plan', input);
-  const preconditions = parseCachedObject(envelope.data.preconditions, commitPreconditionsSchema, cache.preconditions);
-  const nodes = parseCachedArray(envelope.data.nodes, presentationNodeSchema, WIRE_LIMITS.presentationNodes, cache.nodes);
-  const links = parseCachedArray(envelope.data.links, interactionLinkSchema, WIRE_LIMITS.links, cache.links);
-  const coverage = parseCachedArray(envelope.data.coverage, presentationCoverageSchema, WIRE_LIMITS.array, cache.coverage);
-  const stateTransfer = parseCachedArray(envelope.data.stateTransfer, presentationStateTransferSchema, WIRE_LIMITS.array, cache.stateTransfer);
-  const diagnostics = parseCachedArray(envelope.data.diagnostics, diagnosticSchema, WIRE_LIMITS.diagnostics, cache.diagnostics);
+  const raw = input as Record<string, unknown>;
+  const preconditions = parseCachedObject(raw.preconditions, commitPreconditionsSchema, cache.preconditions);
+  const nodes = parseCachedArray(raw.nodes, presentationNodeSchema, WIRE_LIMITS.presentationNodes, cache.nodes, cache.nodeArrays);
+  const links = parseCachedArray(raw.links, interactionLinkSchema, WIRE_LIMITS.links, cache.links, cache.linkArrays);
+  const coverage = parseCachedArray(raw.coverage, presentationCoverageSchema, WIRE_LIMITS.array, cache.coverage, cache.coverageArrays);
+  const stateTransfer = parseCachedArray(raw.stateTransfer, presentationStateTransferSchema, WIRE_LIMITS.array, cache.stateTransfer, cache.stateTransferArrays);
+  const diagnostics = parseCachedArray(raw.diagnostics, diagnosticSchema, WIRE_LIMITS.diagnostics, cache.diagnostics, cache.diagnosticArrays);
   if (preconditions === undefined || nodes === undefined || links === undefined || coverage === undefined || stateTransfer === undefined || diagnostics === undefined)
     return parseInspectedContract('presentation-plan', input);
-  return {ok: true, value: {id: envelope.data.id, revision: envelope.data.revision, rootId: envelope.data.rootId,
-    preconditions, nodes, links, coverage, stateTransfer, diagnostics} as PresentationPlan};
+  return {ok: true, value: freezePresentation({id: envelope.data.id, revision: envelope.data.revision, rootId: envelope.data.rootId,
+    preconditions, nodes, links, coverage, stateTransfer, diagnostics}) as PresentationPlan};
 }
 
 function normalizePlan(input: unknown, id: string, revision: string, preconditions: unknown, alreadyInspected: boolean, cache: PresentationParseCache): Outcome<PresentationPlan> {
@@ -302,6 +313,8 @@ export function composePresentation(request: PresentationCompositionRequest, reg
   const constraints = prepared.value.constraints;
   const preparedManifests = preparePresentationRegistry(registry);
   if (!preparedManifests.ok) return preparedManifests;
+  const validationCache = preparePresentationValidationCache(prepared.value, registry, preparedManifests.value);
+  if (!validationCache.ok) return validationCache;
   // Pure registered node resolutions may be reused only inside this synchronous
   // composition; no validation/authority cache survives a subsequent invocation.
   const nodeMemo = new Map<string, ResolvedPresentationNode>();
@@ -336,7 +349,7 @@ export function composePresentation(request: PresentationCompositionRequest, reg
     if (!expansionReserved && !spend()) return false;
     const normalized = normalizePlan(input, identity.data.id, identity.data.revision, requestPins.value, alreadyInspected, parseCache);
     if (!normalized.ok) { reject(label, normalized.diagnostics); return false; }
-    const checked = validatePreparedPresentationPlan(normalized.value, request.context, registry, prepared.value, options, nodeMemo, nodeIdentityMemo, preparedManifests.value);
+    const checked = validatePreparedPresentationPlan(normalized.value, request.context, registry, prepared.value, options, nodeMemo, nodeIdentityMemo, preparedManifests.value, validationCache.value);
     if (!checked.ok) { reject(label, checked.diagnostics); return false; }
     consider(checked.value, candidateIsIncumbent);
     return true;
