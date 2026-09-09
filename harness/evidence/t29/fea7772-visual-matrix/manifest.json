@@ -1,0 +1,56 @@
+{
+  "task": "T29",
+  "status": "partial-automated-matrix-pass",
+  "sourceCommit": "fea7772819c9bba519b12618bc9cc4c53eb1b997",
+  "sourceDigest": "9afbd73d926c9a08e1713c2b72c767a9f54d63f1a7fcbf15bd5256cbb94b7e03",
+  "sourceChangedDuringRun": false,
+  "command": "pnpm test:visual",
+  "runner": {
+    "node": "v24.20.0",
+    "playwright": "1.63.0",
+    "workers": 1,
+    "retries": 0,
+    "snapshotUpdate": "missing"
+  },
+  "scope": {
+    "expected": 1137,
+    "passed": 1137,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0,
+    "durationMs": 676477.104,
+    "projects": {
+      "chromium": "153.0.8010.12",
+      "firefox": "155.0",
+      "webkit": "26.6"
+    },
+    "viewports": [
+      "1280x900",
+      "360x800"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "directions": [
+      "ltr",
+      "rtl"
+    ]
+  },
+  "qualification": false,
+  "limits": [
+    "Automated Playwright visual, interaction and accessibility attachments only.",
+    "Pinned human visual/design approval and full manual assistive-technology review remain outstanding.",
+    "This run does not establish universal pixel equivalence or release readiness."
+  ],
+  "artifacts": [
+    {
+      "path": "artifacts/visual-catalog/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "artifacts/visual-catalog/results.json",
+      "sha256": "a09b057795c4577596595f94d5e7ced5f5f8dd2f4f41b833eb1760429837bb18"
+    }
+  ]
+}
