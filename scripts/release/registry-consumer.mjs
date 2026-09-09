@@ -48,7 +48,7 @@ try {
   await writeFile(join(consumer, 'exports.ts'), imports.join('\n') + '\n');
   await writeFile(join(consumer, 'tsconfig.json'), JSON.stringify({compilerOptions: {
     target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext', strict: true,
-    noEmit: true, skipLibCheck: false, lib: ['ES2022', 'DOM', 'DOM.Iterable'], types: [],
+    noEmit: true, skipLibCheck: false, lib: ['ES2022', 'DOM', 'DOM.Iterable'], types: ['node', 'react', 'react-dom'],
   }, include: ['exports.ts']}, null, 2) + '\n');
   command(join(consumer, 'node_modules/.bin/tsc'), ['--project', 'tsconfig.json'], consumer);
   await writeFile(join(consumer, 'consumer.mjs'), [
