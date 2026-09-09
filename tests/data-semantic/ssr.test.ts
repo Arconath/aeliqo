@@ -51,6 +51,14 @@ describe("data semantic region SSR", () => {
     const unavailable = await renderAeliqo(html`<aeliqo-metric .value=${3} status="unavailable" unit="records"></aeliqo-metric>`);
     expect(unavailable).toContain("Value unavailable.");
     expect(unavailable).not.toMatch(/<span[^>]*part="unit"[\s\S]*?records/);
+    const error = await renderAeliqo(html`<aeliqo-metric .value=${3} status="error" unit="records"></aeliqo-metric>`);
+    expect(error).toContain('data-status="error"');
+    expect(error).toContain("The data could not be loaded.");
+    expect(error).not.toMatch(/<span[^>]*part="unit"[\s\S]*?records/);
+    const nullable = await renderAeliqo(html`<aeliqo-metric .value=${null} unit="records"></aeliqo-metric>`);
+    expect(nullable).toContain('data-status="ready"');
+    expect(nullable).toContain("—");
+    expect(nullable).not.toMatch(/<span[^>]*part="unit"[\s\S]*?records/);
   });
 
   it("preserves registered host scope annotations alongside the current materialization", async () => {
