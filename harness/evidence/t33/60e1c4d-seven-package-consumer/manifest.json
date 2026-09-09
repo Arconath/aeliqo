@@ -110,11 +110,51 @@
     "exactAeliqoPackageCount": 7,
     "derivedVersionedCopy": "0.0.0 root-only copy used because npm SBOM rejects an unversioned private root; original external consumer package.json and lockfile were not modified"
   },
+  "additionalConsumerEvidence": [
+    {
+      "kind": "framework",
+      "status": "pass",
+      "evidenceCommit": "6a1102cb4e828630dbe6990c7a4d7610ead88f43",
+      "sourceDigest": "9afbd73d926c9a08e1713c2b72c767a9f54d63f1a7fcbf15bd5256cbb94b7e03",
+      "scope": "Installed core/runtime/web/react tarballs; vanilla, React and Vue typed recipes; React declarative Shadow DOM SSR; Chromium property/event behavior; schema-reuse meaning path.",
+      "report": "artifacts/framework-consumers/run-lsmngf/report.json",
+      "reportSha256": "b07f45a0443eca87d06d47a5739c5e15f2d4a5d657053970b0e1f1933fc95a09",
+      "consumerLock": "artifacts/framework-consumers/run-lsmngf/consumer-package-lock.json",
+      "consumerLockSha256": "da91c42b4f75839e19ef75c05cb99d9907d4bae7f2d54a854ab763decb1d0e73",
+      "environment": {
+        "node": "v24.20.0",
+        "npm": "11.19.0",
+        "typescript": "7.0.2",
+        "vite": "8.2.2",
+        "chromium": "153.0.8010.12",
+        "os": "darwin",
+        "arch": "arm64"
+      }
+    },
+    {
+      "kind": "studio",
+      "status": "pass",
+      "evidenceCommit": "6a1102cb4e828630dbe6990c7a4d7610ead88f43",
+      "sourceDigest": "9afbd73d926c9a08e1713c2b72c767a9f54d63f1a7fcbf15bd5256cbb94b7e03",
+      "scope": "Installed core/runtime/devtools tarballs; Studio document/session roundtrip; standalone exportCode TypeScript compilation; immutable code-owned meaning and Experience revisions; personal Experience retention and activation.",
+      "report": "artifacts/studio-consumers/run-bWvBJw/report.json",
+      "reportSha256": "eb2ab83f1c9ae44207203d5ba9e8c472a04948de54a7b25eb137da3ddedd5f90",
+      "consumerLock": "artifacts/studio-consumers/run-bWvBJw/consumer-package-lock.json",
+      "consumerLockSha256": "37723ea280c8f052fc15efed3f1c47249f84881bfaef6f7edd5e132e619d2b59",
+      "environment": {
+        "node": "v24.20.0",
+        "npm": "11.19.0",
+        "typescript": "7.0.2",
+        "os": "darwin",
+        "arch": "arm64"
+      }
+    }
+  ],
   "qualification": false,
   "limits": [
     "These are local target-version artifacts; an unused registry RC version and registry availability were not verified.",
     "The required independent T32 architecture, DX and usability review is not attached.",
-    "Compatibility coverage is limited to exact seven-package installation, lockfile resolution and the corresponding dependency SBOM; full release smoke and later staging gates remain open.",
+    "Compatibility coverage now includes the exact seven-package install, dependency SBOM, framework consumer and Studio consumer, but full release smoke and later staging gates remain open.",
     "No npm publication, dist-tag promotion, deployment, or remote mutation was attempted."
   ]
 }
