@@ -128,7 +128,7 @@ function decodeResponse(input: unknown, context: ToolModelResponseContext): Tool
   const choice = input.choices[0];
   if (!object(choice) || !object(choice.message)) return malformed('message');
   const message = choice.message;
-  const text = message.content === null || message.content === undefined ? undefined
+  const text = message.content === null || message.content === undefined || message.content === '' ? undefined
     : boundedText(message.content) ? message.content : malformed('content');
   if (message.tool_calls !== undefined && (!Array.isArray(message.tool_calls) || message.tool_calls.length > MAX_TOOL_CALLS))
     return malformed('tool calls');

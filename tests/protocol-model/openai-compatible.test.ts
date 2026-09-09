@@ -109,6 +109,37 @@ describe('generic OpenAI-compatible model connection', () => {
     expect(JSON.stringify(observations)).not.toContain(secret);
   });
 
+  it('accepts an empty assistant content field when a compatible endpoint returns a tool call', async () => {
+    const fixture = await fixtureServer(() => ({body: {
+      ...successBody(),
+      choices: [{index: 0, message: {role: 'assistant', content: '', tool_calls: [{
+        id: 'call_next', type: 'function', function: {name: 'summary', arguments: '{"entity":"orders"}'},
+      }]}, finish_reason: 'tool_calls'}],
+    }}));
+    const port = createOpenAICompatibleToolModel({
+      baseURL: fixture.baseURL,
+      model: 'fixture-model',
+      secret: createOpaqueModelSecret('empty-content-secret'),
+      capabilities: ['tool-calls', 'usage'],
+      policy: {allowExternalEgress: true, allowInsecureHttp: true, allowedOrigins: [fixture.origin]},
+    });
+    await expect(port.complete(request, {signal: new AbortController().signal})).resolves.toMatchObject({
+      calls: [{id: 'call_next', name: 'summary', input: {entity: 'orders'}}],
+    });
+  });
+
+  it('classifies protocol decode failures as malformed responses instead of network failures', async () => {
+    const fixture = await fixtureServer(() => ({body: {choices: []}}));
+    const port = createOpenAICompatibleToolModel({
+      baseURL: fixture.baseURL,
+      model: 'fixture-model',
+      secret: createOpaqueModelSecret('malformed-response-secret'),
+      capabilities: ['tool-calls'],
+      policy: {allowExternalEgress: true, allowInsecureHttp: true, allowedOrigins: [fixture.origin]},
+    });
+    await expect(port.complete(request, {signal: new AbortController().signal})).rejects.toMatchObject({kind: 'malformed-response', retryable: false});
+  });
+
   it('normalizes provider errors without retaining the secret and retries only when configured', async () => {
     let calls = 0;
     const fixture = await fixtureServer(() => {

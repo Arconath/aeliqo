@@ -346,7 +346,9 @@ export function createToolModelConnection(options: ToolModelConnectionOptions): 
           if (error instanceof ToolModelProviderError) throw error;
           throw new ToolModelProviderError('malformed-response', 'The model endpoint returned invalid JSON.');
         }
-        const result = config.adapter.decodeResponse(decoded, {model: config.model, estimatedInputTokens});
+        let result: ToolModelResponse;
+        try {result = config.adapter.decodeResponse(decoded, {model: config.model, estimatedInputTokens});}
+        catch {throw new ToolModelProviderError('malformed-response', 'The model endpoint returned a malformed response.');}
         const usage = withToolModelCost(result.usage, config.cost);
         const normalized = usage === result.usage ? result : {...result, usage, ...(result.provider === undefined ? {} : {provider: {...result.provider, usage}})};
         if (config.onResponse !== undefined) {
