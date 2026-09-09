@@ -13,6 +13,7 @@ export default defineConfig({
   testMatch: "data-states.spec.ts",
   outputDir: resolve(repositoryRoot, "artifacts/visual-data-states"),
   timeout: 60_000,
+  reporter: [["list"], ["json", {outputFile: resolve(repositoryRoot, "artifacts/visual-data-states/results.json")}]],
   fullyParallel: false,
   workers: 1,
   use: {baseURL: origin, trace: "retain-on-failure", locale: "en-US", timezoneId: "UTC", deviceScaleFactor: 1},

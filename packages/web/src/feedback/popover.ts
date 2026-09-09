@@ -96,7 +96,7 @@ export class AeliqoPopoverElement extends AeliqoFoundationElement {
     const id = safeElementId(`${this.id || "aeliqo-popover"}-surface`, "aeliqo-popover-surface");
     const content = html`<button part="close" type="button" aria-label="Close" @click=${() => this.close()}>×</button>
       ${this.content || html`<slot></slot>`}`;
-    return html`<button part="trigger" type="button" aria-haspopup="dialog" aria-expanded=${this.open ? "true" : "false"} aria-controls=${id} @click=${() => { this.returnFocus ??= activeElement(this); this.open = !this.open; }}>${this.label}</button>
+    return html`<button part="trigger" type="button" aria-haspopup="dialog" aria-expanded=${this.open ? "true" : "false"} aria-controls=${id} @keydown=${(event: KeyboardEvent) => { if (this.open && event.key === "Escape") this.keydown(event); }} @click=${() => { this.returnFocus ??= activeElement(this); this.open = !this.open; }}>${this.label}</button>
       ${this.modal
         ? html`<dialog part="popover" id=${id} role="dialog" aria-label=${this.label} aria-modal="true" @cancel=${this.cancel} @keydown=${this.keydown}>${content}</dialog>`
         : html`<section part="popover" id=${id} role="dialog" aria-label=${this.label} aria-modal="false" ?hidden=${!this.open} @keydown=${this.keydown}>${content}</section>`}`;

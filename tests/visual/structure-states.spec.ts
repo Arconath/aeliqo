@@ -149,7 +149,7 @@ for (const variant of variants) {
     const trigger = menu.getByRole('button', {name: 'Report actions'});
     const disabled = menu.getByRole('menuitem', {name: 'Unavailable'});
     await setHostProperty(menu, 'open', false);
-    await trigger.focus();
+    await expect(trigger).not.toBeFocused();
     await trigger.click();
     await expect(menu.getByRole('menu')).toBeVisible();
     await expect(menu.getByRole('menuitem', {name: 'Open report'})).toBeFocused();
@@ -160,6 +160,10 @@ for (const variant of variants) {
     expect((await events(page)).filter((event) => event.type === 'aeliqo-menu-action')).toHaveLength(0);
     await menu.getByRole('menuitem', {name: 'Archive'}).press('Escape');
     await expect(menu.getByRole('menu')).toBeHidden();
+    await expect(trigger).toBeFocused();
+    await trigger.press('Enter');
+    await expect(menu.getByRole('menuitem', {name: 'Open report'})).toBeFocused();
+    await menu.getByRole('menuitem', {name: 'Open report'}).press('Escape');
     await expect(trigger).toBeFocused();
     await capture(session, page, info, 'menu-dismissed');
   });
@@ -231,12 +235,19 @@ for (const variant of variants) {
     const popover = session.host;
     const trigger = popover.getByRole('button', {name: 'Report details'});
     await setHostProperty(popover, 'open', false);
-    await page.locator('h1').focus();
     await trigger.click();
     await expect(popover.locator('[part="popover"]')).toBeVisible();
     await expect(popover.getByRole('button', {name: 'Close'})).not.toBeFocused();
     await page.locator('h1').click();
     await expect(popover.locator('[part="popover"]')).toBeHidden();
+
+    await trigger.focus();
+    await trigger.press('Enter');
+    await expect(popover.locator('[part="popover"]')).toBeVisible();
+    await expect(trigger).toBeFocused();
+    await trigger.press('Escape');
+    await expect(popover.locator('[part="popover"]')).toBeHidden();
+    await expect(trigger).toBeFocused();
 
     await setHostProperty(popover, 'modal', true);
     await trigger.focus();
