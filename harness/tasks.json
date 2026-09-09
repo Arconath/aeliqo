@@ -1081,7 +1081,7 @@
         },
         {
           "path": "harness/evidence/t29/fea7772-visual-matrix/manifest.json",
-          "sha256": "471db3521e6e47c0c1a9f866631464b850dd0539339fc1a2361f313249aee8dc"
+          "sha256": "6239fb10afc8993b8f5e1ba2fcf48c077858b5c77e095951ff3214b7f2137383"
         }
       ],
       "notes": "Automated catalog matrix: 882 checks passed at source a73b4a9. Added interaction matrix: 255 passed, zero skips/flakes across Chromium/Firefox/WebKit at ea7957d after independently reviewed form/filter/selection/contrast/pointer fixes. A fresh source-bound run at fea7772 passed 1,137/1,137 Playwright cases across Chromium/Firefox/WebKit with zero skips/unexpected/flaky results. Captures remain automated evidence only. Pinned human visual approval and full manual AT still outstanding; not accepted."

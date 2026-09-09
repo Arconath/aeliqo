@@ -37,6 +37,14 @@
       "rtl"
     ]
   },
+  "focusedAccessibility": {
+    "command": "pnpm test:components:a11y",
+    "expected": 12,
+    "passed": 12,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
   "qualification": false,
   "limits": [
     "Automated Playwright visual, interaction and accessibility attachments only.",
@@ -51,6 +59,10 @@
     {
       "path": "artifacts/visual-catalog/results.json",
       "sha256": "a09b057795c4577596595f94d5e7ced5f5f8dd2f4f41b833eb1760429837bb18"
+    },
+    {
+      "path": "artifacts/component-a11y/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
     }
   ]
 }
