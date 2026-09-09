@@ -5,6 +5,7 @@
   "source": {
     "branch": "rewrite/v0.1.0-master-foundation",
     "baseHead": "076198a",
+    "candidateCommit": "4fdf892671b60ca7efb3432c00f4f10d5ea2d13c",
     "candidateSourceSha256": "4b9d8fa8cfea0cd19af3a86ad2d8da2fbee116d3db0e88874e5c0d41f4833c8a"
   },
   "workstreams": [
@@ -23,7 +24,7 @@
         "pnpm check (87/87 commands passed; sourceChangedDuringRun=false)"
       ],
       "blocker": "Release gates remain fail-closed: required scenario/task evidence plus authenticated source, registry, and deployment proof are incomplete.",
-      "nextAction": "Commit the validated source candidate. Do not publish or deploy until the required release tasks and authenticated external proof are complete."
+      "nextAction": "Resolve the remaining release tasks and authenticated external proof. Do not publish or deploy before the release gate passes."
     },
     {
       "id": "release-state-audit",
