@@ -1,0 +1,19 @@
+Aeliqo T40 active refresh probe (read-only, candidate b5edf37229b962a2576c6d5412496a6b335449d2; worktree /private/tmp/aeliqo-t40-ui)
+
+Sequence:
+  1. browser.html; evaluateUiTask; proposeUiTask; commitUiProposal.
+  2. Check table: tbody rows=2; first checkbox checked=true after selection; focus chain document->region->table->checkbox=true.
+  3. evaluateUiTask() again; await region.updateComplete and 100ms.
+  4. Check current UI; call proposeUiTask().
+
+Observed stdout/state:
+  ev1={state:data-ready}; p1={state:bound,proposalId:ui-proposal-3}; c1={state:renderer-ready}
+  before={rows:2,checked:true,focus:true,dataRevision:1}
+  ev2={state:data-ready}
+  afterEval={rows:1,checked:false,focus:false,dataRevision:2,status:active}
+  p2 throws Error: The development proposal was not bound.
+  Direct host receipt for p2 (same sequence): ok=true, value.state=invalid, diagnostics=[{code:"commit.stale", message:"A referenced result is no longer available at the staged revision and scope."}]
+
+Cause observed in source: evaluateTask assigns element.results to the new result while committed plan still references old result; presentationContext passes old state.presentation as incumbent into validateAgentComposition, which validates old result refs against current read set and rejects the fresh candidate.
+
+No provider, network, or held-out corpus used. This file is only a preserved failure record, not product source.

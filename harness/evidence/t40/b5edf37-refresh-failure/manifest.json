@@ -1,0 +1,11 @@
+{
+  "candidateCommit": "b5edf37229b962a2576c6d5412496a6b335449d2",
+  "integratedCommit": "a17cd46",
+  "status": "failed-development-host",
+  "evidenceKind": "independent reviewer reproduction record; not raw browser trace",
+  "scope": "Exposed development UI fixture only; no model or held-out score. Browser used a local Vite HTTP server; no external provider request.",
+  "finding": "Reevaluation replaces visible results before commit and makes the incumbent stale; an early-return guard allowed the new unit test to pass without reaching final assertions.",
+  "files": {
+    "reviewer-reproduction.txt": "04af463c4cf2b9e0637609a655edde7533d9d4cb12336f8e3138b01893d04b0c"
+  }
+}
