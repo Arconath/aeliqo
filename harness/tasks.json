@@ -1114,9 +1114,13 @@
         {
           "path": "harness/evidence/t30/0d00a01-adverse-probes/manifest.json",
           "sha256": "dc113ac17d081a5c43e7398352aba2eb2b09dc80a407b6b67383e98d61b11ff7"
+        },
+        {
+          "path": "harness/evidence/t30/8628c60-runtime/manifest.json",
+          "sha256": "1ba67de57a7596b94d882f8d8cf81c03dfeaeaa9560020837429e75a7ee14b93"
         }
       ],
-      "notes": "Selected installed byte/graph gates pass. Desktop Chromium extended probes at ea7957d: 30 trusted keyboard samples, 100 component disposal cycles, 10 cold and 30 warm starts pass their functional checks. DOM update p95 0.8ms is not paint; raw heap trend and missing Event Timing observations preserved. Planner remains above 16ms: controlled Node snapshot experiment 79.202ms baseline versus90.038ms candidate was rejected and source reverted. Full device/runner/adverse/whole-page qualification remains open. Additional source0d00a01 Node24 adverse lifecycle and Chromium1000category/250null/40resize/full40page probes pass. Non-cooperative late deliveries distinguished from adapter suppression. Two alternating tie-memo benchmark pairs showed no improvement; optimization discarded. Planner16ms remains unmet."
+      "notes": "Selected installed byte/graph gates pass. Desktop Chromium extended probes at ea7957d: 30 trusted keyboard samples, 100 component disposal cycles, 10 cold and 30 warm starts pass their functional checks. DOM update p95 0.8ms is not paint; raw heap trend and missing Event Timing observations preserved. The source-bound Node24 medium workload at 8628c60 records 10 cold samples (p95 142.303ms) and 30 warm samples (p95 12.608ms <=16ms), targeted reducer p95 0.108ms <=4ms, and 100 cleanup cycles with zero retained handles/regions/observers. Cold-start, full device/runner/adverse/whole-page and manual qualification remain open. Additional source0d00a01 Node24 adverse lifecycle and Chromium1000category/250null/40resize/full40page probes pass. Non-cooperative late deliveries are distinguished from adapter suppression."
     },
     {
       "id": "T31",

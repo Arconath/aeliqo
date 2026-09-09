@@ -1,0 +1,57 @@
+{
+  "task": "T30",
+  "status": "partial-runtime-budget-pass",
+  "sourceCommit": "8628c604ddfd2c1826807829432103a8becff4f1",
+  "sourceDigest": "9afbd73d926c9a08e1713c2b72c767a9f54d63f1a7fcbf15bd5256cbb94b7e03",
+  "sourceChangedDuringRun": false,
+  "environment": {
+    "runtime": "node v24.20.0",
+    "platform": "darwin arm64",
+    "cpu": "Apple M4 Pro",
+    "memoryBytes": 25769803776,
+    "osRelease": "25.6.0"
+  },
+  "workload": {
+    "candidateCount": 64,
+    "rowCount": 10000,
+    "viewCount": 30,
+    "fieldCount": 100,
+    "rowFieldCount": 100,
+    "expansions": 64,
+    "plannerNodes": 31
+  },
+  "checks": {
+    "planner": {
+      "coldSampleCount": 10,
+      "coldP95Ms": 142.303167,
+      "warmSampleCount": 30,
+      "warmP95Ms": 12.608041999999841,
+      "budgetMs": 16,
+      "budgetAssertion": true
+    },
+    "targetedReducer": {
+      "iterations": 100,
+      "dispatchP95Ms": 0.1077499999992142,
+      "budgetMs": 4,
+      "budgetAssertion": true
+    },
+    "cleanup": {
+      "cycles": 100,
+      "retainedHandles": 0,
+      "liveRegions": 0,
+      "openObservers": 0,
+      "budgetAssertion": true
+    }
+  },
+  "artifacts": [
+    {
+      "path": "artifacts/performance-workloads/runtime-1788972200143.json",
+      "sha256": "4387cf2572f49ea2093037426a5279dcd9d09b5b9daee480d43403f9a0bb7a95"
+    }
+  ],
+  "limits": [
+    "This is the medium Node workload on an Apple M4 Pro development machine.",
+    "Cold planner startup remains above the warm budget and is recorded separately.",
+    "Whole-page, low-powered-device, full browser, manual accessibility and release qualification remain open."
+  ]
+}
