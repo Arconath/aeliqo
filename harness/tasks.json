@@ -1070,8 +1070,17 @@
       ],
       "status": "active",
       "stage": "ready",
-      "evidence": [],
-      "notes": "426 initial catalog captures plus252 nativefield state/read-only cases pass acrossChromium/Firefox/WebKit. Invalid radio/date semantics andcomboboxfeedbackocclusion fixedc257e26; independentreview approved. Data/viz/compound alternate-state suite inreview; fullvisualapproval/manualAT stillrequired. Notaccepted."
+      "evidence": [
+        {
+          "path": "harness/evidence/integration/a73b4a9-82-commands/manifest.json",
+          "sha256": "bf201af08f9f09f0969dfd4bbf7ae7e6fefedf594f4c24d522990f7f443b9985"
+        },
+        {
+          "path": "harness/evidence/t29/ea7957d-interactions/manifest.json",
+          "sha256": "31902271c3341807ece7754822caaec732da105a8e6cc94ccfc15301c3952e83"
+        }
+      ],
+      "notes": "Automated catalog matrix: 882 checks passed at source a73b4a9. Added interaction matrix: 255 passed, zero skips/flakes across Chromium/Firefox/WebKit at ea7957d after independently reviewed form/filter/selection/contrast/pointer fixes. Source unchanged during each run; captures remain unapproved. Pinned human visual approval and full manual AT still outstanding; not accepted."
     },
     {
       "id": "T30",
@@ -1093,8 +1102,17 @@
       ],
       "status": "active",
       "stage": "ready",
-      "evidence": [],
-      "notes": "Actual production browser/Node probes found planner overrun; scoped core reuse independently reviewed at9f2439d passes154contracts/23adaptation/14security/5measurement tests. Five diagnostic planner samples76\u201393ms still exceed16ms. Standalone cold/warm fixture and remaining performance matrix active; no qualification."
+      "evidence": [
+        {
+          "path": "harness/evidence/t30/ea7957d-extended-browser/manifest.json",
+          "sha256": "6a709f3a58520f80755f1ca9f46fb3df76ce917988be7ac06fd20ef2abe3e793"
+        },
+        {
+          "path": "harness/evidence/t30/0a6ac0b-snapshot-experiment/manifest.json",
+          "sha256": "5468a294f49ea69c346284ba148d9f4831c420ef937ae41ad5504777913c75ec"
+        }
+      ],
+      "notes": "Selected installed byte/graph gates pass. Desktop Chromium extended probes at ea7957d: 30 trusted keyboard samples, 100 component disposal cycles, 10 cold and 30 warm starts pass their functional checks. DOM update p95 0.8ms is not paint; raw heap trend and missing Event Timing observations preserved. Planner remains above 16ms: controlled Node snapshot experiment 79.202ms baseline versus90.038ms candidate was rejected and source reverted. Full device/runner/adverse/whole-page qualification remains open."
     },
     {
       "id": "T31",

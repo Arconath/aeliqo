@@ -1,0 +1,30 @@
+{
+  "output": "/tmp/aeliqo-snapshot-experiment-before/runtime-1788917481565.json",
+  "sourceCommit": "0a6ac0be9387b71eced6f919e6c6bd54c99c64a5",
+  "timingEnabled": true,
+  "medium": {
+    "durationMs": 76.69995799999924,
+    "status": "search-exhausted",
+    "expansions": 64,
+    "nodes": 31,
+    "candidateCount": 64,
+    "rowCount": 10000,
+    "viewCount": 30,
+    "fieldCount": 100,
+    "rowFieldCount": 100
+  },
+  "reducer": {
+    "iterations": 100,
+    "successful": 100,
+    "unrelatedRoutes": 0,
+    "p50Ms": 0.11054100000001199,
+    "p95Ms": 0.13404199999968114
+  },
+  "cleanup": {
+    "cycles": 100,
+    "retainedHandles": 0,
+    "liveRegions": 0,
+    "openObservers": 0,
+    "bounded": true
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "task": "T30",
+  "decision": "rejected-and-reverted",
+  "baselineSourceCommit": "0a6ac0b",
+  "candidate": "rejected-experiment.patch",
+  "method": "Sequential Node 24 production-package full medium workload on same desktop; before then after. Single paired observation, not a causal confidence interval.",
+  "p95Ms": {
+    "before": 79.20200000000023,
+    "after": 90.03787499999999
+  },
+  "budgetMs": 16,
+  "reason": "Copying and freezing the candidate list did not improve total planning latency. No production change retained.",
+  "limitations": [
+    "Both runs fail the unchanged 16ms planner budget.",
+    "No correctness or independent approval claimed for the discarded experiment."
+  ],
+  "artifacts": [
+    {
+      "path": "after/runtime-1788917530697.json",
+      "sha256": "05638556787d830d88c27fb5533deac4ee6e1d1bcea8f455fa7d3576ac21ba28"
+    },
+    {
+      "path": "after.log",
+      "sha256": "4d3f8c58e109262145139e0b8888064c59a1de36929b21777176808e006c7092"
+    },
+    {
+      "path": "before/runtime-1788917481565.json",
+      "sha256": "49289b3270e4781ae4307738ef82e2dccbe444398fb2d4a8840d207a6c5515e9"
+    },
+    {
+      "path": "before.log",
+      "sha256": "1c918f9c90349982b49b9ed6cfb8bbca43cd839c04b34f7f344069f0f9f937eb"
+    },
+    {
+      "path": "rejected-experiment.patch",
+      "sha256": "41594e7e59685afb980ee7618fe69e9c25e3c2fa13182123fbe25994a464ceae"
+    }
+  ]
+}

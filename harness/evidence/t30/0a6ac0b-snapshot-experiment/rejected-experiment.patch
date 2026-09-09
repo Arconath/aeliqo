@@ -1,0 +1,169 @@
+diff --git a/packages/core/src/contracts/ingress.ts b/packages/core/src/contracts/ingress.ts
+index 2f00333..7e1d4be 100644
+--- a/packages/core/src/contracts/ingress.ts
++++ b/packages/core/src/contracts/ingress.ts
+@@ -14,7 +14,8 @@ export function utf8Bytes(text: string): number {
+   return bytes;
+ }
+ type WirePath = {readonly parent: WirePath | undefined; readonly key: string | number; readonly depth: number};
+-type Frame = {value: unknown; path: WirePath | undefined; leave?: boolean};
++type SnapshotSlot = {container: Record<string, unknown> | unknown[]; key: string};
++type Frame = {value: unknown; path: WirePath | undefined; leave?: boolean; slot?: SnapshotSlot; owned?: object};
+ function pathParts(path: WirePath | undefined): (string | number)[] {
+   const parts = new Array<string | number>(path?.depth ?? 0);
+   for (let current = path; current !== undefined; current = current.parent) parts[current.depth - 1] = current.key;
+@@ -52,6 +53,16 @@ function inspectTextKeys(text: string): Outcome<undefined> {
+ }
+ /** Do cheap iterative resource/JSON checks before recursive schema parsing. */
+ export function inspectWire(input: unknown): Outcome<unknown> {
++  return scanWire(input, false);
++}
++
++/** Internal owned JSON snapshot. Each alias occurrence is counted and copied;
++ * no caller object or callback value is treated as an owned validation cache. */
++export function snapshotWire(input: unknown): Outcome<unknown> {
++  return scanWire(input, true);
++}
++
++function scanWire(input: unknown, snapshot: boolean): Outcome<unknown> {
+   let value = input;
+   if (typeof input === 'string') {
+     if (input.length > L.bytes || utf8Bytes(input) > L.bytes)
+@@ -61,7 +72,8 @@ export function inspectWire(input: unknown): Outcome<unknown> {
+     const uniqueKeys = inspectTextKeys(input);
+     if (!uniqueKeys.ok) return uniqueKeys;
+   }
+-  const frames: Frame[] = [{value, path: undefined}];
++  const holder: Record<string, unknown> = {};
++  const frames: Frame[] = [{value, path: undefined, ...(snapshot ? {slot: {container: holder, key: 'value'}} : {})}];
+   const ancestors = new Set<object>();
+   let nodes = 0;
+   let textBytes = 0;
+@@ -69,18 +81,27 @@ export function inspectWire(input: unknown): Outcome<unknown> {
+     while (frames.length) {
+       const frame = frames.pop()!;
+       const current = frame.value;
+-      if (frame.leave) {ancestors.delete(current as object); continue;}
++      if (frame.leave) {
++        ancestors.delete(current as object);
++        if (frame.owned !== undefined) Object.freeze(frame.owned);
++        continue;
++      }
++      const assign = (next: unknown): void => {
++        if (frame.slot !== undefined) (frame.slot.container as Record<string, unknown>)[frame.slot.key] = next;
++      };
+       if (++nodes > L.nodes) return wireFailure('wire.nodes', 'The wire document exceeds its node limit.', pathParts(frame.path));
+       if ((frame.path?.depth ?? 0) > L.depth) return wireFailure('wire.depth', 'The wire document exceeds its depth limit.', pathParts(frame.path).slice(0, L.depth));
+-      if (current === null || typeof current === 'boolean') continue;
++      if (current === null || typeof current === 'boolean') {assign(current); continue;}
+       if (typeof current === 'number') {
+         if (!Number.isFinite(current)) return wireFailure('wire.number', 'Wire numbers must be finite.', pathParts(frame.path));
++        assign(current);
+         continue;
+       }
+       if (typeof current === 'string') {
+         if (current.length > L.text) return wireFailure('wire.text', 'A wire string exceeds its length limit.', pathParts(frame.path));
+         textBytes += utf8Bytes(current);
+         if (textBytes > L.bytes) return wireFailure('wire.bytes', 'The wire document exceeds its byte limit.');
++        assign(current);
+         continue;
+       }
+       if (typeof current !== 'object') return wireFailure('wire.type', 'Only JSON values are accepted.', pathParts(frame.path));
+@@ -96,8 +117,10 @@ export function inspectWire(input: unknown): Outcome<unknown> {
+         return wireFailure('wire.properties', 'A wire object exceeds its property limit.', pathParts(frame.path));
+       if (isArray && keys.length !== current.length + 1)
+         return wireFailure('wire.array', 'Sparse arrays and extra array properties are not accepted.', pathParts(frame.path));
++      const owned: Record<string, unknown> | unknown[] | undefined = snapshot ? (isArray ? [] : Object.create(null) as Record<string, unknown>) : undefined;
++      if (owned !== undefined) assign(owned);
+       ancestors.add(current);
+-      frames.push({value: current, path: frame.path, leave: true});
++      frames.push({value: current, path: frame.path, leave: true, ...(owned === undefined ? {} : {owned})});
+       for (let index = keys.length - 1; index >= 0; index--) {
+         const key = keys[index]!;
+         if (typeof key !== 'string') return wireFailure('wire.key', 'Symbol keys are not wire data.', pathParts(frame.path));
+@@ -109,14 +132,14 @@ export function inspectWire(input: unknown): Outcome<unknown> {
+         if (!descriptor || !('value' in descriptor) || !descriptor.enumerable)
+           return wireFailure('wire.accessor', 'Accessors and hidden properties are not wire data.', [...pathParts(frame.path), key]);
+         textBytes += utf8Bytes(key);
+-        frames.push({value: descriptor.value as unknown, path: {parent: frame.path, key: isArray ? Number(key) : key, depth: (frame.path?.depth ?? 0) + 1}});
++        frames.push({value: descriptor.value as unknown, path: {parent: frame.path, key: isArray ? Number(key) : key, depth: (frame.path?.depth ?? 0) + 1}, ...(owned === undefined ? {} : {slot: {container: owned, key}})});
+       }
+     }
+     // Includes escaped characters and punctuation after the bounded structure walk.
+-    if (utf8Bytes(JSON.stringify(value)) > L.bytes)
++    if (utf8Bytes(JSON.stringify(snapshot ? holder['value'] : value)) > L.bytes)
+       return wireFailure('wire.bytes', 'The wire document exceeds its byte limit.');
+   } catch {
+     return wireFailure('wire.object', 'The supplied object could not be inspected as JSON.');
+   }
+-  return {ok: true, value};
++  return {ok: true, value: snapshot ? holder['value'] : value};
+ }
+diff --git a/packages/core/src/presentation/compose.ts b/packages/core/src/presentation/compose.ts
+index 479ccb1..5c206cf 100644
+--- a/packages/core/src/presentation/compose.ts
++++ b/packages/core/src/presentation/compose.ts
+@@ -1,7 +1,7 @@
+ import {stateMappingFor} from './state.js';
+ import * as z from 'zod/mini';
+ import {parseContract} from '../contracts/parse.js';
+-import {inspectWire} from '../contracts/ingress.js';
++import {inspectWire, snapshotWire} from '../contracts/ingress.js';
+ import {idSchema, revisionSchema, jsonSchema} from '../contracts/schemas.js';
+ import {validateCommitReadSet} from '../contracts/commit.js';
+ import type {Diagnostic, Outcome, PresentationPlan, Result, Task, VersionRef} from '../contracts/types.js';
+@@ -16,8 +16,8 @@ const compareText = (left: string, right: string): number => left < right ? -1 :
+ const stateIdentity = {id: 'aeliqo.state.identity', revision: '1'} as const;
+ const suggestionSchema = z.record(z.string(), jsonSchema);
+ 
+-function normalizePlan(input: unknown, id: string, revision: string, preconditions: unknown): Outcome<PresentationPlan> {
+-  const wire = inspectWire(input);
++function normalizePlan(input: unknown, id: string, revision: string, preconditions: unknown, owned = false): Outcome<PresentationPlan> {
++  const wire = owned ? {ok: true as const, value: input} : inspectWire(input);
+   if (!wire.ok) return wire;
+   if (wire.value === null || typeof wire.value !== 'object' || Array.isArray(wire.value))
+     return fail('candidate', 'A presentation candidate must be a plan object.');
+@@ -234,11 +234,13 @@ export function composePresentation(request: PresentationCompositionRequest, reg
+   if (constraints.task.revision !== requestPins.value.taskRevision || constraints.task.catalogRevision !== requestPins.value.catalogRevision
+     || constraints.task.functionRegistryDigest !== requestPins.value.functionRegistryDigest || constraints.experience.revision !== requestPins.value.experienceRevision)
+     return fail('stale', 'The task or experience differs from the current version pins.');
++  let candidates: PresentationCompositionRequest['candidates'] = [];
+   if (request.candidates !== undefined) {
+-    const candidatesWire = inspectWire(request.candidates);
++    const candidatesWire = snapshotWire(request.candidates);
+     if (!candidatesWire.ok) return candidatesWire;
+     if (!Array.isArray(candidatesWire.value) || candidatesWire.value.length > 64)
+       return fail('candidate-budget', 'The proposed complete candidate list exceeds the input budget.');
++    candidates = candidatesWire.value as NonNullable<PresentationCompositionRequest['candidates']>;
+   }
+   const rejected: {candidate: string; diagnostics: readonly Diagnostic[]}[] = [];
+   let expansions = 0;
+@@ -255,9 +257,9 @@ export function composePresentation(request: PresentationCompositionRequest, reg
+       tie: canonical(presentation.plan), incumbent: candidateIsIncumbent};
+     if (betterCandidate(rank, best)) best = rank;
+   };
+-  const validateCandidate = (input: unknown, label: string, options: PresentationValidationOptions = {}, candidateIsIncumbent = false, expansionReserved = false): boolean => {
++  const validateCandidate = (input: unknown, label: string, options: PresentationValidationOptions = {}, candidateIsIncumbent = false, expansionReserved = false, owned = false): boolean => {
+     if (!expansionReserved && !spend()) return false;
+-    const normalized = normalizePlan(input, identity.data.id, identity.data.revision, requestPins.value);
++    const normalized = normalizePlan(input, identity.data.id, identity.data.revision, requestPins.value, owned);
+     if (!normalized.ok) { reject(label, normalized.diagnostics); return false; }
+     const checked = validatePreparedPresentationPlan(normalized.value, request.context, registry, prepared.value, options, nodeMemo);
+     if (!checked.ok) { reject(label, checked.diagnostics); return false; }
+@@ -268,7 +270,6 @@ export function composePresentation(request: PresentationCompositionRequest, reg
+ 
+   const patterns = registry.patterns ?? [];
+   const patternContext = prepared.value.patternContext;
+-  const candidates = request.candidates ?? [];
+   for (let index = 0; index < candidates.length; index++) {
+     const candidate = candidates[index]!;
+     if (candidate === null || typeof candidate !== 'object' || (candidate.source !== 'explicit' && candidate.source !== 'pattern')) {
+@@ -288,7 +289,7 @@ export function composePresentation(request: PresentationCompositionRequest, reg
+       const selectedPattern = pattern.value;
+       if (selectedPattern === undefined) { reject(`pattern.${candidate.pattern!.id}`, [{code: 'presentation.pattern', message: 'The registered pattern is unavailable.', retryable: false}]); continue; }
+       validateCandidate(expansion.value, `pattern.${candidate.pattern!.id}`, {requiredPattern: selectedPattern}, false, true);
+-    } else validateCandidate(candidate.plan, `candidate.${index}`, {}, false);
++    } else validateCandidate(candidate.plan, `candidate.${index}`, {}, false, false, true);
+     if (budgetBlocked) break;
+   }
+   const allowed = registry.manifests.filter(manifest => constraints.allowedRepresentations.includes(manifest.ref.id)
