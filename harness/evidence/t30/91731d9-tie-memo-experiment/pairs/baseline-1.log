@@ -1,0 +1,30 @@
+{
+  "output": "/tmp/aeliqo-tie-memo-pairs/baseline-1/runtime-1788918026048.json",
+  "sourceCommit": "91731d969b553f5a1f9684408c9f9ecaf0ac721b",
+  "timingEnabled": true,
+  "medium": {
+    "durationMs": 85.7446660000005,
+    "status": "search-exhausted",
+    "expansions": 64,
+    "nodes": 31,
+    "candidateCount": 64,
+    "rowCount": 10000,
+    "viewCount": 30,
+    "fieldCount": 100,
+    "rowFieldCount": 100
+  },
+  "reducer": {
+    "iterations": 100,
+    "successful": 100,
+    "unrelatedRoutes": 0,
+    "p50Ms": 0.10687500000040018,
+    "p95Ms": 0.1279160000003685
+  },
+  "cleanup": {
+    "cycles": 100,
+    "retainedHandles": 0,
+    "liveRegions": 0,
+    "openObservers": 0,
+    "bounded": true
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "task": "T30",
+  "decision": "rejected-and-reverted",
+  "baselineSourceCommit": "91731d9",
+  "candidate": "rejected-experiment.patch",
+  "method": "Two alternating baseline/candidate pairs, each with full unchanged medium production workload and raw first/subsequent observations. Worker builds/tests paused. Desktop background apps still active; no controlled runner claim.",
+  "p95Ms": {
+    "baseline": [
+      83.97529099999974,
+      85.06762499999968
+    ],
+    "candidate": [
+      90.17250000000013,
+      85.48329199999989
+    ]
+  },
+  "budgetMs": 16,
+  "correctness": "155 contracts and strict types passed; independent reviewer assessed owned-output-only tie memo safe.",
+  "reason": "No repeatable planning improvement; no optimization retained.",
+  "limits": [
+    "Both variants fail the unchanged16ms budget.",
+    "No final T30 acceptance."
+  ],
+  "artifacts": [
+    {
+      "path": "155-contracts-and-types.log",
+      "sha256": "c4c66cc5e2d61b82550974c65e335039b63baba67e7f8c103ae17ef39d2de096"
+    },
+    {
+      "path": "pairs/baseline-1/runtime-1788918026048.json",
+      "sha256": "a2a24bed4c379ce50f7d65079b2356c96890b1b3b97c9bd9430cbd1d18f69d45"
+    },
+    {
+      "path": "pairs/baseline-1-build.log",
+      "sha256": "4e7acf73b637515912d382feb5364957d55f42578ae1497adca282fa027c176a"
+    },
+    {
+      "path": "pairs/baseline-1.log",
+      "sha256": "101b9f14c17c8553726230b5fb4a00de97c6a2f069ba14b9e254ebf55a8c21a3"
+    },
+    {
+      "path": "pairs/baseline-2/runtime-1788918042486.json",
+      "sha256": "4d7b8dfe631227660495e38fe1dbf030486f5ebf81968123132df0d68f296ba0"
+    },
+    {
+      "path": "pairs/baseline-2-build.log",
+      "sha256": "4e7acf73b637515912d382feb5364957d55f42578ae1497adca282fa027c176a"
+    },
+    {
+      "path": "pairs/baseline-2.log",
+      "sha256": "79d5b0704c161cb550204ca5dd043f154b88898fa22865e340ee78487bd84f27"
+    },
+    {
+      "path": "pairs/baseline.ts",
+      "sha256": "a2c036e19b80222551594e1e9d672bf08454e91c0d315a8d60bb7c67f3743322"
+    },
+    {
+      "path": "pairs/candidate-1/runtime-1788918034362.json",
+      "sha256": "8e490ff1f455726a79a2557da57182ef8723c9ac2843d679fbcb91867432cb33"
+    },
+    {
+      "path": "pairs/candidate-1-build.log",
+      "sha256": "4e7acf73b637515912d382feb5364957d55f42578ae1497adca282fa027c176a"
+    },
+    {
+      "path": "pairs/candidate-1.log",
+      "sha256": "7334d75ae5449eeffe11204da3ccac08efb486f5192c2f09a434661986c61014"
+    },
+    {
+      "path": "pairs/candidate-2/runtime-1788918050808.json",
+      "sha256": "9a2fb7a5ab8114e1cd06158a43a317af6e0e0f19752b217bd2a9d17633d9595e"
+    },
+    {
+      "path": "pairs/candidate-2-build.log",
+      "sha256": "4e7acf73b637515912d382feb5364957d55f42578ae1497adca282fa027c176a"
+    },
+    {
+      "path": "pairs/candidate-2.log",
+      "sha256": "edace8306b6a0701de28056140d860536c81636f101203c944b31871404de2c2"
+    },
+    {
+      "path": "pairs/candidate.ts",
+      "sha256": "9ddfd11c796e3ed77d98240368bc5c38809e145b5210e08265bb3b11e70dbbed"
+    },
+    {
+      "path": "rejected-experiment.patch",
+      "sha256": "94f462869ed46b3087b75344c0bea04037bdcb4bd57c39374b820e9cab7c494d"
+    }
+  ]
+}

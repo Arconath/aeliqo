@@ -1,0 +1,44 @@
+
+ RUN  v5.0.0 /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo
+
+ ❯ tests/protocol-mcp/mcp.test.ts (11 tests | 1 failed | 10 skipped) 111ms
+   ❯ MCP adapter (11)
+     × uses the official stdio server and client with negotiated modern and legacy eras 110ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/protocol-mcp/mcp.test.ts > MCP adapter > uses the official stdio server and client with negotiated modern and legacy eras
+AssertionError: expected { ok: true, …(1) } to match object { ok: true, value: { …(2) } }
+(13 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "ok": true,
+    "value": {
+      "requestId": "stdio-modern",
+      "value": {
+-       "era": "modern",
++       "era": "legacy",
+        "query": "stdio",
+      },
+    },
+  }
+
+ ❯ tests/protocol-mcp/mcp.test.ts:103:91
+    101|     });
+    102|     expect(await modern.discover()).toMatchObject({ok: true, value: [{…
+    103|     expect(await modern.invoke('summary', {query: 'stdio'}, {requestId…
+       |                                                                                           ^
+    104|     modern.close();
+    105|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 10 skipped (11)
+   Start at  08:49:35
+   Duration  602ms (transform 45%, import 34%, tests 20%)
+

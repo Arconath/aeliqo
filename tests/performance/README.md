@@ -103,3 +103,22 @@ capacity is reported separately. Instrumentation uses weak references and prunes
 dead targets; listener counters do not model automatic once/AbortSignal removal.
 These observations do not establish a leak verdict or a universal heap budget.
 Run extended observations without concurrent builds and retain environment data.
+
+## Adverse cases
+
+`pnpm test:performance:adverse-runtime` exercises built ResultStore/RegionStore
+exports with an in-process adapter: a slow source, a16-request superseding
+sequence, non-cooperative outstanding reads delivered after return/disposal,
+independent source revisions, and pending authorization disposal. Its report
+separates adapter-suppressed events from values actually delivered late to the
+runtime. It asserts retained rows/buffers, closed sources and observers. This
+is not an HTTP, backend, heap/GC or timing-budget qualification. Set
+`AELIQO_ADVERSE_RUNTIME_OUTPUT` to save its raw JSON observations.
+
+`pnpm test:performance:adverse-visualization` runs actual production elements
+in Chromium with1,000 categories, long localized labels,250 missing values,
+1,000 host-selected identities and40 size oscillations. It checks null gaps,
+bounded internal/document geometry, exact paged data alternatives and selection
+retention through all40 pages. Raw mutation-to-DOM-plus-forced-layout times
+are observations, not paint timestamps or a performance-budget pass. The
+configured desktop fixture does not replace real mobile-device qualification.

@@ -1,0 +1,78 @@
+diff --git a/packages/core/src/presentation/compose.ts b/packages/core/src/presentation/compose.ts
+index 479ccb1..7102d77 100644
+--- a/packages/core/src/presentation/compose.ts
++++ b/packages/core/src/presentation/compose.ts
+@@ -35,10 +35,15 @@ function callbackValue(raw: unknown, code: string, message: string): Outcome<unk
+   return {ok: true, value: outcome.value};
+ }
+ 
+-function canonical(value: unknown): string {
++function canonical(value: unknown, ownedMemo?: WeakMap<object, string>): string {
+   if (value === null || typeof value !== 'object') return JSON.stringify(value);
+-  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
+-  return `{${Object.keys(value as Record<string, unknown>).sort().map(key => `${JSON.stringify(key)}:${canonical((value as Record<string, unknown>)[key])}`).join(',')}}`;
++  const cached = ownedMemo?.get(value);
++  if (cached !== undefined) return cached;
++  const serialized = Array.isArray(value)
++    ? `[${value.map(child => canonical(child, ownedMemo)).join(',')}]`
++    : `{${Object.keys(value as Record<string, unknown>).sort().map(key => `${JSON.stringify(key)}:${canonical((value as Record<string, unknown>)[key], ownedMemo)}`).join(',')}}`;
++  ownedMemo?.set(value, serialized);
++  return serialized;
+ }
+ 
+ function sameRef(left: VersionRef, right: VersionRef): boolean {
+@@ -231,6 +236,9 @@ export function composePresentation(request: PresentationCompositionRequest, reg
+   // Pure registered node resolutions may be reused only inside this synchronous
+   // composition; no validation/authority cache survives a subsequent invocation.
+   const nodeMemo = new Map<string, ResolvedPresentationNode>();
++  // Tie serialization sees only the validator's recursively frozen owned output.
++  // Shared resolved leaves can reuse bytes; no caller input or later invocation can.
++  const tieMemo = new WeakMap<object, string>();
+   if (constraints.task.revision !== requestPins.value.taskRevision || constraints.task.catalogRevision !== requestPins.value.catalogRevision
+     || constraints.task.functionRegistryDigest !== requestPins.value.functionRegistryDigest || constraints.experience.revision !== requestPins.value.experienceRevision)
+     return fail('stale', 'The task or experience differs from the current version pins.');
+@@ -252,7 +260,7 @@ export function composePresentation(request: PresentationCompositionRequest, reg
+   const reject = (candidate: string, diagnostics: readonly Diagnostic[]) => rejected.push({candidate, diagnostics});
+   const consider = (presentation: ValidatedPresentation, candidateIsIncumbent: boolean): void => {
+     const rank: RankedCandidate = {presentation, score: candidateScore(presentation, prepared.value, request.context.incumbent),
+-      tie: canonical(presentation.plan), incumbent: candidateIsIncumbent};
++      tie: canonical(presentation.plan, tieMemo), incumbent: candidateIsIncumbent};
+     if (betterCandidate(rank, best)) best = rank;
+   };
+   const validateCandidate = (input: unknown, label: string, options: PresentationValidationOptions = {}, candidateIsIncumbent = false, expansionReserved = false): boolean => {
+diff --git a/tests/contracts/presentation-memoization.test.ts b/tests/contracts/presentation-memoization.test.ts
+index 705547e..e7d4d99 100644
+--- a/tests/contracts/presentation-memoization.test.ts
++++ b/tests/contracts/presentation-memoization.test.ts
+@@ -62,6 +62,31 @@ function request(
+ }
+ 
+ describe('presentation validation memoization', () => {
++  it('preserves exact tie ordering with shared leaves, reversed candidates and later caller edits', () => {
++    const leaf = tableManifest((values, descriptor) => ({ok: true, value: {values, fields: descriptor!.fields.map(item => item.id), ports: []}}));
++    const root = layoutManifest(values => ({ok: true, value: {values, fields: [], ports: []}}));
++    const installed = registry([leaf, root]);
++    const activeContext = context();
++    const shared = basePlan('same-root', 'same-leaf', {label: '漢字 "quoted"\nline', values: [null, true, -0]});
++    const labels = Array.from({length: 64}, (_, index) => ({label: `choice-${String(index).padStart(3, '0')}`}));
++    const candidates = labels.map(values => ({source: 'explicit' as const, plan: {...shared,
++      nodes: [{...shared.nodes[0]!, config: {...shared.nodes[0]!.config, values}}, shared.nodes[1]!],
++    }}));
++    const run = (ordered: typeof candidates) => composePresentation(request(shared, activeContext, ordered), installed);
++    const first = run(candidates);
++    const reversed = run([...candidates].reverse());
++    for (const composed of [first, reversed]) {
++      expect(composed).toMatchObject({ok: true, value: {expansions: 64,
++        presentation: {plan: {nodes: [{config: {values: {label: 'choice-000'}}}, {id: 'same-leaf'}]}}}});
++    }
++    if (!first.ok || !reversed.ok) return;
++    expect(first.value.presentation?.plan).toEqual(reversed.value.presentation?.plan);
++    labels[0]!.label = 'choice-999';
++    expect(run(candidates)).toMatchObject({ok: true, value: {expansions: 64,
++      presentation: {plan: {nodes: [{config: {values: {label: 'choice-001'}}}, {id: 'same-leaf'}]}}}});
++    expect(first.value.presentation?.plan.nodes[0]!.config.values['label']).toBe('choice-000');
++  });
++
+   it('reuses structurally identical leaves across all 64 complete candidate plans while validating each distinct root', () => {
+     let leafCalls = 0;
+     let rootCalls = 0;

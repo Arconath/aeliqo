@@ -1,0 +1,41 @@
+{
+  "task": "T24",
+  "status": "scoped-regression-pass",
+  "testedSourceCommit": "e49a706",
+  "scope": "Both MCP client helpers now pass SDK ClientOptions through the second constructor argument.",
+  "before": "A requested pinned modern stdio connection was observed as legacy at the actual server.",
+  "after": "12 actual MCP tests and strict types pass, including server-observed modern and legacy eras through stdio and HTTP.",
+  "review": {
+    "reviewer": "platform_proof",
+    "status": "approved",
+    "scope": "Independent source/test review; constructor default/override semantics, auth separation, receipt binding and server-observed era discrimination."
+  },
+  "limitations": [
+    "Earlier protocol-era assertions without server-observed era were insufficient and are superseded by this regression evidence.",
+    "This is not real model reasoning, hosted deployment, or full release acceptance."
+  ],
+  "sourceFiles": [
+    {
+      "path": "packages/agent/src/mcp/index.ts",
+      "sha256": "1789feeaa5a595191b58ef17e2ec03b92b71545431779020ca7df4ac5cfbfbb5"
+    },
+    {
+      "path": "tests/protocol-mcp/mcp.test.ts",
+      "sha256": "046babde112c3c24db3cd8ccee43a1708e58f4933cb3f06d46d436491d56f85c"
+    },
+    {
+      "path": "tests/protocol-mcp/stdio-child.mjs",
+      "sha256": "f20c3a4dcdd5e9ec252a2322acff28bd61edb4c5f497cf2e4fdd170b8d4d2228"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "protocols-and-types-green.log",
+      "sha256": "ea378bd661c8becc6afdffe56db3c083244da667fe25c4c1e7db40f27569b7f9"
+    },
+    {
+      "path": "server-era-red.log",
+      "sha256": "c13c807175c29cfdaaadc6a73c8965884181042e645e4de3621f5a784f212f79"
+    }
+  ]
+}
