@@ -197,7 +197,7 @@ function recordVisibleUpdate(state: InteractionState): void {
     delayMs: state.keydownEventTimestampMs === null ? null : atMs - state.keydownEventTimestampMs,
     revision,
     rowCount: visibleRowCount(),
-    rowIds: table!.rows.map((row) => String(row.id ?? "")),
+    rowIds: [...(table!.shadowRoot?.querySelectorAll("tbody tr td:first-child") ?? [])].map((cell) => cell.textContent?.trim() ?? ""),
     text: visibleText(),
   };
 }
