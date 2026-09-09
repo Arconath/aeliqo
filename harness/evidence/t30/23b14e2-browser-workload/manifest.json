@@ -1,0 +1,87 @@
+{
+  "task": "T30",
+  "status": "partial-browser-workload-pass",
+  "sourceCommit": "23b14e262365180e8b0033de8f74863a2b2fbfd3",
+  "sourceChangedDuringRun": false,
+  "scope": "Production Vite browser workload with a Chromium timeline trace: small standalone controls, 10,000-row/30-view/100-field medium workload, bounded window over a declared 1,000,000-row source, targeted reducer, geometry and 100 mount/dispose cycles.",
+  "environment": {
+    "browser": "HeadlessChrome/153.0.8010.12",
+    "platform": "MacIntel",
+    "viewport": "1280x720",
+    "devicePixelRatio": 1,
+    "hardwareConcurrency": 12
+  },
+  "run": {
+    "command": "AELIQO_SOURCE_COMMIT=23b14e262365180e8b0033de8f74863a2b2fbfd3 AELIQO_RUN_PERFORMANCE=1 AELIQO_ENFORCE_PERFORMANCE_BUDGETS=1 pnpm test:performance:browser",
+    "tests": 2,
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "durationSeconds": 11.4,
+    "tracePhasesAvailable": true
+  },
+  "workloads": {
+    "medium": {
+      "rows": 10000,
+      "views": 30,
+      "fields": 100,
+      "candidateCount": 64,
+      "plannerP95Ms": 8.9,
+      "plannerBudgetMs": 16,
+      "plannerWithinBudget": true,
+      "totalMediumWorkloadP95Ms": 144.5,
+      "totalTimingIsNotPlannerBudget": true
+    },
+    "reducer": {
+      "dispatchP95Ms": 0.2,
+      "budgetMs": 4,
+      "withinBudget": true
+    },
+    "largeWindow": {
+      "declaredPopulationRows": 1000000,
+      "requestedRows": 100,
+      "transferredRows": 100,
+      "executedRows": 100,
+      "examinedRows": 100,
+      "mountedRows": 44,
+      "mountedRowBudget": 100,
+      "responseBodyBytes": 5888
+    },
+    "cleanup": {
+      "cycles": 100,
+      "activeListeners": 0,
+      "detachedRegistrations": 500,
+      "remainingElements": 0,
+      "retainedHandles": 0,
+      "liveRegions": 0,
+      "openObservers": 0,
+      "heapDeltaBytes": 0,
+      "bounded": true
+    }
+  },
+  "trace": {
+    "scriptEvents": 5030,
+    "scriptTotalMs": 5976.04,
+    "layoutEvents": 9,
+    "layoutTotalMs": 3.096,
+    "paintEvents": 2,
+    "paintTotalMs": 0.02
+  },
+  "qualification": false,
+  "limits": [
+    "This is one current MacIntel Chromium run with first/subsequent samples in one page; it is not full process/network cold qualification or lower-powered device evidence.",
+    "The total medium workload includes rendering 30 views and is not substituted for the isolated planner budget.",
+    "Detached listener registrations are retained as diagnostic observations; zero runtime handles/regions/observers and zero reported heap delta do not establish a universal leak verdict.",
+    "Full T30 cold/warm, adverse, whole-page, package and manual qualification remains open."
+  ],
+  "artifacts": [
+    {
+      "path": "artifacts/performance-browser/browser-records-first-subs-091cf-Chromium-layout-paint-trace/performance-report.json",
+      "sha256": "b73919f6e763bab3bd9712794804537c1c07fd5881068fbc5b112f5f4f471842"
+    },
+    {
+      "path": "artifacts/performance-browser/browser-records-first-subs-091cf-Chromium-layout-paint-trace/chromium-timeline-trace.json",
+      "sha256": "9a3eda87001f1257aa91d54218f39be5b09336431b643115750610741ac97802"
+    }
+  ]
+}
