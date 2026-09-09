@@ -602,6 +602,14 @@
       "timeoutSeconds": 300
     },
     {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:site:document-layout"
+      ],
+      "timeoutSeconds": 600
+    },
+    {
       "kind": "packages",
       "argv": [
         "pnpm",

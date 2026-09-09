@@ -147,6 +147,12 @@ one fresh context with the cache cleared and disabled, plus one reload after
 warmup with caching enabled. `AELIQO_RUN_PERFORMANCE=1` expands this to
 10 cold and 30 warm observations per route.
 
+`pnpm test:site:document-layout` separately builds the site and visits all 71
+component documentation routes. It records controlled hydration layout-shift
+entries, verifies real component mounts and static expected-result content, and
+checks the Table documentation structure with JavaScript disabled. Its 0.1
+per-route limit is a local browser observation, not a p75 field CLS claim.
+
 Navigation, resource/body bytes, cache responses, paint entries, LCP candidates
 and individual layout shifts are retained separately. Unsupported observations
 remain null; observer/resource-buffer limits are recorded. LCP candidates are

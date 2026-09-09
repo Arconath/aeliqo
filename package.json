@@ -88,6 +88,7 @@
     "build:site": "pnpm build:platform && pnpm build:agent && pnpm --filter @aeliqo/site build",
     "test:site": "pnpm build:platform && pnpm build:agent && vitest run --config tests/site/vitest.config.mjs && tsc -p tests/site/tsconfig.json && tsc -p apps/site/tsconfig.json",
     "test:site:browser": "playwright test --config tests/site/playwright.config.mjs",
+    "test:site:document-layout": "pnpm build:site && playwright test --config tests/site/document-layout.playwright.config.mjs",
     "test:studio:consumers": "node tests/studio-consumers/studio-tarballs.mjs",
     "test:agent-evaluation:host": "pnpm build:agent && vitest run --config tests/agent-evaluation/vitest.config.mjs && tsc -p tests/agent-evaluation/tsconfig.json",
     "test:security": "pnpm build:agent && pnpm --filter @aeliqo/testkit build && vitest run --config tests/security/vitest.config.mjs && tsc -p tests/security/tsconfig.json",
