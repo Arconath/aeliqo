@@ -23,7 +23,7 @@ not inspect the sealed prompts, source rows or expected answers.
 
 Still required: independently accepted full held-out coverage; owner-selected exact
 weak/strong model configurations and explicit spend ceiling; bounded live trials
-through the official model adapter; external MCP-host reasoning trials; first-attempt and
+through the production protocol adapter; external MCP-host reasoning trials; first-attempt and
 recovery scores; arithmetic/scope/grounding oracles; UI task completion and
 ablation results. Report unavailable credentials, incomplete UI observation,
 unreviewed prose, or missing cost data as blocked/unmeasured. Never substitute
@@ -56,16 +56,20 @@ Before each trial, the runner reserves a conservative bound using all permitted
 model requests, input tokens, turns, output tokens, and the supplied rates. It
 records reservation and usage-derived estimates separately from charged cost,
 which remains unknown. Price changes or extra provider fees are outside this
-estimate; live approval must use current reviewed rates. It rejects missing or mismatched expected reported snapshots and captures
-model snapshots and response IDs without storing raw provider reasoning or
-headers. Source and corpus hashes accompany every report. A changed source
+estimate; live approval must use current reviewed rates. It rejects missing or
+mismatched expected reported snapshots and records model identities plus hashed
+response IDs without storing raw model prose, reasoning, tool payloads, task
+objects, provider bodies, or headers. Trial rows use a whitelist of counters,
+states, score outputs, timing, and safe diagnostic codes. Source and corpus
+hashes accompany every report. A changed source
 invalidates candidate qualification.
 
 Data correctness compares named outputs, selected values/order, grain,
 completeness, and scope against fixture answers excluded from model context.
 Wilson intervals show sample size and uncertainty; unrun groups have null
 intervals. UI completion and prose grounding remain null until those independent
-checks are supplied. Provider failures stay in the model trial denominator.
+checks are supplied. Trials without an exact authorized reported-model snapshot
+remain visible as attempted/unqualified and do not enter weak/strong score denominators.
 
 The current scorer rejects extra selected fields, unexpected row keys, and duplicate
 output identities. Corpus parsing requires unique output/field identities and

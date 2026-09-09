@@ -2,6 +2,7 @@ import {expect,it,vi} from 'vitest';
 import {mkdtemp,writeFile,readFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
+import {createHash} from 'node:crypto';
 import {runEvaluation,parseConfig,parseCase} from './runner.js';
 import {developmentCase} from './development.js';
 it('runs an explicit baseline without credentials or network and labels live evaluation blocked',async()=>{const directory=await mkdtemp(join(tmpdir(),'aeliqo-eval-preflight-'));const corpus=join(directory,'corpus.json');await writeFile(corpus,JSON.stringify([developmentCase]));const fetch=vi.spyOn(globalThis,'fetch').mockRejectedValue(new Error('Unexpected provider egress'));try{expect(await runEvaluation(['--corpus',corpus,'--output',directory])).toBe(2);expect(fetch).not.toHaveBeenCalled();const report=JSON.parse(await readFile(join(directory,'report.json'),'utf8'));expect(report.status).toBe('blocked');expect(report.rows[0].score).toMatchObject({dataCorrect:true,uiTaskCompletion:null,narrativeGrounding:null});expect(report.groups.every((group:{trials:number;interval:unknown})=>group.trials===0&&group.interval===null)).toBe(true);}finally{fetch.mockRestore();}});
@@ -24,3 +25,29 @@ it('records a real MCP explicit baseline separately from model-quality groups',a
  expect(report.rows[1].observation.toolSchemaSha256).toMatch(/^[a-f0-9]{64}$/);
  expect(report.groups.every((group:{trials:number;interval:unknown})=>group.trials===0&&group.interval===null)).toBe(true);
 },30000);
+
+it('never persists model prose, tool payloads, response IDs, or configured credential values',async()=>{
+ const directory=await mkdtemp(join(tmpdir(),'aeliqo-eval-secret-report-'));const corpus=join(directory,'corpus.json');const config=join(directory,'config.json');
+ const corpusBytes=JSON.stringify([developmentCase]);const secret='synthetic-provider-secret-never-persist';
+ const connection={protocol:'openai-compatible-chat',baseURL:'https://provider.example/v1',credentialEnvironment:'AELIQO_EVAL_PROVIDER_SECRET',auth:{scheme:'bearer'},capabilities:['tool-calls','usage','request-cancellation']};
+ const models=[{label:'weak',...connection,model:'synthetic-weak',expectedReportedModel:'reported-weak',inputUSDPerMillion:1,outputUSDPerMillion:1,priceSource:'synthetic test rate'},{label:'strong',...connection,model:'synthetic-strong',expectedReportedModel:'reported-strong',inputUSDPerMillion:1,outputUSDPerMillion:1,priceSource:'synthetic test rate'}];
+ await writeFile(corpus,corpusBytes);await writeFile(config,JSON.stringify({version:'1',authorized:true,authorizationReference:'Synthetic test authorization only',authorizedCorpusSha256:createHash('sha256').update(corpusBytes).digest('hex'),maxUSD:1,trials:1,models,budget:{maxTurns:1,maxModelRequests:1,maxToolCalls:1,maxMilliseconds:5000,maxInputTokens:10000,maxOutputTokens:100,maxTotalTokens:20000,maxInputBytes:1000000,maxOutputBytes:100000,maxRepeatedCalls:1}}));
+ vi.stubEnv('AELIQO_EVAL_PROVIDER_SECRET',secret);const fetch=vi.spyOn(globalThis,'fetch').mockImplementation(async(_input,init)=>{const body=JSON.parse(String(init?.body));const model=body.model==='synthetic-weak'?'reported-weak':'reported-strong';return new Response(JSON.stringify({id:`response-${secret}`,model,choices:[{message:{role:'assistant',content:secret},finish_reason:'stop'}],usage:{prompt_tokens:2,completion_tokens:1,total_tokens:3}}),{status:200,headers:{'content-type':'application/json'}});});
+ try{expect(await runEvaluation(['--corpus',corpus,'--config',config,'--output',directory,'--live'])).toBe(2);const report=await readFile(join(directory,'report.json'),'utf8');expect(report).not.toContain(secret);const parsed=JSON.parse(report);expect(parsed.groups).toMatchObject([{label:'weak',attemptedTrials:1,unqualifiedTrials:0,trials:1},{label:'strong',attemptedTrials:1,unqualifiedTrials:0,trials:1}]);expect(parsed.rows.filter((row:{mode:string})=>row.mode==='governed-model-data').every((row:{result:Record<string,unknown>})=>!Object.hasOwn(row.result,'textDraft'))).toBe(true);}finally{fetch.mockRestore();vi.unstubAllEnvs();}
+});
+
+it('rejects duplicate reported snapshots even when configured aliases differ',()=>{
+ const connection={protocol:'openai-compatible-chat',baseURL:'https://provider.example/v1',credentialEnvironment:'AELIQO_EVAL_PROVIDER_SECRET',auth:{scheme:'bearer'},capabilities:['tool-calls']};
+ const budget={maxTurns:1,maxModelRequests:1,maxToolCalls:1,maxMilliseconds:5000,maxInputTokens:100,maxOutputTokens:100,maxTotalTokens:200,maxInputBytes:100000,maxOutputBytes:100000,maxRepeatedCalls:1};
+ expect(parseConfig({version:'1',authorized:true,authorizationReference:'Synthetic test authorization only',authorizedCorpusSha256:'0'.repeat(64),maxUSD:1,trials:1,models:[{label:'weak',...connection,model:'alias-a',expectedReportedModel:'same-snapshot',inputUSDPerMillion:1,outputUSDPerMillion:1,priceSource:'synthetic'},{label:'strong',...connection,model:'alias-b',expectedReportedModel:'same-snapshot',inputUSDPerMillion:1,outputUSDPerMillion:1,priceSource:'synthetic'}],budget})).toBeUndefined();
+});
+
+it('keeps a mismatched provider snapshot out of the model score denominator',async()=>{
+ const directory=await mkdtemp(join(tmpdir(),'aeliqo-eval-model-pin-'));const corpus=join(directory,'corpus.json');const config=join(directory,'config.json');const corpusBytes=JSON.stringify([developmentCase]);
+ const connection={protocol:'openai-compatible-chat',baseURL:'https://provider.example/v1',credentialEnvironment:'AELIQO_EVAL_PROVIDER_SECRET',auth:{scheme:'bearer'},capabilities:['tool-calls','usage']};
+ const models=[{label:'weak',...connection,model:'alias-weak',expectedReportedModel:'reported-weak',inputUSDPerMillion:1,outputUSDPerMillion:1,priceSource:'synthetic'},{label:'strong',...connection,model:'alias-strong',expectedReportedModel:'reported-strong',inputUSDPerMillion:1,outputUSDPerMillion:1,priceSource:'synthetic'}];
+ const budget={maxTurns:1,maxModelRequests:1,maxToolCalls:1,maxMilliseconds:5000,maxInputTokens:10000,maxOutputTokens:100,maxTotalTokens:20000,maxInputBytes:1000000,maxOutputBytes:100000,maxRepeatedCalls:1};
+ await writeFile(corpus,corpusBytes);await writeFile(config,JSON.stringify({version:'1',authorized:true,authorizationReference:'Synthetic test authorization only',authorizedCorpusSha256:createHash('sha256').update(corpusBytes).digest('hex'),maxUSD:1,trials:1,models,budget}));vi.stubEnv('AELIQO_EVAL_PROVIDER_SECRET','synthetic');
+ const fetch=vi.spyOn(globalThis,'fetch').mockImplementation(async(_input,init)=>{const body=JSON.parse(String(init?.body));const model=body.model==='alias-weak'?'unexpected-snapshot':'reported-strong';return new Response(JSON.stringify({id:`response-${model}`,model,choices:[{message:{role:'assistant',content:'done'},finish_reason:'stop'}],usage:{prompt_tokens:2,completion_tokens:1,total_tokens:3}}),{status:200});});
+ try{expect(await runEvaluation(['--corpus',corpus,'--config',config,'--output',directory,'--live'])).toBe(2);const report=JSON.parse(await readFile(join(directory,'report.json'),'utf8'));expect(report.groups).toMatchObject([{label:'weak',attemptedTrials:1,unqualifiedTrials:1,trials:0,interval:null},{label:'strong',attemptedTrials:1,unqualifiedTrials:0,trials:1}]);expect(report.blocks).toContain('Missing or non-authorized reported model snapshot for weak/development-records/trial-1.');}finally{fetch.mockRestore();vi.unstubAllEnvs();}
+});

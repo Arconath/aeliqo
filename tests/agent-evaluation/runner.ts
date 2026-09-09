@@ -6,8 +6,8 @@ import {parseCatalog,parseTask,parseWireValue,type Task} from '@aeliqo/core';
 import {createOpaqueModelSecret,createOpenAICompatibleToolModel} from '../../packages/agent/src/model/index.js';
 import type {ToolModelCapability} from '../../packages/agent/src/model/protocol.js';
 import {runToolModel} from '../../packages/agent/src/model/loop.js';
-import type {ToolModelBudget} from '../../packages/agent/src/model/types.js';
-import {createEvaluationHost,type EvaluationFixture} from './host.js';
+import type {ToolModelBudget,ToolModelLoopOutcome} from '../../packages/agent/src/model/types.js';
+import {createEvaluationHost,type EvaluationFixture,type EvaluationObservation} from './host.js';
 import {scoreData,wilsonInterval,type ExpectedOutput} from './scoring.js';
 import {runExplicitMcp} from './mcp-baseline.js';
 interface EvaluationCase{readonly id:string;readonly partition:'development'|'heldout';readonly independentAuthor:string;readonly exposure:string;readonly prompt:string;readonly fixture:EvaluationFixture;readonly explicitTask:Task;readonly expected:readonly ExpectedOutput[];}
@@ -29,7 +29,7 @@ function validModel(value:unknown):value is ModelConfig{
 }
 function parseConfig(value:unknown):LiveConfig|undefined{
  if(!object(value)||value.version!=='1'||typeof value.authorized!=='boolean'||!boundedText(value.authorizationReference,512)||typeof value.authorizedCorpusSha256!=='string'||!/^([a-f0-9]{64})$/.test(value.authorizedCorpusSha256)||!integer(value.trials,1,20)||typeof value.maxUSD!=='number'||!Number.isFinite(value.maxUSD)||value.maxUSD<=0||!Array.isArray(value.models)||value.models.length!==2||!object(value.budget))return;
- const models=value.models;const [first,second]=models;if(!first||!second||!models.every(validModel)||new Set(models.map(model=>model.label)).size!==2||first.model===second.model)return;
+ const models=value.models;const [first,second]=models;if(!first||!second||!models.every(validModel)||new Set(models.map(model=>model.label)).size!==2||first.model===second.model||first.expectedReportedModel===second.expectedReportedModel)return;
  const budget=value.budget;for(const [key,max]of Object.entries({maxTurns:32,maxModelRequests:64,maxToolCalls:64,maxMilliseconds:300000,maxInputTokens:1000000,maxOutputTokens:100000,maxTotalTokens:2000000,maxInputBytes:1000000,maxOutputBytes:1000000,maxRepeatedCalls:4}))if(!integer(budget[key],1,max))return;
  return value as unknown as LiveConfig;
 }
@@ -44,6 +44,13 @@ function parseCase(value:unknown):EvaluationCase|undefined{
  for(const output of value.expected){const quality=output.quality;if(!object(quality)||!Array.isArray(quality.identity)||!quality.identity.every(id=>boundedText(id))||new Set(quality.identity).size!==quality.identity.length||!integer(quality.populationCount,0,10000)||quality.precision!=='exact'||!object(quality.sourceRevisions)||!Object.values(quality.sourceRevisions).every(revision=>boundedText(revision))||!['observed','computed'].includes(String(quality.evidenceKind))||!Array.isArray(quality.definitions)||!quality.definitions.every(ref=>object(ref)&&boundedText(ref.id)&&boundedText(ref.revision)))return;if(new Set(output.fields).size!==output.fields.length||output.fields.length===0||new Set(output.grain).size!==output.grain.length||!output.rows.every((row:Record<string,unknown>)=>Object.keys(row).length===output.fields.length&&output.fields.every((field:string)=>Object.hasOwn(row,field))))return;}
  if(!parseWireValue(value).ok)return;
  return value as unknown as EvaluationCase;
+}
+function safeResult(result:ToolModelLoopOutcome):Record<string,unknown>{
+ if(!result.ok)return{ok:false,diagnosticCodes:result.diagnostics.map(item=>item.code)};
+ return{ok:true,stop:result.value.stop,turns:result.value.turns,modelRequests:result.value.modelRequests,toolCalls:result.value.toolCalls,inputTokens:result.value.inputTokens,outputTokens:result.value.outputTokens,receiptStates:result.value.receipts.map(receipt=>({operation:receipt.operation,state:receipt.state}))};
+}
+function safeObservations(observations:readonly EvaluationObservation[]):readonly Record<string,unknown>[] {
+ return observations.map(item=>({stage:item.stage,elapsedMs:item.elapsedMs,outputCount:item.outputs?.length??0,rowCount:item.outputs?.reduce((total,output)=>total+output.rows.length,0)??0,diagnosticCodes:item.diagnostics??[]}));
 }
 export async function runEvaluation(args:readonly string[]):Promise<number>{
  const options=new Map<string,string>();let live=false;let mcpExplicit=false;
@@ -73,18 +80,19 @@ export async function runEvaluation(args:readonly string[]):Promise<number>{
    // Reserve the whole configured trial bound before making either counting or generation requests.
    const maximum=(config.budget.maxModelRequests*config.budget.maxInputTokens*model.inputUSDPerMillion+config.budget.maxTurns*config.budget.maxOutputTokens*model.outputUSDPerMillion)/1_000_000;
    if(!Number.isFinite(maximum)||reservedUSD+maximum>config.maxUSD){blocks.push(`Spend reservation prevents ${model.label}/${testCase.id}/trial-${trial}.`);continue;}reservedUSD+=maximum;
-   const snapshots:{model:string;responseId:string}[]=[];const host=createEvaluationHost(testCase.fixture,'byok');const started=performance.now();
+   const snapshots:{reportedModel?:string;reportedModelSha256:string;matchesExpected:boolean;responseIdSha256:string}[]=[];const host=createEvaluationHost(testCase.fixture,'byok');const started=performance.now();
    try{
     const secret=process.env[model.credentialEnvironment]!;
-    const port=createOpenAICompatibleToolModel({baseURL:model.baseURL,model:model.model,secret:createOpaqueModelSecret(secret),auth:model.auth,capabilities:model.capabilities,policy:{allowExternalEgress:true,allowedOrigins:[new URL(model.baseURL).origin]},retry:{maxAttempts:1},cost:{currency:'USD',inputUSDPerMillion:model.inputUSDPerMillion,outputUSDPerMillion:model.outputUSDPerMillion,source:model.priceSource},onResponse:observation=>{if(observation.providerModel!==undefined&&observation.responseId!==undefined)snapshots.push({model:observation.providerModel,responseId:observation.responseId});}});
+    const port=createOpenAICompatibleToolModel({baseURL:model.baseURL,model:model.model,secret:createOpaqueModelSecret(secret),auth:model.auth,capabilities:model.capabilities,policy:{allowExternalEgress:true,allowedOrigins:[new URL(model.baseURL).origin]},retry:{maxAttempts:1},cost:{currency:'USD',inputUSDPerMillion:model.inputUSDPerMillion,outputUSDPerMillion:model.outputUSDPerMillion,source:model.priceSource},onResponse:observation=>{if(observation.providerModel!==undefined&&observation.responseId!==undefined){const matchesExpected=observation.providerModel===model.expectedReportedModel;snapshots.push({...(matchesExpected?{reportedModel:model.expectedReportedModel}:{}),reportedModelSha256:hash(observation.providerModel),matchesExpected,responseIdSha256:hash(observation.responseId)});}}});
     const result=await runToolModel({requestId:`trial-${trial}`,goal:'chat',prompt:testCase.prompt,endpoint:host.endpoint,model:port,budget:config.budget});
-    if(snapshots.length===0||snapshots.some(item=>item.model!==model.expectedReportedModel))blocks.push(`Missing or non-authorized reported model snapshot for ${model.label}/${testCase.id}/trial-${trial}.`);
+    const qualifiedModelSnapshot=snapshots.length>0&&snapshots.every(item=>item.matchesExpected);
+    if(!qualifiedModelSnapshot)blocks.push(`Missing or non-authorized reported model snapshot for ${model.label}/${testCase.id}/trial-${trial}.`);
     const evaluations=host.observations.filter(item=>item.stage==='evaluate');const first=evaluations[0]?.outputs;const last=evaluations.at(-1)?.outputs;
-    rows.push({caseId:testCase.id,partition:testCase.partition,mode:'governed-model-data',model:model.model,modelLabel:model.label,connection:{protocol:model.protocol,origin:new URL(model.baseURL).origin,authScheme:model.auth.scheme,capabilities:model.capabilities},snapshots,trial,elapsedMs:performance.now()-started,reservedUSD:maximum,firstAttempt:first?scoreData(first,testCase.expected,testCase.fixture.scopeDigest,testCase.fixture.sourceRevision):{dataCorrect:false},score:last&&result.ok&&result.value.stop==='text-ready'?scoreData(last,testCase.expected,testCase.fixture.scopeDigest,testCase.fixture.sourceRevision):{dataCorrect:false},result,observations:host.observations,uiTaskCompletion:null,narrativeGrounding:null,chargedUSD:null,usageEstimatedUSD:result.ok?(result.value.inputTokens*model.inputUSDPerMillion+result.value.outputTokens*model.outputUSDPerMillion)/1_000_000:null,priceSource:model.priceSource});
-   }catch{rows.push({caseId:testCase.id,partition:testCase.partition,mode:'governed-model-data',model:model.model,modelLabel:model.label,trial,status:'provider-failed',elapsedMs:performance.now()-started,score:{dataCorrect:false},reservedUSD:maximum});}finally{host.dispose();}
+    rows.push({caseId:testCase.id,partition:testCase.partition,mode:'governed-model-data',model:model.model,modelLabel:model.label,qualifiedModelSnapshot,connection:{protocol:model.protocol,origin:new URL(model.baseURL).origin,authScheme:model.auth.scheme,capabilities:model.capabilities},snapshots,trial,elapsedMs:performance.now()-started,reservedUSD:maximum,firstAttempt:first?scoreData(first,testCase.expected,testCase.fixture.scopeDigest,testCase.fixture.sourceRevision):{dataCorrect:false},score:last&&result.ok&&result.value.stop==='text-ready'?scoreData(last,testCase.expected,testCase.fixture.scopeDigest,testCase.fixture.sourceRevision):{dataCorrect:false},result:safeResult(result),observations:safeObservations(host.observations),uiTaskCompletion:null,narrativeGrounding:null,chargedUSD:null,usageEstimatedUSD:result.ok?(result.value.inputTokens*model.inputUSDPerMillion+result.value.outputTokens*model.outputUSDPerMillion)/1_000_000:null,priceSource:model.priceSource});
+   }catch{blocks.push(`Provider trial failed before an authorized model snapshot for ${model.label}/${testCase.id}/trial-${trial}.`);rows.push({caseId:testCase.id,partition:testCase.partition,mode:'governed-model-data',model:model.model,modelLabel:model.label,qualifiedModelSnapshot:false,trial,status:'provider-failed',elapsedMs:performance.now()-started,score:{dataCorrect:false},reservedUSD:maximum});}finally{host.dispose();}
   }
  }
- const groups=['weak','strong'].map(label=>{const trials=rows.filter(row=>row.modelLabel===label);const successes=trials.filter(row=>object(row.score)&&row.score.dataCorrect===true).length;return{label,trials:trials.length,dataCorrect:successes,interval:wilsonInterval(successes,trials.length),uiTaskCompletion:null,narrativeGrounding:null};});
+ const groups=['weak','strong'].map(label=>{const attempted=rows.filter(row=>row.modelLabel===label);const trials=attempted.filter(row=>row.qualifiedModelSnapshot===true);const successes=trials.filter(row=>object(row.score)&&row.score.dataCorrect===true).length;return{label,attemptedTrials:attempted.length,unqualifiedTrials:attempted.length-trials.length,trials:trials.length,dataCorrect:successes,interval:wilsonInterval(successes,trials.length),uiTaskCompletion:null,narrativeGrounding:null};});
  const after=sourceDigest();if(after!==before)blocks.push('Source changed during the run; these results cannot qualify the candidate.');
  if(!mcpExplicit)blocks.push('Actual MCP-client explicit trials were not requested.');
  blocks.push('This data-only runner does not establish full T40: UI completion, narrative review, fixed-template ablation, external MCP-host reasoning trials, and independently accepted held-out coverage remain separate requirements.');
