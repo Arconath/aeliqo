@@ -1,4 +1,4 @@
-import {readFile,writeFile,mkdir,readdir,copyFile,unlink} from 'node:fs/promises';
+import {readFile,writeFile,mkdir,readdir,copyFile,mkdtemp,rm} from 'node:fs/promises';
 import {execFile} from 'node:child_process';
 import {resolve,dirname,join} from 'node:path';
 import {tmpdir} from 'node:os';
@@ -14,17 +14,17 @@ const escape=value=>String(value).replaceAll('&','&amp;').replaceAll('<','&lt;')
 async function loadCanonicalExamples(){
  const moduleUrl=pathToFileURL(resolve(root,'../../examples/catalog/index.ts')).href;
  const script=`import(${JSON.stringify(moduleUrl)}).then(({catalogExamples})=>process.stdout.write(JSON.stringify(catalogExamples)))`;
- const loaderPath=join(tmpdir(),`aeliqo-catalog-loader-${process.pid}.mjs`);
- await writeFile(loaderPath,`export async function resolve(specifier,context,nextResolve){if(context.parentURL?.includes('/examples/catalog/')&&specifier.startsWith('.')&&specifier.endsWith('.js'))return nextResolve(specifier.slice(0,-3)+'.ts',context);return nextResolve(specifier,context);}\n`,'utf8');
+ const loaderDirectory=await mkdtemp(join(tmpdir(),'aeliqo-catalog-loader-'));
+ const loaderPath=join(loaderDirectory,'loader.mjs');
  let stdout;
- try{({stdout}=await execFileAsync(process.execPath,['--experimental-strip-types','--experimental-loader',loaderPath,'--input-type=module','-e',script],{cwd:resolve(root,'../..'),maxBuffer:32*1024*1024}));}finally{await unlink(loaderPath).catch(()=>{});}
+ try{await writeFile(loaderPath,`export async function resolve(specifier,context,nextResolve){if(context.parentURL?.includes('/examples/catalog/')&&specifier.startsWith('.')&&specifier.endsWith('.js'))return nextResolve(specifier.slice(0,-3)+'.ts',context);return nextResolve(specifier,context);}\n`,'utf8');({stdout}=await execFileAsync(process.execPath,['--experimental-strip-types','--experimental-loader',loaderPath,'--input-type=module','-e',script],{cwd:resolve(root,'../..'),maxBuffer:32*1024*1024}));}finally{await rm(loaderDirectory,{recursive:true,force:true}).catch(()=>{});}
  const value=JSON.parse(stdout);
  if(!Array.isArray(value)||value.some(entry=>entry===null||typeof entry!=='object'||typeof entry.id!=='string'||typeof entry.source!=='string'))throw Error('Canonical catalog example metadata is unavailable.');
  return value;
 }
 function exampleMarkup(metadata){
  const list=value=>value.map(item=>escape(item)).join(', ');
- return `<div class="component-preview" data-component-preview="${escape(metadata.family)}.${escape(metadata.id)}" data-preview-family="${escape(metadata.family)}" data-preview-id="${escape(metadata.id)}"><h2>Preview</h2><p class="component-preview-status" data-preview-status>Interactive preview requires JavaScript.</p></div><details class="component-example"><summary>Code and required setup</summary><pre><code data-example-code="${escape(metadata.id)}">${escape(metadata.source)}</code></pre><button type="button" data-copy-example="${escape(metadata.id)}" disabled>Copy example</button><p class="component-copy-status" data-copy-status role="status"></p></details><h2>Input fixture</h2><p>${escape(metadata.fixture)}</p><h2>Expected result</h2><p>${escape(metadata.expectedOutcome)}</p><h2>Properties and host ownership</h2><p>${list(metadata.props)}. ${escape(metadata.propsNotes)}</p><h2>States</h2><p>${list(metadata.states)}</p><h2>Keyboard behavior</h2><p>${list(metadata.keyboard)}</p><h2>Events</h2><p>${list(metadata.events)}</p>`;
+ return `<div data-component-preview="${escape(metadata.family)}.${escape(metadata.id)}" data-preview-family="${escape(metadata.family)}" data-preview-id="${escape(metadata.id)}"><div class="component-preview" data-preview-mount data-preview-family="${escape(metadata.family)}" data-preview-id="${escape(metadata.id)}"><h2>Preview</h2><p class="component-preview-status" data-preview-status>Interactive preview requires JavaScript.</p></div><details class="component-example"><summary>Code and required setup</summary><pre><code data-example-code="${escape(metadata.id)}">${escape(metadata.source)}</code></pre><button type="button" data-copy-example="${escape(metadata.id)}" disabled>Copy example</button><p class="component-copy-status" data-copy-status role="status"></p></details><h2>Input fixture</h2><p>${escape(metadata.fixture)}</p><h2>Expected result</h2><p>${escape(metadata.expectedOutcome)}</p><h2>Properties and host ownership</h2><p>${list(metadata.props)}. ${escape(metadata.propsNotes)}</p><h2>States</h2><p>${list(metadata.states)}</p><h2>Keyboard behavior</h2><p>${list(metadata.keyboard)}</p><h2>Events</h2><p>${list(metadata.events)}</p></div>`;
 }
 async function filesAt(path){const result=[];for(const item of await readdir(path,{withFileTypes:true})){const p=join(path,item.name);if(item.isDirectory())result.push(...await filesAt(p));else if(p.endsWith('.d.ts'))result.push(p);}return result;}
 function classDeclaration(text,name){const start=text.indexOf(`export declare class ${name} `);if(start<0)return;const open=text.indexOf('{',start);let depth=0;for(let i=open;i<text.length;i++){if(text[i]==='{')depth++;if(text[i]==='}'&&--depth===0)return text.slice(start,i+1);}throw Error(`Unclosed declaration ${name}`);}
