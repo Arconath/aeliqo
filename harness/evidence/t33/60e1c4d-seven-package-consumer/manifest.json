@@ -173,13 +173,30 @@
         "locale": "en-US",
         "deviceScaleFactor": 1
       }
+    },
+    {
+      "kind": "meaning-authoring",
+      "status": "pass",
+      "evidenceCommit": "468c0eed988ea796bd3601a1bd2bc4da8f051904",
+      "sourceDigest": "9afbd73d926c9a08e1713c2b72c767a9f54d63f1a7fcbf15bd5256cbb94b7e03",
+      "scope": "Installed core/runtime/agent tarballs; typed schema-reuse quickstart; manual/AI evaluator parity; immutable registration conflict/idempotence; trusted grants and exact allowlist activation; stale mutation and revocation; Node and Chromium.",
+      "report": "artifacts/meaning-consumers/run-LXTcOy/report.json",
+      "reportSha256": "7822d0318a504e49bf8316bb3513ab22dbc6e3254328b7cae8026702367386de",
+      "consumerLock": "artifacts/meaning-consumers/run-LXTcOy/consumer-package-lock.json",
+      "consumerLockSha256": "dc20f26bda9cdcc36ca87b55326675e4ec576d97f5daf314012a5b96e726d2ae",
+      "environment": {
+        "node": "v24.20.0",
+        "chromium": "153.0.8010.12",
+        "os": "darwin",
+        "arch": "arm64"
+      }
     }
   ],
   "qualification": false,
   "limits": [
     "These are local target-version artifacts; an unused registry RC version and registry availability were not verified.",
     "The required independent T32 architecture, DX and usability review is not attached.",
-    "Compatibility coverage now includes the exact seven-package install, dependency SBOM, framework consumer and Studio consumer, but full release smoke and later staging gates remain open.",
+    "Compatibility coverage now includes the exact seven-package install, dependency SBOM, framework, Studio, vertical and meaning-authoring consumers, but full release smoke and later staging gates remain open.",
     "No npm publication, dist-tag promotion, deployment, or remote mutation was attempted."
   ]
 }
