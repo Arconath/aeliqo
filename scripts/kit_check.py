@@ -66,6 +66,8 @@ def validate(root: Path) -> tuple[list[str], dict[str,int]]:
     for scenario in scenarios:
         if scenario.get('stage','ready') not in {'ready','release'}:
             errors.append('Invalid scenario stage: '+scenario['id'])
+        if 'deferredForRelease' in scenario and not isinstance(scenario['deferredForRelease'],bool):
+            errors.append('Invalid scenario release deferral: '+scenario['id'])
         if scenario['task'] not in tids:
             errors.append(f'Invalid scenario task: {scenario["id"]}')
     files=export_files(root)

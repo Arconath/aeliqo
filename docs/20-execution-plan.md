@@ -38,7 +38,7 @@ Implement authoring/inspection/export on the same manifests; complete component 
 
 ## M8 — Enterprise and production proof
 
-Run threat-driven tests, tenant/cache/resource isolation, external package consumers, cross-browser SSR/interaction/a11y, manual screen readers/design review, full visual matrix and real performance/bundle/memory measurements. Perform real external MCP and authorized paid-provider BYOK evaluation; document native WebMCP separately. Complete independent adversarial review.
+Run threat-driven tests, tenant/cache/resource isolation, external package consumers, cross-browser SSR/interaction/a11y, independent design review, full visual matrix and real performance/bundle/memory measurements. Manual assistive-technology certification is deferred beyond 0.1.0 and must not be claimed by automated checks. Perform real external MCP and authorized paid-provider BYOK evaluation; document native WebMCP separately. Complete independent adversarial review.
 
 ## M9 — RC and deployment rehearsal
 

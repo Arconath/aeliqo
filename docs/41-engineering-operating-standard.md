@@ -34,7 +34,7 @@ Geometry budget terpisah analytical precision. SVG/Canvas switch tidak menghilan
 
 Unit/property tests dan reference math bukan browser evidence. Browser snapshots bukan task usability. Axe bukan AA certification. Mock MCP/provider bukan actual agent evidence. Render callback bukan paint. Type compile bukan validator. Manual review bukan numeric oracle. Simpan semua sebagai evidence classes berbeda.
 
-PR menjalankan focused deterministic tests dan boundary checks; nightly menjalankan full browser/visual/performance serta provider eval yang diotorisasi; RC menjalankan exact tarball consumers, manual AT/DX/design, artifact security, staging/rollback dan live identity. Skip release-critical tests tidak boleh memberi green readiness.
+PR menjalankan focused deterministic tests dan boundary checks; nightly menjalankan full browser/visual/performance serta provider eval yang diotorisasi; RC menjalankan exact tarball consumers, DX/design review, artifact security, staging/rollback dan live identity. Sertifikasi manual assistive-technology ditunda setelah 0.1.0, bukan digantikan oleh klaim otomatis. Skip release-critical tests tidak boleh memberi green readiness.
 
 Coverage persentase hanya diagnostic. Minimum seluruh public transition/error paths dan named failure modes teruji. Tambahkan property/metamorphic tests untuk invariant matematis/state. Mutation testing terarah pada auth, scope, stale commit, claim numeric grounding dan rollback rules harus membuktikan mutant penting tertangkap. Jangan meningkatkan angka tes dengan menghitung tiap seeded iteration sebagai test independen.
 

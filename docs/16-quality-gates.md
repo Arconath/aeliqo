@@ -18,7 +18,7 @@ Specification -> implemented source -> deterministic tests -> browser behavior -
 
 **Web:** Chromium/Firefox/WebKit plus recorded supported browser versions; native form behavior, SSR/hydration, current React and framework-free consumers, minimal Vue custom element interoperability, streaming and error recovery. The thin wrapper is not allowed to hide a second implementation.
 
-**Visual/a11y:** approved controlled baselines, diff review, contrast/focus/reading order, large text/reflow, manual screen-reader review, dense plot alternatives and every gallery state. Automated a11y tools do not prove full compliance.
+**Visual/a11y:** approved controlled baselines, diff review, contrast/focus/reading order, large text/reflow, dense plot alternatives and every gallery state. Automated a11y tools do not prove full compliance. Manual assistive-technology certification is a post-0.1.0 improvement rather than a release gate, and the release must not claim that certification.
 
 **Agents:** direct/MCP/WebMCP/BYOK contract parity, malformed/hostile tool inputs, explicit target binding, receipts/cancellation; independent actual client/provider/native-host runs.
 

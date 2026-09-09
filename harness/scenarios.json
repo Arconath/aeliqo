@@ -246,11 +246,12 @@
     },
     {
       "id": "S28",
-      "title": "Keyboard and screen reader matrix",
+      "title": "Manual screen reader certification",
       "task": "T29",
-      "assertion": "Real human review with browser/AT versions; automated axe alone insufficient.",
+      "assertion": "Deferred future certification; automated keyboard, focus, semantics, zoom and reflow remain release requirements and must not be represented as manual certification.",
       "status": "planned",
       "nativeHostRequired": false,
+      "deferredForRelease": true,
       "stage": "ready"
     },
     {

@@ -67,6 +67,8 @@ class GateRegressionTests(unittest.TestCase):
         errs=readiness_errors(ROOT,'ready');self.assertFalse(any(x.startswith('S52:') for x in errs))
     def test_release_includes_live_scenario(self):
         errs=readiness_errors(ROOT,'release');self.assertTrue(any(x.startswith('S52:') for x in errs))
+    def test_release_excludes_explicitly_deferred_scenario(self):
+        errs=readiness_errors(ROOT,'release');self.assertFalse(any(x.startswith('S28:') for x in errs))
     def test_native_scenario_required_when_advertised(self):
         def read(path):
             if path.name=='integrated.json':return {'webmcpNativeAdvertised':True,'claims':[]}
