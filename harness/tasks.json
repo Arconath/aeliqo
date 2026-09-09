@@ -1219,7 +1219,13 @@
       ],
       "status": "planned",
       "stage": "ready",
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t32/c5b33c1-independent-audit/manifest.json",
+          "sha256": "cf30eb8929026c17a13c7ca1bbfe1f5cdb4da5a7d39fcbf7145d5e3eed575d82"
+        }
+      ],
+      "notes": "Independent read-only audit recorded with no P0 findings in sampled source, but no T32 approval. P1/open findings preserve T29 human visual/AT, T30 qualification, T31/T40 provider/model evidence, S65-S67 scenario status and T42 registry blockers. T32 remains planned."
     },
     {
       "id": "T33",

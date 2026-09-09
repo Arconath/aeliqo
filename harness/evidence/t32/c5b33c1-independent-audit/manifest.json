@@ -1,0 +1,47 @@
+{
+  "task": "T32",
+  "status": "partial-independent-audit-not-ready",
+  "reviewedCommit": "c5b33c1b931f07289caffa1034d70bc6e3af16eb",
+  "sourceDigest": "9afbd73d926c9a08e1713c2b72c767a9f54d63f1a7fcbf15bd5256cbb94b7e03",
+  "reviewer": {
+    "agentId": "01a08776-0ec0-7962-b15b-f20276ad69b4",
+    "model": "gpt-5.6-luna",
+    "reasoningEffort": "max",
+    "role": "independent read-only architecture, DX and usability reviewer",
+    "independentOfAuthor": true
+  },
+  "auditRecord": "docs/reviews/t32-independent-audit-3b7c044.md",
+  "scope": [
+    "architecture and core/runtime boundaries",
+    "developer meaning DX and code-only operation",
+    "package and external consumer evidence",
+    "usability/accessibility evidence boundaries",
+    "release and model-evaluation readiness"
+  ],
+  "findings": {
+    "p0": [],
+    "p1": [
+      "T32 remains planned and depends on incomplete T29, T30 and T31.",
+      "Human visual/design and manual assistive-technology review are missing.",
+      "T30 cold/device/whole-page/manual qualification remains open; prior CI evidence is stale for the current candidate.",
+      "Authorized provider, held-out intent, narrative grounding, UI completion and ablation evidence are missing for T31/T40.",
+      "S65-S67 remain planned despite local developer-meaning consumer evidence.",
+      "T42 remains blocked by registry history and namespace authority evidence."
+    ]
+  },
+  "classification": {
+    "localArchitecture": "satisfied-sampled",
+    "localContainment": "satisfied-bounded",
+    "developerMeaningImplementation": "satisfied-implementation-evidence-formal-scenarios-unmet",
+    "humanVisualAndAssistiveTechnology": "unmet",
+    "realModelGeneralization": "unknown",
+    "registryReset": "unmet-blocked",
+    "releaseReadiness": "unmet"
+  },
+  "reviewApproval": false,
+  "qualification": false,
+  "limitations": [
+    "No human interview, manual screen-reader review, lower-powered-device run, authorized provider call or registry mutation was available.",
+    "The review is sampled system evidence and is not a zero-defect or release approval claim."
+  ]
+}
