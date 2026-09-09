@@ -1,0 +1,131 @@
+name: Publish verified Aeliqo packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: 'Publish target; both targets use a non-latest dist-tag.'
+        required: true
+        type: choice
+        options: [rc, stable]
+      version:
+        description: '0.1.0-rc.N for RC, or exactly 0.1.0 for stable.'
+        required: true
+        type: string
+
+concurrency:
+  group: aeliqo-npm-publication-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      source_revision: ${{ steps.candidate.outputs.source_revision }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.20.0'
+          registry-url: https://registry.npmjs.org
+      - name: Validate the manually selected release stage
+        env:
+          STAGE: ${{ inputs.stage }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [ "$STAGE" = rc ] && [[ "$VERSION" =~ ^0\.1\.0-rc\.[1-9][0-9]*$ ]]; then exit 0; fi
+          if [ "$STAGE" = stable ] && [ "$VERSION" = 0.1.0 ]; then exit 0; fi
+          echo "Stage and version are not an allowed release identity." >&2
+          exit 1
+      - name: Install the locked package manager and dependencies
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+          pnpm install --frozen-lockfile
+      - name: Build and verify the exact publishable candidate
+        id: candidate
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          node scripts/release/candidate.mjs --version "$VERSION"
+          node --input-type=module <<'NODE'
+          import {readFile} from 'node:fs/promises';
+          const candidate = JSON.parse(await readFile('artifacts/release-candidate/manifest.json', 'utf8'));
+          if (candidate.sourceRevision !== process.env.GITHUB_SHA) throw new Error('Candidate source SHA differs from workflow SHA');
+          if (candidate.version !== process.env.VERSION || candidate.packages.length !== 6) throw new Error('Candidate has an unexpected release identity');
+          console.log(`source_revision=${candidate.sourceRevision}`);
+          NODE
+          echo "source_revision=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+      - name: Publish tarballs with npm trusted publishing only
+        env:
+          VERSION: ${{ inputs.version }}
+          STAGE: ${{ inputs.stage }}
+        run: |
+          TAG=next
+          if [ "$STAGE" = stable ]; then TAG=rewrite; fi
+          node --input-type=module <<'NODE' > artifacts/release-candidate/publish-list.tsv
+          import {readFile} from 'node:fs/promises';
+          const candidate = JSON.parse(await readFile('artifacts/release-candidate/manifest.json', 'utf8'));
+          for (const item of candidate.packages) console.log([item.name, item.file, item.integrity].join('\t'));
+          NODE
+          while IFS=$'\t' read -r PACKAGE FILE INTEGRITY; do
+            if npm view "$PACKAGE@$VERSION" version --json >/dev/null 2>&1; then
+              ACTUAL=$(npm view "$PACKAGE@$VERSION" dist.integrity --json | tr -d '"')
+              if [ "$ACTUAL" != "$INTEGRITY" ]; then
+                echo "$PACKAGE@$VERSION already exists with different bytes; refusing overwrite." >&2
+                exit 1
+              fi
+              echo "$PACKAGE@$VERSION is the verified existing tarball; not republishing."
+            else
+              npm publish "artifacts/release-candidate/$FILE" --access public --provenance --tag "$TAG"
+            fi
+          done < artifacts/release-candidate/publish-list.tsv
+
+  stable-release-and-image:
+    if: inputs.stage == 'stable' && needs.publish.result == 'success'
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          ref: ${{ needs.publish.outputs.source_revision }}
+      - name: Build and push the immutable source image by SHA
+        env:
+          IMAGE: ghcr.io/${{ github.repository_owner }}/aeliqo-site
+          SOURCE_REVISION: ${{ needs.publish.outputs.source_revision }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          printf '%s' "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          mkdir -p artifacts/release-image
+          docker buildx build --platform linux/amd64 --push \
+            --build-arg SOURCE_REVISION="$SOURCE_REVISION" \
+            --tag "$IMAGE:sha-$SOURCE_REVISION" \
+            --tag "$IMAGE:${{ inputs.version }}" \
+            --metadata-file artifacts/release-image/metadata.json .
+          node --input-type=module <<'NODE'
+          import {readFile} from 'node:fs/promises';
+          const metadata = JSON.parse(await readFile('artifacts/release-image/metadata.json', 'utf8'));
+          const digest = metadata['containerimage.digest'];
+          if (!/^sha256:[a-f0-9]{64}$/.test(digest ?? '')) throw new Error('GHCR build did not report an immutable digest');
+          console.log(`Pushed immutable image digest ${digest}`);
+          NODE
+      - name: Create a GitHub release anchored to the published source SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+          SOURCE_REVISION: ${{ needs.publish.outputs.source_revision }}
+        run: |
+          test "$SOURCE_REVISION" = "$GITHUB_SHA"
+          gh release create "v$VERSION" --target "$SOURCE_REVISION" --title "Aeliqo $VERSION" --generate-notes

@@ -1,0 +1,39 @@
+name: Verify Aeliqo package candidate
+
+on:
+  pull_request:
+  push:
+    branches: [rewrite/v0.1.0-master-foundation]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aeliqo-release-candidate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pack-inspect-and-consume:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.20.0'
+      - name: Install the locked package manager and dependencies
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+          pnpm install --frozen-lockfile
+      - name: Build, inspect, hash, SBOM, and consume exact tarballs
+        run: node scripts/release/candidate.mjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-release-candidate-${{ github.sha }}
+          path: artifacts/release-candidate
+          if-no-files-found: error
+          retention-days: 7
