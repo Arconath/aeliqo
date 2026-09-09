@@ -1,0 +1,59 @@
+$ playwright test --config tests/plot/playwright.config.mjs
+[WebServer] (node:47050) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:47058) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 7:33:53 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  1 tests/plot/browser.spec.ts:3:5 › SVG and Canvas use the same coordinates and retain the missing interval (199ms)
+[WebServer] 7:33:53 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  2 tests/plot/browser.spec.ts:13:5 › geometry budget keeps the data alternative and selection emits exact result identity (194ms)
+[WebServer] 7:33:53 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✘  3 tests/plot/browser.spec.ts:24:5 › facet and layer compose real marks, data partitions and Canvas, then clear stale scope (5.2s)
+(node:47090) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 7:33:58 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  4 tests/plot/browser.spec.ts:40:5 › composition selection cannot resurrect under a replaced or revoked result scope (241ms)
+
+
+  1) tests/plot/browser.spec.ts:24:5 › facet and layer compose real marks, data partitions and Canvas, then clear stale scope 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('canvas')
+    Expected: 6
+    Received: 4
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('canvas') with timeout 5000ms
+      - waiting for locator('canvas')
+        14 × locator resolved to 4 elements
+           - unexpected value "4"
+
+
+      30 |  await expect(page.locator('aeliqo-plot circle')).toHaveCount(4);
+      31 |  await page.evaluate(async()=>{const p=(window as any).plot;p.renderer='canvas';await p.updateComplete;});
+    > 32 |  await expect(page.locator('canvas')).toHaveCount(6);
+         |                                       ^
+      33 |  const nonEmpty=await page.locator('canvas').evaluateAll(nodes=>nodes.filter(n=>{const c=n as HTMLCanvasElement;return c.getContext('2d')!.getImageData(0,0,c.width,c.height).data.some((v,i)=>i%4===3&&v>0);}).length);
+      34 |  expect(nonEmpty).toBe(4);
+      35 |  await page.evaluate(async()=>{const p=(window as any).plot;p.results=[];await p.updateComplete;});
+        at /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/tests/plot/browser.spec.ts:32:39
+
+    Error Context: artifacts/plot-browser/browser-facet-and-layer-co-37d7f-nvas-then-clear-stale-scope/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/plot-browser/browser-facet-and-layer-co-37d7f-nvas-then-clear-stale-scope/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace artifacts/plot-browser/browser-facet-and-layer-co-37d7f-nvas-then-clear-stale-scope/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests/plot/browser.spec.ts:24:5 › facet and layer compose real marks, data partitions and Canvas, then clear stale scope 
+  3 passed (6.6s)
+[ELIFECYCLE] Command failed with exit code 1.

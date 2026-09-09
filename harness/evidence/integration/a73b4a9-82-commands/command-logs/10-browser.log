@@ -1,0 +1,37 @@
+$ pnpm build:runtime && pnpm build:platform && playwright test --config tests/vertical-slice/playwright.config.mjs && playwright test --config tests/vertical-slice/web/playwright.config.mjs
+$ pnpm build:core && pnpm --filter @aeliqo/runtime build
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+$ pnpm build:runtime && pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/react build
+$ pnpm build:core && pnpm --filter @aeliqo/runtime build
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+[WebServer] (node:10470) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:10475) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 7:30:40 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  1 tests/vertical-slice/hr-browser.spec.ts:7:5 › actual raw-data view supports selection, queryless reorder, stale refusal and revocation (1.0s)
+  ✓  2 tests/vertical-slice/hr-browser.spec.ts:54:5 › unknown server measurements render real HR output and hydrate without replacing the table (1.4s)
+
+  2 passed (3.2s)
+[WebServer] (node:10504) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:10510) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 7:30:43 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  1 tests/vertical-slice/web/browser.spec.ts:3:5 › keyed region children retain focus and controlled draft state across reorder (232ms)
+[WebServer] 7:30:44 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  2 tests/vertical-slice/web/browser.spec.ts:27:5 › region emits trusted table selection, clears explicitly, and keeps long form series separate (411ms)
+
+  2 passed (1.3s)

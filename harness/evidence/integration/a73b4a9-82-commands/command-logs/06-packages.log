@@ -1,0 +1,3 @@
+$ node tests/consumers/core-tarball.mjs
+Installed @aeliqo/core types, parsers, semantic authoring, schemas, interaction graph, no-codegen probe, Vite graph, and Chromium execution pass.
+Evidence: /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/core-consumers/run-4sAXzA/report.json

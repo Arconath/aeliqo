@@ -1,0 +1,28 @@
+$ playwright test --config tests/compound/playwright.config.mjs
+[WebServer] (node:88730) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:88736) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 7:36:30 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  1 tests/compound/browser.spec.ts:11:5 › explorer forwards filter and stable identity selection to the host (297ms)
+[WebServer] 7:36:30 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  2 tests/compound/browser.spec.ts:26:5 › comparison and breakdown use shared bounded tables and host evaluated values (344ms)
+[WebServer] 7:36:31 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  3 tests/compound/browser.spec.ts:46:5 › comparison interactions reject overflow and normalize duplicate keys (260ms)
+[WebServer] 7:36:31 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  4 tests/compound/browser.spec.ts:57:5 › search results hide stale materialization and restore the matching revision (216ms)
+[WebServer] 7:36:31 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  5 tests/compound/browser.spec.ts:70:5 › current search detail retains its authorized scope (233ms)
+[WebServer] 7:36:31 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  6 tests/compound/browser.spec.ts:76:5 › record editor validates slotted fields and includes the explicit draft receipt (369ms)
+[WebServer] 7:36:32 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  7 tests/compound/browser.spec.ts:99:5 › form flow keeps step scoped controls mounted, blocks invalid progression, and commits all steps (368ms)
+[WebServer] 7:36:32 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  8 tests/compound/browser.spec.ts:121:5 › form flow preserves keyboard focus through forward and back navigation (245ms)
+[WebServer] 7:36:32 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  9 tests/compound/browser.spec.ts:137:5 › compound states keep caution copy and remain accessible under RTL, zoom and forced colors (748ms)
+
+  9 passed (3.9s)

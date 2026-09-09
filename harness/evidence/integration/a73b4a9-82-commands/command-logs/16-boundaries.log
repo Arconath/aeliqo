@@ -1,0 +1,10 @@
+$ vitest run --config tests/security/vitest.config.mjs tests/security/package-boundaries.test.ts
+
+ RUN  v5.0.0 /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo
+
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  07:31:22
+   Duration  1.36s (tests 97%, import 2%, transform 1%)
+

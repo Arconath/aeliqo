@@ -1,0 +1,1156 @@
+{
+  "subjectSha256": "83c425a15608f5df0c72a6d631e0b69b4438f220efe536b260cb9a4899e52d25",
+  "status": "fail",
+  "sourceChangedDuringRun": false,
+  "timestamp": "2026-09-09T00:48:37.635876+00:00",
+  "results": [
+    {
+      "kind": "typecheck",
+      "argv": [
+        "pnpm",
+        "typecheck"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/00-typecheck.log",
+          "sha256": "302f79fad8cbbc4595d76610290e5cec1f8264b322e96e9a0ee74c25ddcf5a4e"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:platform"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/01-unit.log",
+          "sha256": "4a80db4cc88a0a4ac1c27e6ae8a7d1a41071ef8d45e288c8a80f37f8ccc9ab50"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:platform:browser"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/02-browser.log",
+          "sha256": "b41beb218369ac4836d3e399802e18b5b7bf4e6a40310b4de3f431a8d904abfd"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:next-platform"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/03-browser.log",
+          "sha256": "7dbc41ca8e9943c8c592740952e312ca82e165b0863570e74e9fb2898e9cc629"
+        }
+      ]
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:platform:consumers"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/04-packages.log",
+          "sha256": "c3ce7529e78f0215fc10b0ebeb0e77689ef08433c82a0610f350f3bd471bfc83"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:contracts"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/05-unit.log",
+          "sha256": "c9b780e7c097ff12d61af4d87c921a595c279cab97d9d534b5232f1577ca844b"
+        }
+      ]
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:core:consumers"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/06-packages.log",
+          "sha256": "b890fd0ab0ff6bb723c3226b42ff1d2c58287f2eb5ead566d7f7ec1f81af6b1f"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:task-experience"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/07-unit.log",
+          "sha256": "766d4331599a793404815bbf41505c9fd234ba40671e6e1287d9a2ed0832b04d"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:evaluation"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/08-unit.log",
+          "sha256": "c31e6c73d7e1bd84dc72204149f930ee2f429368076bd92e1aa56604100df904"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:vertical"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/09-unit.log",
+          "sha256": "1552a3aa8a568a7d83723dc85130c4b0ef0847f006099af850ffa5dd1b026906"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:vertical:browser"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/10-browser.log",
+          "sha256": "4dcf3a3d9a654b0c3d81d4b49b1adc4138badcb54dce465d259231442fed0c9f"
+        }
+      ]
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:vertical:consumers"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/11-packages.log",
+          "sha256": "a8f52598ec4ccde76c2140ce71d8cf197fd524fbcecdef6ef0a2409dd9ff8b7e"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:agents"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/12-unit.log",
+          "sha256": "6ec2babac083520604a264f1e456d1b2f8fdb3bbc31d967a3b1fb1519b305614"
+        }
+      ]
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:agent:consumers"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/13-packages.log",
+          "sha256": "ba07409bac45517ad0651d643fc5a26898561ef3bcdd13db0bcb03202dc91ee6"
+        }
+      ]
+    },
+    {
+      "kind": "lint",
+      "argv": [
+        "pnpm",
+        "lint"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/14-lint.log",
+          "sha256": "6e04e1bb4a604a205b7e4267383ea4a8293b89c8fd925aad730ea7fe0335cacf"
+        }
+      ]
+    },
+    {
+      "kind": "security",
+      "argv": [
+        "pnpm",
+        "test:security"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/15-security.log",
+          "sha256": "665e641d00c79ce76b8992dda296a87d26724860c84a6af95ed04cb0bd48cdd5"
+        }
+      ]
+    },
+    {
+      "kind": "boundaries",
+      "argv": [
+        "pnpm",
+        "test:boundaries"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/16-boundaries.log",
+          "sha256": "954e680aac9f66bdf15118e7b656f320c8381600b7acb26dc78ee3df4de711e7"
+        }
+      ]
+    },
+    {
+      "kind": "performance",
+      "argv": [
+        "pnpm",
+        "test:performance:bundles"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/17-performance.log",
+          "sha256": "fc2a1cbe29e350409f72183127a58ca48f7fe0aeee8658b7c49c79e1c84b176e"
+        }
+      ]
+    },
+    {
+      "kind": "performance",
+      "argv": [
+        "pnpm",
+        "test:performance:runtime"
+      ],
+      "exitCode": 1,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/18-performance.log",
+          "sha256": "007426058aacffcbd98c0e70e1a3219bf2da0144abf39da46e1c3c9cccc08ed3"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:semantics"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/19-unit.log",
+          "sha256": "c77dbb3154b8c5e9030c67785975ec9b13ca11e9862e3ca23399e9a7a8e4e885"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:query"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/20-unit.log",
+          "sha256": "61fe9ff6b59c6f7118af57f439a4e2ebcafd46a75b788e089f02b759704e935a"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:design"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/21-unit.log",
+          "sha256": "2cec21ae196762f619b861a3afc1f775ea7172aebc177c277067c8a76200ed48"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:design:browser"
+      ],
+      "exitCode": 1,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/22-browser.log",
+          "sha256": "fab5d81f136a098d5b0e2047b2abffeae9d594b1c0ed409daa6b0b5fe95cee26"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:data"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/23-unit.log",
+          "sha256": "63632fb6e7abe21060a5ef1d7de2f3541c31ce5d5e9f176895d120cd8ccf3810"
+        }
+      ]
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:runtime:consumers"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/24-packages.log",
+          "sha256": "816d94e3919c4a01e44685db4fcaa422637d45a97b315ab14cd3fa8ce2d081f3"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:data:auth-retention"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/25-unit.log",
+          "sha256": "48f606e4db4eded978ec9f18457eb0bd2be51c9f35bce4e7723378fdcc8d59e8"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:results"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/26-unit.log",
+          "sha256": "fdbcf8982ee322066d92e2b6a4d41a702c91db6585e8c10c5f8fc9300d9b3978"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:regions"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/27-unit.log",
+          "sha256": "60d82ecfe70b9452ed6532bd8a34df4911f4c9d3d8a192551b1b45ea2bf5ecf3"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:actions"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/28-unit.log",
+          "sha256": "747ad594f4e19574eb1056dbccd9da23295f19676af2c2d073a5bac3067f4558"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:interaction"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/29-unit.log",
+          "sha256": "e05a26b0f55c64f8bbeee5a27bfdd52c8b529111b4d3e03c513a6ecbf00cb3d7"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:foundation"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/30-unit.log",
+          "sha256": "f0c372670de82a3a2f8f21280c21f509a1a879246292c8c96dfc51be42677979"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:foundation:browser"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/31-browser.log",
+          "sha256": "d97d9f38dc43783afe3af3d0d98c2fcbbf637b1af9ec34df9055fbc7461c02f6"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:inputs"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/32-unit.log",
+          "sha256": "d462accd6bb4781b75385408435e53eb6edd3b04ada55feed04a30ca8321e33e"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:inputs:browser"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/33-browser.log",
+          "sha256": "edfc7a9380bc3e7597c1dea59e5133cef3771ba758282d88b1aa01b0e4cb0620"
+        }
+      ]
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:inputs:consumers"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/34-packages.log",
+          "sha256": "c48238f73e1d28bcf3b0640e73497c665e1471a9017f9e34a86a3672c4387273"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:navigation:browser"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/35-browser.log",
+          "sha256": "35f960ae63dce128fe5c14be083875b768620f606e71d6e0311847bc6f0ec958"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:feedback:browser"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/36-browser.log",
+          "sha256": "afbbb49ceaf1ba8ce218ffd949ace23c2df32277927cde0fdc5cf810a3420037"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:data-components"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/37-unit.log",
+          "sha256": "f2033fec4504967094d99527b99671a42efcac6206d2fb5d01939a410d9cf282"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:data-components:browser"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/38-browser.log",
+          "sha256": "4c09c927a3fb3d1293797d89d0018372c4c4f7d431674c8936aab7b2c9b302b0"
+        }
+      ]
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:data-components:consumers"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/39-packages.log",
+          "sha256": "c8269ea16330c96134e1d91b9f4ebe9b232976090c03fdc4b2069d29f90a72a4"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:plot"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/40-unit.log",
+          "sha256": "c526cae460c67ab4a924262b53cdb3949669b0752ec6e70ecb3604299ee082a9"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:plot:browser"
+      ],
+      "exitCode": 1,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/41-browser.log",
+          "sha256": "f16a93fd161d40a6d18d99344d71f7e8b5b98058de998b789013cbbceef2e0eb"
+        }
+      ]
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:plot:consumers"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/42-packages.log",
+          "sha256": "a7417dd4ec11f7da1222bf9daad92bf840c8a462c48b36b12f9d6c8650bd7532"
+        }
+      ]
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:navigation-feedback:consumers"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/43-packages.log",
+          "sha256": "614ee9196b6ea143acd5ba6db46d0ad14c5eceb17fed92459fbaa464257fe517"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:components:a11y"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/44-browser.log",
+          "sha256": "1fe4717892d80ae6f696148a7e27e59be7ccbad2ec5f6f3b7c6a4b8c032e5cf5"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:input-semantic"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/45-unit.log",
+          "sha256": "c76334c329bac5e3d1e3b68de71a6fe49090d0fb56978cacae1c284a8666ac3c"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:input-semantic:browser"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/46-browser.log",
+          "sha256": "37309c4d858ec63fa22f77a4e62302c655371629cdd2c1ba70fbe8775e7ffbca"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:navigation-feedback-semantic"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/47-unit.log",
+          "sha256": "ef64fb2a16a8062ca988b46798c7a08f53f845dd3632fd7f1d416229957b5f78"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:data-semantic"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/48-unit.log",
+          "sha256": "ba32ed7d64281c6de14325d0d6499ddc38fb828fd9ed16b6f8a2f321db989ef5"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:navigation-feedback-semantic:browser"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/49-browser.log",
+          "sha256": "21196b2c69412d233d48c97f7eef56e66f8ce05b95a41f784fb02bd525ed2c69"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:data-semantic:browser"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/50-browser.log",
+          "sha256": "cd981af5232952e356d47dccf107d98eecfa86b66c803bad78b80a0ed763ab02"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:visualization"
+      ],
+      "exitCode": 1,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/51-unit.log",
+          "sha256": "42b366a2268eadb4737d3dbad16091d19e94b64131ef54ecbfe44dda67549960"
+        }
+      ]
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:visualization:consumers"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/52-packages.log",
+          "sha256": "5ed10385464cb67ca916a5db066206870cb53edd24901ef567ae883508331995"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:visualization:browser"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/53-browser.log",
+          "sha256": "af451f3a36e2c0f38a9d37c2839ad2d885b08e28c620cca2c0378ef01a9aacf6"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:presentation-adaptation"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/54-unit.log",
+          "sha256": "8dc7f62ed03808a07330472e4d4b4ef66ab8bd2176e5e78d1b3d302907188a7d"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:presentation-adaptation:browser"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/55-browser.log",
+          "sha256": "73534c29f6f5529f75d0ab67b435a6cf2797c63fb8ae8dd8e2224200db7bf701"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:visualization-semantic"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/56-unit.log",
+          "sha256": "084cd74f348820d3749c3ed9dd2082e9f3800ec0d2ff5caabcbf54be41022699"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:visualization-semantic:browser"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/57-browser.log",
+          "sha256": "8ba36bcdfc3b9833f6b229b266f47680ac6aee07713f101727d59a228572fa30"
+        }
+      ]
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:presentation-adaptation:consumers"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/58-packages.log",
+          "sha256": "5583781e0482c707f5b69e8616944bd48d6a2f06b4dd6b093b8d7850acbe3bd2"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:meaning-authoring"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/59-unit.log",
+          "sha256": "19836940daff2406b68d3bce2edd846e7ea7b4108690db06d1277a9a33dbf3c5"
+        }
+      ]
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:meaning-authoring:consumers"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/60-packages.log",
+          "sha256": "09b6f6f8f0834cec1170fc3afba9f31e55e96595e48ff085b14651f4629ec86f"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:protocol-mcp"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/61-unit.log",
+          "sha256": "fc51e2949ccac42ea9e37b28a9df2169568e8366c3db658fc15dbb24450f9f86"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:protocol-webmcp"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/62-unit.log",
+          "sha256": "25102f69b7a736f911f39cf7727098dbe20f8c4407dfd6f85546ec3d3870b7f8"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:protocol-model"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/63-unit.log",
+          "sha256": "9b6afb7b20a401823e26a67bae0e1e97b5889973065c7b79bb98a9dde878d8bb"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:compounds"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/64-unit.log",
+          "sha256": "2f8a016efe4244a81ca9796f1bf743e01bee7e567e5f1c91c845c70cb626dc39"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:compounds:browser"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/65-browser.log",
+          "sha256": "af4455ac45225c8cd934fd57e1633b8eb8573f8ed9ba79e5557936573ecbca86"
+        }
+      ]
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:protocol:consumers"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/66-packages.log",
+          "sha256": "0ed6e19581930fafb472582db6a3f6077653c1f28622ef31c12f70f775028e7d"
+        }
+      ]
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:compounds:consumers"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/67-packages.log",
+          "sha256": "af1b7b8bd3b66fbb53952b5c759a3d039d0b5de4667bbf14010f84d53c9b38cc"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:compound-semantic"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/68-unit.log",
+          "sha256": "075ed949250e07fb1f263bb9e6214e994d3cb4e82aacd21b5f6a60c3ead39c42"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:compound-semantic:browser"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/69-browser.log",
+          "sha256": "fd58e73b98434f78a7f862480b8c4e324285310e1431e8e44cb02b2aa1ac453a"
+        }
+      ]
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:framework:consumers"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/70-packages.log",
+          "sha256": "125c1ac0e4ce778dba3597ace14e6adeaddaa4fcc573306b5c6598af16c6f1a6"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:studio"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/71-unit.log",
+          "sha256": "d31deeb9853283376e2b03fdaef6589697634cd7e8555c3118bc9f3abfe39aa8"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:studio:browser"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/72-browser.log",
+          "sha256": "6ee8505fc1c9aa6cefb4b4f371aa89b01c56bf1aca21b4fc7cad1efa52c81bd9"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:site"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/73-unit.log",
+          "sha256": "2a23327e91fca834f6b5ece62585a866d4c27965875de3e45cd9fc37be081224"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:site:browser"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/74-browser.log",
+          "sha256": "c7cd1ae74f84d5638827015de0add3c617781960b977a388d1c6a34254d3b77d"
+        }
+      ]
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:studio:consumers"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/75-packages.log",
+          "sha256": "83625d8a11a09fb884c6f934829d4ae06e0b014f42554d23d5606aa27e917751"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:agent-evaluation:host"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/76-unit.log",
+          "sha256": "45cea8e6005a286277b3ac44bec38115e8be8af19cf0dcf232de9e126a161b11"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:visual"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/77-browser.log",
+          "sha256": "7e5a540c0b019f22197429dd629f0fa5b223c66a21a5b42be6340f8878f4dd4b"
+        }
+      ]
+    },
+    {
+      "kind": "performance",
+      "argv": [
+        "pnpm",
+        "test:performance:browser"
+      ],
+      "exitCode": 1,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/78-performance.log",
+          "sha256": "a313c2fd0dbc4c83a098b21ddc5b81f1d636e15192a61678c24717388ff93b8c"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:performance:standalone"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/79-browser.log",
+          "sha256": "5bc4dd0d97b8ef60c1653e46a835ffaba8d4ff8e7a5a37bb7b0b4d678d6fb810"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:performance:perceived-input"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/80-browser.log",
+          "sha256": "16f51db900c6776f7d072818c4f1f24603fd2ee46782d3da44badc128db9a0fa"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:performance:heap-lifecycle"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/81-browser.log",
+          "sha256": "35e2fcedaad9c7b30432f09c5b1c4cd7ba969c98f4a4ecbc03382071f2b72a00"
+        }
+      ]
+    }
+  ]
+}

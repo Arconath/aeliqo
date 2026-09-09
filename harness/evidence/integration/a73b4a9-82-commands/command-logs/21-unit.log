@@ -1,0 +1,10 @@
+$ node design/generate-web-tokens.mjs --check && vitest run design/styles.test.ts
+
+ RUN  v5.0.0 /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo
+
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  07:31:44
+   Duration  133ms (tests 40%, import 29%, transform 29%, worker 2%)
+

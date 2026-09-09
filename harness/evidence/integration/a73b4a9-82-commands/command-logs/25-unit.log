@@ -1,0 +1,6 @@
+$ pnpm build:runtime && node tests/runtime-data/auth-timeout-probe.mjs
+$ pnpm build:core && pnpm --filter @aeliqo/runtime build
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+{"iterations":1000,"failures":[],"passed":1000}

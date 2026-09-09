@@ -1,0 +1,64 @@
+$ pnpm build:platform && playwright test --config tests/design/playwright.config.mjs
+$ pnpm build:runtime && pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/react build
+$ pnpm build:core && pnpm --filter @aeliqo/runtime build
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+[WebServer] (node:25813) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:25819) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 7:31:49 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✘  1 tests/design/baseline.spec.ts:4:5 › themes inherit, legacy overrides survive, and direct inputs keep native state (5.7s)
+(node:25838) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 7:31:55 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  2 tests/design/baseline.spec.ts:50:5 › narrow RTL, text scaling and forced colors preserve content access (838ms)
+[WebServer] 7:31:56 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  3 tests/design/baseline.spec.ts:75:5 › system preference and explicit ancestor choices remain distinct (274ms)
+
+
+  1) tests/design/baseline.spec.ts:4:5 › themes inherit, legacy overrides survive, and direct inputs keep native state 
+
+    Error: expect(locator).toHaveCSS(expected) failed
+
+    Locator:  locator('#team input')
+    Expected: "rgb(160, 200, 240)"
+    Received: "rgb(243, 244, 246)"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCSS" locator('#team input') with timeout 5000ms
+      - waiting for locator('#team input')
+        14 × locator resolved to <input name="" type="text" part="input" id="control" inputmode="text" spellcheck="true" autocomplete="off" aria-describedby="description"/>
+           - unexpected value "rgb(243, 244, 246)"
+
+
+      22 |   expect((await new AxeBuilder({page}).analyze()).violations).toEqual([]);
+      23 |   await page.locator('#design-root').evaluate(element => (element as HTMLElement).style.setProperty('--aeliqo-input-color', 'rgb(160, 200, 240)'));
+    > 24 |   await expect(input).toHaveCSS('color', 'rgb(160, 200, 240)');
+         |                       ^
+      25 |   await page.locator('#design-root').evaluate(element => (element as HTMLElement).style.removeProperty('--aeliqo-input-color'));
+      26 |   await page.locator('#design-root').evaluate(element => {
+      27 |     const style = (element as HTMLElement).style;
+        at /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/tests/design/baseline.spec.ts:24:23
+
+    Error Context: artifacts/design-browser/baseline-themes-inherit-le-38c91-ct-inputs-keep-native-state/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/design-browser/baseline-themes-inherit-le-38c91-ct-inputs-keep-native-state/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace artifacts/design-browser/baseline-themes-inherit-le-38c91-ct-inputs-keep-native-state/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests/design/baseline.spec.ts:4:5 › themes inherit, legacy overrides survive, and direct inputs keep native state 
+  2 passed (7.6s)
+[ELIFECYCLE] Command failed with exit code 1.

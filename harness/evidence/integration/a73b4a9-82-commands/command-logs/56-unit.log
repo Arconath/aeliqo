@@ -1,0 +1,18 @@
+$ pnpm build:platform && vitest run --config tests/visualization-semantic/vitest.config.mjs && tsc -p tests/visualization-semantic/tsconfig.json && node tests/visualization-semantic/ssr.mjs
+$ pnpm build:runtime && pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/react build
+$ pnpm build:core && pnpm --filter @aeliqo/runtime build
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+
+ RUN  v5.0.0 /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo
+
+
+ Test Files  2 passed (2)
+      Tests  7 passed (7)
+   Start at  07:35:39
+   Duration  464ms (transform 67%, import 26%, tests 6%, worker 1%)
+
+Semantic visualization region SSR: canonical core plan validated and all twelve views rendered.

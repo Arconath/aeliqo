@@ -1,0 +1,250 @@
+{
+  "schema": "aeliqo.performance.heap-lifecycle.v1",
+  "sourceCommit": "a73b4a9e46c117148826c3739319cc4d24db2d67",
+  "mode": "functional-10-cycle",
+  "environment": {
+    "node": "v24.20.0",
+    "browser": "153.0.8010.12",
+    "project": "",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+    "platform": "MacIntel",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "devicePixelRatio": 1,
+    "hardwareConcurrency": 12
+  },
+  "method": {
+    "fixture": "/tests/performance/browser.html",
+    "measuredBatchCount": 1,
+    "batchSize": 10,
+    "measuredCycles": 10,
+    "warmup": "The exported smallStandalone workload runs before the measured batch; the full mountDispose runtime cleanup probe is opt-in with AELIQO_RUN_HEAP_LIFECYCLE=1.",
+    "heapUsage": "Chromium CDP Runtime.getHeapUsage",
+    "collection": "Chromium CDP HeapProfiler.collectGarbage requested before every heap sample; dead listener WeakRefs are pruned synchronously after collection and before Runtime.getHeapUsage.",
+    "heapMetric": "combinedLiveHeapFootprintBytes = usedSize + embedderHeapUsedSize + backingStorageSize; totalSize is retained as a raw field but excluded from the metric because it includes allocator capacity.",
+    "listenerInstrumentation": "EventTarget registration bookkeeping installed only for measured component batches, deduplicated per target, pruned after collection, and restored before the report is written."
+  },
+  "warmup": {
+    "smallFixture": {
+      "rowCount": 100,
+      "renderedRows": 100,
+      "inputValue": "ready"
+    },
+    "runtimeCleanup": null,
+    "remainingChildren": 0
+  },
+  "baseline": {
+    "usedSize": 2717188,
+    "totalSize": 3211264,
+    "embedderHeapUsedSize": 479608,
+    "backingStorageSize": 398718,
+    "availableFieldCount": 4,
+    "missingFields": [],
+    "label": "baseline-after-warmup",
+    "footprintBytes": 3595514
+  },
+  "batches": [
+    {
+      "batch": 1,
+      "before": {
+        "usedSize": 2717188,
+        "totalSize": 3211264,
+        "embedderHeapUsedSize": 479608,
+        "backingStorageSize": 398718,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "baseline-after-warmup",
+        "footprintBytes": 3595514
+      },
+      "after": {
+        "usedSize": 2813400,
+        "totalSize": 3735552,
+        "embedderHeapUsedSize": 473128,
+        "backingStorageSize": 398942,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "batch-1-after-gc",
+        "footprintBytes": 3685470
+      },
+      "observation": {
+        "batch": 1,
+        "cycles": 10,
+        "peakComponentCount": 2,
+        "peakRenderedRows": 12,
+        "disposalChecks": [
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          }
+        ],
+        "listeners": {
+          "trackedRegistrationCount": 0,
+          "connectedListenerCount": 0,
+          "detachedListenerCount": 0,
+          "trackedTargetCount": 0
+        },
+        "finalDom": {
+          "rootChildren": 0,
+          "componentCount": 0,
+          "inputCount": 0,
+          "tableCount": 0,
+          "documentComponentCount": 0
+        }
+      }
+    }
+  ],
+  "cleanup": {
+    "finalDom": {
+      "rootChildren": 0,
+      "documentComponentCount": 0
+    },
+    "finalListeners": {
+      "trackedRegistrationCount": 0,
+      "connectedListenerCount": 0,
+      "detachedListenerCount": 0,
+      "trackedTargetCount": 0
+    },
+    "lastBatch": {
+      "rootChildren": 0,
+      "componentCount": 0,
+      "inputCount": 0,
+      "tableCount": 0,
+      "documentComponentCount": 0
+    }
+  },
+  "positiveControl": {
+    "allocation": {
+      "stringCount": 131072,
+      "byteLength": 8388608
+    },
+    "metric": "combinedLiveHeapFootprintBytes = usedSize + embedderHeapUsedSize + backingStorageSize; all three fields must be finite for byte deltas, while totalSize remains a raw allocator-capacity observation.",
+    "before": {
+      "usedSize": 2813400,
+      "totalSize": 3735552,
+      "embedderHeapUsedSize": 473128,
+      "backingStorageSize": 398942,
+      "availableFieldCount": 4,
+      "missingFields": [],
+      "label": "batch-1-after-gc",
+      "footprintBytes": 3685470
+    },
+    "held": {
+      "usedSize": 19070296,
+      "totalSize": 20004864,
+      "embedderHeapUsedSize": 472976,
+      "backingStorageSize": 8787577,
+      "availableFieldCount": 4,
+      "missingFields": [],
+      "label": "positive-control-held-after-gc",
+      "footprintBytes": 28330849
+    },
+    "released": {
+      "usedSize": 2822760,
+      "totalSize": 3735552,
+      "embedderHeapUsedSize": 472976,
+      "backingStorageSize": 398969,
+      "availableFieldCount": 4,
+      "missingFields": [],
+      "label": "positive-control-released-after-gc",
+      "footprintBytes": 3694705
+    },
+    "heldIncreaseBytes": 24645379,
+    "releaseReductionBytes": 24636144,
+    "responsive": true
+  },
+  "trend": {
+    "postGcFootprints": [
+      {
+        "batch": 1,
+        "footprintBytes": 3685470,
+        "usedSize": 2813400,
+        "totalSize": 3735552,
+        "embedderHeapUsedSize": 473128,
+        "backingStorageSize": 398942
+      }
+    ],
+    "firstPostGcFootprintBytes": 3685470,
+    "lastPostGcFootprintBytes": 3685470,
+    "netPostGcDeltaBytes": 0
+  },
+  "interpretation": {
+    "observed": "Batch samples are raw post-requested-GC observations. A rising or falling trend is an investigation signal for this browser run, not a leak verdict or a heap budget.",
+    "positiveControl": "The held allocation must increase combinedLiveHeapFootprintBytes and release must reduce it; deltas become explicit null when any of the three metric fields is unavailable.",
+    "limitations": [
+      "This is one Chromium process and one production Vite fixture.",
+      "Heap totals are allocator/runtime observations; retained capacity can remain in totalSize after release.",
+      "The listener tracker uses deduplicated WeakRefs and prunes dead references after requested collection; registration and detached-listener counts are diagnostic bookkeeping and do not prove a production retention path.",
+      "Automatic once or AbortSignal listener removal is not observed as a removeEventListener call, so listener counters are diagnostic rather than a complete event-listener inventory.",
+      "Zero connected listeners and empty DOM/resource counters do not prove that every object is collectible.",
+      "No universal memory budget or cross-device leak claim is inferred."
+    ]
+  }
+}

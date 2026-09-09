@@ -1,0 +1,14 @@
+$ playwright test --config tests/compound-semantic/playwright.config.mjs
+[WebServer] (node:3586) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:3592) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 7:37:04 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  1 tests/compound-semantic/browser.spec.ts:13:5 › renders the validated compound tree and materialized rows in Chromium (257ms)
+[WebServer] 7:37:04 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  2 tests/compound-semantic/browser.spec.ts:23:5 › preserves typed filter and selection interactions from the expanded plan (295ms)
+
+  2 passed (970ms)

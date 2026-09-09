@@ -1,0 +1,39 @@
+$ pnpm build:platform && AELIQO_RUN_PERFORMANCE=1 node tests/performance/runtime-workload.mjs
+$ pnpm build:runtime && pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/react build
+$ pnpm build:core && pnpm --filter @aeliqo/runtime build
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+{
+  "output": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/performance-workloads/runtime-1788913900714.json",
+  "sourceCommit": "a73b4a9e46c117148826c3739319cc4d24db2d67",
+  "timingEnabled": true,
+  "medium": {
+    "durationMs": 79.35279200000059,
+    "status": "search-exhausted",
+    "expansions": 64,
+    "nodes": 31,
+    "candidateCount": 64,
+    "rowCount": 10000,
+    "viewCount": 30,
+    "fieldCount": 100,
+    "rowFieldCount": 100
+  },
+  "reducer": {
+    "iterations": 100,
+    "successful": 100,
+    "unrelatedRoutes": 0,
+    "p50Ms": 0.10791599999993196,
+    "p95Ms": 0.13520799999969313
+  },
+  "cleanup": {
+    "cycles": 100,
+    "retainedHandles": 0,
+    "liveRegions": 0,
+    "openObservers": 0,
+    "bounded": true
+  }
+}
+[ELIFECYCLE] Command failed with exit code 1.

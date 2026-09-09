@@ -1,0 +1,174 @@
+{
+  "schema": "aeliqo.performance.perceived-input.v1",
+  "sourceCommit": "a73b4a9e46c117148826c3739319cc4d24db2d67",
+  "mode": "functional-smoke",
+  "environment": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "devicePixelRatio": 1
+  },
+  "fixture": {
+    "rowCount": 100,
+    "directInput": true,
+    "tableRows": 100,
+    "retainedModuleGraphPath": "/retained-modules.json",
+    "eventTimingObserverAvailable": true,
+    "eventTimingThresholdMs": 16
+  },
+  "moduleGraph": {
+    "schema": "aeliqo.performance.perceived-input.retained-modules.v1",
+    "entryModules": [
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/tests/performance/perceived-input.html"
+    ],
+    "retainedModules": [
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/css-tag.js",
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/reactive-element.js",
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/node_modules/.pnpm/lit-element@4.2.2/node_modules/lit-element/lit-element.js",
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/node_modules/.pnpm/lit-html@3.3.3/node_modules/lit-html/lit-html.js",
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/node_modules/.pnpm/lit@3.3.3/node_modules/lit/index.js",
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/packages/core/dist/contracts/limits.js",
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/packages/core/dist/contracts/scalars.js",
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/packages/web/dist/data/events.js",
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/packages/web/dist/data/shared.js",
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/packages/web/dist/elements/aeliqo-input.js",
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/packages/web/dist/elements/aeliqo-table.js",
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/packages/web/dist/events.js",
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/packages/web/dist/foundation/base.js",
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/packages/web/dist/input/base.js",
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/packages/web/dist/input/events.js",
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/packages/web/dist/input/text-control.js",
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/packages/web/dist/input/text-field.js",
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/packages/web/dist/styles/theme.js",
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/packages/web/dist/styles/tokens.js",
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/tests/performance/perceived-input.html",
+      "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/tests/performance/perceived-input.ts",
+      "vite/modulepreload-polyfill.js"
+    ],
+    "forbiddenModules": []
+  },
+  "interactions": [
+    {
+      "sequence": 1,
+      "key": "0",
+      "trustedKeyboard": true,
+      "keydownObservedAtMs": 89.90000000596046,
+      "keydownEventTimestampMs": 88.19999998807907,
+      "keyupEventTimestampMs": 95.19999998807907,
+      "queryBefore": "",
+      "queryAfter": "0",
+      "visibleUpdate": {
+        "atMs": 93.5,
+        "delayMs": 5.300000011920929,
+        "revision": 2,
+        "rowCount": 10,
+        "rowIds": [
+          "row-10",
+          "row-20",
+          "row-30",
+          "row-40",
+          "row-50",
+          "row-60",
+          "row-70",
+          "row-80",
+          "row-90",
+          "row-100"
+        ],
+        "text": "row-10Local row 1010 row-20Local row 2020 row-30Local row 3030 row-40Local row 4040 row-50Local row 5050 row-60Local row 6060 row-70Local row 7070 row-80Local row 8080 row-90Local row 9090 row-100Local row 100100"
+      },
+      "eventTiming": {
+        "status": "missing-or-threshold-censored",
+        "observationThresholdMs": 16,
+        "interactionId": null,
+        "entries": []
+      }
+    },
+    {
+      "sequence": 2,
+      "key": "1",
+      "trustedKeyboard": true,
+      "keydownObservedAtMs": 181.19999998807907,
+      "keydownEventTimestampMs": 181.09999999403954,
+      "keyupEventTimestampMs": 182.40000000596046,
+      "queryBefore": "",
+      "queryAfter": "1",
+      "visibleUpdate": {
+        "atMs": 181.90000000596046,
+        "delayMs": 0.800000011920929,
+        "revision": 4,
+        "rowCount": 20,
+        "rowIds": [
+          "row-1",
+          "row-10",
+          "row-11",
+          "row-12",
+          "row-13",
+          "row-14",
+          "row-15",
+          "row-16",
+          "row-17",
+          "row-18",
+          "row-19",
+          "row-21",
+          "row-31",
+          "row-41",
+          "row-51",
+          "row-61",
+          "row-71",
+          "row-81",
+          "row-91",
+          "row-100"
+        ],
+        "text": "row-1Local row 11 row-10Local row 1010 row-11Local row 1111 row-12Local row 1212 row-13Local row 1313 row-14Local row 1414 row-15Local row 1515 row-16Local row 1616 row-17Local row 1717 row-18Local row 1818 row-19Local row 1919 row-21Local row 2121 row-31Local row 3131 row-41Local row 4141 row-51Local row 5151 row-61Local row 6161 row-71Local row 7171 row-81Local row 8181 row-91Local row 9191 row-100Local row 100100"
+      },
+      "eventTiming": {
+        "status": "missing-or-threshold-censored",
+        "observationThresholdMs": 16,
+        "interactionId": null,
+        "entries": []
+      }
+    }
+  ],
+  "visibleUpdateSummary": {
+    "sampleCount": 2,
+    "observedCount": 2,
+    "unavailableCount": 0,
+    "p50Ms": 0.800000011920929,
+    "p95Ms": 5.300000011920929,
+    "valuesMs": [
+      5.300000011920929,
+      0.800000011920929
+    ]
+  },
+  "eventTimingSummary": {
+    "sampleCount": 2,
+    "observedCount": 0,
+    "missingOrThresholdCensoredCount": 2,
+    "durationMs": [],
+    "inputDelayMs": [],
+    "processingDurationMs": []
+  },
+  "network": {
+    "requestsDuringInteractions": 0,
+    "urls": []
+  },
+  "screenshots": [
+    {
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/performance-perceived-input/perceived-input-measures-t-b1d75-put-and-local-100-row-table/interaction-1.png",
+      "bytes": 64807
+    },
+    {
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/performance-perceived-input/perceived-input-measures-t-b1d75-put-and-local-100-row-table/interaction-2.png",
+      "bytes": 84640
+    }
+  ],
+  "notes": [
+    "Visible update is an observed DOM mutation of the live output/table fixture after a trusted keyboard event; it is not a paint timestamp and does not use requestAnimationFrame or Lit updateComplete.",
+    "Event Timing fields are raw browser observations. The browser may omit entries below its configured duration threshold; missing-or-threshold-censored values remain null and are never encoded as zero.",
+    "The 16 ms Event Timing observation threshold is the browser API floor documented for durationThreshold; an absent entry does not prove a fast interaction.",
+    "This fixture uses direct @aeliqo/web input and table imports with local filtering only. No per-keystroke network or model request is allowed or expected.",
+    "The result describes this Chromium fixture and environment only; it is not a universal INP, input-to-paint, whole-site, or lower-powered-device claim. No 100 ms p95 qualification is asserted."
+  ]
+}

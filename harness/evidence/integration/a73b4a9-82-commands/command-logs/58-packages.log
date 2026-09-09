@@ -1,0 +1,2 @@
+$ node tests/consumers/adaptation-tarballs.mjs
+Installed adaptation proof passed: /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/adaptation-consumers/run-KrMLXK/report.json

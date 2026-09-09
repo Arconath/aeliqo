@@ -1,0 +1,23 @@
+$ pnpm build:platform && pnpm build:agent && vitest run --config tests/site/vitest.config.mjs && tsc -p tests/site/tsconfig.json && tsc -p apps/site/tsconfig.json
+$ pnpm build:runtime && pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/react build
+$ pnpm build:core && pnpm --filter @aeliqo/runtime build
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+$ pnpm build:runtime && pnpm --filter @aeliqo/agent build
+$ pnpm build:core && pnpm --filter @aeliqo/runtime build
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+
+ RUN  v5.0.0 /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo
+
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  07:37:33
+   Duration  554ms (transform 54%, tests 28%, import 18%)
+

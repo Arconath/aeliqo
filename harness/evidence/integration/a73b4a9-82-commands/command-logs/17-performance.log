@@ -1,0 +1,99 @@
+$ node tests/performance/bundles.mjs
+{
+  "report": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/performance-bundles/run-4WRPlV/report.json",
+  "gate": "pass",
+  "rows": [
+    {
+      "id": "button",
+      "passed": true,
+      "budget": 15360,
+      "measurements": [
+        {
+          "mode": "total",
+          "gzip": 8858,
+          "forbidden": []
+        },
+        {
+          "mode": "excluding-lit",
+          "gzip": 3348,
+          "forbidden": []
+        }
+      ]
+    },
+    {
+      "id": "input",
+      "passed": true,
+      "budget": 15360,
+      "measurements": [
+        {
+          "mode": "total",
+          "gzip": 11596,
+          "forbidden": []
+        },
+        {
+          "mode": "excluding-lit",
+          "gzip": 6147,
+          "forbidden": []
+        }
+      ]
+    },
+    {
+      "id": "metric",
+      "passed": true,
+      "budget": 15360,
+      "measurements": [
+        {
+          "mode": "total",
+          "gzip": 9013,
+          "forbidden": []
+        },
+        {
+          "mode": "excluding-lit",
+          "gzip": 3449,
+          "forbidden": []
+        }
+      ]
+    },
+    {
+      "id": "table",
+      "passed": true,
+      "budget": 40960,
+      "measurements": [
+        {
+          "mode": "total",
+          "gzip": 13493,
+          "forbidden": []
+        },
+        {
+          "mode": "excluding-lit",
+          "gzip": 8048,
+          "forbidden": []
+        }
+      ]
+    },
+    {
+      "id": "core-planner-validation",
+      "passed": true,
+      "budget": 71680,
+      "measurements": [
+        {
+          "mode": "total",
+          "gzip": 52584,
+          "forbidden": []
+        }
+      ]
+    },
+    {
+      "id": "region-table",
+      "passed": true,
+      "budget": 163840,
+      "measurements": [
+        {
+          "mode": "total",
+          "gzip": 141857,
+          "forbidden": []
+        }
+      ]
+    }
+  ]
+}

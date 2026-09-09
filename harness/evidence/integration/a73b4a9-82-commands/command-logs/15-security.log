@@ -1,0 +1,17 @@
+$ pnpm build:agent && pnpm --filter @aeliqo/testkit build && vitest run --config tests/security/vitest.config.mjs && tsc -p tests/security/tsconfig.json
+$ pnpm build:runtime && pnpm --filter @aeliqo/agent build
+$ pnpm build:core && pnpm --filter @aeliqo/runtime build
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+
+ RUN  v5.0.0 /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo
+
+
+ Test Files  5 passed (5)
+      Tests  14 passed (14)
+   Start at  07:31:20
+   Duration  1.45s (tests 46%, transform 42%, import 11%)
+

@@ -1,0 +1,13 @@
+$ playwright test --config tests/input-semantic/playwright.config.mjs
+[WebServer] (node:63857) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:63863) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 7:34:36 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 7:34:36 AM [vite] (client) [console.warn] Element aeliqo-number-field scheduled an update (generally because a property was set) after an update completed, causing a new update to be scheduled. This is inefficient and should be avoided unless the next update can only be scheduled as a side effect of the previous update. See https://lit.dev/msg/change-in-update for more information.
+  ✓  1 tests/input-semantic/browser.spec.ts:3:5 › shared region preserves input defaults, drafts and semantic targets (479ms)
+
+  1 passed (931ms)

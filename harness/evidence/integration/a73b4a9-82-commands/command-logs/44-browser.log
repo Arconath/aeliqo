@@ -1,0 +1,36 @@
+$ playwright test --config tests/component-a11y/playwright.config.mjs
+[WebServer] (node:63568) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 12 tests using 2 workers
+
+(node:63574) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63575) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 7:34:26 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 7:34:26 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   1 tests/component-a11y/browser.spec.ts:4:6 › input fixture retains valid accessible component semantics (428ms)
+  ✓   2 tests/component-a11y/visual.spec.ts:4:6 › input desktop visual and accessibility capture (454ms)
+[WebServer] 7:34:26 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 7:34:26 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   3 tests/component-a11y/browser.spec.ts:4:6 › navigation fixture retains valid accessible component semantics (329ms)
+[WebServer] 7:34:27 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   4 tests/component-a11y/visual.spec.ts:4:6 › input narrow-dark-rtl visual and accessibility capture (450ms)
+[WebServer] 7:34:27 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   5 tests/component-a11y/browser.spec.ts:4:6 › feedback fixture retains valid accessible component semantics (312ms)
+[WebServer] 7:34:27 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   6 tests/component-a11y/visual.spec.ts:4:6 › navigation desktop visual and accessibility capture (350ms)
+[WebServer] 7:34:27 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   8 tests/component-a11y/visual.spec.ts:4:6 › navigation narrow-dark-rtl visual and accessibility capture (329ms)
+[WebServer] 7:34:27 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   7 tests/component-a11y/browser.spec.ts:4:6 › data-components fixture retains valid accessible component semantics (828ms)
+  ✓   9 tests/component-a11y/visual.spec.ts:4:6 › feedback desktop visual and accessibility capture (327ms)
+[WebServer] 7:34:28 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  10 tests/component-a11y/visual.spec.ts:4:6 › feedback narrow-dark-rtl visual and accessibility capture (348ms)
+[WebServer] 7:34:28 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  11 tests/component-a11y/visual.spec.ts:4:6 › data-components desktop visual and accessibility capture (538ms)
+[WebServer] 7:34:29 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  12 tests/component-a11y/visual.spec.ts:4:6 › data-components narrow-dark-rtl visual and accessibility capture (540ms)
+
+  12 passed (4.1s)
