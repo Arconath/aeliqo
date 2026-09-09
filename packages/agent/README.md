@@ -5,6 +5,20 @@ pure core and effect-owning runtime; direct components and normal interactions d
 not import it. Capability registrations are host-owned and protocol-neutral;
 manual, direct and protocol ports all call the same authority-checked dispatcher.
 
+## Model transports
+
+`@aeliqo/agent/model` exposes only the provider-neutral `ToolModelPort`. The
+optional `@aeliqo/agent/model/openai` entry is an official SDK reference. For a
+trusted-server OpenAI-compatible Responses endpoint, use
+`@aeliqo/agent/model/responses` and configure an explicit HTTPS base endpoint,
+model ID, opaque credential reference, credential resolver, and request policy.
+The transport never identifies a provider from a key or reference, uses no retries,
+does not retain credentials, and normalizes errors without echoing endpoint,
+headers, credential, or provider response text. It sends `stream: false` and has
+no streaming API; only complete responses and function-call proposals are
+implemented. The host remains responsible for model-egress permission, secret
+resolution, pricing, and tool execution.
+
 ## Capability dispatcher and sessions
 
 `createAgentCapabilityRegistry` accepts only trusted local manifests. A manifest

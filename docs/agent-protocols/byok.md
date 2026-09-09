@@ -52,3 +52,30 @@ The official SDK HTTP exchange is tested against a local protocol fixture.
 Synthetic model tests cover containment, permissions, cancellation and budgets.
 Neither establishes real natural-language reasoning or live provider support.
 The actual credentialed, budget-authorized held-out evaluation remains T40.
+
+## OpenAI-compatible Responses transport
+
+`@aeliqo/agent/model/responses` supplies
+`createOpenAICompatibleResponsesToolModel` for a trusted server that owns an
+OpenAI-compatible Responses endpoint. It is deliberately provider-agnostic:
+applications configure the HTTPS base endpoint, explicit model ID, opaque
+credential reference, credential resolver, and request policy independently. The
+transport never selects a provider or model from credential contents, a reference
+format, or an endpoint hostname.
+
+The resolver receives the opaque reference and an abort signal, and returns a
+credential only within the server request. Credentials, authorization headers,
+endpoint URLs, and provider response bodies are never placed in a model receipt or
+transport error. The request policy requires `maxRetries: 0`, explicit timeout and
+byte limits, and `stream: false`. The transport performs no retry itself. Caller
+cancellation and timeout reach credential resolution and `fetch`; an already
+completed remote request cannot be undone.
+
+It implements `responses/input_tokens` counting and non-streaming
+`responses` completion with Responses function-call proposals. `ToolModelPort`
+does not expose streaming events and this transport does not buffer or emulate
+them; a request policy that enables streaming is rejected. Parsed tool proposals
+remain untrusted and must pass `runToolModel` plus the same capability/egress
+boundary as every other BYOK port. This local protocol compatibility is not proof
+that a provider has been evaluated for task quality or that every
+OpenAI-compatible endpoint implements the same optional features.

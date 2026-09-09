@@ -7,7 +7,8 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "NOTICE"
   ],
   "exports": {
     ".": {
@@ -25,6 +26,10 @@
     "./model/openai": {
       "types": "./dist/model/openai.d.ts",
       "import": "./dist/model/openai.js"
+    },
+    "./model/responses": {
+      "types": "./dist/model/responses.d.ts",
+      "import": "./dist/model/responses.js"
     },
     "./webmcp": {
       "types": "./dist/webmcp/index.d.ts",
