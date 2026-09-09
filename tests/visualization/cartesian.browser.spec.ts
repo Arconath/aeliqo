@@ -34,6 +34,40 @@ test('keeps edge x-axis labels inside the chart viewport', async ({page}) => {
   }
 });
 
+test('keeps date and category edge labels inside LTR and RTL chart viewports', async ({page}) => {
+  for (const direction of ['ltr', 'rtl'] as const) {
+    await page.evaluate(async (nextDirection) => {
+      document.documentElement.dir = nextDirection;
+      for (const host of document.querySelectorAll<HTMLElement>('aeliqo-trend, aeliqo-bar')) {
+        const element = host as HTMLElement & {requestUpdate?: () => void; updateComplete?: Promise<unknown>};
+        element.requestUpdate?.();
+        if (element.updateComplete !== undefined) await element.updateComplete;
+      }
+    }, direction);
+    const bounds = await page.evaluate(() => {
+      const output: Record<string, {text: string | null; left: number; right: number; svgLeft: number; svgRight: number}[]> = {};
+      for (const id of ['trend', 'bar']) {
+        const svg = document.querySelector<HTMLElement>(`aeliqo-${id}`)?.shadowRoot?.querySelector<SVGSVGElement>('svg');
+        if (svg === undefined || svg === null) throw new Error(`Missing ${id} SVG`);
+        const svgBounds = svg.getBoundingClientRect();
+        const xTickY = String(svg.viewBox.baseVal.height - 30);
+        output[id] = [...svg.querySelectorAll<SVGTextElement>(`text[y="${xTickY}"]`)].map((label) => {
+          const labelBounds = label.getBoundingClientRect();
+          return {text: label.textContent, left: labelBounds.left, right: labelBounds.right, svgLeft: svgBounds.left, svgRight: svgBounds.right};
+        });
+      }
+      return output;
+    });
+    for (const id of ['trend', 'bar']) {
+      expect(bounds[id]?.length, `${direction} ${id} should expose x-axis labels`).toBeGreaterThan(1);
+      for (const bound of bounds[id] ?? []) {
+        expect(bound.left, `${direction} ${id} ${bound.text} starts outside the SVG`).toBeGreaterThanOrEqual(bound.svgLeft - 0.5);
+        expect(bound.right, `${direction} ${id} ${bound.text} ends outside the SVG`).toBeLessThanOrEqual(bound.svgRight + 0.5);
+      }
+    }
+  }
+});
+
 test('selection is keyboard reachable and an over-budget graphic retains exact data', async ({page}) => {
   await page.locator('aeliqo-trend').evaluate((node) => {
     node.addEventListener('aeliqo-visualization-select', (event) => { (window as any).selection = (event as CustomEvent).detail; });

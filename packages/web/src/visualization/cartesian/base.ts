@@ -207,7 +207,7 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
         <svg viewBox=${`0 0 ${geometry.width} ${geometry.height}`} width=${geometry.width} height=${geometry.height} role="img" aria-label=${`${label}. ${scope} Values and selection are available in the data table below.`}>
           ${svgPlotMarks(geometry)}
           <path d=${`M64,24V${geometry.height - 48}H${geometry.width - 24}`} fill="none" stroke="currentColor"></path>
-          ${axes.x.ticks.map((tick, index) => svg`<text x=${tick.position} y=${geometry.height - 30} text-anchor=${index === 0 ? "start" : index === axes.x.ticks.length - 1 ? "end" : "middle"} aria-label=${tick.label}>${this.tickText(tick.label)}</text>`)}
+          ${axes.x.ticks.map((tick, index) => svg`<text x=${tick.position} y=${geometry.height - 30} text-anchor=${this.xTickAnchor(index, axes.x.ticks.length)} aria-label=${tick.label}>${this.tickText(tick.label)}</text>`)}
           ${axes.y.ticks.map((tick) => svg`<text x="58" y=${tick.position} text-anchor="end" aria-label=${tick.label}>${this.tickText(tick.label)}</text>`)}
           <text x=${geometry.width / 2} y=${geometry.height - 8} text-anchor="middle">${axes.xLabel}</text>
           <text x="64" y="14">${axes.yLabel}</text>
@@ -240,6 +240,12 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
   }
 
   private tickText(text: string): string { return text.length > 12 ? `${text.slice(0, 5)}…${text.slice(-5)}` : text; }
+  private xTickAnchor(index: number, count: number): "start" | "middle" | "end" {
+    if (index > 0 && index < count - 1) return "middle";
+    const rtl = typeof globalThis.getComputedStyle === "function" && globalThis.getComputedStyle(this).direction === "rtl";
+    if (index === 0) return rtl ? "end" : "start";
+    return rtl ? "start" : "end";
+  }
   private uncertaintyText(uncertainty: {readonly kind: "quantified"; readonly lower: number; readonly upper: number; readonly interpretation: string} | {readonly kind: "unquantified"; readonly reason: string}): string {
     return uncertainty.kind === "quantified"
       ? `${uncertainty.interpretation} (range ${uncertainty.lower}–${uncertainty.upper}).`
