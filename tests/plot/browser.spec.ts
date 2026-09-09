@@ -29,7 +29,17 @@ test('facet and layer compose real marks, data partitions and Canvas, then clear
  await expect(page.locator('aeliqo-plot tbody tr')).toHaveCount(6);
  await expect(page.locator('aeliqo-plot circle')).toHaveCount(4);
  await page.evaluate(async()=>{const p=(window as any).plot;p.renderer='canvas';await p.updateComplete;});
- await expect(page.locator('canvas')).toHaveCount(6);
+ await expect(page.locator('canvas')).toHaveCount(4);
+ for(const id of ['a','b','c']){
+  const facet=page.locator(`aeliqo-plot [part=facet] > section[aria-label="id: ${id}"]`);
+  await expect(facet.locator('canvas')).toHaveCount(id==='b'?0:2);
+  await expect(facet.locator('table')).toHaveCount(2);
+  await expect(facet.getByRole('button',{name:`Select ${id}`,exact:true})).toHaveCount(2);
+  if(id==='b'){
+   await expect(facet.getByRole('cell',{name:'Missing',exact:true})).toHaveCount(2);
+   await expect(facet.getByRole('status').first()).toContainText('No plottable observations');
+  }
+ }
  const nonEmpty=await page.locator('canvas').evaluateAll(nodes=>nodes.filter(n=>{const c=n as HTMLCanvasElement;return c.getContext('2d')!.getImageData(0,0,c.width,c.height).data.some((v,i)=>i%4===3&&v>0);}).length);
  expect(nonEmpty).toBe(4);
  await page.evaluate(async()=>{const p=(window as any).plot;p.results=[];await p.updateComplete;});
