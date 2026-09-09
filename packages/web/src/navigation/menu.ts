@@ -1,6 +1,6 @@
-import {css, html, nothing} from "lit";
+import {css, html} from "lit";
 import {AeliqoFoundationElement, aeliqoFoundationThemeStyles} from "../foundation/base.js";
-import {aeliqoNavigationStyles, activeElement, focusFirst, focusLast, restoreFocus, listenOutside, emitAction, safeElementId} from "./shared.js";
+import {aeliqoNavigationStyles, activeElement, focusFirst, restoreFocus, listenOutside, emitAction, safeElementId} from "./shared.js";
 
 export interface AeliqoMenuItem {
   readonly id: string;

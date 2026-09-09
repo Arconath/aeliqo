@@ -112,7 +112,519 @@
         "test:agent:consumers"
       ],
       "timeoutSeconds": 300
+    },
+    {
+      "kind": "lint",
+      "argv": [
+        "pnpm",
+        "lint"
+      ],
+      "timeoutSeconds": 120
+    },
+    {
+      "kind": "security",
+      "argv": [
+        "pnpm",
+        "test:security"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "boundaries",
+      "argv": [
+        "pnpm",
+        "test:boundaries"
+      ],
+      "timeoutSeconds": 120
+    },
+    {
+      "kind": "performance",
+      "argv": [
+        "pnpm",
+        "test:performance:bundles"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "performance",
+      "argv": [
+        "pnpm",
+        "test:performance:runtime"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:semantics"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:query"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:design"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:design:browser"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:data"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:runtime:consumers"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:data:auth-retention"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:results"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:regions"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:actions"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:interaction"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:foundation"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:foundation:browser"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:inputs"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:inputs:browser"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:inputs:consumers"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:navigation:browser"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:feedback:browser"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:data-components"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:data-components:browser"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:data-components:consumers"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:plot"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:plot:browser"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:plot:consumers"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:navigation-feedback:consumers"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:components:a11y"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:input-semantic"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:input-semantic:browser"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:navigation-feedback-semantic"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:data-semantic"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:navigation-feedback-semantic:browser"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:data-semantic:browser"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:visualization"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:visualization:consumers"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:visualization:browser"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:presentation-adaptation"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:presentation-adaptation:browser"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:visualization-semantic"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:visualization-semantic:browser"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:presentation-adaptation:consumers"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:meaning-authoring"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:meaning-authoring:consumers"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:protocol-mcp"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:protocol-webmcp"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:protocol-model"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:compounds"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:compounds:browser"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:protocol:consumers"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:compounds:consumers"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:compound-semantic"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:compound-semantic:browser"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:framework:consumers"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:studio"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:studio:browser"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:site"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:site:browser"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "packages",
+      "argv": [
+        "pnpm",
+        "test:studio:consumers"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:agent-evaluation:host"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:visual"
+      ],
+      "timeoutSeconds": 900
     }
   ],
-  "note": "Real scoped M0, T03, T05, T39 and the T41 narrative slice commands. Full product lint, security, performance and boundary commands remain required; missing kinds deliberately keep the integrated product gate blocked."
+  "note": "Every implemented package test script is indexed except test:data-stream (alias of test:data) and test:visualization:temporal:browser (already included by test:visualization:browser). Source lint checks unused locals/parameters across packages, examples and separately scoped apps. Security, static module boundaries, installed byte budgets and forced-on Node timing remain separate checks. Runtime timing currently exceeds16ms; it cannot pass by skipping. Full browser/standalone/adverse/low-powered timing and human/live integrated evidence remain required independently of this command ledger."
 }
