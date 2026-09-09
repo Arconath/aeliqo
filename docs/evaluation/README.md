@@ -23,7 +23,7 @@ not inspect the sealed prompts, source rows or expected answers.
 
 Still required: independently accepted full held-out coverage; owner-selected exact
 weak/strong model configurations and explicit spend ceiling; bounded live trials
-through the official model adapter; actual MCP client trials; first-attempt and
+through the official model adapter; external MCP-host reasoning trials; first-attempt and
 recovery scores; arithmetic/scope/grounding oracles; UI task completion and
 ablation results. Report unavailable credentials, incomplete UI observation,
 unreviewed prose, or missing cost data as blocked/unmeasured. Never substitute
@@ -72,3 +72,25 @@ business meaning; independent cohort/arithmetic/domain oracles remain required. 
 configuration is a reviewed CLI input, not an authentication credential or proof
 of consent. Live execution still requires explicit owner authorization in the
 controlling session before any provider call.
+
+## Actual MCP explicit baseline
+
+Run `pnpm build:agent` first, then add `--mcp-explicit` to the preflight command to run each explicit task through
+an official MCP SDK client and a separate stdio child using the production
+Aeliqo MCP adapter. The child receives only the application fixture fields;
+expected answers and user prompts are not part of that file. Each child host
+exposes the same scoped data-only capabilities, and its resources are disposed
+after the call. The client validates receipts and Result descriptors before the
+independent scorer compares returned values and quality.
+
+Reports separate `explicit-task` from `explicit-mcp`, preserve the configured
+protocol pin, discovered tool-schema hash, server metadata when available, raw
+call/connection timing, transport detachment and separately observed child exit.
+The child closes its Vite loader and MCP server on stdin closure or termination;
+the parent checks process liveness for at most five seconds after SDK teardown.
+Missing exit evidence or private-fixture cleanup failure fails the baseline.
+A failed explicit MCP baseline
+returns exit1; successful baselines still return exit2 with T40 blocked. These
+are actual local protocol trials, with no model adapter configured. They do not
+measure an external agent's reasoning, hosted HTTP operation, UI completion or
+prose entailment, and they do not enter weak/strong model-score denominators.

@@ -9,6 +9,7 @@ import {runToolModel} from '../../packages/agent/src/model/loop.js';
 import type {ToolModelBudget} from '../../packages/agent/src/model/types.js';
 import {createEvaluationHost,type EvaluationFixture} from './host.js';
 import {scoreData,wilsonInterval,type ExpectedOutput} from './scoring.js';
+import {runExplicitMcp} from './mcp-baseline.js';
 interface EvaluationCase{readonly id:string;readonly partition:'development'|'heldout';readonly independentAuthor:string;readonly exposure:string;readonly prompt:string;readonly fixture:EvaluationFixture;readonly explicitTask:Task;readonly expected:readonly ExpectedOutput[];}
 interface ModelConfig{readonly label:'weak'|'strong';readonly model:string;readonly expectedReportedModel:string;readonly inputUSDPerMillion:number;readonly outputUSDPerMillion:number;readonly priceSource:string;}
 interface LiveConfig{readonly version:'1';readonly authorized:boolean;readonly authorizationReference:string;readonly authorizedCorpusSha256:string;readonly maxUSD:number;readonly trials:number;readonly models:readonly ModelConfig[];readonly budget:ToolModelBudget;}
@@ -35,14 +36,23 @@ function parseCase(value:unknown):EvaluationCase|undefined{
  return value as unknown as EvaluationCase;
 }
 export async function runEvaluation(args:readonly string[]):Promise<number>{
- const options=new Map<string,string>();let live=false;
- for(let index=0;index<args.length;index++){const argument=args[index]!;if(argument==='--live'){live=true;continue;}if(!['--config','--corpus','--output'].includes(argument)||!args[index+1])throw Error('Use --config FILE --corpus FILE --output DIRECTORY [--live].');options.set(argument,args[++index]!);}
+ const options=new Map<string,string>();let live=false;let mcpExplicit=false;
+ for(let index=0;index<args.length;index++){const argument=args[index]!;if(argument==='--live'){live=true;continue;}if(argument==='--mcp-explicit'){mcpExplicit=true;continue;}if(!['--config','--corpus','--output'].includes(argument)||!args[index+1])throw Error('Use --config FILE --corpus FILE --output DIRECTORY [--live] [--mcp-explicit].');options.set(argument,args[++index]!);}
  const corpusPath=options.get('--corpus');const configPath=options.get('--config');const outputPath=options.get('--output');if(!corpusPath||!outputPath)throw Error('Provide a corpus file and output directory.');
  const corpusBytes=await readFile(resolve(corpusPath),'utf8');const raw:unknown=JSON.parse(corpusBytes);if(!Array.isArray(raw)||raw.length===0||raw.length>200)throw Error('The corpus must contain 1–200 cases.');
  const cases=raw.map(parseCase);if(cases.some(item=>item===undefined)||new Set(cases.map(item=>item!.id)).size!==cases.length)throw Error('The corpus contains invalid or repeated cases.');const validCases=cases as EvaluationCase[];
  const root=resolve(import.meta.dirname,'../..');const sourceDigest=()=>execFileSync('python3',['scripts/gate.py','digest'],{cwd:root,encoding:'utf8'}).trim();const before=sourceDigest();const output=resolve(outputPath);await mkdir(output,{recursive:true});
  const rows:Record<string,unknown>[]=[];const blocks:string[]=[];const config=configPath?parseConfig(JSON.parse(await readFile(resolve(configPath),'utf8'))):undefined;
- for(const testCase of validCases){const host=createEvaluationHost(testCase.fixture);try{const started=performance.now();const evaluated=await host.evaluate(testCase.explicitTask);rows.push({caseId:testCase.id,partition:testCase.partition,mode:'explicit-task',model:null,elapsedMs:performance.now()-started,score:evaluated.ok?scoreData(evaluated.value,testCase.expected,testCase.fixture.scopeDigest,testCase.fixture.sourceRevision):{dataCorrect:false,diagnostics:evaluated.diagnostics},observations:host.observations});}finally{host.dispose();}}
+ for(const testCase of validCases){
+  const host=createEvaluationHost(testCase.fixture);
+  try{const started=performance.now();const evaluated=await host.evaluate(testCase.explicitTask);rows.push({caseId:testCase.id,partition:testCase.partition,mode:'explicit-task',model:null,elapsedMs:performance.now()-started,score:evaluated.ok?scoreData(evaluated.value,testCase.expected,testCase.fixture.scopeDigest,testCase.fixture.sourceRevision):{dataCorrect:false,diagnostics:evaluated.diagnostics},observations:host.observations});}finally{host.dispose();}
+  if(mcpExplicit){
+   const baseline=await runExplicitMcp(testCase.fixture,testCase.explicitTask);
+   rows.push({caseId:testCase.id,partition:testCase.partition,mode:'explicit-mcp',model:null,
+    score:baseline.result.ok?scoreData(baseline.result.value,testCase.expected,testCase.fixture.scopeDigest,testCase.fixture.sourceRevision):{dataCorrect:false,diagnostics:baseline.result.diagnostics},
+    observation:baseline.observation,outputs:baseline.result.ok?baseline.result.value:undefined});
+  }
+ }
  if(!live)blocks.push('Live trials were not requested. No provider request was made.');
  else if(!config||!config.authorized)blocks.push('An explicit owner-authorized configuration with exact weak/strong models, prices, and spend ceiling is required.');
  else if(config.authorizedCorpusSha256!==hash(corpusBytes))blocks.push('The corpus bytes differ from the owner-authorized corpus digest. No provider request was made.');
@@ -65,7 +75,8 @@ export async function runEvaluation(args:readonly string[]):Promise<number>{
  }
  const groups=['weak','strong'].map(label=>{const trials=rows.filter(row=>row.modelLabel===label);const successes=trials.filter(row=>object(row.score)&&row.score.dataCorrect===true).length;return{label,trials:trials.length,dataCorrect:successes,interval:wilsonInterval(successes,trials.length),uiTaskCompletion:null,narrativeGrounding:null};});
  const after=sourceDigest();if(after!==before)blocks.push('Source changed during the run; these results cannot qualify the candidate.');
- blocks.push('This data-only runner does not establish full T40: UI completion, narrative review, fixed-template ablation, actual MCP-client trials, and independently accepted held-out coverage remain separate requirements.');
- const report={schemaVersion:1,status:'blocked',sourceDigest:before,sourceChangedDuringRun:after!==before,corpus:{path:resolve(corpusPath),sha256:hash(corpusBytes),cases:validCases.map(item=>({id:item.id,partition:item.partition,independentAuthor:item.independentAuthor,exposure:item.exposure}))},authorization:config?{reference:config.authorizationReference,maximumUSD:config.maxUSD,authorizedCorpusSha256:config.authorizedCorpusSha256}:null,groups,blocks,rows};await writeFile(join(output,'report.json'),JSON.stringify(report,null,2)+'\n');console.log(`Evaluation evidence written to ${join(output,'report.json')}. Overall T40 status: BLOCKED.`);return rows.some(row=>row.mode==='explicit-task'&&object(row.score)&&row.score.dataCorrect===false)?1:2;
+ if(!mcpExplicit)blocks.push('Actual MCP-client explicit trials were not requested.');
+ blocks.push('This data-only runner does not establish full T40: UI completion, narrative review, fixed-template ablation, external MCP-host reasoning trials, and independently accepted held-out coverage remain separate requirements.');
+ const report={schemaVersion:1,status:'blocked',mcpExplicit,sourceDigest:before,sourceChangedDuringRun:after!==before,corpus:{path:resolve(corpusPath),sha256:hash(corpusBytes),cases:validCases.map(item=>({id:item.id,partition:item.partition,independentAuthor:item.independentAuthor,exposure:item.exposure}))},authorization:config?{reference:config.authorizationReference,maximumUSD:config.maxUSD,authorizedCorpusSha256:config.authorizedCorpusSha256}:null,groups,blocks,rows};await writeFile(join(output,'report.json'),JSON.stringify(report,null,2)+'\n');console.log(`Evaluation evidence written to ${join(output,'report.json')}. Overall T40 status: BLOCKED.`);return rows.some(row=>(row.mode==='explicit-task'||row.mode==='explicit-mcp')&&object(row.score)&&row.score.dataCorrect===false)?1:2;
 }
 export{parseConfig,parseCase};

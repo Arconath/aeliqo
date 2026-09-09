@@ -11,3 +11,16 @@ it('pins live data egress to the exact owner-approved corpus bytes',async()=>{co
 it('rejects ambiguous or incomplete expected-output oracles',()=>{expect(parseCase({...developmentCase,expected:[developmentCase.expected[0],developmentCase.expected[0]]})).toBeUndefined();expect(parseCase({...developmentCase,expected:[{...developmentCase.expected[0],fields:['id','id']}]})).toBeUndefined();expect(parseCase({...developmentCase,expected:[{...developmentCase.expected[0],rows:[{id:'a'}]}]})).toBeUndefined();});
 
 it('rejects unbounded or incomplete fixture execution budgets',()=>{expect(parseCase({...developmentCase,fixture:{...developmentCase.fixture,budget:{}}})).toBeUndefined();expect(parseCase({...developmentCase,fixture:{...developmentCase.fixture,budget:{...developmentCase.fixture.budget,maxRows:10001}}})).toBeUndefined();});
+
+it('records a real MCP explicit baseline separately from model-quality groups',async()=>{
+ const directory=await mkdtemp(join(tmpdir(),'aeliqo-eval-mcp-runner-'));const corpus=join(directory,'corpus.json');
+ await writeFile(corpus,JSON.stringify([developmentCase]));
+ expect(await runEvaluation(['--corpus',corpus,'--output',directory,'--mcp-explicit'])).toBe(2);
+ const report=JSON.parse(await readFile(join(directory,'report.json'),'utf8'));
+ expect(report).toMatchObject({status:'blocked',mcpExplicit:true});
+ expect(report.rows.map((row:{mode:string})=>row.mode)).toEqual(['explicit-task','explicit-mcp']);
+ expect(report.rows[1]).toMatchObject({model:null,score:{dataCorrect:true,uiTaskCompletion:null,narrativeGrounding:null},
+  observation:{transport:'official-sdk-stdio',transportDetached:true,childExited:true,cleanupSucceeded:true,receiptState:'data-ready'}});
+ expect(report.rows[1].observation.toolSchemaSha256).toMatch(/^[a-f0-9]{64}$/);
+ expect(report.groups.every((group:{trials:number;interval:unknown})=>group.trials===0&&group.interval===null)).toBe(true);
+},30000);
