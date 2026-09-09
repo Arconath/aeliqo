@@ -1,0 +1,32 @@
+{
+  "task": "T24",
+  "status": "scoped-installed-consumer-pass",
+  "sourceCommit": "8bb7ded",
+  "scope": "See consumer/report.json for exact package tarball hashes, source digest and Node/Chromium installed-path limits. No live provider or native WebMCP claim.",
+  "artifacts": [
+    {
+      "path": "consumer/aeliqo-agent-0.1.0.tgz",
+      "sha256": "674107fddb3bc75f05190a1ec576ce010a8c9da021607cbe19252e1395e87f0d"
+    },
+    {
+      "path": "consumer/aeliqo-core-0.1.0.tgz",
+      "sha256": "37a75cfc9aadc08783b8c20f485939dadef9c2dc23927d64b68720ee9bfd5db7"
+    },
+    {
+      "path": "consumer/aeliqo-runtime-0.1.0.tgz",
+      "sha256": "ee7c293cb8d8e684e157617e64c9f28dc39a70155735e6fbb69452cbda1f8918"
+    },
+    {
+      "path": "consumer/consumer-package-lock.json",
+      "sha256": "70eff14eb8fa9b387e2fddac883da6d0e6c3ba598dc1bfc14a76b600cbfdcf8e"
+    },
+    {
+      "path": "consumer/report.json",
+      "sha256": "9948ed68b256790bad02608daf3faf4b097d229e69d5d6e92b537e892210e66a"
+    },
+    {
+      "path": "consumer.log",
+      "sha256": "22bcfd4836a2e658860efac77378600d4460f746e3a1bfd861af6b8dbe113dcc"
+    }
+  ]
+}

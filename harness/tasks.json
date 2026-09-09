@@ -1110,9 +1110,13 @@
         {
           "path": "harness/evidence/t30/0a6ac0b-snapshot-experiment/manifest.json",
           "sha256": "5468a294f49ea69c346284ba148d9f4831c420ef937ae41ad5504777913c75ec"
+        },
+        {
+          "path": "harness/evidence/t30/0d00a01-adverse-probes/manifest.json",
+          "sha256": "dc113ac17d081a5c43e7398352aba2eb2b09dc80a407b6b67383e98d61b11ff7"
         }
       ],
-      "notes": "Selected installed byte/graph gates pass. Desktop Chromium extended probes at ea7957d: 30 trusted keyboard samples, 100 component disposal cycles, 10 cold and 30 warm starts pass their functional checks. DOM update p95 0.8ms is not paint; raw heap trend and missing Event Timing observations preserved. Planner remains above 16ms: controlled Node snapshot experiment 79.202ms baseline versus90.038ms candidate was rejected and source reverted. Full device/runner/adverse/whole-page qualification remains open."
+      "notes": "Selected installed byte/graph gates pass. Desktop Chromium extended probes at ea7957d: 30 trusted keyboard samples, 100 component disposal cycles, 10 cold and 30 warm starts pass their functional checks. DOM update p95 0.8ms is not paint; raw heap trend and missing Event Timing observations preserved. Planner remains above 16ms: controlled Node snapshot experiment 79.202ms baseline versus90.038ms candidate was rejected and source reverted. Full device/runner/adverse/whole-page qualification remains open. Additional source0d00a01 Node24 adverse lifecycle and Chromium1000category/250null/40resize/full40page probes pass. Non-cooperative late deliveries distinguished from adapter suppression. Two alternating tie-memo benchmark pairs showed no improvement; optimization discarded. Planner16ms remains unmet."
     },
     {
       "id": "T31",
@@ -1355,8 +1359,13 @@
       ],
       "status": "active",
       "stage": "ready",
-      "evidence": [],
-      "notes": "Independent sealed18-case/21-output HR/commerce/support corpus and two independent Python arithmetic/quality provenance paths integrated. Frozen production-port host/scorer covers data-only explicit preflight. No provider call authorized or made; live models/budget, UI/grounding/ablations/MCP evidence remain required; not accepted."
+      "evidence": [
+        {
+          "path": "harness/evidence/t40/0d00a01-explicit-mcp/manifest.json",
+          "sha256": "7888f35967c5fea75df5a7a6671b5eacc51a13cd60c94860e94fda188601acbf"
+        }
+      ],
+      "notes": "Independent sealed18-case/21-output HR/commerce/support corpus and two independent Python arithmetic/quality provenance paths integrated. Frozen production-port host/scorer covers data-only explicit preflight. No provider call authorized or made; live models/budget, UI/grounding/ablations/MCP evidence remain required; not accepted. Source0d00a01 actual official-SDK stdio baseline passes18/18, alongside18/18 direct tasks; every child exit observed,15harness tests/types pass. Model denominators remainzero and UI/groundingnull. Development UI host/browser seam now being implemented separately."
     },
     {
       "id": "T41",

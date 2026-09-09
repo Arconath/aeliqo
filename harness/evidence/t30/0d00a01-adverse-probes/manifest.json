@@ -1,0 +1,34 @@
+{
+  "task": "T30",
+  "status": "partial",
+  "testedSourceCommit": "0d00a013b981a08062a817ef531d83e433b62c0b",
+  "sourceDigest": "63e5bf89e6b03a1238ff65e58c4e8031fcf20021c177eaa093ce2c3cddf0d0fc",
+  "sourceChangedDuringRun": false,
+  "scope": "Actual Node24 runtime adverse lifecycles and Chromium dense/null/resize/pagination observations; no timing-budget, paint, real mobile, whole-product or full T30 pass.",
+  "review": {
+    "status": "approved for scoped development/measurement harness",
+    "reviewer": "platform_proof independent review plus root review of worker fixes"
+  },
+  "artifacts": [
+    {
+      "path": "adverse-runtime.log",
+      "sha256": "146843c3d006376a486d6a88b99c489be82a96bc5e3f7d958e4d90f9dfe825e6"
+    },
+    {
+      "path": "adverse-visualization.log",
+      "sha256": "b626ea896b729fd11c57e8710d13319528c10107682f85adf86a90728ec3fae8"
+    },
+    {
+      "path": "runtime-report.json",
+      "sha256": "cffae07204b5c63d16a58ae10c896008012db98a0f99b59d74634f6d6e4889c1"
+    },
+    {
+      "path": "visualization/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "visualization/adverse-visualization-obse-5ff9c-ith-exact-data-alternatives/adverse-visualization-report.json",
+      "sha256": "2763f0828d5c41cd8f98788ffeb9d87e6df92df4fd655dd0ae979aefd0de8645"
+    }
+  ]
+}

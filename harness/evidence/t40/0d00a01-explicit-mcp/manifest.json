@@ -1,0 +1,36 @@
+{
+  "task": "T40",
+  "status": "partial",
+  "testedSourceCommit": "0d00a013b981a08062a817ef531d83e433b62c0b",
+  "sourceDigest": "63e5bf89e6b03a1238ff65e58c4e8031fcf20021c177eaa093ce2c3cddf0d0fc",
+  "sourceChangedDuringRun": false,
+  "scope": "18 explicit direct and18 actual official-SDK MCP stdio tasks pass independent data oracles. No model request, UI completion, narrative grounding or full T40 acceptance.",
+  "review": {
+    "status": "approved for scoped development/measurement harness",
+    "reviewer": "platform_proof independent review plus root review of worker fixes"
+  },
+  "artifacts": [
+    {
+      "path": "15-harness-tests-and-types.log",
+      "sha256": "55fc7fe71e6f3b103b7aa5905984dda8547b3f04ba085ac77860a989d8e864f5"
+    },
+    {
+      "path": "baseline.log",
+      "sha256": "93130e7c1b236db7f5434b15c0006736170155ab2de1585d46f526e46a843dea"
+    },
+    {
+      "path": "report.json",
+      "sha256": "78a5b079ae4be360c299df1c79f591d0ef7343d081a14a215f35f2eb8b6a9487"
+    }
+  ],
+  "counts": {
+    "explicit-task": {
+      "trials": 18,
+      "correct": 18
+    },
+    "explicit-mcp": {
+      "trials": 18,
+      "correct": 18
+    }
+  }
+}

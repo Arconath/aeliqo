@@ -1,0 +1,49 @@
+{
+  "sourceDigest": "2b794e8a94560ea1ca3f6544559256041e2681d629d40c5355f26c699d6f42b8",
+  "passed": true,
+  "scope": "Installed protocol/model/MCP/WebMCP entries; actual SDK stdio, synthetic BYOK and simulated WebMCP through real dispatcher; official OpenAI entry import; strict declarations; Node and Chromium; provider SDK excluded from browser graph. No live provider or native WebMCP claim.",
+  "artifacts": [
+    {
+      "name": "@aeliqo/core",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/protocol-consumers/run-gUITh5/aeliqo-core-0.1.0.tgz",
+      "sha256": "37a75cfc9aadc08783b8c20f485939dadef9c2dc23927d64b68720ee9bfd5db7",
+      "integrity": "sha512-16js0gzO3V8oOwjCLMATSM/N3gtqo0P+odKs9/PFWLBOWT+JCoYjEI4jFSKp8cC9pnWvTYyH7AHxIw/KcRUH/g=="
+    },
+    {
+      "name": "@aeliqo/runtime",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/protocol-consumers/run-gUITh5/aeliqo-runtime-0.1.0.tgz",
+      "sha256": "ee7c293cb8d8e684e157617e64c9f28dc39a70155735e6fbb69452cbda1f8918",
+      "integrity": "sha512-WesKxpK07bDoTXgd3JsgIZMwt6V6QW8KLpdcjZ1lr+uHYrrXbLPjX0k8ahyfwp2kpIuaMvdq89LS1vYsuqYzRg=="
+    },
+    {
+      "name": "@aeliqo/agent",
+      "version": "0.1.0",
+      "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/protocol-consumers/run-gUITh5/aeliqo-agent-0.1.0.tgz",
+      "sha256": "674107fddb3bc75f05190a1ec576ce010a8c9da021607cbe19252e1395e87f0d",
+      "integrity": "sha512-h+oKh7t/00EOxem2XArJNaI0k/t+0azDsuIit5rA6OMUff7lJqpx/DUfGgjv+9PZ8LoRzzn2e9Ks7vbSQMRyeQ=="
+    }
+  ],
+  "consumerDirectory": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-protocol-consumer-JlX8Sp",
+  "node": {
+    "manual": true,
+    "webmcpSimulated": true,
+    "byokSynthetic": true,
+    "sharedDispatcher": true,
+    "lateCallDenied": true,
+    "mcpActualStdio": true,
+    "officialProviderEntry": true
+  },
+  "browser": {
+    "manual": true,
+    "webmcpSimulated": true,
+    "byokSynthetic": true,
+    "sharedDispatcher": true,
+    "lateCallDenied": true
+  },
+  "environment": {
+    "node": "v24.20.0",
+    "chromium": "153.0.8010.12"
+  }
+}

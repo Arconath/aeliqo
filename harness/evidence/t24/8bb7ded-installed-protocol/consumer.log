@@ -1,0 +1,2 @@
+$ node tests/consumers/protocol-tarballs.mjs
+Installed protocol consumer passed. Evidence: /Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/protocol-consumers/run-gUITh5/report.json
