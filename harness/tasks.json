@@ -1375,9 +1375,13 @@
         {
           "path": "harness/evidence/t40/005153d-local-boundary/manifest.json",
           "sha256": "270f6586044443851e00252a31b6bee7822b4ac7774ffcf9615816bedec2626d"
+        },
+        {
+          "path": "harness/evidence/t40/e708fd0-installed-consumer/manifest.json",
+          "sha256": "99e118fd49c0670bf0d07cbb57133ce69bd3907adee59c61852b05cebc51e026"
         }
       ],
-      "notes": "Independent sealed18-case/21-output HR/commerce/support corpus and two independent Python arithmetic/quality provenance paths integrated. Frozen production-port host/scorer covers data-only explicit preflight. A fresh source-bound local boundary run at 005153d passes 20/20 Node host tests and 4/4 Chromium UI tests, covering effect separation, forged-authority rejection, stale commits, revocation and late work. No provider call authorized or made; live models/budget, UI/grounding/ablations/MCP evidence remain required; not accepted. Model denominators remain zero and UI/grounding remain unqualified."
+      "notes": "Independent sealed18-case/21-output HR/commerce/support corpus and two independent Python arithmetic/quality provenance paths integrated. Frozen production-port host/scorer covers data-only explicit preflight. A fresh source-bound local boundary run at 005153d passes 20/20 Node host tests and 4/4 Chromium UI tests, covering effect separation, forged-authority rejection, stale commits, revocation and late work. An installed external consumer run at e708fd0 passes core/runtime/agent Node and Chromium boundary checks from exact 0.1.0 tarballs. No provider call authorized or made; live models/budget, UI/grounding/ablations/MCP evidence remain required; not accepted. Model denominators remain zero and UI/grounding remain unqualified."
     },
     {
       "id": "T41",

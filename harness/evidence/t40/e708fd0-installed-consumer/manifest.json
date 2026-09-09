@@ -1,0 +1,48 @@
+{
+  "task": "T40",
+  "status": "partial-installed-consumer-pass",
+  "sourceCommit": "e708fd014b4becb4beda3d1b3d067e8b752d49f1",
+  "sourceDigest": "9afbd73d926c9a08e1713c2b72c767a9f54d63f1a7fcbf15bd5256cbb94b7e03",
+  "sourceChangedDuringRun": false,
+  "scope": "Installed @aeliqo/core, @aeliqo/runtime and @aeliqo/agent tarballs, tested from an external consumer with Node and Chromium.",
+  "environment": {
+    "node": "v24.20.0",
+    "chromium": "153.0.8010.12"
+  },
+  "checks": [
+    "canonical composition parity",
+    "capability parity",
+    "trusted session transport",
+    "external egress rejection",
+    "guarded repair",
+    "exact decimal behavior",
+    "false-value rejection",
+    "unverified-prose handling",
+    "revoked-handle clearing",
+    "computed metric versioning"
+  ],
+  "qualification": false,
+  "limits": [
+    "This proves installed package behavior and boundary fixtures, not real model reasoning or held-out language generalization.",
+    "No provider request or live external MCP/model trial was made.",
+    "T40 UI/grounding/ablation and independent live-model requirements remain open."
+  ],
+  "artifacts": [
+    {
+      "path": "artifacts/agent-consumers/run-xN1Zot/report.json",
+      "sha256": "b2e2207ae33102124948ebdd14cd9b6d278214b0fc0fc0bdcfb7eaf7ad4d938b"
+    },
+    {
+      "path": "artifacts/agent-consumers/run-xN1Zot/aeliqo-core-0.1.0.tgz",
+      "sha256": "67910f7786cae6e427c96fdae820fdc2a0921ef8721393a5c363604739d2e32c"
+    },
+    {
+      "path": "artifacts/agent-consumers/run-xN1Zot/aeliqo-runtime-0.1.0.tgz",
+      "sha256": "ee7c293cb8d8e684e157617e64c9f28dc39a70155735e6fbb69452cbda1f8918"
+    },
+    {
+      "path": "artifacts/agent-consumers/run-xN1Zot/aeliqo-agent-0.1.0.tgz",
+      "sha256": "674107fddb3bc75f05190a1ec576ce010a8c9da021607cbe19252e1395e87f0d"
+    }
+  ]
+}
