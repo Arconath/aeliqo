@@ -1,0 +1,44 @@
+{
+  "schema": "aeliqo.performance.diagnostic.v1",
+  "sourceCommit": "b28f6275e5e4af373b66d9ddf0c4af027d827ac7",
+  "productionSourceChanged": false,
+  "productionBuildChanged": false,
+  "qualification": false,
+  "runtime": "v24.20.0",
+  "files": {
+    "contracts/ingress.js": {
+      "originalBuiltSha256": "856fe736c4eba441afcc7353ce76fdff4bab3612e8b627d6c66ad2a0d78cb1bf",
+      "instrumentedSha256": "52608680fce2a3dc9db439d56d44d2766445721a7267272cd324fc5ca66c17c4"
+    },
+    "contracts/parse.js": {
+      "originalBuiltSha256": "f001d987ce9c8fbb65098dd5f8672ccac426c83a920da51d2a1bab2f1d75610e",
+      "instrumentedSha256": "67674cecfc9f4dce39884d07efdac185bafd8e44416448754e7d1938329938a1"
+    },
+    "presentation/validate.js": {
+      "originalBuiltSha256": "f425b10d4ff6f5c740902392ad7dc1559bc47c0dae4aa8ec6cc78dff5c6c373a",
+      "instrumentedSha256": "4eeced0c329fc1b4c27133ad13064901bb6c2c31bc6093c739af1861767156d1"
+    },
+    "presentation/compose.js": {
+      "originalBuiltSha256": "14192fc26bea4d8ec22c866c4b9aec3b6ac7ece86a1e618c6ac30d3c16a8bfaf",
+      "instrumentedSha256": "fbfd5e4b3b6836ed09b33988a0aeebfeafecea05d8e81f1c0bed64d121c9bce7"
+    },
+    "presentation/registry.js": {
+      "originalBuiltSha256": "d362e6494f161fe6032f44a1159c3014c0aca6f7c5d13f4770ede170057626b4",
+      "instrumentedSha256": "216dc6966e7a4d4ca8ade9b4cd3a0490f2db031601e472d1ed5957c953c14b62"
+    },
+    "interaction/graph.js": {
+      "originalBuiltSha256": "f5ffffe15ee0a31248d0c0464fa38ca367094ccbc85ed2c3e6a470e75e933685",
+      "instrumentedSha256": "2b5eb9c1c15ec8b8eb50d508acb27500dc7c6ac6108a2360503f5c4df320afc4"
+    }
+  },
+  "limits": [
+    "Eight instrumented Node observations only; not an isolated p95 or browser/device gate.",
+    "Inclusive function durations overlap and cannot be summed. Wrapper timing changes the workload.",
+    "Diagnostic uses copied built core modules and original workload/registry; no production or original dist file was edited.",
+    "Largest observed shared validation cost spans wire inspection, schema parse, graph/coverage validation, freezing and canonical serialization. Omitting one check alone would not meet16ms and is not proposed."
+  ],
+  "observations": {
+    "ingress-observations.json": "c98ac810ccf3ed69b699ba502d5f502a349976cc4deaef69fdeb3b67a18fb366",
+    "inclusive-function-observations.json": "dbd796bc78fa344099eaa1aba190afd0a1d998756c42cc241add576fb855a49b"
+  }
+}

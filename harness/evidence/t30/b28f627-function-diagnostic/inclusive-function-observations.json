@@ -1,0 +1,552 @@
+{
+  "diagnostic": true,
+  "instrumentationOverhead": true,
+  "node": "v24.20.0",
+  "source": "b28f627",
+  "raw": [
+    {
+      "sample": 0,
+      "totalMs": 92.087625,
+      "inspections": {
+        "object": {
+          "calls": 228,
+          "ms": 2.59819799999957
+        },
+        "array:0": {
+          "calls": 161,
+          "ms": 0.07970499999979097
+        },
+        "task": {
+          "calls": 2,
+          "ms": 0.19412500000001387
+        },
+        "result": {
+          "calls": 1,
+          "ms": 0.2344590000000153
+        },
+        "array:64": {
+          "calls": 1,
+          "ms": 9.428459000000004
+        },
+        "plan:31": {
+          "calls": 192,
+          "ms": 20.037926999999797
+        },
+        "array:2": {
+          "calls": 64,
+          "ms": 0.13549799999989887
+        },
+        "array:31": {
+          "calls": 64,
+          "ms": 1.6096250000002215
+        },
+        "plan:1": {
+          "calls": 94,
+          "ms": 0.17899900000011826
+        }
+      },
+      "functions": {
+        "parseContract": {
+          "calls": 69,
+          "ms": 23.403167999999937
+        },
+        "freezePresentation": {
+          "calls": 767,
+          "ms": 4.694720999999731
+        },
+        "canonicalJSON": {
+          "calls": 1984,
+          "ms": 5.422869000000361
+        },
+        "validateInteractionGraph": {
+          "calls": 158,
+          "ms": 3.4565790000002323
+        },
+        "validatePreparedPresentationPlan": {
+          "calls": 64,
+          "ms": 39.780084000000045
+        },
+        "canonical": {
+          "calls": 64,
+          "ms": 8.623669000000035
+        }
+      }
+    },
+    {
+      "sample": 1,
+      "totalMs": 81.21616700000004,
+      "inspections": {
+        "object": {
+          "calls": 228,
+          "ms": 2.267287000000181
+        },
+        "array:0": {
+          "calls": 161,
+          "ms": 0.08619900000059033
+        },
+        "task": {
+          "calls": 2,
+          "ms": 0.08337500000004638
+        },
+        "result": {
+          "calls": 1,
+          "ms": 0.12641700000000355
+        },
+        "array:64": {
+          "calls": 1,
+          "ms": 7.479417000000012
+        },
+        "plan:31": {
+          "calls": 192,
+          "ms": 16.98494900000003
+        },
+        "array:2": {
+          "calls": 64,
+          "ms": 0.13475100000005114
+        },
+        "array:31": {
+          "calls": 64,
+          "ms": 2.3964160000001584
+        },
+        "plan:1": {
+          "calls": 94,
+          "ms": 0.1737150000000156
+        }
+      },
+      "functions": {
+        "parseContract": {
+          "calls": 69,
+          "ms": 18.231295000000216
+        },
+        "freezePresentation": {
+          "calls": 767,
+          "ms": 6.6988029999996
+        },
+        "canonicalJSON": {
+          "calls": 1984,
+          "ms": 4.702285999998537
+        },
+        "validateInteractionGraph": {
+          "calls": 158,
+          "ms": 2.752998999999704
+        },
+        "validatePreparedPresentationPlan": {
+          "calls": 64,
+          "ms": 40.44041700000025
+        },
+        "canonical": {
+          "calls": 64,
+          "ms": 6.324661000000106
+        }
+      }
+    },
+    {
+      "sample": 2,
+      "totalMs": 79.40270799999996,
+      "inspections": {
+        "object": {
+          "calls": 228,
+          "ms": 2.2152450000000954
+        },
+        "array:0": {
+          "calls": 161,
+          "ms": 0.06254500000011376
+        },
+        "task": {
+          "calls": 2,
+          "ms": 0.07912499999997635
+        },
+        "result": {
+          "calls": 1,
+          "ms": 0.09408299999995506
+        },
+        "array:64": {
+          "calls": 1,
+          "ms": 10.421917000000008
+        },
+        "plan:31": {
+          "calls": 192,
+          "ms": 17.27399899999932
+        },
+        "array:2": {
+          "calls": 64,
+          "ms": 0.11325300000009975
+        },
+        "array:31": {
+          "calls": 64,
+          "ms": 1.5331640000002835
+        },
+        "plan:1": {
+          "calls": 94,
+          "ms": 0.16083300000036616
+        }
+      },
+      "functions": {
+        "parseContract": {
+          "calls": 69,
+          "ms": 17.864084999999932
+        },
+        "freezePresentation": {
+          "calls": 767,
+          "ms": 6.173208999999929
+        },
+        "canonicalJSON": {
+          "calls": 1984,
+          "ms": 5.299066999998217
+        },
+        "validateInteractionGraph": {
+          "calls": 158,
+          "ms": 2.6204200000003084
+        },
+        "validatePreparedPresentationPlan": {
+          "calls": 64,
+          "ms": 36.33891600000004
+        },
+        "canonical": {
+          "calls": 64,
+          "ms": 5.883583000000385
+        }
+      }
+    },
+    {
+      "sample": 3,
+      "totalMs": 76.79204100000004,
+      "inspections": {
+        "object": {
+          "calls": 228,
+          "ms": 2.130494999997836
+        },
+        "array:0": {
+          "calls": 161,
+          "ms": 0.05783600000052047
+        },
+        "task": {
+          "calls": 2,
+          "ms": 0.07974999999999
+        },
+        "result": {
+          "calls": 1,
+          "ms": 0.09016699999995126
+        },
+        "array:64": {
+          "calls": 1,
+          "ms": 9.748125000000073
+        },
+        "plan:31": {
+          "calls": 192,
+          "ms": 16.64634100000046
+        },
+        "array:2": {
+          "calls": 64,
+          "ms": 0.12224699999978839
+        },
+        "array:31": {
+          "calls": 64,
+          "ms": 1.5435819999997875
+        },
+        "plan:1": {
+          "calls": 94,
+          "ms": 0.15079099999979917
+        }
+      },
+      "functions": {
+        "parseContract": {
+          "calls": 69,
+          "ms": 17.405959999999823
+        },
+        "freezePresentation": {
+          "calls": 767,
+          "ms": 6.191696999999181
+        },
+        "canonicalJSON": {
+          "calls": 1984,
+          "ms": 4.529369999997357
+        },
+        "validateInteractionGraph": {
+          "calls": 158,
+          "ms": 2.569874000000027
+        },
+        "validatePreparedPresentationPlan": {
+          "calls": 64,
+          "ms": 35.30549700000029
+        },
+        "canonical": {
+          "calls": 64,
+          "ms": 6.0422070000001895
+        }
+      }
+    },
+    {
+      "sample": 4,
+      "totalMs": 81.03041699999994,
+      "inspections": {
+        "object": {
+          "calls": 228,
+          "ms": 2.2316660000003594
+        },
+        "array:0": {
+          "calls": 161,
+          "ms": 0.05845299999964482
+        },
+        "task": {
+          "calls": 2,
+          "ms": 0.07995800000003328
+        },
+        "result": {
+          "calls": 1,
+          "ms": 0.09204199999999219
+        },
+        "array:64": {
+          "calls": 1,
+          "ms": 9.663749999999936
+        },
+        "plan:31": {
+          "calls": 192,
+          "ms": 17.701010999999426
+        },
+        "array:2": {
+          "calls": 64,
+          "ms": 0.11141800000086732
+        },
+        "array:31": {
+          "calls": 64,
+          "ms": 1.5614560000005895
+        },
+        "plan:1": {
+          "calls": 94,
+          "ms": 0.1515370000005305
+        }
+      },
+      "functions": {
+        "parseContract": {
+          "calls": 69,
+          "ms": 16.664122999999904
+        },
+        "freezePresentation": {
+          "calls": 767,
+          "ms": 6.999592000000007
+        },
+        "canonicalJSON": {
+          "calls": 1984,
+          "ms": 4.801924000002259
+        },
+        "validateInteractionGraph": {
+          "calls": 158,
+          "ms": 2.5335860000008097
+        },
+        "validatePreparedPresentationPlan": {
+          "calls": 64,
+          "ms": 36.00658800000008
+        },
+        "canonical": {
+          "calls": 64,
+          "ms": 8.922832999999855
+        }
+      }
+    },
+    {
+      "sample": 5,
+      "totalMs": 79.0196249999999,
+      "inspections": {
+        "object": {
+          "calls": 228,
+          "ms": 2.26145400000064
+        },
+        "array:0": {
+          "calls": 161,
+          "ms": 0.06358800000020892
+        },
+        "task": {
+          "calls": 2,
+          "ms": 0.08441700000003038
+        },
+        "result": {
+          "calls": 1,
+          "ms": 0.09491600000001199
+        },
+        "array:64": {
+          "calls": 1,
+          "ms": 7.879417000000103
+        },
+        "plan:31": {
+          "calls": 192,
+          "ms": 18.50883399999975
+        },
+        "array:2": {
+          "calls": 64,
+          "ms": 0.11637599999994563
+        },
+        "array:31": {
+          "calls": 64,
+          "ms": 1.5501229999990755
+        },
+        "plan:1": {
+          "calls": 94,
+          "ms": 0.18153499999971245
+        }
+      },
+      "functions": {
+        "parseContract": {
+          "calls": 69,
+          "ms": 16.09829400000035
+        },
+        "freezePresentation": {
+          "calls": 767,
+          "ms": 5.773132999994004
+        },
+        "canonicalJSON": {
+          "calls": 1984,
+          "ms": 4.607727000003024
+        },
+        "validateInteractionGraph": {
+          "calls": 158,
+          "ms": 2.752116999999089
+        },
+        "validatePreparedPresentationPlan": {
+          "calls": 64,
+          "ms": 38.8886300000006
+        },
+        "canonical": {
+          "calls": 64,
+          "ms": 6.223246999998992
+        }
+      }
+    },
+    {
+      "sample": 6,
+      "totalMs": 78.05766700000004,
+      "inspections": {
+        "object": {
+          "calls": 228,
+          "ms": 2.265673999999308
+        },
+        "array:0": {
+          "calls": 161,
+          "ms": 0.05733400000258371
+        },
+        "task": {
+          "calls": 2,
+          "ms": 0.07870899999988978
+        },
+        "result": {
+          "calls": 1,
+          "ms": 0.0933340000001408
+        },
+        "array:64": {
+          "calls": 1,
+          "ms": 10.483166999999867
+        },
+        "plan:31": {
+          "calls": 192,
+          "ms": 17.492420999998103
+        },
+        "array:2": {
+          "calls": 64,
+          "ms": 0.10199900000066009
+        },
+        "array:31": {
+          "calls": 64,
+          "ms": 1.5181250000000546
+        },
+        "plan:1": {
+          "calls": 94,
+          "ms": 0.15450400000008813
+        }
+      },
+      "functions": {
+        "parseContract": {
+          "calls": 69,
+          "ms": 16.4122069999994
+        },
+        "freezePresentation": {
+          "calls": 767,
+          "ms": 7.527459000000363
+        },
+        "canonicalJSON": {
+          "calls": 1984,
+          "ms": 4.427868999994871
+        },
+        "validateInteractionGraph": {
+          "calls": 158,
+          "ms": 2.508709000000863
+        },
+        "validatePreparedPresentationPlan": {
+          "calls": 64,
+          "ms": 36.992126000001235
+        },
+        "canonical": {
+          "calls": 64,
+          "ms": 5.914836999998897
+        }
+      }
+    },
+    {
+      "sample": 7,
+      "totalMs": 79.03104099999996,
+      "inspections": {
+        "object": {
+          "calls": 228,
+          "ms": 4.406497000000172
+        },
+        "array:0": {
+          "calls": 161,
+          "ms": 0.05792199999928016
+        },
+        "task": {
+          "calls": 2,
+          "ms": 0.07983300000000781
+        },
+        "result": {
+          "calls": 1,
+          "ms": 0.09216600000013386
+        },
+        "array:64": {
+          "calls": 1,
+          "ms": 7.70008299999995
+        },
+        "plan:31": {
+          "calls": 192,
+          "ms": 18.05587800000012
+        },
+        "array:2": {
+          "calls": 64,
+          "ms": 0.09970999999904961
+        },
+        "array:31": {
+          "calls": 64,
+          "ms": 1.5040490000001228
+        },
+        "plan:1": {
+          "calls": 94,
+          "ms": 0.14662899999871115
+        }
+      },
+      "functions": {
+        "parseContract": {
+          "calls": 69,
+          "ms": 15.505751999999575
+        },
+        "freezePresentation": {
+          "calls": 767,
+          "ms": 8.422631999997748
+        },
+        "canonicalJSON": {
+          "calls": 1984,
+          "ms": 4.528009999998858
+        },
+        "validateInteractionGraph": {
+          "calls": 158,
+          "ms": 2.578086000000212
+        },
+        "validatePreparedPresentationPlan": {
+          "calls": 64,
+          "ms": 40.20671199999924
+        },
+        "canonical": {
+          "calls": 64,
+          "ms": 5.850791000001664
+        }
+      }
+    }
+  ]
+}
