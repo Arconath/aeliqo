@@ -72,7 +72,11 @@ export interface PresentationValidationCache {
   readonly presentationGraphs: Map<string, Outcome<InteractionGraph>>;
   readonly coverageIds: WeakMap<object, number>;
   readonly coverageAnalyses: Map<string, Outcome<PresentationCoverageAnalysis>>;
+  /** Read-set outcomes are reusable only for frozen plans in this invocation. */
+  readonly readSetReferences: WeakMap<object, number>;
+  readonly readSetOutcomes: WeakMap<object, Map<string, Outcome<CommitPreconditions>>>;
   readonly treeEntries: PresentationTreeCacheEntry[];
+  nextReadSetReference: number;
   nextCoverageId: number;
 }
 
@@ -124,8 +128,22 @@ export function preparePresentationValidationCache(
     resultFields, resultsByRef,
     taskInputs: new Set(prepared.task.kind === 'presentation' ? prepared.task.inputs.map(refKey) : []),
     taskNeeds: new Map(prepared.constraints.taskNeeds.map(need => [need.id, need])), taskOutputs,
-    nodeGraphs: new Map(), presentationGraphs: new Map(), coverageIds: new WeakMap(), coverageAnalyses: new Map(), treeEntries: [], nextCoverageId: 0,
+    nodeGraphs: new Map(), presentationGraphs: new Map(), coverageIds: new WeakMap(), coverageAnalyses: new Map(),
+    readSetReferences: new WeakMap(), readSetOutcomes: new WeakMap(), treeEntries: [], nextReadSetReference: 0, nextCoverageId: 0,
   }};
+}
+
+function readSetDependencyKey(requiredResults: readonly ResultRef[], cache: PresentationValidationCache): string {
+  let key = '';
+  for (const reference of requiredResults) {
+    let identity = cache.readSetReferences.get(reference as object);
+    if (identity === undefined) {
+      identity = ++cache.nextReadSetReference;
+      cache.readSetReferences.set(reference as object, identity);
+    }
+    key += `${identity},`;
+  }
+  return key;
 }
 
 function preparePresentationTree(plan: PresentationPlanLike, cache: PresentationValidationCache): Outcome<PresentationTreeCacheEntry> {
@@ -338,6 +356,7 @@ export function validatePreparedPresentationPlan(
   nodeIdentityMemo?: WeakMap<object, ResolvedPresentationNode>,
   manifestIndex?: ReadonlyMap<string, PresentationRegistry['manifests'][number]>,
   validationCache?: PresentationValidationCache,
+  ownedPlan = false,
 ): Outcome<ValidatedPresentation> {
   // The schema parser owns this plan. Freeze nodes at the callback boundary and
   // freeze the completed replay plan after cached node substitutions.
@@ -348,8 +367,21 @@ export function validatePreparedPresentationPlan(
     || c.task.functionRegistryDigest !== current.functionRegistryDigest || c.experience.revision !== current.experienceRevision)
     return fail('stale', 'The task or experience differs from the current version pins.');
   if (plan.nodes.length === 0 || plan.nodes.length > c.maxNodes) return fail('nodes', 'The candidate exceeds the permitted node count.');
-  const readSet = validateParsedCommitReadSet(plan.preconditions, prepared.value.current,
-    [...prepared.value.taskStructure.resultReferences, ...plan.nodes.flatMap(n => n.result === undefined ? [] : [n.result])]);
+  const requiredResults = [...prepared.value.taskStructure.resultReferences, ...plan.nodes.flatMap(n => n.result === undefined ? [] : [n.result])];
+  let readSet: Outcome<CommitPreconditions> | undefined;
+  if (ownedPlan && validationCache !== undefined && Object.isFrozen(plan) && Object.isFrozen(plan.preconditions)) {
+    const key = readSetDependencyKey(requiredResults, validationCache);
+    let outcomes = validationCache.readSetOutcomes.get(plan.preconditions as object);
+    if (outcomes === undefined) {
+      outcomes = new Map();
+      validationCache.readSetOutcomes.set(plan.preconditions as object, outcomes);
+    }
+    readSet = outcomes.get(key);
+    if (readSet === undefined) {
+      readSet = validateParsedCommitReadSet(plan.preconditions, prepared.value.current, requiredResults);
+      outcomes.set(key, readSet);
+    }
+  } else readSet = validateParsedCommitReadSet(plan.preconditions, prepared.value.current, requiredResults);
   if (!readSet.ok) return readSet;
   const preparedCache = validationCache === undefined
     ? preparePresentationValidationCache(prepared.value, registry, manifestIndex)

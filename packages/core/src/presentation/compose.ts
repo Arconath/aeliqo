@@ -354,7 +354,7 @@ export function composePresentation(request: PresentationCompositionRequest, reg
     if (!expansionReserved && !spend()) return false;
     const normalized = normalizePlan(input, identity.data.id, identity.data.revision, requestPins.value, alreadyInspected, parseCache);
     if (!normalized.ok) { reject(label, normalized.diagnostics); return false; }
-    const checked = validatePreparedPresentationPlan(normalized.value, request.context, registry, prepared.value, options, nodeMemo, nodeIdentityMemo, preparedManifests.value, validationCache.value);
+    const checked = validatePreparedPresentationPlan(normalized.value, request.context, registry, prepared.value, options, nodeMemo, nodeIdentityMemo, preparedManifests.value, validationCache.value, true);
     if (!checked.ok) { reject(label, checked.diagnostics); return false; }
     consider(checked.value, candidateIsIncumbent);
     return true;

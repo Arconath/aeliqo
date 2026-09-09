@@ -44,6 +44,13 @@ function jsonPrimitiveBytes(value: null | boolean | number | string): number {
   if (typeof value === 'number') return utf8Bytes(String(value));
   return jsonStringBytes(value);
 }
+function cachedJSONBytes(text: string, cache: Map<string, number>): number {
+  const cached = cache.get(text);
+  if (cached !== undefined) return cached;
+  const bytes = jsonStringBytes(text);
+  if (cache.size < 1024) cache.set(text, bytes);
+  return bytes;
+}
 type WirePath = {readonly parent: WirePath | undefined; readonly key: string | number; readonly depth: number};
 type Frame = {value: unknown; path: WirePath | undefined; leave?: boolean};
 function pathParts(path: WirePath | undefined): (string | number)[] {
@@ -96,6 +103,7 @@ export function inspectWire(input: unknown): Outcome<unknown> {
   const ancestors = new Set<object>();
   let nodes = 0;
   let encodedBytes = 0;
+  const stringByteCache = new Map<string, number>();
   const addEncodedBytes = (bytes: number): boolean => {
     encodedBytes += bytes;
     return encodedBytes <= L.bytes;
@@ -122,7 +130,7 @@ export function inspectWire(input: unknown): Outcome<unknown> {
       }
       if (typeof current === 'string') {
         if (current.length > L.text) return wireFailure('wire.text', 'A wire string exceeds its length limit.', pathParts(frame.path));
-        if (!addEncodedBytes(jsonPrimitiveBytes(current))) return wireFailure('wire.bytes', 'The wire document exceeds its byte limit.');
+        if (!addEncodedBytes(cachedJSONBytes(current, stringByteCache))) return wireFailure('wire.bytes', 'The wire document exceeds its byte limit.');
         continue;
       }
       if (typeof current !== 'object') return wireFailure('wire.type', 'Only JSON values are accepted.', pathParts(frame.path));
@@ -154,7 +162,7 @@ export function inspectWire(input: unknown): Outcome<unknown> {
           return wireFailure('wire.accessor', 'Accessors and hidden properties are not wire data.', [...pathParts(frame.path), key]);
         const syntaxBytes = isArray
           ? (Number(key) === 0 ? 0 : 1)
-          : jsonStringBytes(key) + 1 + (propertyIndex === 0 ? 0 : 1);
+          : cachedJSONBytes(key, stringByteCache) + 1 + (propertyIndex === 0 ? 0 : 1);
         if (!addEncodedBytes(syntaxBytes)) return wireFailure('wire.bytes', 'The wire document exceeds its byte limit.');
         propertyIndex++;
         frames.push({value: descriptor.value as unknown, path: {parent: frame.path, key: isArray ? Number(key) : key, depth: (frame.path?.depth ?? 0) + 1}});
