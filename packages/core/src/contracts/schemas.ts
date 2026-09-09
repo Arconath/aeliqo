@@ -203,11 +203,16 @@ export const interactionLinkSchema = object({
   id: idSchema, source: object({node: idSchema, port: idSchema}), target: object({node: idSchema, port: idSchema}),
   mapping: versionRefSchema, propagation: z.enum(['directed','identity-equivalence']),
 });
+export const presentationCoverageSchema = object({
+  needId: idSchema, nodeIds: nonEmpty(idSchema), operations: nonEmpty(versionRefSchema),
+});
+export const presentationStateTransferSchema = object({
+  fromNode: idSchema, toNode: idSchema, mapping: versionRefSchema,
+});
 export const presentationPlanSchema = object({
   id: idSchema, revision: revisionSchema, rootId: idSchema, preconditions: commitPreconditionsSchema,
   nodes: array(presentationNodeSchema, L.presentationNodes), links: array(interactionLinkSchema, L.links),
-  coverage: array(object({needId: idSchema, nodeIds: nonEmpty(idSchema), operations: nonEmpty(versionRefSchema)})),
-  stateTransfer: array(object({fromNode: idSchema, toNode: idSchema, mapping: versionRefSchema})),
+  coverage: array(presentationCoverageSchema), stateTransfer: array(presentationStateTransferSchema),
   diagnostics: array(diagnosticSchema, L.diagnostics),
 });
 export const selectionSchema = z.discriminatedUnion('mode', [

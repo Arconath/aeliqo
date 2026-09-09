@@ -4,7 +4,7 @@ import {canonicalJSON, parseContract, parseResult} from '../contracts/parse.js';
 import {inspectWire} from '../contracts/ingress.js';
 import {idSchema, jsonSchema, versionRefSchema} from '../contracts/schemas.js';
 import {WIRE_LIMITS} from '../contracts/limits.js';
-import {validateCommitReadSet} from '../contracts/commit.js';
+import {validateCommitReadSet, validateParsedCommitReadSet} from '../contracts/commit.js';
 import {validateTaskStructure, type TaskStructure} from '../contracts/task/index.js';
 import {resolveExperienceConstraints, type ExperienceConstraints} from '../contracts/experience/index.js';
 import {validateInteractionGraph} from '../interaction/graph.js';
@@ -42,6 +42,8 @@ export interface PreparedPresentationContext {
   readonly results: readonly Result[];
   readonly current: CommitPreconditions;
   readonly environment: PresentationEnvironment;
+  /** Parsed once per composition; candidate validation must not rescan this invariant input. */
+  readonly rendererCapabilities: readonly VersionRef[];
   readonly taskStructure: TaskStructure;
   readonly patternContext: PresentationPatternContext;
 }
@@ -49,6 +51,15 @@ export interface PreparedPresentationContext {
 export interface PresentationValidationOptions {
   /** A pattern candidate must match this exact registered pattern. */
   readonly requiredPattern?: PresentationPatternManifest;
+}
+
+/** Per-composition manifest index. It contains no authority beyond the supplied registry. */
+export function preparePresentationRegistry(registry: PresentationRegistry): Outcome<ReadonlyMap<string, PresentationRegistry['manifests'][number]>> {
+  if (!Array.isArray(registry?.manifests) || registry.manifests.length === 0 || registry.manifests.length > WIRE_LIMITS.presentationNodes)
+    return fail('registry', 'The representation registry is malformed or exceeds its bound.');
+  const manifests = new Map(registry.manifests.map(manifest => [versionKey(manifest.ref), manifest]));
+  if (manifests.size !== registry.manifests.length) return fail('registry', 'Representation references must be unique.');
+  return {ok: true, value: manifests};
 }
 
 function callbackOutcome(raw: unknown, failureCode: string, failureMessage: string): Outcome<unknown> {
@@ -79,6 +90,8 @@ export function preparePresentationContext(context: PresentationContext): Outcom
   if (!environment.ok) return environment;
   const current = validateCommitReadSet(context.current, context.current);
   if (!current.ok) return current;
+  const rendererCapabilities = parseRendererCapabilities(context.rendererCapabilities);
+  if (!rendererCapabilities.ok) return rendererCapabilities;
   if (!Array.isArray(context.results) || context.results.length > WIRE_LIMITS.outputs)
     return fail('results', 'The authorized result descriptors must be bounded.');
   const results: Result[] = [];
@@ -107,7 +120,8 @@ export function preparePresentationContext(context: PresentationContext): Outcom
   });
   return {ok: true, value: freezePresentation({
     constraints: freezePresentation(constraints.value), task, experience, results: frozenResults,
-    current: currentValue, environment: environmentValue, taskStructure: freezePresentation(taskStructure.value), patternContext,
+    current: currentValue, environment: environmentValue, rendererCapabilities: rendererCapabilities.value,
+    taskStructure: freezePresentation(taskStructure.value), patternContext,
   })};
 }
 
@@ -170,6 +184,8 @@ export function validatePreparedPresentationPlan(
   input: PresentationPlanLike, context: PresentationContext, registry: PresentationRegistry,
   preparedContext: PreparedPresentationContext, options: PresentationValidationOptions = {},
   nodeMemo?: Map<string, ResolvedPresentationNode>,
+  nodeIdentityMemo?: WeakMap<object, ResolvedPresentationNode>,
+  manifestIndex?: ReadonlyMap<string, PresentationRegistry['manifests'][number]>,
 ): Outcome<ValidatedPresentation> {
   // The schema parser owns this plan. Freeze nodes at the callback boundary and
   // freeze the completed replay plan after cached node substitutions.
@@ -181,9 +197,8 @@ export function validatePreparedPresentationPlan(
     || c.task.functionRegistryDigest !== current.functionRegistryDigest || c.experience.revision !== current.experienceRevision)
     return fail('stale', 'The task or experience differs from the current version pins.');
   if (plan.nodes.length === 0 || plan.nodes.length > c.maxNodes) return fail('nodes', 'The candidate exceeds the permitted node count.');
-  const rendererCapabilities = parseRendererCapabilities(context.rendererCapabilities);
-  if (!rendererCapabilities.ok) return rendererCapabilities;
-  const readSet = validateCommitReadSet(plan.preconditions, current,
+  const rendererCapabilities = prepared.value.rendererCapabilities;
+  const readSet = validateParsedCommitReadSet(plan.preconditions, prepared.value.current,
     [...prepared.value.taskStructure.resultReferences, ...plan.nodes.flatMap(n => n.result === undefined ? [] : [n.result])]);
   if (!readSet.ok) return readSet;
   const nodes = new Map(plan.nodes.map(node => [node.id, node]));
@@ -203,18 +218,18 @@ export function validatePreparedPresentationPlan(
     visited.add(id); visit.push(...nodes.get(id)!.children);
   }
   if (visited.size !== nodes.size) return fail('tree', 'All nodes must be reachable from the declared root.');
-  if (!Array.isArray(registry?.manifests) || registry.manifests.length === 0 || registry.manifests.length > WIRE_LIMITS.presentationNodes)
-    return fail('registry', 'The representation registry is malformed or exceeds its bound.');
-  const manifests = new Map(registry.manifests.map(m => [versionKey(m.ref), m]));
-  if (manifests.size !== registry.manifests.length) return fail('registry', 'Representation references must be unique.');
-  const renderer = new Set(rendererCapabilities.value.map(versionKey));
+  const preparedManifests = manifestIndex === undefined ? preparePresentationRegistry(registry) : {ok: true as const, value: manifestIndex};
+  if (!preparedManifests.ok) return preparedManifests;
+  const manifests = preparedManifests.value;
+  const renderer = new Set(rendererCapabilities.map(versionKey));
   const extensions = new Set(c.extensionAllowlist.map(versionKey));
   const resolved: ResolvedPresentationNode[] = [];
   for (const node of plan.nodes) {
     // Full schema-owned node identity includes config, children, representation and
     // exact result reference. The memo belongs only to one immutable composition context.
-    const memoKey = nodeMemo === undefined ? undefined : canonicalJSON(node);
-    const cached = memoKey === undefined ? undefined : nodeMemo?.get(memoKey);
+    const identityCached = nodeIdentityMemo?.get(node as object);
+    const memoKey = identityCached === undefined && nodeMemo !== undefined ? canonicalJSON(node) : undefined;
+    const cached = identityCached ?? (memoKey === undefined ? undefined : nodeMemo?.get(memoKey));
     if (cached !== undefined) { resolved.push(cached); continue; }
     const key = versionKey(node.representation);
     const m = manifests.get(key);
@@ -267,6 +282,7 @@ export function validatePreparedPresentationPlan(
     const resolvedNode = freezePresentation({node, manifest: m.ref,
       config: resolvedConfig, result, ...(quality === undefined ? {} : {quality})});
     resolved.push(resolvedNode);
+    nodeIdentityMemo?.set(node as object, resolvedNode);
     if (memoKey !== undefined) nodeMemo?.set(memoKey, resolvedNode);
   }
   const byId = new Map(resolved.map(n => [n.node.id, n]));

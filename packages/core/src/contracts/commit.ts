@@ -31,6 +31,33 @@ function parsePins(input: unknown): Outcome<CommitPreconditions> {
 }
 
 /**
+ * Compare schema-parsed read sets without reparsing their bounded wire shape.
+ * This is intentionally not part of the public root API: callers must obtain
+ * both values from the canonical parser before using this composition helper.
+ */
+export function validateParsedCommitReadSet(
+  expected: CommitPreconditions,
+  current: CommitPreconditions,
+  requiredResults: readonly ResultRef[] = [],
+): Outcome<CommitPreconditions> {
+  for (const pin of scalarPins) {
+    if (expected[pin] !== current[pin])
+      return failure('commit.stale', 'A version or authorization pin changed after this update was staged.');
+  }
+  const reads = new Set(expected.results.map(refKey));
+  for (const ref of requiredResults) {
+    if (ref.scopeDigest !== expected.scopeDigest || !reads.has(refKey(ref)))
+      return failure('commit.missing-dependency', 'The read set omits a required result dependency or its authorized scope.');
+  }
+  const available = new Set(current.results.map(refKey));
+  for (const ref of expected.results) {
+    if (!available.has(refKey(ref)))
+      return failure('commit.stale', 'A referenced result is no longer available at the staged revision and scope.');
+  }
+  return {ok: true, value: expected};
+}
+
+/**
  * Compare declared semantic reads against the current host-owned version pins.
  * The caller derives requiredResults from the actual candidate and operations;
  * a self-declared read set alone cannot establish which dependencies were read.
@@ -50,19 +77,5 @@ export function validateCommitReadSet(
   if (!requiredWire.ok) return requiredWire;
   const required = z.safeParse(requiredRefsSchema, requiredWire.value);
   if (!required.success) return failure('commit.invalid-dependencies', 'The required result dependencies are not valid bounded references.');
-  for (const pin of scalarPins) {
-    if (expected.value[pin] !== current.value[pin])
-      return failure('commit.stale', 'A version or authorization pin changed after this update was staged.');
-  }
-  const reads = new Set(expected.value.results.map(refKey));
-  for (const ref of required.data) {
-    if (ref.scopeDigest !== expected.value.scopeDigest || !reads.has(refKey(ref)))
-      return failure('commit.missing-dependency', 'The read set omits a required result dependency or its authorized scope.');
-  }
-  const available = new Set(current.value.results.map(refKey));
-  for (const ref of expected.value.results) {
-    if (!available.has(refKey(ref)))
-      return failure('commit.stale', 'A referenced result is no longer available at the staged revision and scope.');
-  }
-  return expected;
+  return validateParsedCommitReadSet(expected.value, current.value, required.data);
 }

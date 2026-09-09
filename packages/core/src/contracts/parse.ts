@@ -5,12 +5,10 @@ import {inspectWire} from './ingress.js';
 import {wireDiagnostic, wireFailure} from '../diagnostics/wire.js';
 import type {Contract, ContractKind, Diagnostic, Outcome} from './types.js';
 
-/** A successful parse validates wire shape only. It grants no effect or business meaning. */
-export function parseContract<K extends ContractKind>(kind: K, input: unknown): Outcome<Contract<K>> {
+/** Parse an already-inspected JSON value. Callers must establish the wire boundary first. */
+export function parseInspectedContract<K extends ContractKind>(kind: K, input: unknown): Outcome<Contract<K>> {
   if (!Object.hasOwn(contractSchemas, kind)) return wireFailure('wire.kind', 'The contract kind is not supported.');
-  const inspected = inspectWire(input);
-  if (!inspected.ok) return inspected;
-  const value = inspected.value;
+  const value = input;
   if ((kind === 'catalog' || kind === 'task' || kind === 'result' || kind === 'experience') &&
       value !== null && typeof value === 'object' && Object.hasOwn(value, 'version')) {
     const version = (value as {version: unknown}).version;
@@ -23,6 +21,12 @@ export function parseContract<K extends ContractKind>(kind: K, input: unknown): 
     return {ok: false, diagnostics: diagnostics as [Diagnostic, ...Diagnostic[]]};
   }
   return {ok: true, value: parsed.data as Contract<K>};
+}
+/** A successful parse validates wire shape only. It grants no effect or business meaning. */
+export function parseContract<K extends ContractKind>(kind: K, input: unknown): Outcome<Contract<K>> {
+  const inspected = inspectWire(input);
+  if (!inspected.ok) return inspected;
+  return parseInspectedContract(kind, inspected.value);
 }
 export const parseCatalog = (input: unknown) => parseContract('catalog', input);
 export const parseTask = (input: unknown) => parseContract('task', input);

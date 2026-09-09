@@ -1,8 +1,12 @@
 import {stateMappingFor} from './state.js';
 import * as z from 'zod/mini';
-import {parseContract} from '../contracts/parse.js';
+import {parseInspectedContract} from '../contracts/parse.js';
 import {inspectWire} from '../contracts/ingress.js';
-import {idSchema, revisionSchema, jsonSchema} from '../contracts/schemas.js';
+import {
+  commitPreconditionsSchema, diagnosticSchema, idSchema, interactionLinkSchema, jsonSchema, presentationCoverageSchema,
+  presentationNodeSchema, presentationStateTransferSchema, revisionSchema,
+} from '../contracts/schemas.js';
+import {WIRE_LIMITS} from '../contracts/limits.js';
 import {validateCommitReadSet} from '../contracts/commit.js';
 import type {Diagnostic, Outcome, PresentationPlan, Result, Task, VersionRef} from '../contracts/types.js';
 import type {
@@ -10,19 +14,82 @@ import type {
   PresentationValues, ValidatedPresentation, ResolvedPresentationNode,
 } from './types.js';
 import {freezePresentation, isThenable, presentationFailure as fail, versionKey} from './registry.js';
-import {preparePresentationContext, validatePreparedPresentationPlan, type PresentationValidationOptions, type PreparedPresentationContext} from './validate.js';
+import {preparePresentationContext, preparePresentationRegistry, validatePreparedPresentationPlan, type PresentationValidationOptions, type PreparedPresentationContext} from './validate.js';
 
 const compareText = (left: string, right: string): number => left < right ? -1 : left > right ? 1 : 0;
 const stateIdentity = {id: 'aeliqo.state.identity', revision: '1'} as const;
 const suggestionSchema = z.record(z.string(), jsonSchema);
+type CanonicalCache = WeakMap<object, string>;
+const inspectedPlanEnvelopeSchema = z.strictObject({
+  id: idSchema, revision: revisionSchema, rootId: idSchema, preconditions: z.unknown(),
+  nodes: z.array(z.unknown()).check(z.maxLength(WIRE_LIMITS.presentationNodes)),
+  links: z.array(z.unknown()).check(z.maxLength(WIRE_LIMITS.links)),
+  coverage: z.array(z.unknown()).check(z.maxLength(WIRE_LIMITS.array)),
+  stateTransfer: z.array(z.unknown()).check(z.maxLength(WIRE_LIMITS.array)),
+  diagnostics: z.array(z.unknown()).check(z.maxLength(WIRE_LIMITS.diagnostics)),
+});
 
-function normalizePlan(input: unknown, id: string, revision: string, preconditions: unknown): Outcome<PresentationPlan> {
-  const wire = inspectWire(input);
+interface PresentationParseCache {
+  readonly preconditions: WeakMap<object, z.infer<typeof commitPreconditionsSchema>>;
+  readonly nodes: WeakMap<object, z.infer<typeof presentationNodeSchema>>;
+  readonly links: WeakMap<object, z.infer<typeof interactionLinkSchema>>;
+  readonly coverage: WeakMap<object, z.infer<typeof presentationCoverageSchema>>;
+  readonly stateTransfer: WeakMap<object, z.infer<typeof presentationStateTransferSchema>>;
+  readonly diagnostics: WeakMap<object, z.infer<typeof diagnosticSchema>>;
+}
+
+function createPresentationParseCache(): PresentationParseCache {
+  return {preconditions: new WeakMap(), nodes: new WeakMap(), links: new WeakMap(), coverage: new WeakMap(), stateTransfer: new WeakMap(), diagnostics: new WeakMap()};
+}
+
+function parseCachedObject<S extends z.ZodMiniType>(input: unknown, schema: S, cache: WeakMap<object, z.infer<S>>): z.infer<S> | undefined {
+  if (input === null || typeof input !== 'object' || Array.isArray(input)) return undefined;
+  const cached = cache.get(input);
+  if (cached !== undefined) return cached;
+  const parsed = z.safeParse(schema, input);
+  if (!parsed.success) return undefined;
+  cache.set(input, parsed.data);
+  return parsed.data;
+}
+
+function parseCachedArray<S extends z.ZodMiniType>(input: unknown, schema: S, maximum: number, cache: WeakMap<object, z.infer<S>>): readonly z.infer<S>[] | undefined {
+  if (!Array.isArray(input) || input.length > maximum) return undefined;
+  const output: z.infer<S>[] = [];
+  for (const item of input) {
+    const parsed = parseCachedObject(item, schema, cache);
+    if (parsed === undefined) return undefined;
+    output.push(parsed);
+  }
+  return output;
+}
+
+/**
+ * Parse a plan after the containing candidate list has passed inspectWire.
+ * Shared fragments are memoized only for this synchronous composition; this
+ * never trusts an uninspected object or carries authority across invocations.
+ */
+function parseInspectedPresentationPlan(input: unknown, cache: PresentationParseCache): Outcome<PresentationPlan> {
+  const envelope = z.safeParse(inspectedPlanEnvelopeSchema, input);
+  if (!envelope.success) return parseInspectedContract('presentation-plan', input);
+  const preconditions = parseCachedObject(envelope.data.preconditions, commitPreconditionsSchema, cache.preconditions);
+  const nodes = parseCachedArray(envelope.data.nodes, presentationNodeSchema, WIRE_LIMITS.presentationNodes, cache.nodes);
+  const links = parseCachedArray(envelope.data.links, interactionLinkSchema, WIRE_LIMITS.links, cache.links);
+  const coverage = parseCachedArray(envelope.data.coverage, presentationCoverageSchema, WIRE_LIMITS.array, cache.coverage);
+  const stateTransfer = parseCachedArray(envelope.data.stateTransfer, presentationStateTransferSchema, WIRE_LIMITS.array, cache.stateTransfer);
+  const diagnostics = parseCachedArray(envelope.data.diagnostics, diagnosticSchema, WIRE_LIMITS.diagnostics, cache.diagnostics);
+  if (preconditions === undefined || nodes === undefined || links === undefined || coverage === undefined || stateTransfer === undefined || diagnostics === undefined)
+    return parseInspectedContract('presentation-plan', input);
+  return {ok: true, value: {id: envelope.data.id, revision: envelope.data.revision, rootId: envelope.data.rootId,
+    preconditions, nodes, links, coverage, stateTransfer, diagnostics} as PresentationPlan};
+}
+
+function normalizePlan(input: unknown, id: string, revision: string, preconditions: unknown, alreadyInspected: boolean, cache: PresentationParseCache): Outcome<PresentationPlan> {
+  const wire = alreadyInspected ? {ok: true as const, value: input} : inspectWire(input);
   if (!wire.ok) return wire;
   if (wire.value === null || typeof wire.value !== 'object' || Array.isArray(wire.value))
     return fail('candidate', 'A presentation candidate must be a plan object.');
   const normalized = {...wire.value as Record<string, unknown>, id, revision, preconditions};
-  const reparsed = parseContract('presentation-plan', normalized);
+  const reparsed = parseInspectedPresentationPlan(normalized, cache);
   return reparsed;
 }
 
@@ -35,10 +102,15 @@ function callbackValue(raw: unknown, code: string, message: string): Outcome<unk
   return {ok: true, value: outcome.value};
 }
 
-function canonical(value: unknown): string {
+function canonical(value: unknown, cache?: CanonicalCache): string {
   if (value === null || typeof value !== 'object') return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
-  return `{${Object.keys(value as Record<string, unknown>).sort().map(key => `${JSON.stringify(key)}:${canonical((value as Record<string, unknown>)[key])}`).join(',')}}`;
+  const cached = cache?.get(value);
+  if (cached !== undefined) return cached;
+  const serialized = Array.isArray(value)
+    ? `[${value.map(item => canonical(item, cache)).join(',')}]`
+    : `{${Object.keys(value as Record<string, unknown>).sort().map(key => `${JSON.stringify(key)}:${canonical((value as Record<string, unknown>)[key], cache)}`).join(',')}}`;
+  cache?.set(value, serialized);
+  return serialized;
 }
 
 function sameRef(left: VersionRef, right: VersionRef): boolean {
@@ -228,9 +300,14 @@ export function composePresentation(request: PresentationCompositionRequest, reg
   const prepared = preparePresentationContext(request.context);
   if (!prepared.ok) return prepared;
   const constraints = prepared.value.constraints;
+  const preparedManifests = preparePresentationRegistry(registry);
+  if (!preparedManifests.ok) return preparedManifests;
   // Pure registered node resolutions may be reused only inside this synchronous
   // composition; no validation/authority cache survives a subsequent invocation.
   const nodeMemo = new Map<string, ResolvedPresentationNode>();
+  const nodeIdentityMemo = new WeakMap<object, ResolvedPresentationNode>();
+  const canonicalCache: CanonicalCache = new WeakMap();
+  const parseCache = createPresentationParseCache();
   if (constraints.task.revision !== requestPins.value.taskRevision || constraints.task.catalogRevision !== requestPins.value.catalogRevision
     || constraints.task.functionRegistryDigest !== requestPins.value.functionRegistryDigest || constraints.experience.revision !== requestPins.value.experienceRevision)
     return fail('stale', 'The task or experience differs from the current version pins.');
@@ -252,14 +329,14 @@ export function composePresentation(request: PresentationCompositionRequest, reg
   const reject = (candidate: string, diagnostics: readonly Diagnostic[]) => rejected.push({candidate, diagnostics});
   const consider = (presentation: ValidatedPresentation, candidateIsIncumbent: boolean): void => {
     const rank: RankedCandidate = {presentation, score: candidateScore(presentation, prepared.value, request.context.incumbent),
-      tie: canonical(presentation.plan), incumbent: candidateIsIncumbent};
+      tie: canonical(presentation.plan, canonicalCache), incumbent: candidateIsIncumbent};
     if (betterCandidate(rank, best)) best = rank;
   };
-  const validateCandidate = (input: unknown, label: string, options: PresentationValidationOptions = {}, candidateIsIncumbent = false, expansionReserved = false): boolean => {
+  const validateCandidate = (input: unknown, label: string, options: PresentationValidationOptions = {}, candidateIsIncumbent = false, expansionReserved = false, alreadyInspected = false): boolean => {
     if (!expansionReserved && !spend()) return false;
-    const normalized = normalizePlan(input, identity.data.id, identity.data.revision, requestPins.value);
+    const normalized = normalizePlan(input, identity.data.id, identity.data.revision, requestPins.value, alreadyInspected, parseCache);
     if (!normalized.ok) { reject(label, normalized.diagnostics); return false; }
-    const checked = validatePreparedPresentationPlan(normalized.value, request.context, registry, prepared.value, options, nodeMemo);
+    const checked = validatePreparedPresentationPlan(normalized.value, request.context, registry, prepared.value, options, nodeMemo, nodeIdentityMemo, preparedManifests.value);
     if (!checked.ok) { reject(label, checked.diagnostics); return false; }
     consider(checked.value, candidateIsIncumbent);
     return true;
@@ -287,8 +364,8 @@ export function composePresentation(request: PresentationCompositionRequest, reg
       if (!expansion.ok) { reject(`pattern.${candidate.pattern!.id}`, expansion.diagnostics); continue; }
       const selectedPattern = pattern.value;
       if (selectedPattern === undefined) { reject(`pattern.${candidate.pattern!.id}`, [{code: 'presentation.pattern', message: 'The registered pattern is unavailable.', retryable: false}]); continue; }
-      validateCandidate(expansion.value, `pattern.${candidate.pattern!.id}`, {requiredPattern: selectedPattern}, false, true);
-    } else validateCandidate(candidate.plan, `candidate.${index}`, {}, false);
+      validateCandidate(expansion.value, `pattern.${candidate.pattern!.id}`, {requiredPattern: selectedPattern}, false, true, true);
+    } else validateCandidate(candidate.plan, `candidate.${index}`, {}, false, false, true);
     if (budgetBlocked) break;
   }
   const allowed = registry.manifests.filter(manifest => constraints.allowedRepresentations.includes(manifest.ref.id)
@@ -319,7 +396,7 @@ export function composePresentation(request: PresentationCompositionRequest, reg
     if (!spend()) return false;
     const built = buildPlan(request, prepared.value, registry, layout, selected, suggest);
     if (!built.ok) { reject(label, built.diagnostics); return false; }
-    return validateCandidate(built.value, label, {}, false, true);
+    return validateCandidate(built.value, label, {}, false, true, true);
   };
   if (!budgetBlocked && required.length === 0) {
     const emptyRoots = allowed.filter(manifest => manifest.result !== 'required' && manifest.children.min === 0);
