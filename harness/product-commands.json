@@ -640,7 +640,23 @@
         "test:performance:standalone"
       ],
       "timeoutSeconds": 300
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:performance:perceived-input"
+      ],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "pnpm",
+        "test:performance:heap-lifecycle"
+      ],
+      "timeoutSeconds": 300
     }
   ],
-  "note": "Every implemented package test script is indexed except test:data-stream (alias of test:data) and test:visualization:temporal:browser (already included by test:visualization:browser). Source lint checks unused locals/parameters across packages, examples and separately scoped apps. Security, static module boundaries, installed byte budgets and forced-on Node and browser timing remain separate checks. Runtime timing currently exceeds16ms; it cannot pass by skipping. Standalone smoke collects cache observations without a timing-budget claim. Adverse/low-powered timing and human/live integrated evidence remain required independently of this command ledger."
+  "note": "Every implemented package test script is indexed except test:data-stream (alias of test:data) and test:visualization:temporal:browser (already included by test:visualization:browser). Source lint checks unused locals/parameters across packages, examples and separately scoped apps. Security, static module boundaries, installed byte budgets and forced-on Node and browser timing remain separate checks. Runtime timing currently exceeds16ms; it cannot pass by skipping. Standalone, perceived-input and heap-lifecycle smoke collect cache/DOM/heap observations without a timing-budget or leak qualification claim. Adverse/low-powered timing and human/live integrated evidence remain required independently of this command ledger."
 }

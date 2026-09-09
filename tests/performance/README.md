@@ -80,3 +80,26 @@ Warm-cache evidence distinguishes zero-transfer JavaScript resources, CDP disk
 cache hits, and matched request-ID HTTP 304 revalidations. Revalidation still
 incurs a request; it is not reported as a cache-only load. Raw CDP observations
 retain URLs and status flags, excluding headers and cookies.
+
+
+## Interaction and heap observations
+
+`pnpm test:performance:perceived-input` measures two trusted keyboard inputs in a
+production direct input/table fixture. Every sample starts from the same 100-row
+state and checks actual rendered filtered row identities. Set
+`AELIQO_RUN_PERFORMANCE=1` for 30 observations. DOM mutation delay includes the
+time from the keyboard event timestamp; it is not a paint timestamp. Browser
+Event Timing data is retained when available; missing or threshold-censored
+entries are never replaced by zero. No input-to-paint budget is qualified.
+
+`pnpm test:performance:heap-lifecycle` observes ten input/table mount/dispose
+cycles with requested Chromium garbage collection. Set
+`AELIQO_RUN_HEAP_LIFECYCLE=1` for ten batches totalling 100 measured cycles and
+the separate runtime resource cleanup probe. Each report retains individual
+[CDP heap fields](https://chromedevtools.github.io/devtools-protocol/tot/Runtime/#method-getHeapUsage),
+missing-field metadata, a stated sum of live heap/backing-storage fields,
+DOM/listener counts, and a held-then-released allocation control. Allocator
+capacity is reported separately. Instrumentation uses weak references and prunes
+dead targets; listener counters do not model automatic once/AbortSignal removal.
+These observations do not establish a leak verdict or a universal heap budget.
+Run extended observations without concurrent builds and retain environment data.

@@ -98,7 +98,9 @@
     "test:boundaries": "vitest run --config tests/security/vitest.config.mjs tests/security/package-boundaries.test.ts",
     "test:performance:runtime": "pnpm build:platform && AELIQO_RUN_PERFORMANCE=1 node tests/performance/runtime-workload.mjs",
     "test:performance:browser": "AELIQO_RUN_PERFORMANCE=1 AELIQO_ENFORCE_PERFORMANCE_BUDGETS=1 playwright test --config tests/performance/playwright.config.mjs",
-    "test:performance:standalone": "playwright test --config tests/performance/standalone.playwright.config.mjs"
+    "test:performance:standalone": "playwright test --config tests/performance/standalone.playwright.config.mjs",
+    "test:performance:perceived-input": "playwright test --config tests/performance/perceived-input.playwright.config.mjs",
+    "test:performance:heap-lifecycle": "playwright test --config tests/performance/heap-lifecycle.playwright.config.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
