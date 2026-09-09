@@ -56,19 +56,24 @@ const relationshipResult: ResultRef = {
   outputId: "edges",
 };
 
+// Visualization materialization wraps each scalar identity key in the
+// composite identity tuple, so a one-field text identity is encoded as
+// JSON.stringify([JSON.stringify(["text", value])]).
+const textIdentity = (value: string): string => JSON.stringify([JSON.stringify(["text", value])]);
+
 const expectedSelection: Record<VisualizationId, ExpectedSelection> = {
-  trend: {identity: '[\"text\",\"ada\"]', result: catalogResult, rowText: "Ada Lovelace", reorderedIndex: 2},
-  bar: {identity: '[\"text\",\"ada\"]', result: catalogResult, rowText: "Ada Lovelace", reorderedIndex: 2},
-  area: {identity: '[\"text\",\"ada\"]', result: catalogResult, rowText: "Ada Lovelace", reorderedIndex: 2},
-  scatter: {identity: '[\"text\",\"ada\"]', result: catalogResult, rowText: "Ada Lovelace", reorderedIndex: 2},
-  histogram: {identity: '[\"text\",\"ada\"]', result: catalogResult, rowText: "Ada Lovelace", reorderedIndex: 2},
-  heatmap: {identity: '[\"text\",\"ada\"]', result: catalogResult, rowText: "Ada Lovelace", reorderedIndex: 2},
-  matrix: {identity: '[\"text\",\"ada\"]', result: catalogResult, rowText: "Ada Lovelace", reorderedIndex: 2},
-  timeline: {identity: '[\"text\",\"ada\"]', result: catalogResult, rowText: "Ada Lovelace", reorderedIndex: 2},
-  "calendar-grid": {identity: '[\"text\",\"ada\"]', result: catalogResult, rowText: "Ada Lovelace", reorderedIndex: 2},
-  tree: {identity: '[\"text\",\"company\"]', result: hierarchyResult, rowText: "Company", reorderedIndex: 2},
-  treemap: {identity: '[\"text\",\"company\"]', result: hierarchyResult, rowText: "Company", reorderedIndex: 2},
-  relationship: {identity: '[\"text\",\"e1\"]', result: relationshipResult, rowText: "e1", reorderedIndex: 1},
+  trend: {identity: textIdentity("ada"), result: catalogResult, rowText: "Ada Lovelace", reorderedIndex: 2},
+  bar: {identity: textIdentity("ada"), result: catalogResult, rowText: "Ada Lovelace", reorderedIndex: 2},
+  area: {identity: textIdentity("ada"), result: catalogResult, rowText: "Ada Lovelace", reorderedIndex: 2},
+  scatter: {identity: textIdentity("ada"), result: catalogResult, rowText: "Ada Lovelace", reorderedIndex: 2},
+  histogram: {identity: textIdentity("ada"), result: catalogResult, rowText: "Ada Lovelace", reorderedIndex: 2},
+  heatmap: {identity: textIdentity("ada"), result: catalogResult, rowText: "Ada Lovelace", reorderedIndex: 2},
+  matrix: {identity: textIdentity("ada"), result: catalogResult, rowText: "Ada Lovelace", reorderedIndex: 2},
+  timeline: {identity: textIdentity("ada"), result: catalogResult, rowText: "Ada Lovelace", reorderedIndex: 2},
+  "calendar-grid": {identity: textIdentity("ada"), result: catalogResult, rowText: "Ada Lovelace", reorderedIndex: 2},
+  tree: {identity: textIdentity("company"), result: hierarchyResult, rowText: "Company", reorderedIndex: 2},
+  treemap: {identity: textIdentity("company"), result: hierarchyResult, rowText: "Company", reorderedIndex: 2},
+  relationship: {identity: textIdentity("e1"), result: relationshipResult, rowText: "e1", reorderedIndex: 1},
 };
 
 function componentLocator(page: Page, id: VisualizationId): Locator {
@@ -225,7 +230,7 @@ for (const variant of VARIANTS) {
         await expect(session.host.locator('[part=data] tbody button[aria-pressed="true"]')).toHaveCount(1);
         const selectedIdentity = await session.host.evaluate((element) => (element as VisualizationHost & {selectedIdentity?: string}).selectedIdentity);
         expect(selectedIdentity).toBe(identity);
-        const selectedRow = session.host.locator('[part=data] tbody tr').filter({has: session.host.locator('button[aria-pressed="true"]')});
+        const selectedRow = session.host.locator('[part=data] tbody tr:has(button[aria-pressed="true"])');
         await expect(selectedRow).toContainText(rowText);
         const selectedRowIndex = await selectedRow.evaluate((row) => [...(row.parentElement?.children ?? [])].indexOf(row));
         expect(selectedRowIndex).toBe(reorderedIndex);
