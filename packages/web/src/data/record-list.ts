@@ -107,13 +107,13 @@ export class AeliqoRecordListElement extends LitElement {
     article, [part="record-button"] { border: var(--aeliqo-control-border-width, 0.0625rem) solid var(--aeliqo-color-border, #c9d0d8); border-radius: var(--aeliqo-radius-medium, 0.625rem); display: block; inline-size: 100%; padding: var(--aeliqo-space-12, 0.75rem); text-align: start; }
     [part="record-button"] { background: var(--aeliqo-color-surface, #fff); color: inherit; cursor: pointer; font: inherit; }
     [part="record-button"]:hover { border-color: var(--aeliqo-color-accent, #4338ca); }
-    li[data-selected="true"] [part="record-button"] { border-color: var(--aeliqo-color-accent, #4338ca); box-shadow: inset 0 0 0 0.125rem color-mix(in srgb, var(--aeliqo-color-accent, #4338ca) 20%, transparent); }
+    li[data-selected] [part="record-button"] { border-color: var(--aeliqo-color-accent, #4338ca); box-shadow: inset 0 0 0 0.125rem color-mix(in srgb, var(--aeliqo-color-accent, #4338ca) 20%, transparent); }
     [part="primary"] { display: block; font-weight: var(--aeliqo-typography-font-weight-semibold, 600); overflow-wrap: anywhere; }
     [part="facts"] { display: flex; flex-wrap: wrap; gap: var(--aeliqo-space-4, 0.25rem) var(--aeliqo-space-12, 0.75rem); margin-block-start: var(--aeliqo-space-8, 0.5rem); }
     [part="fact"] { display: inline-flex; flex-wrap: wrap; gap: var(--aeliqo-space-4, 0.25rem); max-inline-size: 100%; }
     [part="field-label"], [part="scope"] { color: var(--aeliqo-color-muted, #475569); font-size: var(--aeliqo-typography-font-size-caption, 0.8125rem); }
     [part="field-value"] { overflow-wrap: anywhere; }
     [part="scope"] { margin: var(--aeliqo-space-8, 0) 0 0; }
-    @media (forced-colors: active) { [part="record-button"] { background: Canvas; color: CanvasText; } li[data-selected="true"] [part="record-button"] { border: 0.1875rem solid Highlight; } }
+    @media (forced-colors: active) { [part="record-button"] { background: Canvas; color: CanvasText; } li[data-selected] [part="record-button"] { border: 0.1875rem solid Highlight; } }
   `];
 }

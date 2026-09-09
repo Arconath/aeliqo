@@ -407,7 +407,7 @@ export class AeliqoTableElement extends LitElement {
     th, td { border-block-end: var(--aeliqo-control-border-width, 1px) solid var(--aeliqo-table-rule, var(--aeliqo-color-border, #c9d0d8)); padding: var(--aeliqo-space-8, 0.5rem) var(--aeliqo-space-12, 0.75rem); text-align: start; vertical-align: top; }
     th { background: var(--aeliqo-table-heading-background, var(--aeliqo-color-surface, #eef2f5)); font-weight: var(--aeliqo-typography-font-weight-semibold, 600); }
     th [part="sort"], [part="grid-row"] [part="sort"] { background: transparent; border: 0; color: inherit; cursor: pointer; font: inherit; inline-size: 100%; min-block-size: var(--aeliqo-control-compact-target, 2rem); padding: 0; text-align: inherit; }
-    tr[data-selected="true"] td, [part="grid-row"][data-selected="true"] { background: color-mix(in srgb, var(--aeliqo-color-accent, #4338ca) 9%, transparent); }
+    tr[data-selected] td, [part="grid-row"][data-selected] { background: color-mix(in srgb, var(--aeliqo-color-accent, #4338ca) 9%, transparent); }
     [part="grid"] { min-inline-size: max-content; }
     [part="grid-row"] { align-items: stretch; display: grid; }
     [part="grid-head"] [part="grid-row"] { font-weight: var(--aeliqo-typography-font-weight-semibold, 600); }
@@ -421,6 +421,6 @@ export class AeliqoTableElement extends LitElement {
     [part="pagination"] { align-items: center; display: flex; flex-wrap: wrap; gap: var(--aeliqo-space-8, 0.5rem); margin-block-start: var(--aeliqo-space-12, 0.75rem); }
     [part="pagination"] button { background: var(--aeliqo-color-surface, #fff); border: var(--aeliqo-control-border-width, 0.0625rem) solid var(--aeliqo-color-border, #94a3b8); border-radius: var(--aeliqo-radius-small, 0.375rem); color: inherit; cursor: pointer; font: inherit; min-block-size: var(--aeliqo-control-compact-target, 2rem); padding-inline: var(--aeliqo-space-8, 0.5rem); }
     [part="pagination"] button:disabled { color: var(--aeliqo-color-muted, #64748b); cursor: not-allowed; }
-    @media (forced-colors: active) { th, td, [part="grid-row"] > *, [part="pagination"] button { border-color: ButtonText; } tr[data-selected="true"] td, [part="grid-row"][data-selected="true"] { background: Highlight; color: HighlightText; } }
+    @media (forced-colors: active) { th, td, [part="grid-row"] > *, [part="pagination"] button { border-color: ButtonText; } tr[data-selected], [part="grid-row"][data-selected] { outline: 0.125rem solid Highlight; outline-offset: -0.125rem; } tr[data-selected] td, [part="grid-row"][data-selected] { background: Canvas; color: CanvasText; } }
   `];
 }

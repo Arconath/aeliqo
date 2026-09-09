@@ -101,7 +101,7 @@ export class AeliqoCardCollectionElement extends LitElement {
     [part="card"] { border: var(--aeliqo-control-border-width, 0.0625rem) solid var(--aeliqo-color-border, #c9d0d8); border-radius: var(--aeliqo-radius-medium, 0.625rem); min-inline-size: 0; padding: var(--aeliqo-space-12, 0.75rem); }
     [part="card-button"] { background: transparent; border: 0; color: inherit; cursor: pointer; display: block; font: inherit; inline-size: 100%; padding: var(--aeliqo-space-8, .5rem); min-block-size: var(--aeliqo-control-min-target,2.75rem); text-align: start; }
     [part="card"]:has([part="card-button"]):hover { border-color: var(--aeliqo-color-accent, #4338ca); }
-    [part="card"][data-selected="true"] { border-color: var(--aeliqo-color-accent, #4338ca); box-shadow: inset 0 0 0 0.125rem color-mix(in srgb, var(--aeliqo-color-accent, #4338ca) 20%, transparent); }
+    [part="card"][data-selected] { border-color: var(--aeliqo-color-accent, #4338ca); box-shadow: inset 0 0 0 0.125rem color-mix(in srgb, var(--aeliqo-color-accent, #4338ca) 20%, transparent); }
     [part="heading"] { font-size: var(--aeliqo-typography-font-size-title, 1.0625rem); margin: 0; overflow-wrap: anywhere; }
     dl { display: grid; gap: var(--aeliqo-space-8, 0.5rem); margin: var(--aeliqo-space-12, 0.75rem) 0 0; }
     [part="fact"] { display: grid; gap: var(--aeliqo-space-4, 0.25rem); min-inline-size: 0; }
@@ -109,6 +109,6 @@ export class AeliqoCardCollectionElement extends LitElement {
     dd { margin: 0; overflow-wrap: anywhere; }
     [part="scope"] { margin: var(--aeliqo-space-8, 0) 0; }
     [part="load-more"] { background: var(--aeliqo-color-surface, #fff); border: var(--aeliqo-control-border-width, 0.0625rem) solid var(--aeliqo-color-accent, #4338ca); border-radius: var(--aeliqo-radius-medium, 0.625rem); color: var(--aeliqo-color-accent, #4338ca); cursor: pointer; font: inherit; margin-block-start: var(--aeliqo-space-12, 0.75rem); min-block-size: var(--aeliqo-control-min-target, 2.75rem); padding-inline: var(--aeliqo-space-12, 0.75rem); }
-    @media (forced-colors: active) { [part="card"], [part="load-more"] { border-color: ButtonText; } [part="card-button"], [part="load-more"] { color: ButtonText; } }
+    @media (forced-colors: active) { [part="card"][data-selected] { outline: 0.125rem solid Highlight; outline-offset: -0.125rem; } [part="card"], [part="load-more"] { border-color: ButtonText; } [part="card-button"], [part="load-more"] { color: ButtonText; } }
   `];
 }

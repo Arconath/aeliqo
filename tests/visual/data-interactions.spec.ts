@@ -96,6 +96,27 @@ async function capture(session: ReviewSession, page: Page, info: TestInfo, label
   expect(axe.violations).toEqual([]);
 }
 
+for (const id of ['record-list', 'card-collection', 'table']) {
+  test(`${id} selected state remains visible in forced colors`, async ({page}, info) => {
+    const session = await openCatalog(page, id, 'desktop-light');
+    await setHostProperty(session.host, 'selectedKeys', ['string:3:lin']);
+    await page.emulateMedia({forcedColors: 'active'});
+    if (id === 'table') {
+      const selected = session.host.locator('tr[aria-selected="true"]');
+      await expect(selected).toHaveCSS('outline-style', 'solid');
+      await expect(selected).toHaveCSS('outline-width', '2px');
+    } else {
+      const selected = session.host.locator(id === 'record-list' ? '[data-selected] [part="record-button"]' : '[data-selected]');
+      if (id === 'record-list') await expect(selected).toHaveCSS('border-top-width', '3px');
+      else {
+        await expect(selected).toHaveCSS('outline-style', 'solid');
+        await expect(selected).toHaveCSS('outline-width', '2px');
+      }
+    }
+    await capture(session, page, info, 'forced-colors-selection');
+  });
+}
+
 for (const variant of variants) {
   test.describe(variant, () => {
     test('record-list keyboard selection keeps a stable identity across reorder', async ({page}, info) => {
@@ -112,7 +133,8 @@ for (const variant of variants) {
       await setHostProperty(list, 'selectedKeys', ['string:3:lin']);
       await rotateRows(list);
       await expect(list.locator('[part="record"]').nth(2)).toHaveAttribute('data-key', 'string:3:lin');
-      await expect(list.locator('[part="record"]').nth(2)).toHaveAttribute('data-selected', 'true');
+      await expect(list.locator('[part="record"]').nth(2)).toHaveAttribute('data-selected', '');
+      await expect(list.locator('[part="record"]').nth(2).locator('button')).not.toHaveCSS('box-shadow', 'none');
       await capture(session, page, info, 'record-list-selection');
     });
 
@@ -129,7 +151,8 @@ for (const variant of variants) {
       await setHostProperty(cards, 'selectedKeys', ['string:3:lin']);
       await rotateRows(cards);
       await expect(cards.locator('[part="card"]').nth(2)).toHaveAttribute('data-key', 'string:3:lin');
-      await expect(cards.locator('[part="card"]').nth(2)).toHaveAttribute('data-selected', 'true');
+      await expect(cards.locator('[part="card"]').nth(2)).toHaveAttribute('data-selected', '');
+      await expect(cards.locator('[part="card"]').nth(2)).not.toHaveCSS('box-shadow', 'none');
 
       const loadMore = cards.locator('[part="load-more"]');
       await setHostProperty(cards, 'loadingMore', true);
@@ -177,7 +200,8 @@ for (const variant of variants) {
       await setHostProperty(table, 'selectedKeys', ['string:3:ada', 'string:3:lin']);
       await rotateRows(table);
       await expect(table.locator('tr[data-row-index]')).toHaveCount(3);
-      await expect(table.locator('tr[data-row-index="2"]')).toHaveAttribute('data-selected', 'true');
+      await expect(table.locator('tr[data-row-index="2"]')).toHaveAttribute('aria-selected', 'true');
+      await expect(table.locator('tr[data-row-index="2"] td').first()).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
       await expect(table.locator('tr[data-row-index="2"]')).toContainText('Lin Chen');
 
       const next = table.locator('button[part="next"]');
@@ -245,7 +269,8 @@ for (const variant of variants) {
 
       // FilterBuilder has no pending status in its actual data API; loading is the supported in-flight state.
       await setHostProperty(filter, 'status', 'loading');
-      await expect(filter.locator('fieldset')).toBeDisabled();
+      await expect(filter.locator('fieldset')).toHaveAttribute('disabled', '');
+      await expect(apply).toBeDisabled();
       const beforeBlockedApply = (await events(page)).filter((event) => event.type === 'aeliqo-filter-change').length;
       await apply.dispatchEvent('click');
       expect((await events(page)).filter((event) => event.type === 'aeliqo-filter-change')).toHaveLength(beforeBlockedApply);

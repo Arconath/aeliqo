@@ -17,7 +17,7 @@ const forcedColorDeclarations = `
   --aeliqo-color-canvas: Canvas;
   --aeliqo-color-surface: Canvas;
   --aeliqo-color-text: CanvasText;
-  --aeliqo-color-muted: GrayText;
+  --aeliqo-color-muted: CanvasText;
   --aeliqo-color-border: ButtonText;
   --aeliqo-color-accent: Highlight;
   --aeliqo-color-on-accent: HighlightText;
