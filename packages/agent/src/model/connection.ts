@@ -1,5 +1,4 @@
 import type {
-  ToolModelCost,
   ToolModelPort,
   ToolModelRequest,
   ToolModelResponse,
