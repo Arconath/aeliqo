@@ -1,11 +1,22 @@
 import {expect, test, type Page} from '@playwright/test';
 
 type UiSnapshot = {readonly status: string; readonly regionRevision: string};
+type ResultRefLike = {readonly id: string; readonly revision: string; readonly outputId: string; readonly queryDigest: string; readonly scopeDigest: string};
+type UiDependencies = {
+  readonly required: readonly ResultRefLike[];
+  readonly readSet: readonly ResultRefLike[];
+  readonly resolvable: readonly ResultRefLike[];
+};
 type UiWindow = Window & {
   aeliqoUiReady?: boolean;
   evaluateUiTask?: () => Promise<{readonly state: 'data-ready'}>;
-  proposeUiTask?: () => Promise<{readonly state: 'bound'; readonly proposalId: string}>;
-  commitUiProposal?: (proposalId: string) => Promise<{readonly state: string}>;
+  proposeUiTask?: () => Promise<{
+    readonly state: 'bound';
+    readonly proposalId: string;
+    readonly regionRevision: string;
+    readonly materializationVersion: number;
+  }>;
+  commitUiProposal?: (proposalId: string) => Promise<{readonly state: string; readonly diagnostics: readonly string[]}>;
   completeUiTask?: () => Promise<{readonly proposalId: string}>;
   recommitUiTask?: () => Promise<void>;
   prepareUiProposal?: () => Promise<void>;
@@ -17,6 +28,7 @@ type UiWindow = Window & {
   revokeUiTask?: (reason?: string) => void;
   disposeUiTask?: () => void;
   uiSnapshot?: () => UiSnapshot;
+  uiDependencies?: () => UiDependencies;
 };
 
 const pageDiagnostics = new WeakMap<object, string[]>();
@@ -55,6 +67,18 @@ async function snapshot(page: Page): Promise<UiSnapshot> {
   });
 }
 
+async function dependencies(page: Page): Promise<UiDependencies> {
+  return page.evaluate(() => {
+    const read = (window as UiWindow).uiDependencies;
+    if (typeof read !== 'function') throw new Error('The UI dependency API is missing.');
+    return read();
+  });
+}
+
+function resultKey(ref: ResultRefLike): string {
+  return JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
+}
+
 async function evaluateUiTask(page: Page): Promise<{readonly state: 'data-ready'}> {
   return page.evaluate(async () => {
     const evaluate = (window as UiWindow).evaluateUiTask;
@@ -63,7 +87,12 @@ async function evaluateUiTask(page: Page): Promise<{readonly state: 'data-ready'
   });
 }
 
-async function proposeUiTask(page: Page): Promise<{readonly state: 'bound'; readonly proposalId: string}> {
+async function proposeUiTask(page: Page): Promise<{
+  readonly state: 'bound';
+  readonly proposalId: string;
+  readonly regionRevision: string;
+  readonly materializationVersion: number;
+}> {
   return page.evaluate(async () => {
     const propose = (window as UiWindow).proposeUiTask;
     if (typeof propose !== 'function') throw new Error('The UI proposal API is missing.');
@@ -71,7 +100,7 @@ async function proposeUiTask(page: Page): Promise<{readonly state: 'bound'; read
   });
 }
 
-async function commitUiProposal(page: Page, proposalId: string): Promise<{readonly state: string}> {
+async function commitUiProposal(page: Page, proposalId: string): Promise<{readonly state: string; readonly diagnostics: readonly string[]}> {
   return page.evaluate(async id => {
     const commit = (window as UiWindow).commitUiProposal;
     if (typeof commit !== 'function') throw new Error('The UI commit API is missing.');
@@ -85,7 +114,7 @@ async function completeUiTask(page: Page): Promise<void> {
   const proposed = await proposeUiTask(page);
   expect(proposed.state).toBe('bound');
   const committed = await commitUiProposal(page, proposed.proposalId);
-  expect(committed.state).toBe('renderer-ready');
+  expect(committed.state, committed.diagnostics.join('; ')).toBe('renderer-ready');
 }
 
 async function focusIsOnFirstCheckbox(page: Page): Promise<boolean> {
@@ -152,6 +181,62 @@ test('keeps the committed rows, selection, and focus when a malformed proposal i
   await expect.poll(() => focusIsOnFirstCheckbox(page)).toBe(true);
 });
 
+test('keeps the committed surface through reevaluation until the new proposal commits', async ({page}) => {
+  await openFixture(page);
+  await completeUiTask(page);
+  const table = page.locator('aeliqo-region aeliqo-table[data-aeliqo-node-id="items"]');
+  const firstCheckbox = table.locator('tbody input[type="checkbox"]').first();
+  await firstCheckbox.check();
+  await firstCheckbox.focus();
+  await expect(firstCheckbox).toBeChecked();
+  await expect.poll(() => focusIsOnFirstCheckbox(page)).toBe(true);
+
+  const before = await snapshot(page);
+  const beforeSurface = await surfaceText(page);
+  const evaluated = await evaluateUiTask(page);
+  expect(evaluated.state).toBe('data-ready');
+  const afterEvaluation = await snapshot(page);
+  expect(afterEvaluation.regionRevision).toBe(before.regionRevision);
+  expect(await surfaceText(page)).toBe(beforeSurface);
+  await expect(table).toBeVisible();
+  await expect(table.locator('tbody tr')).toHaveCount(2);
+  await expect(firstCheckbox).toBeChecked();
+  await expect.poll(() => focusIsOnFirstCheckbox(page)).toBe(true);
+
+  const proposed = await proposeUiTask(page);
+  expect(proposed.state).toBe('bound');
+  expect(proposed.regionRevision).toBe(before.regionRevision);
+  expect(proposed.materializationVersion).toBeGreaterThan(0);
+  expect(await surfaceText(page)).toBe(beforeSurface);
+  await expect(firstCheckbox).toBeChecked();
+  await expect.poll(() => focusIsOnFirstCheckbox(page)).toBe(true);
+
+  const committed = await commitUiProposal(page, proposed.proposalId);
+  expect(committed.state, committed.diagnostics.join('; ')).toBe('renderer-ready');
+  await expect(table).toBeVisible();
+  await expect(table.locator('tbody tr')).toHaveCount(2);
+  await expect(firstCheckbox).toBeChecked();
+  await expect.poll(() => focusIsOnFirstCheckbox(page)).toBe(true);
+  const committedDependencies = await dependencies(page);
+  const committedRequired = committedDependencies.required.map(resultKey);
+  expect(committedDependencies.readSet.map(resultKey)).toEqual(expect.arrayContaining(committedRequired));
+  expect(committedDependencies.resolvable.map(resultKey)).toEqual(expect.arrayContaining(committedRequired));
+
+  await page.evaluate(async () => {
+    const recommit = (window as UiWindow).recommitUiTask;
+    if (typeof recommit !== 'function') throw new Error('The UI recommit API is missing.');
+    await recommit();
+  });
+  await expect(table).toBeVisible();
+  await expect(table.locator('tbody tr')).toHaveCount(2);
+  await expect(firstCheckbox).toBeChecked();
+  await expect.poll(() => focusIsOnFirstCheckbox(page)).toBe(true);
+  const recommittedDependencies = await dependencies(page);
+  const recommittedRequired = recommittedDependencies.required.map(resultKey);
+  expect(recommittedDependencies.readSet.map(resultKey)).toEqual(expect.arrayContaining(recommittedRequired));
+  expect(recommittedDependencies.resolvable.map(resultKey)).toEqual(expect.arrayContaining(recommittedRequired));
+});
+
 test('does not commit a proposal after a real user selection advances the region revision', async ({page}) => {
   await openFixture(page);
   await completeUiTask(page);
@@ -212,4 +297,20 @@ test('revocation clears an existing surface and late held work cannot restore it
   });
   await expect.poll(() => snapshot(page).then(value => value.status)).toBe('disposed');
   await expect.poll(() => surfaceText(page)).toBe('');
+});
+
+test('disposes an active committed surface directly', async ({page}) => {
+  await openFixture(page);
+  await completeUiTask(page);
+  const table = page.locator('aeliqo-region aeliqo-table[data-aeliqo-node-id="items"]');
+  await expect(table).toBeVisible();
+
+  await page.evaluate(() => {
+    const dispose = (window as UiWindow).disposeUiTask;
+    if (typeof dispose !== 'function') throw new Error('The UI disposal API is missing.');
+    dispose();
+  });
+  await expect.poll(() => snapshot(page).then(value => value.status)).toBe('disposed');
+  await expect.poll(() => surfaceText(page)).toBe('');
+  await expect(table).toHaveCount(0);
 });

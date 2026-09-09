@@ -6,6 +6,7 @@ import {
   type CommitPreconditions,
   type Diagnostic,
   type Experience,
+  type InteractionState,
   type Outcome,
   type PresentationContext,
   type PresentationPlan,
@@ -198,8 +199,10 @@ function pins(readSet: RegionReadSet): CommitPreconditions {
   return value;
 }
 
-function sameRef(left: Result['ref'], right: Result['ref']): boolean {
-  return refKey(left) === refKey(right);
+function uniqueRefs(refs: readonly Result['ref'][]): readonly Result['ref'][] {
+  const values = new Map<string, Result['ref']>();
+  for (const ref of refs) values.set(refKey(ref), ref);
+  return Object.freeze([...values.values()]);
 }
 
 function resultRows(output: MaterializedTaskOutput): readonly DataRecord[] {
@@ -212,14 +215,64 @@ function resultFor(output: MaterializedTaskOutput): AeliqoRegionResult | undefin
   return {ref: descriptor.ref, rows: resultRows(output)};
 }
 
+function regionResults(outputs: readonly MaterializedTaskOutput[]): readonly AeliqoRegionResult[] {
+  return Object.freeze(outputs.flatMap(output => {
+    const value = resultFor(output);
+    return value === undefined ? [] : [value];
+  }));
+}
+
 function normalizedRegionContent(snapshot: RegionSnapshot): RegionContent | undefined {
   return snapshot.state;
+}
+
+function outputRefs(outputs: readonly MaterializedTaskOutput[]): readonly Result['ref'][] {
+  return uniqueRefs(outputs.flatMap(output => {
+    const descriptor = output.handle.snapshot().descriptor;
+    return descriptor === undefined ? [] : [descriptor.ref];
+  }));
+}
+
+function logicalRefKey(ref: Result['ref']): string {
+  return JSON.stringify([ref.outputId, ref.queryDigest, ref.scopeDigest]);
+}
+
+function interactionResultRefs(interaction: InteractionState | undefined): readonly Result['ref'][] {
+  if (interaction === undefined) return [];
+  return uniqueRefs(interaction.values.flatMap(entry => {
+    if (entry.payload.kind !== 'selection' || entry.payload.selection.mode !== 'ids') return [];
+    return [entry.payload.selection.result];
+  }));
+}
+
+function rebindInteraction(
+  interaction: InteractionState | undefined,
+  candidateRefs: readonly Result['ref'][]
+): Outcome<InteractionState | undefined> {
+  if (interaction === undefined) return {ok: true, value: undefined};
+  const replacements = new Map(candidateRefs.map(ref => [logicalRefKey(ref), ref]));
+  const values = interaction.values.map(entry => {
+    if (entry.payload.kind !== 'selection' || entry.payload.selection.mode !== 'ids') return entry;
+    const replacement = replacements.get(logicalRefKey(entry.payload.selection.result));
+    if (replacement === undefined) return undefined;
+    return {
+      ...entry,
+      payload: {
+        ...entry.payload,
+        selection: {...entry.payload.selection, result: replacement},
+      },
+    };
+  });
+  if (values.some(value => value === undefined))
+    return fail('ui-development.interaction-stale', 'The current selection cannot be rebound to the fresh result generation.');
+  return {ok: true, value: {...interaction, values: values as InteractionState['values']}};
 }
 
 interface ProposalRecord {
   readonly id: string;
   readonly goalEpoch: string;
   readonly expected: RegionReadSet;
+  readonly materializationVersion: number;
   readonly task: Task;
   readonly validated: ValidatedPresentation;
 }
@@ -237,6 +290,11 @@ export interface UiDevelopmentHost {
   readonly fixture: UiDevelopmentFixture;
   readonly observations: readonly UiDevelopmentObservation[];
   readonly outputs: () => readonly MaterializedTaskOutput[];
+  readonly dependencies: () => {
+    readonly required: readonly Result['ref'][];
+    readonly readSet: readonly Result['ref'][];
+    readonly resolvable: readonly Result['ref'][];
+  };
   readonly plan: () => Outcome<PresentationPlan>;
   readonly evaluateTask: (input?: unknown) => Promise<Outcome<AgentCapabilityReceipt>>;
   readonly propose: (input: unknown) => Promise<Outcome<AgentCapabilityReceipt>>;
@@ -244,6 +302,7 @@ export interface UiDevelopmentHost {
   readonly attach: (element: AeliqoRegionElement) => void;
   readonly holdNextCommit: () => void;
   readonly waitForCommitAuthorization: () => Promise<void>;
+  readonly releaseHeldCommit: () => void;
   readonly revoke: (reason?: string) => void;
   readonly dispose: () => void;
 }
@@ -251,30 +310,55 @@ export interface UiDevelopmentHost {
 function presentationContext(
   snapshot: RegionSnapshot,
   registry: import('@aeliqo/core').PresentationRegistry,
-  outputs: readonly MaterializedTaskOutput[],
+  candidateOutputs: readonly MaterializedTaskOutput[],
+  currentOutputs: readonly MaterializedTaskOutput[],
 ): PresentationContext {
   const state = normalizedRegionContent(snapshot);
   if (state === undefined || snapshot.readSet === undefined) throw new Error('The development region is not active.');
+  const refs = uniqueRefs([
+    ...snapshot.readSet.results,
+    ...outputRefs(candidateOutputs),
+  ]);
+  const descriptors = new Map<string, Result>();
+  for (const output of [...currentOutputs, ...candidateOutputs]) {
+    const descriptor = output.handle.snapshot().descriptor;
+    if (descriptor !== undefined) descriptors.set(refKey(descriptor.ref), descriptor);
+  }
   return {
     task: state.task,
     experience,
-    results: outputs.flatMap(output => output.handle.snapshot().descriptor === undefined ? [] : [output.handle.snapshot().descriptor!]),
-    current: pins(snapshot.readSet),
+    results: refs.flatMap(ref => {
+      const descriptor = descriptors.get(refKey(ref));
+      return descriptor === undefined ? [] : [descriptor];
+    }),
+    current: {...pins(snapshot.readSet), results: refs},
     environment,
     ...(state.presentation === undefined ? {} : {incumbent: state.presentation}),
     rendererCapabilities: [AELIQO_PRESENTATION_REFS.stack, AELIQO_PRESENTATION_REFS.table],
   };
 }
 
-function planForResult(snapshot: RegionSnapshot, output: MaterializedTaskOutput): Outcome<PresentationPlan> {
-  if (snapshot.readSet === undefined || output.handle.snapshot().descriptor === undefined)
+function planForResult(snapshot: RegionSnapshot, outputs: readonly MaterializedTaskOutput[]): Outcome<PresentationPlan> {
+  if (snapshot.readSet === undefined || outputs.length === 0)
     return fail('ui-development.plan', 'A evaluated output is required before proposing a presentation.');
-  const descriptor = output.handle.snapshot().descriptor!;
+  const descriptors = outputs.flatMap(output => {
+    const descriptor = output.handle.snapshot().descriptor;
+    return descriptor === undefined ? [] : [descriptor];
+  });
+  if (descriptors.length !== outputs.length)
+    return fail('ui-development.plan', 'Every evaluated output must have a descriptor before proposing a presentation.');
+  const [descriptor] = descriptors;
+  if (descriptor === undefined) return fail('ui-development.plan', 'A evaluated output is required before proposing a presentation.');
   return {ok: true, value: Object.freeze({
     id: 'ui-development-plan',
     revision: '1',
     rootId: 'root',
-    preconditions: pins(snapshot.readSet),
+    // The candidate owns its prospective result generation. The region's
+    // scalar pins and data revision still come from the committed snapshot;
+    // only the result dependency set is prospective. RegionStore stages this
+    // read set against the host authority and publishes it atomically on
+    // commit.
+    preconditions: Object.freeze({...pins(snapshot.readSet), results: uniqueRefs(descriptors.map(result => result.ref))}),
     nodes: [
       {id: 'root', role: 'structure', representation: AELIQO_PRESENTATION_REFS.stack,
         config: {schema: AELIQO_CONFIG_SCHEMAS.stack, values: {gap: 8}}, children: ['items']},
@@ -283,7 +367,11 @@ function planForResult(snapshot: RegionSnapshot, output: MaterializedTaskOutput)
     ],
     links: [],
     coverage: [],
-    stateTransfer: [],
+    stateTransfer: snapshot.state?.presentation?.nodes.map(node => ({
+      fromNode: node.id,
+      toNode: node.id,
+      mapping: {id: 'aeliqo.state.identity', revision: '1'},
+    })) ?? [],
     diagnostics: [],
   })};
 }
@@ -295,7 +383,11 @@ function planForResult(snapshot: RegionSnapshot, output: MaterializedTaskOutput)
  */
 export function createUiDevelopmentHost(transport: AgentToolTransport = 'manual'): UiDevelopmentHost {
   const functions = standardFunctionRegistry;
-  const resultStore: ResultStore = createResultStore({maxEntries: 16, maxBytes: 1_000_000, ttlMs: 300_000});
+  const resultStoreOptions = {maxEntries: 16, maxBytes: 1_000_000, ttlMs: 300_000} as const;
+  let activeResultStore: ResultStore = createResultStore(resultStoreOptions);
+  let evaluationResultStore: ResultStore | undefined;
+  let pendingResultStore: ResultStore | undefined;
+  const resultStores = new Set<ResultStore>([activeResultStore]);
   const service: LocalDataService = createLocalDataService({
     snapshot: {catalog: developmentFixture.catalog, sourceRevision: developmentFixture.sourceRevision, records: developmentFixture.records},
     hostBudget: developmentFixture.budget,
@@ -307,6 +399,8 @@ export function createUiDevelopmentHost(transport: AgentToolTransport = 'manual'
   const cohortResolver = createResultCohortResolver();
   const handles = new Map<string, ResultHandle>();
   const retained = new Map<string, ReturnType<ResultHandle['retain']>>();
+  const pendingHandles = new Map<string, ResultHandle>();
+  const pendingRetained = new Map<string, ReturnType<ResultHandle['retain']>>();
   const outputs: MaterializedTaskOutput[] = [];
   const proposals = new Map<string, ProposalRecord>();
   const observations: UiDevelopmentObservation[] = [];
@@ -318,21 +412,78 @@ export function createUiDevelopmentHost(transport: AgentToolTransport = 'manual'
   let sequence = 0;
   let revoked = false;
   let pendingEvaluation: readonly MaterializedTaskOutput[] | undefined;
+  let evaluationVersion = 0;
+  let currentMaterializationVersion = 0;
+  let pendingMaterializationVersion: number | undefined;
+  let evaluationInFlight = false;
+  let commitInFlight = false;
   let holdCommit = false;
   let commitStarted = false;
   let releaseCommit: (() => void) | undefined;
   let resolveCommitStarted: (() => void) | undefined;
   let commitStartedPromise: Promise<void> | undefined;
+  let commitWaitTimer: ReturnType<typeof setTimeout> | undefined;
   const maxProposals = 16;
 
   const presentationRegistryResult = createAeliqoPresentationRegistry({resolveEntity: result => result.ref.outputId === 'main' ? 'items' : undefined});
   if (!presentationRegistryResult.ok) throw new Error(presentationRegistryResult.diagnostics[0]?.message ?? 'The presentation registry is unavailable.');
   const registry = presentationRegistryResult.value;
 
-  const refs = (): readonly Result['ref'][] => [...handles.values()].flatMap(handle => {
+  const releaseLeases = (leases: Map<string, ReturnType<ResultHandle['retain']>>): void => {
+    for (const lease of leases.values()) lease.release();
+    leases.clear();
+  };
+
+  const clearPending = (): void => {
+    releaseLeases(pendingRetained);
+    pendingHandles.clear();
+    pendingEvaluation = undefined;
+    pendingMaterializationVersion = undefined;
+    pendingResultStore?.dispose();
+    if (pendingResultStore !== undefined) resultStores.delete(pendingResultStore);
+    pendingResultStore = undefined;
+  };
+
+  const refsForHandles = (source: ReadonlyMap<string, ResultHandle>): readonly Result['ref'][] => uniqueRefs([...source.values()].flatMap(handle => {
     const descriptor = handle.snapshot().descriptor;
     return descriptor === undefined ? [] : [descriptor.ref];
-  });
+  }));
+
+  const refs = (): readonly Result['ref'][] => uniqueRefs([...refsForHandles(handles), ...outputRefs(pendingEvaluation ?? [])]);
+
+  const candidateOutputs = (): readonly MaterializedTaskOutput[] => pendingEvaluation ?? Object.freeze([...outputs]);
+
+  const candidateVersion = (): number | undefined => pendingMaterializationVersion ?? (outputs.length === 0 ? undefined : currentMaterializationVersion);
+
+  const candidateHandles = (version: number): readonly ResultHandle[] | undefined => {
+    if (pendingMaterializationVersion === version && pendingEvaluation !== undefined) return [...pendingHandles.values()];
+    if (currentMaterializationVersion === version) return [...handles.values()];
+    return undefined;
+  };
+
+  const candidateOutputsForVersion = (version: number): readonly MaterializedTaskOutput[] | undefined => {
+    if (pendingMaterializationVersion === version && pendingEvaluation !== undefined) return pendingEvaluation;
+    if (currentMaterializationVersion === version && outputs.length > 0) return Object.freeze([...outputs]);
+    return undefined;
+  };
+
+  const outputsForPresentation = (presentation: ValidatedPresentation | PresentationPlan | undefined): readonly MaterializedTaskOutput[] => {
+    if (presentation === undefined) return [];
+    const plan = 'plan' in presentation ? presentation.plan : presentation;
+    const refs = uniqueRefs([
+      ...plan.preconditions.results,
+      ...plan.nodes.flatMap(node => node.result === undefined ? [] : [node.result]),
+    ]);
+    const available = new Map<string, MaterializedTaskOutput>();
+    for (const output of [...outputs, ...(pendingEvaluation ?? [])]) {
+      const descriptor = output.handle.snapshot().descriptor;
+      if (descriptor !== undefined) available.set(refKey(descriptor.ref), output);
+    }
+    return refs.flatMap(ref => {
+      const output = available.get(refKey(ref));
+      return output === undefined ? [] : [output];
+    });
+  };
 
   const authority = (): RegionAuthority => ({
     principalKey: developmentFixture.principalKey,
@@ -362,7 +513,7 @@ export function createUiDevelopmentHost(transport: AgentToolTransport = 'manual'
     grants: revoked ? [] : ['task.evaluate', 'result.inspect'],
     catalog: developmentFixture.catalog,
     data: service,
-    resultStore,
+    resultStore: evaluationResultStore ?? activeResultStore,
     readContext: {principal: developmentFixture.principalKey},
     cohortResolver,
     resolveResult: ref => handles.get(refKey(ref)),
@@ -388,40 +539,80 @@ export function createUiDevelopmentHost(transport: AgentToolTransport = 'manual'
     }};
   };
 
-  const readEvaluation = async (input: unknown, signal: AbortSignal): Promise<Outcome<AgentCapabilityHandlerResult>> => {
+  const readEvaluationOnce = async (input: unknown, signal: AbortSignal): Promise<Outcome<AgentCapabilityHandlerResult>> => {
     const parsed = parseTask(input);
     if (!parsed.ok) return {ok: true, value: {state: 'invalid', diagnostics: parsed.diagnostics}};
     if (parsed.value.id !== task.id || parsed.value.regionId !== task.regionId || parsed.value.kind !== 'data')
       return {ok: true, value: {state: 'invalid', diagnostics: [diagnostic('ui-development.task', 'The development task is not the paired data task.')]}};
+    const store = evaluationResultStore ?? createResultStore(resultStoreOptions);
+    const ownsEvaluationStore = evaluationResultStore === undefined;
+    if (ownsEvaluationStore) {
+      evaluationResultStore = store;
+      resultStores.add(store);
+    }
+    let published = false;
     const evaluated = await evaluator.evaluate({task: parsed.value, signal});
-    if (!evaluated.ok) return {ok: true, value: {state: 'failed', diagnostics: evaluated.diagnostics}};
+    if (!evaluated.ok) {
+      if (ownsEvaluationStore) {
+        evaluationResultStore = undefined;
+        store.dispose();
+        resultStores.delete(store);
+      }
+      return {ok: true, value: {state: 'failed', diagnostics: evaluated.diagnostics}};
+    }
     try {
       const nextEntries: Array<{readonly key: string; readonly handle: ResultHandle; readonly lease: ReturnType<ResultHandle['retain']>}> = [];
       for (const output of evaluated.value.outputs) {
         const descriptor = output.handle.snapshot().descriptor;
-        if (descriptor === undefined) return {ok: true, value: {state: 'failed', diagnostics: [diagnostic('ui-development.output', 'The evaluated output has no descriptor.') ]}};
-        nextEntries.push({key: refKey(descriptor.ref), handle: output.handle, lease: output.handle.retain()});
+        if (descriptor === undefined) {
+          for (const entry of nextEntries) entry.lease.release();
+          return {ok: true, value: {state: 'failed', diagnostics: [diagnostic('ui-development.output', 'The evaluated output has no descriptor.') ]}};
+        }
+        const lease = output.handle.retain();
+        if (lease.released) {
+          for (const entry of nextEntries) entry.lease.release();
+          return {ok: true, value: {state: 'failed', diagnostics: [diagnostic('ui-development.output', 'The evaluated output is no longer available.') ]}};
+        }
+        nextEntries.push({key: refKey(descriptor.ref), handle: output.handle, lease});
       }
-      // A new evaluation replaces the host's current materialization. Keep the
-      // region's own leases authoritative while publishData reconciles them,
-      // but do not advertise retired generations to later proposals or stage
-      // them into a fresh commit.
-      for (const lease of retained.values()) lease.release();
-      retained.clear();
-      handles.clear();
-      outputs.splice(0, outputs.length, ...evaluated.value.outputs);
+      // A successful evaluation is prospective. Keep the active handles and
+      // region read set untouched until a presentation proposal commits.
+      clearPending();
+      pendingEvaluation = Object.freeze([...evaluated.value.outputs]);
+      pendingMaterializationVersion = ++evaluationVersion;
+      pendingResultStore = store;
+      pendingHandles.clear();
+      pendingRetained.clear();
       for (const entry of nextEntries) {
-        handles.set(entry.key, entry.handle);
-        if (!entry.lease.released) retained.set(entry.key, entry.lease);
+        pendingHandles.set(entry.key, entry.handle);
+        pendingRetained.set(entry.key, entry.lease);
       }
-      pendingEvaluation = Object.freeze([...outputs]);
-      observations.push({stage: 'evaluate', status: 'data-ready', at: Date.now(), details: {outputCount: outputs.length}});
+      published = true;
+      observations.push({stage: 'evaluate', status: 'data-ready', at: Date.now(), details: {outputCount: pendingEvaluation.length, materializationVersion: pendingMaterializationVersion}});
       // Do not return rows/descriptors as capability output. The browser host
       // retains them for the authorized renderer; no answer oracle crosses the
       // capability boundary.
-      return {ok: true, value: {state: 'data-ready', value: {outputIds: outputs.map(output => output.outputId)}}};
+      return {ok: true, value: {state: 'data-ready', value: {outputIds: pendingEvaluation.map(output => output.outputId)}}};
     } finally {
       evaluated.value.release();
+      if (ownsEvaluationStore) {
+        evaluationResultStore = undefined;
+        if (!published) {
+          store.dispose();
+          resultStores.delete(store);
+        }
+      }
+    }
+  };
+
+  const readEvaluation = async (input: unknown, signal: AbortSignal): Promise<Outcome<AgentCapabilityHandlerResult>> => {
+    if (evaluationInFlight)
+      return {ok: true, value: {state: 'stale', diagnostics: [diagnostic('ui-development.concurrent', 'Another task evaluation is already in flight.')]}};
+    evaluationInFlight = true;
+    try {
+      return await readEvaluationOnce(input, signal);
+    } finally {
+      evaluationInFlight = false;
     }
   };
 
@@ -432,20 +623,22 @@ export function createUiDevelopmentHost(transport: AgentToolTransport = 'manual'
 
   const proposePresentation = (input: PresentationPlan): Outcome<AgentCapabilityHandlerResult> => {
     const snapshot = region.snapshot();
-    if (snapshot.status !== 'active' || snapshot.readSet === undefined || outputs.length === 0)
+    const proposedOutputs = candidateOutputs();
+    const proposedVersion = candidateVersion();
+    if (snapshot.status !== 'active' || snapshot.readSet === undefined || proposedOutputs.length === 0 || proposedVersion === undefined)
       return {ok: true, value: {state: 'stale', diagnostics: [diagnostic('ui-development.no-output', 'Evaluate an authorized output before proposing a view.')]}};
-    const contextValue = presentationContext(snapshot, registry, outputs);
+    const contextValue = presentationContext(snapshot, registry, proposedOutputs, outputs);
     const validated = validateAgentComposition(input, registry, contextValue);
     if (!validated.ok) return {ok: true, value: {state: 'invalid', diagnostics: validated.diagnostics}};
     if (proposals.size >= maxProposals) return {ok: true, value: {state: 'failed', diagnostics: [diagnostic('ui-development.proposal-budget', 'The bounded development proposal window is full.')]}};
     const proposalId = `ui-proposal-${++sequence}`;
     if (proposals.has(proposalId)) return {ok: true, value: {state: 'invalid', diagnostics: [diagnostic('ui-development.proposal', 'The development proposal identifier is already in use.')]}};
-    proposals.set(proposalId, {id: proposalId, goalEpoch: developmentFixture.goalEpoch, expected: snapshot.readSet!, task: snapshot.state!.task, validated: validated.value});
-    observations.push({stage: 'propose', status: 'bound', at: Date.now(), details: {proposalId, regionRevision: snapshot.regionRevision}});
-    return {ok: true, value: {state: 'bound', value: {proposalId, regionRevision: snapshot.regionRevision}}};
+    proposals.set(proposalId, {id: proposalId, goalEpoch: developmentFixture.goalEpoch, expected: snapshot.readSet!, materializationVersion: proposedVersion, task: snapshot.state!.task, validated: validated.value});
+    observations.push({stage: 'propose', status: 'bound', at: Date.now(), details: {proposalId, regionRevision: snapshot.regionRevision, materializationVersion: proposedVersion}});
+    return {ok: true, value: {state: 'bound', value: {proposalId, regionRevision: snapshot.regionRevision, materializationVersion: proposedVersion}}};
   };
 
-  const commitPresentation = async (input: {readonly proposalId: string}, signal: AbortSignal): Promise<Outcome<AgentCapabilityHandlerResult>> => {
+  const commitPresentationOnce = async (input: {readonly proposalId: string}, signal: AbortSignal): Promise<Outcome<AgentCapabilityHandlerResult>> => {
     const proposal = proposals.get(input.proposalId);
     if (proposal === undefined) return {ok: true, value: {state: 'stale', diagnostics: [diagnostic('ui-development.proposal', 'The presentation proposal is no longer available.')]}};
     // A proposal is a one-shot capability receipt. Consume it before any
@@ -456,11 +649,24 @@ export function createUiDevelopmentHost(transport: AgentToolTransport = 'manual'
       return {ok: true, value: {state: 'stale', diagnostics: [diagnostic('ui-development.region', 'The proposal belongs to a closed or changed region.')]}};
     if (before.regionRevision !== proposal.expected.regionRevision || before.dataRevision !== proposal.expected.dataRevision)
       return {ok: true, value: {state: 'stale', diagnostics: [diagnostic('ui-development.stale', 'A newer authorized region revision superseded the proposal.')]}};
-    const refreshed = validateAgentComposition(proposal.validated.plan, registry, presentationContext(before, registry, outputs));
+    const candidate = candidateOutputsForVersion(proposal.materializationVersion);
+    const handlesForCandidate = candidate === undefined ? undefined : candidateHandles(proposal.materializationVersion);
+    if (candidate === undefined || handlesForCandidate === undefined)
+      return {ok: true, value: {state: 'stale', diagnostics: [diagnostic('ui-development.stale', 'A newer evaluation superseded the proposal materialization.')]}};
+    const refreshed = validateAgentComposition(proposal.validated.plan, registry, presentationContext(before, registry, candidate, outputs));
     if (!refreshed.ok) return {ok: true, value: {state: 'stale', diagnostics: refreshed.diagnostics}};
+    const candidateRefs = outputRefs(candidate);
+    const reboundInteraction = rebindInteraction(before.state.interaction, candidateRefs);
+    if (!reboundInteraction.ok) return {ok: true, value: {state: 'stale', diagnostics: reboundInteraction.diagnostics}};
     const previous = activePresentation;
-    const projection = {presentation: refreshed.value, ...(before.state.interaction === undefined ? {} : {interaction: before.state.interaction})};
-    const staged = await region.stage({requestId: `ui-commit-${++sequence}`, expected: proposal.expected, state: {task: before.state.task, presentation: refreshed.value.plan, ...(before.state.interaction === undefined ? {} : {interaction: before.state.interaction})}, resultHandles: [...handles.values()]});
+    const projection = {presentation: refreshed.value, ...(reboundInteraction.value === undefined ? {} : {interaction: reboundInteraction.value})};
+    // A compatible selection is rebound to the fresh result generation before
+    // staging, so the candidate read set can retire the incumbent safely.
+    const expected = Object.freeze({...before.readSet, results: uniqueRefs([
+      ...refreshed.value.plan.preconditions.results,
+      ...interactionResultRefs(reboundInteraction.value),
+    ])});
+    const staged = await region.stage({requestId: `ui-commit-${++sequence}`, expected, state: {task: before.state.task, presentation: refreshed.value.plan, ...(reboundInteraction.value === undefined ? {} : {interaction: reboundInteraction.value})}, resultHandles: handlesForCandidate});
     if (!staged.ok) return {ok: true, value: {state: 'stale', diagnostics: staged.diagnostics}};
     const discard = (): void => { region.discard(staged.value); };
     if (signal.aborted) { discard(); return {ok: true, value: {state: 'cancelled', diagnostics: [diagnostic('ui-development.cancelled', 'The presentation commit was cancelled.')]}}; }
@@ -481,6 +687,29 @@ export function createUiDevelopmentHost(transport: AgentToolTransport = 'manual'
       },
     });
     if (!committed.ok) { rollback(); return {ok: true, value: {state: committed.diagnostics.some(item => item.code.includes('stale')) ? 'stale' : 'failed', diagnostics: committed.diagnostics}}; }
+    const wasPending = pendingMaterializationVersion === proposal.materializationVersion;
+    if (wasPending) {
+      for (const lease of retained.values()) lease.release();
+      retained.clear();
+      handles.clear();
+      outputs.splice(0, outputs.length, ...candidate);
+      for (const [key, handle] of pendingHandles) handles.set(key, handle);
+      for (const [key, lease] of pendingRetained) retained.set(key, lease);
+      pendingHandles.clear();
+      pendingRetained.clear();
+      pendingEvaluation = undefined;
+      pendingMaterializationVersion = undefined;
+      const previousStore = activeResultStore;
+      activeResultStore = pendingResultStore ?? activeResultStore;
+      pendingResultStore = undefined;
+      if (previousStore !== activeResultStore) {
+        previousStore.dispose();
+        resultStores.delete(previousStore);
+      }
+      currentMaterializationVersion = proposal.materializationVersion;
+    }
+    const committedRefs = committed.value.readSet?.results ?? [];
+    const needsReconcile = committedRefs.length !== candidateRefs.length || committedRefs.some((ref, index) => refKey(ref) !== refKey(candidateRefs[index]!));
     activePresentation = {...refreshed.value, plan: committed.value.state?.presentation ?? refreshed.value.plan};
     interactionGraph?.dispose();
     interactionGraph = createInteractionGraph(activePresentation.graph);
@@ -496,8 +725,23 @@ export function createUiDevelopmentHost(transport: AgentToolTransport = 'manual'
         return valid ? {ok: true, value: undefined} : {ok: false, diagnostics: [{code: 'runtime.interaction-invalid', message: 'The selected identity is outside the authorized result population.', retryable: false}]};
       },
     });
+    if (needsReconcile) {
+      const reconciled = await region.publishData({resultHandles: [...handlesForCandidate], reason: 'Retired prospective result generations were reconciled after commit.'});
+      if (!reconciled.ok) return {ok: true, value: {state: 'failed', diagnostics: reconciled.diagnostics}};
+    }
     observations.push({stage: 'commit', status: 'renderer-ready', at: Date.now(), details: {regionRevision: committed.value.regionRevision}});
     return {ok: true, value: {state: 'renderer-ready', regionRevision: committed.value.regionRevision}};
+  };
+
+  const commitPresentation = async (input: {readonly proposalId: string}, signal: AbortSignal): Promise<Outcome<AgentCapabilityHandlerResult>> => {
+    if (commitInFlight)
+      return {ok: true, value: {state: 'stale', diagnostics: [diagnostic('ui-development.concurrent', 'Another presentation commit is already in flight.')]}};
+    commitInFlight = true;
+    try {
+      return await commitPresentationOnce(input, signal);
+    } finally {
+      commitInFlight = false;
+    }
   };
 
   const asAgentInput = <T>(outcome: Outcome<T>): Outcome<AgentJsonValue> => outcome.ok
@@ -532,7 +776,9 @@ export function createUiDevelopmentHost(transport: AgentToolTransport = 'manual'
     authorizeCommit: async ({state, current, signal}) => {
       if (revoked || signal.aborted) return fail('runtime.region-revoked', 'The development region authority was revoked.');
       if (!grants().includes('experience.commit') || state.presentation === undefined) return fail('runtime.region-denied', 'The host did not grant presentation commit.');
-      const checked = validateAgentComposition(state.presentation, registry, presentationContext(current, registry, outputs));
+      const candidate = outputsForPresentation(state.presentation);
+      if (candidate.length === 0) return fail('runtime.region-stale', 'The committed presentation has no authorized result generation.');
+      const checked = validateAgentComposition(state.presentation, registry, presentationContext(current, registry, candidate, outputs));
       if (!checked.ok) return fail('runtime.region-invalid', checked.diagnostics.map(item => item.message).join('; '));
       if (holdCommit) {
         holdCommit = false;
@@ -553,14 +799,32 @@ export function createUiDevelopmentHost(transport: AgentToolTransport = 'manual'
   if (!created.ok) throw new Error(created.diagnostics[0]?.message ?? 'The development region could not be created.');
   region = created.value;
 
+  let rollbackElementState: {
+    readonly presentation: ValidatedPresentation | undefined;
+    readonly interaction: InteractionState | undefined;
+    readonly results: readonly AeliqoRegionResult[];
+  } | undefined;
   const renderer: PresentationRenderer = createCallbackPresentationRenderer({
     apply: next => {
       if (element === undefined) return;
+      rollbackElementState = {presentation: element.presentation, interaction: element.interaction, results: element.results};
       element.presentation = next.presentation;
       element.interaction = next.interaction;
+      element.results = regionResults(outputsForPresentation(next.presentation));
       element.requestUpdate();
     },
-    clear: () => element?.clear(),
+    rollback: () => {
+      if (element === undefined || rollbackElementState === undefined) return;
+      element.presentation = rollbackElementState.presentation;
+      element.interaction = rollbackElementState.interaction;
+      element.results = rollbackElementState.results;
+      element.requestUpdate();
+      rollbackElementState = undefined;
+    },
+    clear: () => {
+      rollbackElementState = undefined;
+      element?.clear();
+    },
   });
 
   const endpointResult = createAgentToolEndpoint({
@@ -582,6 +846,10 @@ export function createUiDevelopmentHost(transport: AgentToolTransport = 'manual'
   });
   if (!endpointResult.ok) throw new Error(endpointResult.diagnostics[0]?.message ?? 'The development endpoint could not be created.');
   const endpoint: AgentToolEndpoint = endpointResult.value;
+  const clearCommitWaitTimer = (): void => {
+    if (commitWaitTimer !== undefined) clearTimeout(commitWaitTimer);
+    commitWaitTimer = undefined;
+  };
   const commitRequest = async (proposalId: string): Promise<Outcome<AgentCapabilityReceipt>> => {
     try {
       return await endpoint.invoke('commit_experience', {proposalId}, {requestId: `ui-commit-request-${++sequence}`});
@@ -594,6 +862,7 @@ export function createUiDevelopmentHost(transport: AgentToolTransport = 'manual'
         resolveCommitStarted?.();
         resolveCommitStarted = undefined;
       }
+      clearCommitWaitTimer();
     }
   };
 
@@ -604,9 +873,8 @@ export function createUiDevelopmentHost(transport: AgentToolTransport = 'manual'
       return;
     }
     if (element === undefined || update.snapshot.state === undefined) return;
-    element.interaction = update.snapshot.state.interaction;
-    if (activePresentation !== undefined && update.snapshot.state.presentation !== undefined)
-      element.presentation = {...activePresentation, plan: update.snapshot.state.presentation};
+    if (JSON.stringify(element.interaction) !== JSON.stringify(update.snapshot.state.interaction))
+      element.interaction = update.snapshot.state.interaction;
     element.requestUpdate();
   });
 
@@ -615,27 +883,36 @@ export function createUiDevelopmentHost(transport: AgentToolTransport = 'manual'
     region,
     fixture: developmentFixture,
     observations,
-    outputs: () => Object.freeze([...outputs]),
+    outputs: () => Object.freeze([...candidateOutputs()]),
+    dependencies: () => {
+      const snapshot = region.snapshot();
+      const required = uniqueRefs([
+        ...(snapshot.state?.presentation?.nodes.flatMap(node => node.result === undefined ? [] : [node.result]) ?? []),
+        ...(snapshot.state?.presentation?.preconditions.results ?? []),
+        ...interactionResultRefs(snapshot.state?.interaction),
+      ]);
+      const readSet = snapshot.readSet?.results ?? [];
+      const resolvable = required.filter(ref => {
+        const handle = handles.get(refKey(ref));
+        if (handle === undefined) return false;
+        const resolved = handle.snapshot();
+        return resolved.descriptor !== undefined && refKey(resolved.descriptor.ref) === refKey(ref)
+          && ['ready', 'partial', 'refreshing'].includes(resolved.status);
+      });
+      return {required, readSet, resolvable};
+    },
     plan: () => {
-      const output = outputs[0];
-      return output === undefined ? fail('ui-development.plan', 'Evaluate the development task first.') : planForResult(region.snapshot(), output);
+      const proposedOutputs = candidateOutputs();
+      return proposedOutputs.length === 0 ? fail('ui-development.plan', 'Evaluate the development task first.') : planForResult(region.snapshot(), proposedOutputs);
     },
     evaluateTask: async input => {
-      pendingEvaluation = undefined;
-      const result = await endpoint.invoke('evaluate_task', input ?? task, {requestId: `ui-evaluate-${++sequence}`});
-      const pending = pendingEvaluation as readonly MaterializedTaskOutput[] | undefined;
-      if (result.ok && result.value.state === 'data-ready' && pending !== undefined) {
-        const published = await region.publishData({resultHandles: pending.map(output => output.handle), reason: 'Authorized evaluated output became available.'});
-        if (!published.ok) return {ok: false, diagnostics: published.diagnostics};
-        if (element !== undefined) element.results = pending.flatMap(output => { const value = resultFor(output); return value === undefined ? [] : [value]; });
-      }
-      return result;
+      return endpoint.invoke('evaluate_task', input ?? task, {requestId: `ui-evaluate-${++sequence}`});
     },
     propose: input => endpoint.invoke('propose_experience', input, {requestId: `ui-propose-${++sequence}`}),
     commit: proposalId => commitRequest(proposalId),
     attach: attached => {
       element = attached;
-      element.results = outputs.flatMap(output => { const value = resultFor(output); return value === undefined ? [] : [value]; });
+      element.results = regionResults(outputs);
       element.onSemanticInteraction = (request: AeliqoSemanticInteractionRequest): void => {
         const controller = interaction;
         if (controller === undefined) return;
@@ -648,25 +925,41 @@ export function createUiDevelopmentHost(transport: AgentToolTransport = 'manual'
       element.requestUpdate();
     },
     holdNextCommit: () => {
+      clearCommitWaitTimer();
       holdCommit = true;
       commitStarted = false;
       commitStartedPromise = new Promise(resolve => { resolveCommitStarted = resolve; });
     },
     waitForCommitAuthorization: async () => {
-      if (!commitStartedPromise || commitStarted) return;
-      await Promise.race([
-        commitStartedPromise,
-        new Promise<void>((_, reject) => setTimeout(() => reject(new Error('The bounded commit authorization wait expired.')), developmentFixture.budget.maxMilliseconds + 100)),
-      ]);
+      const started = commitStartedPromise;
+      if (!started || commitStarted) return;
+      await new Promise<void>((resolve, reject) => {
+        commitWaitTimer = setTimeout(() => {
+          commitWaitTimer = undefined;
+          reject(new Error('The bounded commit authorization wait expired.'));
+        }, developmentFixture.budget.maxMilliseconds + 100);
+        started.then(() => {
+          clearCommitWaitTimer();
+          resolve();
+        }, error => {
+          clearCommitWaitTimer();
+          reject(error);
+        });
+      });
+    },
+    releaseHeldCommit: () => {
+      releaseCommit?.();
+      releaseCommit = undefined;
     },
     revoke: reason => {
       if (revoked) return;
       revoked = true;
       interaction?.revoke(reason);
       region.revoke(reason);
-      resultStore.revoke({principalKey: developmentFixture.principalKey, scopeDigest: developmentFixture.scopeDigest});
+      for (const resultStore of resultStores) resultStore.revoke({principalKey: developmentFixture.principalKey, scopeDigest: developmentFixture.scopeDigest});
       releaseCommit?.();
       releaseCommit = undefined;
+      clearCommitWaitTimer();
     },
     dispose: () => {
       renderer.clear('The development host was disposed.');
@@ -677,9 +970,16 @@ export function createUiDevelopmentHost(transport: AgentToolTransport = 'manual'
       region.dispose();
       store.dispose();
       proposals.clear();
-      for (const lease of retained.values()) lease.release();
-      retained.clear();
-      resultStore.dispose();
+      releaseLeases(retained);
+      releaseLeases(pendingRetained);
+      pendingHandles.clear();
+      pendingEvaluation = undefined;
+      pendingMaterializationVersion = undefined;
+      releaseCommit?.();
+      releaseCommit = undefined;
+      clearCommitWaitTimer();
+      for (const resultStore of resultStores) resultStore.dispose();
+      resultStores.clear();
     },
   };
   return host;

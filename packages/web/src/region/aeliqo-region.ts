@@ -191,13 +191,28 @@ export class AeliqoRegionElement extends LitElement {
     const nodeId = this.focusedNodeId;
     this.focusedElement = undefined;
     this.focusedNodeId = undefined;
-    if (focusedElement?.isConnected) {
-      focusedElement.focus();
-      return;
-    }
-    const target = [...(this.shadowRoot?.querySelectorAll<HTMLElement>("[data-aeliqo-node-id]") ?? [])]
-      .find((candidate) => candidate.dataset.aeliqoNodeId === nodeId);
-    target?.focus();
+    const restore = (): void => {
+      if (!this.isConnected) return;
+      if (focusedElement?.isConnected) {
+        focusedElement.focus();
+        return;
+      }
+      const target = [...(this.shadowRoot?.querySelectorAll<HTMLElement>("[data-aeliqo-node-id]") ?? [])]
+        .find((candidate) => candidate.dataset.aeliqoNodeId === nodeId);
+      if (target === undefined) return;
+      const sameTag = focusedElement === undefined ? [] : [...(target.shadowRoot?.querySelectorAll<HTMLElement>(focusedElement.tagName) ?? [])];
+      const attributes = ["id", "aria-label", "name", "part"];
+      const replacement = sameTag.find(candidate => attributes.some(attribute => {
+        const value = focusedElement?.getAttribute(attribute);
+        return value !== null && value !== undefined && value === candidate.getAttribute(attribute);
+      })) ?? (sameTag.length === 1 ? sameTag[0] : undefined);
+      (replacement ?? target).focus();
+    };
+    restore();
+    // A child renderer can replace the previously focused control in the
+    // microtask after this element updates. Retry once so focus follows the
+    // stable node identity through that child update as well.
+    queueMicrotask(restore);
   }
 
   protected override render(): TemplateResult | typeof nothing {
