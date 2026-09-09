@@ -93,6 +93,73 @@ test("filter typing is draft-only and Apply emits the typed predicate", async ({
   await expect.poll(() => page.evaluate(() => (window as unknown as {dataFixture: {events: {type: string; detail: {predicate?: {op: string; field: string; value: string}}}[]}}).dataFixture.events.findLast((event) => event.type === "aeliqo-filter-change")?.detail.predicate)).toEqual({op: "compare", field: "name", value: "Ada", comparison: "eq"});
 });
 
+test("filter conditions can be added and removed without committing a draft", async ({page}) => {
+  await page.goto("/tests/data-components/index.html");
+  const filter = page.locator("#filter");
+  await filter.locator("select[part=field]").first().selectOption("name");
+  await filter.locator("input[part=value]").first().fill("Ada");
+  expect(await page.evaluate(() => (window as unknown as {dataFixture: {events: {type: string}[]}}).dataFixture.events.filter((event) => event.type === "aeliqo-filter-change").length)).toBe(0);
+
+  await filter.getByRole("button", {name: "Add condition", exact: true}).click();
+  await expect(filter.locator("[part=clause]")).toHaveCount(2);
+  await filter.locator("select[part=field]").nth(1).selectOption("name");
+  await filter.locator("input[part=value]").nth(1).fill("Lin");
+  const removeSecond = filter.locator("button[part=remove-condition]").nth(1);
+  await removeSecond.focus();
+  await removeSecond.press("Enter");
+  await expect(filter.locator("[part=clause]")).toHaveCount(1);
+  await expect(filter.locator("select[part=field]").first()).toBeFocused();
+  await expect(filter.locator("button[part=remove-condition]").first()).toBeDisabled();
+  expect(await page.evaluate(() => (window as unknown as {dataFixture: {events: {type: string}[]}}).dataFixture.events.filter((event) => event.type === "aeliqo-filter-change").length)).toBe(0);
+
+  await filter.locator("button[part=apply]").click();
+  await expect.poll(() => page.evaluate(() => (window as any).dataFixture.events.findLast((event: any) => event.type === "aeliqo-filter-change")?.detail.predicate)).toEqual({op: "compare", field: "name", value: "Ada", comparison: "eq"});
+  const beforeAutoApply = await page.evaluate(() => (window as any).dataFixture.events.filter((event: any) => event.type === "aeliqo-filter-change").length);
+
+  await page.evaluate(async () => {
+    const filter = document.querySelector("#filter") as any;
+    filter.autoApply = true;
+    filter.clauses = [
+      {field: "name", operator: "eq", value: "Ada"},
+      {field: "name", operator: "eq", value: "Lin"},
+    ];
+    await filter.updateComplete;
+  });
+  const autoApplyRemove = filter.locator("button[part=remove-condition]").nth(1);
+  await autoApplyRemove.focus();
+  await autoApplyRemove.press("Enter");
+  await expect(filter.locator("select[part=field]").first()).toBeFocused();
+  await expect.poll(() => page.evaluate(() => (window as any).dataFixture.events.filter((event: any) => event.type === "aeliqo-filter-change").length)).toBe(beforeAutoApply + 1);
+  await expect.poll(() => page.evaluate(() => (window as any).dataFixture.events.findLast((event: any) => event.type === "aeliqo-filter-change")?.detail.predicate)).toEqual({op: "compare", field: "name", value: "Ada", comparison: "eq"});
+});
+
+test("filter condition editing stays bounded and locked while loading", async ({page}) => {
+  await page.goto("/tests/data-components/index.html");
+  const filter = page.locator("#filter");
+  await page.evaluate(async () => {
+    const filter = document.querySelector("#filter") as any;
+    filter.clauses = Array.from({length: 127}, () => ({field: "name", operator: "eq", value: "Ada"}));
+    await filter.updateComplete;
+  });
+  await expect(filter.locator("[part=clause]")).toHaveCount(127);
+  const add = filter.locator("button[part=add-condition]");
+  await expect(add).toBeDisabled();
+  await add.dispatchEvent("click");
+  await expect(filter.locator("[part=clause]")).toHaveCount(127);
+
+  await page.evaluate(async () => {
+    const filter = document.querySelector("#filter") as any;
+    filter.clauses = [
+      {field: "name", operator: "eq", value: "Ada"},
+      {field: "name", operator: "eq", value: "Lin"},
+    ];
+    filter.status = "loading";
+    await filter.updateComplete;
+  });
+  await filter.locator("button[part=remove-condition]").nth(1).dispatchEvent("click");
+  await expect(filter.locator("[part=clause]")).toHaveCount(2);
+});
+
 test("compound predicates and multiple clauses remain visible and intact on Apply", async ({page}) => {
   await page.goto("/tests/data-components/index.html");
   await page.evaluate(async () => {

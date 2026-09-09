@@ -26,6 +26,8 @@ type AeliqoFilterLogical = "and" | "or";
 
 const MAX_PREDICATE_DEPTH = 32;
 const MAX_PREDICATE_NODES = 128;
+// A manual compound predicate consumes one node for its logical parent.
+const MAX_MANUAL_CLAUSES = MAX_PREDICATE_NODES - 1;
 
 interface PredicateTraversal {
   nodes: number;
@@ -300,10 +302,11 @@ export class AeliqoFilterBuilderElement extends LitElement {
   private unsupportedPredicate: AeliqoFilterPredicate | undefined = undefined;
   private draftSourceSignature: string | undefined;
   private draftInitialized = false;
+  private draftInteracted = false;
   private validationMessage = "";
 
   protected override willUpdate(changed: Map<string, unknown>): void {
-    if (changed.has("predicate") || changed.has("clauses") || changed.has("logical") || changed.has("entity") || !this.draftInitialized) {
+    if (changed.has("predicate") || changed.has("clauses") || changed.has("logical") || changed.has("entity") || changed.has("fields") || !this.draftInitialized) {
       const projection: PredicateProjection = this.predicate !== undefined
         ? projectPredicate(this.predicate, 0, {nodes: 0}, this.entity)
         : {clauses: this.clauses.map((clause) => ({...clause})), logical: this.logical === "or" ? "or" : "and"};
@@ -314,9 +317,13 @@ export class AeliqoFilterBuilderElement extends LitElement {
       if (!this.draftInitialized || signature !== this.draftSourceSignature) {
         this.clauseDrafts = projection.clauses.map((clause) => ({...clause}));
         this.logicalMode = projection.logical;
-        if (this.clauseDrafts.length === 0 && this.unsupportedPredicate === undefined) {
-          this.clauseDrafts = [{field: this.fields[0]?.id ?? "", operator: "eq", value: ""}];
-        }
+        this.draftInteracted = false;
+      }
+      // A compound can provide its fields after the first child update. Seed a
+      // usable draft once the options arrive, while preserving a draft that
+      // the author has already edited or composed manually.
+      if (this.clauseDrafts.length === 0 && this.fields.length > 0 && this.unsupportedPredicate === undefined && !this.draftInteracted) {
+        this.clauseDrafts = [{field: this.fields[0]!.id, operator: "eq", value: ""}];
       }
       this.draftSourceSignature = signature;
       this.draftInitialized = true;
@@ -339,6 +346,7 @@ export class AeliqoFilterBuilderElement extends LitElement {
               </select>
             </label>` : nothing}
           </div>
+          ${this.unsupportedPredicate === undefined ? html`<button part="add-condition" type="button" ?disabled=${disabled || this.fields.length === 0 || this.clauseDrafts.length >= MAX_MANUAL_CLAUSES} @click=${this.handleAddCondition}>Add condition</button>` : nothing}
           ${this.unsupportedPredicate === undefined ? nothing : html`<div part="unsupported-predicate" role="status">This filter contains a nested condition that is read-only: ${predicateText(this.unsupportedPredicate)}</div>`}
           ${this.inherited === undefined ? nothing : html`<div part="inherited-predicate" role="status">Inherited filter (read-only): ${predicateText(this.inherited)}</div>`}
           <button part="apply" type="submit" ?disabled=${applyDisabled}>${this.applyLabel}</button>
@@ -368,6 +376,7 @@ export class AeliqoFilterBuilderElement extends LitElement {
       ${this.clauseNeedsValue(clause) ? html`<label part="value-label">${clause.operator === "in" ? "Values (JSON array)" : "Value"} ${index + 1}
         <input part="value" data-clause-index=${index} .value=${clause.value ?? ""} @input=${this.handleValueInput} @compositionend=${this.handleValueInput} />
       </label>` : nothing}
+      <button part="remove-condition" type="button" data-clause-index=${index} aria-label=${`Remove condition ${index + 1}`} ?disabled=${this.status === "loading" || this.status === "error" || this.status === "unavailable" || this.clauseDrafts.length <= 1 || this.unsupportedPredicate !== undefined} @click=${this.handleRemoveCondition}>Remove</button>
     </div>`;
   }
 
@@ -386,9 +395,34 @@ export class AeliqoFilterBuilderElement extends LitElement {
     const clause = this.clauseDrafts[index];
     if (clause === undefined) return;
     this.clauseDrafts = this.clauseDrafts.map((candidate, position) => position === index ? {...candidate, ...update} : candidate);
+    this.draftInteracted = true;
     this.validationMessage = "";
     this.requestUpdate();
   }
+
+  private readonly handleAddCondition = (): void => {
+    if (this.fields.length === 0 || this.unsupportedPredicate !== undefined || this.status === "loading" || this.status === "error" || this.status === "unavailable" || this.clauseDrafts.length >= MAX_MANUAL_CLAUSES) return;
+    this.clauseDrafts = [...this.clauseDrafts, {field: this.fields[0]!.id, operator: "eq", value: ""}];
+    this.draftInteracted = true;
+    this.validationMessage = "";
+    this.requestUpdate();
+  };
+
+  private readonly handleRemoveCondition = (event: Event): void => {
+    const index = this.clauseIndex(event);
+    if (index === undefined || this.clauseDrafts.length <= 1 || this.unsupportedPredicate !== undefined || this.status === "loading" || this.status === "error" || this.status === "unavailable") return;
+    this.clauseDrafts = this.clauseDrafts.filter((_, position) => position !== index);
+    const focusIndex = Math.min(index, this.clauseDrafts.length - 1);
+    this.draftInteracted = true;
+    this.validationMessage = "";
+    this.requestUpdate();
+    void this.updateComplete.then(() => {
+      const field = [...this.renderRoot.querySelectorAll<HTMLSelectElement>('select[part="field"]')]
+        .find((candidate) => Number(candidate.dataset.clauseIndex) === focusIndex);
+      (field ?? this.renderRoot.querySelector<HTMLButtonElement>('button[part="add-condition"]'))?.focus();
+    });
+    if (this.autoApply) this.apply();
+  };
 
   private readonly handleFieldChange = (event: Event): void => {
     const target = event.currentTarget;
@@ -460,13 +494,14 @@ export class AeliqoFilterBuilderElement extends LitElement {
     fieldset { border: 0; display: flex; flex-wrap: wrap; gap: var(--aeliqo-space-8, 0.5rem); margin: 0; min-inline-size: 0; padding: 0; }
     legend { font-weight: var(--aeliqo-typography-font-weight-semibold, 600); padding: 0; }
     [part="clauses"] { display: grid; flex-basis: 100%; gap: var(--aeliqo-space-8, 0.5rem); }
-    [part="clause"] { display: flex; flex-wrap: wrap; gap: var(--aeliqo-space-8, 0.5rem); }
+    [part="clause"] { align-items: end; display: flex; flex-wrap: wrap; gap: var(--aeliqo-space-8, 0.5rem); }
     label { display: grid; gap: var(--aeliqo-space-4, 0.25rem); min-inline-size: 9rem; }
     [part="scope"] { color: var(--aeliqo-color-muted, #475569); flex-basis: 100%; font-size: var(--aeliqo-typography-font-size-caption, 0.8125rem); }
     [part="unsupported-predicate"], [part="inherited-predicate"] { background: var(--aeliqo-color-surface-muted, #f1f5f9); border-inline-start: 0.1875rem solid var(--aeliqo-color-warning, #b45309); flex-basis: 100%; padding: var(--aeliqo-space-8, 0.5rem); }
-    select, input, [part="apply"] { background: var(--aeliqo-color-surface, #fff); border: var(--aeliqo-control-border-width, 0.0625rem) solid var(--aeliqo-color-border, #94a3b8); border-radius: var(--aeliqo-radius-small, 0.375rem); color: inherit; font: inherit; min-block-size: var(--aeliqo-control-min-target, 2.75rem); padding-inline: var(--aeliqo-space-8, 0.5rem); }
+    select, input, [part="add-condition"], [part="remove-condition"], [part="apply"] { background: var(--aeliqo-color-surface, #fff); border: var(--aeliqo-control-border-width, 0.0625rem) solid var(--aeliqo-color-border, #94a3b8); border-radius: var(--aeliqo-radius-small, 0.375rem); color: inherit; font: inherit; min-block-size: var(--aeliqo-control-min-target, 2.75rem); padding-inline: var(--aeliqo-space-8, 0.5rem); }
+    [part="add-condition"], [part="remove-condition"] { cursor: pointer; }
     [part="apply"] { align-self: end; background: var(--aeliqo-color-accent, #4338ca); border-color: var(--aeliqo-color-accent, #4338ca); color: var(--aeliqo-color-on-accent, #fff); cursor: pointer; }
     [part="validation"] { color: var(--aeliqo-color-danger, #b91c1c); flex-basis: 100%; margin: 0; }
-    @media (forced-colors: active) { select, input, [part="apply"] { background: Canvas; border-color: ButtonText; color: CanvasText; } [part="apply"] { background: Highlight; color: HighlightText; } }
+    @media (forced-colors: active) { select, input, [part="add-condition"], [part="remove-condition"], [part="apply"] { background: Canvas; border-color: ButtonText; color: CanvasText; } [part="apply"] { background: Highlight; color: HighlightText; } }
   `];
 }

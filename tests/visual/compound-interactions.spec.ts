@@ -125,15 +125,19 @@ for (const variant of variants) {
     test("explorer commits an authorized filter and stable identity selection", async ({page}, info) => {
       const session = await openCompound(page, "explorer", variant);
       const filter = session.host.locator("aeliqo-filter-builder");
-      await filter.locator("[part=field]").selectOption("name");
-      await filter.locator("[part=value]").fill("Ada");
+      if (await filter.locator("[part=clause]").count() === 0) {
+        await filter.getByRole("button", {name: "Add condition", exact: true}).click();
+      }
+      const condition = filter.locator("[part=clause]").first();
+      await condition.locator("[part=field]").selectOption("name");
+      await condition.locator("[part=value]").fill("Ada");
       await filter.locator("[part=apply]").click();
       await expect.poll(() => lastEvent(page, "aeliqo-explorer-filter")).toMatchObject({
         predicate: {op: "compare", entity: "person", field: "name", comparison: "eq", value: "Ada"},
         applied: true,
       });
 
-      await session.host.getByRole("button", {name: "Select person Lin Chen", exact: true}).click();
+      await session.host.getByRole("button", {name: "Select person lin", exact: true}).click();
       await expect.poll(() => lastEvent(page, "aeliqo-explorer-selection")).toMatchObject({
         mode: "ids",
         entity: "person",
@@ -190,7 +194,7 @@ for (const variant of variants) {
       await trend.locator('[part="data"] button').first().click();
       await expect.poll(() => lastEvent(page, "aeliqo-visualization-select")).toMatchObject({
         source: "user",
-        identity: '["text","ada"]',
+        identity: JSON.stringify([JSON.stringify(["text", "ada"])]),
         result: {id: "aeliqo-catalog-example", outputId: "people"},
       });
       await expect(session.host.locator('[part="caution"]')).toContainText("do not establish causal claims");
