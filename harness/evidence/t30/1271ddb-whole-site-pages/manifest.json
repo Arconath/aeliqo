@@ -1,0 +1,19 @@
+{
+  "sourceCommit": "1271ddb",
+  "candidateDigest": "359fd1e8ea708e49ba5ca74c5d9aa93e32ef2aa84534ccdbb26820589fbbd9f3",
+  "sourceUnchangedDuringRun": true,
+  "command": "AELIQO_RUN_PERFORMANCE=1 AELIQO_SOURCE_COMMIT=1271ddb pnpm test:performance:site-page",
+  "result": "1 passed;120 navigations across3routes",
+  "qualification": false,
+  "findings": [
+    "All120 navigations yielded observed LCP candidates and paint entries; no request failures recorded.",
+    "Table docs showed non-input layout shifts on every navigation (cold sum0.286\u20130.419;warm sum0.419). Raw entries identify late sidebar search insertion and expanding documentation preview/metadata. These sums are diagnostics, not final field CLS.",
+    "Follow-up source fix required; observation pass does not indicate whole-page target satisfaction."
+  ],
+  "files": {
+    "types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "extended.log": "b9f72a929197b7422247f4b47921d35098e17dba49fa60ba2ade9d12577e1f6f",
+    "report.json": "7a5cd5a7731571dc3c3debe991d10cbe230d93ac9c6c284552b99420d777519e",
+    "site-build-hashes.json": "ef096f4895f9ae6d7eb621b0187bba0e23a76c2538fd9548fd0e78097e673f93"
+  }
+}
