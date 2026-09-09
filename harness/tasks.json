@@ -1122,9 +1122,13 @@
         {
           "path": "harness/evidence/t30/8628c60-runtime/manifest.json",
           "sha256": "1ba67de57a7596b94d882f8d8cf81c03dfeaeaa9560020837429e75a7ee14b93"
+        },
+        {
+          "path": "harness/evidence/t30/3f6448c-browser-workload/manifest.json",
+          "sha256": "ffa814489a781cdbc1f624153925153bbd1a2d8d1afddbea037fba5897290fe0"
         }
       ],
-      "notes": "Selected installed byte/graph gates pass. Desktop Chromium extended probes at ea7957d: 30 trusted keyboard samples, 100 component disposal cycles, 10 cold and 30 warm starts pass their functional checks. DOM update p95 0.8ms is not paint; raw heap trend and missing Event Timing observations preserved. The source-bound Node24 medium workload at 8628c60 records 10 cold samples (p95 142.303ms) and 30 warm samples (p95 12.608ms <=16ms), targeted reducer p95 0.108ms <=4ms, and 100 cleanup cycles with zero retained handles/regions/observers. Cold-start, full device/runner/adverse/whole-page and manual qualification remain open. Additional source0d00a01 Node24 adverse lifecycle and Chromium1000category/250null/40resize/full40page probes pass. Non-cooperative late deliveries are distinguished from adapter suppression."
+      "notes": "Selected installed byte/graph gates pass. Desktop Chromium extended probes at ea7957d: 30 trusted keyboard samples, 100 component disposal cycles, 10 cold and 30 warm starts pass their functional checks. DOM update p95 0.8ms is not paint; raw heap trend and missing Event Timing observations preserved. The source-bound Node24 medium workload at 8628c60 records 10 cold samples (p95 142.303ms) and 30 warm samples (p95 12.608ms <=16ms), targeted reducer p95 0.108ms <=4ms, and 100 cleanup cycles with zero retained handles/regions/observers. A fresh source-bound Chromium workload at 3f6448c passes 2/2 tests with isolated planner p95 9ms <=16ms, reducer dispatch p95 0.2ms <=4ms, 44 mounted rows, timeline script/layout/paint phases, and 100 cleanup cycles; total medium workload p95 145.3ms is retained separately and is not the planner budget. Cold-start, full device/runner/adverse/whole-page and manual qualification remain open. Additional source0d00a01 Node24 adverse lifecycle and Chromium1000category/250null/40resize/full40page probes pass. Non-cooperative late deliveries are distinguished from adapter suppression."
     },
     {
       "id": "T31",
