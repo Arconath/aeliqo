@@ -96,12 +96,25 @@
     "allApache20": true,
     "externalToWorkspace": true
   },
+  "sbom": {
+    "format": "CycloneDX",
+    "specVersion": "1.5",
+    "generator": "npm 10.9.8",
+    "node": "v22.23.2",
+    "inputLockfileSha256": "fe2d85a6a488ce6f8390557419c05a6d66cc27ecde4c3b3f09ec762916c4890a",
+    "artifact": "artifacts/release-candidate-60e1c4d-7packages/aeliqo-release-consumer.cyclonedx.json",
+    "sha256": "6abd2dd165a52c446c9712fdc621c7bf253f1c6ffe5f1a81970ccc0a355fa753",
+    "bytes": 86204,
+    "componentCount": 83,
+    "dependencyCount": 84,
+    "exactAeliqoPackageCount": 7,
+    "derivedVersionedCopy": "0.0.0 root-only copy used because npm SBOM rejects an unversioned private root; original external consumer package.json and lockfile were not modified"
+  },
   "qualification": false,
   "limits": [
-    "No SBOM was generated or attached, so the T33 supply-chain acceptance is incomplete.",
     "These are local target-version artifacts; an unused registry RC version and registry availability were not verified.",
     "The required independent T32 architecture, DX and usability review is not attached.",
-    "Compatibility coverage is limited to exact seven-package installation and lockfile resolution; full release smoke and later staging gates remain open.",
+    "Compatibility coverage is limited to exact seven-package installation, lockfile resolution and the corresponding dependency SBOM; full release smoke and later staging gates remain open.",
     "No npm publication, dist-tag promotion, deployment, or remote mutation was attempted."
   ]
 }

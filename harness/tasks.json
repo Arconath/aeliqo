@@ -1222,10 +1222,10 @@
       "evidence": [
         {
           "path": "harness/evidence/t33/60e1c4d-seven-package-consumer/manifest.json",
-          "sha256": "f61ca8ee3001676f43ee5fe48647aaf08460d4ff1f5f19f9f50118b791a5e267"
+          "sha256": "22cd28cfb1262781e3704ed1a4781ea2e02e000d9aa266fabe1d521bc6241da4"
         }
       ],
-      "notes": "Partial source-bound pack/install audit: all seven local 0.1.0 Apache-2.0 public tarballs passed archive checks and an external npm consumer installed the exact set with lockfile integrity. T33 remains planned because SBOM, unused registry RC verification and independent T32 review are not present. No publication or promotion was attempted."
+      "notes": "Partial source-bound pack/install audit: all seven local 0.1.0 Apache-2.0 public tarballs passed archive checks, an external npm consumer installed the exact set with lockfile integrity, and a CycloneDX 1.5 SBOM covers the consumer dependency graph. T33 remains planned because unused registry RC verification and independent T32 review are not present. No publication or promotion was attempted."
     },
     {
       "id": "T33",
