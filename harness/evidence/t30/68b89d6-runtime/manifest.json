@@ -1,0 +1,66 @@
+{
+  "task": "T30",
+  "status": "partial-runtime-workload-pass",
+  "sourceCommit": "68b89d613e895f44d348f1a3ba79a04031f912e1",
+  "sourceChangedDuringRun": false,
+  "scope": "Production package Node workload after the current platform build: 10 cold and 30 subsequent medium planner samples, targeted reducer dispatch samples, and 100 runtime resource cleanup cycles.",
+  "environment": {
+    "runtime": "node",
+    "node": "v24.20.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpuModel": "Apple M4 Pro",
+    "cpuCount": 12,
+    "totalMemoryBytes": 25769803776,
+    "osRelease": "25.6.0"
+  },
+  "run": {
+    "command": "AELIQO_RUN_PERFORMANCE=1 pnpm test:performance:runtime",
+    "status": "pass",
+    "mediumSamples": {"first": 10, "subsequent": 30},
+    "cleanupCycles": 100
+  },
+  "workloads": {
+    "medium": {
+      "rows": 10000,
+      "views": 30,
+      "fields": 100,
+      "candidateCount": 64,
+      "coldPlannerDurationP95Ms": 39.65725,
+      "warmPlannerDurationP95Ms": 12.364208,
+      "plannerBudgetMs": 16,
+      "warmPlannerWithinBudget": true,
+      "rawColdObservationP95Ms": 144.107292,
+      "rawWarmObservationP95Ms": 100.322375,
+      "rawObservationsAreRetained": true
+    },
+    "targetedReducer": {
+      "coldDispatchP95Ms": 0.14575,
+      "warmDispatchP95Ms": 0.105,
+      "dispatchBudgetMs": 4,
+      "warmDispatchWithinBudget": true,
+      "iterations": 100,
+      "successful": 100,
+      "unrelatedRoutes": 0
+    },
+    "cleanup": {
+      "cycles": 100,
+      "retainedHandles": 0,
+      "liveRegions": 0,
+      "openObservers": 0,
+      "bounded": true
+    }
+  },
+  "qualification": false,
+  "limits": [
+    "This is one Node24 Apple M4 Pro run; it is not a lower-powered device, process-cold or whole-page qualification.",
+    "The warm planner budget is evaluated from production functional durations; raw observation values retain setup/runtime overhead and are not discarded.",
+    "Full T30 cold/warm, adverse, browser/device, package, whole-page and manual qualification remains open."
+  ],
+  "artifacts": [
+    {
+      "path": "artifacts/performance-workloads/runtime-1788975648096.json",
+      "sha256": "60b99b446f1160d9562f506576902c36912d52cbbdc24f38946b0438c69b9e2f"
+    }
+  ]
+}
