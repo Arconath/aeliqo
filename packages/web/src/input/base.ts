@@ -16,7 +16,7 @@ export type AeliqoValidator<T> = (
 
 export const aeliqoInputStyles = [...aeliqoFoundationThemeStyles, css`
   :host {
-    color: var(--aeliqo-color-text, #111827);
+    color: var(--aeliqo-input-color, var(--aeliqo-color-text, #111827));
     display: inline-block;
     max-inline-size: 100%;
     min-inline-size: min(100%, 12rem);
@@ -39,12 +39,12 @@ export const aeliqoInputStyles = [...aeliqoFoundationThemeStyles, css`
   }
 
   [part="description"] {
-    color: var(--aeliqo-color-muted, #4b5563);
+    color: var(--aeliqo-input-description, var(--aeliqo-color-muted, #4b5563));
     font-size: 0.9em;
   }
 
   [part="error"] {
-    color: var(--aeliqo-color-danger, #b91c1c);
+    color: var(--aeliqo-input-error, var(--aeliqo-color-danger, #b91c1c));
     font-size: 0.9em;
   }
 
@@ -54,13 +54,13 @@ export const aeliqoInputStyles = [...aeliqoFoundationThemeStyles, css`
   }
 
   :is(input, textarea, select, button, [role="combobox"]):focus-visible {
-    outline: var(--aeliqo-focus-width, 0.1875rem) solid var(--aeliqo-color-focus, #4338ca);
+    outline: var(--aeliqo-focus-width, 0.1875rem) solid var(--aeliqo-input-focus, var(--aeliqo-color-focus, #4338ca));
     outline-offset: var(--aeliqo-focus-offset, 0.125rem);
   }
 
   :is(input, textarea, select) {
-    background: var(--aeliqo-color-canvas, #fff);
-    border: var(--aeliqo-control-border-width, 0.0625rem) solid var(--aeliqo-color-border, #64748b);
+    background: var(--aeliqo-input-background, var(--aeliqo-color-canvas, #fff));
+    border: var(--aeliqo-control-border-width, 0.0625rem) solid var(--aeliqo-input-border, var(--aeliqo-color-border, #64748b));
     border-radius: var(--aeliqo-radius-small, 0.375rem);
     box-sizing: border-box;
     color: inherit;

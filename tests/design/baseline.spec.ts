@@ -7,6 +7,7 @@ test('themes inherit, legacy overrides survive, and direct inputs keep native st
   await page.setViewportSize({width: 1280, height: 960});
   await page.goto('/design.html');
   const input = page.locator('#team input');
+  const designRoot = page.locator('#design-root');
   await expect(input).toHaveValue('Research');
   await expect(input).toHaveCSS('background-color', 'rgb(255, 255, 255)');
   await expect(input).toHaveCSS('min-height', '44px');
@@ -20,10 +21,28 @@ test('themes inherit, legacy overrides survive, and direct inputs keep native st
   await expect(page.locator('#code input')).toHaveAttribute('aria-invalid', 'true');
   await page.screenshot({path: info.outputPath('dark-1280.png'), fullPage: true});
   expect((await new AxeBuilder({page}).analyze()).violations).toEqual([]);
-  await page.locator('#design-root').evaluate(element => (element as HTMLElement).style.setProperty('--aeliqo-input-color', 'rgb(160, 200, 240)'));
+  await designRoot.evaluate(element => {
+    const style = (element as HTMLElement).style;
+    style.setProperty('--aeliqo-input-color', 'rgb(160, 200, 240)');
+    style.setProperty('--aeliqo-input-background', 'rgb(12, 34, 56)');
+    style.setProperty('--aeliqo-input-border', 'rgb(200, 120, 80)');
+    style.setProperty('--aeliqo-input-focus', 'rgb(250, 210, 70)');
+    style.setProperty('--aeliqo-input-description', 'rgb(120, 220, 180)');
+    style.setProperty('--aeliqo-input-error', 'rgb(255, 130, 140)');
+  });
   await expect(input).toHaveCSS('color', 'rgb(160, 200, 240)');
-  await page.locator('#design-root').evaluate(element => (element as HTMLElement).style.removeProperty('--aeliqo-input-color'));
-  await page.locator('#design-root').evaluate(element => {
+  await expect(input).toHaveCSS('background-color', 'rgb(12, 34, 56)');
+  await expect(input).toHaveCSS('border-top-color', 'rgb(200, 120, 80)');
+  await expect(page.locator('#team').locator('[part="description"]')).toHaveCSS('color', 'rgb(120, 220, 180)');
+  await expect(page.locator('#code').locator('[part="error"]')).toHaveCSS('color', 'rgb(255, 130, 140)');
+  await input.focus();
+  await expect(input).toHaveCSS('outline-color', 'rgb(250, 210, 70)');
+  await designRoot.evaluate(element => {
+    const style = (element as HTMLElement).style;
+    for (const key of ['input-color', 'input-background', 'input-border', 'input-focus', 'input-description', 'input-error'])
+      style.removeProperty(`--aeliqo-${key}`);
+  });
+  await designRoot.evaluate(element => {
     const style = (element as HTMLElement).style;
     style.setProperty('--aeliqo-focus-width', '4px');
     style.setProperty('--aeliqo-focus-offset', '5px');
