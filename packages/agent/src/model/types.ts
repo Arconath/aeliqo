@@ -2,9 +2,17 @@ import type {Outcome} from '@aeliqo/core';
 import type {AgentCapabilityReceipt, AgentJsonValue} from '../capabilities/types.js';
 import type {AgentModelToolEndpoint, AgentToolDefinition} from '../protocol/types.js';
 
+declare const opaqueModelContinuationBrand: unique symbol;
+/** In-memory protocol state. Its provider value is non-enumerable and never serializable. */
+export interface ToolModelContinuation {
+  readonly kind: 'opaque-model-continuation';
+  readonly bytes: number;
+  readonly [opaqueModelContinuationBrand]: true;
+}
+
 export type ToolModelMessage =
   | {readonly role: 'user'; readonly text: string}
-  | {readonly role: 'assistant'; readonly text?: string; readonly calls: readonly ToolModelCall[]}
+  | {readonly role: 'assistant'; readonly text?: string; readonly calls: readonly ToolModelCall[]; readonly continuation?: ToolModelContinuation}
   | {readonly role: 'tool'; readonly callId: string; readonly output: AgentJsonValue};
 export interface ToolModelCall {
   readonly id: string;
@@ -47,6 +55,8 @@ export interface ToolModelResponse {
   readonly text?: string;
   readonly calls: readonly ToolModelCall[];
   readonly usage: ToolModelUsage;
+  /** Opaque in-memory protocol state needed for a subsequent model request. */
+  readonly continuation?: ToolModelContinuation;
   /** Sanitized provider metadata; credentials and raw responses never belong here. */
   readonly provider?: ToolModelProviderSnapshot;
 }

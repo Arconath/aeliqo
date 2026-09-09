@@ -3,12 +3,14 @@ import {awaitAgentBoundary, capabilityCanonical} from '../capabilities/dispatche
 import type {AgentCapabilityReceipt, AgentJsonValue} from '../capabilities/types.js';
 import type {AgentModelScope} from '../protocol/types.js';
 import type {ToolModelBudget, ToolModelLoopOptions, ToolModelLoopOutcome, ToolModelMessage, ToolModelRequest, ToolModelResponse, ToolModelStop} from './types.js';
+import {isToolModelContinuation} from './continuation.js';
 
 const fail = (code: string, message: string): ToolModelLoopOutcome => ({ok: false, diagnostics: [{code, message, retryable: false}]});
 const integer = (value: unknown, min: number, max: number): value is number => typeof value === 'number' && Number.isSafeInteger(value) && value >= min && value <= max;
 const identifier = (value: unknown): value is string => typeof value === 'string' && /^[A-Za-z0-9_-]{1,64}$/u.test(value);
 const bytes = (value: unknown): number => new TextEncoder().encode(JSON.stringify(value)).byteLength;
 function snapshot<T>(value: T): T {
+  if (isToolModelContinuation(value)) return value;
   if (value === null || typeof value !== 'object') return value;
   if (Array.isArray(value)) return Object.freeze(value.map(snapshot)) as T;
   return Object.freeze(Object.fromEntries(Object.entries(value).map(([key, child]) => [key, snapshot(child)]))) as T;
@@ -21,8 +23,12 @@ function validBudget(b: ToolModelBudget): boolean {
     && integer(b.maxOutputBytes, 1, WIRE_LIMITS.bytes) && integer(b.maxRepeatedCalls, 1, 4);
 }
 function response(input: unknown, limit: number): ToolModelResponse | undefined {
-  const checked = parseWireValue(input);
-  if (!checked.ok || bytes(checked.value) > limit || checked.value === null || Array.isArray(checked.value) || typeof checked.value !== 'object') return undefined;
+  if (input === null || Array.isArray(input) || typeof input !== 'object') return undefined;
+  const continuation = (input as ToolModelResponse).continuation;
+  if (continuation !== undefined && !isToolModelContinuation(continuation)) return undefined;
+  const {continuation: _continuation, ...wireInput} = input as ToolModelResponse;
+  const checked = parseWireValue(wireInput);
+  if (!checked.ok || bytes(checked.value) + (continuation?.bytes ?? 0) > limit || checked.value === null || Array.isArray(checked.value) || typeof checked.value !== 'object') return undefined;
   const value = checked.value as unknown as ToolModelResponse;
   if (value.text !== undefined && (typeof value.text !== 'string' || value.text.length > WIRE_LIMITS.text)) return undefined;
   if (!Array.isArray(value.calls) || value.calls.length > 8 || !value.usage
@@ -32,7 +38,8 @@ function response(input: unknown, limit: number): ToolModelResponse | undefined 
     if (!call || !identifier(call.id) || !identifier(call.name) || ids.has(call.id) || !Object.hasOwn(call, 'input')) return undefined;
     ids.add(call.id);
   }
-  return snapshot(value);
+  const safe = snapshot(value);
+  return Object.freeze({...safe, ...(continuation === undefined ? {} : {continuation})});
 }
 
 /** A bounded I/O loop around the existing dispatcher, with no provider-specific semantics. */
@@ -92,7 +99,8 @@ export async function runToolModel(options: ToolModelLoopOptions): Promise<ToolM
       if (!discovery.ok) return finish('denied');
       const request: ToolModelRequest = snapshot({messages, tools: discovery.value, maxOutputTokens: budget.maxOutputTokens});
       const countIsRemote = count !== undefined;
-      if (bytes(request) > budget.maxInputBytes || modelRequests + (countIsRemote ? 2 : 1) > budget.maxModelRequests) return finish('budget');
+      const continuationBytes = request.messages.reduce((total, message) => total + (message.role === 'assistant' ? message.continuation?.bytes ?? 0 : 0), 0);
+      if (bytes(request) + continuationBytes > budget.maxInputBytes || modelRequests + (countIsRemote ? 2 : 1) > budget.maxModelRequests) return finish('budget');
       let counted: number | ToolModelStop;
       if (count !== undefined) {
         // A remote counter receives model input, so recheck the independent
@@ -126,7 +134,8 @@ export async function runToolModel(options: ToolModelLoopOptions): Promise<ToolM
       if (outputAdmission !== undefined) return finish(outputAdmission);
       if (candidate.calls.length === 0) return finish(goal === 'chat' && candidate.text ? 'text-ready' : 'no-commit', candidate.text);
       if (toolCalls + candidate.calls.length > budget.maxToolCalls) return finish('budget');
-      messages.push({role: 'assistant', ...(candidate.text === undefined ? {} : {text: candidate.text}), calls: candidate.calls});
+      messages.push({role: 'assistant', ...(candidate.text === undefined ? {} : {text: candidate.text}), calls: candidate.calls,
+        ...(candidate.continuation === undefined ? {} : {continuation: candidate.continuation})});
       for (const call of candidate.calls) {
         const fresh = await admit();
         if (fresh !== undefined) return finish(fresh);

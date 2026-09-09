@@ -128,6 +128,37 @@ describe('generic OpenAI-compatible model connection', () => {
     });
   });
 
+  it('round-trips bounded reasoning continuation without serializing its provider value', async () => {
+    const seen: Record<string, unknown>[] = [];
+    const fixture = await fixtureServer(body => {
+      seen.push(body);
+      return {body: {
+        ...successBody(),
+        choices: [{index: 0, message: {role: 'assistant', content: '', reasoning_content: 'private reasoning fixture', tool_calls: [{
+          id: 'call_next', type: 'function', function: {name: 'summary', arguments: '{"entity":"orders"}'},
+        }]}, finish_reason: 'tool_calls'}],
+      }};
+    });
+    const port = createOpenAICompatibleToolModel({
+      baseURL: fixture.baseURL,
+      model: 'fixture-model',
+      secret: createOpaqueModelSecret('continuation-secret'),
+      capabilities: ['tool-calls', 'usage'],
+      policy: {allowExternalEgress: true, allowInsecureHttp: true, allowedOrigins: [fixture.origin]},
+    });
+    const first = await port.complete(request, {signal: new AbortController().signal});
+    expect(JSON.stringify(first)).not.toContain('private reasoning fixture');
+    await port.complete({
+      ...request,
+      messages: [
+        {role: 'user', text: 'Summarize'},
+        {role: 'assistant', calls: first.calls, ...(first.continuation === undefined ? {} : {continuation: first.continuation})},
+        {role: 'tool', callId: 'call_next', output: {count: 2}},
+      ],
+    }, {signal: new AbortController().signal});
+    expect((seen[1]?.messages as Record<string, unknown>[])[1]).toMatchObject({reasoning_content: 'private reasoning fixture'});
+  });
+
   it('classifies protocol decode failures as malformed responses instead of network failures', async () => {
     const fixture = await fixtureServer(() => ({body: {choices: []}}));
     const port = createOpenAICompatibleToolModel({

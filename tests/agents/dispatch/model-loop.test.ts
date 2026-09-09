@@ -4,6 +4,7 @@ import {createAgentCapabilityRegistry} from '../../../packages/agent/src/capabil
 import type {AgentCapabilityManifest} from '../../../packages/agent/src/capabilities/types.js';
 import {createAgentToolEndpoint} from '../../../packages/agent/src/protocol/endpoint.js';
 import {runToolModel} from '../../../packages/agent/src/model/loop.js';
+import {createToolModelContinuation} from '../../../packages/agent/src/model/continuation.js';
 import type {ToolModelBudget, ToolModelPort, ToolModelResponse} from '../../../packages/agent/src/model/types.js';
 
 const budget: ToolModelBudget = {maxTurns: 4, maxModelRequests: 8, maxToolCalls: 8, maxMilliseconds: 1000, maxInputTokens: 1000, maxOutputTokens: 100,
@@ -34,6 +35,18 @@ describe('synthetic model-port boundary contract (not live reasoning evidence)',
     }});
     expect(await runToolModel(f.options)).toMatchObject({ok: true, value: {stop: 'text-ready', turns: 2, modelRequests: 4, toolCalls: 1, textDraft: 'Unverified answer'}});
     expect(f.calls()).toBe(1);
+  });
+  it('preserves an opaque protocol continuation across a tool turn without serializing its value', async () => {
+    const continuation = createToolModelContinuation('fixture-protocol', {privateState: 'reasoning-never-serialized'});
+    let turns = 0;
+    const f = fixture({estimateInputTokens: () => 10, complete: async request => {
+      if (++turns === 1) return {...proposal([{id: 'call1', name: 'summary', input: {}}]), continuation};
+      const assistant = request.messages.find(message => message.role === 'assistant');
+      expect(assistant?.continuation).toBe(continuation);
+      expect(JSON.stringify(assistant)).not.toContain('reasoning-never-serialized');
+      return proposal();
+    }});
+    expect(await runToolModel(f.options)).toMatchObject({ok: true, value: {stop: 'text-ready', turns: 2, toolCalls: 1}});
   });
   it('does not equate model prose with a committed interface', async () => {
     const f = fixture({countInputTokens: async () => 10, complete: async () => proposal([], 'I updated the view')});
