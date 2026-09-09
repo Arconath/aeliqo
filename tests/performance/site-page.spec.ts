@@ -264,7 +264,7 @@ const PERFORMANCE_INIT_SCRIPT = () => {
         state.observerEntriesDropped.paint += entries.length - index;
         break;
       }
-      state.paints.push(base(entries[index]) as PaintEntry);
+      state.paints.push(base(entries[index]!) as PaintEntry);
     }
   }, "paint");
   observe("largest-contentful-paint", entries => {

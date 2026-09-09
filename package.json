@@ -102,7 +102,8 @@
     "test:performance:perceived-input": "playwright test --config tests/performance/perceived-input.playwright.config.mjs",
     "test:performance:heap-lifecycle": "playwright test --config tests/performance/heap-lifecycle.playwright.config.mjs",
     "test:performance:adverse-runtime": "pnpm build:runtime && node --test tests/performance/adverse-runtime.test.mjs",
-    "test:performance:adverse-visualization": "playwright test --config tests/performance/adverse-visualization.playwright.config.mjs"
+    "test:performance:adverse-visualization": "playwright test --config tests/performance/adverse-visualization.playwright.config.mjs",
+    "test:performance:site-page": "playwright test --config tests/performance/site-page.playwright.config.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

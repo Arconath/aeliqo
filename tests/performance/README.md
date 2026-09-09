@@ -138,3 +138,18 @@ budget. Their patches and paired raw observations were preserved under
 `harness/evidence/t30/0a6ac0b-snapshot-experiment` and
 `harness/evidence/t30/91731d9-tie-memo-experiment`; both experimental source
 changes were reverted. The required planner budget remains unchanged.
+
+## Whole-site local pages
+
+`pnpm test:performance:site-page` builds and previews the real site, then
+observes home, Table documentation and playground routes. Each route uses
+one fresh context with the cache cleared and disabled, plus one reload after
+warmup with caching enabled. `AELIQO_RUN_PERFORMANCE=1` expands this to
+10 cold and 30 warm observations per route.
+
+Navigation, resource/body bytes, cache responses, paint entries, LCP candidates
+and individual layout shifts are retained separately. Unsupported observations
+remain null; observer/resource-buffer limits are recorded. LCP candidates are
+not final field LCP, and shifts are not combined into a CLS score. This local
+page probe has no timing-budget pass claim and does not measure INP or actual
+mobile hardware.
