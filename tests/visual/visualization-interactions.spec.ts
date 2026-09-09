@@ -281,8 +281,12 @@ for (const id of ["trend", "timeline", "tree"] as const) {
       const pageTwo = await renderedRowCells(session.host);
       expect(pageTwo[0]?.[1]).toBe(id === "tree" ? "node-25" : "row-25");
       expect(pageTwo.at(-1)?.[1]).toBe(id === "tree" ? "node-29" : "row-29");
-      await session.host.getByRole("button", {name: "Previous", exact: true}).click();
+      const previous = session.host.getByRole("button", {name: "Previous", exact: true});
+      await previous.focus();
+      await expect(previous).toBeFocused();
+      await previous.press("Enter");
       await expect(session.host.locator("tbody tr")).toHaveCount(25);
+      await expect(session.host).toContainText("Rows 1–25 of 30");
       const pageOne = await renderedRowCells(session.host);
       expect(pageOne[0]?.[1]).toBe(id === "tree" ? "root" : "row-0");
       expect(pageOne.at(-1)?.[1]).toBe(id === "tree" ? "node-24" : "row-24");

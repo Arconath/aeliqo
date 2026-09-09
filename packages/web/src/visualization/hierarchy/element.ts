@@ -9,6 +9,7 @@ import type {AeliqoVisualizationSelectionDetail, VisualizationDataset, Visualiza
 const scalarLabel = (value: Scalar): string => value === null ? 'Missing' : typeof value === 'object' ? value.decimal : String(value);
 
 export abstract class AeliqoHierarchyElementBase extends AeliqoFoundationElement {
+  static readonly shadowRootOptions: ShadowRootInit = {mode: "open", delegatesFocus: false};
   static readonly properties = {
     page: {state:true},
     visualization: {attribute: false},
