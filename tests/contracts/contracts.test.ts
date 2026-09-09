@@ -284,7 +284,7 @@ describe('strict ingress and tagged states', () => {
   });
 
   it('does not echo secret values in diagnostic output', () => {
-    const secret = 'sk-live-aeliqo-contract-test-secret';
+    const secret = 'synthetic-redaction-fixture';
     const input = clone(task) as AnyRecord;
     input.secret = secret;
     const outcome = parse('task', input);
