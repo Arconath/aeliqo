@@ -1,4 +1,4 @@
-import {expect, test, type Browser, type Page} from "@playwright/test";
+import {expect, test, type Page} from "@playwright/test";
 import {mkdir, writeFile} from "node:fs/promises";
 import {readFileSync} from "node:fs";
 import {dirname, resolve} from "node:path";
@@ -32,7 +32,7 @@ type LayoutObservation = {readonly route: string; readonly entries: readonly Lay
 type RouteEvidence = {
   readonly route: string;
   readonly component: string;
-  readonly noScript?: LayoutEvidence;
+  readonly noScript: LayoutEvidence;
   readonly hydrated: LayoutEvidence;
   readonly layoutObservation: LayoutObservation;
   readonly hydrationLayoutShiftValue: number;
@@ -60,13 +60,18 @@ const expectStable = (before: Box | null, after: Box | null, name: string): void
   expect(Math.abs(after!.x - before!.x), `${name} x changed during hydration`).toBeLessThanOrEqual(1);
   expect(Math.abs(after!.y - before!.y), `${name} y changed during hydration`).toBeLessThanOrEqual(1);
   expect(Math.abs(after!.width - before!.width), `${name} width changed during hydration`).toBeLessThanOrEqual(1);
+  expect(Math.abs(after!.height - before!.height), `${name} height changed during hydration`).toBeLessThanOrEqual(1);
 };
 
-async function openNoScript(browser: Browser, baseURL: string): Promise<{page: Page; evidence: LayoutEvidence}> {
-  const context = await browser.newContext({baseURL, javaScriptEnabled: false});
-  const page = await context.newPage();
-  await page.goto(REPRESENTATIVE_ROUTE, {waitUntil: "load"});
-  return {page, evidence: await boxes(page)};
+async function assertNoScriptRoute(page: Page, component: typeof COMPONENT_ROUTES[number]): Promise<LayoutEvidence> {
+  await page.goto(component.route, {waitUntil: "domcontentloaded"});
+  await expect(page.getByRole("heading", {level: 1, name: component.name, exact: true})).toBeVisible();
+  await expect(page.locator(".search-trigger")).toBeDisabled();
+  await expect(page.locator("[data-component-preview] [data-preview-mount]")).toContainText("Interactive preview requires JavaScript.");
+  await expect(page.locator("[data-component-preview]")).toContainText("Expected result");
+  await expect(page.locator(`[data-example-code='${component.id}']`)).toContainText("import");
+  await expect(page.locator(`[data-copy-example='${component.id}']`)).toBeDisabled();
+  return boxes(page);
 }
 
 async function readLayoutObservation(page: Page): Promise<LayoutObservation> {
@@ -85,24 +90,34 @@ async function readLayoutObservation(page: Page): Promise<LayoutObservation> {
   });
 }
 
+async function assertCopySuccess(page: Page, componentId: string): Promise<void> {
+  const code = await page.locator(`[data-example-code='${componentId}']`).textContent();
+  if (code === null) throw new Error(`Missing copy source for ${componentId}`);
+  await page.locator("details.component-example summary").click();
+  await page.locator(`[data-copy-example='${componentId}']`).click();
+  await expect(page.locator("[data-copy-status]")).toHaveText("Example copied.");
+  await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(code);
+}
+
 test("all component documentation routes preserve static content and hydration layout", async ({browser}, testInfo) => {
   const baseURL = testInfo.project.use.baseURL;
   if (typeof baseURL !== "string" || baseURL.length === 0) throw new Error("document-layout probe requires a Playwright baseURL");
   expect(COMPONENT_ROUTES, "the document-layout probe must enumerate the complete public catalog").toHaveLength(71);
 
-  const noScript = await openNoScript(browser, baseURL);
+  const noScriptContext = await browser.newContext({baseURL, javaScriptEnabled: false});
+  const noScriptPage = await noScriptContext.newPage();
+  const noScriptEvidence = new Map<string, LayoutEvidence>();
   try {
-    await expect(noScript.page.getByRole("heading", {name: "Table", exact: true})).toBeVisible();
-    await expect(noScript.page.locator(".search-trigger")).toBeDisabled();
-    await expect(noScript.page.locator("[data-component-preview] [data-preview-mount]")).toContainText("Interactive preview requires JavaScript.");
-    await expect(noScript.page.locator("[data-component-preview]")).toContainText("Expected result");
-    await expect(noScript.page.locator("[data-example-code='table']")).toContainText("AeliqoTableElement");
-    await expect(noScript.page.locator("[data-copy-example='table']")).toBeDisabled();
+    for (const component of COMPONENT_ROUTES) {
+      noScriptEvidence.set(component.route, await assertNoScriptRoute(noScriptPage, component));
+    }
   } finally {
-    await noScript.page.context().close();
+    await noScriptContext.close();
   }
+  expect(noScriptEvidence.size, "every component route must have no-JavaScript evidence").toBe(COMPONENT_ROUTES.length);
 
-  const page = await browser.newPage();
+  const context = await browser.newContext({baseURL, permissions: ["clipboard-read", "clipboard-write"]});
+  const page = await context.newPage();
   await page.addInitScript(() => {
     type RecordedShift = {
       readonly value: number;
@@ -147,7 +162,9 @@ test("all component documentation routes preserve static content and hydration l
   const evidence: RouteEvidence[] = [];
   try {
     for (const component of COMPONENT_ROUTES) {
-      await page.goto(component.route, {waitUntil: "load"});
+      const staticEvidence = noScriptEvidence.get(component.route);
+      if (staticEvidence === undefined) throw new Error(`Missing no-JavaScript evidence for ${component.route}`);
+      await page.goto(component.route, {waitUntil: "domcontentloaded"});
       await expect(page.getByRole("heading", {level: 1, name: component.name, exact: true})).toBeVisible();
       await expect(page.locator(`[data-component-preview] aeliqo-${component.id}`)).toBeAttached();
       await expect(page.locator("[data-component-preview]")).toContainText("Expected result");
@@ -160,33 +177,25 @@ test("all component documentation routes preserve static content and hydration l
       }, `aeliqo-${component.id}`);
 
       const hydrated = await boxes(page);
+      expectStable(staticEvidence.sidebarVersion, hydrated.sidebarVersion, `${component.route} sidebar version control`);
+      expectStable(staticEvidence.sidebarNavigation, hydrated.sidebarNavigation, `${component.route} sidebar navigation`);
+      expectStable(staticEvidence.componentPreview, hydrated.componentPreview, `${component.route} preview shell`);
+      expectStable(staticEvidence.propertiesHeading, hydrated.propertiesHeading, `${component.route} properties heading`);
+      expectStable(staticEvidence.apiTable, hydrated.apiTable, `${component.route} API table`);
+
       const layoutObservation = await readLayoutObservation(page);
       expect(layoutObservation.route, `${component.route} layout observer must be fresh for the current navigation`).toBe(component.route);
       const hydrationLayoutShiftValue = layoutObservation.entries
         .filter((entry) => !entry.hadRecentInput)
         .reduce((sum, entry) => sum + entry.value, 0);
       expect(hydrationLayoutShiftValue, `${component.route} controlled hydration layout shift exceeded the ${HYDRATION_LAYOUT_SHIFT_BUDGET} budget`).toBeLessThanOrEqual(HYDRATION_LAYOUT_SHIFT_BUDGET);
-      evidence.push({
-        route: component.route,
-        component: component.id,
-        ...(component.route === REPRESENTATIVE_ROUTE ? {noScript: noScript.evidence} : {}),
-        hydrated,
-        layoutObservation,
-        hydrationLayoutShiftValue,
-      });
+      evidence.push({route: component.route, component: component.id, noScript: staticEvidence, hydrated, layoutObservation, hydrationLayoutShiftValue});
+
+      if (component.route === REPRESENTATIVE_ROUTE) await assertCopySuccess(page, component.id);
     }
   } finally {
-    await page.close();
+    await context.close();
   }
-
-  const representative = evidence.find((entry) => entry.route === REPRESENTATIVE_ROUTE);
-  if (representative === undefined) throw new Error(`Missing layout evidence for ${REPRESENTATIVE_ROUTE}`);
-  if (representative.noScript === undefined) throw new Error(`Missing no-JavaScript evidence for ${REPRESENTATIVE_ROUTE}`);
-  expectStable(representative.noScript.sidebarVersion, representative.hydrated.sidebarVersion, "sidebar version control");
-  expectStable(representative.noScript.sidebarNavigation, representative.hydrated.sidebarNavigation, "sidebar navigation");
-  expectStable(representative.noScript.componentPreview, representative.hydrated.componentPreview, "preview shell");
-  expectStable(representative.noScript.propertiesHeading, representative.hydrated.propertiesHeading, "properties heading");
-  expectStable(representative.noScript.apiTable, representative.hydrated.apiTable, "API table");
 
   const output = testInfo.outputPath("document-layout-evidence.json");
   await mkdir(dirname(output), {recursive: true});
@@ -195,9 +204,10 @@ test("all component documentation routes preserve static content and hydration l
     routes: evidence,
     layoutShiftBudget: HYDRATION_LAYOUT_SHIFT_BUDGET,
     claims: [
-      "All 71 generated component routes were loaded with JavaScript and checked for their real component mount and expected-result content.",
-      "The browser PerformanceObserver recorded layout-shift entries during each controlled JavaScript hydration navigation, retaining source selectors and summing all entries without recent input against a 0.1 per-route observation budget; this is not a p75 field CLS claim.",
-      "No-JavaScript structure and position comparison is retained for the representative data.table route at this viewport.",
+      "All 71 generated component routes were checked with JavaScript disabled for readable fallback content, disabled search/copy controls, and expected-result content under the data-component-preview contract.",
+      "Every route compares no-JavaScript and hydrated sentinel boxes for x, y, width, and height, including the preview shell, properties heading, and API table; the comparison is independent of PerformanceObserver entries.",
+      "The browser PerformanceObserver records layout-shift entries during each controlled JavaScript hydration navigation, retaining source selectors and summing all entries without recent input against a 0.1 per-route observation budget; this is not a p75 field CLS claim.",
+      "The data.table route grants clipboard permissions and verifies successful copy status plus clipboard contents.",
     ],
   }, null, 2)}\n`, "utf8");
 });
