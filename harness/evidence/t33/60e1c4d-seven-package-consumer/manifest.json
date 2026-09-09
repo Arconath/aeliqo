@@ -148,6 +148,31 @@
         "os": "darwin",
         "arch": "arm64"
       }
+    },
+    {
+      "kind": "vertical",
+      "status": "pass",
+      "evidenceCommit": "c5b33c1b931f07289caffa1034d70bc6e3af16eb",
+      "sourceDigest": "9afbd73d926c9a08e1713c2b72c767a9f54d63f1a7fcbf15bd5256cbb94b7e03",
+      "scope": "Installed core/runtime/web tarballs with copied HR vertical source; strict TypeScript; bundled Node evaluator; Chromium render, typed selection, queryless reorder and stale proposal preservation.",
+      "report": "artifacts/vertical-consumers/run-cNnY4w/report.json",
+      "reportSha256": "ca1bd92d06936be1841f3e6cbad39621149c5f481ac0c06eaef7bb549e2c8b7f",
+      "consumerLock": "artifacts/vertical-consumers/run-cNnY4w/consumer-package-lock.json",
+      "consumerLockSha256": "c0d1f157e69fb42a4b6a6fdfb56215bce375a7224464d9cee5e6e2b70fa25644",
+      "environment": {
+        "node": "v24.20.0",
+        "npm": "11.19.0",
+        "pnpm": "11.24.0",
+        "typescript": "7.0.2",
+        "vite": "8.2.2",
+        "playwright": "1.63.0",
+        "chromium": "153.0.8010.12",
+        "os": "darwin",
+        "arch": "arm64",
+        "viewport": {"width": 1280, "height": 720},
+        "locale": "en-US",
+        "deviceScaleFactor": 1
+      }
     }
   ],
   "qualification": false,
