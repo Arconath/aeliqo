@@ -1,0 +1,37 @@
+{
+  "task": "T30",
+  "status": "partial-bundle-and-package-pass",
+  "sourceCommit": "19e54bc32eb9d59b367fe8c1e0e71f8783d1dc5f",
+  "sourceDigest": "9afbd73d926c9a08e1713c2b72c767a9f54d63f1a7fcbf15bd5256cbb94b7e03",
+  "sourceChangedDuringRun": false,
+  "scope": "Current production bundle and installed-tarball gate for selected direct web components, core planner validation and the region/table path.",
+  "environment": {"node": "v24.20.0", "vite": "8.2.2", "os": "darwin", "release": "25.6.0", "arch": "arm64", "target": "es2022", "minified": true},
+  "run": {"command": "pnpm test:performance:bundles", "bundleGate": "pass", "sourceChangedDuringRun": false},
+  "packages": [
+    {"name": "@aeliqo/core", "sha256": "67910f7786cae6e427c96fdae820fdc2a0921ef8721393a5c363604739d2e32c"},
+    {"name": "@aeliqo/runtime", "sha256": "ee7c293cb8d8e684e157617e64c9f28dc39a70155735e6fbb69452cbda1f8918"},
+    {"name": "@aeliqo/web", "sha256": "c2d74d0c4c97781f9f148690e70349fbcde172aa17822e6c56f7b64b942faebc"}
+  ],
+  "consumerLockSha256": "c74d67dd6110794139bd889f1cceb4528605e5056991b98ab47f0378ca2b280c",
+  "rows": [
+    {"id": "button", "budgetBytes": 15360, "totalGzipBytes": 8856, "excludingLitGzipBytes": 3346, "forbiddenModules": [], "passed": true},
+    {"id": "input", "budgetBytes": 15360, "totalGzipBytes": 11636, "excludingLitGzipBytes": 6187, "forbiddenModules": [], "passed": true},
+    {"id": "metric", "budgetBytes": 15360, "totalGzipBytes": 9008, "excludingLitGzipBytes": 3444, "forbiddenModules": [], "passed": true},
+    {"id": "table", "budgetBytes": 40960, "totalGzipBytes": 13506, "excludingLitGzipBytes": 8057, "forbiddenModules": [], "passed": true},
+    {"id": "core-planner-validation", "budgetBytes": 71680, "totalGzipBytes": 54625, "forbiddenModules": [], "passed": true},
+    {"id": "region-table", "budgetBytes": 163840, "totalGzipBytes": 143393, "forbiddenModules": [], "passed": true}
+  ],
+  "qualification": false,
+  "limits": [
+    "This proves selected installed bundle bytes and rendered module graphs, not parse/execute latency or the full catalog.",
+    "Timing, browser traces, large workloads, cleanup/heap, lower-powered hardware and manual qualification remain separate T30 requirements.",
+    "The tarballs are local package artifacts; this is not registry publication or package-history evidence."
+  ],
+  "artifacts": [
+    {"path": "artifacts/performance-bundles/run-NVAnvR/report.json", "sha256": "dbbca7cf1ccd29b07d7e4257fd2032d306ecf6c4e84780f44096c7b2823f2eee"},
+    {"path": "artifacts/performance-bundles/run-NVAnvR/consumer-package-lock.json", "sha256": "c74d67dd6110794139bd889f1cceb4528605e5056991b98ab47f0378ca2b280c"},
+    {"path": "artifacts/performance-bundles/run-NVAnvR/aeliqo-core-0.1.0.tgz", "sha256": "67910f7786cae6e427c96fdae820fdc2a0921ef8721393a5c363604739d2e32c"},
+    {"path": "artifacts/performance-bundles/run-NVAnvR/aeliqo-runtime-0.1.0.tgz", "sha256": "ee7c293cb8d8e684e157617e64c9f28dc39a70155735e6fbb69452cbda1f8918"},
+    {"path": "artifacts/performance-bundles/run-NVAnvR/aeliqo-web-0.1.0.tgz", "sha256": "c2d74d0c4c97781f9f148690e70349fbcde172aa17822e6c56f7b64b942faebc"}
+  ]
+}
