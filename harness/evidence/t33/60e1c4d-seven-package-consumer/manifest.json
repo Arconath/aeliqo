@@ -1,0 +1,107 @@
+{
+  "task": "T33",
+  "status": "partial-pack-and-installed-consumer-pass",
+  "observedAt": "2026-09-09T18:24:04Z",
+  "sourceCommit": "60e1c4df7ff52380c81611967697056f843e9623",
+  "sourceDigest": "9afbd73d926c9a08e1713c2b72c767a9f54d63f1a7fcbf15bd5256cbb94b7e03",
+  "targetVersion": "0.1.0",
+  "scope": "All seven public @aeliqo workspace packages were packed from the source candidate and installed together in an external npm consumer using the exact local tarballs.",
+  "dependencyLock": {
+    "path": "pnpm-lock.yaml",
+    "sha256": "add30021cbbb08b122a176dd2b87a46d74ef315d89f383f45a78cf642e5345e1",
+    "workspaceAliasesInArchives": false
+  },
+  "packages": [
+    {
+      "name": "@aeliqo/agent",
+      "version": "0.1.0",
+      "license": "Apache-2.0",
+      "private": false,
+      "artifact": "artifacts/release-candidate-60e1c4d-7packages/aeliqo-agent-0.1.0.tgz",
+      "sha256": "674107fddb3bc75f05190a1ec576ce010a8c9da021607cbe19252e1395e87f0d",
+      "bytes": 100397
+    },
+    {
+      "name": "@aeliqo/core",
+      "version": "0.1.0",
+      "license": "Apache-2.0",
+      "private": false,
+      "artifact": "artifacts/release-candidate-60e1c4d-7packages/aeliqo-core-0.1.0.tgz",
+      "sha256": "67910f7786cae6e427c96fdae820fdc2a0921ef8721393a5c363604739d2e32c",
+      "bytes": 183540
+    },
+    {
+      "name": "@aeliqo/devtools",
+      "version": "0.1.0",
+      "license": "Apache-2.0",
+      "private": false,
+      "artifact": "artifacts/release-candidate-60e1c4d-7packages/aeliqo-devtools-0.1.0.tgz",
+      "sha256": "97d11ce0971d713fc7fe14c05e1e710e38b4ee45e71d9990457e41680820026e",
+      "bytes": 17396
+    },
+    {
+      "name": "@aeliqo/react",
+      "version": "0.1.0",
+      "license": "Apache-2.0",
+      "private": false,
+      "artifact": "artifacts/release-candidate-60e1c4d-7packages/aeliqo-react-0.1.0.tgz",
+      "sha256": "40cf32c87f87f92abbeb4b8ff587a740326ef9897f2b85221b98535b52bc71fe",
+      "bytes": 11408
+    },
+    {
+      "name": "@aeliqo/runtime",
+      "version": "0.1.0",
+      "license": "Apache-2.0",
+      "private": false,
+      "artifact": "artifacts/release-candidate-60e1c4d-7packages/aeliqo-runtime-0.1.0.tgz",
+      "sha256": "ee7c293cb8d8e684e157617e64c9f28dc39a70155735e6fbb69452cbda1f8918",
+      "bytes": 221894
+    },
+    {
+      "name": "@aeliqo/testkit",
+      "version": "0.1.0",
+      "license": "Apache-2.0",
+      "private": false,
+      "artifact": "artifacts/release-candidate-60e1c4d-7packages/aeliqo-testkit-0.1.0.tgz",
+      "sha256": "03aa1e0a2dfa032c01fb52ecd635d42cf5add8eed179f19fc05787ac87569b36",
+      "bytes": 8721
+    },
+    {
+      "name": "@aeliqo/web",
+      "version": "0.1.0",
+      "license": "Apache-2.0",
+      "private": false,
+      "artifact": "artifacts/release-candidate-60e1c4d-7packages/aeliqo-web-0.1.0.tgz",
+      "sha256": "c2d74d0c4c97781f9f148690e70349fbcde172aa17822e6c56f7b64b942faebc",
+      "bytes": 401574
+    }
+  ],
+  "archiveChecks": {
+    "packageCount": 7,
+    "allExactTargetVersion": true,
+    "allPublic": true,
+    "allApache20": true,
+    "readmeAndLicensePresent": true,
+    "workspaceAliases": false,
+    "bundledNodeModules": false,
+    "pathTraversalEntries": false
+  },
+  "consumer": {
+    "path": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-release-seven-consumer-F1uG8r",
+    "lockfile": "package-lock.json",
+    "lockfileVersion": 3,
+    "lockfileSha256": "fe2d85a6a488ce6f8390557419c05a6d66cc27ecde4c3b3f09ec762916c4890a",
+    "installedAeliqoPackages": 7,
+    "allExactTargetVersion": true,
+    "allApache20": true,
+    "externalToWorkspace": true
+  },
+  "qualification": false,
+  "limits": [
+    "No SBOM was generated or attached, so the T33 supply-chain acceptance is incomplete.",
+    "These are local target-version artifacts; an unused registry RC version and registry availability were not verified.",
+    "The required independent T32 architecture, DX and usability review is not attached.",
+    "Compatibility coverage is limited to exact seven-package installation and lockfile resolution; full release smoke and later staging gates remain open.",
+    "No npm publication, dist-tag promotion, deployment, or remote mutation was attempted."
+  ]
+}
