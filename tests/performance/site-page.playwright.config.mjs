@@ -15,7 +15,7 @@ export default defineConfig({
   outputDir: resolve(repositoryRoot, "artifacts/performance-site-page"),
   use: {baseURL: origin, browserName: "chromium", trace: "retain-on-failure"},
   webServer: {
-    command: `pnpm build:site && ./node_modules/.bin/vite preview apps/site/dist --host 127.0.0.1 --port ${port} --strictPort`,
+    command: `pnpm build:site && ./node_modules/.bin/vite preview --config apps/site/vite.config.mjs --host 127.0.0.1 --port ${port} --strictPort`,
     cwd: repositoryRoot,
     url: `${origin}/`,
     reuseExistingServer: false,

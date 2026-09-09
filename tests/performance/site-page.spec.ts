@@ -78,23 +78,29 @@ type LcpEntry = NumericEntry & {
 };
 
 type LayoutShiftEntry = NumericEntry & {
-  readonly value: number;
-  readonly hadRecentInput: boolean;
-  readonly lastInputTime: number;
+  readonly value: number | null;
+  readonly hadRecentInput: boolean | null;
+  readonly lastInputTime: number | null;
   readonly sources: readonly {
     readonly node: {readonly tagName: string; readonly id: string; readonly className: string} | null;
-    readonly previousRect: {readonly x: number; readonly y: number; readonly width: number; readonly height: number};
-    readonly currentRect: {readonly x: number; readonly y: number; readonly width: number; readonly height: number};
-  }[];
+    readonly previousRect: {readonly x: number; readonly y: number; readonly width: number; readonly height: number} | null;
+    readonly currentRect: {readonly x: number; readonly y: number; readonly width: number; readonly height: number} | null;
+  }[] | null;
 };
 
 type PerformanceObservation = {
   readonly navigation: NavigationEntry | null;
   readonly resources: readonly ResourceEntry[] | null;
   readonly resourceEntriesTruncated: number;
+  readonly resourceTimingBufferFull: boolean | null;
   readonly paints: readonly PaintEntry[] | null;
   readonly largestContentfulPaint: readonly LcpEntry[] | null;
   readonly layoutShifts: readonly LayoutShiftEntry[] | null;
+  readonly observerEntriesDropped: {
+    readonly paint: number;
+    readonly largestContentfulPaint: number;
+    readonly layoutShift: number;
+  } | null;
   readonly observerAvailability: {
     readonly paint: boolean;
     readonly largestContentfulPaint: boolean;
@@ -208,6 +214,8 @@ type PerformanceState = {
   readonly paints: PaintEntry[];
   readonly largestContentfulPaint: LcpEntry[];
   readonly layoutShifts: LayoutShiftEntry[];
+  resourceTimingBufferFull: boolean;
+  readonly observerEntriesDropped: {paint: number; largestContentfulPaint: number; layoutShift: number};
   readonly unavailable: {paint: boolean; largestContentfulPaint: boolean; layoutShift: boolean};
 };
 
@@ -219,8 +227,12 @@ const PERFORMANCE_INIT_SCRIPT = () => {
     paints: [],
     largestContentfulPaint: [],
     layoutShifts: [],
+    resourceTimingBufferFull: false,
+    observerEntriesDropped: {paint: 0, largestContentfulPaint: 0, layoutShift: 0},
     unavailable: {paint: false, largestContentfulPaint: false, layoutShift: false},
   };
+  performance.setResourceTimingBufferSize(2_048);
+  performance.addEventListener("resourcetimingbufferfull", () => {state.resourceTimingBufferFull = true;});
   const base = (entry: PerformanceEntry): NumericEntry => ({
     name: entry.name,
     entryType: entry.entryType,
@@ -232,9 +244,13 @@ const PERFORMANCE_INIT_SCRIPT = () => {
     return {tagName: value.tagName, id: value.id, className: typeof value.className === "string" ? value.className : ""};
   };
   const rect = (value: DOMRectReadOnly | undefined) => value === undefined
-    ? {x: 0, y: 0, width: 0, height: 0}
+    ? null
     : {x: value.x, y: value.y, width: value.width, height: value.height};
   const observe = (type: string, callback: (entries: readonly PerformanceEntry[]) => void, key: "paint" | "largestContentfulPaint" | "layoutShift") => {
+    if (typeof PerformanceObserver === "undefined" || !PerformanceObserver.supportedEntryTypes?.includes(type)) {
+      state.unavailable[key] = true;
+      return;
+    }
     try {
       const observer = new PerformanceObserver(list => callback(list.getEntries()));
       observer.observe({type, buffered: true});
@@ -243,11 +259,21 @@ const PERFORMANCE_INIT_SCRIPT = () => {
     }
   };
   observe("paint", entries => {
-    for (const entry of entries) if (state.paints.length < maxPaintEntries) state.paints.push(base(entry) as PaintEntry);
+    for (let index = 0; index < entries.length; index += 1) {
+      if (state.paints.length >= maxPaintEntries) {
+        state.observerEntriesDropped.paint += entries.length - index;
+        break;
+      }
+      state.paints.push(base(entries[index]) as PaintEntry);
+    }
   }, "paint");
   observe("largest-contentful-paint", entries => {
-    for (const raw of entries) {
-      if (state.largestContentfulPaint.length >= maxLcpEntries) break;
+    for (let index = 0; index < entries.length; index += 1) {
+      if (state.largestContentfulPaint.length >= maxLcpEntries) {
+        state.observerEntriesDropped.largestContentfulPaint += entries.length - index;
+        break;
+      }
+      const raw = entries[index];
       const entry = raw as PerformanceEntry & {renderTime?: number; loadTime?: number; size?: number; id?: string; url?: string; element?: Element};
       state.largestContentfulPaint.push({
         ...base(entry),
@@ -261,8 +287,12 @@ const PERFORMANCE_INIT_SCRIPT = () => {
     }
   }, "largestContentfulPaint");
   observe("layout-shift", entries => {
-    for (const raw of entries) {
-      if (state.layoutShifts.length >= maxLayoutShiftEntries) break;
+    for (let index = 0; index < entries.length; index += 1) {
+      if (state.layoutShifts.length >= maxLayoutShiftEntries) {
+        state.observerEntriesDropped.layoutShift += entries.length - index;
+        break;
+      }
+      const raw = entries[index];
       const entry = raw as PerformanceEntry & {
         value?: number;
         hadRecentInput?: boolean;
@@ -271,10 +301,10 @@ const PERFORMANCE_INIT_SCRIPT = () => {
       };
       state.layoutShifts.push({
         ...base(entry),
-        value: entry.value ?? 0,
-        hadRecentInput: entry.hadRecentInput ?? false,
-        lastInputTime: entry.lastInputTime ?? 0,
-        sources: (entry.sources ?? []).map(source => ({node: node(source.node), previousRect: rect(source.previousRect), currentRect: rect(source.currentRect)})),
+        value: entry.value ?? null,
+        hadRecentInput: entry.hadRecentInput ?? null,
+        lastInputTime: entry.lastInputTime ?? null,
+        sources: entry.sources === undefined ? null : entry.sources.map(source => ({node: node(source.node), previousRect: rect(source.previousRect), currentRect: rect(source.currentRect)})),
       });
     }
   }, "layoutShift");
@@ -285,12 +315,9 @@ function safeNumber(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
-function numericEntry(entry: PerformanceEntry): NumericEntry {
-  return {name: entry.name, entryType: entry.entryType, startTime: entry.startTime, duration: entry.duration};
-}
-
 function collectPerformance(page: Page): Promise<PerformanceObservation> {
   return page.evaluate(({maxResources}) => {
+    const numericEntry = (entry: PerformanceEntry): NumericEntry => ({name: entry.name, entryType: entry.entryType, startTime: entry.startTime, duration: entry.duration});
     const state = (window as Window & {__aeliqoSitePerformance?: PerformanceState}).__aeliqoSitePerformance;
     const entries = performance.getEntriesByType("resource");
     const navigation = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
@@ -317,8 +344,10 @@ function collectPerformance(page: Page): Promise<PerformanceObservation> {
         renderBlockingStatus: (resource as PerformanceResourceTiming & {renderBlockingStatus?: string}).renderBlockingStatus ?? null,
       };
     });
-    return {navigation: nav, resources, resourceEntriesTruncated: Math.max(0, entries.length - resources.length), paints,
-      largestContentfulPaint, layoutShifts, observerAvailability: state === undefined ? {paint: false, largestContentfulPaint: false, layoutShift: false}
+    return {navigation: nav, resources, resourceEntriesTruncated: Math.max(0, entries.length - resources.length),
+      resourceTimingBufferFull: state?.resourceTimingBufferFull ?? null, paints,
+      largestContentfulPaint, layoutShifts, observerEntriesDropped: state === undefined ? null : {...state.observerEntriesDropped},
+      observerAvailability: state === undefined ? {paint: false, largestContentfulPaint: false, layoutShift: false}
         : {paint: !state.unavailable.paint, largestContentfulPaint: !state.unavailable.largestContentfulPaint, layoutShift: !state.unavailable.layoutShift}};
   }, {maxResources: MAX_RESOURCE_ENTRIES});
 }
@@ -422,11 +451,11 @@ async function navigateAndCollect(page: Page, route: typeof ROUTES[number], inde
     cacheEvidence: cacheEvidence(performance, networkSnapshot)};
 }
 
-async function withContext(browser: Browser, route: typeof ROUTES[number], sampleCount: number, cold: boolean): Promise<SiteSample[]> {
+async function withContext(browser: Browser, baseURL: string, route: typeof ROUTES[number], sampleCount: number, cold: boolean): Promise<SiteSample[]> {
   const samples: SiteSample[] = [];
   if (cold) {
     for (let index = 0; index < sampleCount; index += 1) {
-      const context = await browser.newContext();
+      const context = await browser.newContext({baseURL});
       const page = await context.newPage();
       const client = await context.newCDPSession(page);
       const network = new NetworkRecorder(client);
@@ -442,7 +471,7 @@ async function withContext(browser: Browser, route: typeof ROUTES[number], sampl
     }
     return samples;
   }
-  const context = await browser.newContext();
+  const context = await browser.newContext({baseURL});
   const page = await context.newPage();
   const client = await context.newCDPSession(page);
   const network = new NetworkRecorder(client);
@@ -476,9 +505,11 @@ test("captures whole-site production page observations for home, docs, and playg
   const warmSampleCount = extended ? EXTENDED_WARM_SAMPLE_COUNT : DEFAULT_WARM_SAMPLE_COUNT;
   const cold: SiteSample[] = [];
   const warm: SiteSample[] = [];
+  const baseURL = testInfo.project.use.baseURL;
+  if (typeof baseURL !== "string" || baseURL.length === 0) throw new Error("site-page probe requires a Playwright baseURL");
   for (const route of ROUTES) {
-    cold.push(...await withContext(browser, route, coldSampleCount, true));
-    warm.push(...await withContext(browser, route, warmSampleCount, false));
+    cold.push(...await withContext(browser, baseURL, route, coldSampleCount, true));
+    warm.push(...await withContext(browser, baseURL, route, warmSampleCount, false));
   }
   const sourceCommit = process.env.AELIQO_SOURCE_COMMIT ?? "unknown";
   const buildId = process.env.AELIQO_SITE_BUILD_ID ?? "unknown";
