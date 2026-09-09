@@ -14,7 +14,14 @@ The initial development tests establish exact explicit-task/dispatcher parity,
 wire-authority rejection, revocation, and stale-goal denial. These deterministic
 tests are harness validation, not AI performance or T40 release acceptance.
 
-Still required: an independent held-out three-domain corpus; owner-selected exact
+The sealed data-query corpus in `fixtures/evaluation` contains 18 cases across
+HR, commerce and support, with 21 named outputs. Independent Python arithmetic
+and quality reports are preserved beside it. The integrated explicit baseline
+passed 18/18 at source `6e0ed7c`; its frozen report is in
+`harness/evidence/t40/6e0ed7c-explicit-preflight`. The implementation author did
+not inspect the sealed prompts, source rows or expected answers.
+
+Still required: independently accepted full held-out coverage; owner-selected exact
 weak/strong model configurations and explicit spend ceiling; bounded live trials
 through the official model adapter; actual MCP client trials; first-attempt and
 recovery scores; arithmetic/scope/grounding oracles; UI task completion and
