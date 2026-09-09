@@ -1,6 +1,11 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {percentile, firstSubsequent, makeRows, semanticFields, mediumPlan} from './workloads.mjs';
+import {environmentSnapshot, percentile, firstSubsequent, makeRows, semanticFields, mediumPlan} from './workloads.mjs';
+
+test('Node with a global navigator is still recorded as Node', () => {
+  assert.equal(typeof navigator, 'object');
+  assert.deepEqual(environmentSnapshot(), {runtime: 'node', node: process.version, platform: process.platform, arch: process.arch});
+});
 
 test('nearest-rank p95 uses the tail, not a missing-index zero fallback', () => {
   assert.equal(percentile([5, 1, 4, 2, 3], 0.95), 5);

@@ -8,6 +8,7 @@
 import {mkdir, writeFile} from 'node:fs/promises';
 import {join, resolve} from 'node:path';
 import {execFileSync} from 'node:child_process';
+import {availableParallelism, cpus, release, totalmem} from 'node:os';
 import {environmentSnapshot, firstSubsequent, percentile, runMediumPlanner, runRuntimeResourceCycles, runTargetedReducer} from './workloads.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
@@ -28,7 +29,8 @@ const resources = runRuntimeResourceCycles(100);
 const report = {
   sourceCommit,
   timingEnabled,
-  environment: environmentSnapshot(),
+  environment: {...environmentSnapshot(), cpuCount: availableParallelism(), cpuModel: cpus()[0]?.model ?? null,
+    totalMemoryBytes: totalmem(), osRelease: release()},
   workloads: {
     medium: {functional: functionalMedium, observations: medium, budgetMsP95: 16,
       plannerDurationsP95Ms: timingEnabled ? percentile(medium.results.subsequent.map((sample) => sample.durationMs), 0.95) : undefined,

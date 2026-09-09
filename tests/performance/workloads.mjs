@@ -249,7 +249,7 @@ export function runRuntimeResourceCycles(cycles = 100) {
 }
 
 export function environmentSnapshot() {
-  if (typeof navigator !== 'undefined') return {runtime: 'browser', userAgent: navigator.userAgent, platform: navigator.platform, language: navigator.language,
+  if (typeof window !== 'undefined' && typeof document !== 'undefined' && typeof navigator !== 'undefined') return {runtime: 'browser', userAgent: navigator.userAgent, platform: navigator.platform, language: navigator.language,
     viewport: {width: globalThis.innerWidth, height: globalThis.innerHeight}, devicePixelRatio: globalThis.devicePixelRatio, hardwareConcurrency: navigator.hardwareConcurrency ?? null};
-  return {runtime: 'node', node: process.version, platform: process.platform, arch: process.arch, cpuCount: typeof process !== 'undefined' ? process.availableParallelism?.() ?? null : null};
+  return {runtime: 'node', node: process.version, platform: process.platform, arch: process.arch};
 }
