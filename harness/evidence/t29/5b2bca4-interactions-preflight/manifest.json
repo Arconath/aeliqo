@@ -1,0 +1,46 @@
+{
+  "task": "T29",
+  "status": "partial",
+  "testedSourceCommit": "5b2bca434f95d34af01e1467c6f8b4ac2f8377e5",
+  "sourceDigest": "17b91905f2fc3514354e5c0577136cb45d285650e08becc9c0031d4ad605ff07",
+  "sourceChangedDuringRun": false,
+  "stats": {
+    "startTime": "2026-09-09T01:09:26.634Z",
+    "duration": 162891.75,
+    "expected": 250,
+    "skipped": 0,
+    "unexpected": 5,
+    "flaky": 0
+  },
+  "baselineApproval": "unapproved review captures",
+  "limits": [
+    "Five WebKit pointer interaction failures remain under investigation.",
+    "No human design approval or full manual assistive technology qualification."
+  ],
+  "artifacts": [
+    {
+      "path": "filter-controls-browser.log",
+      "sha256": "705431837f5f7b33d1fa30dc61a0219bf94879230032fb232b6f78f51e1e9006"
+    },
+    {
+      "path": "integrated-browser.log",
+      "sha256": "fa7015f477e5a24f73bbe6d3636a67271b6f175a5dbe8eccbda71a25458c0a1d"
+    },
+    {
+      "path": "integrated-build.log",
+      "sha256": "e1d7fee958cc153b9fea9df3ab0ec95ffc45a499fd828a1e7753347d6da57aa0"
+    },
+    {
+      "path": "integrated-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "results.json",
+      "sha256": "c8caf977fd0f4fff2ff7ce06565c5bc77957d932cf7c253311527e7f4bd548b8"
+    },
+    {
+      "path": "unapproved-captures-and-failure-traces.zip",
+      "sha256": "494ca86894bfe74e06966c90a4c3b97fa597e82499623b6f03e3690fc6b1c658"
+    }
+  ]
+}

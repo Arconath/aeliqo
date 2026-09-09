@@ -34,6 +34,9 @@ const inputChanged = (changed: Map<string, unknown>): boolean => ["visualization
  */
 export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
   static readonly aeliqoVersion = "0.1.0";
+  // This surface has several independent focus targets. Delegating a pointer
+  // press to its first viewport can scroll a data button away before mouseup.
+  static override readonly shadowRootOptions: ShadowRootInit = {mode: "open", delegatesFocus: false};
   static readonly properties = {
     visualization: {attribute: false},
     context: {attribute: false},

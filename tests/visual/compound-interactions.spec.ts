@@ -191,12 +191,18 @@ for (const variant of variants) {
       const session = await openCompound(page, "investigation", variant);
       const trend = session.host.locator("aeliqo-trend");
       await expect(trend.locator('[part="data"] button').first()).toBeVisible();
-      await trend.locator('[part="data"] button').first().click();
+      const select = trend.locator('[part="data"] button').first();
+      await select.click();
       await expect.poll(() => lastEvent(page, "aeliqo-visualization-select")).toMatchObject({
         source: "user",
         identity: JSON.stringify([JSON.stringify(["text", "ada"])]),
         result: {id: "aeliqo-catalog-example", outputId: "people"},
       });
+      await expect(select).toHaveAttribute('aria-pressed', 'true');
+      await select.focus();
+      await select.press('Enter');
+      await expect(select).toBeFocused();
+      expect(await eventCount(page, 'aeliqo-visualization-select')).toBe(2);
       await expect(session.host.locator('[part="caution"]')).toContainText("do not establish causal claims");
       await capture(session, page, info, "investigation-selection");
     });
