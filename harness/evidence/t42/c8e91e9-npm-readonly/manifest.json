@@ -1,0 +1,36 @@
+{
+  "task": "T42",
+  "status": "blocked-readonly-registry-preflight",
+  "observedAt": "2026-09-09T17:50:51Z",
+  "sourceCommit": "c8e91e91b0ead491baca6719014b283f837ac537",
+  "sourceDigest": "9afbd73d926c9a08e1713c2b72c767a9f54d63f1a7fcbf15bd5256cbb94b7e03",
+  "target": "0.1.0",
+  "registry": "https://registry.npmjs.org",
+  "commands": {
+    "packageInventory": "npm view <package> versions dist-tags --json --registry=https://registry.npmjs.org",
+    "identity": "npm whoami --registry=https://registry.npmjs.org",
+    "access": "npm access list packages --json --registry=https://registry.npmjs.org"
+  },
+  "packages": [
+    {"name": "@aeliqo/core", "localVersion": "0.1.0", "localPrivate": false, "localLicense": "Apache-2.0", "registryStatus": "pass", "publishedStableVersions": ["0.2.0"], "distTags": {"latest": "0.2.0"}},
+    {"name": "@aeliqo/react", "localVersion": "0.1.0", "localPrivate": false, "localLicense": "Apache-2.0", "registryStatus": "pass", "publishedStableVersions": ["0.2.0"], "distTags": {"latest": "0.2.0"}},
+    {"name": "@aeliqo/runtime", "localVersion": "0.1.0", "localPrivate": false, "localLicense": "Apache-2.0", "registryStatus": "E404", "publishedStableVersions": null, "note": "Registry absence is not historical-use proof."},
+    {"name": "@aeliqo/web", "localVersion": "0.1.0", "localPrivate": false, "localLicense": "Apache-2.0", "registryStatus": "E404", "publishedStableVersions": null, "note": "Registry absence is not historical-use proof."},
+    {"name": "@aeliqo/agent", "localVersion": "0.1.0", "localPrivate": false, "localLicense": "Apache-2.0", "registryStatus": "E404", "publishedStableVersions": null, "note": "Registry absence is not historical-use proof."},
+    {"name": "@aeliqo/devtools", "localVersion": "0.1.0", "localPrivate": false, "localLicense": "Apache-2.0", "registryStatus": "E404", "publishedStableVersions": null, "note": "Registry absence is not historical-use proof."},
+    {"name": "@aeliqo/testkit", "localVersion": "0.1.0", "localPrivate": false, "localLicense": "Apache-2.0", "registryStatus": "E404", "publishedStableVersions": null, "note": "Registry absence is not historical-use proof."}
+  ],
+  "authorization": {
+    "whoamiStatus": "E401",
+    "accessListStatus": "E401",
+    "namespaceAuthorized": false,
+    "publishAttempted": false,
+    "mutations": false
+  },
+  "qualification": false,
+  "limits": [
+    "A package-version listing cannot prove that an identity was never published and later unpublished.",
+    "The E401 authorization result prevents namespace authority, historical collision proof and publication readiness.",
+    "No publish, unpublish, dist-tag, registry or remote repository mutation was attempted."
+  ]
+}

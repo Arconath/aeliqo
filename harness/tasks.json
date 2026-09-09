@@ -1463,9 +1463,13 @@
         {
           "path": "harness/evidence/preflight/inventory.json",
           "sha256": "a3d8e97ec842f907ebcc0314ddc302cd4f821c460940bd46e9d511d3c9fbedc1"
+        },
+        {
+          "path": "harness/evidence/t42/c8e91e9-npm-readonly/manifest.json",
+          "sha256": "67e720397f9887f15f2e82861b409d1db2c222436af62ad96d5a7ddd9ce86977"
         }
       ],
-      "notes": "No current exact collision seen, but historical 0.1.0 use and namespace rights unverified; npm E401. Does not block source implementation."
+      "notes": "Fresh read-only registry preflight at c8e91e9 confirms @aeliqo/core and @aeliqo/react expose 0.2.0/latest; the other five target identities return E404; npm whoami/access return E401. This records a current publish blocker without treating E404 as historical-use proof and without any registry mutation. Exact 0.1.0, migration, staging-tag and namespace-authority decisions remain blocked. Does not block source implementation."
     }
   ]
 }
