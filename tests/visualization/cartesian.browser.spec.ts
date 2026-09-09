@@ -19,7 +19,9 @@ test('renders six families with exact tables, histogram scope and heatmap color 
 });
 
 test('keeps edge x-axis labels inside the chart viewport', async ({page}) => {
-  const bounds = await page.locator('aeliqo-trend svg').evaluate((svg) => {
+  const bounds = await page.locator('aeliqo-trend').evaluate((host) => {
+    const svg = host.shadowRoot?.querySelector<SVGSVGElement>('svg');
+    if (svg === undefined || svg === null) throw new Error('Missing trend SVG');
     const svgBounds = svg.getBoundingClientRect();
     const xTickY = String(svg.viewBox.baseVal.height - 30);
     return [...svg.querySelectorAll<SVGTextElement>(`text[y="${xTickY}"]`)].map((label) => {
@@ -79,11 +81,13 @@ test('centers a single category label in a narrow LTR and RTL chart', async ({pa
     await element.updateComplete;
   });
   for (const direction of ['ltr', 'rtl'] as const) {
-    const bounds = await page.locator('aeliqo-bar svg').evaluate(async (svg, nextDirection) => {
+    const bounds = await page.locator('aeliqo-bar').evaluate(async (host, nextDirection) => {
       document.documentElement.dir = nextDirection;
-      const host = document.querySelector('aeliqo-bar') as HTMLElement & {requestUpdate?: () => void; updateComplete?: Promise<unknown>};
-      host.requestUpdate?.();
-      if (host.updateComplete !== undefined) await host.updateComplete;
+      const element = host as HTMLElement & {requestUpdate?: () => void; updateComplete?: Promise<unknown>};
+      element.requestUpdate?.();
+      if (element.updateComplete !== undefined) await element.updateComplete;
+      const svg = host.shadowRoot?.querySelector<SVGSVGElement>('svg');
+      if (svg === undefined || svg === null) throw new Error('Missing bar SVG');
       const svgBounds = svg.getBoundingClientRect();
       const label = svg.querySelector<SVGTextElement>(`text[y="${svg.viewBox.baseVal.height - 30}"]`);
       if (label === null) throw new Error('Missing single category label');
