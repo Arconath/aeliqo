@@ -1,0 +1,60 @@
+{
+  "task": "T30",
+  "status": "partial-heap-lifecycle-observation-pass",
+  "sourceCommit": "acdc33f44ec297c976c93fe753a996e8093482c7",
+  "sourceChangedDuringRun": false,
+  "scope": "Production Vite input/table fixture with requested Chromium garbage collection, 100 measured mount/dispose cycles and a held/released allocation control.",
+  "environment": {
+    "browser": "Chromium 153.0.8010.12",
+    "runtime": "Node v24.20.0",
+    "platform": "MacIntel",
+    "viewport": "1280x720",
+    "devicePixelRatio": 1,
+    "hardwareConcurrency": 12
+  },
+  "run": {
+    "command": "AELIQO_RUN_HEAP_LIFECYCLE=1 AELIQO_SOURCE_COMMIT=acdc33f pnpm test:performance:heap-lifecycle",
+    "status": "pass",
+    "measuredCycles": 100,
+    "measuredBatches": 10,
+    "cyclesPerBatch": 10,
+    "runtimeCleanupCycles": 100
+  },
+  "observations": {
+    "disposal": {
+      "finalRootChildren": 0,
+      "finalDocumentComponents": 0,
+      "trackedRegistrations": 0,
+      "connectedListeners": 0,
+      "detachedListeners": 0,
+      "runtimeRetainedHandles": 0,
+      "runtimeLiveRegions": 0,
+      "runtimeOpenObservers": 0
+    },
+    "combinedLiveHeapFootprint": {
+      "baselineBytes": 4212283,
+      "firstPostGcBytes": 4229843,
+      "lastPostGcBytes": 4251939,
+      "netPostGcDeltaBytes": 22096,
+      "positiveControlHeldIncreaseBytes": 24637375,
+      "positiveControlReleaseReductionBytes": 24636652
+    }
+  },
+  "qualification": false,
+  "limits": [
+    "Heap totals are one Chromium process/runtime observation; retained allocator capacity is not a leak verdict.",
+    "Listener bookkeeping uses diagnostic WeakRefs and does not model every automatic once/AbortSignal removal path.",
+    "Zero DOM/resource counters and a bounded observed trend do not prove universal collectability or a cross-device memory budget.",
+    "This run does not close T30 lower-powered-device, whole-page, manual or release qualification."
+  ],
+  "artifacts": [
+    {
+      "path": "artifacts/performance-heap-lifecycle/heap-lifecycle-captures-bo-d36c5-ent-lifecycle-heap-evidence/heap-lifecycle-report.json",
+      "sha256": "03fcb6d0d4761ad9dc59ad8f15f0830b20eba6cbdc767189675eeb6baba9f293"
+    },
+    {
+      "path": "artifacts/performance-heap-lifecycle/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    }
+  ]
+}

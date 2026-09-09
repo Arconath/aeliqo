@@ -1,0 +1,62 @@
+{
+  "task": "T30",
+  "status": "partial-perceived-input-observation-pass",
+  "sourceCommit": "acdc33f44ec297c976c93fe753a996e8093482c7",
+  "sourceChangedDuringRun": false,
+  "scope": "Trusted keyboard interactions against the production direct input/table fixture with a separate Event Timing calibration.",
+  "environment": {
+    "browser": "Chromium 153.0.8010.12",
+    "platform": "MacIntel",
+    "viewport": "1280x720",
+    "devicePixelRatio": 1,
+    "fixture": "100-row local input/table",
+    "eventTimingThresholdMs": 16
+  },
+  "run": {
+    "command": "AELIQO_RUN_PERFORMANCE=1 AELIQO_SOURCE_COMMIT=acdc33f pnpm test:performance:perceived-input",
+    "status": "pass",
+    "interactionSamples": 30,
+    "calibrationSamples": 1,
+    "networkRequestsDuringInteractions": 0
+  },
+  "observations": {
+    "visibleDomUpdate": {
+      "sampleCount": 30,
+      "p50Ms": 0.6,
+      "p95Ms": 0.8,
+      "observedCount": 30
+    },
+    "eventTiming": {
+      "realInteractionObservedCount": 0,
+      "realInteractionMissingOrThresholdCensoredCount": 30,
+      "calibrationObserved": true,
+      "calibrationRequestedHandlerMs": 60,
+      "calibrationProcessingDurationMs": 60.1,
+      "calibrationInputDelayMs": 0.1
+    },
+    "moduleGraph": {
+      "forbiddenModules": []
+    }
+  },
+  "qualification": false,
+  "limits": [
+    "Visible DOM mutation delay is not a paint timestamp and is not a field INP qualification.",
+    "The browser omitted or threshold-censored Event Timing entries for all 30 real interactions; those samples remain missing, not zero.",
+    "The deliberate calibration demonstrates association and observer behavior only; it is excluded from the real interaction summary.",
+    "This is one Chromium fixture and does not qualify lower-powered hardware, whole-site input or a universal 100 ms p95 target."
+  ],
+  "artifacts": [
+    {
+      "path": "artifacts/performance-perceived-input/perceived-input-measures-t-b1d75-put-and-local-100-row-table/perceived-input-report.json",
+      "sha256": "8b5faae24d786a005f6afeb58be99e75d2342eea5931f7868d58c859a99272eb"
+    },
+    {
+      "path": "artifacts/performance-perceived-input/perceived-input-calibrates-53ac4-te-trusted-keyboard-handler/perceived-input-calibration.json",
+      "sha256": "6839476326cf3456041b74b0930ec4443df3f3e59f1d042b115aea606e717bc7"
+    },
+    {
+      "path": "artifacts/performance-perceived-input/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    }
+  ]
+}
