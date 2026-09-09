@@ -55,6 +55,8 @@ export interface PresentationValidationOptions {
 
 /** Pure indexes owned by one composition/validation invocation. */
 export interface PresentationValidationCache {
+  readonly preparedContext: PreparedPresentationContext;
+  readonly registry: PresentationRegistry;
   readonly manifests: ReadonlyMap<string, PresentationRegistry['manifests'][number]>;
   readonly renderer: ReadonlySet<string>;
   readonly extensions: ReadonlySet<string>;
@@ -112,6 +114,7 @@ export function preparePresentationValidationCache(
   const taskOutputs = new Map<string, Extract<Task, {kind: 'data'}>['outputs'][number]>();
   if (prepared.task.kind === 'data') for (const output of prepared.task.outputs) taskOutputs.set(output.id, output);
   return {ok: true, value: {
+    preparedContext: prepared, registry,
     manifests: preparedManifests.value,
     renderer: new Set(prepared.rendererCapabilities.map(versionKey)),
     extensions: new Set(prepared.constraints.extensionAllowlist.map(versionKey)),
@@ -350,7 +353,9 @@ export function validatePreparedPresentationPlan(
   if (!readSet.ok) return readSet;
   const preparedCache = validationCache === undefined
     ? preparePresentationValidationCache(prepared.value, registry, manifestIndex)
-    : {ok: true as const, value: validationCache};
+    : validationCache.preparedContext !== preparedContext || validationCache.registry !== registry
+      ? fail('cache', 'The presentation validation cache belongs to a different context or registry.')
+      : {ok: true as const, value: validationCache};
   if (!preparedCache.ok) return preparedCache;
   const tree = preparePresentationTree(plan, preparedCache.value);
   if (!tree.ok) return tree;

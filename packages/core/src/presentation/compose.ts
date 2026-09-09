@@ -54,8 +54,9 @@ function parseCachedObject<S extends z.ZodMiniType>(input: unknown, schema: S, c
   if (cached !== undefined) return cached;
   const parsed = z.safeParse(schema, input);
   if (!parsed.success) return undefined;
-  cache.set(input, parsed.data);
-  return parsed.data;
+  const value = freezePresentation(parsed.data);
+  cache.set(input, value);
+  return value;
 }
 
 function parseCachedArray<S extends z.ZodMiniType>(input: unknown, schema: S, maximum: number, cache: WeakMap<object, z.infer<S>>,
@@ -69,8 +70,9 @@ function parseCachedArray<S extends z.ZodMiniType>(input: unknown, schema: S, ma
     if (parsed === undefined) return undefined;
     output.push(parsed);
   }
-  arrayCache.set(input, output);
-  return output;
+  const value = Object.freeze(output) as readonly z.infer<S>[];
+  arrayCache.set(input, value);
+  return value;
 }
 
 /**
@@ -80,7 +82,10 @@ function parseCachedArray<S extends z.ZodMiniType>(input: unknown, schema: S, ma
  */
 function parseInspectedPresentationPlan(input: unknown, cache: PresentationParseCache): Outcome<PresentationPlan> {
   const envelope = z.safeParse(inspectedPlanEnvelopeSchema, input);
-  if (!envelope.success) return parseInspectedContract('presentation-plan', input);
+  if (!envelope.success) {
+    const fallback = parseInspectedContract('presentation-plan', input);
+    return fallback.ok ? {ok: true, value: freezePresentation(fallback.value)} : fallback;
+  }
   const raw = input as Record<string, unknown>;
   const preconditions = parseCachedObject(raw.preconditions, commitPreconditionsSchema, cache.preconditions);
   const nodes = parseCachedArray(raw.nodes, presentationNodeSchema, WIRE_LIMITS.presentationNodes, cache.nodes, cache.nodeArrays);
@@ -90,7 +95,7 @@ function parseInspectedPresentationPlan(input: unknown, cache: PresentationParse
   const diagnostics = parseCachedArray(raw.diagnostics, diagnosticSchema, WIRE_LIMITS.diagnostics, cache.diagnostics, cache.diagnosticArrays);
   if (preconditions === undefined || nodes === undefined || links === undefined || coverage === undefined || stateTransfer === undefined || diagnostics === undefined)
     return parseInspectedContract('presentation-plan', input);
-  return {ok: true, value: freezePresentation({id: envelope.data.id, revision: envelope.data.revision, rootId: envelope.data.rootId,
+  return {ok: true, value: Object.freeze({id: envelope.data.id, revision: envelope.data.revision, rootId: envelope.data.rootId,
     preconditions, nodes, links, coverage, stateTransfer, diagnostics}) as PresentationPlan};
 }
 
