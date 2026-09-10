@@ -1,20 +1,20 @@
 {
-  "observedAt": "2026-09-09T18:35:03Z",
+  "observedAt": "2026-09-10T02:10:18Z",
   "target": "0.1.0",
   "registry": "https://registry.npmjs.org",
-  "registryRead": "unverified",
-  "namespaceAuthorized": false,
-  "targetEverPublished": null,
-  "publishedStableVersions": null,
-  "resetMigrationApproved": false,
+  "registryRead": "verified",
+  "namespaceAuthorized": true,
+  "targetEverPublished": false,
+  "publishedStableVersions": [],
+  "resetMigrationApproved": true,
   "stagingTag": "next",
   "packages": [
-    {"name": "@aeliqo/core", "localVersion": "0.1.0", "registryStatus": "visible-0.2.0-only", "exactTarget": "unknown"},
-    {"name": "@aeliqo/runtime", "localVersion": "0.1.0", "registryStatus": "E404", "exactTarget": "unknown"},
-    {"name": "@aeliqo/web", "localVersion": "0.1.0", "registryStatus": "E404", "exactTarget": "unknown"},
-    {"name": "@aeliqo/react", "localVersion": "0.1.0", "registryStatus": "visible-0.2.0-only", "exactTarget": "unknown"},
-    {"name": "@aeliqo/agent", "localVersion": "0.1.0", "registryStatus": "E404", "exactTarget": "unknown"},
-    {"name": "@aeliqo/devtools", "localVersion": "0.1.0", "registryStatus": "E404", "exactTarget": "unknown"}
+    {"name": "@aeliqo/sdk-core", "localVersion": "0.1.0", "registryStatus": "public-404", "exactTarget": "not-visible"},
+    {"name": "@aeliqo/sdk-runtime", "localVersion": "0.1.0", "registryStatus": "public-404", "exactTarget": "not-visible"},
+    {"name": "@aeliqo/sdk-web", "localVersion": "0.1.0", "registryStatus": "public-404", "exactTarget": "not-visible"},
+    {"name": "@aeliqo/sdk-react", "localVersion": "0.1.0", "registryStatus": "public-404", "exactTarget": "not-visible"},
+    {"name": "@aeliqo/sdk-agent", "localVersion": "0.1.0", "registryStatus": "public-404", "exactTarget": "not-visible"},
+    {"name": "@aeliqo/sdk-devtools", "localVersion": "0.1.0", "registryStatus": "public-404", "exactTarget": "not-visible"}
   ],
   "excludedInternalPackages": [
     {
@@ -24,18 +24,20 @@
     }
   ],
   "authorization": {
-    "whoami": "E401",
-    "accessList": "E401"
+    "whoami": "arconath",
+    "accessList": "organization-owner-read-write"
   },
   "remoteRefs": {
     "originMain": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e",
     "originRewriteBranch": "711a9495e3ff634025d88aca973de9297b4527a4",
-    "localCandidate": "3b7c04412d7375b3d43be7522219ebd8c985e8a3"
+    "localCandidate": "cfbcfaeddf6ddeb15339748c0f751a510aba5656"
   },
   "mutations": {
     "registry": false,
     "remote": false,
     "production": false
   },
-  "blockedReason": "registry-not-verified"
+  "blockedReason": null,
+  "availabilityCaveat": "Public registry 404s and organization authority permit an RC attempt; only successful first publication definitively proves that a never-visible name/version is reusable.",
+  "identityDecision": "The owner explicitly authorized a coherent clean 0.1.0 lineage when legacy 0.2.0 identities conflicted. The six sdk-* names are that bounded replacement set; no forwarding packages are claimed."
 }

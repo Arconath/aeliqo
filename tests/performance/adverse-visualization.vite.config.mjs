@@ -4,8 +4,8 @@ import {resolve} from "node:path";
 const repositoryRoot = resolve(import.meta.dirname, "../..");
 
 /**
- * Serves the adverse visualization fixture from the built @aeliqo/web and
- * @aeliqo/core package exports. This is an observation harness, not a timing
+ * Serves the adverse visualization fixture from the built @aeliqo/sdk-web and
+ * @aeliqo/sdk-core package exports. This is an observation harness, not a timing
  * qualification gate.
  */
 export default defineConfig({

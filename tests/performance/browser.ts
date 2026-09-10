@@ -1,5 +1,5 @@
-import {AeliqoInputElement} from "@aeliqo/web/input";
-import {AeliqoTableElement} from "@aeliqo/web/table";
+import {AeliqoInputElement} from "@aeliqo/sdk-web/input";
+import {AeliqoTableElement} from "@aeliqo/sdk-web/table";
 import {
   LARGE_TRANSFERRED_ROW_COUNT,
   MEDIUM_ROW_COUNT,

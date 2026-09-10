@@ -1,5 +1,5 @@
-import {registerAeliqoElements} from '@aeliqo/web/register';
-import type {AeliqoRegionElement} from '@aeliqo/web/region';
+import {registerAeliqoElements} from '@aeliqo/sdk-web/register';
+import type {AeliqoRegionElement} from '@aeliqo/sdk-web/region';
 import {createUiDevelopmentHost, task, type UiDevelopmentHost} from './host.js';
 
 registerAeliqoElements();

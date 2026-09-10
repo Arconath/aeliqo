@@ -2,14 +2,14 @@ import assert from 'node:assert/strict';
 import {mkdir, writeFile} from 'node:fs/promises';
 import {dirname} from 'node:path';
 import {test} from 'node:test';
-import {createRegionStore} from '@aeliqo/runtime/regions';
-import {createResultStore} from '@aeliqo/runtime/results';
+import {createRegionStore} from '@aeliqo/sdk-runtime/regions';
+import {createResultStore} from '@aeliqo/sdk-runtime/results';
 
 /**
  * T30 adverse lifecycle probe.
  *
  * This is an in-process async-iterator adapter. It exercises the built
- * @aeliqo/runtime package exports and deliberately makes no network claim.
+ * @aeliqo/sdk-runtime package exports and deliberately makes no network claim.
  * The adapter records source pulls/returns/late values so the report retains
  * the cleanup and concurrency observations that public runtime snapshots do
  * not expose directly.
@@ -354,7 +354,7 @@ async function runProbe() {
     schema: 'aeliqo.performance.adverse-runtime.v1',
     sourceCommit: process.env.AELIQO_SOURCE_COMMIT ?? 'unknown',
     sourceAdapter: 'in-process async-iterator adapter; no network/server capacity claim',
-    packageEntry: '@aeliqo/runtime/results and @aeliqo/runtime/regions built package exports',
+    packageEntry: '@aeliqo/sdk-runtime/results and @aeliqo/sdk-runtime/regions built package exports',
     environment: {node: process.version, platform: process.platform, arch: process.arch},
     method: {
       slowSourceDelayMs: 12, supersedingRequests: 16,

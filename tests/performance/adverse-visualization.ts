@@ -1,5 +1,5 @@
-import {registerAeliqoElements} from "@aeliqo/web";
-import type {Result, ResultRef, VisualizationBindingContext, VisualizationSpec} from "@aeliqo/core";
+import {registerAeliqoElements} from "@aeliqo/sdk-web";
+import type {Result, ResultRef, VisualizationBindingContext, VisualizationSpec} from "@aeliqo/sdk-core";
 
 registerAeliqoElements();
 

@@ -1,5 +1,5 @@
 import {readFileSync} from 'node:fs';
-import {createStandardFunctionRegistry,parseTask,parseWireValue,type Catalog,type Outcome,type Result,type Task} from '@aeliqo/core';
+import {createStandardFunctionRegistry,parseTask,parseWireValue,type Catalog,type Outcome,type Result,type Task} from '@aeliqo/sdk-core';
 import {createLocalDataService,type DataRecord,type QueryBudget} from '../../packages/runtime/src/data/index.js';
 import {createResultStore,type ResultHandle} from '../../packages/runtime/src/results/index.js';
 import {createResultCohortResolver,createTaskEvaluator,type TrustedEvaluationContext} from '../../packages/runtime/src/evaluation/index.js';

@@ -18,9 +18,9 @@ const consumer=await mkdtemp(join(tmpdir(),'aeliqo-performance-consumer-'));
 const packages=[];
 for(const name of ['core','runtime','web']){
  const cwd=join(root,'packages',name);run(['pnpm','build'],cwd);
- const tarball=join(output,`aeliqo-${name}-0.1.0.tgz`);run(['pnpm','pack','--out',tarball],cwd);
+ const tarball=join(output,`aeliqo-sdk-${name}-0.1.0.tgz`);run(['pnpm','pack','--out',tarball],cwd);
  const manifest=JSON.parse(run(['tar','-xOf',tarball,'package/package.json']));
- assert.equal(manifest.version,'0.1.0');assert.equal(manifest.name,`@aeliqo/${name}`);
+ assert.equal(manifest.version,'0.1.0');assert.equal(manifest.name,`@aeliqo/sdk-${name}`);
  packages.push({name:manifest.name,path:tarball,sha256:hash(await readFile(tarball))});
 }
 await writeFile(join(consumer,'package.json'),JSON.stringify({private:true,type:'module',dependencies:Object.fromEntries(packages.map(p=>[p.name,`file:${p.path}`]))}));
@@ -28,12 +28,12 @@ run(['npm','install','--ignore-scripts','--no-audit','--no-fund'],consumer);
 for(const p of packages)assert.equal((await lstat(join(consumer,'node_modules',p.name))).isSymbolicLink(),false);
 const lock=await readFile(join(consumer,'package-lock.json'));await writeFile(join(output,'consumer-package-lock.json'),lock);
 const workloads=[
- {id:'button',code:"import {AeliqoButtonElement} from '@aeliqo/web/button'; customElements.define('perf-button',AeliqoButtonElement);",budget:15*1024,incremental:true,direct:true},
- {id:'input',code:"import {AeliqoInputElement} from '@aeliqo/web/input'; customElements.define('perf-input',AeliqoInputElement);",budget:15*1024,incremental:true,direct:true},
- {id:'metric',code:"import {AeliqoMetricElement} from '@aeliqo/web/metric'; customElements.define('perf-metric',AeliqoMetricElement);",budget:15*1024,incremental:true,direct:true},
- {id:'table',code:"import {AeliqoTableElement} from '@aeliqo/web/table'; customElements.define('perf-table',AeliqoTableElement);",budget:40*1024,incremental:true,direct:true},
- {id:'core-planner-validation',code:"import {parseCatalog,parseTask,parseExperience,createQueryPlanner,validatePresentationPlan,composePresentation} from '@aeliqo/core'; globalThis.aeliqoPerformance={parseCatalog,parseTask,parseExperience,createQueryPlanner,validatePresentationPlan,composePresentation};",budget:70*1024},
- {id:'region-table',code:"import {AeliqoRegionElement,createAeliqoPresentationRegistry} from '@aeliqo/web/region'; import {createLocalDataService} from '@aeliqo/runtime/data'; import {createResultStore} from '@aeliqo/runtime/results'; import {parseTask,validatePresentationPlan,createStandardFunctionRegistry} from '@aeliqo/core'; import {AeliqoTableElement} from '@aeliqo/web/table'; import {createRegionStore} from '@aeliqo/runtime/regions'; import {createTaskEvaluator} from '@aeliqo/runtime/evaluation'; customElements.define('perf-region',AeliqoRegionElement); customElements.define('aeliqo-table',AeliqoTableElement); globalThis.aeliqoPerformance={createRegionStore,createTaskEvaluator,createLocalDataService,createResultStore,createAeliqoPresentationRegistry,parseTask,validatePresentationPlan,createStandardFunctionRegistry};",budget:160*1024},
+ {id:'button',code:"import {AeliqoButtonElement} from '@aeliqo/sdk-web/button'; customElements.define('perf-button',AeliqoButtonElement);",budget:15*1024,incremental:true,direct:true},
+ {id:'input',code:"import {AeliqoInputElement} from '@aeliqo/sdk-web/input'; customElements.define('perf-input',AeliqoInputElement);",budget:15*1024,incremental:true,direct:true},
+ {id:'metric',code:"import {AeliqoMetricElement} from '@aeliqo/sdk-web/metric'; customElements.define('perf-metric',AeliqoMetricElement);",budget:15*1024,incremental:true,direct:true},
+ {id:'table',code:"import {AeliqoTableElement} from '@aeliqo/sdk-web/table'; customElements.define('perf-table',AeliqoTableElement);",budget:40*1024,incremental:true,direct:true},
+ {id:'core-planner-validation',code:"import {parseCatalog,parseTask,parseExperience,createQueryPlanner,validatePresentationPlan,composePresentation} from '@aeliqo/sdk-core'; globalThis.aeliqoPerformance={parseCatalog,parseTask,parseExperience,createQueryPlanner,validatePresentationPlan,composePresentation};",budget:70*1024},
+ {id:'region-table',code:"import {AeliqoRegionElement,createAeliqoPresentationRegistry} from '@aeliqo/sdk-web/region'; import {createLocalDataService} from '@aeliqo/sdk-runtime/data'; import {createResultStore} from '@aeliqo/sdk-runtime/results'; import {parseTask,validatePresentationPlan,createStandardFunctionRegistry} from '@aeliqo/sdk-core'; import {AeliqoTableElement} from '@aeliqo/sdk-web/table'; import {createRegionStore} from '@aeliqo/sdk-runtime/regions'; import {createTaskEvaluator} from '@aeliqo/sdk-runtime/evaluation'; customElements.define('perf-region',AeliqoRegionElement); customElements.define('aeliqo-table',AeliqoTableElement); globalThis.aeliqoPerformance={createRegionStore,createTaskEvaluator,createLocalDataService,createResultStore,createAeliqoPresentationRegistry,parseTask,validatePresentationPlan,createStandardFunctionRegistry};",budget:160*1024},
 ];
 const rows=[];
 for(const workload of workloads){
@@ -44,7 +44,7 @@ for(const workload of workloads){
   const outputs=(Array.isArray(bundled)?bundled.flatMap(x=>x.output):bundled.output);const chunks=[];const moduleSet=new Set();
   for(const chunk of outputs){const bytes=Buffer.from(chunk.type==='chunk'?chunk.code:chunk.source);const path=`${workload.id}-${mode}-${chunk.fileName.replaceAll('/','_')}`;await writeFile(join(output,path),bytes);if(chunk.type==='chunk')Object.keys(chunk.modules).forEach(id=>moduleSet.add(id));chunks.push({path,kind:chunk.type,bytes:bytes.length,gzipBytes:gzipSync(bytes).length,sha256:hash(bytes)});}
   const modules=[...moduleSet].sort().map(id=>id.startsWith(consumer)?id.slice(consumer.length+1):id);
-  const forbidden=modules.filter(id=>id.includes('@aeliqo/agent/')||id.includes('@aeliqo/devtools/')||id.includes('/apps/studio/')||id.startsWith('node:')||id.includes('__vite-browser-external')||(workload.direct&&(id.includes('@aeliqo/runtime/')||id.includes('@aeliqo/core/dist/query/')||id.includes('@aeliqo/core/dist/presentation/')||id.includes('@aeliqo/web/dist/visualization/'))));
+  const forbidden=modules.filter(id=>id.includes('@aeliqo/sdk-agent/')||id.includes('@aeliqo/sdk-devtools/')||id.includes('/apps/studio/')||id.startsWith('node:')||id.includes('__vite-browser-external')||(workload.direct&&(id.includes('@aeliqo/sdk-runtime/')||id.includes('@aeliqo/sdk-core/dist/query/')||id.includes('@aeliqo/sdk-core/dist/presentation/')||id.includes('@aeliqo/sdk-web/dist/visualization/'))));
   measurements.push({mode,chunks,modules,forbidden,jsGzipBytes:chunks.filter(c=>c.kind==='chunk').reduce((sum,c)=>sum+c.gzipBytes,0),cssBytes:chunks.filter(c=>c.path.endsWith('.css')).reduce((sum,c)=>sum+c.bytes,0)});
  }
  const measured=measurements.find(m=>m.mode===(workload.incremental?'excluding-lit':'total'));rows.push({id:workload.id,entry:workload.code,budgetBytes:workload.budget,budgetMetric:workload.incremental?'JS gzip with only Lit packages external':'total JS gzip',passed:measured.jsGzipBytes<=workload.budget&&measurements.every(m=>m.forbidden.length===0),measurements});

@@ -267,7 +267,7 @@ test("measures trusted keyboard to visible DOM update on direct input and local 
       "Visible update is an observed DOM mutation of the live output/table fixture after a trusted keyboard event; it is not a paint timestamp and does not use requestAnimationFrame or Lit updateComplete.",
       "Event Timing fields are raw browser observations. The browser may omit entries below its configured duration threshold; missing-or-threshold-censored values remain null and are never encoded as zero.",
       "The 16 ms Event Timing observation threshold is the browser API floor documented for durationThreshold; an absent entry does not prove a fast interaction.",
-      "This fixture uses direct @aeliqo/web input and table imports with local filtering only. No per-keystroke network or model request is allowed or expected.",
+      "This fixture uses direct @aeliqo/sdk-web input and table imports with local filtering only. No per-keystroke network or model request is allowed or expected.",
       "The result describes this Chromium fixture and environment only; it is not a universal INP, input-to-paint, whole-site, or lower-powered-device claim. No 100 ms p95 qualification is asserted.",
     ],
   };

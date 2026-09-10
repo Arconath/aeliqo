@@ -1,6 +1,6 @@
-import {AeliqoInputElement} from "@aeliqo/web/input";
-import {AeliqoTableElement} from "@aeliqo/web/table";
-import type {AeliqoTableColumn, AeliqoTableRow} from "@aeliqo/web";
+import {AeliqoInputElement} from "@aeliqo/sdk-web/input";
+import {AeliqoTableElement} from "@aeliqo/sdk-web/table";
+import type {AeliqoTableColumn, AeliqoTableRow} from "@aeliqo/sdk-web";
 
 type TimingStatus = "observed" | "missing-or-threshold-censored";
 

@@ -13,57 +13,57 @@ import {
   type Result,
   type Task,
   type ValidatedPresentation,
-} from '@aeliqo/core';
+} from '@aeliqo/sdk-core';
 import {
   createLocalDataService,
   type DataRecord,
   type LocalDataService,
   type QueryBudget,
-} from '@aeliqo/runtime/data';
+} from '@aeliqo/sdk-runtime/data';
 import {
   createResultStore,
   type ResultHandle,
   type ResultStore,
-} from '@aeliqo/runtime/results';
+} from '@aeliqo/sdk-runtime/results';
 import {
   createResultCohortResolver,
   createTaskEvaluator,
   type MaterializedTaskOutput,
   type TrustedEvaluationContext,
-} from '@aeliqo/runtime/evaluation';
+} from '@aeliqo/sdk-runtime/evaluation';
 import {
   createRegionStore,
   type RegionAuthority,
   type RegionHandle,
   type RegionReadSet,
   type RegionSnapshot,
-} from '@aeliqo/runtime/regions';
+} from '@aeliqo/sdk-runtime/regions';
 import {
   createCallbackPresentationRenderer,
   type PresentationRenderer,
-} from '@aeliqo/runtime/presentation';
+} from '@aeliqo/sdk-runtime/presentation';
 import {
   createInteractionController,
   createInteractionGraph,
   type InteractionController,
   type InteractionOutcome,
-} from '@aeliqo/runtime/interaction';
+} from '@aeliqo/sdk-runtime/interaction';
 import {
   createAgentCapabilityRegistry,
   validateAgentComposition,
   type AgentCapabilityHandlerResult,
   type AgentCapabilityHostContext,
   type AgentCapabilityManifest,
-} from '@aeliqo/agent';
+} from '@aeliqo/sdk-agent';
 import {
   createAgentToolEndpoint,
   type AgentToolEndpoint,
   type AgentToolTransport,
-} from '@aeliqo/agent/protocol';
+} from '@aeliqo/sdk-agent/protocol';
 import type {
   AgentCapabilityReceipt,
   AgentJsonValue,
-} from '@aeliqo/agent';
+} from '@aeliqo/sdk-agent';
 import {
   AELIQO_CONFIG_SCHEMAS,
   AELIQO_PRESENTATION_REFS,
@@ -71,8 +71,8 @@ import {
   type AeliqoRegionElement,
   type AeliqoRegionResult,
   type AeliqoSemanticInteractionRequest,
-} from '@aeliqo/web/region';
-import type {RegionContent} from '@aeliqo/runtime/regions';
+} from '@aeliqo/sdk-web/region';
+import type {RegionContent} from '@aeliqo/sdk-runtime/regions';
 
 export interface UiDevelopmentFixture {
   readonly id: 'development-ui-records';
@@ -82,7 +82,7 @@ export interface UiDevelopmentFixture {
   readonly scopeDigest: 'ui-development-scope-1';
   readonly sourceRevision: 'ui-development-source-1';
   readonly budget: QueryBudget;
-  readonly catalog: import('@aeliqo/core').Catalog;
+  readonly catalog: import('@aeliqo/sdk-core').Catalog;
   readonly records: Readonly<Record<string, readonly DataRecord[]>>;
 }
 
@@ -309,7 +309,7 @@ export interface UiDevelopmentHost {
 
 function presentationContext(
   snapshot: RegionSnapshot,
-  registry: import('@aeliqo/core').PresentationRegistry,
+  registry: import('@aeliqo/sdk-core').PresentationRegistry,
   candidateOutputs: readonly MaterializedTaskOutput[],
   currentOutputs: readonly MaterializedTaskOutput[],
 ): PresentationContext {
@@ -500,7 +500,7 @@ export function createUiDevelopmentHost(transport: AgentToolTransport = 'manual'
     return snapshot?.readSet === undefined ? undefined : pins(snapshot.readSet);
   };
 
-  const grants = (): readonly import('@aeliqo/core').OperationGrant[] => revoked
+  const grants = (): readonly import('@aeliqo/sdk-core').OperationGrant[] => revoked
     ? []
     : ['catalog.read', 'task.evaluate', 'result.inspect', 'experience.propose', 'experience.commit'];
 

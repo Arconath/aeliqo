@@ -4,7 +4,7 @@ import {createHash} from 'node:crypto';
 import {join, resolve} from 'node:path';
 import {Client} from '@modelcontextprotocol/client';
 import {StdioClientTransport} from '@modelcontextprotocol/client/stdio';
-import {parseResult, parseWireValue, type Outcome, type Task} from '@aeliqo/core';
+import {parseResult, parseWireValue, type Outcome, type Task} from '@aeliqo/sdk-core';
 import {AELIQO_MCP_MODERN_REVISION, createMcpClientEndpoint} from '../../packages/agent/src/mcp/index.js';
 import type {EvaluatedOutput, EvaluationFixture} from './host.js';
 import type {DataRecord, DataValue} from '../../packages/runtime/src/data/index.js';
