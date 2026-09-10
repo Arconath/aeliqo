@@ -1194,20 +1194,24 @@
         {
           "path": "harness/evidence/t29/00aadd0-final-revalidation/manifest.json",
           "sha256": "9e57c5c0581c0d9bd8e1cc4cedd51e0871cac13ac345539877847fe7f639989e"
+        },
+        {
+          "path": "harness/evidence/t29/a245c8f-final-revalidation/manifest.json",
+          "sha256": "48db0631d8ee5118916986d51cd149d74bc60c5a62887c256cfe20e2d6f5a2d8"
         }
       ],
-      "notes": "Requalified on exact final product source 00aadd0/digest 0bf62c after the semantic-header and Firefox chart-label fixes. Fresh strict types, semantic/unit/SSR/browser/installed-consumer checks, Firefox repeats 18/18, full three-browser visual matrix 1137/1137 with no skips/flakes/retries/unexpected results, adverse visualization, and focused Firefox narrow RTL 200%-text inspection all pass. Manual assistive-technology certification remains explicitly deferred beyond 0.1.0 and is not claimed.",
+      "notes": "Requalified on exact final product source a245c8f/digest be201b after the semantic-header, Firefox chart-label and documentation hydration-space fixes. Fresh strict types, semantic/unit/SSR/browser/installed-consumer checks, Firefox repeats 18/18, full three-browser visual matrix 1137/1137 with no skips/flakes/retries/unexpected results, adverse visualization, all 71 documentation routes, and focused Firefox narrow RTL 200%-text inspection all pass. Independent review found no P0/P1 blocker and retained 147 Axe incomplete diagnostics as a P2 follow-up; there are zero Axe violations. Manual assistive-technology certification remains explicitly deferred beyond 0.1.0 and is not claimed.",
       "review": {
         "status": "approved",
-        "author": "T29 component and test implementation authors",
-        "reviewer": "/root/close_ready_scenarios",
+        "author": "/root/fix_hydration_geometry plus prior T29 component and test implementation authors",
+        "reviewer": "/root/investigate_hydration_shift",
         "artifacts": [
           {
-            "path": "harness/evidence/t29/00aadd0-final-revalidation/independent-review.json",
-            "sha256": "bdc4509a45a534c67a5ab2bce80c827a0d501907f8365813799c5e8dda3d93cc"
+            "path": "harness/evidence/t29/a245c8f-final-revalidation-review/independent-review.json",
+            "sha256": "7e8cc2cb1f00c59bda3a37180b1137088474fd0c37cd4091b09ce479b34fadcf"
           }
         ],
-        "scope": "Approves the complete owned 71-component T29 matrix on exact product source 00aadd0/digest 0bf62c, including the final three-browser and Firefox 200%-text regressions; excludes manual assistive-technology certification, T30/T31/T40, publication and deployment."
+        "scope": "Approves the complete owned 71-component T29 matrix on exact product source a245c8f/digest be201b, including the final three-browser, Firefox 200%-text and 71-route hydration regressions; retains unresolved Axe incomplete diagnostics as a P2 and excludes manual assistive-technology certification, T30/T31/T40, publication and deployment."
       }
     },
     {
@@ -1286,20 +1290,24 @@
         {
           "path": "harness/evidence/t30/4f82c54-release-revalidation/manifest.json",
           "sha256": "64e436ec14817595c23451473213ef0975ffbb73e253812ca0564801068548db"
+        },
+        {
+          "path": "harness/evidence/t30/a245c8f-final-revalidation/manifest.json",
+          "sha256": "f16f0fcc64ba0f885d5dc09cf66f4ea3a09cecf3e4b6d4df6c48bcd40fb0d6be"
         }
       ],
-      "notes": "Accepted at exact source 4f82c54/digest 05e599 after independent review. The immutable qualification has verified source/artifact hashes and raw percentiles; Node/browser, six bundle rows, adverse probes, visible input, 100-cycle heap lifecycle, standalone, representative site routes and all 71 document-layout routes passed. Qualification planner p95 is 13.001ms <=16ms and reducer p95 is 0.120ms <=4ms. One fresh review run measured 17.153ms, while two immediate repeats measured 13.265ms and 13.060ms; this retained variability is a P2 headroom/reliability follow-up, not a universal performance claim. Lower-powered-device, cross-browser, field-CWV, universal input-to-paint, backend/network-capacity and model performance remain unclaimed.",
+      "notes": "Accepted at exact final product source a245c8f/digest be201b after independent review. The immutable qualification has verified source/artifact hashes and raw percentiles; Node/browser, six bundle rows, adverse probes, visible input, 100-cycle heap lifecycle, standalone, representative site routes and all 71 document-layout routes passed. Two qualifying planner p95 runs measured 14.839ms and 13.779ms <=16ms; enforced reducer dispatch p95 measured 0.136792ms and 0.128333ms <=4ms. Five of six fresh reviewer repetitions passed, while one pinned-runtime repetition measured 21.314875ms; this retained variability is a P2 headroom/reliability follow-up, not a universal performance claim. The reviewer also records three nonblocking P3 evidence-precision/environment disclosures without mutating the author packet. Lower-powered-device, cross-browser, field-CWV, universal input-to-paint, backend/network-capacity and model performance remain unclaimed.",
       "review": {
         "status": "approved",
-        "author": "fast_t30_quality + root evidence integration",
+        "author": "/root/fix_t29_visual_blockers plus prior T30 performance implementation authors",
         "reviewer": "/root/fix_remaining_narrow_overflow",
         "artifacts": [
           {
-            "path": "harness/evidence/t30/4f82c54-release-revalidation/independent-review.json",
-            "sha256": "1b61c6151a6a3e34f95a712f9d9f50383ff6d3af0a536f90dbaa28e4357691c0"
+            "path": "harness/evidence/t30/a245c8f-final-revalidation-review/independent-review.json",
+            "sha256": "37b61d9b7a0b2ad75e02e3c625a0213bf85491712bfc51f5dbf6d6112d0de9c9"
           }
         ],
-        "scope": "Approves exact source 4f82c54/digest 05e599 performance qualification and bounded package/runtime measurements. Excludes publication, lower-powered-device and cross-browser behavior, field Core Web Vitals, universal input-to-paint, backend/network capacity and model performance."
+        "scope": "Approves exact final product source a245c8f/digest be201b performance qualification and bounded package/runtime measurements with a retained P2 planner-headroom follow-up and three P3 evidence-precision/environment disclosures. Excludes publication, lower-powered-device and cross-browser behavior, field Core Web Vitals, universal input-to-paint, backend/network capacity and model performance."
       }
     },
     {
@@ -1379,20 +1387,24 @@
         {
           "path": "harness/evidence/t32/05e5990-final-audit/manifest.json",
           "sha256": "fe41ba14e7a829bd46615e10a6e23ebdbbf93aa4367a92d098764ab2e61905ca"
+        },
+        {
+          "path": "harness/evidence/t32/be201bf-final-audit/manifest.json",
+          "sha256": "5f91220d80bdff72b1fd5dadb4249d8e855c1af6f46e36f54d9da9d61c993068"
         }
       ],
-      "notes": "Accepted on exact reviewed source 2087b14/digest 05e599 after independent architecture, DX and usability review with no P0/P1 findings. Fresh boundary/contract/agent/meaning/scenario/site checks, four installed-package onboarding journeys and a six-package local candidate validate the scoped implementation. T29 covers all 71 components; T30 is current and independently reviewed; T31/T40 retain explicit 0/3 live-answer correctness as informational; S65-S67 prove code-only and canonical meaning parity. One noisy planner-budget miss is retained as P2. Manual AT, lower-powered/cross-browser/field performance, model generalization, publication and deployment are not claimed and remain separate later/deferred gates.",
+      "notes": "Accepted on exact final product source a245c8f/digest be201b after independent architecture, DX and usability review with no P0/P1 findings. Fresh boundary/contract/agent/meaning/scenario/query/protocol/security/site checks, installed-package onboarding journeys, current performance gates and a six-package local candidate validate the scoped implementation. T29 covers all 71 components; T30 final-source performance evidence is separately reviewed; T31/T40 retain explicit 0/3 live-answer correctness as informational; S65-S67 prove code-only and canonical meaning parity. Limited planner headroom remains a P2. Manual AT, native WebMCP, lower-powered/cross-browser/field performance, model generalization, publication and deployment are not claimed and remain separate later/deferred gates.",
       "review": {
         "status": "approved",
         "author": "T32 implementation and evidence authors",
-        "reviewer": "/root/fix_remaining_narrow_overflow",
+        "reviewer": "/root/investigate_hydration_shift",
         "artifacts": [
           {
-            "path": "harness/evidence/t32/05e5990-final-audit/manifest.json",
-            "sha256": "fe41ba14e7a829bd46615e10a6e23ebdbbf93aa4367a92d098764ab2e61905ca"
+            "path": "harness/evidence/t32/be201bf-final-audit/independent-review.json",
+            "sha256": "09d48cd0d23a250e1ad8c26a91b57aeec0c4619896956e5330ad3fabdc7f70b3"
           }
         ],
-        "scope": "Approves T32 architecture, DX, usability, evidence-invalidation and external onboarding acceptance for source 2087b14/digest 05e599; excludes manual AT, unrestricted model quality, universal performance, publication, deployment and later release gates."
+        "scope": "Approves T32 architecture, DX, usability, evidence-invalidation and external onboarding acceptance for final product source a245c8f/digest be201b; excludes manual AT, native WebMCP, unrestricted model quality, universal performance, publication, deployment and later release gates."
       }
     },
     {

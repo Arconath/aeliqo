@@ -1,4 +1,5 @@
-RELEASE BLOCKED: 7 unmet conditions
+RELEASE BLOCKED: 8 unmet conditions
+- T30: missing/mismatching artifact harness/evidence/t30/a245c8f-final-revalidation/manifest.json
 - T36: planned, not done
 - T37: planned, not done
 - T38: planned, not done

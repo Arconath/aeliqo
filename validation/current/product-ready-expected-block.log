@@ -1,3 +1,4 @@
-READY BLOCKED: 2 unmet conditions
+READY BLOCKED: 3 unmet conditions
+- T30: missing/mismatching artifact harness/evidence/t30/a245c8f-final-revalidation/manifest.json
 - CI evidence is absent, failed or stale for this candidate
 - No valid integrated candidate evidence
