@@ -21,6 +21,20 @@ for(const component of components.components)for(const variant of ['desktop-ligh
   expect(axe.violations.map(({id,impact,nodes})=>({id,impact,nodes:nodes.map(({target,failureSummary})=>({target,failureSummary}))}))).toEqual([]);
   expect(axe.incomplete.filter(({id})=>id==='aria-prohibited-attr')).toEqual([]);
   expect(measurements.documentWidth).toBeLessThanOrEqual(measurements.viewport.width);
+  if(id==='select'){
+   const control=page.locator('aeliqo-select select');
+   await expect(control).toHaveValue('research');
+   expect(await control.locator('option').allTextContents()).toEqual(['Choose a team','Research','Product']);
+  }
+  if(variant==='desktop-light'&&id==='investigation'){
+   const layout=await page.locator('aeliqo-investigation').evaluate(element=>{const root=element.shadowRoot!;const grid=root.querySelector<HTMLElement>('[part="grid"]')!;const trendPanel=root.querySelector<HTMLElement>('[part="trend"]')!;const trend=root.querySelector('aeliqo-trend')!;const trendRoot=trend.shadowRoot!;const data=trendRoot.querySelector<HTMLElement>('[part="data"]')!;const dataBox=data.getBoundingClientRect();const caption=trendRoot.querySelector('caption')!.getBoundingClientRect();const cells=[...trendRoot.querySelectorAll<HTMLElement>('tbody tr:first-child td')].map(cell=>cell.getBoundingClientRect().width);return{gridWidth:grid.getBoundingClientRect().width,panelWidth:trendPanel.getBoundingClientRect().width,dataStart:dataBox.left,dataEnd:dataBox.right,dataOverflow:data.scrollWidth-data.clientWidth,captionStart:caption.left,captionEnd:caption.right,cells};});
+   expect(layout.panelWidth).toBeGreaterThanOrEqual(layout.gridWidth-1);
+   expect(layout.dataOverflow).toBeLessThanOrEqual(1);
+   expect(layout.captionStart).toBeGreaterThanOrEqual(layout.dataStart-1);
+   expect(layout.captionEnd).toBeLessThanOrEqual(layout.dataEnd+1);
+   expect(layout.cells.length).toBeGreaterThan(2);
+   expect(Math.min(...layout.cells)).toBeGreaterThanOrEqual(64);
+  }
   if(variant==='narrow-dark-rtl'&&['trend','bar','area','scatter','histogram','heatmap','timeline','investigation'].includes(id)){
    const sizes=await page.locator(`aeliqo-${id}`).evaluate(async element=>{const chart=element.localName==='aeliqo-investigation'?element.shadowRoot!.querySelector('aeliqo-trend')!:element;const label=chart.shadowRoot!.querySelector<SVGTextElement>('svg text.axis-x-tick,svg text.timeline-label')!;const original=document.documentElement.style.fontSize;const settle=()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));document.documentElement.style.fontSize='16px';await settle();const normal=label.getBoundingClientRect().height;document.documentElement.style.fontSize='32px';await settle();const zoomed=label.getBoundingClientRect().height;document.documentElement.style.fontSize=original;await settle();return{normal,zoomed};});
    expect(sizes.normal).toBeGreaterThan(0);

@@ -142,11 +142,11 @@ export const CATALOG_MOUNT_SOURCES = {
 		const element = createCatalogElement<AeliqoSelectElement>("aeliqo-select", root);
 		element.label = "Team";
 		element.name = "team";
-		element.options = options.map(({ value, label }) => ({
-			value,
-			label
-		}));
-		element.value = "ada";
+		element.options = [
+			{ value: "research", label: "Research" },
+			{ value: "product", label: "Product" }
+		];
+		element.value = "research";
 		element.emptyLabel = "Choose a team";
 	})`,
   "combobox": String.raw`((root) => {
