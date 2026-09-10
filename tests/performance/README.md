@@ -23,9 +23,12 @@ Node's default compression settings on each emitted chunk.
 The probes below now cover bounded small/medium/large fixtures, cold/warm
 navigations, keyboard/DOM observations, cancellation and 100-cycle lifecycle
 checks. Their functional passes do not close timing or device qualification.
-Planner p95 still exceeds 16 ms; actual input-to-paint, whole-site field metrics
-and the real lower-powered device specified by chapter 12 remain open. Run
-timing work without concurrent builds. Do not revise budgets to fit results.
+Current source-bound Node and Chromium warm planner runs can satisfy the 16 ms
+budget on the recorded reference environment, but timing noise and isolated
+regressions must still be retained and investigated. Actual input-to-paint,
+whole-site field metrics and the real lower-powered device specified by chapter
+12 remain open. Run timing work without concurrent builds. Do not revise budgets
+to fit results.
 
 
 ## Production workload probes
