@@ -6,14 +6,16 @@ const cases = ['commerce-browse', 'support-weekly', 'hr-record'];
 const deterministic = mode => cases.map(caseId => ({caseId, mode, score: {dataCorrect: true}}));
 const baseLive = caseId => ({
   caseId, mode: 'governed-model-data', model: 'deepseek-v4-flash', modelLabel: 'weak', qualifiedModelSnapshot: true,
+  snapshots: [{matchesExpected: true, reportedModel: 'deepseek-flash'}], reservedUSD: 0.1,
   result: {ok: true, stop: 'text-ready', turns: 3, toolCalls: 2, receiptStates: [
     {operation: 'catalog.read', state: 'data-ready'}, {operation: 'task.evaluate', state: 'data-ready'},
   ]},
   observations: [{stage: 'evaluate', rowCount: 2, diagnosticCodes: []}], usageEstimatedUSD: 0.001,
 });
 const report = {
-  schemaVersion: 1, sourceChangedDuringRun: false, mcpExplicit: true, sourceDigest: 'digest',
-  corpus: {sha256: 'a'.repeat(64), selection: {caseIds: cases, modelLabels: ['weak']}},
+  schemaVersion: 1, sourceChangedDuringRun: false, mcpExplicit: true, sourceDigest: 'b'.repeat(64), blocks: ['This data-only runner retains superseded research limitations.'],
+  authorization: {authorizedCorpusSha256: '9b2fd53f8f9e15fdef2afd121e48ba22bad591ffd8b1ded1e5b5517fae5cbfa8', maximumUSD: 1},
+  corpus: {sha256: '9b2fd53f8f9e15fdef2afd121e48ba22bad591ffd8b1ded1e5b5517fae5cbfa8', cases: cases.map(id => ({id})), selection: {caseIds: cases, modelLabels: ['weak']}},
   rows: [
     ...deterministic('explicit-task'), ...deterministic('explicit-mcp'),
     baseLive(cases[0]),
@@ -42,4 +44,13 @@ test('fails closed on missing repair, wrong provider snapshot, or deterministic 
   const wrongMcp = structuredClone(report);
   wrongMcp.rows[3].score.dataCorrect = false;
   assert.throws(() => qualifyT40Smoke(wrongMcp), /MCP deterministic/);
+  const duplicateCase = structuredClone(report);
+  duplicateCase.rows[8].caseId = cases[0];
+  assert.throws(() => qualifyT40Smoke(duplicateCase), /qualified DeepSeek/);
+  const rawPayload = structuredClone(report);
+  rawPayload.rows[6].content = 'must not be retained';
+  assert.throws(() => qualifyT40Smoke(rawPayload), /forbidden provider field/);
+  const wrongOrder = structuredClone(report);
+  wrongOrder.rows[6].result.receiptStates.reverse();
+  assert.throws(() => qualifyT40Smoke(wrongOrder), /operation order/);
 });
