@@ -39,9 +39,13 @@ printf '%s\n' "$headers" | grep -qi '^cache-control: no-cache'
 printf '%s\n' "$headers" | grep -qi "^content-security-policy: default-src 'self'"
 printf '%s\n' "$headers" | grep -qi '^x-content-type-options: nosniff'
 
-asset="$(curl --fail --silent "$base/" | grep -Eo '/assets/[^"? ]+\.js' | head -n 1)"
-test -n "$asset"
-curl --fail --silent --head "$base$asset" | grep -qi '^cache-control: public, max-age=31536000, immutable'
+curl --fail --silent "$base/" > "$temp_dir/index.html"
+assets="$(grep -Eo '/assets/[^"?[:space:]]+\.(js|css)' "$temp_dir/index.html" | sort -u)"
+test -n "$assets"
+printf '%s\n' "$assets" | while IFS= read -r asset; do
+	test -n "$asset"
+	curl --fail --silent --head "$base$asset" | grep -qi '^cache-control: public, max-age=31536000, immutable'
+done
 
 status="$(curl --silent --output /dev/null --write-out '%{http_code}' "$base/not-a-route")"
 test "$status" = 404

@@ -26,6 +26,7 @@ var revision = "unknown"
 
 const (
 	staticRoot            = "/srv/aeliqo"
+	rollupHashLength      = 8
 	drainDelay            = 5 * time.Second
 	shutdownTimeout       = 20 * time.Second
 	kubernetesGracePeriod = 30 * time.Second
@@ -276,12 +277,12 @@ func isHashedAsset(requestPath, file string) bool {
 		return false
 	}
 	name := strings.TrimSuffix(filepath.Base(file), filepath.Ext(file))
-	dash := strings.LastIndexByte(name, '-')
-	if dash == -1 || len(name)-dash-1 < 8 {
+	separator := len(name) - rollupHashLength - 1
+	if separator <= 0 || name[separator] != '-' {
 		return false
 	}
-	for _, character := range name[dash+1:] {
-		if !((character >= '0' && character <= '9') || (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z')) {
+	for _, character := range name[separator+1:] {
+		if !((character >= '0' && character <= '9') || (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') || character == '_' || character == '-') {
 			return false
 		}
 	}

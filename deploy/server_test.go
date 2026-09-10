@@ -338,7 +338,22 @@ func TestStaticResponseReadsFile(t *testing.T) {
 
 func TestOnlyHashedAssetsAreImmutable(t *testing.T) {
 	root := fixtureSite(t)
-	if err := os.WriteFile(filepath.Join(root, "assets", "manual.js"), []byte("manual"), 0o644); err != nil {
+	for _, name := range []string{
+		"site-EAgs_aNb.js",
+		"site-abc-def1.js",
+		"site-abcdefg.js",
+		"site-abcdefghi.js",
+		"site-abc!def1.js",
+		"manual.js",
+	} {
+		if err := os.WriteFile(filepath.Join(root, "assets", name), []byte(name), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.MkdirAll(filepath.Join(root, "static"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "static", "site-abcdefgh.js"), []byte("outside assets"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	handler := newHandler(root, "test")
@@ -347,7 +362,13 @@ func TestOnlyHashedAssetsAreImmutable(t *testing.T) {
 		want string
 	}{
 		{"/assets/site-abcdefgh.js", "public, max-age=31536000, immutable"},
+		{"/assets/site-EAgs_aNb.js", "public, max-age=31536000, immutable"},
+		{"/assets/site-abc-def1.js", "public, max-age=31536000, immutable"},
+		{"/assets/site-abcdefg.js", "public, max-age=3600"},
+		{"/assets/site-abcdefghi.js", "public, max-age=3600"},
+		{"/assets/site-abc!def1.js", "public, max-age=3600"},
 		{"/assets/manual.js", "public, max-age=3600"},
+		{"/static/site-abcdefgh.js", "public, max-age=3600"},
 		{"/assets/../index.html", "no-cache"},
 	} {
 		response := request(t, handler, http.MethodGet, testCase.path)
