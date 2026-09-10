@@ -138,6 +138,12 @@ test('rejects incomplete trials, failed live outcomes, counter overruns, and spe
   const replayedSnapshot = structuredClone(report);
   replayedSnapshot.rows[7].snapshots[0].responseIdSha256 = replayedSnapshot.rows[6].snapshots[0].responseIdSha256;
   assert.throws(() => qualifyT40Smoke(replayedSnapshot, context), /identities must be unique/);
+  const impossibleInterval = structuredClone(report);
+  impossibleInterval.groups[0].interval = {lower: 999, upper: 999, confidence: 0.95, trials: 3};
+  assert.throws(() => qualifyT40Smoke(impossibleInterval, context), /Wilson interval/);
+  const wrongInterval = structuredClone(report);
+  wrongInterval.groups[0].interval = {lower: 0.25, upper: 0.5, confidence: 0.95, trials: 3};
+  assert.throws(() => qualifyT40Smoke(wrongInterval, context), /Wilson interval/);
 });
 
 test('rejects simulated MCP evidence and uncorroborated invalid-repair claims', () => {

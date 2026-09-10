@@ -320,6 +320,15 @@ function assertLiveRow(row, caseId, trial, weak, budget) {
   if (Math.abs(row.usageEstimatedUSD - expectedUsage) > 1e-12) throw new Error('Live usage estimate does not match sanitized token counters');
 }
 
+function wilsonInterval(successes, trials) {
+  const z = 1.959963984540054;
+  const proportion = successes / trials;
+  const denominator = 1 + z * z / trials;
+  const center = (proportion + z * z / (2 * trials)) / denominator;
+  const margin = z * Math.sqrt((proportion * (1 - proportion) + z * z / (4 * trials)) / trials) / denominator;
+  return {lower: Math.max(0, center - margin), upper: Math.min(1, center + margin), confidence: 0.95, trials};
+}
+
 function assertGroups(groups, live) {
   if (!Array.isArray(groups) || groups.length !== 2) throw new Error('T40 report model groups are invalid');
   const scoreCorrect = live.filter(row => row.score.dataCorrect === true).length;
@@ -334,8 +343,11 @@ function assertGroups(groups, live) {
     if (label === 'strong' && group.interval !== null) throw new Error('T40 report model groups do not match the selected trials');
     if (label === 'weak') {
       exactKeys(group.interval, ['lower', 'upper', 'confidence', 'trials'], 'T40 model interval');
-      if (!finite(group.interval.lower) || !finite(group.interval.upper) || group.interval.lower > group.interval.upper
-        || group.interval.confidence !== 0.95 || group.interval.trials !== count) throw new Error('T40 report model groups do not match the selected trials');
+      const expected = wilsonInterval(scoreCorrect, count);
+      if (!finite(group.interval.lower) || group.interval.lower > 1 || !finite(group.interval.upper) || group.interval.upper > 1
+        || group.interval.lower > group.interval.upper || group.interval.confidence !== expected.confidence || group.interval.trials !== expected.trials
+        || Math.abs(group.interval.lower - expected.lower) > Number.EPSILON
+        || Math.abs(group.interval.upper - expected.upper) > Number.EPSILON) throw new Error('T40 report Wilson interval does not match the observed configured trials');
     }
   }
 }
