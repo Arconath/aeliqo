@@ -1,0 +1,29 @@
+{
+  "schema": "aeliqo.t33.reproducibility.v1",
+  "sourceRevision": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+  "version": "0.1.0-rc.1",
+  "candidateDirectory": "candidate",
+  "rebuildDirectory": "rebuild",
+  "releaseArtifactsCompared": 9,
+  "byteIdenticalReleaseArtifacts": [
+    "aeliqo-core-0.1.0-rc.1.tgz",
+    "aeliqo-runtime-0.1.0-rc.1.tgz",
+    "aeliqo-web-0.1.0-rc.1.tgz",
+    "aeliqo-agent-0.1.0-rc.1.tgz",
+    "aeliqo-devtools-0.1.0-rc.1.tgz",
+    "aeliqo-react-0.1.0-rc.1.tgz",
+    "manifest.json",
+    "sbom.cdx.json",
+    "secret-scan.json"
+  ],
+  "releaseArtifactsByteIdentical": true,
+  "sixTarballsByteIdenticalToPriorReviewed676db22Candidate": true,
+  "consumerRecordsByteIdentical": false,
+  "consumerRecordDifference": {
+    "onlyField": "install.lockSha256",
+    "candidate": "9e65bed413bda7442ba4eac4a90ae40c2838371017c715956e17f7e82340c2d8",
+    "rebuild": "44bd7316db7bef6df7a33d28f53082f24a41fa6a1c7afda738d187c83427ca90",
+    "reason": "The temporary consumer package lock includes the absolute file paths of the deliberately different candidate output directories. Both consumers install the same byte-identical six tarballs, load the same seven module entry points, type-check the same 130 exports and execute with the same ten network methods denied. consumer.json is evidence, not a published artifact."
+  },
+  "decision": "release-artifact-reproducibility-passed"
+}

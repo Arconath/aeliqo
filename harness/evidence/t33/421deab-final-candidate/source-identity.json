@@ -1,0 +1,12 @@
+{
+  "schema": "aeliqo.t33.source-identity.v1",
+  "sourceCommit": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+  "sourceTree": "122cb765c8302ccd94a9e0945f1c6bb5512da029",
+  "candidateDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+  "trackedTreeCleanBeforeBuild": true,
+  "trackedTreeCleanAfterBuild": true,
+  "node": "v24.20.0",
+  "pnpm": "11.24.0",
+  "npm": "11.19.0",
+  "recordedAt": "2026-09-10T21:54:40Z"
+}

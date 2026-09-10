@@ -1,0 +1,120 @@
+{
+  "schema": "aeliqo.t33.final-direct-candidate.v2",
+  "task": "T33",
+  "status": "local-candidate-passed-independent-review-pending",
+  "recordedAt": "2026-09-10T21:54:40Z",
+  "author": "root release orchestrator",
+  "source": {
+    "commit": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+    "tree": "122cb765c8302ccd94a9e0945f1c6bb5512da029",
+    "candidateDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+    "trackedTreeCleanBeforeBuild": true,
+    "trackedTreeCleanAfterBuild": true,
+    "sourceDeltaFromReviewed676db22": [
+      "deploy/server.go",
+      "deploy/server_test.go",
+      "scripts/ci/check-static-image.sh"
+    ],
+    "sourceDeltaPurpose": "Recognize locked Vite eight-character URL-safe asset hashes and make the image smoke check every index-referenced JavaScript and CSS asset."
+  },
+  "toolchain": {
+    "node": "v24.20.0",
+    "pnpm": "11.24.0",
+    "npm": "11.19.0"
+  },
+  "commands": [
+    {
+      "command": "node scripts/release/candidate.mjs --version 0.1.0-rc.1 artifacts/t33-421deab-candidate",
+      "exitCode": 0,
+      "result": "passed"
+    },
+    {
+      "command": "node scripts/release/candidate.mjs --version 0.1.0-rc.1 artifacts/t33-421deab-rebuild",
+      "exitCode": 0,
+      "result": "passed"
+    },
+    {
+      "command": "compare each release artifact across the two outputs",
+      "exitCode": 0,
+      "result": "nine-of-nine release artifacts byte-identical"
+    }
+  ],
+  "candidate": {
+    "version": "0.1.0-rc.1",
+    "packageCount": 6,
+    "publishOrder": [
+      "@aeliqo/core",
+      "@aeliqo/runtime",
+      "@aeliqo/web",
+      "@aeliqo/agent",
+      "@aeliqo/devtools",
+      "@aeliqo/react"
+    ],
+    "privateTestkitExcluded": true,
+    "packedBytes": 982309,
+    "packages": [
+      {"name":"@aeliqo/core","file":"aeliqo-core-0.1.0-rc.1.tgz","bytes":183748,"sha256":"bfee566d16179ec0a222de966ff2b00cac042e238e798e09d9afeb8d689c7f38","integrity":"sha512-mlJ8Ssw2ojVgOLKahc6by8DBpONgVFghp3r92YJmm7BPkGtLDo5qnghono3Z+mO2kKA7H0HRAl+JNbgvPxtWKg=="},
+      {"name":"@aeliqo/runtime","file":"aeliqo-runtime-0.1.0-rc.1.tgz","bytes":228488,"sha256":"df7b183da797d6c822e56c0db3af59860e4a5a1c430ac4a2f342f6a8be520d40","integrity":"sha512-EPmpv9TNarwk6aSymK1um6RpEtgFEgNPyzZOrQgD4wainCdmyRmL6Okp1+GiKEof4yIZyEM3S3J+rr8mjABYfA=="},
+      {"name":"@aeliqo/web","file":"aeliqo-web-0.1.0-rc.1.tgz","bytes":407913,"sha256":"a4260c87d1bf2147435bd0108e630bdc7eaf0d8f5a13c45dd6d4423c0c637383","integrity":"sha512-ODldWO7Y5TznW8/STjRjjjvqjcJSMVT897In/ZOqdbcm4l/DHWznbBL54NP0A6/3Ja773jt0kKfbLQ6ytgTGIQ=="},
+      {"name":"@aeliqo/agent","file":"aeliqo-agent-0.1.0-rc.1.tgz","bytes":125773,"sha256":"c4b77fa82e1ec5cf6cde7ba4d5b266d198be9ac2768e8d6b0fda8ad50e652e23","integrity":"sha512-ZYK2lm4SAygBP9xhsNzRaZwDOdqaXX9ClamNv1E2++LhR19YX95UtOsZw6h4+UZwmIXQGpMLWJNyj8TpybnLwQ=="},
+      {"name":"@aeliqo/devtools","file":"aeliqo-devtools-0.1.0-rc.1.tgz","bytes":21156,"sha256":"6166f2a994458f286b979a7d32ea1a3c1ce41d3d03d91acbb9a4b386e8d8ab6d","integrity":"sha512-Wuol9zm+tp8Y0kQR4SUCh5zyxdTMSKgfgH7EgGNUb4+zpa/uNfS6hcq6Ae2ypGabeEo9HRtLV7a/CS9UR+DW4w=="},
+      {"name":"@aeliqo/react","file":"aeliqo-react-0.1.0-rc.1.tgz","bytes":15231,"sha256":"d35abeee2912e50d4f3c3cc214f23f24813cecec1a6aad8dbb11b8753dc056d1","integrity":"sha512-jFkF+1cXYwdJ59bn52ZSSw8QCfdGEAmU9BMZOAYrDMi+/KidEKifOpMPjMviSF+NYfgApdBzaPeCPE6vh3eTUg=="}
+    ]
+  },
+  "verification": {
+    "manifestIdentityAndDependencyOrder": "passed",
+    "strictExportSpecifiersTypeChecked": 130,
+    "licenseAndNotice": "canonical Apache-2.0 files matched in every tarball",
+    "tarballPathAllowlist": "passed",
+    "offlineConsumer": {
+      "runs": 2,
+      "result": "passed",
+      "networkDenied": true,
+      "deniedMethods": 10,
+      "packageModulesLoaded": 7,
+      "coreParserExecuted": true,
+      "auditExecuted": true,
+      "auditNetworkAttempts": 0
+    },
+    "sbom": {
+      "result": "passed",
+      "format": "CycloneDX 1.5",
+      "components": 63,
+      "dependencyRecords": 63
+    },
+    "secretScan": {
+      "result": "passed",
+      "rules": 6,
+      "trackedFiles": 2659,
+      "trackedBytes": 183922499,
+      "expandedArchives": 43,
+      "expandedEntries": 8286,
+      "expandedBytes": 151045932,
+      "packedFiles": 1034,
+      "packedBytes": 6367561,
+      "findings": 0
+    },
+    "reproducibility": "nine release artifacts byte-identical across two clean output directories",
+    "packageBytesUnchangedByDeliveryFix": "all six tarball SHA-256 values match the reviewed 676db22 candidate"
+  },
+  "evidence": {
+    "candidateDirectory": "candidate",
+    "rebuildDirectory": "rebuild",
+    "sourceIdentity": "source-identity.json",
+    "reproducibility": "reproducibility.json",
+    "checksumInventory": "SHA256SUMS"
+  },
+  "limitations": [
+    "This is a local candidate and does not establish npm publication, registry acceptance, provenance, dist-tag promotion, source release or deployment.",
+    "The two consumer.json records differ only in the output-path-derived package-lock hash; consumer.json is evidence rather than a release artifact and both network-denied runs consumed byte-identical tarballs.",
+    "An independent reviewer must rebuild, inspect and consume the retained candidate before T33 task requalification.",
+    "A publishing candidate must be regenerated on the exact clean publication HEAD and its manifest/integrities reconciled before any npm write."
+  ],
+  "mutations": {
+    "npm": false,
+    "github": false,
+    "gitops": false,
+    "production": false,
+    "taskState": false
+  }
+}

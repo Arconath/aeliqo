@@ -1,0 +1,8 @@
+output=artifacts/t33-421deab-candidate
+sourceRevision=cb1e229714564f0f5fa10687bfb59420ef0b9a57
+version=0.1.0-rc.1
+packageCount=6
+exportCount=130
+sbomComponents=63
+secretFindings=0
+exitCode=0
