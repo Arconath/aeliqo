@@ -171,7 +171,7 @@ export class AeliqoComparisonElement extends AeliqoCompoundElement {
     return html`<section part="root" data-status=${current} aria-label=${this.title}>
       <div part="header"><h2>${this.title}</h2>${this.scope ? html`<span part="scope">${this.scopeLabel(this.scope)}</span>` : nothing}</div>
       ${!this.compatible ? html`<p part="status" role="alert">These metrics cannot be compared because their units or grain are incompatible.</p>` : html`
-        <div part="actions" aria-label="Compare set">${keys.map(key => html`<button part="compare-button" type="button" ?disabled=${overflow} aria-pressed=${String(selectedKeys.has(key))} @click=${() => this.requestCompare(key)}>${labels.get(key) ?? key}</button>`)}</div>
+        <div part="actions" role="group" aria-label="Compare set">${keys.map(key => html`<button part="compare-button" type="button" ?disabled=${overflow} aria-pressed=${String(selectedKeys.has(key))} @click=${() => this.requestCompare(key)}>${labels.get(key) ?? key}</button>`)}</div>
         <div part="table" role="region" aria-label="Simultaneous comparison"><aeliqo-table .caption=${`${this.title}: ${keys.length} ${this.entity}${keys.length === 1 ? "" : "s"}`} .columns=${columns} .rows=${rows} .identity=${["metricId"]} .result=${this.result} .scope=${this.scope} status=${current}></aeliqo-table></div>
         ${boundedNotice ? html`<p part="hint">Showing a bounded comparison window. Narrow the compare set to edit it.</p>` : nothing}
       `}

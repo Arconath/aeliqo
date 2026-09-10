@@ -203,7 +203,7 @@ export class AeliqoDeltaElement extends LitElement {
     return html`
       <dl part="delta" aria-describedby=${scope ? "scope" : nothing} data-mode=${this.validMode} data-status=${unavailable ? "unavailable" : this.status}>
         <dt part="label">${this.label}</dt>
-        <dd part="value" class=${unavailable ? "unavailable" : ""} aria-label=${unavailable ? rendered : `${rendered}, ${modeLabel}`}>
+        <dd part="value" class=${unavailable ? "unavailable" : ""}>
           <bdi part="number" dir=${unavailable ? "auto" : "ltr"}>${rendered}</bdi>${this.unit && this.validMode === "absolute" && !unavailable ? html`<span part="unit">${this.unit}</span>` : nothing}
         </dd>
       </dl>

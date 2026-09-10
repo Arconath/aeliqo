@@ -94,6 +94,7 @@ async function capture(session: ReviewSession, page: Page, info: TestInfo, label
   await page.screenshot({path: info.outputPath(`${label}.png`), fullPage: true});
   expect(session.errors).toEqual([]);
   expect(axe.violations).toEqual([]);
+  expect(axe.incomplete.filter(({id}) => id === 'aria-prohibited-attr')).toEqual([]);
 }
 
 for (const id of ['record-list', 'card-collection', 'table']) {

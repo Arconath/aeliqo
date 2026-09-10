@@ -337,7 +337,7 @@ export class AeliqoFilterBuilderElement extends LitElement {
       <form part="builder" @submit=${this.handleSubmit}>
         <fieldset ?disabled=${disabled}>
           <legend>Filter</legend>
-          <div part="scope" aria-label="Inherited scope">${this.scopeLabel}</div>
+          <div part="scope">${this.scopeLabel}</div>
           <div part="clauses">
             ${this.clauseDrafts.map((clause, index) => this.renderClause(clause, index))}
             ${this.clauseDrafts.length > 1 ? html`<label part="logical-label">Match

@@ -77,7 +77,8 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
     [part="layer"] > div { grid-area: 1 / 1; }
     @media (max-width: 30rem) {
       [part="viewport"] svg { inline-size: 100%; }
-      [part="viewport"] svg text { font-size: calc(.5rem + 12px); }
+      [part="viewport"] svg text { font-size: 1rem; }
+      [part="viewport"] svg :is(.axis-x-tick, .axis-y-tick) { font-size: .875rem; }
       [part="data"] { overflow: visible; }
       table { display: block; inline-size: 100%; min-inline-size: 0; }
       caption { display: block; margin-block: var(--aeliqo-space-12, .75rem); text-align: start; }

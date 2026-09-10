@@ -19,7 +19,13 @@ for(const component of components.components)for(const variant of ['desktop-ligh
   await page.screenshot({path:info.outputPath('review.png'),fullPage:true});
   expect(errors).toEqual([]);
   expect(axe.violations.map(({id,impact,nodes})=>({id,impact,nodes:nodes.map(({target,failureSummary})=>({target,failureSummary}))}))).toEqual([]);
+  expect(axe.incomplete.filter(({id})=>id==='aria-prohibited-attr')).toEqual([]);
   expect(measurements.documentWidth).toBeLessThanOrEqual(measurements.viewport.width);
+  if(variant==='narrow-dark-rtl'&&['trend','bar','area','scatter','histogram','heatmap','timeline','investigation'].includes(id)){
+   const sizes=await page.locator(`aeliqo-${id}`).evaluate(async element=>{const chart=element.localName==='aeliqo-investigation'?element.shadowRoot!.querySelector('aeliqo-trend')!:element;const label=chart.shadowRoot!.querySelector<SVGTextElement>('svg text.axis-x-tick,svg text.timeline-label')!;const original=document.documentElement.style.fontSize;const settle=()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));document.documentElement.style.fontSize='16px';await settle();const normal=label.getBoundingClientRect().height;document.documentElement.style.fontSize='32px';await settle();const zoomed=label.getBoundingClientRect().height;document.documentElement.style.fontSize=original;await settle();return{normal,zoomed};});
+   expect(sizes.normal).toBeGreaterThan(0);
+   expect(sizes.zoomed/sizes.normal).toBeGreaterThanOrEqual(1.8);
+  }
   if(variant==='narrow-dark-rtl'&&['stack','grid'].includes(id)){
    const layout=await page.locator(`aeliqo-${id}`).evaluate(element=>{const nodes=[...element.querySelectorAll('span')].map(node=>node.getBoundingClientRect());return nodes.map((box,index)=>index===0?Number.POSITIVE_INFINITY:Math.max(0,Math.max(box.left-nodes[index-1]!.right,nodes[index-1]!.left-box.right,box.top-nodes[index-1]!.bottom,nodes[index-1]!.top-box.bottom)));});
    expect(layout).toHaveLength(2);
@@ -31,7 +37,7 @@ for(const component of components.components)for(const variant of ['desktop-ligh
    expect(control.width).toBeGreaterThanOrEqual(44);
    expect(control.height).toBeGreaterThanOrEqual(44);
   }
-  if(variant==='narrow-dark-rtl'&&['trend','bar','area','scatter','heatmap','investigation'].includes(id)){
+  if(variant==='narrow-dark-rtl'&&['trend','bar','area','scatter','histogram','heatmap','investigation'].includes(id)){
    const intersections=await page.locator(`aeliqo-${id}`).evaluate(element=>{const chart=element.localName==='aeliqo-investigation'?element.shadowRoot!.querySelector('aeliqo-trend')!:element;const labels=[...chart.shadowRoot!.querySelectorAll<SVGTextElement>('svg text.axis-x-tick,svg text.axis-y-tick,svg text.axis-title')];const boxes=labels.map(label=>({text:label.textContent??'',box:label.getBoundingClientRect()}));return boxes.flatMap((left,index)=>boxes.slice(index+1).filter(right=>left.box.left<right.box.right&&left.box.right>right.box.left&&left.box.top<right.box.bottom&&left.box.bottom>right.box.top).map(right=>`${left.text} / ${right.text}`));});
    expect(intersections).toEqual([]);
   }
