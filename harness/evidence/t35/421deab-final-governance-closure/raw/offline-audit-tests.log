@@ -1,0 +1,22 @@
+node:
+v24.20.0
+pnpm:
+11.24.0
+npm:
+11.19.0
+command: pnpm test:audit
+$ pnpm build:runtime && vitest run --config tests/runtime-audit/vitest.config.mjs && tsc -p tests/runtime-audit/tsconfig.json
+$ pnpm build:core && pnpm --filter @aeliqo/runtime build
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+
+ RUN  v5.0.0 /private/tmp/aeliqo-t35-421deab-governance
+
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  05:27:13
+   Duration  81ms (transform 61%, import 20%, tests 13%, worker 6%)
+
+exitCode=0

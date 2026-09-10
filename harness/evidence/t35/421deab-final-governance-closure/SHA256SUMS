@@ -1,0 +1,16 @@
+f099dbd4dd4a3834b912afa832bc1ef03e1a1544bbec3308a4a1a50a39810563  ./checks/summary.json
+5a98db7888c34bc664d362b6e2dfabc0349733782b0b22d6b52a78f60384fa07  ./manifest.json
+0ac3a932fe966395d4763021f350227948f3e8f6791129e99bae4a17307e86e2  ./raw/candidate-integrity-recheck.json
+7043ba986d7c21fbf53918c53e95bbc16a51a59a754944c9036d154d55a0aac6  ./raw/current-claims-identity-scan.json
+6d6f777bcaa34ff65c1d0d037fcc1d00a91b4e7ef6fefb76ea8fd86a1cee89bd  ./raw/dependency-boundary.json
+e78aef0a0c775b40c4a72ef36523a584d44d7f51cce338604cd3331bcc19a64b  ./raw/governance-snapshot.json
+2ce78bbd0576091e2600e89a50100befe7d2a38f3211057716d0b7a759edb025  ./raw/install.log
+aee28e1e16fffa034f75b197d1e15279e937d1fe9075e6d4b5bb09ae8939e80a  ./raw/offline-audit-tests.log
+088bb2f6399a1467ea58503540a8413d493e836cb9c52901441615c634dfec4e  ./raw/package-boundary.json
+d9d036c86790cae30c0bbea7229ddc98688cded390949ec623d1a06c42156aad  ./raw/release-tooling.log
+29af6fd07efb6d71361d6d54c64b78bf446a5f6b78bb2491bb1924a7f6dc6252  ./raw/site-browser.log
+d5363c3dc7b0128582b0b5b23568d6f38b35c6c9b68d219eb0e2307de1e9a5f8  ./raw/site-build.log
+0ab3da6e11383718ed2bbf445a1854ea4492a8f18291229a6cbb8ec7f65c1e37  ./raw/source-and-candidate-binding.json
+72bdb7bd1dc717f1653d4c89cced87cc3ed0200f7cc4b1f213326a69752b8786  ./raw/source-digest.log
+aace62977a7005165e23d230cd10310f14e5e1cbec4a3546fa566f9a6b93935a  ./raw/t33-author-checksum-verify.log
+ad4301d00436b86d051fc3d691322cc3134a8d2a712fe4234b0d449eb23663a7  ./raw/t33-author-security-recheck.json

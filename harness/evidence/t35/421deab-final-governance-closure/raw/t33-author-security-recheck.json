@@ -1,0 +1,30 @@
+{
+  "schema": "aeliqo.t35.t33-author-security-recheck.v1",
+  "source": {
+    "productSourceRevision": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+    "candidateDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6"
+  },
+  "evidence": {
+    "path": "harness/evidence/t33/421deab-final-candidate/candidate/secret-scan.json",
+    "sha256": "e370c3aeef05619bdd6d59aa89c44161e8f11173eb29085431c4970d78498e4d"
+  },
+  "schemaMatches": true,
+  "sourceMatches": true,
+  "scanScopes": [
+    {
+      "scope": "tracked-release-source",
+      "consideredFiles": 2659,
+      "scannedFiles": 2659,
+      "findings": 0
+    },
+    {
+      "scope": "packed-public-artifacts",
+      "consideredFiles": 1034,
+      "scannedFiles": 1034,
+      "findings": 0
+    }
+  ],
+  "findings": 0,
+  "passed": true,
+  "note": "T33 author security scan is reused as candidate evidence; the integrated T33 independent review is bound separately and this T35 packet remains pending its own review."
+}

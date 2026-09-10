@@ -1,0 +1,39 @@
+node:
+v24.20.0
+pnpm:
+11.24.0
+npm:
+11.19.0
+command: pnpm test:release-tooling
+$ node --test tests/release/*.test.mjs
+✔ accepts public manifest and strict packed content (0.985ms)
+✔ rejects leaked source, secrets, workspace aliases, and missing exports (0.248667ms)
+✔ candidate manifest and CycloneDX use exact tarball identities (6.078792ms)
+✔ registry and lock classification fail closed (0.251125ms)
+✔ legacy deprecation is exact, allowlisted, and points to the migration (0.861333ms)
+✔ exact registry classification fails closed (0.152084ms)
+✔ first-RC bootstrap is a separate exact interactive path (0.854917ms)
+✔ publication reopens each tarball and binds its internal public identity (0.437208ms)
+✔ first-RC package history permits only an exact partial-publication resume (0.183667ms)
+✔ owner-unpublished names require the conservative hold and a fresh post-hold preflight (0.179417ms)
+✔ first publication removes only an automatically-created prerelease latest tag (0.437125ms)
+✔ trusted publishing and dist-tag movement fail closed (0.116916ms)
+✔ approved RC records bind source and all candidate integrities (0.172958ms)
+✔ npm provenance binds package bytes to canonical workflow and source (0.4605ms)
+✔ all public packages carry the canonical full LICENSE and NOTICE (5.103792ms)
+✔ package workflow serializes publication and binds quality plus approved RC evidence (0.57775ms)
+✔ bootstrap, registry consumer, and legacy mutations are pinned to npmjs (0.659583ms)
+✔ qualifies a source/config/corpus-bound Flash integration smoke without requiring live model answer quality (7.473625ms)
+✔ fails closed on forged source, corpus, authorization, blockers, or report fields (0.461333ms)
+✔ rejects unknown rows and provider payloads hidden in live or nested fields (1.388583ms)
+✔ rejects incomplete trials, failed live outcomes, counter overruns, and spend inconsistencies (2.4255ms)
+✔ rejects simulated MCP evidence and uncorroborated invalid-repair claims (1.379583ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 51.073125
+exitCode=0

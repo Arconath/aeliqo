@@ -1,0 +1,118 @@
+{
+  "schema": "aeliqo.t35.source-and-candidate-binding.v1",
+  "packetStatus": "author-packet-complete-awaiting-independent-review",
+  "currentIntegration": {
+    "commit": "2f1b663b9e6cd1f7644df12b062ba5b3e0e43134",
+    "tree": "e963219acf406ea3346204011115493bea246462",
+    "trackedTreeClean": true
+  },
+  "productSource": {
+    "commit": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+    "tree": "122cb765c8302ccd94a9e0945f1c6bb5512da029",
+    "candidateDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+    "sourceIdentity": "harness/evidence/t33/421deab-final-candidate/source-identity.json",
+    "sourceIdentitySha256": "837d725b37cd6450995b32dc3befd199b347577d0a9954ed0c2bd886dfa4cbf7",
+    "sourceDeltaFromReviewed676db22": [
+      "deploy/server.go",
+      "deploy/server_test.go",
+      "scripts/ci/check-static-image.sh"
+    ],
+    "sourceDeltaPurpose": "Recognize locked Vite eight-character URL-safe asset hashes and make the image smoke check every index-referenced JavaScript and CSS asset."
+  },
+  "t33Author": {
+    "path": "harness/evidence/t33/421deab-final-candidate/manifest.json",
+    "sha256": "d78adb730ec80c1313cc4df69f3b36ceab94332214b676b7003f241ed1cd8278",
+    "retainedCandidateManifest": {
+      "path": "harness/evidence/t33/421deab-final-candidate/candidate/manifest.json",
+      "sha256": "cac81d42b0af9ea32fba959c9bfd0fe9d52ac0b9478b3c0aa125338995082729"
+    },
+    "checksumInventory": {
+      "path": "harness/evidence/t33/421deab-final-candidate/SHA256SUMS",
+      "sha256": "b42de6e29e685c325c6b4bc17078ae4c3161456d88c24c5f8b0f02af588a172b"
+    },
+    "status": "local-candidate-passed-independent-review-pending",
+    "sourceCommitMatches": true,
+    "sourceTreeMatches": true,
+    "sourceDigestMatches": true,
+    "version": "0.1.0-rc.1",
+    "packageCount": 6,
+    "packageBytesUnchangedByDeliveryFix": "all six tarball SHA-256 values match the reviewed 676db22 candidate",
+    "candidateManifestSourceMatches": true,
+    "candidateManifestVersionMatches": true,
+    "candidateManifestOrderMatches": true
+  },
+  "t33IndependentReview": {
+    "status": "complete",
+    "requiredBeforeT35Finalization": true,
+    "manifest": {
+      "path": "harness/evidence/t33/421deab-final-candidate-review/manifest.json",
+      "sha256": "febc389621218385d0bd54cb255f407dd7e9f898e2626a76b50245db2045d7f3"
+    },
+    "record": {
+      "path": "harness/evidence/t33/421deab-final-candidate-review/independent-review.json",
+      "sha256": "e5a14ee36033567b7cbfd6768548e56a7901017f45489143781852059ce12131"
+    },
+    "reviewer": "/root/review_t33_421deab",
+    "reviewHeadCommit": "2f1b663b9e6cd1f7644df12b062ba5b3e0e43134",
+    "reviewHeadTree": "e963219acf406ea3346204011115493bea246462",
+    "candidateSourceCommit": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+    "candidateSourceTree": "122cb765c8302ccd94a9e0945f1c6bb5512da029",
+    "candidateDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+    "candidateBinding": "exact",
+    "sourceBinding": "exact",
+    "decision": "approve",
+    "findings": {
+      "p0": 0,
+      "p1": 0,
+      "p2": 0,
+      "p3": 0,
+      "blocking": 0
+    },
+    "note": "T33 review evidence is integrated and exact-bound; T35 finalization still requires independent review of this packet."
+  },
+  "exactCandidatePackageBindings": [
+    {
+      "name": "@aeliqo/core",
+      "file": "aeliqo-core-0.1.0-rc.1.tgz",
+      "bytes": 183748,
+      "sha256": "bfee566d16179ec0a222de966ff2b00cac042e238e798e09d9afeb8d689c7f38",
+      "integrity": "sha512-mlJ8Ssw2ojVgOLKahc6by8DBpONgVFghp3r92YJmm7BPkGtLDo5qnghono3Z+mO2kKA7H0HRAl+JNbgvPxtWKg=="
+    },
+    {
+      "name": "@aeliqo/runtime",
+      "file": "aeliqo-runtime-0.1.0-rc.1.tgz",
+      "bytes": 228488,
+      "sha256": "df7b183da797d6c822e56c0db3af59860e4a5a1c430ac4a2f342f6a8be520d40",
+      "integrity": "sha512-EPmpv9TNarwk6aSymK1um6RpEtgFEgNPyzZOrQgD4wainCdmyRmL6Okp1+GiKEof4yIZyEM3S3J+rr8mjABYfA=="
+    },
+    {
+      "name": "@aeliqo/web",
+      "file": "aeliqo-web-0.1.0-rc.1.tgz",
+      "bytes": 407913,
+      "sha256": "a4260c87d1bf2147435bd0108e630bdc7eaf0d8f5a13c45dd6d4423c0c637383",
+      "integrity": "sha512-ODldWO7Y5TznW8/STjRjjjvqjcJSMVT897In/ZOqdbcm4l/DHWznbBL54NP0A6/3Ja773jt0kKfbLQ6ytgTGIQ=="
+    },
+    {
+      "name": "@aeliqo/agent",
+      "file": "aeliqo-agent-0.1.0-rc.1.tgz",
+      "bytes": 125773,
+      "sha256": "c4b77fa82e1ec5cf6cde7ba4d5b266d198be9ac2768e8d6b0fda8ad50e652e23",
+      "integrity": "sha512-ZYK2lm4SAygBP9xhsNzRaZwDOdqaXX9ClamNv1E2++LhR19YX95UtOsZw6h4+UZwmIXQGpMLWJNyj8TpybnLwQ=="
+    },
+    {
+      "name": "@aeliqo/devtools",
+      "file": "aeliqo-devtools-0.1.0-rc.1.tgz",
+      "bytes": 21156,
+      "sha256": "6166f2a994458f286b979a7d32ea1a3c1ce41d3d03d91acbb9a4b386e8d8ab6d",
+      "integrity": "sha512-Wuol9zm+tp8Y0kQR4SUCh5zyxdTMSKgfgH7EgGNUb4+zpa/uNfS6hcq6Ae2ypGabeEo9HRtLV7a/CS9UR+DW4w=="
+    },
+    {
+      "name": "@aeliqo/react",
+      "file": "aeliqo-react-0.1.0-rc.1.tgz",
+      "bytes": 15231,
+      "sha256": "d35abeee2912e50d4f3c3cc214f23f24813cecec1a6aad8dbb11b8753dc056d1",
+      "integrity": "sha512-jFkF+1cXYwdJ59bn52ZSSw8QCfdGEAmU9BMZOAYrDMi+/KidEKifOpMPjMviSF+NYfgApdBzaPeCPE6vh3eTUg=="
+    }
+  ],
+  "noStaleIntermediateBinding": true
+}

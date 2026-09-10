@@ -1,0 +1,27 @@
+command: sha256sum -c SHA256SUMS
+build-output.txt: OK
+candidate/aeliqo-agent-0.1.0-rc.1.tgz: OK
+candidate/aeliqo-core-0.1.0-rc.1.tgz: OK
+candidate/aeliqo-devtools-0.1.0-rc.1.tgz: OK
+candidate/aeliqo-react-0.1.0-rc.1.tgz: OK
+candidate/aeliqo-runtime-0.1.0-rc.1.tgz: OK
+candidate/aeliqo-web-0.1.0-rc.1.tgz: OK
+candidate/consumer.json: OK
+candidate/manifest.json: OK
+candidate/sbom.cdx.json: OK
+candidate/secret-scan.json: OK
+manifest.json: OK
+rebuild-output.txt: OK
+rebuild/aeliqo-agent-0.1.0-rc.1.tgz: OK
+rebuild/aeliqo-core-0.1.0-rc.1.tgz: OK
+rebuild/aeliqo-devtools-0.1.0-rc.1.tgz: OK
+rebuild/aeliqo-react-0.1.0-rc.1.tgz: OK
+rebuild/aeliqo-runtime-0.1.0-rc.1.tgz: OK
+rebuild/aeliqo-web-0.1.0-rc.1.tgz: OK
+rebuild/consumer.json: OK
+rebuild/manifest.json: OK
+rebuild/sbom.cdx.json: OK
+rebuild/secret-scan.json: OK
+reproducibility.json: OK
+source-identity.json: OK
+exitCode=0

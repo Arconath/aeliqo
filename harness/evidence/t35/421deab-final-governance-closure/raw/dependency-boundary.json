@@ -1,0 +1,208 @@
+{
+  "schema": "aeliqo.t35.dependency-boundary.v2",
+  "source": {
+    "commit": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+    "tree": "122cb765c8302ccd94a9e0945f1c6bb5512da029",
+    "candidateDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6"
+  },
+  "candidateRoot": "harness/evidence/t33/421deab-final-candidate/candidate",
+  "packageCount": 6,
+  "exactInternalAndExternalDependencies": true,
+  "dependencyOrderSafe": true,
+  "noWorkspaceAliases": true,
+  "noSdkDependency": true,
+  "noTestkitDependency": true,
+  "packages": [
+    {
+      "name": "@aeliqo/core",
+      "expected": {
+        "dependencies": {
+          "zod": "4.5.4"
+        },
+        "optionalDependencies": {},
+        "peerDependencies": {}
+      },
+      "actual": {
+        "dependencies": {
+          "zod": "4.5.4"
+        },
+        "optionalDependencies": {},
+        "peerDependencies": {}
+      },
+      "exactManifestDependencies": true,
+      "internalDependencyNames": [],
+      "internalDependenciesExactRc": true,
+      "workspaceAliases": false,
+      "staleSdkIdentity": false,
+      "testkitDependency": false
+    },
+    {
+      "name": "@aeliqo/runtime",
+      "expected": {
+        "dependencies": {
+          "@aeliqo/core": "0.1.0-rc.1",
+          "zod": "4.5.4"
+        },
+        "optionalDependencies": {},
+        "peerDependencies": {}
+      },
+      "actual": {
+        "dependencies": {
+          "@aeliqo/core": "0.1.0-rc.1",
+          "zod": "4.5.4"
+        },
+        "optionalDependencies": {},
+        "peerDependencies": {}
+      },
+      "exactManifestDependencies": true,
+      "internalDependencyNames": [
+        "@aeliqo/core"
+      ],
+      "internalDependenciesExactRc": true,
+      "workspaceAliases": false,
+      "staleSdkIdentity": false,
+      "testkitDependency": false
+    },
+    {
+      "name": "@aeliqo/web",
+      "expected": {
+        "dependencies": {
+          "@aeliqo/core": "0.1.0-rc.1",
+          "@lit-labs/ssr": "4.1.0",
+          "@lit-labs/ssr-client": "1.1.8",
+          "d3-scale": "4.0.2",
+          "d3-shape": "3.2.0",
+          "lit": "3.3.3"
+        },
+        "optionalDependencies": {},
+        "peerDependencies": {
+          "@aeliqo/runtime": "0.1.0-rc.1"
+        }
+      },
+      "actual": {
+        "dependencies": {
+          "@aeliqo/core": "0.1.0-rc.1",
+          "@lit-labs/ssr": "4.1.0",
+          "@lit-labs/ssr-client": "1.1.8",
+          "d3-scale": "4.0.2",
+          "d3-shape": "3.2.0",
+          "lit": "3.3.3"
+        },
+        "optionalDependencies": {},
+        "peerDependencies": {
+          "@aeliqo/runtime": "0.1.0-rc.1"
+        }
+      },
+      "exactManifestDependencies": true,
+      "internalDependencyNames": [
+        "@aeliqo/core",
+        "@aeliqo/runtime"
+      ],
+      "internalDependenciesExactRc": true,
+      "workspaceAliases": false,
+      "staleSdkIdentity": false,
+      "testkitDependency": false
+    },
+    {
+      "name": "@aeliqo/agent",
+      "expected": {
+        "dependencies": {
+          "@aeliqo/core": "0.1.0-rc.1",
+          "@aeliqo/runtime": "0.1.0-rc.1"
+        },
+        "optionalDependencies": {},
+        "peerDependencies": {
+          "@modelcontextprotocol/server": "2.0.0",
+          "@modelcontextprotocol/node": "2.0.0",
+          "openai": "7.10.0",
+          "@modelcontextprotocol/client": "2.0.0"
+        }
+      },
+      "actual": {
+        "dependencies": {
+          "@aeliqo/core": "0.1.0-rc.1",
+          "@aeliqo/runtime": "0.1.0-rc.1"
+        },
+        "optionalDependencies": {},
+        "peerDependencies": {
+          "@modelcontextprotocol/server": "2.0.0",
+          "@modelcontextprotocol/node": "2.0.0",
+          "openai": "7.10.0",
+          "@modelcontextprotocol/client": "2.0.0"
+        }
+      },
+      "exactManifestDependencies": true,
+      "internalDependencyNames": [
+        "@aeliqo/core",
+        "@aeliqo/runtime"
+      ],
+      "internalDependenciesExactRc": true,
+      "workspaceAliases": false,
+      "staleSdkIdentity": false,
+      "testkitDependency": false
+    },
+    {
+      "name": "@aeliqo/devtools",
+      "expected": {
+        "dependencies": {
+          "@aeliqo/core": "0.1.0-rc.1",
+          "@aeliqo/runtime": "0.1.0-rc.1"
+        },
+        "optionalDependencies": {},
+        "peerDependencies": {}
+      },
+      "actual": {
+        "dependencies": {
+          "@aeliqo/core": "0.1.0-rc.1",
+          "@aeliqo/runtime": "0.1.0-rc.1"
+        },
+        "optionalDependencies": {},
+        "peerDependencies": {}
+      },
+      "exactManifestDependencies": true,
+      "internalDependencyNames": [
+        "@aeliqo/core",
+        "@aeliqo/runtime"
+      ],
+      "internalDependenciesExactRc": true,
+      "workspaceAliases": false,
+      "staleSdkIdentity": false,
+      "testkitDependency": false
+    },
+    {
+      "name": "@aeliqo/react",
+      "expected": {
+        "dependencies": {
+          "@aeliqo/web": "0.1.0-rc.1",
+          "@lit-labs/ssr-react": "0.3.4",
+          "@lit/react": "1.0.8"
+        },
+        "optionalDependencies": {},
+        "peerDependencies": {
+          "react": ">=19.2.0 <20.0.0",
+          "react-dom": ">=19.2.0 <20.0.0"
+        }
+      },
+      "actual": {
+        "dependencies": {
+          "@aeliqo/web": "0.1.0-rc.1",
+          "@lit-labs/ssr-react": "0.3.4",
+          "@lit/react": "1.0.8"
+        },
+        "optionalDependencies": {},
+        "peerDependencies": {
+          "react": ">=19.2.0 <20.0.0",
+          "react-dom": ">=19.2.0 <20.0.0"
+        }
+      },
+      "exactManifestDependencies": true,
+      "internalDependencyNames": [
+        "@aeliqo/web"
+      ],
+      "internalDependenciesExactRc": true,
+      "workspaceAliases": false,
+      "staleSdkIdentity": false,
+      "testkitDependency": false
+    }
+  ]
+}

@@ -1,0 +1,304 @@
+{
+  "schema": "aeliqo.t35.final-governance-closure.v3",
+  "task": "T35",
+  "status": "author-packet-complete-awaiting-independent-review",
+  "recordedAt": "2026-09-10T22:13:24.724Z",
+  "author": "T35 governance evidence author",
+  "source": {
+    "productSourceRevision": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+    "productSourceTree": "122cb765c8302ccd94a9e0945f1c6bb5512da029",
+    "candidateDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+    "currentIntegrationCommit": "2f1b663b9e6cd1f7644df12b062ba5b3e0e43134",
+    "currentIntegrationTree": "e963219acf406ea3346204011115493bea246462",
+    "currentDigestRecheck": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+    "currentDigestExact": true,
+    "trackedTreeClean": true,
+    "sourceDeltaFromReviewed676db22": [
+      "deploy/server.go",
+      "deploy/server_test.go",
+      "scripts/ci/check-static-image.sh"
+    ],
+    "sourceDeltaPurpose": "Recognize locked Vite eight-character URL-safe asset hashes and make the image smoke check every index-referenced JavaScript and CSS asset."
+  },
+  "historicalReference": {
+    "path": "harness/evidence/t35/676db22-final-governance-closure/manifest.json",
+    "sha256": "e45cdb798331c3722d543e23e2fc8950e8fb84810dcaa8b98a2fff9ea6b0dca7",
+    "usedAsHistoricalReferenceOnly": true,
+    "note": "The historical packet is not an active review or source binding; its prior completion status is not reused."
+  },
+  "currentCandidate": {
+    "t33AuthorManifest": {
+      "path": "harness/evidence/t33/421deab-final-candidate/manifest.json",
+      "sha256": "d78adb730ec80c1313cc4df69f3b36ceab94332214b676b7003f241ed1cd8278"
+    },
+    "t33IndependentReview": {
+      "manifest": {
+        "path": "harness/evidence/t33/421deab-final-candidate-review/manifest.json",
+        "sha256": "febc389621218385d0bd54cb255f407dd7e9f898e2626a76b50245db2045d7f3"
+      },
+      "record": {
+        "path": "harness/evidence/t33/421deab-final-candidate-review/independent-review.json",
+        "sha256": "e5a14ee36033567b7cbfd6768548e56a7901017f45489143781852059ce12131"
+      },
+      "reviewer": "/root/review_t33_421deab",
+      "reviewHeadCommit": "2f1b663b9e6cd1f7644df12b062ba5b3e0e43134",
+      "reviewHeadTree": "e963219acf406ea3346204011115493bea246462",
+      "candidateSourceCommit": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+      "candidateSourceTree": "122cb765c8302ccd94a9e0945f1c6bb5512da029",
+      "candidateDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+      "candidateBinding": "exact",
+      "sourceBinding": "exact",
+      "decision": "approve",
+      "findings": {
+        "p0": 0,
+        "p1": 0,
+        "p2": 0,
+        "blocking": 0
+      }
+    },
+    "t33RetainedCandidateManifest": {
+      "path": "harness/evidence/t33/421deab-final-candidate/candidate/manifest.json",
+      "sha256": "cac81d42b0af9ea32fba959c9bfd0fe9d52ac0b9478b3c0aa125338995082729"
+    },
+    "t33SourceIdentity": {
+      "path": "harness/evidence/t33/421deab-final-candidate/source-identity.json",
+      "sha256": "837d725b37cd6450995b32dc3befd199b347577d0a9954ed0c2bd886dfa4cbf7"
+    },
+    "t33ChecksumInventory": {
+      "path": "harness/evidence/t33/421deab-final-candidate/SHA256SUMS",
+      "sha256": "b42de6e29e685c325c6b4bc17078ae4c3161456d88c24c5f8b0f02af588a172b"
+    },
+    "status": "local-candidate-approved-independent-review-complete",
+    "sourceCommit": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+    "sourceTree": "122cb765c8302ccd94a9e0945f1c6bb5512da029",
+    "candidateDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+    "version": "0.1.0-rc.1",
+    "packageCount": 6,
+    "packageNames": [
+      "@aeliqo/core",
+      "@aeliqo/runtime",
+      "@aeliqo/web",
+      "@aeliqo/agent",
+      "@aeliqo/devtools",
+      "@aeliqo/react"
+    ],
+    "publishOrder": [
+      "@aeliqo/core",
+      "@aeliqo/runtime",
+      "@aeliqo/web",
+      "@aeliqo/agent",
+      "@aeliqo/devtools",
+      "@aeliqo/react"
+    ],
+    "packageRecords": [
+      {
+        "name": "@aeliqo/core",
+        "file": "aeliqo-core-0.1.0-rc.1.tgz",
+        "bytes": 183748,
+        "sha256": "bfee566d16179ec0a222de966ff2b00cac042e238e798e09d9afeb8d689c7f38",
+        "integrity": "sha512-mlJ8Ssw2ojVgOLKahc6by8DBpONgVFghp3r92YJmm7BPkGtLDo5qnghono3Z+mO2kKA7H0HRAl+JNbgvPxtWKg=="
+      },
+      {
+        "name": "@aeliqo/runtime",
+        "file": "aeliqo-runtime-0.1.0-rc.1.tgz",
+        "bytes": 228488,
+        "sha256": "df7b183da797d6c822e56c0db3af59860e4a5a1c430ac4a2f342f6a8be520d40",
+        "integrity": "sha512-EPmpv9TNarwk6aSymK1um6RpEtgFEgNPyzZOrQgD4wainCdmyRmL6Okp1+GiKEof4yIZyEM3S3J+rr8mjABYfA=="
+      },
+      {
+        "name": "@aeliqo/web",
+        "file": "aeliqo-web-0.1.0-rc.1.tgz",
+        "bytes": 407913,
+        "sha256": "a4260c87d1bf2147435bd0108e630bdc7eaf0d8f5a13c45dd6d4423c0c637383",
+        "integrity": "sha512-ODldWO7Y5TznW8/STjRjjjvqjcJSMVT897In/ZOqdbcm4l/DHWznbBL54NP0A6/3Ja773jt0kKfbLQ6ytgTGIQ=="
+      },
+      {
+        "name": "@aeliqo/agent",
+        "file": "aeliqo-agent-0.1.0-rc.1.tgz",
+        "bytes": 125773,
+        "sha256": "c4b77fa82e1ec5cf6cde7ba4d5b266d198be9ac2768e8d6b0fda8ad50e652e23",
+        "integrity": "sha512-ZYK2lm4SAygBP9xhsNzRaZwDOdqaXX9ClamNv1E2++LhR19YX95UtOsZw6h4+UZwmIXQGpMLWJNyj8TpybnLwQ=="
+      },
+      {
+        "name": "@aeliqo/devtools",
+        "file": "aeliqo-devtools-0.1.0-rc.1.tgz",
+        "bytes": 21156,
+        "sha256": "6166f2a994458f286b979a7d32ea1a3c1ce41d3d03d91acbb9a4b386e8d8ab6d",
+        "integrity": "sha512-Wuol9zm+tp8Y0kQR4SUCh5zyxdTMSKgfgH7EgGNUb4+zpa/uNfS6hcq6Ae2ypGabeEo9HRtLV7a/CS9UR+DW4w=="
+      },
+      {
+        "name": "@aeliqo/react",
+        "file": "aeliqo-react-0.1.0-rc.1.tgz",
+        "bytes": 15231,
+        "sha256": "d35abeee2912e50d4f3c3cc214f23f24813cecec1a6aad8dbb11b8753dc056d1",
+        "integrity": "sha512-jFkF+1cXYwdJ59bn52ZSSw8QCfdGEAmU9BMZOAYrDMi+/KidEKifOpMPjMviSF+NYfgApdBzaPeCPE6vh3eTUg=="
+      }
+    ],
+    "allApache20": true,
+    "canonicalLicenseAndNotice": true,
+    "privateTestkitExcluded": true,
+    "exactDependencies": true,
+    "noWorkspaceAliases": true,
+    "noSdkDependency": true,
+    "noTestkitDependency": true,
+    "strictExportSpecifiers": 130,
+    "offlineConsumer": {
+      "source": "T33 author candidate/consumer.json",
+      "runs": 2,
+      "result": "passed",
+      "networkDenied": true,
+      "deniedMethods": 10,
+      "packageModulesLoaded": 7,
+      "coreParserExecuted": true,
+      "auditExecuted": true,
+      "auditNetworkAttempts": 0,
+      "sampledOfflineNoEgress": true
+    },
+    "sbomComponents": 63,
+    "secretFindings": 0,
+    "releaseArtifactsReproducible": "nine release artifacts byte-identical across two clean output directories",
+    "packageBytesUnchangedByDeliveryFix": "all six tarball SHA-256 values match the reviewed 676db22 candidate"
+  },
+  "governanceInputs": [
+    {
+      "path": "MASTER-SOT.md",
+      "sha256": "c94bf4578b58750493ef3357d8c9741f41a5fede74b97ca8b820112c3107f464"
+    },
+    {
+      "path": "README.md",
+      "sha256": "675842e98e42c8461341163a21bc8a24ae20bc4d773a8f058693aad9eaf09688"
+    },
+    {
+      "path": "docs/15-oss-business.md",
+      "sha256": "03fce1133b20709db917391f6ee976fb35362f0989ee56b97a0bc26ee9e6b99c"
+    },
+    {
+      "path": "docs/business/oss-commercial-boundary.md",
+      "sha256": "5a78ee11805502a0660251b2c98d5c8275b1d2f45e37981f8437aa3fad1287ca"
+    },
+    {
+      "path": "docs/public/0.1.0-support-boundary.md",
+      "sha256": "114bb77acd108b12e2322da997afa925e9d3b153808fc2c11e228f40f51172c6"
+    },
+    {
+      "path": "SECURITY.md",
+      "sha256": "fe3d6c1baaea1ad390cede80816dddfc83f1a632caf3d93a340d6cc4e4ed7e84"
+    },
+    {
+      "path": "SUPPORT.md",
+      "sha256": "481068b56729ec84982aa2ead44a0b3c1864ccdfaddc4fa3831200bf0a17b3eb"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "sha256": "26c4a4da674639c3f3df4575db73860302cf4ed83a9e71ed4dd98fbca83058f0"
+    },
+    {
+      "path": "TRADEMARKS.md",
+      "sha256": "e7ef8da971bb4ef53ba8dd44568aa1f6170a382a2207ac6909c514f7902c1785"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "NOTICE",
+      "sha256": "3b685bb536ef72b2063fb7450720cc2f6f79752dbc2ebd750a304508a553b69b"
+    },
+    {
+      "path": "apps/site/public/browser-monitoring.json",
+      "sha256": "7187d1e8e2a4d61b1dc5dfedb22d703a462df21470e0c145365b20fb3ed467c3"
+    },
+    {
+      "path": "apps/site/public/google-analytics.json",
+      "sha256": "7187d1e8e2a4d61b1dc5dfedb22d703a462df21470e0c145365b20fb3ed467c3"
+    }
+  ],
+  "verification": {
+    "governanceInputsCurrentSnapshot": "pass",
+    "currentBoundaryClaims": "pass",
+    "commercialTruth": "pass",
+    "candidateSourceBinding": true,
+    "candidatePackageBoundary": true,
+    "candidateDependencyBoundary": true,
+    "candidateOfflineAndNoEgress": true,
+    "candidateReproducibility": "nine release artifacts byte-identical across two clean output directories",
+    "t33AuthorChecksumInventory": "pass-24/24",
+    "t33AuthorSecurityScan": true,
+    "currentClaimsIdentityScan": "pass-0-findings",
+    "releaseTooling": "pass-22/22",
+    "siteBuild": "pass",
+    "siteGovernanceBrowser": "pass-7/7",
+    "t33IndependentReview": "pass-exact-source-candidate-review-record",
+    "t35IndependentReview": "pending-author-packet-review"
+  },
+  "reviewGate": {
+    "status": "pending",
+    "requiredBeforeFinalization": true,
+    "finalizationPermitted": false,
+    "requiredEvidence": "Independent T35 review of this author packet after the integrated T33 review is exact-bound to the author candidate and source digest.",
+    "upstreamT33Review": {
+      "status": "complete",
+      "manifest": {
+        "path": "harness/evidence/t33/421deab-final-candidate-review/manifest.json",
+        "sha256": "febc389621218385d0bd54cb255f407dd7e9f898e2626a76b50245db2045d7f3"
+      },
+      "record": {
+        "path": "harness/evidence/t33/421deab-final-candidate-review/independent-review.json",
+        "sha256": "e5a14ee36033567b7cbfd6768548e56a7901017f45489143781852059ce12131"
+      },
+      "reviewer": "/root/review_t33_421deab"
+    },
+    "reviewer": null,
+    "manifest": null,
+    "record": null,
+    "note": "The upstream T33 review is bound exactly; T35 finalization still requires an independent review of this governance packet."
+  },
+  "evidence": {
+    "sourceBinding": "raw/source-and-candidate-binding.json",
+    "candidateIntegrity": "raw/candidate-integrity-recheck.json",
+    "governanceSnapshot": "raw/governance-snapshot.json",
+    "packageBoundary": "raw/package-boundary.json",
+    "dependencyBoundary": "raw/dependency-boundary.json",
+    "currentClaimsIdentityScan": "raw/current-claims-identity-scan.json",
+    "t33AuthorSecurityRecheck": "raw/t33-author-security-recheck.json",
+    "t33AuthorChecksumVerify": "raw/t33-author-checksum-verify.log",
+    "install": "raw/install.log",
+    "offlineAuditTests": "raw/offline-audit-tests.log",
+    "releaseTooling": "raw/release-tooling.log",
+    "siteBuild": "raw/site-build.log",
+    "siteBrowser": "raw/site-browser.log",
+    "sourceDigest": "raw/source-digest.log",
+    "t33AuthorManifest": "harness/evidence/t33/421deab-final-candidate/manifest.json",
+    "t33RetainedCandidateManifest": "harness/evidence/t33/421deab-final-candidate/candidate/manifest.json",
+    "t33Reproducibility": "harness/evidence/t33/421deab-final-candidate/reproducibility.json",
+    "t33SourceIdentity": "harness/evidence/t33/421deab-final-candidate/source-identity.json",
+    "t33CandidateChecksumInventory": "harness/evidence/t33/421deab-final-candidate/SHA256SUMS",
+    "t33ReviewManifest": "harness/evidence/t33/421deab-final-candidate-review/manifest.json",
+    "t33ReviewRecord": "harness/evidence/t33/421deab-final-candidate-review/independent-review.json",
+    "t33ReviewChecksumInventory": "harness/evidence/t33/421deab-final-candidate-review/SHA256SUMS",
+    "checksumInventory": "SHA256SUMS"
+  },
+  "limitations": [
+    "This is an author packet for T35 OSS governance, package boundaries, commercial truthfulness and sampled offline local-use evidence; it is not independent review or final T35 approval.",
+    "The independent T33 421deab review is integrated and bound by its exact manifest/report hashes; this packet remains pending its own independent T35 review.",
+    "Fresh T35 governance/audit/site checks ran with Node v24.20.0; they are not a new release candidate rebuild. The retained T33 candidate and independent review used the same recorded Node v24.20.0 toolchain.",
+    "Optional authenticated HTTP, MCP and BYOK/provider integrations require explicit host-authorized effects and are outside the offline claim.",
+    "Registry publication, source release, website deployment, stable promotion, provenance and commercial availability remain separate release states.",
+    "This packet is not legal, accessibility, manual assistive-technology, general model-quality or commercial-launch certification."
+  ],
+  "correctionsApplied": [
+    "Uses truthful author-packet-complete-awaiting-independent-review status; no historical reviewed status is reused.",
+    "Binds directly to the current cache-fix source digest, T33 author manifest and exact integrated T33 independent-review manifest/report; no stale intermediate source binding is retained.",
+    "Uses only the direct six-package family and excludes private @aeliqo/testkit from public release claims."
+  ],
+  "mutations": {
+    "productSource": false,
+    "taskState": false,
+    "candidateArtifacts": false,
+    "npm": false,
+    "github": false,
+    "gitops": false,
+    "production": false,
+    "reviewPacketOnly": true
+  }
+}

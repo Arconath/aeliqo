@@ -1,0 +1,105 @@
+{
+  "schema": "aeliqo.t35.governance-snapshot.v2",
+  "task": "T35",
+  "packetStatus": "author-packet-complete-awaiting-independent-review",
+  "source": {
+    "productSourceRevision": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+    "candidateDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6"
+  },
+  "governanceInputs": [
+    {
+      "path": "MASTER-SOT.md",
+      "sha256": "c94bf4578b58750493ef3357d8c9741f41a5fede74b97ca8b820112c3107f464"
+    },
+    {
+      "path": "README.md",
+      "sha256": "675842e98e42c8461341163a21bc8a24ae20bc4d773a8f058693aad9eaf09688"
+    },
+    {
+      "path": "docs/15-oss-business.md",
+      "sha256": "03fce1133b20709db917391f6ee976fb35362f0989ee56b97a0bc26ee9e6b99c"
+    },
+    {
+      "path": "docs/business/oss-commercial-boundary.md",
+      "sha256": "5a78ee11805502a0660251b2c98d5c8275b1d2f45e37981f8437aa3fad1287ca"
+    },
+    {
+      "path": "docs/public/0.1.0-support-boundary.md",
+      "sha256": "114bb77acd108b12e2322da997afa925e9d3b153808fc2c11e228f40f51172c6"
+    },
+    {
+      "path": "SECURITY.md",
+      "sha256": "fe3d6c1baaea1ad390cede80816dddfc83f1a632caf3d93a340d6cc4e4ed7e84"
+    },
+    {
+      "path": "SUPPORT.md",
+      "sha256": "481068b56729ec84982aa2ead44a0b3c1864ccdfaddc4fa3831200bf0a17b3eb"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "sha256": "26c4a4da674639c3f3df4575db73860302cf4ed83a9e71ed4dd98fbca83058f0"
+    },
+    {
+      "path": "TRADEMARKS.md",
+      "sha256": "e7ef8da971bb4ef53ba8dd44568aa1f6170a382a2207ac6909c514f7902c1785"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "NOTICE",
+      "sha256": "3b685bb536ef72b2063fb7450720cc2f6f79752dbc2ebd750a304508a553b69b"
+    },
+    {
+      "path": "apps/site/public/browser-monitoring.json",
+      "sha256": "7187d1e8e2a4d61b1dc5dfedb22d703a462df21470e0c145365b20fb3ed467c3"
+    },
+    {
+      "path": "apps/site/public/google-analytics.json",
+      "sha256": "7187d1e8e2a4d61b1dc5dfedb22d703a462df21470e0c145365b20fb3ed467c3"
+    }
+  ],
+  "claimChecks": {
+    "directPackageFamily": true,
+    "directPackageNames": {
+      "@aeliqo/core": true,
+      "@aeliqo/runtime": true,
+      "@aeliqo/web": true,
+      "@aeliqo/react": true,
+      "@aeliqo/agent": true,
+      "@aeliqo/devtools": true
+    },
+    "privateTestkit": true,
+    "apache20": true,
+    "canonicalLicenseAndNoticeFiles": true,
+    "noLicenseServerOrAccountCallback": true,
+    "noRuntimePhoneHomeOrLicenseCheck": true,
+    "noArtificialPaidRowCap": true,
+    "offlineLocalUse": true,
+    "optionalHostConfiguredEffects": true,
+    "futureCommercialServiceConditional": true,
+    "noProvenSalesDemandPriceSlaRevenuePmf": true,
+    "noCommercialAvailabilityClaim": true,
+    "noPublicationOrDeploymentClaimInScope": true
+  },
+  "commercialTruth": {
+    "futureServicesConditional": true,
+    "noSalesDemandPriceSlaRevenuePmfClaim": true,
+    "businessBoundaryIsHypothesis": true
+  },
+  "historicalContext": {
+    "priorPacket": "harness/evidence/t35/676db22-final-governance-closure/manifest.json",
+    "priorPacketSha256": "e45cdb798331c3722d543e23e2fc8950e8fb84810dcaa8b98a2fff9ea6b0dca7",
+    "usedAsHistoricalReferenceOnly": true,
+    "note": "Historical packet is not an active binding and its prior completion status is not reused."
+  },
+  "verdict": {
+    "governanceInputsCurrentSnapshot": "pass",
+    "currentBoundaryClaims": "pass",
+    "commercialTruth": "pass",
+    "packageIdentityRebind": "direct-six-name-source-bound",
+    "independentT33Review": "pass-exact-source-candidate-review-record",
+    "t35IndependentReview": "pending-author-packet-review"
+  }
+}

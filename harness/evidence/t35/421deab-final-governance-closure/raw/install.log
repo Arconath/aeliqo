@@ -1,0 +1,11 @@
+node:
+v24.20.0
+pnpm:
+11.24.0
+npm:
+11.19.0
+command: pnpm install --offline --frozen-lockfile
+Scope: all 15 workspace projects
+Already up to date
+Done in 162ms using pnpm v11.24.0
+exitCode=0

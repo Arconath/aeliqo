@@ -1,0 +1,107 @@
+{
+  "schema": "aeliqo.t35.governance-checks.v2",
+  "task": "T35",
+  "status": "author-packet-complete-awaiting-independent-review",
+  "source": {
+    "productSourceRevision": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+    "productSourceTree": "122cb765c8302ccd94a9e0945f1c6bb5512da029",
+    "candidateDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+    "currentIntegrationCommit": "2f1b663b9e6cd1f7644df12b062ba5b3e0e43134",
+    "currentIntegrationTree": "e963219acf406ea3346204011115493bea246462"
+  },
+  "checks": [
+    {
+      "id": "governance-current-snapshot",
+      "result": "pass",
+      "evidence": "raw/governance-snapshot.json",
+      "detail": "13 current governance inputs hash-recorded; Apache-2.0, direct six-name, private testkit, offline and availability boundaries are present."
+    },
+    {
+      "id": "governance-commercial-truth",
+      "result": "pass",
+      "evidence": "raw/governance-snapshot.json",
+      "detail": "Future hosted capabilities remain conditional hypotheses; no sales, demand, price, SLA, revenue or product-market-fit claim is made."
+    },
+    {
+      "id": "candidate-source-binding",
+      "result": "pass",
+      "evidence": "raw/source-and-candidate-binding.json; raw/candidate-integrity-recheck.json",
+      "detail": "Current digest rechecks to 421deab; T33 author manifest and retained candidate bind to source commit cb1e229… and source tree 122cb765…."
+    },
+    {
+      "id": "candidate-public-boundary",
+      "result": "pass",
+      "evidence": "raw/package-boundary.json",
+      "detail": "Exactly six direct public Apache-2.0 tarballs carry canonical LICENSE/NOTICE and exclude source files and private testkit."
+    },
+    {
+      "id": "candidate-dependency-boundary",
+      "result": "pass",
+      "evidence": "raw/dependency-boundary.json",
+      "detail": "Packed manifests match the exact internal/external dependency graph, publish order is safe, and no workspace/sdk/testkit dependency remains."
+    },
+    {
+      "id": "offline-local-use",
+      "result": "pass-sampled-from-t33-author",
+      "evidence": "harness/evidence/t33/421deab-final-candidate/candidate/consumer.json; raw/install.log; raw/offline-audit-tests.log",
+      "detail": "Node 24.20.0 offline workspace install and current local audit tests pass; T33 author candidate consumer ran network-denied with ten methods blocked and zero audit network attempts."
+    },
+    {
+      "id": "candidate-reproducibility",
+      "result": "pass-from-t33-author",
+      "evidence": "harness/evidence/t33/421deab-final-candidate/reproducibility.json; raw/t33-author-checksum-verify.log",
+      "detail": "Nine release artifacts are byte-identical across candidate/rebuild and all 24 T33 author checksum entries verify."
+    },
+    {
+      "id": "t33-author-security",
+      "result": "pass-from-t33-author",
+      "evidence": "raw/t33-author-security-recheck.json",
+      "detail": "The T33 author scan is source-bound and reports zero findings in tracked source and packed public artifacts."
+    },
+    {
+      "id": "current-claims-identity-scan",
+      "result": "pass",
+      "evidence": "raw/current-claims-identity-scan.json",
+      "detail": "Current governance inputs and active 421deab T33 author candidate evidence contain zero stale sdk-prefixed identities."
+    },
+    {
+      "id": "release-tooling",
+      "result": "pass-22/22",
+      "evidence": "raw/release-tooling.log",
+      "detail": "Pinned release-tooling tests pass in the current local check environment."
+    },
+    {
+      "id": "site-governance",
+      "result": "pass",
+      "evidence": "raw/site-build.log; raw/site-browser.log",
+      "detail": "Current site build passes and seven governance/navigation browser scenarios pass."
+    },
+    {
+      "id": "t33-independent-review",
+      "result": "pass-exact-source-candidate-review-record",
+      "evidence": "harness/evidence/t33/421deab-final-candidate-review/manifest.json; harness/evidence/t33/421deab-final-candidate-review/independent-review.json; harness/evidence/t33/421deab-final-candidate-review/SHA256SUMS",
+      "detail": "Independent reviewer /root/review_t33_421deab approved the exact 421deab candidate with zero P0-P3/blocking findings; manifest febc3896… and record e5a14ee3… bind the source commit/tree and candidate digest."
+    }
+  ],
+  "findings": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "blocking": 0,
+    "items": []
+  },
+  "pendingGates": [
+    "t35-independent-review"
+  ],
+  "verdict": {
+    "authorPacketComplete": true,
+    "finalT35Decision": "pending-t35-independent-review",
+    "finalizationPermitted": false,
+    "publicationOrDeploymentClaimed": false
+  },
+  "limitations": [
+    "T35 independent review has not been performed; this summary is an author packet only.",
+    "Fresh T35 checks used the recorded Node v24.20.0/pnpm 11.24.0/npm 11.19.0 toolchain; the retained T33 candidate was not rebuilt by T35.",
+    "Publication, provenance, source release, stable promotion, deployment, manual assistive-technology certification and commercial launch are outside this packet."
+  ]
+}

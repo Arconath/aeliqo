@@ -1,0 +1,137 @@
+{
+  "schema": "aeliqo.t35.candidate-integrity-recheck.v1",
+  "packetStatus": "author-packet-complete-awaiting-independent-review",
+  "currentIntegration": {
+    "commit": "2f1b663b9e6cd1f7644df12b062ba5b3e0e43134",
+    "tree": "e963219acf406ea3346204011115493bea246462",
+    "sourceDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+    "expectedSourceDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+    "sourceDigestExact": true
+  },
+  "t33Author": {
+    "path": "harness/evidence/t33/421deab-final-candidate/manifest.json",
+    "sha256": "d78adb730ec80c1313cc4df69f3b36ceab94332214b676b7003f241ed1cd8278",
+    "status": "local-candidate-passed-independent-review-pending",
+    "sourceCommit": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+    "sourceTree": "122cb765c8302ccd94a9e0945f1c6bb5512da029",
+    "candidateDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+    "candidateManifest": {
+      "path": "harness/evidence/t33/421deab-final-candidate/candidate/manifest.json",
+      "sha256": "cac81d42b0af9ea32fba959c9bfd0fe9d52ac0b9478b3c0aa125338995082729",
+      "sourceRevision": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+      "version": "0.1.0-rc.1"
+    },
+    "packageCount": 6
+  },
+  "packages": [
+    {
+      "name": "@aeliqo/core",
+      "file": "aeliqo-core-0.1.0-rc.1.tgz",
+      "manifestSha256": "bfee566d16179ec0a222de966ff2b00cac042e238e798e09d9afeb8d689c7f38",
+      "computedSha256": "bfee566d16179ec0a222de966ff2b00cac042e238e798e09d9afeb8d689c7f38",
+      "manifestIntegrity": "sha512-mlJ8Ssw2ojVgOLKahc6by8DBpONgVFghp3r92YJmm7BPkGtLDo5qnghono3Z+mO2kKA7H0HRAl+JNbgvPxtWKg==",
+      "computedIntegrity": "sha512-mlJ8Ssw2ojVgOLKahc6by8DBpONgVFghp3r92YJmm7BPkGtLDo5qnghono3Z+mO2kKA7H0HRAl+JNbgvPxtWKg==",
+      "manifestBytes": 183748,
+      "computedBytes": 183748,
+      "byteExact": true,
+      "retainedManifestSha256": "bfee566d16179ec0a222de966ff2b00cac042e238e798e09d9afeb8d689c7f38",
+      "retainedMatchesAuthor": true
+    },
+    {
+      "name": "@aeliqo/runtime",
+      "file": "aeliqo-runtime-0.1.0-rc.1.tgz",
+      "manifestSha256": "df7b183da797d6c822e56c0db3af59860e4a5a1c430ac4a2f342f6a8be520d40",
+      "computedSha256": "df7b183da797d6c822e56c0db3af59860e4a5a1c430ac4a2f342f6a8be520d40",
+      "manifestIntegrity": "sha512-EPmpv9TNarwk6aSymK1um6RpEtgFEgNPyzZOrQgD4wainCdmyRmL6Okp1+GiKEof4yIZyEM3S3J+rr8mjABYfA==",
+      "computedIntegrity": "sha512-EPmpv9TNarwk6aSymK1um6RpEtgFEgNPyzZOrQgD4wainCdmyRmL6Okp1+GiKEof4yIZyEM3S3J+rr8mjABYfA==",
+      "manifestBytes": 228488,
+      "computedBytes": 228488,
+      "byteExact": true,
+      "retainedManifestSha256": "df7b183da797d6c822e56c0db3af59860e4a5a1c430ac4a2f342f6a8be520d40",
+      "retainedMatchesAuthor": true
+    },
+    {
+      "name": "@aeliqo/web",
+      "file": "aeliqo-web-0.1.0-rc.1.tgz",
+      "manifestSha256": "a4260c87d1bf2147435bd0108e630bdc7eaf0d8f5a13c45dd6d4423c0c637383",
+      "computedSha256": "a4260c87d1bf2147435bd0108e630bdc7eaf0d8f5a13c45dd6d4423c0c637383",
+      "manifestIntegrity": "sha512-ODldWO7Y5TznW8/STjRjjjvqjcJSMVT897In/ZOqdbcm4l/DHWznbBL54NP0A6/3Ja773jt0kKfbLQ6ytgTGIQ==",
+      "computedIntegrity": "sha512-ODldWO7Y5TznW8/STjRjjjvqjcJSMVT897In/ZOqdbcm4l/DHWznbBL54NP0A6/3Ja773jt0kKfbLQ6ytgTGIQ==",
+      "manifestBytes": 407913,
+      "computedBytes": 407913,
+      "byteExact": true,
+      "retainedManifestSha256": "a4260c87d1bf2147435bd0108e630bdc7eaf0d8f5a13c45dd6d4423c0c637383",
+      "retainedMatchesAuthor": true
+    },
+    {
+      "name": "@aeliqo/agent",
+      "file": "aeliqo-agent-0.1.0-rc.1.tgz",
+      "manifestSha256": "c4b77fa82e1ec5cf6cde7ba4d5b266d198be9ac2768e8d6b0fda8ad50e652e23",
+      "computedSha256": "c4b77fa82e1ec5cf6cde7ba4d5b266d198be9ac2768e8d6b0fda8ad50e652e23",
+      "manifestIntegrity": "sha512-ZYK2lm4SAygBP9xhsNzRaZwDOdqaXX9ClamNv1E2++LhR19YX95UtOsZw6h4+UZwmIXQGpMLWJNyj8TpybnLwQ==",
+      "computedIntegrity": "sha512-ZYK2lm4SAygBP9xhsNzRaZwDOdqaXX9ClamNv1E2++LhR19YX95UtOsZw6h4+UZwmIXQGpMLWJNyj8TpybnLwQ==",
+      "manifestBytes": 125773,
+      "computedBytes": 125773,
+      "byteExact": true,
+      "retainedManifestSha256": "c4b77fa82e1ec5cf6cde7ba4d5b266d198be9ac2768e8d6b0fda8ad50e652e23",
+      "retainedMatchesAuthor": true
+    },
+    {
+      "name": "@aeliqo/devtools",
+      "file": "aeliqo-devtools-0.1.0-rc.1.tgz",
+      "manifestSha256": "6166f2a994458f286b979a7d32ea1a3c1ce41d3d03d91acbb9a4b386e8d8ab6d",
+      "computedSha256": "6166f2a994458f286b979a7d32ea1a3c1ce41d3d03d91acbb9a4b386e8d8ab6d",
+      "manifestIntegrity": "sha512-Wuol9zm+tp8Y0kQR4SUCh5zyxdTMSKgfgH7EgGNUb4+zpa/uNfS6hcq6Ae2ypGabeEo9HRtLV7a/CS9UR+DW4w==",
+      "computedIntegrity": "sha512-Wuol9zm+tp8Y0kQR4SUCh5zyxdTMSKgfgH7EgGNUb4+zpa/uNfS6hcq6Ae2ypGabeEo9HRtLV7a/CS9UR+DW4w==",
+      "manifestBytes": 21156,
+      "computedBytes": 21156,
+      "byteExact": true,
+      "retainedManifestSha256": "6166f2a994458f286b979a7d32ea1a3c1ce41d3d03d91acbb9a4b386e8d8ab6d",
+      "retainedMatchesAuthor": true
+    },
+    {
+      "name": "@aeliqo/react",
+      "file": "aeliqo-react-0.1.0-rc.1.tgz",
+      "manifestSha256": "d35abeee2912e50d4f3c3cc214f23f24813cecec1a6aad8dbb11b8753dc056d1",
+      "computedSha256": "d35abeee2912e50d4f3c3cc214f23f24813cecec1a6aad8dbb11b8753dc056d1",
+      "manifestIntegrity": "sha512-jFkF+1cXYwdJ59bn52ZSSw8QCfdGEAmU9BMZOAYrDMi+/KidEKifOpMPjMviSF+NYfgApdBzaPeCPE6vh3eTUg==",
+      "computedIntegrity": "sha512-jFkF+1cXYwdJ59bn52ZSSw8QCfdGEAmU9BMZOAYrDMi+/KidEKifOpMPjMviSF+NYfgApdBzaPeCPE6vh3eTUg==",
+      "manifestBytes": 15231,
+      "computedBytes": 15231,
+      "byteExact": true,
+      "retainedManifestSha256": "d35abeee2912e50d4f3c3cc214f23f24813cecec1a6aad8dbb11b8753dc056d1",
+      "retainedMatchesAuthor": true
+    }
+  ],
+  "allPackageBytesExact": true,
+  "allRetainedBindingsExact": true,
+  "t33IndependentReview": {
+    "status": "complete",
+    "requiredBeforeT35Finalization": true,
+    "manifest": {
+      "path": "harness/evidence/t33/421deab-final-candidate-review/manifest.json",
+      "sha256": "febc389621218385d0bd54cb255f407dd7e9f898e2626a76b50245db2045d7f3"
+    },
+    "record": {
+      "path": "harness/evidence/t33/421deab-final-candidate-review/independent-review.json",
+      "sha256": "e5a14ee36033567b7cbfd6768548e56a7901017f45489143781852059ce12131"
+    },
+    "reviewer": "/root/review_t33_421deab",
+    "reviewHeadCommit": "2f1b663b9e6cd1f7644df12b062ba5b3e0e43134",
+    "reviewHeadTree": "e963219acf406ea3346204011115493bea246462",
+    "candidateSourceCommit": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+    "candidateSourceTree": "122cb765c8302ccd94a9e0945f1c6bb5512da029",
+    "candidateDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+    "candidateBinding": "exact",
+    "sourceBinding": "exact",
+    "decision": "approve",
+    "findings": {
+      "p0": 0,
+      "p1": 0,
+      "p2": 0,
+      "p3": 0,
+      "blocking": 0
+    }
+  },
+  "noStaleIntermediateBinding": true
+}
