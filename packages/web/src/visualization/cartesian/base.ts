@@ -211,6 +211,7 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
     const valueLabel = geometry.result.precision.kind === "exact" ? "Exact loaded values" : "Loaded approximate values";
     const histogramMeasure = this.expectedView === "histogram" && this.state.kind === "ready" && this.state.bound.spec.view === "histogram" ? this.state.bound.spec.bins.measure : undefined;
     const tableLabel = histogramMeasure === undefined ? valueLabel : `${valueLabel}; executor-produced ${histogramMeasure} bins`;
+    const axisLeft = geometry.axisLeft ?? 64;
     return html`<figure part="figure">
       ${data ? html`<figcaption>${label}</figcaption><p part="scope">${scope} ${geometry.rows.length} loaded rows.${displayed.length !== geometry.rows.length ? ` ${displayed.length} rows in this display partition.` : nothing}</p>` : nothing}
       ${geometry.result.period && data ? html`<p part="note">${geometry.result.period.interpretation} (${geometry.result.period.timezone}).</p>` : nothing}
@@ -223,11 +224,11 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
       ${graphic && axes && geometry.state === "plot" ? html`<div part="viewport" role="region" tabindex="0" aria-label=${`${label} ${this.expectedView} chart. Scroll to view the full graphic.`} style=${`inline-size: ${this.width}px`}>
         <svg viewBox=${`0 0 ${geometry.width} ${geometry.height}`} width=${geometry.width} height=${geometry.height} role="img" aria-label=${`${label}. ${scope} Values and selection are available in the data table below.`}>
           ${svgPlotMarks(geometry)}
-          <path d=${`M64,24V${geometry.height - 48}H${geometry.width - 24}`} fill="none" stroke="currentColor"></path>
+          <path d=${`M${axisLeft},24V${geometry.height - 48}H${geometry.width - 24}`} fill="none" stroke="currentColor"></path>
           ${axes.x.ticks.map((tick, index) => svg`<text x=${tick.position} y=${geometry.height - 30} text-anchor=${this.xTickAnchor(index, axes.x.ticks.length)} aria-label=${tick.label}>${this.tickText(tick.label)}</text>`)}
-          ${axes.y.ticks.map((tick) => svg`<text x="58" y=${tick.position} text-anchor="end" aria-label=${tick.label}>${this.tickText(tick.label)}</text>`)}
+          ${axes.y.ticks.map((tick) => svg`<text x=${axisLeft - 6} y=${tick.position} text-anchor="end" aria-label=${tick.label}>${this.tickText(tick.label)}</text>`)}
           <text x=${geometry.width / 2} y=${geometry.height - 8} text-anchor="middle">${axes.xLabel}</text>
-          <text x="64" y="14">${axes.yLabel}</text>
+          <text x=${axisLeft} y="14">${axes.yLabel}</text>
         </svg>
       </div>` : nothing}
       ${data ? html`${this.renderLegend(geometry)}${this.renderColorKey(geometry)}<div part="data"><table>

@@ -209,7 +209,7 @@ export class AeliqoBreakdownElement extends AeliqoCompoundElement {
     return html`
       <section part="root" data-status=${current} aria-label=${this.title}>
         <div part="header"><h2>${this.title}</h2>${this.scope ? html`<span part="scope">${this.scopeLabel(this.scope)}</span>` : nothing}</div>
-        <div part="table"><aeliqo-table .caption=${`${this.title}: grouped ${this.entity} data`} .columns=${tableColumns} .rows=${tableRows} .identity=${["groupKey"]} .selectedKeys=${selectedKey ? [selectedKey] : []} .selection=${"single"} .result=${this.result} .scope=${this.scope} status=${current} @aeliqo-table-selection=${this.forwardGroupSelection}></aeliqo-table></div>
+        <div part="table"><aeliqo-table data-reflow="stack" .caption=${`${this.title}: grouped ${this.entity} data`} .columns=${tableColumns} .rows=${tableRows} .identity=${["groupKey"]} .selectedKeys=${selectedKey ? [selectedKey] : []} .selection=${"single"} .result=${this.result} .scope=${this.scope} status=${current} @aeliqo-table-selection=${this.forwardGroupSelection}></aeliqo-table></div>
         ${this.groups.length > groups.length ? html`<p part="hint">Showing a bounded group window.</p>` : nothing}
         ${this.selectedGroup ? html`<section part="detail" aria-label="Contributing records"><h3>Contributing records</h3><aeliqo-record-list .rows=${this.rows} .columns=${this.columns} .identity=${this.identity} .entity=${this.entity} .result=${this.result} .scope=${this.scope} selection="none"></aeliqo-record-list></section>` : nothing}
         ${current !== "ready" ? html`<p part="status" role="status">${this.statusText(current, this.message)}</p>` : nothing}

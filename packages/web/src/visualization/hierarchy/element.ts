@@ -26,8 +26,9 @@ export abstract class AeliqoHierarchyElementBase extends AeliqoFoundationElement
     :host { display: block; min-inline-size:0; inline-size:100%; max-inline-size: 100%; color: var(--aeliqo-color-text, #111827); }
     .sr-only {position:absolute;inline-size:1px;block-size:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;}
     figure { margin: 0; }
-    [part="viewport"] { overflow: auto; max-inline-size: 100%; border: 1px solid var(--aeliqo-color-border, #cbd5e1); border-radius: var(--aeliqo-radius-small, .375rem); }
-    svg { display: block; max-inline-size: 100%; min-inline-size: 20rem; }
+    figcaption, [part="scope"], p, caption, th, td { overflow-wrap: anywhere; unicode-bidi: plaintext; }
+    [part="viewport"] { direction: ltr; overflow: auto; max-inline-size: 100%; border: 1px solid var(--aeliqo-color-border, #cbd5e1); border-radius: var(--aeliqo-radius-small, .375rem); }
+    svg { display: block; max-inline-size: 100%; min-inline-size: min(20rem, 100%); }
     svg text { font: inherit; fill: currentColor; pointer-events: none; }
     [part="node"], [part="edge"] { cursor: pointer; }
     [part="node"]:focus-visible, [part="edge"]:focus-visible { outline: 3px solid var(--aeliqo-color-focus, #4338ca); outline-offset: 2px; }
@@ -39,6 +40,17 @@ export abstract class AeliqoHierarchyElementBase extends AeliqoFoundationElement
     th, td { text-align: start; padding: .5rem; border-block-end: 1px solid var(--aeliqo-color-border, #cbd5e1); vertical-align: top; }
     [aria-selected="true"] { background: color-mix(in srgb, var(--aeliqo-color-accent, #4338ca) 12%, transparent); }
     [part="scope"] { color: var(--aeliqo-color-muted, #4b5563); }
+    @media (max-width: 30rem) {
+      [part="data"] { overflow: visible; }
+      table { display: block; inline-size: 100%; min-inline-size: 0; }
+      caption { display: block; margin-block: .75rem; text-align: start; }
+      thead { block-size: 1px; clip: rect(0 0 0 0); clip-path: inset(50%); inline-size: 1px; overflow: hidden; position: absolute; white-space: nowrap; }
+      tbody { display: grid; gap: .75rem; }
+      tr { border-block-end: 1px solid var(--aeliqo-color-border, #cbd5e1); display: block; padding-block: .25rem; }
+      td { border: 0; display: grid; gap: .5rem; grid-template-columns: minmax(4.75rem, .7fr) minmax(0, 1.3fr); padding: .25rem; }
+      td::before { content: attr(data-label); font-weight: 600; overflow-wrap: anywhere; }
+      td > button { justify-self: start; }
+    }
     @media (forced-colors: active) { svg path, svg line, svg rect, svg circle { stroke: CanvasText; fill: Canvas; } }
   `];
 
@@ -129,7 +141,7 @@ export abstract class AeliqoHierarchyElementBase extends AeliqoFoundationElement
     const result = geometry.result;
     const precision = result.precision.kind === 'exact' ? 'Exact' : 'Approximate';
     const label = geometry.kind === 'treemap' ? `${precision} loaded hierarchy data (${geometry.leafValuePolicy} area policy)` : `${precision} loaded hierarchy data`;
-    return html`<div part="data" tabindex="0" role="region" aria-label=${`${this.label}: scrollable data`}><table><caption>${label}</caption><thead><tr><th scope="col">Select</th>${result.fields.map(field => html`<th scope="col">${field.label}${field.type.unit ? ` (${field.type.unit.symbol})` : ''}</th>`)}</tr></thead><tbody>${repeat(geometry.rows.slice(this.page*25,this.page*25+25),row=>row.identity,row => html`<tr aria-selected=${this.selectedIdentity === row.identity ? 'true' : 'false'}><td><button type="button" ?disabled=${!this.selectionEnabled} aria-pressed=${this.selectedIdentity === row.identity ? 'true' : 'false'} aria-label=${`Select row ${row.identity}`} @click=${() => this.select(row.identity, result.ref)} @keydown=${(event: KeyboardEvent) => this.keySelect(event, row.identity, result.ref)}>Select</button></td>${result.fields.map(field => html`<td>${scalarLabel(row.values[field.id]!)}</td>`)}</tr>`)}</tbody></table></div>${this.pagination(geometry.rows.length)}`;
+    return html`<div part="data" tabindex="0" role="region" aria-label=${`${this.label}: scrollable data`}><table><caption>${label}</caption><thead><tr><th scope="col">Select</th>${result.fields.map(field => html`<th scope="col">${field.label}${field.type.unit ? ` (${field.type.unit.symbol})` : ''}</th>`)}</tr></thead><tbody>${repeat(geometry.rows.slice(this.page*25,this.page*25+25),row=>row.identity,row => html`<tr aria-selected=${this.selectedIdentity === row.identity ? 'true' : 'false'}><td data-label="Select"><button type="button" ?disabled=${!this.selectionEnabled} aria-pressed=${this.selectedIdentity === row.identity ? 'true' : 'false'} aria-label=${`Select row ${row.identity}`} @click=${() => this.select(row.identity, result.ref)} @keydown=${(event: KeyboardEvent) => this.keySelect(event, row.identity, result.ref)}>Select</button></td>${result.fields.map(field => html`<td data-label=${field.label}>${scalarLabel(row.values[field.id]!)}</td>`)}</tr>`)}</tbody></table></div>${this.pagination(geometry.rows.length)}`;
   }
 
   private pagination(count:number){const page=Math.min(this.page,Math.max(0,Math.ceil(count/25)-1));return count>25?html`<nav aria-label="Visualization data pages"><button type="button" ?disabled=${page===0} @click=${()=>{this.page=page-1;}}>Previous</button><span>Rows ${page*25+1}–${Math.min((page+1)*25,count)} of ${count}</span><button type="button" ?disabled=${(page+1)*25>=count} @click=${()=>{this.page=page+1;}}>Next</button></nav>`:'';}
@@ -148,7 +160,7 @@ export abstract class AeliqoHierarchyElementBase extends AeliqoFoundationElement
     const result = geometry.result;
     const source = geometry.bound.spec.view === 'relationship' ? geometry.bound.spec.source.join(', ') : 'source';
     const target = geometry.bound.spec.view === 'relationship' ? geometry.bound.spec.target.join(', ') : 'target';
-    return html`<div part="data" tabindex="0" role="region" aria-label=${`${this.label}: scrollable data`}><table><caption>${result.precision.kind === 'exact' ? 'Exact' : 'Approximate'} loaded relationship data (${geometry.cardinality}; ${source} → ${target})</caption><thead><tr><th scope="col">Select</th>${result.fields.map(field => html`<th scope="col">${field.label}${field.type.unit ? ` (${field.type.unit.symbol})` : ''}</th>`)}</tr></thead><tbody>${repeat(geometry.rows.slice(this.page*25,this.page*25+25),row=>row.identity,row => html`<tr aria-selected=${this.selectedIdentity === row.identity ? 'true' : 'false'}><td><button type="button" ?disabled=${!this.selectionEnabled} aria-pressed=${this.selectedIdentity === row.identity ? 'true' : 'false'} aria-label=${`Select relationship ${row.identity}`} @click=${() => this.select(row.identity, result.ref)} @keydown=${(event: KeyboardEvent) => this.keySelect(event, row.identity, result.ref)}>Select</button></td>${result.fields.map(field => html`<td>${scalarLabel(row.values[field.id]!)}</td>`)}</tr>`)}</tbody></table></div>${this.pagination(geometry.rows.length)}`;
+    return html`<div part="data" tabindex="0" role="region" aria-label=${`${this.label}: scrollable data`}><table><caption>${result.precision.kind === 'exact' ? 'Exact' : 'Approximate'} loaded relationship data (${geometry.cardinality}; ${source} → ${target})</caption><thead><tr><th scope="col">Select</th>${result.fields.map(field => html`<th scope="col">${field.label}${field.type.unit ? ` (${field.type.unit.symbol})` : ''}</th>`)}</tr></thead><tbody>${repeat(geometry.rows.slice(this.page*25,this.page*25+25),row=>row.identity,row => html`<tr aria-selected=${this.selectedIdentity === row.identity ? 'true' : 'false'}><td data-label="Select"><button type="button" ?disabled=${!this.selectionEnabled} aria-pressed=${this.selectedIdentity === row.identity ? 'true' : 'false'} aria-label=${`Select relationship ${row.identity}`} @click=${() => this.select(row.identity, result.ref)} @keydown=${(event: KeyboardEvent) => this.keySelect(event, row.identity, result.ref)}>Select</button></td>${result.fields.map(field => html`<td data-label=${field.label}>${scalarLabel(row.values[field.id]!)}</td>`)}</tr>`)}</tbody></table></div>${this.pagination(geometry.rows.length)}`;
   }
 }
 

@@ -13,6 +13,7 @@ export type PlotMark =
  | {readonly kind:'path';readonly path:string;readonly filled:boolean;readonly series:string;readonly identities:readonly string[];readonly color?:string};
 export interface PlotGeometry {
  readonly width:number;readonly height:number;
+ readonly axisLeft?:number;
  readonly state:'plot'|'data-only';readonly reason?:string;
  readonly marks:readonly PlotMark[];readonly rows:readonly PlotDatum[];
  readonly axes?:{readonly x:PlotScale;readonly y:PlotScale;readonly xLabel:string;readonly yLabel:string};
@@ -73,7 +74,8 @@ export function compilePlotUnit(unit:PlotUnit,result:Result,inputRows:unknown,op
  const e=normalizedUnit.encoding;
   const label=(id:string)=>{const f=fields.get(id)!;return `${f.label}${f.type.unit?` (${f.type.unit.symbol})`:''}`;};
  try {
-  const x=makePlotScale(e.x,fields.get(e.x.field)!.type,projection.domains?.x??displayed.flatMap(d=>[d.values[e.x.field]!,...(e.x2?[d.values[e.x2.field]!]:[])]),[64,width-24]);
+  const axisLeft=family==='heatmap'?192:64;
+  const x=makePlotScale(e.x,fields.get(e.x.field)!.type,projection.domains?.x??displayed.flatMap(d=>[d.values[e.x.field]!,...(e.x2?[d.values[e.x2.field]!]:[])]),[axisLeft,width-24]);
   if(e.size&&normalizedUnit.mark!=='point'&&normalizedUnit.mark!=='line')return dataOnly('Size is supported only for point marks.');
   if((e.x2||e.y2)&&normalizedUnit.mark!=='rect'&&normalizedUnit.mark!=='link')return dataOnly('Second endpoints require rect or link marks.');
   const colorScale=e.color&&e.color.scale!=='ordinal'
@@ -200,7 +202,8 @@ export function compilePlotUnit(unit:PlotUnit,result:Result,inputRows:unknown,op
   };
   const actualXPositions=[...new Set(displayed.map(d=>x.at(d.values[e.x.field]!)).filter((position):position is number=>position!==undefined))];
   const actualYPositions=[...new Set(displayed.map(d=>y.at(d.values[e.y.field]!)).filter((position):position is number=>position!==undefined))];
-  const cellWidth=Math.max(1,Math.min(160,minStep(actualXPositions,(width-88)/Math.max(1,actualXPositions.length))*0.9));
+  const plotWidth=width-24-axisLeft;
+  const cellWidth=Math.max(1,Math.min(160,minStep(actualXPositions,plotWidth/Math.max(1,actualXPositions.length))*0.9));
   const cellHeight=Math.max(1,Math.min(96,minStep(actualYPositions,(height-72)/Math.max(1,actualYPositions.length))*0.9));
   const cellKeys=new Set<string>();
   const barLayout=new Map<string,{readonly center:number;readonly width:number}>();
@@ -216,7 +219,7 @@ export function compilePlotUnit(unit:PlotUnit,result:Result,inputRows:unknown,op
     const xStep=minStep([...byX.values()].map(entries=>x.at(entries[0]!.datum.values[e.x.field]!)!).filter((position):position is number=>position!==undefined),0);
     if(byX.size>1&&xStep<1)return dataOnly('Bar categories are too dense for distinct marks at this width; exact data is available below.');
     for(const entries of byX.values()){
-      const capacity=byX.size>1?xStep*0.8:Math.min(28,(width-88)/Math.max(1,displayed.length)*0.7);
+      const capacity=byX.size>1?xStep*0.8:Math.min(28,plotWidth/Math.max(1,displayed.length)*0.7);
       const barWidth=Math.min(28,capacity/entries.length);
       if(!Number.isFinite(barWidth)||barWidth<1)return dataOnly('Bar groups are too dense for distinct marks at this width; exact data is available below.');
       const center=x.at(entries[0]!.datum.values[e.x.field]!);
@@ -259,7 +262,7 @@ export function compilePlotUnit(unit:PlotUnit,result:Result,inputRows:unknown,op
         const zero=fields.get(e.y.field)!.type.value==='decimal'?{decimal:'0'}:0;
         const baseline=normalizedUnit.mark==='bar'?y.at(zero)!:y0;
         const layout=normalizedUnit.mark==='bar'?barLayout.get(d.identity):undefined;
-        const barWidth=layout?.width??Math.max(1,Math.min(28,(width-88)/Math.max(1,displayed.length)*0.7));
+        const barWidth=layout?.width??Math.max(1,Math.min(28,plotWidth/Math.max(1,displayed.length)*0.7));
         const markX=layout?.center??x0;
         if(normalizedUnit.mark==='cell'){
           const xIdentity=scalarIdentity(d.values[e.x.field]!,fields.get(e.x.field)!.type);
@@ -285,6 +288,6 @@ export function compilePlotUnit(unit:PlotUnit,result:Result,inputRows:unknown,op
   const colorPresentation=e.color&&e.color.scale!=='ordinal'&&colorScale!==undefined
     ? {colorField:e.color.field,colorTicks:colorScale.ticks}
     : {};
-  return {ok:true,value:{state:'plot',width,height,marks,rows:data,axes:{x,y,xLabel:label(e.x.field),yLabel:label(e.y.field)},...colorPresentation,series:[...series.keys()],legend:[...legend].map(([id,label])=>({id,label})),result:descriptor}};
+  return {ok:true,value:{state:'plot',width,height,axisLeft,marks,rows:data,axes:{x,y,xLabel:label(e.x.field),yLabel:label(e.y.field)},...colorPresentation,series:[...series.keys()],legend:[...legend].map(([id,label])=>({id,label})),result:descriptor}};
  }catch{return dataOnly('The scale cannot safely represent these observations. Loaded values are available below.');}
 }

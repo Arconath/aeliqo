@@ -134,7 +134,7 @@ export class AeliqoTableElement extends LitElement {
     const selected = key !== undefined && this.selectedKeys.includes(key);
     return html`<tr data-row-index=${rowIndex} ?data-selected=${selected} aria-selected=${selectable ? String(selected) : nothing}>
       ${selectable ? this.renderSelectionCell(key, selected) : nothing}
-      ${this.columns.map((column) => html`<td style=${column.align ? `text-align:${column.align}` : nothing}>${this.formatCell(row[column.key])}</td>`)}
+      ${this.columns.map((column) => html`<td data-label=${column.label} style=${column.align ? `text-align:${column.align}` : nothing}>${this.formatCell(row[column.key])}</td>`)}
     </tr>`;
   }
 
@@ -183,7 +183,7 @@ export class AeliqoTableElement extends LitElement {
     const action = selected && this.selection !== "single" ? "Deselect" : "Select";
     const label = key === undefined ? "Row cannot be selected" : `${action} ${this.entity} ${this.selectionLabelForKey(key)}`;
     const cell = html`<input type=${this.selection === "single" ? "radio" : "checkbox"} name=${this.selection === "single" ? "aeliqo-single-selection" : nothing} .checked=${selected} ?disabled=${key === undefined} aria-label=${label} @change=${(event: Event) => this.handleSelection(event, key)} />`;
-    return grid ? cell : html`<td part="selection-cell">${cell}</td>`;
+    return grid ? cell : html`<td part="selection-cell" data-label="Select">${cell}</td>`;
   }
 
   private selectionLabelForKey(key: string): string {
@@ -421,6 +421,16 @@ export class AeliqoTableElement extends LitElement {
     [part="pagination"] { align-items: center; display: flex; flex-wrap: wrap; gap: var(--aeliqo-space-8, 0.5rem); margin-block-start: var(--aeliqo-space-12, 0.75rem); }
     [part="pagination"] button { background: var(--aeliqo-color-surface, #fff); border: var(--aeliqo-control-border-width, 0.0625rem) solid var(--aeliqo-color-border, #94a3b8); border-radius: var(--aeliqo-radius-small, 0.375rem); color: inherit; cursor: pointer; font: inherit; min-block-size: var(--aeliqo-control-compact-target, 2rem); padding-inline: var(--aeliqo-space-8, 0.5rem); }
     [part="pagination"] button:disabled { color: var(--aeliqo-color-muted, #64748b); cursor: not-allowed; }
+    @media (max-width: 30rem) {
+      :host([data-reflow="stack"]) [part="scroll"] { overflow: visible; }
+      :host([data-reflow="stack"]) table { display: block; inline-size: 100%; min-inline-size: 0; }
+      :host([data-reflow="stack"]) caption { display: block; overflow-wrap: anywhere; padding-block: var(--aeliqo-space-8, .5rem); unicode-bidi: plaintext; }
+      :host([data-reflow="stack"]) thead { block-size: 1px; clip: rect(0 0 0 0); clip-path: inset(50%); inline-size: 1px; overflow: hidden; position: absolute; white-space: nowrap; }
+      :host([data-reflow="stack"]) tbody { display: grid; gap: var(--aeliqo-space-12, .75rem); }
+      :host([data-reflow="stack"]) tr { border-block-end: var(--aeliqo-control-border-width, 1px) solid var(--aeliqo-table-rule, var(--aeliqo-color-border, #c9d0d8)); display: block; padding-block: var(--aeliqo-space-4, .25rem); }
+      :host([data-reflow="stack"]) td { border: 0; display: grid; gap: var(--aeliqo-space-8, .5rem); grid-template-columns: minmax(4.75rem, .7fr) minmax(0, 1.3fr); padding: var(--aeliqo-space-4, .25rem); }
+      :host([data-reflow="stack"]) td::before { content: attr(data-label); font-weight: var(--aeliqo-typography-font-weight-semibold, 600); overflow-wrap: anywhere; }
+    }
     @media (forced-colors: active) { th, td, [part="grid-row"] > *, [part="pagination"] button { border-color: ButtonText; } tr[data-selected], [part="grid-row"][data-selected] { outline: 0.125rem solid Highlight; outline-offset: -0.125rem; } tr[data-selected] td, [part="grid-row"][data-selected] { background: Canvas; color: CanvasText; } }
   `];
 }

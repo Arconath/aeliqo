@@ -38,5 +38,42 @@ for(const component of components.components)for(const variant of ['desktop-ligh
    expect(layout.graphicStart).toBeGreaterThanOrEqual(-1);
    expect(layout.graphicEnd).toBeGreaterThanOrEqual(-1);
   }
+  if(variant==='narrow-dark-rtl'&&['relationship','tree','treemap'].includes(id)){
+   const layout=await page.locator(`aeliqo-${id}`).evaluate(element=>{const root=element.shadowRoot!;const host=element.getBoundingClientRect();const viewport=root.querySelector<HTMLElement>('[part="viewport"]')!;const viewportBox=viewport.getBoundingClientRect();const graphic=viewport.querySelector('svg')!.getBoundingClientRect();const data=root.querySelector<HTMLElement>('[part="data"]')!;const caption=root.querySelector('caption')!.getBoundingClientRect();const cells=[...root.querySelectorAll<HTMLElement>('tbody tr:first-child td')].map(cell=>({display:getComputedStyle(cell).display,width:cell.getBoundingClientRect().width}));return{hostStart:host.left,hostEnd:host.right,direction:getComputedStyle(viewport).direction,graphicStart:graphic.left-viewportBox.left,graphicEnd:viewportBox.right-graphic.right,dataOverflow:data.scrollWidth-data.clientWidth,captionStart:caption.left,captionEnd:caption.right,cells};});
+   expect(layout.direction).toBe('ltr');
+   expect(layout.graphicStart).toBeGreaterThanOrEqual(-1);
+   expect(layout.graphicEnd).toBeGreaterThanOrEqual(-1);
+   expect(layout.dataOverflow).toBeLessThanOrEqual(1);
+   expect(layout.captionStart).toBeGreaterThanOrEqual(layout.hostStart-1);
+   expect(layout.captionEnd).toBeLessThanOrEqual(layout.hostEnd+1);
+   expect(layout.cells.length).toBeGreaterThan(1);
+   expect(layout.cells.every(cell=>cell.display==='grid'&&cell.width>=layout.hostEnd-layout.hostStart-1)).toBe(true);
+  }
+  if(variant==='narrow-dark-rtl'&&id==='heatmap'){
+   const labels=await page.locator('aeliqo-heatmap').evaluate(element=>{const svg=element.shadowRoot!.querySelector('svg')!;const graphic=svg.getBoundingClientRect();return [...svg.querySelectorAll<SVGTextElement>('text')].map(label=>{const box=label.getBoundingClientRect();return{text:label.textContent,start:box.left,end:box.right,graphicStart:graphic.left,graphicEnd:graphic.right};});});
+   expect(labels.length).toBeGreaterThan(0);
+   for(const label of labels){expect(label.start,`${label.text} starts outside the heatmap`).toBeGreaterThanOrEqual(label.graphicStart-.5);expect(label.end,`${label.text} ends outside the heatmap`).toBeLessThanOrEqual(label.graphicEnd+.5);}
+  }
+  if(variant==='narrow-dark-rtl'&&id==='calendar-grid'){
+   const layout=await page.locator('aeliqo-calendar-grid').evaluate(element=>{const root=element.shadowRoot!;const host=element.getBoundingClientRect();const data=root.querySelector<HTMLElement>('[part="data"]')!;const cells=[...root.querySelectorAll<HTMLElement>('tbody tr:first-child td')].map(cell=>({display:getComputedStyle(cell).display,width:cell.getBoundingClientRect().width,text:cell.textContent}));return{hostWidth:host.width,dataOverflow:data.scrollWidth-data.clientWidth,cells};});
+   expect(layout.dataOverflow).toBeLessThanOrEqual(1);
+   expect(layout.cells.length).toBeGreaterThan(4);
+   expect(layout.cells.every(cell=>cell.display==='grid'&&cell.width>=layout.hostWidth-1&&cell.text?.trim())).toBe(true);
+  }
+  if(variant==='narrow-dark-rtl'&&id==='breakdown'){
+   const layout=await page.locator('aeliqo-breakdown').evaluate(element=>{const host=element.getBoundingClientRect();const table=element.shadowRoot!.querySelector('aeliqo-table')!;const root=table.shadowRoot!;const scroll=root.querySelector<HTMLElement>('[part="scroll"]')!;const caption=root.querySelector('caption')!.getBoundingClientRect();const scope=root.querySelector<HTMLElement>('[part="scope"]')!.getBoundingClientRect();const cells=[...root.querySelectorAll<HTMLElement>('tbody tr:first-child td')].map(cell=>({display:getComputedStyle(cell).display,width:cell.getBoundingClientRect().width}));return{hostStart:host.left,hostEnd:host.right,scrollOverflow:scroll.scrollWidth-scroll.clientWidth,captionStart:caption.left,captionEnd:caption.right,scopeStart:scope.left,scopeEnd:scope.right,cells};});
+   expect(layout.scrollOverflow).toBeLessThanOrEqual(1);
+   for(const [start,end] of [[layout.captionStart,layout.captionEnd],[layout.scopeStart,layout.scopeEnd]]){expect(start).toBeGreaterThanOrEqual(layout.hostStart-1);expect(end).toBeLessThanOrEqual(layout.hostEnd+1);}
+   expect(layout.cells.length).toBeGreaterThan(1);
+   expect(layout.cells.every(cell=>cell.display==='grid'&&cell.width>=layout.hostEnd-layout.hostStart-1)).toBe(true);
+  }
+  if(variant==='narrow-dark-rtl'&&id==='combobox'){
+   const layout=await page.locator('aeliqo-combobox').evaluate(element=>{const host=element.getBoundingClientRect();const root=element.shadowRoot!;const nodes=[root.querySelector<HTMLElement>('[part="label"]')!,root.querySelector<HTMLInputElement>('[part="input"]')!,...root.querySelectorAll<HTMLElement>('[part="option"] span,[part="option"] small')];return{hostStart:host.left,hostEnd:host.right,nodes:nodes.map(node=>{const box=node.getBoundingClientRect();return{start:box.left,end:box.right,text:node.textContent};})};});
+   expect(layout.nodes.length).toBeGreaterThan(2);
+   for(const node of layout.nodes){expect(node.start,`${node.text} starts outside the combobox`).toBeGreaterThanOrEqual(layout.hostStart-.5);expect(node.end,`${node.text} ends outside the combobox`).toBeLessThanOrEqual(layout.hostEnd+.5);}
+   const title=await page.locator('#title').evaluate(element=>{const box=element.getBoundingClientRect();const main=element.parentElement!.getBoundingClientRect();return{start:box.left,end:box.right,mainStart:main.left,mainEnd:main.right};});
+   expect(title.start).toBeGreaterThanOrEqual(title.mainStart);
+   expect(title.end).toBeLessThanOrEqual(title.mainEnd);
+  }
  });
 }

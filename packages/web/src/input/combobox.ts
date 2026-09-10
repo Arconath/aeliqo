@@ -362,12 +362,15 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
   }
 
   static readonly styles = [...aeliqoInputStyles, css`
-    .combobox-wrap { position: relative; }
+    :host { box-sizing: border-box; }
+    .combobox-wrap { min-inline-size: 0; position: relative; }
     [part=listbox] { background: var(--aeliqo-color-canvas, #fff); border: 1px solid var(--aeliqo-color-border, #64748b); border-radius: var(--aeliqo-radius-small, 0.375rem); box-shadow: 0 0.25rem 0.75rem rgb(15 23 42 / 18%); list-style: none; margin: 0.25rem 0 0; max-block-size: 16rem; overflow: auto; padding: 0.25rem; position: absolute; inset-inline: 0; z-index: 1; }
     [part=option], [part=status] { cursor: default; display: flex; gap: 0.5rem; justify-content: space-between; min-block-size: var(--aeliqo-control-min-target, 2.75rem); padding: 0.65rem 0.75rem; }
     [part=option] { flex-direction: column; align-items: flex-start; }
+    .label-text, [part=option] span, [part=option] small { max-inline-size: 100%; overflow-wrap: anywhere; unicode-bidi: plaintext; }
     [part=option] small { color: var(--aeliqo-color-muted, #4b5563); }
     [part=option].active { background: var(--aeliqo-color-surface, #f1f5f9); }
     [part=option][aria-disabled=true] { color: var(--aeliqo-color-muted, #4b5563); }
+    @media (max-width: 30rem) { :host { inline-size: 100%; } [part=label] { padding-inline: 1px; } }
   `];
 }
