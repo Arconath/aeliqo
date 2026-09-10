@@ -1,0 +1,18 @@
+$ playwright test --config tests/visualization-semantic/playwright.config.mjs
+[WebServer] (node:86106) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:86112) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 2:03:00 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  1 tests/visualization-semantic/browser.spec.ts:14:5 › renders all twelve views from one core validated region plan (368ms)
+[WebServer] 2:03:01 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  2 tests/visualization-semantic/browser.spec.ts:22:5 › emits a typed selection and retains the authorized identity (373ms)
+[WebServer] 2:03:01 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  3 tests/visualization-semantic/browser.spec.ts:48:5 › suppresses forged selections and disables the read-only path (312ms)
+[WebServer] 2:03:01 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  4 tests/visualization-semantic/browser.spec.ts:70:5 › clears all committed visualization content when the region is revoked (270ms)
+
+  4 passed (2.1s)

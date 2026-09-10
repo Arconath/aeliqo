@@ -1,0 +1,12 @@
+{
+  "browserVersion": "155.0",
+  "checks": {
+    "componentCount": 7,
+    "documentOverflowCases": 0,
+    "consoleOrPageErrors": 0,
+    "chartLabelIntersectionCases": 0,
+    "chartDataOverflowCases": 0,
+    "chartGeometryOutOfBoundsCases": 0
+  },
+  "reportPath": "/private/tmp/aeliqo-t29-676db22-final-revalidation/harness/evidence/t29/676db22-final-revalidation/reports/firefox-narrow-rtl-200pct-measurements.json"
+}

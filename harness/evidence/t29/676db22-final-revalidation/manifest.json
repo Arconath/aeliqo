@@ -1,0 +1,235 @@
+{
+  "schemaVersion": 1,
+  "task": "T29",
+  "status": "automated-complete-independent-review-pending",
+  "testedSourceCommit": "cc7bf293ba60d338d07f57a820fd058e7a4465dd",
+  "testedSourceTree": "bf396bd3bcabe89ba6cb14279622a5b01dfce190",
+  "sourceDigestBefore": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+  "sourceDigestAfterCompletedRuns": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+  "sourceChangedDuringCompletedRuns": false,
+  "sourceChangedDuringAllRuns": false,
+  "worktree": "/private/tmp/aeliqo-t29-676db22-final-revalidation",
+  "environment": {
+    "node": "v24.20.0",
+    "pnpm": "11.24.0",
+    "playwright": "1.63.0",
+    "browsers": {
+      "chromium": "153.0.8010.12",
+      "firefox": "155.0",
+      "webkit": "26.6"
+    },
+    "visualWorkers": 1,
+    "visualRetries": 0
+  },
+  "completedRuns": [
+    {
+      "command": "pnpm install --offline --frozen-lockfile",
+      "result": "passed",
+      "detail": "15 workspace projects; lockfile unchanged."
+    },
+    {
+      "command": "pnpm typecheck",
+      "result": "passed"
+    },
+    {
+      "command": "pnpm exec playwright test --config tests/visual/playwright.config.mjs --project=firefox --grep='(trend|scatter|histogram|heatmap|investigation) narrow-dark-rtl$|[^-]area narrow-dark-rtl$' --repeat-each=3",
+      "result": "passed",
+      "tests": 18,
+      "passed": 18,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    {
+      "command": "pnpm test:visualization",
+      "result": "passed",
+      "testFiles": 4,
+      "tests": 27
+    },
+    {
+      "command": "pnpm test:visualization-semantic",
+      "result": "passed",
+      "testFiles": 2,
+      "tests": 7
+    },
+    {
+      "command": "pnpm test:visualization-semantic:browser",
+      "result": "passed",
+      "tests": 4
+    },
+    {
+      "command": "pnpm test:visualization:browser",
+      "result": "passed",
+      "tests": 31,
+      "detail": "Temporal 3/3, cartesian 21/21 and hierarchy 7/7."
+    },
+    {
+      "command": "pnpm test:visualization:consumers",
+      "result": "passed",
+      "packages": 3,
+      "sourceDigestMatched": true
+    },
+    {
+      "command": "pnpm test:compounds",
+      "result": "passed",
+      "testFiles": 1,
+      "tests": 4
+    },
+    {
+      "command": "pnpm test:compounds:browser",
+      "result": "passed",
+      "tests": 12
+    },
+    {
+      "command": "pnpm test:compounds:consumers",
+      "result": "passed",
+      "packages": 4,
+      "sourceDigestMatched": true
+    },
+    {
+      "command": "pnpm test:visual",
+      "result": "passed",
+      "tests": 1137,
+      "passed": 1137,
+      "perBrowser": 379,
+      "browsers": ["chromium", "firefox", "webkit"],
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "retries": 0,
+      "duration": "11.7m"
+    },
+    {
+      "command": "pnpm build:agent",
+      "result": "passed",
+      "detail": "Pinned Node v24.20.0 package build required by the public playground's agent boundary."
+    },
+    {
+      "command": "pnpm test:site:browser",
+      "result": "passed",
+      "tests": 7,
+      "passed": 7,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "detail": "Home, playground people/commerce journeys, 71 catalog routes, deep docs/search/theme, narrow drawers, forced colors and offline legal/support boundaries."
+    },
+    {
+      "command": "pnpm exec playwright test --config tests/site/docs-navigation.playwright.config.mjs",
+      "result": "passed",
+      "tests": 10,
+      "passed": 10,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "detail": "Adoption information architecture, search/fallback, source-backed component docs, 320/360 route reflow, focusable code, copy and consent semantics."
+    },
+    {
+      "command": "pnpm exec playwright test --config tests/site/playground-responsive.playwright.config.mjs",
+      "result": "passed",
+      "tests": 9,
+      "passed": 9,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "detail": "Task/inspector/source flows, local draft protection, 320px light/dark LTR/RTL reflow, 1024/1100/1280 panel adaptation, splitter semantics and contributor scoping."
+    },
+    {
+      "command": "pnpm test:site:document-layout",
+      "result": "passed",
+      "tests": 1,
+      "routes": 71,
+      "layoutShiftBudget": 0.1,
+      "maxObservedLayoutShift": 0,
+      "routesWithLayoutShiftEntries": 0,
+      "detail": "Production site build plus no-JavaScript fallback, hydrated sentinel-box stability and clipboard-copy checks for every component route."
+    },
+    {
+      "command": "pnpm test:site",
+      "result": "passed",
+      "tests": 17,
+      "passed": 17,
+      "detail": "Site unit tests and strict tests/site plus apps/site TypeScript checks."
+    },
+    {
+      "command": "pnpm exec vitest run --config tests/catalog-examples/vitest.config.mjs",
+      "result": "passed",
+      "testFiles": 3,
+      "tests": 3,
+      "catalogComponents": 71,
+      "sourceDigestMatched": true,
+      "detail": "Exact @aeliqo/core and @aeliqo/web tarballs installed outside the workspace; strict source parity and catalog snippets."
+    },
+    {
+      "command": "pnpm exec playwright test --config tests/catalog-examples/playwright.config.mjs",
+      "result": "passed",
+      "tests": 3,
+      "passed": 3,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "catalogComponents": 71,
+      "detail": "All catalog roots mounted through executable examples, real renderers/compound host boundaries, direct keyboard action and cleanup."
+    },
+    {
+      "command": "pnpm test:components:a11y",
+      "result": "passed",
+      "tests": 12,
+      "passed": 12,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "detail": "Input, navigation, feedback and data-component fixtures with desktop and narrow-dark-RTL visual/Axe captures."
+    }
+  ],
+  "pendingRuns": [
+    "independent review of retained current-source captures and reports"
+  ],
+  "limits": [
+    "Automated evidence is complete on the exact source, but T29 qualification remains pending an independent review of retained current-source screenshots and reports.",
+    "No manual VoiceOver, NVDA or other assistive-technology certification was performed or claimed.",
+    "Visual matrix captures are automated evidence only and do not establish universal pixel equivalence in every consumer environment.",
+    "The retained 02:28 Node22 site-browser false start is environmental (missing built agent entry point); it is not a qualification run. The pinned Node24 rerun passed 7/7.",
+    "Adverse visualization is a desktop Chromium observation without a universal timing threshold; it does not establish field or lower-powered-device performance."
+  ],
+  "decision": {
+    "automatedQualification": true,
+    "task": "Complete the automated T29 source revalidation on exact cc7bf293ba60d338d07f57a820fd058e7a4465dd / 676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9.",
+    "basis": "The complete three-browser matrix passed 1,137/1,137; focused Firefox regressions passed 18/18 across three repetitions; adverse dense/null-heavy visualization passed; site browser, docs-navigation, playground-responsive, site unit/typecheck and 71-route document-layout gates passed; exact-source catalog consumer and browser cleanup passed; and the component-family accessibility fixtures passed.",
+    "independentReview": "Not claimed in this author packet. An independent reviewer must inspect current-source captures/reports and record residual Axe incomplete diagnostics before T29 task status changes."
+  },
+  "artifacts": [
+    {
+      "path": "harness/evidence/t29/676db22-final-revalidation/reports/compound-consumer-report.json",
+      "sha256": "25f01f71110fc3bf6a99e3a0de4310e235d037075f70f2548652dbad7a588a6b"
+    },
+    {
+      "path": "harness/evidence/t29/676db22-final-revalidation/reports/visualization-consumer-report.json",
+      "sha256": "5bf2bd676bc433873e9fbc0770fd86730b1a2cbc81eb44553f822fba31a64381"
+    },
+    {
+      "path": "harness/evidence/t29/676db22-final-revalidation/results/full-visual-results.json",
+      "sha256": "eff9749fae7fd898b30fb49e540d56c0f2c91c7cc9b8e3c5eb1cbf146a5d50f4"
+    },
+    {
+      "path": "harness/evidence/t29/676db22-final-revalidation/reports/adverse-visualization-report.json"
+    },
+    {
+      "path": "harness/evidence/t29/676db22-final-revalidation/reports/firefox-narrow-rtl-200pct-measurements.json"
+    },
+    {
+      "path": "harness/evidence/t29/676db22-final-revalidation/reports/catalog-source-consumer/report.json"
+    },
+    {
+      "path": "harness/evidence/t29/676db22-final-revalidation/results/site-document-layout/document-layout-evidence.json"
+    },
+    {
+      "path": "harness/evidence/t29/676db22-final-revalidation/screenshots/site-playground-desktop.png"
+    },
+    {
+      "path": "harness/evidence/t29/676db22-final-revalidation/screenshots/site-playground-mobile.png"
+    }
+  ],
+  "rawLogDirectory": "harness/evidence/t29/676db22-final-revalidation/raw-logs",
+  "sha256Inventory": "SHA256SUMS"
+}

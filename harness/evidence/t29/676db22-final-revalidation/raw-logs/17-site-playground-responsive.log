@@ -1,0 +1,32 @@
+[WebServer] (node:6607) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] $ vite --host 127.0.0.1 --port 53087 --strictPort
+[WebServer] (node:6621) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:6629) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 2:31:08 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  1 tests/site/playground-responsive.spec.ts:4:5 › task chooser, inspector summaries, and actionable recovery form a complete people journey (1.3s)
+[WebServer] 2:31:09 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  2 tests/site/playground-responsive.spec.ts:50:5 › source records, guarded reset, commerce progress, and narrow drawers remain usable (2.5s)
+[WebServer] 2:31:12 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  3 tests/site/playground-responsive.spec.ts:86:5 › the complete toolbar reflows without page overflow at 320 pixels (674ms)
+[WebServer] 2:31:12 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  4 tests/site/playground-responsive.spec.ts:107:5 › reset protects a reviewed but unsent commerce draft (3.0s)
+[WebServer] 2:31:15 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  5 tests/site/playground-responsive.spec.ts:125:5 › medium desktop panels preserve a usable result canvas and expose valid panel semantics (600ms)
+[WebServer] 2:31:16 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 2:31:16 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  6 tests/site/playground-responsive.spec.ts:142:5 › medium desktop separators expose achievable ranges and resize only their own panel (671ms)
+[WebServer] 2:31:17 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 2:31:17 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  7 tests/site/playground-responsive.spec.ts:176:5 › panel adaptation moves focus into the surviving or newly modal panel (500ms)
+[WebServer] 2:31:17 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  8 tests/site/playground-responsive.spec.ts:197:5 › RTL results and splitters follow the document direction (367ms)
+[WebServer] 2:31:18 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  9 tests/site/playground-responsive.spec.ts:219:5 › contributor control is scoped to the contributor task (291ms)
+
+  9 passed (11.2s)

@@ -1,0 +1,94 @@
+$ playwright test --config tests/visualization/temporal.playwright.config.mjs && playwright test --config tests/visualization/cartesian.playwright.config.mjs && playwright test --config tests/visualization/playwright.config.mjs
+[WebServer] (node:86153) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:86159) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 2:03:08 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  1 tests/visualization/temporal.browser.spec.ts:4:5 › renders exact matrix, overlap lanes and declared-zone calendar with honest scope (512ms)
+[WebServer] 2:03:08 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  2 tests/visualization/temporal.browser.spec.ts:5:5 › keyboard selection keeps stable identities and focus across row reordering, clears revoked values (201ms)
+[WebServer] 2:03:09 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  3 tests/visualization/temporal.browser.spec.ts:6:5 › narrow RTL large text preserves accessible values and bounded visual scroll (539ms)
+
+  3 passed (1.8s)
+[WebServer] (node:86188) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 21 tests using 3 workers
+
+(node:86208) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:86207) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:86209) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 2:03:10 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   2 [chromium] › tests/visualization/cartesian.browser.spec.ts:9:5 › renders six families with exact tables, histogram scope and heatmap color key (296ms)
+[WebServer] 2:03:10 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   4 [chromium] › tests/visualization/cartesian.browser.spec.ts:21:5 › keeps edge x-axis labels inside the chart viewport (176ms)
+[WebServer] 2:03:10 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   5 [chromium] › tests/visualization/cartesian.browser.spec.ts:38:5 › keeps date and category edge labels inside LTR and RTL chart viewports (222ms)
+[WebServer] 2:03:11 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   6 [chromium] › tests/visualization/cartesian.browser.spec.ts:71:5 › centers a single category label in a narrow LTR and RTL chart (226ms)
+[WebServer] 2:03:11 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 2:03:11 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   7 [chromium] › tests/visualization/cartesian.browser.spec.ts:101:5 › selection is keyboard reachable and an over-budget graphic retains exact data (293ms)
+  ✓   3 [webkit] › tests/visualization/cartesian.browser.spec.ts:9:5 › renders six families with exact tables, histogram scope and heatmap color key (827ms)
+[WebServer] 2:03:11 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 2:03:11 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 2:03:11 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   1 [firefox] › tests/visualization/cartesian.browser.spec.ts:9:5 › renders six families with exact tables, histogram scope and heatmap color key (1.2s)
+  ✓   9 [webkit] › tests/visualization/cartesian.browser.spec.ts:21:5 › keeps edge x-axis labels inside the chart viewport (371ms)
+[WebServer] 2:03:12 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 2:03:12 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  10 [firefox] › tests/visualization/cartesian.browser.spec.ts:21:5 › keeps edge x-axis labels inside the chart viewport (321ms)
+  ✓  11 [webkit] › tests/visualization/cartesian.browser.spec.ts:38:5 › keeps date and category edge labels inside LTR and RTL chart viewports (335ms)
+[WebServer] 2:03:12 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   8 [chromium] › tests/visualization/cartesian.browser.spec.ts:122:5 › narrow RTL at 24px retains a keyboard scroll region and passes axe (939ms)
+[WebServer] 2:03:12 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  12 [firefox] › tests/visualization/cartesian.browser.spec.ts:38:5 › keeps date and category edge labels inside LTR and RTL chart viewports (302ms)
+  ✓  13 [webkit] › tests/visualization/cartesian.browser.spec.ts:71:5 › centers a single category label in a narrow LTR and RTL chart (317ms)
+[WebServer] 2:03:12 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  14 [chromium] › tests/visualization/cartesian.browser.spec.ts:136:5 › keeps result warnings and precision uncertainty visible beside loaded values (227ms)
+[WebServer] 2:03:12 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 2:03:12 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  15 [firefox] › tests/visualization/cartesian.browser.spec.ts:71:5 › centers a single category label in a narrow LTR and RTL chart (312ms)
+  ✓  16 [webkit] › tests/visualization/cartesian.browser.spec.ts:101:5 › selection is keyboard reachable and an over-budget graphic retains exact data (320ms)
+[WebServer] 2:03:13 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 2:03:13 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  17 [firefox] › tests/visualization/cartesian.browser.spec.ts:101:5 › selection is keyboard reachable and an over-budget graphic retains exact data (301ms)
+[WebServer] 2:03:13 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  18 [webkit] › tests/visualization/cartesian.browser.spec.ts:122:5 › narrow RTL at 24px retains a keyboard scroll region and passes axe (937ms)
+[WebServer] 2:03:14 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  20 [webkit] › tests/visualization/cartesian.browser.spec.ts:136:5 › keeps result warnings and precision uncertainty visible beside loaded values (285ms)
+  ✓  19 [firefox] › tests/visualization/cartesian.browser.spec.ts:122:5 › narrow RTL at 24px retains a keyboard scroll region and passes axe (1.2s)
+[WebServer] 2:03:14 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  21 [firefox] › tests/visualization/cartesian.browser.spec.ts:136:5 › keeps result warnings and precision uncertainty visible beside loaded values (277ms)
+
+  21 passed (5.1s)
+[WebServer] (node:86328) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 7 tests using 1 worker
+
+(node:86334) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 2:03:15 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  1 tests/visualization/browser.spec.ts:6:5 › tree keeps bounded SVG and exact table selection (440ms)
+[WebServer] 2:03:16 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  2 tests/visualization/browser.spec.ts:17:5 › geometry budget preserves exact data alternative (203ms)
+[WebServer] 2:03:16 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  3 tests/visualization/browser.spec.ts:27:5 › hierarchy marks are real SVG geometry rather than HTML lookalikes (183ms)
+[WebServer] 2:03:16 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  4 tests/visualization/browser.spec.ts:32:57 › tree real marks, keyboard selection, revocation and narrow RTL (485ms)
+[WebServer] 2:03:17 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  5 tests/visualization/browser.spec.ts:32:57 › treemap real marks, keyboard selection, revocation and narrow RTL (468ms)
+[WebServer] 2:03:17 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  6 tests/visualization/browser.spec.ts:32:57 › relationship real marks, keyboard selection, revocation and narrow RTL (479ms)
+[WebServer] 2:03:18 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  7 tests/visualization/browser.spec.ts:46:5 › dense trees retain paged exact rows and focus on data refresh (323ms)
+
+  7 passed (3.1s)

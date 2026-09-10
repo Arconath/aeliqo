@@ -1,0 +1,50 @@
+{
+  "sourceDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+  "passed": true,
+  "scope": "Installed core/runtime/web/react tarballs; eight compound React bindings, web/React SSR, strict declarations, actual Chromium property and event behavior. Detailed states and semantics are separate focused suites.",
+  "artifacts": [
+    {
+      "name": "@aeliqo/core",
+      "version": "0.1.0",
+      "path": "/private/tmp/aeliqo-t29-676db22-final-revalidation/artifacts/compound-consumers/run-v7FNzK/aeliqo-core-0.1.0.tgz",
+      "sha256": "b6c1b763a325b4714b5d8b39427eb411c7b3d08d66d265a85864bae0ba5bad91",
+      "integrity": "sha512-yOMN++DeKaSbE7Nc5ppnEunwz/y0XFfhKU9c48fccJLUOpL1h0iMCkWXu0H0ZCEKr8IWaef3yhKjdyTxqhisQg=="
+    },
+    {
+      "name": "@aeliqo/runtime",
+      "version": "0.1.0",
+      "path": "/private/tmp/aeliqo-t29-676db22-final-revalidation/artifacts/compound-consumers/run-v7FNzK/aeliqo-runtime-0.1.0.tgz",
+      "sha256": "7cb3acc80b60560201c6492432e962806609c4dd028d3b8c338bcd03ab4a40c7",
+      "integrity": "sha512-UGYPX4RklIT7cylFUztZOSWgA7pO73K+ZxNg0A2OVdGYwU+GrsIplXpVk9tFQ0qH8s+y1y8kz7cc5uaJffPghg=="
+    },
+    {
+      "name": "@aeliqo/web",
+      "version": "0.1.0",
+      "path": "/private/tmp/aeliqo-t29-676db22-final-revalidation/artifacts/compound-consumers/run-v7FNzK/aeliqo-web-0.1.0.tgz",
+      "sha256": "fa9a5452c651cfe159d115c0f5947fadf48a2256684cb47017f233b2118ba8af",
+      "integrity": "sha512-xG5Os5Gohn2M+1a4Aj9HxNMl5/uvarsizuuu8B02lTqnNXj3cHs8IFkwPsZer6IgQ7ac/e7Sn9CxHukI8WD2/w=="
+    },
+    {
+      "name": "@aeliqo/react",
+      "version": "0.1.0",
+      "path": "/private/tmp/aeliqo-t29-676db22-final-revalidation/artifacts/compound-consumers/run-v7FNzK/aeliqo-react-0.1.0.tgz",
+      "sha256": "7d9a6ee3b08d2035338fbebdf92e8156850846cf70b3cfefd6175999d1ce759b",
+      "integrity": "sha512-GMPTHHaqlI1wkVO0pUQd7BsdpWEinorj5jxg8sJmFD+AmBrpmZnuuU3KwOB/eMC8Ku1rjhBihBhlelcw4GsQHg=="
+    }
+  ],
+  "consumerDirectory": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-compound-consumer-iiO9q9",
+  "node": {
+    "webSsr": true,
+    "reactSsr": true,
+    "eightBindings": true
+  },
+  "browser": {
+    "eightRendered": true,
+    "reactPropertyAndEvent": true,
+    "draftReceipt": true
+  },
+  "environment": {
+    "node": "v24.20.0",
+    "chromium": "153.0.8010.12"
+  }
+}

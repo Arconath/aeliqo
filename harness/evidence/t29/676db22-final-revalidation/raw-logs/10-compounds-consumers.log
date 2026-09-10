@@ -1,0 +1,2 @@
+$ node tests/consumers/compound-tarballs.mjs
+Installed compound consumer passed. Evidence: /private/tmp/aeliqo-t29-676db22-final-revalidation/artifacts/compound-consumers/run-v7FNzK/report.json

@@ -1,0 +1,36 @@
+$ playwright test --config tests/compound/playwright.config.mjs
+[WebServer] (node:91397) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 12 tests using 2 workers
+
+(node:91403) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:91404) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 2:03:56 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 2:03:56 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   1 tests/compound/form-flow-draft/browser.spec.ts:22:5 › replaces a seeded scalar with the edited control while retaining repeated fields (339ms)
+  ✓   2 tests/compound/browser.spec.ts:11:5 › explorer forwards filter and stable identity selection to the host (403ms)
+[WebServer] 2:03:57 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 2:03:57 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   3 tests/compound/form-flow-draft/browser.spec.ts:47:5 › keeps an unmounted step until its replacement draft revokes it (312ms)
+  ✓   4 tests/compound/browser.spec.ts:26:5 › comparison and breakdown use shared bounded tables and host evaluated values (322ms)
+[WebServer] 2:03:57 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[WebServer] 2:03:57 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   5 tests/compound/form-flow-draft/browser.spec.ts:96:5 › clears unchecked and empty multiple controls instead of retaining seeded values (330ms)
+  ✓   6 tests/compound/browser.spec.ts:46:5 › comparison interactions reject overflow and normalize duplicate keys (281ms)
+[WebServer] 2:03:57 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   7 tests/compound/browser.spec.ts:57:5 › search results hide stale materialization and restore the matching revision (214ms)
+[WebServer] 2:03:58 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   8 tests/compound/browser.spec.ts:70:5 › current search detail retains its authorized scope (207ms)
+[WebServer] 2:03:58 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   9 tests/compound/browser.spec.ts:76:5 › record editor validates slotted fields and includes the explicit draft receipt (331ms)
+[WebServer] 2:03:58 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  10 tests/compound/browser.spec.ts:99:5 › form flow keeps step scoped controls mounted, blocks invalid progression, and commits all steps (346ms)
+[WebServer] 2:03:58 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  11 tests/compound/browser.spec.ts:121:5 › form flow preserves keyboard focus through forward and back navigation (269ms)
+[WebServer] 2:03:59 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  12 tests/compound/browser.spec.ts:137:5 › compound states keep caution copy and remain accessible under RTL, zoom and forced colors (744ms)
+
+  12 passed (3.7s)

@@ -1,0 +1,136 @@
+$ pnpm build:site && playwright test --config tests/site/document-layout.playwright.config.mjs
+$ pnpm build:platform && pnpm build:agent && pnpm --filter @aeliqo/site build
+$ pnpm build:runtime && pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/react build
+$ pnpm build:core && pnpm --filter @aeliqo/runtime build
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+$ pnpm build:runtime && pnpm --filter @aeliqo/agent build
+$ pnpm build:core && pnpm --filter @aeliqo/runtime build
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json && vite build
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 604 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/404/index.html                                            2.33 kB │ gzip:   1.07 kB
+dist/blog/index.html                                           2.56 kB │ gzip:   1.19 kB
+dist/legal/support/index.html                                  2.59 kB │ gzip:   1.20 kB
+dist/about/index.html                                          2.70 kB │ gzip:   1.25 kB
+dist/legal/security/index.html                                 2.81 kB │ gzip:   1.31 kB
+dist/legal/license/index.html                                  2.82 kB │ gzip:   1.32 kB
+dist/legal/privacy/index.html                                  3.57 kB │ gzip:   1.67 kB
+dist/blog/four-concepts/index.html                             3.62 kB │ gzip:   1.72 kB
+dist/docs/getting-started/agent/index.html                     4.87 kB │ gzip:   2.06 kB
+dist/docs/getting-started/local/index.html                     4.88 kB │ gzip:   2.01 kB
+dist/docs/getting-started/standalone/index.html                4.89 kB │ gzip:   2.02 kB
+dist/docs/getting-started/region/index.html                    4.90 kB │ gzip:   2.04 kB
+dist/docs/getting-started/http/index.html                      4.92 kB │ gzip:   2.01 kB
+dist/docs/integration/index.html                               5.05 kB │ gzip:   2.07 kB
+dist/docs/meaning/index.html                                   5.16 kB │ gzip:   2.17 kB
+dist/docs/concepts/index.html                                  5.22 kB │ gzip:   2.16 kB
+dist/docs/agents/index.html                                    5.33 kB │ gzip:   2.27 kB
+dist/docs/data/index.html                                      5.37 kB │ gzip:   2.24 kB
+dist/docs/production/index.html                                5.68 kB │ gzip:   2.37 kB
+dist/docs/index.html                                           5.81 kB │ gzip:   2.25 kB
+dist/docs/getting-started/index.html                           6.03 kB │ gzip:   2.34 kB
+dist/index.html                                                6.86 kB │ gzip:   2.60 kB
+dist/docs/components/index.html                                9.22 kB │ gzip:   2.56 kB
+dist/playground/index.html                                     9.83 kB │ gzip:   3.16 kB
+dist/docs/components/foundation.separator/index.html          11.07 kB │ gzip:   4.03 kB
+dist/docs/components/foundation.text/index.html               11.07 kB │ gzip:   4.03 kB
+dist/docs/components/foundation.badge/index.html              11.18 kB │ gzip:   4.08 kB
+dist/docs/components/feedback.progress/index.html             11.36 kB │ gzip:   4.14 kB
+dist/docs/components/foundation.heading/index.html            11.36 kB │ gzip:   4.08 kB
+dist/docs/components/foundation.link/index.html               11.56 kB │ gzip:   4.11 kB
+dist/docs/components/foundation.grid/index.html               11.58 kB │ gzip:   4.16 kB
+dist/docs/components/feedback.skeleton/index.html             11.65 kB │ gzip:   4.18 kB
+dist/docs/components/foundation.scroll-area/index.html        11.65 kB │ gzip:   4.14 kB
+dist/docs/components/feedback.tooltip/index.html              11.77 kB │ gzip:   4.25 kB
+dist/docs/components/foundation.surface/index.html            11.77 kB │ gzip:   4.15 kB
+dist/docs/components/foundation.stack/index.html              12.00 kB │ gzip:   4.25 kB
+dist/docs/components/feedback.empty-state/index.html          12.24 kB │ gzip:   4.29 kB
+dist/docs/components/foundation.avatar/index.html             12.25 kB │ gzip:   4.28 kB
+dist/docs/components/feedback.drawer/index.html               12.34 kB │ gzip:   4.37 kB
+dist/docs/components/feedback.toast/index.html                12.36 kB │ gzip:   4.35 kB
+dist/docs/components/navigation.breadcrumb/index.html         12.46 kB │ gzip:   4.36 kB
+dist/docs/components/feedback.dialog/index.html               12.62 kB │ gzip:   4.41 kB
+dist/docs/components/input.field-group/index.html             12.69 kB │ gzip:   4.42 kB
+dist/docs/components/feedback.alert/index.html                12.74 kB │ gzip:   4.38 kB
+dist/docs/components/foundation.icon-button/index.html        12.79 kB │ gzip:   4.28 kB
+dist/docs/components/feedback.popover/index.html              12.93 kB │ gzip:   4.45 kB
+dist/docs/components/navigation.menu/index.html               13.06 kB │ gzip:   4.51 kB
+dist/docs/components/foundation.button/index.html             13.08 kB │ gzip:   4.32 kB
+dist/docs/components/input.form/index.html                    13.19 kB │ gzip:   4.66 kB
+dist/docs/components/navigation.tree-nav/index.html           13.65 kB │ gzip:   4.60 kB
+dist/docs/components/navigation.pagination/index.html         13.70 kB │ gzip:   4.55 kB
+dist/docs/components/navigation.tabs/index.html               14.01 kB │ gzip:   4.64 kB
+dist/docs/components/input.switch/index.html                  14.10 kB │ gzip:   4.49 kB
+dist/docs/components/data.key-value/index.html                14.53 kB │ gzip:   4.97 kB
+dist/docs/components/foundation.split-pane/index.html         14.59 kB │ gzip:   4.63 kB
+dist/docs/components/input.text-area/index.html               14.88 kB │ gzip:   4.53 kB
+dist/docs/components/input.text-field/index.html              14.97 kB │ gzip:   4.53 kB
+dist/docs/components/data.delta/index.html                    15.66 kB │ gzip:   5.10 kB
+dist/docs/components/input.checkbox/index.html                15.74 kB │ gzip:   4.70 kB
+dist/docs/components/data.detail/index.html                   15.80 kB │ gzip:   5.07 kB
+dist/docs/components/data.selection-summary/index.html        15.91 kB │ gzip:   5.11 kB
+dist/docs/components/input.radio-group/index.html             15.98 kB │ gzip:   4.77 kB
+dist/docs/components/input.date-field/index.html              16.00 kB │ gzip:   4.77 kB
+dist/docs/components/data.metric/index.html                   16.08 kB │ gzip:   5.14 kB
+dist/docs/components/input.select/index.html                  16.11 kB │ gzip:   4.75 kB
+dist/docs/components/input.file-input/index.html              16.18 kB │ gzip:   4.73 kB
+dist/docs/components/input.slider/index.html                  16.35 kB │ gzip:   4.88 kB
+dist/docs/components/compound.quality-panel/index.html        16.41 kB │ gzip:   5.17 kB
+dist/docs/components/input.number-field/index.html            16.70 kB │ gzip:   4.89 kB
+dist/docs/components/input.date-range/index.html              17.09 kB │ gzip:   4.95 kB
+dist/docs/components/compound.record-editor/index.html        17.09 kB │ gzip:   5.24 kB
+dist/docs/components/data.record-list/index.html              17.26 kB │ gzip:   5.34 kB
+dist/docs/components/compound.breakdown/index.html            17.28 kB │ gzip:   5.29 kB
+dist/docs/components/compound.comparison/index.html           17.28 kB │ gzip:   5.33 kB
+dist/docs/components/compound.form-flow/index.html            17.59 kB │ gzip:   5.45 kB
+dist/docs/components/compound.search-results/index.html       17.99 kB │ gzip:   5.31 kB
+dist/docs/components/input.search-field/index.html            18.02 kB │ gzip:   4.98 kB
+dist/docs/components/input.combobox/index.html                18.13 kB │ gzip:   5.16 kB
+dist/docs/components/data.filter-builder/index.html           18.16 kB │ gzip:   5.58 kB
+dist/docs/components/data.card-collection/index.html          18.22 kB │ gzip:   5.44 kB
+dist/docs/search/index.html                                   18.37 kB │ gzip:   5.71 kB
+dist/docs/components/compound.investigation/index.html        18.43 kB │ gzip:   5.32 kB
+dist/docs/components/compound.explorer/index.html             18.78 kB │ gzip:   5.46 kB
+dist/docs/components/data.table/index.html                    21.92 kB │ gzip:   6.11 kB
+dist/docs/components/visualization.matrix/index.html          24.51 kB │ gzip:   6.70 kB
+dist/docs/components/visualization.timeline/index.html        24.56 kB │ gzip:   6.69 kB
+dist/docs/components/visualization.calendar-grid/index.html   24.60 kB │ gzip:   6.69 kB
+dist/docs/components/visualization.treemap/index.html         24.74 kB │ gzip:   6.74 kB
+dist/docs/components/visualization.tree/index.html            24.75 kB │ gzip:   6.75 kB
+dist/docs/components/visualization.relationship/index.html    24.89 kB │ gzip:   6.78 kB
+dist/docs/components/visualization.trend/index.html           25.75 kB │ gzip:   6.91 kB
+dist/docs/components/visualization.bar/index.html             25.75 kB │ gzip:   6.93 kB
+dist/docs/components/visualization.heatmap/index.html         25.78 kB │ gzip:   6.91 kB
+dist/docs/components/visualization.histogram/index.html       25.79 kB │ gzip:   6.93 kB
+dist/docs/components/visualization.area/index.html            25.82 kB │ gzip:   6.95 kB
+dist/docs/components/visualization.scatter/index.html         25.83 kB │ gzip:   6.95 kB
+dist/assets/site-DB2aX8vP.css                                 16.95 kB │ gzip:   4.25 kB
+dist/assets/docs-Cbj1XP6A.js                                   6.05 kB │ gzip:   2.52 kB
+dist/assets/dialog-jTsz-chW.js                                 7.95 kB │ gzip:   2.86 kB
+dist/assets/catalog-DZjZEqef.js                              104.05 kB │ gzip:  25.14 kB
+dist/assets/playground-CDEJ3r9v.js                           141.42 kB │ gzip:  38.71 kB
+dist/assets/register-BGjmF9NN.js                             376.09 kB │ gzip:  87.54 kB
+dist/assets/site-EAgs_aNb.js                                 397.60 kB │ gzip: 113.61 kB
+
+✓ built in 499ms
+[WebServer] (node:7046) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:7054) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/site/document-layout.spec.ts:102:5 › all component documentation routes preserve static content and hydration layout (7.7s)
+
+  1 passed (8.9s)

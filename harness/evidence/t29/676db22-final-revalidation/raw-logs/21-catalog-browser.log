@@ -1,0 +1,15 @@
+[WebServer] (node:7924) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:7930) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 2:34:13 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  1 tests/catalog-examples/browser.spec.ts:8:5 › mounts every catalog entry through its executable example (299ms)
+[WebServer] 2:34:13 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  2 tests/catalog-examples/browser.spec.ts:17:5 › uses real renderers and compound host boundaries (293ms)
+[WebServer] 2:34:13 AM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  3 tests/catalog-examples/browser.spec.ts:27:5 › keyboard focus reaches a direct action and cleanup removes mounted roots (274ms)
+
+  3 passed (1.3s)
