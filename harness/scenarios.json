@@ -6,7 +6,13 @@
       "title": "Employee table, then selected detail",
       "task": "T16",
       "assertion": "Identity-based data rendering and no data invented.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -15,7 +21,13 @@
       "title": "Attendance ranking from raw schedule and observations",
       "task": "T07",
       "assertion": "Count employee-days with explicit approved-leave policy; no raw-log duplicate count.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -33,7 +45,13 @@
       "title": "Department ratio rollup",
       "task": "T07",
       "assertion": "Ratio of sums, not mean of employee percentages; missing pairs remain disclosed.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -72,7 +90,13 @@
       "title": "Unknown business meaning",
       "task": "T23",
       "assertion": "Definition flow or declared temporary hypothesis, never silent organizational truth.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -81,7 +105,13 @@
       "title": "Desktop exact comparison to 320px/400% zoom",
       "task": "T20",
       "assertion": "Task-equivalent comparison remains possible; essential two-axis scroll permitted.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -90,7 +120,13 @@
       "title": "Resize during IME/draft/drag",
       "task": "T20",
       "assertion": "Defer unsafe structure transitions; preserve focused owner and draft.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -99,7 +135,13 @@
       "title": "Explicit table preference on narrow region",
       "task": "T19",
       "assertion": "Respect valid choice; report constraint conflict rather than silently swap.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -123,7 +165,13 @@
       "title": "Unrelated node patch",
       "task": "T10",
       "assertion": "Unrelated result/view subscriptions do not recompute unnecessarily.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -132,7 +180,13 @@
       "title": "Out-of-order remote responses",
       "task": "T09",
       "assertion": "Old response cannot replace current result or resurrect closed region.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -141,7 +195,13 @@
       "title": "Consumer unmount and reconnect storm",
       "task": "T09",
       "assertion": "Abort, listeners, caches, streams and workers released within policy.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -150,7 +210,13 @@
       "title": "Join fanout",
       "task": "T07",
       "assertion": "Pre-aggregate or reject many-to-many fanout; no multiplied money/count.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -159,7 +225,13 @@
       "title": "Missing dates, timezone/DST and calendar periods",
       "task": "T07",
       "assertion": "No last-known-value substitution; calendar months distinct from 90 days.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -168,7 +240,13 @@
       "title": "Partial/approximate result",
       "task": "T09",
       "assertion": "Scope/error bounds presented; no global claim from sample or page.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -177,7 +255,13 @@
       "title": "Units and exact decimal money",
       "task": "T04",
       "assertion": "Reject incompatible units/currencies; stable exact decimal calculation.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -201,7 +285,13 @@
       "title": "Prompt injection in records/schema labels",
       "task": "T28",
       "assertion": "Treat content as data; no arbitrary code, endpoint or credential egress.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -210,7 +300,13 @@
       "title": "Business action preview/confirm/revoke",
       "task": "T11",
       "assertion": "Recheck entity revision and authority at execution; no action from layout change.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -228,7 +324,13 @@
       "title": "Native WebMCP absent",
       "task": "T24",
       "assertion": "Manual/other transports work; no fabricated availability.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -246,7 +348,13 @@
       "title": "Vanilla zero-React consumer",
       "task": "T25",
       "assertion": "Actual packed/published-style tarball imports and interactive UI without React; stable registry verification is a later release gate.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -255,7 +363,13 @@
       "title": "React/Next server render and hydration",
       "task": "T25",
       "assertion": "No model or browser globals during SSR, meaningful content and correct event/property mapping.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -264,7 +378,13 @@
       "title": "Vue embedding of shared web component",
       "task": "T25",
       "assertion": "Same renderer, no second business logic or component implementation.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -283,7 +403,13 @@
       "title": "RTL, locale, long labels and forced colors",
       "task": "T29",
       "assertion": "No clipping or color-only meaning; logical navigation remains coherent.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -292,7 +418,13 @@
       "title": "Search and product comparison in app region",
       "task": "T31",
       "assertion": "Non-dashboard task preserves application navigation and region boundaries.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -301,7 +433,13 @@
       "title": "Host-owned record edit form",
       "task": "T31",
       "assertion": "App action contract, draft/errors and explicit save; data mutation separate from view state.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -325,7 +463,13 @@
       "title": "Renderer throw/missing renderer",
       "task": "T20",
       "assertion": "Failed projection cannot produce a presented/completed receipt.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -334,7 +478,13 @@
       "title": "Atomic region update concurrency",
       "task": "T10",
       "assertion": "Expected revisions, idempotency and conflict repair; no mixed partial presentation.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -343,7 +493,13 @@
       "title": "Component inventory contract matrix",
       "task": "T29",
       "assertion": "Every release entry has standalone/semantic/region and applicable states evidence.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -361,7 +517,13 @@
       "title": "Shared semantic definition revision",
       "task": "T23",
       "assertion": "Affected results invalidate intentionally; no uncontrolled loss of drafts or saved task meaning.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -370,7 +532,13 @@
       "title": "Unseen domain/schema import",
       "task": "T31",
       "assertion": "Same contracts, new fields/metrics; no core domain enum or prompt phrase branch.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -379,7 +547,13 @@
       "title": "Novel bounded composition without exact preset",
       "task": "T39",
       "assertion": "Combine existing capabilities without domain-specific pattern or core edits; required operations remain covered.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -388,7 +562,13 @@
       "title": "Multigrain named outputs",
       "task": "T39",
       "assertion": "Ranking, weekly values and source detail have explicit dependencies and separate row grain.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -421,7 +601,13 @@
       "title": "Every dependency revision and principal scope",
       "task": "T10",
       "assertion": "Changed policy/catalog/profile/function/result/task epoch invalidates old proposal; unrelated new result need not.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -454,7 +640,13 @@
       "title": "Structured AI composition proposal",
       "task": "T22",
       "assertion": "Registered nodes can be proposed; executable code, unknown schema and forged actor rejected.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -463,7 +655,13 @@
       "title": "Typed selection versus filter/range/page/draft",
       "task": "T11",
       "assertion": "Separate payload schemas and compatible links, no arbitrary Json accepted as verified interaction.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -472,7 +670,13 @@
       "title": "Canonical task ownership",
       "task": "T01",
       "assertion": "Leases cover actual src paths, no traversal or sibling-prefix collision; changing acceptance invalidates evidence.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -481,7 +685,13 @@
       "title": "Budget exhaustion without false impossibility",
       "task": "T19",
       "assertion": "Bounded candidate generation reports exhaustion distinctly and reuses valid incumbent/fallback.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -490,7 +700,13 @@
       "title": "Live versus fixed cohort on filter change",
       "task": "T31",
       "assertion": "Recompute membership only if task declares live population; stable cohort retains explicit lineage.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -499,7 +715,13 @@
       "title": "Aggregate-only permission and model egress",
       "task": "T28",
       "assertion": "Server-approved aggregate visibility does not grant raw-detail or model data sharing rights.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -517,7 +739,13 @@
       "title": "Hallucinated metric and renderer",
       "task": "T41",
       "assertion": "Unknown metric/view never produces a fabricated result or arbitrary renderer; correct gap with prior authorized state retained.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -535,7 +763,13 @@
       "title": "Model score cannot authorize effect",
       "task": "T41",
       "assertion": "Changing model name or test score grants no read, UI, meaning, egress or business-write permission.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -544,7 +778,13 @@
       "title": "Action needs host grant and confirmation",
       "task": "T41",
       "assertion": "experience.commit does not imply action.execute; forgedhuman/approval and stale confirmation fail every route.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -553,7 +793,13 @@
       "title": "Weak model unavailable or looping",
       "task": "T41",
       "assertion": "Timeout/malformed repeated outputs preserve authorized state and manual controls; runtime-owned source-scoped fingerprints stop no-progress retries.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -562,7 +808,13 @@
       "title": "Revocation invalidates old UI fallback",
       "task": "T28",
       "assertion": "Retaining previous UI on AI failure cannot retain data whose authorization was revoked.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -613,7 +865,13 @@
       "title": "Real docs and playground UI",
       "task": "T27",
       "assertion": "Component routes and snippet copies are specific and compiled; live preview uses actual package; agent inspector is secondary and keys server-side.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -622,7 +880,13 @@
       "title": "Master traceability and extension boundary",
       "task": "T32",
       "assertion": "All discussion decisions map to current docs/tasks; generated images ignored; no-preset composition and new domain require no prompt-specific core branch.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -661,7 +925,13 @@
       "title": "Developer meaning DX and authoring parity",
       "task": "T25",
       "assertion": "External built-package example compiles with typed errors and schema reuse; code/Studio equivalent definitions share evaluator/results across views, no manual-path model calls or required Studio imports.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+          "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     }

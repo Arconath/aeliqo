@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "status": "pass",
+  "observedAt": "2026-09-10T02:44:31Z",
+  "sourceCommit": "5d81a213fe4f5efc22076751cdcff55055017e18",
+  "subjectSha256": "4edfb36cee75c9a60973508c1ca4a6fe8fae6adecf1c281cc7b25a4d79be54a6",
+  "environment": {
+    "node": "v22.23.2",
+    "pnpm": "11.24.0",
+    "vitest": "5.0.0"
+  },
+  "command": [
+    "pnpm",
+    "test:scenarios"
+  ],
+  "scenarioIds": [
+    "S01",
+    "S02",
+    "S04",
+    "S07",
+    "S08",
+    "S09",
+    "S10",
+    "S12",
+    "S13",
+    "S14",
+    "S15",
+    "S16",
+    "S17",
+    "S18",
+    "S20",
+    "S21",
+    "S23",
+    "S25",
+    "S26",
+    "S27",
+    "S29",
+    "S30",
+    "S31",
+    "S33",
+    "S34",
+    "S35",
+    "S37",
+    "S38",
+    "S39",
+    "S40",
+    "S43",
+    "S46",
+    "S47",
+    "S48",
+    "S49",
+    "S50",
+    "S51",
+    "S53",
+    "S55",
+    "S56",
+    "S57",
+    "S58",
+    "S63",
+    "S64",
+    "S67"
+  ],
+  "result": {
+    "testFilesPassed": 2,
+    "testsPassed": 52,
+    "traceabilityAssertionsPassed": 49,
+    "typecheckPassed": true,
+    "exitCode": 0
+  },
+  "subjectDerivation": "SHA-256 of the ordered sha256sum lines for sourceInputs.",
+  "sourceInputs": [
+    {
+      "path": "fixtures/scenarios/ready-traceability.ts",
+      "sha256": "6399329efd55c1f7c9edd7af476540e635d8228fd34f3bcb83a1f9eb37c08de4"
+    },
+    {
+      "path": "tests/scenarios/ready-traceability.test.ts",
+      "sha256": "5bfc331ce87bb8488befe02bc7296b159ffdfd47530fb464393e1f1dcc438d40"
+    },
+    {
+      "path": "tests/scenarios/tsconfig.json",
+      "sha256": "423291bdd6aedd5a87a155730e842951608ec35085fe97c57b5a2604d3cac757"
+    },
+    {
+      "path": "tests/scenarios/vitest.config.mjs",
+      "sha256": "2be487b6fc2e4fc58aa547dc85d91ca8677b0217d1ac2e15ac6482887d55e344"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "harness/evidence/scenarios/4edfb36cee75/ready-traceability.log",
+      "sha256": "9292230b793666065e07d44370dc5d627db232f4e95910144e8ba4ee4a1e4b69"
+    }
+  ],
+  "scope": "Scenario-level traceability for the listed deterministic ready-stage scenarios: exact production assertion markers, immutable task evidence links, task-ownership regression execution, and master-decision/no-preset extension-boundary audits.",
+  "limits": "This bundle does not close or qualify S03, S22, S24, S28, S36, S42, S45, S52, S54, S59, S61 or S62; T30, T40, T32, T33, T34, T42 or release work; model reasoning quality; native-host behavior; registry publication; deployment; or Node 24.20.0 execution. The successful run used Node v22.23.2 despite the package engine request for 24.20.0."
+}

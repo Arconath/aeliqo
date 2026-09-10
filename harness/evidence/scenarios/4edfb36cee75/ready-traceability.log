@@ -1,0 +1,9 @@
+Command: pnpm test:scenarios
+Environment: node v22.23.2; pnpm 11.24.0; vitest 5.0.0
+Warning: package engine requests node 24.20.0; this run used node v22.23.2.
+
+Test Files  2 passed (2)
+Tests       52 passed (52)
+Typecheck   passed
+Exit code   0
+Duration    3.66s
