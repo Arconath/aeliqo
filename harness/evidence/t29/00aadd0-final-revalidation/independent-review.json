@@ -1,0 +1,88 @@
+{
+  "task": "T29",
+  "decision": "approved",
+  "reviewedSourceCommit": "00aadd06426cef10971bbfaea10caad48621430f",
+  "reviewedSourceTree": "f40d9a15e61bf71c1d605d13f8d0e735ad121f97",
+  "reviewedSourceDigest": "0bf62c81431a62f5d9ab1c71528a798c54aa4c7b9415b0c7363f2f25da32268e",
+  "reviewedAt": "2026-09-10T13:17:55Z",
+  "reviewer": "close_ready_scenarios",
+  "independence": "The reviewer did not author either candidate fix and made no product, test, task, scenario, configuration, lockfile, integrated-evidence, or CI change during this requalification.",
+  "scope": "Independent final-source requalification of T29 on a fresh isolated exact-commit worktree: strict types; visualization semantic, unit, SSR, browser, and installed-consumer paths; compound unit, SSR, browser, and installed-consumer paths; a complete three-browser visual/Axe/interaction matrix; repeated Firefox regression cases; adverse dense/null-heavy visualization behavior; and focused narrow RTL 200%-root-text pixel inspection.",
+  "findings": [],
+  "automatedReview": {
+    "fullVisualMatrix": {
+      "decision": "passed",
+      "tests": 1137,
+      "passed": 1137,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "retries": 0,
+      "browsers": ["chromium", "firefox", "webkit"],
+      "detail": "All 379 cases per browser passed, including catalog captures, Axe assertions, field/data/structure states, keyboard and IME behavior, controlled identities, revocation, responsive states, and visualization interactions."
+    },
+    "firefoxRepeat": {
+      "decision": "passed",
+      "tests": 18,
+      "passed": 18,
+      "repeatEach": 3,
+      "componentIds": ["trend", "area", "scatter", "histogram", "heatmap", "investigation"],
+      "variant": "360x800 narrow dark RTL"
+    },
+    "visualization": {
+      "unitTests": 27,
+      "unitTestFiles": 4,
+      "semanticTests": 7,
+      "semanticTestFiles": 2,
+      "semanticBrowserTests": 4,
+      "browserTests": 31,
+      "installedConsumer": "passed",
+      "installedPackages": ["@aeliqo/sdk-core", "@aeliqo/sdk-web", "@aeliqo/sdk-react"]
+    },
+    "compounds": {
+      "unitTests": 4,
+      "unitTestFiles": 1,
+      "browserTests": 12,
+      "installedConsumer": "passed",
+      "installedPackages": ["@aeliqo/sdk-core", "@aeliqo/sdk-runtime", "@aeliqo/sdk-web", "@aeliqo/sdk-react"]
+    },
+    "adverseVisualization": {
+      "decision": "passed",
+      "tests": 1,
+      "rows": 1000,
+      "nullRows": 250,
+      "selectedSet": 1000,
+      "oscillationSamples": 40,
+      "observedP50Ms": 13.5,
+      "observedP95Ms": 16,
+      "requestsDuringInteraction": 0,
+      "detail": "Exact paged data alternatives, stable identities, null-separated paths, bounded document width, and zero interaction network requests were observed. The probe defines no universal timing budget."
+    }
+  },
+  "pixelReview": {
+    "decision": "approved",
+    "variant": "Firefox 155.0, 360x800 viewport, dark theme, RTL, 32px root font (200% of the 16px baseline)",
+    "componentIds": ["trend", "bar", "area", "scatter", "histogram", "heatmap", "investigation"],
+    "capturesInspected": 7,
+    "documentOverflowCases": 0,
+    "consoleOrPageErrors": 0,
+    "chartLabelIntersections": 0,
+    "observations": "Titles, scope copy, SVG marks and axes, legends where applicable, exact-data captions, paged row cards, selection controls, and the Investigation evidence/detail regions remain visible and readable. Text reflows vertically within the viewport width; no horizontal clipping, label collision, content occlusion, or lost essential comparison was observed."
+  },
+  "acceptance": {
+    "exactSourceIdentity": "approved",
+    "typedAndSemanticPaths": "approved",
+    "crossBrowserVisualAndInteractionMatrix": "approved",
+    "installedConsumers": "approved",
+    "focusedFirefoxRegression": "approved",
+    "narrowRtlLargeText": "approved",
+    "taskDecision": "T29 remains qualified on exact final source 00aadd0 / digest 0bf62c8."
+  },
+  "limitations": [
+    "No manual VoiceOver, NVDA, or other assistive-technology certification was performed or claimed.",
+    "Focused 200%-root-text pixel inspection covered the seven changed or adjacent visualization surfaces in Firefox; the complete automated matrix covered all required catalog components at its maintained variants across all three browsers.",
+    "The adverse probe is a desktop Chromium observation, not a lower-powered-device, field Core Web Vitals, paint, or universal performance claim.",
+    "Captured fixtures do not establish universal pixel equivalence in every consumer environment.",
+    "This review does not qualify T30, T31, T40, publication, deployment, or release promotion."
+  ]
+}

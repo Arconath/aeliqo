@@ -1,0 +1,149 @@
+[
+  {
+    "component": "trend",
+    "screenshot": "/private/tmp/aeliqo-t29-00aadd0-zoom/trend-firefox-narrow-dark-rtl-200pct.png",
+    "errors": [],
+    "viewport": {
+      "width": 360,
+      "height": 800
+    },
+    "documentWidth": 360,
+    "rootFontSize": "32px",
+    "direction": "rtl",
+    "theme": "dark",
+    "host": {
+      "left": 16,
+      "right": 344,
+      "width": 328,
+      "height": 2511.88330078125
+    },
+    "labelCount": 8,
+    "intersections": []
+  },
+  {
+    "component": "bar",
+    "screenshot": "/private/tmp/aeliqo-t29-00aadd0-zoom/bar-firefox-narrow-dark-rtl-200pct.png",
+    "errors": [],
+    "viewport": {
+      "width": 360,
+      "height": 800
+    },
+    "documentWidth": 360,
+    "rootFontSize": "32px",
+    "direction": "rtl",
+    "theme": "dark",
+    "host": {
+      "left": 16,
+      "right": 344,
+      "width": 328,
+      "height": 2685.88330078125
+    },
+    "labelCount": 7,
+    "intersections": []
+  },
+  {
+    "component": "area",
+    "screenshot": "/private/tmp/aeliqo-t29-00aadd0-zoom/area-firefox-narrow-dark-rtl-200pct.png",
+    "errors": [],
+    "viewport": {
+      "width": 360,
+      "height": 800
+    },
+    "documentWidth": 360,
+    "rootFontSize": "32px",
+    "direction": "rtl",
+    "theme": "dark",
+    "host": {
+      "left": 16,
+      "right": 344,
+      "width": 328,
+      "height": 2511.88330078125
+    },
+    "labelCount": 8,
+    "intersections": []
+  },
+  {
+    "component": "scatter",
+    "screenshot": "/private/tmp/aeliqo-t29-00aadd0-zoom/scatter-firefox-narrow-dark-rtl-200pct.png",
+    "errors": [],
+    "viewport": {
+      "width": 360,
+      "height": 800
+    },
+    "documentWidth": 360,
+    "rootFontSize": "32px",
+    "direction": "rtl",
+    "theme": "dark",
+    "host": {
+      "left": 16,
+      "right": 344,
+      "width": 328,
+      "height": 2511.88330078125
+    },
+    "labelCount": 8,
+    "intersections": []
+  },
+  {
+    "component": "histogram",
+    "screenshot": "/private/tmp/aeliqo-t29-00aadd0-zoom/histogram-firefox-narrow-dark-rtl-200pct.png",
+    "errors": [],
+    "viewport": {
+      "width": 360,
+      "height": 800
+    },
+    "documentWidth": 360,
+    "rootFontSize": "32px",
+    "direction": "rtl",
+    "theme": "dark",
+    "host": {
+      "left": 16,
+      "right": 344,
+      "width": 328,
+      "height": 2793.88330078125
+    },
+    "labelCount": 10,
+    "intersections": []
+  },
+  {
+    "component": "heatmap",
+    "screenshot": "/private/tmp/aeliqo-t29-00aadd0-zoom/heatmap-firefox-narrow-dark-rtl-200pct.png",
+    "errors": [],
+    "viewport": {
+      "width": 360,
+      "height": 800
+    },
+    "documentWidth": 360,
+    "rootFontSize": "32px",
+    "direction": "rtl",
+    "theme": "dark",
+    "host": {
+      "left": 16,
+      "right": 344,
+      "width": 328,
+      "height": 2623.88330078125
+    },
+    "labelCount": 7,
+    "intersections": []
+  },
+  {
+    "component": "investigation",
+    "screenshot": "/private/tmp/aeliqo-t29-00aadd0-zoom/investigation-firefox-narrow-dark-rtl-200pct.png",
+    "errors": [],
+    "viewport": {
+      "width": 360,
+      "height": 800
+    },
+    "documentWidth": 360,
+    "rootFontSize": "32px",
+    "direction": "rtl",
+    "theme": "dark",
+    "host": {
+      "left": 16,
+      "right": 344,
+      "width": 328,
+      "height": 4095.38330078125
+    },
+    "labelCount": 8,
+    "intersections": []
+  }
+]

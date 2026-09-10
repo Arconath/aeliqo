@@ -1,0 +1,177 @@
+{
+  "task": "T29",
+  "status": "passed-final-source-independent-revalidation",
+  "testedSourceCommit": "00aadd06426cef10971bbfaea10caad48621430f",
+  "testedSourceTree": "f40d9a15e61bf71c1d605d13f8d0e735ad121f97",
+  "sourceDigestBefore": "0bf62c81431a62f5d9ab1c71528a798c54aa4c7b9415b0c7363f2f25da32268e",
+  "sourceDigestAfter": "0bf62c81431a62f5d9ab1c71528a798c54aa4c7b9415b0c7363f2f25da32268e",
+  "sourceChangedDuringRun": false,
+  "reviewedAt": "2026-09-10T13:17:55Z",
+  "reviewer": "close_ready_scenarios",
+  "independent": true,
+  "worktree": "fresh isolated worktree created directly from the tested source commit",
+  "scope": "Final exact-source T29 requalification after the narrow visualization fixes. All commands ran locally from the isolated worktree with one visual-matrix worker and no retries.",
+  "environment": {
+    "os": "macOS 26.6.2 (25G83)",
+    "architecture": "arm64",
+    "node": "v24.20.0",
+    "pnpm": "11.24.0",
+    "playwright": "1.63.0",
+    "browsers": {
+      "chromium": "153.0.8010.12",
+      "firefox": "155.0",
+      "webkit": "26.6"
+    },
+    "visualWorkers": 1,
+    "visualRetries": 0
+  },
+  "runs": [
+    {
+      "command": "pnpm install --offline --frozen-lockfile",
+      "result": "passed",
+      "detail": "15 workspace projects; lockfile unchanged"
+    },
+    {
+      "command": "pnpm typecheck",
+      "result": "passed"
+    },
+    {
+      "command": "pnpm exec playwright test --config tests/visual/playwright.config.mjs --project=firefox --grep='(trend|scatter|histogram|heatmap|investigation) narrow-dark-rtl$|[^-]area narrow-dark-rtl$' --repeat-each=3",
+      "result": "passed",
+      "tests": 18,
+      "passed": 18,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    {
+      "command": "pnpm test:visualization",
+      "result": "passed",
+      "testFiles": 4,
+      "tests": 27,
+      "detail": "Temporal, hierarchy, and cartesian SSR checks also passed."
+    },
+    {
+      "command": "pnpm test:visualization-semantic",
+      "result": "passed",
+      "testFiles": 2,
+      "tests": 7,
+      "detail": "All twelve canonical-plan SSR views passed."
+    },
+    {
+      "command": "pnpm test:visualization-semantic:browser",
+      "result": "passed",
+      "tests": 4,
+      "passed": 4
+    },
+    {
+      "command": "pnpm test:visualization:browser",
+      "result": "passed",
+      "tests": 31,
+      "passed": 31,
+      "detail": "Temporal 3/3, cartesian 21/21, hierarchy 7/7."
+    },
+    {
+      "command": "pnpm test:visualization:consumers",
+      "result": "passed",
+      "sourceDigestMatched": true,
+      "packages": 3
+    },
+    {
+      "command": "pnpm test:compounds",
+      "result": "passed",
+      "testFiles": 1,
+      "tests": 4,
+      "detail": "Compound SSR also passed."
+    },
+    {
+      "command": "pnpm test:compounds:browser",
+      "result": "passed",
+      "tests": 12,
+      "passed": 12
+    },
+    {
+      "command": "pnpm test:compounds:consumers",
+      "result": "passed",
+      "sourceDigestMatched": true,
+      "packages": 4
+    },
+    {
+      "command": "pnpm test:visual",
+      "result": "passed",
+      "tests": 1137,
+      "passed": 1137,
+      "perBrowser": 379,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "retries": 0,
+      "duration": "11.5m"
+    },
+    {
+      "command": "pnpm test:performance:adverse-visualization",
+      "result": "passed",
+      "tests": 1,
+      "passed": 1,
+      "detail": "1000 rows, 250 null rows, 1000 selected identities, 40 resize oscillations, observed p50 13.5ms and p95 16ms, zero interaction requests."
+    },
+    {
+      "command": "ad hoc read-only Playwright capture and measurement of seven Firefox narrow/dark/RTL surfaces at 32px root font",
+      "result": "passed-and-visually-approved",
+      "components": 7,
+      "documentOverflowCases": 0,
+      "consoleOrPageErrors": 0,
+      "chartLabelIntersections": 0
+    }
+  ],
+  "decision": {
+    "qualification": true,
+    "task": "T29 remains accepted on exact source 00aadd0 and digest 0bf62c8.",
+    "basis": "The requested fresh matrix passed without failure or flake, the focused Firefox cases passed three consecutive repetitions each, installed consumers retained the exact source digest, the dense/null-heavy probe passed, and the focused 200% root-text captures were independently inspected without a blocking visual finding."
+  },
+  "limits": [
+    "No manual VoiceOver, NVDA, or other assistive-technology certification was performed or claimed.",
+    "Focused 200%-root-text pixel inspection covered seven visualization surfaces in Firefox; the maintained automated visual matrix covered the complete required catalog across Chromium, Firefox, and WebKit.",
+    "The adverse run is a desktop Chromium observation without a universal performance threshold; it does not establish lower-powered-device, field Core Web Vitals, paint, or universal performance behavior.",
+    "The owned fixtures do not establish universal pixel equivalence across every consumer environment.",
+    "This evidence does not qualify T30, T31, T40, publication, deployment, or release promotion."
+  ],
+  "artifacts": [
+    {
+      "path": "harness/evidence/t29/00aadd0-final-revalidation/SHA256SUMS",
+      "sha256": "f9f8d0c153c322e73031ba6f3a0c35ad4ca7c687ef98cd240e739d252c52da5f",
+      "bytes": 1944,
+      "detail": "Hashes every retained report, measurement, independent review, and raw log."
+    },
+    {
+      "path": "harness/evidence/t29/00aadd0-final-revalidation/independent-review.json",
+      "sha256": "bdc4509a45a534c67a5ab2bce80c827a0d501907f8365813799c5e8dda3d93cc",
+      "bytes": 4695
+    },
+    {
+      "path": "harness/evidence/t29/00aadd0-final-revalidation/raw-logs/11-full-visual.log",
+      "sha256": "bb4768794b21bb5f42aab08e9271c11a938d470fca8df5e1bcd7582c08e5371e",
+      "bytes": 331673
+    },
+    {
+      "path": "harness/evidence/t29/00aadd0-final-revalidation/firefox-narrow-rtl-200pct-measurements.json",
+      "sha256": "3e66f7665105e0354e01002e8a658cc931df3fb026d3c029160164377455d38a",
+      "bytes": 3707
+    },
+    {
+      "path": "harness/evidence/t29/00aadd0-final-revalidation/adverse-visualization-report.json",
+      "sha256": "c50855e0c2efb7ba7d7d024fa8d5ff5cab828d935cf50e39406e635411625e87",
+      "bytes": 28624
+    },
+    {
+      "path": "harness/evidence/t29/00aadd0-final-revalidation/visualization-consumer-report.json",
+      "sha256": "b2a99e0fff5d4ab08d6d08bcbdaba635b7ffefb25a5ab0d7dd20ec1b92f6dd14",
+      "bytes": 1972
+    },
+    {
+      "path": "harness/evidence/t29/00aadd0-final-revalidation/compound-consumer-report.json",
+      "sha256": "40fe830c68a946e7f569d5b7881ff156b2c3e967c5efd871555deb802cc09d33",
+      "bytes": 2309
+    }
+  ]
+}

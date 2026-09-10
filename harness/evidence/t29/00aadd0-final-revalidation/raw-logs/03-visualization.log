@@ -1,0 +1,24 @@
+$ pnpm build:platform && vitest run --config tests/visualization/vitest.config.mjs && tsc -p tests/visualization/tsconfig.json && node tests/visualization/temporal-ssr.mjs && node tests/visualization/hierarchy-ssr.mjs && node tests/visualization/cartesian-ssr.mjs
+$ pnpm build:runtime && pnpm --filter @aeliqo/sdk-web build && pnpm --filter @aeliqo/sdk-react build
+$ pnpm build:core && pnpm --filter @aeliqo/sdk-runtime build
+$ pnpm --filter @aeliqo/sdk-core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+
+ RUN  v5.0.0 /private/tmp/aeliqo-t29-00aadd0.TTzU2N
+
+
+ Test Files  4 passed (4)
+      Tests  27 passed (27)
+   Start at  19:56:34
+   Duration  419ms (transform 61%, import 29%, tests 10%, worker 1%)
+
+Public registration SSR: Matrix, Timeline, CalendarGrid exact rows and request isolation passed.
+(node:20261) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///private/tmp/aeliqo-t29-00aadd0.TTzU2N/tests/visualization/hierarchy-fixtures.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /private/tmp/aeliqo-t29-00aadd0.TTzU2N/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Three hierarchy family SSR, public registration, exact table, partial scope and isolation checks passed.
+Cartesian SSR six-family marks, exact tables, color key, histogram scope and request isolation passed.
