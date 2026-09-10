@@ -1,0 +1,42 @@
+{
+  "schema": "aeliqo.t42.npm-authenticated-refresh.v1",
+  "task": "T42",
+  "status": "pass-current-authenticated-readonly",
+  "checkedAt": "2026-09-10T15:31:30Z",
+  "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+  "registry": "https://registry.npmjs.org/",
+  "authentication": {
+    "actor": "arconath",
+    "organization": "aeliqo",
+    "organizationRole": "owner",
+    "tfaMode": "auth-and-writes",
+    "previousExpiredSessionResolved": true
+  },
+  "packages": [
+    {"name": "@aeliqo/sdk-core", "identity": "E404-currently-not-visible", "version": "0.1.0-rc.1", "versionState": "E404-currently-not-visible"},
+    {"name": "@aeliqo/sdk-runtime", "identity": "E404-currently-not-visible", "version": "0.1.0-rc.1", "versionState": "E404-currently-not-visible"},
+    {"name": "@aeliqo/sdk-web", "identity": "E404-currently-not-visible", "version": "0.1.0-rc.1", "versionState": "E404-currently-not-visible"},
+    {"name": "@aeliqo/sdk-agent", "identity": "E404-currently-not-visible", "version": "0.1.0-rc.1", "versionState": "E404-currently-not-visible"},
+    {"name": "@aeliqo/sdk-devtools", "identity": "E404-currently-not-visible", "version": "0.1.0-rc.1", "versionState": "E404-currently-not-visible"},
+    {"name": "@aeliqo/sdk-react", "identity": "E404-currently-not-visible", "version": "0.1.0-rc.1", "versionState": "E404-currently-not-visible"}
+  ],
+  "assertions": {
+    "actorAuthenticated": true,
+    "namespaceAuthority": true,
+    "authAndWritesTfa": true,
+    "allSixCurrentIdentityQueriesE404": true,
+    "allSixExactRcQueriesE404": true,
+    "historicalNonUseProven": false,
+    "firstPublicationAcceptanceProven": false
+  },
+  "limitations": [
+    "Authenticated E404 establishes current non-visibility only; it does not prove historical non-use or guarantee npm will accept first publication.",
+    "The bootstrap publisher must recheck actor, organization authority, 2FA, version state and exact candidate bytes immediately before publication."
+  ],
+  "mutations": {
+    "npm": false,
+    "github": false,
+    "gitops": false,
+    "production": false
+  }
+}
