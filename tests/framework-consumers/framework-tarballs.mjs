@@ -110,14 +110,14 @@ for (const artifact of artifacts) {
     assert.equal(hash(installed), hash(packed), `Installed ${artifact.name} bytes differ for ${entry}`);
   }
 }
-assert.equal(lock.packages["node_modules/@aeliqo/sdk-runtime"]?.dependencies?.["@aeliqo/sdk-core"], "0.1.0");
-assert.equal(lock.packages["node_modules/@aeliqo/sdk-web"]?.dependencies?.["@aeliqo/sdk-core"], "0.1.0");
-assert.equal(lock.packages["node_modules/@aeliqo/sdk-react"]?.dependencies?.["@aeliqo/sdk-web"], "0.1.0");
+assert.equal(lock.packages["node_modules/@aeliqo/runtime"]?.dependencies?.["@aeliqo/core"], "0.1.0");
+assert.equal(lock.packages["node_modules/@aeliqo/web"]?.dependencies?.["@aeliqo/core"], "0.1.0");
+assert.equal(lock.packages["node_modules/@aeliqo/react"]?.dependencies?.["@aeliqo/web"], "0.1.0");
 assert.deepEqual(Object.keys(lock.packages).filter((key) => key.startsWith("node_modules/@aeliqo/")).sort(), [
-  "node_modules/@aeliqo/sdk-core",
-  "node_modules/@aeliqo/sdk-react",
-  "node_modules/@aeliqo/sdk-runtime",
-  "node_modules/@aeliqo/sdk-web",
+  "node_modules/@aeliqo/core",
+  "node_modules/@aeliqo/react",
+  "node_modules/@aeliqo/runtime",
+  "node_modules/@aeliqo/web",
 ]);
 await writeFile(join(runDirectory, "consumer-package-lock.json"), lockBytes);
 
@@ -134,9 +134,9 @@ assert.equal(wrappers.length, 71);
 
 const wrapperImport = wrappers.join(", ");
 await writeFile(join(consumer, "framework-types.tsx"), `
-import {${wrapperImport}} from "@aeliqo/sdk-react";
-import type {AeliqoInputChangeDetail, AeliqoTableColumn, AeliqoTableRow} from "@aeliqo/sdk-web";
-import {AeliqoInput} from "@aeliqo/sdk-react";
+import {${wrapperImport}} from "@aeliqo/react";
+import type {AeliqoInputChangeDetail, AeliqoTableColumn, AeliqoTableRow} from "@aeliqo/web";
+import {AeliqoInput} from "@aeliqo/react";
 
 const wrappers = {${wrappers.join(", ")}};
 for (const [name, component] of Object.entries(wrappers)) {
@@ -151,7 +151,7 @@ void [input, table];
 `);
 
 await writeFile(join(consumer, "framework-vanilla.ts"), `
-import {AeliqoInputEvent, registerAeliqoElements, type AeliqoInputElement, type AeliqoTableElement} from "@aeliqo/sdk-web";
+import {AeliqoInputEvent, registerAeliqoElements, type AeliqoInputElement, type AeliqoTableElement} from "@aeliqo/web";
 registerAeliqoElements();
 const input = document.createElement("aeliqo-input") as AeliqoInputElement;
 const table = document.createElement("aeliqo-table") as AeliqoTableElement;
@@ -167,7 +167,7 @@ document.body.append(input, table);
 
 await writeFile(join(consumer, "framework-vue.ts"), `
 import {createApp, h, ref, type VNode} from "vue";
-import {registerAeliqoElements, AeliqoInputEvent} from "@aeliqo/sdk-web";
+import {registerAeliqoElements, AeliqoInputEvent} from "@aeliqo/web";
 registerAeliqoElements();
 const Fixture = {setup(): (() => VNode) { const value = ref("Vue"); return () => h("aeliqo-input", {
   label: "Vue person", value: value.value, "onAeliqo-input": (event: Event) => { if (event instanceof AeliqoInputEvent) value.value = event.detail.value; },
@@ -176,8 +176,8 @@ createApp(Fixture).mount(document.body);
 `);
 
 const catalogQuickstart = `
-import {createStandardFunctionRegistry, parseCatalog, type Catalog} from "@aeliqo/sdk-core";
-import {createMeaningAuthoring} from "@aeliqo/sdk-runtime/meaning";
+import {createStandardFunctionRegistry, parseCatalog, type Catalog} from "@aeliqo/core";
+import {createMeaningAuthoring} from "@aeliqo/runtime/meaning";
 const registry = createStandardFunctionRegistry("framework-meaning-consumer");
 if (!registry.ok) throw new Error("function registry");
 const catalog = {version: "1", revision: "framework-catalog", functionRegistryDigest: registry.value.digest,
@@ -214,10 +214,10 @@ run([join(consumer, "node_modules/.bin/tsc"), "--project", "tsconfig.json"], con
 
 await writeFile(join(consumer, "ssr.mjs"), `
 import assert from "node:assert/strict";
-import "@aeliqo/sdk-react/ssr";
+import "@aeliqo/react/ssr";
 import {createElement} from "react";
 import {renderToString} from "react-dom/server";
-import {AeliqoInput, AeliqoTable} from "@aeliqo/sdk-react";
+import {AeliqoInput, AeliqoTable} from "@aeliqo/react";
 assert.equal(typeof globalThis.window, "undefined");
 const input = renderToString(createElement(AeliqoInput, {label: "SSR person", value: "Ada"}));
 const table = renderToString(createElement(AeliqoTable, {caption: "SSR people", columns: [{key: "name", label: "Name"}], rows: [{name: "Ada"}]}));
@@ -233,10 +233,10 @@ await writeFile(join(consumer, "index.html"), `<!doctype html><html lang="en"><h
 <main id="vanilla"><h1>Vanilla</h1><p id="vanilla-status" role="status">Ready</p><aeliqo-input id="vanilla-input" label="Vanilla person" value="Vanilla"></aeliqo-input><aeliqo-table id="vanilla-table"></aeliqo-table></main>
 <main id="react-root"><h1>React</h1></main><main id="vue-root"><h1>Vue</h1></main><script type="module" src="/framework-app.tsx"></script></body></html>`);
 await writeFile(join(consumer, "framework-app.tsx"), `
-import {registerAeliqoElements, AeliqoInputEvent, type AeliqoTableElement} from "@aeliqo/sdk-web";
+import {registerAeliqoElements, AeliqoInputEvent, type AeliqoTableElement} from "@aeliqo/web";
 import {createRoot} from "react-dom/client";
 import React, {useState} from "react";
-import {AeliqoInput, AeliqoTable, registerAeliqoReactElements} from "@aeliqo/sdk-react";
+import {AeliqoInput, AeliqoTable, registerAeliqoReactElements} from "@aeliqo/react";
 import {createApp, h, ref, type VNode} from "vue";
 registerAeliqoElements(); registerAeliqoReactElements();
 const vanillaInput = document.querySelector("#vanilla-input");

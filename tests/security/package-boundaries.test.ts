@@ -233,7 +233,7 @@ describe('T28 package boundary graph', () => {
       const core = reachableEntries('core', exportedSourceEntries('core', manifests[0]!), files);
       const runtime = reachableEntries('runtime', exportedSourceEntries('runtime', manifests[1]!), files);
       expect(externalImports(core).filter(name => name !== 'zod/mini' && name !== 'zod')).toEqual([]);
-      expect(externalImports(runtime).filter(name => !name.startsWith('@aeliqo/sdk-core') && name !== 'zod/mini' && name !== 'zod')).toEqual([]);
+      expect(externalImports(runtime).filter(name => !name.startsWith('@aeliqo/core') && name !== 'zod/mini' && name !== 'zod')).toEqual([]);
       expect(externalImports(runtime).filter(name => /(?:web|react|agent|devtools|lit|d3|provider|mcp|openai|node:|fs|http)/i.test(name))).toEqual([]);
       expect(assertNoAmbientEffects(core.files, files)).toEqual([]);
     } finally {
@@ -251,19 +251,19 @@ describe('T28 package boundary graph', () => {
       expect(directKeys.length).toBeGreaterThan(40);
       for (const key of directKeys) {
         const target = flattenedExportTargets(allExports[key]).find(value => value.includes('/dist/') && value.endsWith('.js'));
-        expect(target, `@aeliqo/sdk-web ${key} import target`).toBeDefined();
+        expect(target, `@aeliqo/web ${key} import target`).toBeDefined();
         const graph = reachableEntries('web', [packageExportSource('web', target!)], files);
-        expect(graph.findings, `@aeliqo/sdk-web ${key} graph`).toEqual([]);
+        expect(graph.findings, `@aeliqo/web ${key} graph`).toEqual([]);
         const external = externalImports(graph);
         expect(external.filter(name => /@aeliqo\/(?:runtime|agent|devtools)|(?:provider|mcp|openai)/i.test(name)), `${key} must stay direct-control`).toEqual([]);
-        expect(external.filter(name => name.startsWith('@aeliqo/sdk-core/query') || name.startsWith('@aeliqo/sdk-core/presentation'))).toEqual([]);
+        expect(external.filter(name => name.startsWith('@aeliqo/core/query') || name.startsWith('@aeliqo/core/presentation'))).toEqual([]);
       }
       const regionTarget = packageExportSource('web', flattenedExportTargets(allExports['./region'])[0]!);
       const region = reachableEntries('web', [regionTarget], files);
       expect(region.findings).toEqual([]);
       const adaptationTarget = packageExportSource('web', flattenedExportTargets(allExports['./region/adaptation'])[0]!);
       const adaptation = reachableEntries('web', [adaptationTarget], files);
-      expect(externalImports(adaptation).some(name => name.startsWith('@aeliqo/sdk-runtime/'))).toBe(true);
+      expect(externalImports(adaptation).some(name => name.startsWith('@aeliqo/runtime/'))).toBe(true);
       const serverTarget = packageExportSource('web', flattenedExportTargets(allExports['./server'])[0]!);
       const server = reachableEntries('web', [serverTarget], files);
       expect(externalImports(server).some(name => name.startsWith('@lit-labs/ssr'))).toBe(true);

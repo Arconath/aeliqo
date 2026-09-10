@@ -15,10 +15,10 @@ const pageHtml = `<!doctype html>
 <title>Aeliqo native WebMCP probe</title>
 <p id="status">Running native WebMCP probe…</p>
 <script type="importmap">
-{"imports":{"@aeliqo/sdk-core":"/packages/core/dist/index.js","zod/mini":"/node_modules/.pnpm/node_modules/zod/mini/index.js"}}
+{"imports":{"@aeliqo/core":"/packages/core/dist/index.js","zod/mini":"/node_modules/.pnpm/node_modules/zod/mini/index.js"}}
 </script>
 <script type="module">
-import {parseWireValue} from '@aeliqo/sdk-core';
+import {parseWireValue} from '@aeliqo/core';
 import {createAgentCapabilityRegistry} from '/packages/agent/dist/capabilities/registry.js';
 import {createAgentToolEndpoint} from '/packages/agent/dist/protocol/index.js';
 import {createWebMcpAdapter, detectWebMcp} from '/packages/agent/dist/webmcp/index.js';

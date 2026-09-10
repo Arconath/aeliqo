@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest';
-import {parseContract, type MeaningDefinition} from '@aeliqo/sdk-core';
-import {createLocalDataService} from '@aeliqo/sdk-runtime/data';
-import {createMeaningAuthoring, createMeaningEvaluator, createMeaningRegistry} from '@aeliqo/sdk-runtime/meaning';
+import {parseContract, type MeaningDefinition} from '@aeliqo/core';
+import {createLocalDataService} from '@aeliqo/runtime/data';
+import {createMeaningAuthoring, createMeaningEvaluator, createMeaningRegistry} from '@aeliqo/runtime/meaning';
 import {budget, catalog, functions, grant, query, snapshot, source, value} from '../../fixtures/scenarios/public-api.js';
 
 function manualMeaning(): MeaningDefinition {

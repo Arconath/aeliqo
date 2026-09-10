@@ -113,10 +113,10 @@ for (const artifact of artifacts) {
     assert.equal(hash(await readFile(installed)), hash(run(["tar", "-xOf", artifact.path, entry], root, null)), `Installed ${artifact.name} bytes differ for ${entry}`);
   }
 }
-assert.equal(lock.packages["node_modules/@aeliqo/sdk-web"].dependencies["@aeliqo/sdk-core"], "0.1.0");
-assert.equal(lock.packages["node_modules/@aeliqo/sdk-react"].dependencies["@aeliqo/sdk-web"], "0.1.0");
-assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/sdk-web/node_modules/")), []);
-assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/sdk-react/node_modules/")), []);
+assert.equal(lock.packages["node_modules/@aeliqo/web"].dependencies["@aeliqo/core"], "0.1.0");
+assert.equal(lock.packages["node_modules/@aeliqo/react"].dependencies["@aeliqo/web"], "0.1.0");
+assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/web/node_modules/")), []);
+assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/react/node_modules/")), []);
 await writeFile(join(runDirectory, "consumer-package-lock.json"), lockBytes);
 
 const ref={id:'r',revision:'1',outputId:'out',queryDigest:'q',scopeDigest:'s'};
@@ -126,9 +126,9 @@ const rows=[{id:'a',x:1,y:{decimal:'9007199254740993.001'}},{id:'b',x:2,y:null},
 const spec={version:'1',root:{kind:'facet',field:'id',scales:'shared-compatible',child:unit}};
 const dataSource=`const result=${JSON.stringify(result)},unit=${JSON.stringify(unit)},rows=${JSON.stringify(rows)},spec=${JSON.stringify(spec)};\n`;
 await writeFile(join(consumer,'consumer.tsx'),`import React from 'react';
-import type {PlotSpec,PlotUnit,Result} from '@aeliqo/sdk-core';
-import {AeliqoPlotElement,compilePlotComposition,type PlotDataset} from '@aeliqo/sdk-web/plot';
-import {AeliqoPlot} from '@aeliqo/sdk-react/plot';
+import type {PlotSpec,PlotUnit,Result} from '@aeliqo/core';
+import {AeliqoPlotElement,compilePlotComposition,type PlotDataset} from '@aeliqo/web/plot';
+import {AeliqoPlot} from '@aeliqo/react/plot';
 const result:Result=${JSON.stringify(result)};
 const unit:PlotUnit=${JSON.stringify(unit)};
 const spec:PlotSpec=${JSON.stringify(spec)};
@@ -139,15 +139,15 @@ void [component,compilePlotComposition(spec,[result],datasets,{width:400,height:
 `.replace('<Aeliqo spec','<AeliqoPlot spec'));
 await writeFile(join(consumer,'tsconfig.json'),JSON.stringify({compilerOptions:{target:'ES2022',module:'NodeNext',moduleResolution:'NodeNext',jsx:'react-jsx',strict:true,noEmit:true,skipLibCheck:false,lib:['ES2022','DOM','DOM.Iterable']},files:['consumer.tsx']}));
 run([join(consumer,'node_modules/.bin/tsc'),'-p','tsconfig.json'],consumer);
-await writeFile(join(consumer,'ssr.mjs'),`import '@aeliqo/sdk-react/ssr';
-import assert from 'node:assert/strict';import {createElement} from 'react';import {renderToString} from 'react-dom/server';import {AeliqoPlot} from '@aeliqo/sdk-react/plot';
+await writeFile(join(consumer,'ssr.mjs'),`import '@aeliqo/react/ssr';
+import assert from 'node:assert/strict';import {createElement} from 'react';import {renderToString} from 'react-dom/server';import {AeliqoPlot} from '@aeliqo/react/plot';
 ${dataSource}
 const output=renderToString(createElement(AeliqoPlot,{spec,results:[result],datasets:[{result:result.ref,rows}]}));
 assert(output.includes('9007199254740993.001'));assert(output.includes('shadowrootmode="open"'));assert.equal((output.match(/<circle/g)||[]).length,2);
 const next=renderToString(createElement(AeliqoPlot));assert(!next.includes('9007199254740993'));assert(next.includes('No result is available'));
 console.log('Installed React composition SSR exact values and request isolation passed.');`);
 const ssr=run(['node','ssr.mjs'],consumer);
-await writeFile(join(consumer,'browser.ts'),`import {AeliqoPlotElement} from '@aeliqo/sdk-web/plot';
+await writeFile(join(consumer,'browser.ts'),`import {AeliqoPlotElement} from '@aeliqo/web/plot';
 ${dataSource}
 customElements.define('aeliqo-plot',AeliqoPlotElement);const plot=new AeliqoPlotElement();plot.label='Installed plot';plot.unit=unit;plot.result=result;plot.rows=rows;plot.width=400;plot.height=240;document.querySelector('main').append(plot);Object.assign(window,{plot,spec,result,rows});`);
 await writeFile(join(consumer,'index.html'),'<!doctype html><html lang="en"><meta charset="utf-8"><title>Installed plot</title><body><main></main><script type="module" src="/browser.ts"></script></body></html>');

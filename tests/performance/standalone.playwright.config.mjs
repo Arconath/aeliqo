@@ -15,7 +15,7 @@ export default defineConfig({
   outputDir: resolve(repositoryRoot, "artifacts/performance-standalone"),
   use: {baseURL: origin, browserName: "chromium", trace: "retain-on-failure"},
   webServer: {
-    command: `pnpm build:runtime && pnpm --filter @aeliqo/sdk-web build && ./node_modules/.bin/vite build --config tests/performance/standalone.vite.config.mjs --mode production && ./node_modules/.bin/vite preview --config tests/performance/standalone.vite.config.mjs --host 127.0.0.1 --port ${port} --strictPort`,
+    command: `pnpm build:runtime && pnpm --filter @aeliqo/web build && ./node_modules/.bin/vite build --config tests/performance/standalone.vite.config.mjs --mode production && ./node_modules/.bin/vite preview --config tests/performance/standalone.vite.config.mjs --host 127.0.0.1 --port ${port} --strictPort`,
     cwd: repositoryRoot,
     url: `${origin}/tests/performance/standalone.html`,
     reuseExistingServer: false,

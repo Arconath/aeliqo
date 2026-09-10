@@ -1,4 +1,4 @@
-import {createStandardFunctionRegistry, type Catalog, type Experience} from '@aeliqo/sdk-core';
+import {createStandardFunctionRegistry, type Catalog, type Experience} from '@aeliqo/core';
 import {createStudioDocument, type StudioDocument} from '../../packages/devtools/src/index.js';
 
 const functions = createStandardFunctionRegistry('studio-test-functions');

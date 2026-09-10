@@ -2,7 +2,7 @@
  * Build and consume the data family from real package tarballs.
  *
  * The consumer lives outside the pnpm workspace. It installs the packed
- * @aeliqo/sdk-core, @aeliqo/sdk-web and @aeliqo/sdk-react artifacts, checks every data
+ * @aeliqo/core, @aeliqo/web and @aeliqo/react artifacts, checks every data
  * entry point and declaration surface, then exercises data SSR and the
  * browser-owned decimal, delta, filter and virtual-grid behavior.
  */
@@ -70,7 +70,7 @@ import {gzipSync} from 'node:zlib';
 import {writeFile} from 'node:fs/promises';
 const measured = [];
 for (const entry of ${JSON.stringify(entries)}) {
-  await writeFile('measure-entry.js', 'export * from "@aeliqo/sdk-web/' + entry + '";');
+  await writeFile('measure-entry.js', 'export * from "@aeliqo/web/' + entry + '";');
   for (const excludeLit of [false, true]) {
     const result = await build({configFile: false, logLevel: 'silent', build: {write: false, minify: true,
       lib: {entry: 'measure-entry.js', formats: ['es']},
@@ -156,15 +156,15 @@ for (const artifact of artifacts) {
     assert.equal(hash(await readFile(installed)), hash(run(["tar", "-xOf", artifact.path, entry], root, null)), `Installed ${artifact.name} bytes differ for ${entry}`);
   }
 }
-assert.equal(lock.packages["node_modules/@aeliqo/sdk-web"].dependencies["@aeliqo/sdk-core"], "0.1.0");
-assert.equal(lock.packages["node_modules/@aeliqo/sdk-react"].dependencies["@aeliqo/sdk-web"], "0.1.0");
-assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/sdk-web/node_modules/")), []);
-assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/sdk-react/node_modules/")), []);
+assert.equal(lock.packages["node_modules/@aeliqo/web"].dependencies["@aeliqo/core"], "0.1.0");
+assert.equal(lock.packages["node_modules/@aeliqo/react"].dependencies["@aeliqo/web"], "0.1.0");
+assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/web/node_modules/")), []);
+assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/react/node_modules/")), []);
 await writeFile(join(runDirectory, "consumer-package-lock.json"), lockBytes);
 
 const webSubpaths = ["data", "metric", "delta", "key-value", "detail", "record-list", "card-collection", "selection-summary", "filter-builder", "table", "register", "server"];
-const webSpecifiers = ["@aeliqo/sdk-web", ...webSubpaths.map(path => `@aeliqo/sdk-web/${path}`)];
-const reactSpecifiers = ["@aeliqo/sdk-react", "@aeliqo/sdk-react/data"];
+const webSpecifiers = ["@aeliqo/web", ...webSubpaths.map(path => `@aeliqo/web/${path}`)];
+const reactSpecifiers = ["@aeliqo/react", "@aeliqo/react/data"];
 const resolutionEntry = join(consumer, "resolve-data.mjs");
 await writeFile(resolutionEntry, `
 import {fileURLToPath} from 'node:url';
@@ -185,21 +185,21 @@ for (const spec of [...webSpecifiers, ...reactSpecifiers]) assert(resolved[spec]
 
 await writeFile(join(consumer, "consumer.tsx"), `
 import React from 'react';
-import {createAeliqoPresentationRegistry} from '@aeliqo/sdk-web';
-import type {AeliqoDataBinding, AeliqoPresentationRegistryOptions} from '@aeliqo/sdk-web';
-import type {Result, ResultRef} from '@aeliqo/sdk-core';
-import {AeliqoMetric, AeliqoDelta, AeliqoKeyValue, AeliqoDetail, AeliqoRecordList, AeliqoCardCollection, AeliqoSelectionSummary, AeliqoFilterBuilder, AeliqoTable} from '@aeliqo/sdk-react/data';
-import {AeliqoTable as MainTable} from '@aeliqo/sdk-react';
-import {AeliqoMetricElement} from '@aeliqo/sdk-web/metric';
-import {AeliqoDeltaElement, calculateAeliqoDelta} from '@aeliqo/sdk-web/delta';
-import {AeliqoKeyValueElement} from '@aeliqo/sdk-web/key-value';
-import {AeliqoDetailElement} from '@aeliqo/sdk-web/detail';
-import {AeliqoRecordListElement} from '@aeliqo/sdk-web/record-list';
-import {AeliqoCardCollectionElement} from '@aeliqo/sdk-web/card-collection';
-import {AeliqoSelectionSummaryElement} from '@aeliqo/sdk-web/selection-summary';
-import {AeliqoFilterBuilderElement} from '@aeliqo/sdk-web/filter-builder';
-import {AeliqoTableElement, AELIQO_TABLE_MAX_VIRTUAL_ROWS} from '@aeliqo/sdk-web/data';
-import type {AeliqoDataScope, AeliqoFilterChangeDetail, AeliqoTableRow, AeliqoTableWindowDetail} from '@aeliqo/sdk-web/data';
+import {createAeliqoPresentationRegistry} from '@aeliqo/web';
+import type {AeliqoDataBinding, AeliqoPresentationRegistryOptions} from '@aeliqo/web';
+import type {Result, ResultRef} from '@aeliqo/core';
+import {AeliqoMetric, AeliqoDelta, AeliqoKeyValue, AeliqoDetail, AeliqoRecordList, AeliqoCardCollection, AeliqoSelectionSummary, AeliqoFilterBuilder, AeliqoTable} from '@aeliqo/react/data';
+import {AeliqoTable as MainTable} from '@aeliqo/react';
+import {AeliqoMetricElement} from '@aeliqo/web/metric';
+import {AeliqoDeltaElement, calculateAeliqoDelta} from '@aeliqo/web/delta';
+import {AeliqoKeyValueElement} from '@aeliqo/web/key-value';
+import {AeliqoDetailElement} from '@aeliqo/web/detail';
+import {AeliqoRecordListElement} from '@aeliqo/web/record-list';
+import {AeliqoCardCollectionElement} from '@aeliqo/web/card-collection';
+import {AeliqoSelectionSummaryElement} from '@aeliqo/web/selection-summary';
+import {AeliqoFilterBuilderElement} from '@aeliqo/web/filter-builder';
+import {AeliqoTableElement, AELIQO_TABLE_MAX_VIRTUAL_ROWS} from '@aeliqo/web/data';
+import type {AeliqoDataScope, AeliqoFilterChangeDetail, AeliqoTableRow, AeliqoTableWindowDetail} from '@aeliqo/web/data';
 
 const rows = [
   {id: 'a', name: 'Ada', amount: {decimal: '100000000000000000.01'}},
@@ -257,15 +257,15 @@ run([join(consumer, "node_modules/.bin/tsc"), "--project", "tsconfig.json"], con
 
 await writeFile(join(consumer, "ssr.mjs"), `
 import assert from 'node:assert/strict';
-import '@aeliqo/sdk-react/ssr';
+import '@aeliqo/react/ssr';
 import {createElement} from 'react';
 import {renderToString} from 'react-dom/server';
 import {html} from 'lit';
-import {renderAeliqo} from '@aeliqo/sdk-web/server';
-import {createAeliqoPresentationRegistry} from '@aeliqo/sdk-web';
-import {validatePresentationPlan} from '@aeliqo/sdk-core';
-import {AeliqoMetricElement, AeliqoDeltaElement, AeliqoKeyValueElement, AeliqoDetailElement, AeliqoRecordListElement, AeliqoCardCollectionElement, AeliqoSelectionSummaryElement, AeliqoFilterBuilderElement, AeliqoTableElement} from '@aeliqo/sdk-web/data';
-import {AeliqoTable, AeliqoDelta} from '@aeliqo/sdk-react/data';
+import {renderAeliqo} from '@aeliqo/web/server';
+import {createAeliqoPresentationRegistry} from '@aeliqo/web';
+import {validatePresentationPlan} from '@aeliqo/core';
+import {AeliqoMetricElement, AeliqoDeltaElement, AeliqoKeyValueElement, AeliqoDetailElement, AeliqoRecordListElement, AeliqoCardCollectionElement, AeliqoSelectionSummaryElement, AeliqoFilterBuilderElement, AeliqoTableElement} from '@aeliqo/web/data';
+import {AeliqoTable, AeliqoDelta} from '@aeliqo/react/data';
 assert.equal(typeof globalThis.window, 'undefined');
 assert.equal(typeof globalThis.document, 'undefined');
 const definitions = [['aeliqo-metric', AeliqoMetricElement], ['aeliqo-delta', AeliqoDeltaElement], ['aeliqo-key-value', AeliqoKeyValueElement], ['aeliqo-detail', AeliqoDetailElement], ['aeliqo-record-list', AeliqoRecordListElement], ['aeliqo-card-collection', AeliqoCardCollectionElement], ['aeliqo-selection-summary', AeliqoSelectionSummaryElement], ['aeliqo-filter-builder', AeliqoFilterBuilderElement], ['aeliqo-table', AeliqoTableElement]];
@@ -329,7 +329,7 @@ console.log(JSON.stringify({webBytes: webMarkup.length, reactBytes: reactMarkup.
 const ssrOutput = run(["node", join(consumer, "ssr.mjs")], consumer).trim();
 
 await writeFile(join(consumer, "browser-entry.ts"), `
-import {AeliqoTableElement, AeliqoDeltaElement, AeliqoFilterBuilderElement} from '@aeliqo/sdk-web/data';
+import {AeliqoTableElement, AeliqoDeltaElement, AeliqoFilterBuilderElement} from '@aeliqo/web/data';
 const definitions = [['aeliqo-table', AeliqoTableElement], ['aeliqo-delta', AeliqoDeltaElement], ['aeliqo-filter-builder', AeliqoFilterBuilderElement]];
 for (const [tag, constructor] of definitions) if (!customElements.get(tag)) customElements.define(tag, constructor);
 const fixture = document.querySelector('#fixture');
@@ -425,7 +425,7 @@ const directBundles = await measureDirectEntries();
 assert.equal(sourceDigest(), before, "Source changed during data tarball consumer proof");
 await writeFile(join(runDirectory, "report.json"), JSON.stringify({
   sourceDigest: before, sourceChangedDuringRun: false,
-  scope: "Installed @aeliqo/sdk-core, @aeliqo/sdk-web data entry points and @aeliqo/sdk-react data wrappers from actual tarballs; strict TypeScript; Lit/React SSR; Chromium exact decimal and percentage-point rendering, host-controlled virtual-grid keyboard window echo/focus, and native filter Apply behavior.",
+  scope: "Installed @aeliqo/core, @aeliqo/web data entry points and @aeliqo/react data wrappers from actual tarballs; strict TypeScript; Lit/React SSR; Chromium exact decimal and percentage-point rendering, host-controlled virtual-grid keyboard window echo/focus, and native filter Apply behavior.",
   artifacts: artifacts.map(({bytes, entries, ...item}) => item), consumerDirectory: consumer,
   consumerLock: {path: join(runDirectory, "consumer-package-lock.json"), sha256: hash(lockBytes)},
   resolution: resolved, ssr: ssrOutput, directBundles,

@@ -84,13 +84,13 @@ const manifests = {
 };
 assert.deepEqual(
   Object.values(manifests).map((manifest) => [manifest.name, manifest.version]),
-  [['@aeliqo/sdk-core', '0.1.0'], ['@aeliqo/sdk-runtime', '0.1.0'], ['@aeliqo/testkit', '0.1.0']],
+  [['@aeliqo/core', '0.1.0'], ['@aeliqo/runtime', '0.1.0'], ['@aeliqo/testkit', '0.1.0']],
 );
 for (const manifest of Object.values(manifests)) {
   assert.equal(manifest.license, 'Apache-2.0');
   if (manifest.name === '@aeliqo/testkit') assert.equal(manifest.private, true);
   else assert.notEqual(manifest.private, true);
-  const exportKey = manifest.name === '@aeliqo/sdk-runtime' ? './results' : '.';
+  const exportKey = manifest.name === '@aeliqo/runtime' ? './results' : '.';
   assert.equal(typeof manifest.exports?.[exportKey]?.import, 'string');
   assert.equal(typeof manifest.exports?.[exportKey]?.types, 'string');
 }
@@ -177,8 +177,8 @@ for (const artifact of artifacts) {
   assert(installedReal.startsWith(`${consumerReal}/node_modules/`), `${artifact.name} escaped consumer node_modules`);
   await assertRegularTree(installed, `Installed ${artifact.name}`);
 }
-assert.equal(lock.packages['node_modules/@aeliqo/testkit'].dependencies['@aeliqo/sdk-runtime'], '0.1.0');
-assert.equal(lock.packages['node_modules/@aeliqo/sdk-runtime'].dependencies['@aeliqo/sdk-core'], '0.1.0');
+assert.equal(lock.packages['node_modules/@aeliqo/testkit'].dependencies['@aeliqo/runtime'], '0.1.0');
+assert.equal(lock.packages['node_modules/@aeliqo/runtime'].dependencies['@aeliqo/core'], '0.1.0');
 assert.equal(lock.packages['node_modules/zod'].version, '4.5.4');
 assert.match(lock.packages['node_modules/zod'].integrity, /^sha512-/);
 assert.deepEqual(Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/testkit/node_modules/')), []);
@@ -198,8 +198,8 @@ await writeFile(join(runDirectory, 'consumer-package-lock.json'), lockBytes);
 // packed internal testkit with the consumer's declarations. No workspace source
 // or package aliases are visible.
 await writeFile(join(consumerDirectory, 'consumer.ts'), `
-import {CONTRACT_VERSION, type ResultRef} from '@aeliqo/sdk-core';
-import {createResultStore, type ResultEvent, type ResultBeginInput} from '@aeliqo/sdk-runtime/results';
+import {CONTRACT_VERSION, type ResultRef} from '@aeliqo/core';
+import {createResultStore, type ResultEvent, type ResultBeginInput} from '@aeliqo/runtime/results';
 import {assertDeniedSnapshot, collectResultEvents, rowsFromResultSnapshot} from '@aeliqo/testkit';
 const ref: ResultRef = {id: 'consumer-result', revision: 'source-1', outputId: 'rows', queryDigest: 'query-1', scopeDigest: 'scope-1'};
 const key: ResultBeginInput = {principalKey: 'consumer-principal', scopeDigest: 'scope-1', policyRevision: 'policy-1', queryDigest: 'query-1', catalogRevision: 'catalog-1', functionRegistryDigest: 'functions-1', sourceRevision: 'source-1', outputId: 'rows', taskId: 'task-1', requestId: 'request-1'};
@@ -220,7 +220,7 @@ run([join(consumerDirectory, 'node_modules', '.bin', 'tsc'), '-p', 'tsconfig.jso
 
 await writeFile(join(consumerDirectory, 'runtime-probe.mjs'), `
 import assert from 'node:assert/strict';
-import {createResultStore} from '@aeliqo/sdk-runtime/results';
+import {createResultStore} from '@aeliqo/runtime/results';
 import {assertDeniedSnapshot, collectResultEvents, rowsFromResultSnapshot} from '@aeliqo/testkit';
 
 const ref = {id: 'consumer-result', revision: 'source-1', outputId: 'rows', queryDigest: 'query-1', scopeDigest: 'scope-1'};

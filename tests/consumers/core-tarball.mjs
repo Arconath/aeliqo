@@ -1,5 +1,5 @@
 /**
- * Build and consume the actual @aeliqo/sdk-core package outside the workspace.
+ * Build and consume the actual @aeliqo/core package outside the workspace.
  *
  * This is a bounded T03/T04/T05/T07/T11 package-boundary check. It proves the four
  * public document parsers, generated schema files, task structure, experience
@@ -117,7 +117,7 @@ async function clearCompiledOutput(directory, allowedPattern) {
 
 const sourceBefore = await sourceDigest();
 const manifest = JSON.parse(await readFile(join(coreDirectory, "package.json"), "utf8"));
-assert.equal(manifest.name, "@aeliqo/sdk-core");
+assert.equal(manifest.name, "@aeliqo/core");
 assert.equal(manifest.version, "0.1.0");
 assert.equal(manifest.license, "Apache-2.0");
 assert.notEqual(manifest.private, true);
@@ -155,7 +155,7 @@ const tarballSha256 = hash(tarballBytes);
 const tarballIntegrity = `sha512-${hash(tarballBytes, "sha512", "base64")}`;
 const packedManifest = JSON.parse(run(["tar", "-xOf", tarballPath, "package/package.json"], root));
 assert.deepEqual(packedManifest, manifest);
-assert.equal(packedManifest.name, "@aeliqo/sdk-core");
+assert.equal(packedManifest.name, "@aeliqo/core");
 assert.equal(packedManifest.version, "0.1.0");
 assert.equal(packedManifest.license, "Apache-2.0");
 for (const field of ["dependencies", "peerDependencies", "optionalDependencies"]) {
@@ -181,11 +181,11 @@ run([
 ], consumerDirectory);
 const lockBytes = await readFile(join(consumerDirectory, "package-lock.json"));
 const lock = JSON.parse(lockBytes);
-const coreLock = lock.packages["node_modules/@aeliqo/sdk-core"];
+const coreLock = lock.packages["node_modules/@aeliqo/core"];
 assert.equal(coreLock.version, "0.1.0");
 assert.equal(coreLock.integrity, tarballIntegrity);
 const corePackageEntries = Object.keys(lock.packages).filter((key) => /(?:^|\/)node_modules\/@aeliqo\/sdk-core$/.test(key));
-assert.deepEqual(corePackageEntries, ["node_modules/@aeliqo/sdk-core"], "Expected exactly one installed @aeliqo/sdk-core package");
+assert.deepEqual(corePackageEntries, ["node_modules/@aeliqo/core"], "Expected exactly one installed @aeliqo/core package");
 assert.equal(lock.packages["node_modules/zod"].version, "4.5.4");
 assert.match(lock.packages["node_modules/zod"].integrity, /^sha512-/);
 const installedZod = JSON.parse(await readFile(join(consumerDirectory, "node_modules/zod/package.json"), "utf8"));
@@ -198,7 +198,7 @@ for (const [name, version] of Object.entries({typescript: "7.0.2", vite: "8.2.2"
   assert.match(lock.packages[`node_modules/${name}`].integrity, /^sha512-/);
 }
 assert.deepEqual(
-  Object.keys(lock.packages).filter((key) => key.startsWith("node_modules/@aeliqo/sdk-core/node_modules/")),
+  Object.keys(lock.packages).filter((key) => key.startsWith("node_modules/@aeliqo/core/node_modules/")),
   [],
   "Core has unexpected nested production dependencies",
 );
@@ -206,7 +206,7 @@ assert.deepEqual(
 for (const entry of tarEntries) {
   if (entry.endsWith("/")) continue;
   const relativeEntry = entry.slice("package/".length);
-  const installedPath = join(consumerDirectory, "node_modules/@aeliqo/sdk-core", relativeEntry);
+  const installedPath = join(consumerDirectory, "node_modules/@aeliqo/core", relativeEntry);
   const installedStat = await lstat(installedPath);
   assert(installedStat.isFile(), `Installed package entry is not a regular file: ${relativeEntry}`);
   const packedEntry = run(["tar", "-xOf", tarballPath, entry], root, null);
@@ -608,13 +608,13 @@ import {
   parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue, compareScalars, bindVisualizationSpec, parseVisualizationSpec,
   validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph, parseInteractionState, createPresentationRegistry, composePresentation, validatePresentationPlan,
   checkExpression, createStandardFunctionRegistry, createTypedAuthoring, createQueryPlanner, createQueryFunctionRegistry,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 import type {
   VisualizationSpec, Catalog, Task, Result, Experience, CommitPreconditions, Outcome, TaskStructure, Wire, PresentationPlan, PresentationValues, NarrativeClaim, OperationGrant,
   Interaction, InteractionPayload, InteractionSelection, InteractionLink, InteractionGraphInput, InteractionGraph, InteractionMappingManifest,
   ExperienceRestriction, ExperienceConstraints, TypedAuthoring, TypedExpression,
   FunctionRegistry, MeaningDefinition, MeaningBundle, QueryPlanner, LogicalPlan, QueryResult, QuerySpec, QuerySource,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 const commitPins: CommitPreconditions = ${JSON.stringify(commitPins)};
 declare const visualizationResult: Result;
 const visualization: VisualizationSpec = {version: '1', view: 'matrix', result: visualizationResult.ref, columns: ['employee.id']};
@@ -754,7 +754,7 @@ import {
   parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue, compareScalars, bindVisualizationSpec, parseVisualizationSpec,
   validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph, parseInteractionState, createPresentationRegistry, composePresentation, validatePresentationPlan,
   checkExpression, createStandardFunctionRegistry, createTypedAuthoring, authorizeMeaningActivation, createQueryPlanner, createQueryFunctionRegistry,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 assert.deepEqual(parseWireValue('{"requestId":"one"}'), {ok:true,value:{requestId:'one'}});
 assert.equal(parseWireValue('{"requestId":"one","requestId":"two"}').ok, false);
 assert.equal(parseWireValue({requestId:undefined}).ok, false);
@@ -910,11 +910,11 @@ assert.equal(forgedActivation.ok, false);
 if (!forgedActivation.ok) assert(forgedActivation.diagnostics.some((diagnostic) => diagnostic.code === 'semantic.activation-denied'));
 const require = createRequire(import.meta.url);
 for (const name of ${JSON.stringify(expectedSchemas)}) {
-  const path = require.resolve('@aeliqo/sdk-core/schemas/' + name + '.schema.json');
+  const path = require.resolve('@aeliqo/core/schemas/' + name + '.schema.json');
   const schema = JSON.parse(await readFile(path, 'utf8'));
   assert.equal(typeof schema, 'object');
 }
-const runtimeSchema = await import('@aeliqo/sdk-core/schema');
+const runtimeSchema = await import('@aeliqo/core/schema');
 assert(Object.keys(runtimeSchema).length > 0);
 ${queryConsumerSource}
 assert.deepEqual(runInstalledQuery().total, [{total:{decimal:'20.03'}}]);
@@ -924,10 +924,10 @@ ${presentationConsumerSource}
 assert.equal(runInstalledPresentation(createPresentationRegistry, composePresentation, validatePresentationPlan, documents, commitPins).noPreset, true);
 ${agentConsumerSource}
 assert.equal(runInstalledAgentContracts(parseContract, serializeContract, compareScalars, documents.result.ref).claimShapeChecked, true);
-console.log('Installed @aeliqo/sdk-core query planning, exact evaluation and cancellation pass.');
-console.log('Installed @aeliqo/sdk-core parsers, schema exports, and round trips pass.');
-console.log('Installed @aeliqo/sdk-core task structure and experience constraint passes pass.');
-console.log('Installed @aeliqo/sdk-core semantic checker and typed authoring passes pass.');
+console.log('Installed @aeliqo/core query planning, exact evaluation and cancellation pass.');
+console.log('Installed @aeliqo/core parsers, schema exports, and round trips pass.');
+console.log('Installed @aeliqo/core task structure and experience constraint passes pass.');
+console.log('Installed @aeliqo/core semantic checker and typed authoring passes pass.');
 `);
 const consumerOutput = run([process.execPath, "consumer.mjs"], consumerDirectory);
 const parserProbe = join(consumerDirectory, "no-codegen.mjs");
@@ -935,7 +935,7 @@ await writeFile(parserProbe, `
 import assert from 'node:assert/strict';
 globalThis.Function = () => { throw new Error('Function constructor used by core parser'); };
 globalThis.eval = () => { throw new Error('eval used by core parser'); };
-const core = await import('@aeliqo/sdk-core');
+const core = await import('@aeliqo/core');
 const {parseWireValue, checkExpression, createQueryPlanner, createQueryFunctionRegistry} = core;
 ${queryConsumerSource}
 assert.equal(runInstalledQuery().precision.kind, 'exact');
@@ -977,7 +977,7 @@ import {
   parseCatalog, parseTask, parseResult, parseExperience, parseWireValue, parseContract, serializeContract, compareScalars,
   validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph, parseInteractionState, createPresentationRegistry, composePresentation, validatePresentationPlan,
   checkExpression, createStandardFunctionRegistry, createTypedAuthoring, createQueryPlanner, createQueryFunctionRegistry,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 const validWire = parseWireValue('{"requestId":"one"}');
 if (!validWire.ok || validWire.value.requestId !== 'one' ||
     parseWireValue('{"requestId":"one","requestId":"two"}').ok ||
@@ -1030,7 +1030,7 @@ const fixtureModules = new Set([
   `${normalizedConsumerDirectory}/bundle-entry.js`,
   `${normalizedConsumerDirectory}/index.html`,
 ]);
-const coreDistPrefix = `${normalizedConsumerDirectory}/node_modules/@aeliqo/sdk-core/dist/`;
+const coreDistPrefix = `${normalizedConsumerDirectory}/node_modules/@aeliqo/core/dist/`;
 const zodV4Prefix = `${normalizedConsumerDirectory}/node_modules/zod/v4/`;
 assert(normalizedModules.some((id) => id.startsWith(coreDistPrefix)), "Installed core is absent from Vite graph");
 for (const id of normalizedModules) {
@@ -1088,7 +1088,7 @@ const report = {
   sourceDigestBefore: sourceBefore,
   sourceDigestAfter: sourceAfter,
   sourceChangedDuringRun: sourceBefore !== sourceAfter,
-  scope: "@aeliqo/sdk-core 0.1.0 installed tarball; four document parsers/round trips; TaskStructure, ExperienceConstraints, semantic checker and typed authoring passes; generated schemas; Vite core graph and 70 KiB gzip budget. Includes installed exact decimal aggregate, canonical query ranking, cancellation and registered interaction graph validation in Node/no-codegen/Chromium. Full planner and product certification are outside this scoped check.",
+  scope: "@aeliqo/core 0.1.0 installed tarball; four document parsers/round trips; TaskStructure, ExperienceConstraints, semantic checker and typed authoring passes; generated schemas; Vite core graph and 70 KiB gzip budget. Includes installed exact decimal aggregate, canonical query ranking, cancellation and registered interaction graph validation in Node/no-codegen/Chromium. Full planner and product certification are outside this scoped check.",
   artifact: {name: packedManifest.name, version: packedManifest.version, path: tarballPath, sha256: tarballSha256, integrity: tarballIntegrity},
   consumer: {directory: consumerDirectory, lockPath: join(runDirectory, "consumer-package-lock.json"), lockSha256: hash(lockBytes)},
   schemas: expectedSchemas.map((name) => `schemas/${name}.schema.json`),
@@ -1110,5 +1110,5 @@ const report = {
   passed: true,
 };
 await writeFile(join(runDirectory, "report.json"), JSON.stringify(report, null, 2) + "\n");
-console.log("Installed @aeliqo/sdk-core types, parsers, semantic authoring, schemas, interaction graph, no-codegen probe, Vite graph, and Chromium execution pass.");
+console.log("Installed @aeliqo/core types, parsers, semantic authoring, schemas, interaction graph, no-codegen probe, Vite graph, and Chromium execution pass.");
 console.log(`Evidence: ${join(runDirectory, "report.json")}`);

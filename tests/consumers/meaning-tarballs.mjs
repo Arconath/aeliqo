@@ -84,16 +84,16 @@ for (const artifact of artifacts) {
     assert.equal(hash(installed), hash(packed), `Installed ${artifact.name} bytes differ for ${entry}`);
   }
 }
-assert.equal(lock.packages['node_modules/@aeliqo/sdk-runtime'].dependencies['@aeliqo/sdk-core'], '0.1.0');
-assert.equal(lock.packages['node_modules/@aeliqo/sdk-agent'].dependencies['@aeliqo/sdk-core'], '0.1.0');
-assert.deepEqual(Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/sdk-runtime/node_modules/')), []);
-assert.deepEqual(Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/sdk-agent/node_modules/')), []);
+assert.equal(lock.packages['node_modules/@aeliqo/runtime'].dependencies['@aeliqo/core'], '0.1.0');
+assert.equal(lock.packages['node_modules/@aeliqo/agent'].dependencies['@aeliqo/core'], '0.1.0');
+assert.deepEqual(Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/runtime/node_modules/')), []);
+assert.deepEqual(Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/agent/node_modules/')), []);
 await writeFile(join(runDirectory, 'consumer-package-lock.json'), lockBytes);
 
 const sharedSource = `
-import {createStandardFunctionRegistry} from '@aeliqo/sdk-core';
-import {createMeaningAuthoring, createMeaningEvaluator, createMeaningRegistry} from '@aeliqo/sdk-runtime/meaning';
-import {createAgentMeaningAuthoring, createMeaningProposalCapability, createMeaningActivationCapability, createAgentCapabilityRegistry, createAgentCapabilityDispatcher} from '@aeliqo/sdk-agent';
+import {createStandardFunctionRegistry} from '@aeliqo/core';
+import {createMeaningAuthoring, createMeaningEvaluator, createMeaningRegistry} from '@aeliqo/runtime/meaning';
+import {createAgentMeaningAuthoring, createMeaningProposalCapability, createMeaningActivationCapability, createAgentCapabilityRegistry, createAgentCapabilityDispatcher} from '@aeliqo/agent';
 
 const check = (condition, message) => { if (!condition) throw new Error(message); };
 const registryResult = createStandardFunctionRegistry('meaning-consumer-functions');
@@ -212,16 +212,16 @@ await writeFile(join(consumerDirectory, 'node.mjs'), `
 import {realpath} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {runMeaningProbe} from './shared.mjs';
-for (const specifier of ['@aeliqo/sdk-core', '@aeliqo/sdk-runtime/meaning', '@aeliqo/sdk-agent']) {
+for (const specifier of ['@aeliqo/core', '@aeliqo/runtime/meaning', '@aeliqo/agent']) {
   const resolved = await realpath(fileURLToPath(import.meta.resolve(specifier)));
   if (!resolved.includes('/node_modules/')) throw new Error('Resolved outside installed node_modules: ' + specifier + ' -> ' + resolved);
 }
 console.log(JSON.stringify(await runMeaningProbe()));
 `);
 await writeFile(join(consumerDirectory, 'consumer.ts'), `
-import {createMeaningAuthoring} from '@aeliqo/sdk-runtime/meaning';
-import {createAgentMeaningAuthoring} from '@aeliqo/sdk-agent';
-import {createStandardFunctionRegistry, type Catalog} from '@aeliqo/sdk-core';
+import {createMeaningAuthoring} from '@aeliqo/runtime/meaning';
+import {createAgentMeaningAuthoring} from '@aeliqo/agent';
+import {createStandardFunctionRegistry, type Catalog} from '@aeliqo/core';
 const registry=createStandardFunctionRegistry('meaning-consumer-functions');
 if(!registry.ok) throw new Error('registry');
 const catalog={version:'1',revision:'typed-catalog',functionRegistryDigest:registry.value.digest,entities:[{id:'orders',label:'Orders',identity:['id'],rowGrain:['id'],fields:[{id:'id',label:'ID',role:'identity',type:{value:'text',nullable:false}},{id:'amount',label:'Amount',role:'measure',type:{value:'integer',nullable:false}}]}],relationships:[],meanings:[],capabilities:[]} as const satisfies Catalog;

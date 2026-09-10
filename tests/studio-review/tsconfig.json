@@ -3,9 +3,9 @@
   "compilerOptions": {
     "noEmit": true,
     "paths": {
-      "@aeliqo/sdk-core": ["../../packages/core/dist/index.d.ts"],
-      "@aeliqo/sdk-runtime/meaning": ["../../packages/runtime/dist/meaning/index.d.ts"],
-      "@aeliqo/sdk-runtime": ["../../packages/runtime/dist/index.d.ts"]
+      "@aeliqo/core": ["../../packages/core/dist/index.d.ts"],
+      "@aeliqo/runtime/meaning": ["../../packages/runtime/dist/meaning/index.d.ts"],
+      "@aeliqo/runtime": ["../../packages/runtime/dist/index.d.ts"]
     }
   },
   "include": ["./*.ts"]

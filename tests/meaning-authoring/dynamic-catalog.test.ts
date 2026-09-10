@@ -1,5 +1,5 @@
 import {expect,it} from 'vitest';
-import {createStandardFunctionRegistry,parseCatalog,type Catalog} from '@aeliqo/sdk-core';
+import {createStandardFunctionRegistry,parseCatalog,type Catalog} from '@aeliqo/core';
 import {createMeaningAuthoring} from '../../packages/runtime/src/meaning/index.js';
 
 it('accepts schema-loaded field names while retaining literal-catalog typo checks',()=>{

@@ -1,5 +1,5 @@
-import {AeliqoInputElement} from "@aeliqo/sdk-web/input";
-import {AeliqoTableElement} from "@aeliqo/sdk-web/table";
+import {AeliqoInputElement} from "@aeliqo/web/input";
+import {AeliqoTableElement} from "@aeliqo/web/table";
 
 export const STANDALONE_ROW_COUNT = 100;
 

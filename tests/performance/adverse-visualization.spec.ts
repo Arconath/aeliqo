@@ -231,7 +231,7 @@ test("observes adverse dense and null-heavy visualization behavior with exact da
     },
     network: {requestsDuringInteraction: requestUrls.length, urls: requestUrls},
     notes: [
-      "The fixture imports the production @aeliqo/sdk-web custom elements and @aeliqo/sdk-core result/spec contracts through the package entry points.",
+      "The fixture imports the production @aeliqo/web custom elements and @aeliqo/core result/spec contracts through the package entry points.",
       "Bar geometry and line segments are counted from the live SVG. The table is the exact, paginated accessible alternative; its DOM contains only the visible page rows.",
       "Null trend values are retained in the exact table and produce separate line paths, so a path does not bridge a missing observation.",
       "Oscillation timing is raw mutation-to-DOM-and-forced-layout observation. It includes the component DOM update and synchronous layout reads; it is not a paint or input-to-paint timestamp and does not use requestAnimationFrame.",

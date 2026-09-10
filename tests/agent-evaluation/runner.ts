@@ -2,7 +2,7 @@ import {readFile,mkdir,writeFile} from 'node:fs/promises';
 import {resolve,join} from 'node:path';
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
-import {parseCatalog,parseTask,parseWireValue,type Task} from '@aeliqo/sdk-core';
+import {parseCatalog,parseTask,parseWireValue,type Task} from '@aeliqo/core';
 import {createOpaqueModelSecret,createOpenAICompatibleToolModel} from '../../packages/agent/src/model/index.js';
 import type {ToolModelCapability} from '../../packages/agent/src/model/protocol.js';
 import {runToolModel} from '../../packages/agent/src/model/loop.js';

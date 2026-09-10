@@ -5,11 +5,11 @@
  * and the input scope so a result cannot be mistaken for a whole-page or
  * backend capacity claim.
  */
-import {composePresentation} from '@aeliqo/sdk-core';
-import {createAeliqoPresentationRegistry, AELIQO_CONFIG_SCHEMAS, AELIQO_OPERATION_REFS, AELIQO_PRESENTATION_REFS} from '@aeliqo/sdk-web/region';
-import {createInteractionController, createInteractionGraph} from '@aeliqo/sdk-runtime/interaction';
-import {createRegionStore} from '@aeliqo/sdk-runtime/regions';
-import {createResultStore} from '@aeliqo/sdk-runtime/results';
+import {composePresentation} from '@aeliqo/core';
+import {createAeliqoPresentationRegistry, AELIQO_CONFIG_SCHEMAS, AELIQO_OPERATION_REFS, AELIQO_PRESENTATION_REFS} from '@aeliqo/web/region';
+import {createInteractionController, createInteractionGraph} from '@aeliqo/runtime/interaction';
+import {createRegionStore} from '@aeliqo/runtime/regions';
+import {createResultStore} from '@aeliqo/runtime/results';
 
 export const SMALL_ROW_COUNT = 100;
 export const MEDIUM_ROW_COUNT = 10_000;

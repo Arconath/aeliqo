@@ -106,10 +106,10 @@ for (const artifact of artifacts) {
     assert.equal(hash(await readFile(installed)), hash(run(["tar", "-xOf", artifact.path, entry], root, null)), `Installed ${artifact.name} bytes differ for ${entry}`);
   }
 }
-assert.equal(lock.packages["node_modules/@aeliqo/sdk-web"].dependencies["@aeliqo/sdk-core"], "0.1.0");
-assert.equal(lock.packages["node_modules/@aeliqo/sdk-react"].dependencies["@aeliqo/sdk-web"], "0.1.0");
-assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/sdk-web/node_modules/")), []);
-assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/sdk-react/node_modules/")), []);
+assert.equal(lock.packages["node_modules/@aeliqo/web"].dependencies["@aeliqo/core"], "0.1.0");
+assert.equal(lock.packages["node_modules/@aeliqo/react"].dependencies["@aeliqo/web"], "0.1.0");
+assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/web/node_modules/")), []);
+assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/react/node_modules/")), []);
 await writeFile(join(runDirectory, "consumer-package-lock.json"), lockBytes);
 
 const hierarchy=await import('../visualization/hierarchy-fixtures.ts');
@@ -122,9 +122,9 @@ const rows=[{id:'a',date:'2026-09-08',amount:{decimal:'9007199254740993.001'}}];
 const specs=[{version:'1',view:'matrix',result:ref,columns:['id','amount']},{version:'1',view:'timeline',result:ref,start:'date'},{version:'1',view:'calendar-grid',result:ref,date:'date',value:'amount',label:'id'}];
 const dataSource=`const extraViews=${JSON.stringify(extraViews)};\nconst result=${JSON.stringify(result)},rows=${JSON.stringify(rows)},specs=${JSON.stringify(specs)};\n`;
 await writeFile(join(consumer,'consumer.tsx'),`import React from 'react';
-import type {VisualizationSpec,Result} from '@aeliqo/sdk-core';
-import {AeliqoMatrixElement,AeliqoTimelineElement,AeliqoCalendarGridElement,type VisualizationInputs} from '@aeliqo/sdk-web/visualization';
-import {AeliqoMatrix,AeliqoTimeline,AeliqoCalendarGrid,${extraNames.map(name=>'Aeliqo'+name).join(',')}} from '@aeliqo/sdk-react/visualization';
+import type {VisualizationSpec,Result} from '@aeliqo/core';
+import {AeliqoMatrixElement,AeliqoTimelineElement,AeliqoCalendarGridElement,type VisualizationInputs} from '@aeliqo/web/visualization';
+import {AeliqoMatrix,AeliqoTimeline,AeliqoCalendarGrid,${extraNames.map(name=>'Aeliqo'+name).join(',')}} from '@aeliqo/react/visualization';
 const result:Result=${JSON.stringify(result)};
 const specs:readonly VisualizationSpec[]=${JSON.stringify(specs)};
 const inputs:VisualizationInputs={visualization:specs[0],context:{results:[result]},datasets:[{result:result.ref,rows:${JSON.stringify(rows)}}],label:'Exact result',width:640,height:320,maxMarks:1000};
@@ -134,8 +134,8 @@ void[component,AeliqoTimeline,AeliqoCalendarGrid,AeliqoTimelineElement,AeliqoCal
 `);
 await writeFile(join(consumer,'tsconfig.json'),JSON.stringify({compilerOptions:{target:'ES2022',module:'NodeNext',moduleResolution:'NodeNext',jsx:'react-jsx',strict:true,noEmit:true,skipLibCheck:false,lib:['ES2022','DOM','DOM.Iterable']},files:['consumer.tsx']}));
 run([join(consumer,'node_modules/.bin/tsc'),'-p','tsconfig.json'],consumer);
-await writeFile(join(consumer,'ssr.mjs'),`import '@aeliqo/sdk-react/ssr';
-import assert from 'node:assert/strict';import {createElement} from 'react';import {renderToString} from 'react-dom/server';import {AeliqoMatrix,AeliqoTimeline,AeliqoCalendarGrid,${extraNames.map(name=>'Aeliqo'+name).join(',')}} from '@aeliqo/sdk-react/visualization';
+await writeFile(join(consumer,'ssr.mjs'),`import '@aeliqo/react/ssr';
+import assert from 'node:assert/strict';import {createElement} from 'react';import {renderToString} from 'react-dom/server';import {AeliqoMatrix,AeliqoTimeline,AeliqoCalendarGrid,${extraNames.map(name=>'Aeliqo'+name).join(',')}} from '@aeliqo/react/visualization';
 ${dataSource}
 for(const [index,component] of [AeliqoMatrix,AeliqoTimeline,AeliqoCalendarGrid].entries()){
  const output=renderToString(createElement(component,{visualization:specs[index],context:{results:[result]},datasets:[{result:result.ref,rows}]}));
@@ -145,7 +145,7 @@ for(const [index,component] of [AeliqoMatrix,AeliqoTimeline,AeliqoCalendarGrid].
 for(const [index,component] of [${extraNames.map(name=>'Aeliqo'+name).join(',')}].entries()){const data=extraViews[index];const output=renderToString(createElement(component,{visualization:data.spec,context:data.context,datasets:data.datasets}));assert(output.includes('<table'));assert(output.includes('<svg'));assert(output.includes('shadowrootmode="open"'));const next=renderToString(createElement(component));assert(!next.includes('<table'));}
 console.log('Installed React twelve-family plus Matrix, Timeline, CalendarGrid SSR exact values, warnings and request isolation passed.');`);
 const ssr=run(['node','ssr.mjs'],consumer);
-await writeFile(join(consumer,'browser.ts'),`import {registerAeliqoElements} from '@aeliqo/sdk-web';
+await writeFile(join(consumer,'browser.ts'),`import {registerAeliqoElements} from '@aeliqo/web';
 ${dataSource}
 registerAeliqoElements();const views=specs.map(spec=>{const element=document.createElement('aeliqo-'+spec.view);Object.assign(element,{label:spec.view,visualization:spec,context:{results:[result]},datasets:[{result:result.ref,rows}]});element.addEventListener('aeliqo-visualization-select',event=>Object.assign(window,{selection:event.detail}));document.querySelector('main').append(element);return element;});for(const data of extraViews){const element=document.createElement('aeliqo-'+data.view);Object.assign(element,{visualization:data.spec,context:data.context,datasets:data.datasets});element.addEventListener('aeliqo-visualization-select',event=>Object.assign(window,{selection:event.detail}));document.querySelector('main').append(element);views.push(element);}Object.assign(window,{views});`);
 await writeFile(join(consumer,'index.html'),'<!doctype html><html lang="en"><meta charset="utf-8"><title>Installed visualizations</title><body><main></main><script type="module" src="/browser.ts"></script></body></html>');

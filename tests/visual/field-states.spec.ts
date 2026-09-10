@@ -1,6 +1,6 @@
 import {test, expect} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import type {AeliqoFieldElement} from '@aeliqo/sdk-web';
+import type {AeliqoFieldElement} from '@aeliqo/web';
 
 const fields = ['text-field', 'text-area', 'number-field', 'checkbox', 'radio-group', 'switch', 'select', 'combobox', 'date-field', 'date-range', 'slider', 'search-field', 'file-input'] as const;
 const states = ['disabled', 'invalid', 'pending'] as const;

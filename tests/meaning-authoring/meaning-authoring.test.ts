@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {createStandardFunctionRegistry, type Catalog, type MeaningDefinition} from '@aeliqo/sdk-core';
+import {createStandardFunctionRegistry, type Catalog, type MeaningDefinition} from '@aeliqo/core';
 import {
   createMeaningAuthoring,
   createMeaningEvaluator,

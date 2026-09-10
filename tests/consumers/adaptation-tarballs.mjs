@@ -18,7 +18,7 @@ for(const name of ['core','runtime','web']){
  const dir=join(root,'packages',name);const path=join(runDirectory,`${name}.tgz`);run(['pnpm','pack','--out',path],dir);
  const packed=JSON.parse(run(['tar','-xOf',path,'package/package.json']));assert.equal(packed.name,`@aeliqo/sdk-${name}`);assert.equal(packed.version,'0.1.0');assert.equal(packed.license,'Apache-2.0');
  for(const key of ['dependencies','peerDependencies'])assert(!JSON.stringify(packed[key]??{}).includes('workspace:'));
- if(name==='web'){assert.equal(packed.peerDependenciesMeta['@aeliqo/sdk-runtime'].optional,true);assert.equal(packed.dependencies['@aeliqo/sdk-runtime'],undefined);}
+ if(name==='web'){assert.equal(packed.peerDependenciesMeta['@aeliqo/runtime'].optional,true);assert.equal(packed.dependencies['@aeliqo/runtime'],undefined);}
  artifacts.push({name:packed.name,path,sha256:hash(await readFile(path))});
 }
 await writeFile(join(consumer,'package.json'),JSON.stringify({private:true,type:'module'}));
@@ -32,7 +32,7 @@ await writeFile(join(consumer,'browser.ts'),source);await writeFile(join(consume
 await writeFile(join(consumer,'index.html'),await readFile(join(root,'tests/adaptation-semantic/index.html')));
 await writeFile(join(consumer,'tsconfig.json'),JSON.stringify({compilerOptions:{target:'ES2022',module:'ESNext',moduleResolution:'Bundler',strict:true,exactOptionalPropertyTypes:true,noUncheckedIndexedAccess:true,skipLibCheck:false,noEmit:true},include:['browser.ts','fixtures.ts']}));
 run(['node','node_modules/typescript/bin/tsc','-p','tsconfig.json'],consumer);
-run(['node','--disallow-code-generation-from-strings','--input-type=module','-e',`import assert from 'node:assert/strict';import {measureAeliqoRegionEnvironment} from '@aeliqo/sdk-web/region/adaptation';import {createPresentationAdaptationController} from '@aeliqo/sdk-runtime/presentation';assert.equal(typeof createPresentationAdaptationController,'function');assert.equal(measureAeliqoRegionEnvironment(undefined).keyboard,'unknown');assert.equal(measureAeliqoRegionEnvironment(undefined).inlineSize.state,'unknown');`],consumer);
+run(['node','--disallow-code-generation-from-strings','--input-type=module','-e',`import assert from 'node:assert/strict';import {measureAeliqoRegionEnvironment} from '@aeliqo/web/region/adaptation';import {createPresentationAdaptationController} from '@aeliqo/runtime/presentation';assert.equal(typeof createPresentationAdaptationController,'function');assert.equal(measureAeliqoRegionEnvironment(undefined).keyboard,'unknown');assert.equal(measureAeliqoRegionEnvironment(undefined).inlineSize.state,'unknown');`],consumer);
 await writeFile(join(consumer,'vite.config.mjs'),`export default {build:{target:'es2022'}};`);run(['node','node_modules/vite/bin/vite.js','build'],consumer);
 const server=createServer(async(req,res)=>{try{const url=new URL(req.url,'http://local');const p=resolve(consumer,'dist',url.pathname==='/'?'index.html':'.'+url.pathname);if(!p.startsWith(join(consumer,'dist')+'/'))throw Error('path');res.setHeader('content-type',extname(p)==='.js'?'text/javascript':extname(p)==='.css'?'text/css':'text/html');res.end(await readFile(p));}catch{res.statusCode=404;res.end();}});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;let chromiumVersion;

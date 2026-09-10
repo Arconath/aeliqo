@@ -315,7 +315,7 @@ for (const example of catalogExamples) {
         changed: beforeByPath.get(file.path)?.sha256 !== file.sha256,
       }));
       const report = {
-        scope: "Minified source extraction plus installed @aeliqo/sdk-core and @aeliqo/sdk-web tarballs; strict TypeScript with skipLibCheck false; Chromium mounts all 71 source roots and compares host tag, text, shadow DOM tags, and accessibility semantics against actual catalog previews.",
+        scope: "Minified source extraction plus installed @aeliqo/core and @aeliqo/web tarballs; strict TypeScript with skipLibCheck false; Chromium mounts all 71 source roots and compares host tag, text, shadow DOM tags, and accessibility semantics against actual catalog previews.",
         candidateDigest: {before: candidateDigestBefore, after: candidateDigestAfter, unchanged: candidateDigestBefore === candidateDigestAfter},
         candidateFiles,
         artifacts: {tarballs: tarballArtifacts, lock: lockArtifact, extractedSources: extractedSourceArtifacts},

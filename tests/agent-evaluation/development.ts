@@ -1,4 +1,4 @@
-import {createStandardFunctionRegistry,type Task} from '@aeliqo/sdk-core';
+import {createStandardFunctionRegistry,type Task} from '@aeliqo/core';
 import type {EvaluationFixture} from './host.js';
 const registry=createStandardFunctionRegistry();if(!registry.ok)throw Error('registry');
 export const fixture:EvaluationFixture={id:'development-records',principalKey:'fixture-principal',regionId:'eval-region',goalEpoch:'goal-1',scopeDigest:'scope-1',sourceRevision:'source-1',budget:{maxRows:10,maxBytes:100_000,maxMessages:8,maxMilliseconds:5000,maxColumns:8},catalog:{version:'1',revision:'catalog-1',functionRegistryDigest:registry.value.digest,entities:[{id:'items',label:'Synthetic items',identity:['id'],rowGrain:['id'],fields:[{id:'id',label:'ID',role:'identity',type:{value:'text',nullable:false}},{id:'group',label:'Group',role:'dimension',type:{value:'text',nullable:false}},{id:'value',label:'Value',role:'measure',type:{value:'integer',nullable:false}}]}],relationships:[],meanings:[],capabilities:[]},records:{items:[{id:'a',group:'A',value:9},{id:'b',group:'B',value:2},{id:'c',group:'A',value:5}]}};

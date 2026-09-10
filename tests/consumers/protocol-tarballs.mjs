@@ -84,18 +84,18 @@ for (const [name, version] of Object.entries({typescript: "7.0.2", vite: "8.2.2"
   assert.equal(lock.packages[`node_modules/${name}`].version, version);
   assert.match(lock.packages[`node_modules/${name}`].integrity, /^sha512-/);
 }
-assert.equal(lock.packages["node_modules/@aeliqo/sdk-runtime"].dependencies["@aeliqo/sdk-core"], "0.1.0");
-assert.equal(lock.packages["node_modules/@aeliqo/sdk-agent"].dependencies["@aeliqo/sdk-core"], "0.1.0");
-assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/sdk-runtime/node_modules/")), []);
-assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/sdk-agent/node_modules/")), []);
+assert.equal(lock.packages["node_modules/@aeliqo/runtime"].dependencies["@aeliqo/core"], "0.1.0");
+assert.equal(lock.packages["node_modules/@aeliqo/agent"].dependencies["@aeliqo/core"], "0.1.0");
+assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/runtime/node_modules/")), []);
+assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/agent/node_modules/")), []);
 await writeFile(join(runDirectory, "consumer-package-lock.json"), lockBytes);
 
 const probe = `
-import {parseWireValue} from '@aeliqo/sdk-core';
-import {createAgentCapabilityRegistry} from '@aeliqo/sdk-agent';
-import {createAgentToolEndpoint} from '@aeliqo/sdk-agent/protocol';
-import {runToolModel} from '@aeliqo/sdk-agent/model';
-import {createWebMcpAdapter} from '@aeliqo/sdk-agent/webmcp';
+import {parseWireValue} from '@aeliqo/core';
+import {createAgentCapabilityRegistry} from '@aeliqo/agent';
+import {createAgentToolEndpoint} from '@aeliqo/agent/protocol';
+import {runToolModel} from '@aeliqo/agent/model';
+import {createWebMcpAdapter} from '@aeliqo/agent/webmcp';
 export function fixture(transport='manual') {
  const registry=createAgentCapabilityRegistry([{ref:{id:'summary',revision:'1'},label:'Summary',operation:'catalog.read',parse:parseWireValue,invoke:()=>({state:'data-ready',value:{count:2}})}]);
  if(!registry.ok)throw Error('registry');
@@ -116,17 +116,17 @@ export async function probe(){
 }
 `;
 await writeFile(join(consumer,'probe.mjs'),probe);
-await writeFile(join(consumer,'stdio.mjs'),`import {fixture} from './probe.mjs';import {createMcpStdioServer} from '@aeliqo/sdk-agent/mcp';createMcpStdioServer({createEndpoint:()=>fixture('mcp')});`);
+await writeFile(join(consumer,'stdio.mjs'),`import {fixture} from './probe.mjs';import {createMcpStdioServer} from '@aeliqo/agent/mcp';createMcpStdioServer({createEndpoint:()=>fixture('mcp')});`);
 await writeFile(join(consumer,'node.mjs'),`
 import {probe} from './probe.mjs';import {realpath} from 'node:fs/promises';import {fileURLToPath} from 'node:url';
-import {connectMcpStdioClient} from '@aeliqo/sdk-agent/mcp';import {createOpenAIToolModel} from '@aeliqo/sdk-agent/model/openai';
-for(const specifier of ['@aeliqo/sdk-core','@aeliqo/sdk-agent','@aeliqo/sdk-agent/protocol','@aeliqo/sdk-agent/model','@aeliqo/sdk-agent/mcp','@aeliqo/sdk-agent/webmcp','@aeliqo/sdk-agent/model/openai']){const path=await realpath(fileURLToPath(import.meta.resolve(specifier)));if(!path.startsWith(${JSON.stringify(consumerReal)}+'/node_modules/'))throw Error('Non-installed resolution');}
+import {connectMcpStdioClient} from '@aeliqo/agent/mcp';import {createOpenAIToolModel} from '@aeliqo/agent/model/openai';
+for(const specifier of ['@aeliqo/core','@aeliqo/agent','@aeliqo/agent/protocol','@aeliqo/agent/model','@aeliqo/agent/mcp','@aeliqo/agent/webmcp','@aeliqo/agent/model/openai']){const path=await realpath(fileURLToPath(import.meta.resolve(specifier)));if(!path.startsWith(${JSON.stringify(consumerReal)}+'/node_modules/'))throw Error('Non-installed resolution');}
 const result=await probe();const client=await connectMcpStdioClient({targetRegionId:'region',goalEpoch:'goal',server:{command:process.execPath,args:[fileURLToPath(new URL('./stdio.mjs',import.meta.url))],stderr:'pipe'}});
 try{const tools=await client.discover();const receipt=await client.invoke('summary',{}, {requestId:'stdio'});if(!tools.ok||!receipt.ok||receipt.value.value?.count!==2)throw Error('Installed actual MCP failed');}finally{client.close();}
 if(typeof createOpenAIToolModel!=='function')throw Error('Official SDK entry');console.log(JSON.stringify({...result,mcpActualStdio:true,officialProviderEntry:true}));
 `);
 const nodeReport=JSON.parse(run(['node','--disallow-code-generation-from-strings','node.mjs'],consumer).trim());
-await writeFile(join(consumer,'consumer.ts'),`import {createAgentToolEndpoint,type AgentToolEndpointOptions} from '@aeliqo/sdk-agent/protocol';import {runToolModel,type ToolModelPort,type ToolModelLoopOptions} from '@aeliqo/sdk-agent/model';import {createMcpHttpHandler,type McpHttpServerOptions} from '@aeliqo/sdk-agent/mcp';import {createWebMcpAdapter,type WebMcpAdapterOptions} from '@aeliqo/sdk-agent/webmcp';import {createOpenAIToolModel,type OpenAIToolModelOptions} from '@aeliqo/sdk-agent/model/openai';
+await writeFile(join(consumer,'consumer.ts'),`import {createAgentToolEndpoint,type AgentToolEndpointOptions} from '@aeliqo/agent/protocol';import {runToolModel,type ToolModelPort,type ToolModelLoopOptions} from '@aeliqo/agent/model';import {createMcpHttpHandler,type McpHttpServerOptions} from '@aeliqo/agent/mcp';import {createWebMcpAdapter,type WebMcpAdapterOptions} from '@aeliqo/agent/webmcp';import {createOpenAIToolModel,type OpenAIToolModelOptions} from '@aeliqo/agent/model/openai';
 declare const endpoint:AgentToolEndpointOptions;createAgentToolEndpoint(endpoint);declare const loop:ToolModelLoopOptions;await runToolModel(loop);declare const http:McpHttpServerOptions;createMcpHttpHandler(http);declare const web:WebMcpAdapterOptions;createWebMcpAdapter(web);declare const provider:OpenAIToolModelOptions;createOpenAIToolModel(provider);
 // @ts-expect-error The model cannot assign itself authority.
 const invalid:ToolModelPort={approved:true};void invalid;

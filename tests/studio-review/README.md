@@ -15,7 +15,7 @@ commands or accepting reference-only evidence:
 Run the deterministic probes with:
 
 ```sh
-pnpm build:runtime && pnpm --filter @aeliqo/sdk-devtools build
+pnpm build:runtime && pnpm --filter @aeliqo/devtools build
 pnpm exec vitest run --config tests/studio-review/vitest.config.mjs
 pnpm exec tsc -p tests/studio-review/tsconfig.json
 ```

@@ -78,17 +78,17 @@ for (const [name, version] of Object.entries({typescript: "7.0.2", vite: "8.2.2"
   assert.equal(lock.packages[`node_modules/${name}`].version, version);
   assert.match(lock.packages[`node_modules/${name}`].integrity, /^sha512-/);
 }
-assert.equal(lock.packages["node_modules/@aeliqo/sdk-runtime"].dependencies["@aeliqo/sdk-core"], "0.1.0");
-assert.equal(lock.packages["node_modules/@aeliqo/sdk-web"].dependencies["@aeliqo/sdk-core"], "0.1.0");
-assert.equal(lock.packages["node_modules/@aeliqo/sdk-react"].dependencies["@aeliqo/sdk-web"], "0.1.0");
-assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/sdk-runtime/node_modules/")), []);
-assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/sdk-web/node_modules/")), []);
+assert.equal(lock.packages["node_modules/@aeliqo/runtime"].dependencies["@aeliqo/core"], "0.1.0");
+assert.equal(lock.packages["node_modules/@aeliqo/web"].dependencies["@aeliqo/core"], "0.1.0");
+assert.equal(lock.packages["node_modules/@aeliqo/react"].dependencies["@aeliqo/web"], "0.1.0");
+assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/runtime/node_modules/")), []);
+assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/web/node_modules/")), []);
 await writeFile(join(runDirectory, "consumer-package-lock.json"), lockBytes);
 
 const names=['Explorer','Comparison','Breakdown','Investigation','SearchResults','RecordEditor','FormFlow','QualityPanel'];
 const tags=['explorer','comparison','breakdown','investigation','search-results','record-editor','form-flow','quality-panel'];
 await writeFile(join(consumer,'node.mjs'),`
-import {html} from 'lit';import {renderAeliqo} from '@aeliqo/sdk-web/server';import * as bindings from '@aeliqo/sdk-react/compound';import '@aeliqo/sdk-react/ssr';import React from 'react';import {renderToString} from 'react-dom/server';
+import {html} from 'lit';import {renderAeliqo} from '@aeliqo/web/server';import * as bindings from '@aeliqo/react/compound';import '@aeliqo/react/ssr';import React from 'react';import {renderToString} from 'react-dom/server';
 const output=await renderAeliqo(html\`<aeliqo-explorer></aeliqo-explorer><aeliqo-comparison></aeliqo-comparison><aeliqo-breakdown></aeliqo-breakdown><aeliqo-investigation></aeliqo-investigation><aeliqo-search-results></aeliqo-search-results><aeliqo-record-editor></aeliqo-record-editor><aeliqo-form-flow></aeliqo-form-flow><aeliqo-quality-panel></aeliqo-quality-panel>\`);
 if((output.match(/shadowrootmode=/g)||[]).length<8)throw Error('Missing compound SSR');
 for(const name of ${JSON.stringify(names)}){if(typeof bindings['Aeliqo'+name]!=='object'&&typeof bindings['Aeliqo'+name]!=='function')throw Error('Missing React binding');}
@@ -96,7 +96,7 @@ const react=renderToString(React.createElement(bindings.AeliqoRecordEditor,{enti
 `);
 const nodeReport=JSON.parse(run(['node','--disallow-code-generation-from-strings','node.mjs'],consumer).trim());
 await writeFile(join(consumer,'consumer.tsx'),`
-import React from 'react';import {AeliqoRecordEditor,AeliqoFormFlow,AeliqoComparison,AeliqoExplorer,AeliqoBreakdown,AeliqoInvestigation,AeliqoSearchResults,AeliqoQualityPanel} from '@aeliqo/sdk-react/compound';import type {AeliqoRecordEditorSaveDetail,AeliqoCompoundRecipeInput} from '@aeliqo/sdk-web/compound';import {explorerPresentationRecipe} from '@aeliqo/sdk-web/explorer';
+import React from 'react';import {AeliqoRecordEditor,AeliqoFormFlow,AeliqoComparison,AeliqoExplorer,AeliqoBreakdown,AeliqoInvestigation,AeliqoSearchResults,AeliqoQualityPanel} from '@aeliqo/react/compound';import type {AeliqoRecordEditorSaveDetail,AeliqoCompoundRecipeInput} from '@aeliqo/web/compound';import {explorerPresentationRecipe} from '@aeliqo/web/explorer';
 const editor=<AeliqoRecordEditor entity="person" entityKey="a" entityRevision="1" onSave={event=>{const detail:AeliqoRecordEditorSaveDetail=event.detail;void detail;}}/>;
 const flow=<AeliqoFormFlow steps={[{id:'a',label:'A'}]} draft={{values:['a','b']}} onCommit={event=>{void event.detail.draft;}}/>;
 const compare=<AeliqoComparison metrics={[{id:'amount',label:'Amount',values:{a:{decimal:'9007199254740993.01'}}}]} compareKeys={['a']}/>;
@@ -108,7 +108,7 @@ await writeFile(join(consumer,'tsconfig.json'),JSON.stringify({compilerOptions:{
 run(['node','node_modules/typescript/bin/tsc','-p','tsconfig.json'],consumer);
 await writeFile(join(consumer,'index.html'),'<div id="app"></div><script type="module" src="/browser.mjs"></script>');
 await writeFile(join(consumer,'browser.mjs'),`
-import React from 'react';import {createRoot} from 'react-dom/client';import {registerAeliqoElements} from '@aeliqo/sdk-web';import * as wrappers from '@aeliqo/sdk-react/compound';registerAeliqoElements();window.receipts=[];
+import React from 'react';import {createRoot} from 'react-dom/client';import {registerAeliqoElements} from '@aeliqo/web';import * as wrappers from '@aeliqo/react/compound';registerAeliqoElements();window.receipts=[];
 const components=${JSON.stringify(names)}.map(name=>React.createElement(wrappers['Aeliqo'+name],{key:name,...(name==='RecordEditor'?{entity:'person',entityKey:'a',entityRevision:'1',onSave:event=>window.receipts.push(event.detail)}:{})},name==='RecordEditor'?React.createElement('input',{name:'name',defaultValue:'Ada',required:true,'aria-label':'Name'}):undefined));
 createRoot(document.querySelector('#app')).render(React.createElement(React.Fragment,null,...components));
 `);

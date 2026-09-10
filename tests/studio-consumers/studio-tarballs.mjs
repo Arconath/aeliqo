@@ -103,14 +103,14 @@ for (const artifact of artifacts) {
     assert.equal(hash(installed), hash(packed), `Installed ${artifact.name} bytes differ for ${entry}`);
   }
 }
-assert.equal(lock.packages['node_modules/@aeliqo/sdk-runtime']?.dependencies?.['@aeliqo/sdk-core'], '0.1.0');
-assert.equal(lock.packages['node_modules/@aeliqo/sdk-devtools']?.dependencies?.['@aeliqo/sdk-core'], '0.1.0');
-assert.equal(lock.packages['node_modules/@aeliqo/sdk-devtools']?.dependencies?.['@aeliqo/sdk-runtime'], '0.1.0');
+assert.equal(lock.packages['node_modules/@aeliqo/runtime']?.dependencies?.['@aeliqo/core'], '0.1.0');
+assert.equal(lock.packages['node_modules/@aeliqo/devtools']?.dependencies?.['@aeliqo/core'], '0.1.0');
+assert.equal(lock.packages['node_modules/@aeliqo/devtools']?.dependencies?.['@aeliqo/runtime'], '0.1.0');
 assert.equal(lock.packages['node_modules/typescript']?.version, '7.0.2');
 assert.deepEqual(Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/')).sort(), [
-  'node_modules/@aeliqo/sdk-core',
-  'node_modules/@aeliqo/sdk-devtools',
-  'node_modules/@aeliqo/sdk-runtime',
+  'node_modules/@aeliqo/core',
+  'node_modules/@aeliqo/devtools',
+  'node_modules/@aeliqo/runtime',
 ]);
 assert(!Object.keys(lock.packages).some((key) => /(?:studio|agent|openai)/iu.test(key)), 'Consumer pulled Studio or model packages');
 await writeFile(join(runDirectory, 'consumer-package-lock.json'), lockBytes);
@@ -119,9 +119,9 @@ await writeFile(join(consumer, 'probe.mjs'), `
 import assert from 'node:assert/strict';
 import {join} from 'node:path';
 import {writeFile} from 'node:fs/promises';
-import {createStandardFunctionRegistry} from '@aeliqo/sdk-core';
-import {createMeaningAuthoring} from '@aeliqo/sdk-runtime/meaning';
-import {createStudioDocument, createStudioSession, parseStudioDocument} from '@aeliqo/sdk-devtools';
+import {createStandardFunctionRegistry} from '@aeliqo/core';
+import {createMeaningAuthoring} from '@aeliqo/runtime/meaning';
+import {createStudioDocument, createStudioSession, parseStudioDocument} from '@aeliqo/devtools';
 
 const check = (condition, message) => { if (!condition) throw new Error(message); };
 const registryResult = createStandardFunctionRegistry('studio-consumer-functions');
@@ -179,7 +179,7 @@ const finalRoundtrip = parseStudioDocument(finalExport.value, {registry});
 check(finalRoundtrip.ok && JSON.stringify(finalRoundtrip.value) === JSON.stringify(session.getState().document), 'Edited Studio JSON roundtrip changed the document');
 const code = session.exportCode();
 check(code.ok, 'export standalone code');
-check(!code.value.includes('import ') && !code.value.includes('@aeliqo/studio') && !code.value.includes('@aeliqo/sdk-agent') && !code.value.includes('model'), 'Studio code export has an unexpected runtime/model dependency');
+check(!code.value.includes('import ') && !code.value.includes('@aeliqo/studio') && !code.value.includes('@aeliqo/agent') && !code.value.includes('model'), 'Studio code export has an unexpected runtime/model dependency');
 await writeFile(join(process.cwd(), 'exported-studio.ts'), code.value);
 console.log(JSON.stringify({documentRevision: current.revision, profileRevisions: current.profiles.map((profile) => profile.experience.revision), codeBytes: code.value.length}));
 `);
@@ -198,7 +198,7 @@ await writeFile(join(runDirectory, 'report.json'), JSON.stringify({
   sourceDigest: before,
   sourceChangedDuringRun: before !== after,
   passed: true,
-  scope: 'Installed @aeliqo/sdk-core, @aeliqo/sdk-runtime and @aeliqo/sdk-devtools 0.1.0 tarballs; Studio document/session JSON roundtrip; standalone exportCode TypeScript compilation; immutable code-owned meaning/Experience revisions; personal Experience revision retention and activation without Studio app, agent or model packages.',
+  scope: 'Installed @aeliqo/core, @aeliqo/runtime and @aeliqo/devtools 0.1.0 tarballs; Studio document/session JSON roundtrip; standalone exportCode TypeScript compilation; immutable code-owned meaning/Experience revisions; personal Experience revision retention and activation without Studio app, agent or model packages.',
   artifacts: artifacts.map(({entries, ...artifact}) => ({...artifact, entries})),
   consumerDirectory: consumer,
   consumerLock: {path: join(runDirectory, 'consumer-package-lock.json'), sha256: hash(lockBytes)},
