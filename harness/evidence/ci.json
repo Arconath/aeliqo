@@ -1,8 +1,8 @@
 {
-  "subjectSha256": "4b9d8fa8cfea0cd19af3a86ad2d8da2fbee116d3db0e88874e5c0d41f4833c8a",
-  "status": "pass",
+  "subjectSha256": "05e5990492994ecd9877454cc13be94e2bd9ebe17df1985725c139f971c1be10",
+  "status": "fail",
   "sourceChangedDuringRun": false,
-  "timestamp": "2026-09-09T21:36:51.983206+00:00",
+  "timestamp": "2026-09-10T09:53:57.323070+00:00",
   "results": [
     {
       "kind": "typecheck",
@@ -14,7 +14,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/00-typecheck.log",
-          "sha256": "302f79fad8cbbc4595d76610290e5cec1f8264b322e96e9a0ee74c25ddcf5a4e"
+          "sha256": "2eabafa8fb837dc99f577cf275f677fe111d9e3acaceaba169bbb6a58f18ccf0"
         }
       ]
     },
@@ -28,7 +28,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/01-unit.log",
-          "sha256": "e7b5d1cc17b4130bbe54fe258747aa4e2dc1f65050a9d52e735e05b737921a1e"
+          "sha256": "ca484f355d4d4a02242f3cf1c104ea124f9ff29ea9ffd6efec82261dbf8af15e"
         }
       ]
     },
@@ -42,7 +42,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/02-browser.log",
-          "sha256": "6a166a7889ffd249112a0c5b1a6aca29b8a50c0eebd0a18f569c5b1fc7686cbb"
+          "sha256": "c5a1e9a3848ca7b2a417e132158f4d007f0c3fb4697d6a7bd3424db984e6f77a"
         }
       ]
     },
@@ -56,7 +56,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/03-browser.log",
-          "sha256": "7ebb3c2661da1f6773ecbc42f59f5e78ff44e9e68288aa1fa360cf9715c6aa48"
+          "sha256": "31e0b60b44d528078a8e7564c764a5d26cf3b3237f738ba722e32848f7b3c919"
         }
       ]
     },
@@ -70,7 +70,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/04-packages.log",
-          "sha256": "cc154738b6d2916c133cd53f41ce9aed0173d5898f1dd88c517a4f1f861dc937"
+          "sha256": "9cfbef85c65e6b5537b923107156d3ba4be7a84ecf22dacfcb5d9a440258cd7a"
         }
       ]
     },
@@ -84,7 +84,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/05-unit.log",
-          "sha256": "1ebcc4033871361b9cb3c0a0173777bcebe223e18376c3ab529da5a9b3ee1ad8"
+          "sha256": "87d101481b4b8e4b1427e6efe5cb5ca842a2a3248729e676b7c3f5269fe9ca7c"
         }
       ]
     },
@@ -98,7 +98,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/06-packages.log",
-          "sha256": "62440b1db1386f1937ef0c4825025cd31ee4415b47e0fe16faf4fbd93b5b8775"
+          "sha256": "79d5f726e783916d7e8d1696b2ed8922548c634a5de92c34fcd85b7c29629df8"
         }
       ]
     },
@@ -112,7 +112,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/07-unit.log",
-          "sha256": "c648f8329e96b995f67a0703de8abbd1c829a53623827544fd8de1fbba6508aa"
+          "sha256": "78c1e16fd5d8c7b5aec097eaba65e9d88061c01328c08ac4c6cec59a9eb61057"
         }
       ]
     },
@@ -126,7 +126,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/08-unit.log",
-          "sha256": "5ca27887187e1ef3c52e226778ae5aae3107ab1a096c258917efb8ad9a0ba777"
+          "sha256": "564a37024b3bf5e0453953deab282492909ef4d05260e5fed84a0070392c4fff"
         }
       ]
     },
@@ -140,7 +140,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/09-unit.log",
-          "sha256": "8ad324e9d1de24cc1f21be47418b896ff5c7207af98e3c654c99788b76f0b0a2"
+          "sha256": "07bb8ca5c289de0e1eda3d54ef2296d52fb228ddc9b6c489c853133d5a7e6565"
         }
       ]
     },
@@ -154,7 +154,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/10-browser.log",
-          "sha256": "2a624cdfd6256b5a9c858aceb13f6db11e1b24c7fc4c265c5a7226e270549021"
+          "sha256": "76843db450b1c1e7c90880b8c7a8be84211b6b6074cbbff513d70d58a18aa813"
         }
       ]
     },
@@ -168,7 +168,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/11-packages.log",
-          "sha256": "7b16921ed8d06723c7d0405b1f0c6a4dcf7f53431f4ef6fadb083bcdffe344d1"
+          "sha256": "de049954e8d3e94234bd193eebebf9e99429019e306e6b28f5c0b35dc3093bfc"
         }
       ]
     },
@@ -182,7 +182,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/12-unit.log",
-          "sha256": "0465fc985d507ee2f9d89222fd76a2ed22dcd5816699c80bdd747ab8f05d6322"
+          "sha256": "b58cbe59f8de26e732f96b53af80b52c6ec335079fd8f1bfea6e7ce2ec0fa7d4"
         }
       ]
     },
@@ -196,7 +196,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/13-packages.log",
-          "sha256": "0de8b6925727943a7383ed84f7d6fd4cd4c8692e273216435e7a4d228ba79c1b"
+          "sha256": "b141f2b95a5297b69416b3c204718a9a51610807f2d09c85e4ebf58c66755dc5"
         }
       ]
     },
@@ -224,7 +224,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/15-security.log",
-          "sha256": "786b4058c11be7f30c9a0ed767c5a31d498296f386e2b12560fb3f766f401bf6"
+          "sha256": "36aa165491afdae354f45326b9fbdd17b5ad9bc9c3c97dbf2f368fc5399a8c09"
         }
       ]
     },
@@ -238,7 +238,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/16-boundaries.log",
-          "sha256": "1f56ecfc63b7b866bee7d2927bbf2eb6828644ed072e31e7788e9bc9925a605c"
+          "sha256": "568935d8adaf336df4b743c7f56eed7501876890a1e30460bf2e2c8f27f72052"
         }
       ]
     },
@@ -252,7 +252,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/17-performance.log",
-          "sha256": "ed1bb1f49dd4a6a3040441b6a327856ffb47b902804ba08e443bcc37c7854bdb"
+          "sha256": "5d7802ab67da58965907e70df0f7bf61794f62f6cfe3f5f42883bf72c8796b27"
         }
       ]
     },
@@ -266,7 +266,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/18-performance.log",
-          "sha256": "bc03530f5fb8251a77f36360714ae194893b3d3502a47121d37c11cc8464dae0"
+          "sha256": "c77fa41958bd5d5c2af7db8a979a497488a3b9ed13a62e5c79525dd21ec3f0c7"
         }
       ]
     },
@@ -280,7 +280,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/19-unit.log",
-          "sha256": "7860e5e13704ef414b8fc492b0f06540ef4285df0a1a2366a70f5808640ed1e5"
+          "sha256": "195dc309aba23e229dd82358e44c9465468bb26eaf66585f2d0b7b68aa77cdc1"
         }
       ]
     },
@@ -294,7 +294,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/20-unit.log",
-          "sha256": "ed7846e2040e4c9e1b1654e0fbe6b29e550f18d9e1bc771991952a332e21a869"
+          "sha256": "e54b0ac6574675cd3b9eb89f318e3ebf235ea8dd428256189abfac7fdb1e1466"
         }
       ]
     },
@@ -308,7 +308,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/21-unit.log",
-          "sha256": "c0c1bbb4d31b67516069a21b4ff6940171524afdad67a39388cc71395aba9faa"
+          "sha256": "3fd89a23601459bd53f8547b5fb6542c56640b09416497b72fe63661114648fd"
         }
       ]
     },
@@ -322,7 +322,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/22-browser.log",
-          "sha256": "a9058f9c1ef6fa3b53b90a49be9d6ee1d191af4837a67385227d55b65a5074a8"
+          "sha256": "b4f051645565903146f15b1a7e506c21f88f2b64badaeff1fbb9a65d9002c66d"
         }
       ]
     },
@@ -336,7 +336,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/23-unit.log",
-          "sha256": "3b0d3aadb625155448fd485464fd500e49c9286925cad437394d859c3e9150ae"
+          "sha256": "64d8034bd302a271630956609386de88945bb260e4951cde97ceff11e7502dde"
         }
       ]
     },
@@ -350,7 +350,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/24-packages.log",
-          "sha256": "6933b2a3135d53e13bb8a5fb248203c5dcce4d5179c1bd096ebbde4aab4296a0"
+          "sha256": "f45b3fccdfd7593ed88bbe3bd1772493bdb7cc8342458bd767796a6122cddbe6"
         }
       ]
     },
@@ -364,7 +364,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/25-unit.log",
-          "sha256": "48f606e4db4eded978ec9f18457eb0bd2be51c9f35bce4e7723378fdcc8d59e8"
+          "sha256": "3c8b54232ad92fd6c3306c5df372849a27fd7f566d3a517a49c79fb280ead484"
         }
       ]
     },
@@ -378,7 +378,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/26-unit.log",
-          "sha256": "af0a7e0241c32ee69a364de1ce0e968aa67165d3baf54f9d07c36b9a266335db"
+          "sha256": "88c43297fbd372b7f461278981c55bf8bc40935ad79c96696c390e2cef8ed871"
         }
       ]
     },
@@ -392,7 +392,7 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/27-unit.log",
-          "sha256": "a859cf3be9d7cc8b27776baa6de2333e77236e490a3d44f354cfee422cf6de47"
+          "sha256": "c2dc14c6042f653d7fe8c4165acaf423a9ba47c25fc2f9c03fe45f3aa80d6a7e"
         }
       ]
     },
@@ -406,7 +406,21 @@
       "artifacts": [
         {
           "path": "artifacts/product-ci/28-unit.log",
-          "sha256": "6bf7bd03907f5151f5ab28103dfe776fac1a2071324e873a2f0a20809b2fe96e"
+          "sha256": "ff2fdfcce095f97d83b9d5a2cd9610fbb900bb6580006bdc466ce31b2864a936"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:audit"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/29-unit.log",
+          "sha256": "5cec0c9d78cdade779672e431c6a04625cbc67ab97bb2f0d3aff439a1a3b7a5d"
         }
       ]
     },
@@ -419,8 +433,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/29-unit.log",
-          "sha256": "bcd2b2db5c1e4ae30a52dedb6fa229babaf5be3502ffd6ef0ad584665e75d19e"
+          "path": "artifacts/product-ci/30-unit.log",
+          "sha256": "3f595006da42e56bbf58c0b2c118a50b421f74123202b39cca512a2afb42f4ec"
         }
       ]
     },
@@ -433,8 +447,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/30-unit.log",
-          "sha256": "42990bd73b5565b700ef5810e2a4173d155e962717078412ce79059511cf25b2"
+          "path": "artifacts/product-ci/31-unit.log",
+          "sha256": "72525f74c58b2c4539cb732a3174533c1abc24198289cfbd5566143b5af6e637"
         }
       ]
     },
@@ -447,8 +461,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/31-browser.log",
-          "sha256": "151b3275fea69d4b52005900362e63bd896029bbf74e66f3e289bc2bac90c210"
+          "path": "artifacts/product-ci/32-browser.log",
+          "sha256": "648210a4dc60ddd02cdfdb437dc9f7a92dff57b767fb4f2e575f02adb1836562"
         }
       ]
     },
@@ -461,8 +475,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/32-unit.log",
-          "sha256": "5ae5ea666bd3f9d8750314182276558877ba87dacdf51feed683eacd8063ee06"
+          "path": "artifacts/product-ci/33-unit.log",
+          "sha256": "85110c6237116c5e8ad16473f539bbabc671093c3455302ef6a78e58c82b3b6c"
         }
       ]
     },
@@ -475,8 +489,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/33-browser.log",
-          "sha256": "ad8be77e2d927375fbf1958f69dce1abceb951ad930b0f9d1dabd0f5157da181"
+          "path": "artifacts/product-ci/34-browser.log",
+          "sha256": "181b9622948159e1036f22e527937d84a84792989189f2c89296e25109b4317a"
         }
       ]
     },
@@ -489,8 +503,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/34-packages.log",
-          "sha256": "a4981e5c47a187780c15cd7c7e270a1b7e62c3e653066db952a48b53d14c8beb"
+          "path": "artifacts/product-ci/35-packages.log",
+          "sha256": "585d7431bc8e3f8f8a49a16bb1aec56bd31273703f4350dde738a975e1b47a16"
         }
       ]
     },
@@ -503,8 +517,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/35-browser.log",
-          "sha256": "b143e5b1200f0e27f316162a041b22b29de1a93c149a9458c9b1fc64e4c47fbb"
+          "path": "artifacts/product-ci/36-browser.log",
+          "sha256": "2807534f4aec45aed9eb90b4212d5ca72abd0a683e0e1d7c28474b8f655516ca"
         }
       ]
     },
@@ -517,8 +531,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/36-browser.log",
-          "sha256": "8b4c550f1d911b06b429fba33c8ea3e31b12a1f89ef7da13cc266f6bf936b6d4"
+          "path": "artifacts/product-ci/37-browser.log",
+          "sha256": "9b3ba3206e04c1fad7da155f42d8c57795062cf4f92dbcbe7daa17dd575419f0"
         }
       ]
     },
@@ -531,8 +545,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/37-unit.log",
-          "sha256": "59783cf4b81089c9069736a4f20e79ac98f89e322700d5fc06ff227311c66f11"
+          "path": "artifacts/product-ci/38-unit.log",
+          "sha256": "35e6e82999fcffbf96be7a6ae5b994cf5f49363443a8436d1651adb366464dc9"
         }
       ]
     },
@@ -545,8 +559,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/38-browser.log",
-          "sha256": "5dcaf3c0991571526257fcd0353bab2188098fa633733fac1cfdff2ede58c8a8"
+          "path": "artifacts/product-ci/39-browser.log",
+          "sha256": "f67e5beb2b0e461ce8533f86bae40c0cd9401397c8cb2a518743a25051480561"
         }
       ]
     },
@@ -559,8 +573,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/39-packages.log",
-          "sha256": "204fba1a5902cd40b0d74933e4e984d8001ccd3e574e194f75e5fa487889db34"
+          "path": "artifacts/product-ci/40-packages.log",
+          "sha256": "b69c1f531eac68289b4abdc65ddac18bc99a6c68f018bf2d5acb4aa9337ced5f"
         }
       ]
     },
@@ -573,8 +587,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/40-unit.log",
-          "sha256": "c969cc116327913a76830d487e2da6131c05390665e092fefc0eec33937cc6d6"
+          "path": "artifacts/product-ci/41-unit.log",
+          "sha256": "2046a2c6af1e2b2b6120005954857d78908b6f12e236f2845d53a2fffb8b3f9a"
         }
       ]
     },
@@ -587,8 +601,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/41-browser.log",
-          "sha256": "581099a210ad616b20a00ae5aa632b73b7690ae1d9dd3655cd4e74272571d305"
+          "path": "artifacts/product-ci/42-browser.log",
+          "sha256": "28fc4f7c65e40fa916da8ba4fba73cf9a2ebfa4c050807206c7acddfd768981b"
         }
       ]
     },
@@ -601,8 +615,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/42-packages.log",
-          "sha256": "71ac0972ca7e4bb77a1702aa68d21739419c30275499412fad1463c8d634dd5e"
+          "path": "artifacts/product-ci/43-packages.log",
+          "sha256": "6c2f77b44fa2f6a5344dc7ce98e738072e36f61223ada2eb7f6ec5356fc78b14"
         }
       ]
     },
@@ -615,8 +629,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/43-packages.log",
-          "sha256": "4748e7e2f575141852527393a2e37a7291fb229ef50e83a06b97c79f44f9aa5c"
+          "path": "artifacts/product-ci/44-packages.log",
+          "sha256": "3ce220ee78d9d887f0f5f18c049cfa143c847ea49f7c62c35ab6a0f99e7c9bb2"
         }
       ]
     },
@@ -629,8 +643,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/44-browser.log",
-          "sha256": "fa0461a3d151cebbbfb8ee4fbe0597398a282d6b492394bf7d058f9cd437f7a7"
+          "path": "artifacts/product-ci/45-browser.log",
+          "sha256": "4a86789e1e53c41f4cd878a7dbec1cf4765fd0e01bc266112a0e0ef866dbdbc6"
         }
       ]
     },
@@ -643,8 +657,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/45-unit.log",
-          "sha256": "94d5e04d9ffb13071d5d871cbed5786f3ce3285d30aada50e1e38e0d813a4312"
+          "path": "artifacts/product-ci/46-unit.log",
+          "sha256": "8e2199a6722cf9ebe92454598333d5c7c36b21e57e12c175eb5f866439924ec1"
         }
       ]
     },
@@ -657,8 +671,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/46-browser.log",
-          "sha256": "62fd4a55cf20c8562ec11877a2d1a11ec69ab589207f55f82aaf9e2c4bc66039"
+          "path": "artifacts/product-ci/47-browser.log",
+          "sha256": "f70e306e254b42c239be101a666a734f822c0b5daee76f97863069a547c68ccb"
         }
       ]
     },
@@ -671,8 +685,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/47-unit.log",
-          "sha256": "de4b4e55acb9e005fe84339125544aab9f5e5fc3ecc1ee677922b6af12678de1"
+          "path": "artifacts/product-ci/48-unit.log",
+          "sha256": "8c06f94686956c31a42e785d4edd750a475bd3fb613adeaceb6972112008ced3"
         }
       ]
     },
@@ -685,8 +699,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/48-unit.log",
-          "sha256": "4a26e17366852a54b37a57dc57186627bd4d2dd0ac9590b297439388cc24120e"
+          "path": "artifacts/product-ci/49-unit.log",
+          "sha256": "e8561631b7ad4f8bb83534c1dcc304631c9a226e97dca2d0ae6ce967ffb32d4f"
         }
       ]
     },
@@ -699,8 +713,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/49-browser.log",
-          "sha256": "194ef373f8b029c52bf0c71c20afceb08410c4df7a25ade45ece0ad09bcfc434"
+          "path": "artifacts/product-ci/50-browser.log",
+          "sha256": "a1047e062246146c566ef0221a69b6e6878deed35f8625f274f819cd14061696"
         }
       ]
     },
@@ -713,8 +727,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/50-browser.log",
-          "sha256": "0bad202e8317b4ada2f545d907b4904d04cd35690a531cd52cc2800da98735be"
+          "path": "artifacts/product-ci/51-browser.log",
+          "sha256": "d329f6c42b49e8900be8c6a6b557c6e12627af241b8ba21e8495725727a20d89"
         }
       ]
     },
@@ -727,8 +741,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/51-unit.log",
-          "sha256": "196fc3943cab82ef812812fab3d84a5b0454dc1924034a7fbb7ac30c904beb8c"
+          "path": "artifacts/product-ci/52-unit.log",
+          "sha256": "682eac7ad20991e9183a6dba20aa92a1154997ad38f3e0a3af684d9f0a496881"
         }
       ]
     },
@@ -741,8 +755,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/52-packages.log",
-          "sha256": "ee74420863ba8c3a2c94936a10237c7cb805dad8dc139ab88fa140171853a435"
+          "path": "artifacts/product-ci/53-packages.log",
+          "sha256": "fbac2e9b7ebb35f0929abf52a62cac535b2f11e3b8c6c16cb328fc799559e302"
         }
       ]
     },
@@ -755,8 +769,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/53-browser.log",
-          "sha256": "178add68a67082bbb542ee3ac74d732c6241e2170e8a64ea6cfb68b5a311e44d"
+          "path": "artifacts/product-ci/54-browser.log",
+          "sha256": "7aaaa93b2ffbd9b380d1594cf23c6f67b2d7921aadc98c893850098eefb96422"
         }
       ]
     },
@@ -769,8 +783,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/54-unit.log",
-          "sha256": "cdbb2ec46677ad5f53cdbe33b93c5bb290c6a1ecde0c939fad198c2a819f878d"
+          "path": "artifacts/product-ci/55-unit.log",
+          "sha256": "4d8e849b0063bdc1f6e8e4eb433bfd9d24a5d762dcc0b33ceb73adcb7fac69bf"
         }
       ]
     },
@@ -783,8 +797,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/55-browser.log",
-          "sha256": "dc69ccefdbddeae8cb0e41e6e5ed94c9b89ba61a813ea7fda00c006381a26360"
+          "path": "artifacts/product-ci/56-browser.log",
+          "sha256": "56a1ed172de03b668a382e3c36cfc9ffd33d6dde3268fb98e07176eff9a64467"
         }
       ]
     },
@@ -797,8 +811,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/56-unit.log",
-          "sha256": "860e1b31632f73cf7ac32ba383da1fde72ac57acb223b8ca7f8a979c57a2fcf6"
+          "path": "artifacts/product-ci/57-unit.log",
+          "sha256": "dab22fccb76bd814960c2384cdf31f09a1d0d52dba5f88b6764f09737e2488a7"
         }
       ]
     },
@@ -808,11 +822,11 @@
         "pnpm",
         "test:visualization-semantic:browser"
       ],
-      "exitCode": 0,
+      "exitCode": 1,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/57-browser.log",
-          "sha256": "0bd169fa61254ad56d6f5cadec707db2cd2b9a32501ea60e35b47cddfe363e86"
+          "path": "artifacts/product-ci/58-browser.log",
+          "sha256": "f0bff24e1002c37996a7cda791b3eabde597068449e04f8e9f5bc0d10ef0f736"
         }
       ]
     },
@@ -825,8 +839,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/58-packages.log",
-          "sha256": "4e634cb11d4da6109279d59a3114c38b97473b875aabed109d74308527eb0fc8"
+          "path": "artifacts/product-ci/59-packages.log",
+          "sha256": "27ed3ba85b8a7e20af179ed60eddd57c48353edcbcc7b3c640540f40f2a0f801"
         }
       ]
     },
@@ -839,8 +853,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/59-unit.log",
-          "sha256": "424c94da42f00174bfd317c8e6bd70a36a699480b5e3a8851aaf786bcc308ef5"
+          "path": "artifacts/product-ci/60-unit.log",
+          "sha256": "5bb95096d01e7a1480404c849e00b7ffcf161ed88494b925e18c0ce1e6e9aade"
         }
       ]
     },
@@ -853,8 +867,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/60-packages.log",
-          "sha256": "703a26ee5207a22ba4912d0032684ea4bce155a3e8933370df2fdfa38dacb107"
+          "path": "artifacts/product-ci/61-packages.log",
+          "sha256": "3909074738e34c3e7f5d98090c627f5afe3058be018a38e328b9b994660148fb"
         }
       ]
     },
@@ -867,8 +881,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/61-unit.log",
-          "sha256": "d9b0733e30aa64239b28368a7b6aa69644258bce9f58f0701ba99bb7bca30df1"
+          "path": "artifacts/product-ci/62-unit.log",
+          "sha256": "659cf337b2234411616bdb55ba553993e22b5321637077fd75ba63fc39049120"
         }
       ]
     },
@@ -881,8 +895,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/62-unit.log",
-          "sha256": "e9ea6d4ba66f2487223cdcfbb51d20b2a921e4ff1612be5ac4c72072681f508f"
+          "path": "artifacts/product-ci/63-unit.log",
+          "sha256": "ba71071bf63c8423bf7e4d7f37273833430df2c737d0b8d5ecce0e8bc3600138"
         }
       ]
     },
@@ -895,8 +909,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/63-unit.log",
-          "sha256": "588a4bb3bdeefb14f437b611001983196393dc9108ca4dbf2c51b3f575d15a2e"
+          "path": "artifacts/product-ci/64-unit.log",
+          "sha256": "b0169cb228d62dc9b1f0f8eb8911f8428afb413bb217c5022b27aa8214c80043"
         }
       ]
     },
@@ -909,8 +923,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/64-unit.log",
-          "sha256": "fcc40fc94641e7ad175dfbfc7b5c9c5d37514172469d41ce8c1cb50262a2a4d4"
+          "path": "artifacts/product-ci/65-unit.log",
+          "sha256": "0aad05026748b5208d073e8a6df3bd4ace9a19d2fef6edafa38bbbf78ec2876c"
         }
       ]
     },
@@ -923,8 +937,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/65-browser.log",
-          "sha256": "1a31e0a67312a30357abe793d3c6b7bf9b2cc27512cd88c155444697ca9f65c0"
+          "path": "artifacts/product-ci/66-browser.log",
+          "sha256": "3aa1a5258e49ac83d34b27d6a6549137f394dd667aea6392e55ad64f2f941d83"
         }
       ]
     },
@@ -937,8 +951,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/66-packages.log",
-          "sha256": "84447c86475058c5308561e02d7e42ab3007d7230415a49a12a04e458d102548"
+          "path": "artifacts/product-ci/67-packages.log",
+          "sha256": "863bad75a60f7040c0fa4200de6bc8e55c4e1050c5327001bcf2352602663594"
         }
       ]
     },
@@ -951,8 +965,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/67-packages.log",
-          "sha256": "ef6600d007809a6c01b9d6867a78709a4c328590e720405477363d74a4c3615e"
+          "path": "artifacts/product-ci/68-packages.log",
+          "sha256": "778afec84955bf96e897906636ee4849f9eaff5f35e7ec2d128c9d085c720481"
         }
       ]
     },
@@ -965,8 +979,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/68-unit.log",
-          "sha256": "e097f5f3977944c09fc0563edec482ade4274a04d568acea147be4218c4326ad"
+          "path": "artifacts/product-ci/69-unit.log",
+          "sha256": "05998df452b5da741582a9de4690ca19a3ca82d7e07be3616091e334a649832f"
         }
       ]
     },
@@ -979,8 +993,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/69-browser.log",
-          "sha256": "8af4826ee38c5276aa7849f5dc48e526d6269516a13b980f32768dc806e67344"
+          "path": "artifacts/product-ci/70-browser.log",
+          "sha256": "cda7ffc36004688106ba8cd1ad23ff15a71c7064a60494a363a63e2b82da6ec7"
         }
       ]
     },
@@ -993,8 +1007,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/70-packages.log",
-          "sha256": "430b4026a370a9c1eb5cb25f2e85559c93f04a4c70266cf9b0adb414717e61d7"
+          "path": "artifacts/product-ci/71-packages.log",
+          "sha256": "23d8932316c8f6f9cea997ca945e4b7dc9764b3a0d6d84b84abefaf0bb0a7772"
         }
       ]
     },
@@ -1007,8 +1021,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/71-unit.log",
-          "sha256": "77b2d3e7ceed0fb0051902bc443e5692136e8d6a4c792d2e1e2a8cabd2db3c9b"
+          "path": "artifacts/product-ci/72-unit.log",
+          "sha256": "5f0a1730b7fcd4b25e339e399fe5ac6221ab202f71dba006d4a6b1da22e6bf24"
         }
       ]
     },
@@ -1021,8 +1035,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/72-browser.log",
-          "sha256": "815b94782d5603c24542505bc5a26f1251c74d27b485b2fa48371a9f46044461"
+          "path": "artifacts/product-ci/73-browser.log",
+          "sha256": "cede99a0e8344022f1a1736ecef44b6f50353358baa329920ee9153d2f01c4c4"
         }
       ]
     },
@@ -1035,8 +1049,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/73-unit.log",
-          "sha256": "921218d0771c6b6816766ed56b92e44fc79618710cc23e719e2d7f52908ff71c"
+          "path": "artifacts/product-ci/74-unit.log",
+          "sha256": "fd4723fa165b26f31c2d1d271028b6271a55e6ce339564fc69b6ecbb6616eba2"
         }
       ]
     },
@@ -1049,8 +1063,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/74-browser.log",
-          "sha256": "a1a4839f6d6c2c9411751c129003ee11815557fce177d0f483ce591dc3810fe9"
+          "path": "artifacts/product-ci/75-browser.log",
+          "sha256": "e18c4b4ca89727d4b1facbd0375426ae003a6fb8e6c48515282150b5bb0c16c6"
         }
       ]
     },
@@ -1063,8 +1077,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/75-browser.log",
-          "sha256": "0bb9b4765c93bc23a365f3f43d244347a83d683e2b5fefde830723e077044f7e"
+          "path": "artifacts/product-ci/76-browser.log",
+          "sha256": "8d9363642de5f43c961c904e3532e0cf0941bb774167adebf8c255dd8f6b4f98"
         }
       ]
     },
@@ -1077,8 +1091,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/76-packages.log",
-          "sha256": "c037bc55068a4259e85d69ae6cf1e3c698ff1b1e4506e4c42ae1e3042980a49d"
+          "path": "artifacts/product-ci/77-packages.log",
+          "sha256": "06d8ea3b9e37ad447fc71412adac7722ee7ee773cb5234d783107316001357d4"
         }
       ]
     },
@@ -1091,8 +1105,22 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/77-unit.log",
-          "sha256": "d89545cae9c2553d48607350c98db1f6294bc79e0906043c0503cb96a1777734"
+          "path": "artifacts/product-ci/78-unit.log",
+          "sha256": "bab2d4fecd1d4fdc906494b8ac1bedc35db3a201403d1863a3fa8167747abcb4"
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
+        "test:scenarios"
+      ],
+      "exitCode": 0,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/79-unit.log",
+          "sha256": "151cd90c7d330e99f1103c90712f80d781dfde21c3e427b789778c1c55609dbb"
         }
       ]
     },
@@ -1102,11 +1130,11 @@
         "pnpm",
         "test:visual"
       ],
-      "exitCode": 0,
+      "exitCode": 1,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/78-browser.log",
-          "sha256": "728fe396164c4356b1f844b9902f6dcf8d237b8e3fe053afdd687150343b8c88"
+          "path": "artifacts/product-ci/80-browser.log",
+          "sha256": "3a7198186371301a2f1ca4bc82ac464580ddeee808f6cefbe39e72d06c1251be"
         }
       ]
     },
@@ -1119,8 +1147,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/79-performance.log",
-          "sha256": "1c73e26a79f334389c96e939319fda7093fa228cf19ebca835e86e85a9412d0d"
+          "path": "artifacts/product-ci/81-performance.log",
+          "sha256": "8d57a3cb76f4f6bc7757d18915293313e5191c8feb63aa27bf090fc2ed2e8e3c"
         }
       ]
     },
@@ -1133,8 +1161,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/80-browser.log",
-          "sha256": "151794c0ac60c73023b53aa191039cadd7e4614df4a524674e7fb93389cd76ce"
+          "path": "artifacts/product-ci/82-browser.log",
+          "sha256": "3c70c41c30c7d75ea10874cbf0658e38904c462e0b78f033484d4f5c55d6e391"
         }
       ]
     },
@@ -1147,8 +1175,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/81-browser.log",
-          "sha256": "e8e842bbe2add9f62f49c825855c1bfe185e2d830fa10bad40bf74fc3057c638"
+          "path": "artifacts/product-ci/83-browser.log",
+          "sha256": "76211289c3b9befae1b478e55ea374d441e39cca65af2e8937f086db575980d4"
         }
       ]
     },
@@ -1161,8 +1189,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/82-browser.log",
-          "sha256": "6105c9451ea722f5f8dab5fab64d2fdba3827c0661ec65007eaf14b1e56ef91e"
+          "path": "artifacts/product-ci/84-browser.log",
+          "sha256": "dca5e69d758fab26a313c39cef1be243985d9f513fd297fe7c25d03401cdcda5"
         }
       ]
     },
@@ -1175,8 +1203,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/83-performance.log",
-          "sha256": "9e2755ab97ca1c01be6538c782175313f1c32283127ab8004af9f2a4ab5b799d"
+          "path": "artifacts/product-ci/85-performance.log",
+          "sha256": "b097f53dc3c0be18a2ac4786961eb7de3f5c758d08fd34da7e5532b1a688450a"
         }
       ]
     },
@@ -1189,8 +1217,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/84-performance.log",
-          "sha256": "9e5f529918fdd9cf94d4cc75214832785a0810869622f06d848958ebe72d113a"
+          "path": "artifacts/product-ci/86-performance.log",
+          "sha256": "4f4ae408720030189964f95efa5d98d412e0ebe24926c2d9990763af1b96bcd0"
         }
       ]
     },
@@ -1203,8 +1231,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/85-browser.log",
-          "sha256": "9113318b0ca0c8ccc7716a53ba8e6afe0db7d1932d53a4ee9a94370ebbbb411c"
+          "path": "artifacts/product-ci/87-browser.log",
+          "sha256": "53810d1559eda236b7d06845e8d8e55e63b09a56850d964d2627ca033ef32717"
         }
       ]
     },
@@ -1217,8 +1245,8 @@
       "exitCode": 0,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/86-browser.log",
-          "sha256": "d892b0d454660f8d103fa943b488560e462a7f90d05e7c84e47f8960679ca8dc"
+          "path": "artifacts/product-ci/88-browser.log",
+          "sha256": "9dd8e1e4da54d0d56b5c894d51f7c8add6e06774e72a9646dde44bb1957e1842"
         }
       ]
     }
