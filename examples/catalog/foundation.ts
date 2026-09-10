@@ -130,14 +130,22 @@ export const foundationExamples: readonly CatalogExampleDefinition[] = [
     element.direction = "row";
     element.gap = 12;
     element.align = "center";
-    element.append("First", "Second");
+    for (const text of ["First", "Second"]) {
+      const item = document.createElement("span");
+      item.textContent = text;
+      element.append(item);
+    }
   }),
   mount("grid", (root) => {
     const element = createCatalogElement<AeliqoGridElement>("aeliqo-grid", root);
     element.columns = 2;
     element.gap = 16;
     element.minItem = "small";
-    element.append("Left", "Right");
+    for (const text of ["Left", "Right"]) {
+      const item = document.createElement("span");
+      item.textContent = text;
+      element.append(item);
+    }
   }),
   mount("split-pane", (root) => {
     const element = createCatalogElement<AeliqoSplitPaneElement>("aeliqo-split-pane", root);

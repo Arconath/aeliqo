@@ -212,6 +212,7 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
     const histogramMeasure = this.expectedView === "histogram" && this.state.kind === "ready" && this.state.bound.spec.view === "histogram" ? this.state.bound.spec.bins.measure : undefined;
     const tableLabel = histogramMeasure === undefined ? valueLabel : `${valueLabel}; executor-produced ${histogramMeasure} bins`;
     const axisLeft = geometry.axisLeft ?? 64;
+    const svgHeight = geometry.height + 72;
     return html`<figure part="figure">
       ${data ? html`<figcaption>${label}</figcaption><p part="scope">${scope} ${geometry.rows.length} loaded rows.${displayed.length !== geometry.rows.length ? ` ${displayed.length} rows in this display partition.` : nothing}</p>` : nothing}
       ${geometry.result.period && data ? html`<p part="note">${geometry.result.period.interpretation} (${geometry.result.period.timezone}).</p>` : nothing}
@@ -222,13 +223,13 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
       ${histogramMeasure !== undefined && data ? html`<p part="note">Executor-produced ${histogramMeasure} bins. Bin delivery does not establish source observation coverage.</p>` : nothing}
       ${geometry.state === "data-only" ? html`<p part="error" role="status">${geometry.reason ?? "The chart geometry is unavailable."}</p>` : nothing}
       ${graphic && axes && geometry.state === "plot" ? html`<div part="viewport" role="region" tabindex="0" aria-label=${`${label} ${this.expectedView} chart. Scroll to view the full graphic.`} style=${`inline-size: ${this.width}px`}>
-        <svg viewBox=${`0 0 ${geometry.width} ${geometry.height}`} width=${geometry.width} height=${geometry.height} role="img" aria-label=${`${label}. ${scope} Values and selection are available in the data table below.`}>
+        <svg viewBox=${`0 0 ${geometry.width} ${svgHeight}`} width=${geometry.width} height=${svgHeight} role="img" aria-label=${`${label}. ${scope} Values and selection are available in the data table below.`}>
           ${svgPlotMarks(geometry)}
           <path d=${`M${axisLeft},24V${geometry.height - 48}H${geometry.width - 24}`} fill="none" stroke="currentColor"></path>
-          ${axes.x.ticks.map((tick, index) => svg`<text x=${tick.position} y=${geometry.height - 30} text-anchor=${this.xTickAnchor(index, axes.x.ticks.length)} aria-label=${tick.label}>${this.tickText(tick.label)}</text>`)}
-          ${axes.y.ticks.map((tick) => svg`<text x=${axisLeft - 6} y=${tick.position} text-anchor="end" aria-label=${tick.label}>${this.tickText(tick.label)}</text>`)}
-          <text x=${geometry.width / 2} y=${geometry.height - 8} text-anchor="middle">${axes.xLabel}</text>
-          <text x=${axisLeft} y="14">${axes.yLabel}</text>
+          ${axes.x.ticks.map((tick, index) => svg`<text class="axis-x-tick" x=${tick.position} y=${geometry.height - 18 + index % 2 * 36} text-anchor=${this.xTickAnchor(index, axes.x.ticks.length)}>${this.tickText(tick.label)}</text>`)}
+          ${axes.y.ticks.map((tick) => svg`<text class="axis-y-tick" x=${axisLeft - 8} y=${tick.position} text-anchor="end">${this.tickText(tick.label)}</text>`)}
+          <text class="axis-title" x=${geometry.width / 2} y=${geometry.height + 58} text-anchor="middle">${axes.xLabel}</text>
+          <text class="axis-title" x=${axisLeft + 8} y="14">${axes.yLabel}</text>
         </svg>
       </div>` : nothing}
       ${data ? html`${this.renderLegend(geometry)}${this.renderColorKey(geometry)}<div part="data"><table>
@@ -246,7 +247,7 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
   private renderColorKey(geometry: PlotGeometry): unknown {
     const field = geometry.result.fields.find((candidate) => candidate.id === geometry.colorField);
     if (field === undefined || geometry.colorTicks === undefined) return nothing;
-    return html`<div part="color-key" aria-label=${`${field.label} color key`}><span>${field.label}</span><div part="color-key-bar" aria-hidden="true"></div><ul part="color-key-ticks">${geometry.colorTicks.map((tick) => html`<li>${tick.label}</li>`)}</ul></div>`;
+    return html`<div part="color-key" role="group" aria-label=${`${field.label} color key`}><span>${field.label}</span><div part="color-key-bar" aria-hidden="true"></div><ul part="color-key-ticks">${geometry.colorTicks.map((tick) => html`<li>${tick.label}</li>`)}</ul></div>`;
   }
 
   private scopeText(result: Result): string {

@@ -20,6 +20,30 @@ for(const component of components.components)for(const variant of ['desktop-ligh
   expect(errors).toEqual([]);
   expect(axe.violations.map(({id,impact,nodes})=>({id,impact,nodes:nodes.map(({target,failureSummary})=>({target,failureSummary}))}))).toEqual([]);
   expect(measurements.documentWidth).toBeLessThanOrEqual(measurements.viewport.width);
+  if(variant==='narrow-dark-rtl'&&['stack','grid'].includes(id)){
+   const layout=await page.locator(`aeliqo-${id}`).evaluate(element=>{const nodes=[...element.querySelectorAll('span')].map(node=>node.getBoundingClientRect());return nodes.map((box,index)=>index===0?Number.POSITIVE_INFINITY:Math.max(0,Math.max(box.left-nodes[index-1]!.right,nodes[index-1]!.left-box.right,box.top-nodes[index-1]!.bottom,nodes[index-1]!.top-box.bottom)));});
+   expect(layout).toHaveLength(2);
+   expect(layout[1]).toBeGreaterThan(0);
+  }
+  if(variant==='narrow-dark-rtl'&&['form','dialog'].includes(id)){
+   const control=await page.locator(`aeliqo-${id}`).evaluate(element=>{const button=element.querySelector('button')!;const box=button.getBoundingClientRect();return{fontSize:parseFloat(getComputedStyle(button).fontSize),hostFontSize:parseFloat(getComputedStyle(element).fontSize),width:box.width,height:box.height};});
+   expect(control.fontSize).toBeGreaterThanOrEqual(control.hostFontSize);
+   expect(control.width).toBeGreaterThanOrEqual(44);
+   expect(control.height).toBeGreaterThanOrEqual(44);
+  }
+  if(variant==='narrow-dark-rtl'&&['trend','bar','area','scatter','heatmap','investigation'].includes(id)){
+   const intersections=await page.locator(`aeliqo-${id}`).evaluate(element=>{const chart=element.localName==='aeliqo-investigation'?element.shadowRoot!.querySelector('aeliqo-trend')!:element;const labels=[...chart.shadowRoot!.querySelectorAll<SVGTextElement>('svg text.axis-x-tick,svg text.axis-y-tick,svg text.axis-title')];const boxes=labels.map(label=>({text:label.textContent??'',box:label.getBoundingClientRect()}));return boxes.flatMap((left,index)=>boxes.slice(index+1).filter(right=>left.box.left<right.box.right&&left.box.right>right.box.left&&left.box.top<right.box.bottom&&left.box.bottom>right.box.top).map(right=>`${left.text} / ${right.text}`));});
+   expect(intersections).toEqual([]);
+  }
+  if(variant==='narrow-dark-rtl'&&['relationship','tree','treemap','timeline'].includes(id)){
+   const intersections=await page.locator(`aeliqo-${id}`).evaluate(element=>{const labels=[...element.shadowRoot!.querySelectorAll<SVGTextElement>('svg text:not(.sr-only)')];const boxes=labels.map(label=>({text:label.textContent??'',box:label.getBoundingClientRect()}));return boxes.flatMap((left,index)=>boxes.slice(index+1).filter(right=>left.box.left<right.box.right&&left.box.right>right.box.left&&left.box.top<right.box.bottom&&left.box.bottom>right.box.top).map(right=>`${left.text} / ${right.text}`));});
+   expect(intersections).toEqual([]);
+  }
+  if(variant==='narrow-dark-rtl'&&['tree','treemap'].includes(id)){
+   const contrasts=await page.locator(`aeliqo-${id}`).evaluate(element=>{const rgb=(value:string)=>value.match(/[\d.]+/g)!.slice(0,3).map(Number).map(channel=>{const normalized=channel/255;return normalized<=.04045?normalized/12.92:((normalized+.055)/1.055)**2.4;});const luminance=(value:string)=>{const [r,g,b]=rgb(value);return .2126*r!+.7152*g!+.0722*b!;};return [...element.shadowRoot!.querySelectorAll<SVGTextElement>('svg text.tree-label,svg text.treemap-label')].map(label=>{const rect=label.previousElementSibling!;const foreground=luminance(getComputedStyle(label).fill);const background=luminance(getComputedStyle(rect).fill);return(Math.max(foreground,background)+.05)/(Math.min(foreground,background)+.05);});});
+   expect(contrasts.length).toBeGreaterThan(0);
+   expect(Math.min(...contrasts)).toBeGreaterThanOrEqual(4.5);
+  }
   if(variant==='narrow-dark-rtl'&&id==='quality-panel'){
    const columns=await page.locator('aeliqo-quality-panel').evaluate(element=>getComputedStyle(element.shadowRoot!.querySelector('dl')!).gridTemplateColumns);
    expect(columns.trim().split(/\s+/)).toHaveLength(1);

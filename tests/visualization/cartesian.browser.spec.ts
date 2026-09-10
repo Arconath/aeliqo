@@ -23,8 +23,7 @@ test('keeps edge x-axis labels inside the chart viewport', async ({page}) => {
     const svg = host.shadowRoot?.querySelector<SVGSVGElement>('svg');
     if (svg === undefined || svg === null) throw new Error('Missing trend SVG');
     const svgBounds = svg.getBoundingClientRect();
-    const xTickY = String(svg.viewBox.baseVal.height - 30);
-    return [...svg.querySelectorAll<SVGTextElement>(`text[y="${xTickY}"]`)].map((label) => {
+    return [...svg.querySelectorAll<SVGTextElement>('text.axis-x-tick')].map((label) => {
       const bounds = label.getBoundingClientRect();
       return {text: label.textContent, left: bounds.left, right: bounds.right, svgLeft: svgBounds.left, svgRight: svgBounds.right};
     });
@@ -52,8 +51,7 @@ test('keeps date and category edge labels inside LTR and RTL chart viewports', a
         const svg = document.querySelector<HTMLElement>(`aeliqo-${id}`)?.shadowRoot?.querySelector<SVGSVGElement>('svg');
         if (svg === undefined || svg === null) throw new Error(`Missing ${id} SVG`);
         const svgBounds = svg.getBoundingClientRect();
-        const xTickY = String(svg.viewBox.baseVal.height - 30);
-        output[id] = [...svg.querySelectorAll<SVGTextElement>(`text[y="${xTickY}"]`)].map((label) => {
+        output[id] = [...svg.querySelectorAll<SVGTextElement>('text.axis-x-tick')].map((label) => {
           const labelBounds = label.getBoundingClientRect();
           return {text: label.textContent, left: labelBounds.left, right: labelBounds.right, svgLeft: svgBounds.left, svgRight: svgBounds.right};
         });
@@ -89,7 +87,7 @@ test('centers a single category label in a narrow LTR and RTL chart', async ({pa
       const svg = host.shadowRoot?.querySelector<SVGSVGElement>('svg');
       if (svg === undefined || svg === null) throw new Error('Missing bar SVG');
       const svgBounds = svg.getBoundingClientRect();
-      const label = svg.querySelector<SVGTextElement>(`text[y="${svg.viewBox.baseVal.height - 30}"]`);
+      const label = svg.querySelector<SVGTextElement>('text.axis-x-tick');
       if (label === null) throw new Error('Missing single category label');
       const labelBounds = label.getBoundingClientRect();
       return {anchor: label.getAttribute('text-anchor'), left: labelBounds.left, right: labelBounds.right, svgLeft: svgBounds.left, svgRight: svgBounds.right};
