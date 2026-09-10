@@ -1,0 +1,183 @@
+{
+  "schema": "aeliqo.t33.final-candidate-independent-review-manifest.v2",
+  "task": "T33",
+  "status": "local-candidate-approved-independent-review-complete",
+  "generatedAt": "2026-09-10T20:48:03Z",
+  "reviewer": "/root/review_t29_final",
+  "source": {
+    "reviewBaseCommit": "7e7ce06345935193bc7c67654265a3fdd689ab41",
+    "reviewBaseTree": "bfc76f0fe40a3c9296f7646e7e69edf534022db4",
+    "candidateSourceCommit": "1be6be5ea1d4d06d2e46fe0a1addbca4078492a3",
+    "candidateSourceTree": "39f6a0f11f97c24195cdae1c9c7ce1f4aedd8797",
+    "candidateDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+    "reviewBaseIsCandidateSourceChild": true,
+    "reviewBaseDeltaOnlyEvidence": true,
+    "reviewBaseDeltaPathCount": 26,
+    "trackedTreeCleanBeforeReview": true
+  },
+  "authorCandidate": {
+    "path": "harness/evidence/t33/676db22-final-candidate",
+    "manifestSha256": "620c6ff8b5a8b98de6d1fdd57767e3d8a0a8d296f841558240d53170a294a88d",
+    "sourceIdentitySha256": "d04492e9fc7f58c179a5ee0d5e9040ab32fa82a80e561de54a961c40e56e4a8a",
+    "reproducibilitySha256": "cd54b39e0accc57ffb0f8904c90048960be2df61e6569d6873eccef54834d0f4",
+    "checksumEntries": 24,
+    "checksumVerification": "pass"
+  },
+  "candidate": {
+    "schema": "aeliqo.release-candidate.v1",
+    "version": "0.1.0-rc.1",
+    "packageCount": 6,
+    "packedBytes": 982309,
+    "privateTestkitExcluded": true,
+    "publishOrder": [
+      "@aeliqo/core",
+      "@aeliqo/runtime",
+      "@aeliqo/web",
+      "@aeliqo/agent",
+      "@aeliqo/devtools",
+      "@aeliqo/react"
+    ],
+    "tarballs": {
+      "@aeliqo/core": {
+        "file": "aeliqo-core-0.1.0-rc.1.tgz",
+        "bytes": 183748,
+        "sha256": "bfee566d16179ec0a222de966ff2b00cac042e238e798e09d9afeb8d689c7f38"
+      },
+      "@aeliqo/runtime": {
+        "file": "aeliqo-runtime-0.1.0-rc.1.tgz",
+        "bytes": 228488,
+        "sha256": "df7b183da797d6c822e56c0db3af59860e4a5a1c430ac4a2f342f6a8be520d40"
+      },
+      "@aeliqo/web": {
+        "file": "aeliqo-web-0.1.0-rc.1.tgz",
+        "bytes": 407913,
+        "sha256": "a4260c87d1bf2147435bd0108e630bdc7eaf0d8f5a13c45dd6d4423c0c637383"
+      },
+      "@aeliqo/agent": {
+        "file": "aeliqo-agent-0.1.0-rc.1.tgz",
+        "bytes": 125773,
+        "sha256": "c4b77fa82e1ec5cf6cde7ba4d5b266d198be9ac2768e8d6b0fda8ad50e652e23"
+      },
+      "@aeliqo/devtools": {
+        "file": "aeliqo-devtools-0.1.0-rc.1.tgz",
+        "bytes": 21156,
+        "sha256": "6166f2a994458f286b979a7d32ea1a3c1ce41d3d03d91acbb9a4b386e8d8ab6d"
+      },
+      "@aeliqo/react": {
+        "file": "aeliqo-react-0.1.0-rc.1.tgz",
+        "bytes": 15231,
+        "sha256": "d35abeee2912e50d4f3c3cc214f23f24813cecec1a6aad8dbb11b8753dc056d1"
+      }
+    }
+  },
+  "checks": {
+    "toolchain": {
+      "node": "v24.20.0",
+      "pnpm": "11.24.0",
+      "npm": "11.19.0",
+      "workspaceInstallOfflineFrozen": true,
+      "workspaceProjects": 15,
+      "packagesReused": 145,
+      "packagesDownloaded": 0,
+      "releaseToolingPassed": 22
+    },
+    "freshRebuild": {
+      "regularOutput": "artifacts/t33-independent-candidate",
+      "offlineOutput": "artifacts/t33-independent-offline",
+      "sourceRevision": "7e7ce06345935193bc7c67654265a3fdd689ab41",
+      "offlineNpmInstallEnforced": true,
+      "releaseArtifactsCompared": 9,
+      "releaseArtifactsByteIdentical": true,
+      "sixTarballsByteIdenticalToRetainedCandidate": true,
+      "freshManifestSha256": "8f107ca6cd11658387cba7b1199bb28396e69023d6a8cc3c2c82279a604685fc",
+      "freshSbomSha256": "9f3da528ee879b4979510db33981133415744f440056d7b467ac31a749f38dfa",
+      "freshSecretScanSha256": "9a4a6d24a301d95fd22cf452a4f252ef615fc6f95c29e6a145e6f25dc49261dd",
+      "freshConsumerLockHashes": {
+        "regular": "e070b98148b71cea3c5b23d5e4c2c03f9b1404413253a3659d03130e808dd8a7",
+        "offline": "ea6b3efe88788f91f923fb7ee5b831b3685dc890f99dce6231d994bb9fc81e65",
+        "differenceReason": "temporary output path is recorded in package-lock; installed identities and execution evidence match"
+      }
+    },
+    "tarballs": {
+      "result": "pass",
+      "packedFiles": 1034,
+      "exportTargets": 221,
+      "strictExportSpecifiers": 130,
+      "duplicatePaths": 0,
+      "unsafePaths": 0,
+      "nonAllowlistedPaths": 0,
+      "symlinks": 0,
+      "workspaceProtocols": 0,
+      "canonicalLicenseAndNotice": true,
+      "privateTestkitExcluded": true,
+      "internalDependenciesExactAndPublicationOrdered": true
+    },
+    "offlineConsumer": {
+      "result": "pass",
+      "strictExportsTypeChecked": 130,
+      "packageModulesLoaded": 7,
+      "coreParserExecuted": true,
+      "auditExecuted": true,
+      "auditNetworkAttempts": 0,
+      "networkDenied": true,
+      "deniedMethods": 10
+    },
+    "sbom": {
+      "result": "pass",
+      "format": "CycloneDX 1.5",
+      "components": 63,
+      "internalComponents": 6,
+      "externalComponents": 57,
+      "dependencyRecords": 63,
+      "dependencyEdges": 95,
+      "allRefsKnownAndReachable": true,
+      "externalHashesAndLicensesMatchFrozenLock": true
+    },
+    "secretScan": {
+      "result": "pass",
+      "rules": 6,
+      "retainedFindings": 0,
+      "freshFindings": 0,
+      "freshPackedFiles": 1034,
+      "freshPackedBytes": 6367561
+    },
+    "staleEvidenceRejection": {
+      "staleScratchUsed": false,
+      "staleFilesCopiedOrCited": 0,
+      "directNameMatches": true,
+      "sdkPrefixedIdentityMatches": 0,
+      "staleTimestampMatches": 0,
+      "registryEvidenceUsed": false
+    }
+  },
+  "findings": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "blocking": 0,
+    "items": []
+  },
+  "principalArtifacts": [
+    {
+      "path": "independent-review.json",
+      "sha256": "1516e747b79dff84df40de6a7319f8d65268e2c999e76542d2c41b689ae62d65"
+    }
+  ],
+  "artifactHashIndex": {
+    "path": "SHA256SUMS",
+    "entries": 1,
+    "sha256": "62aef256e35adc451b92a42c08c3df380f219647e606f3901a122e17c1b4f689"
+  },
+  "limitations": [
+    "The retained candidate was built from the clean source parent 1be6be5; current main 7e7ce06 adds only that candidate evidence packet. The fresh current-main rebuild confirms identical package bytes, while publication still requires regeneration on the exact clean publication HEAD.",
+    "Consumer lock hashes are path-sensitive evidence and are not release artifacts; installed package identity, strict exports and runtime/offline results are the stable comparison.",
+    "Registry/authentication/publication/provenance/dist-tag/source-release/deployment checks are outside T33 and were intentionally not performed; stale prior-run registry scratch was not used.",
+    "Manual assistive-technology, native-host and universal pixel/performance certification remain outside this package-candidate review."
+  ],
+  "verdict": {
+    "localCandidate": "approved",
+    "publication": "out-of-scope",
+    "releaseApprovalIssued": false,
+    "summary": "The direct-name six-package 0.1.0-rc.1 local candidate is independently verified, reproducible and usable by an explicitly offline network-denied consumer with no P0, P1 or P2 finding."
+  }
+}

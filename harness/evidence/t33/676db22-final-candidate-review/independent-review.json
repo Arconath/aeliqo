@@ -1,0 +1,290 @@
+{
+  "schema": "aeliqo.t33.final-candidate-independent-review.v2",
+  "task": "T33",
+  "status": "local-candidate-approved-independent-review-complete",
+  "reviewedAt": "2026-09-10T20:48:03Z",
+  "reviewer": {
+    "agent": "/root/review_t29_final",
+    "role": "independent release-candidate, package-integrity and offline-consumer reviewer",
+    "independentOfCandidateAuthor": true
+  },
+  "reviewScope": "Evidence-only independent review of the exact six-package local 0.1.0-rc.1 candidate. No product source, task state, npm package, dist-tag, GitHub state, GitOps state or production state was modified.",
+  "source": {
+    "reviewBaseCommit": "7e7ce06345935193bc7c67654265a3fdd689ab41",
+    "reviewBaseTree": "bfc76f0fe40a3c9296f7646e7e69edf534022db4",
+    "candidateSourceCommit": "1be6be5ea1d4d06d2e46fe0a1addbca4078492a3",
+    "candidateSourceTree": "39f6a0f11f97c24195cdae1c9c7ce1f4aedd8797",
+    "candidateDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+    "reviewBaseIsCandidateSourceChild": true,
+    "reviewBaseDelta": {
+      "commitCount": 1,
+      "pathCount": 26,
+      "onlyPathPrefix": "harness/evidence/t33/676db22-final-candidate/",
+      "productSourceChanged": false
+    },
+    "candidateAuthorTreeCleanBeforeAndAfterBuild": true,
+    "reviewBaseTreeCleanBeforeReview": true
+  },
+  "authorRecord": {
+    "path": "harness/evidence/t33/676db22-final-candidate/manifest.json",
+    "sha256": "620c6ff8b5a8b98de6d1fdd57767e3d8a0a8d296f841558240d53170a294a88d",
+    "sourceIdentityPath": "harness/evidence/t33/676db22-final-candidate/source-identity.json",
+    "sourceIdentitySha256": "d04492e9fc7f58c179a5ee0d5e9040ab32fa82a80e561de54a961c40e56e4a8a",
+    "reproducibilityPath": "harness/evidence/t33/676db22-final-candidate/reproducibility.json",
+    "reproducibilitySha256": "cd54b39e0accc57ffb0f8904c90048960be2df61e6569d6873eccef54834d0f4",
+    "candidateSourceRevision": "1be6be5ea1d4d06d2e46fe0a1addbca4078492a3",
+    "candidateDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9"
+  },
+  "candidate": {
+    "schema": "aeliqo.release-candidate.v1",
+    "version": "0.1.0-rc.1",
+    "publishOrder": [
+      "@aeliqo/core",
+      "@aeliqo/runtime",
+      "@aeliqo/web",
+      "@aeliqo/agent",
+      "@aeliqo/devtools",
+      "@aeliqo/react"
+    ],
+    "packageCount": 6,
+    "packedBytes": 982309,
+    "privateTestkitExcluded": true,
+    "packages": [
+      {
+        "name": "@aeliqo/core",
+        "file": "aeliqo-core-0.1.0-rc.1.tgz",
+        "bytes": 183748,
+        "sha256": "bfee566d16179ec0a222de966ff2b00cac042e238e798e09d9afeb8d689c7f38",
+        "integrity": "sha512-mlJ8Ssw2ojVgOLKahc6by8DBpONgVFghp3r92YJmm7BPkGtLDo5qnghono3Z+mO2kKA7H0HRAl+JNbgvPxtWKg=="
+      },
+      {
+        "name": "@aeliqo/runtime",
+        "file": "aeliqo-runtime-0.1.0-rc.1.tgz",
+        "bytes": 228488,
+        "sha256": "df7b183da797d6c822e56c0db3af59860e4a5a1c430ac4a2f342f6a8be520d40",
+        "integrity": "sha512-EPmpv9TNarwk6aSymK1um6RpEtgFEgNPyzZOrQgD4wainCdmyRmL6Okp1+GiKEof4yIZyEM3S3J+rr8mjABYfA=="
+      },
+      {
+        "name": "@aeliqo/web",
+        "file": "aeliqo-web-0.1.0-rc.1.tgz",
+        "bytes": 407913,
+        "sha256": "a4260c87d1bf2147435bd0108e630bdc7eaf0d8f5a13c45dd6d4423c0c637383",
+        "integrity": "sha512-ODldWO7Y5TznW8/STjRjjjvqjcJSMVT897In/ZOqdbcm4l/DHWznbBL54NP0A6/3Ja773jt0kKfbLQ6ytgTGIQ=="
+      },
+      {
+        "name": "@aeliqo/agent",
+        "file": "aeliqo-agent-0.1.0-rc.1.tgz",
+        "bytes": 125773,
+        "sha256": "c4b77fa82e1ec5cf6cde7ba4d5b266d198be9ac2768e8d6b0fda8ad50e652e23",
+        "integrity": "sha512-ZYK2lm4SAygBP9xhsNzRaZwDOdqaXX9ClamNv1E2++LhR19YX95UtOsZw6h4+UZwmIXQGpMLWJNyj8TpybnLwQ=="
+      },
+      {
+        "name": "@aeliqo/devtools",
+        "file": "aeliqo-devtools-0.1.0-rc.1.tgz",
+        "bytes": 21156,
+        "sha256": "6166f2a994458f286b979a7d32ea1a3c1ce41d3d03d91acbb9a4b386e8d8ab6d",
+        "integrity": "sha512-Wuol9zm+tp8Y0kQR4SUCh5zyxdTMSKgfgH7EgGNUb4+zpa/uNfS6hcq6Ae2ypGabeEo9HRtLV7a/CS9UR+DW4w=="
+      },
+      {
+        "name": "@aeliqo/react",
+        "file": "aeliqo-react-0.1.0-rc.1.tgz",
+        "bytes": 15231,
+        "sha256": "d35abeee2912e50d4f3c3cc214f23f24813cecec1a6aad8dbb11b8753dc056d1",
+        "integrity": "sha512-jFkF+1cXYwdJ59bn52ZSSw8QCfdGEAmU9BMZOAYrDMi+/KidEKifOpMPjMviSF+NYfgApdBzaPeCPE6vh3eTUg=="
+      }
+    ]
+  },
+  "verification": {
+    "retainedPacket": {
+      "checksumCommand": "sha256sum -c harness/evidence/t33/676db22-final-candidate/SHA256SUMS",
+      "result": "pass",
+      "entries": 24,
+      "mismatches": 0,
+      "manifestCrossFields": "pass",
+      "sourceIdentityCrossFields": "pass",
+      "reproducibilityCrossFields": "pass"
+    },
+    "toolchain": {
+      "node": "v24.20.0",
+      "pnpm": "11.24.0",
+      "npm": "11.19.0",
+      "workspaceInstall": {
+        "command": "pnpm install --offline --frozen-lockfile",
+        "result": "pass",
+        "workspaceProjects": 15,
+        "packagesReused": 145,
+        "packagesDownloaded": 0
+      },
+      "releaseTooling": {
+        "command": "pnpm test:release-tooling",
+        "result": "pass",
+        "tests": 22,
+        "failed": 0
+      }
+    },
+    "freshCurrentMainRebuild": {
+      "sourceRevision": "7e7ce06345935193bc7c67654265a3fdd689ab41",
+      "regularOutput": "artifacts/t33-independent-candidate",
+      "offlineOutput": "artifacts/t33-independent-offline",
+      "regularBuildResult": "pass",
+      "offlineBuildResult": "pass",
+      "offlineNpmInstallExplicitlyEnforced": true,
+      "releaseArtifactsCompared": 9,
+      "releaseArtifactsByteIdenticalAcrossFreshOutputs": true,
+      "sixTarballsByteIdenticalToRetainedCandidate": true,
+      "freshMetadataByteIdenticalAcrossFreshOutputs": {
+        "manifest": true,
+        "sbom": true,
+        "secretScan": true
+      },
+      "freshConsumerRecordsByteIdentical": false,
+      "freshConsumerDifference": {
+        "onlyField": "install.lockSha256",
+        "regularLockSha256": "e070b98148b71cea3c5b23d5e4c2c03f9b1404413253a3659d03130e808dd8a7",
+        "offlineLockSha256": "ea6b3efe88788f91f923fb7ee5b831b3685dc890f99dce6231d994bb9fc81e65",
+        "reason": "npm package-lock records the deliberately different temporary output path; installed package identities, integrities, exports, module execution and network-denied probes were equal."
+      },
+      "freshOutputHashes": {
+        "manifest": "8f107ca6cd11658387cba7b1199bb28396e69023d6a8cc3c2c82279a604685fc",
+        "sbom": "9f3da528ee879b4979510db33981133415744f440056d7b467ac31a749f38dfa",
+        "secretScan": "9a4a6d24a301d95fd22cf452a4f252ef615fc6f95c29e6a145e6f25dc49261dd",
+        "regularConsumer": "a8c86d768aa064bd5f679196440d7dad6827283f6b8b5196b26f0f07418f6b1e",
+        "offlineConsumer": "8490df6dd60e1b4b9c4874df85763599d8be703f6ef789c0e45559a487b14b6f"
+      }
+    },
+    "tarballs": {
+      "result": "pass",
+      "packages": 6,
+      "packedFiles": 1034,
+      "duplicatePaths": 0,
+      "unsafePaths": 0,
+      "nonAllowlistedPaths": 0,
+      "symlinks": 0,
+      "workspaceProtocols": 0,
+      "exportTargets": 221,
+      "strictExportSpecifiers": 130,
+      "internalDependenciesExactAndPublicationOrdered": true,
+      "canonicalLicenseAndNoticeInEveryTarball": true,
+      "privateTestkitExcluded": true,
+      "exactBytesSha256AndSha512Integrity": true
+    },
+    "offlineConsumer": {
+      "result": "pass",
+      "npmInstallOffline": true,
+      "publicPackageIdentitiesAndIntegritiesExact": true,
+      "strictExportSpecifiersTypeChecked": 130,
+      "packageModulesLoaded": 7,
+      "coreParserExecuted": true,
+      "auditExecuted": true,
+      "runtimeNetworkDenied": true,
+      "networkBlockerMethodsExercised": 10,
+      "auditNetworkAttempts": 0,
+      "deniedMethods": [
+        "fetch",
+        "http.request",
+        "http.get",
+        "https.request",
+        "https.get",
+        "net.connect",
+        "net.createConnection",
+        "net.Socket.connect",
+        "dns.lookup",
+        "dns.resolve"
+      ]
+    },
+    "sbom": {
+      "result": "pass",
+      "format": "CycloneDX 1.5",
+      "components": 63,
+      "internalComponents": 6,
+      "externalComponents": 57,
+      "dependencyRecords": 63,
+      "dependencyEdges": 95,
+      "uniqueBomRefs": true,
+      "everyDependencyRefAndTargetKnown": true,
+      "everyComponentReachableFromPublicPackages": true,
+      "externalHashesAndLicensesMatchFrozenWorkspaceLock": true
+    },
+    "secretScan": {
+      "result": "pass",
+      "rules": 6,
+      "retainedCandidate": {
+        "trackedFiles": 2586,
+        "trackedBytes": 181647371,
+        "expandedArchives": 31,
+        "expandedEntries": 6218,
+        "expandedBytes": 138310162,
+        "packedFiles": 1034,
+        "packedBytes": 6367561,
+        "findings": 0
+      },
+      "freshCurrentMain": {
+        "trackedFiles": 2612,
+        "trackedBytes": 183739432,
+        "expandedArchives": 43,
+        "expandedEntries": 8286,
+        "expandedBytes": 151045932,
+        "packedFiles": 1034,
+        "packedBytes": 6367561,
+        "findings": 0
+      }
+    },
+    "sourceHygiene": {
+      "candidateAndFreshTextScansContainNoSdkPrefixedIdentities": true,
+      "candidateAndFreshTextScansContainNoRegistryEvidence": true,
+      "candidateAndFreshTextScansContainNoStaleTimestamp": true,
+      "staleScratchUsed": false,
+      "staleScratchFilesCopiedOrCited": 0,
+      "registryChecksPerformed": false,
+      "registryPublicationEvidenceInScope": false
+    },
+    "mutations": {
+      "productSource": false,
+      "taskState": false,
+      "candidateArtifacts": false,
+      "npm": false,
+      "github": false,
+      "gitops": false,
+      "production": false,
+      "reviewPacketOnly": true
+    }
+  },
+  "knownDifferences": [
+    {
+      "id": "source-revision-binding",
+      "disposition": "documented-and-nonblocking",
+      "detail": "The retained author candidate binds to 1be6be5, the clean source parent of current main 7e7ce06. The one-commit delta adds only the retained T33 evidence packet; no product source changed. A fresh current-main rebuild binds metadata to 7e7ce06 and produces byte-identical six tarballs. A publication candidate must still be regenerated on the exact clean publication HEAD before any npm write."
+    },
+    {
+      "id": "consumer-lock-path",
+      "disposition": "documented-and-nonblocking",
+      "detail": "Consumer lock hashes differ between deliberate temporary output directories. The difference is confined to the path-bearing package-lock hash; package identities, integrities, exports, runtime execution and ten network-denied probes match."
+    },
+    {
+      "id": "secret-scan-source-scope",
+      "disposition": "documented-and-nonblocking",
+      "detail": "The fresh current-main source scan counts more tracked archives because current main contains the retained T33 evidence packet. Both retained and fresh scans found zero secret-pattern findings; the packed-artifact scan remains 1034 files and 6367561 bytes in both."
+    }
+  ],
+  "findings": {
+    "p0": [],
+    "p1": [],
+    "p2": []
+  },
+  "outOfScope": [
+    "npm identity/history/hold/authentication, publication, provenance, dist-tag promotion, source release and deployment",
+    "registry and public-visibility reads; T42 owns current authenticated registry evidence",
+    "manual assistive-technology certification, native-host testing and universal pixel/performance certification"
+  ],
+  "limitations": [
+    "This approves the local exact six-package candidate and its deterministic offline compatibility evidence only; it is not approval to publish or deploy.",
+    "Fresh output directories are ignored local build products; their hashes and command outcomes are recorded here, while the retained candidate packet remains the repository evidence under review.",
+    "The documented source-revision and package-lock path differences must be preserved when preparing a future publication candidate; neither difference changes the verified package bytes."
+  ],
+  "verdict": {
+    "localCandidate": "approve",
+    "publication": "out-of-scope",
+    "releaseApprovalIssued": false,
+    "summary": "The retained direct-name 0.1.0-rc.1 candidate passes all 24 retained checksum entries, exact identity/dependency/license/archive/export checks, frozen SBOM and secret-scan checks, and an independent current-main rebuild. The explicitly offline installed consumer type-checks 130 exports, loads seven package modules, executes core/audit paths, and records zero audit egress while denying ten network methods. No P0, P1 or P2 finding remains."
+  }
+}
