@@ -1391,9 +1391,13 @@
         {
           "path": "harness/evidence/t32/be201bf-final-audit/manifest.json",
           "sha256": "5f91220d80bdff72b1fd5dadb4249d8e855c1af6f46e36f54d9da9d61c993068"
+        },
+        {
+          "path": "harness/evidence/t32/be201bf-reference-closure/manifest.json",
+          "sha256": "834b58643cf4f6aa429016e99f06d9879e7b80468cfae995f5548099f84b492b"
         }
       ],
-      "notes": "Accepted on exact final product source a245c8f/digest be201b after independent architecture, DX and usability review with no P0/P1 findings. Fresh boundary/contract/agent/meaning/scenario/query/protocol/security/site checks, installed-package onboarding journeys, current performance gates and a six-package local candidate validate the scoped implementation. T29 covers all 71 components; T30 final-source performance evidence is separately reviewed; T31/T40 retain explicit 0/3 live-answer correctness as informational; S65-S67 prove code-only and canonical meaning parity. Limited planner headroom remains a P2. Manual AT, native WebMCP, lower-powered/cross-browser/field performance, model generalization, publication and deployment are not claimed and remain separate later/deferred gates.",
+      "notes": "Accepted on exact final product source a245c8f/digest be201b after independent architecture, DX and usability review with no P0/P1 findings. Fresh boundary/contract/agent/meaning/scenario/query/protocol/security/site checks, installed-package onboarding journeys, current performance gates and a six-package local candidate validate the scoped implementation. A supplemental evidence-only closure verifies all current T29/T30 author and reviewer hashes and identifies historical references explicitly. T31/T40 retain explicit 0/3 live-answer correctness as informational; S65-S67 prove code-only and canonical meaning parity. Limited planner headroom remains a P2. Manual AT, native WebMCP, lower-powered/cross-browser/field performance, model generalization, publication and deployment are not claimed and remain separate later/deferred gates.",
       "review": {
         "status": "approved",
         "author": "T32 implementation and evidence authors",
@@ -1432,20 +1436,28 @@
         {
           "path": "harness/evidence/t33/d7b48da-rc1-review/manifest.json",
           "sha256": "3ccd42da1c85ad8b397781c7d7ca5b2bdcaa623a191a873cd014bcaa7562ad7a"
+        },
+        {
+          "path": "harness/evidence/t33/a245c8f-final-candidate/manifest.json",
+          "sha256": "8579fd4abc576af85cedae88f8e5a51e2d4ab154ff4943e5dcae3cb63847bb40"
+        },
+        {
+          "path": "harness/evidence/t33/a245c8f-final-candidate-review/manifest.json",
+          "sha256": "13bc6ea0e11618bd20f4eb438d45f0ac929bd76c8f7a83f4c67e2c1e723adcf1"
         }
       ],
-      "notes": "Accepted on exact clean source d7b48da/digest 05e599 after independent review of the six public Apache-2.0 0.1.0-rc.1 tarballs. Exact bytes/integrities, allowlisted contents, declarations and the installed styles export, dependency order, frozen-lock SBOM, full source/archive/packed-artifact secret scans, 130 strict export checks and a fresh offline consumer pass. Authenticated owner-scope queries found all six package identities and exact RC versions E404/not visible; this proves current non-visibility only, not historical non-use or guaranteed first-publication acceptance. @aeliqo/testkit remains private and excluded. No publication, promotion, GitHub or production mutation occurred.",
+      "notes": "Accepted on exact final product source a245c8f/digest be201b after independent review of the six public Apache-2.0 0.1.0-rc.1 tarballs. An offline rebuild reproduced all six tarballs, the candidate manifest, SBOM and secret-scan bytes exactly; 1,034 allowlisted entries, canonical licenses/notices, exact dependency order, 130 strict exports, 63 SBOM components, zero secret findings and a fresh network-denied consumer pass. The reviewer recorded an intervening npm E401, which the current independently reviewed T42 authentication refresh closes: actor arconath, aeliqo owner and auth-and-writes 2FA. All six identities and exact RC versions remain E404/currently unseen; historical non-use and first-publication acceptance remain unproven until publish. @aeliqo/testkit remains private and excluded. A final publishing candidate must be rebuilt on the exact clean publication HEAD and compared to these reviewed package bytes.",
       "review": {
         "status": "approved",
-        "author": "release candidate implementation authors",
-        "reviewer": "/root/close_ready_scenarios",
+        "author": "root release orchestrator plus release candidate implementation authors",
+        "reviewer": "/root/fix_remaining_narrow_overflow",
         "artifacts": [
           {
-            "path": "harness/evidence/t33/d7b48da-rc1-review/manifest.json",
-            "sha256": "3ccd42da1c85ad8b397781c7d7ca5b2bdcaa623a191a873cd014bcaa7562ad7a"
+            "path": "harness/evidence/t33/a245c8f-final-candidate-review/independent-review.json",
+            "sha256": "ab509f539386595adbe971e8e1dd94f9ae001a6811d1700d0d0e27c0b76f67e4"
           }
         ],
-        "scope": "Approves the exact d7b48da six-package 0.1.0-rc.1 candidate for T33 acceptance with no P0/P1 finding; excludes npm publication/acceptance, dist-tag promotion, source release and deployment."
+        "scope": "Approves the exact final-source six-package 0.1.0-rc.1 local candidate and byte-for-byte reproducibility for T33 acceptance with no P0/P1 finding; excludes npm first-publication acceptance, provenance, dist-tag promotion, source release and deployment."
       }
     },
     {
@@ -1473,20 +1485,28 @@
         {
           "path": "harness/evidence/t34/63f6498-local-rollout/independent-review.json",
           "sha256": "6f08cc330aa9722c6d9c1a9d675f0ce2906eeb817d3ea85ab0a5a22c17681444"
+        },
+        {
+          "path": "harness/evidence/t34/a245c8f-final-preflight/manifest.json",
+          "sha256": "b4e62cec794b4bd295c53fc510b58ac48aac202c6b2bf5f9bdfcbfa66928a58f"
+        },
+        {
+          "path": "harness/evidence/t34/a245c8f-final-preflight-review/manifest.json",
+          "sha256": "b2b0ea9d9462ea853407ec917aeac9f94dce9e602c75bf6cd93c3d06194d30a2"
         }
       ],
-      "notes": "Accepted as a local pre-release rehearsal on exact source 63f6498/digest 05e599 and independently approved from clean review base a5df858. The linux/amd64 candidate c205b92d, exact desired image 13564b4a and previously executed rollback e758c1f6 passed immutable identity and current-to-candidate-to-rollback-to-current loopback checks; current was restored byte-identically. Raw round-robin produced 20 cross-generation asset 404s, so promotion as-is is unsafe. A rendered Traefik Secure/HttpOnly/SameSite=Lax sticky-cookie Service delta kept HTML and all observed immediate/dynamic assets on one healthy generation across six Chromium canary/rollback/restore sessions, with explicit reload recovery and late-asset failover limits. The active UpCloud freeze correctly rejected the desired-state delta; reversal was byte-identical and clean, while a docs-only candidate record was allowed. This closes only the ready-stage rehearsal. Production promotion remains conditional on freeze release, an independently verified registry image, reviewed affinity application, and live Traefik/Kubernetes canary and rollback verification; no npm, GitHub, GitOps, registry or production mutation occurred.",
+      "notes": "Accepted as a final-source local pre-release rehearsal on exact source a245c8f/digest be201b. The linux/amd64 local candidate image 30f0f4a, exact desired image 13564b4a and previously executed rollback e758c1f6 passed current-to-candidate-to-rollback-to-current loopback checks; current was restored byte-identically. Raw round-robin retained 20 cross-generation asset 404s and the browser probe retained two, so unmitigated promotion remains unsafe. The merged/live Traefik Secure/HttpOnly/SameSite=Lax affinity configuration kept healthy sessions pinned and exercised unhealthy-backend reassignment/reload recovery, with three late-departed-generation asset 404s retained as a limit. The UpCloud freeze is officially released and prospective GitOps renders pass. Independent review found no P0/P1 and retained three P2 evidence-precision/stale-reference findings. This closes only the ready-stage rehearsal; production promotion still requires an immutable registry candidate image, reviewed GitOps digest update and live Flux/Kubernetes/Traefik canary and rollback verification.",
       "review": {
         "status": "approved",
-        "author": "/root/fix_remaining_narrow_overflow",
-        "reviewer": "/root/close_ready_scenarios",
+        "author": "/root/fix_hydration_geometry",
+        "reviewer": "/root/investigate_hydration_shift",
         "artifacts": [
           {
-            "path": "harness/evidence/t34/63f6498-local-rollout/independent-review.json",
-            "sha256": "6f08cc330aa9722c6d9c1a9d675f0ce2906eeb817d3ea85ab0a5a22c17681444"
+            "path": "harness/evidence/t34/a245c8f-final-preflight-review/independent-review.json",
+            "sha256": "cb50bdafa0f3a3d8db291c1b84ec3a192671f0bc82bba626433713c77cd7f5cc"
           }
         ],
-        "scope": "Approves the exact local rollout/rollback and affinity mitigation as a ready-stage rehearsal with no P0/P1 finding; preserves the late-asset, historical rollback-drain and non-live-proxy P2 limits and excludes production promotion until the freeze and live conditions are satisfied."
+        "scope": "Approves the exact final-source local rollout/rollback, skew and affinity evidence as a ready-stage rehearsal with no P0/P1 finding; preserves late-asset, historical rollback-drain, evidence-normalization/stale-reference and non-live-proxy limits and excludes production promotion until immutable image, GitOps and live canary conditions are satisfied."
       }
     },
     {
@@ -1511,20 +1531,28 @@
         {
           "path": "harness/evidence/t35/05e5990-exact-candidate/manifest.json",
           "sha256": "068edde6ff3a1d3164ef1d1369b0d68b20d852cbfb1994a02b5fa876e86d8279"
+        },
+        {
+          "path": "harness/evidence/t35/be201bf-final-governance-closure/manifest.json",
+          "sha256": "443a246314ed9a34741a74942ec3219a7748e5ba017e137c9c7749f4d153ce89"
+        },
+        {
+          "path": "harness/evidence/t35/be201bf-final-governance-closure-review/manifest.json",
+          "sha256": "5210b8a4a6bc12cee4d1ba8f4c66ec19efdfe5520b949db6ac80ecb3f8d3c1fd"
         }
       ],
-      "notes": "Accepted on exact source d7b48da/digest 05e599 after independent OSS governance and commercial-boundary review with no P0/P1/P2 findings. The six exact 0.1.0-rc.1 archives carry canonical Apache-2.0 LICENSE/NOTICE, exact internal dependencies and 130 verified public exports; an external exact-integrity consumer executed sampled local core/audit/web/protocol/DevTools/React SSR paths with network blocked and zero pre-control attempts. Complete OSS/local capabilities remain outside paid entitlements; optional HTTP/MCP/BYOK effects are host-authorized. Hosted collaboration/governance/support remain explicitly future hypotheses with no service, sales, demand, price, SLA, revenue or PMF claim. Registry publication, source release, deployment, provenance, stable promotion, manual AT and general model quality remain separate and unclaimed.",
+      "notes": "Accepted on exact final product source a245c8f/digest be201b after independent OSS governance and commercial-boundary review with no P0/P1/P2 findings. All 13 governance inputs remain byte-identical to the approved baseline, while the current independently reviewed six-package 0.1.0-rc.1 candidate carries canonical Apache-2.0 LICENSE/NOTICE, exact internal dependencies, 130 verified exports, a network-denied consumer, 63-component SBOM and zero secret findings. @aeliqo/testkit remains private Apache-2.0 source and is excluded from public tarballs. Complete OSS/local capabilities remain outside paid entitlements; optional HTTP/MCP/BYOK effects are host-authorized. Hosted collaboration/governance/support remain future hypotheses with no service, sales, demand, price, SLA, revenue or PMF claim. Publication, provenance, promotion, deployment, manual AT and general model quality remain separate and unclaimed.",
       "review": {
         "status": "approved",
-        "author": "T35 governance and bounded local-audit implementation authors",
-        "reviewer": "/root/fix_t29_visual_blockers",
+        "author": "root release orchestrator plus T35 governance authors",
+        "reviewer": "/root/fix_hydration_geometry",
         "artifacts": [
           {
-            "path": "harness/evidence/t35/05e5990-exact-candidate/independent-review.json",
-            "sha256": "dc7046d7019e90e0e038157281fc4ce2f3bccd1a54713be379e301dad00c4da4"
+            "path": "harness/evidence/t35/be201bf-final-governance-closure-review/independent-review.json",
+            "sha256": "209a83719162dee5a174c8ebef13d26680788dc7a6775b39f670f37f689de392"
           }
         ],
-        "scope": "Approves T35 OSS governance, commercial truthfulness and sampled offline local-use acceptance for source d7b48da/digest 05e599 and the exact six-package 0.1.0-rc.1 candidate; excludes publication, provenance, deployment, promotion, commercial launch, manual AT and general model quality."
+        "scope": "Approves T35 OSS governance, commercial truthfulness and sampled offline local-use acceptance for final source a245c8f/digest be201b and the exact current six-package 0.1.0-rc.1 candidate; excludes publication, provenance, deployment, promotion, commercial launch, manual AT and general model quality."
       }
     },
     {
@@ -1789,21 +1817,29 @@
         {
           "path": "harness/evidence/t42/76490dd-authenticated/manifest.json",
           "sha256": "a832ff2f78a4c585124af3db231157efc98335f992386e9707ed157f96b3ffa0"
+        },
+        {
+          "path": "harness/evidence/t42/20260910-reauthenticated/manifest.json",
+          "sha256": "f55e1b2c8937e254babb8c8addbc561e2c39712a0a8ea754a3028789442dd788"
+        },
+        {
+          "path": "harness/evidence/t42/20260910-reauthenticated-review/manifest.json",
+          "sha256": "2cd160cf7c52ac6f7bb2f28c68e57300aea10bdfce84f623eba930f318ec5682"
         }
       ],
       "review": {
         "status": "approved",
         "author": "root release integration and prior release-control authors",
-        "reviewer": "close_ready_scenarios independent release reviewer",
+        "reviewer": "/root/fix_hydration_geometry",
         "artifacts": [
           {
-            "path": "harness/evidence/t42/76490dd-authenticated/independent-review.json",
-            "sha256": "813485149acdde931ad091a209b4578390d554469e3cf05f886c1be8df2954a2"
+            "path": "harness/evidence/t42/20260910-reauthenticated-review/independent-review.json",
+            "sha256": "08e5dcf6401456bacec540ea38d93085a092766cc8184d751a2ceb4ccea5eaed"
           }
         ],
         "scope": "Approves authenticated namespace authority, actual current registry observations, exact reset migration and fail-closed release controls for the prepublication ready stage; excludes any claim that npm will accept first publication and excludes RC/stable publication, tagging, source release and deployment."
       },
-      "notes": "Accepted at exact source 76490dd/digest f51e351 after independent read-only review. Pinned Node24.20/npm11.19 authenticated as arconath; npm reports organization-owner authority for aeliqo and auth-and-writes 2FA. All six @aeliqo/sdk-* names and exact 0.1.0/0.1.0-rc.1 queries are currently E404/not visible; legacy @aeliqo/core and @aeliqo/react retain visible 0.2.0/latest history. Release controls preserve exact 0.1.0, reject collision or byte mismatch, prohibit unpublish as reset recovery, restrict first RC to interactive owner bootstrap on next, require all six packages exactly once, stage stable on rewrite, and preserve rollback plus explicit cleanup allowlisting. This closes the ready-stage preflight and rule assertion only: historical non-use and npm first-publication acceptance remain unknown until an authorized 0.1.0-rc.1 publish succeeds. No registry, GitHub or production mutation occurred."
+      "notes": "Refreshed and independently accepted on final candidate digest be201b using pinned Node24.20/npm11.19. The reauthenticated actor is arconath, npm reports organization-owner authority for aeliqo and auth-and-writes 2FA, and all six @aeliqo/sdk-* identities plus exact 0.1.0-rc.1 queries remain E404/currently not visible. Legacy @aeliqo/core and @aeliqo/react retain visible 0.2.0/latest history. Release controls preserve exact 0.1.0, reject collision or byte mismatch, prohibit unpublish as reset recovery, restrict first RC to interactive owner bootstrap on next, require all six packages exactly once, stage stable on rewrite, and preserve rollback plus explicit cleanup allowlisting. Historical non-use and npm first-publication acceptance remain unknown until the authorized 0.1.0-rc.1 publish succeeds. No registry, GitHub or production mutation occurred during this read-only refresh."
     }
   ]
 }

@@ -523,8 +523,12 @@
       "status": "done",
       "evidence": [
         {
-          "path": "harness/evidence/t34/63f6498-local-rollout/manifest.json",
-          "sha256": "1ab4a4b6e81f7303ac9a54468b7f2909231aa942cb89b84d7ec63aa428b7ca79"
+          "path": "harness/evidence/t34/a245c8f-final-preflight/manifest.json",
+          "sha256": "b4e62cec794b4bd295c53fc510b58ac48aac202c6b2bf5f9bdfcbfa66928a58f"
+        },
+        {
+          "path": "harness/evidence/t34/a245c8f-final-preflight-review/manifest.json",
+          "sha256": "b2b0ea9d9462ea853407ec917aeac9f94dce9e602c75bf6cd93c3d06194d30a2"
         }
       ],
       "nativeHostRequired": false,
