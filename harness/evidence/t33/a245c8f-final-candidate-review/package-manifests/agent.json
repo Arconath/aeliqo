@@ -1,0 +1,78 @@
+{
+  "name": "@aeliqo/sdk-agent",
+  "version": "0.1.0-rc.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Arconath/aeliqo.git",
+    "directory": "packages/agent"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./protocol": {
+      "types": "./dist/protocol/index.d.ts",
+      "import": "./dist/protocol/index.js"
+    },
+    "./model": {
+      "types": "./dist/model/index.d.ts",
+      "import": "./dist/model/index.js"
+    },
+    "./model/openai": {
+      "types": "./dist/model/openai.d.ts",
+      "import": "./dist/model/openai.js"
+    },
+    "./model/responses": {
+      "types": "./dist/model/responses.d.ts",
+      "import": "./dist/model/responses.js"
+    },
+    "./webmcp": {
+      "types": "./dist/webmcp/index.d.ts",
+      "import": "./dist/webmcp/index.js"
+    },
+    "./mcp": {
+      "types": "./dist/mcp/index.d.ts",
+      "import": "./dist/mcp/index.js"
+    }
+  },
+  "dependencies": {
+    "@aeliqo/sdk-core": "0.1.0-rc.1",
+    "@aeliqo/sdk-runtime": "0.1.0-rc.1"
+  },
+  "peerDependencies": {
+    "@modelcontextprotocol/server": "2.0.0",
+    "@modelcontextprotocol/node": "2.0.0",
+    "openai": "7.10.0",
+    "@modelcontextprotocol/client": "2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@modelcontextprotocol/server": {
+      "optional": true
+    },
+    "@modelcontextprotocol/node": {
+      "optional": true
+    },
+    "openai": {
+      "optional": true
+    },
+    "@modelcontextprotocol/client": {
+      "optional": true
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  }
+}

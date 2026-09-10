@@ -1,0 +1,131 @@
+{
+  "schema": "aeliqo.t33.final-candidate-independent-review.v1",
+  "task": "T33",
+  "status": "local-candidate-approved-registry-auth-blocked",
+  "generatedAt": "2026-09-10T15:17:18Z",
+  "reviewer": "/root/fix_remaining_narrow_overflow",
+  "source": {
+    "buildRevision": "763f29a79e93f8808eccdc810b86622837245acf",
+    "buildTree": "9247e5b1ee663a6938a6d59c851fe711f88ec1ca",
+    "productSourceRevision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+    "candidateDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+    "trackedTreeClean": true
+  },
+  "scope": "Evidence-only independent review of the exact six-package local 0.1.0-rc.1 candidate. No package source, task state, npm package, dist-tag, GitHub state, GitOps state or production state was modified.",
+  "checks": [
+    {
+      "command": "pnpm install --offline --frozen-lockfile",
+      "status": "pass",
+      "exitCode": 0,
+      "projects": 15,
+      "reused": 145,
+      "downloaded": 0
+    },
+    {
+      "command": "pnpm test:release-tooling",
+      "status": "pass",
+      "exitCode": 0,
+      "tests": 19
+    },
+    {
+      "command": "npm_config_offline=true node scripts/release/candidate.mjs --version 0.1.0-rc.1 artifacts/t33-final-review-rebuild",
+      "status": "pass",
+      "exitCode": 0,
+      "tarballs": 6,
+      "exports": 130,
+      "sbomComponents": 63,
+      "secretFindings": 0
+    },
+    {
+      "command": "independent tarball audit",
+      "status": "pass",
+      "packages": 6,
+      "packedFiles": 1034,
+      "exportTargets": 221,
+      "exportSpecifiers": 130
+    },
+    {
+      "command": "fresh npm --offline installed consumer and strict export/runtime audit",
+      "status": "pass",
+      "exitCode": 0,
+      "packagesAdded": 66,
+      "exports": 130,
+      "runtimeNetworkAttempts": 0
+    },
+    {
+      "command": "independent SBOM graph audit",
+      "status": "pass",
+      "components": 63,
+      "dependencyRecords": 63,
+      "dependencyEdges": 95
+    },
+    {
+      "command": "fresh source and packed-artifact secret scan plus independent count/hash checks",
+      "status": "pass",
+      "trackedFiles": 2210,
+      "packedFiles": 1034,
+      "findings": 0
+    },
+    {
+      "command": "public unauthenticated registry identity and exact-version reads",
+      "status": "current-non-visibility",
+      "packageIdentity404": 6,
+      "exactVersion404": 6,
+      "mutations": false
+    },
+    {
+      "command": "npm whoami --registry=https://registry.npmjs.org/",
+      "status": "blocked-E401",
+      "exitCode": 1
+    },
+    {
+      "command": "npm access list packages @aeliqo --json --registry=https://registry.npmjs.org/",
+      "status": "blocked-E401",
+      "exitCode": 1
+    }
+  ],
+  "candidateIntegrity": {
+    "authorRecordPath": "harness/evidence/t33/a245c8f-final-candidate/manifest.json",
+    "authorRecordSha256": "8579fd4abc576af85cedae88f8e5a51e2d4ab154ff4943e5dcae3cb63847bb40",
+    "candidateManifestSha256": "eeaf806a32aa892e5b7cac6146f395d8e0e12f165bdf4cef2b4b4b3cb5fb899f",
+    "candidateConsumerSha256": "c906a2d4776e993c66cc5228c38852ce080ed3ca01893417917109f4109acacb",
+    "candidateSbomSha256": "bc8e624695dda17a11c2cccbb527b178876bbdbef73392175c9933d8823484ff",
+    "candidateSecretScanSha256": "878cd1daf10bd108f61582c1ea20ded575d54b8eabae433a44771086a8025265",
+    "sixTarballsByteIdenticalToFreshOfflineRebuild": true,
+    "manifestByteIdenticalToFreshOfflineRebuild": true,
+    "sbomByteIdenticalToFreshOfflineRebuild": true,
+    "secretScanByteIdenticalToFreshOfflineRebuild": true,
+    "candidateUnchangedDuringReview": true
+  },
+  "principalArtifacts": [
+    {"path": "independent-review.json", "sha256": "ab509f539386595adbe971e8e1dd94f9ae001a6811d1700d0d0e27c0b76f67e4"},
+    {"path": "raw/tarball-audit.json", "sha256": "cfe3b56c5e1904bcd58f306e293dda53c1ae85a0a68edea974ce77499d2c3bb3"},
+    {"path": "raw/offline-consumer-audit.json", "sha256": "bccfe8e5700256b87739acc3ee5cb22c98ce0d0aa2296d1e26040a83584150a2"},
+    {"path": "raw/sbom-audit.json", "sha256": "085a95fcae4b09ab403a49bcc402a2fb56b0369bded927f9dacd421a5188e788"},
+    {"path": "raw/secret-scan-audit.json", "sha256": "fab4c9e113d6a6458618d65a3411f45213eff72fc417e0a7de15ef8923ea814d"},
+    {"path": "raw/rebuild-comparison.json", "sha256": "86f36cc32eed245273b598590744018276a97c363b5e2d5a518bc0176ba6dd00"},
+    {"path": "raw/registry-audit.json", "sha256": "92bb510c75a5cd12a96e9a0878c5705938c1d84c639e7058a0dfab896a885ee7"},
+    {"path": "raw/fresh-offline-package-lock.json", "sha256": "1208eb6b3c207b9e1bbed443404cdabe1e40c25bfbb4301540fa1cb3f37e64df"},
+    {"path": "raw/original-manifest.json", "sha256": "eeaf806a32aa892e5b7cac6146f395d8e0e12f165bdf4cef2b4b4b3cb5fb899f"},
+    {"path": "raw/original-sbom.cdx.json", "sha256": "bc8e624695dda17a11c2cccbb527b178876bbdbef73392175c9933d8823484ff"},
+    {"path": "raw/original-secret-scan.json", "sha256": "878cd1daf10bd108f61582c1ea20ded575d54b8eabae433a44771086a8025265"}
+  ],
+  "artifactHashIndex": {
+    "path": "SHA256SUMS",
+    "entries": 49,
+    "sha256": "e1734d4b345e132693895be1af4fbd71974fa8ff555d57baff546e5559adb054"
+  },
+  "blockers": [
+    {
+      "id": "npm-auth-e401",
+      "scope": "authenticated npm authority and publication readiness",
+      "detail": "The current npm credential is rejected. Owner identity, @aeliqo namespace authority, 2FA mode, authenticated history and publication acceptance remain unverified. Public HTTP 404 responses prove current non-visibility only."
+    }
+  ],
+  "verdict": {
+    "localCandidate": "approved",
+    "authenticatedRegistryReadiness": "blocked",
+    "published": false,
+    "deployed": false
+  }
+}

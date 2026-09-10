@@ -1,0 +1,79 @@
+{
+  "checkedAt": "2026-09-10T14:53:45.503Z",
+  "registry": "https://registry.npmjs.org/",
+  "authentication": "not-sent-public-read",
+  "rows": [
+    {
+      "name": "@aeliqo/sdk-core",
+      "identity": {
+        "status": 404,
+        "visible": false
+      },
+      "exactVersion": {
+        "version": "0.1.0-rc.1",
+        "status": 404,
+        "visible": false
+      }
+    },
+    {
+      "name": "@aeliqo/sdk-runtime",
+      "identity": {
+        "status": 404,
+        "visible": false
+      },
+      "exactVersion": {
+        "version": "0.1.0-rc.1",
+        "status": 404,
+        "visible": false
+      }
+    },
+    {
+      "name": "@aeliqo/sdk-web",
+      "identity": {
+        "status": 404,
+        "visible": false
+      },
+      "exactVersion": {
+        "version": "0.1.0-rc.1",
+        "status": 404,
+        "visible": false
+      }
+    },
+    {
+      "name": "@aeliqo/sdk-agent",
+      "identity": {
+        "status": 404,
+        "visible": false
+      },
+      "exactVersion": {
+        "version": "0.1.0-rc.1",
+        "status": 404,
+        "visible": false
+      }
+    },
+    {
+      "name": "@aeliqo/sdk-devtools",
+      "identity": {
+        "status": 404,
+        "visible": false
+      },
+      "exactVersion": {
+        "version": "0.1.0-rc.1",
+        "status": 404,
+        "visible": false
+      }
+    },
+    {
+      "name": "@aeliqo/sdk-react",
+      "identity": {
+        "status": 404,
+        "visible": false
+      },
+      "exactVersion": {
+        "version": "0.1.0-rc.1",
+        "status": 404,
+        "visible": false
+      }
+    }
+  ]
+}

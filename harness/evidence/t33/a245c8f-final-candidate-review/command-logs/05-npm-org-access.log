@@ -1,0 +1,12 @@
+npm error code E401
+npm error Unable to authenticate, your authentication token seems to be invalid.
+npm error To correct this please try logging in again with:
+npm error   npm login
+{
+  "error": {
+    "code": "E401",
+    "summary": "Unable to authenticate, your authentication token seems to be invalid.",
+    "detail": "To correct this please try logging in again with:\n  npm login"
+  }
+}
+npm error A complete log of this run can be found in: /Users/nino/.npm/_logs/2026-09-10T14_54_02_591Z-debug-0.log

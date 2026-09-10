@@ -1,0 +1,40 @@
+{
+  "name": "@aeliqo/sdk-core",
+  "version": "0.1.0-rc.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Arconath/aeliqo.git",
+    "directory": "packages/core"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "description": "Pure Aeliqo semantic UI contracts and compilation",
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "schemas",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./schema": {
+      "types": "./dist/contracts/schemas.d.ts",
+      "import": "./dist/contracts/schemas.js"
+    },
+    "./schemas/*": "./schemas/*"
+  },
+  "dependencies": {
+    "zod": "4.5.4"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/generate-schemas.mjs"
+  }
+}

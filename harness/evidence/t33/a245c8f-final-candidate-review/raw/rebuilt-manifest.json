@@ -1,0 +1,63 @@
+{
+  "schema": "aeliqo.release-candidate.v1",
+  "sourceRevision": "763f29a79e93f8808eccdc810b86622837245acf",
+  "version": "0.1.0-rc.1",
+  "publishOrder": [
+    "@aeliqo/sdk-core",
+    "@aeliqo/sdk-runtime",
+    "@aeliqo/sdk-web",
+    "@aeliqo/sdk-agent",
+    "@aeliqo/sdk-devtools",
+    "@aeliqo/sdk-react"
+  ],
+  "packages": [
+    {
+      "name": "@aeliqo/sdk-core",
+      "version": "0.1.0-rc.1",
+      "file": "aeliqo-sdk-core-0.1.0-rc.1.tgz",
+      "sha256": "6d33115ea2ef59550d9558f9933bb05c896224dc2b2a8f1aef10def782864d24",
+      "integrity": "sha512-ePAoEYZCyWxxjobNfSsG3EpOffZaE8J+1VxJ+DY1jJkiK8fOTZ7exyEeLy9TwZ+mSyk4GyGkDLX86ksiOF9kdQ==",
+      "bytes": 183756
+    },
+    {
+      "name": "@aeliqo/sdk-runtime",
+      "version": "0.1.0-rc.1",
+      "file": "aeliqo-sdk-runtime-0.1.0-rc.1.tgz",
+      "sha256": "e42c171c87134f643a3a3c832df0b6d955f54698427068564a4be56d55ebc71f",
+      "integrity": "sha512-KR0rcpXTbnV+V2675z3mAy0mwwulLlc96kJTzyh2x+oh3g7QHH5JHI/hp78+wyH+4J12r7ai00CKye50ShxHpQ==",
+      "bytes": 228551
+    },
+    {
+      "name": "@aeliqo/sdk-web",
+      "version": "0.1.0-rc.1",
+      "file": "aeliqo-sdk-web-0.1.0-rc.1.tgz",
+      "sha256": "134d55ad79de939f70a8ce8baa9f9795e209926917d421707ce5fd6e4f8dcf66",
+      "integrity": "sha512-EbcqNsElLdx1d5jvemxVNMltR3vnMPl83iWMU9nVMCoT1QaNfGU+/N1lsSVZ8wG9tEpDoJeRP59cJPuqT55Www==",
+      "bytes": 408000
+    },
+    {
+      "name": "@aeliqo/sdk-agent",
+      "version": "0.1.0-rc.1",
+      "file": "aeliqo-sdk-agent-0.1.0-rc.1.tgz",
+      "sha256": "5e7a0501c74ebc61271854381c849c1c59489175af4cfcc27558cdf1214659e7",
+      "integrity": "sha512-StYjUYt/ld8NzWGVK5oSfTc1B6V2FK5KoWXB2W3QBK80WTfMMMXBgjEQnepgUTBgTDh2obO85Cv+2aB5NJaq9g==",
+      "bytes": 125813
+    },
+    {
+      "name": "@aeliqo/sdk-devtools",
+      "version": "0.1.0-rc.1",
+      "file": "aeliqo-sdk-devtools-0.1.0-rc.1.tgz",
+      "sha256": "9aa4e83a33824fea2b5975ad4f001b8a8c0268c39d2e447c39ba8a30edf7ba4c",
+      "integrity": "sha512-toS2M3us61VIn4jJT1gHxxkjto9vukCIqrJdzemF/pifnVqF9Imevhm8ziM5sPNljqy0rBIRG6wnvy0pS7wi9Q==",
+      "bytes": 21173
+    },
+    {
+      "name": "@aeliqo/sdk-react",
+      "version": "0.1.0-rc.1",
+      "file": "aeliqo-sdk-react-0.1.0-rc.1.tgz",
+      "sha256": "cfb8ae8bf6466188b4aaaddcf6e7f8fdef8a6e85414ec8d118bdda3d8a4c04cb",
+      "integrity": "sha512-NhbRW6+XU7inu3rEbuoa7WbMlC+8UaX0OKW7OTczZOzqHkK+iiY4nsX5hmIMgxemTHKUDYyhqcSSgVgl8pjWhQ==",
+      "bytes": 15235
+    }
+  ]
+}

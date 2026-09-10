@@ -1,0 +1,102 @@
+{
+  "schema": "aeliqo.t33.registry-independent-audit.v1",
+  "checkedAt": "2026-09-10T14:53:45.503Z",
+  "registry": "https://registry.npmjs.org/",
+  "publicVisibility": {
+    "authentication": "not-sent",
+    "packageIdentities404": 6,
+    "exactVersions404": 6,
+    "rows": [
+      {
+        "name": "@aeliqo/sdk-core",
+        "identity": {
+          "status": 404,
+          "visible": false
+        },
+        "exactVersion": {
+          "version": "0.1.0-rc.1",
+          "status": 404,
+          "visible": false
+        }
+      },
+      {
+        "name": "@aeliqo/sdk-runtime",
+        "identity": {
+          "status": 404,
+          "visible": false
+        },
+        "exactVersion": {
+          "version": "0.1.0-rc.1",
+          "status": 404,
+          "visible": false
+        }
+      },
+      {
+        "name": "@aeliqo/sdk-web",
+        "identity": {
+          "status": 404,
+          "visible": false
+        },
+        "exactVersion": {
+          "version": "0.1.0-rc.1",
+          "status": 404,
+          "visible": false
+        }
+      },
+      {
+        "name": "@aeliqo/sdk-agent",
+        "identity": {
+          "status": 404,
+          "visible": false
+        },
+        "exactVersion": {
+          "version": "0.1.0-rc.1",
+          "status": 404,
+          "visible": false
+        }
+      },
+      {
+        "name": "@aeliqo/sdk-devtools",
+        "identity": {
+          "status": 404,
+          "visible": false
+        },
+        "exactVersion": {
+          "version": "0.1.0-rc.1",
+          "status": 404,
+          "visible": false
+        }
+      },
+      {
+        "name": "@aeliqo/sdk-react",
+        "identity": {
+          "status": 404,
+          "visible": false
+        },
+        "exactVersion": {
+          "version": "0.1.0-rc.1",
+          "status": 404,
+          "visible": false
+        }
+      }
+    ],
+    "meaning": "Current public non-visibility only; does not prove historical non-use or publication acceptance."
+  },
+  "authenticatedAuthority": {
+    "whoami": {
+      "exitCode": 1,
+      "result": "E401-unauthorized"
+    },
+    "organizationAccess": {
+      "exitCode": 1,
+      "result": "E401-invalid-or-expired-token"
+    },
+    "ownerIdentityVerified": false,
+    "namespaceOwnershipVerified": false,
+    "twoFactorModeVerified": false,
+    "publicationAuthorized": false,
+    "blocking": true,
+    "blocker": "Current npm authentication fails E401, so owner identity, @aeliqo authority, 2FA mode, authenticated package history and publication acceptance cannot be verified."
+  },
+  "mutations": false
+}

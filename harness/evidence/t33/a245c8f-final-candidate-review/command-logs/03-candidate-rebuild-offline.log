@@ -1,0 +1,26 @@
+{
+  "output": "/private/tmp/aeliqo-t33-source-review.xlA2hZ/artifacts/t33-final-review-rebuild",
+  "sourceRevision": "763f29a79e93f8808eccdc810b86622837245acf",
+  "tarballs": [
+    "aeliqo-sdk-core-0.1.0-rc.1.tgz",
+    "aeliqo-sdk-runtime-0.1.0-rc.1.tgz",
+    "aeliqo-sdk-web-0.1.0-rc.1.tgz",
+    "aeliqo-sdk-agent-0.1.0-rc.1.tgz",
+    "aeliqo-sdk-devtools-0.1.0-rc.1.tgz",
+    "aeliqo-sdk-react-0.1.0-rc.1.tgz"
+  ],
+  "consumer": {
+    "lockSha256": "8774d50cf3b8f4bd3d7e28db12d60892a38c03c5ff4e0e70df7ab035d6c5ed2b",
+    "packages": [
+      "@aeliqo/sdk-core",
+      "@aeliqo/sdk-runtime",
+      "@aeliqo/sdk-web",
+      "@aeliqo/sdk-agent",
+      "@aeliqo/sdk-devtools",
+      "@aeliqo/sdk-react"
+    ],
+    "exportCount": 130
+  },
+  "sbomComponents": 63,
+  "secretFindings": 0
+}

@@ -1,0 +1,61 @@
+{
+  "schema": "aeliqo.local-tarball-consumer.v1",
+  "sourceRevision": "763f29a79e93f8808eccdc810b86622837245acf",
+  "version": "0.1.0-rc.1",
+  "install": {
+    "source": "local-candidate-tarballs",
+    "lockSha256": "7e0308d9d2f99c24d1cdc4660016d5220149bda8279edd0bea2ab0fa9e2aa0f4"
+  },
+  "execution": {
+    "networkDenied": true,
+    "deniedMethods": [
+      "fetch",
+      "http.request",
+      "http.get",
+      "https.request",
+      "https.get",
+      "net.connect",
+      "net.createConnection",
+      "net.Socket.connect",
+      "dns.lookup",
+      "dns.resolve"
+    ],
+    "packageModulesLoaded": 7,
+    "coreParserExecuted": true,
+    "auditNetworkAttempts": 0,
+    "auditExecuted": true
+  },
+  "packages": [
+    {
+      "name": "@aeliqo/sdk-core",
+      "version": "0.1.0-rc.1",
+      "integrity": "sha512-ePAoEYZCyWxxjobNfSsG3EpOffZaE8J+1VxJ+DY1jJkiK8fOTZ7exyEeLy9TwZ+mSyk4GyGkDLX86ksiOF9kdQ=="
+    },
+    {
+      "name": "@aeliqo/sdk-runtime",
+      "version": "0.1.0-rc.1",
+      "integrity": "sha512-KR0rcpXTbnV+V2675z3mAy0mwwulLlc96kJTzyh2x+oh3g7QHH5JHI/hp78+wyH+4J12r7ai00CKye50ShxHpQ=="
+    },
+    {
+      "name": "@aeliqo/sdk-web",
+      "version": "0.1.0-rc.1",
+      "integrity": "sha512-EbcqNsElLdx1d5jvemxVNMltR3vnMPl83iWMU9nVMCoT1QaNfGU+/N1lsSVZ8wG9tEpDoJeRP59cJPuqT55Www=="
+    },
+    {
+      "name": "@aeliqo/sdk-agent",
+      "version": "0.1.0-rc.1",
+      "integrity": "sha512-StYjUYt/ld8NzWGVK5oSfTc1B6V2FK5KoWXB2W3QBK80WTfMMMXBgjEQnepgUTBgTDh2obO85Cv+2aB5NJaq9g=="
+    },
+    {
+      "name": "@aeliqo/sdk-devtools",
+      "version": "0.1.0-rc.1",
+      "integrity": "sha512-toS2M3us61VIn4jJT1gHxxkjto9vukCIqrJdzemF/pifnVqF9Imevhm8ziM5sPNljqy0rBIRG6wnvy0pS7wi9Q=="
+    },
+    {
+      "name": "@aeliqo/sdk-react",
+      "version": "0.1.0-rc.1",
+      "integrity": "sha512-NhbRW6+XU7inu3rEbuoa7WbMlC+8UaX0OKW7OTczZOzqHkK+iiY4nsX5hmIMgxemTHKUDYyhqcSSgVgl8pjWhQ=="
+    }
+  ],
+  "exportCount": 130
+}

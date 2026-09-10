@@ -1,0 +1,20 @@
+{
+  "schema": "aeliqo.t33.sbom-independent-audit.v1",
+  "auditedAt": "2026-09-10T14:57:03.445Z",
+  "sourceRevision": "763f29a79e93f8808eccdc810b86622837245acf",
+  "candidateVersion": "0.1.0-rc.1",
+  "sbomSha256": "bc8e624695dda17a11c2cccbb527b178876bbdbef73392175c9933d8823484ff",
+  "freshOfflineRebuildSbomSha256": "bc8e624695dda17a11c2cccbb527b178876bbdbef73392175c9933d8823484ff",
+  "byteIdenticalToFreshOfflineRebuild": true,
+  "format": "CycloneDX 1.5",
+  "components": 63,
+  "internalComponents": 6,
+  "externalComponents": 57,
+  "dependencyRecords": 63,
+  "dependencyEdges": 95,
+  "uniqueBomRefs": true,
+  "everyDependencyRefAndTargetKnown": true,
+  "everyComponentReachableFromPublicPackages": true,
+  "candidateHashesLicensesAndPropertiesExact": true,
+  "externalHashesLicensesMatchFrozenWorkspaceLock": true
+}

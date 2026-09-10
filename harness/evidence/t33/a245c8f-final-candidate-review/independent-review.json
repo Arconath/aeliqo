@@ -1,0 +1,172 @@
+{
+  "task": "T33",
+  "status": "local-candidate-approved-registry-auth-blocked",
+  "reviewedAt": "2026-09-10T15:17:18Z",
+  "reviewer": {
+    "agent": "/root/fix_remaining_narrow_overflow",
+    "role": "independent release-candidate reviewer",
+    "independentOfCandidateAuthor": true
+  },
+  "source": {
+    "buildRevision": "763f29a79e93f8808eccdc810b86622837245acf",
+    "buildTree": "9247e5b1ee663a6938a6d59c851fe711f88ec1ca",
+    "productSourceRevision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+    "candidateDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+    "trackedBuildTreeCleanBeforeAndAfterReview": true,
+    "candidateBytesChangedDuringReview": false
+  },
+  "authorRecord": {
+    "path": "harness/evidence/t33/a245c8f-final-candidate/manifest.json",
+    "sha256": "8579fd4abc576af85cedae88f8e5a51e2d4ab154ff4943e5dcae3cb63847bb40",
+    "verifiedAgainstCandidate": true
+  },
+  "candidate": {
+    "path": "artifacts/t33-a245c8f-final-candidate",
+    "schema": "aeliqo.release-candidate.v1",
+    "version": "0.1.0-rc.1",
+    "publishOrder": [
+      "@aeliqo/sdk-core",
+      "@aeliqo/sdk-runtime",
+      "@aeliqo/sdk-web",
+      "@aeliqo/sdk-agent",
+      "@aeliqo/sdk-devtools",
+      "@aeliqo/sdk-react"
+    ],
+    "records": {
+      "manifest.json": "eeaf806a32aa892e5b7cac6146f395d8e0e12f165bdf4cef2b4b4b3cb5fb899f",
+      "consumer.json": "c906a2d4776e993c66cc5228c38852ce080ed3ca01893417917109f4109acacb",
+      "sbom.cdx.json": "bc8e624695dda17a11c2cccbb527b178876bbdbef73392175c9933d8823484ff",
+      "secret-scan.json": "878cd1daf10bd108f61582c1ea20ded575d54b8eabae433a44771086a8025265"
+    },
+    "packages": [
+      {"name": "@aeliqo/sdk-core", "bytes": 183756, "sha256": "6d33115ea2ef59550d9558f9933bb05c896224dc2b2a8f1aef10def782864d24", "integrity": "sha512-ePAoEYZCyWxxjobNfSsG3EpOffZaE8J+1VxJ+DY1jJkiK8fOTZ7exyEeLy9TwZ+mSyk4GyGkDLX86ksiOF9kdQ=="},
+      {"name": "@aeliqo/sdk-runtime", "bytes": 228551, "sha256": "e42c171c87134f643a3a3c832df0b6d955f54698427068564a4be56d55ebc71f", "integrity": "sha512-KR0rcpXTbnV+V2675z3mAy0mwwulLlc96kJTzyh2x+oh3g7QHH5JHI/hp78+wyH+4J12r7ai00CKye50ShxHpQ=="},
+      {"name": "@aeliqo/sdk-web", "bytes": 408000, "sha256": "134d55ad79de939f70a8ce8baa9f9795e209926917d421707ce5fd6e4f8dcf66", "integrity": "sha512-EbcqNsElLdx1d5jvemxVNMltR3vnMPl83iWMU9nVMCoT1QaNfGU+/N1lsSVZ8wG9tEpDoJeRP59cJPuqT55Www=="},
+      {"name": "@aeliqo/sdk-agent", "bytes": 125813, "sha256": "5e7a0501c74ebc61271854381c849c1c59489175af4cfcc27558cdf1214659e7", "integrity": "sha512-StYjUYt/ld8NzWGVK5oSfTc1B6V2FK5KoWXB2W3QBK80WTfMMMXBgjEQnepgUTBgTDh2obO85Cv+2aB5NJaq9g=="},
+      {"name": "@aeliqo/sdk-devtools", "bytes": 21173, "sha256": "9aa4e83a33824fea2b5975ad4f001b8a8c0268c39d2e447c39ba8a30edf7ba4c", "integrity": "sha512-toS2M3us61VIn4jJT1gHxxkjto9vukCIqrJdzemF/pifnVqF9Imevhm8ziM5sPNljqy0rBIRG6wnvy0pS7wi9Q=="},
+      {"name": "@aeliqo/sdk-react", "bytes": 15235, "sha256": "cfb8ae8bf6466188b4aaaddcf6e7f8fdef8a6e85414ec8d118bdda3d8a4c04cb", "integrity": "sha512-NhbRW6+XU7inu3rEbuoa7WbMlC+8UaX0OKW7OTczZOzqHkK+iiY4nsX5hmIMgxemTHKUDYyhqcSSgVgl8pjWhQ=="}
+    ]
+  },
+  "verification": {
+    "toolchain": {"node": "v24.20.0", "pnpm": "11.24.0", "npm": "11.19.0"},
+    "offlineFrozenWorkspaceInstall": {"result": "pass", "workspaceProjects": 15, "packagesReused": 145, "packagesDownloaded": 0},
+    "releaseTooling": {"command": "pnpm test:release-tooling", "result": "pass", "tests": 19, "failed": 0},
+    "freshOfflineCandidateRebuild": {
+      "result": "pass",
+      "npmOffline": true,
+      "sourceRevision": "763f29a79e93f8808eccdc810b86622837245acf",
+      "tarballsByteIdentical": 6,
+      "manifestByteIdentical": true,
+      "sbomByteIdentical": true,
+      "secretScanByteIdentical": true,
+      "consumerRecordIdenticalAfterRemovingRandomTemporaryRootLockHash": true
+    },
+    "tarballs": {
+      "result": "pass",
+      "packages": 6,
+      "packedFiles": 1034,
+      "regularOrDirectoryEntriesOnly": true,
+      "duplicatePaths": 0,
+      "unsafePaths": 0,
+      "nonAllowlistedPaths": 0,
+      "sensitiveLookingPaths": 0,
+      "canonicalLicenseAndNotice": true,
+      "workspaceProtocols": 0,
+      "internalDependenciesExactAndPublicationOrdered": true,
+      "exportTargetsPresent": 221,
+      "strictExportSpecifiers": 130,
+      "exactBytesSha256AndSha512Integrity": true
+    },
+    "freshOfflineConsumer": {
+      "result": "pass",
+      "install": "npm install --offline --ignore-scripts --no-audit --no-fund",
+      "packagesAdded": 66,
+      "packageLockEntries": 86,
+      "publicPackageIdentitiesAndIntegritiesExact": true,
+      "strictExportSpecifiersTypeChecked": 130,
+      "aeliqoModulesLoaded": 8,
+      "coreParserExecuted": true,
+      "auditExecuted": true,
+      "runtimeNetworkAttempts": 0,
+      "networkBlockerMethodsExercised": 10,
+      "styleExportExecuted": true,
+      "styleCssTextBytes": 10708
+    },
+    "sbom": {
+      "result": "pass",
+      "format": "CycloneDX 1.5",
+      "components": 63,
+      "internalComponents": 6,
+      "externalComponents": 57,
+      "dependencyRecords": 63,
+      "dependencyEdges": 95,
+      "uniqueBomRefs": true,
+      "everyDependencyRefAndTargetKnown": true,
+      "everyComponentReachableFromPublicPackages": true,
+      "candidateHashesLicensesAndPropertiesExact": true,
+      "externalHashesAndLicensesMatchFrozenWorkspaceLock": true
+    },
+    "secretScan": {
+      "result": "pass",
+      "freshRebuildReportByteIdentical": true,
+      "rules": 6,
+      "trackedFiles": 2210,
+      "trackedBytes": 165412325,
+      "expandedArchives": 17,
+      "expandedArchiveHashesVerified": 17,
+      "expandedEntries": 3492,
+      "expandedBytes": 121422700,
+      "packedFiles": 1034,
+      "packedBytes": 6368775,
+      "excludedFiles": 0,
+      "findings": 0
+    },
+    "registry": {
+      "publicRead": {
+        "result": "current-non-visibility",
+        "authenticationSent": false,
+        "packageIdentitiesHttp404": 6,
+        "exactCandidateVersionsHttp404": 6
+      },
+      "authenticatedAuthority": {
+        "result": "blocked",
+        "npmWhoami": "E401-unauthorized",
+        "npmOrganizationAccess": "E401-invalid-or-expired-token",
+        "ownerIdentityVerified": false,
+        "namespaceAuthorityVerified": false,
+        "twoFactorModeVerified": false,
+        "publicationAuthorized": false
+      },
+      "mutations": false
+    }
+  },
+  "findings": {
+    "p0": [],
+    "p1": [],
+    "p2": [],
+    "externalBlockers": [
+      {
+        "id": "npm-auth-e401",
+        "scope": "authenticated registry authority and publication readiness",
+        "detail": "Current npm whoami and @aeliqo organization-access checks both fail E401. Public unauthenticated reads return HTTP 404 for all six identities and exact 0.1.0-rc.1 versions, but that proves only current public non-visibility; it cannot verify owner identity, namespace authority, 2FA mode, authenticated history or first-publication acceptance."
+      }
+    ]
+  },
+  "claims": {
+    "implemented": "The six-package local 0.1.0-rc.1 candidate already exists and was not modified by this review.",
+    "validated": "All deterministic local T33 package, offline-consumer, SBOM, license, allowlist, export, exact-dependency, release-tooling and secret-scan checks passed.",
+    "published": false,
+    "deployed": false,
+    "blocked": "Authenticated npm authority and publication readiness are blocked by the current E401 response."
+  },
+  "limitations": [
+    "Public HTTP 404 responses establish current non-visibility only; they do not prove historical non-use or npm acceptance of first publication.",
+    "The fresh consumer package-lock hash differs from the author consumer hash because npm records the randomized temporary consumer path. Exact installed names, versions, integrities and the reachable SBOM graph were independently compared.",
+    "No package publish, dist-tag move, GitHub write, GitOps change, production mutation or task-status change occurred."
+  ],
+  "verdict": {
+    "localCandidate": "approve",
+    "authenticatedRegistryReadiness": "blocked",
+    "summary": "The exact local T33 candidate is byte-for-byte reproducible and satisfies every available deterministic acceptance check. It must not be published or described as registry-authorized until npm authentication and namespace authority are restored and reverified."
+  }
+}
