@@ -7,7 +7,7 @@ export const pages = [
 <p class="lead">Your application supplies records, identity, routes, and business actions. Choose one bounded path before composing them.</p>
 <div class="doc-paths"><a href="/docs/getting-started/standalone/"><h2>Standalone</h2><p>One component, no evaluator.</p></a><a href="/docs/getting-started/local/"><h2>Local</h2><p>Bounded records and a local evaluator.</p></a><a href="/docs/getting-started/http/"><h2>HTTP</h2><p>Application service and authenticated source policy.</p></a><a href="/docs/getting-started/region/"><h2>Region</h2><p>Validated task outputs and adaptive presentation.</p></a><a href="/docs/getting-started/agent/"><h2>Agent</h2><p>Optional MCP or BYOK assistance.</p></a></div>
 <h2>Get the rewrite packages</h2><p>The 0.1.0 rewrite is not yet published as a stable release. Build and pack the checked-out rewrite packages, then install those tarballs into your application. Do not substitute a historical npm version.</p>
-<pre><code>pnpm build:platform
+<pre tabindex="0"><code>pnpm build:platform
 pnpm --filter @aeliqo/core pack --out /tmp/aeliqo-core-0.1.0.tgz
 pnpm --filter @aeliqo/runtime pack --out /tmp/aeliqo-runtime-0.1.0.tgz
 pnpm --filter @aeliqo/web pack --out /tmp/aeliqo-web-0.1.0.tgz</code></pre>

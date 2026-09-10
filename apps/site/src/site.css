@@ -425,11 +425,16 @@ summary {
 
 pre {
   max-width: 100%;
+  min-width: 0;
   padding: 1.25rem;
   overflow: auto;
   border-radius: var(--radius-sm);
   background: var(--surface);
   font-size: 0.875rem;
+}
+
+.code-scroll {
+  max-width: 100%;
 }
 
 #copy-status {
@@ -939,8 +944,7 @@ footer nav {
   vertical-align: top;
 }
 
-.api-table code,
-.reading details code {
+.reading :not(pre) > code {
   overflow-wrap: anywhere;
 }
 

@@ -1,5 +1,11 @@
 import {expect, test} from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import {readFileSync} from "node:fs";
+import {resolve} from "node:path";
+
+const COMPONENT_ROUTES = (JSON.parse(readFileSync(resolve(process.cwd(), "harness/components.json"), "utf8")) as {
+  readonly components: readonly {readonly id: string; readonly name: string}[];
+}).components.map(({id}) => `/docs/components/${id}/`);
 
 const GETTING_STARTED_ROUTES = [
   "/docs/getting-started/standalone/",
@@ -108,4 +114,130 @@ test("narrow documentation starts with the requested article before navigation",
   } finally {
     await noScriptContext.close();
   }
+});
+
+test("all generated component routes fit 320px and 360px without page overflow", async ({browser}) => {
+  test.setTimeout(180_000);
+  for (const width of [320, 360]) {
+    const hydratedContext = await browser.newContext({viewport: {width, height: 800}});
+    const hydratedPage = await hydratedContext.newPage();
+    try {
+      for (const route of COMPONENT_ROUTES) {
+        await hydratedPage.goto(route);
+        await expect(hydratedPage.locator(".reading h1")).toBeVisible();
+        await expect.poll(() => hydratedPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      }
+    } finally {
+      await hydratedContext.close();
+    }
+
+    const noScriptContext = await browser.newContext({javaScriptEnabled: false, viewport: {width, height: 800}});
+    const noScriptPage = await noScriptContext.newPage();
+    try {
+      for (const route of COMPONENT_ROUTES) {
+        await noScriptPage.goto(route);
+        await expect(noScriptPage.locator(".reading h1")).toBeVisible();
+        expect(await noScriptPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      }
+    } finally {
+      await noScriptContext.close();
+    }
+  }
+});
+
+test("scrollable code remains focusable and named across static, hydrated, and opened states", async ({browser, page}) => {
+  await page.goto("/docs/getting-started/");
+  const install = page.locator(".reading > pre");
+  await expect(install).toHaveAttribute("tabindex", "0");
+  await install.focus();
+  await expect(install).toBeFocused();
+  const recordListExample = page.locator('div[data-example="record-list"] > pre');
+  await expect(recordListExample).toHaveAttribute("tabindex", "0");
+  await recordListExample.focus();
+  await expect(recordListExample).toBeFocused();
+  expect((await new AxeBuilder({page}).include("main").analyze()).violations).toEqual([]);
+
+  const noScriptContext = await browser.newContext({javaScriptEnabled: false, viewport: {width: 360, height: 800}});
+  const noScriptPage = await noScriptContext.newPage();
+  try {
+    await noScriptPage.goto("/docs/getting-started/");
+    const staticInstall = noScriptPage.locator(".reading > pre");
+    await expect(staticInstall).toHaveAttribute("tabindex", "0");
+    await staticInstall.focus();
+    await expect(staticInstall).toBeFocused();
+
+    await noScriptPage.goto("/docs/components/data.table/");
+    const noScriptDetails = noScriptPage.locator("details.component-example");
+    await noScriptDetails.evaluate((element) => { (element as HTMLDetailsElement).open = true; });
+    const noScriptExample = noScriptDetails.locator("pre");
+    await expect(noScriptExample).toHaveAttribute("tabindex", "0");
+    await noScriptExample.focus();
+    await expect(noScriptExample).toBeFocused();
+  } finally {
+    await noScriptContext.close();
+  }
+
+  await page.goto("/docs/components/data.table/");
+  const details = page.locator("details.component-example");
+  await details.locator("summary").click();
+  const example = details.locator("pre");
+  await expect(example).toHaveAttribute("tabindex", "0");
+  await example.focus();
+  await expect(example).toBeFocused();
+  const apiPre = page.locator(".code-scroll > pre");
+  await expect(apiPre).toHaveAttribute("tabindex", "0");
+  await expect(apiPre).not.toHaveAttribute("aria-label");
+  await expect(page.locator(".code-scroll")).toHaveAttribute("role", "region");
+  await expect(page.locator(".code-scroll")).toHaveAttribute("aria-labelledby", "public-api-heading");
+  const openedA11y = await new AxeBuilder({page}).include("main").analyze();
+  expect(openedA11y.violations).toEqual([]);
+});
+
+test("every generated component example keeps its code focusable when opened", async ({page}) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({width: 360, height: 800});
+  for (const route of COMPONENT_ROUTES) {
+    await page.goto(route);
+    const details = page.locator("details.component-example");
+    await details.evaluate((element) => { (element as HTMLDetailsElement).open = true; });
+    const pre = details.locator("pre");
+    await expect(pre).toHaveAttribute("tabindex", "0");
+  }
+});
+
+test("homepage code disclosures remain focusable at 320px", async ({page}) => {
+  await page.setViewportSize({width: 320, height: 900});
+  await page.goto("/");
+  for (const details of [page.locator("details.release-install"), page.locator("details").filter({hasText: "View the component source"})]) {
+    await details.locator("summary").click();
+    const pre = details.locator("pre");
+    await expect(pre).toHaveAttribute("tabindex", "0");
+    await pre.focus();
+    await expect(pre).toBeFocused();
+  }
+  const accessibility = await new AxeBuilder({page}).include("main").analyze();
+  expect(accessibility.violations).toEqual([]);
+});
+
+test("homepage result output remains a named accessible section after evaluation", async ({page}) => {
+  await page.goto("/");
+  await page.locator("#team").selectOption("Engineering");
+  await page.getByRole("button", {name: "Request a local result", exact: true}).click();
+  const result = page.locator("#demo-result");
+  await expect(result).toBeVisible();
+  await expect(result).toHaveAttribute("aria-labelledby", "demo-result-title");
+  await expect(page.getByRole("region", {name: "Exact supplied output", exact: true})).toBeVisible();
+  const accessibility = await new AxeBuilder({page}).include("main").analyze();
+  expect(accessibility.violations).toEqual([]);
+});
+
+test("shown analytics consent uses an accessible dialog role", async ({page}) => {
+  await page.goto("/docs/");
+  const consent = page.locator("#analytics-consent");
+  await expect(consent).toHaveAttribute("role", "dialog");
+  await consent.evaluate((element) => { element.removeAttribute("hidden"); });
+  await expect(consent).toBeVisible();
+  await expect(consent.getByRole("button", {name: "Allow analytics", exact: true})).toBeVisible();
+  const accessibility = await new AxeBuilder({page}).include("#analytics-consent").analyze();
+  expect(accessibility.violations).toEqual([]);
 });
