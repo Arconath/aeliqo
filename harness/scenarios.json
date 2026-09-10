@@ -883,7 +883,14 @@
       "title": "Exact 0.1.0 identity collision",
       "task": "T42",
       "assertion": "Used name/version blocks publication; unavailable registry remains unknown. Unpublish does not free version.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/t42/76490dd-authenticated/manifest.json",
+          "sha256": "a832ff2f78a4c585124af3db231157efc98335f992386e9707ed157f96b3ffa0"
+        }
+      ],
+      "notes": "Passed as a release-control assertion at source 76490dd: used or byte-mismatched versions are rejected, non-visibility remains explicitly unknown until first publication, and unpublish is prohibited as version-reuse recovery. No availability or publication claim is made.",
       "stage": "ready",
       "nativeHostRequired": false
     },

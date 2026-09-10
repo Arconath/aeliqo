@@ -1,0 +1,62 @@
+{
+  "schema": "aeliqo.t42-independent-release-review.v1",
+  "task": "T42",
+  "scenario": "S61",
+  "status": "approved-ready-stage",
+  "reviewedAt": "2026-09-10T06:34:07Z",
+  "author": "root release integration and prior release-control authors",
+  "reviewer": "close_ready_scenarios independent release reviewer",
+  "subject": {
+    "sourceCommit": "76490dd4c0bc756eef79ee9dc6bc6f6e9de1b5fc",
+    "candidateDigestBefore": "f51e351e7d5a2261293f551312ba11a222fbe5ba3dddb24324bf38c364e3c7f3",
+    "candidateDigestAfter": "f51e351e7d5a2261293f551312ba11a222fbe5ba3dddb24324bf38c364e3c7f3"
+  },
+  "acceptanceReview": [
+    {
+      "acceptance": "Record actual namespace/package history/collision checks and lower-semver reset migration. Unknown registry access is a recorded publish blocker, not available.",
+      "result": "pass",
+      "basis": "The pinned release toolchain authenticated as arconath, npm reports arconath as owner of aeliqo with auth-and-writes 2FA, all six sdk-* identities and exact 0.1.0/0.1.0-rc.1 queries returned E404, and the incompatible @aeliqo/core and @aeliqo/react 0.2.0 histories remain visible. The migration document treats first-publication acceptance as unknown rather than available."
+    },
+    {
+      "acceptance": "Exact target 0.1.0 retained; previously published identities not overwritten/unpublished to reset; staging tags/rollback/cleanup allowlist documented.",
+      "result": "pass",
+      "basis": "All six public local package manifests remain exact 0.1.0; the release controls restrict first bootstrap to 0.1.0-rc.1 on next, stable to rewrite, and exact six-package dependency order. The migration chapter preserves old artifacts and rollback, prohibits unpublish as collision recovery, and requires explicit cleanup targets."
+    }
+  ],
+  "controlReview": {
+    "collision": "Registry classifiers fail closed on non-404 errors and reject existing candidate versions with different bytes.",
+    "unpublishNonReuse": "The canonical migration contract states that a published name/version cannot be reused after unpublish and prohibits unpublish as reset recovery.",
+    "firstRcBootstrap": "The owner bootstrap is restricted to an interactive local terminal, exact actor/org-owner/TFA authority, the exact 0.1.0-rc.1 version, next tag, unused identities or byte-identical partial-publication resume.",
+    "nonlatestTags": "RC is restricted to next; initial stable is restricted to rewrite; latest promotion is a separate deliberate operation.",
+    "exactPackageSet": "The candidate and approved-RC validators require each of the six sdk-* packages exactly once in dependency order and bind tarball bytes/integrities.",
+    "rollbackAndCleanup": "Existing consumers, release artifacts, data, credentials, and rollback references are retained; production cleanup requires an explicit reviewed target list after rollback identity is secured."
+  },
+  "verification": {
+    "releaseTooling": {
+      "command": "pnpm test:release-tooling",
+      "result": "pass",
+      "tests": 19,
+      "failed": 0
+    },
+    "offlineInventory": {
+      "command": "python3 scripts/version_preflight.py harness/release-preflight.json",
+      "result": "expected-fail-closed",
+      "reason": "historical-use-unknown",
+      "publishReady": false
+    }
+  },
+  "scenarioReview": {
+    "assertion": "Used name/version blocks publication; unavailable registry remains unknown. Unpublish does not free version.",
+    "result": "pass",
+    "basis": "The documented policy and executable release-tooling tests enforce all three clauses. Current E404 observations are recorded only as not visible."
+  },
+  "decision": {
+    "t42ReadyStage": "approved",
+    "s61RuleAssertion": "passed",
+    "publicationAvailability": "not-established",
+    "firstRcPublicationRequiredToEstablishRegistryAcceptance": true
+  },
+  "scope": "Approves the exact 0.1.0 reset policy, authenticated namespace authority, current registry observations, and fail-closed publication controls at the prepublication ready stage. It does not approve or claim RC/stable publication, dist-tag promotion, GitHub release, deployment, historical non-use, or npm first-publication availability.",
+  "mutations": false,
+  "findings": []
+}

@@ -1675,7 +1675,7 @@
         "Record actual namespace/package history/collision checks and lower-semver reset migration. Unknown registry access is a recorded publish blocker, not available.",
         "Exact target0.1.0 retained; previously published identities not overwritten/unpublished to reset; staging tags/rollback/cleanup allowlist documented."
       ],
-      "status": "blocked",
+      "status": "done",
       "stage": "ready",
       "evidence": [
         {
@@ -1693,9 +1693,25 @@
         {
           "path": "harness/evidence/t42/3b7c044-release-readonly/manifest.json",
           "sha256": "cabef49d4a2eb0f9bebe8fb6babbf733631fb5074bca1dcd3d95bfe8f96b9fb3"
+        },
+        {
+          "path": "harness/evidence/t42/76490dd-authenticated/manifest.json",
+          "sha256": "a832ff2f78a4c585124af3db231157efc98335f992386e9707ed157f96b3ffa0"
         }
       ],
-      "notes": "Fresh read-only registry preflight at 3b7c044 confirms all seven local public Apache-2.0 packages remain exactly 0.1.0; @aeliqo/core and @aeliqo/react expose 0.2.0/latest; the other five target identities return E404; exact 0.1.0 queries remain E404-or-permission-ambiguous; npm whoami/access return E401. Git ls-remote records origin/main at 6b0c4f0 and the stale remote rewrite branch at 711a949, while the local candidate is 3b7c044. The normalized harness/release-preflight.json now runs through the offline helper and fails closed with registry-not-verified. This records a current publish/remote blocker without any registry, remote or production mutation. Exact 0.1.0 history, migration approval, staging tag and namespace authority remain blocked. Does not block source implementation."
+      "review": {
+        "status": "approved",
+        "author": "root release integration and prior release-control authors",
+        "reviewer": "close_ready_scenarios independent release reviewer",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t42/76490dd-authenticated/independent-review.json",
+            "sha256": "813485149acdde931ad091a209b4578390d554469e3cf05f886c1be8df2954a2"
+          }
+        ],
+        "scope": "Approves authenticated namespace authority, actual current registry observations, exact reset migration and fail-closed release controls for the prepublication ready stage; excludes any claim that npm will accept first publication and excludes RC/stable publication, tagging, source release and deployment."
+      },
+      "notes": "Accepted at exact source 76490dd/digest f51e351 after independent read-only review. Pinned Node24.20/npm11.19 authenticated as arconath; npm reports organization-owner authority for aeliqo and auth-and-writes 2FA. All six @aeliqo/sdk-* names and exact 0.1.0/0.1.0-rc.1 queries are currently E404/not visible; legacy @aeliqo/core and @aeliqo/react retain visible 0.2.0/latest history. Release controls preserve exact 0.1.0, reject collision or byte mismatch, prohibit unpublish as reset recovery, restrict first RC to interactive owner bootstrap on next, require all six packages exactly once, stage stable on rewrite, and preserve rollback plus explicit cleanup allowlisting. This closes the ready-stage preflight and rule assertion only: historical non-use and npm first-publication acceptance remain unknown until an authorized 0.1.0-rc.1 publish succeeds. No registry, GitHub or production mutation occurred."
     }
   ]
 }

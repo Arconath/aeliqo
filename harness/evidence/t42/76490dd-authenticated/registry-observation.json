@@ -1,0 +1,133 @@
+{
+  "schema": "aeliqo.t42-authenticated-registry-observation.v1",
+  "task": "T42",
+  "scenario": "S61",
+  "observedAt": "2026-09-10T06:34:07Z",
+  "source": {
+    "commit": "76490dd4c0bc756eef79ee9dc6bc6f6e9de1b5fc",
+    "tree": "0ee387c81e2a4bd218e8cbb79d9a44a458284520",
+    "candidateDigest": "f51e351e7d5a2261293f551312ba11a222fbe5ba3dddb24324bf38c364e3c7f3"
+  },
+  "environment": {
+    "node": "v24.20.0",
+    "npm": "11.19.0",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "authorization": {
+    "actor": "arconath",
+    "organization": "aeliqo",
+    "organizationRole": "owner",
+    "tfaMode": "auth-and-writes",
+    "publishedPackageAccess": {
+      "@aeliqo/core": "read-write",
+      "@aeliqo/react": "read-write",
+      "@aeliqo/mcp": "read-write",
+      "@aeliqo/byok": "read-write",
+      "@aeliqo/webmcp-experimental": "read-write"
+    }
+  },
+  "targetPackages": [
+    {
+      "name": "@aeliqo/sdk-core",
+      "packageQuery": "E404-not-visible",
+      "exactStableQuery": "E404-not-visible",
+      "exactFirstRcQuery": "E404-not-visible"
+    },
+    {
+      "name": "@aeliqo/sdk-runtime",
+      "packageQuery": "E404-not-visible",
+      "exactStableQuery": "E404-not-visible",
+      "exactFirstRcQuery": "E404-not-visible"
+    },
+    {
+      "name": "@aeliqo/sdk-web",
+      "packageQuery": "E404-not-visible",
+      "exactStableQuery": "E404-not-visible",
+      "exactFirstRcQuery": "E404-not-visible"
+    },
+    {
+      "name": "@aeliqo/sdk-react",
+      "packageQuery": "E404-not-visible",
+      "exactStableQuery": "E404-not-visible",
+      "exactFirstRcQuery": "E404-not-visible"
+    },
+    {
+      "name": "@aeliqo/sdk-agent",
+      "packageQuery": "E404-not-visible",
+      "exactStableQuery": "E404-not-visible",
+      "exactFirstRcQuery": "E404-not-visible"
+    },
+    {
+      "name": "@aeliqo/sdk-devtools",
+      "packageQuery": "E404-not-visible",
+      "exactStableQuery": "E404-not-visible",
+      "exactFirstRcQuery": "E404-not-visible"
+    }
+  ],
+  "legacyHistory": [
+    {
+      "name": "@aeliqo/core",
+      "visibleVersions": [
+        "0.2.0"
+      ],
+      "distTags": {
+        "latest": "0.2.0"
+      },
+      "deprecation": "present",
+      "exactStableQuery": "E404-not-visible",
+      "exactFirstRcQuery": "E404-not-visible"
+    },
+    {
+      "name": "@aeliqo/react",
+      "visibleVersions": [
+        "0.2.0"
+      ],
+      "distTags": {
+        "latest": "0.2.0"
+      },
+      "deprecation": "absent",
+      "exactStableQuery": "E404-not-visible",
+      "exactFirstRcQuery": "E404-not-visible"
+    }
+  ],
+  "localPackageSet": {
+    "public": [
+      "@aeliqo/sdk-core@0.1.0",
+      "@aeliqo/sdk-runtime@0.1.0",
+      "@aeliqo/sdk-web@0.1.0",
+      "@aeliqo/sdk-react@0.1.0",
+      "@aeliqo/sdk-agent@0.1.0",
+      "@aeliqo/sdk-devtools@0.1.0"
+    ],
+    "internal": "@aeliqo/testkit@0.1.0 (private)",
+    "allApache20": true
+  },
+  "commands": [
+    "npm whoami --json",
+    "npm org ls aeliqo --json",
+    "npm profile get --json, reduced immediately to the tfa field",
+    "npm access list packages @aeliqo --json",
+    "npm view <package> name versions dist-tags deprecated --json",
+    "npm view <package>@0.1.0 version --json",
+    "npm view <package>@0.1.0-rc.1 version --json"
+  ],
+  "sanitization": {
+    "emailRecorded": false,
+    "tokenRecorded": false,
+    "otpRecorded": false,
+    "npmConfigurationRecorded": false
+  },
+  "mutations": {
+    "npmPublish": false,
+    "npmUnpublish": false,
+    "npmDistTag": false,
+    "npmDeprecate": false,
+    "github": false,
+    "production": false
+  },
+  "availability": {
+    "claimed": false,
+    "classification": "authenticated-owner-scope-with-target-identities-not-visible",
+    "caveat": "Authenticated organization ownership plus E404 establishes authority and current non-visibility, not historical non-use or guaranteed first-publication acceptance. Only the authorized first 0.1.0-rc.1 publication can establish actual registry acceptance."
+  }
+}

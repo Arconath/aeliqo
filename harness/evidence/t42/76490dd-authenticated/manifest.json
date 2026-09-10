@@ -1,0 +1,82 @@
+{
+  "schema": "aeliqo.t42-evidence-manifest.v1",
+  "task": "T42",
+  "scenarios": [
+    "S61"
+  ],
+  "status": "passed-ready-stage",
+  "observedAt": "2026-09-10T06:34:07Z",
+  "source": {
+    "commit": "76490dd4c0bc756eef79ee9dc6bc6f6e9de1b5fc",
+    "tree": "0ee387c81e2a4bd218e8cbb79d9a44a458284520",
+    "candidateDigest": "f51e351e7d5a2261293f551312ba11a222fbe5ba3dddb24324bf38c364e3c7f3",
+    "sourceChanged": false
+  },
+  "artifacts": [
+    {
+      "path": "harness/evidence/t42/76490dd-authenticated/registry-observation.json",
+      "sha256": "c264e539e994518853a878e1337830a473f146ca0513f62908e92016232aca3e"
+    },
+    {
+      "path": "harness/evidence/t42/76490dd-authenticated/independent-review.json",
+      "sha256": "813485149acdde931ad091a209b4578390d554469e3cf05f886c1be8df2954a2"
+    }
+  ],
+  "reviewedInputs": [
+    {
+      "path": "docs/18-release-migration.md",
+      "sha256": "8cad1f6a63a0c6fd3067ad402914bda0d6ab373412072df15c0daebc4eed6b7d"
+    },
+    {
+      "path": "docs/16-quality-gates.md",
+      "sha256": "d9898f1dc5a6ec4ed6b201d2829ede964d6b919ae05cd51a4342be54980aa0a8"
+    },
+    {
+      "path": "harness/release-preflight.json",
+      "sha256": "9f7899c3dc2f6503783641b8abf4cbb8d872b2c5ebd26ed1119ea1362fa39c45"
+    },
+    {
+      "path": "scripts/release/candidate-lib.mjs",
+      "sha256": "98a23978991c2d096366857337ec5887ed469b4a712fe726a3db9e0672de417a"
+    },
+    {
+      "path": "scripts/release/publication-lib.mjs",
+      "sha256": "4b43ebefff26b51c198551e56079c625c63ca634c33419c278c7b4d426f78927"
+    },
+    {
+      "path": "scripts/release/legacy-lineage-lib.mjs",
+      "sha256": "a4ebf8b3be2fad9214c7c60a47a2ad67b8ec59321a764bf80083251aab4210bc"
+    },
+    {
+      "path": "tests/release/candidate-lib.test.mjs",
+      "sha256": "8d25243f7a66118cdf351cc578363e95c783313434c4f4229654519e4996791d"
+    },
+    {
+      "path": "tests/release/publication-lib.test.mjs",
+      "sha256": "bac677629eb9a4806fe42ee8df1fcb0b3d4d0a6f06c50d9f2d5bd58c9b151af1"
+    },
+    {
+      "path": "tests/release/legacy-lineage.test.mjs",
+      "sha256": "22a7b731114771fbba571bfabdecfffd926f31a0e5f01206cce7f2ab24d781ff"
+    }
+  ],
+  "results": {
+    "authenticatedActor": "arconath",
+    "organizationRole": "owner",
+    "tfaMode": "auth-and-writes",
+    "targetPackageIdentitiesNotVisible": 6,
+    "exactStableVersionsNotVisible": 6,
+    "exactFirstRcVersionsNotVisible": 6,
+    "legacyHistoriesInspected": 2,
+    "releaseToolingTestsPassed": 19,
+    "releaseToolingTestsFailed": 0,
+    "s61": "passed"
+  },
+  "decision": "T42 is complete for the prepublication ready stage because authenticated namespace authority, actual current package/history checks, exact reset migration, nonlatest staging, collision refusal, rollback preservation, and cleanup allowlisting are established. npm first-publication availability remains deliberately unclaimed and is established only by a successful authorized 0.1.0-rc.1 bootstrap publication.",
+  "limitations": [
+    "An authenticated E404 does not prove that a name/version was never published and later unpublished.",
+    "The offline inventory helper remains fail-closed with historical-use-unknown and publishReady false.",
+    "No npm publish, unpublish, dist-tag, deprecate, GitHub, source-release, deployment, or production operation was performed.",
+    "This evidence does not qualify broader ready/release gates or claim RC/stable availability."
+  ]
+}
