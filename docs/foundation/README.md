@@ -38,7 +38,7 @@ module paths. It does not resolve business actions or invent source capability.
 ## Direct and React use
 
 ```ts
-import {AeliqoButtonElement} from '@aeliqo/sdk-web/button';
+import {AeliqoButtonElement} from '@aeliqo/web/button';
 customElements.define('aeliqo-button', AeliqoButtonElement);
 ```
 
@@ -46,7 +46,7 @@ Each of the 13 elements has a leaf export (`/button`, `/icon-button`, `/link`,
 `/text`, `/heading`, `/badge`, `/avatar`, `/separator`, `/surface`, `/stack`,
 `/grid`, `/split-pane`, `/scroll-area`). Importing `/foundation` collects the
 constructors. Call `registerAeliqoElements` from `/register` to register the whole
-web catalog. React wrappers are available from `@aeliqo/sdk-react/foundation`; they
+web catalog. React wrappers are available from `@aeliqo/react/foundation`; they
 use those same elements and typed `onAeliqoAction`, `onAeliqoLink` and
 `onAeliqoSplitChange` events. Applications supply IconButton's `icon` slot.
 

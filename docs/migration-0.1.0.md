@@ -6,12 +6,12 @@ The Aeliqo 0.1 rewrite is a new, incompatible package lineage. It is not a semve
 
 | Responsibility | Rewrite package | Legacy package or status |
 |---|---|---|
-| Contracts, semantics, query, presentation validation | `@aeliqo/sdk-core@0.1.0` | Replaces incompatible `@aeliqo/core@0.2.0` |
-| Effectful evaluation and task/result lifecycle | `@aeliqo/sdk-runtime@0.1.0` | New public lineage |
-| Shared Lit/custom-element implementation | `@aeliqo/sdk-web@0.1.0` | New public lineage |
-| Thin React bindings | `@aeliqo/sdk-react@0.1.0` | Replaces incompatible `@aeliqo/react@0.2.0` |
-| Protocol and model adapters | `@aeliqo/sdk-agent@0.1.0` | Replaces `@aeliqo/mcp`, `@aeliqo/byok`, and `@aeliqo/webmcp-experimental` 0.2.0 packages |
-| Local Studio/document tooling | `@aeliqo/sdk-devtools@0.1.0` | New public lineage |
+| Contracts, semantics, query, presentation validation | `@aeliqo/core@0.1.0` | Replaces incompatible `@aeliqo/core@0.2.0` |
+| Effectful evaluation and task/result lifecycle | `@aeliqo/runtime@0.1.0` | New public lineage |
+| Shared Lit/custom-element implementation | `@aeliqo/web@0.1.0` | New public lineage |
+| Thin React bindings | `@aeliqo/react@0.1.0` | Replaces incompatible `@aeliqo/react@0.2.0` |
+| Protocol and model adapters | `@aeliqo/agent@0.1.0` | Replaces `@aeliqo/mcp`, `@aeliqo/byok`, and `@aeliqo/webmcp-experimental` 0.2.0 packages |
+| Local Studio/document tooling | `@aeliqo/devtools@0.1.0` | New public lineage |
 
 `@aeliqo/testkit` remains a private workspace. It is not an npm release dependency or one of the six public artifacts.
 
@@ -20,32 +20,32 @@ The Aeliqo 0.1 rewrite is a new, incompatible package lineage. It is not a semve
 Use the packages needed by the application, pinned exactly while the API is major-zero. For example:
 
 ```sh
-npm install --save-exact @aeliqo/sdk-core@0.1.0 @aeliqo/sdk-runtime@0.1.0 @aeliqo/sdk-web@0.1.0
+npm install --save-exact @aeliqo/core@0.1.0 @aeliqo/runtime@0.1.0 @aeliqo/web@0.1.0
 ```
 
 Do not use a range such as `^0.1.0` for the initial cutover, and do not expect an existing `^0.2.0` dependency to select the rewrite.
 
 ## Change imports
 
-Core and React imports gain the uniform `sdk-` package prefix:
+Core and React keep their concise package names, but the 0.1 API is intentionally incompatible with the deprecated 0.2 preview. The other responsibilities use matching concise names:
 
 ```ts
-import type {Catalog, Task} from '@aeliqo/sdk-core';
-import {AeliqoInput} from '@aeliqo/sdk-react';
+import type {Catalog, Task} from '@aeliqo/core';
+import {AeliqoInput} from '@aeliqo/react';
 ```
 
 The former protocol packages are now subpaths of one agent boundary:
 
 ```ts
-import {createMcpStdioServer} from '@aeliqo/sdk-agent/mcp';
-import {createOpenAIModel} from '@aeliqo/sdk-agent/model/openai';
-import {createWebMcpAdapter} from '@aeliqo/sdk-agent/webmcp';
+import {createMcpStdioServer} from '@aeliqo/agent/mcp';
+import {createOpenAIModel} from '@aeliqo/agent/model/openai';
+import {createWebMcpAdapter} from '@aeliqo/agent/webmcp';
 ```
 
 The 0.2 packages are not forwarding shims. Their APIs, workspace documents, persisted plans, and protocol payloads must not be assumed compatible with the rewrite. Recreate or explicitly migrate saved application state using the 0.1 contracts, and validate identity, grain, scope, meaning versions, permissions, and result lineage before activation.
 
 ## Roll back
 
-Keep the previous lockfile and deployment digest. A rollback restores the complete previous dependency set and matching application deployment; it must not mix 0.2 packages with 0.1 rewrite packages. Existing 0.2.0 artifacts remain installable after targeted deprecation, so consumers can roll back while seeing a clear migration warning.
+Keep the previous lockfile, cached package artifacts where lawfully retained, and deployment digest. A deployment rollback restores the previous immutable image; it must not mix 0.2 packages with 0.1 rewrite packages. The owner manually unpublished the public 0.2.0 packages, so a fresh registry install of that historical dependency set is no longer an available rollback path. Do not claim otherwise.
 
-Stable package publication, dist-tag promotion, legacy deprecation, and production deployment are separate operations. The release operator must verify every exact registry artifact before moving to the next operation. The guarded legacy-deprecation command also compares the stable registry integrities with the verified candidate manifest before it can change legacy metadata.
+Stable package publication, dist-tag promotion, obsolete-lineage inspection, and production deployment are separate operations. The release operator must verify every exact registry artifact before moving to the next operation. The guarded obsolete-lineage command treats an already-unpublished version as historical state, never as proof that the version was unused. The accidental `@aeliqo/sdk-core@0.1.0-rc.1` package is not a supported alias or migration bridge.

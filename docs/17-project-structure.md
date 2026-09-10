@@ -39,7 +39,7 @@ This is a target layout, not permission to create hundreds of empty placeholders
 
 ## Six public packages and one internal test workspace
 
-The public packages are `@aeliqo/sdk-core`, `@aeliqo/sdk-runtime`, `@aeliqo/sdk-web`, `@aeliqo/sdk-react`, `@aeliqo/sdk-agent`, and `@aeliqo/sdk-devtools`. `@aeliqo/testkit` is an Apache-2.0 source workspace marked `private: true`, used only by local host/security tests and excluded from registry/release claims. Protocols are subpaths of the agent package; old v0.2 names have a documented migration, not silent compatibility promises. Devtools is an optional development dependency; testkit is internal-only.
+The public packages are `@aeliqo/core`, `@aeliqo/runtime`, `@aeliqo/web`, `@aeliqo/react`, `@aeliqo/agent`, and `@aeliqo/devtools`. `@aeliqo/testkit` is an Apache-2.0 source workspace marked `private: true`, used only by local host/security tests and excluded from registry/release claims. Protocols are subpaths of the agent package; old v0.2 names have a documented migration, not silent compatibility promises. Devtools is an optional development dependency; testkit is internal-only.
 
 Do not make a package per operator, chart or provider. Do not put server-only MCP/provider dependencies in a browser-imported barrel. Optional subpaths and explicit peer/runtime dependencies must be tested against isolated built consumers; declaring sideEffects false does not fix an eagerly imported graph.
 

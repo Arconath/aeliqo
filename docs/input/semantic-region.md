@@ -3,7 +3,7 @@
 The direct input components are ordinary native-friendly controls. A region adds a reviewed semantic binding around those controls. The presentation graph carries only a `bindingRef` and the immutable `bindingRevision`; it cannot provide the label, option list, semantic field, default, action, upload behavior or file schema.
 
 ```ts
-import {createAeliqoPresentationRegistry, type AeliqoInputBindings} from "@aeliqo/sdk-web/region";
+import {createAeliqoPresentationRegistry, type AeliqoInputBindings} from "@aeliqo/web/region";
 
 const bindings = {
   revision: "checkout-inputs-3",

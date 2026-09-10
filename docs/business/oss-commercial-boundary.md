@@ -5,9 +5,9 @@
 Aeliqo's core contracts, evaluator, runtime, HTTP and local data paths, complete
 component catalog, React bindings, agent and protocol plumbing, local Studio and
 DevTools, security and accessibility behavior, and internal testkit source are
-Apache-2.0. The six public packages are `@aeliqo/sdk-core`,
-`@aeliqo/sdk-runtime`, `@aeliqo/sdk-web`, `@aeliqo/sdk-react`,
-`@aeliqo/sdk-agent`, and `@aeliqo/sdk-devtools`. The testkit stays a private
+Apache-2.0. The six public packages are `@aeliqo/core`,
+`@aeliqo/runtime`, `@aeliqo/web`, `@aeliqo/react`,
+`@aeliqo/agent`, and `@aeliqo/devtools`. The testkit stays a private
 workspace so its release-only helpers are not mistaken for a seventh public API.
 
 These capabilities run without a license server, account callback, hosted
@@ -20,7 +20,7 @@ Security, authorization hooks, accessibility behavior, and the required
 component families are not paid upgrades. A configured local application keeps
 working when a future hosted service is unavailable.
 
-`@aeliqo/sdk-runtime/audit` supplies the basic local audit export: a bounded,
+`@aeliqo/runtime/audit` supplies the basic local audit export: a bounded,
 in-memory collector for fixed plan, capability, cancellation, source, cache,
 renderer, and resource event families. It rejects arbitrary messages, prompts,
 records, identity fields, URLs, and unknown properties, and discloses when its

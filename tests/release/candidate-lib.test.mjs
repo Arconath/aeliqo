@@ -8,34 +8,34 @@ import {
 } from '../../scripts/release/candidate-lib.mjs';
 
 const manifest = {
-  name: '@aeliqo/sdk-core', version: RELEASE_VERSION, license: 'Apache-2.0',
+  name: '@aeliqo/core', version: RELEASE_VERSION, license: 'Apache-2.0',
   exports: {'.': {types: './dist/index.d.ts', import: './dist/index.js'}, './schemas/*': './schemas/*'},
   dependencies: {},
 };
 const paths = ['package/', 'package/package.json', 'package/README.md', 'package/LICENSE', 'package/NOTICE', 'package/dist/index.js', 'package/dist/index.d.ts', 'package/schemas/catalog.json'];
 
 test('accepts public manifest and strict packed content', () => {
-  assert.doesNotThrow(() => assertPublicManifest(manifest, '@aeliqo/sdk-core'));
-  assert.doesNotThrow(() => assertTarballPaths(paths, '@aeliqo/sdk-core'));
-  assert.doesNotThrow(() => assertExportTargets(manifest, paths, '@aeliqo/sdk-core'));
+  assert.doesNotThrow(() => assertPublicManifest(manifest, '@aeliqo/core'));
+  assert.doesNotThrow(() => assertTarballPaths(paths, '@aeliqo/core'));
+  assert.doesNotThrow(() => assertExportTargets(manifest, paths, '@aeliqo/core'));
   assert.deepEqual(exportSpecifiers(manifest, paths), [
-    '@aeliqo/sdk-core', '@aeliqo/sdk-core/schemas/catalog.json',
+    '@aeliqo/core', '@aeliqo/core/schemas/catalog.json',
   ]);
 });
 test('rejects leaked source, secrets, workspace aliases, and missing exports', () => {
-  assert.throws(() => assertTarballPaths([...paths, 'package/src/index.ts'], '@aeliqo/sdk-core'), /non-allowlisted/);
-  assert.throws(() => assertTarballPaths([...paths, 'package/dist/.env.production'], '@aeliqo/sdk-core'), /sensitive-looking/);
-  assert.throws(() => assertPublicManifest({...manifest, dependencies: {'@aeliqo/sdk-runtime': 'workspace:*'}}, '@aeliqo/sdk-core'), /non-exact internal/);
-  assert.throws(() => assertExportTargets({...manifest, exports: {'.': './dist/missing.js'}}, paths, '@aeliqo/sdk-core'), /absent/);
+  assert.throws(() => assertTarballPaths([...paths, 'package/src/index.ts'], '@aeliqo/core'), /non-allowlisted/);
+  assert.throws(() => assertTarballPaths([...paths, 'package/dist/.env.production'], '@aeliqo/core'), /sensitive-looking/);
+  assert.throws(() => assertPublicManifest({...manifest, dependencies: {'@aeliqo/runtime': 'workspace:*'}}, '@aeliqo/core'), /non-exact internal/);
+  assert.throws(() => assertExportTargets({...manifest, exports: {'.': './dist/missing.js'}}, paths, '@aeliqo/core'), /absent/);
 });
 test('candidate manifest and CycloneDX use exact tarball identities', () => {
   const dependencies = {
-    '@aeliqo/sdk-core': {},
-    '@aeliqo/sdk-runtime': {'@aeliqo/sdk-core': RELEASE_VERSION},
-    '@aeliqo/sdk-web': {'@aeliqo/sdk-core': RELEASE_VERSION},
-    '@aeliqo/sdk-agent': {'@aeliqo/sdk-core': RELEASE_VERSION, '@aeliqo/sdk-runtime': RELEASE_VERSION},
-    '@aeliqo/sdk-devtools': {'@aeliqo/sdk-core': RELEASE_VERSION, '@aeliqo/sdk-runtime': RELEASE_VERSION},
-    '@aeliqo/sdk-react': {'@aeliqo/sdk-web': RELEASE_VERSION},
+    '@aeliqo/core': {},
+    '@aeliqo/runtime': {'@aeliqo/core': RELEASE_VERSION},
+    '@aeliqo/web': {'@aeliqo/core': RELEASE_VERSION},
+    '@aeliqo/agent': {'@aeliqo/core': RELEASE_VERSION, '@aeliqo/runtime': RELEASE_VERSION},
+    '@aeliqo/devtools': {'@aeliqo/core': RELEASE_VERSION, '@aeliqo/runtime': RELEASE_VERSION},
+    '@aeliqo/react': {'@aeliqo/web': RELEASE_VERSION},
   };
   const packages = PUBLIC_PACKAGE_NAMES.map((name, index) => ({
     name, file: `${name.slice('@aeliqo/'.length)}.tgz`, sha256: String(index).repeat(64),
@@ -47,22 +47,22 @@ test('candidate manifest and CycloneDX use exact tarball identities', () => {
   assert.throws(() => assertPublishOrder([...packages].reverse()), /published after/);
   const external = {name: 'zod', version: '4.5.4', ref: packagePurl('zod', '4.5.4'), integrity: `sha512-${Buffer.from('zod').toString('base64')}`, license: 'MIT'};
   const sbom = cyclonedxSbom({sourceRevision: 'deadbeef', packages, externalComponents: [external], dependencies: [
-    {ref: packagePurl('@aeliqo/sdk-core', RELEASE_VERSION), dependsOn: [external.ref]},
+    {ref: packagePurl('@aeliqo/core', RELEASE_VERSION), dependsOn: [external.ref]},
   ]});
   assert.equal(sbom.bomFormat, 'CycloneDX');
   assert.equal(sbom.components.length, 7);
   assert.equal(sbom.components.find(item => item.name === 'zod').hashes[0].alg, 'SHA-512');
-  assert.equal(packagePurl('@aeliqo/sdk-core', RELEASE_VERSION), 'pkg:npm/%40aeliqo/sdk-core@0.1.0');
+  assert.equal(packagePurl('@aeliqo/core', RELEASE_VERSION), 'pkg:npm/%40aeliqo/core@0.1.0');
   assert.equal(sha256(Buffer.from('x')), '2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881');
   assert.match(sha512Integrity(Buffer.from('x')), /^sha512-/);
 });
 
 test('registry and lock classification fail closed', () => {
   const integrity = 'sha512-dGVzdA==';
-  assert.deepEqual(classifyRegistryVersionResponse(404, {}, '@aeliqo/sdk-core', '0.1.0', integrity), {state: 'absent'});
-  assert.equal(classifyRegistryVersionResponse(200, {name: '@aeliqo/sdk-core', version: '0.1.0', dist: {integrity}}, '@aeliqo/sdk-core', '0.1.0', integrity).state, 'verified-existing');
-  assert.throws(() => classifyRegistryVersionResponse(503, {}, '@aeliqo/sdk-core', '0.1.0', integrity), /HTTP 503/);
-  assert.throws(() => classifyRegistryVersionResponse(200, {name: '@aeliqo/sdk-core', version: '0.1.0', dist: {integrity: 'sha512-other'}}, '@aeliqo/sdk-core', '0.1.0', integrity), /different bytes/);
+  assert.deepEqual(classifyRegistryVersionResponse(404, {}, '@aeliqo/core', '0.1.0', integrity), {state: 'absent'});
+  assert.equal(classifyRegistryVersionResponse(200, {name: '@aeliqo/core', version: '0.1.0', dist: {integrity}}, '@aeliqo/core', '0.1.0', integrity).state, 'verified-existing');
+  assert.throws(() => classifyRegistryVersionResponse(503, {}, '@aeliqo/core', '0.1.0', integrity), /HTTP 503/);
+  assert.throws(() => classifyRegistryVersionResponse(200, {name: '@aeliqo/core', version: '0.1.0', dist: {integrity: 'sha512-other'}}, '@aeliqo/core', '0.1.0', integrity), /different bytes/);
   const lock = pnpmLockIntegrities("packages:\n\n  'zod@4.5.4':\n    resolution: {integrity: sha512-dGVzdA==}\n\nsnapshots:\n");
   assert.equal(lock.get('zod@4.5.4'), integrity);
 });

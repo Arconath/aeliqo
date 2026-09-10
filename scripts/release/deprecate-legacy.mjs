@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Inspect, then optionally deprecate the exact allowlisted 0.2.0 lineages.
+ * Inspect, then optionally deprecate the exact allowlisted obsolete lineages.
  * npm has no archive operation for a package lineage; deprecation is the
  * reversible registry marker while Git/source history remains preserved.
  */
@@ -17,7 +17,7 @@ const value = flag => {
   return index === -1 ? undefined : process.argv.slice(2)[index + 1];
 };
 const confirmation = process.env.AELIQO_CONFIRM_LEGACY_DEPRECATION;
-const expectedConfirmation = 'deprecate-v0.2.0-after-sdk-v0.1.0';
+const expectedConfirmation = 'deprecate-obsolete-packages-after-v0.1.0';
 const candidatePath = resolve(value('--candidate') ?? 'artifacts/release-candidate/manifest.json');
 
 async function registryPackage(name, version, expectedIntegrity) {
@@ -69,11 +69,11 @@ const missingReplacements = replacements.filter(item => item.state !== 'visible'
 const legacy = [];
 for (const lineage of LEGACY_LINEAGES) {
   const state = await registryPackage(lineage.name, lineage.version);
-  if (state.state !== 'visible') throw new Error(`Allowlisted legacy package disappeared: ${lineage.name}@${lineage.version}`);
   legacy.push({
     name: lineage.name,
     version: lineage.version,
     replacement: lineage.replacement,
+    state: state.state,
     currentDeprecation: state.deprecated,
     intendedDeprecation: legacyDeprecationMessage(lineage),
   });
@@ -99,6 +99,10 @@ if (confirmation !== expectedConfirmation) {
 const authenticatedUser = npm(['whoami']);
 const actions = [];
 for (const item of legacy) {
+  if (item.state === 'absent') {
+    actions.push({name: item.name, version: item.version, action: 'already-unpublished'});
+    continue;
+  }
   if (item.currentDeprecation === item.intendedDeprecation) {
     actions.push({name: item.name, version: item.version, action: 'verified-existing'});
     continue;

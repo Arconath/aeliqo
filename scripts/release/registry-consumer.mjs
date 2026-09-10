@@ -5,7 +5,7 @@ import {mkdir, mkdtemp, readFile, readdir, rm, writeFile} from 'node:fs/promises
 import {tmpdir} from 'node:os';
 import {dirname, join, resolve} from 'node:path';
 import {PUBLIC_PACKAGE_NAMES, exportSpecifiers, packageShortName, readJson, sha256} from './candidate-lib.mjs';
-import {assertCandidateIdentity, verifyNpmProvenance} from './publication-lib.mjs';
+import {NPM_REGISTRY, assertCandidateIdentity, verifyNpmProvenance} from './publication-lib.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
 const args = process.argv.slice(2);
@@ -51,7 +51,7 @@ try {
   for (const [name, requested] of [...peers].sort(([left], [right]) => left.localeCompare(right))) dependencies[name] = requested;
   const devDependencies = {typescript: '7.0.2', '@types/node': '24.13.3', '@types/react': '19.2.18', '@types/react-dom': '19.2.7'};
   await writeFile(join(consumer, 'package.json'), JSON.stringify({private: true, type: 'module', dependencies, devDependencies}, null, 2) + '\n');
-  command('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--save-exact'], consumer);
+  command('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--save-exact', '--registry', NPM_REGISTRY], consumer);
 
   const installedManifests = [];
   const imports = [];
@@ -74,8 +74,8 @@ try {
   }, include: ['exports.ts']}, null, 2) + '\n');
   command(join(consumer, 'node_modules/.bin/tsc'), ['--project', 'tsconfig.json'], consumer);
   await writeFile(join(consumer, 'consumer.mjs'), [
-    "import '@aeliqo/sdk-core';", "import '@aeliqo/sdk-runtime/evaluation';", "import '@aeliqo/sdk-web/server';",
-    "import '@aeliqo/sdk-agent/protocol';", "import '@aeliqo/sdk-devtools';", "import '@aeliqo/sdk-react/ssr';",
+    "import '@aeliqo/core';", "import '@aeliqo/runtime/evaluation';", "import '@aeliqo/web/server';",
+    "import '@aeliqo/agent/protocol';", "import '@aeliqo/devtools';", "import '@aeliqo/react/ssr';",
   ].join('\n') + '\n');
   command('node', ['--disallow-code-generation-from-strings', 'consumer.mjs'], consumer);
 
@@ -96,7 +96,7 @@ try {
     for (const item of candidate.packages ?? []) {
       if (packages.find(entry => entry.name === item.name)?.integrity !== item.integrity) throw new Error(`Registry integrity differs from approved candidate for ${item.name}`);
     }
-    const audit = JSON.parse(command('npm', ['audit', 'signatures', '--json', '--include-attestations'], consumer));
+    const audit = JSON.parse(command('npm', ['audit', 'signatures', '--json', '--include-attestations', '--registry', NPM_REGISTRY], consumer));
     provenance = packages.map(item => verifyNpmProvenance(audit, {...item, sourceRevision: expectedSourceRevision}));
   }
   const report = {

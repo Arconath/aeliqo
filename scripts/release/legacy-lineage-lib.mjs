@@ -4,33 +4,44 @@ export const LEGACY_LINEAGES = Object.freeze([
   {
     name: '@aeliqo/core',
     version: '0.2.0',
-    replacement: '@aeliqo/sdk-core@0.1.0',
+    replacement: '@aeliqo/core@0.1.0',
+    reason: 'Legacy Aeliqo 0.2 preview',
   },
   {
     name: '@aeliqo/react',
     version: '0.2.0',
-    replacement: '@aeliqo/sdk-react@0.1.0',
+    replacement: '@aeliqo/react@0.1.0',
+    reason: 'Legacy Aeliqo 0.2 preview',
   },
   {
     name: '@aeliqo/mcp',
     version: '0.2.0',
-    replacement: '@aeliqo/sdk-agent@0.1.0 subpath @aeliqo/sdk-agent/mcp',
+    replacement: '@aeliqo/agent@0.1.0 subpath @aeliqo/agent/mcp',
+    reason: 'Legacy Aeliqo 0.2 preview',
   },
   {
     name: '@aeliqo/byok',
     version: '0.2.0',
-    replacement: '@aeliqo/sdk-agent@0.1.0 model subpaths',
+    replacement: '@aeliqo/agent@0.1.0 model subpaths',
+    reason: 'Legacy Aeliqo 0.2 preview',
   },
   {
     name: '@aeliqo/webmcp-experimental',
     version: '0.2.0',
-    replacement: '@aeliqo/sdk-agent@0.1.0 subpath @aeliqo/sdk-agent/webmcp',
+    replacement: '@aeliqo/agent@0.1.0 subpath @aeliqo/agent/webmcp',
+    reason: 'Legacy Aeliqo 0.2 preview',
+  },
+  {
+    name: '@aeliqo/sdk-core',
+    version: '0.1.0-rc.1',
+    replacement: '@aeliqo/core@0.1.0',
+    reason: 'Accidental sdk-prefixed prerelease',
   },
 ]);
 
 export function legacyDeprecationMessage(lineage) {
   if (!LEGACY_LINEAGES.includes(lineage)) throw new Error('Legacy lineage is not allowlisted');
-  return `Legacy Aeliqo 0.2 lineage; incompatible with the 0.1 rewrite. Migrate to ${lineage.replacement}. ${MIGRATION_URL}`;
+  return `${lineage.reason}; incompatible with the supported 0.1 package identity. Migrate to ${lineage.replacement}. ${MIGRATION_URL}`;
 }
 
 export function classifyExactPackage(status, payload, name, version, expectedIntegrity) {

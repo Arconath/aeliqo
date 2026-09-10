@@ -10,7 +10,7 @@ The package baseline is opt-in and component scoped. A Lit element prepends `ael
 
 ```ts
 import {css, LitElement} from "lit";
-import {aeliqoThemeStyles} from "@aeliqo/sdk-web/styles";
+import {aeliqoThemeStyles} from "@aeliqo/web/styles";
 
 export class ExampleElement extends LitElement {
   static styles = [aeliqoThemeStyles, css`

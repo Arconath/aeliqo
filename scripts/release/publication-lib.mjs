@@ -5,9 +5,22 @@ import {
 
 export const NPM_OWNER = 'arconath';
 export const NPM_ORG = 'aeliqo';
+export const NPM_REGISTRY = 'https://registry.npmjs.org';
 export const GITHUB_REPOSITORY = 'Arconath/aeliqo';
 export const GITHUB_OWNER = 'hermawan22';
 export const RELEASE_WORKFLOW = '.github/workflows/release-publish.yml';
+export const BOOTSTRAP_LEGACY_HISTORY = Object.freeze({
+  '@aeliqo/core': Object.freeze(['0.2.0']),
+  '@aeliqo/react': Object.freeze(['0.2.0']),
+});
+const REQUIRED_UNPUBLISHED_HISTORY = Object.freeze([
+  '@aeliqo/core@0.2.0',
+  '@aeliqo/react@0.2.0',
+  '@aeliqo/mcp@0.2.0',
+  '@aeliqo/byok@0.2.0',
+  '@aeliqo/webmcp-experimental@0.2.0',
+  '@aeliqo/sdk-core@0.1.0-rc.1',
+]);
 
 const RC = /^0\.1\.0-rc\.([1-9]\d*)$/;
 
@@ -32,7 +45,7 @@ export function assertCandidateIdentity(candidate, {bootstrap = false, tag} = {}
     throw new Error('Stable candidates require rewrite; RC candidates require next');
   }
   for (const item of candidate.packages) {
-    const expectedFile = `aeliqo-sdk-${packageShortName(item.name)}-${candidate.version}.tgz`;
+    const expectedFile = `aeliqo-${packageShortName(item.name)}-${candidate.version}.tgz`;
     if (item.version !== candidate.version || item.file !== expectedFile
       || !/^[0-9a-f]{64}$/.test(item.sha256 ?? '')
       || !/^sha512-[A-Za-z0-9+/]+={0,2}$/.test(item.integrity ?? '')
@@ -60,11 +73,66 @@ export function assertBootstrapAuthority({whoami, membership, tfa, stdinTTY, std
   if (tfa?.tfa?.mode !== 'auth-and-writes') throw new Error('Owner bootstrap requires auth-and-writes two-factor authentication');
 }
 
-export function assertBootstrapPackageHistory({name, version, identityExists, registryVersions, versionState}) {
+export function assertBootstrapRegistryReset(preflight, now = Date.now()) {
+  const names = preflight?.packages?.map(item => item.name);
+  if (preflight?.target !== '0.1.0' || names?.join('\n') !== PUBLIC_PACKAGE_NAMES.join('\n')) {
+    throw new Error('Bootstrap preflight does not name the exact direct six-package target');
+  }
+  if (preflight.registry !== NPM_REGISTRY || preflight.registryRead !== 'verified' || preflight.namespaceAuthority !== 'verified'
+    || preflight.packages.some(item => item.registryStatus !== 'public-404-post-hold' || item.exactTarget !== 'not-visible')) {
+    throw new Error('Bootstrap requires an exact authenticated post-hold registry observation');
+  }
+  const history = preflight.ownerUnpublishedHistory;
+  if (!Array.isArray(history) || REQUIRED_UNPUBLISHED_HISTORY.some(item => !history.includes(item))) {
+    throw new Error('Bootstrap preflight does not preserve the known unpublished package history');
+  }
+  const notBefore = Date.parse(preflight.conservativePublishNotBefore ?? '');
+  if (!Number.isFinite(notBefore) || now < notBefore) {
+    throw new Error('Bootstrap is blocked by npm\'s conservative 24-hour package-name hold');
+  }
+  const verifiedAt = Date.parse(preflight.postHoldVerifiedAt ?? '');
+  if (!Number.isFinite(verifiedAt) || preflight.postHoldVerifiedAt !== preflight.observedAt
+    || verifiedAt < notBefore || verifiedAt > now) {
+    throw new Error('Bootstrap requires a fresh authenticated post-hold registry preflight');
+  }
+}
+
+export function bootstrapTagReconciliation({name, desiredVersion, beforeTags, afterTags}) {
+  const validTagMap = value => value && typeof value === 'object' && !Array.isArray(value)
+    && Object.values(value).every(version => typeof version === 'string' && version.length > 0);
+  if (!validTagMap(beforeTags) || !validTagMap(afterTags)) {
+    throw new Error(`Registry returned malformed dist-tags while publishing ${name}`);
+  }
+  if (afterTags.next !== desiredVersion) {
+    throw new Error(`Registry dist-tag next does not select verified ${name}@${desiredVersion}`);
+  }
+
+  const expectedTags = {...beforeTags, next: desiredVersion};
+  if (expectedTags.latest === desiredVersion) delete expectedTags.latest;
+  const removeTags = afterTags.latest === desiredVersion ? ['latest'] : [];
+  const reconciledTags = {...afterTags};
+  for (const tag of removeTags) delete reconciledTags[tag];
+  if (JSON.stringify(Object.entries(reconciledTags).sort()) !== JSON.stringify(Object.entries(expectedTags).sort())) {
+    throw new Error(`Registry changed unexpected dist-tags while publishing ${name}`);
+  }
+  return {removeTags, expectedTags};
+}
+
+export function assertBootstrapPackageHistory({name, version, identityExists, registryVersions, deprecatedVersions = [], versionState}) {
   if (!Array.isArray(registryVersions)) throw new Error(`Registry history is unavailable for ${name}`);
   if (identityExists === false && registryVersions.length === 0 && versionState === 'absent') return;
-  if (identityExists === true && registryVersions.length === 1 && registryVersions[0] === version && versionState === 'verified-existing') return;
-  throw new Error(`Owner bootstrap requires unused package identity ${name} or an exact resumable ${version}`);
+  const legacy = BOOTSTRAP_LEGACY_HISTORY[name] ?? [];
+  const actual = [...registryVersions].sort();
+  if (deprecatedVersions.includes(version)) throw new Error(`Owner bootstrap refuses deprecated candidate ${name}@${version}`);
+  const exactResume = versionState === 'verified-existing' && actual.join('\n') === version;
+  const visibleLegacy = versionState === 'absent' && legacy.length > 0
+    && actual.join('\n') === [...legacy].sort().join('\n')
+    && legacy.every(item => deprecatedVersions.includes(item));
+  const visibleLegacyResume = versionState === 'verified-existing' && legacy.length > 0
+    && actual.join('\n') === [...legacy, version].sort().join('\n')
+    && legacy.every(item => deprecatedVersions.includes(item));
+  if (identityExists === true && (exactResume || visibleLegacy || visibleLegacyResume)) return;
+  throw new Error(`Owner bootstrap requires an unused package identity, or the exact deprecated legacy history plus resumable ${version}, for ${name}`);
 }
 
 export function assertTrustedPublishingContext(environment, sourceRevision) {

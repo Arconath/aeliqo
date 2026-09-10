@@ -2,8 +2,8 @@
 
 This record proves the Aeliqo WebMCP adapter against Chrome's native
 `document.modelContext` surface. The browser page imports the built
-`@aeliqo/sdk-agent` WebMCP adapter, `AgentToolEndpoint`, capability registry and
-`@aeliqo/sdk-core` wire validator. The endpoint uses the real capability
+`@aeliqo/agent` WebMCP adapter, `AgentToolEndpoint`, capability registry and
+`@aeliqo/core` wire validator. The endpoint uses the real capability
 dispatcher with a local, read-only `catalog.read` handler. The page does not
 inject a `modelContext`, install a shim, use browser automation as a protocol
 substitute, contact a model, or send a provider request.

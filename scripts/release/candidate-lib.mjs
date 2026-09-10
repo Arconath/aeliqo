@@ -12,7 +12,7 @@ export const RELEASE_VERSION = '0.1.0';
 export const PUBLIC_PACKAGES = Object.freeze([
   'core', 'runtime', 'web', 'agent', 'devtools', 'react',
 ]);
-export const PUBLIC_PACKAGE_NAMES = Object.freeze(PUBLIC_PACKAGES.map(name => `@aeliqo/sdk-${name}`));
+export const PUBLIC_PACKAGE_NAMES = Object.freeze(PUBLIC_PACKAGES.map(name => `@aeliqo/${name}`));
 
 const REQUIRED_FILES = new Set(['package/package.json', 'package/README.md', 'package/LICENSE', 'package/NOTICE']);
 const ALLOWED_PREFIXES = ['package/dist/', 'package/schemas/'];
@@ -28,12 +28,12 @@ export function sha512Integrity(bytes) {
 
 export function packageShortName(packageName) {
   if (!PUBLIC_PACKAGE_NAMES.includes(packageName)) throw new Error(`Not a public release package: ${packageName}`);
-  return packageName.slice('@aeliqo/sdk-'.length);
+  return packageName.slice('@aeliqo/'.length);
 }
 
 export function publicPackageName(shortName) {
   if (!PUBLIC_PACKAGES.includes(shortName)) throw new Error(`Not a public package responsibility: ${shortName}`);
-  return `@aeliqo/sdk-${shortName}`;
+  return `@aeliqo/${shortName}`;
 }
 
 export function assertPublicManifest(manifest, expectedName, expectedVersion = RELEASE_VERSION, {allowWorkspace = false} = {}) {

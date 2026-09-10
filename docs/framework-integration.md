@@ -1,6 +1,6 @@
 # Framework integration
 
-Aeliqo has one browser implementation. `@aeliqo/sdk-web` owns the Lit custom
+Aeliqo has one browser implementation. `@aeliqo/web` owns the Lit custom
 elements and their properties, events, form behavior, and rendering. React
 uses thin `@lit/react` wrappers around those same elements. Vue and other
 frameworks use the custom-element surface directly. There is no second
@@ -13,7 +13,7 @@ checks.
 
 ## Vanilla
 
-Install `@aeliqo/sdk-web`, register elements once at the application boundary, and
+Install `@aeliqo/web`, register elements once at the application boundary, and
 set typed properties on the element. A normal DOM listener receives the typed
 `aeliqo-input` event; a native `FormData` submission remains available.
 
@@ -22,7 +22,7 @@ import {
   AeliqoInputEvent,
   registerAeliqoElements,
   type AeliqoInputElement,
-} from "@aeliqo/sdk-web";
+} from "@aeliqo/web";
 
 registerAeliqoElements();
 const input = document.querySelector<AeliqoInputElement>("aeliqo-input");
@@ -47,7 +47,7 @@ import {
   AeliqoInput,
   AeliqoTable,
   registerAeliqoReactElements,
-} from "@aeliqo/sdk-react";
+} from "@aeliqo/react";
 
 registerAeliqoReactElements();
 
@@ -69,14 +69,14 @@ export function PeopleForm() {
 ```
 
 The React package exports thin wrappers for all 71 catalog entries. The
-`@aeliqo/sdk-react/foundation`, `/inputs`, `/navigation`, `/feedback`, `/data`,
+`@aeliqo/react/foundation`, `/inputs`, `/navigation`, `/feedback`, `/data`,
 `/plot`, `/visualization`, and `/compound` subpaths are available when a
 consumer wants a narrower import boundary. A direct component stays direct:
 it does not start a planner, a runtime region, an agent, or a model call.
 
 ### React server rendering and hydration
 
-SSR is opt-in. Import `@aeliqo/sdk-react/ssr` before the bindings in the server
+SSR is opt-in. Import `@aeliqo/react/ssr` before the bindings in the server
 entry and in the client hydration entry. The server output contains Lit's
 declarative shadow root; the host must preserve that markup and load Lit
 hydration support before registering the browser elements. Ordinary imports do
@@ -84,8 +84,8 @@ not read browser globals or enable SSR as a side effect.
 
 ```tsx
 // server entry
-import "@aeliqo/sdk-react/ssr";
-import {AeliqoInput} from "@aeliqo/sdk-react";
+import "@aeliqo/react/ssr";
+import {AeliqoInput} from "@aeliqo/react";
 import {renderToString} from "react-dom/server";
 import {createElement} from "react";
 
@@ -107,7 +107,7 @@ form (`onAeliqo-input` for `aeliqo-input`).
 
 ```ts
 import {createApp, h, ref} from "vue";
-import {AeliqoInputEvent, registerAeliqoElements} from "@aeliqo/sdk-web";
+import {AeliqoInputEvent, registerAeliqoElements} from "@aeliqo/web";
 
 registerAeliqoElements();
 const App = {
@@ -127,15 +127,15 @@ createApp(App).mount(document.querySelector("#app")!);
 
 ## Meaning authoring is independent of the UI
 
-Developer-authored meanings use `@aeliqo/sdk-core` and
-`@aeliqo/sdk-runtime/meaning`. They reuse the application Catalog, preserve field
+Developer-authored meanings use `@aeliqo/core` and
+`@aeliqo/runtime/meaning`. They reuse the application Catalog, preserve field
 identity and type information, and return the same typed expression/evaluator
 contracts used by other authoring surfaces. The path does not import a model,
 Studio, chart, layout, or framework package.
 
 ```ts
-import {createStandardFunctionRegistry, type Catalog} from "@aeliqo/sdk-core";
-import {createMeaningAuthoring} from "@aeliqo/sdk-runtime/meaning";
+import {createStandardFunctionRegistry, type Catalog} from "@aeliqo/core";
+import {createMeaningAuthoring} from "@aeliqo/runtime/meaning";
 
 const registry = createStandardFunctionRegistry("app-functions");
 if (!registry.ok) throw new Error("Cannot create function registry");
@@ -187,7 +187,7 @@ Run the focused external proof after dependencies are installed:
 node tests/framework-consumers/framework-tarballs.mjs
 ```
 
-It packs `@aeliqo/sdk-core`, `@aeliqo/sdk-runtime`, `@aeliqo/sdk-web`, and `@aeliqo/sdk-react`,
+It packs `@aeliqo/core`, `@aeliqo/runtime`, `@aeliqo/web`, and `@aeliqo/react`,
 installs those exact tarballs in a temporary directory outside the workspace,
 strictly type-checks vanilla/React/Vue plus the meaning quickstart, renders a
 React SSR fixture, and exercises properties/events in Chromium. Existing

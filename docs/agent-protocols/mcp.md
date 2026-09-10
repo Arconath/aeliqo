@@ -18,7 +18,7 @@ Create a new endpoint for discovery and for every call. The endpoint owns the
 pairing, expiry, region, goal epoch, grants and dispatcher admission:
 
 ```ts
-import { createMcpStdioServer } from '@aeliqo/sdk-agent/mcp';
+import { createMcpStdioServer } from '@aeliqo/agent/mcp';
 
 createMcpStdioServer({
   createEndpoint: ({ era }) => createPairedEndpoint({ era }),
@@ -36,7 +36,7 @@ endpoint.
 An application-owned agent can connect with the official stdio client:
 
 ```ts
-import { connectMcpStdioClient } from '@aeliqo/sdk-agent/mcp';
+import { connectMcpStdioClient } from '@aeliqo/agent/mcp';
 
 const endpoint = await connectMcpStdioClient({
   server: { command: 'my-aeliqo-server', args: [] },
@@ -71,7 +71,7 @@ forwards an inbound token to another service.
 import {
   createMcpHttpHandler,
   type McpHttpAuthGate,
-} from '@aeliqo/sdk-agent/mcp';
+} from '@aeliqo/agent/mcp';
 
 const authenticate: McpHttpAuthGate = applicationBearerGate;
 const handler = createMcpHttpHandler({
@@ -99,7 +99,7 @@ Connect through the official Streamable HTTP client and supply an
 application-owned bearer provider:
 
 ```ts
-import { connectMcpHttpClient } from '@aeliqo/sdk-agent/mcp';
+import { connectMcpHttpClient } from '@aeliqo/agent/mcp';
 
 const endpoint = await connectMcpHttpClient({
   url: 'https://mcp.example.com/mcp',

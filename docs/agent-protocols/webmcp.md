@@ -1,12 +1,12 @@
 # WebMCP adapter
 
-`@aeliqo/sdk-agent/webmcp` is an optional browser projection of one
+`@aeliqo/agent/webmcp` is an optional browser projection of one
 host-owned `AgentToolEndpoint`. It does not contain a capability dispatcher,
 model planner, browser automation fallback, or authority grant logic. The
 endpoint remains the single executor for discovery and invocation.
 
 ```ts
-import {createWebMcpAdapter} from '@aeliqo/sdk-agent/webmcp';
+import {createWebMcpAdapter} from '@aeliqo/agent/webmcp';
 
 const adapter = createWebMcpAdapter({endpoint});
 const registration = await adapter.register();

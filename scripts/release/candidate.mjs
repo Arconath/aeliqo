@@ -194,7 +194,7 @@ async function buildAndPack(stagingRoot) {
     await writeFile(join(stage, 'package.json'), JSON.stringify(stagedManifest(source), null, 2) + '\n');
     command('pnpm', ['pack', '--pack-destination', output], {cwd: stage});
 
-    const tarball = join(output, `aeliqo-sdk-${shortName}-${version}.tgz`);
+    const tarball = join(output, `aeliqo-${shortName}-${version}.tgz`);
     if (!await exists(tarball)) throw new Error(`pnpm pack did not produce expected ${tarball}`);
     const manifest = packedJson(tarball);
     assertPublicManifest(manifest, expectedName, version);
@@ -259,10 +259,10 @@ async function externalConsumer(packages) {
     "syncBuiltinESMExports();",
   ].join('\n') + '\n');
   await writeFile(join(consumer, 'consumer.mjs'), [
-    "import {parseContract} from '@aeliqo/sdk-core';",
+    "import {parseContract} from '@aeliqo/core';",
     "const modules = await Promise.all([",
-    "  import('@aeliqo/sdk-runtime/evaluation'), import('@aeliqo/sdk-runtime/audit'), import('@aeliqo/sdk-web/server'),",
-    "  import('@aeliqo/sdk-agent/protocol'), import('@aeliqo/sdk-devtools'), import('@aeliqo/sdk-react/ssr'),",
+    "  import('@aeliqo/runtime/evaluation'), import('@aeliqo/runtime/audit'), import('@aeliqo/web/server'),",
+    "  import('@aeliqo/agent/protocol'), import('@aeliqo/devtools'), import('@aeliqo/react/ssr'),",
     "]);",
     "const boundedRejection = parseContract('catalog', '{}');",
     "const audit = modules[1].createLocalAuditExporter({maxEvents: 2, maxBytes: 1024, now: () => 1});",

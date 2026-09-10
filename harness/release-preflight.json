@@ -1,5 +1,5 @@
 {
-  "observedAt": "2026-09-10T02:10:18Z",
+  "observedAt": "2026-09-10T16:32:51Z",
   "target": "0.1.0",
   "registry": "https://registry.npmjs.org",
   "registryRead": "verified",
@@ -9,13 +9,31 @@
   "resetMigrationApproved": true,
   "stagingTag": "next",
   "packages": [
-    {"name": "@aeliqo/sdk-core", "localVersion": "0.1.0", "registryStatus": "public-404", "exactTarget": "not-visible"},
-    {"name": "@aeliqo/sdk-runtime", "localVersion": "0.1.0", "registryStatus": "public-404", "exactTarget": "not-visible"},
-    {"name": "@aeliqo/sdk-web", "localVersion": "0.1.0", "registryStatus": "public-404", "exactTarget": "not-visible"},
-    {"name": "@aeliqo/sdk-react", "localVersion": "0.1.0", "registryStatus": "public-404", "exactTarget": "not-visible"},
-    {"name": "@aeliqo/sdk-agent", "localVersion": "0.1.0", "registryStatus": "public-404", "exactTarget": "not-visible"},
-    {"name": "@aeliqo/sdk-devtools", "localVersion": "0.1.0", "registryStatus": "public-404", "exactTarget": "not-visible"}
+    {"name": "@aeliqo/core", "localVersion": "0.1.0", "registryStatus": "public-404-after-owner-unpublish", "exactTarget": "not-visible"},
+    {"name": "@aeliqo/runtime", "localVersion": "0.1.0", "registryStatus": "public-404", "exactTarget": "not-visible"},
+    {"name": "@aeliqo/web", "localVersion": "0.1.0", "registryStatus": "public-404", "exactTarget": "not-visible"},
+    {"name": "@aeliqo/agent", "localVersion": "0.1.0", "registryStatus": "public-404", "exactTarget": "not-visible"},
+    {"name": "@aeliqo/devtools", "localVersion": "0.1.0", "registryStatus": "public-404", "exactTarget": "not-visible"},
+    {"name": "@aeliqo/react", "localVersion": "0.1.0", "registryStatus": "public-404-after-owner-unpublish", "exactTarget": "not-visible"}
   ],
+  "abandonedPackages": [
+    {
+      "name": "@aeliqo/sdk-core",
+      "version": "0.1.0-rc.1",
+      "registryStatus": "public-404-after-owner-unpublish",
+      "reason": "Owner corrected the package identity after the first package in the bootstrap sequence and manually unpublished it; this historical name+version remains permanently unavailable and is not part of the direct-name release."
+    }
+  ],
+  "ownerUnpublishedHistory": [
+    "@aeliqo/core@0.2.0",
+    "@aeliqo/react@0.2.0",
+    "@aeliqo/mcp@0.2.0",
+    "@aeliqo/byok@0.2.0",
+    "@aeliqo/webmcp-experimental@0.2.0",
+    "@aeliqo/sdk-core@0.1.0-rc.1"
+  ],
+  "conservativePublishNotBefore": "2026-09-11T16:32:51Z",
+  "postHoldVerifiedAt": null,
   "excludedInternalPackages": [
     {
       "name": "@aeliqo/testkit",
@@ -30,14 +48,14 @@
   "remoteRefs": {
     "originMain": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e",
     "originRewriteBranch": "711a9495e3ff634025d88aca973de9297b4527a4",
-    "localCandidate": "cfbcfaeddf6ddeb15339748c0f751a510aba5656"
+    "localCandidate": null
   },
   "mutations": {
-    "registry": false,
+    "registry": true,
     "remote": false,
     "production": false
   },
-  "blockedReason": "first-publication-authority-required",
-  "availabilityCaveat": "Public registry 404s and organization authority permit an RC attempt; only successful first publication definitively proves that a never-visible name/version is reusable.",
-  "identityDecision": "The owner explicitly authorized a coherent clean 0.1.0 lineage when legacy 0.2.0 identities conflicted. The six sdk-* names are that bounded replacement set; no forwarding packages are claimed."
+  "blockedReason": "direct-name-migration-release-revalidation-and-npm-24h-name-hold",
+  "availabilityCaveat": "Authenticated current reads show every organization package as not visible after owner unpublication. That does not erase historical use or bypass npm's 24-hour name hold; only a fresh post-hold preflight and successful exact RC publication prove acceptance.",
+  "identityDecision": "The owner explicitly selected the concise six-package family @aeliqo/{core,runtime,web,react,agent,devtools} and manually unpublished all prior organization packages. Historical name+version pairs remain permanently unavailable; the accidental sdk-core RC is not a forwarding package."
 }

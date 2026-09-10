@@ -4,13 +4,13 @@ import {resolve} from 'node:path';
 import test from 'node:test';
 import {PUBLIC_PACKAGE_NAMES, sha256, sha512Integrity} from '../../scripts/release/candidate-lib.mjs';
 import {
-  assertApprovedRc, assertBootstrapAuthority, assertBootstrapPackageHistory, assertCandidateIdentity,
-  assertCandidateTarball, assertTagMayAdvance, assertTrustedPublishingContext, expectedIntegrity,
+  assertApprovedRc, assertBootstrapAuthority, assertBootstrapPackageHistory, assertBootstrapRegistryReset, assertCandidateIdentity,
+  assertCandidateTarball, assertTagMayAdvance, assertTrustedPublishingContext, bootstrapTagReconciliation, expectedIntegrity,
   verifyNpmProvenance,
 } from '../../scripts/release/publication-lib.mjs';
 
 const sourceRevision = 'a'.repeat(40);
-const packages = PUBLIC_PACKAGE_NAMES.map((name, index) => ({name, version: '0.1.0-rc.2', sha256: String(index).padStart(64, '0'), integrity: `sha512-${index}`, bytes: 1, file: `aeliqo-sdk-${name.slice('@aeliqo/sdk-'.length)}-0.1.0-rc.2.tgz`}));
+const packages = PUBLIC_PACKAGE_NAMES.map((name, index) => ({name, version: '0.1.0-rc.2', sha256: String(index).padStart(64, '0'), integrity: `sha512-${index}`, bytes: 1, file: `aeliqo-${name.slice('@aeliqo/'.length)}-0.1.0-rc.2.tgz`}));
 const candidate = {schema: 'aeliqo.release-candidate.v1', sourceRevision, version: '0.1.0-rc.2', publishOrder: PUBLIC_PACKAGE_NAMES, packages};
 const withVersion = (value) => ({...candidate, version: value, packages: packages.map(item => ({...item, version: value, file: item.file.replace('0.1.0-rc.2', value)}))});
 
@@ -21,7 +21,7 @@ test('first-RC bootstrap is a separate exact interactive path', () => {
   assert.doesNotThrow(() => assertCandidateIdentity(withVersion('0.1.0-rc.1'), {bootstrap: true, tag: 'next'}));
   assert.throws(() => assertCandidateIdentity(withVersion('0.1.0-rc.2'), {bootstrap: true, tag: 'next'}), /restricted/);
   assert.throws(() => assertCandidateIdentity({...candidate, packages: candidate.packages.map((item, index) => index ? item : {...item, version: '9.9.9'})}, {tag: 'next'}), /metadata is invalid/);
-  assert.throws(() => assertCandidateIdentity({...candidate, packages: candidate.packages.map((item, index) => index ? item : {...item, file: 'aeliqo-sdk-core-9.9.9.tgz'})}, {tag: 'next'}), /metadata is invalid/);
+  assert.throws(() => assertCandidateIdentity({...candidate, packages: candidate.packages.map((item, index) => index ? item : {...item, file: 'aeliqo-core-9.9.9.tgz'})}, {tag: 'next'}), /metadata is invalid/);
   const authority = {whoami: 'arconath', membership: {arconath: 'owner'}, tfa: {tfa: {mode: 'auth-and-writes'}}, stdinTTY: true, stdoutTTY: true, stderrTTY: true, ci: false};
   assert.doesNotThrow(() => assertBootstrapAuthority(authority));
   assert.throws(() => assertBootstrapAuthority({...authority, ci: true}), /interactive local terminal/);
@@ -36,20 +36,61 @@ test('publication reopens each tarball and binds its internal public identity', 
   const canonicalNotice = Buffer.from('notice');
   const input = {item, candidateVersion: candidate.version, manifest, paths, license: canonicalLicense, notice: canonicalNotice, canonicalLicense, canonicalNotice};
   assert.doesNotThrow(() => assertCandidateTarball(input));
-  assert.throws(() => assertCandidateTarball({...input, manifest: {...manifest, name: '@aeliqo/sdk-runtime'}}), /Expected @aeliqo\/sdk-core/);
+  assert.throws(() => assertCandidateTarball({...input, manifest: {...manifest, name: '@aeliqo/runtime'}}), /Expected @aeliqo\/core/);
   assert.throws(() => assertCandidateTarball({...input, manifest: {...manifest, version: '9.9.9'}}), /must be version/);
   assert.throws(() => assertCandidateTarball({...input, notice: Buffer.from('changed')}), /NOTICE differs/);
 });
 
 test('first-RC package history permits only an exact partial-publication resume', () => {
-  const name = '@aeliqo/sdk-core';
+  const name = '@aeliqo/core';
   const version = '0.1.0-rc.1';
   assert.doesNotThrow(() => assertBootstrapPackageHistory({name, version, identityExists: false, registryVersions: [], versionState: 'absent'}));
-  assert.doesNotThrow(() => assertBootstrapPackageHistory({name, version, identityExists: true, registryVersions: [version], versionState: 'verified-existing'}));
+  assert.doesNotThrow(() => assertBootstrapPackageHistory({name, version, identityExists: true, registryVersions: ['0.2.0'], deprecatedVersions: ['0.2.0'], versionState: 'absent'}));
+  assert.doesNotThrow(() => assertBootstrapPackageHistory({name, version, identityExists: true, registryVersions: ['0.2.0', version], deprecatedVersions: ['0.2.0'], versionState: 'verified-existing'}));
+  assert.doesNotThrow(() => assertBootstrapPackageHistory({name, version, identityExists: true, registryVersions: [version], deprecatedVersions: [], versionState: 'verified-existing'}));
   assert.throws(() => assertBootstrapPackageHistory({name, version, identityExists: true, registryVersions: [], versionState: 'absent'}), /unused package identity/);
-  assert.throws(() => assertBootstrapPackageHistory({name, version, identityExists: true, registryVersions: [version], versionState: 'absent'}), /unused package identity/);
-  assert.throws(() => assertBootstrapPackageHistory({name, version, identityExists: true, registryVersions: ['0.0.9'], versionState: 'absent'}), /unused package identity/);
-  assert.throws(() => assertBootstrapPackageHistory({name, version, identityExists: true, registryVersions: [version, '0.1.0-rc.0'], versionState: 'verified-existing'}), /unused package identity/);
+  assert.throws(() => assertBootstrapPackageHistory({name, version, identityExists: true, registryVersions: ['0.2.0'], deprecatedVersions: [], versionState: 'absent'}), /deprecated legacy history/);
+  assert.throws(() => assertBootstrapPackageHistory({name, version, identityExists: true, registryVersions: ['0.0.9'], deprecatedVersions: [], versionState: 'absent'}), /deprecated legacy history/);
+  assert.throws(() => assertBootstrapPackageHistory({name, version, identityExists: true, registryVersions: ['0.2.0', version, '0.1.0-rc.0'], deprecatedVersions: ['0.2.0'], versionState: 'verified-existing'}), /deprecated legacy history/);
+  assert.doesNotThrow(() => assertBootstrapPackageHistory({name: '@aeliqo/runtime', version, identityExists: true, registryVersions: [version], versionState: 'verified-existing'}));
+  assert.throws(() => assertBootstrapPackageHistory({name: '@aeliqo/runtime', version, identityExists: true, registryVersions: [version], deprecatedVersions: [version], versionState: 'verified-existing'}), /deprecated candidate/);
+});
+
+test('owner-unpublished names require the conservative hold and a fresh post-hold preflight', () => {
+  const notBefore = '2026-09-11T16:32:51Z';
+  const preflight = {
+    target: '0.1.0',
+    registry: 'https://registry.npmjs.org',
+    registryRead: 'verified',
+    namespaceAuthority: 'verified',
+    observedAt: '2026-09-11T16:33:00Z',
+    packages: PUBLIC_PACKAGE_NAMES.map(name => ({name, registryStatus: 'public-404-post-hold', exactTarget: 'not-visible'})),
+    ownerUnpublishedHistory: [
+      '@aeliqo/core@0.2.0', '@aeliqo/react@0.2.0', '@aeliqo/mcp@0.2.0',
+      '@aeliqo/byok@0.2.0', '@aeliqo/webmcp-experimental@0.2.0', '@aeliqo/sdk-core@0.1.0-rc.1',
+    ],
+    conservativePublishNotBefore: notBefore,
+    postHoldVerifiedAt: '2026-09-11T16:33:00Z',
+  };
+  assert.throws(() => assertBootstrapRegistryReset(preflight, Date.parse('2026-09-11T16:32:50Z')), /24-hour package-name hold/);
+  assert.doesNotThrow(() => assertBootstrapRegistryReset(preflight, Date.parse('2026-09-11T16:33:01Z')));
+  assert.throws(() => assertBootstrapRegistryReset({...preflight, postHoldVerifiedAt: null}, Date.parse('2026-09-11T16:33:01Z')), /fresh authenticated post-hold/);
+  assert.throws(() => assertBootstrapRegistryReset({...preflight, packages: preflight.packages.slice(1)}, Date.parse('2026-09-11T16:33:01Z')), /exact direct six-package/);
+  assert.throws(() => assertBootstrapRegistryReset({...preflight, ownerUnpublishedHistory: []}, Date.parse('2026-09-11T16:33:01Z')), /known unpublished/);
+  assert.throws(() => assertBootstrapRegistryReset({...preflight, observedAt: '2026-09-11T16:32:59Z'}, Date.parse('2026-09-11T16:33:01Z')), /fresh authenticated/);
+  assert.throws(() => assertBootstrapRegistryReset({...preflight, registry: 'https://registry.example.test'}, Date.parse('2026-09-11T16:33:01Z')), /exact authenticated/);
+});
+
+test('first publication removes only an automatically-created prerelease latest tag', () => {
+  const input = {name: '@aeliqo/runtime', desiredVersion: '0.1.0-rc.1', beforeTags: {}, afterTags: {next: '0.1.0-rc.1', latest: '0.1.0-rc.1'}};
+  assert.deepEqual(bootstrapTagReconciliation(input), {removeTags: ['latest'], expectedTags: {next: '0.1.0-rc.1'}});
+  assert.deepEqual(bootstrapTagReconciliation({...input, afterTags: {next: '0.1.0-rc.1'}}), {removeTags: [], expectedTags: {next: '0.1.0-rc.1'}});
+  assert.deepEqual(bootstrapTagReconciliation({
+    ...input, name: '@aeliqo/core', beforeTags: {latest: '0.2.0'},
+    afterTags: {latest: '0.2.0', next: '0.1.0-rc.1'},
+  }), {removeTags: [], expectedTags: {latest: '0.2.0', next: '0.1.0-rc.1'}});
+  assert.throws(() => bootstrapTagReconciliation({...input, afterTags: {next: '0.1.0-rc.1', beta: '9.9.9'}}), /unexpected dist-tags/);
+  assert.throws(() => bootstrapTagReconciliation({...input, afterTags: {latest: '0.1.0-rc.1'}}), /next does not select/);
 });
 
 test('trusted publishing and dist-tag movement fail closed', () => {
@@ -75,11 +116,11 @@ test('approved RC records bind source and all candidate integrities', () => {
 test('npm provenance binds package bytes to canonical workflow and source', () => {
   const bytes = Buffer.from('candidate');
   const integrity = sha512Integrity(bytes);
-  const name = '@aeliqo/sdk-core';
+  const name = '@aeliqo/core';
   const version = '0.1.0-rc.2';
   const statement = {
     predicateType: 'https://slsa.dev/provenance/v1',
-    subject: [{name: 'pkg:npm/%40aeliqo/sdk-core@0.1.0-rc.2', digest: {sha512: Buffer.from(integrity.slice(7), 'base64').toString('hex')}}],
+    subject: [{name: 'pkg:npm/%40aeliqo/core@0.1.0-rc.2', digest: {sha512: Buffer.from(integrity.slice(7), 'base64').toString('hex')}}],
     predicate: {buildDefinition: {
       externalParameters: {workflow: {repository: 'https://github.com/Arconath/aeliqo', ref: 'refs/heads/main', path: '/.github/workflows/release-publish.yml'}},
       internalParameters: {github: {event_name: 'workflow_dispatch'}},
@@ -97,7 +138,7 @@ test('all public packages carry the canonical full LICENSE and NOTICE', async ()
   const [license, notice] = await Promise.all([readFile(resolve(root, 'LICENSE')), readFile(resolve(root, 'NOTICE'))]);
   assert.ok(license.length > 10_000);
   for (const name of PUBLIC_PACKAGE_NAMES) {
-    const directory = name.slice('@aeliqo/sdk-'.length);
+    const directory = name.slice('@aeliqo/'.length);
     assert.deepEqual(await readFile(resolve(root, 'packages', directory, 'LICENSE')), license);
     assert.deepEqual(await readFile(resolve(root, 'packages', directory, 'NOTICE')), notice);
   }

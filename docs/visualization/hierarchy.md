@@ -1,7 +1,7 @@
 # Tree, Treemap and Relationship
 
-Import the shared elements from `@aeliqo/sdk-web/visualization/hierarchy`, or the thin
-React bindings from `@aeliqo/sdk-react/visualization`. `registerAeliqoElements()`
+Import the shared elements from `@aeliqo/web/visualization/hierarchy`, or the thin
+React bindings from `@aeliqo/react/visualization`. `registerAeliqoElements()`
 registers all twelve visualization families. Direct components accept a typed
 `visualization`, an authorized binding `context`, and bounded `datasets` keyed by
 exact ResultRef. They perform no query, model call or source discovery.
