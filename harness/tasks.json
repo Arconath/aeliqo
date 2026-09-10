@@ -1500,24 +1500,36 @@
     {
       "id": "T40",
       "phase": "M6-Eval",
-      "title": "Real reasoning generalization, evidence and autonomy evaluation",
+      "title": "Provider-neutral BYOK, dispatcher and MCP integration qualification",
       "ownerRole": "agent evaluation + independent reviewer",
       "dependsOn": [
         "T24",
         "T39"
       ],
       "paths": [
+        "packages/agent/src/model",
+        "packages/agent/src/capabilities",
+        "packages/agent/src/mcp",
         "tests/agent-evaluation",
-        "fixtures/evaluation",
-        "docs/evaluation"
+        "tests/protocol-model",
+        "tests/protocol-mcp",
+        "tests/agents/dispatch/model-loop.test.ts",
+        "fixtures/evaluation"
       ],
       "acceptance": [
-        "Actual authorized provider and MCP runs on held-out paraphrase/composition/schema domains with recorded versions/budgets; no synthetic substitute.",
-        "Evaluate separately from present; no compulsory nested LLM calls; stale user state wins.",
-        "Independent arithmetic, population, explanation grounding and claim evidence checks including mix-shift counterexample.",
-        "Ablations: explicit tasks, fixed templates, governed AI proposals; report correctness, task completion, cost/latency separately.",
-        "Unavailable credentials remain BLOCKED; does not block independent component implementation.",
-        "Run weak/strong model configurations with independent effect permissions and repeated invalid/valid-but-wrong tasks; never derive privilege from evaluation score."
+        "BYOK architecture is provider-neutral.",
+        "API credentials are opaque.",
+        "Provider is not inferred from key prefix, content, or shape.",
+        "A real DeepSeek V4 Flash request succeeds through Aeliqo.",
+        "A real tool call succeeds through Aeliqo.",
+        "Provider continuation needed for protocol correctness is safely supported.",
+        "Cancellation and timeout are bounded.",
+        "Errors are normalized correctly.",
+        "Credentials cannot escape through redirects, logs, evidence, or the browser bundle.",
+        "Tool execution remains controlled by trusted Aeliqo authorization and dispatcher boundaries.",
+        "Duplicate or multiple effect execution cannot bypass sequencing.",
+        "The real MCP path relevant to agent integration works.",
+        "A bounded three-to-five-case live held-out smoke proves simple query, deterministic evaluation, a valid tool call, invalid-request recovery, and a multi-turn flow."
       ],
       "status": "active",
       "stage": "ready",
@@ -1535,7 +1547,7 @@
           "sha256": "99e118fd49c0670bf0d07cbb57133ce69bd3907adee59c61852b05cebc51e026"
         }
       ],
-      "notes": "Independent sealed18-case/21-output HR/commerce/support corpus and two independent Python arithmetic/quality provenance paths integrated. Frozen production-port host/scorer covers data-only explicit preflight. A fresh source-bound local boundary run at 005153d passes 20/20 Node host tests and 4/4 Chromium UI tests, covering effect separation, forged-authority rejection, stale commits, revocation and late work. An installed external consumer run at e708fd0 passes core/runtime/agent Node and Chromium boundary checks from exact 0.1.0 tarballs. No provider call authorized or made; live models/budget, UI/grounding/ablations/MCP evidence remain required; not accepted. Model denominators remain zero and UI/grounding remain unqualified."
+      "notes": "The owner superseded the pre-release weak-versus-strong research task with a product integration qualification. Historical explicit-task, installed-consumer, and real MCP evidence remains useful input, but final acceptance requires a fresh source-bound three-to-five-case DeepSeek V4 Flash smoke plus deterministic security, dispatcher, continuation, cancellation, error-normalization, browser-bundle, and MCP proof. Model answer quality remains measured separately and does not grant authority or block a sound provider-neutral integration."
     },
     {
       "id": "T41",

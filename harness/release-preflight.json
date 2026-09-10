@@ -4,7 +4,7 @@
   "registry": "https://registry.npmjs.org",
   "registryRead": "verified",
   "namespaceAuthorized": true,
-  "targetEverPublished": false,
+  "targetEverPublished": null,
   "publishedStableVersions": [],
   "resetMigrationApproved": true,
   "stagingTag": "next",
@@ -37,7 +37,7 @@
     "remote": false,
     "production": false
   },
-  "blockedReason": null,
+  "blockedReason": "first-publication-authority-required",
   "availabilityCaveat": "Public registry 404s and organization authority permit an RC attempt; only successful first publication definitively proves that a never-visible name/version is reusable.",
   "identityDecision": "The owner explicitly authorized a coherent clean 0.1.0 lineage when legacy 0.2.0 identities conflicted. The six sdk-* names are that bounded replacement set; no forwarding packages are claimed."
 }
