@@ -1,0 +1,61 @@
+{
+  "schema": "aeliqo.local-tarball-consumer.v1",
+  "sourceRevision": "1be6be5ea1d4d06d2e46fe0a1addbca4078492a3",
+  "version": "0.1.0-rc.1",
+  "install": {
+    "source": "local-candidate-tarballs",
+    "lockSha256": "767297a8f435a40abe16c512bc08c23c775306f4731f760f8b26e80eacac8220"
+  },
+  "execution": {
+    "networkDenied": true,
+    "deniedMethods": [
+      "fetch",
+      "http.request",
+      "http.get",
+      "https.request",
+      "https.get",
+      "net.connect",
+      "net.createConnection",
+      "net.Socket.connect",
+      "dns.lookup",
+      "dns.resolve"
+    ],
+    "packageModulesLoaded": 7,
+    "coreParserExecuted": true,
+    "auditNetworkAttempts": 0,
+    "auditExecuted": true
+  },
+  "packages": [
+    {
+      "name": "@aeliqo/core",
+      "version": "0.1.0-rc.1",
+      "integrity": "sha512-mlJ8Ssw2ojVgOLKahc6by8DBpONgVFghp3r92YJmm7BPkGtLDo5qnghono3Z+mO2kKA7H0HRAl+JNbgvPxtWKg=="
+    },
+    {
+      "name": "@aeliqo/runtime",
+      "version": "0.1.0-rc.1",
+      "integrity": "sha512-EPmpv9TNarwk6aSymK1um6RpEtgFEgNPyzZOrQgD4wainCdmyRmL6Okp1+GiKEof4yIZyEM3S3J+rr8mjABYfA=="
+    },
+    {
+      "name": "@aeliqo/web",
+      "version": "0.1.0-rc.1",
+      "integrity": "sha512-ODldWO7Y5TznW8/STjRjjjvqjcJSMVT897In/ZOqdbcm4l/DHWznbBL54NP0A6/3Ja773jt0kKfbLQ6ytgTGIQ=="
+    },
+    {
+      "name": "@aeliqo/agent",
+      "version": "0.1.0-rc.1",
+      "integrity": "sha512-ZYK2lm4SAygBP9xhsNzRaZwDOdqaXX9ClamNv1E2++LhR19YX95UtOsZw6h4+UZwmIXQGpMLWJNyj8TpybnLwQ=="
+    },
+    {
+      "name": "@aeliqo/devtools",
+      "version": "0.1.0-rc.1",
+      "integrity": "sha512-Wuol9zm+tp8Y0kQR4SUCh5zyxdTMSKgfgH7EgGNUb4+zpa/uNfS6hcq6Ae2ypGabeEo9HRtLV7a/CS9UR+DW4w=="
+    },
+    {
+      "name": "@aeliqo/react",
+      "version": "0.1.0-rc.1",
+      "integrity": "sha512-jFkF+1cXYwdJ59bn52ZSSw8QCfdGEAmU9BMZOAYrDMi+/KidEKifOpMPjMviSF+NYfgApdBzaPeCPE6vh3eTUg=="
+    }
+  ],
+  "exportCount": 130
+}

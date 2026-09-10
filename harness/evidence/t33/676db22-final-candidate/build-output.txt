@@ -1,0 +1,12 @@
+output=/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/artifacts/t33-676db22-final-candidate
+sourceRevision=1be6be5ea1d4d06d2e46fe0a1addbca4078492a3
+version=0.1.0-rc.1
+tarballs=6
+publishOrder=@aeliqo/core,@aeliqo/runtime,@aeliqo/web,@aeliqo/agent,@aeliqo/devtools,@aeliqo/react
+consumerLockSha256=20306b9bab96d59c3de48d6e66f996404a468e1132f5c8352c4e8eabffc0f66d
+consumerPackages=6
+consumerExportCount=130
+consumerNetworkDenied=true
+sbomComponents=63
+secretFindings=0
+exitCode=0
