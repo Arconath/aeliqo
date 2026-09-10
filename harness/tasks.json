@@ -1406,15 +1406,31 @@
       "acceptance": [
         "Unused RC version, frozen dependencies, licenses, SBOM, exact artifact hashes and isolated consumers pass."
       ],
-      "status": "planned",
+      "status": "done",
       "stage": "ready",
       "evidence": [
         {
           "path": "harness/evidence/t33/60e1c4d-seven-package-consumer/manifest.json",
           "sha256": "d651d1dc501641f310f6433e32a5e7189c11dcd19d299017f42dd1caace3ddc0"
+        },
+        {
+          "path": "harness/evidence/t33/d7b48da-rc1-review/manifest.json",
+          "sha256": "3ccd42da1c85ad8b397781c7d7ca5b2bdcaa623a191a873cd014bcaa7562ad7a"
         }
       ],
-      "notes": "Historical partial source-bound pack/install audit included seven local workspaces. The current release target is six public Apache-2.0 packages; @aeliqo/testkit remains Apache-2.0 source but is an internal private workspace and is excluded from registry artifacts. A new six-package RC audit, unused registry RC verification and independent T32 review remain required. No publication or promotion was attempted."
+      "notes": "Accepted on exact clean source d7b48da/digest 05e599 after independent review of the six public Apache-2.0 0.1.0-rc.1 tarballs. Exact bytes/integrities, allowlisted contents, declarations and the installed styles export, dependency order, frozen-lock SBOM, full source/archive/packed-artifact secret scans, 130 strict export checks and a fresh offline consumer pass. Authenticated owner-scope queries found all six package identities and exact RC versions E404/not visible; this proves current non-visibility only, not historical non-use or guaranteed first-publication acceptance. @aeliqo/testkit remains private and excluded. No publication, promotion, GitHub or production mutation occurred.",
+      "review": {
+        "status": "approved",
+        "author": "release candidate implementation authors",
+        "reviewer": "/root/close_ready_scenarios",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t33/d7b48da-rc1-review/manifest.json",
+            "sha256": "3ccd42da1c85ad8b397781c7d7ca5b2bdcaa623a191a873cd014bcaa7562ad7a"
+          }
+        ],
+        "scope": "Approves the exact d7b48da six-package 0.1.0-rc.1 candidate for T33 acceptance with no P0/P1 finding; excludes npm publication/acceptance, dist-tag promotion, source release and deployment."
+      }
     },
     {
       "id": "T34",
