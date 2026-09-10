@@ -5,7 +5,7 @@ import {readFile, writeFile} from 'node:fs/promises';
 import {basename, dirname, relative, resolve} from 'node:path';
 import {classifyRegistryVersionResponse, readJson} from './candidate-lib.mjs';
 import {
-  NPM_ORG, assertBootstrapAuthority, assertCandidateIdentity, assertCandidateTarball,
+  NPM_ORG, assertBootstrapAuthority, assertBootstrapPackageHistory, assertCandidateIdentity, assertCandidateTarball,
   assertTagMayAdvance, assertTrustedPublishingContext, expectedIntegrity,
 } from './publication-lib.mjs';
 
@@ -69,7 +69,7 @@ async function registryPackage(item) {
     if (selected !== undefined && typeof selected !== 'string') throw new Error(`Registry returned malformed ${item.name} dist-tag ${tag}`);
     const versions = payload?.versions;
     if (!versions || typeof versions !== 'object' || Array.isArray(versions)) throw new Error(`Registry returned malformed ${item.name} version history`);
-    return {exists: true, selected};
+    return {exists: true, selected, versions: Object.keys(versions).sort()};
   } finally { clearTimeout(timer); }
 }
 
@@ -105,7 +105,12 @@ for (const item of candidate.packages) {
   });
   const before = await registryState(item);
   const registryPackageState = await registryPackage(item);
-  if (bootstrap && registryPackageState.exists) throw new Error(`Owner bootstrap requires unused package identity ${item.name}`);
+  if (bootstrap) assertBootstrapPackageHistory({
+    name: item.name,
+    version: candidate.version,
+    registryVersions: registryPackageState.exists ? registryPackageState.versions : [],
+    versionState: before.state,
+  });
   assertTagMayAdvance({name: item.name, tag, desiredVersion: candidate.version, currentVersion: registryPackageState.selected, versionAlreadyExists: before.state === 'verified-existing'});
   prepared.push({item, tarball, before});
 }

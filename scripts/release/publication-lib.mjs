@@ -60,6 +60,13 @@ export function assertBootstrapAuthority({whoami, membership, tfa, stdinTTY, std
   if (tfa?.tfa?.mode !== 'auth-and-writes') throw new Error('Owner bootstrap requires auth-and-writes two-factor authentication');
 }
 
+export function assertBootstrapPackageHistory({name, version, registryVersions, versionState}) {
+  if (!Array.isArray(registryVersions)) throw new Error(`Registry history is unavailable for ${name}`);
+  if (registryVersions.length === 0) return;
+  if (registryVersions.length === 1 && registryVersions[0] === version && versionState === 'verified-existing') return;
+  throw new Error(`Owner bootstrap requires unused package identity ${name} or an exact resumable ${version}`);
+}
+
 export function assertTrustedPublishingContext(environment, sourceRevision) {
   if (environment.GITHUB_ACTIONS !== 'true'
     || environment.GITHUB_REPOSITORY !== GITHUB_REPOSITORY

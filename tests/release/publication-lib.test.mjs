@@ -4,7 +4,7 @@ import {resolve} from 'node:path';
 import test from 'node:test';
 import {PUBLIC_PACKAGE_NAMES, sha256, sha512Integrity} from '../../scripts/release/candidate-lib.mjs';
 import {
-  assertApprovedRc, assertBootstrapAuthority, assertCandidateIdentity,
+  assertApprovedRc, assertBootstrapAuthority, assertBootstrapPackageHistory, assertCandidateIdentity,
   assertCandidateTarball, assertTagMayAdvance, assertTrustedPublishingContext, expectedIntegrity,
   verifyNpmProvenance,
 } from '../../scripts/release/publication-lib.mjs';
@@ -39,6 +39,16 @@ test('publication reopens each tarball and binds its internal public identity', 
   assert.throws(() => assertCandidateTarball({...input, manifest: {...manifest, name: '@aeliqo/sdk-runtime'}}), /Expected @aeliqo\/sdk-core/);
   assert.throws(() => assertCandidateTarball({...input, manifest: {...manifest, version: '9.9.9'}}), /must be version/);
   assert.throws(() => assertCandidateTarball({...input, notice: Buffer.from('changed')}), /NOTICE differs/);
+});
+
+test('first-RC package history permits only an exact partial-publication resume', () => {
+  const name = '@aeliqo/sdk-core';
+  const version = '0.1.0-rc.1';
+  assert.doesNotThrow(() => assertBootstrapPackageHistory({name, version, registryVersions: [], versionState: 'absent'}));
+  assert.doesNotThrow(() => assertBootstrapPackageHistory({name, version, registryVersions: [version], versionState: 'verified-existing'}));
+  assert.throws(() => assertBootstrapPackageHistory({name, version, registryVersions: [version], versionState: 'absent'}), /unused package identity/);
+  assert.throws(() => assertBootstrapPackageHistory({name, version, registryVersions: ['0.0.9'], versionState: 'absent'}), /unused package identity/);
+  assert.throws(() => assertBootstrapPackageHistory({name, version, registryVersions: [version, '0.1.0-rc.0'], versionState: 'verified-existing'}), /unused package identity/);
 });
 
 test('trusted publishing and dist-tag movement fail closed', () => {
