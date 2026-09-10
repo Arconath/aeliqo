@@ -1206,20 +1206,28 @@
         {
           "path": "harness/evidence/t29/676db22-final-revalidation-review/manifest.json",
           "sha256": "500ca18d8015dd62d9617dc6fb5c2c80cafd213019b760bb7d3af91a0112e3d2"
+        },
+        {
+          "path": "harness/evidence/integration/421deab-cache-fix-delta/manifest.json",
+          "sha256": "e85020a255394dffaa329beadd3587ee7c3e0fa7d0de0cc9cb49345c23f5368c"
         }
       ],
-      "notes": "Requalified on exact direct-name source cc7bf293/tree bf396bd3/digest 676db22. The full 1,137-case Chromium/Firefox/WebKit matrix, focused Firefox 200%-text RTL repeats, site/docs/playground flows, all 71 documentation routes, installed catalog/visualization/compound consumers and component-family accessibility fixtures passed. Independent review inspected all 17 retained screenshots and verified packet integrity. One nonblocking P2 retains 209 color-contrast and 24 cross-shadow aria-controls Axe incomplete diagnostics; zero Axe violations were retained. Manual assistive-technology certification and universal pixel parity remain explicitly unclaimed.",
+      "notes": "The complete 1,137-case Chromium/Firefox/WebKit visual matrix, focused Firefox 200%-text RTL repeats, site/docs/playground flows, all 71 documentation routes, installed consumers and component-family accessibility fixtures remain bound to exact direct-name source cc7bf293/digest 676db22. For current digest 421deab, an independent proportionate delta review proved the site output byte-identical across 106 files and 7 assets and reran the affected Node 24 site/browser/a11y/layout, bundle, boundary and installed-consumer checks. One retained nonblocking P2 covers 209 color-contrast and 24 cross-shadow aria-controls Axe incomplete diagnostics; zero Axe violations were retained. Manual assistive-technology certification and universal pixel parity remain explicitly unclaimed.",
       "review": {
         "status": "approved",
         "author": "/root/investigate_hydration_shift plus prior T29 component and test implementation authors",
-        "reviewer": "/root/review_t29_final",
+        "reviewer": "/root/review_t29_final plus /root/audit_direct_name_candidate",
         "artifacts": [
           {
             "path": "harness/evidence/t29/676db22-final-revalidation-review/independent-review.json",
             "sha256": "c4c5e8c49b896312dc8413cf2fe20140c97d37932a562c0cac25f750eb87c141"
+          },
+          {
+            "path": "harness/evidence/integration/421deab-cache-fix-delta/independent-review.json",
+            "sha256": "598c06e3c2d7a7123bb3fe1948092f43013e42c0817487c2549392a09d1fa696"
           }
         ],
-        "scope": "Approves the complete owned 71-component T29 matrix on exact final direct-name source cc7bf293/digest 676db22, including three-browser, Firefox 200%-text RTL, site/docs/playground, all-route hydration, installed-consumer and independently reviewed screenshot evidence. Retains unresolved Axe incomplete diagnostics as one nonblocking P2 and excludes manual assistive-technology certification, universal pixel parity, publication and deployment."
+        "scope": "Approves the complete owned 71-component T29 matrix on exact direct-name source cc7bf293/digest 676db22 plus the proportionate current-digest 421deab cache-fix delta, including byte-identical site output and fresh affected Node 24 checks. Retains unresolved Axe incomplete diagnostics as one nonblocking P2 and excludes manual assistive-technology certification, universal pixel parity, publication and deployment."
       }
     },
     {
@@ -1310,9 +1318,13 @@
         {
           "path": "harness/evidence/t30/676db22-final-revalidation-review/manifest.json",
           "sha256": "3868442c558a09cf7021e8a3935877c4f385077b4042efbfa78c115b77d4ad43"
+        },
+        {
+          "path": "harness/evidence/integration/421deab-cache-fix-delta/manifest.json",
+          "sha256": "e85020a255394dffaa329beadd3587ee7c3e0fa7d0de0cc9cb49345c23f5368c"
         }
       ],
-      "notes": "Requalified on exact direct-name source cc7bf293/tree bf396bd3/digest 676db22. The contention-free Node 24.20/pnpm 11.24 author matrix passed two runtime repetitions, enforced Chromium, selected direct-name bundles, adverse, perceived-input, heap, standalone, site and two complete 71-route layout runs; independent review verified all indexed artifacts and limitations. Three nonblocking P2 follow-ups remain: planner timing headroom/variance, homepage shared-main growth after retaining the real evaluator, and portable retention of T30 consumer tarballs. Manual AT, lower-powered devices, cross-browser performance, field metrics, universal input-to-paint, backend/network capacity, model quality, publication and deployment are not claimed.",
+      "notes": "The contention-free Node 24.20/pnpm 11.24 full performance matrix remains bound to exact direct-name source cc7bf293/digest 676db22, including two runtime repetitions, enforced Chromium, bundles, adverse, perceived-input, heap, standalone, site and two complete 71-route layout runs. For current digest 421deab, an independent proportionate delta review proved the site output byte-identical and freshly passed site-page, bundle, layout, boundary and installed-consumer checks under Node 24. Three nonblocking P2 follow-ups remain: planner timing headroom/variance, homepage shared-main growth after retaining the real evaluator, and portable retention of T30 consumer tarballs. Manual AT, lower-powered devices, cross-browser performance, field metrics, universal input-to-paint, backend/network capacity, model quality, publication and deployment are not claimed.",
       "review": {
         "status": "approved",
         "author": "/root/fix_remaining_narrow_overflow plus prior T30 implementation authors",
@@ -1321,9 +1333,13 @@
           {
             "path": "harness/evidence/t30/676db22-final-revalidation-review/independent-review.json",
             "sha256": "a1d556f1b712e4d19ff9a9d1bbcf965dccabb03e5a4b88872b27b29e2e83a006"
+          },
+          {
+            "path": "harness/evidence/integration/421deab-cache-fix-delta/independent-review.json",
+            "sha256": "598c06e3c2d7a7123bb3fe1948092f43013e42c0817487c2549392a09d1fa696"
           }
         ],
-        "scope": "Approves the exact final direct-name source cc7bf293/digest 676db22 performance qualification and bounded package/runtime measurements with three retained nonblocking P2 follow-ups: planner headroom, homepage shared-main growth and portable consumer-tarball retention. Excludes publication, lower-powered-device and cross-browser performance, field Core Web Vitals, universal input-to-paint, backend/network capacity, manual AT and model quality."
+        "scope": "Approves the exact direct-name source cc7bf293/digest 676db22 full performance qualification plus the proportionate current-digest 421deab cache-fix delta, with three retained nonblocking P2 follow-ups: planner headroom, homepage shared-main growth and portable consumer-tarball retention. Excludes publication, lower-powered-device and cross-browser performance, field Core Web Vitals, universal input-to-paint, backend/network capacity, manual AT and model quality."
       }
     },
     {
@@ -1415,9 +1431,13 @@
         {
           "path": "harness/evidence/t32/676db22-final-audit/manifest.json",
           "sha256": "0a4e4cfcf3e81be4b2b775dd7655f3eda98a17f312305091eb2cdba39ec07e7e"
+        },
+        {
+          "path": "harness/evidence/integration/421deab-cache-fix-delta/manifest.json",
+          "sha256": "e85020a255394dffaa329beadd3587ee7c3e0fa7d0de0cc9cb49345c23f5368c"
         }
       ],
-      "notes": "Requalified by an independent exact-source audit on commit 41c4078/tree 3732be07/digest 676db22 after the direct-name and adoption-experience revision. Architecture/containment, code-only meaning DX and S65-S67, installed runtime/meaning/framework/Studio consumers, site journeys, release controls and a local six-package candidate all passed. Four nonblocking P2 limits remain: planner headroom, homepage shared-main growth, portable retention of historical T30 consumer tarballs, and missing independent human developer/design onboarding sessions. Automated onboarding does not substitute for those human sessions; manual AT, native WebMCP, authorized model-answer accuracy, publication and deployment remain unclaimed.",
+      "notes": "The independent architecture/DX/usability audit remains bound to exact direct-name digest 676db22 after the adoption-experience revision. Architecture/containment, code-only meaning DX and S65-S67, installed runtime/meaning/framework/Studio consumers, site journeys, release controls and the local six-package candidate all passed. For current digest 421deab, a proportionate independent delta review proved only the reviewed three-file cache fix changed semantic source/config and freshly passed boundaries, installed core/runtime/framework consumers, site and delivery checks. Four nonblocking P2 limits remain: planner headroom, homepage shared-main growth, portable retention of historical T30 consumer tarballs, and missing independent human developer/design onboarding sessions. Automated onboarding does not substitute for those human sessions; manual AT, native WebMCP, authorized model-answer accuracy, publication and deployment remain unclaimed.",
       "review": {
         "status": "approved",
         "author": "T32 implementation and evidence authors",
@@ -1426,9 +1446,13 @@
           {
             "path": "harness/evidence/t32/676db22-final-audit/independent-review.json",
             "sha256": "63eda472e8a43b92631e6aa828e3e766e5c37c0139196f17a205bea759b2e566"
+          },
+          {
+            "path": "harness/evidence/integration/421deab-cache-fix-delta/independent-review.json",
+            "sha256": "598c06e3c2d7a7123bb3fe1948092f43013e42c0817487c2549392a09d1fa696"
           }
         ],
-        "scope": "Approves exact direct-name source 41c4078/digest 676db22 architecture, containment, DX, usability, evidence invalidation and automated onboarding acceptance with four disclosed nonblocking P2 limits. Excludes human onboarding completion, manual AT, native WebMCP, unrestricted model quality, universal performance, publication, deployment and later release gates."
+        "scope": "Approves exact direct-name digest 676db22 architecture, containment, DX, usability, evidence invalidation and automated onboarding acceptance plus the proportionate current-digest 421deab cache-fix delta, with four disclosed nonblocking P2 limits. Excludes human onboarding completion, manual AT, native WebMCP, unrestricted model quality, universal performance, publication, deployment and later release gates."
       }
     },
     {
