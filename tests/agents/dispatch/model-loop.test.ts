@@ -36,6 +36,13 @@ describe('synthetic model-port boundary contract (not live reasoning evidence)',
     expect(await runToolModel(f.options)).toMatchObject({ok: true, value: {stop: 'text-ready', turns: 2, modelRequests: 4, toolCalls: 1, textDraft: 'Unverified answer'}});
     expect(f.calls()).toBe(1);
   });
+  it('keeps application-owned operating instructions separate from the user prompt', async () => {
+    const f = fixture({estimateInputTokens: () => 10, complete: async request => {
+      expect(request.messages.slice(0, 2)).toEqual([{role: 'system', text: 'Use authorized tools.'}, {role: 'user', text: 'Show the summary'}]);
+      return proposal();
+    }});
+    expect(await runToolModel({...f.options, instructions: 'Use authorized tools.'})).toMatchObject({ok: true, value: {stop: 'text-ready'}});
+  });
   it('preserves an opaque protocol continuation across a tool turn without serializing its value', async () => {
     const continuation = createToolModelContinuation('fixture-protocol', {privateState: 'reasoning-never-serialized'});
     let turns = 0;

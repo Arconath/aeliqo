@@ -46,6 +46,7 @@ function response(input: unknown, limit: number): ToolModelResponse | undefined 
 export async function runToolModel(options: ToolModelLoopOptions): Promise<ToolModelLoopOutcome> {
   if (!options || !identifier(options.requestId) || !['chat', 'experience'].includes(options.goal)
     || typeof options.prompt !== 'string' || options.prompt.length === 0 || options.prompt.length > WIRE_LIMITS.text
+    || (options.instructions !== undefined && (typeof options.instructions !== 'string' || options.instructions.length === 0 || options.instructions.length > WIRE_LIMITS.text))
     || !validBudget(options.budget) || options.endpoint?.transport !== 'byok'
     || typeof options.endpoint.authorizeModel !== 'function' || (typeof options.model?.countInputTokens !== 'function' && typeof options.model?.estimateInputTokens !== 'function')
     || typeof options.model.complete !== 'function') return fail('agent.model.invalid', 'The model loop requires bounded input, a BYOK endpoint, and an application-owned model port.');
@@ -58,7 +59,10 @@ export async function runToolModel(options: ToolModelLoopOptions): Promise<ToolM
   const signal = options.signal === undefined ? controller.signal : AbortSignal.any([controller.signal, options.signal]);
   const started = performance.now();
   const left = (): number => Math.max(0, budget.maxMilliseconds - (performance.now() - started));
-  const messages: ToolModelMessage[] = [{role: 'user', text: options.prompt}];
+  const messages: ToolModelMessage[] = [
+    ...(options.instructions === undefined ? [] : [{role: 'system' as const, text: options.instructions}]),
+    {role: 'user', text: options.prompt},
+  ];
   const receipts: AgentCapabilityReceipt[] = [];
   const seen = new Map<string, {fingerprint: string; output: AgentJsonValue}>();
   const repeats = new Map<string, number>();

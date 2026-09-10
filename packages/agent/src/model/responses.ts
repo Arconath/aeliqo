@@ -90,8 +90,10 @@ function route(baseUrl: URL, suffix: string): string {
 
 function project(request: ToolModelRequest, model: string): Record<string, unknown> {
   const input: Record<string, unknown>[] = [];
+  const instructions = [INSTRUCTIONS];
   for (const message of request.messages) {
-    if (message.role === 'user') input.push({role: 'user', content: message.text});
+    if (message.role === 'system') instructions.push(message.text);
+    else if (message.role === 'user') input.push({role: 'user', content: message.text});
     else if (message.role === 'tool') input.push({type: 'function_call_output', call_id: message.callId, output: serialized(message.output)});
     else {
       if (message.text !== undefined) input.push({role: 'assistant', content: message.text});
@@ -99,7 +101,7 @@ function project(request: ToolModelRequest, model: string): Record<string, unkno
     }
   }
   return {model, input, tools: request.tools.map(tool => ({type: 'function', name: tool.name, description: tool.description, parameters: tool.inputSchema, strict: false})),
-    instructions: INSTRUCTIONS, parallel_tool_calls: false};
+    instructions: instructions.join('\n\n'), parallel_tool_calls: false};
 }
 
 function serialized(value: unknown): string {
@@ -222,7 +224,7 @@ function completed(value: unknown): ToolModelResponse {
  * complete responses and function proposals; it has no provider selection, retry, memory,
  * tool execution, or credential persistence behavior.
  */
-export function createOpenAICompatibleResponsesToolModel(options: OpenAICompatibleResponsesToolModelOptions): ToolModelPort {
+export function createOpenAICompatibleResponsesToolModel(options: OpenAICompatibleResponsesToolModelOptions) {
   const configured = configuration(options);
   const request = async (suffix: string, payload: Record<string, unknown>, signal: AbortSignal): Promise<unknown> => {
     const body = serialized(payload);

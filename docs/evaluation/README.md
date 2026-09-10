@@ -50,7 +50,10 @@ configuration has no credential field. No live run has been authorized or run.
 The runner currently accepts the generic OpenAI-compatible Chat Completions
 protocol and does not infer provider or transport from a credential. It uses
 provider-default sampling/reasoning settings rather than silently emulating an
-unsupported effort setting.
+unsupported effort setting. A fixed application-owned instruction tells both
+model configurations to read the authorized catalog, propose a canonical Task,
+evaluate it through the tool boundary, repair invalid proposals within budget,
+and avoid authoritative arithmetic or self-declared grants.
 
 Before each trial, the runner reserves a conservative bound using all permitted
 model requests, input tokens, turns, output tokens, and the supplied rates. It

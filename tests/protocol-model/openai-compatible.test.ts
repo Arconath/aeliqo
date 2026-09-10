@@ -21,6 +21,7 @@ afterEach(async () => {
 
 const request: ToolModelRequest = {
   messages: [
+    {role: 'system', text: 'Evaluate the canonical task.'},
     {role: 'user', text: 'Summarize'},
     {role: 'assistant', calls: [{id: 'call_previous', name: 'summary', input: {entity: 'orders'}}]},
     {role: 'tool', callId: 'call_previous', output: {count: 2}},
@@ -98,6 +99,7 @@ describe('generic OpenAI-compatible model connection', () => {
     expect(seen[0]?.request.headers.get('x-fixture')).toBe('protocol-test');
     expect(seen[0]?.body).toMatchObject({model: 'fixture-model', max_tokens: 100, stream: false, parallel_tool_calls: false,
       messages: [
+        {role: 'system', content: 'Evaluate the canonical task.'},
         {role: 'user', content: 'Summarize'},
         {role: 'assistant', content: null, tool_calls: [{id: 'call_previous', type: 'function'}]},
         {role: 'tool', tool_call_id: 'call_previous', content: '{"count":2}'},

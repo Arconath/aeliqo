@@ -11,6 +11,7 @@ export interface ToolModelContinuation {
 }
 
 export type ToolModelMessage =
+  | {readonly role: 'system'; readonly text: string}
   | {readonly role: 'user'; readonly text: string}
   | {readonly role: 'assistant'; readonly text?: string; readonly calls: readonly ToolModelCall[]; readonly continuation?: ToolModelContinuation}
   | {readonly role: 'tool'; readonly callId: string; readonly output: AgentJsonValue};
@@ -99,6 +100,8 @@ export interface ToolModelLoopOptions {
   readonly goal: 'chat' | 'experience';
   /** Host-approved text only. The loop does not automatically read page, catalog or host context. */
   readonly prompt: string;
+  /** Optional application-owned operating policy; providers cannot grant themselves authority through it. */
+  readonly instructions?: string;
   readonly endpoint: AgentModelToolEndpoint;
   readonly model: ToolModelPort;
   readonly budget: ToolModelBudget;

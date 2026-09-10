@@ -27,6 +27,17 @@ describe('OpenAI-compatible Responses ToolModelPort', () => {
     expect(JSON.parse(String(calls[1]?.init?.body))).toMatchObject({model: 'fixture-model', stream: false, store: false, parallel_tool_calls: false});
   });
 
+  it('projects application-owned system policy through the Responses instructions field', async () => {
+    let body: Record<string, unknown> | undefined;
+    const port = createOpenAICompatibleResponsesToolModel(options(async (_url, init) => {
+      body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      return response({input_tokens: 11});
+    }));
+    await port.countInputTokens({...request, messages: [{role: 'system', text: 'Evaluate the canonical task.'}, ...request.messages]}, {signal});
+    expect(body?.instructions).toContain('Evaluate the canonical task.');
+    expect(body?.input).toEqual([{role: 'user', content: 'Summarize authorized data.'}]);
+  });
+
   it('uses no retries and rejects non-HTTPS, credential-derived, and streaming configuration', () => {
     const fetcher = (async () => response({input_tokens: 1})) as typeof fetch;
     expect(() => createOpenAICompatibleResponsesToolModel({...options(fetcher), endpoint: {protocol: 'https', baseUrl: 'http://responses.fixture.test/v1'}})).toThrow(ResponsesTransportError);

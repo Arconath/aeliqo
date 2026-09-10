@@ -42,7 +42,7 @@ function json(value: unknown): string {
 }
 
 function inputMessage(message: ToolModelRequest['messages'][number]): Record<string, unknown> {
-  if (message.role === 'user') return {role: 'user', content: message.text};
+  if (message.role === 'system' || message.role === 'user') return {role: message.role, content: message.text};
   if (message.role === 'tool') return {role: 'tool', tool_call_id: message.callId, content: json(message.output)};
   const continuation = message.continuation === undefined ? undefined
     : readToolModelContinuation(message.continuation, OPENAI_COMPATIBLE_CHAT_PROTOCOL);

@@ -13,8 +13,10 @@ const INSTRUCTIONS = 'Use only registered tools for data evaluation and interfac
 
 function project(request: ToolModelRequest, model: string) {
   const input: ResponseInputItem[] = [];
+  const instructions = [INSTRUCTIONS];
   for (const message of request.messages) {
-    if (message.role === 'user') input.push({role: 'user', content: message.text});
+    if (message.role === 'system') instructions.push(message.text);
+    else if (message.role === 'user') input.push({role: 'user', content: message.text});
     else if (message.role === 'tool') input.push({type: 'function_call_output', call_id: message.callId, output: JSON.stringify(message.output)});
     else {
       if (message.text) input.push({role: 'assistant', content: message.text});
@@ -23,7 +25,7 @@ function project(request: ToolModelRequest, model: string) {
   }
   const tools: FunctionTool[] = request.tools.map(tool => ({type: 'function', name: tool.name, description: tool.description,
     parameters: tool.inputSchema, strict: false}));
-  return {model, input, tools, instructions: INSTRUCTIONS, parallel_tool_calls: false, truncation: 'disabled' as const};
+  return {model, input, tools, instructions: instructions.join('\n\n'), parallel_tool_calls: false, truncation: 'disabled' as const};
 }
 
 /** Optional server-only reference. It performs no tool execution and never keeps provider conversation state. */
