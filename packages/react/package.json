@@ -1,6 +1,14 @@
 {
   "name": "@aeliqo/sdk-react",
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Arconath/aeliqo.git",
+    "directory": "packages/react"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "Thin React bindings for Aeliqo web elements",
   "license": "Apache-2.0",
   "type": "module",

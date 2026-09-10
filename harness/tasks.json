@@ -1208,7 +1208,7 @@
         "Documented actual hardware/browser workloads; p50/p95, bytes, geometry, DOM, memory and cleanup budgets pass.",
         "Measure cold/warm and user-perceived latency, network, model, DOM/layout/paint separately; no reference-model benchmark claimed as product."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
       "evidence": [
         {
@@ -1258,9 +1258,25 @@
         {
           "path": "harness/evidence/t30/acdc33f-heap-lifecycle/manifest.json",
           "sha256": "01a6ab3cc5cd567a4e024f0e177932a8497359a645c8a69a89909eb66f218316"
+        },
+        {
+          "path": "harness/evidence/t30/5d81a21-release-revalidation/manifest.json",
+          "sha256": "4ae8b60a6b609f8bec582b3682a2525e1b1ed10ce958b2b95d64a4cb994d436f"
         }
       ],
-      "notes": "Selected installed byte/graph gates pass. Desktop Chromium extended probes at ea7957d: 30 trusted keyboard samples, 100 component disposal cycles, 10 cold and 30 warm starts pass their functional checks. DOM update p95 0.8ms is not paint; raw heap trend and missing Event Timing observations preserved. The source-bound Node24 medium workload at 8628c60 records 10 cold samples (p95 142.303ms) and 30 warm samples (p95 12.608ms <=16ms), targeted reducer p95 0.108ms <=4ms, and 100 cleanup cycles with zero retained handles/regions/observers. Fresh source-bound Chromium workloads at 3f6448c and current 23b14e2 pass 2/2 tests; the current run records isolated planner p95 8.9ms <=16ms, reducer dispatch p95 0.2ms <=4ms, 44 mounted rows, timeline script/layout/paint phases, and 100 cleanup cycles; total medium workload p95 144.5ms is retained separately and is not the planner budget. A current source-bound Node24 run at 68b89d6 records cold planner p95 39.657ms, warm planner p95 12.364ms <=16ms, warm reducer dispatch p95 0.105ms <=4ms, and 100 bounded cleanup cycles; raw overhead observations remain in the artifact. The current 19e54bc installed bundle gate passes all six selected rows with no forbidden module edges and exact core/runtime/web 0.1.0 tarballs. Current source-bound standalone and whole-site observations at 3f1f790 add 10 cold/30 warm standalone samples and 120 representative-route navigations, including resource/paint/cache/layout-shift records. Current source-bound perceived-input and heap-lifecycle probes at acdc33f add 30 trusted visible-update samples, explicit Event Timing calibration, 100 measured disposal cycles and a positive allocation control. Cold-start process, full device/runner, manual qualification and release acceptance remain open. Additional source0d00a01 Node24 adverse lifecycle and Chromium1000category/250null/40resize/full40page probes pass. Non-cooperative late deliveries are distinguished from adapter suppression."
+      "notes": "Release-qualified at source 5d81a21 and digest e7d035e2 after current-source runtime, Chromium, installed sdk package bundle, adverse workload, visible-input, heap lifecycle, standalone and representative site-route revalidation. Warm planner p95 13.715ms <=16ms, reducer p95 0.158ms <=4ms, six bundle rows pass, and 100 lifecycle cycles finish with zero DOM nodes or tracked listeners. One retained same-source Node sample at 16.504ms remains visible as measurement noise. No lower-powered-device, field-CWV, universal input-to-paint, backend/network-capacity or model-performance claim.",
+      "review": {
+        "status": "approved",
+        "author": "fast_t30_quality + root evidence integration",
+        "reviewer": "review_t40_release",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t30/5d81a21-release-revalidation/independent-review.json",
+            "sha256": "2b558340b071c8a9dfef8c4e92b1dd7b16b962f03244538f2999b96eb8340d44"
+          }
+        ],
+        "scope": "Approves the current-source performance and exact sdk package-identity revalidation; excludes publication and universal performance claims."
+      }
     },
     {
       "id": "T31",

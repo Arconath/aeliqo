@@ -1,0 +1,44 @@
+{
+  "task": "T30",
+  "status": "release-complete",
+  "generatedAt": "2026-09-10T02:28:28Z",
+  "sourceCommit": "5d81a213fe4f5efc22076751cdcff55055017e18",
+  "sourceDigest": "e7d035e2d83dde1f95467d114567edc25db0e364f4bfe86e99b0f3ee686be02b",
+  "scope": "Current-source revalidation of runtime and browser planner/reducer budgets, installed package bundles, adverse workloads, visible-input timing, heap lifecycle, standalone startup and representative site routes after the sdk package identity migration.",
+  "environment": {
+    "os": "macOS 26.6.2 (25G83)",
+    "node": "v24.20.0",
+    "cpu": "Apple M4 Pro",
+    "logicalCpuCount": 12,
+    "memoryBytes": 25769803776,
+    "browser": "Chromium 153.0.8010.12"
+  },
+  "checks": [
+    {"command": "pnpm lint", "status": "pass"},
+    {"command": "pnpm exec tsc -p tests/performance/tsconfig.json --noEmit", "status": "pass"},
+    {"command": "pnpm test:performance:runtime", "status": "pass", "warmPlannerP95Ms": 13.714916999999787, "plannerBudgetMs": 16, "reducerP95Ms": 0.1580840000005992},
+    {"command": "pnpm test:performance:browser", "status": "pass", "tests": 2},
+    {"command": "pnpm test:performance:bundles", "status": "pass", "rows": 6},
+    {"command": "pnpm test:performance:adverse-runtime", "status": "pass", "tests": 1},
+    {"command": "pnpm test:performance:adverse-visualization", "status": "pass", "tests": 1},
+    {"command": "AELIQO_RUN_PERFORMANCE=1 pnpm test:performance:perceived-input", "status": "pass", "tests": 2, "visibleUpdateP95Ms": 0.7999999970197678},
+    {"command": "AELIQO_RUN_HEAP_LIFECYCLE=1 pnpm test:performance:heap-lifecycle", "status": "pass", "tests": 1, "cycles": 100, "finalDomNodes": 0, "finalTrackedListeners": 0, "positiveControlResponsive": true},
+    {"command": "pnpm test:performance:standalone", "status": "pass"},
+    {"command": "pnpm test:performance:site-page", "status": "pass"}
+  ],
+  "qualification": {
+    "releaseBlockers": [],
+    "limits": "No lower-powered-device, field-CWV, universal input-to-paint, backend/network-capacity or model-performance claim. One retained same-source Node sample of 16.504 ms is treated as measurement noise and remains visible in the preceding qualification evidence."
+  },
+  "artifacts": [
+    {"path": "adverse-runtime.json", "sha256": "328e6bce743448901469a345a46c5a002d43f8deac2e463b6fabed955c16703c"},
+    {"path": "adverse-visualization.json", "sha256": "cd55751df567ce907c3e885c0c83d951956904c249a79bc429b0a419ff4bf9cc"},
+    {"path": "browser.json", "sha256": "b416aea691717199035335bf89ea8a2685e24aae3526d0baac60bce3bcff3132"},
+    {"path": "bundles.json", "sha256": "2b21edeb96e978286b011ab9117566c7ef70ac9b735430101d00dd2e522d5730"},
+    {"path": "heap-lifecycle.json", "sha256": "fb78ef2a70dd730b1635af658f09aa4f1aaf2576ad530e77998e3ec233fe85bf"},
+    {"path": "perceived-input.json", "sha256": "c6a664fa5f56ef9efe80f292d28fcd5a890a7c0e4891e2e7fbdf7c00ac266ff3"},
+    {"path": "runtime.json", "sha256": "ca5c3755f60f3380fefbd4f77afdb66736a54fb986a7b5142f1d61baa7d15933"},
+    {"path": "site-page.json", "sha256": "52e6ba8cdc95c057713b2cc26fc385d04a8fb171fefac8027c67f65cc6844c9b"},
+    {"path": "standalone.json", "sha256": "a9aa88d2f0e4f889b24c1f9ff0381b43a07359b7a56a269016be897376d4a74f"}
+  ]
+}

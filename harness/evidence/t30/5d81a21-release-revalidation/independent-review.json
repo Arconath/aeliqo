@@ -1,0 +1,17 @@
+{
+  "task": "T30",
+  "status": "approved",
+  "reviewedAt": "2026-09-10T02:28:28Z",
+  "sourceCommit": "5d81a213fe4f5efc22076751cdcff55055017e18",
+  "sourceDigest": "e7d035e2d83dde1f95467d114567edc25db0e364f4bfe86e99b0f3ee686be02b",
+  "reviewer": "review_t40_release",
+  "independentOfAuthor": true,
+  "decision": "approve",
+  "scope": "Approves T30 performance behavior and exact @aeliqo/sdk-* package-identity revalidation on source 5d81a21; no publication, lower-powered-device, field-CWV, universal input-to-paint, backend/network-capacity, or model-performance claim.",
+  "observations": [
+    "All focused runtime, browser, six bundle, adverse-runtime, adverse-visualization, perceived-input, 100-cycle heap lifecycle, standalone cold/warm, site-route and TypeScript gates passed.",
+    "The candidate source digest remained unchanged and all copied qualification artifacts matched their recorded hashes.",
+    "The retained 16.504 ms Node sample is preserved as noise evidence rather than hidden or relabeled."
+  ],
+  "blockingFindings": []
+}
