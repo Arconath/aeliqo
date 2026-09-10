@@ -1,0 +1,143 @@
+{
+  "schema": "aeliqo.integrated-ready-claim-audit.v1",
+  "reviewedAt": "2026-09-10T15:40:12Z",
+  "subject": {
+    "integratedReport": "harness/evidence/integrated.json",
+    "integratedReportSha256": "cf62420dd28d6f1bade9dd6ff81b3386da9d984c59ac3f58e02ada83df52ae91",
+    "stage": "ready",
+    "productSourceRevision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+    "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+    "webmcpNativeAdvertised": false
+  },
+  "requiredClaims": {
+    "expected": [
+      "browser-matrix",
+      "visual-review",
+      "package-consumers",
+      "performance",
+      "security",
+      "real-mcp",
+      "real-byok",
+      "independent-review"
+    ],
+    "observed": [
+      {"name": "browser-matrix", "status": "pass", "provenance": null, "artifacts": 1},
+      {"name": "visual-review", "status": "pass", "provenance": null, "artifacts": 1},
+      {"name": "package-consumers", "status": "pass", "provenance": null, "artifacts": 2},
+      {"name": "performance", "status": "pass", "provenance": null, "artifacts": 2},
+      {"name": "security", "status": "pass", "provenance": null, "artifacts": 3},
+      {"name": "real-mcp", "status": "pass", "provenance": "live", "artifacts": 3},
+      {"name": "real-byok", "status": "pass", "provenance": "live", "artifacts": 3},
+      {"name": "independent-review", "status": "pass", "provenance": null, "artifacts": 2}
+    ],
+    "allExpectedPresent": true,
+    "allExpectedPassing": true,
+    "liveClaimsHaveLiveProvenance": true,
+    "additionalClaims": [
+      {"name": "actual-tests", "status": "pass", "provenance": null},
+      {"name": "operational-preflight", "status": "pass", "provenance": null}
+    ]
+  },
+  "currentSourceBridges": {
+    "t29": {
+      "authorPath": "harness/evidence/t29/a245c8f-final-revalidation/manifest.json",
+      "reviewPath": "harness/evidence/t29/a245c8f-final-revalidation-review/independent-review.json",
+      "sourceRevision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+      "sourceTree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+      "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+      "authorStatus": "passed-automated-final-source-revalidation",
+      "reviewStatus": "approved-with-nonblocking-p2-follow-up",
+      "bound": true
+    },
+    "t30": {
+      "authorPath": "harness/evidence/t30/a245c8f-final-revalidation/manifest.json",
+      "reviewPath": "harness/evidence/t30/a245c8f-final-revalidation-review/independent-review.json",
+      "sourceRevision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+      "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+      "authorStatus": "passed",
+      "reviewStatus": "review-complete-with-nonblocking-findings",
+      "bound": true
+    },
+    "t33": {
+      "authorPath": "harness/evidence/t33/a245c8f-final-candidate/manifest.json",
+      "reviewPath": "harness/evidence/t33/a245c8f-final-candidate-review/independent-review.json",
+      "productSourceRevision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+      "candidateDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+      "candidateBuildTree": "9247e5b1ee663a6938a6d59c851fe711f88ec1ca",
+      "authorStatus": "pass-local-candidate",
+      "reviewStatus": "local-candidate-approved-registry-auth-blocked",
+      "bound": true,
+      "publicationClaimed": false
+    },
+    "t34": {
+      "authorPath": "harness/evidence/t34/a245c8f-final-preflight/manifest.json",
+      "reviewPath": "harness/evidence/t34/a245c8f-final-preflight-review/independent-review.json",
+      "sourceRevision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+      "sourceTree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+      "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+      "candidateImageDigest": "sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214",
+      "authorStatus": "passed-final-source-preflight-not-promoted",
+      "reviewStatus": "review-complete-with-nonblocking-findings",
+      "bound": true,
+      "promotionClaimed": false
+    },
+    "t32": {
+      "currentSourceClosurePath": "harness/evidence/t32/be201bf-reference-closure/manifest.json",
+      "currentSourceRevision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+      "currentSourceTree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+      "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+      "auditReviewedEvidenceCommit": "fdc29af570fe1c82bcdb63346cafc7462a3849a1",
+      "auditSourceUnchangedFromCurrentSource": true,
+      "reviewStatus": "approved",
+      "bound": true
+    },
+    "t31AndT40HistoricalLiveProvenance": {
+      "t31SourceRevision": "ab5ccc8de1d0636efe975504516cb204c2bb41f2",
+      "t40SourceRevision": "ab5ccc8de1d0636efe975504516cb204c2bb41f2",
+      "historicalSourceDigest": "f51e351e7d5a2261293f551312ba11a222fbe5ba3dddb24324bf38c364e3c7f3",
+      "currentBridge": "T32 current-source protocol/containment and evidence-reference audit",
+      "deterministicMcp": "18/18 direct and official SDK MCP cases; 21/21 independent oracle outputs",
+      "liveByokAnswerCorrect": "0/3",
+      "currentSourceLiveReexecuted": false,
+      "currentSourceBridgeDoesNotClaimLiveAccuracy": true,
+      "bound": true
+    }
+  },
+  "nonClaimsVerified": {
+    "manualAssistiveTechnology": {
+      "integratedLimitationPresent": true,
+      "explicitlyNotClaimed": true
+    },
+    "nativeWebMCP": {
+      "webmcpNativeAdvertised": false,
+      "limitationPresent": true,
+      "explicitlyNotClaimed": true
+    },
+    "modelAccuracy": {
+      "liveAnswerCorrect": 0,
+      "liveAnswerTrials": 3,
+      "limitationPresent": true,
+      "explicitlyNotClaimed": true
+    },
+    "universalPerformance": {
+      "environment": "Apple M4 Pro/macOS",
+      "plannerHeadroomP2Present": true,
+      "lowerPoweredFieldAndUniversalClaimsDenied": true
+    },
+    "publicationDeployment": {
+      "npmPublicationClaimed": false,
+      "sourceReleaseClaimed": false,
+      "stablePromotionClaimed": false,
+      "productionDeploymentClaimed": false,
+      "liveCandidateIdentityClaimed": false,
+      "limitationPresent": true
+    }
+  },
+  "assessment": {
+    "requiredClaimsAndProvenance": "satisfied",
+    "currentSourceBridges": "satisfied-with-historical-live-provenance-boundary",
+    "limitationsAgainstOverclaiming": "satisfied",
+    "ci89of89": "satisfied-in-current-authoritative-workspace",
+    "cleanCheckoutCiRetention": "follow-up-required"
+  }
+}

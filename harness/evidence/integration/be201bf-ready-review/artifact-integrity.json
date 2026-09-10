@@ -1,0 +1,84 @@
+{
+  "schema": "aeliqo.integrated-ready-artifact-integrity-review.v1",
+  "reviewedAt": "2026-09-10T15:40:12Z",
+  "reviewBaseCommit": "3fa44f957c68ea8f4a7fdfb22c0b6c74a3ef5f22",
+  "integratedReport": {
+    "path": "harness/evidence/integrated.json",
+    "declaredSha256": "cf62420dd28d6f1bade9dd6ff81b3386da9d984c59ac3f58e02ada83df52ae91",
+    "recomputedSha256": "cf62420dd28d6f1bade9dd6ff81b3386da9d984c59ac3f58e02ada83df52ae91",
+    "bytes": 8302,
+    "exact": true
+  },
+  "sourceBinding": {
+    "productSourceRevision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+    "productSourceTree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+    "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+    "gateDigestCommand": "python3 scripts/gate.py digest",
+    "recomputedGateDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+    "sourceTreeMatchesRevision": true
+  },
+  "integratedArtifactReferences": {
+    "claims": 10,
+    "references": 20,
+    "missing": 0,
+    "mismatched": 0,
+    "allJsonRecordsParsed": true,
+    "allDirectReferences": [
+      {"claim": "actual-tests", "path": "harness/evidence/ci.json", "bytes": 28990, "sha256": "036c20578c1e14f231a8893871dfaa08131e2cf142864d9667f221c9763836ef", "exact": true},
+      {"claim": "browser-matrix", "path": "harness/evidence/t29/a245c8f-final-revalidation/manifest.json", "bytes": 14410, "sha256": "48db0631d8ee5118916986d51cd149d74bc60c5a62887c256cfe20e2d6f5a2d8", "exact": true},
+      {"claim": "visual-review", "path": "harness/evidence/t29/a245c8f-final-revalidation-review/independent-review.json", "bytes": 5405, "sha256": "7e8cc2cb1f00c59bda3a37180b1137088474fd0c37cd4091b09ce479b34fadcf", "exact": true},
+      {"claim": "package-consumers", "path": "harness/evidence/t33/a245c8f-final-candidate/manifest.json", "bytes": 4693, "sha256": "8579fd4abc576af85cedae88f8e5a51e2d4ab154ff4943e5dcae3cb63847bb40", "exact": true},
+      {"claim": "package-consumers", "path": "harness/evidence/t33/a245c8f-final-candidate-review/independent-review.json", "bytes": 8382, "sha256": "ab509f539386595adbe971e8e1dd94f9ae001a6811d1700d0d0e27c0b76f67e4", "exact": true},
+      {"claim": "performance", "path": "harness/evidence/t30/a245c8f-final-revalidation/manifest.json", "bytes": 18782, "sha256": "f16f0fcc90d3edf90a693c63870a47f77cee189ae5c0b2a355c1d687e662ddbc", "exact": true},
+      {"claim": "performance", "path": "harness/evidence/t30/a245c8f-final-revalidation-review/independent-review.json", "bytes": 8215, "sha256": "37b61d9b7a0b2ad75e02e3c625a0213bf85491712bfc51f5dbf6d6112d0de9c9", "exact": true},
+      {"claim": "security", "path": "harness/evidence/t28/54bb823-sourcebound/manifest.json", "bytes": 4564, "sha256": "949adb34090bc059a6e8a9f677ab8320f9cfd07b5637fbe1e939b829ae951d29", "exact": true},
+      {"claim": "security", "path": "harness/evidence/t28/54bb823-sourcebound/independent-review.json", "bytes": 2719, "sha256": "9d8593765916542bd2f11cef26f4f5a54744ed1fa28061ae2f5b87cb80944905", "exact": true},
+      {"claim": "security", "path": "harness/evidence/t32/be201bf-final-audit/manifest.json", "bytes": 3802, "sha256": "5f91220d80bdff72b1fd5dadb4249d8e855c1af6f46e36f54d9da9d61c993068", "exact": true},
+      {"claim": "real-mcp", "path": "harness/evidence/t31/final-cross-domain/manifest.json", "bytes": 3048, "sha256": "a30b2954c8a7f85dcd5c8f219e925b5cc4aadf6e5036b8c82ae07d213c5e3a77", "exact": true},
+      {"claim": "real-mcp", "path": "harness/evidence/t31/final-cross-domain/independent-review.json", "bytes": 2283, "sha256": "2fb69273e99db4d8fd18036a909b78fb67824912defe82f228d337d2b092731a", "exact": true},
+      {"claim": "real-mcp", "path": "harness/evidence/t32/be201bf-final-audit/manifest.json", "bytes": 3802, "sha256": "5f91220d80bdff72b1fd5dadb4249d8e855c1af6f46e36f54d9da9d61c993068", "exact": true},
+      {"claim": "real-byok", "path": "harness/evidence/t40/final-release-smoke/manifest.json", "bytes": 4357, "sha256": "adc0ffdebb589ad7b7144855683b81efdfcb423de6ee87c25208d4fa88148d5a", "exact": true},
+      {"claim": "real-byok", "path": "harness/evidence/t40/final-release-smoke/independent-review.json", "bytes": 3705, "sha256": "9d71aa76b8c30809b59b18182fcc5d50d751f42c04969e865a9435d6a2943abd", "exact": true},
+      {"claim": "real-byok", "path": "harness/evidence/t32/be201bf-final-audit/manifest.json", "bytes": 3802, "sha256": "5f91220d80bdff72b1fd5dadb4249d8e855c1af6f46e36f54d9da9d61c993068", "exact": true},
+      {"claim": "independent-review", "path": "harness/evidence/t32/be201bf-final-audit/independent-review.json", "bytes": 4314, "sha256": "09d48cd0d23a250e1ad8c26a91b57aeec0c4619896956e5330ad3fabdc7f70b3", "exact": true},
+      {"claim": "independent-review", "path": "harness/evidence/t32/be201bf-reference-closure/manifest.json", "bytes": 2593, "sha256": "834b58643cf4f6aa429016e99f06d9879e7b80468cfae995f5548099f84b492b", "exact": true},
+      {"claim": "operational-preflight", "path": "harness/evidence/t34/a245c8f-final-preflight/manifest.json", "bytes": 5361, "sha256": "b4e62cec794b4bd295c53fc510b58ac48aac202c6b2bf5f9bdfcbfa66928a58f", "exact": true},
+      {"claim": "operational-preflight", "path": "harness/evidence/t34/a245c8f-final-preflight-review/independent-review.json", "bytes": 8687, "sha256": "cb50bdafa0f3a3d8db291c1b84ec3a192671f0bc82bba626433713c77cd7f5cc", "exact": true}
+    ]
+  },
+  "ciLedger": {
+    "path": "harness/evidence/ci.json",
+    "status": "pass",
+    "subjectSha256MatchesGateDigest": true,
+    "sourceChangedDuringRun": false,
+    "commands": 89,
+    "artifacts": 89,
+    "allExitCodesZero": true,
+    "allNestedArtifactHashesRecomputedExact": true,
+    "nestedArtifactsMissing": 0,
+    "nestedArtifactsTrackedByGit": 0,
+    "nestedArtifactsIgnoredByGit": true,
+    "observedArtifactDirectoryFilesInCurrentMainWorkspace": 139,
+    "cleanDetachedReviewWorktreeHasNestedArtifacts": false,
+    "interpretation": "The 89 raw logs are present and hash-exact in the current main workspace, allowing the ready gate to pass, but artifacts/ is ignored and the raw logs are not part of commit 3fa44f9. A clean checkout at the commit cannot independently inspect the retained CI log bytes without rerunning CI or receiving the ignored artifacts."
+  },
+  "gate": {
+    "command": "python3 scripts/gate.py ready",
+    "workspace": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo",
+    "exitCode": 0,
+    "output": "READY evidence structure and artifact hashes pass; retain independent review/CI authority.",
+    "cleanDetachedWorktreeProbe": {
+      "workspace": "/private/tmp/aeliqo-integrated-ready-review",
+      "exitCode": 1,
+      "reportedMissingCiArtifacts": 89,
+      "interpretation": "Expected consequence of the ignored raw-log retention boundary, not a product test failure."
+    }
+  },
+  "disposition": {
+    "priority": "P2",
+    "blocking": false,
+    "reason": "The current authoritative workspace has all 89 exact logs and the ready gate passes. The committed integrated report alone does not retain those raw log bytes, so clean-checkout evidence replay is not possible without rerunning the gate or preserving the ignored artifacts.",
+    "recommendedCorrection": "Retain the 89 CI logs in an immutable evidence archive or make the integrated packet's retention boundary explicit and require a fresh CI run at each clean-checkout readiness check.",
+    "verification": "Run gate ready in a clean checkout with the retained raw logs available; require 89/89 nested hashes and zero missing artifacts."
+  }
+}

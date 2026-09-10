@@ -1,0 +1,55 @@
+{
+  "schema": "aeliqo.integrated-ready-review-manifest.v1",
+  "task": "integration-ready-review",
+  "status": "review-complete-with-nonblocking-findings",
+  "generatedAt": "2026-09-10T15:40:12Z",
+  "reviewer": "/root/investigate_hydration_shift",
+  "reviewBaseCommit": "3fa44f957c68ea8f4a7fdfb22c0b6c74a3ef5f22",
+  "integratedReport": {
+    "path": "harness/evidence/integrated.json",
+    "sha256": "cf62420dd28d6f1bade9dd6ff81b3386da9d984c59ac3f58e02ada83df52ae91",
+    "stage": "ready"
+  },
+  "source": {
+    "revision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+    "tree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+    "digest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8"
+  },
+  "verification": {
+    "directIntegratedReferences": 20,
+    "directIntegratedReferencesExact": 20,
+    "ciCommands": 89,
+    "ciArtifacts": 89,
+    "ciArtifactsExactInCurrentWorkspace": 89,
+    "gateReadyExitCode": 0,
+    "requiredClaimsPresentAndPassing": true,
+    "liveClaimProvenanceCorrect": true,
+    "nonClaimsExplicit": true,
+    "sourceBridgesVerified": true
+  },
+  "findings": {
+    "newP0": 0,
+    "newP1": 0,
+    "newP2": 1,
+    "newP3": 1,
+    "blocking": 0
+  },
+  "artifacts": [
+    {"path": "artifact-integrity.json", "bytes": 7540, "sha256": "238841a79c0bcb22b318053c38fdb134024b6c42168e03e5cf556d576065fe5a"},
+    {"path": "claim-audit.json", "bytes": 6559, "sha256": "4c2596f48b6042b346dcea725c08cad0b3064cab210a03ededefe13810e3b5b1"},
+    {"path": "independent-review.json", "bytes": 8846, "sha256": "bbca8286fa3069c99256e3677d35cc2cb8252e5ce3c7737529f912d4ee9b2c52"}
+  ],
+  "checksumPolicy": "SHA256SUMS inventories the three review records only; manifest and checksum inventory are excluded to avoid circular hashes.",
+  "scope": "Independent review of the committed integrated ready report and its current-workspace CI/readiness evidence. Product source, task state, integrated report, registry, GitHub, GitOps remote and production were not changed.",
+  "promotionApprovalIssued": false,
+  "mutations": {
+    "productSource": false,
+    "taskState": false,
+    "integratedReport": false,
+    "registry": false,
+    "github": false,
+    "gitopsRemote": false,
+    "production": false,
+    "reviewPacketOnly": true
+  }
+}

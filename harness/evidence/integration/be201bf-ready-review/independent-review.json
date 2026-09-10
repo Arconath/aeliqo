@@ -1,0 +1,109 @@
+{
+  "schema": "aeliqo.integrated-ready-independent-review.v1",
+  "task": "integration-ready-review",
+  "status": "review-complete-with-nonblocking-findings",
+  "reviewedAt": "2026-09-10T15:40:12Z",
+  "reviewer": {
+    "agent": "/root/investigate_hydration_shift",
+    "role": "independent integrated evidence and readiness reviewer",
+    "independentOfIntegratedEvidenceAuthor": true
+  },
+  "subject": {
+    "integratedCommit": "3fa44f957c68ea8f4a7fdfb22c0b6c74a3ef5f22",
+    "integratedReport": "harness/evidence/integrated.json",
+    "integratedReportSha256": "cf62420dd28d6f1bade9dd6ff81b3386da9d984c59ac3f58e02ada83df52ae91",
+    "productSourceRevision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+    "productSourceTree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+    "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+    "stage": "ready"
+  },
+  "findings": [
+    {
+      "id": "INTEGRATION-R1",
+      "priority": "P2",
+      "blocking": false,
+      "requirement": "A committed ready report should retain or clearly bind the raw bytes needed to independently replay its CI artifact hashes.",
+      "evidence": {
+        "location": "harness/evidence/ci.json and artifacts/product-ci/00-typecheck.log through 88-browser.log",
+        "reviewRecord": "harness/evidence/integration/be201bf-ready-review/artifact-integrity.json",
+        "observed": "The 89-command CI ledger is pass, all 89 exit codes are zero, and all 89 nested hashes recompute exactly in the current main workspace. The 89 raw logs are ignored by .gitignore and are absent from a clean detached worktree at commit 3fa44f9.",
+        "expected": "Either the raw logs should be retained in an immutable evidence archive or the report should explicitly require a fresh CI run whenever a clean checkout is evaluated."
+      },
+      "consequence": "The current workspace can pass gate ready, but the committed report alone cannot prove the historical 89 command outputs from a clean checkout; a clean checkout reports 89 missing CI artifacts until logs are regenerated or supplied.",
+      "priorityRationale": "The authoritative workspace has exact logs and gate ready passes, so this is evidence-retention and reproducibility risk rather than a product-test failure or release blocker.",
+      "recommendedCorrection": "Retain the 89 logs under an immutable evidence packet, or make the retention boundary explicit and pair every ready report with a fresh clean-checkout CI run.",
+      "verification": "Run gate ready in a clean checkout with the retained logs present; require 89/89 nested hashes, zero missing artifacts and unchanged source digest.",
+      "status": "open-follow-up; nonblocking"
+    },
+    {
+      "id": "INTEGRATION-R2",
+      "priority": "P3",
+      "blocking": false,
+      "requirement": "Integrated live-provenance claims should make the source identity of retained live runs visible when current-source bridges are indirect.",
+      "evidence": {
+        "location": "harness/evidence/integrated.json#/claims real-mcp and real-byok; harness/evidence/t31/final-cross-domain/manifest.json; harness/evidence/t40/final-release-smoke/manifest.json",
+        "reviewRecord": "harness/evidence/integration/be201bf-ready-review/claim-audit.json",
+        "observed": "T31 and T40 live records are from source digest f51e351e and revision ab5ccc8; T32 current-source protocol/containment and reference closure bind later changes to a245c8f/be201bfa. The integrated report explicitly identifies the BYOK historical digest and the 0/3 answer result, while the MCP claim states a current-source bridge without repeating the historical source identity in top-level limitations.",
+        "expected": "The integrated record should identify both retained live records as historical-source evidence and state that the current bridge does not establish current-source live answer or transport accuracy."
+      },
+      "consequence": "A reader could otherwise mistake the passing live MCP provenance for a current-source live qualification, even though the claim wording and T32 evidence do not actually make that claim.",
+      "priorityRationale": "The existing bridge is accurate and the report does not claim model accuracy, native WebMCP or unrestricted reasoning; this is a precision/traceability improvement.",
+      "recommendedCorrection": "Add an explicit top-level limitation for T31's f51e historical live MCP provenance, matching the already explicit BYOK limitation.",
+      "verification": "Re-read the integrated report and T32 closure; require each live claim to carry retained source revision/digest, bridge scope, and explicit current-source live-accuracy non-claim.",
+      "status": "open-follow-up; nonblocking"
+    }
+  ],
+  "coverage": {
+    "integratedReportIntegrity": "satisfied; report SHA-256 cf62420d... exact and all 20 direct artifact references exact",
+    "requiredClaimNames": "satisfied; all eight gate READY_CLAIMS are present",
+    "claimStatuses": "satisfied; all required and additional claims have status pass",
+    "liveProvenance": "satisfied; real-mcp and real-byok both declare provenance live",
+    "currentSourceBridges": "satisfied; T29/T30/T33/T34 directly bind a245c8f/be201bfa, T32 closure binds the current source, and T31/T40 historical live evidence is not presented as current-source live accuracy",
+    "ci": "satisfied in current authoritative workspace; 89/89 commands exit zero and all 89 nested hashes recompute exact",
+    "gateReady": "satisfied; python3 scripts/gate.py ready exits 0 in the current main workspace",
+    "manualAssistiveTechnology": "satisfied as non-claim; manual VoiceOver/NVDA/other AT is explicitly deferred",
+    "nativeWebMCP": "satisfied as non-claim; webmcpNativeAdvertised=false and native host qualification is not claimed",
+    "modelAccuracy": "satisfied as non-claim; live answer correctness is 0/3 and no model-quality claim is made",
+    "performance": "satisfied with stated scope; Apple M4 Pro/macOS observations and planner-headroom P2 remain, with universal/lower-powered/field claims denied",
+    "publicationAndDeployment": "satisfied as non-claim; npm publication, source release, stable promotion, production deployment and live candidate identity are all denied"
+  },
+  "inheritedNonblockingRisks": [
+    {
+      "source": "harness/evidence/t29/a245c8f-final-revalidation-review/independent-review.json",
+      "priority": "P2",
+      "summary": "147 unresolved Axe incomplete diagnostics remain outside manual AT certification."
+    },
+    {
+      "source": "harness/evidence/t30/a245c8f-final-revalidation-review/independent-review.json",
+      "priority": "P2",
+      "summary": "Planner timing has limited headroom and one retained reviewer budget miss."
+    },
+    {
+      "source": "harness/evidence/t34/a245c8f-final-preflight-review/independent-review.json",
+      "priority": "P2",
+      "summary": "T34 artifact index has eight deterministic LF/CRLF checked-in mismatches, and its T33 pointer is historical/stale for the final source; the local rehearsal remains semantically supported."
+    },
+    {
+      "source": "harness/evidence/t33/a245c8f-final-candidate-review/independent-review.json",
+      "priority": "external-blocker",
+      "summary": "Authenticated npm authority is E401-blocked; local candidate approval does not imply publication readiness."
+    }
+  ],
+  "limitations": [
+    "The gate-ready pass is current-workspace evidence; clean-checkout replay requires the ignored 89 CI logs or a fresh CI run.",
+    "No current-source live MCP or provider call was made during this integration review.",
+    "No manual assistive-technology certification, native WebMCP host qualification, universal performance qualification, publication, deployment or stable promotion is claimed.",
+    "The historical T40 live answer score is 0/3 and remains informational; current-source deterministic/protocol bridges do not establish model accuracy.",
+    "This review does not mutate product source, task state, integrated.json, registry, GitHub, GitOps remote or production."
+  ],
+  "verdict": {
+    "decision": "approve-integrated-ready-current-workspace-with-nonblocking-findings",
+    "blockingFindings": [],
+    "newP0": 0,
+    "newP1": 0,
+    "newP2": 1,
+    "newP3": 1,
+    "promotionApprovalIssued": false,
+    "summary": "The committed integrated report is internally consistent, all required claim names/statuses/provenance are present, current-source bridges are documented, the current authoritative workspace independently passes the ready gate, and the explicit limitations prevent claims about manual AT, native WebMCP, model accuracy, universal performance, publication or deployment. The only new issues are nonblocking evidence-retention and historical live-provenance precision follow-ups."
+  }
+}
