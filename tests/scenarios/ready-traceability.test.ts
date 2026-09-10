@@ -33,7 +33,7 @@ const taskById = new Map(tasks.map(task => [task.id, task]));
 const scenarioById = new Map(scenarios.map(scenario => [scenario.id, scenario]));
 
 const expectedIds = [
-  'S01', 'S02', 'S04', 'S07', 'S08', 'S09', 'S10', 'S12', 'S13', 'S14',
+  'S01', 'S02', 'S03', 'S04', 'S07', 'S08', 'S09', 'S10', 'S12', 'S13', 'S14',
   'S15', 'S16', 'S17', 'S18', 'S20', 'S21', 'S23', 'S25', 'S26', 'S27',
   'S29', 'S30', 'S31', 'S33', 'S34', 'S35', 'S37', 'S38', 'S39', 'S40',
   'S43', 'S46', 'S47', 'S48', 'S49', 'S50', 'S51', 'S53', 'S55', 'S56',
@@ -57,7 +57,7 @@ describe('ready-stage scenario traceability', () => {
     const ids = readyScenarioTraceability.map(trace => trace.id);
     expect(ids).toEqual(expectedIds);
     expect(new Set(ids).size).toBe(ids.length);
-    for (const excluded of ['S03', 'S22', 'S24', 'S28', 'S36', 'S42', 'S45', 'S52', 'S54', 'S59', 'S61', 'S62']) {
+    for (const excluded of ['S22', 'S24', 'S28', 'S36', 'S42', 'S45', 'S52', 'S54', 'S59', 'S61', 'S62']) {
       expect(ids).not.toContain(excluded);
     }
   });
