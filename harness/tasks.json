@@ -1164,7 +1164,7 @@
       "acceptance": [
         "Every required component done with automated accessibility, keyboard/focus, cross-browser behavior and independently reviewed screenshot evidence."
       ],
-      "status": "planned",
+      "status": "done",
       "stage": "ready",
       "evidence": [
         {
@@ -1198,20 +1198,28 @@
         {
           "path": "harness/evidence/t29/a245c8f-final-revalidation/manifest.json",
           "sha256": "48db0631d8ee5118916986d51cd149d74bc60c5a62887c256cfe20e2d6f5a2d8"
+        },
+        {
+          "path": "harness/evidence/t29/676db22-final-revalidation/manifest.json",
+          "sha256": "8bdcb4945de20fabb95f291496e5e573923756164ee0ec5f2b6ded8d4d9de839"
+        },
+        {
+          "path": "harness/evidence/t29/676db22-final-revalidation-review/manifest.json",
+          "sha256": "500ca18d8015dd62d9617dc6fb5c2c80cafd213019b760bb7d3af91a0112e3d2"
         }
       ],
-      "notes": "Reopened after the owner-selected direct npm package identity migration and public site/docs/playground revision. The retained a245c8f evidence is historical and must not qualify the new source; rerun the complete catalog, interaction, cross-browser visual, documentation-route, narrow/reflow and installed-consumer matrix on the final direct-name source, then obtain independent review. Manual assistive-technology certification remains explicitly deferred beyond 0.1.0 and is not claimed.",
+      "notes": "Requalified on exact direct-name source cc7bf293/tree bf396bd3/digest 676db22. The full 1,137-case Chromium/Firefox/WebKit matrix, focused Firefox 200%-text RTL repeats, site/docs/playground flows, all 71 documentation routes, installed catalog/visualization/compound consumers and component-family accessibility fixtures passed. Independent review inspected all 17 retained screenshots and verified packet integrity. One nonblocking P2 retains 209 color-contrast and 24 cross-shadow aria-controls Axe incomplete diagnostics; zero Axe violations were retained. Manual assistive-technology certification and universal pixel parity remain explicitly unclaimed.",
       "review": {
         "status": "approved",
-        "author": "/root/fix_hydration_geometry plus prior T29 component and test implementation authors",
-        "reviewer": "/root/investigate_hydration_shift",
+        "author": "/root/investigate_hydration_shift plus prior T29 component and test implementation authors",
+        "reviewer": "/root/review_t29_final",
         "artifacts": [
           {
-            "path": "harness/evidence/t29/a245c8f-final-revalidation-review/independent-review.json",
-            "sha256": "7e8cc2cb1f00c59bda3a37180b1137088474fd0c37cd4091b09ce479b34fadcf"
+            "path": "harness/evidence/t29/676db22-final-revalidation-review/independent-review.json",
+            "sha256": "c4c5e8c49b896312dc8413cf2fe20140c97d37932a562c0cac25f750eb87c141"
           }
         ],
-        "scope": "Approves the complete owned 71-component T29 matrix on exact product source a245c8f/digest be201b, including the final three-browser, Firefox 200%-text and 71-route hydration regressions; retains unresolved Axe incomplete diagnostics as a P2 and excludes manual assistive-technology certification, T30/T31/T40, publication and deployment."
+        "scope": "Approves the complete owned 71-component T29 matrix on exact final direct-name source cc7bf293/digest 676db22, including three-browser, Firefox 200%-text RTL, site/docs/playground, all-route hydration, installed-consumer and independently reviewed screenshot evidence. Retains unresolved Axe incomplete diagnostics as one nonblocking P2 and excludes manual assistive-technology certification, universal pixel parity, publication and deployment."
       }
     },
     {
