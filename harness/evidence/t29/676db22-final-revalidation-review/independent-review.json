@@ -1,0 +1,360 @@
+{
+  "schema": "aeliqo.t29.independent-review.v1",
+  "task": "T29",
+  "status": "approved-with-nonblocking-p2-follow-up",
+  "reviewedAt": "2026-09-10T19:56:30Z",
+  "reviewedSourceCommit": "cc7bf293ba60d338d07f57a820fd058e7a4465dd",
+  "reviewedSourceTree": "bf396bd3bcabe89ba6cb14279622a5b01dfce190",
+  "reviewedSourceDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+  "reviewer": "/root/review_t29_final",
+  "independence": "The reviewer used an isolated registered worktree and did not author the reviewed source, tests, lockfile, integrated author packet, or qualification runs. Only this independent review packet was added after inspection.",
+  "scope": [
+    "Reconcile the author packet manifest, source identity, candidate digest, artifact references and complete checksum inventory against the exact cc7bf293ba60d338d07f57a820fd058e7a4465dd source.",
+    "Parse the retained Playwright result tree and every retained accessibility attachment for expected, passed, skipped, unexpected, flaky, retry, result-error, violation and incomplete-diagnostic counts.",
+    "Inspect retained visualization and compound installed-consumer reports, the 71-component catalog consumer report, adverse dense/null-heavy visualization report, and 71-route document-layout evidence.",
+    "Inspect all 17 retained screenshots: seven Firefox narrow dark RTL large-text visualization captures, eight component-family captures, and two site playground captures.",
+    "Reproduce the prescribed six Firefox narrow dark RTL visualization cases with repeat-each=3 from the isolated worktree on the pinned Node 24 toolchain."
+  ],
+  "sourceIdentity": {
+    "authorEvidenceCommit": "4b60cba732efc46ec553a4a2a4241818e029de7a",
+    "authorManifest": {
+      "path": "harness/evidence/t29/676db22-final-revalidation/manifest.json",
+      "sha256": "8bdcb4945de20fabb95f291496e5e573923756164ee0ec5f2b6ded8d4d9de839",
+      "bytes": 9100
+    },
+    "authorChecksumInventory": {
+      "path": "harness/evidence/t29/676db22-final-revalidation/SHA256SUMS",
+      "sha256": "b747cec257c43f55271fdbdeff845c2fed6029e8b7870a96be82016fe9c64ef3",
+      "entries": 59,
+      "bytes": 9245
+    },
+    "packetFiles": 61,
+    "inventoryFiles": 59,
+    "inventoryHashCheck": "passed 59/59; inventory matches every packet file except manifest.json and SHA256SUMS",
+    "candidateDigestBeforeAndAfterReview": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9"
+  },
+  "automatedReview": {
+    "fullVisualMatrix": {
+      "decision": "passed",
+      "resultPath": "harness/evidence/t29/676db22-final-revalidation/results/full-visual-results.json",
+      "resultSha256": "eff9749fae7fd898b30fb49e540d56c0f2c91c7cc9b8e3c5eb1cbf146a5d50f4",
+      "tests": 1137,
+      "passed": 1137,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "retries": 0,
+      "resultErrors": 0,
+      "topLevelErrors": 0,
+      "perBrowser": {
+        "chromium": 379,
+        "firefox": 379,
+        "webkit": 379
+      },
+      "environment": {
+        "node": "v24.20.0",
+        "pnpm": "11.24.0",
+        "playwright": "1.63.0",
+        "browsers": {
+          "chromium": "153.0.8010.12",
+          "firefox": "155.0",
+          "webkit": "26.6"
+        },
+        "workers": 1,
+        "retries": 0
+      }
+    },
+    "axeAttachmentReview": {
+      "accessibilityAttachments": 1320,
+      "plainAccessibilityAttachments": 837,
+      "violationRuleEntries": 0,
+      "violationNodes": 0,
+      "incompleteRuleEntries": {
+        "color-contrast": 209,
+        "aria-valid-attr-value": 24
+      },
+      "incompleteNodes": {
+        "color-contrast": 1006,
+        "aria-valid-attr-value": 24
+      },
+      "colorContrastDiagnosticReasons": {
+        "backgroundContainsImage": 728,
+        "backgroundPartiallyObscured": 181,
+        "backgroundOverlapped": 70,
+        "nonTextCharacters": 18,
+        "shortTextContent": 9
+      },
+      "ariaControlsDiagnosticDistribution": {
+        "menu": 12,
+        "popover": 12
+      },
+      "disposition": "No Axe violation was retained. The unresolved color-contrast entries are Axe background-determination diagnostics, and the aria-valid-attr-value entries are cross-custom-element aria-controls resolution diagnostics; both remain explicitly disclosed rather than treated as compliance proof."
+    },
+    "firefoxRepeat": {
+      "decision": "passed",
+      "command": "pnpm exec playwright test --config tests/visual/playwright.config.mjs --project=firefox --grep='(trend|scatter|histogram|heatmap|investigation) narrow-dark-rtl$|[^-]area narrow-dark-rtl$' --repeat-each=3",
+      "tests": 18,
+      "passed": 18,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "retries": 0,
+      "componentIds": [
+        "trend",
+        "area",
+        "scatter",
+        "histogram",
+        "heatmap",
+        "investigation"
+      ],
+      "variant": "Firefox 155.0, 360x800 viewport, dark theme, RTL, 32px root font",
+      "freshSourceDigestAfterRun": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9"
+    },
+    "visualization": {
+      "unitTests": 27,
+      "unitTestFiles": 4,
+      "semanticTests": 7,
+      "semanticTestFiles": 2,
+      "semanticBrowserTests": 4,
+      "browserTests": 31,
+      "installedConsumer": "passed",
+      "installedConsumerReport": "harness/evidence/t29/676db22-final-revalidation/reports/visualization-consumer-report.json",
+      "installedPackages": [
+        "@aeliqo/core",
+        "@aeliqo/web",
+        "@aeliqo/react"
+      ],
+      "sourceDigestMatched": true
+    },
+    "compounds": {
+      "unitTests": 4,
+      "unitTestFiles": 1,
+      "browserTests": 12,
+      "installedConsumer": "passed",
+      "installedConsumerReport": "harness/evidence/t29/676db22-final-revalidation/reports/compound-consumer-report.json",
+      "installedPackages": [
+        "@aeliqo/core",
+        "@aeliqo/runtime",
+        "@aeliqo/web",
+        "@aeliqo/react"
+      ],
+      "sourceDigestMatched": true
+    },
+    "catalogConsumer": {
+      "decision": "passed",
+      "report": "harness/evidence/t29/676db22-final-revalidation/reports/catalog-source-consumer/report.json",
+      "catalogExamples": 71,
+      "previews": 71,
+      "sourceRoots": 71,
+      "fingerprintsCompared": 71,
+      "extractedSources": 71,
+      "mismatches": 0,
+      "manifestErrors": 0,
+      "consumerErrors": 0,
+      "sourceDigestUnchanged": true
+    },
+    "adverseVisualization": {
+      "decision": "passed-with-provenance-limit",
+      "report": "harness/evidence/t29/676db22-final-revalidation/reports/adverse-visualization-report.json",
+      "rows": 1000,
+      "nullRows": 250,
+      "selectedSet": 1000,
+      "oscillationSamples": 40,
+      "observedP50Ms": 13.6,
+      "observedP95Ms": 15.7,
+      "requestsDuringInteraction": 0,
+      "detail": "Exact paged data alternatives, stable identities, null-separated paths and bounded document width were observed. The report defines no universal timing threshold and is a desktop Chromium observation."
+    },
+    "siteAndDocs": {
+      "siteBrowser": {
+        "decision": "passed",
+        "tests": 7,
+        "passed": 7,
+        "report": "harness/evidence/t29/676db22-final-revalidation/raw-logs/15-site-browser.log",
+        "reportSha256": "b83b9086822381e1acb26ae186f71dee383888863dc1c93aca3caad803e73884"
+      },
+      "docsNavigation": {
+        "decision": "passed",
+        "tests": 10,
+        "passed": 10,
+        "report": "harness/evidence/t29/676db22-final-revalidation/results/site-docs-navigation-last-run.json"
+      },
+      "playgroundResponsive": {
+        "decision": "passed",
+        "tests": 9,
+        "passed": 9,
+        "report": "harness/evidence/t29/676db22-final-revalidation/results/site-playground-responsive-last-run.json"
+      },
+      "documentLayout": {
+        "decision": "passed",
+        "routes": 71,
+        "routesWithLayoutShiftEntries": 0,
+        "maxObservedLayoutShift": 0,
+        "layoutShiftBudget": 0.1,
+        "noScriptHydratedBoxMismatches": 0,
+        "report": "harness/evidence/t29/676db22-final-revalidation/results/site-document-layout/document-layout-evidence.json",
+        "reportSha256": "a318eea502b8ca18dc451ed9360d7dc3bb93914b47712a90f6be8bd9006dbb1f"
+      },
+      "siteUnitAndTypecheck": {
+        "decision": "passed",
+        "tests": 17,
+        "passed": 17
+      }
+    },
+    "componentAccessibility": {
+      "decision": "passed",
+      "tests": 12,
+      "passed": 12,
+      "families": [
+        "input",
+        "navigation",
+        "feedback",
+        "data-components"
+      ],
+      "variants": [
+        "desktop",
+        "narrow-dark-rtl"
+      ],
+      "axeViolations": 0
+    },
+    "environmentalAttempts": [
+      {
+        "command": "pnpm test:site:browser",
+        "node": "v22.23.2",
+        "outcome": "non-qualifying-failed",
+        "failures": 4,
+        "passes": 3,
+        "cause": "The unbuilt @aeliqo/agent/webmcp workspace entry point could not be resolved before the pinned build step.",
+        "qualificationTreatment": "Excluded from qualification; the pinned Node v24.20.0 rerun passed 7/7."
+      }
+    ]
+  },
+  "pixelReview": {
+    "decision": "approved-with-observation",
+    "capturesInspected": 17,
+    "chartCaptures": {
+      "count": 7,
+      "componentIds": [
+        "trend",
+        "bar",
+        "area",
+        "scatter",
+        "histogram",
+        "heatmap",
+        "investigation"
+      ],
+      "variant": "Firefox 155.0, 360x800 viewport, dark theme, RTL, 32px root font",
+      "documentOverflowCases": 0,
+      "chartLabelIntersections": 0,
+      "consoleOrPageErrors": 0,
+      "observations": "Titles, scope text, SVG marks and axes, legends where present, exact-data captions, paged rows, selection controls, and the Investigation evidence/detail regions remain readable. Text reflows vertically; the Investigation capture is tall but contains its essential evidence and exact-data regions without document clipping."
+    },
+    "componentFamilyCaptures": {
+      "count": 8,
+      "families": [
+        "input",
+        "navigation",
+        "feedback",
+        "data-components"
+      ],
+      "variants": [
+        "desktop",
+        "narrow-dark-rtl"
+      ],
+      "observations": "Controls and family layouts remain legible in the retained desktop and narrow captures. The data-components narrow stress state places very long exact numeric strings at a horizontal scroll edge; the exact table and LTR metric presentation provide the accessible/scrollable data path, so this is recorded as an observation rather than a blocking finding."
+    },
+    "sitePlaygroundCaptures": {
+      "count": 2,
+      "variants": [
+        "desktop",
+        "mobile dark"
+      ],
+      "observations": "The desktop source/inspector/result workflow, invalid-document alert and focus-region state are visible. The mobile layout is a single responsive column with stacked controls and a visible Inspect focus ring; no page-level horizontal overflow is visible in the retained state."
+    }
+  },
+  "findings": {
+    "p0": [],
+    "p1": [],
+    "p2": [
+      {
+        "id": "T29-P2-AXE-INCOMPLETE",
+        "summary": "Retained Axe attachments contain unresolved incomplete diagnostics in addition to zero violations.",
+        "evidence": "The full result packet contains 1,320 accessibility attachments: zero violation rule entries/nodes; 209 color-contrast incomplete rule entries covering 1,006 nodes; and 24 aria-valid-attr-value incomplete entries covering 24 nodes. The color-contrast diagnostics are Axe inability to determine background/text for image-containing, partially obscured, overlapped, non-text or short-text nodes. The aria diagnostics are 12 menu and 12 popover aria-controls references that Axe cannot resolve through the custom-element boundary.",
+        "actualVsExpected": "The maintained suites assert an empty Axe violations list and reject prohibited-ARIA incomplete checks. They retain other incomplete checks for review; no required test failed.",
+        "consequence": "These diagnostics do not establish complete WCAG or assistive-technology compliance for the affected cases.",
+        "priorityRationale": "Nonblocking follow-up: no Axe violation or prohibited-ARIA incomplete was observed; the packet and this review disclose the unresolved checks; manual assistive-technology certification is explicitly deferred rather than claimed.",
+        "recommendedCorrection": "Add targeted contrast assertions for the affected rendered states and a custom-element-boundary aria-controls check, then supplement with the deferred manual assistive-technology review before making a stronger compliance claim.",
+        "verification": "Repeat the full matrix and confirm the incomplete diagnostic counts are reduced or explicitly justified without introducing violations.",
+        "status": "open-follow-up; nonblocking"
+      }
+    ]
+  },
+  "coverage": {
+    "artifactIntegrity": "satisfied; all 59 author checksum entries match and all nine manifest artifact references exist; manifest-referenced hashes agree with the inventory",
+    "exactSourceIdentity": "satisfied; commit, tree and gate digest independently match the packet",
+    "fullThreeBrowserMatrix": "satisfied from retained current-source result; 1,137/1,137 passed, 379 per browser, zero skips/unexpected/flaky/retries/result errors",
+    "focusedFirefoxGeometry": "satisfied; independent 18/18 repeat-each=3 run plus retained seven-capture measurements report zero document overflow, label intersections, data overflow, geometry escapes and page/console errors",
+    "installedConsumers": "satisfied; visualization, compound and 71-entry catalog consumer reports pass with exact source digest/fingerprint parity",
+    "adverseVisualization": "satisfied-with-provenance-limit; 1,000 rows, 250 null rows, 1,000 selected identities, 40 oscillations and zero interaction requests",
+    "siteDocumentLayout": "satisfied; all 71 routes have identical retained no-script/hydrated sentinel boxes and zero layout-shift entries",
+    "retainedScreenshotReview": "satisfied-with-observation; all 17 retained assets inspected",
+    "manualAssistiveTechnology": "unknown-and-not-claimed",
+    "publicationDeploymentAndUniversalPixelParity": "not-applicable-and-not-claimed"
+  },
+  "acceptance": {
+    "automatedAccessibility": "approved-with-disclosed-axe-incomplete-p2",
+    "keyboardFocusAndCrossBrowserBehavior": "approved from retained complete matrix and focused Firefox repeat",
+    "completeCatalog": "approved; 71/71 source roots, fingerprints and installed catalog consumer checks",
+    "screenshotEvidence": "approved-with-observation; current-source captures are independently inspected",
+    "taskDecision": "T29 final-source acceptance is supported on cc7bf293ba60d338d07f57a820fd058e7a4465dd / 676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9."
+  },
+  "artifactsReviewed": [
+    {
+      "path": "harness/evidence/t29/676db22-final-revalidation/results/full-visual-results.json",
+      "sha256": "eff9749fae7fd898b30fb49e540d56c0f2c91c7cc9b8e3c5eb1cbf146a5d50f4"
+    },
+    {
+      "path": "harness/evidence/t29/676db22-final-revalidation/reports/adverse-visualization-report.json",
+      "sha256": "07547d8db7105b85397d828e74e861d15386fae32c3f20bd34fc7a7ca01647c5"
+    },
+    {
+      "path": "harness/evidence/t29/676db22-final-revalidation/reports/firefox-narrow-rtl-200pct-measurements.json",
+      "sha256": "ac69f6091b1f2426d4a9de2066dc13198e2f5181e773d7136dd8000f03dab9ac"
+    },
+    {
+      "path": "harness/evidence/t29/676db22-final-revalidation/reports/catalog-source-consumer/report.json",
+      "sha256": "e2d55239eeb5da10e7e4c04299bc5a64fe41e302fc3170e32da337fcb6c3d668"
+    },
+    {
+      "path": "harness/evidence/t29/676db22-final-revalidation/reports/compound-consumer-report.json",
+      "sha256": "25f01f71110fc3bf6a99e3a0de4310e235d037075f70f2548652dbad7a588a6b"
+    },
+    {
+      "path": "harness/evidence/t29/676db22-final-revalidation/reports/visualization-consumer-report.json",
+      "sha256": "5bf2bd676bc433873e9fbc0770fd86730b1a2cbc81eb44553f822fba31a64381"
+    },
+    {
+      "path": "harness/evidence/t29/676db22-final-revalidation/results/site-document-layout/document-layout-evidence.json",
+      "sha256": "a318eea502b8ca18dc451ed9360d7dc3bb93914b47712a90f6be8bd9006dbb1f"
+    },
+    {
+      "path": "harness/evidence/t29/676db22-final-revalidation/screenshots/",
+      "files": 17,
+      "sha256Source": "author SHA256SUMS"
+    }
+  ],
+  "limitations": [
+    "The independent reviewer parsed the retained 1,137-case result rather than rerunning the complete matrix; the focused Firefox six-case repeat was independently rerun 18/18 across three repetitions.",
+    "No manual VoiceOver, NVDA or other assistive-technology certification was performed or claimed.",
+    "The retained visual matrix and reviewed captures prove the owned fixtures and states, not universal pixel equivalence for every consumer environment or operating system.",
+    "The adverse visualization timing is a desktop Chromium observation with no universal timing threshold; it is not field or lower-powered-device evidence.",
+    "The Node 22 site-browser false start is environmental and excluded from qualification; only the pinned Node 24 rerun is counted.",
+    "This review does not qualify T30, T31, T40, publication, deployment, release promotion or live-site identity."
+  ],
+  "verdict": {
+    "decision": "approve-T29-final-revalidation",
+    "blockingFindings": 0,
+    "releaseApprovalIssued": false,
+    "summary": "The exact current-source T29 author packet is internally consistent and independently checked in the retained evidence plus the prescribed focused Firefox repeat. No P0 or P1 finding remains. One explicitly disclosed P2 records unresolved Axe incomplete diagnostics, and a long-number horizontal-scroll observation remains nonblocking; the evidence supports T29 approval with those limits and without a stronger manual-AT or universal-compliance claim."
+  }
+}

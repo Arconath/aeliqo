@@ -1,0 +1,54 @@
+{
+  "schema": "aeliqo.t29.independent-review-manifest.v1",
+  "task": "T29",
+  "status": "complete-independent-review",
+  "reviewedAt": "2026-09-10T19:56:30Z",
+  "reviewedSourceCommit": "cc7bf293ba60d338d07f57a820fd058e7a4465dd",
+  "reviewedSourceTree": "bf396bd3bcabe89ba6cb14279622a5b01dfce190",
+  "reviewedSourceDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+  "reviewedAuthorEvidence": {
+    "commit": "4b60cba732efc46ec553a4a2a4241818e029de7a",
+    "manifest": "harness/evidence/t29/676db22-final-revalidation/manifest.json",
+    "manifestSha256": "8bdcb4945de20fabb95f291496e5e573923756164ee0ec5f2b6ded8d4d9de839",
+    "checksumInventory": "harness/evidence/t29/676db22-final-revalidation/SHA256SUMS",
+    "checksumInventorySha256": "b747cec257c43f55271fdbdeff845c2fed6029e8b7870a96be82016fe9c64ef3",
+    "checksumEntries": 59,
+    "packetFiles": 61
+  },
+  "reviewer": {
+    "agent": "/root/review_t29_final",
+    "role": "independent T29 evidence, browser and screenshot reviewer",
+    "independentOfEvidenceAuthors": true,
+    "worktree": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo-t29-final-review",
+    "branch": "codex/t29-final-revalidation-review"
+  },
+  "evidence": [
+    {
+      "path": "independent-review.json",
+      "sha256": "c4c5e8c49b896312dc8413cf2fe20140c97d37932a562c0cac25f750eb87c141",
+      "bytes": 18081
+    },
+    {
+      "path": "SHA256SUMS",
+      "sha256": "09391d549aeb6848fdc40b17acdfc3b99ed4f0474bc8d3b93302f8031902cadc",
+      "bytes": 145,
+      "detail": "Inventory for independent-review.json only; manifest.json and SHA256SUMS are excluded to avoid a circular hash."
+    }
+  ],
+  "decision": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 1,
+    "blockingFindings": 0,
+    "status": "approved-with-nonblocking-p2-follow-up",
+    "review": "The exact current-source author packet is internally consistent and independently rechecked in the retained evidence plus a focused Firefox repeat."
+  },
+  "limits": [
+    "The independent reviewer parsed the retained 1,137-case result rather than rerunning the complete matrix; the prescribed focused Firefox six-case repeat was independently rerun 18/18 across three repetitions.",
+    "The reviewed Axe attachments retain incomplete color-contrast and custom-element aria-controls diagnostics; there are zero retained Axe violations, and the diagnostics are disclosed as a nonblocking P2 rather than treated as compliance proof.",
+    "No manual VoiceOver, NVDA or other assistive-technology certification was performed or claimed.",
+    "The retained visual captures prove the owned fixtures and states, not universal pixel equivalence for every consumer environment or operating system.",
+    "The adverse timing report is a desktop Chromium observation and does not establish a universal performance threshold or field behavior.",
+    "This review does not qualify T30, T31, T40, publication, deployment, release promotion or live-site identity."
+  ]
+}
