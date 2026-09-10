@@ -1,0 +1,43 @@
+# OSS and commercial boundary
+
+## Shipped as Apache-2.0 source
+
+Aeliqo's core contracts, evaluator, runtime, HTTP and local data paths, complete
+component catalog, React bindings, agent and protocol plumbing, local Studio and
+DevTools, security and accessibility behavior, and internal testkit source are
+Apache-2.0. The six public packages are `@aeliqo/sdk-core`,
+`@aeliqo/sdk-runtime`, `@aeliqo/sdk-web`, `@aeliqo/sdk-react`,
+`@aeliqo/sdk-agent`, and `@aeliqo/sdk-devtools`. The testkit stays a private
+workspace so its release-only helpers are not mistaken for a seventh public API.
+
+These capabilities run without a license server, account callback, hosted
+control plane, paid row limit, or mandatory model call. Applications may use
+local records and the local evaluator entirely offline. HTTP data sources, MCP,
+and BYOK providers are optional host-configured effects; their network use is a
+property of that chosen integration, not a framework licensing dependency.
+
+Security, authorization hooks, accessibility behavior, and the required
+component families are not paid upgrades. A configured local application keeps
+working when a future hosted service is unavailable.
+
+## Separate commercial hypothesis
+
+A future commercial service may operate cross-organization collaboration,
+catalog and profile rollout, approval workflows, management SSO/SCIM, retained
+audit search, fleet diagnostics, managed infrastructure, private deployment,
+and support/SLA. It would consume the same public contracts and live in a
+separate service and license boundary.
+
+No hosted commercial service, price, SLA, customer demand, recurring revenue,
+or product-market fit is claimed for 0.1.0. Those are hypotheses to validate in
+paid pilots. Any future pricing should separate inference, storage, egress, and
+support costs; BYOK must not be charged again as bundled inference, and ordinary
+rendering must not be metered.
+
+## Release evidence
+
+Source builds and clean tarball consumers demonstrate offline framework use.
+Registry publication, website deployment, and commercial availability are
+independent states and must be reported separately. See the
+[0.1.0 support boundary](../public/0.1.0-support-boundary.md) and
+[release migration](../18-release-migration.md).

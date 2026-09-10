@@ -47,6 +47,8 @@
 | [40](40-current-research.md) | 40 — Riset primer terkini dan batas inferensi |
 | [41](41-engineering-operating-standard.md) | 41 — Standar engineering, scalability, dan maintainer operations |
 
+Release-facing boundaries: [OSS and commercial boundary](business/oss-commercial-boundary.md) and [0.1.0 support boundary](public/0.1.0-support-boundary.md).
+
 ## Jalur baca
 
 User/developer: master → DX09 → source02 → meaning03 → examples22 → website38.

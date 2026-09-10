@@ -1,6 +1,6 @@
 # Aeliqo — master foundation 0.1.0
 
-**Status: implementation specification, runnable reference tests and execution harness; not a completed or released SDK.**
+**Status: 0.1.0 release candidate. Registry and production availability are verified separately from source readiness.**
 
 Aeliqo is an opinionated adaptive application UI framework with its own complete primitive and 2D components. User intent and application-owned data become governed, interactive experiences. AI may be wrong: its proposals must pass explicit contracts. Contract validity is not proof that every interpretation or business claim is true.
 
@@ -21,11 +21,13 @@ Requires Python 3.11+; reference type tests also require Node and TypeScript's `
 
 The latest product target is **0.1.0**. It supersedes earlier 0.10 planning; contract schema version 1 is independent. The rewrite uses the clean `@aeliqo/sdk-{core,runtime,web,react,agent,devtools}` identity family, while `@aeliqo/testkit` remains a private workspace. Published npm identities are immutable, and a lower semver is not an automatic upgrade for previous users. [Release migration](docs/18-release-migration.md) defines collision checks and cutover; [the 0.1 migration guide](docs/migration-0.1.0.md) maps the incompatible 0.2 packages.
 
-A clean source tree is intentional. Preserve historical commits and rollback artifacts; remove legacy implementation from the new active tree rather than deleting customer data or breaking a live service first. GitHub writing from this preparation session returned 403; no remote branch, deployment or registry artifact was changed. Local authenticated publication is available through the dry-run-first script.
+A clean source tree is intentional. Preserve historical commits and rollback artifacts; remove legacy implementation from the new active tree rather than deleting customer data or breaking a live service first. Publication uses audited tarballs, non-latest staging tags, clean registry consumers, and an explicit final promotion; source presence alone is not a publication claim.
 
 ## License and product boundary
 
 Apache-2.0 for the complete runtime/components/basic security/accessibility/local tools and protocol integration. Hosted organizational collaboration/governance/operations and enterprise support are a separate commercial service. No safety paywall, runtime license callback or artificial paid row cap.
+
+The exact boundary and availability language are documented in [OSS and commercial boundary](docs/business/oss-commercial-boundary.md) and [0.1.0 support boundary](docs/public/0.1.0-support-boundary.md).
 
 ## Specification edition 1.1
 
