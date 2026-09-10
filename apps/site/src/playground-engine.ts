@@ -3,12 +3,12 @@ import {
   type Catalog, type Experience, type MeaningDefinition, type Outcome,
   type PresentationContext, type PresentationPlan, type QuerySpec, type Result, type ResultRef,
   type Task, type ValidatedPresentation, type VisualizationSpec,
-} from '@aeliqo/core';
-import {createLocalDataService, type DataRecord, type QueryBudget} from '@aeliqo/runtime/data';
-import {createResultStore, type ResultHandle, type ResultLease} from '@aeliqo/runtime/results';
-import {createResultCohortResolver, createTaskEvaluator, type TrustedEvaluationContext} from '@aeliqo/runtime/evaluation';
-import {createMeaningAuthoring} from '@aeliqo/runtime/meaning';
-import {createAeliqoPresentationRegistry, AELIQO_OPERATION_REFS} from '@aeliqo/web/region';
+} from '@aeliqo/sdk-core';
+import {createLocalDataService, type DataRecord, type QueryBudget} from '@aeliqo/sdk-runtime/data';
+import {createResultStore, type ResultHandle, type ResultLease} from '@aeliqo/sdk-runtime/results';
+import {createResultCohortResolver, createTaskEvaluator, type TrustedEvaluationContext} from '@aeliqo/sdk-runtime/evaluation';
+import {createMeaningAuthoring} from '@aeliqo/sdk-runtime/meaning';
+import {createAeliqoPresentationRegistry, AELIQO_OPERATION_REFS} from '@aeliqo/sdk-web/region';
 
 export const DEMO_REGION = 'aeliqo-public-demo';
 export const DEMO_SCOPE = 'synthetic-public-records';

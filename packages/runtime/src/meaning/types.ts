@@ -15,8 +15,8 @@ import type {
   SemanticPolicy,
   TypedExpression,
   VersionRef,
-} from '@aeliqo/core';
-import type {DefineMetricInput, TypedAuthoring} from '@aeliqo/core';
+} from '@aeliqo/sdk-core';
+import type {DefineMetricInput, TypedAuthoring} from '@aeliqo/sdk-core';
 
 /** The trusted surface that produced a canonical definition. */
 export type MeaningAuthoringSurface = 'code' | 'studio' | 'ai-assisted';

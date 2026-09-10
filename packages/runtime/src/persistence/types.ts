@@ -1,4 +1,4 @@
-import type {Task} from '@aeliqo/core';
+import type {Task} from '@aeliqo/sdk-core';
 import type {RegionHistoryEntry, RegionReadSet, RegionSnapshot} from '../regions/types.js';
 
 /** Versioned metadata document. Presentation plans and result rows are intentionally omitted. */

@@ -2,7 +2,7 @@ import type {
   ResultBatch,
   ResultEvent,
   ResultSnapshot,
-} from '@aeliqo/runtime/results';
+} from '@aeliqo/sdk-runtime/results';
 
 export const DEFAULT_MAX_RESULT_EVENTS = 256;
 export const DEFAULT_MAX_RESULT_ROWS = 10_000;

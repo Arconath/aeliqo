@@ -12,7 +12,7 @@ import {
   AeliqoStackElement,
   AeliqoSurfaceElement,
   AeliqoTextElement,
-} from "@aeliqo/web";
+} from "@aeliqo/sdk-web";
 import {appendSlottedText, cleanupCatalogRoot, createCatalogElement, createCatalogRoot} from "./fixture.js";
 import {catalogMountSource, catalogSource} from "./source.js";
 import type {CatalogExampleDefinition, CatalogExampleId, CatalogExampleMetadata} from "./types.js";
@@ -32,7 +32,7 @@ const sourceImports = `import {
   AeliqoSurfaceElement,
   AeliqoTextElement,
   registerAeliqoElements,
-} from "@aeliqo/web";`;
+} from "@aeliqo/sdk-web";`;
 
 type MetadataNotes = Pick<CatalogExampleMetadata, "fixture" | "props" | "propsNotes" | "states" | "keyboard" | "events" | "expectedOutcome">;
 const componentNotes: Record<string, Partial<MetadataNotes>> = {

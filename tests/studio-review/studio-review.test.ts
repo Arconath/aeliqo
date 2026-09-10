@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import {createStudioDocument, createStudioSession} from '../../packages/devtools/src/index.js';
-import {createMeaningAuthoring, meaningDigest} from '@aeliqo/runtime/meaning';
+import {createMeaningAuthoring, meaningDigest} from '@aeliqo/sdk-runtime/meaning';
 import {catalog, document, input, registry} from '../studio/fixtures.js';
 
 function catalogWithEntity(entity: string, revision: string) {

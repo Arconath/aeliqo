@@ -4,7 +4,7 @@ import {spawnSync} from 'node:child_process';
 import {mkdir, mkdtemp, readFile, readdir, rm, writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {dirname, join, resolve} from 'node:path';
-import {PUBLIC_PACKAGE_NAMES, exportSpecifiers, readJson, sha256} from './candidate-lib.mjs';
+import {PUBLIC_PACKAGE_NAMES, exportSpecifiers, packageShortName, readJson, sha256} from './candidate-lib.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
 const args = process.argv.slice(2);
@@ -31,7 +31,7 @@ const consumer = await mkdtemp(join(tmpdir(), 'aeliqo-registry-consumer-'));
 try {
   const peers = new Map();
   for (const name of PUBLIC_PACKAGE_NAMES) {
-    const shortName = name.slice('@aeliqo/'.length);
+    const shortName = packageShortName(name);
     const manifest = await readJson(join(root, 'packages', shortName, 'package.json'));
     for (const peer of Object.keys(manifest.peerDependencies ?? {})) {
       if (PUBLIC_PACKAGE_NAMES.includes(peer)) continue;
@@ -68,8 +68,8 @@ try {
   }, include: ['exports.ts']}, null, 2) + '\n');
   command(join(consumer, 'node_modules/.bin/tsc'), ['--project', 'tsconfig.json'], consumer);
   await writeFile(join(consumer, 'consumer.mjs'), [
-    "import '@aeliqo/core';", "import '@aeliqo/runtime/evaluation';", "import '@aeliqo/web/server';",
-    "import '@aeliqo/agent/protocol';", "import '@aeliqo/devtools';", "import '@aeliqo/react/ssr';",
+    "import '@aeliqo/sdk-core';", "import '@aeliqo/sdk-runtime/evaluation';", "import '@aeliqo/sdk-web/server';",
+    "import '@aeliqo/sdk-agent/protocol';", "import '@aeliqo/sdk-devtools';", "import '@aeliqo/sdk-react/ssr';",
   ].join('\n') + '\n');
   command('node', ['--disallow-code-generation-from-strings', 'consumer.mjs'], consumer);
 

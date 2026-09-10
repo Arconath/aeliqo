@@ -1,6 +1,6 @@
 import '@lit-labs/ssr-client/lit-element-hydrate-support.js';
-import {stableTableRowKey} from '@aeliqo/web/table';
-import type {AeliqoRegionElement, AeliqoRegionSnapshot} from '@aeliqo/web/region';
+import {stableTableRowKey} from '@aeliqo/sdk-web/table';
+import type {AeliqoRegionElement, AeliqoRegionSnapshot} from '@aeliqo/sdk-web/region';
 
 const element = document.querySelector<AeliqoRegionElement>('#ssr-region')!;
 const initialState = JSON.parse(document.querySelector('#initial-state')!.textContent!) as AeliqoRegionSnapshot;
@@ -11,7 +11,7 @@ element.onSemanticInteraction = request => {
   document.querySelector('#hydration-status')!.textContent = request.payload.kind === 'selection' && request.payload.selection.mode === 'ids'
     ? `Selected ${request.payload.selection.keys.map(key => initialState.results.flatMap(result => result.rows).find(row => stableTableRowKey(row, ['employee_id']) === key)?.employee_id ?? 'Unknown employee').join(', ')} after hydration.` : 'Selection cleared after hydration.';
 };
-const {registerAeliqoElements} = await import('@aeliqo/web');
+const {registerAeliqoElements} = await import('@aeliqo/sdk-web');
 registerAeliqoElements();
 element.removeAttribute('defer-hydration');
 await element.updateComplete;

@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import type {QuerySource} from '@aeliqo/core';
+import type {QuerySource} from '@aeliqo/sdk-core';
 import {createStudioSession} from '../../packages/devtools/src/index.js';
 import {catalog, document, registry} from '../studio/fixtures.js';
 

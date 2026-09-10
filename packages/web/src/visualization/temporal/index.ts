@@ -1,6 +1,6 @@
 import {html,svg,css,nothing} from 'lit';
 import {repeat} from 'lit/directives/repeat.js';
-import type {VisualizationBindingContext,VisualizationSpec} from '@aeliqo/core';
+import type {VisualizationBindingContext,VisualizationSpec} from '@aeliqo/sdk-core';
 import {AeliqoFoundationElement,aeliqoFoundationThemeStyles} from '../../foundation/base.js';
 import {exactLabel} from '../../plot/scales.js';
 import type {VisualizationDataset,VisualizationInputs,VisualizationRow} from '../types.js';

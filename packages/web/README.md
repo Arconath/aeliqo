@@ -1,9 +1,9 @@
-# @aeliqo/web
+# @aeliqo/sdk-web
 
 The T02 platform slice contains the shared Lit implementation for Aeliqo's
 native input, semantic table, and accessible SVG chart. Importing this entry
 does not define custom elements. Call `registerAeliqoElements()` once at the
-application boundary, or use the isolated `@aeliqo/web/server` entry for the
+application boundary, or use the isolated `@aeliqo/sdk-web/server` entry for the
 server renderer. The server entry accepts a trusted, pre-resolved Lit template
 through `renderAeliqo`; it does not own application data or routes.
 
@@ -18,7 +18,7 @@ response headers. The platform fixture exercises the browser nonce path and
 blocks inline scripts; it is not a manual assistive-technology certification.
 
 
-`@aeliqo/web/region` adds `createAeliqoPresentationRegistry` and
+`@aeliqo/sdk-web/region` adds `createAeliqoPresentationRegistry` and
 `AeliqoRegionElement`. The registry connects the pure presentation compiler to
 the shared table, trend, filter, and stack implementations. The host supplies
 `resolveEntity` for authorized result identities. No-preset composition uses the

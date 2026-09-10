@@ -1,5 +1,5 @@
-import {registerAeliqoElements, type AeliqoRegionElement} from '@aeliqo/web';
-import {aeliqoStandaloneThemeStyles} from '@aeliqo/web/styles';
+import {registerAeliqoElements, type AeliqoRegionElement} from '@aeliqo/sdk-web';
+import {aeliqoStandaloneThemeStyles} from '@aeliqo/sdk-web/styles';
 import {createHrViewSession, type HrViewSession} from './view-session.js';
 
 declare global { interface Window { hrFixture?: HrViewSession; } }

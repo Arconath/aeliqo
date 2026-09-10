@@ -1,5 +1,5 @@
-import {bindVisualizationSpec, scalarIdentity} from '@aeliqo/core';
-import type {BoundVisualization, Catalog, Outcome, Result, ResultRef, Scalar, SemanticType} from '@aeliqo/core';
+import {bindVisualizationSpec, scalarIdentity} from '@aeliqo/sdk-core';
+import type {BoundVisualization, Catalog, Outcome, Result, ResultRef, Scalar, SemanticType} from '@aeliqo/sdk-core';
 import {materializeVisualizationRows} from '../materialization.js';
 import type {VisualizationInputs, VisualizationRow} from '../types.js';
 

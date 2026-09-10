@@ -63,7 +63,7 @@ const artifacts = [];
 for (const name of packageNames) {
   const directory = join(root, "packages", name);
   const manifest = JSON.parse(await readFile(join(directory, "package.json"), "utf8"));
-  assert.equal(manifest.name, `@aeliqo/${name}`);
+  assert.equal(manifest.name, `@aeliqo/sdk-${name}`);
   assert.equal(manifest.version, "0.1.0");
   assert.equal(manifest.license, "Apache-2.0");
   assert.notEqual(manifest.private, true);
@@ -113,15 +113,15 @@ for (const artifact of artifacts) {
     assert.equal(hash(await readFile(installed)), hash(run(["tar", "-xOf", artifact.path, entry], root, null)), `Installed ${artifact.name} bytes differ for ${entry}`);
   }
 }
-assert.equal(lock.packages["node_modules/@aeliqo/web"].dependencies["@aeliqo/core"], "0.1.0");
-assert.equal(lock.packages["node_modules/@aeliqo/react"].dependencies["@aeliqo/web"], "0.1.0");
-assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/web/node_modules/")), []);
-assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/react/node_modules/")), []);
+assert.equal(lock.packages["node_modules/@aeliqo/sdk-web"].dependencies["@aeliqo/sdk-core"], "0.1.0");
+assert.equal(lock.packages["node_modules/@aeliqo/sdk-react"].dependencies["@aeliqo/sdk-web"], "0.1.0");
+assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/sdk-web/node_modules/")), []);
+assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/sdk-react/node_modules/")), []);
 await writeFile(join(runDirectory, "consumer-package-lock.json"), lockBytes);
 
 const webSubpaths = ["inputs", "text-field", "text-area", "number-field", "checkbox", "radio-group", "switch", "select", "combobox", "date-field", "date-range", "slider", "search-field", "file-input", "field-group", "form"];
-const webSpecifiers = ["@aeliqo/web/input", "@aeliqo/web/server", ...webSubpaths.map(path => `@aeliqo/web/${path}`)];
-const reactSpecifiers = ["@aeliqo/react", "@aeliqo/react/inputs"];
+const webSpecifiers = ["@aeliqo/sdk-web/input", "@aeliqo/sdk-web/server", ...webSubpaths.map(path => `@aeliqo/sdk-web/${path}`)];
+const reactSpecifiers = ["@aeliqo/sdk-react", "@aeliqo/sdk-react/inputs"];
 const resolutionEntry = join(consumer, "resolve-inputs.mjs");
 await writeFile(resolutionEntry, `
 import {fileURLToPath} from 'node:url';
@@ -142,12 +142,12 @@ for (const spec of [...webSpecifiers, ...reactSpecifiers]) assert(resolved[spec]
 
 await writeFile(join(consumer, "consumer.tsx"), `
 import React from 'react';
-import {AeliqoTextField, AeliqoTextArea, AeliqoNumberField, AeliqoCheckbox, AeliqoRadioGroup, AeliqoSwitch, AeliqoSelect, AeliqoCombobox, AeliqoDateField, AeliqoDateRange, AeliqoSlider, AeliqoSearchField, AeliqoFileInput, AeliqoFieldGroup, AeliqoForm} from '@aeliqo/react/inputs';
-import {AeliqoTextField as MainTextField, AeliqoTextArea as MainTextArea, AeliqoNumberField as MainNumberField, AeliqoCheckbox as MainCheckbox, AeliqoRadioGroup as MainRadioGroup, AeliqoSwitch as MainSwitch, AeliqoSelect as MainSelect, AeliqoCombobox as MainCombobox, AeliqoDateField as MainDateField, AeliqoDateRange as MainDateRange, AeliqoSlider as MainSlider, AeliqoSearchField as MainSearchField, AeliqoFileInput as MainFileInput, AeliqoFieldGroup as MainFieldGroup, AeliqoForm as MainForm} from '@aeliqo/react';
-import {AeliqoTextFieldElement, AeliqoTextAreaElement, AeliqoNumberFieldElement, AeliqoCheckboxElement, AeliqoRadioGroupElement, AeliqoSwitchElement, AeliqoSelectElement, AeliqoComboboxElement, AeliqoDateFieldElement, AeliqoDateRangeElement, AeliqoSliderElement, AeliqoSearchFieldElement, AeliqoFileInputElement, AeliqoFieldGroupElement, AeliqoFormElement} from '@aeliqo/web/inputs';
-import {AeliqoTextFieldElement as TextFieldByPath} from '@aeliqo/web/text-field';
-import type {AeliqoInputChangeDetail, AeliqoInputCommitDetail, AeliqoValidationDetail, AeliqoSearchDetail, AeliqoFileChangeDetail, AeliqoFormSubmitDetail, AeliqoDateRangeValue} from '@aeliqo/web/inputs';
-import {createAeliqoPresentationRegistry, type AeliqoInputBindings} from '@aeliqo/web/region';
+import {AeliqoTextField, AeliqoTextArea, AeliqoNumberField, AeliqoCheckbox, AeliqoRadioGroup, AeliqoSwitch, AeliqoSelect, AeliqoCombobox, AeliqoDateField, AeliqoDateRange, AeliqoSlider, AeliqoSearchField, AeliqoFileInput, AeliqoFieldGroup, AeliqoForm} from '@aeliqo/sdk-react/inputs';
+import {AeliqoTextField as MainTextField, AeliqoTextArea as MainTextArea, AeliqoNumberField as MainNumberField, AeliqoCheckbox as MainCheckbox, AeliqoRadioGroup as MainRadioGroup, AeliqoSwitch as MainSwitch, AeliqoSelect as MainSelect, AeliqoCombobox as MainCombobox, AeliqoDateField as MainDateField, AeliqoDateRange as MainDateRange, AeliqoSlider as MainSlider, AeliqoSearchField as MainSearchField, AeliqoFileInput as MainFileInput, AeliqoFieldGroup as MainFieldGroup, AeliqoForm as MainForm} from '@aeliqo/sdk-react';
+import {AeliqoTextFieldElement, AeliqoTextAreaElement, AeliqoNumberFieldElement, AeliqoCheckboxElement, AeliqoRadioGroupElement, AeliqoSwitchElement, AeliqoSelectElement, AeliqoComboboxElement, AeliqoDateFieldElement, AeliqoDateRangeElement, AeliqoSliderElement, AeliqoSearchFieldElement, AeliqoFileInputElement, AeliqoFieldGroupElement, AeliqoFormElement} from '@aeliqo/sdk-web/inputs';
+import {AeliqoTextFieldElement as TextFieldByPath} from '@aeliqo/sdk-web/text-field';
+import type {AeliqoInputChangeDetail, AeliqoInputCommitDetail, AeliqoValidationDetail, AeliqoSearchDetail, AeliqoFileChangeDetail, AeliqoFormSubmitDetail, AeliqoDateRangeValue} from '@aeliqo/sdk-web/inputs';
+import {createAeliqoPresentationRegistry, type AeliqoInputBindings} from '@aeliqo/sdk-web/region';
 const semanticBindings = {revision:'inputs-1',inputs:[{id:'name',ref:{id:'input.text-field',revision:'1'},config:{label:'Name'},draft:{entity:'profile',key:'self',field:'name',entityRevision:'1',type:{value:'text',nullable:false}}}]} satisfies AeliqoInputBindings;
 const semanticRegistry = createAeliqoPresentationRegistry({inputs:semanticBindings});
 void semanticRegistry;
@@ -187,12 +187,12 @@ run([join(consumer, "node_modules/.bin/tsc"), "--project", "tsconfig.json"], con
 
 await writeFile(join(consumer, "ssr.mjs"), `
 import assert from 'node:assert/strict';
-import '@aeliqo/react/ssr';
+import '@aeliqo/sdk-react/ssr';
 import {createElement} from 'react';
 import {renderToString} from 'react-dom/server';
 import {html} from 'lit';
-import {renderAeliqo} from '@aeliqo/web/server';
-import {AeliqoTextField, AeliqoForm} from '@aeliqo/react/inputs';
+import {renderAeliqo} from '@aeliqo/sdk-web/server';
+import {AeliqoTextField, AeliqoForm} from '@aeliqo/sdk-react/inputs';
 const markup = await renderAeliqo(html\`<aeliqo-text-field label="SSR name" default-value="Ada"></aeliqo-text-field><aeliqo-number-field label="SSR amount" default-value="10.50"></aeliqo-number-field><aeliqo-checkbox label="SSR agree" default-checked></aeliqo-checkbox><aeliqo-radio-group label="SSR role" .options=\${[{value:'a',label:'Admin'}]} default-value="a"></aeliqo-radio-group><aeliqo-switch label="SSR switch" default-checked></aeliqo-switch><aeliqo-select label="SSR country" .options=\${[{value:'id',label:'Indonesia'}]} default-value="id"></aeliqo-select><aeliqo-combobox label="SSR person" .options=\${[{value:'ada',label:'Ada'}]} default-value="ada"></aeliqo-combobox><aeliqo-date-field label="SSR date" default-value="2026-09-08"></aeliqo-date-field><aeliqo-date-range label="SSR range" default-start="2026-09-01" default-end="2026-09-08"></aeliqo-date-range><aeliqo-slider label="SSR progress" default-value="20"></aeliqo-slider><aeliqo-search-field label="SSR search" default-value="Ada"></aeliqo-search-field><aeliqo-file-input label="SSR file"></aeliqo-file-input><aeliqo-field-group legend="SSR group"></aeliqo-field-group><aeliqo-form label="SSR form"></aeliqo-form>\`);
 assert.match(markup, /shadowrootmode="open"/);
 for (const text of ['SSR name','SSR amount','SSR agree','SSR role','SSR switch','SSR country','SSR person','SSR date','SSR range','SSR progress','SSR search','SSR file','SSR group','SSR form']) assert.match(markup, new RegExp(text));
@@ -210,21 +210,21 @@ console.log(JSON.stringify({webBytes: markup.length, reactBytes: reactMarkup.len
 const ssrOutput = run(["node", join(consumer, "ssr.mjs")], consumer).trim();
 
 await writeFile(join(consumer, "browser-entry.ts"), `
-import {AeliqoTextFieldElement} from '@aeliqo/web/text-field';
-import {AeliqoTextAreaElement} from '@aeliqo/web/text-area';
-import {AeliqoNumberFieldElement} from '@aeliqo/web/number-field';
-import {AeliqoCheckboxElement} from '@aeliqo/web/checkbox';
-import {AeliqoRadioGroupElement} from '@aeliqo/web/radio-group';
-import {AeliqoSwitchElement} from '@aeliqo/web/switch';
-import {AeliqoSelectElement} from '@aeliqo/web/select';
-import {AeliqoComboboxElement} from '@aeliqo/web/combobox';
-import {AeliqoDateFieldElement} from '@aeliqo/web/date-field';
-import {AeliqoDateRangeElement} from '@aeliqo/web/date-range';
-import {AeliqoSliderElement} from '@aeliqo/web/slider';
-import {AeliqoSearchFieldElement} from '@aeliqo/web/search-field';
-import {AeliqoFileInputElement} from '@aeliqo/web/file-input';
-import {AeliqoFieldGroupElement} from '@aeliqo/web/field-group';
-import {AeliqoFormElement} from '@aeliqo/web/form';
+import {AeliqoTextFieldElement} from '@aeliqo/sdk-web/text-field';
+import {AeliqoTextAreaElement} from '@aeliqo/sdk-web/text-area';
+import {AeliqoNumberFieldElement} from '@aeliqo/sdk-web/number-field';
+import {AeliqoCheckboxElement} from '@aeliqo/sdk-web/checkbox';
+import {AeliqoRadioGroupElement} from '@aeliqo/sdk-web/radio-group';
+import {AeliqoSwitchElement} from '@aeliqo/sdk-web/switch';
+import {AeliqoSelectElement} from '@aeliqo/sdk-web/select';
+import {AeliqoComboboxElement} from '@aeliqo/sdk-web/combobox';
+import {AeliqoDateFieldElement} from '@aeliqo/sdk-web/date-field';
+import {AeliqoDateRangeElement} from '@aeliqo/sdk-web/date-range';
+import {AeliqoSliderElement} from '@aeliqo/sdk-web/slider';
+import {AeliqoSearchFieldElement} from '@aeliqo/sdk-web/search-field';
+import {AeliqoFileInputElement} from '@aeliqo/sdk-web/file-input';
+import {AeliqoFieldGroupElement} from '@aeliqo/sdk-web/field-group';
+import {AeliqoFormElement} from '@aeliqo/sdk-web/form';
 const definitions = [
   ['aeliqo-text-field', AeliqoTextFieldElement], ['aeliqo-text-area', AeliqoTextAreaElement], ['aeliqo-number-field', AeliqoNumberFieldElement],
   ['aeliqo-checkbox', AeliqoCheckboxElement], ['aeliqo-radio-group', AeliqoRadioGroupElement], ['aeliqo-switch', AeliqoSwitchElement],
@@ -337,7 +337,7 @@ try {
 assert.equal(sourceDigest(), before, "Source changed during input tarball consumer proof");
 await writeFile(join(runDirectory, "report.json"), JSON.stringify({
   sourceDigest: before, sourceChangedDuringRun: false,
-  scope: "Installed @aeliqo/core, @aeliqo/web input-family entry points and @aeliqo/react input wrappers from actual tarballs; strict TypeScript; Node Lit SSR and React SSR; Chromium native forms, defaults/reset, IME, controlled value/query events, search, file metadata and submit/reset.",
+  scope: "Installed @aeliqo/sdk-core, @aeliqo/sdk-web input-family entry points and @aeliqo/sdk-react input wrappers from actual tarballs; strict TypeScript; Node Lit SSR and React SSR; Chromium native forms, defaults/reset, IME, controlled value/query events, search, file metadata and submit/reset.",
   artifacts: artifacts.map(({bytes, entries, ...item}) => item), consumerDirectory: consumer,
   consumerLock: {path: join(runDirectory, "consumer-package-lock.json"), sha256: hash(lockBytes)},
   resolution: resolved, ssr: ssrOutput,

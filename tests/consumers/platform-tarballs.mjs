@@ -44,7 +44,7 @@ const artifacts = [];
 for (const name of ['core', 'web', 'react']) {
   const directory = join(root, 'packages', name);
   const manifest = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
-  assert.equal(manifest.name, `@aeliqo/${name}`);
+  assert.equal(manifest.name, `@aeliqo/sdk-${name}`);
   assert.equal(manifest.version, '0.1.0');
   assert.notEqual(manifest.private, true);
   const dist = join(directory, 'dist');
@@ -63,8 +63,8 @@ for (const name of ['core', 'web', 'react']) {
   for (const field of ['dependencies','peerDependencies','optionalDependencies']) {
     assert(!JSON.stringify(packed[field] ?? {}).includes('workspace:'), 'Unresolved workspace dependency');
   }
-  if (name === 'web') assert.equal(packed.dependencies['@aeliqo/core'], '0.1.0');
-  if (name === 'react') assert.equal(packed.dependencies['@aeliqo/web'], '0.1.0');
+  if (name === 'web') assert.equal(packed.dependencies['@aeliqo/sdk-core'], '0.1.0');
+  if (name === 'react') assert.equal(packed.dependencies['@aeliqo/sdk-web'], '0.1.0');
   artifacts.push({name: packed.name, version: packed.version, path: tarball,
     sha256: hash(bytes), integrity: `sha512-${hash(bytes, 'sha512', 'base64')}`});
 }
@@ -93,12 +93,12 @@ for (const artifact of artifacts) {
 }
 await writeFile(join(runDirectory, 'consumer-package-lock.json'), lockBytes);
 await writeFile(join(consumer, 'consumer.tsx'), `
-import {AeliqoInputElement} from '@aeliqo/web/input';
-import {AeliqoTableElement} from '@aeliqo/web/table';
-import {AeliqoChartElement} from '@aeliqo/web/chart';
-import {AeliqoInput, registerAeliqoReactElements} from '@aeliqo/react';
-import type {AeliqoInputChangeDetail} from '@aeliqo/web';
-import {aeliqoThemeStyles, createAeliqoLocaleContext} from '@aeliqo/web/styles';
+import {AeliqoInputElement} from '@aeliqo/sdk-web/input';
+import {AeliqoTableElement} from '@aeliqo/sdk-web/table';
+import {AeliqoChartElement} from '@aeliqo/sdk-web/chart';
+import {AeliqoInput, registerAeliqoReactElements} from '@aeliqo/sdk-react';
+import type {AeliqoInputChangeDetail} from '@aeliqo/sdk-web';
+import {aeliqoThemeStyles, createAeliqoLocaleContext} from '@aeliqo/sdk-web/styles';
 const locale = createAeliqoLocaleContext('ar-EG', {direction: 'rtl'});
 const styleText: string = aeliqoThemeStyles.cssText;
 void [locale, styleText];
@@ -116,16 +116,16 @@ await writeFile(join(consumer, 'consumer.mjs'), `
 import assert from 'node:assert/strict';
 import {createElement} from 'react';
 import {renderToString} from 'react-dom/server';
-import {AeliqoInput} from '@aeliqo/react';
-import {AeliqoInputElement} from '@aeliqo/web/input';
+import {AeliqoInput} from '@aeliqo/sdk-react';
+import {AeliqoInputElement} from '@aeliqo/sdk-web/input';
 assert.equal(typeof window, 'undefined');
-const styles = await import('@aeliqo/web/styles');
+const styles = await import('@aeliqo/sdk-web/styles');
 assert.equal(styles.createAeliqoLocaleContext('ar-EG', {direction:'rtl'}).direction, 'rtl');
 assert.match(styles.aeliqoThemeStyles.cssText, /:host/);
 assert.equal(typeof AeliqoInputElement, 'function');
 const reactMarkup=renderToString(createElement(AeliqoInput,{label:'Person',value:'Ada'}));
 assert.match(reactMarkup, /aeliqo-input/);assert.match(reactMarkup,/label="Person"/);
-const {renderAeliqo}=await import('@aeliqo/web/server');const {html}=await import('lit');
+const {renderAeliqo}=await import('@aeliqo/sdk-web/server');const {html}=await import('lit');
 const markup=await renderAeliqo(html\`<aeliqo-input label="Installed person" value="Ada"></aeliqo-input>\`);
 assert.match(markup,/shadowrootmode="open"/);assert.match(markup,/Installed person/);assert.match(markup,/<input/);
 console.log('Installed web/React types, Node import and Lit SSR content pass.');
@@ -133,7 +133,7 @@ console.log('Installed web/React types, Node import and Lit SSR content pass.');
 const stdout=run(['node','consumer.mjs'],consumer);
 await writeFile(join(consumer,'index.html'),'<!doctype html><html lang="en"><title>Installed Aeliqo input</title><body><script type="module" src="/browser.js"></script></body></html>');
 await writeFile(join(consumer,'browser.js'),`
-import {AeliqoInputElement} from '@aeliqo/web/input';
+import {AeliqoInputElement} from '@aeliqo/sdk-web/input';
 customElements.define('installed-aeliqo-input',AeliqoInputElement);
 const form=document.createElement('form');const input=document.createElement('installed-aeliqo-input');
 input.label='Installed person';input.value='Ada';input.name='person';
@@ -150,7 +150,7 @@ run([join(consumer,'node_modules/.bin/vite'),'build'],consumer);
 const modules=JSON.parse(await readFile(join(consumer,'dist/modules.json'),'utf8'));
 // AeliqoInput delegates to the shared TextField; these are its exact required bases/events.
 // Runtime, planner, agent, chart, and other component modules remain excluded.
-const allowed=/(?:\/browser\.js$|\/index\.html$|vite\/modulepreload-polyfill|\/node_modules\/(?:lit(?:-html|-element)?\/|@lit\/reactive-element\/|@aeliqo\/web\/dist\/(?:elements\/aeliqo-input|events|input\/(?:events|base|text-control|text-field)|foundation\/base|styles\/(?:theme|tokens))\.js$))/;
+const allowed=/(?:\/browser\.js$|\/index\.html$|vite\/modulepreload-polyfill|\/node_modules\/(?:lit(?:-html|-element)?\/|@lit\/reactive-element\/|@aeliqo\/sdk-web\/dist\/(?:elements\/aeliqo-input|events|input\/(?:events|base|text-control|text-field)|foundation\/base|styles\/(?:theme|tokens))\.js$))/;
 assert.deepEqual(modules.filter(id=>!allowed.test(id)),[], 'Unexpected standalone input module');
 const browserBundles=[];
 for (const file of await readdir(join(consumer,'dist/assets'))) {

@@ -1,5 +1,5 @@
 import {expect,it} from 'vitest';
-import {createStandardFunctionRegistry,type Catalog,type MeaningDefinition,type Outcome} from '@aeliqo/core';
+import {createStandardFunctionRegistry,type Catalog,type MeaningDefinition,type Outcome} from '@aeliqo/sdk-core';
 import {createMeaningAuthoring,createMeaningRegistry,type MeaningActivationContext} from '../../packages/runtime/src/meaning/index.js';
 const functions=value(createStandardFunctionRegistry('activation-functions'));
 const catalog={version:'1',revision:'catalog-1',functionRegistryDigest:functions.digest,entities:[{id:'items',label:'Items',identity:['id'],rowGrain:['id'],fields:[{id:'id',label:'ID',role:'identity',type:{value:'text',nullable:false}},{id:'amount',label:'Amount',role:'measure',type:{value:'integer',nullable:false}}]}],relationships:[],meanings:[],capabilities:[]} as const satisfies Catalog;

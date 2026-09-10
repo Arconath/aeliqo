@@ -1,5 +1,5 @@
-import {bindVisualizationSpec, compareScalars} from '@aeliqo/core';
-import type {Outcome, Result, Scalar, SemanticType} from '@aeliqo/core';
+import {bindVisualizationSpec, compareScalars} from '@aeliqo/sdk-core';
+import type {Outcome, Result, Scalar, SemanticType} from '@aeliqo/sdk-core';
 import {materializeVisualizationRows} from '../materialization.js';
 import type {VisualizationInputs, VisualizationRow} from '../types.js';
 import {makePlotScale,type PlotTick} from '../../plot/scales.js';

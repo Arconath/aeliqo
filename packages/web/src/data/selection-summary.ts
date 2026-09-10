@@ -1,6 +1,6 @@
 import {css, html, LitElement, nothing} from "lit";
 import {aeliqoThemeStyles} from "../styles/theme.js";
-import type {ResultRef} from "@aeliqo/core";
+import type {ResultRef} from "@aeliqo/sdk-core";
 import type {AeliqoDataScope, AeliqoDataStatus, AeliqoFilterPredicate, AeliqoSelectionDetail} from "./types.js";
 import {AeliqoDataSelectionEvent} from "./events.js";
 import {dataStyles, scopeText, statusTemplate} from "./shared.js";

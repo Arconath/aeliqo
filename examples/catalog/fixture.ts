@@ -7,9 +7,9 @@ import type {
   Scalar,
   VisualizationBindingContext,
   VisualizationSpec,
-} from "@aeliqo/core";
-import type {VisualizationDataset} from "@aeliqo/web/visualization";
-import type {AeliqoDataColumn, AeliqoDataScope, AeliqoFieldOption} from "@aeliqo/web/data";
+} from "@aeliqo/sdk-core";
+import type {VisualizationDataset} from "@aeliqo/sdk-web/visualization";
+import type {AeliqoDataColumn, AeliqoDataScope, AeliqoFieldOption} from "@aeliqo/sdk-web/data";
 
 export const catalogRef: ResultRef = {
   id: "aeliqo-catalog-example",

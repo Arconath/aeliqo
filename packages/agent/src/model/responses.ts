@@ -1,4 +1,4 @@
-import {parseWireValue, WIRE_LIMITS} from '@aeliqo/core';
+import {parseWireValue, WIRE_LIMITS} from '@aeliqo/sdk-core';
 import type {AgentJsonValue} from '../capabilities/types.js';
 import type {ToolModelCall, ToolModelRequest, ToolModelResponse} from './types.js';
 

@@ -1,4 +1,4 @@
-import type {PresentationEnvironment} from '@aeliqo/core';
+import type {PresentationEnvironment} from '@aeliqo/sdk-core';
 import {
   createCallbackPresentationRenderer,
   createPresentationAdaptationController,
@@ -10,9 +10,9 @@ import {
   type PresentationAdaptationStatus,
   type PresentationNavigationState,
   type PresentationRenderer as RuntimePresentationRenderer,
-} from '@aeliqo/runtime/presentation';
+} from '@aeliqo/sdk-runtime/presentation';
 import type {AeliqoRegionElement} from './aeliqo-region.js';
-import type {RegionHandle, RegionOutcome} from '@aeliqo/runtime/regions';
+import type {RegionHandle, RegionOutcome} from '@aeliqo/sdk-runtime/regions';
 
 const KNOWN = (value: number): {readonly state: 'known'; readonly value: number} => ({state: 'known', value});
 const UNKNOWN = {state: 'unknown'} as const;

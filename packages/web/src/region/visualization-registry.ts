@@ -15,7 +15,7 @@ import {
   type VersionRef,
   type VisualizationBindingContext,
   type VisualizationSpec,
-} from "@aeliqo/core";
+} from "@aeliqo/sdk-core";
 import {materializeVisualizationRows} from "../visualization/materialization.js";
 import type {VisualizationDataset} from "../visualization/types.js";
 import {
@@ -81,7 +81,7 @@ export interface AeliqoVisualizationRegistryOptions {
 }
 
 export interface AeliqoVisualizationPresentationRenderContext {
-  readonly onSemanticInteraction?: (nodeId: string, portId: string, payload: import("@aeliqo/core").InteractionPayload) => void;
+  readonly onSemanticInteraction?: (nodeId: string, portId: string, payload: import("@aeliqo/sdk-core").InteractionPayload) => void;
   readonly interaction?: InteractionState;
 }
 

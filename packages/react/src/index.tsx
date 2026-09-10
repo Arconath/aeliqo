@@ -5,13 +5,13 @@ import {
   AeliqoInputElement,
   AeliqoInputEvent,
   registerAeliqoElements,
-} from "@aeliqo/web";
+} from "@aeliqo/sdk-web";
 import type {
   AeliqoChartPoint,
   AeliqoInputChangeDetail,
   AeliqoTableColumn,
   AeliqoTableRow,
-} from "@aeliqo/web";
+} from "@aeliqo/sdk-web";
 
 export type {AeliqoChartPoint, AeliqoInputChangeDetail, AeliqoTableColumn, AeliqoTableRow};
 export {AeliqoInputEvent};

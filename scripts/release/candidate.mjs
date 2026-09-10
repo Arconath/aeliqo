@@ -7,7 +7,8 @@ import {basename, join, relative, resolve} from 'node:path';
 import {
   PUBLIC_PACKAGES, PUBLIC_PACKAGE_NAMES, RELEASE_VERSION, assertExportTargets,
   assertPublicManifest, assertTarballPaths, candidateManifest, cyclonedxSbom,
-  exportSpecifiers, packagePurl, pnpmLockIntegrities, readJson, sha256, sha512Integrity,
+  exportSpecifiers, packagePurl, pnpmLockIntegrities, publicPackageName, readJson,
+  sha256, sha512Integrity,
 } from './candidate-lib.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
@@ -176,7 +177,7 @@ async function buildAndPack(stagingRoot) {
   for (const shortName of PUBLIC_PACKAGES) {
     const directory = join(root, 'packages', shortName);
     const source = await readJson(join(directory, 'package.json'));
-    const expectedName = `@aeliqo/${shortName}`;
+    const expectedName = publicPackageName(shortName);
     assertPublicManifest(source, expectedName, RELEASE_VERSION, {allowWorkspace: true});
     command('pnpm', ['--filter', expectedName, 'build']);
 
@@ -186,7 +187,7 @@ async function buildAndPack(stagingRoot) {
     await writeFile(join(stage, 'package.json'), JSON.stringify(stagedManifest(source), null, 2) + '\n');
     command('pnpm', ['pack', '--pack-destination', output], {cwd: stage});
 
-    const tarball = join(output, `aeliqo-${shortName}-${version}.tgz`);
+    const tarball = join(output, `aeliqo-sdk-${shortName}-${version}.tgz`);
     if (!await exists(tarball)) throw new Error(`pnpm pack did not produce expected ${tarball}`);
     const manifest = packedJson(tarball);
     assertPublicManifest(manifest, expectedName, version);
@@ -237,8 +238,8 @@ async function externalConsumer(packages) {
   }
   const exportCount = await typeCheckInstalledExports(consumer, packages);
   await writeFile(join(consumer, 'consumer.mjs'), [
-    "import '@aeliqo/core';", "import '@aeliqo/runtime/evaluation';", "import '@aeliqo/web/server';",
-    "import '@aeliqo/agent/protocol';", "import '@aeliqo/devtools';", "import '@aeliqo/react/ssr';",
+    "import '@aeliqo/sdk-core';", "import '@aeliqo/sdk-runtime/evaluation';", "import '@aeliqo/sdk-web/server';",
+    "import '@aeliqo/sdk-agent/protocol';", "import '@aeliqo/sdk-devtools';", "import '@aeliqo/sdk-react/ssr';",
   ].join('\n') + '\n');
   command('node', ['--disallow-code-generation-from-strings', 'consumer.mjs'], {cwd: consumer});
   return {consumer, lock, lockSha256: sha256(await readFile(join(consumer, 'package-lock.json'))), packages: packages.map(item => item.name), exportCount};

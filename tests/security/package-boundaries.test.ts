@@ -92,7 +92,7 @@ function flattenedExportTargets(value: unknown): string[] {
 
 function exportedSourceEntries(name: PackageName, manifest: Record<string, unknown>): string[] {
   const exports = manifest.exports;
-  if (!exports || typeof exports !== 'object') throw new Error(`@aeliqo/${name} has no exports map`);
+  if (!exports || typeof exports !== 'object') throw new Error(`@aeliqo/sdk-${name} has no exports map`);
   const entries: string[] = [];
   for (const [key, value] of Object.entries(exports as Record<string, unknown>)) {
     if (key.includes('*')) continue;
@@ -209,16 +209,16 @@ describe('T28 package boundary graph', () => {
         const exports = manifests[i]!.exports as Record<string, unknown>;
         for (const [key, value] of Object.entries(exports)) {
           if (key.includes('*') || typeof value === 'string') continue;
-          expect(value, `@aeliqo/${name} ${key} export descriptor`).toMatchObject({
+          expect(value, `@aeliqo/sdk-${name} ${key} export descriptor`).toMatchObject({
             types: expect.stringMatching(/^\.\/dist\/.+\.d\.ts$/),
             import: expect.stringMatching(/^\.\/dist\/.+\.js$/),
           });
         }
         const entries = exportedSourceEntries(name, manifests[i]!);
-        expect(entries.length, `@aeliqo/${name} should declare source exports`).toBeGreaterThan(0);
+        expect(entries.length, `@aeliqo/sdk-${name} should declare source exports`).toBeGreaterThan(0);
         const graph = reachableEntries(name, entries, files);
-        expect(graph.findings, `@aeliqo/${name} export/local graph`).toEqual([]);
-        expect(graph.files.size, `@aeliqo/${name} graph should contain implementation`).toBeGreaterThan(0);
+        expect(graph.findings, `@aeliqo/sdk-${name} export/local graph`).toEqual([]);
+        expect(graph.files.size, `@aeliqo/sdk-${name} graph should contain implementation`).toBeGreaterThan(0);
       }
     } finally {
       snapshot.dispose();
@@ -233,7 +233,7 @@ describe('T28 package boundary graph', () => {
       const core = reachableEntries('core', exportedSourceEntries('core', manifests[0]!), files);
       const runtime = reachableEntries('runtime', exportedSourceEntries('runtime', manifests[1]!), files);
       expect(externalImports(core).filter(name => name !== 'zod/mini' && name !== 'zod')).toEqual([]);
-      expect(externalImports(runtime).filter(name => !name.startsWith('@aeliqo/core') && name !== 'zod/mini' && name !== 'zod')).toEqual([]);
+      expect(externalImports(runtime).filter(name => !name.startsWith('@aeliqo/sdk-core') && name !== 'zod/mini' && name !== 'zod')).toEqual([]);
       expect(externalImports(runtime).filter(name => /(?:web|react|agent|devtools|lit|d3|provider|mcp|openai|node:|fs|http)/i.test(name))).toEqual([]);
       expect(assertNoAmbientEffects(core.files, files)).toEqual([]);
     } finally {
@@ -251,19 +251,19 @@ describe('T28 package boundary graph', () => {
       expect(directKeys.length).toBeGreaterThan(40);
       for (const key of directKeys) {
         const target = flattenedExportTargets(allExports[key]).find(value => value.includes('/dist/') && value.endsWith('.js'));
-        expect(target, `@aeliqo/web ${key} import target`).toBeDefined();
+        expect(target, `@aeliqo/sdk-web ${key} import target`).toBeDefined();
         const graph = reachableEntries('web', [packageExportSource('web', target!)], files);
-        expect(graph.findings, `@aeliqo/web ${key} graph`).toEqual([]);
+        expect(graph.findings, `@aeliqo/sdk-web ${key} graph`).toEqual([]);
         const external = externalImports(graph);
         expect(external.filter(name => /@aeliqo\/(?:runtime|agent|devtools)|(?:provider|mcp|openai)/i.test(name)), `${key} must stay direct-control`).toEqual([]);
-        expect(external.filter(name => name.startsWith('@aeliqo/core/query') || name.startsWith('@aeliqo/core/presentation'))).toEqual([]);
+        expect(external.filter(name => name.startsWith('@aeliqo/sdk-core/query') || name.startsWith('@aeliqo/sdk-core/presentation'))).toEqual([]);
       }
       const regionTarget = packageExportSource('web', flattenedExportTargets(allExports['./region'])[0]!);
       const region = reachableEntries('web', [regionTarget], files);
       expect(region.findings).toEqual([]);
       const adaptationTarget = packageExportSource('web', flattenedExportTargets(allExports['./region/adaptation'])[0]!);
       const adaptation = reachableEntries('web', [adaptationTarget], files);
-      expect(externalImports(adaptation).some(name => name.startsWith('@aeliqo/runtime/'))).toBe(true);
+      expect(externalImports(adaptation).some(name => name.startsWith('@aeliqo/sdk-runtime/'))).toBe(true);
       const serverTarget = packageExportSource('web', flattenedExportTargets(allExports['./server'])[0]!);
       const server = reachableEntries('web', [serverTarget], files);
       expect(externalImports(server).some(name => name.startsWith('@lit-labs/ssr'))).toBe(true);

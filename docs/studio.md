@@ -1,6 +1,6 @@
 # Local Studio and DevTools
 
-`@aeliqo/devtools` is the local OSS authoring surface for Aeliqo. It has four
+`@aeliqo/sdk-devtools` is the local OSS authoring surface for Aeliqo. It has four
 areas: **Data & Meaning**, **Experience**, **Component Gallery**, and
 **Inspect**. It does not require an account, cloud service, model key, or
 provider connection.
@@ -12,7 +12,7 @@ Experience profiles, active profile, and token profile. It deliberately omits
 credentials and result rows.
 
 ```ts
-import {createStudioDocument, createStudioSession} from '@aeliqo/devtools';
+import {createStudioDocument, createStudioSession} from '@aeliqo/sdk-devtools';
 
 const document = createStudioDocument(input, {registry});
 if (!document.ok) throw new Error(document.diagnostics[0].message);
@@ -41,7 +41,7 @@ ownership counts, and the exact export so a reviewer can compare the document
 before activation.
 
 The checked-in app under `apps/studio` is a small Vite host for these APIs. A
-release build should build `@aeliqo/core`, `@aeliqo/runtime`, `@aeliqo/web`,
-`@aeliqo/devtools`, and then the Studio app. The Studio browser suite runs
+release build should build `@aeliqo/sdk-core`, `@aeliqo/sdk-runtime`, `@aeliqo/sdk-web`,
+`@aeliqo/sdk-devtools`, and then the Studio app. The Studio browser suite runs
 against that local host and exercises all four areas, manual meaning creation,
 and a file download export.

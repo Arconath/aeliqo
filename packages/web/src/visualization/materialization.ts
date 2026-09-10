@@ -1,5 +1,5 @@
-import {parseWireValue, scalarIdentity, validateScalar} from '@aeliqo/core';
-import type {BoundVisualization, Outcome, Result, Scalar} from '@aeliqo/core';
+import {parseWireValue, scalarIdentity, validateScalar} from '@aeliqo/sdk-core';
+import type {BoundVisualization, Outcome, Result, Scalar} from '@aeliqo/sdk-core';
 import type {VisualizationDataset, VisualizationRow} from './types.js';
 const key = (result: Result['ref']): string => JSON.stringify([result.id, result.revision, result.outputId, result.queryDigest, result.scopeDigest]);
 const fail = (code: string, message: string): Outcome<never> => ({ok: false, diagnostics: [{code: `visualization.${code}`, message, retryable: false}]});

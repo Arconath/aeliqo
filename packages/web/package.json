@@ -1,5 +1,5 @@
 {
-  "name": "@aeliqo/web",
+  "name": "@aeliqo/sdk-web",
   "version": "0.1.0",
   "description": "Aeliqo's shared Lit web elements",
   "license": "Apache-2.0",
@@ -340,7 +340,7 @@
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@aeliqo/core": "workspace:*",
+    "@aeliqo/sdk-core": "workspace:*",
     "@lit-labs/ssr": "4.1.0",
     "@lit-labs/ssr-client": "1.1.8",
     "d3-scale": "4.0.2",
@@ -350,13 +350,13 @@
   "devDependencies": {
     "@types/d3-scale": "4.0.9",
     "@types/d3-shape": "3.2.0",
-    "@aeliqo/runtime": "workspace:*"
+    "@aeliqo/sdk-runtime": "workspace:*"
   },
   "peerDependencies": {
-    "@aeliqo/runtime": "0.1.0"
+    "@aeliqo/sdk-runtime": "0.1.0"
   },
   "peerDependenciesMeta": {
-    "@aeliqo/runtime": {
+    "@aeliqo/sdk-runtime": {
       "optional": true
     }
   }

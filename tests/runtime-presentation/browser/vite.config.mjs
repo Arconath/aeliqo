@@ -5,7 +5,7 @@ const repositoryRoot = resolve(import.meta.dirname, '../../..');
 export default defineConfig({
   resolve: {
     alias: {
-      '@aeliqo/runtime/presentation': resolve(repositoryRoot, 'packages/runtime/src/presentation/index.ts'),
+      '@aeliqo/sdk-runtime/presentation': resolve(repositoryRoot, 'packages/runtime/src/presentation/index.ts'),
     },
   },
 });

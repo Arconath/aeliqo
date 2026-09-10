@@ -1,6 +1,6 @@
 import React from "react";
 import {createComponent, type EventName} from "@lit/react";
-import {AeliqoButtonElement, AeliqoIconButtonElement, AeliqoLinkElement, AeliqoTextElement, AeliqoHeadingElement, AeliqoBadgeElement, AeliqoAvatarElement, AeliqoSeparatorElement, AeliqoSurfaceElement, AeliqoStackElement, AeliqoGridElement, AeliqoSplitPaneElement, AeliqoScrollAreaElement, type AeliqoActionEvent, type AeliqoLinkEvent, type AeliqoSplitChangeEvent} from "@aeliqo/web/foundation";
+import {AeliqoButtonElement, AeliqoIconButtonElement, AeliqoLinkElement, AeliqoTextElement, AeliqoHeadingElement, AeliqoBadgeElement, AeliqoAvatarElement, AeliqoSeparatorElement, AeliqoSurfaceElement, AeliqoStackElement, AeliqoGridElement, AeliqoSplitPaneElement, AeliqoScrollAreaElement, type AeliqoActionEvent, type AeliqoLinkEvent, type AeliqoSplitChangeEvent} from "@aeliqo/sdk-web/foundation";
 
 export const AeliqoButton = createComponent({react: React, tagName: "aeliqo-button", elementClass: AeliqoButtonElement, events: {onAeliqoAction: "aeliqo-action" as EventName<AeliqoActionEvent>}, displayName: "AeliqoButton"});
 export const AeliqoIconButton = createComponent({react: React, tagName: "aeliqo-icon-button", elementClass: AeliqoIconButtonElement, events: {onAeliqoAction: "aeliqo-action" as EventName<AeliqoActionEvent>}, displayName: "AeliqoIconButton"});

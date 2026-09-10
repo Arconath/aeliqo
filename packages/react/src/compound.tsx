@@ -1,8 +1,8 @@
 import React from "react";
 import {createComponent, type EventName} from "@lit/react";
-import {AeliqoExplorerElement, AeliqoComparisonElement, AeliqoBreakdownElement, AeliqoInvestigationElement, AeliqoSearchResultsElement, AeliqoRecordEditorElement, AeliqoFormFlowElement, AeliqoQualityPanelElement} from "@aeliqo/web/compound";
-import type {AeliqoBreakdownGroupDetail, AeliqoComparisonSetDetail, AeliqoFormFlowCommitDetail, AeliqoFormFlowStepDetail, AeliqoRecordEditorCancelDetail, AeliqoRecordEditorSaveDetail} from "@aeliqo/web/compound";
-import type {AeliqoFilterChangeDetail, AeliqoSelectionDetail} from "@aeliqo/web/data";
+import {AeliqoExplorerElement, AeliqoComparisonElement, AeliqoBreakdownElement, AeliqoInvestigationElement, AeliqoSearchResultsElement, AeliqoRecordEditorElement, AeliqoFormFlowElement, AeliqoQualityPanelElement} from "@aeliqo/sdk-web/compound";
+import type {AeliqoBreakdownGroupDetail, AeliqoComparisonSetDetail, AeliqoFormFlowCommitDetail, AeliqoFormFlowStepDetail, AeliqoRecordEditorCancelDetail, AeliqoRecordEditorSaveDetail} from "@aeliqo/sdk-web/compound";
+import type {AeliqoFilterChangeDetail, AeliqoSelectionDetail} from "@aeliqo/sdk-web/data";
 export const AeliqoExplorer = createComponent({react: React, tagName: "aeliqo-explorer", elementClass: AeliqoExplorerElement,
   events: {onFilterChange: "aeliqo-explorer-filter" as EventName<CustomEvent<AeliqoFilterChangeDetail>>, onSelectionChange: "aeliqo-explorer-selection" as EventName<CustomEvent<AeliqoSelectionDetail>>}, displayName: "AeliqoExplorer"});
 export const AeliqoComparison = createComponent({react: React, tagName: "aeliqo-comparison", elementClass: AeliqoComparisonElement,

@@ -1,8 +1,8 @@
 # Runtime presentation adaptation
 
-Import the opt-in adapter from `@aeliqo/web/region/adaptation` and install
-`@aeliqo/runtime` explicitly. Ordinary web primitives do not require runtime.
-The lower-level controller is `@aeliqo/runtime/presentation`.
+Import the opt-in adapter from `@aeliqo/sdk-web/region/adaptation` and install
+`@aeliqo/sdk-runtime` explicitly. Ordinary web primitives do not require runtime.
+The lower-level controller is `@aeliqo/sdk-runtime/presentation`.
 
 Provide a RegionHandle, the canonical presentation registry, and host context
 containing the Experience, authorized Result descriptors and renderer

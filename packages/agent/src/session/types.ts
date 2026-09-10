@@ -1,4 +1,4 @@
-import type {AgentLoopBudget, AgentStopReason, Diagnostic, Outcome, ResultRef} from '@aeliqo/core';
+import type {AgentLoopBudget, AgentStopReason, Diagnostic, Outcome, ResultRef} from '@aeliqo/sdk-core';
 import type {
   AgentCapabilityReceipt,
   AgentCapabilityRequest,

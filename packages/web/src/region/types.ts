@@ -1,5 +1,5 @@
 import type {AeliqoDataHostRequest} from "./data-renderer.js";
-import type {InteractionPayload, ResultRef, ValidatedPresentation, VisualizationBindingContext} from "@aeliqo/core";
+import type {InteractionPayload, ResultRef, ValidatedPresentation, VisualizationBindingContext} from "@aeliqo/sdk-core";
 import type {AeliqoTableColumn, AeliqoTableRow} from "../types.js";
 import type {AeliqoDataScope} from "../data/types.js";
 

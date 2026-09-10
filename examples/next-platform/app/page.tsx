@@ -1,5 +1,5 @@
 import {html} from 'lit';
-import {renderAeliqo} from '@aeliqo/web/server';
+import {renderAeliqo} from '@aeliqo/sdk-web/server';
 import {HydrateAeliqo} from './hydrate';
 
 export const dynamic = 'force-dynamic';

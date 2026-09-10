@@ -1,5 +1,5 @@
-import {parseWireValue} from "@aeliqo/core";
-import type {InteractionPayload, ValidatedPresentation} from "@aeliqo/core";
+import {parseWireValue} from "@aeliqo/sdk-core";
+import type {InteractionPayload, ValidatedPresentation} from "@aeliqo/sdk-core";
 import {html, nothing, type TemplateResult} from "lit";
 import {repeat} from "lit/directives/repeat.js";
 

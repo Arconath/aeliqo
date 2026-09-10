@@ -1,5 +1,5 @@
 {
-  "name": "@aeliqo/runtime",
+  "name": "@aeliqo/sdk-runtime",
   "version": "0.1.0",
   "type": "module",
   "license": "Apache-2.0",
@@ -52,7 +52,7 @@
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@aeliqo/core": "workspace:*",
+    "@aeliqo/sdk-core": "workspace:*",
     "zod": "4.5.4"
   }
 }

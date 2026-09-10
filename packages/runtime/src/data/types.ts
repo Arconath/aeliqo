@@ -10,7 +10,7 @@ import type {
   QuerySpec,
   FunctionRegistry,
   QueryLimits,
-} from '@aeliqo/core';
+} from '@aeliqo/sdk-core';
 import type {
   AcceptedQueryWire,
   CatalogPageWire,
@@ -65,7 +65,7 @@ export interface ReadContext {
     readonly principalKey: string;
     readonly resolver: import('../evaluation/types.js').CohortResolver;
     readonly resultStore: import('../results/types.js').ResultStore;
-    readonly resolveResult: (ref: import('@aeliqo/core').ResultRef) => import('../results/types.js').ResultHandle | undefined;
+    readonly resolveResult: (ref: import('@aeliqo/sdk-core').ResultRef) => import('../results/types.js').ResultHandle | undefined;
   };
 }
 

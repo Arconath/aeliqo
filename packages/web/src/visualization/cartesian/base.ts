@@ -1,7 +1,7 @@
 import {css, html, nothing, svg, unsafeCSS} from "lit";
 import {repeat} from "lit/directives/repeat.js";
-import type {Diagnostic, Result, ResultRef, Scalar, VisualizationSpec, BoundVisualization} from "@aeliqo/core";
-import {bindVisualizationSpec} from "@aeliqo/core";
+import type {Diagnostic, Result, ResultRef, Scalar, VisualizationSpec, BoundVisualization} from "@aeliqo/sdk-core";
+import {bindVisualizationSpec} from "@aeliqo/sdk-core";
 import {AeliqoFoundationElement, aeliqoFoundationThemeStyles} from "../../foundation/base.js";
 import {compilePlotComposition} from "../../plot/composition.js";
 import type {CompiledPlot, CompiledPlotNode, PlotDataset} from "../../plot/composition.js";

@@ -1,4 +1,4 @@
-# @aeliqo/core
+# @aeliqo/sdk-core
 
 Pure, versioned Aeliqo wire contracts for **Catalog**, **Task**, **Result**, and
 **Experience**. This implementation currently supplies canonical schemas, inferred
@@ -9,7 +9,7 @@ Bounded in-memory relational planning and evaluation are available through the
 query API described below.
 
 ```ts
-import {parseCatalog, serializeContract} from '@aeliqo/core';
+import {parseCatalog, serializeContract} from '@aeliqo/sdk-core';
 
 const parsed = parseCatalog(untrustedJSON);
 if (parsed.ok) {
@@ -49,9 +49,9 @@ successful ingress is not envelope validation or authorization. The exported
 envelope types.
 
 JSON Schema 2020-12 files are exported through
-`@aeliqo/core/schemas/catalog.schema.json` (and the other contract kinds).
+`@aeliqo/sdk-core/schemas/catalog.schema.json` (and the other contract kinds).
 Consumers must apply the documented byte, depth, and node limits before recursive
-JSON Schema validation. The low-level `@aeliqo/core/schema` export is the canonical
+JSON Schema validation. The low-level `@aeliqo/sdk-core/schema` export is the canonical
 schema source; use the bounded parsers for untrusted ingress.
 
 Wire version `1` is separate from package version `0.1.0`. There is no automatic

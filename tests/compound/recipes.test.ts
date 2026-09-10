@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {validatePresentationPlan, type PresentationContext} from '@aeliqo/core';
+import {validatePresentationPlan, type PresentationContext} from '@aeliqo/sdk-core';
 import {createAeliqoPresentationRegistry} from '../../packages/web/src/region/registry.js';
 import {explorerPresentationRecipe, breakdownPresentationRecipe, qualityPanelPresentationRecipe, compoundRecipeHelpers} from '../../packages/web/src/compound/recipes.js';
 import type {AeliqoCompoundRecipeInput} from '../../packages/web/src/compound/types.js';

@@ -1,5 +1,5 @@
-import {parseContract, WIRE_LIMITS} from '@aeliqo/core';
-import type {Diagnostic, Outcome} from '@aeliqo/core';
+import {parseContract, WIRE_LIMITS} from '@aeliqo/sdk-core';
+import type {Diagnostic, Outcome} from '@aeliqo/sdk-core';
 import {DataStreamError, readResultStream} from './stream.js';
 import type {ResultStreamLimits} from './stream.js';
 import {

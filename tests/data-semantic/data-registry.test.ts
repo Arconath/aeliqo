@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Result } from "@aeliqo/core";
+import type { Result } from "@aeliqo/sdk-core";
 import {
   createAeliqoDataRegistry,
   validateAeliqoDataBinding,

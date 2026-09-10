@@ -37,7 +37,7 @@ const before = sourceDigest();
 for (const [name, version] of [["core", "0.1.0"], ["runtime", "0.1.0"], ["agent", "0.1.0"]]) {
   const directory = join(root, "packages", name);
   const manifest = JSON.parse(await readFile(join(directory, "package.json"), "utf8"));
-  assert.equal(manifest.name, `@aeliqo/${name}`);
+  assert.equal(manifest.name, `@aeliqo/sdk-${name}`);
   assert.equal(manifest.version, version);
   assert.notEqual(manifest.private, true);
   run(["pnpm", "build"], directory);
@@ -84,19 +84,19 @@ for (const [name, version] of Object.entries({typescript: "7.0.2", vite: "8.2.2"
   assert.equal(lock.packages[`node_modules/${name}`].version, version);
   assert.match(lock.packages[`node_modules/${name}`].integrity, /^sha512-/);
 }
-assert.equal(lock.packages["node_modules/@aeliqo/runtime"].dependencies["@aeliqo/core"], "0.1.0");
-assert.equal(lock.packages["node_modules/@aeliqo/agent"].dependencies["@aeliqo/core"], "0.1.0");
-assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/runtime/node_modules/")), []);
-assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/agent/node_modules/")), []);
+assert.equal(lock.packages["node_modules/@aeliqo/sdk-runtime"].dependencies["@aeliqo/sdk-core"], "0.1.0");
+assert.equal(lock.packages["node_modules/@aeliqo/sdk-agent"].dependencies["@aeliqo/sdk-core"], "0.1.0");
+assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/sdk-runtime/node_modules/")), []);
+assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/sdk-agent/node_modules/")), []);
 await writeFile(join(runDirectory, "consumer-package-lock.json"), lockBytes);
 
 const fixture=await import('../contracts/fixtures.ts');
 const compositionFixture={plan:fixture.presentationPlan,task:fixture.presentationTask,result:fixture.result,experience:fixture.experience,environment:fixture.environment};
 const probe = `
-import {createNarrativeVerifier, createAgentBinder, containAgentProposal,createAgentCapabilityRegistry,createAgentCapabilityDispatcher,createTaskBindingCapability,createAgentSession,createAgentCompositionRegistry,validateAgentComposition} from '@aeliqo/agent';
-import {createStandardFunctionRegistry,validatePresentationPlan} from '@aeliqo/core';
-import {createLocalDataService} from '@aeliqo/runtime/data';
-import {createResultStore} from '@aeliqo/runtime/results';
+import {createNarrativeVerifier, createAgentBinder, containAgentProposal,createAgentCapabilityRegistry,createAgentCapabilityDispatcher,createTaskBindingCapability,createAgentSession,createAgentCompositionRegistry,validateAgentComposition} from '@aeliqo/sdk-agent';
+import {createStandardFunctionRegistry,validatePresentationPlan} from '@aeliqo/sdk-core';
+import {createLocalDataService} from '@aeliqo/sdk-runtime/data';
+import {createResultStore} from '@aeliqo/sdk-runtime/results';
 export async function probe() {
  const check = (value, message) => {if (!value) throw Error(message);};
  const ref={id:'result',revision:'1',outputId:'rows',queryDigest:'query',scopeDigest:'scope'};
@@ -147,12 +147,12 @@ export async function probe() {
 `;
 await writeFile(join(consumer,'probe.mjs'),probe);
 await writeFile(join(consumer,'node.mjs'),`import {probe} from './probe.mjs'; import {realpath} from 'node:fs/promises'; import {fileURLToPath} from 'node:url';
-for(const specifier of ['@aeliqo/core','@aeliqo/runtime/results','@aeliqo/agent']){const path=await realpath(fileURLToPath(import.meta.resolve(specifier)));if(!path.startsWith(${JSON.stringify(consumerReal)}+'/node_modules/'))throw Error('Non-installed resolution');}
+for(const specifier of ['@aeliqo/sdk-core','@aeliqo/sdk-runtime/results','@aeliqo/sdk-agent']){const path=await realpath(fileURLToPath(import.meta.resolve(specifier)));if(!path.startsWith(${JSON.stringify(consumerReal)}+'/node_modules/'))throw Error('Non-installed resolution');}
 console.log(JSON.stringify(await probe()));
 `);
 const nodeReport=JSON.parse(run(['node','--disallow-code-generation-from-strings','node.mjs'],consumer).trim());
-await writeFile(join(consumer,'consumer.ts'),`import {createNarrativeVerifier, createAgentBinder, containAgentProposal, type AgentHost, type AgentBindingDecision, type AgentContainmentReceipt, type NarrativeAuthority, type NarrativeReceipt,createAgentSession,type AgentCapabilityDispatcher,createAgentCompositionRegistry,validateAgentComposition} from '@aeliqo/agent';
-import type {OperationGrant, NarrativeClaim} from '@aeliqo/core';
+await writeFile(join(consumer,'consumer.ts'),`import {createNarrativeVerifier, createAgentBinder, containAgentProposal, type AgentHost, type AgentBindingDecision, type AgentContainmentReceipt, type NarrativeAuthority, type NarrativeReceipt,createAgentSession,type AgentCapabilityDispatcher,createAgentCompositionRegistry,validateAgentComposition} from '@aeliqo/sdk-agent';
+import type {OperationGrant, NarrativeClaim} from '@aeliqo/sdk-core';
 declare const authority: NarrativeAuthority; declare const claim: NarrativeClaim;
 const checked=createNarrativeVerifier({readContext:()=>({ok:true,value:authority})}).verify(claim);
 if(checked.ok){const receipt:NarrativeReceipt=checked.value;void receipt;}

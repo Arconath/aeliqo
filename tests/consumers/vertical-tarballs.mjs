@@ -40,7 +40,7 @@ const before = sourceDigest();
 for (const [name, version] of [["core", "0.1.0"], ["runtime", "0.1.0"], ["web", "0.1.0"]]) {
   const directory = join(root, "packages", name);
   const manifest = JSON.parse(await readFile(join(directory, "package.json"), "utf8"));
-  assert.equal(manifest.name, `@aeliqo/${name}`);
+  assert.equal(manifest.name, `@aeliqo/sdk-${name}`);
   assert.equal(manifest.version, version);
   assert.notEqual(manifest.private, true);
   run(["pnpm", "build"], directory);
@@ -87,10 +87,10 @@ for (const [name, version] of Object.entries({typescript: "7.0.2", vite: "8.2.2"
   assert.equal(lock.packages[`node_modules/${name}`].version, version);
   assert.match(lock.packages[`node_modules/${name}`].integrity, /^sha512-/);
 }
-assert.equal(lock.packages["node_modules/@aeliqo/runtime"].dependencies["@aeliqo/core"], "0.1.0");
-assert.equal(lock.packages["node_modules/@aeliqo/web"].dependencies["@aeliqo/core"], "0.1.0");
-assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/runtime/node_modules/")), []);
-assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/web/node_modules/")), []);
+assert.equal(lock.packages["node_modules/@aeliqo/sdk-runtime"].dependencies["@aeliqo/sdk-core"], "0.1.0");
+assert.equal(lock.packages["node_modules/@aeliqo/sdk-web"].dependencies["@aeliqo/sdk-core"], "0.1.0");
+assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/sdk-runtime/node_modules/")), []);
+assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/sdk-web/node_modules/")), []);
 await writeFile(join(runDirectory, "consumer-package-lock.json"), lockBytes);
 
 // Copy only the source files consumed by this probe. The workspace example may
@@ -118,7 +118,7 @@ const resolutionModule = join(consumer, "examples/vertical-slice/src/module-reso
 await writeFile(resolutionModule, `
 import {realpath} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
-const packages = ['@aeliqo/core', '@aeliqo/runtime/data', '@aeliqo/runtime/evaluation', '@aeliqo/web/region'];
+const packages = ['@aeliqo/sdk-core', '@aeliqo/sdk-runtime/data', '@aeliqo/sdk-runtime/evaluation', '@aeliqo/sdk-web/region'];
 const resolved = {};
 for (const packageName of packages) resolved[packageName] = await realpath(fileURLToPath(import.meta.resolve(packageName)));
 console.log(JSON.stringify(resolved));
@@ -131,7 +131,7 @@ for (const [packageName, resolved] of Object.entries(resolvedPackages)) {
 await writeFile(join(consumer, "src-node-entry.ts"), `
 import {createHrDataSession} from './examples/vertical-slice/src/data-session.js';
 import {initialTask} from './examples/vertical-slice/src/hr.js';
-import type {ResultHandle} from '@aeliqo/runtime/results';
+import type {ResultHandle} from '@aeliqo/sdk-runtime/results';
 const rows = (handle: ResultHandle): readonly Record<string, unknown>[] => handle.snapshot().batches.flatMap(batch => batch.rows);
 const session = createHrDataSession('local');
 const first = await session.evaluate(initialTask());
@@ -164,7 +164,7 @@ assert.deepEqual(nodeReport.ranking, ["e1", "e2", "e3", "e4", "e5"]);
 assert.equal(nodeReport.trendRows, 60);
 
 await writeFile(join(consumer, "browser-entry.ts"), `
-import {registerAeliqoElements, type AeliqoRegionElement} from '@aeliqo/web';
+import {registerAeliqoElements, type AeliqoRegionElement} from '@aeliqo/sdk-web';
 import {createHrViewSession} from './examples/vertical-slice/src/view-session.js';
 declare global { interface Window { hrFixture?: Awaited<ReturnType<typeof createHrViewSession>>; } }
 registerAeliqoElements();
@@ -254,7 +254,7 @@ try {
 
 assert.equal(sourceDigest(), before, "Source changed during tarball consumer proof");
 await writeFile(join(runDirectory, "report.json"), JSON.stringify({
-  sourceDigest: before, sourceChangedDuringRun: false, scope: "Installed @aeliqo/core, @aeliqo/runtime and @aeliqo/web tarballs with copied HR vertical source; strict TypeScript; bundled Node evaluator; Chromium render, typed selection, queryless reorder and stale proposal.",
+  sourceDigest: before, sourceChangedDuringRun: false, scope: "Installed @aeliqo/sdk-core, @aeliqo/sdk-runtime and @aeliqo/sdk-web tarballs with copied HR vertical source; strict TypeScript; bundled Node evaluator; Chromium render, typed selection, queryless reorder and stale proposal.",
   artifacts: packages.map(({bytes, ...item}) => item), consumerDirectory: consumer,
   consumerLock: {path: join(runDirectory, "consumer-package-lock.json"), sha256: hash(lockBytes)},
   node: nodeReport, browser: browserReport, browserAssets,

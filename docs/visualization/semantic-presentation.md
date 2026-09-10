@@ -1,6 +1,6 @@
 # Semantic visualization presentations
 
-`@aeliqo/web` exposes twelve visualization representations through the
+`@aeliqo/sdk-web` exposes twelve visualization representations through the
 semantic region registry. The registry is the host boundary between a core
 `VisualizationSpec` and a Lit element; it does not invent a query, aggregate
 rows, or infer a source capability.

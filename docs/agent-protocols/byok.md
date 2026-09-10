@@ -1,11 +1,11 @@
 # Application-owned BYOK model port
 
-`@aeliqo/agent/model` exports `ToolModelPort` and `runToolModel`. The model port
+`@aeliqo/sdk-agent/model` exports `ToolModelPort` and `runToolModel`. The model port
 only counts input tokens and proposes text/function calls. Every proposed call
 uses the same registered capability dispatcher as the manual, MCP and WebMCP
 paths. The loop contains no query evaluator or provider-specific planner.
 
-Create an expiring `createAgentToolEndpoint` from `@aeliqo/agent/protocol` with
+Create an expiring `createAgentToolEndpoint` from `@aeliqo/sdk-agent/protocol` with
 `transport: 'byok'`, an explicit region/goal/principal, trusted host authority,
 and the capability registry. Pass that endpoint, the host-approved prompt,
 `goal: 'chat' | 'experience'`, and an explicit `ToolModelBudget` to the loop.
@@ -53,7 +53,7 @@ prevent an external host from printing text outside that boundary.
 
 ## Optional official OpenAI reference
 
-`@aeliqo/agent/model/openai` exports `createOpenAIToolModel`. Install the exact
+`@aeliqo/sdk-agent/model/openai` exports `createOpenAIToolModel`. Install the exact
 optional `openai` peer version recorded in the agent package, create the official
 SDK client on a trusted server, and supply an explicit model ID. The reference
 uses Responses function tools and input-token counting, disables retries,
@@ -72,7 +72,7 @@ The actual credentialed, budget-authorized held-out evaluation remains T40.
 
 ## OpenAI-compatible Responses transport
 
-`@aeliqo/agent/model/responses` supplies
+`@aeliqo/sdk-agent/model/responses` supplies
 `createOpenAICompatibleResponsesToolModel` for a trusted server that owns an
 OpenAI-compatible Responses endpoint. It is deliberately provider-agnostic:
 applications configure the HTTPS base endpoint, explicit model ID, opaque

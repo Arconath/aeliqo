@@ -11,7 +11,7 @@ The runtime builder reuses the existing catalog fields. It does not require a
 second schema or a model/provider call:
 
 ```ts
-import {createMeaningAuthoring, createMeaningRegistry} from '@aeliqo/runtime/meaning';
+import {createMeaningAuthoring, createMeaningRegistry} from '@aeliqo/sdk-runtime/meaning';
 
 const authoring = createMeaningAuthoring({catalog, registry});
 if (!authoring.ok) throw new Error(authoring.diagnostics[0].code);
@@ -46,7 +46,7 @@ The optional agent package only adapts bounded AI input into the same runtime
 builder. It has no model SDK and cannot activate a definition:
 
 ```ts
-import {createAgentMeaningAuthoring} from '@aeliqo/agent';
+import {createAgentMeaningAuthoring} from '@aeliqo/sdk-agent';
 
 const ai = createAgentMeaningAuthoring({catalog, registry});
 if (!ai.ok) throw new Error(ai.diagnostics[0].code);

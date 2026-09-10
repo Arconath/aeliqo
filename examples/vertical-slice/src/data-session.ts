@@ -1,7 +1,7 @@
-import type {ResultRef, Task} from '@aeliqo/core';
-import {createDataHttpHandler, createHttpDataService, createLocalDataService, type DataService, type LocalSnapshot, type QueryBudget} from '@aeliqo/runtime/data';
-import {createResultStore, type ResultHandle, type ResultStore} from '@aeliqo/runtime/results';
-import {createResultCohortResolver, createTaskEvaluator, type TaskEvaluation, type TrustedEvaluationContext} from '@aeliqo/runtime/evaluation';
+import type {ResultRef, Task} from '@aeliqo/sdk-core';
+import {createDataHttpHandler, createHttpDataService, createLocalDataService, type DataService, type LocalSnapshot, type QueryBudget} from '@aeliqo/sdk-runtime/data';
+import {createResultStore, type ResultHandle, type ResultStore} from '@aeliqo/sdk-runtime/results';
+import {createResultCohortResolver, createTaskEvaluator, type TaskEvaluation, type TrustedEvaluationContext} from '@aeliqo/sdk-runtime/evaluation';
 import {catalog, functionRegistry, snapshot, sourceLimits} from './hr.js';
 
 export const principalKey = 'synthetic-hr-reader';

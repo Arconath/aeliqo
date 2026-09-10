@@ -15,7 +15,7 @@ import {
   AeliqoTextAreaElement,
   AeliqoTextFieldElement,
   type AeliqoOption,
-} from "@aeliqo/web";
+} from "@aeliqo/sdk-web";
 import {cleanupCatalogRoot, createCatalogElement, createCatalogRoot} from "./fixture.js";
 import {catalogMountSource, catalogSource} from "./source.js";
 import type {CatalogExampleDefinition, CatalogExampleId, CatalogExampleMetadata} from "./types.js";
@@ -38,7 +38,7 @@ const sourceImports = `import {
   AeliqoTextFieldElement,
   registerAeliqoElements,
   type AeliqoOption,
-} from "@aeliqo/web";`;
+} from "@aeliqo/sdk-web";`;
 
 const sourceSetup = `const options: readonly AeliqoOption[] = [
   {value: "ada", label: "Ada Lovelace", description: "Research"},

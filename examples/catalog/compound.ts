@@ -9,7 +9,7 @@ import {
   AeliqoRecordEditorElement,
   AeliqoSearchResultsElement,
   AeliqoTextFieldElement,
-} from "@aeliqo/web";
+} from "@aeliqo/sdk-web";
 import {
   catalogColumns,
   catalogFields,
@@ -38,10 +38,10 @@ const sourceImports = `import {
   AeliqoSearchResultsElement,
   AeliqoTextFieldElement,
   registerAeliqoElements,
-} from "@aeliqo/web";`;
-const sourceTypeImports = `import type {ResultRef, Scalar, VisualizationBindingContext, VisualizationSpec} from "@aeliqo/core";
-import type {AeliqoDataColumn, AeliqoDataScope, AeliqoFieldOption} from "@aeliqo/web/data";
-import type {VisualizationDataset} from "@aeliqo/web/visualization";`;
+} from "@aeliqo/sdk-web";`;
+const sourceTypeImports = `import type {ResultRef, Scalar, VisualizationBindingContext, VisualizationSpec} from "@aeliqo/sdk-core";
+import type {AeliqoDataColumn, AeliqoDataScope, AeliqoFieldOption} from "@aeliqo/sdk-web/data";
+import type {VisualizationDataset} from "@aeliqo/sdk-web/visualization";`;
 
 const sourceSetup = `${sourceTypeImports}
 

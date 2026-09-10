@@ -1,4 +1,4 @@
-import {registerAeliqoElements} from "@aeliqo/web";
+import {registerAeliqoElements} from "@aeliqo/sdk-web";
 import {compoundExamples} from "./compound.js";
 import {dataExamples} from "./data.js";
 import {feedbackExamples} from "./feedback.js";

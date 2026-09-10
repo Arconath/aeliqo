@@ -71,7 +71,7 @@ const packages = [];
 for (const name of ["core", "web", "react"]) {
   const directory = join(root, "packages", name);
   const manifest = JSON.parse(await readFile(join(directory, "package.json"), "utf8"));
-  assert.equal(manifest.name, `@aeliqo/${name}`);
+  assert.equal(manifest.name, `@aeliqo/sdk-${name}`);
   assert.equal(manifest.version, "0.1.0");
   assert.notEqual(manifest.private, true);
   const dist = join(directory, "dist");
@@ -90,8 +90,8 @@ for (const name of ["core", "web", "react"]) {
   for (const field of ["dependencies", "peerDependencies", "optionalDependencies"]) {
     assert(!JSON.stringify(packed[field] ?? {}).includes("workspace:"), `${name} has a workspace dependency in ${field}`);
   }
-  if (name === "web") assert.equal(packed.dependencies?.["@aeliqo/core"], "0.1.0");
-  if (name === "react") assert.equal(packed.dependencies?.["@aeliqo/web"], "0.1.0");
+  if (name === "web") assert.equal(packed.dependencies?.["@aeliqo/sdk-core"], "0.1.0");
+  if (name === "react") assert.equal(packed.dependencies?.["@aeliqo/sdk-web"], "0.1.0");
   const entries = run(["tar", "-tzf", tarball], root).trim().split("\n");
   assert(entries.includes("package/LICENSE"), `${name} tarball has no license`);
   assert(!entries.some(entry => entry.startsWith("package/src/")), `${name} tarball leaked source files`);
@@ -138,18 +138,18 @@ for (const item of packages) {
     assert.equal(hash(installed), hash(packed), `Installed ${item.name} bytes differ for ${entry}`);
   }
 }
-assert.equal(lock.packages["node_modules/@aeliqo/web"].dependencies["@aeliqo/core"], "0.1.0");
-assert.equal(lock.packages["node_modules/@aeliqo/react"].dependencies["@aeliqo/web"], "0.1.0");
-assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/web/node_modules/")), []);
-assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/react/node_modules/")), []);
+assert.equal(lock.packages["node_modules/@aeliqo/sdk-web"].dependencies["@aeliqo/sdk-core"], "0.1.0");
+assert.equal(lock.packages["node_modules/@aeliqo/sdk-react"].dependencies["@aeliqo/sdk-web"], "0.1.0");
+assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/sdk-web/node_modules/")), []);
+assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/sdk-react/node_modules/")), []);
 await writeFile(join(runDirectory, "consumer-package-lock.json"), lockBytes);
 
 // Resolve every public navigation/feedback entry point from a module inside
 // the temporary consumer. All results must remain under its node_modules tree.
 const subpaths = [
-  "@aeliqo/web/navigation", "@aeliqo/web/tabs", "@aeliqo/web/breadcrumb", "@aeliqo/web/pagination", "@aeliqo/web/menu", "@aeliqo/web/tree-nav",
-  "@aeliqo/web/feedback", "@aeliqo/web/dialog", "@aeliqo/web/drawer", "@aeliqo/web/popover", "@aeliqo/web/tooltip", "@aeliqo/web/alert", "@aeliqo/web/toast", "@aeliqo/web/progress", "@aeliqo/web/skeleton", "@aeliqo/web/empty-state",
-  "@aeliqo/react", "@aeliqo/react/ssr", "@aeliqo/web/server",
+  "@aeliqo/sdk-web/navigation", "@aeliqo/sdk-web/tabs", "@aeliqo/sdk-web/breadcrumb", "@aeliqo/sdk-web/pagination", "@aeliqo/sdk-web/menu", "@aeliqo/sdk-web/tree-nav",
+  "@aeliqo/sdk-web/feedback", "@aeliqo/sdk-web/dialog", "@aeliqo/sdk-web/drawer", "@aeliqo/sdk-web/popover", "@aeliqo/sdk-web/tooltip", "@aeliqo/sdk-web/alert", "@aeliqo/sdk-web/toast", "@aeliqo/sdk-web/progress", "@aeliqo/sdk-web/skeleton", "@aeliqo/sdk-web/empty-state",
+  "@aeliqo/sdk-react", "@aeliqo/sdk-react/ssr", "@aeliqo/sdk-web/server",
 ];
 const consumerNodeModules = JSON.stringify(join(consumerReal, "node_modules"));
 await writeFile(join(consumer, "resolution-check.mjs"), `
@@ -171,27 +171,27 @@ assert.equal(Object.keys(resolvedPackages).length, subpaths.length);
 // are recorded so a source checkout or a pnpm link cannot hide in the proof.
 await writeFile(join(consumer, "consumer.tsx"), `
 import React from "react";
-import {AeliqoTabs, AeliqoBreadcrumb, AeliqoPagination, AeliqoMenu, AeliqoTreeNav, AeliqoDialog, AeliqoDrawer, AeliqoPopover, AeliqoTooltip, AeliqoAlert, AeliqoToast, AeliqoProgress, AeliqoSkeleton, AeliqoEmptyState} from "@aeliqo/react";
-import type {AeliqoTabItem, AeliqoBreadcrumbItem, AeliqoTreeNavNode} from "@aeliqo/web/navigation";
-import type {AeliqoEmptyStateKind} from "@aeliqo/web/empty-state";
-import {createAeliqoPresentationRegistry, type AeliqoNavigationFeedbackBindings} from "@aeliqo/web/region";
+import {AeliqoTabs, AeliqoBreadcrumb, AeliqoPagination, AeliqoMenu, AeliqoTreeNav, AeliqoDialog, AeliqoDrawer, AeliqoPopover, AeliqoTooltip, AeliqoAlert, AeliqoToast, AeliqoProgress, AeliqoSkeleton, AeliqoEmptyState} from "@aeliqo/sdk-react";
+import type {AeliqoTabItem, AeliqoBreadcrumbItem, AeliqoTreeNavNode} from "@aeliqo/sdk-web/navigation";
+import type {AeliqoEmptyStateKind} from "@aeliqo/sdk-web/empty-state";
+import {createAeliqoPresentationRegistry, type AeliqoNavigationFeedbackBindings} from "@aeliqo/sdk-web/region";
 const semanticBindings = {revision:"nav-1",contents:[{id:"title",text:"Navigation"}]} satisfies AeliqoNavigationFeedbackBindings;
 const semanticRegistry = createAeliqoPresentationRegistry({navigationFeedback:semanticBindings});
 void semanticRegistry;
-import {AeliqoTabsElement} from "@aeliqo/web/tabs";
-import {AeliqoBreadcrumbElement} from "@aeliqo/web/breadcrumb";
-import {AeliqoPaginationElement} from "@aeliqo/web/pagination";
-import {AeliqoMenuElement} from "@aeliqo/web/menu";
-import {AeliqoTreeNavElement} from "@aeliqo/web/tree-nav";
-import {AeliqoDialogElement} from "@aeliqo/web/dialog";
-import {AeliqoDrawerElement} from "@aeliqo/web/drawer";
-import {AeliqoPopoverElement} from "@aeliqo/web/popover";
-import {AeliqoTooltipElement} from "@aeliqo/web/tooltip";
-import {AeliqoAlertElement} from "@aeliqo/web/alert";
-import {AeliqoToastElement} from "@aeliqo/web/toast";
-import {AeliqoProgressElement} from "@aeliqo/web/progress";
-import {AeliqoSkeletonElement} from "@aeliqo/web/skeleton";
-import {AeliqoEmptyStateElement} from "@aeliqo/web/empty-state";
+import {AeliqoTabsElement} from "@aeliqo/sdk-web/tabs";
+import {AeliqoBreadcrumbElement} from "@aeliqo/sdk-web/breadcrumb";
+import {AeliqoPaginationElement} from "@aeliqo/sdk-web/pagination";
+import {AeliqoMenuElement} from "@aeliqo/sdk-web/menu";
+import {AeliqoTreeNavElement} from "@aeliqo/sdk-web/tree-nav";
+import {AeliqoDialogElement} from "@aeliqo/sdk-web/dialog";
+import {AeliqoDrawerElement} from "@aeliqo/sdk-web/drawer";
+import {AeliqoPopoverElement} from "@aeliqo/sdk-web/popover";
+import {AeliqoTooltipElement} from "@aeliqo/sdk-web/tooltip";
+import {AeliqoAlertElement} from "@aeliqo/sdk-web/alert";
+import {AeliqoToastElement} from "@aeliqo/sdk-web/toast";
+import {AeliqoProgressElement} from "@aeliqo/sdk-web/progress";
+import {AeliqoSkeletonElement} from "@aeliqo/sdk-web/skeleton";
+import {AeliqoEmptyStateElement} from "@aeliqo/sdk-web/empty-state";
 
 const tabs: readonly AeliqoTabItem[] = [{id:"overview",label:"Overview",content:"Overview"}];
 const crumbs: readonly AeliqoBreadcrumbItem[] = [{id:"home",label:"Home",href:"/"}];
@@ -231,12 +231,12 @@ run([join(consumer, "node_modules/.bin/tsc"), "--project", "tsconfig.json"], con
 // bleed between templates, and importing the React binding must stay SSR-safe.
 await writeFile(join(consumer, "ssr-consumer.mjs"), `
 import assert from "node:assert/strict";
-import "@aeliqo/react/ssr";
+import "@aeliqo/sdk-react/ssr";
 import {createElement} from "react";
 import {renderToString} from "react-dom/server";
 import {html} from "lit";
-import {renderAeliqo} from "@aeliqo/web/server";
-import {AeliqoTabs, AeliqoDialog, AeliqoAlert, AeliqoMenu} from "@aeliqo/react";
+import {renderAeliqo} from "@aeliqo/sdk-web/server";
+import {AeliqoTabs, AeliqoDialog, AeliqoAlert, AeliqoMenu} from "@aeliqo/sdk-react";
 assert.equal(typeof window, "undefined");
 const [first, second] = await Promise.all([
   renderAeliqo(html\`<aeliqo-tabs .items=\${[{id:"one",label:"One",content:"First request"}]}></aeliqo-tabs><aeliqo-dialog heading="Request one"></aeliqo-dialog>\`),
@@ -262,7 +262,7 @@ const ssrReport = JSON.parse(run(["node", "ssr-consumer.mjs"], consumer).trim().
 
 await writeFile(join(consumer, "index.html"), `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Installed navigation and feedback</title></head><body><main><button id="outside" type="button">Outside</button><aeliqo-tabs id="tabs"></aeliqo-tabs><aeliqo-breadcrumb id="breadcrumb"></aeliqo-breadcrumb><aeliqo-pagination id="pagination"></aeliqo-pagination><aeliqo-menu id="menu"></aeliqo-menu><aeliqo-tree-nav id="tree"></aeliqo-tree-nav><aeliqo-dialog id="dialog"></aeliqo-dialog><aeliqo-popover id="popover"></aeliqo-popover><aeliqo-drawer id="drawer"></aeliqo-drawer><aeliqo-tooltip id="tooltip"></aeliqo-tooltip><aeliqo-alert id="alert"></aeliqo-alert><aeliqo-toast id="toast"></aeliqo-toast><aeliqo-progress id="progress"></aeliqo-progress><aeliqo-skeleton id="skeleton"></aeliqo-skeleton><aeliqo-empty-state id="empty"></aeliqo-empty-state></main><script type="module" src="/browser.js"></script></body></html>\n`);
 await writeFile(join(consumer, "browser.js"), `
-import {registerAeliqoElements} from "@aeliqo/web/register";
+import {registerAeliqoElements} from "@aeliqo/sdk-web/register";
 registerAeliqoElements();
 const byId = id => document.getElementById(id);
 const tabs = byId("tabs"); tabs.items = [{id:"overview",label:"Overview",content:"Overview panel"},{id:"details",label:"Details",content:"Details panel"}];
@@ -422,7 +422,7 @@ await writeFile(join(runDirectory, "report.json"), JSON.stringify({
   sourceDigest: before,
   sourceChangedDuringRun: false,
   passed: true,
-  scope: "Installed @aeliqo/core, @aeliqo/web and @aeliqo/react tarballs; public navigation and feedback subpath resolution; strict React event declarations; concurrent Lit/React SSR isolation; Chromium focus, keyboard navigation, dismiss and cancel behavior.",
+  scope: "Installed @aeliqo/sdk-core, @aeliqo/sdk-web and @aeliqo/sdk-react tarballs; public navigation and feedback subpath resolution; strict React event declarations; concurrent Lit/React SSR isolation; Chromium focus, keyboard navigation, dismiss and cancel behavior.",
   artifacts: packages.map(({entries, ...item}) => item),
   consumerDirectory: consumer,
   consumerLock: {path: join(runDirectory, "consumer-package-lock.json"), sha256: hash(lockBytes)},

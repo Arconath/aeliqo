@@ -1,4 +1,4 @@
-import {parseWireValue, validateCommitReadSet, WIRE_LIMITS} from '@aeliqo/core';
+import {parseWireValue, validateCommitReadSet, WIRE_LIMITS} from '@aeliqo/sdk-core';
 import {awaitAgentBoundary, capabilityCanonical} from '../capabilities/dispatcher.js';
 import type {AgentCapabilityReceipt, AgentCapabilityState, AgentJsonValue} from '../capabilities/types.js';
 import type {AgentModelScope} from '../protocol/types.js';

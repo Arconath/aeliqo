@@ -1,5 +1,5 @@
-import {bindPlotSpec,scalarIdentity,parseWireValue} from '@aeliqo/core';
-import type {PlotSpec,PlotNode,PlotUnit,Result,ResultRef,Scalar,Outcome} from '@aeliqo/core';
+import {bindPlotSpec,scalarIdentity,parseWireValue} from '@aeliqo/sdk-core';
+import type {PlotSpec,PlotNode,PlotUnit,Result,ResultRef,Scalar,Outcome} from '@aeliqo/sdk-core';
 import {compilePlotUnit} from './geometry.js';
 import type {PlotGeometry,PlotDatum,PlotGeometryOptions,PlotProjection} from './geometry.js';
 import {exactLabel} from './scales.js';

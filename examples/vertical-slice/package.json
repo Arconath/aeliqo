@@ -7,9 +7,9 @@
     "dev": "vite"
   },
   "dependencies": {
-    "@aeliqo/core": "workspace:*",
-    "@aeliqo/runtime": "workspace:*",
-    "@aeliqo/web": "workspace:*",
+    "@aeliqo/sdk-core": "workspace:*",
+    "@aeliqo/sdk-runtime": "workspace:*",
+    "@aeliqo/sdk-web": "workspace:*",
     "lit": "3.3.3",
     "@lit-labs/ssr-client": "1.1.8"
   }

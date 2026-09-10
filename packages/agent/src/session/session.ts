@@ -1,5 +1,5 @@
 import {normalizeAgentCapabilityRequest} from '../capabilities/dispatcher.js';
-import {parseContract, parseWireValue, type AgentStopReason, type Diagnostic, type Outcome} from '@aeliqo/core';
+import {parseContract, parseWireValue, type AgentStopReason, type Diagnostic, type Outcome} from '@aeliqo/sdk-core';
 import type {
   AgentCapabilityReceipt,
   AgentCapabilityRequest,

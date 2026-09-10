@@ -1,6 +1,6 @@
 import {css, html, LitElement, nothing} from "lit";
 import {aeliqoThemeStyles} from "../styles/theme.js";
-import {validateScalar} from "@aeliqo/core";
+import {validateScalar} from "@aeliqo/sdk-core";
 import type {AeliqoDataStatus, AeliqoFieldOption, AeliqoFilterPredicate, AeliqoFilterValue} from "./types.js";
 import {AeliqoFilterChangeEvent} from "./events.js";
 import {dataStyles, dataValueText, statusTemplate} from "./shared.js";

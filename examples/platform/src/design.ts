@@ -1,7 +1,7 @@
 import './csp-bootstrap.js';
-import {registerAeliqoElements, AeliqoInputEvent} from '@aeliqo/web';
-import type {AeliqoInputElement, AeliqoTableElement, AeliqoChartElement} from '@aeliqo/web';
-import {aeliqoStandaloneThemeStyles, aeliqoLocaleAttributes, createAeliqoLocaleContext} from '@aeliqo/web/styles';
+import {registerAeliqoElements, AeliqoInputEvent} from '@aeliqo/sdk-web';
+import type {AeliqoInputElement, AeliqoTableElement, AeliqoChartElement} from '@aeliqo/sdk-web';
+import {aeliqoStandaloneThemeStyles, aeliqoLocaleAttributes, createAeliqoLocaleContext} from '@aeliqo/sdk-web/styles';
 
 const stylesheet = document.createElement('style');
 stylesheet.nonce = 't02nonce';

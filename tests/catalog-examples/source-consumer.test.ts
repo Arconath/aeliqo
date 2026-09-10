@@ -217,7 +217,7 @@ for (const example of catalogExamples) {
         const tarball = join(runDirectory, `aeliqo-${packageName}-0.1.0.tgz`);
         run(["pnpm", "pack", "--out", tarball], packageDirectory);
         const packedManifest = JSON.parse(run(["tar", "-xOf", tarball, "package/package.json"], workspace)) as {name?: string; version?: string; private?: boolean; dependencies?: Record<string, string>};
-        expect(packedManifest.name).toBe(`@aeliqo/${packageName}`);
+        expect(packedManifest.name).toBe(`@aeliqo/sdk-${packageName}`);
         expect(packedManifest.version).toBe("0.1.0");
         expect(packedManifest.private).not.toBe(true);
         expect(JSON.stringify(packedManifest.dependencies ?? {})).not.toContain("workspace:");
@@ -315,7 +315,7 @@ for (const example of catalogExamples) {
         changed: beforeByPath.get(file.path)?.sha256 !== file.sha256,
       }));
       const report = {
-        scope: "Minified source extraction plus installed @aeliqo/core and @aeliqo/web tarballs; strict TypeScript with skipLibCheck false; Chromium mounts all 71 source roots and compares host tag, text, shadow DOM tags, and accessibility semantics against actual catalog previews.",
+        scope: "Minified source extraction plus installed @aeliqo/sdk-core and @aeliqo/sdk-web tarballs; strict TypeScript with skipLibCheck false; Chromium mounts all 71 source roots and compares host tag, text, shadow DOM tags, and accessibility semantics against actual catalog previews.",
         candidateDigest: {before: candidateDigestBefore, after: candidateDigestAfter, unchanged: candidateDigestBefore === candidateDigestAfter},
         candidateFiles,
         artifacts: {tarballs: tarballArtifacts, lock: lockArtifact, extractedSources: extractedSourceArtifacts},

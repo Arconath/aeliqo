@@ -6,7 +6,7 @@ import {
   AeliqoInput,
   AeliqoTable,
   registerAeliqoReactElements,
-} from "@aeliqo/react";
+} from "@aeliqo/sdk-react";
 
 registerAeliqoReactElements();
 

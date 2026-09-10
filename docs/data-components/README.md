@@ -1,7 +1,7 @@
 # Data components
 
 The data family is one shared Lit implementation with direct imports under
-`@aeliqo/web/data`. It renders host supplied values and scopes; it does not
+`@aeliqo/sdk-web/data`. It renders host supplied values and scopes; it does not
 execute a query, infer a metric, or create a region/runtime. Each component
 accepts the same explicit loading, partial, stale, error and unavailable
 states where those states apply.
@@ -89,8 +89,8 @@ review remains part of the product release gate.
 Register the authorized materialization before validating a presentation:
 
 ```ts
-import {createAeliqoPresentationRegistry} from '@aeliqo/web';
-import type {AeliqoDataBinding} from '@aeliqo/web';
+import {createAeliqoPresentationRegistry} from '@aeliqo/sdk-web';
+import type {AeliqoDataBinding} from '@aeliqo/sdk-web';
 
 export function registryForPeople(binding: AeliqoDataBinding) {
   return createAeliqoPresentationRegistry({

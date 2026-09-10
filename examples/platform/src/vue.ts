@@ -1,6 +1,6 @@
 import "./csp-bootstrap.js";
 import {createApp, h, ref, type App, type VNode} from "vue";
-import {AeliqoInputEvent, registerAeliqoElements} from "@aeliqo/web";
+import {AeliqoInputEvent, registerAeliqoElements} from "@aeliqo/sdk-web";
 
 registerAeliqoElements();
 

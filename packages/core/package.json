@@ -1,5 +1,5 @@
 {
-  "name": "@aeliqo/core",
+  "name": "@aeliqo/sdk-core",
   "version": "0.1.0",
   "type": "module",
   "description": "Pure Aeliqo semantic UI contracts and compilation",

@@ -10,7 +10,7 @@ import {
   type Scalar,
   type SemanticType,
   type VersionRef,
-} from "@aeliqo/core";
+} from "@aeliqo/sdk-core";
 import type {
   AeliqoDataColumn,
   AeliqoDataRecord,

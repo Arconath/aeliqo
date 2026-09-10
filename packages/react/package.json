@@ -1,5 +1,5 @@
 {
-  "name": "@aeliqo/react",
+  "name": "@aeliqo/sdk-react",
   "version": "0.1.0",
   "description": "Thin React bindings for Aeliqo web elements",
   "license": "Apache-2.0",
@@ -63,7 +63,7 @@
     "react-dom": ">=19.2.0 <20.0.0"
   },
   "dependencies": {
-    "@aeliqo/web": "workspace:*",
+    "@aeliqo/sdk-web": "workspace:*",
     "@lit-labs/ssr-react": "0.3.4",
     "@lit/react": "1.0.8"
   }

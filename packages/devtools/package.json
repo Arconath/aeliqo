@@ -1,5 +1,5 @@
 {
-  "name": "@aeliqo/devtools",
+  "name": "@aeliqo/sdk-devtools",
   "version": "0.1.0",
   "type": "module",
   "description": "Local OSS Studio and versioned authoring tools for Aeliqo",
@@ -15,7 +15,7 @@
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@aeliqo/core": "workspace:*",
-    "@aeliqo/runtime": "workspace:*"
+    "@aeliqo/sdk-core": "workspace:*",
+    "@aeliqo/sdk-runtime": "workspace:*"
   }
 }

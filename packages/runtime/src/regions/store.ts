@@ -1,5 +1,5 @@
-import {parseContract, parseInteractionState, parseWireValue, validateCommitReadSet, WIRE_LIMITS} from '@aeliqo/core';
-import type {ResultRef} from '@aeliqo/core';
+import {parseContract, parseInteractionState, parseWireValue, validateCommitReadSet, WIRE_LIMITS} from '@aeliqo/sdk-core';
+import type {ResultRef} from '@aeliqo/sdk-core';
 import type {ResultHandle, ResultLease} from '../results/types.js';
 import {createSerialQueue, type SerialQueue} from '../scheduling/index.js';
 import {exportRegionDocument, parseRegionDocument} from '../persistence/index.js';

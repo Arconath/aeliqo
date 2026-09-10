@@ -1,4 +1,4 @@
-import type {OperationGrant, Outcome, VersionRef} from '@aeliqo/core';
+import type {OperationGrant, Outcome, VersionRef} from '@aeliqo/sdk-core';
 import type {AgentCapabilityReceipt, AgentJsonValue} from '../capabilities/types.js';
 
 /** Host-authored JSON Schema for the registered capability's input, not an authority grant. */
@@ -35,7 +35,7 @@ export interface AgentToolEndpoint {
 /** Host-only egress admission receipt; never automatically included in model input. */
 export interface AgentModelScope {
   readonly principalKey: string;
-  readonly current?: import('@aeliqo/core').CommitPreconditions;
+  readonly current?: import('@aeliqo/sdk-core').CommitPreconditions;
 }
 export interface AgentModelToolEndpoint extends AgentToolEndpoint {
   readonly authorizeModel: (options?: {readonly signal?: AbortSignal}) => Promise<Outcome<AgentModelScope>>;

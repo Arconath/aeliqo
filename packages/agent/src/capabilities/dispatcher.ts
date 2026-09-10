@@ -8,7 +8,7 @@ import {
   type Outcome,
   type ResultRef,
   type VersionRef,
-} from '@aeliqo/core';
+} from '@aeliqo/sdk-core';
 import {capabilityRefKey} from './registry.js';
 import type {
   AgentCapabilityAuthority,

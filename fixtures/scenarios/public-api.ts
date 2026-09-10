@@ -1,5 +1,5 @@
-import {createStandardFunctionRegistry, type Catalog, type Outcome, type QuerySpec} from '@aeliqo/core';
-import type {DataRecord, LocalSnapshot, QueryBudget, ReadGrant} from '@aeliqo/runtime/data';
+import {createStandardFunctionRegistry, type Catalog, type Outcome, type QuerySpec} from '@aeliqo/sdk-core';
+import type {DataRecord, LocalSnapshot, QueryBudget, ReadGrant} from '@aeliqo/sdk-runtime/data';
 
 export function value<T>(result: Outcome<T>): T {
   if (!result.ok) throw new Error(result.diagnostics.map((diagnostic) => diagnostic.code).join(', '));

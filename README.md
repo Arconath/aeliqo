@@ -19,7 +19,7 @@ python3 scripts/validate_all.py
 
 Requires Python 3.11+; reference type tests also require Node and TypeScript's `tsc`. Production dependencies and browser matrix are verified and pinned during M0, not fabricated in this foundation. `validate_all.py` tests the kit, not the future runtime. See [VALIDATION.md](VALIDATION.md) for actual results and limits.
 
-The latest product target is **0.1.0**. It supersedes earlier 0.10 planning; contract schema version 1 is independent. Published npm identities are immutable, and a lower semver is not an automatic upgrade for previous users. [Release migration](docs/18-release-migration.md) defines collision checks, reset communication and cutover.
+The latest product target is **0.1.0**. It supersedes earlier 0.10 planning; contract schema version 1 is independent. The rewrite uses the clean `@aeliqo/sdk-{core,runtime,web,react,agent,devtools}` identity family, while `@aeliqo/testkit` remains a private workspace. Published npm identities are immutable, and a lower semver is not an automatic upgrade for previous users. [Release migration](docs/18-release-migration.md) defines collision checks and cutover; [the 0.1 migration guide](docs/migration-0.1.0.md) maps the incompatible 0.2 packages.
 
 A clean source tree is intentional. Preserve historical commits and rollback artifacts; remove legacy implementation from the new active tree rather than deleting customer data or breaking a live service first. GitHub writing from this preparation session returned 403; no remote branch, deployment or registry artifact was changed. Local authenticated publication is available through the dry-run-first script.
 

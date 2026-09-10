@@ -1,4 +1,4 @@
-import {parseWireValue, validatePresentationPlan, type Outcome, type PresentationPlan, type VersionRef} from '@aeliqo/core';
+import {parseWireValue, validatePresentationPlan, type Outcome, type PresentationPlan, type VersionRef} from '@aeliqo/sdk-core';
 import type {
   AeliqoBreakdownRecipeInput, AeliqoComparisonRecipeInput, AeliqoCompoundRecipe, AeliqoCompoundRecipeInput,
   AeliqoExplorerRecipeInput, AeliqoFormFlowRecipeInput, AeliqoInvestigationRecipeInput, AeliqoQualityPanelRecipeInput,

@@ -5,7 +5,7 @@ import {
   AeliqoInputEvent,
   AeliqoTableElement,
   registerAeliqoElements,
-} from "@aeliqo/web";
+} from "@aeliqo/sdk-web";
 
 registerAeliqoElements();
 

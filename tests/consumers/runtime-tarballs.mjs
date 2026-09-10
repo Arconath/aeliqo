@@ -1,5 +1,5 @@
 /**
- * Build and consume the actual @aeliqo/core and @aeliqo/runtime packages
+ * Build and consume the actual @aeliqo/sdk-core and @aeliqo/sdk-runtime packages
  * outside the workspace.
  *
  * This is a bounded data/results/regions/actions package-boundary check. It proves
@@ -107,16 +107,16 @@ async function clearCompiledOutput(directory, allowedPattern) {
 
 const coreManifest = JSON.parse(await readFile(join(coreDirectory, 'package.json'), 'utf8'));
 const runtimeManifest = JSON.parse(await readFile(join(runtimeDirectory, 'package.json'), 'utf8'));
-assert.equal(coreManifest.name, '@aeliqo/core');
+assert.equal(coreManifest.name, '@aeliqo/sdk-core');
 assert.equal(coreManifest.version, '0.1.0');
 assert.equal(coreManifest.license, 'Apache-2.0');
 assert.notEqual(coreManifest.private, true);
-assert.equal(runtimeManifest.name, '@aeliqo/runtime');
+assert.equal(runtimeManifest.name, '@aeliqo/sdk-runtime');
 assert.equal(runtimeManifest.version, '0.1.0');
 assert.equal(runtimeManifest.license, 'Apache-2.0');
 assert.notEqual(runtimeManifest.private, true);
-assert.deepEqual(Object.keys(runtimeManifest.dependencies ?? {}), ['@aeliqo/core', 'zod']);
-assert.equal(runtimeManifest.dependencies['@aeliqo/core'], 'workspace:*');
+assert.deepEqual(Object.keys(runtimeManifest.dependencies ?? {}), ['@aeliqo/sdk-core', 'zod']);
+assert.equal(runtimeManifest.dependencies['@aeliqo/sdk-core'], 'workspace:*');
 assert.deepEqual(Object.keys(runtimeManifest.peerDependencies ?? {}), []);
 assert.deepEqual(Object.keys(runtimeManifest.optionalDependencies ?? {}), []);
 assert.deepEqual(runtimeManifest.exports?.['./data'], {
@@ -165,12 +165,12 @@ const artifacts = [
 const packedCoreManifest = JSON.parse(run(['tar', '-xOf', coreTarball, 'package/package.json'], root));
 const packedRuntimeManifest = JSON.parse(run(['tar', '-xOf', runtimeTarball, 'package/package.json'], root));
 assert.deepEqual(packedCoreManifest, coreManifest);
-assert.equal(packedRuntimeManifest.name, '@aeliqo/runtime');
+assert.equal(packedRuntimeManifest.name, '@aeliqo/sdk-runtime');
 assert.equal(packedRuntimeManifest.version, '0.1.0');
 assert.equal(packedRuntimeManifest.license, 'Apache-2.0');
 assert.deepEqual(packedRuntimeManifest.exports, runtimeManifest.exports);
-assert.deepEqual(Object.keys(packedRuntimeManifest.dependencies ?? {}), ['@aeliqo/core', 'zod']);
-assert.equal(packedRuntimeManifest.dependencies['@aeliqo/core'], '0.1.0');
+assert.deepEqual(Object.keys(packedRuntimeManifest.dependencies ?? {}), ['@aeliqo/sdk-core', 'zod']);
+assert.equal(packedRuntimeManifest.dependencies['@aeliqo/sdk-core'], '0.1.0');
 for (const manifest of [packedCoreManifest, packedRuntimeManifest]) {
   for (const field of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
     assert(!JSON.stringify(manifest[field] ?? {}).includes('workspace:'), `Workspace alias in ${manifest.name} ${field}`);
@@ -179,7 +179,7 @@ for (const manifest of [packedCoreManifest, packedRuntimeManifest]) {
 
 const coreEntries = run(['tar', '-tzf', coreTarball], root).trim().split('\n');
 const runtimeEntries = run(['tar', '-tzf', runtimeTarball], root).trim().split('\n');
-for (const [name, entries] of [['@aeliqo/core', coreEntries], ['@aeliqo/runtime', runtimeEntries]]) {
+for (const [name, entries] of [['@aeliqo/sdk-core', coreEntries], ['@aeliqo/sdk-runtime', runtimeEntries]]) {
   for (const entry of entries) {
     assert(entry.startsWith('package/') && !entry.split('/').includes('..'), `Unexpected ${name} archive path: ${entry}`);
   }
@@ -208,17 +208,17 @@ for (const artifact of artifacts) {
     `Duplicate installed ${artifact.name}`,
   );
 }
-assert.equal(lock.packages['node_modules/@aeliqo/runtime'].dependencies['@aeliqo/core'], '0.1.0');
-assert.equal(lock.packages['node_modules/@aeliqo/core'].version, '0.1.0');
+assert.equal(lock.packages['node_modules/@aeliqo/sdk-runtime'].dependencies['@aeliqo/sdk-core'], '0.1.0');
+assert.equal(lock.packages['node_modules/@aeliqo/sdk-core'].version, '0.1.0');
 assert.equal(lock.packages['node_modules/zod'].version, '4.5.4');
 assert.match(lock.packages['node_modules/zod'].integrity, /^sha512-/);
 assert.deepEqual(
-  Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/runtime/node_modules/')),
+  Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/sdk-runtime/node_modules/')),
   [],
   'Runtime has unexpected nested production dependencies',
 );
 for (const artifact of artifacts) {
-  const entries = artifact.name === '@aeliqo/core' ? coreEntries : runtimeEntries;
+  const entries = artifact.name === '@aeliqo/sdk-core' ? coreEntries : runtimeEntries;
   for (const entry of entries) {
     if (entry.endsWith('/')) continue;
     const installedPath = join(consumerDirectory, 'node_modules', artifact.name, entry.slice('package/'.length));
@@ -546,14 +546,14 @@ async function exerciseActions() {
 `;
 
 await writeFile(join(consumerDirectory, 'consumer-types.ts'), `
-import {createDataHttpHandler, createHttpDataService, createLocalDataService, parseBudget, parseResultEvent} from '@aeliqo/runtime/data';
-import type {DataHttpHandler, DataRecord, DataService, LocalSnapshot, QueryBudget, ReadContext, ResultEvent} from '@aeliqo/runtime/data';
-import type {Catalog, QuerySpec} from '@aeliqo/core';
-import {createResultStore, type ResultStore, type ResultCacheKey} from '@aeliqo/runtime/results';
-import {createRegionStore, type RegionHandle, type RegionStore} from '@aeliqo/runtime/regions';
-import {parseRegionDocument} from '@aeliqo/runtime/persistence';
-import {createActionPort, createActionRegistry, type ActionRequest, type ActionPort} from '@aeliqo/runtime/actions';
-import {createInteractionController, createInteractionGraph, type InteractionControllerOptions, type InteractionEvent} from '@aeliqo/runtime/interaction';
+import {createDataHttpHandler, createHttpDataService, createLocalDataService, parseBudget, parseResultEvent} from '@aeliqo/sdk-runtime/data';
+import type {DataHttpHandler, DataRecord, DataService, LocalSnapshot, QueryBudget, ReadContext, ResultEvent} from '@aeliqo/sdk-runtime/data';
+import type {Catalog, QuerySpec} from '@aeliqo/sdk-core';
+import {createResultStore, type ResultStore, type ResultCacheKey} from '@aeliqo/sdk-runtime/results';
+import {createRegionStore, type RegionHandle, type RegionStore} from '@aeliqo/sdk-runtime/regions';
+import {parseRegionDocument} from '@aeliqo/sdk-runtime/persistence';
+import {createActionPort, createActionRegistry, type ActionRequest, type ActionPort} from '@aeliqo/sdk-runtime/actions';
+import {createInteractionController, createInteractionGraph, type InteractionControllerOptions, type InteractionEvent} from '@aeliqo/sdk-runtime/interaction';
 declare const interactionOptions: InteractionControllerOptions;
 declare const interactionEvent: InteractionEvent;
 createInteractionController(interactionOptions).dispatch(interactionEvent);
@@ -625,12 +625,12 @@ import {
   createDataHttpHandler,
   createHttpDataService,
   createLocalDataService,
-} from '@aeliqo/runtime/data';
-import {createResultStore} from '@aeliqo/runtime/results';
-import {createRegionStore} from '@aeliqo/runtime/regions';
-import {parseRegionDocument, serializeRegionDocument} from '@aeliqo/runtime/persistence';
-import {createActionPort, createActionRegistry} from '@aeliqo/runtime/actions';
-import {createInteractionController, createInteractionGraph} from '@aeliqo/runtime/interaction';
+} from '@aeliqo/sdk-runtime/data';
+import {createResultStore} from '@aeliqo/sdk-runtime/results';
+import {createRegionStore} from '@aeliqo/sdk-runtime/regions';
+import {parseRegionDocument, serializeRegionDocument} from '@aeliqo/sdk-runtime/persistence';
+import {createActionPort, createActionRegistry} from '@aeliqo/sdk-runtime/actions';
+import {createInteractionController, createInteractionGraph} from '@aeliqo/sdk-runtime/interaction';
 
 const run = (argv, cwd) => {
   const result = spawnSync(argv[0], argv.slice(1), {cwd, encoding: 'utf8'});
@@ -777,12 +777,12 @@ try {
 
   await writeFile('index.html', '<!doctype html><html><body><script type="module" src="browser.js"></script></body></html>');
   await writeFile('browser.js', \`
-import {createDataHttpHandler, createHttpDataService, createLocalDataService} from '@aeliqo/runtime/data';
-import {createResultStore} from '@aeliqo/runtime/results';
-import {createRegionStore} from '@aeliqo/runtime/regions';
-import {parseRegionDocument, serializeRegionDocument} from '@aeliqo/runtime/persistence';
-import {createActionPort, createActionRegistry} from '@aeliqo/runtime/actions';
-import {createInteractionController, createInteractionGraph} from '@aeliqo/runtime/interaction';
+import {createDataHttpHandler, createHttpDataService, createLocalDataService} from '@aeliqo/sdk-runtime/data';
+import {createResultStore} from '@aeliqo/sdk-runtime/results';
+import {createRegionStore} from '@aeliqo/sdk-runtime/regions';
+import {parseRegionDocument, serializeRegionDocument} from '@aeliqo/sdk-runtime/persistence';
+import {createActionPort, createActionRegistry} from '@aeliqo/sdk-runtime/actions';
+import {createInteractionController, createInteractionGraph} from '@aeliqo/sdk-runtime/interaction';
 const fixture = ${fixtureSource};
 const {catalog, rows, budget, query} = fixture;
 ${regionExerciseSource}
@@ -829,8 +829,8 @@ globalThis.__aeliqoBrowserData = {local,network,transportFlows,regions,actions,i
   await writeFile('vite.config.mjs', \`export default {build:{minify:true,outDir:'dist',rollupOptions:{input:'index.html'}},plugins:[{name:'record-runtime-modules',generateBundle(_,bundle){const modules=Object.values(bundle).filter(item=>item.type==='chunk').flatMap(item=>Object.keys(item.modules));this.emitFile({type:'asset',fileName:'modules.json',source:JSON.stringify(modules)});}}]};\`);
   run(['node_modules/.bin/vite', 'build'], process.cwd());
   const browserModules = JSON.parse(await readFile('dist/modules.json', 'utf8'));
-  assert(browserModules.some(id => id.includes('@aeliqo/runtime')), 'Browser graph omitted installed runtime');
-  assert(browserModules.some(id => id.includes('@aeliqo/core')), 'Browser graph omitted installed core');
+  assert(browserModules.some(id => id.includes('@aeliqo/sdk-runtime')), 'Browser graph omitted installed runtime');
+  assert(browserModules.some(id => id.includes('@aeliqo/sdk-core')), 'Browser graph omitted installed core');
   const bundleFiles = [];
   for (const path of await (async function files(directory) {
     const result = [];
@@ -919,7 +919,7 @@ const sourceDigestAfter = {
 assert.deepEqual(sourceDigestAfter, sourceDigestBefore, 'Package source changed during consumer verification');
 const report = {
   passed: true,
-  scope: '@aeliqo/core and @aeliqo/runtime 0.1.0 installed tarballs; strict declarations; local/HTTP ADC roundtrip; authorization and stale-plan checks; region commits, result leases and fresh-query restore in Node and Chromium.',
+  scope: '@aeliqo/sdk-core and @aeliqo/sdk-runtime 0.1.0 installed tarballs; strict declarations; local/HTTP ADC roundtrip; authorization and stale-plan checks; region commits, result leases and fresh-query restore in Node and Chromium.',
   artifacts: artifacts.map(({name, version, path, sha256, integrity}) => ({name, version, path, sha256, integrity})),
   consumer: {directory: consumerDirectory, lockPath: join(runDirectory, 'consumer-package-lock.json'), lockSha256: hash(lockBytes)},
   sourceDigestBefore,

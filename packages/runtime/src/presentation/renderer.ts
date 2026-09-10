@@ -5,7 +5,7 @@ import type {
   Scalar,
   ValidatedPresentation,
   VersionRef,
-} from '@aeliqo/core';
+} from '@aeliqo/sdk-core';
 import type {RegionContent, RegionOutcome} from '../regions/types.js';
 
 const failure = <T>(code: string, message: string): RegionOutcome<T> => ({

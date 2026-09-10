@@ -6,7 +6,7 @@ import {
   type AgentStopReason,
   type Diagnostic,
   type Outcome,
-} from '@aeliqo/core';
+} from '@aeliqo/sdk-core';
 import type {
   AgentAttempt,
   AgentAttemptProgress,

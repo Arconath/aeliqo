@@ -1,4 +1,4 @@
-import type {Contract, Diagnostic, Result} from '@aeliqo/core';
+import type {Contract, Diagnostic, Result} from '@aeliqo/sdk-core';
 
 export type ResultEvent = Contract<'result-event'>;
 

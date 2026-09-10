@@ -1,9 +1,9 @@
-import {createPresentationRegistry, type PresentationPlan, type PresentationPatternManifest} from '@aeliqo/core';
-import {createRegionStore} from '@aeliqo/runtime/regions';
-import {createAeliqoRegionAdaptation} from '@aeliqo/web/region/adaptation';
-import {createAeliqoPresentationRegistry} from '@aeliqo/web/region';
-import {registerAeliqoElements} from '@aeliqo/web/register';
-import type {AeliqoRegionElement} from '@aeliqo/web/region';
+import {createPresentationRegistry, type PresentationPlan, type PresentationPatternManifest} from '@aeliqo/sdk-core';
+import {createRegionStore} from '@aeliqo/sdk-runtime/regions';
+import {createAeliqoRegionAdaptation} from '@aeliqo/sdk-web/region/adaptation';
+import {createAeliqoPresentationRegistry} from '@aeliqo/sdk-web/region';
+import {registerAeliqoElements} from '@aeliqo/sdk-web/register';
+import type {AeliqoRegionElement} from '@aeliqo/sdk-web/region';
 import {presentationTask, result, ref, experience} from '../contracts/fixtures.js';
 registerAeliqoElements();
 const ok = <T>(value:T) => ({ok:true as const,value});

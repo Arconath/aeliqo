@@ -1,4 +1,4 @@
-import type {Outcome} from '@aeliqo/core';
+import type {Outcome} from '@aeliqo/sdk-core';
 import type {AgentCapabilityReceipt} from '../capabilities/types.js';
 import type {AgentToolDefinition, AgentToolEndpoint, AgentToolInputSchema} from '../protocol/types.js';
 
