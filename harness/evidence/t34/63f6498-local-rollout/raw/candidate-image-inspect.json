@@ -1,0 +1,58 @@
+[
+    {
+        "Id": "sha256:c205b92d6447878a003ddd919e6611c1bd61a7ed96abb6b92e7fd186bcc19d35",
+        "RepoTags": [
+            "aeliqo-t34:63f6498"
+        ],
+        "RepoDigests": [
+            "aeliqo-t34@sha256:c205b92d6447878a003ddd919e6611c1bd61a7ed96abb6b92e7fd186bcc19d35"
+        ],
+        "Comment": "buildkit.dockerfile.v0",
+        "Created": "2026-09-10T15:59:50.381982775+07:00",
+        "Config": {
+            "User": "101:101",
+            "ExposedPorts": {
+                "8080/tcp": {}
+            },
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            ],
+            "Entrypoint": [
+                "/aeliqo-static-server"
+            ],
+            "WorkingDir": "/srv/aeliqo",
+            "Labels": {
+                "org.opencontainers.image.description": "Aeliqo static rewrite site",
+                "org.opencontainers.image.revision": "63f6498fab1df770a9f521c3cad7db33d17cf793",
+                "org.opencontainers.image.source": "https://github.com/Arconath/aeliqo"
+            }
+        },
+        "Architecture": "amd64",
+        "Os": "linux",
+        "Size": 3597491,
+        "RootFS": {
+            "Type": "layers",
+            "Layers": [
+                "sha256:deb52190fe9b2150b3aa05a862217c679e261ea7496b800d75a8d80fe67a9216",
+                "sha256:93bd3fa4097fcb4b4ec9c2642508770a396d190abcc5435c90a4e64b98842ee7",
+                "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+            ]
+        },
+        "Metadata": {
+            "LastTagTime": "2026-09-10T08:59:50.705024361Z"
+        },
+        "Descriptor": {
+            "mediaType": "application/vnd.oci.image.index.v1+json",
+            "digest": "sha256:c205b92d6447878a003ddd919e6611c1bd61a7ed96abb6b92e7fd186bcc19d35",
+            "size": 855
+        },
+        "Identity": {
+            "Build": [
+                {
+                    "Ref": "l2500vso8r514mvhvm11140ti",
+                    "CreatedAt": "2026-09-10T15:59:50.707015396+07:00"
+                }
+            ]
+        }
+    }
+]

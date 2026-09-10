@@ -1,0 +1,101 @@
+{
+  "schema": "aeliqo.t34-checks.v1",
+  "capturedAt": "2026-09-10T09:22:14.745Z",
+  "checks": [
+    {
+      "name": "candidate-linux-amd64-build",
+      "result": "pass",
+      "evidence": "raw/candidate-build.json",
+      "digest": "sha256:c205b92d6447878a003ddd919e6611c1bd61a7ed96abb6b92e7fd186bcc19d35"
+    },
+    {
+      "name": "candidate-current-check-static-image",
+      "result": "pass",
+      "command": "scripts/ci/check-static-image.sh aeliqo-t34:63f6498 <full revision>",
+      "evidence": "raw/candidate-static-smoke.log"
+    },
+    {
+      "name": "exact-current-and-executed-rollback-pull",
+      "result": "pass",
+      "evidence": [
+        "raw/current-manifest-inspect.json",
+        "raw/rollback-manifest-inspect.json",
+        "image-identities.json"
+      ]
+    },
+    {
+      "name": "current-candidate-rollback-current-loopback-sequence",
+      "result": "pass-with-historical-rollback-drain-limit",
+      "evidence": "rollout-sequence.json",
+      "restoredCurrentIdentity": true,
+      "restoredCurrentHtmlByteIdentical": true,
+      "rollbackReadinessDrainObserved": false,
+      "allStoppedWithin30Seconds": true
+    },
+    {
+      "name": "unmitigated-round-robin-skew-matrix",
+      "result": "fail-as-expected-and-mitigated",
+      "evidence": "skew-matrix.json",
+      "crossImageMisses": 20,
+      "sameHashedPathByteConflicts": 0,
+      "ownAssetsAvailable": true,
+      "ownAssetsImmutable": true
+    },
+    {
+      "name": "cookie-affinity-browser-canary-rollback-restore",
+      "result": "pass-with-explicit-failover-limit",
+      "evidence": "sticky-affinity-browser.json",
+      "healthySessions": 6,
+      "healthyAssetsStayOnOneGeneration": true,
+      "unhealthyCookieReassigned": true,
+      "healthyReloadRecovers": true,
+      "lateDepartedGenerationAssetCan404": true
+    },
+    {
+      "name": "coherent-candidate-and-affinity-gitops-render",
+      "result": "pass",
+      "evidence": [
+        "gitops/proposed-gitops.patch",
+        "gitops/render-summary.json"
+      ],
+      "annotationsExact": true,
+      "candidateImageExact": true,
+      "productionIdentityPresent": true,
+      "upcloudIdentityPresent": true
+    },
+    {
+      "name": "active-freeze-rejects-desired-state-delta",
+      "result": "pass",
+      "evidence": "gitops/freeze-rejection.log",
+      "exitCode": 1
+    },
+    {
+      "name": "candidate-reversal-byte-identical",
+      "result": "pass",
+      "evidence": [
+        "gitops/render-summary.json",
+        "gitops/reversed-freeze-check.log"
+      ],
+      "renderHashesRestored": true,
+      "gitopsWorktreeClean": true
+    },
+    {
+      "name": "docs-only-candidate-record-allowed",
+      "result": "pass",
+      "evidence": [
+        "gitops/candidate-record.patch",
+        "gitops/docs-only-freeze-check.log"
+      ]
+    }
+  ],
+  "exclusions": {
+    "productionMutation": false,
+    "gitopsMutation": false,
+    "registryMutation": false,
+    "githubMutation": false,
+    "npmMutation": false,
+    "liveTraffic": false,
+    "liveTraefik": false,
+    "liveOutage": false
+  }
+}

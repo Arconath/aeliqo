@@ -1,0 +1,181 @@
+{
+  "schema": "aeliqo.t34-rollout-sequence.v1",
+  "capturedAt": "2026-09-10T09:07:55.211Z",
+  "requestedSequence": [
+    {
+      "step": "current-initial",
+      "digest": "sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+      "revision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e"
+    },
+    {
+      "step": "candidate",
+      "digest": "sha256:c205b92d6447878a003ddd919e6611c1bd61a7ed96abb6b92e7fd186bcc19d35",
+      "revision": "63f6498fab1df770a9f521c3cad7db33d17cf793"
+    },
+    {
+      "step": "executed-rollback",
+      "digest": "sha256:e758c1f6548a7543fdd7a69ae7a1255c438a6e35457cfefc2b4acc4551fd4060",
+      "revision": "41f29540bf534a23ad08b7fbb865e008f9f16105"
+    },
+    {
+      "step": "current-restored",
+      "digest": "sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+      "revision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e"
+    }
+  ],
+  "loopbackOnly": true,
+  "sharedPort": 32789,
+  "results": [
+    {
+      "step": "current-initial",
+      "image": "aeliqo-t34-current:13564b4a",
+      "revision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e",
+      "digest": "sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+      "port": 32789,
+      "actualId": "sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+      "assertions": {
+        "immutableDigestMatches": true,
+        "versionStatus": 200,
+        "versionMatches": true,
+        "healthStatus": 200,
+        "healthBody": {
+          "status": "ok"
+        },
+        "readyStatus": 200,
+        "readyBody": {
+          "status": "ready"
+        },
+        "htmlStatus": 200,
+        "htmlNoCache": true,
+        "drainObserved": true,
+        "stopped": true,
+        "stoppedWithin30Seconds": true
+      },
+      "index": {
+        "sha256": "50c0e5471c6b4f3430949c16b25747e914aa5e6ce8a6a50fdecf95843c6f3f35",
+        "bytes": 701
+      },
+      "drain": {
+        "status": 503,
+        "body": "{\"status\":\"draining\"}",
+        "observedAfterMs": 28.876082999999994,
+        "stoppedAfterMs": 5359.105750000001
+      }
+    },
+    {
+      "step": "candidate",
+      "image": "aeliqo-t34:63f6498",
+      "revision": "63f6498fab1df770a9f521c3cad7db33d17cf793",
+      "digest": "sha256:c205b92d6447878a003ddd919e6611c1bd61a7ed96abb6b92e7fd186bcc19d35",
+      "port": 32789,
+      "actualId": "sha256:c205b92d6447878a003ddd919e6611c1bd61a7ed96abb6b92e7fd186bcc19d35",
+      "assertions": {
+        "immutableDigestMatches": true,
+        "versionStatus": 200,
+        "versionMatches": true,
+        "healthStatus": 200,
+        "healthBody": {
+          "status": "ok"
+        },
+        "readyStatus": 200,
+        "readyBody": {
+          "status": "ready"
+        },
+        "htmlStatus": 200,
+        "htmlNoCache": true,
+        "drainObserved": true,
+        "stopped": true,
+        "stoppedWithin30Seconds": true
+      },
+      "index": {
+        "sha256": "08b5c7c2111fcaaadd2f01305bd2bc70ef654f54fb523ba6a7800f41c9dd956b",
+        "bytes": 4293
+      },
+      "drain": {
+        "status": 503,
+        "body": "{\"status\":\"draining\"}",
+        "observedAfterMs": 33.874792000000525,
+        "stoppedAfterMs": 5343.509875000001
+      }
+    },
+    {
+      "step": "executed-rollback",
+      "image": "aeliqo-t34-rollback:e758c1f6",
+      "revision": "41f29540bf534a23ad08b7fbb865e008f9f16105",
+      "digest": "sha256:e758c1f6548a7543fdd7a69ae7a1255c438a6e35457cfefc2b4acc4551fd4060",
+      "port": 32789,
+      "actualId": "sha256:e758c1f6548a7543fdd7a69ae7a1255c438a6e35457cfefc2b4acc4551fd4060",
+      "assertions": {
+        "immutableDigestMatches": true,
+        "versionStatus": 200,
+        "versionMatches": true,
+        "healthStatus": 200,
+        "healthBody": {
+          "status": "ok"
+        },
+        "readyStatus": 200,
+        "readyBody": {
+          "status": "ready"
+        },
+        "htmlStatus": 200,
+        "htmlNoCache": true,
+        "drainObserved": false,
+        "stopped": true,
+        "stoppedWithin30Seconds": true
+      },
+      "index": {
+        "sha256": "09d110eace7aa2379c5df548fc4f55ea59389090937e11bec140e03134cce807",
+        "bytes": 609
+      },
+      "drain": {
+        "status": null,
+        "body": null,
+        "observedAfterMs": null,
+        "stoppedAfterMs": 5356.695666000001
+      }
+    },
+    {
+      "step": "current-restored",
+      "image": "aeliqo-t34-current:13564b4a",
+      "revision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e",
+      "digest": "sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+      "port": 32789,
+      "actualId": "sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+      "assertions": {
+        "immutableDigestMatches": true,
+        "versionStatus": 200,
+        "versionMatches": true,
+        "healthStatus": 200,
+        "healthBody": {
+          "status": "ok"
+        },
+        "readyStatus": 200,
+        "readyBody": {
+          "status": "ready"
+        },
+        "htmlStatus": 200,
+        "htmlNoCache": true,
+        "drainObserved": true,
+        "stopped": true,
+        "stoppedWithin30Seconds": true
+      },
+      "index": {
+        "sha256": "50c0e5471c6b4f3430949c16b25747e914aa5e6ce8a6a50fdecf95843c6f3f35",
+        "bytes": 701
+      },
+      "drain": {
+        "status": 503,
+        "body": "{\"status\":\"draining\"}",
+        "observedAfterMs": 28.207375000001775,
+        "stoppedAfterMs": 5363.403458000001
+      }
+    }
+  ],
+  "assertions": {
+    "exactOrder": true,
+    "sameLoopbackPort": true,
+    "allOperationalChecksPass": false,
+    "restoredCurrentIdentity": true,
+    "restoredCurrentHtmlByteIdentical": true
+  }
+}

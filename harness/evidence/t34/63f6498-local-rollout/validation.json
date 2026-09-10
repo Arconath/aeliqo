@@ -1,0 +1,55 @@
+{
+  "schema": "aeliqo.t34-focused-validation.v1",
+  "validatedAt": "2026-09-10T09:26:50.439Z",
+  "environment": {
+    "node": "v24.20.0",
+    "pnpm": "11.24.0"
+  },
+  "checks": [
+    {
+      "command": "artifact hash and task-reference verifier",
+      "result": "pass",
+      "artifactsVerified": 26,
+      "manifestReferenceMatched": true
+    },
+    {
+      "command": "python3 scripts/kit_check.py",
+      "result": "pass",
+      "files": 1991,
+      "tasks": 43,
+      "components": 71,
+      "requirements": 35,
+      "scenarios": 67
+    },
+    {
+      "command": "pnpm test:scenarios",
+      "result": "pass",
+      "testFiles": 2,
+      "tests": 58,
+      "failed": 0
+    },
+    {
+      "command": "python3 scripts/next_tasks.py",
+      "result": "pass",
+      "nextReady": "T36",
+      "blocked": 0
+    },
+    {
+      "command": "git diff --check",
+      "result": "pass"
+    },
+    {
+      "command": "python3 scripts/gate.py digest",
+      "result": "pass",
+      "candidateDigest": "05e5990492994ecd9877454cc13be94e2bd9ebe17df1985725c139f971c1be10"
+    },
+    {
+      "command": "platform-apps rehearsal worktree cleanliness check",
+      "result": "pass",
+      "clean": true
+    }
+  ],
+  "limitations": [
+    "scripts/check_ownership.py requires task-leased implementation paths; this authorized evidence/status-only closeout is orchestrator state outside T34 deploy/docs/releases leases, so ownership was not represented as passing."
+  ]
+}

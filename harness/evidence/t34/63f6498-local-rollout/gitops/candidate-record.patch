@@ -1,0 +1,27 @@
+diff --git a/docs/production-release-candidates.md b/docs/production-release-candidates.md
+index 475863d..3167474 100644
+--- a/docs/production-release-candidates.md
++++ b/docs/production-release-candidates.md
+@@ -32,6 +32,22 @@ changes, and release notes.
+ - Promotion: queued; not permitted until UpCloud cutover acceptance and candidate
+   revalidation
+
++## Aeliqo
++
++- Candidate created locally: 2026-09-10
++- Source: `63f6498fab1df770a9f521c3cad7db33d17cf793`
++- Image:
++  - web: local immutable digest `sha256:c205b92d6447878a003ddd919e6611c1bd61a7ed96abb6b92e7fd186bcc19d35`
++- Database migration: none; the site remains stateless
++- Quality: exact-source `linux/amd64` build and local operational/rollback
++  rehearsal passed; registry publication and live Traefik validation did not run
++- Dependency change from production source `6b0c4f0c`: complete 0.1.0 rewrite
++  candidate; six npm packages remain separately unpublished
++- Release notes: full owned component library, local evaluator/runtime, Studio,
++  agent adapters, documentation, playground, and bounded local audit export
++- Promotion: queued; requires the active freeze to be released, a reviewed sticky
++  Service annotation, an immutable registry image, and live canary verification
++
+ ## Loklyo
+
+ - Candidate created: 2026-09-10

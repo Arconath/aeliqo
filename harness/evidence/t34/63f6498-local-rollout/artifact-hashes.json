@@ -1,0 +1,141 @@
+{
+  "schema": "aeliqo.t34-artifact-hashes.v1",
+  "algorithm": "sha256",
+  "artifacts": [
+    {
+      "path": "checks.json",
+      "bytes": 3063,
+      "sha256": "65a5c45883c845262a660c67c89b870b2eef93c22bb8901b738d26ce5b75b2c2"
+    },
+    {
+      "path": "environment.json",
+      "bytes": 1386,
+      "sha256": "7187fb5d9398ae57c0db930aaecbb50cb7b18eb9429a77403951277f0bc1781f"
+    },
+    {
+      "path": "gitops-topology.json",
+      "bytes": 4487,
+      "sha256": "c5151aaacc179928809cf277fe1a88f68dff0f48d90ad0549c687f60df6c5e55"
+    },
+    {
+      "path": "gitops/baseline-aeliqo-runtime.yaml",
+      "bytes": 3613,
+      "sha256": "e147a77004904834ca694aa37e9df35e861eb20c5fd8afd2cf2ad2957df7072e"
+    },
+    {
+      "path": "gitops/baseline-freeze-check.log",
+      "bytes": 96,
+      "sha256": "f737e6667d86747d629d0e27652caa808c18512719d8806f53b350a12398d7e6"
+    },
+    {
+      "path": "gitops/candidate-aeliqo-runtime.yaml",
+      "bytes": 4054,
+      "sha256": "56d66ee57f93d709969fcb6578327fd16f3c772380be3ce7b1e08187b430223b"
+    },
+    {
+      "path": "gitops/candidate-record.patch",
+      "bytes": 1304,
+      "sha256": "4af1224c814de24111b95c0289ee53030fcaa95e7c56e304bdd11d42bb50ae34"
+    },
+    {
+      "path": "gitops/docs-only-freeze-check.log",
+      "bytes": 96,
+      "sha256": "f737e6667d86747d629d0e27652caa808c18512719d8806f53b350a12398d7e6"
+    },
+    {
+      "path": "gitops/freeze-rejection.log",
+      "bytes": 302,
+      "sha256": "3939c07c718a309d0bd1ff0b742cea8e68bc4f335b50c22639e46930671937dc"
+    },
+    {
+      "path": "gitops/proposed-gitops.patch",
+      "bytes": 1878,
+      "sha256": "0405c5f65f9c5878e05109dfa809fb8ba1e7c9a8baff664fe1d1137150aa47de"
+    },
+    {
+      "path": "gitops/render-summary.json",
+      "bytes": 1560,
+      "sha256": "02b1e5fd2fe53c9f963e58f9adab3829deef6139b5446908f9667a737caabbd8"
+    },
+    {
+      "path": "gitops/reversed-freeze-check.log",
+      "bytes": 96,
+      "sha256": "f737e6667d86747d629d0e27652caa808c18512719d8806f53b350a12398d7e6"
+    },
+    {
+      "path": "image-identities.json",
+      "bytes": 3150,
+      "sha256": "e033e515e4676d9055beff0c18a7262a4ac5cc14c64d80dc4df3833555dfe3a4"
+    },
+    {
+      "path": "raw/candidate-build.json",
+      "bytes": 1649,
+      "sha256": "a1f9fe797c49605fcbcbed0bb9f080e765ef7dbedd1e45d17d76ab169de8a6d0"
+    },
+    {
+      "path": "raw/candidate-build.log",
+      "bytes": 19284,
+      "sha256": "00014622d2f72b968c2f51241a108bfb815d8ad11f2fefce7a94e68c23881d9e"
+    },
+    {
+      "path": "raw/candidate-image-inspect.json",
+      "bytes": 2099,
+      "sha256": "2c8956935e19ee42a4ff76345403e10c6f67081de4e579063abd77c0b3bf67f4"
+    },
+    {
+      "path": "raw/candidate-static-smoke.log",
+      "bytes": 152,
+      "sha256": "b1147cb5841b87f1888d23e40ba93c2531d31271164b9b705b89fc2786edcacb"
+    },
+    {
+      "path": "raw/current-image-inspect.json",
+      "bytes": 2184,
+      "sha256": "fde974b30d16eb82806dfd521b89c134fc0cbbb48c197afe2acc21820876b814"
+    },
+    {
+      "path": "raw/current-manifest-inspect.json",
+      "bytes": 4786,
+      "sha256": "b83f12d7ed8f5429f286eddaa0f9d98d4ab4d94f98a32370a08b3bdbeadb6183"
+    },
+    {
+      "path": "raw/current-static-smoke-trace.log",
+      "bytes": 5158,
+      "sha256": "75a977f9bd35504f14cb032c0243921952f931d6036409d27ee6e59a14722432"
+    },
+    {
+      "path": "raw/rollback-image-inspect.json",
+      "bytes": 2186,
+      "sha256": "4949a506b9a8c1ae7fd3bf9c40b5cbf4368d62ebb4a91486b1534e950970b572"
+    },
+    {
+      "path": "raw/rollback-manifest-inspect.json",
+      "bytes": 4786,
+      "sha256": "505f065b0d1cd0fe6ab1cf7a89b34b18f877092a7b71ef0d6624606e8c1c3949"
+    },
+    {
+      "path": "rollout-sequence.json",
+      "bytes": 5686,
+      "sha256": "d8d150b8da97f5e05f15a10f2362e440bac6bf03cc2da049ce5839ea335837fd"
+    },
+    {
+      "path": "skew-matrix.json",
+      "bytes": 19652,
+      "sha256": "76e165b937736a6c206091c8cd419450934a0c6dac9153feaa2772985d1e599b"
+    },
+    {
+      "path": "source-identity.json",
+      "bytes": 1388,
+      "sha256": "fa46703b1103d8f22beb5337d53288c94926d2bb8001341244c8d855f1c6ef54"
+    },
+    {
+      "path": "sticky-affinity-browser.json",
+      "bytes": 43622,
+      "sha256": "3aba8721a95d3f417f54ce483217c1e3e0760c151a497377085100fad9c49929"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 1454,
+      "sha256": "76e8810126da93a24bcc2c72e1a19cb2d2d00d216368dd2a5b00eafe4a3195f5"
+    }
+  ]
+}

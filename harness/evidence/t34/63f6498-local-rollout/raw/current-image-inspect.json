@@ -1,0 +1,58 @@
+[
+    {
+        "Id": "sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+        "RepoTags": [
+            "aeliqo-t34-current:13564b4a",
+            "ghcr.io/arconath/aeliqo-web@sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4"
+        ],
+        "RepoDigests": [
+            "aeliqo-t34-current@sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+            "ghcr.io/arconath/aeliqo-web@sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4"
+        ],
+        "Comment": "buildkit.dockerfile.v0",
+        "Created": "2026-09-08T15:56:03.457893139Z",
+        "Config": {
+            "User": "101:101",
+            "ExposedPorts": {
+                "8080/tcp": {}
+            },
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            ],
+            "Entrypoint": [
+                "/aeliqo-server"
+            ],
+            "WorkingDir": "/srv/aeliqo",
+            "Labels": {
+                "org.opencontainers.image.revision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e",
+                "org.opencontainers.image.source": "https://github.com/Arconath/aeliqo"
+            }
+        },
+        "Architecture": "amd64",
+        "Os": "linux",
+        "Size": 3215898,
+        "RootFS": {
+            "Type": "layers",
+            "Layers": [
+                "sha256:70a39fe2f29792a80d734db18a496474255e56346766efdefcd03560c3d69012",
+                "sha256:7d3f20e3bfcc328acdaf574c57dc1c61d04c6acd96f7ac34554b3bd6992d5c51",
+                "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+            ]
+        },
+        "Metadata": {
+            "LastTagTime": "2026-09-10T09:01:35.731874716Z"
+        },
+        "Descriptor": {
+            "mediaType": "application/vnd.oci.image.index.v1+json",
+            "digest": "sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+            "size": 855
+        },
+        "Identity": {
+            "Pull": [
+                {
+                    "Repository": "ghcr.io/arconath/aeliqo-web"
+                }
+            ]
+        }
+    }
+]

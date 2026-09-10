@@ -520,7 +520,7 @@
       "title": "Pre-release artifact skew and rollback rehearsal",
       "task": "T34",
       "assertion": "No npm overwrite; pinned old consumer works; deploy rollback does not require package deletion.",
-      "status": "planned",
+      "status": "passed",
       "nativeHostRequired": false,
       "stage": "ready"
     },

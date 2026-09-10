@@ -1,0 +1,156 @@
+apiVersion: v1
+data:
+  browser-monitoring.json: '{"enabled":true,"version":"${RELEASE_REVISION}"}'
+kind: ConfigMap
+metadata:
+  name: aeliqo-browser-monitoring
+  namespace: apps-aeliqo
+---
+apiVersion: v1
+data:
+  google-analytics.json: '{"enabled":true,"measurementId":"G-8LP3YETZ2Q"}'
+kind: ConfigMap
+metadata:
+  name: aeliqo-google-analytics
+  namespace: apps-aeliqo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aeliqo-web
+  namespace: apps-aeliqo
+spec:
+  ports:
+  - name: http
+    port: 8080
+    targetPort: http
+  selector:
+    app: aeliqo
+    component: web
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aeliqo-web
+  namespace: apps-aeliqo
+spec:
+  minReadySeconds: 10
+  progressDeadlineSeconds: 600
+  replicas: 2
+  selector:
+    matchLabels:
+      app: aeliqo
+      component: web
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        arconath.com/source-revision: ${RELEASE_REVISION}
+      labels:
+        app: aeliqo
+        component: web
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - image: ghcr.io/arconath/aeliqo-web@sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: http
+          periodSeconds: 15
+          timeoutSeconds: 3
+        name: web
+        ports:
+        - containerPort: 8080
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: http
+          periodSeconds: 10
+          timeoutSeconds: 3
+        resources:
+          limits:
+            cpu: 500m
+            ephemeral-storage: 128Mi
+            memory: 128Mi
+          requests:
+            cpu: 25m
+            ephemeral-storage: 16Mi
+            memory: 32Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+        startupProbe:
+          failureThreshold: 24
+          httpGet:
+            path: /healthz
+            port: http
+          periodSeconds: 5
+          timeoutSeconds: 3
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmp
+        - mountPath: /srv/aeliqo/browser-monitoring.json
+          name: browser-monitoring
+          readOnly: true
+          subPath: browser-monitoring.json
+        - mountPath: /srv/aeliqo/google-analytics.json
+          name: google-analytics
+          readOnly: true
+          subPath: google-analytics.json
+      imagePullSecrets:
+      - name: ghcr-pull
+      securityContext:
+        runAsGroup: 101
+        runAsNonRoot: true
+        runAsUser: 101
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - emptyDir:
+          sizeLimit: 16Mi
+        name: tmp
+      - configMap:
+          name: aeliqo-browser-monitoring
+        name: browser-monitoring
+      - configMap:
+          name: aeliqo-google-analytics
+        name: google-analytics
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aeliqo-web
+  namespace: apps-aeliqo
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: aeliqo.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: aeliqo-web
+            port:
+              name: http
+        path: /
+        pathType: Prefix
+  - host: www.aeliqo.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: aeliqo-web
+            port:
+              name: http
+        path: /
+        pathType: Prefix

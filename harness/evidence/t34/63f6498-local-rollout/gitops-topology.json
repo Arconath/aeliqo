@@ -1,0 +1,124 @@
+{
+  "schema": "aeliqo.t34-gitops-topology.v1",
+  "capturedAt": "2026-09-10T09:22:14.698Z",
+  "platformApps": {
+    "repository": "Arconath/platform-apps",
+    "commit": "7cd93c8b9785a4ee7a6323c60f39164ea4b984e1",
+    "tree": "654f5056e126aa18cc37206e5d76d256bae063aa",
+    "detachedWorktree": true,
+    "cleanAfterRehearsal": true,
+    "files": [
+      {
+        "path": "production-freeze.json",
+        "sha256": "41c7393e1ecf4b1e06020f15ff8da27aa52cc78280a28e66749607284f34096e"
+      },
+      {
+        "path": "apps/aeliqo/runtime/resources.yaml",
+        "sha256": "dbe331eac15d80c115be99a741d5729b0fa74d78dda0327698d9380b8ab86178"
+      },
+      {
+        "path": "apps/aeliqo/release-evidence.json",
+        "sha256": "d04c28ce71702add64596d9760be3b41860d3948679d9ff90e7f9429b64cbb45"
+      },
+      {
+        "path": "clusters/production/platform.yaml",
+        "sha256": "e69249e96de3127ee5fd21219abc4a62f8fd017625001ea14b69d1ab3bc51c33"
+      },
+      {
+        "path": "clusters/production/kustomization.yaml",
+        "sha256": "e4bdfbf61dff8172a66f39c095421df640be718efa645f3523536834b9f7cf38"
+      },
+      {
+        "path": "clusters/upcloud-production/kustomization.yaml",
+        "sha256": "0608d6b6599c55b5382f9f91eeca4469561b6c451c1393ae830793e902f8abac"
+      },
+      {
+        "path": "clusters/upcloud-production/platform-paths.yaml",
+        "sha256": "4b1c738c71c1cc64424b4894f32210ef449cbd6672192eb3baef38d9d79fa4b7"
+      },
+      {
+        "path": "clusters/upcloud-production/network/cloudflared-upcloud-fenced.yaml",
+        "sha256": "5d8e32c708d92b0a58b1435ab87ca115195dee6faf93b41c67e9bf24fca010c6"
+      },
+      {
+        "path": "clusters/upcloud-production/network/traefik-upcloud.yaml",
+        "sha256": "5504b5ec7ebef63504bbe2f883814346cd02dda8225152f2326124054f9c1dc9"
+      },
+      {
+        "path": "docs/production-release-candidates.md",
+        "sha256": "4346196550ea0a21817edbe339bfbd8a2695523602a412244999437facc2ba61"
+      }
+    ]
+  },
+  "platformInfrastructure": {
+    "repository": "Arconath/platform-infrastructure",
+    "commit": "b2c92eb5ed5b986832dcd9650dfd462cc6bdaa1f",
+    "tree": "e8952016e79cdcef19780aa5a6bde6eec4bc648a",
+    "readOnlyInspection": true,
+    "files": [
+      {
+        "path": "docs/aeliqo-acceptance.md",
+        "sha256": "d45fff7d9277d7d93a192cd0681c2cbe1747fee2f138bc834aeeb49278927a22"
+      },
+      {
+        "path": "evidence/aeliqo-runtime.json",
+        "sha256": "cf0f46c53aabe2fc5f11dd0765184b92e04136024dc3521acb66e0d473e8bd84"
+      },
+      {
+        "path": "terraform/cloudflare/production.auto.tfvars.json",
+        "sha256": "7e636838af25f743e0b0157249b14e95e7010c7896687023ef94b35b097f9280"
+      }
+    ]
+  },
+  "topology": {
+    "controller": "Flux follows platform-apps main",
+    "ingressClass": "traefik",
+    "serviceStickyCookieAtBaseline": false,
+    "replicas": 2,
+    "rollingUpdate": {
+      "maxUnavailable": 0,
+      "maxSurge": 1,
+      "minReadySeconds": 10
+    },
+    "terminationGracePeriodSeconds": 30,
+    "statefulDependencies": [],
+    "hosts": [
+      "aeliqo.com",
+      "www.aeliqo.com"
+    ],
+    "currentProduction": "clusters/production",
+    "upcloudProduction": {
+      "reuses": "../production/platform.yaml",
+      "state": "prepared/fenced/not deployed",
+      "cloudflaredReplicas": 0
+    }
+  },
+  "identities": {
+    "desired": {
+      "revision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e",
+      "digest": "sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+      "deploymentVerified": false
+    },
+    "executedRollback": {
+      "revision": "41f29540bf534a23ad08b7fbb865e008f9f16105",
+      "digest": "sha256:e758c1f6548a7543fdd7a69ae7a1255c438a6e35457cfefc2b4acc4551fd4060"
+    },
+    "lastDurablyLiveVerified": {
+      "revision": "da9142ade2db617f283ef6e9eb6fff4539f26ef3",
+      "digest": "sha256:88bcc3f05749cb57cbcac531a8f84e726ca615754a7bd4d8e294164bd0e9fd38"
+    }
+  },
+  "freeze": {
+    "active": true,
+    "changeId": "UPCLOUD-NYC-PRIMARY-20260910",
+    "aeliqoDesiredStateLocked": true,
+    "productionAndUpcloudWiringLocked": true,
+    "candidateRecordPath": "docs/production-release-candidates.md",
+    "docsOnlyCandidateRecordAllowed": true
+  },
+  "traefikReference": {
+    "url": "https://doc.traefik.io/traefik/reference/routing-configuration/kubernetes/ingress/",
+    "observedOn": "2026-09-10",
+    "scope": "Kubernetes Service cookie-affinity annotations and unhealthy-server reassignment semantics"
+  }
+}

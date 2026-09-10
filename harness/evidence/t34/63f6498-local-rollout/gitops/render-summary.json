@@ -1,0 +1,33 @@
+{
+  "schema": "aeliqo.t34-gitops-render.v1",
+  "baseline": {
+    "aeliqo-runtime": "e147a77004904834ca694aa37e9df35e861eb20c5fd8afd2cf2ad2957df7072e",
+    "production": "82d2335d85cd73d3976c68e82c54033ac15ec60d412b90a809f677e48a98ade1",
+    "upcloud-production": "00d5ab1fef43f60b48e1cc18eee9429d0158de96714cdb75d86abea82e8f3411"
+  },
+  "candidate": {
+    "aeliqo-runtime": "56d66ee57f93d709969fcb6578327fd16f3c772380be3ce7b1e08187b430223b",
+    "production": "55e665aa15aebf35198006f1a402c45e79a74e41ae029808bbdeafdc16f909ce",
+    "upcloud-production": "5617277b81b6db903db21d1bcb164885806b59d748386582a3a7f9414991ac04"
+  },
+  "candidateRenderDiffers": {
+    "aeliqo-runtime": true,
+    "production": true,
+    "upcloud-production": true
+  },
+  "serviceAnnotations": {
+    "traefik.ingress.kubernetes.io/service.sticky.cookie": "true",
+    "traefik.ingress.kubernetes.io/service.sticky.cookie.httponly": "true",
+    "traefik.ingress.kubernetes.io/service.sticky.cookie.maxage": "600",
+    "traefik.ingress.kubernetes.io/service.sticky.cookie.name": "aeliqo_affinity",
+    "traefik.ingress.kubernetes.io/service.sticky.cookie.samesite": "lax",
+    "traefik.ingress.kubernetes.io/service.sticky.cookie.secure": "true"
+  },
+  "serviceAnnotationsExact": true,
+  "candidateImage": "ghcr.io/arconath/aeliqo-web@sha256:c205b92d6447878a003ddd919e6611c1bd61a7ed96abb6b92e7fd186bcc19d35",
+  "candidateImageExact": true,
+  "productionCandidateIdentityPresent": true,
+  "upcloudCandidateIdentityPresent": true,
+  "freezeGuardExitCode": 1,
+  "freezeGuardRejected": true
+}

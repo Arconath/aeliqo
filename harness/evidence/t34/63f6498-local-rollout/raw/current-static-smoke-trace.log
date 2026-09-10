@@ -1,0 +1,93 @@
++ set -eu
++ image=aeliqo-t34-current:13564b4a
++ revision=6b0c4f0c745d39c486ac8465ef6a41db39c5912e
++ container=aeliqo-static-18735
+++ mktemp -d /var/folders/02/x09mj32544v14j3lsr3crd100000gn/T//aeliqo-image-check.XXXXXX
++ temp_dir=/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T//aeliqo-image-check.pu6LcL
+++ docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' aeliqo-t34-current:13564b4a
++ test 6b0c4f0c745d39c486ac8465ef6a41db39c5912e = 6b0c4f0c745d39c486ac8465ef6a41db39c5912e
++ trap cleanup EXIT INT TERM
++ docker run --detach --rm --name aeliqo-static-18735 -p 127.0.0.1::8080 aeliqo-t34-current:13564b4a
+WARNING: The requested image's platform (linux/amd64) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested
+++ docker port aeliqo-static-18735 8080/tcp
+++ sed 's/.*://'
++ port=32785
++ base=http://127.0.0.1:32785
++ attempt=1
++ '[' 1 -le 30 ']'
++ curl --fail --silent http://127.0.0.1:32785/readyz
++ grep -qx '{"status":"ready"}'
++ break
++ curl --fail --silent http://127.0.0.1:32785/healthz
++ grep -qx '{"status":"ok"}'
++ curl --fail --silent http://127.0.0.1:32785/version
++ grep -Fq '"revision":"6b0c4f0c745d39c486ac8465ef6a41db39c5912e"'
+++ curl --fail --silent --head http://127.0.0.1:32785/
++ headers='HTTP/1.1 200 OK
+Accept-Ranges: bytes
+Cache-Control: no-cache
+Content-Length: 701
+Content-Security-Policy: default-src '\''self'\''; script-src '\''self'\'' https://www.googletagmanager.com; style-src '\''self'\''; img-src '\''self'\'' data:; connect-src '\''self'\'' ws: wss: https://www.google-analytics.com https://region1.google-analytics.com; font-src '\''self'\''; object-src '\''none'\''; base-uri '\''self'\''; frame-ancestors '\''none'\''; form-action '\''self'\''
+Content-Type: text/html; charset=utf-8
+Last-Modified: Tue, 08 Sep 2026 15:55:57 GMT
+Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+Referrer-Policy: strict-origin-when-cross-origin
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Date: Thu, 10 Sep 2026 09:02:49 GMT
+'
++ printf '%s\n' 'HTTP/1.1 200 OK
+Accept-Ranges: bytes
+Cache-Control: no-cache
+Content-Length: 701
+Content-Security-Policy: default-src '\''self'\''; script-src '\''self'\'' https://www.googletagmanager.com; style-src '\''self'\''; img-src '\''self'\'' data:; connect-src '\''self'\'' ws: wss: https://www.google-analytics.com https://region1.google-analytics.com; font-src '\''self'\''; object-src '\''none'\''; base-uri '\''self'\''; frame-ancestors '\''none'\''; form-action '\''self'\''
+Content-Type: text/html; charset=utf-8
+Last-Modified: Tue, 08 Sep 2026 15:55:57 GMT
+Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+Referrer-Policy: strict-origin-when-cross-origin
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Date: Thu, 10 Sep 2026 09:02:49 GMT
+'
++ grep -qi '^cache-control: no-cache'
++ printf '%s\n' 'HTTP/1.1 200 OK
+Accept-Ranges: bytes
+Cache-Control: no-cache
+Content-Length: 701
+Content-Security-Policy: default-src '\''self'\''; script-src '\''self'\'' https://www.googletagmanager.com; style-src '\''self'\''; img-src '\''self'\'' data:; connect-src '\''self'\'' ws: wss: https://www.google-analytics.com https://region1.google-analytics.com; font-src '\''self'\''; object-src '\''none'\''; base-uri '\''self'\''; frame-ancestors '\''none'\''; form-action '\''self'\''
+Content-Type: text/html; charset=utf-8
+Last-Modified: Tue, 08 Sep 2026 15:55:57 GMT
+Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+Referrer-Policy: strict-origin-when-cross-origin
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Date: Thu, 10 Sep 2026 09:02:49 GMT
+'
++ grep -qi '^content-security-policy: default-src '\''self'\'''
++ printf '%s\n' 'HTTP/1.1 200 OK
+Accept-Ranges: bytes
+Cache-Control: no-cache
+Content-Length: 701
+Content-Security-Policy: default-src '\''self'\''; script-src '\''self'\'' https://www.googletagmanager.com; style-src '\''self'\''; img-src '\''self'\'' data:; connect-src '\''self'\'' ws: wss: https://www.google-analytics.com https://region1.google-analytics.com; font-src '\''self'\''; object-src '\''none'\''; base-uri '\''self'\''; frame-ancestors '\''none'\''; form-action '\''self'\''
+Content-Type: text/html; charset=utf-8
+Last-Modified: Tue, 08 Sep 2026 15:55:57 GMT
+Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+Referrer-Policy: strict-origin-when-cross-origin
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Date: Thu, 10 Sep 2026 09:02:49 GMT
+'
++ grep -qi '^x-content-type-options: nosniff'
+++ curl --fail --silent http://127.0.0.1:32785/
+++ grep -Eo '/assets/[^"? ]+\.js'
+++ head -n 1
++ asset=/assets/main-Czg6yLNf.js
++ test -n /assets/main-Czg6yLNf.js
++ curl --fail --silent --head http://127.0.0.1:32785/assets/main-Czg6yLNf.js
++ grep -qi '^cache-control: public, max-age=31536000, immutable'
+++ curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:32785/not-a-route
++ status=200
++ test 200 = 404
++ cleanup
++ docker rm --force aeliqo-static-18735
++ rm -rf /var/folders/02/x09mj32544v14j3lsr3crd100000gn/T//aeliqo-image-check.pu6LcL

@@ -1,0 +1,122 @@
+{
+  "schema": "aeliqo.t34-local-rollout-rehearsal.v1",
+  "task": "T34",
+  "scenario": "S36",
+  "status": "passed",
+  "completedAt": "2026-09-10T09:24:13.635Z",
+  "executor": {
+    "agent": "/root/fix_remaining_narrow_overflow",
+    "role": "release rehearsal author",
+    "independentReviewer": null
+  },
+  "source": {
+    "commit": "63f6498fab1df770a9f521c3cad7db33d17cf793",
+    "tree": "9e1420398593f727ddc83970c3b7269a663ccecf",
+    "candidateDigest": "05e5990492994ecd9877454cc13be94e2bd9ebe17df1985725c139f971c1be10"
+  },
+  "identities": {
+    "candidate": {
+      "scope": "local linux/amd64 image only",
+      "digest": "sha256:c205b92d6447878a003ddd919e6611c1bd61a7ed96abb6b92e7fd186bcc19d35",
+      "revision": "63f6498fab1df770a9f521c3cad7db33d17cf793"
+    },
+    "currentDesired": {
+      "digest": "sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+      "revision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e"
+    },
+    "executedRollback": {
+      "digest": "sha256:e758c1f6548a7543fdd7a69ae7a1255c438a6e35457cfefc2b4acc4551fd4060",
+      "revision": "41f29540bf534a23ad08b7fbb865e008f9f16105"
+    }
+  },
+  "gitops": {
+    "platformAppsCommit": "7cd93c8b9785a4ee7a6323c60f39164ea4b984e1",
+    "platformInfrastructureCommit": "b2c92eb5ed5b986832dcd9650dfd462cc6bdaa1f",
+    "freezeChangeId": "UPCLOUD-NYC-PRIMARY-20260910",
+    "freezeActive": true,
+    "desiredStateChanged": false
+  },
+  "results": {
+    "candidateBuildAndStaticSmoke": "pass",
+    "threeImmutableIdentities": "pass",
+    "loopbackSequence": "pass-with-historical-rollback-drain-limit",
+    "unmitigatedRoundRobinSkew": {
+      "result": "fail",
+      "crossImageAsset404s": 20,
+      "sameHashedPathByteConflicts": 0
+    },
+    "cookieAffinityMitigation": {
+      "result": "pass-for-healthy-backend-canary-rollback-restore",
+      "browserSessions": 6,
+      "cookie": "Secure HttpOnly SameSite=Lax Max-Age=600",
+      "healthyGenerationAssetErrors": 0,
+      "failoverReloadRecovery": "pass",
+      "lateDepartedGenerationAssetRequest": "can-return-404-before-reload"
+    },
+    "gitopsRender": "pass",
+    "freezeRejection": "pass",
+    "byteIdenticalReversal": "pass",
+    "docsOnlyCandidateRecord": "pass"
+  },
+  "acceptance": {
+    "existingGitOpsTopologyInspected": "satisfied",
+    "candidateDigestCanary": "satisfied-locally",
+    "cacheAndVersionSkew": "satisfied-by-rehearsed-cookie-affinity-with-promotion-conditions",
+    "rollback": "satisfied-locally-current-to-candidate-to-executed-rollback-to-current",
+    "withoutLiveOutage": "satisfied-by-no-live-mutation"
+  },
+  "scenarioAssertion": {
+    "noNpmOverwrite": true,
+    "pinnedOldArtifactWorks": true,
+    "rollbackRequiresPackageDeletion": false,
+    "status": "passed"
+  },
+  "promotion": {
+    "eligibleNow": false,
+    "conditions": [
+      "Release the active production freeze with its separate accepted evidence.",
+      "Publish or otherwise produce and independently verify an immutable registry image for the exact candidate; the recorded c205b92d digest is local only.",
+      "Review and apply the rendered Traefik Service cookie-affinity annotation delta.",
+      "Run a live Traefik/Kubernetes canary and rollback verification, including unhealthy-backend failover and public identity checks."
+    ]
+  },
+  "limitations": [
+    "The raw no-affinity matrix has 20 cross-generation 404s; the existing desired state has no sticky Service annotations and must not be promoted as-is.",
+    "The local HTTPS proxy implements documented Traefik cookie-affinity semantics but is not a live Traefik controller.",
+    "A late uncached generation-specific asset requested after its pinned backend becomes unhealthy can still return 404; reload obtains matching healthy-generation HTML and assets.",
+    "The historical executed-rollback image exited in about 5.36 seconds but did not expose readyz=503 during its own SIGTERM window; current and candidate did.",
+    "Current and executed-rollback images use legacy extensionless SPA fallback behavior and therefore do not satisfy the candidate-only not-a-route=404 assertion in the current static-image script.",
+    "No npm publication, GitHub write, GitOps commit, registry write, production mutation, live traffic, live Traefik test, external outage, or independent review occurred."
+  ],
+  "evidence": {
+    "artifactHashes": {
+      "path": "artifact-hashes.json",
+      "sha256": "1d88b7d0afc7f5c04aa7c158cb8ecd420bb9c81f88f89512a6cede5123ffc114",
+      "count": 27
+    },
+    "key": [
+      "source-identity.json",
+      "environment.json",
+      "image-identities.json",
+      "checks.json",
+      "rollout-sequence.json",
+      "skew-matrix.json",
+      "sticky-affinity-browser.json",
+      "gitops-topology.json",
+      "gitops/render-summary.json",
+      "gitops/proposed-gitops.patch",
+      "gitops/freeze-rejection.log",
+      "gitops/candidate-record.patch",
+      "validation.json"
+    ]
+  },
+  "mutations": {
+    "aeliqoSource": false,
+    "candidateBytes": false,
+    "npm": false,
+    "github": false,
+    "gitops": false,
+    "registry": false,
+    "production": false
+  }
+}

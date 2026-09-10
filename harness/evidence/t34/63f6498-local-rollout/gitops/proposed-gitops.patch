@@ -1,0 +1,42 @@
+diff --git a/apps/aeliqo/runtime/resources.yaml b/apps/aeliqo/runtime/resources.yaml
+index 4ab1462..0349408 100644
+--- a/apps/aeliqo/runtime/resources.yaml
++++ b/apps/aeliqo/runtime/resources.yaml
+@@ -46,7 +46,7 @@ spec:
+           name: aeliqo-google-analytics
+       containers:
+       - name: web
+-        image: ghcr.io/arconath/aeliqo-web@sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4
++        image: ghcr.io/arconath/aeliqo-web@sha256:c205b92d6447878a003ddd919e6611c1bd61a7ed96abb6b92e7fd186bcc19d35
+         securityContext:
+           allowPrivilegeEscalation: false
+           readOnlyRootFilesystem: true
+@@ -89,6 +89,13 @@ kind: Service
+ metadata:
+   name: aeliqo-web
+   namespace: apps-aeliqo
++  annotations:
++    traefik.ingress.kubernetes.io/service.sticky.cookie: "true"
++    traefik.ingress.kubernetes.io/service.sticky.cookie.name: aeliqo_affinity
++    traefik.ingress.kubernetes.io/service.sticky.cookie.secure: "true"
++    traefik.ingress.kubernetes.io/service.sticky.cookie.httponly: "true"
++    traefik.ingress.kubernetes.io/service.sticky.cookie.samesite: "lax"
++    traefik.ingress.kubernetes.io/service.sticky.cookie.maxage: "600"
+ spec:
+   selector: {app: aeliqo, component: web}
+   ports:
+diff --git a/clusters/production/platform.yaml b/clusters/production/platform.yaml
+index 1825a80..a741d78 100644
+--- a/clusters/production/platform.yaml
++++ b/clusters/production/platform.yaml
+@@ -497,8 +497,8 @@ spec:
+   timeout: 10m
+   postBuild:
+     substitute:
+-      RELEASE_REVISION: 6b0c4f0c745d39c486ac8465ef6a41db39c5912e
+-      IMAGE_DIGEST: sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4
++      RELEASE_REVISION: 63f6498fab1df770a9f521c3cad7db33d17cf793
++      IMAGE_DIGEST: sha256:c205b92d6447878a003ddd919e6611c1bd61a7ed96abb6b92e7fd186bcc19d35
+   dependsOn:
+   - name: aeliqo-config
+   sourceRef:

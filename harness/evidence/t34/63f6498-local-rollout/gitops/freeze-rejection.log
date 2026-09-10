@@ -1,0 +1,1 @@
+Production promotion is frozen for change UPCLOUD-NYC-PRIMARY-20260910. Development, validation, and immutable image builds may continue; desired-state promotion must wait for UpCloud acceptance. Locked desired state changed against the current freeze record: aeliqo, current-production-release-wiring

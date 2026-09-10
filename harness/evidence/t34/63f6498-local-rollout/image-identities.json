@@ -1,0 +1,78 @@
+{
+  "schema": "aeliqo.t34-image-identities.v1",
+  "candidateBuild": {
+    "command": "docker buildx build --platform linux/amd64 --load --build-arg SOURCE_REVISION=<full 63f6498 SHA> --tag aeliqo-t34:63f6498 --metadata-file <path> .",
+    "containerImageDigest": "sha256:c205b92d6447878a003ddd919e6611c1bd61a7ed96abb6b92e7fd186bcc19d35",
+    "descriptor": {
+      "mediaType": "application/vnd.oci.image.index.v1+json",
+      "digest": "sha256:c205b92d6447878a003ddd919e6611c1bd61a7ed96abb6b92e7fd186bcc19d35",
+      "size": 855
+    },
+    "baseMaterials": [
+      {
+        "uri": "pkg:docker/golang@1.27.0-alpine?digest=sha256:4c9fe60190a2a3350ddc51de80d0224b8a6698d12bdfc999fee45ea9d6c46dbc&platform=linux%2Famd64",
+        "digest": {
+          "sha256": "4c9fe60190a2a3350ddc51de80d0224b8a6698d12bdfc999fee45ea9d6c46dbc"
+        }
+      },
+      {
+        "uri": "pkg:docker/node@24.20.0-alpine?digest=sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf&platform=linux%2Famd64",
+        "digest": {
+          "sha256": "e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf"
+        }
+      }
+    ]
+  },
+  "images": {
+    "candidate": {
+      "origin": "local exact-source build",
+      "digest": "sha256:c205b92d6447878a003ddd919e6611c1bd61a7ed96abb6b92e7fd186bcc19d35",
+      "revision": "63f6498fab1df770a9f521c3cad7db33d17cf793",
+      "os": "linux",
+      "architecture": "amd64",
+      "sizeBytes": 3597491,
+      "repoDigests": [
+        "aeliqo-t34@sha256:c205b92d6447878a003ddd919e6611c1bd61a7ed96abb6b92e7fd186bcc19d35"
+      ],
+      "digestMatches": true,
+      "revisionMatches": true,
+      "platformMatches": true
+    },
+    "current": {
+      "origin": "exact GHCR desired-state digest",
+      "digest": "sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+      "revision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e",
+      "os": "linux",
+      "architecture": "amd64",
+      "sizeBytes": 3215898,
+      "repoDigests": [
+        "aeliqo-t34-current@sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+        "ghcr.io/arconath/aeliqo-web@sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4"
+      ],
+      "digestMatches": true,
+      "revisionMatches": true,
+      "platformMatches": true
+    },
+    "rollback": {
+      "origin": "exact previously executed GHCR rollback digest",
+      "digest": "sha256:e758c1f6548a7543fdd7a69ae7a1255c438a6e35457cfefc2b4acc4551fd4060",
+      "revision": "41f29540bf534a23ad08b7fbb865e008f9f16105",
+      "os": "linux",
+      "architecture": "amd64",
+      "sizeBytes": 2726753,
+      "repoDigests": [
+        "aeliqo-t34-rollback@sha256:e758c1f6548a7543fdd7a69ae7a1255c438a6e35457cfefc2b4acc4551fd4060",
+        "ghcr.io/arconath/aeliqo-web@sha256:e758c1f6548a7543fdd7a69ae7a1255c438a6e35457cfefc2b4acc4551fd4060"
+      ],
+      "digestMatches": true,
+      "revisionMatches": true,
+      "platformMatches": true
+    }
+  },
+  "assertions": {
+    "threeDigestsExact": true,
+    "threeRevisionsExact": true,
+    "threePlatformsLinuxAmd64": true,
+    "candidateBuildDigestMatchesInspect": true
+  }
+}
