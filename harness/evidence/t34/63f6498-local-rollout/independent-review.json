@@ -1,0 +1,176 @@
+{
+  "schema": "aeliqo.t34-independent-rollout-review.v1",
+  "task": "T34",
+  "scenario": "S36",
+  "status": "approved-ready-stage",
+  "reviewedAt": "2026-09-10T09:42:14Z",
+  "reviewer": {
+    "agent": "/root/close_ready_scenarios",
+    "role": "independent release and rollback reviewer",
+    "independentOfRehearsalAuthor": true
+  },
+  "subject": {
+    "reviewBaseCommit": "a5df8583ebeeb10e5b40987bd9b359df51a0fa71",
+    "reviewBaseTree": "bc79597f1d8f2371863415f9a3599ab07d711eaa",
+    "rehearsalSourceCommit": "63f6498fab1df770a9f521c3cad7db33d17cf793",
+    "rehearsalSourceTree": "9e1420398593f727ddc83970c3b7269a663ccecf",
+    "candidateDigest": "05e5990492994ecd9877454cc13be94e2bd9ebe17df1985725c139f971c1be10",
+    "manifest": {
+      "path": "harness/evidence/t34/63f6498-local-rollout/manifest.json",
+      "sha256": "1ab4a4b6e81f7303ac9a54468b7f2909231aa942cb89b84d7ec63aa428b7ca79"
+    },
+    "artifactIndex": {
+      "path": "harness/evidence/t34/63f6498-local-rollout/artifact-hashes.json",
+      "sha256": "1d88b7d0afc7f5c04aa7c158cb8ecd420bb9c81f88f89512a6cede5123ffc114",
+      "indexedArtifacts": 27
+    }
+  },
+  "artifactAudit": {
+    "result": "pass",
+    "indexedArtifactsWithExactBytesAndSha256": 27,
+    "sourceInputsWithExactSha256": 5,
+    "manifestAndArtifactIndexReferencesExact": true,
+    "sourceDigestMatchesReviewedT33Candidate": true
+  },
+  "imageIdentity": {
+    "result": "pass",
+    "candidate": {
+      "scope": "local exact-source linux/amd64 image",
+      "digest": "sha256:c205b92d6447878a003ddd919e6611c1bd61a7ed96abb6b92e7fd186bcc19d35",
+      "revision": "63f6498fab1df770a9f521c3cad7db33d17cf793",
+      "ociSource": "https://github.com/Arconath/aeliqo"
+    },
+    "currentDesired": {
+      "scope": "freshly resolved exact GHCR OCI index",
+      "digest": "sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+      "linuxAmd64Manifest": "sha256:30a14d85e7bba29d9dcdab1e2d47f28140b856959552a964cf1fa17477f93bc8",
+      "revision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e"
+    },
+    "executedRollback": {
+      "scope": "freshly resolved exact GHCR OCI index",
+      "digest": "sha256:e758c1f6548a7543fdd7a69ae7a1255c438a6e35457cfefc2b4acc4551fd4060",
+      "linuxAmd64Manifest": "sha256:27f80e22f76ac300fe15f69acff43f79cfb8ecf9ac223cbd7194faa26698eff5",
+      "revision": "41f29540bf534a23ad08b7fbb865e008f9f16105"
+    },
+    "assertions": {
+      "threeLocalImageIdsMatch": true,
+      "threeRevisionAndSourceLabelsMatch": true,
+      "threeImagesLinuxAmd64": true,
+      "threeImagesRunAs101": true,
+      "threeImagesExpose8080": true,
+      "currentAndRollbackGhcrIndexesResolve": true
+    }
+  },
+  "freshImageSmoke": {
+    "result": "pass",
+    "sequence": [
+      "current",
+      "candidate",
+      "executed-rollback",
+      "current-restored"
+    ],
+    "checksPerGeneration": [
+      "GET /healthz returns status ok",
+      "GET /readyz returns status ready",
+      "GET /version returns the exact revision",
+      "HTML is byte/hash exact and Cache-Control no-cache",
+      "all HTML-referenced generation-owned assets are byte/hash exact and Cache-Control public, max-age=31536000, immutable"
+    ],
+    "ownedAssetsVerified": {
+      "currentInitial": 4,
+      "candidate": 2,
+      "executedRollback": 4,
+      "currentRestored": 4
+    },
+    "restoredCurrentHtmlByteIdentical": true
+  },
+  "skewAndAffinity": {
+    "rawRoundRobin": {
+      "result": "unsafe-as-expected",
+      "crossGenerationAsset404s": 20,
+      "sameHashedPathByteConflicts": 0,
+      "generationOwnedAssetsAvailableAndImmutable": true
+    },
+    "stickyAffinity": {
+      "result": "adequate-for-ready-stage-rehearsal-with-explicit-limit",
+      "chromiumHealthySessions": 6,
+      "healthySessionAssetErrors": 0,
+      "allImmediateAndDynamicAssetsPinnedToDocumentGeneration": true,
+      "cookie": "Secure HttpOnly SameSite=Lax Max-Age=600",
+      "unhealthyBackendFailovers": 3,
+      "reloadRecoveries": 3,
+      "lateUncachedDepartedGenerationAsset404s": 3
+    },
+    "officialTraefikReview": {
+      "verifiedAt": "2026-09-10",
+      "url": "https://doc.traefik.io/traefik/reference/routing-configuration/kubernetes/ingress/",
+      "serviceAnnotationKeysValid": true,
+      "sameSiteLaxValid": true,
+      "secureHttpOnlyAndMaxAgeValid": true,
+      "unhealthyServerReassignmentSemanticsMatchRehearsal": true
+    }
+  },
+  "gitopsReproduction": {
+    "result": "pass",
+    "repository": "Arconath/platform-apps",
+    "commit": "7cd93c8b9785a4ee7a6323c60f39164ea4b984e1",
+    "detachedTemporaryClone": true,
+    "baselineRenderSha256": {
+      "aeliqo-runtime": "e147a77004904834ca694aa37e9df35e861eb20c5fd8afd2cf2ad2957df7072e",
+      "production": "82d2335d85cd73d3976c68e82c54033ac15ec60d412b90a809f677e48a98ade1",
+      "upcloud-production": "00d5ab1fef43f60b48e1cc18eee9429d0158de96714cdb75d86abea82e8f3411"
+    },
+    "candidateRenderSha256": {
+      "aeliqo-runtime": "56d66ee57f93d709969fcb6578327fd16f3c772380be3ce7b1e08187b430223b",
+      "production": "55e665aa15aebf35198006f1a402c45e79a74e41ae029808bbdeafdc16f909ce",
+      "upcloud-production": "5617277b81b6db903db21d1bcb164885806b59d748386582a3a7f9414991ac04"
+    },
+    "candidateImageAndSixStickyAnnotationsExact": true,
+    "activeFreezeCandidateExitCode": 1,
+    "activeFreezeRejectedScopes": [
+      "aeliqo",
+      "current-production-release-wiring"
+    ],
+    "reversalRestoredThreeBaselineHashes": true,
+    "reversalFreezeCheckPassed": true,
+    "docsOnlyCandidateRecordFreezeCheckPassed": true,
+    "temporaryCloneCleanAfterReversal": true
+  },
+  "acceptanceReview": {
+    "existingGitOpsTopologyInspected": "pass",
+    "candidateDigestCanary": "pass-local-only",
+    "cacheAndVersionSkew": "pass-ready-stage-with-affinity-and-explicit-failover-limit",
+    "rollback": "pass-local-rehearsal",
+    "withoutLiveOutage": "pass-no-live-mutation",
+    "promotionEligibleNow": false
+  },
+  "findings": {
+    "p0": [],
+    "p1": [],
+    "p2": [
+      "Affinity cannot serve a late uncached generation-specific asset after its selected backend becomes unhealthy; the reproduced request returns 404 and a document reload recovers on the healthy generation.",
+      "The historical executed-rollback image stops inside the 30-second grace period but did not expose readyz=503 during its own shutdown window.",
+      "The affinity behavior is a faithful loopback proxy/browser rehearsal, not a live Traefik/Kubernetes observation."
+    ]
+  },
+  "promotionConditions": [
+    "Release the active UPCLOUD-NYC-PRIMARY-20260910 production freeze through its accepted procedure.",
+    "Produce and independently verify an immutable registry image for the exact candidate; c205b92d is local only.",
+    "Review and apply the rendered Traefik Service affinity delta against the actual deployed Traefik version.",
+    "Run live Kubernetes/Traefik canary, unhealthy-backend, rollback and public identity checks before production promotion."
+  ],
+  "mutations": {
+    "aeliqoSource": false,
+    "candidateImage": false,
+    "npm": false,
+    "github": false,
+    "gitopsRemote": false,
+    "registry": false,
+    "production": false
+  },
+  "verdict": {
+    "decision": "approve-T34-ready-stage-rehearsal",
+    "blockingFindings": [],
+    "summary": "The mitigation is adequate to close the local ready-stage rehearsal because it removes routine healthy-backend skew, preserves the failure limit explicitly, and the active freeze rejects promotion. Production promotion remains conditional and is not approved."
+  }
+}

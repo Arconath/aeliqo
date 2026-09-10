@@ -520,7 +520,13 @@
       "title": "Pre-release artifact skew and rollback rehearsal",
       "task": "T34",
       "assertion": "No npm overwrite; pinned old consumer works; deploy rollback does not require package deletion.",
-      "status": "passed",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/t34/63f6498-local-rollout/manifest.json",
+          "sha256": "1ab4a4b6e81f7303ac9a54468b7f2909231aa942cb89b84d7ec63aa428b7ca79"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },

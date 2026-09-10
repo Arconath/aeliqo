@@ -1453,9 +1453,25 @@
         {
           "path": "harness/evidence/t34/63f6498-local-rollout/manifest.json",
           "sha256": "1ab4a4b6e81f7303ac9a54468b7f2909231aa942cb89b84d7ec63aa428b7ca79"
+        },
+        {
+          "path": "harness/evidence/t34/63f6498-local-rollout/independent-review.json",
+          "sha256": "6f08cc330aa9722c6d9c1a9d675f0ce2906eeb817d3ea85ab0a5a22c17681444"
         }
       ],
-      "notes": "Accepted as a local pre-release rehearsal on exact source 63f6498/digest 05e599. The linux/amd64 candidate c205b92d, exact desired image 13564b4a and previously executed rollback e758c1f6 passed immutable identity and current-to-candidate-to-rollback-to-current loopback checks; current was restored byte-identically. Raw round-robin produced 20 cross-generation asset 404s, so promotion as-is is unsafe. A rendered Traefik Secure/HttpOnly/SameSite=Lax sticky-cookie Service delta kept HTML and all observed immediate/dynamic assets on one healthy generation across six Chromium canary/rollback/restore sessions, with explicit reload recovery and late-asset failover limits. The active UpCloud freeze correctly rejected the desired-state delta; reversal was byte-identical and clean, while a docs-only candidate record was allowed. This closes only the ready-stage rehearsal. Production promotion remains conditional on freeze release, an independently verified registry image, reviewed affinity application, and live Traefik/Kubernetes canary and rollback verification; no npm, GitHub, GitOps, registry or production mutation occurred."
+      "notes": "Accepted as a local pre-release rehearsal on exact source 63f6498/digest 05e599 and independently approved from clean review base a5df858. The linux/amd64 candidate c205b92d, exact desired image 13564b4a and previously executed rollback e758c1f6 passed immutable identity and current-to-candidate-to-rollback-to-current loopback checks; current was restored byte-identically. Raw round-robin produced 20 cross-generation asset 404s, so promotion as-is is unsafe. A rendered Traefik Secure/HttpOnly/SameSite=Lax sticky-cookie Service delta kept HTML and all observed immediate/dynamic assets on one healthy generation across six Chromium canary/rollback/restore sessions, with explicit reload recovery and late-asset failover limits. The active UpCloud freeze correctly rejected the desired-state delta; reversal was byte-identical and clean, while a docs-only candidate record was allowed. This closes only the ready-stage rehearsal. Production promotion remains conditional on freeze release, an independently verified registry image, reviewed affinity application, and live Traefik/Kubernetes canary and rollback verification; no npm, GitHub, GitOps, registry or production mutation occurred.",
+      "review": {
+        "status": "approved",
+        "author": "/root/fix_remaining_narrow_overflow",
+        "reviewer": "/root/close_ready_scenarios",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t34/63f6498-local-rollout/independent-review.json",
+            "sha256": "6f08cc330aa9722c6d9c1a9d675f0ce2906eeb817d3ea85ab0a5a22c17681444"
+          }
+        ],
+        "scope": "Approves the exact local rollout/rollback and affinity mitigation as a ready-stage rehearsal with no P0/P1 finding; preserves the late-asset, historical rollback-drain and non-live-proxy P2 limits and excludes production promotion until the freeze and live conditions are satisfied."
+      }
     },
     {
       "id": "T35",
