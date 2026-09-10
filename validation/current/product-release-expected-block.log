@@ -1,12 +1,7 @@
-RELEASE BLOCKED: 12 unmet conditions
-- T32: planned, not done
-- T33: planned, not done
-- T34: planned, not done
-- T35: planned, not done
+RELEASE BLOCKED: 7 unmet conditions
 - T36: planned, not done
 - T37: planned, not done
 - T38: planned, not done
-- S36: scenario not passed
 - S52: scenario not passed
 - S62: scenario not passed
 - CI evidence is absent, failed or stale for this candidate
