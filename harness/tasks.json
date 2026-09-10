@@ -1467,9 +1467,27 @@
       "acceptance": [
         "All promised OSS capabilities usable offline; commercial hypotheses not represented as proven sales."
       ],
-      "status": "planned",
+      "status": "done",
       "stage": "ready",
-      "evidence": []
+      "evidence": [
+        {
+          "path": "harness/evidence/t35/05e5990-exact-candidate/manifest.json",
+          "sha256": "068edde6ff3a1d3164ef1d1369b0d68b20d852cbfb1994a02b5fa876e86d8279"
+        }
+      ],
+      "notes": "Accepted on exact source d7b48da/digest 05e599 after independent OSS governance and commercial-boundary review with no P0/P1/P2 findings. The six exact 0.1.0-rc.1 archives carry canonical Apache-2.0 LICENSE/NOTICE, exact internal dependencies and 130 verified public exports; an external exact-integrity consumer executed sampled local core/audit/web/protocol/DevTools/React SSR paths with network blocked and zero pre-control attempts. Complete OSS/local capabilities remain outside paid entitlements; optional HTTP/MCP/BYOK effects are host-authorized. Hosted collaboration/governance/support remain explicitly future hypotheses with no service, sales, demand, price, SLA, revenue or PMF claim. Registry publication, source release, deployment, provenance, stable promotion, manual AT and general model quality remain separate and unclaimed.",
+      "review": {
+        "status": "approved",
+        "author": "T35 governance and bounded local-audit implementation authors",
+        "reviewer": "/root/fix_t29_visual_blockers",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t35/05e5990-exact-candidate/independent-review.json",
+            "sha256": "dc7046d7019e90e0e038157281fc4ce2f3bccd1a54713be379e301dad00c4da4"
+          }
+        ],
+        "scope": "Approves T35 OSS governance, commercial truthfulness and sampled offline local-use acceptance for source d7b48da/digest 05e599 and the exact six-package 0.1.0-rc.1 candidate; excludes publication, provenance, deployment, promotion, commercial launch, manual AT and general model quality."
+      }
     },
     {
       "id": "T36",
