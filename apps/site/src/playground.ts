@@ -215,6 +215,7 @@ async function evaluate(task: unknown, requested: DemoView = 'table', progress?:
 }
 
 function runChoice() {
+  syncContributorVisibility();
   const choice = taskChoice.value as DemoTaskChoice;
   const task = value(engine.taskFor(choice, {team: team.value, contributor: contributor.value}));
   if (!task) return;
@@ -355,18 +356,61 @@ $('reset').addEventListener('click', () => {
 
 let lastPanel: string | undefined;
 const narrow = matchMedia('(max-width:900px)');
+const panelMinWidth = 260;
+const panelMaxWidth = 520;
+const canvasMinWidth = 280;
 const panels = [
   ['source-toggle', 'source-panel', 'source-close'],
   ['inspector-toggle', 'inspector-panel', 'inspector-close'],
 ] as const;
+const workspace = $<HTMLElement>('playground-workspace');
 
 function focusPanel(panel: string) {
   $(panel).querySelector<HTMLElement>('textarea,select,[tabindex="0"],button:not(.panel-resize):not(.panel-close)')?.focus();
 }
 
+function visiblePanels() {
+  return panels.filter(([, panel]) => !$(panel).hidden);
+}
+
+function panelWidth(panel: string) {
+  return Number($(panel).querySelector<HTMLElement>('.panel-resize')?.getAttribute('aria-valuenow')) || 320;
+}
+
+function setPanelWidth(panel: string, width: number) {
+  const next = Math.max(panelMinWidth, Math.min(panelMaxWidth, Math.round(width)));
+  $(panel).style.setProperty('--panel-width', `${next}px`);
+  const handle = $(panel).querySelector<HTMLElement>('.panel-resize');
+  handle?.setAttribute('aria-valuenow', String(next));
+  handle?.setAttribute('aria-valuetext', `${next} pixels`);
+}
+
+function fitDesktopPanels() {
+  if (narrow.matches) return;
+  const visible = visiblePanels();
+  if (visible.length < 2 || workspace.clientWidth === 0) return;
+  const gap = Number.parseFloat(getComputedStyle(workspace).columnGap) || 0;
+  const budget = Math.floor(workspace.clientWidth - gap * visible.length - canvasMinWidth);
+  if (budget < panelMinWidth * visible.length) {
+    const keep = visible.find(([, panel]) => panel === lastPanel) ?? visible.at(-1)!;
+    for (const [toggle, panel] of visible) {
+      if (panel !== keep[1]) {
+        $(panel).hidden = true;
+        $(toggle).setAttribute('aria-expanded', 'false');
+      }
+    }
+    return;
+  }
+  const total = visible.reduce((sum, [, panel]) => sum + panelWidth(panel), 0);
+  if (total > budget) {
+    const width = Math.floor(budget / visible.length);
+    for (const [, panel] of visible) setPanelWidth(panel, width);
+  }
+}
+
 function panelModality() {
   if (narrow.matches) {
-    const visible = panels.filter(([, panel]) => !$(panel).hidden);
+    const visible = visiblePanels();
     if (visible.length > 1) {
       const keep = visible.find(([, panel]) => panel === lastPanel) ?? visible.at(-1)!;
       for (const [toggle, panel] of visible) {
@@ -377,7 +421,7 @@ function panelModality() {
       }
       focusPanel(keep[1]);
     }
-  }
+  } else fitDesktopPanels();
   const opened = panels.find(([, panel]) => !$(panel).hidden);
   const modal = narrow.matches && opened !== undefined;
   for (const element of document.querySelectorAll<HTMLElement>('.topbar,footer,.playground-header,.playground-toolbar,.playground-main,#dataset-status')) element.inert = modal;
@@ -434,6 +478,7 @@ for (const [toggle, panel, close] of panels) {
   });
 }
 narrow.addEventListener('change', panelModality);
+window.addEventListener('resize', panelModality);
 
 $('inspector-tab').addEventListener('change', updateInspector);
 const sourceSection = $<HTMLSelectElement>('source-section');
@@ -452,18 +497,17 @@ for (const [id, panel, direction] of [
   let initial = 320;
   let start = 0;
   const resize = (width: number) => {
-    const next = Math.max(260, Math.min(520, Math.round(width)));
-    $(panel).style.setProperty('--panel-width', `${next}px`);
-    handle.setAttribute('aria-valuenow', String(next));
-    handle.setAttribute('aria-valuetext', `${next} pixels`);
+    setPanelWidth(panel, width);
+    fitDesktopPanels();
   };
+  const physicalDirection = () => getComputedStyle(workspace).direction === 'rtl' ? -direction : direction;
   handle.addEventListener('keydown', event => {
     if (event.key === 'Home' || event.key === 'End') {
       event.preventDefault();
-      resize(event.key === 'Home' ? 260 : 520);
+      resize(event.key === 'Home' ? panelMinWidth : panelMaxWidth);
     } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
       event.preventDefault();
-      resize(Number(handle.getAttribute('aria-valuenow')) + (event.key === 'ArrowRight' ? 16 : -16) * direction);
+      resize(Number(handle.getAttribute('aria-valuenow')) + (event.key === 'ArrowRight' ? 16 : -16) * physicalDirection());
     }
   });
   handle.addEventListener('pointerdown', event => {
@@ -472,7 +516,7 @@ for (const [id, panel, direction] of [
     handle.setPointerCapture(event.pointerId);
   });
   handle.addEventListener('pointermove', event => {
-    if (handle.hasPointerCapture(event.pointerId)) resize(initial + (event.clientX - start) * direction);
+    if (handle.hasPointerCapture(event.pointerId)) resize(initial + (event.clientX - start) * physicalDirection());
   });
   const release = (event: PointerEvent) => {
     if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId);
@@ -568,11 +612,15 @@ function syncDatasetVisibility() {
   if (taskChoice.selectedOptions[0]?.disabled) taskChoice.value = commerce ? 'products-browse' : 'people-browse';
   $('people-workflow').hidden = commerce;
   $('team-control').hidden = commerce;
-  $('contributor-control').hidden = commerce;
+  syncContributorVisibility();
   $('commerce').hidden = !commerce;
   $('dataset-status').textContent = commerce
     ? 'Commerce catalog · Synthetic local source · Scope: synthetic-public-records'
     : 'People & absence · Synthetic local source · Scope: synthetic-public-records';
+}
+
+function syncContributorVisibility() {
+  $('contributor-control').hidden = dataset.value === 'products' || taskChoice.value !== 'people-contributor';
 }
 
 dataset.addEventListener('change', () => {
@@ -582,7 +630,7 @@ dataset.addEventListener('change', () => {
   runChoice();
 });
 taskChoice.addEventListener('change', () => {
-  $('contributor-control').hidden = dataset.value === 'products';
+  syncContributorVisibility();
 });
 
 $('webmcp-status').textContent = detectWebMcp().supported ? 'WebMCP experimental API detected · unpaired' : 'WebMCP unavailable in this browser';

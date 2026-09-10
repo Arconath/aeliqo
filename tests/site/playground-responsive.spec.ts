@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import {expect, test} from '@playwright/test';
 
 test('task chooser, inspector summaries, and actionable recovery form a complete people journey', async ({page}) => {
@@ -53,6 +54,9 @@ test('source records, guarded reset, commerce progress, and narrow drawers remai
   await page.goto('/playground/');
   await page.getByRole('button', {name: 'Source', exact: true}).click();
   await expect(page.locator('#source-panel')).toHaveAttribute('aria-modal', 'true');
+  const mobileAxe = await new AxeBuilder({page}).include('.playground-layout').analyze();
+  expect(mobileAxe.violations).toEqual([]);
+  expect(mobileAxe.incomplete.filter(({id}) => id === 'aria-allowed-role' || id === 'aria-prohibited-attr')).toEqual([]);
   await page.locator('#source-section').selectOption('dataset');
   await expect(page.locator('#source-content')).toContainText('People & absence');
   await page.keyboard.press('Escape');
@@ -77,4 +81,52 @@ test('source records, guarded reset, commerce progress, and narrow drawers remai
   await expect(page.locator('#dataset')).toHaveValue('employees');
   await expect(page.locator('#play-status')).toContainText('4 result rows');
   expect(errors).toEqual([]);
+});
+
+test('medium desktop panels preserve a usable result canvas and expose valid panel semantics', async ({page}) => {
+  await page.setViewportSize({width: 1024, height: 800});
+  await page.goto('/playground/');
+  await page.getByRole('button', {name: 'Source', exact: true}).click();
+  await page.getByRole('button', {name: 'Inspect', exact: true}).click();
+  await page.locator('#source-resize').focus();
+  await page.keyboard.press('End');
+  await page.locator('#inspector-resize').focus();
+  await page.keyboard.press('End');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  const main = await page.locator('.playground-main').boundingBox();
+  expect(main?.width ?? 0).toBeGreaterThanOrEqual(280);
+  const axe = await new AxeBuilder({page}).include('.playground-layout').analyze();
+  expect(axe.violations).toEqual([]);
+  expect(axe.incomplete.filter(({id}) => id === 'aria-allowed-role' || id === 'aria-prohibited-attr')).toEqual([]);
+});
+
+test('RTL results and splitters follow the document direction', async ({page}) => {
+  await page.setViewportSize({width: 1440, height: 900});
+  await page.goto('/playground/');
+  await page.evaluate(() => { document.documentElement.dir = 'rtl'; });
+  await page.getByRole('button', {name: 'Browse people', exact: true}).click();
+  await expect(page.locator('aeliqo-region [part="region"]').first()).toHaveAttribute('dir', 'rtl');
+  await page.getByRole('button', {name: 'Source', exact: true}).click();
+  const handle = page.locator('#source-resize');
+  const before = Number(await handle.getAttribute('aria-valuenow'));
+  const box = await handle.boundingBox();
+  if (!box) throw Error('source resize handle is not visible');
+  await page.mouse.move(box.x + box.width / 2, box.y + 80);
+  await page.mouse.down();
+  await page.mouse.move(box.x - 48, box.y + 80, {steps: 3});
+  await page.mouse.up();
+  const afterPointer = Number(await handle.getAttribute('aria-valuenow'));
+  expect(afterPointer).toBeGreaterThan(before);
+  await handle.focus();
+  await page.keyboard.press('ArrowLeft');
+  expect(Number(await handle.getAttribute('aria-valuenow'))).toBeGreaterThan(afterPointer);
+});
+
+test('contributor control is scoped to the contributor task', async ({page}) => {
+  await page.goto('/playground/');
+  await expect(page.locator('#contributor-control')).toBeHidden();
+  await page.getByRole('button', {name: 'Inspect records', exact: true}).click();
+  await expect(page.locator('#contributor-control')).toBeVisible();
+  await page.getByRole('button', {name: 'Rank absence days', exact: true}).click();
+  await expect(page.locator('#contributor-control')).toBeHidden();
 });

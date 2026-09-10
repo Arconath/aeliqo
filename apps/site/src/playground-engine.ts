@@ -49,6 +49,13 @@ const baseCatalog:Catalog={version:'1',revision:'demo-catalog-1',functionRegistr
 ],relationships:[],meanings:[],capabilities:[]};
 const budget:QueryBudget={maxRows:100,maxBytes:250_000,maxMessages:16,maxMilliseconds:5000,maxColumns:16};
 
+function pageDirection(): 'ltr'|'rtl' {
+  if (typeof document === 'undefined') return 'ltr';
+  const explicit = document.documentElement.getAttribute('dir');
+  if (explicit === 'rtl' || explicit === 'ltr') return explicit;
+  return typeof getComputedStyle === 'function' && getComputedStyle(document.documentElement).direction === 'rtl' ? 'rtl' : 'ltr';
+}
+
 /** Application-owned synthetic host. The shared runtime does all query arithmetic. */
 export function createDemoEngine(){
  let catalog=baseCatalog;
@@ -129,7 +136,7 @@ export function createDemoEngine(){
   const experience:Experience={version:'1',id:'demo-experience',revision:'demo-experience-1',mode:'adaptive',agentAllowed:false,allowedRepresentations:['layout.stack','data.table','visualization.trend','visualization.bar'],allowedPatterns:[],composition:{allowWithoutPreset:true,maxNodes:4,maxExpansions:8},requiredOperations:[],tokenProfile:{id:'tokens.default',revision:'1'},extensionAllowlist:[],transitionPolicy:'stable'};
   const needs=[{id:'read',operation:AELIQO_OPERATION_REFS.read,fields:result.fields.map(field=>field.id),outputId:result.ref.outputId,required:true}];
   const presentationTask:Task={...output.task,needs};
-  const context:PresentationContext={task:presentationTask,experience,results:dependencies,current,environment:{inlineSize:{state:'unknown'},blockSize:{state:'unknown'},textScale:{state:'unknown'},pointer:'unknown',hover:'unknown',keyboard:'unknown',locale:'en-US',direction:'ltr',reducedMotion:false,forcedColors:false},rendererCapabilities:spec?[{id:'layout.stack',revision:'1'},exact,representation]:[{id:'layout.stack',revision:'1'},exact]};
+  const context:PresentationContext={task:presentationTask,experience,results:dependencies,current,environment:{inlineSize:{state:'unknown'},blockSize:{state:'unknown'},textScale:{state:'unknown'},pointer:'unknown',hover:'unknown',keyboard:'unknown',locale:'en-US',direction:pageDirection(),reducedMotion:false,forcedColors:false},rendererCapabilities:spec?[{id:'layout.stack',revision:'1'},exact,representation]:[{id:'layout.stack',revision:'1'},exact]};
   const installed=createAeliqoPresentationRegistry({data:[{result,rows:output.rows}],visualizations:spec?[{result,context:{results:[result],catalog},datasets:[{result:result.ref,rows:output.rows}]}]:[],resolveEntity:()=>output.task.kind==='data'&&output.task.outputs[0]?.kind==='query'?output.task.outputs[0].query.entity:'record'});if(!installed.ok)return installed;
   const table={id:'exact-values',role:'table',representation:exact,result:result.ref,config:{schema:{id:'data.table.config',revision:'1'},values:{}},children:[]};
   const nodes:PresentationPlan['nodes']=spec?[{id:'root',role:'structure',representation:{id:'layout.stack',revision:'1'},config:{schema:{id:'layout.stack.config',revision:'1'},values:{}},children:['visualization','exact-values']},{id:'visualization',role:'visualization',representation,result:result.ref,config:{schema:{id:`${representation.id}.config`,revision:'1'},values:{visualization:spec}},children:[]},table]:[table];
