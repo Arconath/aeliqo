@@ -1,6 +1,139 @@
-<section class="playground-header"><p class="eyebrow">INTERACTIVE PLAYGROUND</p><h1>Ask more of your data.</h1><p>Synthetic records · Public demo scope · Ephemeral session</p><p class="caption">Manual mode · MCP unpaired · BYOK unconfigured · <span id="webmcp-status">Checking WebMCP availability…</span></p></section>
-<div class="playground-toolbar" aria-label="Playground controls"><label>Dataset <select id="dataset"><option value="employees">People & absence</option><option value="products">Products</option></select></label><label id="team-control">Team <select id="play-team"><option value="all">All teams</option><option>Design</option><option>Engineering</option><option>Operations</option></select></label><button id="refresh">Browse records</button><button id="source-toggle" aria-expanded="false" aria-controls="source-panel">Source</button><button id="inspector-toggle" aria-expanded="false" aria-controls="inspector-panel">Inspect</button><button id="cancel">Cancel query</button></div>
-<div class="playground-workspace"><aside id="source-panel" class="playground-panel" hidden aria-label="Source browser"><button class="panel-close" id="source-close">Close source</button><h2>Source</h2><p>All records in this session are synthetic. The local evaluator applies the task and its budgets.</p><label>Task document <textarea id="task-draft" spellcheck="false" rows="16"></textarea></label><button id="evaluate-draft">Evaluate task</button><p class="caption">Edit the typed document to use the same generic evaluator as the controls. No free text is sent to a model.</p><button id="export-task">Export task</button><button id="reset">Reset session</button><button id="source-resize" class="panel-resize" aria-label="Resize source panel" role="separator" aria-orientation="vertical" aria-valuemin="260" aria-valuemax="520" aria-valuenow="320" title="Drag or use left and right arrow keys"></button></aside>
-<div class="playground-main"><div id="people-actions" class="playground-actions"><button id="define-meaning">Define absence days</button><button id="rank">Rank absence days</button><button id="freeze">Freeze current people</button><button id="trend">Trend fixed cohort</button><button id="compare-periods">Compare periods</button><label>Contributor <select id="contributor"><option value="ada">Ada Chen</option><option value="sam">Sam Rivera</option><option value="iman">Iman Putra</option><option value="lee">Lee Morgan</option></select></label><button id="inspect-contributor">Inspect records</button></div><p id="cohort-status" class="caption">No fixed cohort yet.</p><div class="canvas-heading"><h2 id="result-title">Records</h2><label>View <select id="result-view"><option value="table">Exact table</option><option value="bar">Bar + table</option><option value="trend">Trend + table</option></select></label></div><p id="play-status" role="status" aria-live="polite">Loading the synthetic dataset…</p><div id="play-error" role="alert" hidden></div><div id="result-canvas" aria-label="Evaluated results"></div><div id="commerce" hidden><h2>Compare and review</h2><p>Select two products to compare their supplied price and stock. Edit a local enquiry draft; nothing is sent or purchased.</p><div id="commerce-controls"></div><div id="commerce-comparison"></div><div id="commerce-detail"></div><div id="commerce-form"></div></div></div>
-<aside id="inspector-panel" class="playground-panel" hidden aria-label="Result inspector"><button class="panel-close" id="inspector-close">Close inspector</button><h2>Inspect</h2><label>Section <select id="inspector-tab"><option>Task</option><option>Data</option><option>Experience</option><option>Activity</option></select></label><pre id="inspector-content" tabindex="0"></pre><button id="inspector-resize" class="panel-resize" aria-label="Resize inspector panel" role="separator" aria-orientation="vertical" aria-valuemin="260" aria-valuemax="520" aria-valuenow="320" title="Drag or use left and right arrow keys"></button></aside></div>
+<section class="playground-header" aria-labelledby="playground-title">
+  <p class="eyebrow">INTERACTIVE PLAYGROUND</p>
+  <h1 id="playground-title">Start with a result. Inspect every decision.</h1>
+  <p>Choose a synthetic dataset and a typed task. Aeliqo evaluates it locally, presents the result, and keeps the source and evidence one panel away.</p>
+  <p id="session-status" class="caption">Synthetic records · Public demo scope · Ephemeral session · Manual mode · MCP unpaired · BYOK unconfigured · <span id="webmcp-status">Checking WebMCP availability…</span></p>
+</section>
+
+<div class="playground-toolbar" aria-label="Playground controls">
+  <label>Dataset
+    <select id="dataset">
+      <option value="employees">People &amp; absence</option>
+      <option value="products">Commerce catalog</option>
+    </select>
+  </label>
+  <label>Task
+    <select id="task-choice">
+      <option value="people-browse" data-dataset="employees">Browse people</option>
+      <option value="people-rank" data-dataset="employees">Rank absence days</option>
+      <option value="people-trend" data-dataset="employees">Trend fixed cohort</option>
+      <option value="people-periods" data-dataset="employees">Compare periods</option>
+      <option value="people-contributor" data-dataset="employees">Inspect contributor</option>
+      <option value="products-browse" data-dataset="products">Browse, compare, and review products</option>
+    </select>
+  </label>
+  <label id="team-control">Team
+    <select id="play-team">
+      <option value="all">All teams</option>
+      <option>Design</option>
+      <option>Engineering</option>
+      <option>Operations</option>
+    </select>
+  </label>
+  <label id="contributor-control" hidden>Contributor
+    <select id="contributor">
+      <option value="ada">Ada Chen</option>
+      <option value="sam">Sam Rivera</option>
+      <option value="iman">Iman Putra</option>
+      <option value="lee">Lee Morgan</option>
+    </select>
+  </label>
+  <button id="run-task">Run task</button>
+  <button id="source-toggle" aria-expanded="false" aria-controls="source-panel">Source</button>
+  <button id="inspector-toggle" aria-expanded="false" aria-controls="inspector-panel">Inspect</button>
+  <button id="cancel" disabled>Cancel query</button>
+</div>
+
+<p id="dataset-status" class="caption">People &amp; absence · Synthetic local source · Scope: synthetic-public-records</p>
+
+<div class="playground-workspace">
+  <aside id="source-panel" class="playground-panel" hidden aria-label="Source browser">
+    <button class="panel-close" id="source-close">Close source</button>
+    <h2>Source</h2>
+    <p>Browse the supplied synthetic rows or edit the accepted typed Task. Neither view contains credentials, private data, or a model transcript.</p>
+    <label>Source view
+      <select id="source-section">
+        <option value="task">Task document</option>
+        <option value="dataset">Dataset records</option>
+      </select>
+    </label>
+    <section id="source-data-view" hidden aria-labelledby="source-data-heading">
+      <h3 id="source-data-heading">Supplied records</h3>
+      <p id="source-description" class="caption"></p>
+      <pre id="source-content" tabindex="0"></pre>
+    </section>
+    <section id="source-task-view" aria-labelledby="source-task-heading">
+      <h3 id="source-task-heading">Accepted Task</h3>
+      <label>Task document
+        <textarea id="task-draft" spellcheck="false" rows="16"></textarea>
+      </label>
+      <button id="evaluate-draft">Evaluate task</button>
+      <p class="caption">The generic evaluator validates this document locally. Shape-valid does not mean that Aeliqo verified its business intent.</p>
+      <button id="export-task">Export Task + presentation</button>
+      <button id="reset">Reset session</button>
+    </section>
+    <button id="source-resize" class="panel-resize" aria-label="Resize source panel" role="separator" aria-orientation="vertical" aria-valuemin="260" aria-valuemax="520" aria-valuenow="320" aria-valuetext="320 pixels" title="Drag or use left and right arrow keys"></button>
+  </aside>
+
+  <div class="playground-main">
+    <section id="people-workflow" aria-labelledby="workflow-title">
+      <div class="canvas-heading">
+        <h2 id="workflow-title">Guided people workflow</h2>
+        <p id="workflow-progress" role="status">Step 1 of 4 · Browse people</p>
+      </div>
+      <progress id="workflow-meter" max="4" value="0">0 of 4</progress>
+      <div id="people-actions" class="playground-actions" aria-label="Guided people steps">
+        <button id="browse-people" aria-label="Browse people">1. Browse people</button>
+        <button id="define-meaning" aria-label="Define absence days">2. Define absence days</button>
+        <button id="freeze" aria-label="Freeze current people">3. Freeze current people</button>
+        <button id="rank" aria-label="Rank absence days">4a. Rank absence days</button>
+        <button id="trend" aria-label="Trend fixed cohort">4b. Trend fixed cohort</button>
+        <button id="compare-periods" aria-label="Compare periods">4c. Compare periods</button>
+        <button id="inspect-contributor" aria-label="Inspect records">4d. Inspect contributor records</button>
+      </div>
+      <p id="cohort-status" class="caption">No fixed cohort yet. A fixed cohort preserves employee identities when filters change.</p>
+    </section>
+
+    <div class="canvas-heading">
+      <h2 id="result-title">Result</h2>
+      <label>View
+        <select id="result-view">
+          <option value="table">Exact table</option>
+          <option value="bar">Bar + table</option>
+          <option value="trend">Trend + table</option>
+        </select>
+      </label>
+    </div>
+    <p id="play-status" role="status" aria-live="polite">Loading the synthetic dataset…</p>
+    <div id="play-error" role="alert" hidden></div>
+    <div id="result-canvas" aria-label="Evaluated results"></div>
+
+    <section id="commerce" hidden aria-labelledby="commerce-title">
+      <h2 id="commerce-title">Compare, inspect, and review</h2>
+      <p>Select two products to compare supplied price and stock, inspect a detail, then review a local enquiry draft. Nothing is purchased or sent.</p>
+      <p id="commerce-progress" class="caption">Step 1 of 3 · Choose two products</p>
+      <div id="commerce-controls"></div>
+      <div id="commerce-comparison"></div>
+      <div id="commerce-detail"></div>
+      <div id="commerce-form"></div>
+    </section>
+  </div>
+
+  <aside id="inspector-panel" class="playground-panel" hidden aria-label="Result inspector">
+    <button class="panel-close" id="inspector-close">Close inspector</button>
+    <h2>Inspect</h2>
+    <label>Section
+      <select id="inspector-tab">
+        <option>Task</option>
+        <option>Data</option>
+        <option>Experience</option>
+        <option>Activity</option>
+      </select>
+    </label>
+    <p id="inspector-summary" class="caption">Accepted Task, normalized queries, exact revision, and scope.</p>
+    <pre id="inspector-content" tabindex="0"></pre>
+    <button id="inspector-resize" class="panel-resize" aria-label="Resize inspector panel" role="separator" aria-orientation="vertical" aria-valuemin="260" aria-valuemax="520" aria-valuenow="320" aria-valuetext="320 pixels" title="Drag or use left and right arrow keys"></button>
+  </aside>
+</div>
+
 <noscript><p>The playground needs JavaScript to evaluate local records. <a href="/docs/">Read the documentation</a>.</p></noscript>

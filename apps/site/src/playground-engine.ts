@@ -14,9 +14,13 @@ export const DEMO_REGION = 'aeliqo-public-demo';
 export const DEMO_SCOPE = 'synthetic-public-records';
 export const ABSENCE_MEANING = 'absence.days';
 export type DemoView = 'table' | 'trend' | 'bar';
+export type DemoDataset = 'employees' | 'products';
+export type DemoTaskChoice = 'people-browse' | 'people-rank' | 'people-trend' | 'people-periods' | 'people-contributor' | 'products-browse';
 export interface DemoOutput {readonly task:Task; readonly descriptor:Result; readonly rows:readonly DataRecord[]; readonly handle:ResultHandle;}
 export interface FixedDemoCohort {readonly source:ResultRef;readonly cohortDigest:string;readonly label:string;readonly members:number;}
 export interface DemoPresentation {readonly validated:ValidatedPresentation;readonly experience:Experience;readonly plan:PresentationPlan;}
+export interface DemoSourceSnapshot {readonly version:'1';readonly dataset:DemoDataset;readonly label:string;readonly sourceRevision:string;readonly scopeDigest:string;readonly synthetic:true;readonly entities:readonly {readonly id:string;readonly grain:readonly string[];readonly records:readonly DataRecord[]}[];}
+export interface DemoExportDocument {readonly version:'1';readonly kind:'aeliqo-playground-export';readonly task:Task;readonly presentations:readonly {readonly outputId:string;readonly experience:Experience;readonly plan:PresentationPlan}[];readonly disclosure:{readonly synthetic:true;readonly scopeDigest:string;readonly includesRows:false;readonly includesCredentials:false};}
 const failure = <T>(code:string,message:string):Outcome<T> => ({ok:false,diagnostics:[{code,message,retryable:false}]});
 const text = {value:'text',nullable:false} as const;
 const integer = {value:'integer',nullable:false} as const;
@@ -75,6 +79,17 @@ export function createDemoEngine(){
   return{ok:true,value:{...task(outputs[0]!.query,'Compare two synthetic fortnight periods'),kind:'data',outputs:[outputs[0]!,outputs[1]!]}};
  }
  function contributorTask(employeeId:string):Task{return task(query('absences',['fact_id','employee_id','name','team','week','days'],{where:{op:'compare',field:'employee_id',comparison:'eq',value:employeeId},order:[{field:'week',direction:'asc',nulls:'last'}]}),'Inspect supplied absence records for one employee');}
+ function taskFor(choice:DemoTaskChoice,options:{readonly team?:string;readonly contributor?:string}={}):Outcome<Task>{
+  if(choice==='people-browse')return{ok:true,value:peopleTask(options.team)};
+  if(choice==='people-rank')return rankingTask(options.team);
+  if(choice==='people-trend')return trendTask();
+  if(choice==='people-periods')return comparisonTask();
+  if(choice==='people-contributor')return{ok:true,value:contributorTask(options.contributor??'ada')};
+  if(choice==='products-browse')return{ok:true,value:productTask()};
+  return failure('demo.unknown-task','Choose one of the supplied playground tasks.');
+ }
+ function sourceSnapshot(dataset:DemoDataset):DemoSourceSnapshot{return dataset==='products'?{version:'1',dataset,label:'Commerce catalog',sourceRevision:'synthetic-source-1',scopeDigest:DEMO_SCOPE,synthetic:true,entities:[{id:'products',grain:['product_id'],records:products}]}:{version:'1',dataset,label:'People & absence',sourceRevision:'synthetic-source-1',scopeDigest:DEMO_SCOPE,synthetic:true,entities:[{id:'employees',grain:['employee_id'],records:employees},{id:'absences',grain:['fact_id'],records:absences}]};}
+ function createExportDocument(task:Task,presentations:readonly DemoPresentation[]):DemoExportDocument{return{version:'1',kind:'aeliqo-playground-export',task,presentations:presentations.map(item=>({outputId:item.plan.preconditions.results[0]?.outputId??'main',experience:item.experience,plan:item.plan})),disclosure:{synthetic:true,scopeDigest:DEMO_SCOPE,includesRows:false,includesCredentials:false}};}
  function defineAbsenceMeaning():Outcome<MeaningDefinition>{
   const existing=catalog.meanings.find(item=>item.id===ABSENCE_MEANING);if(existing)return{ok:true,value:existing};
   const authoring=createMeaningAuthoring({catalog,registry:functions,source:{surface:'code',ownership:'code',readOnly:true}});if(!authoring.ok)return authoring;
@@ -121,5 +136,5 @@ export function createDemoEngine(){
   const plan:PresentationPlan={id:'demo-presentation',revision:String(revision),preconditions:current,rootId:spec?'root':'exact-values',nodes,links:[],coverage:[{needId:'read',nodeIds:['exact-values'],operations:[AELIQO_OPERATION_REFS.read]}],stateTransfer:[],diagnostics:[]};
   const validated=validatePresentationPlan(plan,context,installed.value);return validated.ok?{ok:true,value:{validated:validated.value,experience,plan:validated.value.plan}}:validated;
  }
- return{get catalog(){return catalog;},get cohort(){return cohort;},budget,peopleTask,productTask,rankingTask,trendTask,comparisonTask,contributorTask,defineAbsenceMeaning,evaluate,freezeCohort,present,cancel(){active?.abort();},dispose(){closed=true;active?.abort();cohortLease?.release();cohortLease=undefined;handles.clear();store.dispose();}};
+ return{get catalog(){return catalog;},get cohort(){return cohort;},budget,peopleTask,productTask,rankingTask,trendTask,comparisonTask,contributorTask,taskFor,sourceSnapshot,createExportDocument,defineAbsenceMeaning,evaluate,freezeCohort,present,cancel(){active?.abort();},dispose(){closed=true;active?.abort();cohortLease?.release();cohortLease=undefined;handles.clear();store.dispose();}};
 }
