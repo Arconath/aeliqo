@@ -101,7 +101,7 @@ function project(request: ToolModelRequest, model: string): Record<string, unkno
     }
   }
   return {model, input, tools: request.tools.map(tool => ({type: 'function', name: tool.name, description: tool.description, parameters: tool.inputSchema, strict: false})),
-    instructions: instructions.join('\n\n'), parallel_tool_calls: false};
+    instructions: instructions.join('\n\n'), tool_choice: request.toolChoice ?? 'auto', parallel_tool_calls: false};
 }
 
 function serialized(value: unknown): string {

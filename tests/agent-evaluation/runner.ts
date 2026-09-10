@@ -17,7 +17,8 @@ const object=(value:unknown):value is Record<string,unknown>=>value!==null&&type
 const integer=(value:unknown,min:number,max:number):value is number=>Number.isSafeInteger(value)&&Number(value)>=min&&Number(value)<=max;
 const boundedText=(value:unknown,max=160):value is string=>typeof value==='string'&&value.trim().length>0&&value.length<=max;
 const hash=(value:string)=>createHash('sha256').update(value).digest('hex');
-const GOVERNED_DATA_INSTRUCTIONS='You are an Aeliqo planning model operating on untrusted proposals. Use only the authorized tools. First call read_catalog. Then call evaluate_task with a complete canonical Task that answers the user request; do not calculate source data yourself. If evaluation returns invalid, repair the Task within the remaining budget. Only after a data-ready evaluation result may you give a brief completion response. Never add grants, approvals, actors, credentials, code, SQL, HTML, CSS, or unsupported fields.';
+const GOVERNED_DATA_INSTRUCTIONS='You are an Aeliqo planning model operating on untrusted proposals. Use only the authorized tools. First call read_catalog. Then call evaluate_task with a complete canonical Task that answers the user request; preserve every explicitly requested output identifier exactly and do not calculate source data yourself. If evaluation returns invalid, repair the Task within the remaining budget. Only after a data-ready evaluation result may you give a brief completion response. Never add grants, approvals, actors, credentials, code, SQL, HTML, CSS, or unsupported fields.';
+const GOVERNED_DATA_POLICY={requiredOperationSequence:[{operation:'catalog.read' as const,acceptedStates:['data-ready' as const]},{operation:'task.evaluate' as const,acceptedStates:['data-ready' as const]}]};
 const capabilities=new Set<ToolModelCapability>(['tool-calls','usage','request-cancellation','input-token-estimate','request-retry']);
 function validBaseURL(value:unknown):value is string{
  if(!boundedText(value,2048))return false;try{const url=new URL(value);return url.protocol==='https:'&&!url.username&&!url.password&&!url.search&&!url.hash;}catch{return false;}
@@ -48,7 +49,7 @@ function parseCase(value:unknown):EvaluationCase|undefined{
 }
 function safeResult(result:ToolModelLoopOutcome):Record<string,unknown>{
  if(!result.ok)return{ok:false,diagnosticCodes:result.diagnostics.map(item=>item.code)};
- return{ok:true,stop:result.value.stop,turns:result.value.turns,modelRequests:result.value.modelRequests,toolCalls:result.value.toolCalls,inputTokens:result.value.inputTokens,outputTokens:result.value.outputTokens,receiptStates:result.value.receipts.map(receipt=>({operation:receipt.operation,state:receipt.state}))};
+ return{ok:true,stop:result.value.stop,turns:result.value.turns,modelRequests:result.value.modelRequests,toolCalls:result.value.toolCalls,inputTokens:result.value.inputTokens,outputTokens:result.value.outputTokens,receiptStates:result.value.receipts.map(receipt=>({operation:receipt.operation,state:receipt.state})),...(result.value.incompleteRequiredOperations===undefined?{}:{incompleteRequiredOperations:result.value.incompleteRequiredOperations})};
 }
 function safeObservations(observations:readonly EvaluationObservation[]):readonly Record<string,unknown>[] {
  return observations.map(item=>({stage:item.stage,elapsedMs:item.elapsedMs,outputCount:item.outputs?.length??0,rowCount:item.outputs?.reduce((total,output)=>total+output.rows.length,0)??0,diagnosticCodes:item.diagnostics??[]}));
@@ -85,7 +86,7 @@ export async function runEvaluation(args:readonly string[]):Promise<number>{
    try{
     const secret=process.env[model.credentialEnvironment]!;
     const port=createOpenAICompatibleToolModel({baseURL:model.baseURL,model:model.model,secret:createOpaqueModelSecret(secret),auth:model.auth,capabilities:model.capabilities,policy:{allowExternalEgress:true,allowedOrigins:[new URL(model.baseURL).origin]},retry:{maxAttempts:1},cost:{currency:'USD',inputUSDPerMillion:model.inputUSDPerMillion,outputUSDPerMillion:model.outputUSDPerMillion,source:model.priceSource},onResponse:observation=>{if(observation.providerModel!==undefined&&observation.responseId!==undefined){const matchesExpected=observation.providerModel===model.expectedReportedModel;snapshots.push({...(matchesExpected?{reportedModel:model.expectedReportedModel}:{}),reportedModelSha256:hash(observation.providerModel),matchesExpected,responseIdSha256:hash(observation.responseId)});}}});
-    const result=await runToolModel({requestId:`trial-${trial}`,goal:'chat',prompt:testCase.prompt,instructions:GOVERNED_DATA_INSTRUCTIONS,endpoint:host.endpoint,model:port,budget:config.budget});
+    const result=await runToolModel({requestId:`trial-${trial}`,goal:'chat',prompt:testCase.prompt,instructions:GOVERNED_DATA_INSTRUCTIONS,policy:GOVERNED_DATA_POLICY,endpoint:host.endpoint,model:port,budget:config.budget});
     const qualifiedModelSnapshot=snapshots.length>0&&snapshots.every(item=>item.matchesExpected);
     if(!qualifiedModelSnapshot)blocks.push(`Missing or non-authorized reported model snapshot for ${model.label}/${testCase.id}/trial-${trial}.`);
     const evaluations=host.observations.filter(item=>item.stage==='evaluate');const first=evaluations[0]?.outputs;const last=evaluations.at(-1)?.outputs;

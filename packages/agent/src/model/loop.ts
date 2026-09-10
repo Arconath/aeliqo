@@ -1,6 +1,6 @@
 import {parseWireValue, validateCommitReadSet, WIRE_LIMITS} from '@aeliqo/core';
 import {awaitAgentBoundary, capabilityCanonical} from '../capabilities/dispatcher.js';
-import type {AgentCapabilityReceipt, AgentJsonValue} from '../capabilities/types.js';
+import type {AgentCapabilityReceipt, AgentCapabilityState, AgentJsonValue} from '../capabilities/types.js';
 import type {AgentModelScope} from '../protocol/types.js';
 import type {ToolModelBudget, ToolModelLoopOptions, ToolModelLoopOutcome, ToolModelMessage, ToolModelRequest, ToolModelResponse, ToolModelStop} from './types.js';
 import {isToolModelContinuation} from './continuation.js';
@@ -8,6 +8,9 @@ import {isToolModelContinuation} from './continuation.js';
 const fail = (code: string, message: string): ToolModelLoopOutcome => ({ok: false, diagnostics: [{code, message, retryable: false}]});
 const integer = (value: unknown, min: number, max: number): value is number => typeof value === 'number' && Number.isSafeInteger(value) && value >= min && value <= max;
 const identifier = (value: unknown): value is string => typeof value === 'string' && /^[A-Za-z0-9_-]{1,64}$/u.test(value);
+const positiveStates = new Set<AgentCapabilityState>(['accepted', 'bound', 'data-ready', 'plan-committed', 'renderer-ready']);
+const operations = new Set(['catalog.read', 'result.inspect', 'task.propose', 'task.evaluate', 'experience.propose', 'experience.commit',
+  'meaning.propose', 'meaning.activate', 'action.propose', 'action.execute', 'model.egress']);
 const bytes = (value: unknown): number => new TextEncoder().encode(JSON.stringify(value)).byteLength;
 function snapshot<T>(value: T): T {
   if (isToolModelContinuation(value)) return value;
@@ -21,6 +24,25 @@ function validBudget(b: ToolModelBudget): boolean {
     && integer(b.maxInputTokens, 1, 1_000_000) && integer(b.maxOutputTokens, 1, 100_000)
     && integer(b.maxTotalTokens, 1, 2_000_000) && integer(b.maxInputBytes, 1, WIRE_LIMITS.bytes)
     && integer(b.maxOutputBytes, 1, WIRE_LIMITS.bytes) && integer(b.maxRepeatedCalls, 1, 4);
+}
+function validPolicy(policy: ToolModelLoopOptions['policy']): boolean {
+  if (policy === undefined) return true;
+  return policy !== null && typeof policy === 'object' && Array.isArray(policy.requiredOperationSequence)
+    && policy.requiredOperationSequence.length > 0 && policy.requiredOperationSequence.length <= 16
+    && policy.requiredOperationSequence.every(step => step !== null && typeof step === 'object'
+      && typeof step.operation === 'string' && operations.has(step.operation) && Array.isArray(step.acceptedStates)
+      && step.acceptedStates.length > 0 && step.acceptedStates.length <= positiveStates.size
+      && new Set(step.acceptedStates).size === step.acceptedStates.length
+      && step.acceptedStates.every((state: unknown) => typeof state === 'string' && positiveStates.has(state as AgentCapabilityState)));
+}
+function requiredIndex(policy: ToolModelLoopOptions['policy'], receipts: readonly AgentCapabilityReceipt[]): number {
+  if (policy === undefined) return 0;
+  let index = 0;
+  for (const receipt of receipts) {
+    const step = policy.requiredOperationSequence[index];
+    if (step !== undefined && receipt.operation === step.operation && step.acceptedStates.includes(receipt.state)) index++;
+  }
+  return index;
 }
 function response(input: unknown, limit: number): ToolModelResponse | undefined {
   if (input === null || Array.isArray(input) || typeof input !== 'object') return undefined;
@@ -47,10 +69,11 @@ export async function runToolModel(options: ToolModelLoopOptions): Promise<ToolM
   if (!options || !identifier(options.requestId) || !['chat', 'experience'].includes(options.goal)
     || typeof options.prompt !== 'string' || options.prompt.length === 0 || options.prompt.length > WIRE_LIMITS.text
     || (options.instructions !== undefined && (typeof options.instructions !== 'string' || options.instructions.length === 0 || options.instructions.length > WIRE_LIMITS.text))
-    || !validBudget(options.budget) || options.endpoint?.transport !== 'byok'
+    || !validPolicy(options.policy) || !validBudget(options.budget) || options.endpoint?.transport !== 'byok'
     || typeof options.endpoint.authorizeModel !== 'function' || (typeof options.model?.countInputTokens !== 'function' && typeof options.model?.estimateInputTokens !== 'function')
     || typeof options.model.complete !== 'function') return fail('agent.model.invalid', 'The model loop requires bounded input, a BYOK endpoint, and an application-owned model port.');
   const budget = {...options.budget}, requestId = options.requestId, goal = options.goal;
+  const policy = options.policy === undefined ? undefined : snapshot(options.policy);
   const endpoint = options.endpoint;
   const count = options.model.countInputTokens?.bind(options.model);
   const estimate = options.model.estimateInputTokens?.bind(options.model);
@@ -68,8 +91,12 @@ export async function runToolModel(options: ToolModelLoopOptions): Promise<ToolM
   const repeats = new Map<string, number>();
   let turns = 0, modelRequests = 0, toolCalls = 0, inputTokens = 0, outputTokens = 0;
   let expectedScope: AgentModelScope | undefined;
-  const finish = (stop: ToolModelStop, textDraft?: string): ToolModelLoopOutcome => ({ok: true, value: snapshot({stop, turns, modelRequests, toolCalls, inputTokens, outputTokens, receipts,
-    ...(textDraft === undefined ? {} : {textDraft})})});
+  const remainingRequired = () => policy?.requiredOperationSequence.slice(requiredIndex(policy, receipts)).map(step => step.operation) ?? [];
+  const finish = (stop: ToolModelStop, textDraft?: string): ToolModelLoopOutcome => {
+    const incompleteRequiredOperations = remainingRequired();
+    return {ok: true, value: snapshot({stop, turns, modelRequests, toolCalls, inputTokens, outputTokens, receipts,
+      ...(textDraft === undefined ? {} : {textDraft}), ...(incompleteRequiredOperations.length === 0 ? {} : {incompleteRequiredOperations})})};
+  };
   const boundary = async <T>(work: (signal: AbortSignal) => Promise<T>): Promise<T | ToolModelStop> => {
     if (signal.aborted) return 'cancelled';
     if (left() === 0) return 'budget';
@@ -101,7 +128,10 @@ export async function runToolModel(options: ToolModelLoopOptions): Promise<ToolM
       const discovery = await boundary(child => endpoint.discover({signal: child}));
       if (typeof discovery === 'string') return finish(discovery);
       if (!discovery.ok) return finish('denied');
-      const request: ToolModelRequest = snapshot({messages, tools: discovery.value, maxOutputTokens: budget.maxOutputTokens});
+      const required = policy?.requiredOperationSequence[requiredIndex(policy, receipts)];
+      const tools = required === undefined ? discovery.value : discovery.value.filter(tool => tool.operation === required.operation);
+      if (required !== undefined && tools.length === 0) return finish('failed');
+      const request: ToolModelRequest = snapshot({messages, tools, toolChoice: required === undefined ? 'auto' : 'required', maxOutputTokens: budget.maxOutputTokens});
       const countIsRemote = count !== undefined;
       const continuationBytes = request.messages.reduce((total, message) => total + (message.role === 'assistant' ? message.continuation?.bytes ?? 0 : 0), 0);
       if (bytes(request) + continuationBytes > budget.maxInputBytes || modelRequests + (countIsRemote ? 2 : 1) > budget.maxModelRequests) return finish('budget');
@@ -136,11 +166,30 @@ export async function runToolModel(options: ToolModelLoopOptions): Promise<ToolM
         || inputTokens + outputTokens > budget.maxTotalTokens) return finish('budget');
       const outputAdmission = await admit();
       if (outputAdmission !== undefined) return finish(outputAdmission);
-      if (candidate.calls.length === 0) return finish(goal === 'chat' && candidate.text ? 'text-ready' : 'no-commit', candidate.text);
+      if (candidate.calls.length === 0) {
+        if (required === undefined) return finish(goal === 'chat' && candidate.text ? 'text-ready' : 'no-commit', candidate.text);
+        if (candidate.text !== undefined || candidate.continuation !== undefined) messages.push({role: 'assistant', ...(candidate.text === undefined ? {} : {text: candidate.text}), calls: [],
+          ...(candidate.continuation === undefined ? {} : {continuation: candidate.continuation})});
+        messages.push({role: 'system', text: `The host still requires a successful ${required.operation} tool receipt before final text. Continue with the available tool.`});
+        continue;
+      }
       if (toolCalls + candidate.calls.length > budget.maxToolCalls) return finish('budget');
+      if (required !== undefined && candidate.calls.some(call => !tools.some(tool => tool.name === call.name))) {
+        toolCalls += candidate.calls.length;
+        messages.push({role: 'assistant', ...(candidate.text === undefined ? {} : {text: candidate.text}), calls: candidate.calls,
+          ...(candidate.continuation === undefined ? {} : {continuation: candidate.continuation})});
+        for (const call of candidate.calls) messages.push({role: 'tool', callId: call.id, output: {ok: false, diagnostics: [{code: 'agent.model.required-operation', message: `The host requires ${required.operation} before this tool.`, retryable: true}]}});
+        continue;
+      }
       messages.push({role: 'assistant', ...(candidate.text === undefined ? {} : {text: candidate.text}), calls: candidate.calls,
         ...(candidate.continuation === undefined ? {} : {continuation: candidate.continuation})});
-      for (const call of candidate.calls) {
+      for (const [callIndex, call] of candidate.calls.entries()) {
+        if (required !== undefined && callIndex > 0) {
+          toolCalls++;
+          messages.push({role: 'tool', callId: call.id, output: {ok: false, diagnostics: [{code: 'agent.model.required-operation',
+            message: 'The host admits at most one required operation per model response. Continue after the trusted receipt.', retryable: true}]}});
+          continue;
+        }
         const fresh = await admit();
         if (fresh !== undefined) return finish(fresh);
         const fingerprint = capabilityCanonical({name: call.name, input: call.input, scope: expectedScope === undefined ? undefined : {principalKey: expectedScope.principalKey, current: expectedScope.current === undefined ? undefined : {...expectedScope.current, results: []}}});
@@ -171,7 +220,7 @@ export async function runToolModel(options: ToolModelLoopOptions): Promise<ToolM
         if (bytes(messages) > budget.maxInputBytes) return finish('budget');
       }
     }
-    return finish('budget');
+    return finish(remainingRequired().length === 0 ? 'budget' : 'required-sequence');
   } catch {
     return finish('failed');
   } finally {

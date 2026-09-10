@@ -2,7 +2,7 @@ import {describe, expect, it} from 'vitest';
 import {createOpenAICompatibleResponsesToolModel, ResponsesTransportError, type OpenAICompatibleResponsesToolModelOptions} from '../../../packages/agent/src/model/responses.js';
 import type {ToolModelRequest} from '../../../packages/agent/src/model/types.js';
 
-const request: ToolModelRequest = {messages: [{role: 'user', text: 'Summarize authorized data.'}], tools: [{name: 'summary', description: 'Read summary.', capability: {id: 'summary', revision: '1'}, operation: 'catalog.read', inputSchema: {type: 'object', additionalProperties: false}}], maxOutputTokens: 32};
+const request: ToolModelRequest = {messages: [{role: 'user', text: 'Summarize authorized data.'}], tools: [{name: 'summary', description: 'Read summary.', capability: {id: 'summary', revision: '1'}, operation: 'catalog.read', inputSchema: {type: 'object', additionalProperties: false}}], toolChoice: 'required', maxOutputTokens: 32};
 const policy = {maxRetries: 0 as const, timeoutMilliseconds: 100, maxRequestBytes: 10_000, maxResponseBytes: 10_000, stream: false as const};
 const signal = new AbortController().signal;
 const encoder = new TextEncoder();
@@ -24,7 +24,7 @@ describe('OpenAI-compatible Responses ToolModelPort', () => {
     await expect(port.complete(request, {signal})).resolves.toEqual({text: 'Unverified draft.', calls: [{id: 'call_summary', name: 'summary', input: {scope: 'allowed'}}], usage: {inputTokens: 11, outputTokens: 7}});
     expect(calls.map(call => call.url)).toEqual(['https://responses.fixture.test/v1/responses/input_tokens', 'https://responses.fixture.test/v1/responses']);
     expect(calls[1]?.init?.headers).toMatchObject({authorization: 'Bearer fixture:release-fixture', 'content-type': 'application/json'});
-    expect(JSON.parse(String(calls[1]?.init?.body))).toMatchObject({model: 'fixture-model', stream: false, store: false, parallel_tool_calls: false});
+    expect(JSON.parse(String(calls[1]?.init?.body))).toMatchObject({model: 'fixture-model', stream: false, store: false, tool_choice: 'required', parallel_tool_calls: false});
   });
 
   it('projects application-owned system policy through the Responses instructions field', async () => {

@@ -27,6 +27,7 @@ const request: ToolModelRequest = {
     {role: 'tool', callId: 'call_previous', output: {count: 2}},
   ],
   tools: [{name: 'summary', description: 'Read summary', capability: {id: 'summary', revision: '1'}, operation: 'catalog.read', inputSchema: {type: 'object'}}],
+  toolChoice: 'required',
   maxOutputTokens: 100,
 };
 
@@ -97,7 +98,7 @@ describe('generic OpenAI-compatible model connection', () => {
     expect(seen[0]?.request.url).toBe(`${fixture.origin}/v1/chat/completions`);
     expect(seen[0]?.request.headers.get('authorization')).toBe(`Bearer ${secret}`);
     expect(seen[0]?.request.headers.get('x-fixture')).toBe('protocol-test');
-    expect(seen[0]?.body).toMatchObject({model: 'fixture-model', max_tokens: 100, stream: false, parallel_tool_calls: false,
+    expect(seen[0]?.body).toMatchObject({model: 'fixture-model', max_tokens: 100, stream: false, tool_choice: 'required', parallel_tool_calls: false,
       messages: [
         {role: 'system', content: 'Evaluate the canonical task.'},
         {role: 'user', content: 'Summarize'},

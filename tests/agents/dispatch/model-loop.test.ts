@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import {parseWireValue, type OperationGrant, type Outcome} from '../../../packages/core/src/index.js';
 import {createAgentCapabilityRegistry} from '../../../packages/agent/src/capabilities/registry.js';
-import type {AgentCapabilityManifest} from '../../../packages/agent/src/capabilities/types.js';
+import type {AgentCapabilityManifest, AgentCapabilityState} from '../../../packages/agent/src/capabilities/types.js';
 import {createAgentToolEndpoint} from '../../../packages/agent/src/protocol/endpoint.js';
 import {runToolModel} from '../../../packages/agent/src/model/loop.js';
 import {createToolModelContinuation} from '../../../packages/agent/src/model/continuation.js';
@@ -10,6 +10,10 @@ import type {ToolModelBudget, ToolModelPort, ToolModelResponse} from '../../../p
 const budget: ToolModelBudget = {maxTurns: 4, maxModelRequests: 8, maxToolCalls: 8, maxMilliseconds: 1000, maxInputTokens: 1000, maxOutputTokens: 100,
   maxTotalTokens: 2000, maxInputBytes: 100_000, maxOutputBytes: 10_000, maxRepeatedCalls: 1};
 const proposal = (calls: ToolModelResponse['calls'] = [], text = 'Unverified answer'): ToolModelResponse => ({calls, text, usage: {inputTokens: 10, outputTokens: 5}});
+const sequencePolicy = {requiredOperationSequence: [
+  {operation: 'catalog.read' as const, acceptedStates: ['data-ready' as const]},
+  {operation: 'task.evaluate' as const, acceptedStates: ['data-ready' as const]},
+]};
 function fixture(model: ToolModelPort, handler: AgentCapabilityManifest['invoke'] = () => ({state: 'data-ready', value: {count: 2}}), operation: OperationGrant = 'catalog.read') {
   let grants: readonly OperationGrant[] = [operation, 'model.egress'];
   let regionId = 'region';
@@ -23,6 +27,23 @@ function fixture(model: ToolModelPort, handler: AgentCapabilityManifest['invoke'
   if (!endpoint.ok) throw new Error('endpoint');
   return {options: {requestId: 'run', goal: 'chat' as const, prompt: 'Show the summary', model, endpoint: endpoint.value, budget},
     revoke: () => {grants = [operation];}, region: () => {regionId = 'other';}, calls: () => calls};
+}
+function sequenceFixture(model: ToolModelPort, catalogState: AgentCapabilityState = 'data-ready') {
+  const invoked: string[] = [];
+  const registry = createAgentCapabilityRegistry([
+    {ref: {id: 'catalog', revision: '1'}, operation: 'catalog.read', label: 'Catalog', parse: value => parseWireValue(value) as Outcome<never>,
+      invoke: () => {invoked.push('read_catalog'); return {state: catalogState, value: {entities: []}};}},
+    {ref: {id: 'evaluate', revision: '1'}, operation: 'task.evaluate', label: 'Evaluate', parse: value => parseWireValue(value) as Outcome<never>,
+      invoke: () => {invoked.push('evaluate_task'); return {state: 'data-ready', value: {outputs: []}};}},
+  ]);
+  if (!registry.ok) throw new Error('registry');
+  const endpoint = createAgentToolEndpoint({transport: 'byok', targetRegionId: 'region', goalEpoch: 'goal', principalKey: 'owner', expiresAt: Date.now() + 60_000,
+    registry: registry.value, tools: [
+      {name: 'read_catalog', operation: 'catalog.read', capability: {id: 'catalog', revision: '1'}, inputSchema: {type: 'object'}},
+      {name: 'evaluate_task', operation: 'task.evaluate', capability: {id: 'evaluate', revision: '1'}, inputSchema: {type: 'object'}},
+    ], host: {readContext: () => ({ok: true, value: {principalKey: 'owner', regionId: 'region', goalEpoch: 'goal', grants: ['catalog.read', 'task.evaluate', 'model.egress']}})}});
+  if (!endpoint.ok) throw new Error('endpoint');
+  return {options: {requestId: 'sequence', goal: 'chat' as const, prompt: 'Evaluate the request', endpoint: endpoint.value, model, budget, policy: sequencePolicy}, invoked};
 }
 
 describe('synthetic model-port boundary contract (not live reasoning evidence)', () => {
@@ -42,6 +63,58 @@ describe('synthetic model-port boundary contract (not live reasoning evidence)',
       return proposal();
     }});
     expect(await runToolModel({...f.options, instructions: 'Use authorized tools.'})).toMatchObject({ok: true, value: {stop: 'text-ready'}});
+  });
+  it('requires trusted operation receipts in host order before accepting final text', async () => {
+    let turn = 0;
+    const f = sequenceFixture({estimateInputTokens: () => 10, complete: async request => {
+      turn++;
+      if (turn === 1) {
+        expect(request).toMatchObject({toolChoice: 'required', tools: [{name: 'read_catalog', operation: 'catalog.read'}]});
+        return proposal([], 'Premature answer');
+      }
+      if (turn === 2) return proposal([{id: 'read', name: 'read_catalog', input: {}}]);
+      if (turn === 3) {
+        expect(request).toMatchObject({toolChoice: 'required', tools: [{name: 'evaluate_task', operation: 'task.evaluate'}]});
+        return proposal([{id: 'evaluate', name: 'evaluate_task', input: {}}]);
+      }
+      expect(request.toolChoice).toBe('auto');
+      return proposal([], 'Grounded draft');
+    }});
+    expect(await runToolModel(f.options)).toMatchObject({ok: true, value: {stop: 'text-ready', textDraft: 'Grounded draft',
+      receipts: [{operation: 'catalog.read', state: 'data-ready'}, {operation: 'task.evaluate', state: 'data-ready'}]}});
+    expect(f.invoked).toEqual(['read_catalog', 'evaluate_task']);
+  });
+  it('repairs an out-of-order proposal without dispatching it', async () => {
+    let turn = 0;
+    const f = sequenceFixture({estimateInputTokens: () => 10, complete: async request => {
+      turn++;
+      if (turn === 1) return proposal([{id: 'early', name: 'evaluate_task', input: {}}]);
+      if (turn === 2) {
+        expect(request.messages.at(-1)).toMatchObject({role: 'tool', callId: 'early', output: {ok: false, diagnostics: [{code: 'agent.model.required-operation'}]}});
+        return proposal([{id: 'read', name: 'read_catalog', input: {}}]);
+      }
+      if (turn === 3) return proposal([{id: 'evaluate', name: 'evaluate_task', input: {}}]);
+      return proposal([], 'Grounded draft');
+    }});
+    expect(await runToolModel(f.options)).toMatchObject({ok: true, value: {stop: 'text-ready'}});
+    expect(f.invoked).toEqual(['read_catalog', 'evaluate_task']);
+  });
+  it('does not advance a required milestone from a non-accepted receipt state', async () => {
+    let calls = 0;
+    const f = sequenceFixture({estimateInputTokens: () => 10, complete: async () => proposal([{id: `read-${++calls}`, name: 'read_catalog', input: {}}])}, 'accepted');
+    expect(await runToolModel({...f.options, budget: {...budget, maxTurns: 1}})).toMatchObject({ok: true, value: {
+      stop: 'required-sequence', incompleteRequiredOperations: ['catalog.read', 'task.evaluate'], receipts: [{operation: 'catalog.read', state: 'accepted'}],
+    }});
+    expect(f.invoked).toEqual(['read_catalog']);
+  });
+  it('dispatches at most one required operation from a multi-call response', async () => {
+    const f = sequenceFixture({estimateInputTokens: () => 10, complete: async () => proposal([
+      {id: 'read-1', name: 'read_catalog', input: {}}, {id: 'read-2', name: 'read_catalog', input: {}},
+    ])});
+    expect(await runToolModel({...f.options, budget: {...budget, maxTurns: 1}})).toMatchObject({ok: true, value: {
+      stop: 'required-sequence', toolCalls: 2, incompleteRequiredOperations: ['task.evaluate'], receipts: [{operation: 'catalog.read', state: 'data-ready'}],
+    }});
+    expect(f.invoked).toEqual(['read_catalog']);
   });
   it('preserves an opaque protocol continuation across a tool turn without serializing its value', async () => {
     const continuation = createToolModelContinuation('fixture-protocol', {privateState: 'reasoning-never-serialized'});

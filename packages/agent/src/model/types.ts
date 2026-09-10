@@ -1,5 +1,5 @@
 import type {Outcome} from '@aeliqo/core';
-import type {AgentCapabilityReceipt, AgentJsonValue} from '../capabilities/types.js';
+import type {AgentCapabilityOperation, AgentCapabilityReceipt, AgentCapabilityState, AgentJsonValue} from '../capabilities/types.js';
 import type {AgentModelToolEndpoint, AgentToolDefinition} from '../protocol/types.js';
 
 declare const opaqueModelContinuationBrand: unique symbol;
@@ -49,6 +49,8 @@ export interface ToolModelProviderSnapshot {
 export interface ToolModelRequest {
   readonly messages: readonly ToolModelMessage[];
   readonly tools: readonly AgentToolDefinition[];
+  /** Provider adherence hint only. The loop/dispatcher remain authoritative. */
+  readonly toolChoice?: 'auto' | 'required';
   readonly maxOutputTokens: number;
 }
 export interface ToolModelResponse {
@@ -83,7 +85,15 @@ export interface ToolModelBudget {
   readonly maxOutputBytes: number;
   readonly maxRepeatedCalls: number;
 }
-export type ToolModelStop = 'text-ready' | 'renderer-ready' | 'no-commit' | 'no-progress' | 'budget' | 'cancelled' | 'stale' | 'denied' | 'failed';
+export type ToolModelStop = 'text-ready' | 'renderer-ready' | 'no-commit' | 'no-progress' | 'required-sequence' | 'budget' | 'cancelled' | 'stale' | 'denied' | 'failed';
+export interface ToolModelRequiredOperation {
+  readonly operation: AgentCapabilityOperation;
+  readonly acceptedStates: readonly AgentCapabilityState[];
+}
+export interface ToolModelRunPolicy {
+  /** Ordered milestones proven only by trusted dispatcher receipts. */
+  readonly requiredOperationSequence: readonly ToolModelRequiredOperation[];
+}
 export interface ToolModelReceipt {
   readonly stop: ToolModelStop;
   readonly turns: number;
@@ -94,6 +104,8 @@ export interface ToolModelReceipt {
   /** This is a draft, never a verified numerical narrative or business fact. */
   readonly textDraft?: string;
   readonly receipts: readonly AgentCapabilityReceipt[];
+  /** Remaining host-required milestones when the run stops before completion. */
+  readonly incompleteRequiredOperations?: readonly AgentCapabilityOperation[];
 }
 export interface ToolModelLoopOptions {
   readonly requestId: string;
@@ -102,6 +114,8 @@ export interface ToolModelLoopOptions {
   readonly prompt: string;
   /** Optional application-owned operating policy; providers cannot grant themselves authority through it. */
   readonly instructions?: string;
+  /** Optional host-owned finalization policy. It never grants an operation. */
+  readonly policy?: ToolModelRunPolicy;
   readonly endpoint: AgentModelToolEndpoint;
   readonly model: ToolModelPort;
   readonly budget: ToolModelBudget;

@@ -79,7 +79,7 @@ function encodeRequest(input: {readonly request: ToolModelRequest; readonly mode
     model: input.model,
     messages: input.request.messages.map(inputMessage),
     tools: input.request.tools.map(functionTool),
-    tool_choice: 'auto',
+    tool_choice: input.request.toolChoice ?? 'auto',
     parallel_tool_calls: false,
     max_tokens: input.request.maxOutputTokens,
     stream: false,

@@ -25,7 +25,7 @@ function project(request: ToolModelRequest, model: string) {
   }
   const tools: FunctionTool[] = request.tools.map(tool => ({type: 'function', name: tool.name, description: tool.description,
     parameters: tool.inputSchema, strict: false}));
-  return {model, input, tools, instructions: instructions.join('\n\n'), parallel_tool_calls: false, truncation: 'disabled' as const};
+  return {model, input, tools, instructions: instructions.join('\n\n'), tool_choice: request.toolChoice ?? 'auto', parallel_tool_calls: false, truncation: 'disabled' as const};
 }
 
 /** Optional server-only reference. It performs no tool execution and never keeps provider conversation state. */

@@ -34,6 +34,22 @@ it as a fact. An experience request finishes successfully only with an actual
 `no-commit`. Renderer readiness identifies the committed region revision; it
 does not certify browser paint or human attention.
 
+Applications may provide an opt-in `policy.requiredOperationSequence`. Each
+milestone names an operation and explicit positive receipt states. While a
+milestone is pending, the loop exposes only tools for that operation and sends
+`toolChoice: 'required'` as a provider adherence hint. Final text remains blocked
+until trusted dispatcher receipts satisfy the sequence in order; model prose,
+tool names and result values cannot advance it. Premature text or an out-of-order
+proposal receives bounded repair feedback, and an out-of-order proposal is not
+dispatched. The policy never adds a grant, bypasses the existing scope rechecks,
+or proves that a shape-valid task matches the user's intent.
+
+This final-text gate belongs to the application-owned BYOK loop. MCP and WebMCP
+hosts own their agents' prose surfaces; an application that requires the same
+guarantee there must gate its own display/finalization on session-scoped trusted
+receipts. Aeliqo's protocol adapter can enforce capability invocation but cannot
+prevent an external host from printing text outside that boundary.
+
 ## Optional official OpenAI reference
 
 `@aeliqo/agent/model/openai` exports `createOpenAIToolModel`. Install the exact

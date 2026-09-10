@@ -9,7 +9,7 @@ import type {ToolModelRequest} from '../../packages/agent/src/model/types.js';
 const request: ToolModelRequest = {messages: [{role: 'user', text: 'Summarize'},
   {role: 'assistant', calls: [{id: 'call_previous', name: 'summary', input: {entity: 'orders'}}]},
   {role: 'tool', callId: 'call_previous', output: {count: 2}}],
-  tools: [{name: 'summary', description: 'Read summary', capability: {id: 'summary', revision: '1'}, operation: 'catalog.read', inputSchema: {type: 'object'}}], maxOutputTokens: 100};
+  tools: [{name: 'summary', description: 'Read summary', capability: {id: 'summary', revision: '1'}, operation: 'catalog.read', inputSchema: {type: 'object'}}], toolChoice: 'required', maxOutputTokens: 100};
 
 async function localProvider(test: (port: ReturnType<typeof createOpenAIToolModel>, bodies: Record<string, unknown>[]) => Promise<void>, malformed = false) {
   const bodies: Record<string, unknown>[] = [];
@@ -43,7 +43,7 @@ describe('official OpenAI SDK against a local protocol fixture, not live provide
       expect(await port.countInputTokens(request, {signal})).toBe(42);
       expect(await port.complete(request, {signal})).toMatchObject({calls: [{id: 'call_next', name: 'summary', input: {entity: 'orders'}}], usage: {inputTokens: 42, outputTokens: 8}});
       expect(bodies).toHaveLength(2);
-      expect(bodies[1]).toMatchObject({store: false, stream: false, parallel_tool_calls: false, max_output_tokens: 100, model: 'fixture-model',
+      expect(bodies[1]).toMatchObject({store: false, stream: false, tool_choice: 'required', parallel_tool_calls: false, max_output_tokens: 100, model: 'fixture-model',
         input: [{role: 'user', content: 'Summarize'}, {type: 'function_call', call_id: 'call_previous', name: 'summary'}, {type: 'function_call_output', call_id: 'call_previous', output: '{"count":2}'}]});
       expect(bodies[0]?.input).toEqual(bodies[1]?.input);
       expect(bodies[0]?.tools).toEqual(bodies[1]?.tools);
