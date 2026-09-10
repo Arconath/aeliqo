@@ -1,0 +1,87 @@
+{
+  "schema": "aeliqo.performance.perceived-input.calibration.v1",
+  "sourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+  "fixture": {
+    "rowCount": 100,
+    "directInput": true,
+    "tableRows": 100,
+    "retainedModuleGraphPath": "/retained-modules.json",
+    "eventTimingObserverAvailable": true,
+    "eventTimingThresholdMs": 16
+  },
+  "requestedHandlerMs": 60,
+  "interaction": {
+    "sequence": 1,
+    "key": "0",
+    "trustedKeyboard": true,
+    "keydownObservedAtMs": 61.70000000298023,
+    "keydownEventTimestampMs": 61.5,
+    "keyupEventTimestampMs": 123.40000000596046,
+    "queryBefore": "",
+    "queryAfter": "0",
+    "visibleUpdate": {
+      "atMs": 122.79999999701977,
+      "delayMs": 61.29999999701977,
+      "revision": 2,
+      "rowCount": 10,
+      "rowIds": [
+        "row-10",
+        "row-20",
+        "row-30",
+        "row-40",
+        "row-50",
+        "row-60",
+        "row-70",
+        "row-80",
+        "row-90",
+        "row-100"
+      ],
+      "text": "row-10Local row 1010 row-20Local row 2020 row-30Local row 3030 row-40Local row 4040 row-50Local row 5050 row-60Local row 6060 row-70Local row 7070 row-80Local row 8080 row-90Local row 9090 row-100Local row 100100"
+    },
+    "eventTiming": {
+      "status": "observed",
+      "observationThresholdMs": 16,
+      "interactionId": 2369,
+      "entries": [
+        {
+          "entryType": "event",
+          "name": "keydown",
+          "startTime": 61.5,
+          "duration": 64,
+          "processingStart": 61.5,
+          "processingEnd": 121.79999999701977,
+          "inputDelayMs": 0,
+          "processingDurationMs": 60.29999999701977,
+          "interactionId": 2369
+        },
+        {
+          "entryType": "first-input",
+          "name": "keydown",
+          "startTime": 61.5,
+          "duration": 64,
+          "processingStart": 61.5,
+          "processingEnd": 121.79999999701977,
+          "inputDelayMs": 0,
+          "processingDurationMs": 60.29999999701977,
+          "interactionId": 2369
+        }
+      ]
+    }
+  },
+  "exactKeydownMatch": {
+    "entryType": "event",
+    "name": "keydown",
+    "startTime": 61.5,
+    "duration": 64,
+    "processingStart": 61.5,
+    "processingEnd": 121.79999999701977,
+    "inputDelayMs": 0,
+    "processingDurationMs": 60.29999999701977,
+    "interactionId": 2369
+  },
+  "notes": [
+    "This one-off calibration deliberately occupies the main thread for the requested duration during a trusted keydown so the browser should emit an Event Timing entry above the 16 ms observation threshold.",
+    "The exact match uses the normalized KeyboardEvent.timeStamp and PerformanceEventTiming.startTime; no handler-time tolerance window is used.",
+    "The calibration interaction is reported separately and is excluded from the real interaction samples and their visible-update summary."
+  ]
+}
