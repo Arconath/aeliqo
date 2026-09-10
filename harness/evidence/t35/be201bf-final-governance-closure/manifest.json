@@ -1,0 +1,69 @@
+{
+  "schema": "aeliqo.t35.final-governance-closure.v1",
+  "task": "T35",
+  "status": "passed-awaiting-independent-review",
+  "recordedAt": "2026-09-10T15:31:00Z",
+  "author": "root release orchestrator",
+  "source": {
+    "productSourceRevision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+    "candidateDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8"
+  },
+  "baseline": {
+    "path": "harness/evidence/t35/05e5990-exact-candidate/manifest.json",
+    "sha256": "068edde6ff3a1d3164ef1d1369b0d68b20d852cbfb1994a02b5fa876e86d8279",
+    "status": "independently-approved-historical-baseline"
+  },
+  "currentCandidate": {
+    "authorManifest": {
+      "path": "harness/evidence/t33/a245c8f-final-candidate/manifest.json",
+      "sha256": "8579fd4abc576af85cedae88f8e5a51e2d4ab154ff4943e5dcae3cb63847bb40"
+    },
+    "independentReview": {
+      "path": "harness/evidence/t33/a245c8f-final-candidate-review/independent-review.json",
+      "sha256": "ab509f539386595adbe971e8e1dd94f9ae001a6811d1700d0d0e27c0b76f67e4"
+    },
+    "version": "0.1.0-rc.1",
+    "packageCount": 6,
+    "allApache20": true,
+    "canonicalLicenseAndNotice": true,
+    "privateTestkitExcluded": true,
+    "strictExportSpecifiers": 130,
+    "offlineConsumer": "pass",
+    "runtimeNetworkAttempts": 0,
+    "sbomComponents": 63,
+    "secretFindings": 0
+  },
+  "governanceInputs": [
+    {"path": "MASTER-SOT.md", "sha256": "c94bf4578b58750493ef3357d8c9741f41a5fede74b97ca8b820112c3107f464"},
+    {"path": "README.md", "sha256": "428979e2daa28133d44352d00d1d11cfb1be7843230afa4b7901ab417e02a6f2"},
+    {"path": "docs/15-oss-business.md", "sha256": "03fce1133b20709db917391f6ee976fb35362f0989ee56b97a0bc26ee9e6b99c"},
+    {"path": "docs/business/oss-commercial-boundary.md", "sha256": "789deb2de9170ec38db6d2bc3859b414a0f71458762a006c5dd5e6b6ab026447"},
+    {"path": "docs/public/0.1.0-support-boundary.md", "sha256": "50b9586511bf5213163205e8f414bca5ee58f9b59a2e37b7e732013bb634ff9f"},
+    {"path": "SECURITY.md", "sha256": "fe3d6c1baaea1ad390cede80816dddfc83f1a632caf3d93a340d6cc4e4ed7e84"},
+    {"path": "SUPPORT.md", "sha256": "481068b56729ec84982aa2ead44a0b3c1864ccdfaddc4fa3831200bf0a17b3eb"},
+    {"path": "CONTRIBUTING.md", "sha256": "26c4a4da674639c3f3df4575db73860302cf4ed83a9e71ed4dd98fbca83058f0"},
+    {"path": "TRADEMARKS.md", "sha256": "e7ef8da971bb4ef53ba8dd44568aa1f6170a382a2207ac6909c514f7902c1785"},
+    {"path": "LICENSE", "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"},
+    {"path": "NOTICE", "sha256": "3b685bb536ef72b2063fb7450720cc2f6f79752dbc2ebd750a304508a553b69b"},
+    {"path": "apps/site/public/browser-monitoring.json", "sha256": "7187d1e8e2a4d61b1dc5dfedb22d703a462df21470e0c145365b20fb3ed467c3"},
+    {"path": "apps/site/public/google-analytics.json", "sha256": "7187d1e8e2a4d61b1dc5dfedb22d703a462df21470e0c145365b20fb3ed467c3"}
+  ],
+  "verification": {
+    "governanceInputsUnchangedFromApprovedBaseline": true,
+    "currentPackageBytesIndependentlyReviewed": true,
+    "allPromisedOssCapabilitiesRemainOfflineAndApache20": "satisfied-sampled",
+    "commercialHypothesesNotRepresentedAsProvenSales": "satisfied",
+    "publicationOrDeploymentClaimed": false
+  },
+  "externalBlockers": [
+    {
+      "id": "npm-auth-e401",
+      "scope": "publication-only",
+      "detail": "Current npm CLI authentication is expired; this does not invalidate local OSS/governance acceptance but blocks publication until reauthentication and authority checks pass."
+    }
+  ],
+  "limitations": [
+    "This closure rebinds unchanged governance inputs to the independently reviewed final package candidate; it is not a new commercial, security or accessibility certification.",
+    "Publication, provenance, stable promotion and production deployment remain separate release gates."
+  ]
+}
