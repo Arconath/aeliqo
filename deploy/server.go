@@ -4,40 +4,108 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
 	"log"
 	"mime"
+	"net"
 	"net/http"
 	"os"
+	"os/signal"
 	"path"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
+	"syscall"
 	"time"
 )
 
 var revision = "unknown"
 
 const (
-	staticRoot     = "/srv/aeliqo"
-	writeTimeout   = 15 * time.Second
-	securityPolicy = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self' https://www.googletagmanager.com; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com"
+	staticRoot            = "/srv/aeliqo"
+	drainDelay            = 5 * time.Second
+	shutdownTimeout       = 20 * time.Second
+	kubernetesGracePeriod = 30 * time.Second
+	writeTimeout          = 30 * time.Second
+	securityPolicy        = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self' https://www.googletagmanager.com; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com"
 )
 
 func main() {
-	server := newServer(env("AELIQO_LISTEN_ADDR", ":8080"), env("AELIQO_STATIC_ROOT", staticRoot), revision)
-	log.Fatal(server.ListenAndServe())
+	var ready atomic.Bool
+	server := newServerWithReadiness(env("AELIQO_LISTEN_ADDR", ":8080"), env("AELIQO_STATIC_ROOT", staticRoot), revision, &ready)
+	listener, err := net.Listen("tcp", server.Addr)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	shutdownSignal := make(chan os.Signal, 1)
+	signal.Notify(shutdownSignal, syscall.SIGINT, syscall.SIGTERM)
+	defer signal.Stop(shutdownSignal)
+
+	log.Printf("Aeliqo static server listening on %s", server.Addr)
+	if err := serveUntilSignal(server, listener, &ready, shutdownSignal, drainDelay, shutdownTimeout); !errors.Is(err, http.ErrServerClosed) {
+		log.Fatal(err)
+	}
 }
 
 func newServer(address, root, buildRevision string) *http.Server {
+	var ready atomic.Bool
+	ready.Store(true)
+	return newServerWithReadiness(address, root, buildRevision, &ready)
+}
+
+func newServerWithReadiness(address, root, buildRevision string, ready *atomic.Bool) *http.Server {
 	return &http.Server{
 		Addr:              address,
-		Handler:           newHandler(root, buildRevision),
+		Handler:           newHandlerWithReadiness(root, buildRevision, ready),
 		ReadHeaderTimeout: 5 * time.Second,
 		WriteTimeout:      writeTimeout,
 		IdleTimeout:       60 * time.Second,
 	}
+}
+
+func serveUntilSignal(server *http.Server, listener net.Listener, ready *atomic.Bool, signals <-chan os.Signal, drainFor, shutdownAfter time.Duration) error {
+	serveError := make(chan error, 1)
+	ready.Store(true)
+	go func() {
+		serveError <- server.Serve(listener)
+	}()
+
+	select {
+	case err := <-serveError:
+		ready.Store(false)
+		return err
+	case <-signals:
+		// Stop receiving new traffic before waiting for load balancers and
+		// kube-proxy to observe the failed readiness probe.
+		ready.Store(false)
+	}
+
+	if drainFor > 0 {
+		timer := time.NewTimer(drainFor)
+		select {
+		case err := <-serveError:
+			if !timer.Stop() {
+				<-timer.C
+			}
+			return err
+		case <-timer.C:
+		}
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), shutdownAfter)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
+		// Shutdown does not force-close active connections when its context
+		// expires. Close them so the process still exits inside the pod's
+		// termination grace period.
+		_ = server.Close()
+		return err
+	}
+	return <-serveError
 }
 
 func env(name, fallback string) string {
@@ -48,6 +116,12 @@ func env(name, fallback string) string {
 }
 
 func newHandler(root, buildRevision string) http.Handler {
+	var ready atomic.Bool
+	ready.Store(true)
+	return newHandlerWithReadiness(root, buildRevision, &ready)
+}
+
+func newHandlerWithReadiness(root, buildRevision string, ready *atomic.Bool) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		setSecurityHeaders(response)
 		if request.Method != http.MethodGet && request.Method != http.MethodHead {
@@ -62,6 +136,10 @@ func newHandler(root, buildRevision string) http.Handler {
 			writeJSON(response, request, http.StatusOK, map[string]string{"status": "ok"})
 			return
 		case "/readyz":
+			if !ready.Load() {
+				writeJSON(response, request, http.StatusServiceUnavailable, map[string]string{"status": "draining"})
+				return
+			}
 			writeJSON(response, request, http.StatusOK, map[string]string{"status": "ready"})
 			return
 		case "/version":

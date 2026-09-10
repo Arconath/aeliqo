@@ -4,11 +4,13 @@ set -eu
 image="${1:?usage: check-static-image.sh IMAGE [REVISION]}"
 revision="${2:-unknown}"
 container="aeliqo-static-$$"
+temp_dir="$(mktemp -d "${TMPDIR:-/tmp}/aeliqo-image-check.XXXXXX")"
 
 test "$(docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$image")" = "$revision"
 
 cleanup() {
-  docker stop "$container" >/dev/null 2>&1 || true
+	docker rm --force "$container" >/dev/null 2>&1 || true
+	rm -rf "$temp_dir"
 }
 trap cleanup EXIT INT TERM
 
@@ -43,3 +45,32 @@ curl --fail --silent --head "$base$asset" | grep -qi '^cache-control: public, ma
 
 status="$(curl --silent --output /dev/null --write-out '%{http_code}' "$base/not-a-route")"
 test "$status" = 404
+
+# SIGTERM must make readiness fail while the listener remains available for the
+# five-second load-balancer drain window. The server must then stop inside the
+# 30-second Kubernetes termination grace period.
+docker kill --signal TERM "$container" >/dev/null
+draining=false
+attempt=1
+while [ "$attempt" -le 40 ]; do
+	status="$(curl --silent --output "$temp_dir/readyz.json" --write-out '%{http_code}' "$base/readyz" || true)"
+	if [ "$status" = 503 ] && grep -qx '{"status":"draining"}' "$temp_dir/readyz.json"; then
+		draining=true
+		break
+	fi
+	sleep 0.1
+	attempt=$((attempt + 1))
+done
+test "$draining" = true
+
+stopped=false
+attempt=1
+while [ "$attempt" -le 300 ]; do
+	if ! docker container inspect "$container" >/dev/null 2>&1; then
+		stopped=true
+		break
+	fi
+	sleep 0.1
+	attempt=$((attempt + 1))
+done
+test "$stopped" = true

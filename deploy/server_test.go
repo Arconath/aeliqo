@@ -1,13 +1,19 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
+	"syscall"
 	"testing"
+	"time"
 )
 
 func fixtureSite(t *testing.T) string {
@@ -52,6 +58,189 @@ func TestOperationalEndpointsEmbedRevisionAndNeverCache(t *testing.T) {
 		if got := response.Header().Get("Cache-Control"); got != "no-store" {
 			t.Fatalf("%s cache-control=%q", endpoint.path, got)
 		}
+	}
+}
+
+func TestReadinessReturnsServiceUnavailableWhileDraining(t *testing.T) {
+	var ready atomic.Bool
+	ready.Store(true)
+	handler := newHandlerWithReadiness(fixtureSite(t), "source-123", &ready)
+
+	response := request(t, handler, http.MethodGet, "/readyz")
+	if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `"status":"ready"`) {
+		t.Fatalf("ready status=%d body=%q", response.Code, response.Body.String())
+	}
+
+	ready.Store(false)
+	response = request(t, handler, http.MethodGet, "/readyz")
+	if response.Code != http.StatusServiceUnavailable || !strings.Contains(response.Body.String(), `"status":"draining"`) {
+		t.Fatalf("draining status=%d body=%q", response.Code, response.Body.String())
+	}
+	if got := response.Header().Get("Cache-Control"); got != "no-store" {
+		t.Fatalf("draining cache-control=%q", got)
+	}
+}
+
+func TestGracefulTerminationBudgetFitsKubernetesGracePeriod(t *testing.T) {
+	if drainDelay != 5*time.Second {
+		t.Fatalf("drain delay=%s", drainDelay)
+	}
+	if shutdownTimeout != 20*time.Second {
+		t.Fatalf("shutdown timeout=%s", shutdownTimeout)
+	}
+	if drainDelay+shutdownTimeout >= kubernetesGracePeriod {
+		t.Fatalf("termination budget %s must leave margin inside %s", drainDelay+shutdownTimeout, kubernetesGracePeriod)
+	}
+	if writeTimeout < shutdownTimeout {
+		t.Fatalf("write timeout %s cuts off the %s shutdown window", writeTimeout, shutdownTimeout)
+	}
+}
+
+func TestServeUntilSignalMarksUnreadyBeforeDrainingActiveRequest(t *testing.T) {
+	requestStarted := make(chan struct{})
+	releaseRequest := make(chan struct{})
+	var ready atomic.Bool
+	operational := newHandlerWithReadiness(fixtureSite(t), "source-123", &ready)
+	handler := http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+		if request.URL.Path != "/slow" {
+			operational.ServeHTTP(response, request)
+			return
+		}
+		close(requestStarted)
+		<-releaseRequest
+		_, _ = io.WriteString(response, "complete")
+	})
+	server := &http.Server{Handler: handler}
+	shutdownStarted := make(chan struct{})
+	server.RegisterOnShutdown(func() { close(shutdownStarted) })
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	signals := make(chan os.Signal, 1)
+	done := make(chan error, 1)
+	go func() {
+		done <- serveUntilSignal(server, listener, &ready, signals, 100*time.Millisecond, time.Second)
+	}()
+	waitFor(t, time.Second, ready.Load, "server never became ready")
+
+	responseDone := make(chan struct{})
+	var responseBody string
+	var responseError error
+	go func() {
+		defer close(responseDone)
+		response, err := http.Get("http://" + listener.Addr().String() + "/slow")
+		if err != nil {
+			responseError = err
+			return
+		}
+		defer response.Body.Close()
+		body, err := io.ReadAll(response.Body)
+		responseError = err
+		responseBody = string(body)
+	}()
+
+	<-requestStarted
+	signals <- syscall.SIGTERM
+	waitFor(t, time.Second, func() bool { return !ready.Load() }, "server stayed ready after SIGTERM")
+
+	draining, err := http.Get("http://" + listener.Addr().String() + "/readyz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer draining.Body.Close()
+	if draining.StatusCode != http.StatusServiceUnavailable {
+		t.Fatalf("draining readiness status=%d", draining.StatusCode)
+	}
+	select {
+	case <-shutdownStarted:
+		t.Fatal("shutdown started before the readiness drain delay elapsed")
+	case <-time.After(50 * time.Millisecond):
+	}
+	select {
+	case <-responseDone:
+		t.Fatal("active request ended before graceful shutdown released it")
+	default:
+	}
+
+	select {
+	case <-shutdownStarted:
+	case <-time.After(time.Second):
+		t.Fatal("server shutdown did not start after the drain delay")
+	}
+	close(releaseRequest)
+	select {
+	case <-responseDone:
+	case <-time.After(time.Second):
+		t.Fatal("active request did not complete during graceful shutdown")
+	}
+	if responseError != nil {
+		t.Fatal(responseError)
+	}
+	if responseBody != "complete" {
+		t.Fatalf("active request was not drained: %q", responseBody)
+	}
+	if err := <-done; !errors.Is(err, http.ErrServerClosed) {
+		t.Fatalf("server shutdown returned %v", err)
+	}
+}
+
+func TestServeUntilSignalForcesCloseAtShutdownDeadline(t *testing.T) {
+	requestStarted := make(chan struct{})
+	releaseRequest := make(chan struct{})
+	server := &http.Server{Handler: http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
+		close(requestStarted)
+		<-releaseRequest
+		_, _ = io.WriteString(response, "late")
+	})}
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var ready atomic.Bool
+	signals := make(chan os.Signal, 1)
+	done := make(chan error, 1)
+	go func() {
+		done <- serveUntilSignal(server, listener, &ready, signals, 0, 25*time.Millisecond)
+	}()
+	waitFor(t, time.Second, ready.Load, "server never became ready")
+
+	clientDone := make(chan struct{})
+	go func() {
+		defer close(clientDone)
+		response, err := http.Get("http://" + listener.Addr().String())
+		if err == nil {
+			defer response.Body.Close()
+			_, _ = io.ReadAll(response.Body)
+		}
+	}()
+	<-requestStarted
+	signals <- syscall.SIGTERM
+
+	select {
+	case err := <-done:
+		if !errors.Is(err, context.DeadlineExceeded) {
+			t.Fatalf("shutdown deadline returned %v", err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("shutdown deadline did not force the server closed")
+	}
+	close(releaseRequest)
+	select {
+	case <-clientDone:
+	case <-time.After(time.Second):
+		t.Fatal("client did not observe forced close")
+	}
+}
+
+func waitFor(t *testing.T, timeout time.Duration, condition func() bool, failure string) {
+	t.Helper()
+	deadline := time.Now().Add(timeout)
+	for !condition() {
+		if time.Now().After(deadline) {
+			t.Fatal(failure)
+		}
+		time.Sleep(time.Millisecond)
 	}
 }
 
