@@ -1,0 +1,71 @@
+{
+  "schemaVersion": "1",
+  "task": "T40",
+  "status": "passed",
+  "sourceCommit": "ab5ccc8de1d0636efe975504516cb204c2bb41f2",
+  "sourceDigest": "f51e351e7d5a2261293f551312ba11a222fbe5ba3dddb24324bf38c364e3c7f3",
+  "sourceChangedDuringRuns": false,
+  "recordedAt": "2026-09-10T06:00:15Z",
+  "environment": {
+    "node": "v24.20.0",
+    "pnpm": "11.24.0",
+    "os": "Darwin 25.6.0 arm64"
+  },
+  "scope": "Provider-neutral BYOK/dispatcher and official MCP integration qualification with a bounded owner-authorized DeepSeek V4 Flash smoke, deterministic execution baselines, failure repair, continuation, secret minimization, and independent adversarial review.",
+  "corpus": {
+    "path": "fixtures/evaluation/t40-data-query-heldout.json",
+    "sha256": "9b2fd53f8f9e15fdef2afd121e48ba22bad591ffd8b1ded1e5b5517fae5cbfa8",
+    "manifestPath": "fixtures/evaluation/t40-data-query-heldout.manifest.json",
+    "manifestSha256": "38efc8dc1ed1ae326047cb36d3e063b36760c5f432cfb105b9bc89f136a8d85e",
+    "cases": 18,
+    "domains": {"hr": 6, "commerce": 6, "serviceSupport": 6},
+    "namedOutputs": 21
+  },
+  "commands": {
+    "deterministic": "node tests/agent-evaluation/run.mjs --corpus fixtures/evaluation/t40-data-query-heldout.json --output artifacts/t40-deepseek-live-f51e35-final/deterministic --mcp-explicit",
+    "live": "AELIQO_EVAL_PROVIDER_SECRET=<opaque-keychain-value> node tests/agent-evaluation/run.mjs --config artifacts/t40-deepseek-live-f51e35-final/config.json --corpus fixtures/evaluation/t40-data-query-heldout.json --output artifacts/t40-deepseek-live-f51e35-final/attempt-1 --live --mcp-explicit --model-label weak --case commerce-currency-order-browse --case commerce-paid-revenue-topk --case support-weekly-volume",
+    "qualifier": "node scripts/release/qualify-t40-smoke.mjs --report artifacts/t40-deepseek-live-f51e35-final/attempt-1/report.json --output artifacts/t40-deepseek-live-f51e35-final/attempt-1/qualification.json --corpus fixtures/evaluation/t40-data-query-heldout.json --config artifacts/t40-deepseek-live-f51e35-final/config.json"
+  },
+  "deterministic": {
+    "direct": {"correct": 18, "trials": 18},
+    "officialSdkMcp": {"correct": 18, "trials": 18},
+    "independentOracle": {"verifiedOutputs": 21, "totalOutputs": 21}
+  },
+  "live": {
+    "configuredModel": "deepseek-v4-flash",
+    "observedModel": "deepseek-flash",
+    "selectedCases": ["commerce-currency-order-browse", "commerce-paid-revenue-topk", "support-weekly-volume"],
+    "trials": 3,
+    "qualifiedSnapshots": 10,
+    "dataReadyAttempts": 3,
+    "invalidThenDataReadyAttempts": 1,
+    "textReadyMultiTurnAttempts": 3,
+    "reservedUSD": 0.13804032,
+    "maximumUSD": 6,
+    "usageEstimatedUSD": 0.05345692,
+    "retainedProviderPayloads": 0,
+    "liveDataCorrect": {"correct": 0, "trials": 3, "blocking": false, "disposition": "informational under the owner-superseded integration qualification"}
+  },
+  "artifacts": [
+    {"path": "config.json", "sha256": "4219ba115a02b956182e8a5df86bae74fd47c578ce70be533faae33570ea53b5"},
+    {"path": "deterministic-report.json", "sha256": "cbe3d4b29b18f2f6edcced3bc3cf3615fafc567eb7e357f011c8ba0b150a1109"},
+    {"path": "quality-oracle.json", "sha256": "3d5a9e9c566f748fe84fae8ea708f7ef0bd6c313f48b2bb49eeb1af1cdabca24"},
+    {"path": "independent-oracle.json", "sha256": "b99b88a51c2fd267f7e5f2c14e2afbecc0e335a4090f389ded4b6d2937c19d65"},
+    {"path": "live-report.json", "sha256": "0b358937c9be68f29fee14e7d15c92ab3389446db66bad0729448875393e1cfb"},
+    {"path": "qualification.json", "sha256": "c8979f499342e3cfff0dcb3a43345a5383943c4e9952a75e17f46ae68bf1d14c"}
+  ],
+  "provenance": {
+    "independentOracleScriptSha256": "c2638239ab932838ee1bacf467957ab4b42e49c682e4e3ca16117a7909c60e2e",
+    "qualityOracleScriptSha256": "a1da10b4427d9618cf7a2629e72a9ed40330a4e5311abbb7b22875d2b11df294"
+  },
+  "review": {
+    "status": "approved",
+    "reviewer": "/root/fix_remaining_narrow_overflow",
+    "artifact": "independent-review.json"
+  },
+  "limits": [
+    "Live answer accuracy was 0/3 and is informational; no live answer-accuracy claim is made.",
+    "No strong-model comparison, UI completion, narrative grounding, fixed-template ablation, external MCP-host reasoning, or full docs/32 benchmark claim is made.",
+    "The recorded API credential remained opaque and is not present in tracked evidence."
+  ]
+}

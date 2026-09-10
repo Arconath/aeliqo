@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1",
+  "task": "T31",
+  "status": "approved",
+  "reviewedSourceCommit": "ab5ccc8de1d0636efe975504516cb204c2bb41f2",
+  "reviewedSourceDigest": "f51e351e7d5a2261293f551312ba11a222fbe5ba3dddb24324bf38c364e3c7f3",
+  "reviewer": "/root/fix_remaining_narrow_overflow",
+  "role": "independent cross-domain correctness and integration reviewer",
+  "independentOfAuthor": true,
+  "decision": "approve",
+  "evidence": {
+    "direct": {"correct": 18, "trials": 18, "namedOutputs": 21},
+    "officialSdkMcp": {"correct": 18, "trials": 18, "namedOutputs": 21, "projectionMatchesDirect": 18},
+    "independentOracle": {"verifiedOutputs": 21, "totalOutputs": 21},
+    "domains": {"hr": 6, "commerce": 6, "serviceSupport": 6},
+    "query": {"passed": 94, "failed": 0},
+    "vertical": {"passed": 18, "failed": 0},
+    "providerIntegrationBreadth": {"commerceCases": 2, "serviceSupportCases": 1, "dataReadyMultiTurn": 3, "invalidThenDataReady": 1}
+  },
+  "s03": {
+    "status": "proved",
+    "productionAssertion": "tests/vertical-slice/integration/hr-runtime.test.ts: evaluates ranking before weekly trend and binds original ADC descriptors to the semantic task",
+    "oracleAssertion": "tests/query/oracle.test.ts: selects a fixed full-period top-K population before temporal evaluation",
+    "finding": "The full-period ranking selects the fixed cohort before the weekly output; local and HTTP evaluation retain it, the independent totals match, the mutation differs, and lineage/revocation are asserted."
+  },
+  "assessment": "No HR live case is required for this acceptance: developer-authored typed tasks are a first-class model-optional path, all six HR cases have exact deterministic direct/MCP/oracle coverage, and the bounded live smoke establishes the generic natural-language/provider path over two other domains without HR-specific resolver or endpoint branches.",
+  "limitations": [
+    "Live answer correctness was 0/3 and is informational under the owner-superseded T40 integration qualification.",
+    "No natural-language HR accuracy, strong-model comparison, UI completion, narrative grounding, or full benchmark completion is claimed.",
+    "The evidence proves the stated cross-domain implementation acceptance, not unrestricted intent understanding."
+  ]
+}

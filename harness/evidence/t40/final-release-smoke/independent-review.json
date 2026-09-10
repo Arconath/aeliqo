@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "1",
+  "task": "T40",
+  "status": "approved",
+  "reviewedSourceCommit": "ab5ccc8de1d0636efe975504516cb204c2bb41f2",
+  "reviewedSourceDigest": "f51e351e7d5a2261293f551312ba11a222fbe5ba3dddb24324bf38c364e3c7f3",
+  "reviewer": "/root/fix_remaining_narrow_overflow",
+  "role": "independent adversarial release-evidence reviewer",
+  "independentOfAuthor": true,
+  "decision": "approve",
+  "reproduction": {
+    "qualifier": {
+      "command": "node scripts/release/qualify-t40-smoke.mjs --report artifacts/t40-deepseek-live-f51e35-final/attempt-1/report.json --output /tmp/aeliqo-t40-reviewed-qualification.json --corpus fixtures/evaluation/t40-data-query-heldout.json --config artifacts/t40-deepseek-live-f51e35-final/config.json",
+      "exitCode": 0,
+      "byteIdentical": true
+    },
+    "releaseTooling": {"command": "pnpm test:release-tooling", "passed": 19, "failed": 0},
+    "query": {"command": "pnpm test:query", "passed": 94, "failed": 0},
+    "vertical": {"command": "pnpm test:vertical", "passed": 18, "failed": 0},
+    "protocolModel": {"command": "pnpm test:protocol-model", "passed": 11, "failed": 0},
+    "protocolMcp": {"command": "pnpm test:protocol-mcp", "passed": 13, "failed": 0},
+    "agentEvaluationHost": {"command": "pnpm test:agent-evaluation:host", "passed": 28, "failed": 0},
+    "agents": {"command": "pnpm test:agents", "passed": 112, "failed": 0},
+    "security": {"passed": 14, "failed": 0},
+    "performanceAndBundle": {"status": "pass", "forbiddenMarkers": []},
+    "independentOracle": {"command": "python3 fixtures/evaluation/t40-independent-oracle.py --report /tmp/aeliqo-t40-reviewed-oracle.json", "verifiedOutputs": 21, "totalOutputs": 21, "byteIdentical": true}
+  },
+  "deterministicAudit": {
+    "cases": 18,
+    "domains": {"hr": 6, "commerce": 6, "serviceSupport": 6},
+    "directCorrect": 18,
+    "officialSdkMcpCorrect": 18,
+    "directMcpProjectionMatches": 18,
+    "namedOutputsPerMode": 21,
+    "mcpProtocol": "2026-07-28",
+    "mcpToolSchemaSha256": "49b691e3516934b515b327103470b05dca47f2d671f723927e5ae3c3d6cced34",
+    "mcpCleanup": "all children exited and detached cleanly; stderr count zero"
+  },
+  "liveAudit": {
+    "selectedCases": ["commerce-currency-order-browse", "commerce-paid-revenue-topk", "support-weekly-volume"],
+    "trials": 3,
+    "qualifiedSnapshots": 10,
+    "modelRequests": 10,
+    "uniqueResponseIdentityHashes": 10,
+    "toolCalls": 7,
+    "deterministicDirectCorrect": 3,
+    "deterministicMcpCorrect": 3,
+    "dataReadyAttempts": 3,
+    "invalidThenDataReadyAttempts": 1,
+    "textReadyMultiTurnAttempts": 3,
+    "reservedUSD": 0.13804032,
+    "maximumUSD": 6,
+    "usageEstimatedUSD": 0.05345692,
+    "chargedUSD": null,
+    "retainedProviderPayloads": 0,
+    "liveDataCorrect": 0,
+    "liveDataCorrectTrials": 3,
+    "liveDataCorrectDisposition": "informational and nonblocking under the owner-superseded integration qualification"
+  },
+  "sanitization": {
+    "providerMessagesRetained": 0,
+    "providerReasoningRetained": 0,
+    "rawRequestsRetained": 0,
+    "rawResponsesRetained": 0,
+    "toolArgumentsRetained": 0,
+    "credentialsRetained": 0,
+    "allowedCredentialMetadata": "AELIQO_EVAL_PROVIDER_SECRET environment-variable name only"
+  },
+  "limitations": [
+    "The live answer-accuracy score is 0/3 and is not claimed as an accuracy result.",
+    "No strong-model comparison is claimed.",
+    "The data-only live runner does not establish UI completion, narrative grounding, fixed-template ablation, external MCP-host reasoning, or the broader historical benchmark in docs/32.",
+    "Authorization and deterministic execution remain host-controlled; model quality grants no permission."
+  ]
+}

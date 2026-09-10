@@ -1,0 +1,1548 @@
+{
+  "schemaVersion": 1,
+  "status": "blocked",
+  "mcpExplicit": true,
+  "sourceDigest": "f51e351e7d5a2261293f551312ba11a222fbe5ba3dddb24324bf38c364e3c7f3",
+  "sourceChangedDuringRun": false,
+  "corpus": {
+    "path": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/fixtures/evaluation/t40-data-query-heldout.json",
+    "sha256": "9b2fd53f8f9e15fdef2afd121e48ba22bad591ffd8b1ded1e5b5517fae5cbfa8",
+    "cases": [
+      {
+        "id": "hr-record-browse",
+        "partition": "heldout",
+        "independentAuthor": "platform-proof corpus author (independent Python arithmetic)",
+        "exposure": "Held-out T40 data-query corpus. Prompts, records and expected rows are sealed from harness implementation and model development until corpus freeze."
+      },
+      {
+        "id": "hr-ratio-null-by-department",
+        "partition": "heldout",
+        "independentAuthor": "platform-proof corpus author (independent Python arithmetic)",
+        "exposure": "Held-out T40 data-query corpus. Prompts, records and expected rows are sealed from harness implementation and model development until corpus freeze."
+      },
+      {
+        "id": "hr-weekly-absence-temporal",
+        "partition": "heldout",
+        "independentAuthor": "platform-proof corpus author (independent Python arithmetic)",
+        "exposure": "Held-out T40 data-query corpus. Prompts, records and expected rows are sealed from harness implementation and model development until corpus freeze."
+      },
+      {
+        "id": "hr-relation-absence-followup",
+        "partition": "heldout",
+        "independentAuthor": "platform-proof corpus author (independent Python arithmetic)",
+        "exposure": "Held-out T40 data-query corpus. Prompts, records and expected rows are sealed from harness implementation and model development until corpus freeze."
+      },
+      {
+        "id": "hr-multigrain-named-outputs",
+        "partition": "heldout",
+        "independentAuthor": "platform-proof corpus author (independent Python arithmetic)",
+        "exposure": "Held-out T40 data-query corpus. Prompts, records and expected rows are sealed from harness implementation and model development until corpus freeze."
+      },
+      {
+        "id": "hr-topk-period-filter",
+        "partition": "heldout",
+        "independentAuthor": "platform-proof corpus author (independent Python arithmetic)",
+        "exposure": "Held-out T40 data-query corpus. Prompts, records and expected rows are sealed from harness implementation and model development until corpus freeze."
+      },
+      {
+        "id": "commerce-currency-order-browse",
+        "partition": "heldout",
+        "independentAuthor": "platform-proof corpus author (independent Python arithmetic)",
+        "exposure": "Held-out T40 data-query corpus. Prompts, records and expected rows are sealed from harness implementation and model development until corpus freeze."
+      },
+      {
+        "id": "commerce-paid-revenue-topk",
+        "partition": "heldout",
+        "independentAuthor": "platform-proof corpus author (independent Python arithmetic)",
+        "exposure": "Held-out T40 data-query corpus. Prompts, records and expected rows are sealed from harness implementation and model development until corpus freeze."
+      },
+      {
+        "id": "commerce-null-amount-records",
+        "partition": "heldout",
+        "independentAuthor": "platform-proof corpus author (independent Python arithmetic)",
+        "exposure": "Held-out T40 data-query corpus. Prompts, records and expected rows are sealed from harness implementation and model development until corpus freeze."
+      },
+      {
+        "id": "commerce-active-customer-relation",
+        "partition": "heldout",
+        "independentAuthor": "platform-proof corpus author (independent Python arithmetic)",
+        "exposure": "Held-out T40 data-query corpus. Prompts, records and expected rows are sealed from harness implementation and model development until corpus freeze."
+      },
+      {
+        "id": "commerce-monthly-paid-revenue",
+        "partition": "heldout",
+        "independentAuthor": "platform-proof corpus author (independent Python arithmetic)",
+        "exposure": "Held-out T40 data-query corpus. Prompts, records and expected rows are sealed from harness implementation and model development until corpus freeze."
+      },
+      {
+        "id": "commerce-multigrain-orders-markets",
+        "partition": "heldout",
+        "independentAuthor": "platform-proof corpus author (independent Python arithmetic)",
+        "exposure": "Held-out T40 data-query corpus. Prompts, records and expected rows are sealed from harness implementation and model development until corpus freeze."
+      },
+      {
+        "id": "support-urgent-ticket-browse",
+        "partition": "heldout",
+        "independentAuthor": "platform-proof corpus author (independent Python arithmetic)",
+        "exposure": "Held-out T40 data-query corpus. Prompts, records and expected rows are sealed from harness implementation and model development until corpus freeze."
+      },
+      {
+        "id": "support-resolution-rate-null",
+        "partition": "heldout",
+        "independentAuthor": "platform-proof corpus author (independent Python arithmetic)",
+        "exposure": "Held-out T40 data-query corpus. Prompts, records and expected rows are sealed from harness implementation and model development until corpus freeze."
+      },
+      {
+        "id": "support-weekly-volume",
+        "partition": "heldout",
+        "independentAuthor": "platform-proof corpus author (independent Python arithmetic)",
+        "exposure": "Held-out T40 data-query corpus. Prompts, records and expected rows are sealed from harness implementation and model development until corpus freeze."
+      },
+      {
+        "id": "support-account-urgent-relation",
+        "partition": "heldout",
+        "independentAuthor": "platform-proof corpus author (independent Python arithmetic)",
+        "exposure": "Held-out T40 data-query corpus. Prompts, records and expected rows are sealed from harness implementation and model development until corpus freeze."
+      },
+      {
+        "id": "support-multigrain-queue-tickets",
+        "partition": "heldout",
+        "independentAuthor": "platform-proof corpus author (independent Python arithmetic)",
+        "exposure": "Held-out T40 data-query corpus. Prompts, records and expected rows are sealed from harness implementation and model development until corpus freeze."
+      },
+      {
+        "id": "support-null-response-records",
+        "partition": "heldout",
+        "independentAuthor": "platform-proof corpus author (independent Python arithmetic)",
+        "exposure": "Held-out T40 data-query corpus. Prompts, records and expected rows are sealed from harness implementation and model development until corpus freeze."
+      }
+    ],
+    "selection": {
+      "caseIds": [
+        "commerce-currency-order-browse",
+        "commerce-paid-revenue-topk",
+        "support-weekly-volume"
+      ],
+      "modelLabels": [
+        "weak"
+      ]
+    }
+  },
+  "authorization": {
+    "reference": "Owner finish-to-production directive in this controlling session; economical real DeepSeek evaluation explicitly authorized on 2026-09-10. Current Flash response identity was re-pinned by a minimal HTTP 200 request; portable auto tool choice is enforced by host receipt sequencing.",
+    "maximumUSD": 6,
+    "authorizedCorpusSha256": "9b2fd53f8f9e15fdef2afd121e48ba22bad591ffd8b1ded1e5b5517fae5cbfa8"
+  },
+  "groups": [
+    {
+      "label": "weak",
+      "attemptedTrials": 3,
+      "unqualifiedTrials": 0,
+      "trials": 3,
+      "dataCorrect": 0,
+      "interval": {
+        "lower": 5.551115123125783e-17,
+        "upper": 0.5614970317550454,
+        "confidence": 0.95,
+        "trials": 3
+      },
+      "uiTaskCompletion": null,
+      "narrativeGrounding": null
+    },
+    {
+      "label": "strong",
+      "attemptedTrials": 0,
+      "unqualifiedTrials": 0,
+      "trials": 0,
+      "dataCorrect": 0,
+      "interval": null,
+      "uiTaskCompletion": null,
+      "narrativeGrounding": null
+    }
+  ],
+  "blocks": [
+    "This data-only runner does not establish full T40: UI completion, narrative review, fixed-template ablation, external MCP-host reasoning trials, and independently accepted held-out coverage remain separate requirements."
+  ],
+  "rows": [
+    {
+      "caseId": "commerce-currency-order-browse",
+      "partition": "heldout",
+      "mode": "explicit-task",
+      "model": null,
+      "elapsedMs": 12.190417000000025,
+      "score": {
+        "dataCorrect": true,
+        "findings": [],
+        "uiTaskCompletion": null,
+        "narrativeGrounding": null
+      },
+      "observations": [
+        {
+          "stage": "evaluate",
+          "elapsedMs": 12.10695799999985,
+          "task": {
+            "version": "1",
+            "id": "commerce-currency-order-browse-task",
+            "revision": "1",
+            "catalogRevision": "commerce-catalog-2026-01",
+            "functionRegistryDigest": "core-standard-1",
+            "regionId": "eval-region",
+            "goal": "List paid orders",
+            "needs": [],
+            "assumptions": [],
+            "kind": "data",
+            "outputs": [
+              {
+                "id": "orders",
+                "kind": "query",
+                "query": {
+                  "entity": "orders",
+                  "fields": [
+                    "orderId",
+                    "market",
+                    "netAmount"
+                  ],
+                  "measures": [],
+                  "relations": [],
+                  "groupBy": [],
+                  "where": {
+                    "op": "compare",
+                    "field": "status",
+                    "comparison": "eq",
+                    "value": "paid"
+                  },
+                  "population": {
+                    "kind": "all-authorized"
+                  },
+                  "order": [
+                    {
+                      "field": "orderId",
+                      "direction": "asc",
+                      "nulls": "last"
+                    }
+                  ]
+                },
+                "dependsOn": [],
+                "delivery": "eager"
+              }
+            ]
+          },
+          "outputs": [
+            {
+              "descriptor": {
+                "version": "1",
+                "ref": {
+                  "id": "result-359deba51384f40b6cb95d295104c5dbaa1a5b603b4e4468706517021b9c122f",
+                  "revision": "commerce-source-2026-01",
+                  "outputId": "orders",
+                  "queryDigest": "query-0e3dc81a9c621216d2de273affc4022b06272a97474e1960b7e528674537e508",
+                  "scopeDigest": "scope-commerce-currency-order-browse"
+                },
+                "taskId": "commerce-currency-order-browse-task",
+                "fields": [
+                  {
+                    "id": "orderId",
+                    "label": "Order ID",
+                    "type": {
+                      "value": "text",
+                      "nullable": false,
+                      "grain": [
+                        "[\"orders\",\"orderId\"]"
+                      ]
+                    },
+                    "role": "identity"
+                  },
+                  {
+                    "id": "market",
+                    "label": "Market",
+                    "type": {
+                      "value": "text",
+                      "nullable": false,
+                      "grain": [
+                        "[\"orders\",\"orderId\"]"
+                      ]
+                    },
+                    "role": "dimension"
+                  },
+                  {
+                    "id": "netAmount",
+                    "label": "Net amount",
+                    "type": {
+                      "value": "decimal",
+                      "nullable": true,
+                      "unit": {
+                        "dimension": "currency",
+                        "symbol": "USD",
+                        "currency": "USD"
+                      },
+                      "grain": [
+                        "[\"orders\",\"orderId\"]"
+                      ]
+                    },
+                    "role": "measure"
+                  }
+                ],
+                "identity": [
+                  "orderId"
+                ],
+                "rowGrain": [
+                  "orderId"
+                ],
+                "counts": {
+                  "loaded": 6,
+                  "population": {
+                    "kind": "exact",
+                    "value": 6,
+                    "populationDigest": "population-1ef5e9fc1803d3ef4df05d61f845bd644b422225a160b4a916e2e5dc006819ff"
+                  }
+                },
+                "precision": {
+                  "kind": "exact"
+                },
+                "coverage": {
+                  "kind": "complete",
+                  "populationDigest": "population-1ef5e9fc1803d3ef4df05d61f845bd644b422225a160b4a916e2e5dc006819ff"
+                },
+                "consistency": {
+                  "kind": "snapshot",
+                  "snapshotId": "commerce-source-2026-01",
+                  "sourceRevisions": {
+                    "orders": "commerce-source-2026-01"
+                  }
+                },
+                "evidence": {
+                  "kind": "observed",
+                  "source": {
+                    "id": "local-source",
+                    "revision": "commerce-source-2026-01"
+                  }
+                },
+                "filters": [
+                  {
+                    "op": "compare",
+                    "field": "status",
+                    "comparison": "eq",
+                    "value": "paid"
+                  }
+                ],
+                "warnings": [],
+                "lineage": []
+              },
+              "rows": [
+                {
+                  "orderId": "o-100",
+                  "market": "north",
+                  "netAmount": {
+                    "decimal": "120.50"
+                  }
+                },
+                {
+                  "orderId": "o-101",
+                  "market": "north",
+                  "netAmount": {
+                    "decimal": "80.00"
+                  }
+                },
+                {
+                  "orderId": "o-103",
+                  "market": "south",
+                  "netAmount": {
+                    "decimal": "210.00"
+                  }
+                },
+                {
+                  "orderId": "o-104",
+                  "market": "south",
+                  "netAmount": null
+                },
+                {
+                  "orderId": "o-105",
+                  "market": "west",
+                  "netAmount": {
+                    "decimal": "50.25"
+                  }
+                },
+                {
+                  "orderId": "o-107",
+                  "market": "east",
+                  "netAmount": {
+                    "decimal": "100.01"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "caseId": "commerce-currency-order-browse",
+      "partition": "heldout",
+      "mode": "explicit-mcp",
+      "model": null,
+      "score": {
+        "dataCorrect": true,
+        "findings": [],
+        "uiTaskCompletion": null,
+        "narrativeGrounding": null
+      },
+      "observation": {
+        "transport": "official-sdk-stdio",
+        "protocolPin": "2026-07-28",
+        "server": {
+          "name": "aeliqo-evaluation-baseline",
+          "version": "0.1.0"
+        },
+        "node": "v24.20.0",
+        "discoveredTools": [
+          "read_catalog",
+          "evaluate_task"
+        ],
+        "toolSchemaSha256": "49b691d736f2b48f420344a261b03946679fdb19702445e849690ae786f83881",
+        "receiptState": "data-ready",
+        "callElapsedMs": 17.663290999999845,
+        "elapsedMs": 825.6080420000001,
+        "transportDetached": true,
+        "childPid": 18016,
+        "childExited": true,
+        "cleanupSucceeded": true,
+        "stderrBytes": 0,
+        "modelExecution": "No model adapter is configured.",
+        "fixtureProjection": "Application fixture fields only; expected answers and prompts are omitted.",
+        "limits": [
+          "Explicit normalized-task baseline only. No external model reasoning, HTTP deployment, UI completion or narrative grounding is asserted."
+        ]
+      },
+      "outputs": [
+        {
+          "descriptor": {
+            "version": "1",
+            "ref": {
+              "id": "result-a949522864daca1a2a8bb99838e2dbb78f4e253264dbbe7953a1928e694a7699",
+              "revision": "commerce-source-2026-01",
+              "outputId": "orders",
+              "queryDigest": "query-0e3dc81a9c621216d2de273affc4022b06272a97474e1960b7e528674537e508",
+              "scopeDigest": "scope-commerce-currency-order-browse"
+            },
+            "taskId": "commerce-currency-order-browse-task",
+            "fields": [
+              {
+                "id": "orderId",
+                "label": "Order ID",
+                "type": {
+                  "value": "text",
+                  "nullable": false,
+                  "grain": [
+                    "[\"orders\",\"orderId\"]"
+                  ]
+                },
+                "role": "identity"
+              },
+              {
+                "id": "market",
+                "label": "Market",
+                "type": {
+                  "value": "text",
+                  "nullable": false,
+                  "grain": [
+                    "[\"orders\",\"orderId\"]"
+                  ]
+                },
+                "role": "dimension"
+              },
+              {
+                "id": "netAmount",
+                "label": "Net amount",
+                "type": {
+                  "value": "decimal",
+                  "nullable": true,
+                  "unit": {
+                    "dimension": "currency",
+                    "symbol": "USD",
+                    "currency": "USD"
+                  },
+                  "grain": [
+                    "[\"orders\",\"orderId\"]"
+                  ]
+                },
+                "role": "measure"
+              }
+            ],
+            "identity": [
+              "orderId"
+            ],
+            "rowGrain": [
+              "orderId"
+            ],
+            "counts": {
+              "loaded": 6,
+              "population": {
+                "kind": "exact",
+                "value": 6,
+                "populationDigest": "population-1ef5e9fc1803d3ef4df05d61f845bd644b422225a160b4a916e2e5dc006819ff"
+              }
+            },
+            "precision": {
+              "kind": "exact"
+            },
+            "coverage": {
+              "kind": "complete",
+              "populationDigest": "population-1ef5e9fc1803d3ef4df05d61f845bd644b422225a160b4a916e2e5dc006819ff"
+            },
+            "consistency": {
+              "kind": "snapshot",
+              "snapshotId": "commerce-source-2026-01",
+              "sourceRevisions": {
+                "orders": "commerce-source-2026-01"
+              }
+            },
+            "evidence": {
+              "kind": "observed",
+              "source": {
+                "id": "local-source",
+                "revision": "commerce-source-2026-01"
+              }
+            },
+            "filters": [
+              {
+                "op": "compare",
+                "field": "status",
+                "comparison": "eq",
+                "value": "paid"
+              }
+            ],
+            "warnings": [],
+            "lineage": []
+          },
+          "rows": [
+            {
+              "orderId": "o-100",
+              "market": "north",
+              "netAmount": {
+                "decimal": "120.50"
+              }
+            },
+            {
+              "orderId": "o-101",
+              "market": "north",
+              "netAmount": {
+                "decimal": "80.00"
+              }
+            },
+            {
+              "orderId": "o-103",
+              "market": "south",
+              "netAmount": {
+                "decimal": "210.00"
+              }
+            },
+            {
+              "orderId": "o-104",
+              "market": "south",
+              "netAmount": null
+            },
+            {
+              "orderId": "o-105",
+              "market": "west",
+              "netAmount": {
+                "decimal": "50.25"
+              }
+            },
+            {
+              "orderId": "o-107",
+              "market": "east",
+              "netAmount": {
+                "decimal": "100.01"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "caseId": "commerce-paid-revenue-topk",
+      "partition": "heldout",
+      "mode": "explicit-task",
+      "model": null,
+      "elapsedMs": 6.899291000000176,
+      "score": {
+        "dataCorrect": true,
+        "findings": [],
+        "uiTaskCompletion": null,
+        "narrativeGrounding": null
+      },
+      "observations": [
+        {
+          "stage": "evaluate",
+          "elapsedMs": 6.894250000000056,
+          "task": {
+            "version": "1",
+            "id": "commerce-paid-revenue-topk-task",
+            "revision": "1",
+            "catalogRevision": "commerce-catalog-2026-01",
+            "functionRegistryDigest": "core-standard-1",
+            "regionId": "eval-region",
+            "goal": "Rank paid revenue by market",
+            "needs": [],
+            "assumptions": [],
+            "kind": "data",
+            "outputs": [
+              {
+                "id": "markets",
+                "kind": "query",
+                "query": {
+                  "entity": "orders",
+                  "fields": [
+                    "market"
+                  ],
+                  "measures": [
+                    {
+                      "id": "commerce.revenue",
+                      "revision": "1"
+                    }
+                  ],
+                  "relations": [],
+                  "groupBy": [
+                    "market"
+                  ],
+                  "where": {
+                    "op": "compare",
+                    "field": "status",
+                    "comparison": "eq",
+                    "value": "paid"
+                  },
+                  "population": {
+                    "kind": "all-authorized"
+                  },
+                  "order": [
+                    {
+                      "field": "commerce.revenue",
+                      "direction": "desc",
+                      "nulls": "last"
+                    },
+                    {
+                      "field": "market",
+                      "direction": "asc",
+                      "nulls": "last"
+                    }
+                  ],
+                  "topK": 2
+                },
+                "dependsOn": [],
+                "delivery": "eager"
+              }
+            ]
+          },
+          "outputs": [
+            {
+              "descriptor": {
+                "version": "1",
+                "ref": {
+                  "id": "result-456051b438a5473525f23a99857d67d77db725c9c91a6918d90107b81f79c25c",
+                  "revision": "commerce-source-2026-01",
+                  "outputId": "markets",
+                  "queryDigest": "query-a19dd1b16996656b31bfb91db6e8406f401acb77b7d636621fdec41a9b909030",
+                  "scopeDigest": "scope-commerce-paid-revenue-topk"
+                },
+                "taskId": "commerce-paid-revenue-topk-task",
+                "fields": [
+                  {
+                    "id": "market",
+                    "label": "Market",
+                    "type": {
+                      "value": "text",
+                      "nullable": false,
+                      "grain": [
+                        "market"
+                      ]
+                    },
+                    "role": "dimension"
+                  },
+                  {
+                    "id": "commerce.revenue",
+                    "label": "Paid revenue",
+                    "type": {
+                      "value": "decimal",
+                      "nullable": true,
+                      "unit": {
+                        "dimension": "currency",
+                        "symbol": "USD",
+                        "currency": "USD"
+                      },
+                      "grain": [
+                        "market"
+                      ]
+                    },
+                    "role": "measure",
+                    "derivation": {
+                      "id": "commerce.revenue",
+                      "revision": "1"
+                    }
+                  }
+                ],
+                "identity": [
+                  "market"
+                ],
+                "rowGrain": [
+                  "market"
+                ],
+                "counts": {
+                  "loaded": 2,
+                  "population": {
+                    "kind": "exact",
+                    "value": 2,
+                    "populationDigest": "population-ae6a4c3231fa724369ea7b553c5527e08391ce8938fde2771285cf9bc7147f94"
+                  }
+                },
+                "precision": {
+                  "kind": "exact"
+                },
+                "coverage": {
+                  "kind": "complete",
+                  "populationDigest": "population-ae6a4c3231fa724369ea7b553c5527e08391ce8938fde2771285cf9bc7147f94"
+                },
+                "consistency": {
+                  "kind": "snapshot",
+                  "snapshotId": "commerce-source-2026-01",
+                  "sourceRevisions": {
+                    "orders": "commerce-source-2026-01"
+                  }
+                },
+                "evidence": {
+                  "kind": "computed",
+                  "queryDigest": "query-a19dd1b16996656b31bfb91db6e8406f401acb77b7d636621fdec41a9b909030",
+                  "definitions": [
+                    {
+                      "id": "commerce.revenue",
+                      "revision": "1"
+                    }
+                  ]
+                },
+                "filters": [
+                  {
+                    "op": "compare",
+                    "field": "status",
+                    "comparison": "eq",
+                    "value": "paid"
+                  }
+                ],
+                "warnings": [],
+                "lineage": []
+              },
+              "rows": [
+                {
+                  "market": "north",
+                  "commerce.revenue": {
+                    "decimal": "200.5"
+                  }
+                },
+                {
+                  "market": "east",
+                  "commerce.revenue": {
+                    "decimal": "100.01"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "caseId": "commerce-paid-revenue-topk",
+      "partition": "heldout",
+      "mode": "explicit-mcp",
+      "model": null,
+      "score": {
+        "dataCorrect": true,
+        "findings": [],
+        "uiTaskCompletion": null,
+        "narrativeGrounding": null
+      },
+      "observation": {
+        "transport": "official-sdk-stdio",
+        "protocolPin": "2026-07-28",
+        "server": {
+          "name": "aeliqo-evaluation-baseline",
+          "version": "0.1.0"
+        },
+        "node": "v24.20.0",
+        "discoveredTools": [
+          "read_catalog",
+          "evaluate_task"
+        ],
+        "toolSchemaSha256": "49b691d736f2b48f420344a261b03946679fdb19702445e849690ae786f83881",
+        "receiptState": "data-ready",
+        "callElapsedMs": 17.92074999999977,
+        "elapsedMs": 750.6882500000002,
+        "transportDetached": true,
+        "childPid": 18018,
+        "childExited": true,
+        "cleanupSucceeded": true,
+        "stderrBytes": 0,
+        "modelExecution": "No model adapter is configured.",
+        "fixtureProjection": "Application fixture fields only; expected answers and prompts are omitted.",
+        "limits": [
+          "Explicit normalized-task baseline only. No external model reasoning, HTTP deployment, UI completion or narrative grounding is asserted."
+        ]
+      },
+      "outputs": [
+        {
+          "descriptor": {
+            "version": "1",
+            "ref": {
+              "id": "result-0cdd2b37f0fece351f320c20694c49ed6f64459d9265d510768b5ad1f696ffc7",
+              "revision": "commerce-source-2026-01",
+              "outputId": "markets",
+              "queryDigest": "query-a19dd1b16996656b31bfb91db6e8406f401acb77b7d636621fdec41a9b909030",
+              "scopeDigest": "scope-commerce-paid-revenue-topk"
+            },
+            "taskId": "commerce-paid-revenue-topk-task",
+            "fields": [
+              {
+                "id": "market",
+                "label": "Market",
+                "type": {
+                  "value": "text",
+                  "nullable": false,
+                  "grain": [
+                    "market"
+                  ]
+                },
+                "role": "dimension"
+              },
+              {
+                "id": "commerce.revenue",
+                "label": "Paid revenue",
+                "type": {
+                  "value": "decimal",
+                  "nullable": true,
+                  "unit": {
+                    "dimension": "currency",
+                    "symbol": "USD",
+                    "currency": "USD"
+                  },
+                  "grain": [
+                    "market"
+                  ]
+                },
+                "role": "measure",
+                "derivation": {
+                  "id": "commerce.revenue",
+                  "revision": "1"
+                }
+              }
+            ],
+            "identity": [
+              "market"
+            ],
+            "rowGrain": [
+              "market"
+            ],
+            "counts": {
+              "loaded": 2,
+              "population": {
+                "kind": "exact",
+                "value": 2,
+                "populationDigest": "population-ae6a4c3231fa724369ea7b553c5527e08391ce8938fde2771285cf9bc7147f94"
+              }
+            },
+            "precision": {
+              "kind": "exact"
+            },
+            "coverage": {
+              "kind": "complete",
+              "populationDigest": "population-ae6a4c3231fa724369ea7b553c5527e08391ce8938fde2771285cf9bc7147f94"
+            },
+            "consistency": {
+              "kind": "snapshot",
+              "snapshotId": "commerce-source-2026-01",
+              "sourceRevisions": {
+                "orders": "commerce-source-2026-01"
+              }
+            },
+            "evidence": {
+              "kind": "computed",
+              "queryDigest": "query-a19dd1b16996656b31bfb91db6e8406f401acb77b7d636621fdec41a9b909030",
+              "definitions": [
+                {
+                  "id": "commerce.revenue",
+                  "revision": "1"
+                }
+              ]
+            },
+            "filters": [
+              {
+                "op": "compare",
+                "field": "status",
+                "comparison": "eq",
+                "value": "paid"
+              }
+            ],
+            "warnings": [],
+            "lineage": []
+          },
+          "rows": [
+            {
+              "market": "north",
+              "commerce.revenue": {
+                "decimal": "200.5"
+              }
+            },
+            {
+              "market": "east",
+              "commerce.revenue": {
+                "decimal": "100.01"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "caseId": "support-weekly-volume",
+      "partition": "heldout",
+      "mode": "explicit-task",
+      "model": null,
+      "elapsedMs": 6.946374999999989,
+      "score": {
+        "dataCorrect": true,
+        "findings": [],
+        "uiTaskCompletion": null,
+        "narrativeGrounding": null
+      },
+      "observations": [
+        {
+          "stage": "evaluate",
+          "elapsedMs": 6.940791999999874,
+          "task": {
+            "version": "1",
+            "id": "support-weekly-volume-task",
+            "revision": "1",
+            "catalogRevision": "support-catalog-2026-01",
+            "functionRegistryDigest": "core-standard-1",
+            "regionId": "eval-region",
+            "goal": "Show weekly ticket volume",
+            "needs": [],
+            "assumptions": [],
+            "kind": "data",
+            "outputs": [
+              {
+                "id": "weekly-volume",
+                "kind": "query",
+                "query": {
+                  "entity": "tickets",
+                  "fields": [
+                    "openedDate"
+                  ],
+                  "measures": [
+                    {
+                      "id": "support.ticket-count",
+                      "revision": "1"
+                    }
+                  ],
+                  "relations": [],
+                  "groupBy": [
+                    "openedDate"
+                  ],
+                  "timeBucket": {
+                    "field": "openedDate",
+                    "grain": "week",
+                    "calendar": "iso8601",
+                    "timezone": "UTC",
+                    "weekStartsOn": 1
+                  },
+                  "population": {
+                    "kind": "all-authorized"
+                  },
+                  "order": [
+                    {
+                      "field": "openedDate",
+                      "direction": "asc",
+                      "nulls": "last"
+                    }
+                  ]
+                },
+                "dependsOn": [],
+                "delivery": "eager"
+              }
+            ]
+          },
+          "outputs": [
+            {
+              "descriptor": {
+                "version": "1",
+                "ref": {
+                  "id": "result-84c4507a0b1363977bdab6a0b395443fb95210f181717e6f07c80e9d1fdf5f15",
+                  "revision": "support-source-2026-01",
+                  "outputId": "weekly-volume",
+                  "queryDigest": "query-45252130ec9be0769852b29eac99d57f00e9424d261a8d5aa469fae9677ec833",
+                  "scopeDigest": "scope-support-weekly-volume"
+                },
+                "taskId": "support-weekly-volume-task",
+                "fields": [
+                  {
+                    "id": "openedDate",
+                    "label": "Opened date",
+                    "type": {
+                      "value": "date",
+                      "nullable": false,
+                      "grain": [
+                        "openedDate"
+                      ],
+                      "temporal": {
+                        "calendar": "iso8601",
+                        "timezone": "UTC",
+                        "grain": "week"
+                      }
+                    },
+                    "role": "dimension"
+                  },
+                  {
+                    "id": "support.ticket-count",
+                    "label": "Ticket count",
+                    "type": {
+                      "value": "integer",
+                      "nullable": false,
+                      "grain": [
+                        "openedDate"
+                      ]
+                    },
+                    "role": "measure",
+                    "derivation": {
+                      "id": "support.ticket-count",
+                      "revision": "1"
+                    }
+                  }
+                ],
+                "identity": [
+                  "openedDate"
+                ],
+                "rowGrain": [
+                  "openedDate"
+                ],
+                "counts": {
+                  "loaded": 8,
+                  "population": {
+                    "kind": "exact",
+                    "value": 8,
+                    "populationDigest": "population-7c11b4ef230774d7501acd4781fa7c205c690be27c60196f1289685579d98090"
+                  }
+                },
+                "precision": {
+                  "kind": "exact"
+                },
+                "coverage": {
+                  "kind": "complete",
+                  "populationDigest": "population-7c11b4ef230774d7501acd4781fa7c205c690be27c60196f1289685579d98090"
+                },
+                "consistency": {
+                  "kind": "snapshot",
+                  "snapshotId": "support-source-2026-01",
+                  "sourceRevisions": {
+                    "tickets": "support-source-2026-01"
+                  }
+                },
+                "evidence": {
+                  "kind": "computed",
+                  "queryDigest": "query-45252130ec9be0769852b29eac99d57f00e9424d261a8d5aa469fae9677ec833",
+                  "definitions": [
+                    {
+                      "id": "support.ticket-count",
+                      "revision": "1"
+                    }
+                  ]
+                },
+                "filters": [],
+                "warnings": [],
+                "lineage": []
+              },
+              "rows": [
+                {
+                  "openedDate": "2025-12-29",
+                  "support.ticket-count": 1
+                },
+                {
+                  "openedDate": "2026-01-05",
+                  "support.ticket-count": 2
+                },
+                {
+                  "openedDate": "2026-01-12",
+                  "support.ticket-count": 2
+                },
+                {
+                  "openedDate": "2026-02-02",
+                  "support.ticket-count": 1
+                },
+                {
+                  "openedDate": "2026-02-09",
+                  "support.ticket-count": 2
+                },
+                {
+                  "openedDate": "2026-02-16",
+                  "support.ticket-count": 1
+                },
+                {
+                  "openedDate": "2026-02-23",
+                  "support.ticket-count": 1
+                },
+                {
+                  "openedDate": "2026-03-02",
+                  "support.ticket-count": 1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "caseId": "support-weekly-volume",
+      "partition": "heldout",
+      "mode": "explicit-mcp",
+      "model": null,
+      "score": {
+        "dataCorrect": true,
+        "findings": [],
+        "uiTaskCompletion": null,
+        "narrativeGrounding": null
+      },
+      "observation": {
+        "transport": "official-sdk-stdio",
+        "protocolPin": "2026-07-28",
+        "server": {
+          "name": "aeliqo-evaluation-baseline",
+          "version": "0.1.0"
+        },
+        "node": "v24.20.0",
+        "discoveredTools": [
+          "read_catalog",
+          "evaluate_task"
+        ],
+        "toolSchemaSha256": "49b691d736f2b48f420344a261b03946679fdb19702445e849690ae786f83881",
+        "receiptState": "data-ready",
+        "callElapsedMs": 20.97154099999989,
+        "elapsedMs": 747.502708,
+        "transportDetached": true,
+        "childPid": 18020,
+        "childExited": true,
+        "cleanupSucceeded": true,
+        "stderrBytes": 0,
+        "modelExecution": "No model adapter is configured.",
+        "fixtureProjection": "Application fixture fields only; expected answers and prompts are omitted.",
+        "limits": [
+          "Explicit normalized-task baseline only. No external model reasoning, HTTP deployment, UI completion or narrative grounding is asserted."
+        ]
+      },
+      "outputs": [
+        {
+          "descriptor": {
+            "version": "1",
+            "ref": {
+              "id": "result-a4875e16623c8bf2ad3fd0317bbb6c906122985a56c1fda6f5d261da79c79bf7",
+              "revision": "support-source-2026-01",
+              "outputId": "weekly-volume",
+              "queryDigest": "query-45252130ec9be0769852b29eac99d57f00e9424d261a8d5aa469fae9677ec833",
+              "scopeDigest": "scope-support-weekly-volume"
+            },
+            "taskId": "support-weekly-volume-task",
+            "fields": [
+              {
+                "id": "openedDate",
+                "label": "Opened date",
+                "type": {
+                  "value": "date",
+                  "nullable": false,
+                  "grain": [
+                    "openedDate"
+                  ],
+                  "temporal": {
+                    "calendar": "iso8601",
+                    "timezone": "UTC",
+                    "grain": "week"
+                  }
+                },
+                "role": "dimension"
+              },
+              {
+                "id": "support.ticket-count",
+                "label": "Ticket count",
+                "type": {
+                  "value": "integer",
+                  "nullable": false,
+                  "grain": [
+                    "openedDate"
+                  ]
+                },
+                "role": "measure",
+                "derivation": {
+                  "id": "support.ticket-count",
+                  "revision": "1"
+                }
+              }
+            ],
+            "identity": [
+              "openedDate"
+            ],
+            "rowGrain": [
+              "openedDate"
+            ],
+            "counts": {
+              "loaded": 8,
+              "population": {
+                "kind": "exact",
+                "value": 8,
+                "populationDigest": "population-7c11b4ef230774d7501acd4781fa7c205c690be27c60196f1289685579d98090"
+              }
+            },
+            "precision": {
+              "kind": "exact"
+            },
+            "coverage": {
+              "kind": "complete",
+              "populationDigest": "population-7c11b4ef230774d7501acd4781fa7c205c690be27c60196f1289685579d98090"
+            },
+            "consistency": {
+              "kind": "snapshot",
+              "snapshotId": "support-source-2026-01",
+              "sourceRevisions": {
+                "tickets": "support-source-2026-01"
+              }
+            },
+            "evidence": {
+              "kind": "computed",
+              "queryDigest": "query-45252130ec9be0769852b29eac99d57f00e9424d261a8d5aa469fae9677ec833",
+              "definitions": [
+                {
+                  "id": "support.ticket-count",
+                  "revision": "1"
+                }
+              ]
+            },
+            "filters": [],
+            "warnings": [],
+            "lineage": []
+          },
+          "rows": [
+            {
+              "openedDate": "2025-12-29",
+              "support.ticket-count": 1
+            },
+            {
+              "openedDate": "2026-01-05",
+              "support.ticket-count": 2
+            },
+            {
+              "openedDate": "2026-01-12",
+              "support.ticket-count": 2
+            },
+            {
+              "openedDate": "2026-02-02",
+              "support.ticket-count": 1
+            },
+            {
+              "openedDate": "2026-02-09",
+              "support.ticket-count": 2
+            },
+            {
+              "openedDate": "2026-02-16",
+              "support.ticket-count": 1
+            },
+            {
+              "openedDate": "2026-02-23",
+              "support.ticket-count": 1
+            },
+            {
+              "openedDate": "2026-03-02",
+              "support.ticket-count": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "caseId": "commerce-currency-order-browse",
+      "partition": "heldout",
+      "mode": "governed-model-data",
+      "model": "deepseek-v4-flash",
+      "modelLabel": "weak",
+      "qualifiedModelSnapshot": true,
+      "connection": {
+        "protocol": "openai-compatible-chat",
+        "origin": "https://api.deepseek.com",
+        "authScheme": "bearer",
+        "capabilities": [
+          "tool-calls",
+          "usage",
+          "request-cancellation"
+        ]
+      },
+      "snapshots": [
+        {
+          "reportedModel": "deepseek-flash",
+          "reportedModelSha256": "7d963f65d1ede1bd9416a5f55575efe0d202e0a00519ef04e47dae20c3180445",
+          "matchesExpected": true,
+          "responseIdSha256": "b46145bf40efe59e91297d919b8d8095d056866caddb5d5e10107b059ba2e6c5"
+        },
+        {
+          "reportedModel": "deepseek-flash",
+          "reportedModelSha256": "7d963f65d1ede1bd9416a5f55575efe0d202e0a00519ef04e47dae20c3180445",
+          "matchesExpected": true,
+          "responseIdSha256": "4ada51fc2dcf119d06674557308596343e31e81b9fab37c5f23dcd7b808ae560"
+        },
+        {
+          "reportedModel": "deepseek-flash",
+          "reportedModelSha256": "7d963f65d1ede1bd9416a5f55575efe0d202e0a00519ef04e47dae20c3180445",
+          "matchesExpected": true,
+          "responseIdSha256": "7b574e7e5b83184dc8b356924cc8060c6440d3090bd0ad2c9e9d274c9ee1397b"
+        }
+      ],
+      "trial": 1,
+      "elapsedMs": 8643.076334000001,
+      "reservedUSD": 0.04601344,
+      "firstAttempt": {
+        "dataCorrect": false,
+        "findings": [
+          "orders:missing-output"
+        ],
+        "uiTaskCompletion": null,
+        "narrativeGrounding": null
+      },
+      "score": {
+        "dataCorrect": false,
+        "findings": [
+          "orders:missing-output"
+        ],
+        "uiTaskCompletion": null,
+        "narrativeGrounding": null
+      },
+      "result": {
+        "ok": true,
+        "stop": "text-ready",
+        "turns": 3,
+        "modelRequests": 3,
+        "toolCalls": 2,
+        "inputTokens": 30669,
+        "outputTokens": 1719,
+        "receiptStates": [
+          {
+            "operation": "catalog.read",
+            "state": "data-ready"
+          },
+          {
+            "operation": "task.evaluate",
+            "state": "data-ready"
+          }
+        ]
+      },
+      "observations": [
+        {
+          "stage": "evaluate",
+          "elapsedMs": 10.627415999999357,
+          "outputCount": 1,
+          "rowCount": 6,
+          "diagnosticCodes": []
+        }
+      ],
+      "uiTaskCompletion": null,
+      "narrativeGrounding": null,
+      "chargedUSD": null,
+      "usageEstimatedUSD": 0.01576344,
+      "priceSource": "https://api-docs.deepseek.com/quick_start/pricing peak rates, verified 2026-09-10"
+    },
+    {
+      "caseId": "commerce-paid-revenue-topk",
+      "partition": "heldout",
+      "mode": "governed-model-data",
+      "model": "deepseek-v4-flash",
+      "modelLabel": "weak",
+      "qualifiedModelSnapshot": true,
+      "connection": {
+        "protocol": "openai-compatible-chat",
+        "origin": "https://api.deepseek.com",
+        "authScheme": "bearer",
+        "capabilities": [
+          "tool-calls",
+          "usage",
+          "request-cancellation"
+        ]
+      },
+      "snapshots": [
+        {
+          "reportedModel": "deepseek-flash",
+          "reportedModelSha256": "7d963f65d1ede1bd9416a5f55575efe0d202e0a00519ef04e47dae20c3180445",
+          "matchesExpected": true,
+          "responseIdSha256": "86b3edaf1034069210971d2f2e030bf278447ae7b7b410c84583f9c6f9a2ab5c"
+        },
+        {
+          "reportedModel": "deepseek-flash",
+          "reportedModelSha256": "7d963f65d1ede1bd9416a5f55575efe0d202e0a00519ef04e47dae20c3180445",
+          "matchesExpected": true,
+          "responseIdSha256": "30ac333c0d553b5fb73e4761df533cb85e6930f13455fadc73d42c9ae41f411a"
+        },
+        {
+          "reportedModel": "deepseek-flash",
+          "reportedModelSha256": "7d963f65d1ede1bd9416a5f55575efe0d202e0a00519ef04e47dae20c3180445",
+          "matchesExpected": true,
+          "responseIdSha256": "3074917346d8bdd6af0f43b792e77648ee1dc343fad5182f75f48d075c87ebaa"
+        }
+      ],
+      "trial": 1,
+      "elapsedMs": 5006.679,
+      "reservedUSD": 0.04601344,
+      "firstAttempt": {
+        "dataCorrect": false,
+        "findings": [
+          "markets:missing-output"
+        ],
+        "uiTaskCompletion": null,
+        "narrativeGrounding": null
+      },
+      "score": {
+        "dataCorrect": false,
+        "findings": [
+          "markets:missing-output"
+        ],
+        "uiTaskCompletion": null,
+        "narrativeGrounding": null
+      },
+      "result": {
+        "ok": true,
+        "stop": "text-ready",
+        "turns": 3,
+        "modelRequests": 3,
+        "toolCalls": 2,
+        "inputTokens": 29727,
+        "outputTokens": 873,
+        "receiptStates": [
+          {
+            "operation": "catalog.read",
+            "state": "data-ready"
+          },
+          {
+            "operation": "task.evaluate",
+            "state": "data-ready"
+          }
+        ]
+      },
+      "observations": [
+        {
+          "stage": "evaluate",
+          "elapsedMs": 8.223041999999623,
+          "outputCount": 1,
+          "rowCount": 2,
+          "diagnosticCodes": []
+        }
+      ],
+      "uiTaskCompletion": null,
+      "narrativeGrounding": null,
+      "chargedUSD": null,
+      "usageEstimatedUSD": 0.01423224,
+      "priceSource": "https://api-docs.deepseek.com/quick_start/pricing peak rates, verified 2026-09-10"
+    },
+    {
+      "caseId": "support-weekly-volume",
+      "partition": "heldout",
+      "mode": "governed-model-data",
+      "model": "deepseek-v4-flash",
+      "modelLabel": "weak",
+      "qualifiedModelSnapshot": true,
+      "connection": {
+        "protocol": "openai-compatible-chat",
+        "origin": "https://api.deepseek.com",
+        "authScheme": "bearer",
+        "capabilities": [
+          "tool-calls",
+          "usage",
+          "request-cancellation"
+        ]
+      },
+      "snapshots": [
+        {
+          "reportedModel": "deepseek-flash",
+          "reportedModelSha256": "7d963f65d1ede1bd9416a5f55575efe0d202e0a00519ef04e47dae20c3180445",
+          "matchesExpected": true,
+          "responseIdSha256": "3847e8ce707f8a282163aac5706db20b68d1de32e3c02080e3adf8f96fd95f21"
+        },
+        {
+          "reportedModel": "deepseek-flash",
+          "reportedModelSha256": "7d963f65d1ede1bd9416a5f55575efe0d202e0a00519ef04e47dae20c3180445",
+          "matchesExpected": true,
+          "responseIdSha256": "8f26aa7186b1230fd6bf71f67cb0d7047938877b1732460b25a5580c55888577"
+        },
+        {
+          "reportedModel": "deepseek-flash",
+          "reportedModelSha256": "7d963f65d1ede1bd9416a5f55575efe0d202e0a00519ef04e47dae20c3180445",
+          "matchesExpected": true,
+          "responseIdSha256": "229e97148019bbfda46f4dce0ae7562a97a295bdfb1b46a105a1900859cea410"
+        },
+        {
+          "reportedModel": "deepseek-flash",
+          "reportedModelSha256": "7d963f65d1ede1bd9416a5f55575efe0d202e0a00519ef04e47dae20c3180445",
+          "matchesExpected": true,
+          "responseIdSha256": "adb5c8fe503f330620738f087f01d2507d7fd0e919dd04cd326d8a33e3f5a72d"
+        }
+      ],
+      "trial": 1,
+      "elapsedMs": 11942.34575,
+      "reservedUSD": 0.04601344,
+      "firstAttempt": {
+        "dataCorrect": false
+      },
+      "score": {
+        "dataCorrect": false,
+        "findings": [
+          "weekly-volume:missing-output"
+        ],
+        "uiTaskCompletion": null,
+        "narrativeGrounding": null
+      },
+      "result": {
+        "ok": true,
+        "stop": "text-ready",
+        "turns": 4,
+        "modelRequests": 4,
+        "toolCalls": 3,
+        "inputTokens": 46559,
+        "outputTokens": 2254,
+        "receiptStates": [
+          {
+            "operation": "catalog.read",
+            "state": "data-ready"
+          },
+          {
+            "operation": "task.evaluate",
+            "state": "invalid"
+          },
+          {
+            "operation": "task.evaluate",
+            "state": "data-ready"
+          }
+        ]
+      },
+      "observations": [
+        {
+          "stage": "evaluate",
+          "elapsedMs": 2.588291999996727,
+          "outputCount": 0,
+          "rowCount": 0,
+          "diagnosticCodes": [
+            "data.unsupported"
+          ]
+        },
+        {
+          "stage": "evaluate",
+          "elapsedMs": 4.9114169999993464,
+          "outputCount": 1,
+          "rowCount": 8,
+          "diagnosticCodes": []
+        }
+      ],
+      "uiTaskCompletion": null,
+      "narrativeGrounding": null,
+      "chargedUSD": null,
+      "usageEstimatedUSD": 0.023461239999999998,
+      "priceSource": "https://api-docs.deepseek.com/quick_start/pricing peak rates, verified 2026-09-10"
+    }
+  ]
+}

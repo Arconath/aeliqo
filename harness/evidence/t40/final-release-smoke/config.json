@@ -1,0 +1,48 @@
+{
+  "version": "1",
+  "authorized": true,
+  "authorizationReference": "Owner finish-to-production directive in this controlling session; economical real DeepSeek evaluation explicitly authorized on 2026-09-10. Current Flash response identity was re-pinned by a minimal HTTP 200 request; portable auto tool choice is enforced by host receipt sequencing.",
+  "authorizedCorpusSha256": "9b2fd53f8f9e15fdef2afd121e48ba22bad591ffd8b1ded1e5b5517fae5cbfa8",
+  "maxUSD": 6,
+  "trials": 1,
+  "models": [
+    {
+      "label": "weak",
+      "protocol": "openai-compatible-chat",
+      "baseURL": "https://api.deepseek.com",
+      "model": "deepseek-v4-flash",
+      "expectedReportedModel": "deepseek-flash",
+      "credentialEnvironment": "AELIQO_EVAL_PROVIDER_SECRET",
+      "auth": {"scheme": "bearer"},
+      "capabilities": ["tool-calls", "usage", "request-cancellation"],
+      "inputUSDPerMillion": 0.44,
+      "outputUSDPerMillion": 1.32,
+      "priceSource": "https://api-docs.deepseek.com/quick_start/pricing peak rates, verified 2026-09-10"
+    },
+    {
+      "label": "strong",
+      "protocol": "openai-compatible-chat",
+      "baseURL": "https://api.deepseek.com",
+      "model": "deepseek-v4-pro",
+      "expectedReportedModel": "deepseek-v4-pro",
+      "credentialEnvironment": "AELIQO_EVAL_PROVIDER_SECRET",
+      "auth": {"scheme": "bearer"},
+      "capabilities": ["tool-calls", "usage", "request-cancellation"],
+      "inputUSDPerMillion": 1.32,
+      "outputUSDPerMillion": 3.96,
+      "priceSource": "https://api-docs.deepseek.com/quick_start/pricing peak rates, verified 2026-09-10"
+    }
+  ],
+  "budget": {
+    "maxTurns": 4,
+    "maxModelRequests": 4,
+    "maxToolCalls": 3,
+    "maxMilliseconds": 120000,
+    "maxInputTokens": 20000,
+    "maxOutputTokens": 2048,
+    "maxTotalTokens": 85000,
+    "maxInputBytes": 262144,
+    "maxOutputBytes": 262144,
+    "maxRepeatedCalls": 2
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1",
+  "task": "T31",
+  "status": "passed",
+  "sourceCommit": "ab5ccc8de1d0636efe975504516cb204c2bb41f2",
+  "sourceDigest": "f51e351e7d5a2261293f551312ba11a222fbe5ba3dddb24324bf38c364e3c7f3",
+  "sourceChangedDuringRuns": false,
+  "recordedAt": "2026-09-10T06:00:15Z",
+  "scope": "Cross-domain held-out typed task and official MCP execution across HR, commerce, and service/support, with independent exact oracles, fixed-cohort production assertions, and bounded live provider-path breadth.",
+  "corpus": {
+    "path": "fixtures/evaluation/t40-data-query-heldout.json",
+    "sha256": "9b2fd53f8f9e15fdef2afd121e48ba22bad591ffd8b1ded1e5b5517fae5cbfa8",
+    "manifestPath": "fixtures/evaluation/t40-data-query-heldout.manifest.json",
+    "manifestSha256": "38efc8dc1ed1ae326047cb36d3e063b36760c5f432cfb105b9bc89f136a8d85e",
+    "cases": 18,
+    "domains": {"hr": 6, "commerce": 6, "serviceSupport": 6},
+    "namedOutputs": 21
+  },
+  "results": {
+    "direct": {"correct": 18, "trials": 18},
+    "officialSdkMcp": {"correct": 18, "trials": 18},
+    "independentOracle": {"verifiedOutputs": 21, "totalOutputs": 21},
+    "query": {"command": "pnpm test:query", "passed": 94, "failed": 0},
+    "vertical": {"command": "pnpm test:vertical", "passed": 18, "failed": 0}
+  },
+  "s03": {
+    "status": "passed",
+    "sources": [
+      "tests/vertical-slice/integration/hr-runtime.test.ts: evaluates ranking before weekly trend and binds original ADC descriptors to the semantic task",
+      "tests/query/oracle.test.ts: selects a fixed full-period top-K population before temporal evaluation"
+    ],
+    "result": "The fixed full-period top-five population is selected before weekly evaluation, retained across local and HTTP execution, and verified against independent exact totals and a discriminating mutation."
+  },
+  "artifacts": [
+    {"path": "harness/evidence/t40/final-release-smoke/deterministic-report.json", "sha256": "cbe3d4b29b18f2f6edcced3bc3cf3615fafc567eb7e357f011c8ba0b150a1109"},
+    {"path": "harness/evidence/t40/final-release-smoke/quality-oracle.json", "sha256": "3d5a9e9c566f748fe84fae8ea708f7ef0bd6c313f48b2bb49eeb1af1cdabca24"},
+    {"path": "harness/evidence/t40/final-release-smoke/independent-oracle.json", "sha256": "b99b88a51c2fd267f7e5f2c14e2afbecc0e335a4090f389ded4b6d2937c19d65"},
+    {"path": "harness/evidence/t40/final-release-smoke/qualification.json", "sha256": "c8979f499342e3cfff0dcb3a43345a5383943c4e9952a75e17f46ae68bf1d14c"},
+    {"path": "harness/evidence/t40/final-release-smoke/manifest.json", "sha256": "adc0ffdebb589ad7b7144855683b81efdfcb423de6ee87c25208d4fa88148d5a"}
+  ],
+  "review": {
+    "status": "approved",
+    "reviewer": "/root/fix_remaining_narrow_overflow",
+    "artifact": "independent-review.json"
+  },
+  "limits": [
+    "Live answer correctness was 0/3 and is informational; no live answer-accuracy claim is made.",
+    "No natural-language HR accuracy, strong-model comparison, UI completion, narrative grounding, or unrestricted intent-generalization claim is made."
+  ]
+}

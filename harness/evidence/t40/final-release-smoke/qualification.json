@@ -1,0 +1,26 @@
+{
+  "schema": "aeliqo.t40-release-smoke.v1",
+  "status": "passed",
+  "sourceDigest": "f51e351e7d5a2261293f551312ba11a222fbe5ba3dddb24324bf38c364e3c7f3",
+  "corpusSha256": "9b2fd53f8f9e15fdef2afd121e48ba22bad591ffd8b1ded1e5b5517fae5cbfa8",
+  "selectedCaseIds": [
+    "commerce-currency-order-browse",
+    "commerce-paid-revenue-topk",
+    "support-weekly-volume"
+  ],
+  "configuredModel": "deepseek-v4-flash",
+  "observedModel": "deepseek-flash",
+  "attempts": 3,
+  "configuredTrialsPerCase": 1,
+  "qualifiedSnapshots": 10,
+  "deterministicDirectCorrect": 3,
+  "deterministicMcpCorrect": 3,
+  "dataReadyAttempts": 3,
+  "invalidThenDataReadyAttempts": 1,
+  "textReadyMultiTurnAttempts": 3,
+  "reservedUSD": 0.13804032,
+  "usageEstimatedUSD": 0.05345692,
+  "retainedProviderPayloads": 0,
+  "reportSha256": "0b358937c9be68f29fee14e7d15c92ab3389446db66bad0729448875393e1cfb",
+  "configSha256": "4219ba115a02b956182e8a5df86bae74fd47c578ce70be533faae33570ea53b5"
+}

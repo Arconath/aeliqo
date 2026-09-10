@@ -36,7 +36,13 @@
       "title": "Fixed top-five population, then weekly trend",
       "task": "T31",
       "assertion": "Select population over full requested period before weekly trend; independent exact totals.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/t31/final-cross-domain/manifest.json",
+          "sha256": "a30b2954c8a7f85dcd5c8f219e925b5cc4aadf6e5036b8c82ae07d213c5e3a77"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -315,7 +321,13 @@
       "title": "MCP versus direct versus BYOK parity",
       "task": "T24",
       "assertion": "Equivalent command produces same authorized state/receipt; real provider run labeled.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/t40/final-release-smoke/manifest.json",
+          "sha256": "adc0ffdebb589ad7b7144855683b81efdfcb423de6ee87c25208d4fa88148d5a"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -592,7 +604,13 @@
       "title": "Evaluate without publishing every intermediate view",
       "task": "T40",
       "assertion": "Agent can investigate within budget while preserving incumbent UI; only intended results commit.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/t40/final-release-smoke/manifest.json",
+          "sha256": "adc0ffdebb589ad7b7144855683b81efdfcb423de6ee87c25208d4fa88148d5a"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -631,7 +649,13 @@
       "title": "Claim grounding and changing population mix",
       "task": "T40",
       "assertion": "Correct totals do not permit incorrect all-groups/causal explanations; preserve evidence references.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/t40/final-release-smoke/manifest.json",
+          "sha256": "adc0ffdebb589ad7b7144855683b81efdfcb423de6ee87c25208d4fa88148d5a"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -754,7 +778,13 @@
       "title": "Valid-but-wrong meaning",
       "task": "T40",
       "assertion": "Known metric selected for wrong latent intent is measured as semantic failure, not claimed prevented by schema; material known ambiguity gets a concise choice.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/t40/final-release-smoke/manifest.json",
+          "sha256": "adc0ffdebb589ad7b7144855683b81efdfcb423de6ee87c25208d4fa88148d5a"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -823,7 +853,13 @@
       "title": "Narrative title grounding",
       "task": "T40",
       "assertion": "Numbers, titles and tooltips cite compatible result/time/unit; adding a source ID does not verify unsupported prose or causality.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/t40/final-release-smoke/manifest.json",
+          "sha256": "adc0ffdebb589ad7b7144855683b81efdfcb423de6ee87c25208d4fa88148d5a"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },

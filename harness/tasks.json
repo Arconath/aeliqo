@@ -1296,15 +1296,31 @@
       "acceptance": [
         "HR raw data plus non-HR and non-dashboard tasks work without prompt-specific endpoint or resolver cases."
       ],
-      "status": "planned",
+      "status": "done",
       "stage": "ready",
       "evidence": [
         {
           "path": "harness/evidence/t31/5e37b53-explicit-mcp/manifest.json",
           "sha256": "6bcc89de1abe5f87e0733b98dfff572db567e11e8e9d9fec8f12a6cec4796b8d"
+        },
+        {
+          "path": "harness/evidence/t31/final-cross-domain/manifest.json",
+          "sha256": "a30b2954c8a7f85dcd5c8f219e925b5cc4aadf6e5036b8c82ae07d213c5e3a77"
         }
       ],
-      "notes": "Partial current-source evidence only: the sealed 18-case corpus passes 18/18 explicit typed tasks and 18/18 local official-SDK MCP tasks, with 21/21 independent Python-oracle outputs verified across HR, commerce and service/support. Natural-language unseen-intent/model/UI/grounding acceptance remains untested; task stays planned."
+      "notes": "Accepted on exact source ab5ccc8/digest f51e351: the sealed 18-case corpus passes 18/18 direct typed tasks and 18/18 official-SDK MCP tasks with 21/21 independent Python-oracle outputs across six HR, six commerce and six service/support cases. Fresh query 94/94 and vertical 18/18 prove the fixed full-period top-five population before weekly evaluation. A three-case commerce/support Flash smoke establishes generic bounded provider integration; manual typed tasks remain first-class and model-optional, so no HR-specific endpoint or resolver branch is required. Live answer correctness was 0/3 and informational; no natural-language HR accuracy, UI/narrative, strong-model, or unrestricted intent-generalization claim is made.",
+      "review": {
+        "status": "approved",
+        "author": "root evidence integration and prior scoped implementation authors",
+        "reviewer": "/root/fix_remaining_narrow_overflow",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t31/final-cross-domain/independent-review.json",
+            "sha256": "2fb69273e99db4d8fd18036a909b78fb67824912defe82f228d337d2b092731a"
+          }
+        ],
+        "scope": "Approves the stated cross-domain implementation and S03 fixed-cohort acceptance; excludes unrestricted intent accuracy and broader UI/narrative benchmark claims."
+      }
     },
     {
       "id": "T32",
@@ -1547,7 +1563,7 @@
         "The real MCP path relevant to agent integration works.",
         "A bounded three-to-five-case live held-out smoke proves simple query, deterministic evaluation, a valid tool call, invalid-request recovery, and a multi-turn flow."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
       "evidence": [
         {
@@ -1561,9 +1577,25 @@
         {
           "path": "harness/evidence/t40/e708fd0-installed-consumer/manifest.json",
           "sha256": "99e118fd49c0670bf0d07cbb57133ce69bd3907adee59c61852b05cebc51e026"
+        },
+        {
+          "path": "harness/evidence/t40/final-release-smoke/manifest.json",
+          "sha256": "adc0ffdebb589ad7b7144855683b81efdfcb423de6ee87c25208d4fa88148d5a"
         }
       ],
-      "notes": "The owner superseded the pre-release weak-versus-strong research task with a product integration qualification. Historical explicit-task, installed-consumer, and real MCP evidence remains useful input, but final acceptance requires a fresh source-bound three-to-five-case DeepSeek V4 Flash smoke plus deterministic security, dispatcher, continuation, cancellation, error-normalization, browser-bundle, and MCP proof. Model answer quality remains measured separately and does not grant authority or block a sound provider-neutral integration."
+      "notes": "Accepted on exact source ab5ccc8/digest f51e351 under the owner-superseded product integration qualification. Full corpus: 18/18 direct, 18/18 official MCP and 21/21 independent oracle. The bounded three-case DeepSeek V4 Flash smoke produced 10/10 authorized unique provider snapshots, three governed data-ready multi-turn flows, and one diagnostic-backed invalid-to-ready repair for estimated usage $0.05345692 with zero retained provider payloads. Live answer correctness was 0/3 and remains informational; model quality grants no authority. No strong-model, UI completion, narrative grounding, fixed-template ablation, external MCP-host reasoning, or full docs/32 benchmark claim is made.",
+      "review": {
+        "status": "approved",
+        "author": "root evidence integration and prior scoped implementation authors",
+        "reviewer": "/root/fix_remaining_narrow_overflow",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t40/final-release-smoke/independent-review.json",
+            "sha256": "9d71aa76b8c30809b59b18182fcc5d50d751f42c04969e865a9435d6a2943abd"
+          }
+        ],
+        "scope": "Approves provider-neutral integration, bounded continuation/repair, official MCP parity, opaque credential handling and exact live-smoke evidence; excludes model-answer accuracy and broader UI/narrative benchmark claims."
+      }
     },
     {
       "id": "T41",

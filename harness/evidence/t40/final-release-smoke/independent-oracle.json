@@ -1,0 +1,228 @@
+{
+  "schemaVersion": "1",
+  "oracle": "t40-independent-python",
+  "independent": true,
+  "sdkImports": [],
+  "corpus": "fixtures/evaluation/t40-data-query-heldout.json",
+  "corpusSha256": "9b2fd53f8f9e15fdef2afd121e48ba22bad591ffd8b1ded1e5b5517fae5cbfa8",
+  "manifestSha256": "38efc8dc1ed1ae326047cb36d3e063b36760c5f432cfb105b9bc89f136a8d85e",
+  "scriptSha256": "c2638239ab932838ee1bacf467957ab4b42e49c682e4e3ca16117a7909c60e2e",
+  "python": "3.14.7",
+  "caseCount": 18,
+  "outputCount": 21,
+  "verifiedOutputCount": 21,
+  "failedOutputCount": 0,
+  "failures": [],
+  "outputs": [
+    {
+      "caseId": "hr-record-browse",
+      "outputId": "employees",
+      "actualRows": 2,
+      "expectedRows": 2,
+      "actualDigest": "34031079e9dfdaebce88135f8afdc4af716b57839532d13cce6e46f2e823b5eb",
+      "expectedDigest": "34031079e9dfdaebce88135f8afdc4af716b57839532d13cce6e46f2e823b5eb",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "caseId": "hr-ratio-null-by-department",
+      "outputId": "department-rates",
+      "actualRows": 3,
+      "expectedRows": 3,
+      "actualDigest": "7c62587f87d43fe66127e589be0e41f1ed04853c1ecc9f9e187d57c098504b07",
+      "expectedDigest": "7c62587f87d43fe66127e589be0e41f1ed04853c1ecc9f9e187d57c098504b07",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "caseId": "hr-weekly-absence-temporal",
+      "outputId": "weekly-absence",
+      "actualRows": 5,
+      "expectedRows": 5,
+      "actualDigest": "fd8bca12c7a56a3746a084a91966772fc4abe4a6b7c168b986de8317cc386b96",
+      "expectedDigest": "fd8bca12c7a56a3746a084a91966772fc4abe4a6b7c168b986de8317cc386b96",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "caseId": "hr-relation-absence-followup",
+      "outputId": "employees",
+      "actualRows": 3,
+      "expectedRows": 3,
+      "actualDigest": "9e0051baefb8f5f084e550bb8c4b004de21c28d56270c3d2b96e317a9e644bfd",
+      "expectedDigest": "9e0051baefb8f5f084e550bb8c4b004de21c28d56270c3d2b96e317a9e644bfd",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "caseId": "hr-multigrain-named-outputs",
+      "outputId": "employee-detail",
+      "actualRows": 4,
+      "expectedRows": 4,
+      "actualDigest": "15357662ceec72785b1145ba30f07b7b8ddf96d7917cd682c87f323dcfb08985",
+      "expectedDigest": "15357662ceec72785b1145ba30f07b7b8ddf96d7917cd682c87f323dcfb08985",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "caseId": "hr-multigrain-named-outputs",
+      "outputId": "department-rates",
+      "actualRows": 3,
+      "expectedRows": 3,
+      "actualDigest": "7c62587f87d43fe66127e589be0e41f1ed04853c1ecc9f9e187d57c098504b07",
+      "expectedDigest": "7c62587f87d43fe66127e589be0e41f1ed04853c1ecc9f9e187d57c098504b07",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "caseId": "hr-topk-period-filter",
+      "outputId": "top-departments",
+      "actualRows": 2,
+      "expectedRows": 2,
+      "actualDigest": "a983933b3a82c21460a0c86524a4188ca5e86188a7e89f60cb0a646b80e93969",
+      "expectedDigest": "a983933b3a82c21460a0c86524a4188ca5e86188a7e89f60cb0a646b80e93969",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "caseId": "commerce-currency-order-browse",
+      "outputId": "orders",
+      "actualRows": 6,
+      "expectedRows": 6,
+      "actualDigest": "c126122c50b7cb9ec8099faac694257ec84c401c5ebda24bc7a7098727578812",
+      "expectedDigest": "c126122c50b7cb9ec8099faac694257ec84c401c5ebda24bc7a7098727578812",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "caseId": "commerce-paid-revenue-topk",
+      "outputId": "markets",
+      "actualRows": 2,
+      "expectedRows": 2,
+      "actualDigest": "8921639f74bd227a44e61a0eaca686c4e0bddeb2932e00d39c9d806ee054370b",
+      "expectedDigest": "8921639f74bd227a44e61a0eaca686c4e0bddeb2932e00d39c9d806ee054370b",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "caseId": "commerce-null-amount-records",
+      "outputId": "orders",
+      "actualRows": 1,
+      "expectedRows": 1,
+      "actualDigest": "1c468fa41c0310b90f5cad0168b8bb1061afe89a231e3dafe032148de19d2208",
+      "expectedDigest": "1c468fa41c0310b90f5cad0168b8bb1061afe89a231e3dafe032148de19d2208",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "caseId": "commerce-active-customer-relation",
+      "outputId": "customers",
+      "actualRows": 3,
+      "expectedRows": 3,
+      "actualDigest": "830153bc432737add2e85052d7cd68df82c7fd1b3a82c8c5111aa94b8f129a2f",
+      "expectedDigest": "830153bc432737add2e85052d7cd68df82c7fd1b3a82c8c5111aa94b8f129a2f",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "caseId": "commerce-monthly-paid-revenue",
+      "outputId": "monthly-revenue",
+      "actualRows": 3,
+      "expectedRows": 3,
+      "actualDigest": "b43570cf5ccc2ea96144ac7f5d84c2910bd08e9a433ae01c594bb1717afdebc1",
+      "expectedDigest": "b43570cf5ccc2ea96144ac7f5d84c2910bd08e9a433ae01c594bb1717afdebc1",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "caseId": "commerce-multigrain-orders-markets",
+      "outputId": "paid-order-detail",
+      "actualRows": 5,
+      "expectedRows": 5,
+      "actualDigest": "ca8d2a1db75ae3cffeafb270b46991093eff7e096f956ace241052404080dc77",
+      "expectedDigest": "ca8d2a1db75ae3cffeafb270b46991093eff7e096f956ace241052404080dc77",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "caseId": "commerce-multigrain-orders-markets",
+      "outputId": "market-revenue",
+      "actualRows": 4,
+      "expectedRows": 4,
+      "actualDigest": "1fab4ad48e4f7a344c7a381b1ee15f75ee9db148d20a1fdc98bfad03e82e5a14",
+      "expectedDigest": "1fab4ad48e4f7a344c7a381b1ee15f75ee9db148d20a1fdc98bfad03e82e5a14",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "caseId": "support-urgent-ticket-browse",
+      "outputId": "tickets",
+      "actualRows": 5,
+      "expectedRows": 5,
+      "actualDigest": "fdf8cc1a957b16b18e666fd78b4fab4df776ef44ce20ef1489e1c470ce87fa92",
+      "expectedDigest": "fdf8cc1a957b16b18e666fd78b4fab4df776ef44ce20ef1489e1c470ce87fa92",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "caseId": "support-resolution-rate-null",
+      "outputId": "queue-rates",
+      "actualRows": 4,
+      "expectedRows": 4,
+      "actualDigest": "0966e86c95f585ce63eb788f7d94b61ef6a8501b4f27e894866f6b1ecdd06293",
+      "expectedDigest": "0966e86c95f585ce63eb788f7d94b61ef6a8501b4f27e894866f6b1ecdd06293",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "caseId": "support-weekly-volume",
+      "outputId": "weekly-volume",
+      "actualRows": 8,
+      "expectedRows": 8,
+      "actualDigest": "01c20b535eb69982bffd5fe37ebebe5a481702d9d677467edcd064afd71ce2e4",
+      "expectedDigest": "01c20b535eb69982bffd5fe37ebebe5a481702d9d677467edcd064afd71ce2e4",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "caseId": "support-account-urgent-relation",
+      "outputId": "accounts",
+      "actualRows": 5,
+      "expectedRows": 5,
+      "actualDigest": "85dd55ed6ab5a0bd2351ab2d8dc11daa1cfd38db0b139db643dc7a77fc4655df",
+      "expectedDigest": "85dd55ed6ab5a0bd2351ab2d8dc11daa1cfd38db0b139db643dc7a77fc4655df",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "caseId": "support-multigrain-queue-tickets",
+      "outputId": "queue-rates",
+      "actualRows": 4,
+      "expectedRows": 4,
+      "actualDigest": "0966e86c95f585ce63eb788f7d94b61ef6a8501b4f27e894866f6b1ecdd06293",
+      "expectedDigest": "0966e86c95f585ce63eb788f7d94b61ef6a8501b4f27e894866f6b1ecdd06293",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "caseId": "support-multigrain-queue-tickets",
+      "outputId": "urgent-detail",
+      "actualRows": 5,
+      "expectedRows": 5,
+      "actualDigest": "1305d06ee330d246e6b4aee440cb846f87cfac070b4340b6ed97c29d9e1dbcf8",
+      "expectedDigest": "1305d06ee330d246e6b4aee440cb846f87cfac070b4340b6ed97c29d9e1dbcf8",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "caseId": "support-null-response-records",
+      "outputId": "tickets",
+      "actualRows": 4,
+      "expectedRows": 4,
+      "actualDigest": "1ea91fa2ca3c264d21fef763a7c41d5605d0599306b770eeaae4218def8a3999",
+      "expectedDigest": "1ea91fa2ca3c264d21fef763a7c41d5605d0599306b770eeaae4218def8a3999",
+      "reasons": [],
+      "passed": true
+    }
+  ]
+}
