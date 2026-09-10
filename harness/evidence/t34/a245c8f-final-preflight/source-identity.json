@@ -1,0 +1,36 @@
+{
+  "schema": "aeliqo.t34-final-source-identity.v1",
+  "source": {
+    "commit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+    "tree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+    "candidateDigest": "sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214",
+    "productContextMatches": true,
+    "branch": "detached final-source preflight worktree",
+    "exactRequestedCommit": true,
+    "trackedTreeCleanBeforeEvidence": true
+  },
+  "dependency": {
+    "task": "T33",
+    "status": "done",
+    "reviewStatus": "approved",
+    "reviewManifest": "harness/evidence/t33/d7b48da-rc1-review/manifest.json",
+    "reviewManifestSha256": "3ccd42da1c85ad8b397781c7d7ca5b2bdcaa623a191a873cd014bcaa7562ad7a"
+  },
+  "sourceInputs": {
+    "Dockerfile": {
+      "sha256": "6039bc2e70ba19a130f2aa7b71d1cc22c0e4d65931c01b56b2d41aae5dcba265"
+    },
+    "deploy/server.go": {
+      "sha256": "c0d7f090cab9e9e510c0b26c2a3fae7b6cce6e0f538a81eba008aa4117d4e17b"
+    },
+    "scripts/ci/check-static-image.sh": {
+      "sha256": "5b764fc06f3e4bfb26e89f1b5c13850d4404bbf8c789b346adf24051a8f6e4dd"
+    },
+    "package.json": {
+      "sha256": "f2c323a2bef1c72004a72d58ee7f5a5961abe19fba5546be6b1f588d692024d7"
+    },
+    "pnpm-lock.yaml": {
+      "sha256": "78166cbb9ce3ea799bd3a25be247cc02a808abaabc62f029a4931e587232b33b"
+    }
+  }
+}

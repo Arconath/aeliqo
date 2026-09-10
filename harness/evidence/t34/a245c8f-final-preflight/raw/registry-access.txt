@@ -1,0 +1,3 @@
+auth_config_removed=true
+registry=ghcr.io
+user=hermawan22

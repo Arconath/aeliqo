@@ -1,0 +1,29 @@
+{
+  "schema": "aeliqo.t34-final-environment.v1",
+  "capturedAt": "2026-09-10T15:04:40Z",
+  "host": {
+    "uname": "Darwin Hermawans-MacBook-Pro.local 25.6.0 Darwin Kernel Version 25.6.0: Fri Jul 31 19:17:26 PDT 2026; root:xnu-12377.161.14~5/RELEASE_ARM64_T6041 arm64",
+    "macOS": "26.6.2",
+    "architecture": "arm64"
+  },
+  "docker": {
+    "clientVersion": "29.4.0",
+    "serverVersion": "29.4.0",
+    "serverOs": "linux",
+    "serverArch": "arm64",
+    "context": "orbstack",
+    "buildx": "github.com/docker/buildx v0.33.0 f7897eba028583e0071642db3c011e860444f8cf",
+    "targetPlatform": "linux/amd64"
+  },
+  "node": "v24.20.0",
+  "python": "Python 3.14.7",
+  "kubectlClient": "{\"major\":\"1\",\"minor\":\"37\",\"gitVersion\":\"v1.37.0\",\"gitCommit\":\"f54c212e3a2f75d674b717a9b29052b20b60aefc\",\"gitTreeState\":\"clean\",\"buildDate\":\"2026-08-26T10:44:20Z\",\"goVersion\":\"go1.27.0\",\"compiler\":\"gc\",\"platform\":\"darwin/arm64\"}",
+  "registryAccess": {
+    "registry": "ghcr.io",
+    "method": "temporary isolated DOCKER_CONFIG with gh auth token over stdin",
+    "tokenLogged": false,
+    "temporaryConfigRemoved": true
+  },
+  "disk": "7.4Gi free of 460Gi",
+  "githubAuthStatusRedacted": "github.com   ✓ Logged in to github.com account hermawan22 (keyring)   - Active account: true   - Git operations protocol: ssh   - Token: [REDACTED]   - Token [REDACTED] "
+}

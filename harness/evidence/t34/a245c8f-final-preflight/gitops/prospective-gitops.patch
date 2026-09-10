@@ -1,0 +1,28 @@
+diff --git a/apps/aeliqo/runtime/resources.yaml b/apps/aeliqo/runtime/resources.yaml
+index 84ef8ef..c41c083 100644
+--- a/apps/aeliqo/runtime/resources.yaml
++++ b/apps/aeliqo/runtime/resources.yaml
+@@ -46,7 +46,7 @@ spec:
+           name: aeliqo-google-analytics
+       containers:
+       - name: web
+-        image: ghcr.io/arconath/aeliqo-web@sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4
++        image: ghcr.io/arconath/aeliqo-web@sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214
+         securityContext:
+           allowPrivilegeEscalation: false
+           readOnlyRootFilesystem: true
+diff --git a/clusters/production/platform.yaml b/clusters/production/platform.yaml
+index 354b29b..dd9c5dc 100644
+--- a/clusters/production/platform.yaml
++++ b/clusters/production/platform.yaml
+@@ -497,8 +497,8 @@ spec:
+   timeout: 10m
+   postBuild:
+     substitute:
+-      RELEASE_REVISION: 6b0c4f0c745d39c486ac8465ef6a41db39c5912e
+-      IMAGE_DIGEST: sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4
++      RELEASE_REVISION: a245c8f946030f930c9145e44dd7211bcd0fb774
++      IMAGE_DIGEST: sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214
+   dependsOn:
+   - name: aeliqo-config
+   sourceRef:

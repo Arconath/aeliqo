@@ -1,0 +1,183 @@
+{
+  "schema": "aeliqo.t34-final-checks.v1",
+  "capturedAt": "2026-09-10T15:07:31.973Z",
+  "checks": [
+    {
+      "name": "candidate-linux-amd64-build",
+      "result": "pass",
+      "evidence": [
+        "raw/candidate-build.json",
+        "raw/candidate-image-inspect.json"
+      ],
+      "digest": "sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214",
+      "revision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+      "platform": "linux/amd64"
+    },
+    {
+      "name": "candidate-check-static-image",
+      "result": "pass",
+      "evidence": [
+        "raw/candidate-static-smoke.log",
+        "raw/candidate-static-smoke-trace.log"
+      ],
+      "assertions": [
+        "healthz=200",
+        "readyz=200",
+        "version exact",
+        "HTML no-cache and security headers",
+        "hashed asset immutable",
+        "not-a-route=404",
+        "SIGTERM readiness drain=503",
+        "stop within 30s"
+      ]
+    },
+    {
+      "name": "exact-current-and-executed-rollback-ghcr-pull",
+      "result": "pass",
+      "evidence": [
+        "raw/registry-pull.log",
+        "raw/current-registry-manifest.txt",
+        "raw/rollback-registry-manifest.txt",
+        "raw/current-image-inspect.json",
+        "raw/rollback-image-inspect.json"
+      ],
+      "registryAuth": "temporary isolated config; token not logged; config removed",
+      "assertions": {
+        "candidateSourceAndRevisionExact": true,
+        "candidatePlatformLinuxAmd64": true,
+        "currentAndRollbackGhcrIndexesResolve": true,
+        "currentAndRollbackPlatformLinuxAmd64": true,
+        "threeRevisionsExact": true,
+        "candidateRegistryPublicationVerified": false
+      }
+    },
+    {
+      "name": "current-candidate-rollback-current-loopback-sequence",
+      "result": "pass-with-historical-rollback-drain-limit",
+      "evidence": [
+        "rollout-sequence.json",
+        "raw/loopback-sequence.log"
+      ],
+      "sequence": [
+        {
+          "step": "current-initial",
+          "revision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e"
+        },
+        {
+          "step": "candidate",
+          "revision": "a245c8f946030f930c9145e44dd7211bcd0fb774"
+        },
+        {
+          "step": "executed-rollback",
+          "revision": "41f29540bf534a23ad08b7fbb865e008f9f16105"
+        },
+        {
+          "step": "current-restored",
+          "revision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e"
+        }
+      ],
+      "restoredCurrentIdentity": true,
+      "restoredCurrentHtmlByteIdentical": true,
+      "allStoppedWithin30Seconds": true,
+      "rollbackReadinessDrainObserved": false
+    },
+    {
+      "name": "unmitigated-round-robin-skew-matrix",
+      "result": "fail-as-expected-and-mitigated-by-affinity",
+      "evidence": [
+        "skew-matrix.json",
+        "browser-round-robin.json"
+      ],
+      "crossImageAsset404s": 20,
+      "browserCrossImageAsset404s": 2,
+      "sameHashedPathByteConflicts": 0,
+      "ownAssetsAvailableAndImmutable": true
+    },
+    {
+      "name": "cookie-affinity-browser-canary-failover-restore",
+      "result": "pass-with-explicit-late-asset-limit",
+      "evidence": [
+        "sticky-affinity-browser.json",
+        "browser-probe.json",
+        "raw/browser-proxy.log"
+      ],
+      "healthySessions": 3,
+      "healthyAssetsStayOnOneGeneration": true,
+      "cookie": "Secure HttpOnly SameSite=Lax Max-Age=600",
+      "unhealthyBackendFailovers": 3,
+      "reloadRecoveries": true,
+      "lateDepartedGenerationAsset404s": 3
+    },
+    {
+      "name": "production-freeze-released-and-accepted",
+      "result": "pass",
+      "evidence": [
+        "gitops-topology.json",
+        "gitops/freeze-check.log"
+      ],
+      "freezeActive": false,
+      "changeId": "UPCLOUD-NYC-PRIMARY-20260910",
+      "acceptanceOutcome": "PASS",
+      "releaseGateOpen": true
+    },
+    {
+      "name": "merged-affinity-main-and-prospective-render",
+      "result": "pass",
+      "evidence": [
+        "gitops-topology.json",
+        "gitops/render-summary.json",
+        "gitops/prospective-gitops.patch",
+        "gitops/candidate-aeliqo-runtime.yaml",
+        "gitops/candidate-production.yaml",
+        "gitops/candidate-upcloud-production.yaml"
+      ],
+      "affinityMerged": true,
+      "renderAssertions": {
+        "candidateImageExact": true,
+        "candidateRevisionExact": true,
+        "productionCandidateIdentityPresent": true,
+        "upcloudCandidateIdentityPresent": true,
+        "serviceAnnotationsExact": true,
+        "baselineAndCandidateDiffer": {
+          "aeliqoRuntime": true,
+          "production": true,
+          "upcloudProduction": true
+        },
+        "freezeCheckExitCode": 0,
+        "remoteWrite": false,
+        "productionMutation": false
+      },
+      "candidateRegistryPublicationVerified": false,
+      "remoteWrite": false
+    },
+    {
+      "name": "public-apex-www-cookie-and-identity",
+      "result": "pass",
+      "evidence": [
+        "public-live.json",
+        "raw/public-aeliqo.com.headers",
+        "raw/public-www.aeliqo.com.headers",
+        "raw/public-aeliqo.com-cookie-first.headers",
+        "raw/public-www.aeliqo.com-cookie-first.headers"
+      ],
+      "assertions": {
+        "allPublicRoots200": true,
+        "allPublicVersions200": true,
+        "allPublicRootsCurrentHtml": true,
+        "allAssets200Immutable": true,
+        "secureHttpOnlyLaxCookieObserved": true,
+        "cookieJarPersistsWithoutRotation": true
+      },
+      "currentDesiredRevision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e"
+    }
+  ],
+  "exclusions": {
+    "candidateRegistryWrite": false,
+    "githubWrite": false,
+    "gitopsRemoteWrite": false,
+    "productionMutation": false,
+    "liveKubernetesMutation": false,
+    "liveTraefikCanary": false,
+    "npmMutation": false
+  }
+}

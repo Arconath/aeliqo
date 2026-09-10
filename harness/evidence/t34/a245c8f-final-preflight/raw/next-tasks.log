@@ -1,0 +1,18 @@
+$ python3 scripts/next_tasks.py
+{
+  "suggested": [
+    {
+      "id": "T36",
+      "title": "Publish unused stable 0.1.0 packages and source release",
+      "role": "release",
+      "paths": [
+        "harness/evidence",
+        "docs/releases"
+      ]
+    }
+  ],
+  "active": [],
+  "readyButDeferred": [],
+  "blocked": [],
+  "note": "Read-only suggestion. Orchestrator verifies semantic coupling and acquires worktree/path ownership before spawning."
+}

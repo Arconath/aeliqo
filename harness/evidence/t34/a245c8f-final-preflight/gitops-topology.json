@@ -1,0 +1,119 @@
+{
+  "schema": "aeliqo.t34-final-gitops-topology.v1",
+  "capturedAt": "2026-09-10T15:06:12.106Z",
+  "platformApps": {
+    "repository": "Arconath/platform-apps",
+    "ref": "origin/main",
+    "commit": "8fa8319698599d32b6dfd4c3d2786ca23d07c34f",
+    "tree": "2b39e451fbe44e66fd3c35f5f3310653e6f02eb2",
+    "workingTreeStatus": [
+      "## codex/loklyo-v1-release-evidence-20260906...origin/codex/loklyo-v1-release-evidence-20260906 [gone]",
+      " M README.md",
+      " M apps/boringkit/config/config.yaml",
+      " M apps/boringkit/config/runtime.enc.yaml",
+      " M apps/boringkit/runtime/resources.yaml",
+      " M apps/foundiqo/runtime/resources.yaml",
+      " M apps/loklyo/config/config.yaml",
+      " M apps/loklyo/config/runtime.enc.yaml",
+      " M apps/loklyo/runtime/resources.yaml",
+      " M apps/releasepassport/config/config.yaml",
+      " M apps/releasepassport/config/runtime.enc.yaml",
+      " M apps/releasepassport/runtime/resources.yaml",
+      " M apps/syviora/runtime/resources.yaml",
+      " M infrastructure/identity/kustomization.yaml",
+      " M infrastructure/network/tunnel.yaml",
+      " M infrastructure/objects/seaweedfs.yaml",
+      " M infrastructure/observability/kustomization.yaml",
+      " M infrastructure/observability/monitoring.yaml",
+      " M infrastructure/storage/provisioner.yaml",
+      " M scripts/validate.py"
+    ],
+    "readOnlyMainSnapshot": true,
+    "files": {
+      "production-freeze.json": "751d5ea03779a49cb8aa255ed0841c782d1e7e6e84538b7812eabffb52bd0baf",
+      "apps/aeliqo/runtime/resources.yaml": "967469553d0284a830b746f05a7092980483bd5debec131f388b3131f6bb7856",
+      "apps/aeliqo/runtime/kustomization.yaml": "d4c17b2456c087954aa480fc60889ae2352b0ac46f75d6d770c61a21dd5f36b0",
+      "apps/aeliqo/release-evidence.json": "d04c28ce71702add64596d9760be3b41860d3948679d9ff90e7f9429b64cbb45",
+      "clusters/production/platform.yaml": "2eee0e389e2e626d98c3bcf8c37a1250bc38fd50687a786a14df5f9db22ae6eb",
+      "clusters/upcloud-production/kustomization.yaml": "0608d6b6599c55b5382f9f91eeca4469561b6c451c1393ae830793e902f8abac",
+      "clusters/upcloud-production/platform-paths.yaml": "4b1c738c71c1cc64424b4894f32210ef449cbd6672192eb3baef38d9d79fa4b7",
+      "docs/evidence/upcloud-production-acceptance-20260910.json": "36cb63469add0b650853c7a96e3dae31266f3e782edba08d199896aea932436a"
+    }
+  },
+  "platformInfrastructure": {
+    "repository": "Arconath/platform-infrastructure",
+    "ref": "origin/main",
+    "commit": "fcf69fee37faf95b0e128216b0046de1f1bf6cae",
+    "tree": "53491388d6ecc23877d82e3a6f7d071bed5289c9",
+    "workingTreeStatus": [
+      "## codex/r640-clean-rebuild-20260905...origin/codex/r640-clean-rebuild-20260905 [ahead 90, behind 1]",
+      " M .github/workflows/validate.yml",
+      " M README.md",
+      " M ansible/data-network.yml",
+      " M ansible/guest-baseline.yml",
+      " M ansible/hermes.yml",
+      " M ansible/host-storage.yml",
+      " M ansible/loklyo-worker.yml",
+      " M ansible/relocate-capacity.yml",
+      " M ansible/retire-ci.yml",
+      " M ansible/retire-network.yml",
+      " M docs/delivery-audit.md",
+      " M docs/hermes-recovery.md",
+      " M evidence/final-delivery-audit.json",
+      " M evidence/loklyo-worker-runtime.json",
+      " M policy/ci-admission.json",
+      "?? .worktrees/",
+      "?? ansible/files/hermes/migrate-web-profiles.py"
+    ],
+    "readOnlyMainSnapshot": true,
+    "files": {
+      "docs/aeliqo-acceptance.md": "d45fff7d9277d7d93a192cd0681c2cbe1747fee2f138bc834aeeb49278927a22",
+      "evidence/aeliqo-runtime.json": "cf0f46c53aabe2fc5f11dd0765184b92e04136024dc3521acb66e0d473e8bd84",
+      "terraform/cloudflare/production.auto.tfvars.json": "6be77a5996e5b27b4ef9eeb6a0756b4a0272fae32625670854e14a57f069d21e"
+    }
+  },
+  "freeze": {
+    "active": false,
+    "changeId": "UPCLOUD-NYC-PRIMARY-20260910",
+    "acceptanceEvidence": "docs/evidence/upcloud-production-acceptance-20260910.json",
+    "acceptanceOutcome": "PASS",
+    "acceptanceRecordedAt": "2026-09-10T11:02:00Z",
+    "acceptanceGitopsCommit": "0c7f09af30e45e16e30686a32fccf5db4aeeb7b1",
+    "releaseGateOpen": true
+  },
+  "desiredState": {
+    "revision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e",
+    "digest": "sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+    "repository": "ghcr.io/arconath/aeliqo-web",
+    "deploymentVerified": false
+  },
+  "affinity": {
+    "mergedCommit": "bb1b353c027608deddd75642a7b78320132e9549",
+    "mergedCommitIsAncestorOfMain": true,
+    "annotations": {
+      "traefik.ingress.kubernetes.io/service.sticky.cookie": "true",
+      "traefik.ingress.kubernetes.io/service.sticky.cookie.name": "aeliqo_affinity",
+      "traefik.ingress.kubernetes.io/service.sticky.cookie.secure": "true",
+      "traefik.ingress.kubernetes.io/service.sticky.cookie.httponly": "true",
+      "traefik.ingress.kubernetes.io/service.sticky.cookie.samesite": "lax",
+      "traefik.ingress.kubernetes.io/service.sticky.cookie.maxage": "600"
+    }
+  },
+  "topology": {
+    "controller": "Flux follows platform-apps main",
+    "ingressClass": "traefik",
+    "replicas": 2,
+    "rollingUpdate": {
+      "maxUnavailable": 0,
+      "maxSurge": 1,
+      "minReadySeconds": 10
+    },
+    "terminationGracePeriodSeconds": 30,
+    "hosts": [
+      "aeliqo.com",
+      "www.aeliqo.com"
+    ],
+    "currentProduction": "clusters/production",
+    "upcloudProduction": "clusters/upcloud-production"
+  }
+}

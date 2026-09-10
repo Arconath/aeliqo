@@ -1,0 +1,3 @@
+## main...origin/main
+ M apps/aeliqo/runtime/resources.yaml
+ M clusters/production/platform.yaml

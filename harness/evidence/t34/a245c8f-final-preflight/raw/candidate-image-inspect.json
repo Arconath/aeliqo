@@ -1,0 +1,31 @@
+{
+  "Id": "sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214",
+  "RepoDigests": [
+    "aeliqo-t34-final@sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214"
+  ],
+  "RepoTags": [
+    "aeliqo-t34-final:a245c8f9"
+  ],
+  "Architecture": "amd64",
+  "Os": "linux",
+  "Size": 3597478,
+  "Config": {
+    "User": "101:101",
+    "ExposedPorts": {
+      "8080/tcp": {}
+    },
+    "Labels": {
+      "org.opencontainers.image.description": "Aeliqo static rewrite site",
+      "org.opencontainers.image.revision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+      "org.opencontainers.image.source": "https://github.com/Arconath/aeliqo"
+    }
+  },
+  "RootFS": {
+    "Type": "layers",
+    "Layers": [
+      "sha256:e4a2182a5b81ea929a2d1d2d528cdb23f25787fa6aca1022e920057f122f38db",
+      "sha256:aa6cd8c80da85bbdadbedbfacece578fcc64bb9f2886bf8399d63845f67422ba",
+      "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+    ]
+  }
+}

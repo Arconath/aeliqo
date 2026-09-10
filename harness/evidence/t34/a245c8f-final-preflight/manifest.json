@@ -1,0 +1,129 @@
+{
+  "schema": "aeliqo.t34-final-source-preflight.v1",
+  "task": "T34",
+  "scenario": "S36",
+  "status": "passed-final-source-preflight-not-promoted",
+  "completedAt": "2026-09-10T15:08:05.785Z",
+  "executor": {
+    "agent": "/root/fix_hydration_geometry",
+    "role": "final-source operational preflight and rehearsal author",
+    "independentReviewer": null
+  },
+  "source": {
+    "commit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+    "tree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+    "candidateDigest": "sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214",
+    "candidateImageTag": "aeliqo-t34-final:a245c8f9",
+    "productContextMatches": true,
+    "trackedTreeCleanBeforeEvidence": true
+  },
+  "dependency": {
+    "task": "T33",
+    "status": "done",
+    "reviewStatus": "approved",
+    "reviewManifest": "harness/evidence/t33/d7b48da-rc1-review/manifest.json"
+  },
+  "identities": {
+    "candidate": {
+      "scope": "local exact-source linux/amd64 image only",
+      "digest": "sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214",
+      "revision": "a245c8f946030f930c9145e44dd7211bcd0fb774"
+    },
+    "currentDesired": {
+      "scope": "fresh exact GHCR desired-state digest",
+      "digest": "sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+      "revision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e"
+    },
+    "executedRollback": {
+      "scope": "fresh exact GHCR previously executed rollback digest",
+      "digest": "sha256:e758c1f6548a7543fdd7a69ae7a1255c438a6e35457cfefc2b4acc4551fd4060",
+      "revision": "41f29540bf534a23ad08b7fbb865e008f9f16105"
+    }
+  },
+  "gitops": {
+    "platformAppsCommit": "8fa8319698599d32b6dfd4c3d2786ca23d07c34f",
+    "platformInfrastructureCommit": "fcf69fee37faf95b0e128216b0046de1f1bf6cae",
+    "freezeChangeId": "UPCLOUD-NYC-PRIMARY-20260910",
+    "freezeActive": false,
+    "freezeAcceptanceOutcome": "PASS",
+    "affinityMergedCommit": "bb1b353c027608deddd75642a7b78320132e9549",
+    "affinityMergedIntoMain": true,
+    "prospectiveCandidateRender": "gitops/render-summary.json",
+    "remoteWrite": false
+  },
+  "results": {
+    "candidateBuildAndStaticSmoke": "pass",
+    "threeImmutableIdentities": "pass-local-candidate-plus-fresh-ghcr-current-rollback",
+    "loopbackSequence": "pass-with-historical-rollback-drain-limit",
+    "unmitigatedRoundRobinSkew": {
+      "result": "fail-as-expected",
+      "crossImageAsset404s": 20,
+      "browserCrossImageAsset404s": 2
+    },
+    "cookieAffinityMitigation": {
+      "result": "pass-for-healthy-backend-canary-failover-restore-with-limit",
+      "browserSessions": 3,
+      "healthyGenerationAssetErrors": 0,
+      "unhealthyBackendFailovers": 3,
+      "reloadRecoveries": 3,
+      "lateDepartedGenerationAsset404s": 3
+    },
+    "gitopsRender": "pass",
+    "freezeGuard": "pass-released-freeze",
+    "publicLiveCookieAndIdentity": "pass-apex-and-www"
+  },
+  "acceptance": {
+    "existingGitOpsTopologyInspected": "satisfied",
+    "candidateDigestCanary": "satisfied-locally-only",
+    "cacheAndVersionSkew": "satisfied-by-rehearsed-cookie-affinity-with-public-cookie-observation",
+    "rollback": "satisfied-locally-current-to-candidate-to-executed-rollback-to-current",
+    "withoutLiveOutage": "satisfied-by-no-live-mutation",
+    "publicCurrentIdentityVerified": true
+  },
+  "promotion": {
+    "eligibleNow": false,
+    "conditions": [
+      "Publish and independently verify the exact candidate image as an immutable GHCR digest for source a245c8f946030f930c9145e44dd7211bcd0fb774.",
+      "Review and apply the prospective production/upcloud GitOps delta carrying the candidate digest and revision through the normal platform-apps path.",
+      "Run a live Flux/Kubernetes/Traefik canary, unhealthy-backend failover, rollback and public candidate identity verification before promotion."
+    ]
+  },
+  "limitations": [
+    "Candidate image is local only; no registry or GitOps write was made.",
+    "Loopback HTTPS proxy/browser behavior is a faithful affinity rehearsal, not a live Traefik/Kubernetes observation.",
+    "A late uncached asset from a departed generation can return 404 before reload; the tested reload obtains a healthy matching generation.",
+    "The historical executed-rollback image stopped inside the 30-second grace period but did not expose readyz=503 during its own SIGTERM window.",
+    "Public apex and www currently serve the desired current revision 6b0c4f0c745d39c486ac8465ef6a41db39c5912e; the candidate is not deployed."
+  ],
+  "evidence": {
+    "checks": "checks.json",
+    "key": [
+      "source-identity.json",
+      "environment.json",
+      "image-identities.json",
+      "raw/candidate-build.json",
+      "raw/current-registry-manifest.txt",
+      "raw/rollback-registry-manifest.txt",
+      "rollout-sequence.json",
+      "skew-matrix.json",
+      "browser-round-robin.json",
+      "sticky-affinity-browser.json",
+      "public-live.json",
+      "gitops-topology.json",
+      "gitops/render-summary.json",
+      "gitops/prospective-gitops.patch",
+      "validation.json",
+      "artifact-hashes.json"
+    ]
+  },
+  "mutations": {
+    "aeliqoSource": false,
+    "candidateSourceBytes": false,
+    "npm": false,
+    "github": false,
+    "gitopsRemote": false,
+    "registry": false,
+    "production": false,
+    "evidenceOnly": true
+  }
+}

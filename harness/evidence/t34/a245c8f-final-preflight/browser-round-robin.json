@@ -1,0 +1,102 @@
+{
+  "responses": {
+    "requests": [
+      {
+        "path": "/",
+        "status": 200,
+        "resourceType": "document"
+      },
+      {
+        "path": "/assets/main-LBDCQgHO.css",
+        "status": 200,
+        "resourceType": "stylesheet"
+      },
+      {
+        "path": "/assets/styles-D8hp4Rvg.js",
+        "status": 200,
+        "resourceType": "script"
+      },
+      {
+        "path": "/assets/styles-CNc2bHie.css",
+        "status": 0,
+        "resourceType": "stylesheet"
+      },
+      {
+        "path": "/assets/main-Czg6yLNf.js",
+        "status": 404,
+        "resourceType": "script"
+      },
+      {
+        "path": "/assets/main-Czg6yLNf.js",
+        "status": 0,
+        "resourceType": "script"
+      }
+    ],
+    "errorCount": 1,
+    "errors": [
+      {
+        "path": "/assets/main-Czg6yLNf.js",
+        "status": 404,
+        "resourceType": "script"
+      }
+    ]
+  },
+  "proxyRequests": [
+    {
+      "session": "round-robin-browser",
+      "path": "/",
+      "query": "",
+      "method": "GET",
+      "backend": "current",
+      "reason": "round-robin",
+      "status": 200,
+      "hadAffinityCookie": false
+    },
+    {
+      "session": "round-robin-browser",
+      "path": "/assets/main-LBDCQgHO.css",
+      "query": "",
+      "method": "GET",
+      "backend": "current",
+      "reason": "round-robin",
+      "status": 200,
+      "hadAffinityCookie": false
+    },
+    {
+      "session": "round-robin-browser",
+      "path": "/assets/styles-D8hp4Rvg.js",
+      "query": "",
+      "method": "GET",
+      "backend": "current",
+      "reason": "round-robin",
+      "status": 200,
+      "hadAffinityCookie": false
+    },
+    {
+      "session": "round-robin-browser",
+      "path": "/assets/styles-CNc2bHie.css",
+      "query": "",
+      "method": "GET",
+      "backend": "candidate",
+      "reason": "round-robin",
+      "status": 404,
+      "hadAffinityCookie": false
+    },
+    {
+      "session": "round-robin-browser",
+      "path": "/assets/main-Czg6yLNf.js",
+      "query": "",
+      "method": "GET",
+      "backend": "candidate",
+      "reason": "round-robin",
+      "status": 404,
+      "hadAffinityCookie": false
+    }
+  ],
+  "cookies": [],
+  "assertions": {
+    "crossGenerationAsset404s": 2,
+    "unsafeAsExpected": true,
+    "noAffinityCookieIssued": true
+  }
+}

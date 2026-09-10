@@ -1,0 +1,347 @@
+{
+  "schema": "aeliqo.t34-final-artifact-hashes.v1",
+  "algorithm": "sha256",
+  "generatedAt": "2026-09-10T15:09:35.463Z",
+  "artifacts": [
+    {
+      "path": "browser-probe.json",
+      "bytes": 28945,
+      "sha256": "7e88002225babf390e3d0aab244521d8b85da6efbe679b5e01ee34b29f88b455"
+    },
+    {
+      "path": "browser-round-robin.json",
+      "bytes": 2301,
+      "sha256": "b5c63b4f0360db25de3f2fa2f02a883fdc2e3ad264ec30be2ffa11fa745e924d"
+    },
+    {
+      "path": "checks.json",
+      "bytes": 5803,
+      "sha256": "f464b5e8076a70bcc1709ec581b9f9c614e17482a25b960beacaa67c7b9480f8"
+    },
+    {
+      "path": "environment.json",
+      "bytes": 1383,
+      "sha256": "2f4ffed6ce84b6211bba8470258833b9c5e60b1b6ee23e51983014d4135676af"
+    },
+    {
+      "path": "gitops-topology.json",
+      "bytes": 5438,
+      "sha256": "e8af7384e6c0d551c97a5cb8b73d3e3e2bedf425218a30ef691228a852932ec6"
+    },
+    {
+      "path": "gitops/baseline-aeliqo-runtime.yaml",
+      "bytes": 4054,
+      "sha256": "21f2d9061e4a73ec4e1c14fb2e630959b82c942b9077ea6e2e7748b157384e0e"
+    },
+    {
+      "path": "gitops/baseline-production-restricted.yaml",
+      "bytes": 283963,
+      "sha256": "baf854c57c0042a471e78182e267c39384283b26c49eb42ebc3d29dc2b9b1120"
+    },
+    {
+      "path": "gitops/baseline-production.yaml",
+      "bytes": 283963,
+      "sha256": "9e24a52c02dc82086bbfb89813e03dfaab19591a68e3fac30692d4d4eb2b8df4"
+    },
+    {
+      "path": "gitops/baseline-upcloud-production-restricted.yaml",
+      "bytes": 284750,
+      "sha256": "2992c4b21e5af4cc3832a38bbcccafbb7c5d3c6bd5e6b13f6b1f7a8fbe83753d"
+    },
+    {
+      "path": "gitops/baseline-upcloud-production.yaml",
+      "bytes": 284750,
+      "sha256": "ef971d635a49ef37082ad85a234e64fa9b75afe42eba1e965cb03abad4412f24"
+    },
+    {
+      "path": "gitops/candidate-aeliqo-runtime.yaml",
+      "bytes": 4054,
+      "sha256": "3a65a4332bcd5383e1ce347bb720d690077ee31f39d33ae5db1678d60dad5593"
+    },
+    {
+      "path": "gitops/candidate-production.yaml",
+      "bytes": 283963,
+      "sha256": "baf854c57c0042a471e78182e267c39384283b26c49eb42ebc3d29dc2b9b1120"
+    },
+    {
+      "path": "gitops/candidate-upcloud-production.yaml",
+      "bytes": 284750,
+      "sha256": "2992c4b21e5af4cc3832a38bbcccafbb7c5d3c6bd5e6b13f6b1f7a8fbe83753d"
+    },
+    {
+      "path": "gitops/freeze-check.log",
+      "bytes": 11,
+      "sha256": "16e3edbe92d848d09637b5ec0801d01a735a0deb44c99bc4c374f0865de6acd8"
+    },
+    {
+      "path": "gitops/prospective-gitops.patch",
+      "bytes": 1278,
+      "sha256": "91ae0e24653af58e70a30d7775035337cccfd448121f8f9cb45a76dfcdd8978c"
+    },
+    {
+      "path": "gitops/render-hashes.txt",
+      "bytes": 700,
+      "sha256": "b552f0b4902e9dbbb3c7f4644e0679a8460b905ce1fff9ec30dab60cad8a7ce3"
+    },
+    {
+      "path": "gitops/render-summary.json",
+      "bytes": 2948,
+      "sha256": "08aca405c714cd2993f06e6057005acc7dd61bd89b6040dc67b20431b8ad0f1c"
+    },
+    {
+      "path": "image-identities.json",
+      "bytes": 4347,
+      "sha256": "a427f38db45b2c1e2cad4640c102c25b550acd6ff8dff5487b8d382611326008"
+    },
+    {
+      "path": "manifest.json",
+      "bytes": 5361,
+      "sha256": "b4e62cec794b4bd295c53fc510b58ac48aac202c6b2bf5f9bdfcbfa66928a58f"
+    },
+    {
+      "path": "public-live.json",
+      "bytes": 5164,
+      "sha256": "e37e5085b1de7e7428d79f8f994883aa0c421121359fde5e3289c6518c5093bd"
+    },
+    {
+      "path": "raw/browser-proxy.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "raw/build-context.txt",
+      "bytes": 167,
+      "sha256": "56fa8658e07a2fb916ec6d0899a37adee0e599642159bda93bc68fb9a3e3689a"
+    },
+    {
+      "path": "raw/candidate-build.json",
+      "bytes": 1656,
+      "sha256": "a700477018b82fe08d416d1e58b88bf53ac0206b0de93841533b10680e8692c2"
+    },
+    {
+      "path": "raw/candidate-build.log",
+      "bytes": 19342,
+      "sha256": "f449b1b0eda6faf34154d352ed5b7dee27dffc17b689c3826610c4be11a00a75"
+    },
+    {
+      "path": "raw/candidate-image-inspect.json",
+      "bytes": 981,
+      "sha256": "e453ae78eddb1cbdd3463a8cb4d865da80a2f34305f3915839a517f7c039173d"
+    },
+    {
+      "path": "raw/candidate-static-smoke-trace.log",
+      "bytes": 8891,
+      "sha256": "3445b97b06cb90b6941d599ea40f85625f725f9d30fa491e64beb4ace2cd7362"
+    },
+    {
+      "path": "raw/candidate-static-smoke.log",
+      "bytes": 163,
+      "sha256": "ef9ffaa04c4b2a78497941f1390bdf5c9788e53c6aed3e8f3616dcc8cb5ec936"
+    },
+    {
+      "path": "raw/current-image-inspect.json",
+      "bytes": 656,
+      "sha256": "5fd0fbf296db411e8be48f6a990b2b89d4688629d45a946c9806fbfc2cf223a7"
+    },
+    {
+      "path": "raw/current-registry-manifest.txt",
+      "bytes": 864,
+      "sha256": "6cd1e10cee9d4e6a7d0cd6ee7efd8fb26f00cac517cd9a431b836618b0109ff1"
+    },
+    {
+      "path": "raw/gitops-candidate-worktree.txt",
+      "bytes": 97,
+      "sha256": "990f4ac2c38a33567419000e4667f6ce09a3f2e1ab6ae3a975f6b2d4f962e49a"
+    },
+    {
+      "path": "raw/gitops-clone-status.txt",
+      "bytes": 22,
+      "sha256": "5fbcb2990ad25e368c12219bf3ddca36e464d044e7acac16696fa8cd54159185"
+    },
+    {
+      "path": "raw/gitops-clone.log",
+      "bytes": 71,
+      "sha256": "03fa5d81985d8f3309db554eef43a38c91f935b806739ff19132c19742894b61"
+    },
+    {
+      "path": "raw/kit-check.log",
+      "bytes": 196,
+      "sha256": "b7ec0993adbb75710f5d875f80ffce34f9cd88d2c1ab7d10deda90044ea59f00"
+    },
+    {
+      "path": "raw/kustomize-baseline-aeliqo-runtime.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "raw/kustomize-baseline-production-restricted.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "raw/kustomize-baseline-production.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "raw/kustomize-baseline-upcloud-production-restricted.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "raw/kustomize-baseline-upcloud-production.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "raw/kustomize-candidate-aeliqo-runtime.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "raw/kustomize-candidate-production.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "raw/kustomize-candidate-upcloud-production.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "raw/loopback-sequence.log",
+      "bytes": 882,
+      "sha256": "3ec93ea74e9a916e2de88cc9f1350aa4a16acbc6b166e1ccb60b0747fc5a1604"
+    },
+    {
+      "path": "raw/next-tasks.log",
+      "bytes": 452,
+      "sha256": "dca02ff6fda37a0ce2216f2f244ec20a0dda1faa812ca9f38d6c1e31d714d3b0"
+    },
+    {
+      "path": "raw/public-aeliqo.com-cookie-first.headers",
+      "bytes": 1215,
+      "sha256": "26d807dc4b5e9ce9fa508cb15d114c2419e8f05c4d2baca578ab0879298a83ff"
+    },
+    {
+      "path": "raw/public-aeliqo.com-cookie-second.headers",
+      "bytes": 1034,
+      "sha256": "b58d42790d131c515a80afc2b78696d72dfde582121cbc37d7fefb745bf52843"
+    },
+    {
+      "path": "raw/public-aeliqo.com-version.headers",
+      "bytes": 1128,
+      "sha256": "b4dc281e23c4cfb3e9cc1a34193bf9574b8fdda8c1403834600e8a34ae6f7e86"
+    },
+    {
+      "path": "raw/public-aeliqo.com-version.json",
+      "bytes": 75,
+      "sha256": "631c99091f24f40fdb70aa717fb726c36659604944dd50f11277cae984b758ea"
+    },
+    {
+      "path": "raw/public-aeliqo.com.headers",
+      "bytes": 1209,
+      "sha256": "74556dda4040075c0e8c6342d891080dd5a7aff2b73d250779e44737669b6230"
+    },
+    {
+      "path": "raw/public-aeliqo.com.html",
+      "bytes": 701,
+      "sha256": "50c0e5471c6b4f3430949c16b25747e914aa5e6ce8a6a50fdecf95843c6f3f35"
+    },
+    {
+      "path": "raw/public-www.aeliqo.com-cookie-first.headers",
+      "bytes": 1221,
+      "sha256": "6f8067ade65b0cbb628818429e5f6a904304cc895ff26ce7ca44c783707c203b"
+    },
+    {
+      "path": "raw/public-www.aeliqo.com-cookie-second.headers",
+      "bytes": 1046,
+      "sha256": "07c4f686cf024b719a3f344065186e656a2b13d4fc4dea0c5c450eac9544b4c0"
+    },
+    {
+      "path": "raw/public-www.aeliqo.com-version.headers",
+      "bytes": 1138,
+      "sha256": "cb2f2a7cb628d906aa34272c74a8b73a8cf0121abd83422b47d36e8966400dbf"
+    },
+    {
+      "path": "raw/public-www.aeliqo.com-version.json",
+      "bytes": 75,
+      "sha256": "631c99091f24f40fdb70aa717fb726c36659604944dd50f11277cae984b758ea"
+    },
+    {
+      "path": "raw/public-www.aeliqo.com.headers",
+      "bytes": 1221,
+      "sha256": "c9a2e37655e05623d5a17abd40e3fae23c0983112f44a890ef92f69c3a81dbcc"
+    },
+    {
+      "path": "raw/public-www.aeliqo.com.html",
+      "bytes": 701,
+      "sha256": "50c0e5471c6b4f3430949c16b25747e914aa5e6ce8a6a50fdecf95843c6f3f35"
+    },
+    {
+      "path": "raw/registry-access.txt",
+      "bytes": 58,
+      "sha256": "78828c6b0eaf98ee640df33b9a1afd24cbbfd29980a164fab53694ccc5775818"
+    },
+    {
+      "path": "raw/registry-login.log",
+      "bytes": 16,
+      "sha256": "8bd4a1179fd214d0c9cfa53d7bb46c2c347c664a5f05beb77eae4c096fd979d3"
+    },
+    {
+      "path": "raw/registry-pull.log",
+      "bytes": 934,
+      "sha256": "273fd435fbcaaea873fb02a5e6138d27b31119e6b10c40d387f7718e3fec46a3"
+    },
+    {
+      "path": "raw/rollback-image-inspect.json",
+      "bytes": 657,
+      "sha256": "978a0401bff1e3c1896f9465e95f5b85887d527e2ac2285ee847857dc6f2a852"
+    },
+    {
+      "path": "raw/rollback-registry-manifest.txt",
+      "bytes": 864,
+      "sha256": "3002cb05d3965a6621b1d1b28c54df5a4003931e1c240e5cb4160cb73585ed57"
+    },
+    {
+      "path": "raw/scenario-tests.log",
+      "bytes": 1904,
+      "sha256": "631828277cfac0183e59b0f68ad1a689fd3623ee3a2a61364bf16f222ef0e575"
+    },
+    {
+      "path": "raw/skew-matrix.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "raw/source-diff-check.log",
+      "bytes": 31,
+      "sha256": "3f80aa561a728e25fcd6427c99cfe3530a9cbfa3f70523e411c4b7f475b37e4a"
+    },
+    {
+      "path": "rollout-sequence.json",
+      "bytes": 11210,
+      "sha256": "69098214468fa743eafcce3fdeb0b1bad031dc223ec564478ef294d3b1599a9e"
+    },
+    {
+      "path": "skew-matrix.json",
+      "bytes": 12537,
+      "sha256": "34e0c11bfb56505ed0dc2c8eed362b5a9d59f418ec4f9f9520956f2f7fbabe95"
+    },
+    {
+      "path": "source-identity.json",
+      "bytes": 1333,
+      "sha256": "2920ed7e449cf4429d7bc5adf770a2a16197a50a56f9a32394ebeaafa3b047d3"
+    },
+    {
+      "path": "sticky-affinity-browser.json",
+      "bytes": 23186,
+      "sha256": "11b1db49f2c0fa60b96e3e16fc555757246d00d2db8b62d2bbe755af41e91f95"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 1300,
+      "sha256": "0b5879fd32ffcf26763d05cdcce9c0649ef005e36bf53f2cdc06050ceecd6655"
+    }
+  ]
+}

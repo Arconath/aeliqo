@@ -1,0 +1,3 @@
+worktree=/private/tmp/aeliqo-t34-a245c8f-final-preflight
+source_revision=a245c8f946030f930c9145e44dd7211bcd0fb774
+source_tree=9343cc4dd0087c67268743c2f433e712fa42a114

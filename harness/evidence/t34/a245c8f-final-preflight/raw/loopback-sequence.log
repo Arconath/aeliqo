@@ -1,0 +1,12 @@
+starting current-initial aeliqo-t34-current:13564b4a
+Error response from daemon: No such container: aeliqo-t34-loop-55509-current-initial
+Error response from daemon: No such container: aeliqo-t34-loop-55509-current-initial
+starting candidate aeliqo-t34-final:a245c8f9
+Error response from daemon: No such container: aeliqo-t34-loop-55509-candidate
+Error response from daemon: No such container: aeliqo-t34-loop-55509-candidate
+starting executed-rollback aeliqo-t34-rollback:e758c1f6
+Error response from daemon: No such container: aeliqo-t34-loop-55509-executed-rollback
+Error response from daemon: No such container: aeliqo-t34-loop-55509-executed-rollback
+starting current-restored aeliqo-t34-current:13564b4a
+Error response from daemon: No such container: aeliqo-t34-loop-55509-current-restored
+Error response from daemon: No such container: aeliqo-t34-loop-55509-current-restored

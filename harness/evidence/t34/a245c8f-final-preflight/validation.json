@@ -1,0 +1,45 @@
+{
+  "schema": "aeliqo.t34-final-validation.v1",
+  "validatedAt": "2026-09-10T15:09:17.326Z",
+  "checks": [
+    {
+      "command": "source git diff --check",
+      "result": "pass",
+      "evidence": "raw/source-diff-check.log"
+    },
+    {
+      "command": "python3 scripts/kit_check.py",
+      "result": "pass",
+      "evidence": "raw/kit-check.log",
+      "files": 2247,
+      "tasks": 43,
+      "components": 71,
+      "requirements": 35,
+      "scenarios": 67
+    },
+    {
+      "command": "pnpm test:scenarios",
+      "result": "pass",
+      "evidence": "raw/scenario-tests.log",
+      "testFiles": 2,
+      "tests": 58,
+      "failed": 0
+    },
+    {
+      "command": "python3 scripts/next_tasks.py",
+      "result": "pass",
+      "evidence": "raw/next-tasks.log",
+      "nextReady": "T36",
+      "blocked": 0
+    },
+    {
+      "command": "T34 final check bundle",
+      "result": "pass",
+      "evidence": "checks.json"
+    }
+  ],
+  "limitations": [
+    "scripts/check_ownership.py was not treated as a passing gate for this status/evidence-only task because the task-owned implementation paths do not cover the evidence closeout path.",
+    "No independent reviewer was assigned in this subagent run; the parent/orchestrator should review the evidence-only commit before integration."
+  ]
+}

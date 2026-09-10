@@ -1,0 +1,15 @@
+Name:      ghcr.io/arconath/aeliqo-web@sha256:e758c1f6548a7543fdd7a69ae7a1255c438a6e35457cfefc2b4acc4551fd4060
+MediaType: application/vnd.oci.image.index.v1+json
+Digest:    sha256:e758c1f6548a7543fdd7a69ae7a1255c438a6e35457cfefc2b4acc4551fd4060
+           
+Manifests: 
+  Name:        ghcr.io/arconath/aeliqo-web@sha256:27f80e22f76ac300fe15f69acff43f79cfb8ecf9ac223cbd7194faa26698eff5
+  MediaType:   application/vnd.oci.image.manifest.v1+json
+  Platform:    linux/amd64
+               
+  Name:        ghcr.io/arconath/aeliqo-web@sha256:b4a430e8c5d1a19a88ce4cb5e0aab96aec84a1a43fae269fcf27ca2ff2c9117d
+  MediaType:   application/vnd.oci.image.manifest.v1+json
+  Platform:    unknown/unknown
+  Annotations: 
+    vnd.docker.reference.digest: sha256:27f80e22f76ac300fe15f69acff43f79cfb8ecf9ac223cbd7194faa26698eff5
+    vnd.docker.reference.type:   attestation-manifest

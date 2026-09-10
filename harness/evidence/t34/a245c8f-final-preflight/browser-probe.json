@@ -1,0 +1,1017 @@
+{
+  "schema": "aeliqo.t34-final-browser-probe.v1",
+  "capturedAt": "2026-09-10T14:55:24.849Z",
+  "browser": {
+    "engine": "Chromium",
+    "version": "153.0.8010.12",
+    "headless": true
+  },
+  "proxy": {
+    "scheme": "https",
+    "loopbackOnly": true,
+    "certificateSha256": "37fc9ad3f0e97b2627c2b2189b80912aae8a2f06608edf7d381bf30d7c2ac2cf",
+    "sticky": {
+      "port": 61215,
+      "cookie": {
+        "name": "aeliqo_affinity",
+        "secure": true,
+        "httpOnly": true,
+        "sameSite": "Lax",
+        "maxAgeSeconds": 600,
+        "path": "/"
+      },
+      "algorithm": "healthy cookie pin with reassignment to a healthy generation"
+    },
+    "roundRobin": {
+      "port": 61216,
+      "algorithm": "alternating current/candidate per request"
+    }
+  },
+  "backends": {
+    "current": {
+      "image": "aeliqo-t34-current:13564b4a",
+      "revision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e",
+      "port": 32843
+    },
+    "candidate": {
+      "image": "aeliqo-t34-final:a245c8f9",
+      "revision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+      "port": 32844
+    },
+    "rollback": {
+      "image": "aeliqo-t34-rollback:e758c1f6",
+      "revision": "41f29540bf534a23ad08b7fbb865e008f9f16105",
+      "port": 32845
+    }
+  },
+  "roundRobin": {
+    "responses": {
+      "requests": [
+        {
+          "path": "/",
+          "status": 200,
+          "resourceType": "document"
+        },
+        {
+          "path": "/assets/main-LBDCQgHO.css",
+          "status": 200,
+          "resourceType": "stylesheet"
+        },
+        {
+          "path": "/assets/styles-D8hp4Rvg.js",
+          "status": 200,
+          "resourceType": "script"
+        },
+        {
+          "path": "/assets/styles-CNc2bHie.css",
+          "status": 0,
+          "resourceType": "stylesheet"
+        },
+        {
+          "path": "/assets/main-Czg6yLNf.js",
+          "status": 404,
+          "resourceType": "script"
+        },
+        {
+          "path": "/assets/main-Czg6yLNf.js",
+          "status": 0,
+          "resourceType": "script"
+        }
+      ],
+      "errorCount": 1,
+      "errors": [
+        {
+          "path": "/assets/main-Czg6yLNf.js",
+          "status": 404,
+          "resourceType": "script"
+        }
+      ]
+    },
+    "proxyRequests": [
+      {
+        "session": "round-robin-browser",
+        "path": "/",
+        "query": "",
+        "method": "GET",
+        "backend": "current",
+        "reason": "round-robin",
+        "status": 200,
+        "hadAffinityCookie": false
+      },
+      {
+        "session": "round-robin-browser",
+        "path": "/assets/main-LBDCQgHO.css",
+        "query": "",
+        "method": "GET",
+        "backend": "current",
+        "reason": "round-robin",
+        "status": 200,
+        "hadAffinityCookie": false
+      },
+      {
+        "session": "round-robin-browser",
+        "path": "/assets/styles-D8hp4Rvg.js",
+        "query": "",
+        "method": "GET",
+        "backend": "current",
+        "reason": "round-robin",
+        "status": 200,
+        "hadAffinityCookie": false
+      },
+      {
+        "session": "round-robin-browser",
+        "path": "/assets/styles-CNc2bHie.css",
+        "query": "",
+        "method": "GET",
+        "backend": "candidate",
+        "reason": "round-robin",
+        "status": 404,
+        "hadAffinityCookie": false
+      },
+      {
+        "session": "round-robin-browser",
+        "path": "/assets/main-Czg6yLNf.js",
+        "query": "",
+        "method": "GET",
+        "backend": "candidate",
+        "reason": "round-robin",
+        "status": 404,
+        "hadAffinityCookie": false
+      }
+    ],
+    "cookies": [],
+    "assertions": {
+      "crossGenerationAsset404s": 2,
+      "unsafeAsExpected": true,
+      "noAffinityCookieIssued": true
+    }
+  },
+  "sessions": [
+    {
+      "label": "sticky-current",
+      "seed": "current",
+      "initial": {
+        "responses": {
+          "requests": [
+            {
+              "path": "/",
+              "status": 200,
+              "resourceType": "document"
+            },
+            {
+              "path": "/assets/main-LBDCQgHO.css",
+              "status": 200,
+              "resourceType": "stylesheet"
+            },
+            {
+              "path": "/assets/main-Czg6yLNf.js",
+              "status": 200,
+              "resourceType": "script"
+            },
+            {
+              "path": "/assets/styles-CNc2bHie.css",
+              "status": 200,
+              "resourceType": "stylesheet"
+            },
+            {
+              "path": "/assets/styles-D8hp4Rvg.js",
+              "status": 200,
+              "resourceType": "script"
+            },
+            {
+              "path": "/assets/HomePage-BCFb5eaT.css",
+              "status": 200,
+              "resourceType": "stylesheet"
+            },
+            {
+              "path": "/assets/HomePage-DeNaFZfB.js",
+              "status": 200,
+              "resourceType": "script"
+            },
+            {
+              "path": "/aeliqo-logo.png",
+              "status": 200,
+              "resourceType": "image"
+            }
+          ],
+          "errorCount": 0,
+          "errors": []
+        },
+        "proxyRequests": [
+          {
+            "session": "sticky-current-initial",
+            "path": "/",
+            "query": "?__seed=current",
+            "method": "GET",
+            "backend": "current",
+            "reason": "initial-seed",
+            "status": 200,
+            "hadAffinityCookie": false
+          },
+          {
+            "session": "sticky-current-initial",
+            "path": "/assets/main-Czg6yLNf.js",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-current-initial",
+            "path": "/assets/main-LBDCQgHO.css",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-current-initial",
+            "path": "/assets/styles-D8hp4Rvg.js",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-current-initial",
+            "path": "/assets/styles-CNc2bHie.css",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-current-initial",
+            "path": "/assets/HomePage-DeNaFZfB.js",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-current-initial",
+            "path": "/assets/HomePage-BCFb5eaT.css",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-current-initial",
+            "path": "/aeliqo-logo.png",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          }
+        ],
+        "backends": [
+          "current"
+        ],
+        "cookie": {
+          "name": "aeliqo_affinity",
+          "value": "current",
+          "domain": "127.0.0.1",
+          "path": "/",
+          "expires": 1789052719.913841,
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "Lax"
+        }
+      },
+      "lateAsset": {
+        "request": {
+          "path": "/assets/main-Czg6yLNf.js",
+          "status": 404,
+          "bytes": 2056
+        },
+        "proxyRequests": [
+          {
+            "session": "sticky-current-late-asset",
+            "path": "/assets/main-Czg6yLNf.js",
+            "query": "",
+            "method": "GET",
+            "backend": "candidate",
+            "reason": "unhealthy-cookie-failover",
+            "status": 404,
+            "hadAffinityCookie": true
+          }
+        ],
+        "cookieAfterRequest": {
+          "name": "aeliqo_affinity",
+          "value": "candidate",
+          "domain": "127.0.0.1",
+          "path": "/",
+          "expires": 1789052720.717978,
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "Lax"
+        }
+      },
+      "reload": {
+        "responses": {
+          "requests": [
+            {
+              "path": "/",
+              "status": 200,
+              "resourceType": "document"
+            },
+            {
+              "path": "/assets/site-ClTIlh4d.css",
+              "status": 200,
+              "resourceType": "stylesheet"
+            },
+            {
+              "path": "/assets/site-DQwQCzVw.js",
+              "status": 200,
+              "resourceType": "script"
+            },
+            {
+              "path": "/aeliqo.png",
+              "status": 200,
+              "resourceType": "image"
+            }
+          ],
+          "errorCount": 0,
+          "errors": []
+        },
+        "proxyRequests": [
+          {
+            "session": "sticky-current-reload",
+            "path": "/",
+            "query": "?__seed=current",
+            "method": "GET",
+            "backend": "candidate",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-current-reload",
+            "path": "/assets/site-ClTIlh4d.css",
+            "query": "",
+            "method": "GET",
+            "backend": "candidate",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-current-reload",
+            "path": "/assets/site-DQwQCzVw.js",
+            "query": "",
+            "method": "GET",
+            "backend": "candidate",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-current-reload",
+            "path": "/aeliqo.png",
+            "query": "",
+            "method": "GET",
+            "backend": "candidate",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          }
+        ],
+        "backends": [
+          "candidate"
+        ],
+        "cookie": {
+          "name": "aeliqo_affinity",
+          "value": "candidate",
+          "domain": "127.0.0.1",
+          "path": "/",
+          "expires": 1789052720.717978,
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "Lax"
+        }
+      },
+      "assertions": {
+        "initialDocumentAndAssetsHealthy": true,
+        "initialPinnedToSeed": true,
+        "cookieSecure": true,
+        "cookieHttpOnly": true,
+        "cookieSameSiteLax": true,
+        "cookiePathRoot": true,
+        "cookieMaxAgeBounded": true,
+        "lateDepartedAssetCan404": true,
+        "unhealthyCookieReassigned": true,
+        "reloadRecoversHealthy": true
+      }
+    },
+    {
+      "label": "sticky-candidate",
+      "seed": "candidate",
+      "initial": {
+        "responses": {
+          "requests": [
+            {
+              "path": "/",
+              "status": 200,
+              "resourceType": "document"
+            },
+            {
+              "path": "/assets/site-ClTIlh4d.css",
+              "status": 200,
+              "resourceType": "stylesheet"
+            },
+            {
+              "path": "/aeliqo.png",
+              "status": 200,
+              "resourceType": "image"
+            },
+            {
+              "path": "/assets/site-DQwQCzVw.js",
+              "status": 200,
+              "resourceType": "script"
+            }
+          ],
+          "errorCount": 0,
+          "errors": []
+        },
+        "proxyRequests": [
+          {
+            "session": "sticky-candidate-initial",
+            "path": "/",
+            "query": "?__seed=candidate",
+            "method": "GET",
+            "backend": "candidate",
+            "reason": "initial-seed",
+            "status": 200,
+            "hadAffinityCookie": false
+          },
+          {
+            "session": "sticky-candidate-initial",
+            "path": "/assets/site-DQwQCzVw.js",
+            "query": "",
+            "method": "GET",
+            "backend": "candidate",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-candidate-initial",
+            "path": "/assets/site-ClTIlh4d.css",
+            "query": "",
+            "method": "GET",
+            "backend": "candidate",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-candidate-initial",
+            "path": "/aeliqo.png",
+            "query": "",
+            "method": "GET",
+            "backend": "candidate",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          }
+        ],
+        "backends": [
+          "candidate"
+        ],
+        "cookie": {
+          "name": "aeliqo_affinity",
+          "value": "candidate",
+          "domain": "127.0.0.1",
+          "path": "/",
+          "expires": 1789052721.545663,
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "Lax"
+        }
+      },
+      "lateAsset": {
+        "request": {
+          "path": "/assets/site-DQwQCzVw.js",
+          "status": 404,
+          "bytes": 19
+        },
+        "proxyRequests": [
+          {
+            "session": "sticky-candidate-late-asset",
+            "path": "/assets/site-DQwQCzVw.js",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "unhealthy-cookie-failover",
+            "status": 404,
+            "hadAffinityCookie": true
+          }
+        ],
+        "cookieAfterRequest": {
+          "name": "aeliqo_affinity",
+          "value": "current",
+          "domain": "127.0.0.1",
+          "path": "/",
+          "expires": 1789052722.354737,
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "Lax"
+        }
+      },
+      "reload": {
+        "responses": {
+          "requests": [
+            {
+              "path": "/",
+              "status": 200,
+              "resourceType": "document"
+            },
+            {
+              "path": "/assets/styles-CNc2bHie.css",
+              "status": 200,
+              "resourceType": "stylesheet"
+            },
+            {
+              "path": "/assets/main-Czg6yLNf.js",
+              "status": 200,
+              "resourceType": "script"
+            },
+            {
+              "path": "/assets/main-LBDCQgHO.css",
+              "status": 200,
+              "resourceType": "stylesheet"
+            },
+            {
+              "path": "/assets/styles-D8hp4Rvg.js",
+              "status": 200,
+              "resourceType": "script"
+            },
+            {
+              "path": "/assets/HomePage-BCFb5eaT.css",
+              "status": 200,
+              "resourceType": "stylesheet"
+            },
+            {
+              "path": "/assets/HomePage-DeNaFZfB.js",
+              "status": 200,
+              "resourceType": "script"
+            },
+            {
+              "path": "/aeliqo-logo.png",
+              "status": 200,
+              "resourceType": "image"
+            }
+          ],
+          "errorCount": 0,
+          "errors": []
+        },
+        "proxyRequests": [
+          {
+            "session": "sticky-candidate-reload",
+            "path": "/",
+            "query": "?__seed=candidate",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-candidate-reload",
+            "path": "/assets/styles-CNc2bHie.css",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-candidate-reload",
+            "path": "/assets/styles-D8hp4Rvg.js",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-candidate-reload",
+            "path": "/assets/main-Czg6yLNf.js",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-candidate-reload",
+            "path": "/assets/main-LBDCQgHO.css",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-candidate-reload",
+            "path": "/assets/HomePage-BCFb5eaT.css",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-candidate-reload",
+            "path": "/assets/HomePage-DeNaFZfB.js",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-candidate-reload",
+            "path": "/aeliqo-logo.png",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          }
+        ],
+        "backends": [
+          "current"
+        ],
+        "cookie": {
+          "name": "aeliqo_affinity",
+          "value": "current",
+          "domain": "127.0.0.1",
+          "path": "/",
+          "expires": 1789052722.354737,
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "Lax"
+        }
+      },
+      "assertions": {
+        "initialDocumentAndAssetsHealthy": true,
+        "initialPinnedToSeed": true,
+        "cookieSecure": true,
+        "cookieHttpOnly": true,
+        "cookieSameSiteLax": true,
+        "cookiePathRoot": true,
+        "cookieMaxAgeBounded": true,
+        "lateDepartedAssetCan404": true,
+        "unhealthyCookieReassigned": true,
+        "reloadRecoversHealthy": true
+      }
+    },
+    {
+      "label": "sticky-rollback",
+      "seed": "rollback",
+      "initial": {
+        "responses": {
+          "requests": [
+            {
+              "path": "/",
+              "status": 200,
+              "resourceType": "document"
+            },
+            {
+              "path": "/assets/main-BB-zjIBm.js",
+              "status": 200,
+              "resourceType": "script"
+            },
+            {
+              "path": "/assets/main-D_OuDGFe.css",
+              "status": 200,
+              "resourceType": "stylesheet"
+            },
+            {
+              "path": "/assets/styles-DPGrKE6U.css",
+              "status": 200,
+              "resourceType": "stylesheet"
+            },
+            {
+              "path": "/assets/styles-CiawjvKI.js",
+              "status": 200,
+              "resourceType": "script"
+            },
+            {
+              "path": "/assets/index-Bor-Idwi.js",
+              "status": 200,
+              "resourceType": "script"
+            },
+            {
+              "path": "/assets/browser-DyiNWAmQ.js",
+              "status": 200,
+              "resourceType": "script"
+            }
+          ],
+          "errorCount": 0,
+          "errors": []
+        },
+        "proxyRequests": [
+          {
+            "session": "sticky-rollback-initial",
+            "path": "/",
+            "query": "?__seed=rollback",
+            "method": "GET",
+            "backend": "rollback",
+            "reason": "initial-seed",
+            "status": 200,
+            "hadAffinityCookie": false
+          },
+          {
+            "session": "sticky-rollback-initial",
+            "path": "/assets/main-BB-zjIBm.js",
+            "query": "",
+            "method": "GET",
+            "backend": "rollback",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-rollback-initial",
+            "path": "/assets/main-D_OuDGFe.css",
+            "query": "",
+            "method": "GET",
+            "backend": "rollback",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-rollback-initial",
+            "path": "/assets/styles-CiawjvKI.js",
+            "query": "",
+            "method": "GET",
+            "backend": "rollback",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-rollback-initial",
+            "path": "/assets/styles-DPGrKE6U.css",
+            "query": "",
+            "method": "GET",
+            "backend": "rollback",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-rollback-initial",
+            "path": "/assets/index-Bor-Idwi.js",
+            "query": "",
+            "method": "GET",
+            "backend": "rollback",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-rollback-initial",
+            "path": "/assets/browser-DyiNWAmQ.js",
+            "query": "",
+            "method": "GET",
+            "backend": "rollback",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          }
+        ],
+        "backends": [
+          "rollback"
+        ],
+        "cookie": {
+          "name": "aeliqo_affinity",
+          "value": "rollback",
+          "domain": "127.0.0.1",
+          "path": "/",
+          "expires": 1789052723.195094,
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "Lax"
+        }
+      },
+      "lateAsset": {
+        "request": {
+          "path": "/assets/main-BB-zjIBm.js",
+          "status": 404,
+          "bytes": 19
+        },
+        "proxyRequests": [
+          {
+            "session": "sticky-rollback-late-asset",
+            "path": "/assets/main-BB-zjIBm.js",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "unhealthy-cookie-failover",
+            "status": 404,
+            "hadAffinityCookie": true
+          }
+        ],
+        "cookieAfterRequest": {
+          "name": "aeliqo_affinity",
+          "value": "current",
+          "domain": "127.0.0.1",
+          "path": "/",
+          "expires": 1789052724.051691,
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "Lax"
+        }
+      },
+      "reload": {
+        "responses": {
+          "requests": [
+            {
+              "path": "/",
+              "status": 200,
+              "resourceType": "document"
+            },
+            {
+              "path": "/assets/main-LBDCQgHO.css",
+              "status": 200,
+              "resourceType": "stylesheet"
+            },
+            {
+              "path": "/assets/main-Czg6yLNf.js",
+              "status": 200,
+              "resourceType": "script"
+            },
+            {
+              "path": "/assets/styles-CNc2bHie.css",
+              "status": 200,
+              "resourceType": "stylesheet"
+            },
+            {
+              "path": "/assets/styles-D8hp4Rvg.js",
+              "status": 200,
+              "resourceType": "script"
+            },
+            {
+              "path": "/assets/HomePage-BCFb5eaT.css",
+              "status": 200,
+              "resourceType": "stylesheet"
+            },
+            {
+              "path": "/assets/HomePage-DeNaFZfB.js",
+              "status": 200,
+              "resourceType": "script"
+            },
+            {
+              "path": "/aeliqo-logo.png",
+              "status": 200,
+              "resourceType": "image"
+            }
+          ],
+          "errorCount": 0,
+          "errors": []
+        },
+        "proxyRequests": [
+          {
+            "session": "sticky-rollback-reload",
+            "path": "/",
+            "query": "?__seed=rollback",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-rollback-reload",
+            "path": "/assets/main-Czg6yLNf.js",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-rollback-reload",
+            "path": "/assets/main-LBDCQgHO.css",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-rollback-reload",
+            "path": "/assets/styles-D8hp4Rvg.js",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-rollback-reload",
+            "path": "/assets/styles-CNc2bHie.css",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-rollback-reload",
+            "path": "/assets/HomePage-DeNaFZfB.js",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-rollback-reload",
+            "path": "/assets/HomePage-BCFb5eaT.css",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          },
+          {
+            "session": "sticky-rollback-reload",
+            "path": "/aeliqo-logo.png",
+            "query": "",
+            "method": "GET",
+            "backend": "current",
+            "reason": "healthy-cookie",
+            "status": 200,
+            "hadAffinityCookie": true
+          }
+        ],
+        "backends": [
+          "current"
+        ],
+        "cookie": {
+          "name": "aeliqo_affinity",
+          "value": "current",
+          "domain": "127.0.0.1",
+          "path": "/",
+          "expires": 1789052724.051691,
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "Lax"
+        }
+      },
+      "assertions": {
+        "initialDocumentAndAssetsHealthy": true,
+        "initialPinnedToSeed": true,
+        "cookieSecure": true,
+        "cookieHttpOnly": true,
+        "cookieSameSiteLax": true,
+        "cookiePathRoot": true,
+        "cookieMaxAgeBounded": true,
+        "lateDepartedAssetCan404": true,
+        "unhealthyCookieReassigned": true,
+        "reloadRecoversHealthy": true
+      }
+    }
+  ],
+  "assertions": {
+    "healthySessions": 3,
+    "allHealthySessionAssetsPinned": true,
+    "allCookiesSecureHttpOnlyLax": true,
+    "unhealthyCookieReassigned": true,
+    "healthyReloadRecovers": true,
+    "lateDepartedGenerationAsset404s": 3
+  }
+}

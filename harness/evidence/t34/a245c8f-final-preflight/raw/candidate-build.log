@@ -1,0 +1,304 @@
+#0 building with "orbstack" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.98kB done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/node:24.20.0-alpine@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf
+#2 ...
+
+#3 [internal] load metadata for docker.io/library/golang:1.27.0-alpine@sha256:4c9fe60190a2a3350ddc51de80d0224b8a6698d12bdfc999fee45ea9d6c46dbc
+#3 DONE 11.9s
+
+#2 [internal] load metadata for docker.io/library/node:24.20.0-alpine@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf
+#2 DONE 12.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 894B done
+#4 DONE 0.1s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [server-build 1/4] FROM docker.io/library/golang:1.27.0-alpine@sha256:4c9fe60190a2a3350ddc51de80d0224b8a6698d12bdfc999fee45ea9d6c46dbc
+#6 resolve docker.io/library/golang:1.27.0-alpine@sha256:4c9fe60190a2a3350ddc51de80d0224b8a6698d12bdfc999fee45ea9d6c46dbc 0.1s done
+#6 DONE 0.1s
+
+#7 [site-build  1/13] FROM docker.io/library/node:24.20.0-alpine@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf
+#7 resolve docker.io/library/node:24.20.0-alpine@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf
+#7 resolve docker.io/library/node:24.20.0-alpine@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf 0.1s done
+#7 DONE 0.1s
+
+#5 [internal] load build context
+#5 transferring context: 7.48MB 0.1s done
+#5 DONE 0.1s
+
+#8 [server-build 2/4] WORKDIR /src
+#8 CACHED
+
+#9 [server-build 3/4] COPY deploy/server.go ./server.go
+#9 CACHED
+
+#10 [site-build  3/13] RUN corepack enable && corepack prepare pnpm@11.24.0 --activate
+#10 CACHED
+
+#11 [site-build  2/13] WORKDIR /workspace
+#11 CACHED
+
+#12 [site-build  4/13] COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json ./
+#12 CACHED
+
+#13 [site-build  5/13] COPY packages ./packages
+#13 DONE 0.2s
+
+#14 [server-build 4/4] RUN CGO_ENABLED=0 GOOS=linux go build -trimpath   -ldflags="-s -w -X main.revision=a245c8f946030f930c9145e44dd7211bcd0fb774"   -o /aeliqo-static-server ./server.go
+#14 ...
+
+#15 [site-build  6/13] COPY apps ./apps
+#15 DONE 0.1s
+
+#16 [site-build  7/13] COPY examples ./examples
+#16 DONE 0.1s
+
+#17 [site-build  8/13] COPY tests ./tests
+#17 DONE 0.2s
+
+#14 [server-build 4/4] RUN CGO_ENABLED=0 GOOS=linux go build -trimpath   -ldflags="-s -w -X main.revision=a245c8f946030f930c9145e44dd7211bcd0fb774"   -o /aeliqo-static-server ./server.go
+#14 ...
+
+#18 [site-build  9/13] COPY design ./design
+#18 DONE 0.1s
+
+#19 [site-build 10/13] COPY harness/components.json ./harness/components.json
+#19 DONE 0.1s
+
+#20 [site-build 11/13] RUN pnpm install --frozen-lockfile
+#20 2.139 Scope: all 15 workspace projects
+#20 2.382 ? Verifying lockfile against supply-chain policies (220 entries)...
+#20 2.398 Lockfile is up to date, resolution step is skipped
+#20 2.564 Progress: resolved 1, reused 0, downloaded 0, added 0
+#20 2.633 Packages: +144
+#20 2.633 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#20 3.579 Progress: resolved 144, reused 0, downloaded 0, added 0
+#20 3.983 Packages are cloned from the content-addressable store to the virtual store.
+#20 3.983   Content-addressable store is at: /root/.local/share/pnpm/store/v11
+#20 3.983   Virtual store is at:             node_modules/.pnpm
+#20 4.168 
+#20 4.168    ╭──────────────────────────────────────────────╮
+#20 4.168    │                                              │
+#20 4.168    │     Update available! 11.24.0 → 12.3.4.      │
+#20 4.168    │     Changelog: https://pnpm.io/v/12.3.4      │
+#20 4.168    │   To update, run: corepack use pnpm@12.3.4   │
+#20 4.168    │                                              │
+#20 4.168    ╰──────────────────────────────────────────────╯
+#20 4.168 
+#20 4.586 Progress: resolved 144, reused 0, downloaded 23, added 14
+#20 5.587 Progress: resolved 144, reused 0, downloaded 58, added 56
+#20 6.590 Progress: resolved 144, reused 0, downloaded 102, added 100
+#20 7.596 Progress: resolved 144, reused 0, downloaded 132, added 132
+#20 8.597 Progress: resolved 144, reused 0, downloaded 135, added 135
+#20 10.25 Progress: resolved 144, reused 0, downloaded 136, added 135
+#20 11.72 Progress: resolved 144, reused 0, downloaded 137, added 137
+#20 12.46 ✓ Lockfile passes supply-chain policies (220 entries in 10s)
+#20 12.77 Progress: resolved 144, reused 0, downloaded 139, added 139
+#20 13.77 Progress: resolved 144, reused 0, downloaded 141, added 141
+#20 14.88 Progress: resolved 144, reused 0, downloaded 142, added 141
+#20 15.88 Progress: resolved 144, reused 0, downloaded 142, added 142
+#20 20.52 Progress: resolved 144, reused 0, downloaded 143, added 142
+#20 21.52 Progress: resolved 144, reused 0, downloaded 144, added 143
+#20 22.34 Progress: resolved 144, reused 0, downloaded 144, added 144, done
+#20 22.66 
+#20 22.66 devDependencies:
+#20 22.66 + @aeliqo/sdk-agent 0.1.0 <- packages/agent
+#20 22.66 + @aeliqo/sdk-core 0.1.0 <- packages/core
+#20 22.66 + @aeliqo/sdk-devtools 0.1.0 <- packages/devtools
+#20 22.66 + @aeliqo/sdk-react 0.1.0 <- packages/react
+#20 22.66 + @aeliqo/sdk-runtime 0.1.0 <- packages/runtime
+#20 22.66 + @aeliqo/sdk-web 0.1.0 <- packages/web
+#20 22.66 + @aeliqo/testkit 0.1.0 <- packages/testkit
+#20 22.66 + @axe-core/playwright 4.13.0
+#20 22.66 + @lit-labs/ssr 4.1.0
+#20 22.66 + @lit-labs/ssr-client 1.1.8
+#20 22.66 + @lit/react 1.0.8
+#20 22.66 + @modelcontextprotocol/client 2.0.0
+#20 22.66 + @playwright/test 1.63.0
+#20 22.66 + @types/node 24.13.3
+#20 22.66 + @types/react 19.2.18
+#20 22.66 + @types/react-dom 19.2.7
+#20 22.66 + ajv 8.20.0
+#20 22.66 + ajv-formats 3.0.1
+#20 22.66 + lit 3.3.3
+#20 22.66 + openai 7.10.0
+#20 22.66 + react 19.2.8
+#20 22.66 + react-dom 19.2.8
+#20 22.66 + typescript 7.0.2
+#20 22.66 + vite 8.2.2
+#20 22.66 + vitest 5.0.0
+#20 22.66 + vue 3.5.42
+#20 22.66 
+#20 22.86 Done in 21.6s using pnpm v11.24.0
+#20 ...
+
+#14 [server-build 4/4] RUN CGO_ENABLED=0 GOOS=linux go build -trimpath   -ldflags="-s -w -X main.revision=a245c8f946030f930c9145e44dd7211bcd0fb774"   -o /aeliqo-static-server ./server.go
+#14 DONE 24.2s
+
+#20 [site-build 11/13] RUN pnpm install --frozen-lockfile
+#20 DONE 23.5s
+
+#21 [site-build 12/13] RUN pnpm build:platform && pnpm build:agent
+#21 ...
+
+#22 [stage-3 1/3] COPY --from=server-build /aeliqo-static-server /aeliqo-static-server
+#22 DONE 0.0s
+
+#21 [site-build 12/13] RUN pnpm build:platform && pnpm build:agent
+#21 1.365 $ pnpm build:runtime && pnpm --filter @aeliqo/sdk-web build && pnpm --filter @aeliqo/sdk-react build
+#21 2.366 $ pnpm build:core && pnpm --filter @aeliqo/sdk-runtime build
+#21 3.397 $ pnpm --filter @aeliqo/sdk-core build
+#21 4.457 $ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+#21 7.172 $ tsc -p tsconfig.json
+#21 10.04 $ tsc -p tsconfig.json
+#21 13.19 $ tsc -p tsconfig.json
+#21 15.76 $ pnpm build:runtime && pnpm --filter @aeliqo/sdk-agent build
+#21 16.73 $ pnpm build:core && pnpm --filter @aeliqo/sdk-runtime build
+#21 17.68 $ pnpm --filter @aeliqo/sdk-core build
+#21 18.70 $ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+#21 21.43 $ tsc -p tsconfig.json
+#21 24.18 $ tsc -p tsconfig.json
+#21 DONE 26.2s
+
+#23 [site-build 13/13] RUN rm -rf /workspace/apps/site/dist /workspace/artifacts/site-source /workspace/artifacts/site-public   && node --input-type=module -e 'const {generatePages}=await import("./apps/site/generate-pages.mjs"); await generatePages()'   && test -f /workspace/artifacts/site-source/index.html
+#23 DONE 2.6s
+
+#24 [site-generated 1/1] RUN pnpm --filter @aeliqo/site build   && test -f /workspace/apps/site/dist/404/index.html   && test -f /workspace/apps/site/dist/404.html
+#24 1.240 $ tsc -p tsconfig.json && vite build
+#24 6.039 vite v8.2.2 building client environment for production...
+#24 6.074 transforming...
+#24 6.534 ✓ 599 modules transformed.
+#24 6.701 rendering chunks...
+#24 6.877 computing gzip size...
+#24 6.928 dist/404/index.html                                            2.06 kB │ gzip:   0.98 kB
+#24 6.928 dist/blog/index.html                                           2.28 kB │ gzip:   1.10 kB
+#24 6.928 dist/legal/support/index.html                                  2.31 kB │ gzip:   1.10 kB
+#24 6.928 dist/about/index.html                                          2.42 kB │ gzip:   1.16 kB
+#24 6.928 dist/legal/security/index.html                                 2.53 kB │ gzip:   1.22 kB
+#24 6.928 dist/legal/license/index.html                                  2.54 kB │ gzip:   1.23 kB
+#24 6.928 dist/legal/privacy/index.html                                  3.30 kB │ gzip:   1.58 kB
+#24 6.928 dist/blog/four-concepts/index.html                             3.34 kB │ gzip:   1.62 kB
+#24 6.928 dist/docs/index.html                                           3.71 kB │ gzip:   1.62 kB
+#24 6.928 dist/docs/integration/index.html                               3.92 kB │ gzip:   1.73 kB
+#24 6.928 dist/docs/meaning/index.html                                   4.03 kB │ gzip:   1.82 kB
+#24 6.928 dist/docs/concepts/index.html                                  4.09 kB │ gzip:   1.81 kB
+#24 6.928 dist/docs/agents/index.html                                    4.20 kB │ gzip:   1.92 kB
+#24 6.928 dist/docs/getting-started/index.html                           4.23 kB │ gzip:   1.81 kB
+#24 6.928 dist/docs/data/index.html                                      4.24 kB │ gzip:   1.90 kB
+#24 6.928 dist/index.html                                                4.29 kB │ gzip:   1.89 kB
+#24 6.928 dist/docs/production/index.html                                4.55 kB │ gzip:   2.01 kB
+#24 6.928 dist/playground/index.html                                     6.04 kB │ gzip:   2.27 kB
+#24 6.928 dist/docs/components/index.html                                8.09 kB │ gzip:   2.22 kB
+#24 6.928 dist/docs/components/foundation.separator/index.html           8.17 kB │ gzip:   3.07 kB
+#24 6.928 dist/docs/components/foundation.text/index.html                8.22 kB │ gzip:   3.08 kB
+#24 6.928 dist/docs/components/feedback.progress/index.html              8.32 kB │ gzip:   3.14 kB
+#24 6.928 dist/docs/components/foundation.badge/index.html               8.34 kB │ gzip:   3.12 kB
+#24 6.928 dist/docs/components/foundation.heading/index.html             8.50 kB │ gzip:   3.12 kB
+#24 6.928 dist/docs/components/foundation.scroll-area/index.html         8.53 kB │ gzip:   3.15 kB
+#24 6.928 dist/docs/components/feedback.skeleton/index.html              8.58 kB │ gzip:   3.17 kB
+#24 6.928 dist/docs/components/foundation.link/index.html                8.67 kB │ gzip:   3.17 kB
+#24 6.928 dist/docs/components/foundation.grid/index.html                8.68 kB │ gzip:   3.20 kB
+#24 6.928 dist/docs/components/feedback.tooltip/index.html               8.73 kB │ gzip:   3.24 kB
+#24 6.928 dist/docs/components/foundation.surface/index.html             8.91 kB │ gzip:   3.21 kB
+#24 6.928 dist/docs/components/foundation.stack/index.html               9.08 kB │ gzip:   3.28 kB
+#24 6.928 dist/docs/components/feedback.empty-state/index.html           9.12 kB │ gzip:   3.29 kB
+#24 6.928 dist/docs/components/feedback.drawer/index.html                9.13 kB │ gzip:   3.33 kB
+#24 6.928 dist/docs/components/feedback.toast/index.html                 9.23 kB │ gzip:   3.34 kB
+#24 6.928 dist/docs/components/foundation.avatar/index.html              9.26 kB │ gzip:   3.30 kB
+#24 6.928 dist/docs/components/navigation.breadcrumb/index.html          9.38 kB │ gzip:   3.36 kB
+#24 6.928 dist/docs/components/feedback.dialog/index.html                9.45 kB │ gzip:   3.40 kB
+#24 6.928 dist/docs/components/foundation.icon-button/index.html         9.58 kB │ gzip:   3.25 kB
+#24 6.928 dist/docs/components/feedback.popover/index.html               9.59 kB │ gzip:   3.39 kB
+#24 6.928 dist/docs/components/feedback.alert/index.html                 9.61 kB │ gzip:   3.36 kB
+#24 6.928 dist/docs/components/input.field-group/index.html              9.73 kB │ gzip:   3.47 kB
+#24 6.928 dist/docs/components/foundation.button/index.html              9.86 kB │ gzip:   3.30 kB
+#24 6.928 dist/docs/components/navigation.menu/index.html                9.93 kB │ gzip:   3.51 kB
+#24 6.928 dist/docs/components/input.form/index.html                    10.19 kB │ gzip:   3.70 kB
+#24 6.928 dist/docs/components/navigation.tree-nav/index.html           10.43 kB │ gzip:   3.60 kB
+#24 6.928 dist/docs/components/navigation.pagination/index.html         10.62 kB │ gzip:   3.55 kB
+#24 6.928 dist/docs/components/navigation.tabs/index.html               10.76 kB │ gzip:   3.63 kB
+#24 6.928 dist/docs/components/foundation.split-pane/index.html         11.06 kB │ gzip:   3.58 kB
+#24 6.928 dist/docs/components/input.switch/index.html                  11.09 kB │ gzip:   3.50 kB
+#24 6.928 dist/docs/components/data.key-value/index.html                11.36 kB │ gzip:   3.93 kB
+#24 6.928 dist/docs/components/input.text-area/index.html               11.93 kB │ gzip:   3.59 kB
+#24 6.928 dist/docs/components/input.text-field/index.html              12.03 kB │ gzip:   3.59 kB
+#24 6.928 dist/docs/components/data.detail/index.html                   12.53 kB │ gzip:   4.02 kB
+#24 6.928 dist/docs/components/data.delta/index.html                    12.54 kB │ gzip:   4.07 kB
+#24 6.928 dist/docs/components/data.selection-summary/index.html        12.67 kB │ gzip:   4.06 kB
+#24 6.928 dist/docs/components/data.metric/index.html                   12.82 kB │ gzip:   4.08 kB
+#24 6.928 dist/docs/components/input.checkbox/index.html                12.91 kB │ gzip:   3.75 kB
+#24 6.928 dist/docs/components/input.radio-group/index.html             12.98 kB │ gzip:   3.78 kB
+#24 6.928 dist/docs/components/input.date-field/index.html              13.24 kB │ gzip:   3.84 kB
+#24 6.928 dist/docs/components/input.select/index.html                  13.34 kB │ gzip:   3.83 kB
+#24 6.928 dist/docs/components/input.file-input/index.html              13.45 kB │ gzip:   3.85 kB
+#24 6.928 dist/docs/components/compound.quality-panel/index.html        13.47 kB │ gzip:   4.21 kB
+#24 6.928 dist/docs/components/input.slider/index.html                  13.49 kB │ gzip:   3.91 kB
+#24 6.928 dist/docs/components/data.record-list/index.html              13.82 kB │ gzip:   4.26 kB
+#24 6.928 dist/docs/components/input.number-field/index.html            13.91 kB │ gzip:   3.94 kB
+#24 6.928 dist/docs/components/input.date-range/index.html              14.10 kB │ gzip:   3.97 kB
+#24 6.928 dist/docs/components/compound.record-editor/index.html        14.30 kB │ gzip:   4.32 kB
+#24 6.928 dist/docs/components/compound.comparison/index.html           14.32 kB │ gzip:   4.35 kB
+#24 6.928 dist/docs/components/compound.breakdown/index.html            14.40 kB │ gzip:   4.33 kB
+#24 6.928 dist/docs/components/data.card-collection/index.html          14.64 kB │ gzip:   4.33 kB
+#24 6.928 dist/docs/components/compound.form-flow/index.html            14.73 kB │ gzip:   4.50 kB
+#24 6.928 dist/docs/components/data.filter-builder/index.html           14.80 kB │ gzip:   4.49 kB
+#24 6.928 dist/docs/components/input.combobox/index.html                14.82 kB │ gzip:   4.12 kB
+#24 6.928 dist/docs/components/input.search-field/index.html            14.94 kB │ gzip:   4.02 kB
+#24 6.928 dist/docs/components/compound.search-results/index.html       15.17 kB │ gzip:   4.35 kB
+#24 6.928 dist/docs/components/compound.investigation/index.html        15.58 kB │ gzip:   4.39 kB
+#24 6.928 dist/docs/components/compound.explorer/index.html             15.87 kB │ gzip:   4.48 kB
+#24 6.928 dist/docs/components/data.table/index.html                    17.48 kB │ gzip:   4.82 kB
+#24 6.928 dist/docs/components/visualization.matrix/index.html          20.79 kB │ gzip:   5.57 kB
+#24 6.928 dist/docs/components/visualization.timeline/index.html        20.83 kB │ gzip:   5.58 kB
+#24 6.928 dist/docs/components/visualization.calendar-grid/index.html   20.88 kB │ gzip:   5.57 kB
+#24 6.928 dist/docs/components/visualization.treemap/index.html         21.12 kB │ gzip:   5.65 kB
+#24 6.928 dist/docs/components/visualization.tree/index.html            21.13 kB │ gzip:   5.65 kB
+#24 6.928 dist/docs/components/visualization.relationship/index.html    21.27 kB │ gzip:   5.69 kB
+#24 6.928 dist/docs/components/visualization.trend/index.html           21.59 kB │ gzip:   5.73 kB
+#24 6.928 dist/docs/components/visualization.bar/index.html             21.60 kB │ gzip:   5.74 kB
+#24 6.928 dist/docs/components/visualization.heatmap/index.html         21.62 kB │ gzip:   5.74 kB
+#24 6.928 dist/docs/components/visualization.histogram/index.html       21.64 kB │ gzip:   5.75 kB
+#24 6.928 dist/docs/components/visualization.area/index.html            21.67 kB │ gzip:   5.77 kB
+#24 6.928 dist/docs/components/visualization.scatter/index.html         21.67 kB │ gzip:   5.77 kB
+#24 6.928 dist/assets/site-ClTIlh4d.css                                 10.18 kB │ gzip:   2.77 kB
+#24 6.928 dist/assets/docs-syWBxg0N.js                                   4.55 kB │ gzip:   1.95 kB
+#24 6.928 dist/assets/dialog-VNBcbYIA.js                                 9.07 kB │ gzip:   3.22 kB
+#24 6.928 dist/assets/site-DQwQCzVw.js                                  44.64 kB │ gzip:  15.81 kB
+#24 6.928 dist/assets/catalog-B2D9cjdG.js                              104.10 kB │ gzip:  25.15 kB
+#24 6.928 dist/assets/playground-BiLln9sd.js                           346.80 kB │ gzip:  88.63 kB
+#24 6.928 dist/assets/register-BMiVRV9W.js                             508.90 kB │ gzip: 130.72 kB
+#24 6.928 
+#24 6.932 ✓ built in 891ms
+#24 6.934 [plugin builtin:vite-reporter] 
+#24 6.934 (!) Some chunks are larger than 500 kB after minification. Consider:
+#24 6.934 - Using dynamic import() to code-split the application
+#24 6.934 - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+#24 6.934 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+#24 DONE 7.1s
+
+#25 [stage-3 2/3] COPY --from=site-generated /workspace/apps/site/dist /srv/aeliqo
+#25 DONE 0.1s
+
+#26 [stage-3 3/3] WORKDIR /srv/aeliqo
+#26 DONE 0.1s
+
+#27 exporting to image
+#27 exporting layers
+#27 exporting layers 0.3s done
+#27 exporting manifest sha256:4b58ba9bb86073ad4920f3762189a0a054a531620b732eba311c2d3e56d988c5
+#27 exporting manifest sha256:4b58ba9bb86073ad4920f3762189a0a054a531620b732eba311c2d3e56d988c5 0.0s done
+#27 exporting config sha256:90fe851b4d0148e31513d96e4693b4c5d232c938630d12b676648ca607b92ba9 0.0s done
+#27 exporting attestation manifest sha256:2471c2b6e2e1347d1aa70730286d0a072820fa37793906c68170f1da220b236d 0.0s done
+#27 exporting manifest list sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214 0.0s done
+#27 naming to docker.io/library/aeliqo-t34-final:a245c8f9 done
+#27 DONE 0.4s
+
+#28 resolving provenance for metadata file
+#28 DONE 0.0s

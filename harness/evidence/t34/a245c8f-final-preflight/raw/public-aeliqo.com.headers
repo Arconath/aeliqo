@@ -1,0 +1,19 @@
+HTTP/2 200 
+date: Thu, 10 Sep 2026 14:55:42 GMT
+content-type: text/html; charset=utf-8
+accept-ranges: bytes
+cache-control: no-cache
+content-security-policy: default-src 'self'; script-src 'self' https://www.googletagmanager.com; style-src 'self'; img-src 'self' data:; connect-src 'self' ws: wss: https://www.google-analytics.com https://region1.google-analytics.com; font-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'
+last-modified: Tue, 08 Sep 2026 15:55:57 GMT
+permissions-policy: camera=(), microphone=(), geolocation=(), payment=()
+referrer-policy: strict-origin-when-cross-origin
+set-cookie: aeliqo_affinity=[VALUE]; Path=/; Max-Age=600; HttpOnly; Secure; SameSite=Lax
+x-content-type-options: nosniff
+x-frame-options: DENY
+cf-cache-status: DYNAMIC
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=xTxuxgv3QJmo3evxQLK9c0tVhVmhkEhajvV1CFYvred%2FE0QUD7O9aW0nLPe9I%2BGOUmWpbOEmP68TuYJfVY%2FEWuB%2BkZXAF8AYGAC7MsAykgRDpSg869Vpoiu2fY2s"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server: cloudflare
+cf-ray: a38f46736c740141-MAD
+alt-svc: h3=":443"; ma=86400
+

@@ -1,0 +1,104 @@
+{
+  "schema": "aeliqo.t34-final-image-identities.v1",
+  "candidateBuild": {
+    "command": "docker buildx build --platform linux/amd64 --load --build-arg SOURCE_REVISION=<a245c8f full SHA> --tag aeliqo-t34-final:a245c8f9 --metadata-file raw/candidate-build.json <worktree>",
+    "containerImageDigest": "sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214",
+    "descriptor": {
+      "mediaType": "application/vnd.oci.image.index.v1+json",
+      "digest": "sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214",
+      "size": 855
+    },
+    "baseMaterials": [
+      {
+        "uri": "pkg:docker/golang@1.27.0-alpine?digest=sha256:4c9fe60190a2a3350ddc51de80d0224b8a6698d12bdfc999fee45ea9d6c46dbc&platform=linux%2Famd64",
+        "digest": {
+          "sha256": "4c9fe60190a2a3350ddc51de80d0224b8a6698d12bdfc999fee45ea9d6c46dbc"
+        }
+      },
+      {
+        "uri": "pkg:docker/node@24.20.0-alpine?digest=sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf&platform=linux%2Famd64",
+        "digest": {
+          "sha256": "e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf"
+        }
+      }
+    ],
+    "sourceRevision": "a245c8f946030f930c9145e44dd7211bcd0fb774"
+  },
+  "images": {
+    "candidate": {
+      "origin": "local exact-source build",
+      "digest": "sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214",
+      "repoDigests": [
+        "aeliqo-t34-final@sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214"
+      ],
+      "revision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+      "source": "https://github.com/Arconath/aeliqo",
+      "os": "linux",
+      "architecture": "amd64",
+      "user": "101:101",
+      "exposedPorts": {
+        "8080/tcp": {}
+      },
+      "sizeBytes": 3597478,
+      "revisionMatches": true,
+      "platformMatches": true,
+      "digestMatches": true
+    },
+    "current": {
+      "origin": "fresh exact GHCR desired-state digest",
+      "digest": "sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+      "repoDigests": [
+        "aeliqo-t34-current@sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+        "ghcr.io/arconath/aeliqo-web@sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4"
+      ],
+      "revision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e",
+      "source": "https://github.com/Arconath/aeliqo",
+      "os": "linux",
+      "architecture": "amd64",
+      "user": "101:101",
+      "exposedPorts": {
+        "8080/tcp": {}
+      },
+      "sizeBytes": 3215898,
+      "revisionMatches": true,
+      "platformMatches": true,
+      "registryManifest": {
+        "indexDigest": "sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+        "linuxAmd64Manifest": "sha256:30a14d85e7bba29d9dcdab1e2d47f28140b856959552a964cf1fa17477f93bc8",
+        "mediaType": "application/vnd.oci.image.index.v1+json"
+      }
+    },
+    "rollback": {
+      "origin": "fresh exact previously executed GHCR rollback digest",
+      "digest": "sha256:e758c1f6548a7543fdd7a69ae7a1255c438a6e35457cfefc2b4acc4551fd4060",
+      "repoDigests": [
+        "aeliqo-t34-rollback@sha256:e758c1f6548a7543fdd7a69ae7a1255c438a6e35457cfefc2b4acc4551fd4060",
+        "ghcr.io/arconath/aeliqo-web@sha256:e758c1f6548a7543fdd7a69ae7a1255c438a6e35457cfefc2b4acc4551fd4060"
+      ],
+      "revision": "41f29540bf534a23ad08b7fbb865e008f9f16105",
+      "source": "https://github.com/Arconath/aeliqo",
+      "os": "linux",
+      "architecture": "amd64",
+      "user": "101:101",
+      "exposedPorts": {
+        "8080/tcp": {}
+      },
+      "sizeBytes": 2726753,
+      "revisionMatches": true,
+      "platformMatches": true,
+      "registryManifest": {
+        "indexDigest": "sha256:e758c1f6548a7543fdd7a69ae7a1255c438a6e35457cfefc2b4acc4551fd4060",
+        "linuxAmd64Manifest": "sha256:27f80e22f76ac300fe15f69acff43f79cfb8ecf9ac223cbd7194faa26698eff5",
+        "mediaType": "application/vnd.oci.image.index.v1+json"
+      }
+    }
+  },
+  "assertions": {
+    "candidateSourceAndRevisionExact": true,
+    "candidatePlatformLinuxAmd64": true,
+    "currentAndRollbackGhcrIndexesResolve": true,
+    "currentAndRollbackPlatformLinuxAmd64": true,
+    "threeRevisionsExact": true,
+    "candidateRegistryPublicationVerified": false
+  }
+}

@@ -1,0 +1,16 @@
+HTTP/2 200 
+date: Thu, 10 Sep 2026 14:56:23 GMT
+content-type: application/json
+content-length: 75
+content-security-policy: default-src 'self'; script-src 'self' https://www.googletagmanager.com; style-src 'self'; img-src 'self' data:; connect-src 'self' ws: wss: https://www.google-analytics.com https://region1.google-analytics.com; font-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'
+permissions-policy: camera=(), microphone=(), geolocation=(), payment=()
+referrer-policy: strict-origin-when-cross-origin
+x-content-type-options: nosniff
+x-frame-options: DENY
+cf-cache-status: DYNAMIC
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=MCLOfa0XOnEWrvC96qzIsIw94XxdDC5RvtQAL%2B0mrvvL9odENaJy75eEvTfuIutrDAErW5D6jLeG8pxkebzS0mkzGezzkiFDnUmim%2FpDvmqDGt10RKpwkamDVG6yuFlVUQ%3D%3D"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server: cloudflare
+cf-ray: a38f477249612761-WAW
+alt-svc: h3=":443"; ma=86400
+

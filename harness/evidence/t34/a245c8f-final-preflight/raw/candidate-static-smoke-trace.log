@@ -1,0 +1,255 @@
++ set -eu
++ image=aeliqo-t34-final:a245c8f9
++ revision=a245c8f946030f930c9145e44dd7211bcd0fb774
++ container=aeliqo-static-48332
+++ mktemp -d /var/folders/02/x09mj32544v14j3lsr3crd100000gn/T//aeliqo-image-check.XXXXXX
++ temp_dir=/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T//aeliqo-image-check.QsQWUc
+++ docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' aeliqo-t34-final:a245c8f9
++ test a245c8f946030f930c9145e44dd7211bcd0fb774 = a245c8f946030f930c9145e44dd7211bcd0fb774
++ trap cleanup EXIT INT TERM
++ docker run --detach --rm --name aeliqo-static-48332 -p 127.0.0.1::8080 aeliqo-t34-final:a245c8f9
+WARNING: The requested image's platform (linux/amd64) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested
+++ docker port aeliqo-static-48332 8080/tcp
+++ sed 's/.*://'
++ port=32848
++ base=http://127.0.0.1:32848
++ attempt=1
++ '[' 1 -le 30 ']'
++ curl --fail --silent http://127.0.0.1:32848/readyz
++ grep -qx '{"status":"ready"}'
++ break
++ curl --fail --silent http://127.0.0.1:32848/healthz
++ grep -qx '{"status":"ok"}'
++ curl --fail --silent http://127.0.0.1:32848/version
++ grep -Fq '"revision":"a245c8f946030f930c9145e44dd7211bcd0fb774"'
+++ curl --fail --silent --head http://127.0.0.1:32848/
++ headers='HTTP/1.1 200 OK
+Cache-Control: no-cache
+Content-Security-Policy: default-src '\''self'\''; base-uri '\''self'\''; object-src '\''none'\''; frame-ancestors '\''none'\''; form-action '\''self'\''; img-src '\''self'\'' data:; font-src '\''self'\''; style-src '\''self'\''; script-src '\''self'\'' https://www.googletagmanager.com; connect-src '\''self'\'' https://www.google-analytics.com https://region1.google-analytics.com
+Content-Type: text/html; charset=utf-8
+Cross-Origin-Opener-Policy: same-origin
+Referrer-Policy: strict-origin-when-cross-origin
+X-Content-Type-Options: nosniff
+Date: Thu, 10 Sep 2026 15:03:52 GMT
+'
++ printf '%s\n' 'HTTP/1.1 200 OK
+Cache-Control: no-cache
+Content-Security-Policy: default-src '\''self'\''; base-uri '\''self'\''; object-src '\''none'\''; frame-ancestors '\''none'\''; form-action '\''self'\''; img-src '\''self'\'' data:; font-src '\''self'\''; style-src '\''self'\''; script-src '\''self'\'' https://www.googletagmanager.com; connect-src '\''self'\'' https://www.google-analytics.com https://region1.google-analytics.com
+Content-Type: text/html; charset=utf-8
+Cross-Origin-Opener-Policy: same-origin
+Referrer-Policy: strict-origin-when-cross-origin
+X-Content-Type-Options: nosniff
+Date: Thu, 10 Sep 2026 15:03:52 GMT
+'
++ grep -qi '^cache-control: no-cache'
++ printf '%s\n' 'HTTP/1.1 200 OK
+Cache-Control: no-cache
+Content-Security-Policy: default-src '\''self'\''; base-uri '\''self'\''; object-src '\''none'\''; frame-ancestors '\''none'\''; form-action '\''self'\''; img-src '\''self'\'' data:; font-src '\''self'\''; style-src '\''self'\''; script-src '\''self'\'' https://www.googletagmanager.com; connect-src '\''self'\'' https://www.google-analytics.com https://region1.google-analytics.com
+Content-Type: text/html; charset=utf-8
+Cross-Origin-Opener-Policy: same-origin
+Referrer-Policy: strict-origin-when-cross-origin
+X-Content-Type-Options: nosniff
+Date: Thu, 10 Sep 2026 15:03:52 GMT
+'
++ grep -qi '^content-security-policy: default-src '\''self'\'''
++ printf '%s\n' 'HTTP/1.1 200 OK
+Cache-Control: no-cache
+Content-Security-Policy: default-src '\''self'\''; base-uri '\''self'\''; object-src '\''none'\''; frame-ancestors '\''none'\''; form-action '\''self'\''; img-src '\''self'\'' data:; font-src '\''self'\''; style-src '\''self'\''; script-src '\''self'\'' https://www.googletagmanager.com; connect-src '\''self'\'' https://www.google-analytics.com https://region1.google-analytics.com
+Content-Type: text/html; charset=utf-8
+Cross-Origin-Opener-Policy: same-origin
+Referrer-Policy: strict-origin-when-cross-origin
+X-Content-Type-Options: nosniff
+Date: Thu, 10 Sep 2026 15:03:52 GMT
+'
++ grep -qi '^x-content-type-options: nosniff'
+++ curl --fail --silent http://127.0.0.1:32848/
+++ grep -Eo '/assets/[^"? ]+\.js'
+++ head -n 1
++ asset=/assets/site-DQwQCzVw.js
++ test -n /assets/site-DQwQCzVw.js
++ curl --fail --silent --head http://127.0.0.1:32848/assets/site-DQwQCzVw.js
++ grep -qi '^cache-control: public, max-age=31536000, immutable'
+++ curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:32848/not-a-route
++ status=404
++ test 404 = 404
++ docker kill --signal TERM aeliqo-static-48332
++ draining=false
++ attempt=1
++ '[' 1 -le 40 ']'
+++ curl --silent --output /var/folders/02/x09mj32544v14j3lsr3crd100000gn/T//aeliqo-image-check.QsQWUc/readyz.json --write-out '%{http_code}' http://127.0.0.1:32848/readyz
++ status=503
++ '[' 503 = 503 ']'
++ grep -qx '{"status":"draining"}' /var/folders/02/x09mj32544v14j3lsr3crd100000gn/T//aeliqo-image-check.QsQWUc/readyz.json
++ draining=true
++ break
++ test true = true
++ stopped=false
++ attempt=1
++ '[' 1 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=2
++ '[' 2 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=3
++ '[' 3 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=4
++ '[' 4 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=5
++ '[' 5 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=6
++ '[' 6 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=7
++ '[' 7 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=8
++ '[' 8 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=9
++ '[' 9 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=10
++ '[' 10 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=11
++ '[' 11 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=12
++ '[' 12 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=13
++ '[' 13 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=14
++ '[' 14 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=15
++ '[' 15 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=16
++ '[' 16 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=17
++ '[' 17 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=18
++ '[' 18 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=19
++ '[' 19 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=20
++ '[' 20 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=21
++ '[' 21 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=22
++ '[' 22 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=23
++ '[' 23 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=24
++ '[' 24 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=25
++ '[' 25 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=26
++ '[' 26 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=27
++ '[' 27 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=28
++ '[' 28 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=29
++ '[' 29 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=30
++ '[' 30 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=31
++ '[' 31 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=32
++ '[' 32 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=33
++ '[' 33 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=34
++ '[' 34 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=35
++ '[' 35 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=36
++ '[' 36 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=37
++ '[' 37 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=38
++ '[' 38 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=39
++ '[' 39 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=40
++ '[' 40 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ sleep 0.1
++ attempt=41
++ '[' 41 -le 300 ']'
++ docker container inspect aeliqo-static-48332
++ stopped=true
++ break
++ test true = true
++ cleanup
++ docker rm --force aeliqo-static-48332
++ rm -rf /var/folders/02/x09mj32544v14j3lsr3crd100000gn/T//aeliqo-image-check.QsQWUc

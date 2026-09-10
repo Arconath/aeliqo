@@ -1,0 +1,76 @@
+{
+  "schema": "aeliqo.t34-final-gitops-render.v1",
+  "capturedAt": "2026-09-10T15:06:42.707Z",
+  "base": {
+    "platformAppsCommit": "8fa8319698599d32b6dfd4c3d2786ca23d07c34f",
+    "platformAppsTree": "2b39e451fbe44e66fd3c35f5f3310653e6f02eb2",
+    "freezeActive": false,
+    "desiredRevision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e",
+    "desiredDigest": "sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4"
+  },
+  "candidate": {
+    "sourceRevision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+    "image": "ghcr.io/arconath/aeliqo-web@sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214",
+    "registryPublicationVerified": false,
+    "localImageDigest": "sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214"
+  },
+  "renderTool": {
+    "command": "kubectl kustomize",
+    "kubectlVersion": "v1.37.0",
+    "kustomizeVersion": "v5.8.1",
+    "upcloudLoadRestrictor": "LoadRestrictionsNone"
+  },
+  "hashes": {
+    "baseline-aeliqo-runtime.yaml": {
+      "bytes": 4054,
+      "sha256": "21f2d9061e4a73ec4e1c14fb2e630959b82c942b9077ea6e2e7748b157384e0e"
+    },
+    "candidate-aeliqo-runtime.yaml": {
+      "bytes": 4054,
+      "sha256": "3a65a4332bcd5383e1ce347bb720d690077ee31f39d33ae5db1678d60dad5593"
+    },
+    "baseline-production.yaml": {
+      "bytes": 283963,
+      "sha256": "9e24a52c02dc82086bbfb89813e03dfaab19591a68e3fac30692d4d4eb2b8df4"
+    },
+    "candidate-production.yaml": {
+      "bytes": 283963,
+      "sha256": "baf854c57c0042a471e78182e267c39384283b26c49eb42ebc3d29dc2b9b1120"
+    },
+    "baseline-upcloud-production.yaml": {
+      "bytes": 284750,
+      "sha256": "ef971d635a49ef37082ad85a234e64fa9b75afe42eba1e965cb03abad4412f24"
+    },
+    "candidate-upcloud-production.yaml": {
+      "bytes": 284750,
+      "sha256": "2992c4b21e5af4cc3832a38bbcccafbb7c5d3c6bd5e6b13f6b1f7a8fbe83753d"
+    },
+    "prospective-gitops.patch": {
+      "bytes": 1278,
+      "sha256": "91ae0e24653af58e70a30d7775035337cccfd448121f8f9cb45a76dfcdd8978c"
+    }
+  },
+  "serviceAnnotations": {
+    "traefik.ingress.kubernetes.io/service.sticky.cookie": "true",
+    "traefik.ingress.kubernetes.io/service.sticky.cookie.name": "aeliqo_affinity",
+    "traefik.ingress.kubernetes.io/service.sticky.cookie.secure": "true",
+    "traefik.ingress.kubernetes.io/service.sticky.cookie.httponly": "true",
+    "traefik.ingress.kubernetes.io/service.sticky.cookie.samesite": "lax",
+    "traefik.ingress.kubernetes.io/service.sticky.cookie.maxage": "600"
+  },
+  "assertions": {
+    "candidateImageExact": true,
+    "candidateRevisionExact": true,
+    "productionCandidateIdentityPresent": true,
+    "upcloudCandidateIdentityPresent": true,
+    "serviceAnnotationsExact": true,
+    "baselineAndCandidateDiffer": {
+      "aeliqoRuntime": true,
+      "production": true,
+      "upcloudProduction": true
+    },
+    "freezeCheckExitCode": 0,
+    "remoteWrite": false,
+    "productionMutation": false
+  }
+}

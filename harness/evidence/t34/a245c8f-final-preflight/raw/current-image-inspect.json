@@ -1,0 +1,20 @@
+{
+  "Id": "sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+  "RepoDigests": [
+    "aeliqo-t34-current@sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+    "ghcr.io/arconath/aeliqo-web@sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4"
+  ],
+  "Architecture": "amd64",
+  "Os": "linux",
+  "Size": 3215898,
+  "Config": {
+    "User": "101:101",
+    "ExposedPorts": {
+      "8080/tcp": {}
+    },
+    "Labels": {
+      "org.opencontainers.image.revision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e",
+      "org.opencontainers.image.source": "https://github.com/Arconath/aeliqo"
+    }
+  }
+}

@@ -1,0 +1,176 @@
+{
+  "schema": "aeliqo.t34-public-live-cookie.v1",
+  "capturedAt": "2026-09-10T14:57:46.304Z",
+  "hosts": [
+    {
+      "host": "aeliqo.com",
+      "root": {
+        "status": 200,
+        "server": "cloudflare",
+        "htmlSha256": "50c0e5471c6b4f3430949c16b25747e914aa5e6ce8a6a50fdecf95843c6f3f35",
+        "htmlBytes": 701,
+        "cacheControl": "no-cache",
+        "cspPresent": true,
+        "xContentTypeOptions": "nosniff",
+        "cookie": {
+          "present": true,
+          "valueRedacted": "[VALUE]",
+          "path": "/",
+          "maxAgeSeconds": 600,
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "Lax"
+        }
+      },
+      "version": {
+        "status": 200,
+        "body": {
+          "product": "aeliqo",
+          "revision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e"
+        },
+        "revisionMatches": true,
+        "cookie": {
+          "present": true,
+          "valueRedacted": "[VALUE]",
+          "path": "/",
+          "maxAgeSeconds": 600,
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "Lax"
+        }
+      },
+      "assets": [
+        {
+          "path": "/assets/main-Czg6yLNf.js",
+          "status": 200,
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentType": "text/javascript; charset=utf-8"
+        },
+        {
+          "path": "/assets/styles-D8hp4Rvg.js",
+          "status": 200,
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentType": "text/javascript; charset=utf-8"
+        },
+        {
+          "path": "/assets/styles-CNc2bHie.css",
+          "status": 200,
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentType": "text/css; charset=utf-8"
+        },
+        {
+          "path": "/assets/main-LBDCQgHO.css",
+          "status": 200,
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentType": "text/css; charset=utf-8"
+        }
+      ],
+      "publicCookieJar": {
+        "firstStatus": 200,
+        "firstCookie": {
+          "present": true,
+          "valueRedacted": "[VALUE]",
+          "path": "/",
+          "maxAgeSeconds": 600,
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "Lax"
+        },
+        "secondStatus": 200,
+        "secondSetCookiePresent": false,
+        "cookiePersistedWithoutRotation": true
+      }
+    },
+    {
+      "host": "www.aeliqo.com",
+      "root": {
+        "status": 200,
+        "server": "cloudflare",
+        "htmlSha256": "50c0e5471c6b4f3430949c16b25747e914aa5e6ce8a6a50fdecf95843c6f3f35",
+        "htmlBytes": 701,
+        "cacheControl": "no-cache",
+        "cspPresent": true,
+        "xContentTypeOptions": "nosniff",
+        "cookie": {
+          "present": true,
+          "valueRedacted": "[VALUE]",
+          "path": "/",
+          "maxAgeSeconds": 600,
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "Lax"
+        }
+      },
+      "version": {
+        "status": 200,
+        "body": {
+          "product": "aeliqo",
+          "revision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e"
+        },
+        "revisionMatches": true,
+        "cookie": {
+          "present": true,
+          "valueRedacted": "[VALUE]",
+          "path": "/",
+          "maxAgeSeconds": 600,
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "Lax"
+        }
+      },
+      "assets": [
+        {
+          "path": "/assets/main-Czg6yLNf.js",
+          "status": 200,
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentType": "text/javascript; charset=utf-8"
+        },
+        {
+          "path": "/assets/styles-D8hp4Rvg.js",
+          "status": 200,
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentType": "text/javascript; charset=utf-8"
+        },
+        {
+          "path": "/assets/styles-CNc2bHie.css",
+          "status": 200,
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentType": "text/css; charset=utf-8"
+        },
+        {
+          "path": "/assets/main-LBDCQgHO.css",
+          "status": 200,
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentType": "text/css; charset=utf-8"
+        }
+      ],
+      "publicCookieJar": {
+        "firstStatus": 200,
+        "firstCookie": {
+          "present": true,
+          "valueRedacted": "[VALUE]",
+          "path": "/",
+          "maxAgeSeconds": 600,
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "Lax"
+        },
+        "secondStatus": 200,
+        "secondSetCookiePresent": false,
+        "cookiePersistedWithoutRotation": true
+      }
+    }
+  ],
+  "currentDesired": {
+    "revision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e",
+    "htmlSha256": "50c0e5471c6b4f3430949c16b25747e914aa5e6ce8a6a50fdecf95843c6f3f35"
+  },
+  "assertions": {
+    "allPublicRoots200": true,
+    "allPublicVersions200": true,
+    "allPublicRootsCurrentHtml": true,
+    "allAssets200Immutable": true,
+    "secureHttpOnlyLaxCookieObserved": true,
+    "cookieJarPersistsWithoutRotation": true
+  }
+}
