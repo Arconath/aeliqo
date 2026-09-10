@@ -1,0 +1,39 @@
+$ pnpm build:platform && AELIQO_RUN_PERFORMANCE=1 node tests/performance/runtime-workload.mjs
+$ pnpm build:runtime && pnpm --filter @aeliqo/sdk-web build && pnpm --filter @aeliqo/sdk-react build
+$ pnpm build:core && pnpm --filter @aeliqo/sdk-runtime build
+$ pnpm --filter @aeliqo/sdk-core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+{
+  "output": "artifacts/t30-00aadd0-release-revalidation/runtime-attempt-1/runtime-1789046413236.json",
+  "sourceCommit": "00aadd06426cef10971bbfaea10caad48621430f",
+  "timingEnabled": true,
+  "medium": {
+    "durationMs": 11.476875000000291,
+    "status": "search-exhausted",
+    "expansions": 64,
+    "nodes": 31,
+    "candidateCount": 64,
+    "rowCount": 10000,
+    "viewCount": 30,
+    "fieldCount": 100,
+    "rowFieldCount": 100
+  },
+  "reducer": {
+    "iterations": 100,
+    "successful": 100,
+    "unrelatedRoutes": 0,
+    "p50Ms": 0.103874999999789,
+    "p95Ms": 0.14350000000013097
+  },
+  "cleanup": {
+    "cycles": 100,
+    "retainedHandles": 0,
+    "liveRegions": 0,
+    "openObservers": 0,
+    "bounded": true
+  }
+}
+[ELIFECYCLE] Command failed with exit code 1.

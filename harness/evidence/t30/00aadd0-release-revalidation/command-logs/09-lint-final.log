@@ -1,0 +1,1 @@
+$ tsc -p tsconfig.lint.json && tsc -p apps/site/tsconfig.json --noUnusedLocals --noUnusedParameters && tsc -p apps/studio/tsconfig.json --noUnusedLocals --noUnusedParameters

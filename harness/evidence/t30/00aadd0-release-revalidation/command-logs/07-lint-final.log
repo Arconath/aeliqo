@@ -1,0 +1,12 @@
+$ tsc -p tsconfig.lint.json && tsc -p apps/site/tsconfig.json --noUnusedLocals --noUnusedParameters && tsc -p apps/studio/tsconfig.json --noUnusedLocals --noUnusedParameters
+apps/studio/src/main.ts(3,94): error TS2307: Cannot find module '@aeliqo/sdk-devtools' or its corresponding type declarations.
+apps/studio/src/main.ts(156,85): error TS7006: Parameter 'diagnostic' implicitly has an 'any' type.
+apps/studio/src/main.ts(161,177): error TS7006: Parameter 'diagnostic' implicitly has an 'any' type.
+apps/studio/src/main.ts(171,100): error TS7006: Parameter 'diagnostic' implicitly has an 'any' type.
+apps/studio/src/main.ts(174,230): error TS7006: Parameter 'field' implicitly has an 'any' type.
+apps/studio/src/main.ts(175,270): error TS7006: Parameter 'draft' implicitly has an 'any' type.
+apps/studio/src/main.ts(182,48): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+apps/studio/src/main.ts(185,117): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+apps/studio/src/main.ts(268,63): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+apps/studio/src/main.ts(283,20): error TS7006: Parameter 'state' implicitly has an 'any' type.
+[ELIFECYCLE] Command failed with exit code 1.

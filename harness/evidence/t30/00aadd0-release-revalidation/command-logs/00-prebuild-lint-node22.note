@@ -1,0 +1,1 @@
+Harness note: initial pre-build lint was launched under host Node v22.23.2 before the pinned Node v24.20.0 shell was restored; TypeScript failed because workspace package dist outputs were not built, then the wrapper attempted to assign zsh readonly variable status. This is non-qualifying and retained transparently.

@@ -1,0 +1,3 @@
+$ tsc -p tsconfig.lint.json && tsc -p apps/site/tsconfig.json --noUnusedLocals --noUnusedParameters && tsc -p apps/studio/tsconfig.json --noUnusedLocals --noUnusedParameters
+apps/site/src/playground.ts(2,28): error TS2307: Cannot find module '@aeliqo/sdk-agent/webmcp' or its corresponding type declarations.
+[ELIFECYCLE] Command failed with exit code 1.

@@ -1,0 +1,790 @@
+[WARN] Unsupported engine: wanted: {"node":"24.20.0"} (current: {"node":"v22.23.2","pnpm":"11.24.0"})
+$ tsc -p tsconfig.lint.json && tsc -p apps/site/tsconfig.json --noUnusedLocals --noUnusedParameters && tsc -p apps/studio/tsconfig.json --noUnusedLocals --noUnusedParameters
+examples/next-platform/app/hydrate.tsx(18,53): error TS2307: Cannot find module '@aeliqo/sdk-web' or its corresponding type declarations.
+examples/next-platform/app/page.tsx(2,28): error TS2307: Cannot find module '@aeliqo/sdk-web/server' or its corresponding type declarations.
+examples/platform/src/design.ts(2,56): error TS2307: Cannot find module '@aeliqo/sdk-web' or its corresponding type declarations.
+examples/platform/src/design.ts(3,79): error TS2307: Cannot find module '@aeliqo/sdk-web' or its corresponding type declarations.
+examples/platform/src/design.ts(4,94): error TS2307: Cannot find module '@aeliqo/sdk-web/styles' or its corresponding type declarations.
+examples/platform/src/design.ts(20,39): error TS7006: Parameter 'event' implicitly has an 'any' type.
+examples/platform/src/design.ts(29,83): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+examples/platform/src/hydrate.ts(3,38): error TS2307: Cannot find module '@aeliqo/sdk-web' or its corresponding type declarations.
+examples/platform/src/main.ts(8,8): error TS2307: Cannot find module '@aeliqo/sdk-web' or its corresponding type declarations.
+examples/platform/src/main.ts(45,23): error TS2339: Property 'detail' does not exist on type 'Event'.
+examples/platform/src/main.ts(46,40): error TS2339: Property 'detail' does not exist on type 'Event'.
+examples/platform/src/react.tsx(9,8): error TS2307: Cannot find module '@aeliqo/sdk-react' or its corresponding type declarations.
+examples/platform/src/react.tsx(24,27): error TS7006: Parameter 'event' implicitly has an 'any' type.
+examples/platform/src/vue.ts(3,56): error TS2307: Cannot find module '@aeliqo/sdk-web' or its corresponding type declarations.
+examples/platform/src/vue.ts(12,29): error TS2339: Property 'detail' does not exist on type 'Event'.
+examples/vertical-slice/src/data-session.ts(1,36): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+examples/vertical-slice/src/data-session.ts(2,140): error TS2307: Cannot find module '@aeliqo/sdk-runtime/data' or its corresponding type declarations.
+examples/vertical-slice/src/data-session.ts(3,70): error TS2307: Cannot find module '@aeliqo/sdk-runtime/results' or its corresponding type declarations.
+examples/vertical-slice/src/data-session.ts(4,115): error TS2307: Cannot find module '@aeliqo/sdk-runtime/evaluation' or its corresponding type declarations.
+examples/vertical-slice/src/data-session.ts(22,11): error TS7006: Parameter 'input' implicitly has an 'any' type.
+examples/vertical-slice/src/data-session.ts(23,10): error TS7006: Parameter 'input' implicitly has an 'any' type.
+examples/vertical-slice/src/data-session.ts(24,12): error TS7006: Parameter 'input' implicitly has an 'any' type.
+examples/vertical-slice/src/data-session.ts(37,18): error TS7031: Binding element 'context' implicitly has an 'any' type.
+examples/vertical-slice/src/data-session.ts(46,125): error TS7006: Parameter 'input' implicitly has an 'any' type.
+examples/vertical-slice/src/data-session.ts(46,132): error TS7006: Parameter 'init' implicitly has an 'any' type.
+examples/vertical-slice/src/data-session.ts(48,16): error TS7006: Parameter 'request' implicitly has an 'any' type.
+examples/vertical-slice/src/data-session.ts(48,25): error TS7006: Parameter 'context' implicitly has an 'any' type.
+examples/vertical-slice/src/data-session.ts(49,10): error TS7006: Parameter 'request' implicitly has an 'any' type.
+examples/vertical-slice/src/data-session.ts(49,19): error TS7006: Parameter 'context' implicitly has an 'any' type.
+examples/vertical-slice/src/data-session.ts(50,15): error TS7006: Parameter 'request' implicitly has an 'any' type.
+examples/vertical-slice/src/data-session.ts(50,24): error TS7006: Parameter 'context' implicitly has an 'any' type.
+examples/vertical-slice/src/data-session.ts(62,62): error TS7006: Parameter 'd' implicitly has an 'any' type.
+examples/vertical-slice/src/data-session.ts(67,62): error TS7006: Parameter 'd' implicitly has an 'any' type.
+examples/vertical-slice/src/hr.ts(2,43): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+examples/vertical-slice/src/hr.ts(3,107): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+examples/vertical-slice/src/hr.ts(4,46): error TS2307: Cannot find module '@aeliqo/sdk-runtime/data' or its corresponding type declarations.
+examples/vertical-slice/src/hr.ts(61,162): error TS7006: Parameter 'r' implicitly has an 'any' type.
+examples/vertical-slice/src/hr.ts(62,36): error TS7006: Parameter 'r' implicitly has an 'any' type.
+examples/vertical-slice/src/main.ts(1,64): error TS2307: Cannot find module '@aeliqo/sdk-web' or its corresponding type declarations.
+examples/vertical-slice/src/main.ts(2,43): error TS2307: Cannot find module '@aeliqo/sdk-web/styles' or its corresponding type declarations.
+examples/vertical-slice/src/main.ts(29,38): error TS7006: Parameter 'request' implicitly has an 'any' type.
+examples/vertical-slice/src/main.ts(33,65): error TS7006: Parameter 'key' implicitly has an 'any' type.
+examples/vertical-slice/src/ssr-client.ts(2,33): error TS2307: Cannot find module '@aeliqo/sdk-web/table' or its corresponding type declarations.
+examples/vertical-slice/src/ssr-client.ts(3,62): error TS2307: Cannot find module '@aeliqo/sdk-web/region' or its corresponding type declarations.
+examples/vertical-slice/src/ssr-client.ts(10,33): error TS7006: Parameter 'request' implicitly has an 'any' type.
+examples/vertical-slice/src/ssr-client.ts(12,54): error TS7006: Parameter 'key' implicitly has an 'any' type.
+examples/vertical-slice/src/ssr-client.ts(12,90): error TS7006: Parameter 'result' implicitly has an 'any' type.
+examples/vertical-slice/src/ssr-client.ts(12,118): error TS7006: Parameter 'row' implicitly has an 'any' type.
+examples/vertical-slice/src/ssr-client.ts(14,47): error TS2307: Cannot find module '@aeliqo/sdk-web' or its corresponding type declarations.
+examples/vertical-slice/src/ssr.ts(2,28): error TS2307: Cannot find module '@aeliqo/sdk-web/server' or its corresponding type declarations.
+examples/vertical-slice/src/ssr.ts(3,43): error TS2307: Cannot find module '@aeliqo/sdk-web/styles' or its corresponding type declarations.
+examples/vertical-slice/src/view-session.ts(1,206): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+examples/vertical-slice/src/view-session.ts(2,53): error TS2307: Cannot find module '@aeliqo/sdk-runtime/regions' or its corresponding type declarations.
+examples/vertical-slice/src/view-session.ts(3,67): error TS2307: Cannot find module '@aeliqo/sdk-runtime/interaction' or its corresponding type declarations.
+examples/vertical-slice/src/view-session.ts(4,43): error TS2307: Cannot find module '@aeliqo/sdk-runtime/evaluation' or its corresponding type declarations.
+examples/vertical-slice/src/view-session.ts(5,138): error TS2307: Cannot find module '@aeliqo/sdk-web/region' or its corresponding type declarations.
+examples/vertical-slice/src/view-session.ts(6,33): error TS2307: Cannot find module '@aeliqo/sdk-web/table' or its corresponding type declarations.
+examples/vertical-slice/src/view-session.ts(11,78): error TS18046: 'ref' is of type 'unknown'.
+examples/vertical-slice/src/view-session.ts(17,58): error TS7006: Parameter 'd' implicitly has an 'any' type.
+examples/vertical-slice/src/view-session.ts(29,81): error TS7006: Parameter 'output' implicitly has an 'any' type.
+examples/vertical-slice/src/view-session.ts(33,103): error TS7006: Parameter 'batch' implicitly has an 'any' type.
+examples/vertical-slice/src/view-session.ts(36,76): error TS7006: Parameter 'result' implicitly has an 'any' type.
+examples/vertical-slice/src/view-session.ts(49,24): error TS7031: Binding element 'state' implicitly has an 'any' type.
+examples/vertical-slice/src/view-session.ts(49,31): error TS7031: Binding element 'current' implicitly has an 'any' type.
+examples/vertical-slice/src/view-session.ts(54,103): error TS7006: Parameter 'd' implicitly has an 'any' type.
+examples/vertical-slice/src/view-session.ts(59,28): error TS18046: 'region' is of type 'unknown'.
+examples/vertical-slice/src/view-session.ts(61,7): error TS18046: 'composed' is of type 'unknown'.
+examples/vertical-slice/src/view-session.ts(61,133): error TS18046: 'composed' is of type 'unknown'.
+examples/vertical-slice/src/view-session.ts(62,18): error TS18046: 'composed' is of type 'unknown'.
+examples/vertical-slice/src/view-session.ts(63,30): error TS18046: 'region' is of type 'unknown'.
+examples/vertical-slice/src/view-session.ts(63,89): error TS18046: 'region' is of type 'unknown'.
+examples/vertical-slice/src/view-session.ts(64,90): error TS7006: Parameter 'output' implicitly has an 'any' type.
+examples/vertical-slice/src/view-session.ts(65,16): error TS18046: 'region' is of type 'unknown'.
+examples/vertical-slice/src/view-session.ts(69,22): error TS18046: 'region' is of type 'unknown'.
+examples/vertical-slice/src/view-session.ts(75,20): error TS18046: 'region' is of type 'unknown'.
+examples/vertical-slice/src/view-session.ts(81,20): error TS7006: Parameter 'ref' implicitly has an 'any' type.
+examples/vertical-slice/src/view-session.ts(82,24): error TS7006: Parameter 'selection' implicitly has an 'any' type.
+examples/vertical-slice/src/view-session.ts(88,112): error TS7006: Parameter 'key' implicitly has an 'any' type.
+examples/vertical-slice/src/view-session.ts(95,21): error TS18046: 'region' is of type 'unknown'.
+examples/vertical-slice/src/view-session.ts(101,33): error TS7006: Parameter 'node' implicitly has an 'any' type.
+examples/vertical-slice/src/view-session.ts(102,41): error TS7006: Parameter 'node' implicitly has an 'any' type.
+examples/vertical-slice/src/view-session.ts(107,70): error TS7006: Parameter 'row' implicitly has an 'any' type.
+examples/vertical-slice/src/view-session.ts(108,64): error TS7006: Parameter 'row' implicitly has an 'any' type.
+examples/vertical-slice/src/view-session.ts(112,56): error TS7006: Parameter 'batch' implicitly has an 'any' type.
+examples/vertical-slice/src/view-session.ts(114,32): error TS18046: 'region' is of type 'unknown'.
+examples/vertical-slice/src/view-session.ts(118,109): error TS18046: 'region' is of type 'unknown'.
+examples/vertical-slice/src/view-session.ts(124,35): error TS18046: 'region' is of type 'unknown'.
+examples/vertical-slice/src/view-session.ts(124,157): error TS18046: 'checked' is of type 'unknown'.
+examples/vertical-slice/src/view-session.ts(125,20): error TS18046: 'region' is of type 'unknown'.
+examples/vertical-slice/src/view-session.ts(125,60): error TS2698: Spread types may only be created from object types.
+examples/vertical-slice/src/view-session.ts(125,78): error TS18046: 'region' is of type 'unknown'.
+examples/vertical-slice/src/view-session.ts(129,20): error TS18046: 'region' is of type 'unknown'.
+examples/vertical-slice/src/view-session.ts(130,28): error TS18046: 'region' is of type 'unknown'.
+examples/vertical-slice/src/view-session.ts(131,24): error TS18046: 'region' is of type 'unknown'.
+examples/vertical-slice/src/view-session.ts(134,79): error TS18046: 'region' is of type 'unknown'.
+packages/agent/src/binder-types.ts(14,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/binder.ts(20,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/binder.ts(335,77): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/agent/src/capabilities/composition.ts(12,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/capabilities/composition.ts(39,101): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/agent/src/capabilities/dispatcher.ts(11,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/capabilities/registry.ts(1,127): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/capabilities/task.ts(1,121): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/capabilities/types.ts(9,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/loop-types.ts(7,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/loop.ts(9,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/mcp/index.ts(29,143): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/meaning/authoring.ts(9,8): error TS2307: Cannot find module '@aeliqo/sdk-runtime/meaning' or its corresponding type declarations.
+packages/agent/src/meaning/authoring.ts(15,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/meaning/authoring.ts(16,30): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/meaning/authoring.ts(44,68): error TS7006: Parameter 'scope' implicitly has an 'any' type.
+packages/agent/src/meaning/authoring.ts(121,22): error TS2339: Property 'catalog' does not exist on type 'AgentMeaningAuthoringOptions<C>'.
+packages/agent/src/meaning/authoring.ts(122,23): error TS2339: Property 'registry' does not exist on type 'AgentMeaningAuthoringOptions<C>'.
+packages/agent/src/meaning/authoring.ts(123,17): error TS2339: Property 'definitions' does not exist on type 'AgentMeaningAuthoringOptions<C>'.
+packages/agent/src/meaning/authoring.ts(123,72): error TS2339: Property 'definitions' does not exist on type 'AgentMeaningAuthoringOptions<C>'.
+packages/agent/src/meaning/authoring.ts(124,17): error TS2339: Property 'policy' does not exist on type 'AgentMeaningAuthoringOptions<C>'.
+packages/agent/src/meaning/authoring.ts(124,62): error TS2339: Property 'policy' does not exist on type 'AgentMeaningAuthoringOptions<C>'.
+packages/agent/src/meaning/capabilities.ts(7,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/meaning/capabilities.ts(69,66): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/meaning/capabilities.ts(69,103): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/meaning/capabilities.ts(80,67): error TS7006: Parameter 'item' implicitly has an 'any' type.
+packages/agent/src/meaning/capabilities.ts(100,52): error TS7006: Parameter 'item' implicitly has an 'any' type.
+packages/agent/src/meaning/capabilities.ts(101,37): error TS7006: Parameter 'code' implicitly has an 'any' type.
+packages/agent/src/meaning/capabilities.ts(102,27): error TS7006: Parameter 'code' implicitly has an 'any' type.
+packages/agent/src/meaning/capabilities.ts(103,27): error TS7006: Parameter 'code' implicitly has an 'any' type.
+packages/agent/src/meaning/capabilities.ts(104,27): error TS7006: Parameter 'code' implicitly has an 'any' type.
+packages/agent/src/meaning/types.ts(9,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/meaning/types.ts(20,8): error TS2307: Cannot find module '@aeliqo/sdk-runtime/meaning' or its corresponding type declarations.
+packages/agent/src/model/continuation.ts(1,43): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/model/loop.ts(1,66): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/model/loop.ts(112,36): error TS2322: Type 'string' is not assignable to type 'ToolModelStop | undefined'.
+packages/agent/src/model/loop.ts(113,50): error TS7006: Parameter 'd' implicitly has an 'any' type.
+packages/agent/src/model/loop.ts(130,56): error TS2345: Argument of type 'string' is not assignable to parameter of type 'ToolModelStop'.
+packages/agent/src/model/loop.ts(133,87): error TS7006: Parameter 'tool' implicitly has an 'any' type.
+packages/agent/src/model/loop.ts(178,78): error TS7006: Parameter 'tool' implicitly has an 'any' type.
+packages/agent/src/model/loop.ts(205,55): error TS2345: Argument of type 'string' is not assignable to parameter of type 'ToolModelStop'.
+packages/agent/src/model/openai-compatible.ts(1,43): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/model/openai.ts(3,30): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/model/responses.ts(1,43): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/model/types.ts(1,28): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/narrative.ts(1,182): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/narrative.ts(2,33): error TS2307: Cannot find module '@aeliqo/sdk-runtime/results' or its corresponding type declarations.
+packages/agent/src/narrative.ts(65,46): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/agent/src/narrative.ts(68,127): error TS7006: Parameter 'ref' implicitly has an 'any' type.
+packages/agent/src/narrative.ts(70,56): error TS7006: Parameter 'id' implicitly has an 'any' type.
+packages/agent/src/narrative.ts(70,85): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/agent/src/narrative.ts(71,33): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/agent/src/narrative.ts(113,35): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ eq: boolean; ne: boolean; lt: boolean; lte: boolean; gt: boolean; gte: boolean; }'.
+packages/agent/src/protocol/endpoint.ts(1,57): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/protocol/types.ts(1,56): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/protocol/types.ts(38,29): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/session/session.ts(2,98): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/session/session.ts(215,29): error TS18048: 'last' is possibly 'undefined'.
+packages/agent/src/session/session.ts(217,23): error TS18048: 'last' is possibly 'undefined'.
+packages/agent/src/session/session.ts(218,118): error TS18048: 'last' is possibly 'undefined'.
+packages/agent/src/session/session.ts(219,15): error TS2375: Type 'Readonly<{ turn: number; state: AgentCapabilityState; fingerprint: string; proposalBytes: number; progress: "gap-closed" | "new" | "none"; receipt: AgentCapabilityReceipt | undefined; }>' is not assignable to type 'AgentSessionAttempt' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'receipt' are incompatible.
+    Type 'AgentCapabilityReceipt | undefined' is not assignable to type 'AgentCapabilityReceipt'.
+      Type 'undefined' is not assignable to type 'AgentCapabilityReceipt'.
+packages/agent/src/session/types.ts(1,85): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/webmcp/adapter.ts(1,44): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/agent/src/webmcp/types.ts(1,28): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/devtools/src/document.ts(13,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/devtools/src/document.ts(19,8): error TS2307: Cannot find module '@aeliqo/sdk-runtime/meaning' or its corresponding type declarations.
+packages/devtools/src/document.ts(146,81): error TS7006: Parameter 'diagnostic' implicitly has an 'any' type.
+packages/devtools/src/document.ts(160,83): error TS7006: Parameter 'diagnostic' implicitly has an 'any' type.
+packages/devtools/src/document.ts(174,89): error TS7006: Parameter 'diagnostic' implicitly has an 'any' type.
+packages/devtools/src/document.ts(205,48): error TS7006: Parameter 'meaning' implicitly has an 'any' type.
+packages/devtools/src/document.ts(281,58): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/devtools/src/session.ts(11,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/devtools/src/session.ts(21,8): error TS2307: Cannot find module '@aeliqo/sdk-runtime/meaning' or its corresponding type declarations.
+packages/devtools/src/session.ts(146,40): error TS7006: Parameter 'meaning' implicitly has an 'any' type.
+packages/devtools/src/session.ts(185,182): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/devtools/src/session.ts(217,53): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/devtools/src/session.ts(218,42): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/devtools/src/session.ts(228,48): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/devtools/src/session.ts(235,172): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/devtools/src/session.ts(246,43): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/devtools/src/session.ts(250,77): error TS7006: Parameter 'diagnostic' implicitly has an 'any' type.
+packages/devtools/src/session.ts(257,47): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/devtools/src/session.ts(278,45): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/devtools/src/session.ts(278,120): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/devtools/src/session.ts(284,43): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/devtools/src/session.ts(296,50): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/devtools/src/session.ts(297,78): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/devtools/src/session.ts(309,46): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/devtools/src/session.ts(313,48): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/devtools/src/session.ts(353,84): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/devtools/src/session.ts(385,36): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/react/src/compound.tsx(3,219): error TS2307: Cannot find module '@aeliqo/sdk-web/compound' or its corresponding type declarations.
+packages/react/src/compound.tsx(4,190): error TS2307: Cannot find module '@aeliqo/sdk-web/compound' or its corresponding type declarations.
+packages/react/src/compound.tsx(5,68): error TS2307: Cannot find module '@aeliqo/sdk-web/data' or its corresponding type declarations.
+packages/react/src/data.tsx(3,400): error TS2307: Cannot find module '@aeliqo/sdk-web/data' or its corresponding type declarations.
+packages/react/src/data.tsx(4,46): error TS2307: Cannot find module '@aeliqo/sdk-web' or its corresponding type declarations.
+packages/react/src/feedback.tsx(3,211): error TS2307: Cannot find module '@aeliqo/sdk-web/feedback' or its corresponding type declarations.
+packages/react/src/feedback.tsx(13,210): error TS2307: Cannot find module '@aeliqo/sdk-web/feedback' or its corresponding type declarations.
+packages/react/src/foundation.tsx(3,370): error TS2307: Cannot find module '@aeliqo/sdk-web/foundation' or its corresponding type declarations.
+packages/react/src/index.tsx(8,8): error TS2307: Cannot find module '@aeliqo/sdk-web' or its corresponding type declarations.
+packages/react/src/index.tsx(14,8): error TS2307: Cannot find module '@aeliqo/sdk-web' or its corresponding type declarations.
+packages/react/src/inputs.tsx(3,663): error TS2307: Cannot find module '@aeliqo/sdk-web/inputs' or its corresponding type declarations.
+packages/react/src/navigation.tsx(3,124): error TS2307: Cannot find module '@aeliqo/sdk-web/navigation' or its corresponding type declarations.
+packages/react/src/plot.tsx(3,63): error TS2307: Cannot find module '@aeliqo/sdk-web/plot' or its corresponding type declarations.
+packages/react/src/ssr.ts(3,38): error TS2307: Cannot find module '@aeliqo/sdk-web/register' or its corresponding type declarations.
+packages/react/src/visualization.tsx(3,122): error TS2307: Cannot find module '@aeliqo/sdk-web/visualization' or its corresponding type declarations.
+packages/react/src/visualization.tsx(7,139): error TS2307: Cannot find module '@aeliqo/sdk-web/visualization' or its corresponding type declarations.
+packages/react/src/visualization.tsx(14,82): error TS2307: Cannot find module '@aeliqo/sdk-web/visualization' or its corresponding type declarations.
+packages/runtime/src/actions/boundary.ts(1,58): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/actions/boundary.ts(2,60): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/actions/registry.ts(1,40): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/actions/types.ts(1,60): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/audit/exporter.ts(1,31): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/audit/types.ts(1,28): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/data/http.ts(1,42): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/data/http.ts(2,40): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/data/http.ts(225,19): error TS18046: 'value' is of type 'unknown'.
+packages/runtime/src/data/http.ts(226,34): error TS18046: 'value' is of type 'unknown'.
+packages/runtime/src/data/http.ts(226,57): error TS18046: 'value' is of type 'unknown'.
+packages/runtime/src/data/http.ts(249,13): error TS18046: 'response' is of type 'unknown'.
+packages/runtime/src/data/http.ts(249,59): error TS18046: 'response' is of type 'unknown'.
+packages/runtime/src/data/http.ts(249,90): error TS18046: 'value' is of type 'unknown'.
+packages/runtime/src/data/http.ts(249,115): error TS18046: 'response' is of type 'unknown'.
+packages/runtime/src/data/http.ts(257,40): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ readonly [x: string]: any; readonly version: "1"; readonly target: { readonly [x: string]: any; } & { readonly [x: string]: any; }; readonly expiresAt: number; readonly effectiveBudget: { ...; } & {}; } & { ...; }'.
+  Type 'unknown' is not assignable to type '{ readonly [x: string]: any; readonly version: "1"; readonly target: { readonly [x: string]: any; } & { readonly [x: string]: any; }; readonly expiresAt: number; readonly effectiveBudget: { ...; } & {}; }'.
+packages/runtime/src/data/http.ts(274,64): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ readonly [x: string]: any; readonly version: "1"; readonly target: { readonly [x: string]: any; } & { readonly [x: string]: any; }; readonly expiresAt: number; readonly effectiveBudget: { ...; } & {}; } & { ...; }'.
+  Type 'unknown' is not assignable to type '{ readonly [x: string]: any; readonly version: "1"; readonly target: { readonly [x: string]: any; } & { readonly [x: string]: any; }; readonly expiresAt: number; readonly effectiveBudget: { ...; } & {}; }'.
+packages/runtime/src/data/http.ts(347,9): error TS18046: 'error' is of type 'unknown'.
+packages/runtime/src/data/http.ts(347,42): error TS18046: 'error' is of type 'unknown'.
+packages/runtime/src/data/http.ts(348,37): error TS18046: 'error' is of type 'unknown'.
+packages/runtime/src/data/local.ts(11,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/data/local.ts(33,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/data/local.ts(34,27): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/data/local.ts(249,34): error TS7006: Parameter 'entity' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(249,92): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(257,55): error TS7006: Parameter 'entity' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(280,32): error TS18047: 'entity' is possibly 'null'.
+packages/runtime/src/data/local.ts(280,39): error TS2339: Property 'fields' does not exist on type '{}'.
+packages/runtime/src/data/local.ts(280,50): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(298,27): error TS18047: 'entity' is possibly 'null'.
+packages/runtime/src/data/local.ts(298,34): error TS2339: Property 'fields' does not exist on type '{}'.
+packages/runtime/src/data/local.ts(302,30): error TS18047: 'entity' is possibly 'null'.
+packages/runtime/src/data/local.ts(302,37): error TS2339: Property 'identity' does not exist on type '{}'.
+packages/runtime/src/data/local.ts(303,37): error TS18047: 'entity' is possibly 'null'.
+packages/runtime/src/data/local.ts(303,44): error TS2339: Property 'identity' does not exist on type '{}'.
+packages/runtime/src/data/local.ts(303,57): error TS7006: Parameter 'identity' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(303,124): error TS2339: Property 'type' does not exist on type '{}'.
+packages/runtime/src/data/local.ts(415,33): error TS7006: Parameter 'entity' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(429,33): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(600,43): error TS7006: Parameter 'entity' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(600,146): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(601,61): error TS7006: Parameter 'entity' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(603,39): error TS7006: Parameter 'entity' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(604,55): error TS7006: Parameter 'relationship' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(606,37): error TS7006: Parameter 'key' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(608,62): error TS7006: Parameter 'relationship' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(609,53): error TS7006: Parameter 'capability' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(611,37): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(612,38): error TS7006: Parameter 'relation' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(615,34): error TS7006: Parameter 'entity' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(616,61): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(644,66): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(743,41): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(744,104): error TS2339: Property 'output' does not exist on type '{}'.
+packages/runtime/src/data/local.ts(747,76): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(759,44): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(776,49): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(800,54): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(845,3): error TS2322: Type 'readonly unknown[]' is not assignable to type 'readonly string[]'.
+  Type 'unknown' is not assignable to type 'string'.
+packages/runtime/src/data/local.ts(845,55): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(845,139): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(851,42): error TS7006: Parameter 'reference' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(880,37): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(1004,41): error TS7006: Parameter 'entity' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(1004,145): error TS7006: Parameter 'entity' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(1062,62): error TS7006: Parameter 'count' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(1062,69): error TS7006: Parameter 'entity' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(1088,60): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(1290,50): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(1433,53): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/runtime/src/data/local.ts(1466,130): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/runtime/src/data/schema.ts(9,8): error TS2307: Cannot find module '@aeliqo/sdk-core/schema' or its corresponding type declarations.
+packages/runtime/src/data/schema.ts(10,72): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/data/schema.ts(12,60): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/data/schema.ts(156,67): error TS7006: Parameter 'value' implicitly has an 'any' type.
+packages/runtime/src/data/stream.ts(1,42): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/data/stream.ts(2,52): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/data/types.ts(13,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/data/types.ts(68,42): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/evaluation/cohort.ts(1,43): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/evaluation/cohort.ts(2,93): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/evaluation/cohort.ts(92,33): error TS7006: Parameter 'entity' implicitly has an 'any' type.
+packages/runtime/src/evaluation/cohort.ts(96,37): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/runtime/src/evaluation/cohort.ts(99,41): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/runtime/src/evaluation/cohort.ts(150,37): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/runtime/src/evaluation/cohort.ts(153,41): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/runtime/src/evaluation/task.ts(1,50): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/evaluation/task.ts(7,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/evaluation/task.ts(173,28): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(176,37): error TS2345: Argument of type 'TrustedEvaluationContext | undefined' is not assignable to parameter of type 'TrustedEvaluationContext'.
+  Type 'undefined' is not assignable to type 'TrustedEvaluationContext'.
+packages/runtime/src/evaluation/task.ts(178,59): error TS7006: Parameter 'output' implicitly has an 'any' type.
+packages/runtime/src/evaluation/task.ts(181,74): error TS7006: Parameter 'output' implicitly has an 'any' type.
+packages/runtime/src/evaluation/task.ts(181,146): error TS7006: Parameter 'output' implicitly has an 'any' type.
+packages/runtime/src/evaluation/task.ts(189,36): error TS18047: 'output' is possibly 'null'.
+packages/runtime/src/evaluation/task.ts(189,43): error TS2339: Property 'dependsOn' does not exist on type '{}'.
+packages/runtime/src/evaluation/task.ts(194,26): error TS2339: Property 'kind' does not exist on type '{}'.
+packages/runtime/src/evaluation/task.ts(194,55): error TS2339: Property 'kind' does not exist on type '{}'.
+packages/runtime/src/evaluation/task.ts(194,82): error TS2339: Property 'query' does not exist on type '{}'.
+packages/runtime/src/evaluation/task.ts(196,33): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(198,26): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(198,92): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(199,215): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(200,85): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(200,130): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(201,92): error TS2345: Argument of type 'TrustedEvaluationContext | undefined' is not assignable to parameter of type 'TrustedEvaluationContext'.
+  Type 'undefined' is not assignable to type 'TrustedEvaluationContext'.
+packages/runtime/src/evaluation/task.ts(201,130): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(201,165): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(201,190): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(201,251): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(201,294): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(201,343): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(201,383): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(201,408): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(201,438): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(204,38): error TS2345: Argument of type 'TrustedEvaluationContext | undefined' is not assignable to parameter of type 'TrustedEvaluationContext'.
+  Type 'undefined' is not assignable to type 'TrustedEvaluationContext'.
+packages/runtime/src/evaluation/task.ts(208,26): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(208,57): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/runtime/src/evaluation/task.ts(209,194): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(209,219): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(209,280): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(209,323): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(219,22): error TS2339: Property 'kind' does not exist on type '{}'.
+packages/runtime/src/evaluation/task.ts(220,40): error TS2345: Argument of type 'TrustedEvaluationContext | undefined' is not assignable to parameter of type 'TrustedEvaluationContext'.
+  Type 'undefined' is not assignable to type 'TrustedEvaluationContext'.
+packages/runtime/src/evaluation/task.ts(223,28): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(223,57): error TS2339: Property 'result' does not exist on type '{}'.
+packages/runtime/src/evaluation/task.ts(230,95): error TS2339: Property 'result' does not exist on type '{}'.
+packages/runtime/src/evaluation/task.ts(231,45): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(231,96): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(231,150): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(231,215): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(231,279): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(233,183): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/runtime/src/evaluation/task.ts(236,35): error TS2339: Property 'query' does not exist on type '{}'.
+packages/runtime/src/evaluation/task.ts(239,36): error TS2345: Argument of type 'TrustedEvaluationContext | undefined' is not assignable to parameter of type 'TrustedEvaluationContext'.
+  Type 'undefined' is not assignable to type 'TrustedEvaluationContext'.
+packages/runtime/src/evaluation/task.ts(240,60): error TS2339: Property 'id' does not exist on type '{}'.
+packages/runtime/src/evaluation/task.ts(241,87): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(242,61): error TS2339: Property 'id' does not exist on type '{}'.
+packages/runtime/src/evaluation/task.ts(243,33): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(243,76): error TS2345: Argument of type 'TrustedEvaluationContext | undefined' is not assignable to parameter of type 'TrustedEvaluationContext'.
+  Type 'undefined' is not assignable to type 'TrustedEvaluationContext'.
+packages/runtime/src/evaluation/task.ts(246,44): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(246,96): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(247,52): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(247,114): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(248,95): error TS2339: Property 'id' does not exist on type '{}'.
+packages/runtime/src/evaluation/task.ts(250,38): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(250,73): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(250,425): error TS2339: Property 'id' does not exist on type '{}'.
+packages/runtime/src/evaluation/task.ts(252,26): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(254,49): error TS18048: 'context' is possibly 'undefined'.
+packages/runtime/src/evaluation/task.ts(254,92): error TS2345: Argument of type 'TrustedEvaluationContext | undefined' is not assignable to parameter of type 'TrustedEvaluationContext'.
+  Type 'undefined' is not assignable to type 'TrustedEvaluationContext'.
+packages/runtime/src/evaluation/task.ts(274,191): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/runtime/src/evaluation/task.ts(278,32): error TS2345: Argument of type 'TrustedEvaluationContext | undefined' is not assignable to parameter of type 'TrustedEvaluationContext'.
+  Type 'undefined' is not assignable to type 'TrustedEvaluationContext'.
+packages/runtime/src/evaluation/task.ts(282,61): error TS7006: Parameter 'id' implicitly has an 'any' type.
+packages/runtime/src/evaluation/task.ts(282,95): error TS7006: Parameter 'id' implicitly has an 'any' type.
+packages/runtime/src/evaluation/task.ts(285,102): error TS7006: Parameter 'id' implicitly has an 'any' type.
+packages/runtime/src/evaluation/types.ts(10,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/interaction/controller.ts(1,65): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/interaction/controller.ts(2,72): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/interaction/controller.ts(34,37): error TS2353: Object literal may only specify known properties, and 'message' does not exist in type 'InteractionFailure'.
+packages/runtime/src/interaction/controller.ts(307,85): error TS2551: Property 'catalogRevision' does not exist on type 'RegionReadSet'. Did you mean 'dataRevision'?
+packages/runtime/src/interaction/controller.ts(307,149): error TS2339: Property 'experienceRevision' does not exist on type 'RegionReadSet'.
+packages/runtime/src/interaction/controller.ts(308,58): error TS2339: Property 'functionRegistryDigest' does not exist on type 'RegionReadSet'.
+packages/runtime/src/interaction/controller.ts(308,122): error TS2339: Property 'scopeDigest' does not exist on type 'RegionReadSet'.
+packages/runtime/src/interaction/controller.ts(309,50): error TS2339: Property 'policyRevision' does not exist on type 'RegionReadSet'.
+packages/runtime/src/interaction/controller.ts(341,52): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/runtime/src/interaction/controller.ts(344,37): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/runtime/src/interaction/controller.ts(348,43): error TS7006: Parameter 'port' implicitly has an 'any' type.
+packages/runtime/src/interaction/controller.ts(439,41): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/runtime/src/interaction/controller.ts(445,41): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/runtime/src/interaction/controller.ts(495,42): error TS7006: Parameter 'draft' implicitly has an 'any' type.
+packages/runtime/src/interaction/controller.ts(501,43): error TS7006: Parameter 'draft' implicitly has an 'any' type.
+packages/runtime/src/interaction/controller.ts(569,37): error TS2339: Property 'results' does not exist on type 'RegionReadSet'.
+packages/runtime/src/interaction/controller.ts(574,94): error TS2339: Property 'message' does not exist on type 'RegionFailure'.
+packages/runtime/src/interaction/controller.ts(575,57): error TS2339: Property 'scopeDigest' does not exist on type 'RegionReadSet'.
+packages/runtime/src/interaction/controller.ts(583,50): error TS2353: Object literal may only specify known properties, and 'results' does not exist in type 'RegionReadSet'.
+packages/runtime/src/interaction/controller.ts(606,90): error TS2339: Property 'message' does not exist on type 'RegionFailure'.
+packages/runtime/src/interaction/controller.ts(626,148): error TS2339: Property 'message' does not exist on type 'RegionFailure'.
+packages/runtime/src/interaction/controller.ts(628,85): error TS2339: Property 'message' does not exist on type 'RegionFailure'.
+packages/runtime/src/interaction/controller.ts(629,79): error TS2339: Property 'message' does not exist on type 'RegionFailure'.
+packages/runtime/src/interaction/graph.ts(1,81): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/interaction/graph.ts(22,37): error TS2353: Object literal may only specify known properties, and 'message' does not exist in type 'InteractionFailure'.
+packages/runtime/src/interaction/graph.ts(66,66): error TS2339: Property 'message' does not exist on type 'InteractionFailure'.
+packages/runtime/src/interaction/graph.ts(93,53): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/runtime/src/interaction/graph.ts(123,56): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/runtime/src/interaction/types.ts(6,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/meaning/authoring.ts(14,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/meaning/authoring.ts(79,72): error TS7006: Parameter 'signature' implicitly has an 'any' type.
+packages/runtime/src/meaning/authoring.ts(84,37): error TS7006: Parameter 'signature' implicitly has an 'any' type.
+packages/runtime/src/meaning/authoring.ts(165,13): error TS2339: Property 'ownerId' does not exist on type 'MeaningSource | { surface: "ai-assisted"; ownership: any; }'.
+  Property 'ownerId' does not exist on type '{ surface: "ai-assisted"; ownership: any; }'.
+packages/runtime/src/meaning/authoring.ts(165,55): error TS2339: Property 'ownerId' does not exist on type 'MeaningSource | { surface: "ai-assisted"; ownership: any; }'.
+  Property 'ownerId' does not exist on type '{ surface: "ai-assisted"; ownership: any; }'.
+packages/runtime/src/meaning/authoring.ts(170,45): error TS2339: Property 'readOnly' does not exist on type 'MeaningSource | { surface: "ai-assisted"; ownership: any; }'.
+  Property 'readOnly' does not exist on type '{ surface: "ai-assisted"; ownership: any; }'.
+packages/runtime/src/meaning/authoring.ts(171,15): error TS2339: Property 'ownerId' does not exist on type 'MeaningSource | { surface: "ai-assisted"; ownership: any; }'.
+  Property 'ownerId' does not exist on type '{ surface: "ai-assisted"; ownership: any; }'.
+packages/runtime/src/meaning/authoring.ts(171,60): error TS2339: Property 'ownerId' does not exist on type 'MeaningSource | { surface: "ai-assisted"; ownership: any; }'.
+  Property 'ownerId' does not exist on type '{ surface: "ai-assisted"; ownership: any; }'.
+packages/runtime/src/meaning/authoring.ts(236,17): error TS2339: Property 'id' does not exist on type 'MeaningDefinitionInput'.
+packages/runtime/src/meaning/authoring.ts(236,31): error TS2339: Property 'revision' does not exist on type 'MeaningDefinitionInput'.
+packages/runtime/src/meaning/authoring.ts(236,78): error TS2339: Property 'revision' does not exist on type 'MeaningDefinitionInput'.
+packages/runtime/src/meaning/authoring.ts(236,103): error TS2339: Property 'label' does not exist on type 'MeaningDefinitionInput'.
+packages/runtime/src/meaning/authoring.ts(237,26): error TS2339: Property 'description' does not exist on type 'MeaningDefinitionInput'.
+packages/runtime/src/meaning/authoring.ts(237,57): error TS2339: Property 'expression' does not exist on type 'MeaningDefinitionInput'.
+packages/runtime/src/meaning/authoring.ts(238,17): error TS2339: Property 'aggregation' does not exist on type 'MeaningDefinitionInput'.
+packages/runtime/src/meaning/authoring.ts(238,70): error TS2339: Property 'aggregation' does not exist on type 'MeaningDefinitionInput'.
+packages/runtime/src/meaning/authoring.ts(239,17): error TS2339: Property 'aggregationDimensions' does not exist on type 'MeaningDefinitionInput'.
+packages/runtime/src/meaning/authoring.ts(239,90): error TS2339: Property 'aggregationDimensions' does not exist on type 'MeaningDefinitionInput'.
+packages/runtime/src/meaning/authoring.ts(240,17): error TS2339: Property 'missingPolicy' does not exist on type 'MeaningDefinitionInput'.
+packages/runtime/src/meaning/authoring.ts(240,74): error TS2339: Property 'missingPolicy' does not exist on type 'MeaningDefinitionInput'.
+packages/runtime/src/meaning/authoring.ts(242,17): error TS2339: Property 'dependencies' does not exist on type 'MeaningDefinitionInput'.
+packages/runtime/src/meaning/authoring.ts(242,72): error TS2339: Property 'dependencies' does not exist on type 'MeaningDefinitionInput'.
+packages/runtime/src/meaning/evaluator.ts(15,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/meaning/registry.ts(11,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/meaning/registry.ts(48,54): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/runtime/src/meaning/registry.ts(174,78): error TS7006: Parameter 'meaning' implicitly has an 'any' type.
+packages/runtime/src/meaning/registry.ts(259,75): error TS7006: Parameter 'ref' implicitly has an 'any' type.
+packages/runtime/src/meaning/registry.ts(305,37): error TS7006: Parameter 'dependency' implicitly has an 'any' type.
+packages/runtime/src/meaning/registry.ts(354,125): error TS7006: Parameter 'dependency' implicitly has an 'any' type.
+packages/runtime/src/meaning/types.ts(18,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/meaning/types.ts(19,54): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/persistence/document.ts(1,58): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/persistence/document.ts(2,31): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/persistence/document.ts(101,91): error TS2339: Property 'scopeDigest' does not exist on type 'RegionReadSet'.
+packages/runtime/src/persistence/document.ts(136,62): error TS2339: Property 'message' does not exist on type 'RegionFailure'.
+packages/runtime/src/persistence/types.ts(1,25): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/presentation/adaptation.ts(12,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/presentation/adaptation.ts(32,24): error TS2353: Object literal may only specify known properties, and 'message' does not exist in type 'RegionFailure'.
+packages/runtime/src/presentation/renderer.ts(8,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/presentation/renderer.ts(13,24): error TS2353: Object literal may only specify known properties, and 'message' does not exist in type 'RegionFailure'.
+packages/runtime/src/presentation/renderer.ts(38,41): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/runtime/src/presentation/renderer.ts(42,34): error TS7006: Parameter 'transfer' implicitly has an 'any' type.
+packages/runtime/src/presentation/renderer.ts(49,46): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/runtime/src/presentation/renderer.ts(51,50): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/runtime/src/presentation/renderer.ts(79,49): error TS7006: Parameter 'port' implicitly has an 'any' type.
+packages/runtime/src/regions/store.ts(1,104): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/regions/store.ts(2,30): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/regions/store.ts(58,122): error TS2353: Object literal may only specify known properties, and 'message' does not exist in type 'RegionFailure'.
+packages/runtime/src/regions/store.ts(234,47): error TS2551: Property 'catalogRevision' does not exist on type 'RegionReadSet'. Did you mean 'dataRevision'?
+packages/runtime/src/regions/store.ts(234,113): error TS2339: Property 'functionRegistryDigest' does not exist on type 'RegionReadSet'.
+packages/runtime/src/regions/store.ts(595,40): error TS2339: Property 'results' does not exist on type 'RegionReadSet'.
+packages/runtime/src/regions/store.ts(597,80): error TS2339: Property 'scopeDigest' does not exist on type 'RegionReadSet'.
+packages/runtime/src/regions/store.ts(879,37): error TS2339: Property 'scopeDigest' does not exist on type 'RegionReadSet'.
+packages/runtime/src/regions/store.ts(893,86): error TS2339: Property 'scopeDigest' does not exist on type 'RegionReadSet'.
+packages/runtime/src/regions/store.ts(893,148): error TS2339: Property 'policyRevision' does not exist on type 'RegionReadSet'.
+packages/runtime/src/regions/store.ts(894,61): error TS2551: Property 'catalogRevision' does not exist on type 'RegionReadSet'. Did you mean 'dataRevision'?
+packages/runtime/src/regions/store.ts(894,131): error TS2339: Property 'experienceRevision' does not exist on type 'RegionReadSet'.
+packages/runtime/src/regions/store.ts(895,68): error TS2339: Property 'functionRegistryDigest' does not exist on type 'RegionReadSet'.
+packages/runtime/src/regions/store.ts(903,62): error TS2339: Property 'results' does not exist on type 'RegionReadSet'.
+packages/runtime/src/regions/store.ts(903,160): error TS2339: Property 'results' does not exist on type 'RegionReadSet'.
+packages/runtime/src/regions/store.ts(910,52): error TS2339: Property 'results' does not exist on type 'RegionReadSet'.
+packages/runtime/src/regions/store.ts(919,39): error TS2339: Property 'results' does not exist on type 'RegionReadSet'.
+packages/runtime/src/regions/store.ts(962,62): error TS2339: Property 'message' does not exist on type 'RegionFailure'.
+packages/runtime/src/regions/store.ts(968,53): error TS2339: Property 'scopeDigest' does not exist on type 'RegionReadSet'.
+packages/runtime/src/regions/types.ts(1,69): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/results/store.ts(1,74): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/results/store.ts(6,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/results/store.ts(460,34): error TS7006: Parameter 'edge' implicitly has an 'any' type.
+packages/runtime/src/results/store.ts(460,61): error TS7006: Parameter 'ref' implicitly has an 'any' type.
+packages/runtime/src/results/store.ts(468,51): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/runtime/src/results/store.ts(485,47): error TS2339: Property 'type' does not exist on type '{}'.
+packages/runtime/src/results/store.ts(527,75): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/runtime/src/results/types.ts(1,49): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/runtime/src/tasks/types.ts(1,96): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/testkit/src/index.ts(5,8): error TS2307: Cannot find module '@aeliqo/sdk-runtime/results' or its corresponding type declarations.
+packages/testkit/src/index.ts(166,36): error TS7006: Parameter 'batch' implicitly has an 'any' type.
+packages/testkit/src/index.ts(193,76): error TS7031: Binding element 'code' implicitly has an 'any' type.
+packages/web/src/compound/elements.ts(2,98): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/compound/recipes.ts(1,110): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/compound/recipes.ts(34,25): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/web/src/compound/recipes.ts(37,28): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/web/src/compound/recipes.ts(40,25): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/web/src/compound/recipes.ts(41,50): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/web/src/compound/recipes.ts(42,40): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/web/src/compound/recipes.ts(42,77): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/web/src/compound/types.ts(1,149): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/data/card-collection.ts(3,30): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/data/delta.ts(3,30): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/data/filter-builder.ts(3,30): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/data/record-list.ts(3,30): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/data/selection-summary.ts(3,30): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/data/shared.ts(2,30): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/data/shared.ts(3,27): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/data/types.ts(1,52): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/data/types.ts(2,30): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/elements/aeliqo-chart.ts(3,30): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/elements/aeliqo-table.ts(5,30): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/elements/aeliqo-table.ts(7,30): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/plot/composition.ts(1,58): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/plot/composition.ts(2,79): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/plot/composition.ts(38,36): error TS7006: Parameter 'f' implicitly has an 'any' type.
+packages/web/src/plot/composition.ts(58,42): error TS7006: Parameter 'n' implicitly has an 'any' type.
+packages/web/src/plot/composition.ts(58,44): error TS7006: Parameter 'm' implicitly has an 'any' type.
+packages/web/src/plot/composition.ts(66,38): error TS7006: Parameter 'f' implicitly has an 'any' type.
+packages/web/src/plot/element.ts(2,63): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/plot/element.ts(127,131): error TS7006: Parameter 'f' implicitly has an 'any' type.
+packages/web/src/plot/element.ts(128,283): error TS7006: Parameter 'k' implicitly has an 'any' type.
+packages/web/src/plot/element.ts(128,419): error TS7006: Parameter 'f' implicitly has an 'any' type.
+packages/web/src/plot/geometry.ts(2,88): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/plot/geometry.ts(3,51): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/plot/geometry.ts(49,45): error TS7006: Parameter 'f' implicitly has an 'any' type.
+packages/web/src/plot/geometry.ts(64,52): error TS18047: 'field' is possibly 'null'.
+packages/web/src/plot/geometry.ts(64,58): error TS2339: Property 'type' does not exist on type '{}'.
+packages/web/src/plot/geometry.ts(75,65): error TS2339: Property 'label' does not exist on type '{}'.
+packages/web/src/plot/geometry.ts(75,75): error TS2339: Property 'type' does not exist on type '{}'.
+packages/web/src/plot/geometry.ts(75,92): error TS2339: Property 'type' does not exist on type '{}'.
+packages/web/src/plot/geometry.ts(78,52): error TS2339: Property 'type' does not exist on type '{}'.
+packages/web/src/plot/geometry.ts(82,56): error TS2339: Property 'type' does not exist on type '{}'.
+packages/web/src/plot/geometry.ts(98,90): error TS2339: Property 'type' does not exist on type '{}'.
+packages/web/src/plot/geometry.ts(102,132): error TS2339: Property 'label' does not exist on type '{}'.
+packages/web/src/plot/geometry.ts(115,38): error TS2339: Property 'type' does not exist on type '{}'.
+packages/web/src/plot/geometry.ts(153,88): error TS2339: Property 'type' does not exist on type '{}'.
+packages/web/src/plot/geometry.ts(171,44): error TS2339: Property 'type' does not exist on type '{}'.
+packages/web/src/plot/geometry.ts(172,44): error TS2339: Property 'type' does not exist on type '{}'.
+packages/web/src/plot/geometry.ts(173,49): error TS2339: Property 'type' does not exist on type '{}'.
+packages/web/src/plot/geometry.ts(197,68): error TS2339: Property 'type' does not exist on type '{}'.
+packages/web/src/plot/geometry.ts(213,85): error TS2339: Property 'type' does not exist on type '{}'.
+packages/web/src/plot/geometry.ts(242,98): error TS2339: Property 'type' does not exist on type '{}'.
+packages/web/src/plot/geometry.ts(262,43): error TS2339: Property 'type' does not exist on type '{}'.
+packages/web/src/plot/geometry.ts(268,86): error TS2339: Property 'type' does not exist on type '{}'.
+packages/web/src/plot/geometry.ts(269,86): error TS2339: Property 'type' does not exist on type '{}'.
+packages/web/src/plot/scales.ts(2,82): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/plot/scales.ts(3,55): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/region/adaptation.ts(1,44): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/region/adaptation.ts(13,8): error TS2307: Cannot find module '@aeliqo/sdk-runtime/presentation' or its corresponding type declarations.
+packages/web/src/region/adaptation.ts(15,48): error TS2307: Cannot find module '@aeliqo/sdk-runtime/regions' or its corresponding type declarations.
+packages/web/src/region/adaptation.ts(167,13): error TS7006: Parameter 'next' implicitly has an 'any' type.
+packages/web/src/region/adaptation.ts(299,22): error TS7006: Parameter 'outcome' implicitly has an 'any' type.
+packages/web/src/region/aeliqo-region.ts(9,99): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/region/aeliqo-region.ts(121,41): error TS7006: Parameter 'source' implicitly has an 'any' type.
+packages/web/src/region/aeliqo-region.ts(123,85): error TS2322: Type '{} | null' is not assignable to type 'TableCell'.
+  Type '{}' is not assignable to type 'TableCell'.
+packages/web/src/region/aeliqo-region.ts(135,35): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/aeliqo-region.ts(220,56): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/web/src/region/aeliqo-region.ts(222,177): error TS2345: Argument of type 'Map<unknown, unknown>' is not assignable to parameter of type 'ReadonlyMap<string, ValidatedPresentation>'.
+  Types of property 'forEach' are incompatible.
+    Type '(callbackfn: (value: unknown, key: unknown, map: Map<unknown, unknown>) => void, thisArg?: any) => void' is not assignable to type '(callbackfn: (value: ValidatedPresentation, key: string, map: ReadonlyMap<string, ValidatedPresentation>) => void, thisArg?: any) => void'.
+      Types of parameters 'callbackfn' and 'callbackfn' are incompatible.
+        Types of parameters 'key' and 'key' are incompatible.
+          Type 'unknown' is not assignable to type 'string'.
+packages/web/src/region/aeliqo-region.ts(231,36): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+packages/web/src/region/aeliqo-region.ts(253,41): error TS7006: Parameter 'port' implicitly has an 'any' type.
+packages/web/src/region/aeliqo-region.ts(265,43): error TS7006: Parameter 'port' implicitly has an 'any' type.
+packages/web/src/region/aeliqo-region.ts(277,33): error TS7006: Parameter 'port' implicitly has an 'any' type.
+packages/web/src/region/aeliqo-region.ts(288,55): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/web/src/region/aeliqo-region.ts(374,42): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/web/src/region/aeliqo-region.ts(387,50): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/web/src/region/aeliqo-region.ts(393,50): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/web/src/region/aeliqo-region.ts(395,54): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/web/src/region/aeliqo-region.ts(404,48): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/web/src/region/aeliqo-region.ts(430,165): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/web/src/region/aeliqo-region.ts(430,257): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/web/src/region/aeliqo-region.ts(433,48): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/web/src/region/data-presentation.ts(12,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/region/data-presentation.ts(216,54): error TS7006: Parameter 'port' implicitly has an 'any' type.
+packages/web/src/region/data-presentation.ts(237,21): error TS7006: Parameter 'values' implicitly has an 'any' type.
+packages/web/src/region/data-presentation.ts(237,29): error TS7006: Parameter 'result' implicitly has an 'any' type.
+packages/web/src/region/data-registry.ts(13,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/region/data-registry.ts(167,37): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/data-registry.ts(243,33): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/data-registry.ts(604,46): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/data-registry.ts(659,33): error TS7006: Parameter 'fieldId' implicitly has an 'any' type.
+packages/web/src/region/data-registry.ts(708,34): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/data-registry.ts(1030,24): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/data-registry.ts(1044,24): error TS7006: Parameter 'column' implicitly has an 'any' type.
+packages/web/src/region/data-registry.ts(1049,59): error TS7006: Parameter 'column' implicitly has an 'any' type.
+packages/web/src/region/data-registry.ts(1052,26): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/data-registry.ts(1052,54): error TS7006: Parameter 'column' implicitly has an 'any' type.
+packages/web/src/region/data-registry.ts(1105,40): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/data-registry.ts(1153,33): error TS7006: Parameter 'column' implicitly has an 'any' type.
+packages/web/src/region/data-registry.ts(1236,36): error TS7006: Parameter 'id' implicitly has an 'any' type.
+packages/web/src/region/data-registry.ts(1579,42): error TS7006: Parameter 'column' implicitly has an 'any' type.
+packages/web/src/region/data-registry.ts(1671,36): error TS7006: Parameter 'column' implicitly has an 'any' type.
+packages/web/src/region/data-registry.ts(1676,39): error TS7006: Parameter 'port' implicitly has an 'any' type.
+packages/web/src/region/data-renderer.ts(6,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/region/data-renderer.ts(7,32): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/region/data-renderer.ts(630,52): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/data-renderer.ts(633,43): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/data-renderer.ts(682,67): error TS18047: 'field' is possibly 'null'.
+packages/web/src/region/data-renderer.ts(682,73): error TS2339: Property 'type' does not exist on type '{}'.
+packages/web/src/region/data-renderer.ts(703,65): error TS18047: 'field' is possibly 'null'.
+packages/web/src/region/data-renderer.ts(703,71): error TS2339: Property 'type' does not exist on type '{}'.
+packages/web/src/region/data-renderer.ts(942,6): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/web/src/region/data-renderer.ts(964,6): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/data-renderer.ts(991,8): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/web/src/region/data-renderer.ts(1116,14): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/data-renderer.ts(1117,11): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/foundation-registry.ts(1,126): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/region/foundation-registry.ts(51,74): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/web/src/region/foundation-registry.ts(51,143): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/web/src/region/foundation-registry.ts(54,19): error TS7006: Parameter 'values' implicitly has an 'any' type.
+packages/web/src/region/foundation-registry.ts(61,47): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/web/src/region/foundation-registry.ts(65,50): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/web/src/region/foundation-registry.ts(69,35): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/web/src/region/foundation-registry.ts(76,33): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/web/src/region/foundation-renderer.ts(1,62): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/region/input-registry.ts(11,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/region/input-registry.ts(362,19): error TS7006: Parameter 'values' implicitly has an 'any' type.
+packages/web/src/region/input-renderer.ts(7,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/region/input-renderer.ts(142,65): error TS7006: Parameter 'item' implicitly has an 'any' type.
+packages/web/src/region/input-renderer.ts(142,71): error TS7006: Parameter 'index' implicitly has an 'any' type.
+packages/web/src/region/input-renderer.ts(200,34): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/web/src/region/input-renderer.ts(210,48): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/web/src/region/input-renderer.ts(298,45): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/web/src/region/input-renderer.ts(330,94): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+packages/web/src/region/navigation-feedback-registry.ts(10,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/region/navigation-feedback-registry.ts(529,52): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(530,48): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(531,50): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(532,67): error TS2345: Argument of type 'Map<unknown, unknown>' is not assignable to parameter of type 'Map<string, AeliqoNavigationFeedbackContent>'.
+  Type 'unknown' is not assignable to type 'string'.
+packages/web/src/region/navigation-feedback-registry.ts(533,49): error TS2345: Argument of type 'Map<unknown, unknown>' is not assignable to parameter of type 'Map<string, AeliqoNavigationFeedbackContent>'.
+  Type 'unknown' is not assignable to type 'string'.
+packages/web/src/region/navigation-feedback-registry.ts(534,64): error TS2345: Argument of type 'Map<unknown, unknown>' is not assignable to parameter of type 'Map<string, AeliqoNavigationFeedbackContent>'.
+  Type 'unknown' is not assignable to type 'string'.
+packages/web/src/region/navigation-feedback-registry.ts(535,46): error TS2345: Argument of type 'Map<unknown, unknown>' is not assignable to parameter of type 'Map<string, AeliqoNavigationFeedbackContent>'.
+  Type 'unknown' is not assignable to type 'string'.
+packages/web/src/region/navigation-feedback-registry.ts(536,49): error TS2345: Argument of type 'Map<unknown, unknown>' is not assignable to parameter of type 'Map<string, AeliqoNavigationFeedbackContent>'.
+  Type 'unknown' is not assignable to type 'string'.
+packages/web/src/region/navigation-feedback-registry.ts(537,58): error TS2345: Argument of type 'Map<unknown, unknown>' is not assignable to parameter of type 'Map<string, AeliqoNavigationFeedbackContent>'.
+  Type 'unknown' is not assignable to type 'string'.
+packages/web/src/region/navigation-feedback-registry.ts(633,95): error TS7006: Parameter '_' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(633,98): error TS7006: Parameter 'index' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(669,149): error TS7006: Parameter 'id' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(781,33): error TS7006: Parameter 'route' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(781,89): error TS7006: Parameter 'action' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(784,103): error TS7006: Parameter 'values' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(784,111): error TS7006: Parameter '_result' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(784,120): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(785,122): error TS7006: Parameter 'values' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(786,149): error TS7006: Parameter 'values' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(787,112): error TS7006: Parameter 'values' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(788,115): error TS7006: Parameter 'values' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(789,98): error TS7006: Parameter 'values' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(789,106): error TS7006: Parameter '_result' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(789,115): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(790,104): error TS7006: Parameter 'values' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(790,112): error TS7006: Parameter '_result' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(790,121): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(791,103): error TS7006: Parameter 'values' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(791,111): error TS7006: Parameter '_result' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(791,120): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(792,103): error TS7006: Parameter 'values' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(792,111): error TS7006: Parameter '_result' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(792,120): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(793,96): error TS7006: Parameter 'values' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(793,104): error TS7006: Parameter '_result' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(793,113): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(794,116): error TS7006: Parameter 'values' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(794,124): error TS7006: Parameter '_result' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(794,133): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(795,99): error TS7006: Parameter 'values' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(795,107): error TS7006: Parameter '_result' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(795,116): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(796,99): error TS7006: Parameter 'values' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(796,107): error TS7006: Parameter '_result' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(796,116): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(797,121): error TS7006: Parameter 'values' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(797,129): error TS7006: Parameter '_result' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-registry.ts(797,138): error TS7006: Parameter 'node' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-renderer.ts(1,30): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/region/navigation-feedback-renderer.ts(2,62): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/region/navigation-feedback-renderer.ts(31,45): error TS7006: Parameter 'declared' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-renderer.ts(35,34): error TS7006: Parameter 'port' implicitly has an 'any' type.
+packages/web/src/region/navigation-feedback-renderer.ts(153,63): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+packages/web/src/region/navigation-feedback-renderer.ts(163,78): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+packages/web/src/region/registry.ts(18,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/region/registry.ts(76,110): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/registry.ts(81,70): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/registry.ts(130,82): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+packages/web/src/region/registry.ts(171,97): error TS7006: Parameter 'column' implicitly has an 'any' type.
+packages/web/src/region/registry.ts(231,37): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/registry.ts(231,119): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/registry.ts(232,38): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/registry.ts(233,28): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/registry.ts(235,44): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/registry.ts(256,281): error TS7006: Parameter 'values' implicitly has an 'any' type.
+packages/web/src/region/registry.ts(256,289): error TS7006: Parameter 'result' implicitly has an 'any' type.
+packages/web/src/region/registry.ts(257,288): error TS7006: Parameter 'values' implicitly has an 'any' type.
+packages/web/src/region/registry.ts(257,296): error TS7006: Parameter 'result' implicitly has an 'any' type.
+packages/web/src/region/registry.ts(258,253): error TS7006: Parameter 'values' implicitly has an 'any' type.
+packages/web/src/region/registry.ts(258,261): error TS7006: Parameter 'result' implicitly has an 'any' type.
+packages/web/src/region/types.ts(2,102): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/region/visualization-registry.ts(18,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/region/visualization-registry.ts(84,85): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/region/visualization-registry.ts(204,40): error TS7006: Parameter 'result' implicitly has an 'any' type.
+packages/web/src/region/visualization-registry.ts(207,62): error TS7006: Parameter 'result' implicitly has an 'any' type.
+packages/web/src/region/visualization-registry.ts(234,34): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/web/src/region/visualization-registry.ts(246,82): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/visualization-registry.ts(254,10): error TS7053: Element implicitly has an 'any' type because expression of type 'VisualizationSpec' can't be used to index type 'Readonly<{ trend: { id: string; revision: string; }; bar: { id: string; revision: string; }; area: { id: string; revision: string; }; scatter: { id: string; revision: string; }; histogram: { id: string; revision: string; }; ... 6 more ...; relationship: { ...; }; }>'.
+packages/web/src/region/visualization-registry.ts(254,57): error TS7053: Element implicitly has an 'any' type because expression of type 'VisualizationSpec' can't be used to index type 'Readonly<{ trend: { id: string; revision: string; }; bar: { id: string; revision: string; }; area: { id: string; revision: string; }; scatter: { id: string; revision: string; }; histogram: { id: string; revision: string; }; ... 6 more ...; relationship: { ...; }; }>'.
+packages/web/src/region/visualization-registry.ts(257,21): error TS7006: Parameter 'values' implicitly has an 'any' type.
+packages/web/src/region/visualization-registry.ts(257,29): error TS7006: Parameter 'result' implicitly has an 'any' type.
+packages/web/src/region/visualization-renderer.ts(10,8): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/region/visualization-renderer.ts(13,38): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/region/visualization-renderer.ts(67,47): error TS7006: Parameter 'value' implicitly has an 'any' type.
+packages/web/src/region/visualization-renderer.ts(80,4): error TS2366: Function lacks ending return statement and return type does not include 'undefined'.
+packages/web/src/region/visualization-renderer.ts(110,34): error TS7006: Parameter 'port' implicitly has an 'any' type.
+packages/web/src/region/visualization-renderer.ts(111,45): error TS7006: Parameter 'operation' implicitly has an 'any' type.
+packages/web/src/region/visualization-renderer.ts(132,81): error TS7006: Parameter 'result' implicitly has an 'any' type.
+packages/web/src/region/visualization-renderer.ts(136,105): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/region/visualization-renderer.ts(146,39): error TS7006: Parameter 'row' implicitly has an 'any' type.
+packages/web/src/region/visualization-renderer.ts(147,42): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/web/src/types.ts(1,30): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/visualization/cartesian/base.ts(3,97): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/visualization/cartesian/base.ts(4,37): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/visualization/cartesian/base.ts(152,72): error TS7006: Parameter 'row' implicitly has an 'any' type.
+packages/web/src/visualization/cartesian/base.ts(228,141): error TS7006: Parameter 'warning' implicitly has an 'any' type.
+packages/web/src/visualization/cartesian/base.ts(242,119): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/visualization/cartesian/base.ts(243,518): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/visualization/cartesian/base.ts(254,48): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/web/src/visualization/cartesian/base.ts(279,137): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/visualization/hierarchy/element.ts(3,75): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/visualization/hierarchy/element.ts(82,94): error TS7006: Parameter 'row' implicitly has an 'any' type.
+packages/web/src/visualization/hierarchy/element.ts(126,38): error TS7006: Parameter 'warning' implicitly has an 'any' type.
+packages/web/src/visualization/hierarchy/element.ts(146,200): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/visualization/hierarchy/element.ts(146,875): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/visualization/hierarchy/element.ts(165,328): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/visualization/hierarchy/element.ts(165,1012): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/visualization/hierarchy/geometry.ts(1,53): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/visualization/hierarchy/geometry.ts(2,98): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/visualization/hierarchy/geometry.ts(120,37): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/web/src/visualization/hierarchy/geometry.ts(130,38): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/web/src/visualization/hierarchy/geometry.ts(181,94): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/visualization/hierarchy/geometry.ts(293,46): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/visualization/hierarchy/geometry.ts(474,94): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/visualization/materialization.ts(1,62): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/visualization/materialization.ts(2,64): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/visualization/materialization.ts(14,37): error TS7006: Parameter 'item' implicitly has an 'any' type.
+packages/web/src/visualization/materialization.ts(30,44): error TS7006: Parameter 'field' implicitly has an 'any' type.
+packages/web/src/visualization/materialization.ts(43,50): error TS18047: 'field' is possibly 'null'.
+packages/web/src/visualization/materialization.ts(43,56): error TS2339: Property 'type' does not exist on type '{}'.
+packages/web/src/visualization/temporal/geometry.ts(1,53): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/visualization/temporal/geometry.ts(2,58): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/visualization/temporal/geometry.ts(30,118): error TS7006: Parameter 'f' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/geometry.ts(32,33): error TS7006: Parameter 'f' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(3,66): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+packages/web/src/visualization/temporal/index.ts(28,203): error TS7006: Parameter 'row' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(29,43): error TS7006: Parameter 'row' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(30,42): error TS7006: Parameter 'f' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(31,103): error TS7006: Parameter 'id' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(31,126): error TS7006: Parameter 'f' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(36,62): error TS7006: Parameter 'id' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(41,26): error TS7006: Parameter 'w' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(43,642): error TS7006: Parameter 'mark' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(43,647): error TS7006: Parameter 'index' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(43,653): error TS7006: Parameter 'list' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(43,990): error TS2739: Type '{}' is missing the following properties from type 'VisualizationRow': identity, values
+packages/web/src/visualization/temporal/index.ts(43,1067): error TS7006: Parameter '_' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(43,1069): error TS7006: Parameter 'index' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(43,1075): error TS7006: Parameter 'list' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(43,1121): error TS7006: Parameter 'tick' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(43,1126): error TS7006: Parameter 'index' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(44,434): error TS7006: Parameter 'day' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(44,438): error TS7006: Parameter 'index' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(44,650): error TS7006: Parameter 'row' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(46,258): error TS7006: Parameter 'f' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(46,418): error TS7006: Parameter 'f' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(46,573): error TS18046: 'row' is of type 'unknown'.
+packages/web/src/visualization/temporal/index.ts(46,634): error TS7006: Parameter 'f' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(46,681): error TS18046: 'row' is of type 'unknown'.
+packages/web/src/visualization/temporal/index.ts(46,829): error TS18046: 'row' is of type 'unknown'.
+packages/web/src/visualization/temporal/index.ts(46,890): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'VisualizationRow'.
+packages/web/src/visualization/temporal/index.ts(46,918): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'VisualizationRow'.
+packages/web/src/visualization/temporal/index.ts(46,1081): error TS18046: 'row' is of type 'unknown'.
+packages/web/src/visualization/temporal/index.ts(46,1142): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'VisualizationRow'.
+packages/web/src/visualization/temporal/index.ts(46,1170): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'VisualizationRow'.
+packages/web/src/visualization/temporal/index.ts(46,1209): error TS7006: Parameter 'f' implicitly has an 'any' type.
+packages/web/src/visualization/temporal/index.ts(46,1256): error TS18046: 'row' is of type 'unknown'.
+packages/web/src/visualization/types.ts(1,86): error TS2307: Cannot find module '@aeliqo/sdk-core' or its corresponding type declarations.
+[ELIFECYCLE] Command failed with exit code 1.

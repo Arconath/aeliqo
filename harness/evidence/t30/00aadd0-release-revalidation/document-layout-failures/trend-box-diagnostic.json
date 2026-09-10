@@ -1,0 +1,63 @@
+{
+  "schema": "aeliqo.t30.trend-hydration-box-diagnostic.v1",
+  "sourceCommit": "00aadd06426cef10971bbfaea10caad48621430f",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "before": {
+    "mount": {
+      "x": 355.1875,
+      "y": 311.0625,
+      "width": 832,
+      "height": 912,
+      "scrollHeight": 910,
+      "clientHeight": 910
+    },
+    "host": {
+      "x": 355.1875,
+      "y": 311.0625,
+      "width": 832,
+      "height": 1741.78125,
+      "scrollHeight": 1742,
+      "clientHeight": 1742
+    },
+    "trend": null,
+    "mountText": "PreviewInteractive preview requires JavaScript.",
+    "mountHTML": "<h2>Preview</h2><p class=\"component-preview-status\" data-preview-status=\"\">Interactive preview requires JavaScript.</p>"
+  },
+  "after": {
+    "mount": {
+      "x": 355.1875,
+      "y": 311.0625,
+      "width": 832,
+      "height": 941,
+      "scrollHeight": 939,
+      "clientHeight": 939
+    },
+    "host": {
+      "x": 355.1875,
+      "y": 311.0625,
+      "width": 832,
+      "height": 1770.78125,
+      "scrollHeight": 1771,
+      "clientHeight": 1771
+    },
+    "trend": {
+      "x": 380.1875,
+      "y": 440.0625,
+      "width": 782,
+      "height": 787,
+      "scrollHeight": 787,
+      "clientHeight": 787
+    },
+    "mountText": "PreviewInteractive preview loaded.",
+    "mountHTML": "<h2>Preview</h2><p class=\"component-preview-status\" data-preview-status=\"\">Interactive preview loaded.</p><div data-catalog-example-root=\"true\" style=\"display: grid; gap: 12px;\"><aeliqo-trend data-aeliqo-theme=\"light\"></aeliqo-trend></div>"
+  },
+  "delta": {
+    "mountHeight": 29,
+    "hostHeight": 29
+  },
+  "assertionBudgetPx": 1,
+  "qualifies": false
+}

@@ -1,0 +1,571 @@
+{
+  "task": "T30",
+  "status": "blocked",
+  "generatedAt": "2026-09-10T13:34:01Z",
+  "sourceCommit": "00aadd06426cef10971bbfaea10caad48621430f",
+  "sourceDigest": "0bf62c81431a62f5d9ab1c71528a798c54aa4c7b9415b0c7363f2f25da32268e",
+  "scope": "Fresh exact-source release performance requalification from an isolated worktree: all Node timing attempts, enforced browser first/subsequent timing, installed-package bundle and lock evidence, adverse runtime and visualization cases, extended trusted-input observations and calibration, 100-cycle heap lifecycle, extended standalone and whole-site cold/warm observations, and the all-71 documentation layout gate. No measurement was reused from an earlier source.",
+  "sourceVerification": {
+    "worktree": "/private/tmp/aeliqo-t30-00aadd0-release-revalidation",
+    "headBeforeMatrix": "00aadd06426cef10971bbfaea10caad48621430f",
+    "headAfterMatrix": "00aadd06426cef10971bbfaea10caad48621430f",
+    "digestBeforeMatrix": "0bf62c81431a62f5d9ab1c71528a798c54aa4c7b9415b0c7363f2f25da32268e",
+    "digestAfterMatrix": "0bf62c81431a62f5d9ab1c71528a798c54aa4c7b9415b0c7363f2f25da32268e",
+    "productSourceChanges": [],
+    "budgetChanges": []
+  },
+  "environment": {
+    "os": "macOS 26.6.2 (25G83)",
+    "kernelRelease": "25.6.0",
+    "node": "v24.20.0",
+    "pnpm": "11.24.0",
+    "typescript": "7.0.2",
+    "vite": "8.2.2",
+    "playwright": "1.63.0",
+    "browser": "Chromium 153.0.8010.12",
+    "cpu": "Apple M4 Pro",
+    "logicalCpuCount": 12,
+    "memoryBytes": 25769803776,
+    "measurementIsolation": {
+      "concurrentPlaywrightOrPerformanceProcesses": 0,
+      "unrelatedIdlePreviewObserved": "One pre-existing site Vite preview on port 52729 remained idle at 0.0% observed CPU; all probes used separately allocated strict ports.",
+      "workers": 1
+    }
+  },
+  "checks": [
+    {
+      "command": "AELIQO_PERFORMANCE_OUTPUT=artifacts/t30-00aadd0-release-revalidation/runtime-attempt-1 pnpm test:performance:runtime",
+      "status": "fail",
+      "exitCode": 1,
+      "reason": "presentation planner p95 24.138832999999977 ms exceeded the unchanged 16 ms budget"
+    },
+    {
+      "command": "AELIQO_PERFORMANCE_OUTPUT=artifacts/t30-00aadd0-release-revalidation/runtime-attempt-2 pnpm test:performance:runtime",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "command": "AELIQO_PERFORMANCE_OUTPUT=artifacts/t30-00aadd0-release-revalidation/runtime-attempt-3 pnpm test:performance:runtime",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm lint",
+      "status": "pass-after-explicit-workspace-build-prerequisites",
+      "exitCode": 0,
+      "setupAttemptsRetained": 3
+    },
+    {
+      "command": "pnpm exec tsc -p tests/performance/tsconfig.json --noEmit",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=00aadd06426cef10971bbfaea10caad48621430f pnpm test:performance:browser",
+      "status": "pass",
+      "exitCode": 0,
+      "tests": 2,
+      "timingEnabled": true,
+      "budgetsEnforced": true
+    },
+    {
+      "command": "pnpm test:performance:bundles",
+      "status": "pass",
+      "exitCode": 0,
+      "rows": 6
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=00aadd06426cef10971bbfaea10caad48621430f AELIQO_ADVERSE_RUNTIME_OUTPUT=artifacts/t30-00aadd0-release-revalidation/adverse-runtime.json pnpm test:performance:adverse-runtime",
+      "status": "pass",
+      "exitCode": 0,
+      "tests": 1
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=00aadd06426cef10971bbfaea10caad48621430f pnpm test:performance:adverse-visualization",
+      "status": "pass",
+      "exitCode": 0,
+      "tests": 1
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=00aadd06426cef10971bbfaea10caad48621430f AELIQO_RUN_PERFORMANCE=1 pnpm test:performance:perceived-input",
+      "status": "pass",
+      "exitCode": 0,
+      "tests": 2,
+      "trustedKeyboardSamples": 30
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=00aadd06426cef10971bbfaea10caad48621430f AELIQO_RUN_HEAP_LIFECYCLE=1 pnpm test:performance:heap-lifecycle",
+      "status": "pass",
+      "exitCode": 0,
+      "tests": 1,
+      "cycles": 100
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=00aadd06426cef10971bbfaea10caad48621430f AELIQO_RUN_PERFORMANCE=1 pnpm test:performance:standalone",
+      "status": "pass",
+      "exitCode": 0,
+      "tests": 1,
+      "coldSamples": 10,
+      "warmSamples": 30
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=00aadd06426cef10971bbfaea10caad48621430f AELIQO_RUN_PERFORMANCE=1 pnpm test:performance:site-page",
+      "status": "pass",
+      "exitCode": 0,
+      "tests": 1,
+      "routes": 3,
+      "coldSamplesPerRoute": 10,
+      "warmSamplesPerRoute": 30
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=00aadd06426cef10971bbfaea10caad48621430f pnpm test:site:document-layout",
+      "status": "fail",
+      "exitCode": 1,
+      "attempt": 1,
+      "reason": "/docs/components/visualization.trend/ preview shell height changed by 29 px during hydration; allowed delta <= 1 px"
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=00aadd06426cef10971bbfaea10caad48621430f pnpm test:site:document-layout",
+      "status": "fail",
+      "exitCode": 1,
+      "attempt": 2,
+      "reason": "/docs/components/visualization.trend/ preview shell height changed by 29 px during hydration; allowed delta <= 1 px"
+    }
+  ],
+  "setupObservations": [
+    "The initial pre-build lint invocation accidentally used host Node v22.23.2 and failed because workspace distribution outputs were absent; its log and wrapper failure are retained and are not qualification evidence.",
+    "Under pinned Node v24.20.0, lint first exposed missing built agent output and then missing built DevTools output. After running the repository's build:agent and build:devtools prerequisites, the unchanged source passed pnpm lint. All attempts and exit codes are retained.",
+    "The performance TypeScript project passed under pinned Node v24.20.0 after the same workspace build prerequisites."
+  ],
+  "measurements": {
+    "nodeRuntimeAttempts": [
+      {
+        "attempt": 1,
+        "plannerP95Ms": 24.138832999999977,
+        "plannerBudgetMs": 16,
+        "plannerPassed": false,
+        "targetedReducerDispatchP95Ms": 0.11904199999935372,
+        "targetedReducerBudgetMs": 4,
+        "targetedReducerPassed": true,
+        "cleanupPassed": true,
+        "mediumFirstSamples": 10,
+        "mediumSubsequentSamples": 30,
+        "mediumTotalSubsequentP95Ms": 151.79670799999985
+      },
+      {
+        "attempt": 2,
+        "plannerP95Ms": 12.83987500000012,
+        "plannerBudgetMs": 16,
+        "plannerPassed": true,
+        "targetedReducerDispatchP95Ms": 0.11395799999991141,
+        "targetedReducerBudgetMs": 4,
+        "targetedReducerPassed": true,
+        "cleanupPassed": true,
+        "mediumFirstSamples": 10,
+        "mediumSubsequentSamples": 30,
+        "mediumTotalSubsequentP95Ms": 106.737709
+      },
+      {
+        "attempt": 3,
+        "plannerP95Ms": 13.085625000000164,
+        "plannerBudgetMs": 16,
+        "plannerPassed": true,
+        "targetedReducerDispatchP95Ms": 0.12337500000012369,
+        "targetedReducerBudgetMs": 4,
+        "targetedReducerPassed": true,
+        "cleanupPassed": true,
+        "mediumFirstSamples": 10,
+        "mediumSubsequentSamples": 30,
+        "mediumTotalSubsequentP95Ms": 108.60116700000003
+      }
+    ],
+    "nodeRuntimeFunctionalShape": {
+      "rows": 10000,
+      "rowFields": 100,
+      "views": 30,
+      "candidateCount": 64,
+      "expansions": 64,
+      "nodes": 31,
+      "cleanupCycles": 100,
+      "retainedHandles": 0,
+      "liveRegions": 0,
+      "openObservers": 0
+    },
+    "browserRuntime": {
+      "presentationPlannerP95Ms": 9.799999997019768,
+      "presentationPlannerBudgetMs": 16,
+      "targetedReducerDispatchP95Ms": 0.20000000298023224,
+      "targetedReducerBudgetMs": 4,
+      "budgetsEnforced": true,
+      "sourceChangedDuringRun": false,
+      "small": {
+        "rows": 100,
+        "firstSamples": 10,
+        "firstP50Ms": 0.800000011920929,
+        "firstP95Ms": 4.299999997019768,
+        "subsequentSamples": 30,
+        "subsequentP50Ms": 0.7000000029802322,
+        "subsequentP95Ms": 1.4000000059604645
+      },
+      "medium": {
+        "rows": 10000,
+        "rowFields": 100,
+        "views": 30,
+        "virtualRows": 1320,
+        "firstSamples": 10,
+        "firstP50Ms": 139.29999999701977,
+        "firstP95Ms": 179.70000000298023,
+        "subsequentSamples": 30,
+        "subsequentP50Ms": 136.1000000089407,
+        "subsequentP95Ms": 150.79999999701977
+      },
+      "largeWindow": {
+        "declaredPopulationRows": 1000000,
+        "requestedRows": 100,
+        "transferredRows": 100,
+        "executedRows": 100,
+        "examinedRows": 100,
+        "mountedRows": 44,
+        "maxMountedRows": 100,
+        "responseBodyBytes": 5888,
+        "firstP95Ms": 6.799999997019768,
+        "subsequentP95Ms": 1.0999999940395355
+      },
+      "trace": {
+        "events": 112452,
+        "scriptEvents": 5031,
+        "scriptP95Ms": 0.011,
+        "layoutEvents": 10,
+        "layoutP95Ms": 2.775,
+        "paintEvents": 2,
+        "paintP95Ms": 0.022,
+        "compositeLayerEvents": 0
+      }
+    },
+    "bundles": {
+      "gate": "pass",
+      "consumerLockSha256": "dd647dfa535052e432c45a8aea227b37ecce9417d852caa7ec7a008252793ad4",
+      "packages": [
+        {
+          "name": "@aeliqo/sdk-core",
+          "sha256": "57ef75c3f102bb34df012478f0c483e03b3d8fb7d6f0704c654f36eeb2677b89"
+        },
+        {
+          "name": "@aeliqo/sdk-runtime",
+          "sha256": "de17a389e84c5ca1ff4fab13761869faa80d90d4bcd989265ee611a2712dd5ac"
+        },
+        {
+          "name": "@aeliqo/sdk-web",
+          "sha256": "65b3b6964356bd4cb1484c3a4966e70f816ed31bdba1845bb58414280a5f13bd"
+        }
+      ],
+      "rows": [
+        {
+          "id": "button",
+          "gzipBytesExcludingLit": 3346,
+          "budgetBytes": 15360
+        },
+        {
+          "id": "input",
+          "gzipBytesExcludingLit": 6187,
+          "budgetBytes": 15360
+        },
+        {
+          "id": "metric",
+          "gzipBytesExcludingLit": 3444,
+          "budgetBytes": 15360
+        },
+        {
+          "id": "table",
+          "gzipBytesExcludingLit": 8280,
+          "budgetBytes": 40960
+        },
+        {
+          "id": "core-planner-validation",
+          "gzipBytesTotal": 54625,
+          "budgetBytes": 71680
+        },
+        {
+          "id": "region-table",
+          "gzipBytesTotal": 143754,
+          "budgetBytes": 163840
+        }
+      ]
+    },
+    "adverseRuntime": {
+      "elapsedMs": 21.158625,
+      "slowSourceElapsedMs": 15.951042000000001,
+      "supersedingRequests": 16,
+      "supersededRequests": 15,
+      "staleRows": 0,
+      "lateEventsDropped": 45,
+      "nonCooperativeDeliveriesAfterReturn": 2,
+      "retainedAfterDispose": false,
+      "retainedBuffersAfterCleanup": 0,
+      "activeSourcesAfterCleanup": 0,
+      "regionStoreEntryAfterDispose": false,
+      "authorizationAborted": true
+    },
+    "adverseVisualization": {
+      "rows": 1000,
+      "nullRows": 250,
+      "selectedIdentities": 1000,
+      "samples": 40,
+      "p50Ms": 13.099999994039536,
+      "p95Ms": 15.400000005960464,
+      "wideSamples": 20,
+      "wideWidth": 3600,
+      "wideViewportScrollWidth": 3600,
+      "narrowSamples": 20,
+      "narrowWidth": 960,
+      "narrowViewportScrollWidth": 0,
+      "networkRequests": 0
+    },
+    "perceivedInput": {
+      "mode": "extended-observation",
+      "trustedKeyboardSamples": 30,
+      "visibleDomUpdateP50Ms": 0.699999988079071,
+      "visibleDomUpdateP95Ms": 0.800000011920929,
+      "eventTimingObserved": 1,
+      "eventTimingMissingOrThresholdCensored": 29,
+      "eventTimingThresholdMs": 16,
+      "networkRequests": 0,
+      "calibrationRequestedHandlerMs": 60,
+      "calibrationEventDurationMs": 64,
+      "calibrationProcessingDurationMs": 60.099999994039536
+    },
+    "heapLifecycle": {
+      "mode": "full-100-cycle",
+      "batches": 10,
+      "cyclesPerBatch": 10,
+      "baselineFootprintBytes": 4225669,
+      "firstPostGcFootprintBytes": 4243287,
+      "lastPostGcFootprintBytes": 4265283,
+      "netPostGcDeltaBytes": 21996,
+      "finalDomNodes": 0,
+      "finalTrackedListeners": 0,
+      "positiveControlHeldIncreaseBytes": 24638831,
+      "positiveControlReleaseReductionBytes": 24639492,
+      "positiveControlResponsive": true
+    },
+    "standalone": {
+      "mode": "extended-observation",
+      "rows": 100,
+      "coldSamples": 10,
+      "coldDomContentLoadedP50Ms": 11.200000002980232,
+      "coldDomContentLoadedP95Ms": 29.100000008940697,
+      "coldFixtureReadyP50Ms": 11.199999988079071,
+      "coldFixtureReadyP95Ms": 29,
+      "coldFirstContentfulPaintAvailable": 10,
+      "coldFirstContentfulPaintP95Ms": 24,
+      "warmSamples": 30,
+      "warmDomContentLoadedP50Ms": 5.4000000059604645,
+      "warmDomContentLoadedP95Ms": 9.5,
+      "warmFixtureReadyP50Ms": 5.300000011920929,
+      "warmFixtureReadyP95Ms": 9.5,
+      "warmFirstContentfulPaintAvailable": 2,
+      "warmFirstContentfulPaintP95Ms": 20,
+      "revalidatedCacheSamples": 30,
+      "forbiddenModules": 0
+    },
+    "sitePage": {
+      "mode": "extended-observation",
+      "coldSamplesPerRoute": 10,
+      "warmSamplesPerRoute": 30,
+      "routes": [
+        {
+          "id": "home",
+          "coldNavigationP95Ms": 43.29999999701977,
+          "coldFirstContentfulPaintP95Ms": 60,
+          "coldTotalTransferP95Bytes": 457335,
+          "warmNavigationP95Ms": 10.200000002980232,
+          "warmFirstContentfulPaintP95Ms": 16,
+          "warmTotalTransferP95Bytes": 900,
+          "layoutShiftEntries": 0
+        },
+        {
+          "id": "component-docs",
+          "coldNavigationP95Ms": 21.100000008940697,
+          "coldFirstContentfulPaintP95Ms": 28,
+          "coldTotalTransferP95Bytes": 618541,
+          "warmNavigationP95Ms": 8.299999997019768,
+          "warmFirstContentfulPaintP95Ms": 20,
+          "warmTotalTransferP95Bytes": 2100,
+          "layoutShiftEntries": 0
+        },
+        {
+          "id": "playground",
+          "coldNavigationP95Ms": 15.599999994039536,
+          "coldFirstContentfulPaintP95Ms": 20,
+          "coldTotalTransferP95Bytes": 679292,
+          "warmNavigationP95Ms": 5.9000000059604645,
+          "warmFirstContentfulPaintP95Ms": 16,
+          "warmTotalTransferP95Bytes": 1800,
+          "layoutShiftEntries": 0
+        }
+      ]
+    },
+    "documentLayout": {
+      "catalogRoutes": 71,
+      "noJavaScriptRoutesCheckedBeforeFailure": 71,
+      "hydratedFailureRoutePosition": 52,
+      "hydratedFailureRoute": "/docs/components/visualization.trend/",
+      "attempts": 2,
+      "identicalFailureCount": 2,
+      "allowedSentinelDeltaPx": 1,
+      "observedPreviewHeightDeltaPx": 29,
+      "diagnostic": {
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "staticPreviewMount": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 912
+        },
+        "hydratedPreviewMount": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 941
+        },
+        "staticPreviewHostHeight": 1741.78125,
+        "hydratedPreviewHostHeight": 1770.78125,
+        "hydratedTrendHeight": 787
+      },
+      "completeDocumentLayoutReportProduced": false,
+      "qualifies": false
+    }
+  },
+  "qualification": {
+    "allAssignedGatesPassed": false,
+    "releaseBlockersObserved": [
+      "The all-71 documentation layout gate failed twice at visualization.trend with a deterministic 29 px preview-shell hydration height delta against the <= 1 px sentinel tolerance."
+    ],
+    "additionalSignals": [
+      "The first fresh Node runtime attempt failed the unchanged 16 ms planner p95 budget at 24.139 ms; two immediate isolated same-source repeats passed at 12.840 ms and 13.086 ms. The raw outlier remains visible and is not averaged away."
+    ],
+    "independentReview": "not-performed-for-this-blocked-author-artifact",
+    "releaseApprovalIssued": false,
+    "signedOff": false
+  },
+  "limitations": [
+    "This matrix is blocked and is not T30 release signoff. The deterministic visualization.trend hydration mismatch requires a product-source fix and a fresh complete exact-source rerun.",
+    "Measurements describe one isolated Apple M4 Pro/macOS runner and one headless Chromium build; they do not establish lower-powered-device, cross-browser or field behavior.",
+    "The Node and loaded-page first/subsequent observations are not equivalent to process, HTTP-cache or device cold starts. Node timing showed material same-source p95 variability across three retained attempts.",
+    "Visible-input timing ends at an observed DOM mutation, not paint. Missing or threshold-censored Event Timing entries do not prove a fast interaction; the deliberate calibration only verifies that the observation path can report a long event.",
+    "Trace phase durations can overlap. Zero composite-layer events means no such event was exposed in this trace, not zero compositing cost.",
+    "The heap probe is a requested-GC diagnostic from one Chromium process. Empty DOM/listener/resource counters and a responsive positive control do not prove every object is collectible or establish a universal memory budget.",
+    "Adverse runtime uses an in-process adapter and does not prove HTTP, socket, proxy, backend cancellation or network capacity.",
+    "Bundle rows cover selected installed production package entry points and retained module graphs; they do not establish parse, execution or interaction latency.",
+    "Site paint/LCP/layout observations are raw controlled-run entries, not field Core Web Vitals or universal INP. No reference-model, model-provider, backend-capacity or network-performance benchmark is claimed.",
+    "The document-layout test completed no-JavaScript checks for all 71 routes, then stopped on hydrated route 52; no complete 71-route hydrated report exists for this source."
+  ],
+  "sourceInputs": [
+    {
+      "path": "docs/12-performance.md",
+      "sha256": "94d6e0a5e823a592f38e17a7c84498df712f18ef5dba4dea7c8a2961a8bb1bca"
+    },
+    {
+      "path": "docs/33-performance-experiments.md",
+      "sha256": "21075d1c55de7bf81f82b9dbb581129c2ce530c43f91feb5605d0b5d81bac88f"
+    },
+    {
+      "path": "tests/performance/README.md",
+      "sha256": "b790ada47685b5de3b1f0e355b4d4302c55424bc026cd615286a3b40d1b5a250"
+    },
+    {
+      "path": "tests/site/document-layout.spec.ts",
+      "sha256": "df01f5d19d49fdc7f04c697c828defd7f094fbd2b6f4857a764e94c40f820aec"
+    },
+    {
+      "path": "tests/site/document-layout.playwright.config.mjs",
+      "sha256": "caeef79d79a76152e8a160e5b64667f0e400cdf92e53835b3622b7a6d1baf4b1"
+    },
+    {
+      "path": "harness/components.json",
+      "sha256": "b31648989a4f1b5cd3611c9bb1595c8c09d2e7fc4d9c133d6d96ce422b6e4d51"
+    },
+    {
+      "path": "package.json",
+      "sha256": "f2c323a2bef1c72004a72d58ee7f5a5961abe19fba5546be6b1f588d692024d7"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "78166cbb9ce3ea799bd3a25be247cc02a808abaabc62f029a4931e587232b33b"
+    }
+  ],
+  "artifactHashIndex": {
+    "path": "SHA256SUMS",
+    "entries": 65,
+    "sha256": "45c615ea8d3f3f1d669da466e1889a00e9eaff052b627ad7cfc10052f6f65a7e"
+  },
+  "principalArtifacts": [
+    {
+      "path": "runtime-attempt-1.json",
+      "sha256": "cafd76c63d1ac233a8c013b6db3b9c1260e7306d1e5962ff2618166d4f0a0a28"
+    },
+    {
+      "path": "runtime-attempt-2.json",
+      "sha256": "27956672136285b9e3506e6e4ac61047810a3a2aad2063e94ea18012c7362084"
+    },
+    {
+      "path": "runtime-attempt-3.json",
+      "sha256": "6380e0d2a6fc6019bcc41c85e1bbc6637bf8008f02227c99e6003712175fc748"
+    },
+    {
+      "path": "browser.json",
+      "sha256": "5b33cb7908a5bb79e16a14cb0525ed274805d5f63f5aa30cc936b94f38a2c6f4"
+    },
+    {
+      "path": "bundles.json",
+      "sha256": "60a312b3d5f3f6990288c37865559a6fa28ce0cc456bf7e64be22370263b4d12"
+    },
+    {
+      "path": "bundles-consumer-package-lock.json",
+      "sha256": "dd647dfa535052e432c45a8aea227b37ecce9417d852caa7ec7a008252793ad4"
+    },
+    {
+      "path": "adverse-runtime.json",
+      "sha256": "0fd1c45ec054cd47df55bf11c72226717ff01f9e23761e310447a3b257f3091a"
+    },
+    {
+      "path": "adverse-visualization.json",
+      "sha256": "75ba46dde2eaa64fe8b4ca45414a6a7cf247ed2c50cb761b0ae19957378ccd85"
+    },
+    {
+      "path": "perceived-input.json",
+      "sha256": "c21bfc4a0fe894808b329cf1dbe490a5d68c8eab1c47514b0203198322daed9c"
+    },
+    {
+      "path": "perceived-input-calibration.json",
+      "sha256": "45b45fc0714757fdbe758d52081e0af429bd31a338ff606147c6e9836726323f"
+    },
+    {
+      "path": "heap-lifecycle.json",
+      "sha256": "f93a7fadc42da43df746e23e35dd5d33cebf5df32d130db7133bb64bdeebb4b1"
+    },
+    {
+      "path": "standalone.json",
+      "sha256": "634c8363d6853c37e27ca805093967d8c04dd73ec0a3383d4a8a6a8389d5de88"
+    },
+    {
+      "path": "site-page.json",
+      "sha256": "45d576ab714d39195151011aab34eb044aa852b0843434231cd428a599938822"
+    },
+    {
+      "path": "document-layout-failures/trend-box-diagnostic.json",
+      "sha256": "946839de890a6818856a95f81d84d6e22ce9b395b01493e93c62154030c8afcd"
+    },
+    {
+      "path": "document-layout-failures/attempt-1-trace.zip",
+      "sha256": "6f0608600d3f7449d3e4a61ef19a426f694105b52f74b6d62b94913811728ebb"
+    },
+    {
+      "path": "document-layout-failures/attempt-2-trace.zip",
+      "sha256": "5cc4e1b1cad7fd786be58ae1ce45ee49320d627eb7d8e9d001836ef965fce717"
+    }
+  ]
+}
