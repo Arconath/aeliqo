@@ -385,20 +385,43 @@ function setPanelWidth(panel: string, width: number) {
   handle?.setAttribute('aria-valuetext', `${next} pixels`);
 }
 
+function desktopPanelBudget() {
+  const visible = visiblePanels();
+  const gap = Number.parseFloat(getComputedStyle(workspace).columnGap) || 0;
+  return Math.floor(workspace.clientWidth - gap * visible.length - canvasMinWidth);
+}
+
+function achievablePanelMax(panel: string) {
+  const otherWidths = visiblePanels()
+    .filter(([, visiblePanel]) => visiblePanel !== panel)
+    .reduce((sum, [, visiblePanel]) => sum + panelWidth(visiblePanel), 0);
+  return Math.max(panelMinWidth, Math.min(panelMaxWidth, desktopPanelBudget() - otherWidths));
+}
+
+function syncPanelRanges() {
+  for (const [, panel] of visiblePanels()) {
+    $(panel).querySelector<HTMLElement>('.panel-resize')?.setAttribute('aria-valuemax', String(achievablePanelMax(panel)));
+  }
+}
+
 function fitDesktopPanels() {
   if (narrow.matches) return;
   const visible = visiblePanels();
-  if (visible.length < 2 || workspace.clientWidth === 0) return;
-  const gap = Number.parseFloat(getComputedStyle(workspace).columnGap) || 0;
-  const budget = Math.floor(workspace.clientWidth - gap * visible.length - canvasMinWidth);
+  if (visible.length === 0 || workspace.clientWidth === 0) return;
+  const budget = desktopPanelBudget();
   if (budget < panelMinWidth * visible.length) {
     const keep = visible.find(([, panel]) => panel === lastPanel) ?? visible.at(-1)!;
+    const focused = document.activeElement;
+    let hidFocus = false;
     for (const [toggle, panel] of visible) {
       if (panel !== keep[1]) {
+        if (focused instanceof Node && $(panel).contains(focused)) hidFocus = true;
         $(panel).hidden = true;
         $(toggle).setAttribute('aria-expanded', 'false');
       }
     }
+    if (hidFocus) focusPanel(keep[1]);
+    syncPanelRanges();
     return;
   }
   const total = visible.reduce((sum, [, panel]) => sum + panelWidth(panel), 0);
@@ -406,6 +429,7 @@ function fitDesktopPanels() {
     const width = Math.floor(budget / visible.length);
     for (const [, panel] of visible) setPanelWidth(panel, width);
   }
+  syncPanelRanges();
 }
 
 function panelModality() {
@@ -430,6 +454,7 @@ function panelModality() {
     if (modal && !$(panel).hidden) $(panel).setAttribute('aria-modal', 'true');
     else $(panel).removeAttribute('aria-modal');
   }
+  if (modal && opened !== undefined && !$(opened[1]).contains(document.activeElement)) focusPanel(opened[1]);
 }
 
 function closePanel(toggle: string, panel: string) {
@@ -497,14 +522,14 @@ for (const [id, panel, direction] of [
   let initial = 320;
   let start = 0;
   const resize = (width: number) => {
-    setPanelWidth(panel, width);
-    fitDesktopPanels();
+    setPanelWidth(panel, Math.min(width, achievablePanelMax(panel)));
+    syncPanelRanges();
   };
   const physicalDirection = () => getComputedStyle(workspace).direction === 'rtl' ? -direction : direction;
   handle.addEventListener('keydown', event => {
     if (event.key === 'Home' || event.key === 'End') {
       event.preventDefault();
-      resize(event.key === 'Home' ? panelMinWidth : panelMaxWidth);
+      resize(event.key === 'Home' ? panelMinWidth : achievablePanelMax(panel));
     } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
       event.preventDefault();
       resize(Number(handle.getAttribute('aria-valuenow')) + (event.key === 'ArrowRight' ? 16 : -16) * physicalDirection());
@@ -595,7 +620,6 @@ function mountCommerce(output: DemoOutput | undefined) {
       if (!form.reportValidity()) return;
       receipt.textContent = `Draft reviewed for ${String(new FormData(form).get('name') ?? '')}. This remains local; no enquiry was sent.`;
       $('commerce-progress').textContent = 'Step 3 of 3 · Local draft reviewed; nothing was sent';
-      productFormDirty = false;
       activity('review', 'Reviewed a local commerce enquiry draft without egress or action.');
     });
     $('commerce-form').append(form);

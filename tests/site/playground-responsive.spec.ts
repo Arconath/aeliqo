@@ -83,6 +83,45 @@ test('source records, guarded reset, commerce progress, and narrow drawers remai
   expect(errors).toEqual([]);
 });
 
+test('the complete toolbar reflows without page overflow at 320 pixels', async ({page}) => {
+  await page.setViewportSize({width: 320, height: 800});
+  await page.goto('/playground/');
+  for (const theme of ['light', 'dark']) {
+    await page.locator('#theme').selectOption(theme);
+    for (const direction of ['ltr', 'rtl']) {
+      await page.evaluate(value => { document.documentElement.dir = value; }, direction);
+      await page.locator('#dataset').selectOption('products');
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      const toolbar = await page.locator('.playground-toolbar').boundingBox();
+      const task = await page.locator('#task-choice').boundingBox();
+      expect(toolbar).not.toBeNull();
+      expect(task).not.toBeNull();
+      expect(task!.x).toBeGreaterThanOrEqual(toolbar!.x);
+      expect(task!.x + task!.width).toBeLessThanOrEqual(toolbar!.x + toolbar!.width + 0.5);
+    }
+  }
+  const axe = await new AxeBuilder({page}).analyze();
+  expect(axe.violations).toEqual([]);
+});
+
+test('reset protects a reviewed but unsent commerce draft', async ({page}) => {
+  await page.goto('/playground/');
+  await page.locator('#dataset').selectOption('products');
+  await page.getByRole('textbox', {name: 'Your name', exact: true}).fill('Nino');
+  await page.getByRole('textbox', {name: 'Enquiry note', exact: true}).fill('Keep this local draft.');
+  await page.getByRole('button', {name: 'Review local enquiry', exact: true}).click();
+  await expect(page.locator('#commerce-form [role=status]')).toContainText('remains local');
+  await page.getByRole('button', {name: 'Source', exact: true}).click();
+  page.once('dialog', async dialog => {
+    expect(dialog.message()).toContain('discard your local drafts');
+    await dialog.dismiss();
+  });
+  await page.getByRole('button', {name: 'Reset session'}).click();
+  await expect(page.locator('#dataset')).toHaveValue('products');
+  await expect(page.getByRole('textbox', {name: 'Your name', exact: true})).toHaveValue('Nino');
+  await expect(page.getByRole('textbox', {name: 'Enquiry note', exact: true})).toHaveValue('Keep this local draft.');
+});
+
 test('medium desktop panels preserve a usable result canvas and expose valid panel semantics', async ({page}) => {
   await page.setViewportSize({width: 1024, height: 800});
   await page.goto('/playground/');
@@ -98,6 +137,61 @@ test('medium desktop panels preserve a usable result canvas and expose valid pan
   const axe = await new AxeBuilder({page}).include('.playground-layout').analyze();
   expect(axe.violations).toEqual([]);
   expect(axe.incomplete.filter(({id}) => id === 'aria-allowed-role' || id === 'aria-prohibited-attr')).toEqual([]);
+});
+
+test('medium desktop separators expose achievable ranges and resize only their own panel', async ({page}) => {
+  for (const width of [1024, 1100]) {
+    await page.setViewportSize({width, height: 800});
+    await page.goto('/playground/');
+    await page.getByRole('button', {name: 'Source', exact: true}).click();
+    await page.getByRole('button', {name: 'Inspect', exact: true}).click();
+    const source = page.locator('#source-resize');
+    const inspector = page.locator('#inspector-resize');
+    const initialSource = Number(await source.getAttribute('aria-valuenow'));
+    const initialInspector = Number(await inspector.getAttribute('aria-valuenow'));
+    const achievableMaximum = Number(await source.getAttribute('aria-valuemax'));
+    expect(achievableMaximum).toBeGreaterThanOrEqual(initialSource);
+    expect(achievableMaximum).toBeLessThanOrEqual(520);
+
+    await source.focus();
+    await page.keyboard.press('Home');
+    await expect(source).toHaveAttribute('aria-valuenow', '260');
+    await expect(inspector).toHaveAttribute('aria-valuenow', String(initialInspector));
+    await page.keyboard.press('End');
+    await expect(source).toHaveAttribute('aria-valuenow', String(achievableMaximum));
+    await expect(inspector).toHaveAttribute('aria-valuenow', String(initialInspector));
+    const sourceBox = await source.boundingBox();
+    if (!sourceBox) throw Error('source resize handle is not visible');
+    await page.mouse.move(sourceBox.x + sourceBox.width / 2, sourceBox.y + 80);
+    await page.mouse.down();
+    await page.mouse.move(sourceBox.x - 32, sourceBox.y + 80, {steps: 3});
+    await page.mouse.up();
+    expect(Number(await source.getAttribute('aria-valuenow'))).toBeLessThan(achievableMaximum);
+    await expect(inspector).toHaveAttribute('aria-valuenow', String(initialInspector));
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    expect((await page.locator('.playground-main').boundingBox())?.width ?? 0).toBeGreaterThanOrEqual(280);
+  }
+});
+
+test('panel adaptation moves focus into the surviving or newly modal panel', async ({page}) => {
+  await page.setViewportSize({width: 1280, height: 800});
+  await page.goto('/playground/');
+  await page.getByRole('button', {name: 'Source', exact: true}).click();
+  await page.getByRole('button', {name: 'Inspect', exact: true}).click();
+  await page.locator('#source-section').focus();
+  await page.setViewportSize({width: 901, height: 800});
+  await expect(page.locator('#source-panel')).toBeHidden();
+  await expect(page.locator('#inspector-panel')).toBeVisible();
+  await expect(page.locator('#inspector-tab')).toBeFocused();
+
+  await page.setViewportSize({width: 1280, height: 800});
+  await page.goto('/playground/');
+  await page.getByRole('button', {name: 'Source', exact: true}).click();
+  await page.getByRole('button', {name: 'Run task'}).focus();
+  await page.setViewportSize({width: 768, height: 800});
+  await expect(page.locator('#source-panel')).toHaveAttribute('role', 'dialog');
+  await expect(page.locator('#source-panel')).toHaveAttribute('aria-modal', 'true');
+  await expect(page.locator('#source-section')).toBeFocused();
 });
 
 test('RTL results and splitters follow the document direction', async ({page}) => {
