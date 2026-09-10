@@ -1,0 +1,49 @@
+{
+  "schema": "aeliqo.t35-checks.v1",
+  "executedAt": "2026-09-10",
+  "sourceRevision": "d7b48da0b9d3fc2c1ee48c8de7dd6edfaf11cb22",
+  "sourceDigestBefore": "05e5990492994ecd9877454cc13be94e2bd9ebe17df1985725c139f971c1be10",
+  "sourceDigestAfter": "05e5990492994ecd9877454cc13be94e2bd9ebe17df1985725c139f971c1be10",
+  "environment": {
+    "node": "v24.20.0",
+    "pnpm": "11.24.0",
+    "npm": "11.19.0",
+    "os": "darwin",
+    "arch": "arm64"
+  },
+  "checks": [
+    {
+      "command": "pnpm install --offline --frozen-lockfile",
+      "result": "passed",
+      "detail": "15 workspace projects; 145 packages reused; zero downloads."
+    },
+    {
+      "command": "pnpm test:audit",
+      "result": "passed",
+      "tests": 6,
+      "detail": "Runtime build, bounded local audit behavior, strict TypeScript."
+    },
+    {
+      "command": "node tests/consumers/public-package-notices.mjs",
+      "result": "passed",
+      "detail": "Six public sdk packages carry canonical notices; @aeliqo/testkit remains a private Apache-2.0 workspace."
+    },
+    {
+      "command": "pnpm test:release-tooling",
+      "result": "passed",
+      "tests": 19
+    },
+    {
+      "command": "pnpm build:site && pnpm test:site:browser",
+      "result": "passed",
+      "tests": 6,
+      "detail": "Includes local no-model workflows and legal/support/offline/commercial boundary coverage without default egress."
+    },
+    {
+      "command": "node harness/evidence/t35/05e5990-exact-candidate/verify-candidate.mjs --candidate <shared-root>/artifacts/release-candidate --source d7b48da0b9d3fc2c1ee48c8de7dd6edfaf11cb22 --source-digest 05e5990492994ecd9877454cc13be94e2bd9ebe17df1985725c139f971c1be10 --output harness/evidence/t35/05e5990-exact-candidate/candidate-audit.json",
+      "result": "passed",
+      "detail": "Reopened and rehashed six exact RC archives; independently installed exact integrities; strict-checked 130 public export specifiers; executed local core/audit/server/protocol/DevTools/React SSR entry points with ten network methods blocked and zero pre-control attempts; verified 63-component CycloneDX binding and zero recorded secret-scan findings."
+    }
+  ],
+  "nonQualifyingObservation": "A direct pnpm test:site:browser invocation in the fresh worktree correctly could not start before packages/web/dist existed. The qualifying sequence explicitly built the site first and then passed 6/6; no product or acceptance failure is inferred."
+}

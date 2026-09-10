@@ -1,0 +1,78 @@
+{
+  "schema": "aeliqo.t35-independent-review.v1",
+  "task": "T35",
+  "reviewedAt": "2026-09-10T08:39:00Z",
+  "sourceRevision": "d7b48da0b9d3fc2c1ee48c8de7dd6edfaf11cb22",
+  "sourceDigest": "05e5990492994ecd9877454cc13be94e2bd9ebe17df1985725c139f971c1be10",
+  "candidateVersion": "0.1.0-rc.1",
+  "reviewer": {
+    "agent": "/root/fix_t29_visual_blockers",
+    "role": "independent OSS governance and commercial-boundary reviewer",
+    "independentOfT35Implementation": true
+  },
+  "acceptance": "All promised OSS capabilities usable offline; commercial hypotheses not represented as proven sales.",
+  "requirements": [
+    {
+      "requirement": "The complete promised local framework, component, security/accessibility, protocol, Studio/DevTools and testkit capabilities remain Apache-2.0 rather than paid entitlements.",
+      "classification": "satisfied",
+      "evidence": [
+        "MASTER-SOT.md section 21, docs/15-oss-business.md, docs/business/oss-commercial-boundary.md and docs/public/0.1.0-support-boundary.md agree on the boundary.",
+        "The exact six public RC archives declare Apache-2.0 and contain byte-identical canonical LICENSE and NOTICE files.",
+        "The internal testkit remains a private Apache-2.0 source workspace, preventing release-only helpers from being represented as a seventh public API.",
+        "T27 and the final T32 system review are complete and their retained manifests are hash-bound below."
+      ]
+    },
+    {
+      "requirement": "Ordinary local use has no account, license-server callback, paid row cap, mandatory model call, or hidden audit transport.",
+      "classification": "satisfied-sampled",
+      "evidence": [
+        "An independent external consumer installed the exact six tarball integrities and strict-checked all 130 export specifiers.",
+        "Core parsing, bounded local audit export, web server, protocol, DevTools and React SSR entry points executed with fetch, HTTP, HTTPS, net and DNS blocked; zero network attempt occurred before explicit positive-control probes.",
+        "Fresh audit tests passed 6/6 and fresh site browser tests passed 6/6, including local no-model flows and default-no-egress governance pages.",
+        "Static inspection found network effects only in the documented optional runtime HTTP, model/provider and MCP paths; the web registry explicitly does not fetch or discover sources."
+      ]
+    },
+    {
+      "requirement": "Commercial operation and support are hypotheses, not evidence of sales, availability or market validation.",
+      "classification": "satisfied",
+      "evidence": [
+        "README, business/public boundary documents, SUPPORT, SECURITY and site legal copy state that hosted service, pricing, SLA, demand, recurring revenue and product-market fit are not claimed for 0.1.0.",
+        "Future hosted collaboration, governance, retained audit search, managed infrastructure and support are consistently described as possible separate services using the public contracts.",
+        "No customer, contract, price, revenue, demand, certification, partner, availability or SLA assertion was found in the reviewed release-facing materials."
+      ]
+    },
+    {
+      "requirement": "Governance and availability statements match observed project state.",
+      "classification": "satisfied",
+      "evidence": [
+        "CONTRIBUTING requires Apache-2.0 inbound contributions and DCO 1.1 sign-off without claiming a CLA; TRADEMARKS preserves the Apache-2.0 mark boundary without claiming certification.",
+        "GitHub private vulnerability reporting is enabled, public Issues are disabled, and SECURITY/SUPPORT promise neither a monitored email/queue nor a response-time SLA.",
+        "All six RC registry identities returned 404 and the production site reports the older 6b0c4f0 revision; release-facing copy explicitly separates source, registry and production state, so neither is represented as current-candidate availability."
+      ]
+    }
+  ],
+  "priorRiskRecheck": {
+    "auditExporter": "closed: fixed event families and codes, strict runtime validation, bounded oldest eviction with count/byte disclosure, fail-closed redacted clock behavior, clear/dispose release, and no audit-owned network/filesystem I/O",
+    "licenseAndNotices": "closed: canonical Apache-2.0 LICENSE and NOTICE are present in each exact public archive and in the private testkit source",
+    "commercialTruthfulness": "closed: future commercial surfaces are explicitly conditional and are not represented as current service, sale, demand, price, SLA, revenue or product-market fit",
+    "availabilityTruthfulness": "closed for T35: local source/candidate, registry and deployed-site states are distinguished; publication and deployment remain separate release tasks"
+  },
+  "findings": {
+    "p0": [],
+    "p1": [],
+    "p2": []
+  },
+  "limitations": [
+    "This is a source- and RC-bound sampled audit, not universal certification that every optional integration or environment is offline-capable.",
+    "Optional authenticated HTTP, MCP and BYOK/provider paths intentionally use host-authorized network effects and are not contradicted by the offline local-path acceptance.",
+    "SECURITY's phrase that source, registry packages and the deployed site have separate release evidence must be read with README, SUPPORT and the boundary documents: it distinguishes evidence domains and does not claim that this RC is published or deployed.",
+    "The registry and production observations are time-bound. They do not reserve 0.1.0-rc.1, approve publication, qualify provenance, promote a dist-tag, deploy the reviewed source, or establish commercial availability.",
+    "Manual assistive-technology certification, general model answer quality, registry publication, source release, staging/production deployment and stable promotion remain outside T35 and are not claimed."
+  ],
+  "verdict": {
+    "decision": "approve-T35",
+    "blockingFindings": [],
+    "releaseApprovalIssued": false,
+    "summary": "No P0, P1 or P2 governance, commercial-boundary or offline-local-use finding remains in the inspected T35 scope. The exact RC bytes and current source satisfy T35 acceptance with the stated limits."
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "schema": "aeliqo.t35-external-observations.v1",
+  "observedAt": "2026-09-10T08:38:33Z",
+  "sourceRevision": "d7b48da0b9d3fc2c1ee48c8de7dd6edfaf11cb22",
+  "candidateVersion": "0.1.0-rc.1",
+  "repository": {
+    "url": "https://github.com/Arconath/aeliqo",
+    "public": true,
+    "archived": false,
+    "defaultBranch": "main",
+    "issuesEnabled": false,
+    "privateVulnerabilityReporting": true,
+    "remoteMainRevision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e"
+  },
+  "registry": {
+    "baseUrl": "https://registry.npmjs.org",
+    "version": "0.1.0-rc.1",
+    "packages": [
+      {"name": "@aeliqo/sdk-core", "httpStatus": 404, "state": "absent-at-observation"},
+      {"name": "@aeliqo/sdk-runtime", "httpStatus": 404, "state": "absent-at-observation"},
+      {"name": "@aeliqo/sdk-web", "httpStatus": 404, "state": "absent-at-observation"},
+      {"name": "@aeliqo/sdk-agent", "httpStatus": 404, "state": "absent-at-observation"},
+      {"name": "@aeliqo/sdk-devtools", "httpStatus": 404, "state": "absent-at-observation"},
+      {"name": "@aeliqo/sdk-react", "httpStatus": 404, "state": "absent-at-observation"}
+    ]
+  },
+  "productionWebsite": {
+    "url": "https://aeliqo.com/",
+    "httpStatus": 200,
+    "reportedRevision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e",
+    "browserMonitoringEnabled": true,
+    "googleAnalyticsEnabled": true,
+    "classification": "older-deployed-site-not-the-reviewed-candidate"
+  },
+  "reviewedSourceDefaults": {
+    "apps/site/public/browser-monitoring.json": {"enabled": false},
+    "apps/site/public/google-analytics.json": {"enabled": false}
+  },
+  "interpretation": [
+    "The local RC is not published and the reviewed rewrite is not the production site; this matches the source text that separates source, registry, and deployment states.",
+    "The older live site's telemetry settings are not evidence about the reviewed source defaults. The reviewed source and its local browser tests remain default-no-egress.",
+    "Registry absence is an observation at one time, not a reservation, publication approval, or guarantee that the version remains unused.",
+    "No registry, repository, site, support, or vulnerability-reporting state was mutated."
+  ]
+}

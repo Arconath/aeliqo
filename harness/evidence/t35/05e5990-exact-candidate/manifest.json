@@ -1,0 +1,84 @@
+{
+  "task": "T35",
+  "status": "complete-independent-governance-review",
+  "generatedAt": "2026-09-10T08:40:00Z",
+  "sourceRevision": "d7b48da0b9d3fc2c1ee48c8de7dd6edfaf11cb22",
+  "sourceDigest": "05e5990492994ecd9877454cc13be94e2bd9ebe17df1985725c139f971c1be10",
+  "sourceChangedDuringReview": false,
+  "candidate": {
+    "version": "0.1.0-rc.1",
+    "location": "artifacts/release-candidate",
+    "manifestSha256": "4fae71ca870fe63e9d4ca68dce4e3b074492f18e6eb0285de2c21f0d55d1707d",
+    "consumerSha256": "c4dfddced41488f2d218ebfea4816bbc1735be9577e1041636577bb492c61e2a",
+    "sbomSha256": "33959994a5d4ac91f4123c132d02093879ac03010db592047d39c7a252861b23",
+    "secretScanSha256": "f52c3db5fc96ecbadb1c5ca82af3e25e4466d61a2e877f865d38a862a7284fe5",
+    "packages": [
+      {"name": "@aeliqo/sdk-core", "file": "aeliqo-sdk-core-0.1.0-rc.1.tgz", "sha256": "6d33115ea2ef59550d9558f9933bb05c896224dc2b2a8f1aef10def782864d24", "bytes": 183756},
+      {"name": "@aeliqo/sdk-runtime", "file": "aeliqo-sdk-runtime-0.1.0-rc.1.tgz", "sha256": "e42c171c87134f643a3a3c832df0b6d955f54698427068564a4be56d55ebc71f", "bytes": 228551},
+      {"name": "@aeliqo/sdk-web", "file": "aeliqo-sdk-web-0.1.0-rc.1.tgz", "sha256": "861791671dd0c16ee7fe81e7f2bbed26d909c20dbe8fb662eea9a7444d9b1db6", "bytes": 407824},
+      {"name": "@aeliqo/sdk-agent", "file": "aeliqo-sdk-agent-0.1.0-rc.1.tgz", "sha256": "5e7a0501c74ebc61271854381c849c1c59489175af4cfcc27558cdf1214659e7", "bytes": 125813},
+      {"name": "@aeliqo/sdk-devtools", "file": "aeliqo-sdk-devtools-0.1.0-rc.1.tgz", "sha256": "9aa4e83a33824fea2b5975ad4f001b8a8c0268c39d2e447c39ba8a30edf7ba4c", "bytes": 21173},
+      {"name": "@aeliqo/sdk-react", "file": "aeliqo-sdk-react-0.1.0-rc.1.tgz", "sha256": "cfb8ae8bf6466188b4aaaddcf6e7f8fdef8a6e85414ec8d118bdda3d8a4c04cb", "bytes": 15235}
+    ]
+  },
+  "acceptance": {
+    "allPromisedOssCapabilitiesUsableOffline": "satisfied-sampled",
+    "commercialHypothesesNotRepresentedAsProvenSales": "satisfied",
+    "blockingFindings": []
+  },
+  "freshChecks": [
+    "Offline frozen workspace install reused 145 packages with zero downloads.",
+    "Bounded local audit tests passed 6/6.",
+    "Public-package notice/private-testkit boundary check passed.",
+    "Release-tooling tests passed 19/19.",
+    "Site build and browser governance/offline/no-egress tests passed 6/6.",
+    "Independent exact-candidate verifier passed for six archives, 130 strict public export specifiers, exact installed integrities, 63 SBOM components, canonical licenses/notices and selected runtime entry points under a ten-method network blocker with zero pre-control attempts."
+  ],
+  "artifacts": [
+    {"path": "candidate-audit.json", "sha256": "fe3b617b26704bdb97aa20777fb988ee922e074d4dbfbeddb25baa172b71523c"},
+    {"path": "checks.json", "sha256": "8d15662a1852c8cde909f28a44634977946d26c2706a4162f5b103b36dec32fc"},
+    {"path": "external-observations.json", "sha256": "a6becc7cacc4b8c01603b4b9d9764e47a068b26c48d965e26f0635462320735a"},
+    {"path": "independent-review.json", "sha256": "dc7046d7019e90e0e038157281fc4ce2f3bccd1a54713be379e301dad00c4da4"},
+    {"path": "verify-candidate.mjs", "sha256": "90214c6c0ec9c52f63b4e706e865bca60efa837bf3364789e28ffc608ba4461d"}
+  ],
+  "reviewedInputs": [
+    {"path": "MASTER-SOT.md", "sha256": "c94bf4578b58750493ef3357d8c9741f41a5fede74b97ca8b820112c3107f464"},
+    {"path": "README.md", "sha256": "428979e2daa28133d44352d00d1d11cfb1be7843230afa4b7901ab417e02a6f2"},
+    {"path": "docs/15-oss-business.md", "sha256": "03fce1133b20709db917391f6ee976fb35362f0989ee56b97a0bc26ee9e6b99c"},
+    {"path": "docs/business/oss-commercial-boundary.md", "sha256": "789deb2de9170ec38db6d2bc3859b414a0f71458762a006c5dd5e6b6ab026447"},
+    {"path": "docs/public/0.1.0-support-boundary.md", "sha256": "50b9586511bf5213163205e8f414bca5ee58f9b59a2e37b7e732013bb634ff9f"},
+    {"path": "SECURITY.md", "sha256": "fe3d6c1baaea1ad390cede80816dddfc83f1a632caf3d93a340d6cc4e4ed7e84"},
+    {"path": "SUPPORT.md", "sha256": "481068b56729ec84982aa2ead44a0b3c1864ccdfaddc4fa3831200bf0a17b3eb"},
+    {"path": "CONTRIBUTING.md", "sha256": "26c4a4da674639c3f3df4575db73860302cf4ed83a9e71ed4dd98fbca83058f0"},
+    {"path": "TRADEMARKS.md", "sha256": "e7ef8da971bb4ef53ba8dd44568aa1f6170a382a2207ac6909c514f7902c1785"},
+    {"path": "LICENSE", "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"},
+    {"path": "NOTICE", "sha256": "3b685bb536ef72b2063fb7450720cc2f6f79752dbc2ebd750a304508a553b69b"},
+    {"path": "apps/site/public/browser-monitoring.json", "sha256": "7187d1e8e2a4d61b1dc5dfedb22d703a462df21470e0c145365b20fb3ed467c3"},
+    {"path": "apps/site/public/google-analytics.json", "sha256": "7187d1e8e2a4d61b1dc5dfedb22d703a462df21470e0c145365b20fb3ed467c3"}
+  ],
+  "dependencyEvidence": [
+    {"task": "T27", "path": "harness/evidence/t27/3edaa47d2bb2/manifest.json", "sha256": "714b16dfd93142d3f1f4d89506843caa89f44703d6b4a50323b2cb93850cad16", "status": "done"},
+    {"task": "T32", "path": "harness/evidence/t32/05e5990-final-audit/manifest.json", "sha256": "fe41ba14e7a829bd46615e10a6e23ebdbbf93aa4367a92d098764ab2e61905ca", "status": "done"},
+    {"task": "T30", "path": "harness/evidence/t30/4f82c54-release-revalidation/manifest.json", "sha256": "64e436ec14817595c23451473213ef0975ffbb73e253812ca0564801068548db", "status": "done", "purpose": "same-source performance and no-default-network qualification cited by final T32 review"}
+  ],
+  "externalState": {
+    "registryRc1": "all-six-absent-at-observation",
+    "productionSite": "older-6b0c4f0-deployment",
+    "githubPrivateVulnerabilityReporting": "enabled",
+    "githubIssues": "disabled",
+    "releaseOrDeploymentClaim": false
+  },
+  "findings": {"p0": [], "p1": [], "p2": []},
+  "limitations": [
+    "T35 evidence approves the OSS governance/commercial boundary and sampled offline local behavior only; it does not approve or perform publication, deployment, stable promotion, provenance attestation or commercial launch.",
+    "Optional authenticated HTTP, MCP and BYOK/provider integrations intentionally require explicit host-authorized network effects.",
+    "Registry and production observations are time-bound; an absent RC identity is not reserved by this review.",
+    "Any later source, acceptance, build configuration, governance copy or candidate-byte change requires fresh review."
+  ],
+  "verdict": {
+    "decision": "approve-T35",
+    "recommendedTaskStatus": "done",
+    "releaseApprovalIssued": false,
+    "summary": "Exact candidate and source satisfy T35 acceptance with no P0, P1 or P2 finding in the inspected scope."
+  }
+}
