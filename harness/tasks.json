@@ -1232,7 +1232,7 @@
         "Documented actual hardware/browser workloads; p50/p95, bytes, geometry, DOM, memory and cleanup budgets pass.",
         "Measure cold/warm and user-perceived latency, network, model, DOM/layout/paint separately; no reference-model benchmark claimed as product."
       ],
-      "status": "planned",
+      "status": "done",
       "stage": "ready",
       "evidence": [
         {
@@ -1294,20 +1294,28 @@
         {
           "path": "harness/evidence/t30/a245c8f-final-revalidation/manifest.json",
           "sha256": "f16f0fcc90d3edf90a693c63870a47f77cee189ae5c0b2a355c1d687e662ddbc"
+        },
+        {
+          "path": "harness/evidence/t30/676db22-final-revalidation/manifest.json",
+          "sha256": "5e2873303f33a2aeaaf52314be508b8a493a135d0f290c06e75d8c5578ee6812"
+        },
+        {
+          "path": "harness/evidence/t30/676db22-final-revalidation-review/manifest.json",
+          "sha256": "3868442c558a09cf7021e8a3935877c4f385077b4042efbfa78c115b77d4ad43"
         }
       ],
-      "notes": "Reopened after the direct-name migration and public site/docs/playground revision. The retained a245c8f performance packet is immutable historical evidence, not qualification for the new source. Rerun runtime, browser, bundles, adverse, lifecycle, standalone, site and documentation-layout gates on the exact final source with independent review; preserve the prior P2 planner-headroom finding and all explicitly unclaimed environments.",
+      "notes": "Requalified on exact direct-name source cc7bf293/tree bf396bd3/digest 676db22. The contention-free Node 24.20/pnpm 11.24 author matrix passed two runtime repetitions, enforced Chromium, selected direct-name bundles, adverse, perceived-input, heap, standalone, site and two complete 71-route layout runs; independent review verified all indexed artifacts and limitations. Three nonblocking P2 follow-ups remain: planner timing headroom/variance, homepage shared-main growth after retaining the real evaluator, and portable retention of T30 consumer tarballs. Manual AT, lower-powered devices, cross-browser performance, field metrics, universal input-to-paint, backend/network capacity, model quality, publication and deployment are not claimed.",
       "review": {
         "status": "approved",
-        "author": "/root/fix_t29_visual_blockers plus prior T30 performance implementation authors",
-        "reviewer": "/root/fix_remaining_narrow_overflow",
+        "author": "/root/fix_remaining_narrow_overflow plus prior T30 implementation authors",
+        "reviewer": "/root/audit_direct_name_candidate",
         "artifacts": [
           {
-            "path": "harness/evidence/t30/a245c8f-final-revalidation-review/independent-review.json",
-            "sha256": "37b61d9b7a0b2ad75e02e3c625a0213bf85491712bfc51f5dbf6d6112d0de9c9"
+            "path": "harness/evidence/t30/676db22-final-revalidation-review/independent-review.json",
+            "sha256": "a1d556f1b712e4d19ff9a9d1bbcf965dccabb03e5a4b88872b27b29e2e83a006"
           }
         ],
-        "scope": "Approves exact final product source a245c8f/digest be201b performance qualification and bounded package/runtime measurements with a retained P2 planner-headroom follow-up and three P3 evidence-precision/environment disclosures. Excludes publication, lower-powered-device and cross-browser behavior, field Core Web Vitals, universal input-to-paint, backend/network capacity and model performance."
+        "scope": "Approves the exact final direct-name source cc7bf293/digest 676db22 performance qualification and bounded package/runtime measurements with three retained nonblocking P2 follow-ups: planner headroom, homepage shared-main growth and portable consumer-tarball retention. Excludes publication, lower-powered-device and cross-browser performance, field Core Web Vitals, universal input-to-paint, backend/network capacity, manual AT and model quality."
       }
     },
     {
