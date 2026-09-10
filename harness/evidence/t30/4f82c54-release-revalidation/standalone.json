@@ -1,0 +1,419 @@
+{
+  "schema": "aeliqo.performance.standalone.v1",
+  "sourceCommit": "4f82c548d4178f5c33151e39d7011fac93465308",
+  "mode": "functional-smoke",
+  "environment": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+    "platform": "MacIntel",
+    "language": "en-US",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "devicePixelRatio": 1,
+    "hardwareConcurrency": 12
+  },
+  "fixture": {
+    "rowCount": 100,
+    "controlValue": "ready",
+    "entrypoint": "@aeliqo/sdk-web/input + @aeliqo/sdk-web/table"
+  },
+  "moduleGraph": {
+    "schema": "aeliqo.performance.standalone.retained-modules.v1",
+    "entryModules": [
+      "/private/tmp/aeliqo-t30-release-4f82c54/tests/performance/standalone.html"
+    ],
+    "retainedModules": [
+      "/private/tmp/aeliqo-t30-release-4f82c54/node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/css-tag.js",
+      "/private/tmp/aeliqo-t30-release-4f82c54/node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/reactive-element.js",
+      "/private/tmp/aeliqo-t30-release-4f82c54/node_modules/.pnpm/lit-element@4.2.2/node_modules/lit-element/lit-element.js",
+      "/private/tmp/aeliqo-t30-release-4f82c54/node_modules/.pnpm/lit-html@3.3.3/node_modules/lit-html/lit-html.js",
+      "/private/tmp/aeliqo-t30-release-4f82c54/node_modules/.pnpm/lit@3.3.3/node_modules/lit/index.js",
+      "/private/tmp/aeliqo-t30-release-4f82c54/packages/core/dist/contracts/limits.js",
+      "/private/tmp/aeliqo-t30-release-4f82c54/packages/core/dist/contracts/scalars.js",
+      "/private/tmp/aeliqo-t30-release-4f82c54/packages/web/dist/data/events.js",
+      "/private/tmp/aeliqo-t30-release-4f82c54/packages/web/dist/data/shared.js",
+      "/private/tmp/aeliqo-t30-release-4f82c54/packages/web/dist/elements/aeliqo-input.js",
+      "/private/tmp/aeliqo-t30-release-4f82c54/packages/web/dist/elements/aeliqo-table.js",
+      "/private/tmp/aeliqo-t30-release-4f82c54/packages/web/dist/events.js",
+      "/private/tmp/aeliqo-t30-release-4f82c54/packages/web/dist/foundation/base.js",
+      "/private/tmp/aeliqo-t30-release-4f82c54/packages/web/dist/input/base.js",
+      "/private/tmp/aeliqo-t30-release-4f82c54/packages/web/dist/input/events.js",
+      "/private/tmp/aeliqo-t30-release-4f82c54/packages/web/dist/input/text-control.js",
+      "/private/tmp/aeliqo-t30-release-4f82c54/packages/web/dist/input/text-field.js",
+      "/private/tmp/aeliqo-t30-release-4f82c54/packages/web/dist/styles/theme.js",
+      "/private/tmp/aeliqo-t30-release-4f82c54/packages/web/dist/styles/tokens.js",
+      "/private/tmp/aeliqo-t30-release-4f82c54/tests/performance/standalone.html",
+      "/private/tmp/aeliqo-t30-release-4f82c54/tests/performance/standalone.ts",
+      "vite/modulepreload-polyfill.js"
+    ],
+    "forbiddenModules": []
+  },
+  "cold": {
+    "label": "cold-cache-disabled-fresh-context",
+    "sampleCount": 1,
+    "samples": [
+      {
+        "index": 1,
+        "condition": {
+          "cache": "disabled",
+          "cacheCleared": true,
+          "cacheDisabled": true,
+          "freshContext": true,
+          "sameContextAsWarmup": false
+        },
+        "observation": {
+          "environment": {
+            "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+            "platform": "MacIntel",
+            "language": "en-US",
+            "viewport": {
+              "width": 1280,
+              "height": 720
+            },
+            "devicePixelRatio": 1,
+            "hardwareConcurrency": 12
+          },
+          "fixture": {
+            "rowCount": 100,
+            "renderedRows": 100,
+            "controlValue": "ready",
+            "inputPresent": true,
+            "tablePresent": true
+          },
+          "timing": {
+            "navigation": {
+              "name": "http://127.0.0.1:51595/tests/performance/standalone.html",
+              "type": "navigate",
+              "startTime": 0,
+              "duration": 13.299999997019768,
+              "domInteractive": 5.0999999940395355,
+              "domContentLoadedEventEnd": 12.700000002980232,
+              "loadEventEnd": 13.299999997019768,
+              "transferSize": 1178,
+              "encodedBodySize": 878,
+              "decodedBodySize": 878
+            },
+            "resources": [
+              {
+                "name": "http://127.0.0.1:51595/assets/standalone-mB1x3U-0.js",
+                "initiatorType": "script",
+                "startTime": 3.7000000029802322,
+                "duration": 2.7999999970197678,
+                "transferSize": 19288,
+                "encodedBodySize": 18988,
+                "decodedBodySize": 65753
+              }
+            ],
+            "paints": [
+              {
+                "name": "first-paint",
+                "startTime": 16,
+                "duration": 0
+              },
+              {
+                "name": "first-contentful-paint",
+                "startTime": 16,
+                "duration": 0
+              }
+            ],
+            "fixtureReadyMs": 12.599999994039536
+          },
+          "resourceBytes": {
+            "totalTransferBytes": 19288,
+            "totalEncodedBytes": 18988,
+            "totalDecodedBytes": 65753,
+            "javascriptTransferBytes": 19288,
+            "javascriptEncodedBytes": 18988,
+            "javascriptDecodedBytes": 65753,
+            "resourceCount": 1,
+            "javascriptResourceCount": 1,
+            "cachedResourceCount": 0,
+            "cachedJavascriptResourceCount": 0,
+            "resourceTimingUnavailableCount": 0,
+            "javascriptResourceTimingUnavailableCount": 0
+          }
+        },
+        "network": {
+          "responses": [
+            {
+              "requestId": "A4CA89254C89999B10FFA3EB9D42DAFB",
+              "url": "http://127.0.0.1:51595/tests/performance/standalone.html",
+              "status": 200,
+              "fromDiskCache": false,
+              "fromServiceWorker": false
+            },
+            {
+              "requestId": "99755.2",
+              "url": "http://127.0.0.1:51595/assets/standalone-mB1x3U-0.js",
+              "status": 200,
+              "fromDiskCache": false,
+              "fromServiceWorker": false
+            }
+          ],
+          "extraInfo": [
+            {
+              "requestId": "A4CA89254C89999B10FFA3EB9D42DAFB",
+              "statusCode": 200
+            },
+            {
+              "requestId": "99755.2",
+              "statusCode": 200
+            }
+          ]
+        }
+      }
+    ],
+    "summary": {
+      "sampleCount": 1,
+      "domContentLoadedEventEndMs": {
+        "p50": 12.700000002980232,
+        "p95": 12.700000002980232,
+        "availableCount": 1,
+        "unavailableCount": 0,
+        "observed": [
+          12.700000002980232
+        ]
+      },
+      "fixtureReadyMs": {
+        "p50": 12.599999994039536,
+        "p95": 12.599999994039536,
+        "availableCount": 1,
+        "unavailableCount": 0,
+        "observed": [
+          12.599999994039536
+        ]
+      },
+      "firstContentfulPaintMs": {
+        "p50": 16,
+        "p95": 16,
+        "availableCount": 1,
+        "unavailableCount": 0,
+        "observed": [
+          16
+        ]
+      }
+    }
+  },
+  "warm": {
+    "label": "warm-cache-enabled-same-context-after-warmup",
+    "warmup": {
+      "environment": {
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+        "platform": "MacIntel",
+        "language": "en-US",
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "devicePixelRatio": 1,
+        "hardwareConcurrency": 12
+      },
+      "fixture": {
+        "rowCount": 100,
+        "renderedRows": 100,
+        "controlValue": "ready",
+        "inputPresent": true,
+        "tablePresent": true
+      },
+      "timing": {
+        "navigation": {
+          "name": "http://127.0.0.1:51595/tests/performance/standalone.html",
+          "type": "navigate",
+          "startTime": 0,
+          "duration": 12.400000005960464,
+          "domInteractive": 4.299999997019768,
+          "domContentLoadedEventEnd": 11.799999997019768,
+          "loadEventEnd": 12.400000005960464,
+          "transferSize": 1178,
+          "encodedBodySize": 878,
+          "decodedBodySize": 878
+        },
+        "resources": [
+          {
+            "name": "http://127.0.0.1:51595/assets/standalone-mB1x3U-0.js",
+            "initiatorType": "script",
+            "startTime": 2.7000000029802322,
+            "duration": 3.5999999940395355,
+            "transferSize": 19288,
+            "encodedBodySize": 18988,
+            "decodedBodySize": 65753
+          }
+        ],
+        "paints": [
+          {
+            "name": "first-paint",
+            "startTime": 12,
+            "duration": 0
+          },
+          {
+            "name": "first-contentful-paint",
+            "startTime": 12,
+            "duration": 0
+          }
+        ],
+        "fixtureReadyMs": 11.700000002980232
+      },
+      "resourceBytes": {
+        "totalTransferBytes": 19288,
+        "totalEncodedBytes": 18988,
+        "totalDecodedBytes": 65753,
+        "javascriptTransferBytes": 19288,
+        "javascriptEncodedBytes": 18988,
+        "javascriptDecodedBytes": 65753,
+        "resourceCount": 1,
+        "javascriptResourceCount": 1,
+        "cachedResourceCount": 0,
+        "cachedJavascriptResourceCount": 0,
+        "resourceTimingUnavailableCount": 0,
+        "javascriptResourceTimingUnavailableCount": 0
+      }
+    },
+    "sampleCount": 1,
+    "samples": [
+      {
+        "index": 1,
+        "condition": {
+          "cache": "enabled",
+          "cacheCleared": false,
+          "cacheDisabled": false,
+          "freshContext": false,
+          "sameContextAsWarmup": true
+        },
+        "observation": {
+          "environment": {
+            "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+            "platform": "MacIntel",
+            "language": "en-US",
+            "viewport": {
+              "width": 1280,
+              "height": 720
+            },
+            "devicePixelRatio": 1,
+            "hardwareConcurrency": 12
+          },
+          "fixture": {
+            "rowCount": 100,
+            "renderedRows": 100,
+            "controlValue": "ready",
+            "inputPresent": true,
+            "tablePresent": true
+          },
+          "timing": {
+            "navigation": {
+              "name": "http://127.0.0.1:51595/tests/performance/standalone.html",
+              "type": "reload",
+              "startTime": 0,
+              "duration": 7,
+              "domInteractive": 4,
+              "domContentLoadedEventEnd": 6.5,
+              "loadEventEnd": 7,
+              "transferSize": 300,
+              "encodedBodySize": 878,
+              "decodedBodySize": 878
+            },
+            "resources": [
+              {
+                "name": "http://127.0.0.1:51595/assets/standalone-mB1x3U-0.js",
+                "initiatorType": "script",
+                "startTime": 3,
+                "duration": 0.7000000029802322,
+                "transferSize": 300,
+                "encodedBodySize": 0,
+                "decodedBodySize": 0
+              }
+            ],
+            "paints": [],
+            "fixtureReadyMs": 6.5
+          },
+          "resourceBytes": {
+            "totalTransferBytes": 300,
+            "totalEncodedBytes": 0,
+            "totalDecodedBytes": 0,
+            "javascriptTransferBytes": 300,
+            "javascriptEncodedBytes": 0,
+            "javascriptDecodedBytes": 0,
+            "resourceCount": 1,
+            "javascriptResourceCount": 1,
+            "cachedResourceCount": 0,
+            "cachedJavascriptResourceCount": 0,
+            "resourceTimingUnavailableCount": 0,
+            "javascriptResourceTimingUnavailableCount": 0
+          }
+        },
+        "network": {
+          "responses": [
+            {
+              "requestId": "76615B3C14022AAA7FCE1C4003A86CA7",
+              "url": "http://127.0.0.1:51595/tests/performance/standalone.html",
+              "status": 200,
+              "fromDiskCache": false,
+              "fromServiceWorker": false
+            },
+            {
+              "requestId": "99756.5",
+              "url": "http://127.0.0.1:51595/assets/standalone-mB1x3U-0.js",
+              "status": 304,
+              "fromDiskCache": false,
+              "fromServiceWorker": false
+            }
+          ],
+          "extraInfo": [
+            {
+              "requestId": "76615B3C14022AAA7FCE1C4003A86CA7",
+              "statusCode": 304
+            },
+            {
+              "requestId": "99756.5",
+              "statusCode": 304
+            }
+          ]
+        }
+      }
+    ],
+    "summary": {
+      "sampleCount": 1,
+      "domContentLoadedEventEndMs": {
+        "p50": 6.5,
+        "p95": 6.5,
+        "availableCount": 1,
+        "unavailableCount": 0,
+        "observed": [
+          6.5
+        ]
+      },
+      "fixtureReadyMs": {
+        "p50": 6.5,
+        "p95": 6.5,
+        "availableCount": 1,
+        "unavailableCount": 0,
+        "observed": [
+          6.5
+        ]
+      },
+      "firstContentfulPaintMs": {
+        "p50": null,
+        "p95": null,
+        "availableCount": 0,
+        "unavailableCount": 1,
+        "observed": []
+      }
+    },
+    "cacheEvidence": {
+      "criterion": "Separate ResourceTiming zero-transfer JS hits, CDP disk-cache responses, and actual matching CDP ExtraInfo 304 statuses",
+      "sampleCount": 1,
+      "hitSampleCount": 0,
+      "diskCacheSampleCount": 0,
+      "revalidatedSampleCount": 1,
+      "status": "observed",
+      "note": "Revalidation still incurs a request; it is reported separately from zero-transfer and disk-cache hits. Incomplete means the run exposed no qualifying cache evidence."
+    }
+  },
+  "notes": [
+    "Cold samples use a new browser context and page, clear the Chromium browser cache through CDP, and disable the network cache for the navigation.",
+    "Warm samples perform one warmup navigation, then 1 reload in one context with the browser cache enabled; ResourceTiming transferSize and encodedBodySize are retained for cache-hit evidence.",
+    "Fixture-ready is measured after Lit updateComplete and is not a paint measurement; first-contentful-paint is reported only when the browser exposes a paint timing entry.",
+    "Timing summaries and cache evidence are diagnostic observations for this run; they are not performance-budget qualification.",
+    "These observations cover this standalone 100-row input/table fixture only. They do not claim input-to-paint, whole-site, or lower-powered-device performance."
+  ]
+}

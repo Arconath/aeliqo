@@ -1,0 +1,5195 @@
+{
+  "routeCount": 71,
+  "routes": [
+    {
+      "route": "/docs/components/foundation.button/",
+      "component": "button",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 386
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 386
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/foundation.button/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/foundation.icon-button/",
+      "component": "icon-button",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1506.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1627.640625,
+          "width": 832,
+          "height": 343
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1506.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1627.640625,
+          "width": 832,
+          "height": 343
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/foundation.icon-button/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/foundation.link/",
+      "component": "link",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 214
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 214
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/foundation.link/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/foundation.text/",
+      "component": "text",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1506.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1627.640625,
+          "width": 832,
+          "height": 171
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1506.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1627.640625,
+          "width": 832,
+          "height": 171
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/foundation.text/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/foundation.heading/",
+      "component": "heading",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1476.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1597.640625,
+          "width": 832,
+          "height": 171
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1476.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1597.640625,
+          "width": 832,
+          "height": 171
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/foundation.heading/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/foundation.badge/",
+      "component": "badge",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1476.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1597.640625,
+          "width": 832,
+          "height": 128
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1476.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1597.640625,
+          "width": 832,
+          "height": 128
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/foundation.badge/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/foundation.avatar/",
+      "component": "avatar",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1476.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1597.640625,
+          "width": 832,
+          "height": 257
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1476.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1597.640625,
+          "width": 832,
+          "height": 257
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/foundation.avatar/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/foundation.separator/",
+      "component": "separator",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1476.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1597.640625,
+          "width": 832,
+          "height": 128
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1476.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1597.640625,
+          "width": 832,
+          "height": 128
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/foundation.separator/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/foundation.surface/",
+      "component": "surface",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1506.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1627.640625,
+          "width": 832,
+          "height": 214
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1506.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1627.640625,
+          "width": 832,
+          "height": 214
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/foundation.surface/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/foundation.stack/",
+      "component": "stack",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1476.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1597.640625,
+          "width": 832,
+          "height": 257
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1476.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1597.640625,
+          "width": 832,
+          "height": 257
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/foundation.stack/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/foundation.grid/",
+      "component": "grid",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1476.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1597.640625,
+          "width": 832,
+          "height": 171
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1476.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1597.640625,
+          "width": 832,
+          "height": 171
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/foundation.grid/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/foundation.split-pane/",
+      "component": "split-pane",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 472
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 472
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/foundation.split-pane/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/foundation.scroll-area/",
+      "component": "scroll-area",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1500.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1621.640625,
+          "width": 832,
+          "height": 171
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1500.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1621.640625,
+          "width": 832,
+          "height": 171
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/foundation.scroll-area/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/input.text-field/",
+      "component": "text-field",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 988
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 988
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/input.text-field/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/input.text-area/",
+      "component": "text-area",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 988
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 988
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/input.text-area/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/input.number-field/",
+      "component": "number-field",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 859
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 859
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/input.number-field/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/input.checkbox/",
+      "component": "checkbox",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 730
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 730
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/input.checkbox/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/input.radio-group/",
+      "component": "radio-group",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 336
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1516.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1637.640625,
+          "width": 832,
+          "height": 730
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 336
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1516.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1637.640625,
+          "width": 832,
+          "height": 730
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/input.radio-group/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/input.switch/",
+      "component": "switch",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 730
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 730
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/input.switch/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/input.select/",
+      "component": "select",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 773
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 773
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/input.select/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/input.combobox/",
+      "component": "combobox",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 902
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 902
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/input.combobox/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/input.date-field/",
+      "component": "date-field",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 773
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 773
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/input.date-field/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/input.date-range/",
+      "component": "date-range",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 859
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 859
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/input.date-range/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/input.slider/",
+      "component": "slider",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 816
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 816
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/input.slider/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/input.search-field/",
+      "component": "search-field",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1500.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1621.640625,
+          "width": 832,
+          "height": 1074
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1500.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1621.640625,
+          "width": 832,
+          "height": 1074
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/input.search-field/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/input.file-input/",
+      "component": "file-input",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 816
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 816
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/input.file-input/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/input.field-group/",
+      "component": "field-group",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1500.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1621.640625,
+          "width": 832,
+          "height": 214
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1500.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1621.640625,
+          "width": 832,
+          "height": 214
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/input.field-group/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/input.form/",
+      "component": "form",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 128
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 128
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/input.form/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/navigation.tabs/",
+      "component": "tabs",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 300
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 300
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/navigation.tabs/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/navigation.breadcrumb/",
+      "component": "breadcrumb",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1476.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1597.640625,
+          "width": 832,
+          "height": 128
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1476.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1597.640625,
+          "width": 832,
+          "height": 128
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/navigation.breadcrumb/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/navigation.pagination/",
+      "component": "pagination",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 300
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 300
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/navigation.pagination/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/navigation.menu/",
+      "component": "menu",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1506.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1627.640625,
+          "width": 832,
+          "height": 171
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1506.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1627.640625,
+          "width": 832,
+          "height": 171
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/navigation.menu/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/navigation.tree-nav/",
+      "component": "tree-nav",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 352
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1538.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1659.640625,
+          "width": 832,
+          "height": 214
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 352
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1538.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1659.640625,
+          "width": 832,
+          "height": 214
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/navigation.tree-nav/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/feedback.tooltip/",
+      "component": "tooltip",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 171
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 171
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/feedback.tooltip/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/feedback.popover/",
+      "component": "popover",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 257
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 257
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/feedback.popover/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/feedback.dialog/",
+      "component": "dialog",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1500.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1621.640625,
+          "width": 832,
+          "height": 214
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1500.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1621.640625,
+          "width": 832,
+          "height": 214
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/feedback.dialog/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/feedback.drawer/",
+      "component": "drawer",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 214
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 214
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/feedback.drawer/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/feedback.toast/",
+      "component": "toast",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 257
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 257
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/feedback.toast/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/feedback.alert/",
+      "component": "alert",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1500.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1621.640625,
+          "width": 832,
+          "height": 300
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1500.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1621.640625,
+          "width": 832,
+          "height": 300
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/feedback.alert/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/feedback.progress/",
+      "component": "progress",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 171
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 171
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/feedback.progress/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/feedback.skeleton/",
+      "component": "skeleton",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1500.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1621.640625,
+          "width": 832,
+          "height": 214
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1500.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1621.640625,
+          "width": 832,
+          "height": 214
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/feedback.skeleton/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/feedback.empty-state/",
+      "component": "empty-state",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1500.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1621.640625,
+          "width": 832,
+          "height": 214
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1500.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1621.640625,
+          "width": 832,
+          "height": 214
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/feedback.empty-state/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/data.metric/",
+      "component": "metric",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1500.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1621.640625,
+          "width": 832,
+          "height": 472
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1500.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1621.640625,
+          "width": 832,
+          "height": 472
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/data.metric/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/data.delta/",
+      "component": "delta",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 429
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 429
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/data.delta/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/data.key-value/",
+      "component": "key-value",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1500.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1621.640625,
+          "width": 832,
+          "height": 214
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1500.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1621.640625,
+          "width": 832,
+          "height": 214
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/data.key-value/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/data.detail/",
+      "component": "detail",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 336
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1546.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1667.640625,
+          "width": 832,
+          "height": 429
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 336
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1546.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1667.640625,
+          "width": 832,
+          "height": 429
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/data.detail/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/data.record-list/",
+      "component": "record-list",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 464
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1644.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1765.640625,
+          "width": 832,
+          "height": 558
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 464
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1644.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1765.640625,
+          "width": 832,
+          "height": 558
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/data.record-list/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/data.card-collection/",
+      "component": "card-collection",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 912
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2122.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2243.640625,
+          "width": 832,
+          "height": 687
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 912
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2122.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2243.640625,
+          "width": 832,
+          "height": 687
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/data.card-collection/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/data.table/",
+      "component": "table",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 384
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1594.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1715.640625,
+          "width": 832,
+          "height": 945
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 384
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1594.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1715.640625,
+          "width": 832,
+          "height": 945
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/data.table/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/data.filter-builder/",
+      "component": "filter-builder",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 336
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1546.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1667.640625,
+          "width": 832,
+          "height": 515
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 336
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1546.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1667.640625,
+          "width": 832,
+          "height": 515
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/data.filter-builder/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/data.selection-summary/",
+      "component": "selection-summary",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 429
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 320
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 1530.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 1651.640625,
+          "width": 832,
+          "height": 429
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/data.selection-summary/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/visualization.trend/",
+      "component": "trend",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 912
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2092.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2213.640625,
+          "width": 832,
+          "height": 472
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 912
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2092.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2213.640625,
+          "width": 832,
+          "height": 472
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/visualization.trend/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/visualization.bar/",
+      "component": "bar",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 944
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2154.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2275.640625,
+          "width": 832,
+          "height": 472
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 944
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2154.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2275.640625,
+          "width": 832,
+          "height": 472
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/visualization.bar/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/visualization.area/",
+      "component": "area",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 912
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2122.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2243.640625,
+          "width": 832,
+          "height": 472
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 912
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2122.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2243.640625,
+          "width": 832,
+          "height": 472
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/visualization.area/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/visualization.scatter/",
+      "component": "scatter",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 912
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2122.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2243.640625,
+          "width": 832,
+          "height": 472
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 912
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2122.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2243.640625,
+          "width": 832,
+          "height": 472
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/visualization.scatter/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/visualization.histogram/",
+      "component": "histogram",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 944
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2124.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2245.640625,
+          "width": 832,
+          "height": 472
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 944
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2124.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2245.640625,
+          "width": 832,
+          "height": 472
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/visualization.histogram/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/visualization.heatmap/",
+      "component": "heatmap",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 960
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2170.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2291.640625,
+          "width": 832,
+          "height": 472
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 960
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2170.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2291.640625,
+          "width": 832,
+          "height": 472
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/visualization.heatmap/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/visualization.matrix/",
+      "component": "matrix",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 896
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2106.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2227.640625,
+          "width": 832,
+          "height": 429
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 896
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2106.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2227.640625,
+          "width": 832,
+          "height": 429
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/visualization.matrix/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/visualization.relationship/",
+      "component": "relationship",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 896
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2106.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2227.640625,
+          "width": 832,
+          "height": 429
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 896
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2106.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2227.640625,
+          "width": 832,
+          "height": 429
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/visualization.relationship/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/visualization.tree/",
+      "component": "tree",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 896
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2106.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2227.640625,
+          "width": 832,
+          "height": 429
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 896
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2106.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2227.640625,
+          "width": 832,
+          "height": 429
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/visualization.tree/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/visualization.treemap/",
+      "component": "treemap",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 896
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2076.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2197.640625,
+          "width": 832,
+          "height": 429
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 896
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2076.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2197.640625,
+          "width": 832,
+          "height": 429
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/visualization.treemap/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/visualization.timeline/",
+      "component": "timeline",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 896
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2106.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2227.640625,
+          "width": 832,
+          "height": 429
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 896
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2106.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2227.640625,
+          "width": 832,
+          "height": 429
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/visualization.timeline/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/visualization.calendar-grid/",
+      "component": "calendar-grid",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 896
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2106.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2227.640625,
+          "width": 832,
+          "height": 429
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 896
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2106.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2227.640625,
+          "width": 832,
+          "height": 429
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/visualization.calendar-grid/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/compound.explorer/",
+      "component": "explorer",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 928
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2132.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2253.640625,
+          "width": 832,
+          "height": 816
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 928
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2132.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2253.640625,
+          "width": 832,
+          "height": 816
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/compound.explorer/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/compound.comparison/",
+      "component": "comparison",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 928
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2138.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2259.640625,
+          "width": 832,
+          "height": 558
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 928
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2138.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2259.640625,
+          "width": 832,
+          "height": 558
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/compound.comparison/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/compound.breakdown/",
+      "component": "breakdown",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 928
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2138.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2259.640625,
+          "width": 832,
+          "height": 601
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 928
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2138.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2259.640625,
+          "width": 832,
+          "height": 601
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/compound.breakdown/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/compound.investigation/",
+      "component": "investigation",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 1424
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2628.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2749.640625,
+          "width": 832,
+          "height": 816
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 311.0625,
+          "width": 832,
+          "height": 1424
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2628.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2749.640625,
+          "width": 832,
+          "height": 816
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/compound.investigation/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/compound.search-results/",
+      "component": "search-results",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 928
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2138.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2259.640625,
+          "width": 832,
+          "height": 730
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 928
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2138.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2259.640625,
+          "width": 832,
+          "height": 730
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/compound.search-results/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/compound.record-editor/",
+      "component": "record-editor",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 928
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2138.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2259.640625,
+          "width": 832,
+          "height": 515
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 928
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2138.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2259.640625,
+          "width": 832,
+          "height": 515
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/compound.record-editor/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/compound.form-flow/",
+      "component": "form-flow",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 928
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2138.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2259.640625,
+          "width": 832,
+          "height": 472
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 928
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2138.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2259.640625,
+          "width": 832,
+          "height": 472
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/compound.form-flow/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    },
+    {
+      "route": "/docs/components/compound.quality-panel/",
+      "component": "quality-panel",
+      "noScript": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 928
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2138.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2259.640625,
+          "width": 832,
+          "height": 429
+        }
+      },
+      "hydrated": {
+        "sidebarVersion": {
+          "x": 51.1875,
+          "y": 212,
+          "width": 240,
+          "height": 71.390625
+        },
+        "sidebarNavigation": {
+          "x": 51.1875,
+          "y": 350.390625,
+          "width": 240,
+          "height": 371.34375
+        },
+        "componentPreview": {
+          "x": 355.1875,
+          "y": 341.0625,
+          "width": 832,
+          "height": 928
+        },
+        "propertiesHeading": {
+          "x": 355.1875,
+          "y": 2138.84375,
+          "width": 832,
+          "height": 40.796875
+        },
+        "apiTable": {
+          "x": 355.1875,
+          "y": 2259.640625,
+          "width": 832,
+          "height": 429
+        }
+      },
+      "layoutObservation": {
+        "route": "/docs/components/compound.quality-panel/",
+        "entries": []
+      },
+      "hydrationLayoutShiftValue": 0
+    }
+  ],
+  "layoutShiftBudget": 0.1,
+  "claims": [
+    "All 71 generated component routes were checked with JavaScript disabled for readable fallback content, disabled search/copy controls, and expected-result content under the data-component-preview contract.",
+    "Every route compares no-JavaScript and hydrated sentinel boxes for x, y, width, and height, including the preview shell, properties heading, and API table; the comparison is independent of PerformanceObserver entries.",
+    "The browser PerformanceObserver records layout-shift entries during each controlled JavaScript hydration navigation, retaining source selectors and summing all entries without recent input against a 0.1 per-route observation budget; this is not a p75 field CLS claim.",
+    "The data.table route grants clipboard permissions and verifies successful copy status plus clipboard contents."
+  ]
+}

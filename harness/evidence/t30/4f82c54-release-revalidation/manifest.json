@@ -1,0 +1,402 @@
+{
+  "task": "T30",
+  "status": "qualification-complete",
+  "generatedAt": "2026-09-10T07:50:39Z",
+  "sourceCommit": "4f82c548d4178f5c33151e39d7011fac93465308",
+  "sourceDigest": "05e5990492994ecd9877454cc13be94e2bd9ebe17df1985725c139f971c1be10",
+  "scope": "Fresh same-source performance qualification after the reviewed wide-chart geometry fix and bounded local audit/governance slice. No measurements or rows were reused from earlier candidates.",
+  "environment": {
+    "os": "macOS 26.6.2 (25G83)",
+    "kernelRelease": "25.6.0",
+    "node": "v24.20.0",
+    "pnpm": "11.24.0",
+    "typescript": "7.0.2",
+    "vite": "8.2.2",
+    "playwright": "1.63.0",
+    "browser": "Chromium 153.0.8010.12",
+    "cpu": "Apple M4 Pro",
+    "logicalCpuCount": 12,
+    "memoryBytes": 25769803776
+  },
+  "checks": [
+    {
+      "command": "pnpm lint",
+      "status": "pass"
+    },
+    {
+      "command": "pnpm exec tsc -p tests/performance/tsconfig.json --noEmit",
+      "status": "pass"
+    },
+    {
+      "command": "AELIQO_PERFORMANCE_OUTPUT=artifacts/t30-4f82c54/runtime pnpm test:performance:runtime",
+      "status": "pass"
+    },
+    {
+      "command": "pnpm test:performance:browser",
+      "status": "pass",
+      "tests": 2
+    },
+    {
+      "command": "pnpm test:performance:bundles",
+      "status": "pass",
+      "rows": 6
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=4f82c548d4178f5c33151e39d7011fac93465308 AELIQO_ADVERSE_RUNTIME_OUTPUT=artifacts/t30-4f82c54/adverse-runtime.json pnpm test:performance:adverse-runtime",
+      "status": "pass",
+      "tests": 1
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=4f82c548d4178f5c33151e39d7011fac93465308 pnpm test:performance:adverse-visualization",
+      "status": "pass",
+      "tests": 1
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=4f82c548d4178f5c33151e39d7011fac93465308 AELIQO_RUN_PERFORMANCE=1 pnpm test:performance:perceived-input",
+      "status": "pass",
+      "tests": 2
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=4f82c548d4178f5c33151e39d7011fac93465308 AELIQO_RUN_HEAP_LIFECYCLE=1 pnpm test:performance:heap-lifecycle",
+      "status": "pass",
+      "tests": 1,
+      "cycles": 100
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=4f82c548d4178f5c33151e39d7011fac93465308 pnpm test:performance:standalone",
+      "status": "pass",
+      "tests": 1
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=4f82c548d4178f5c33151e39d7011fac93465308 pnpm test:performance:site-page",
+      "status": "pass",
+      "tests": 1,
+      "routes": 3
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=4f82c548d4178f5c33151e39d7011fac93465308 pnpm test:site:document-layout",
+      "status": "pass",
+      "tests": 1,
+      "routes": 71
+    }
+  ],
+  "measurements": {
+    "nodeRuntime": {
+      "workload": {
+        "rows": 10000,
+        "rowFields": 100,
+        "views": 30,
+        "candidateCount": 64,
+        "expansions": 64,
+        "nodes": 31
+      },
+      "first": {
+        "samples": 10,
+        "p50Ms": 112.88887500000004,
+        "p95Ms": 153.437166
+      },
+      "subsequent": {
+        "samples": 30,
+        "p50Ms": 96.40666599999986,
+        "p95Ms": 108.428042
+      },
+      "plannerDurationsP95Ms": 13.000792000000274,
+      "plannerBudgetMs": 16,
+      "targetedReducerDispatchP95Ms": 0.12033400000018446,
+      "targetedReducerBudgetMs": 4,
+      "cleanup": {
+        "cycles": 100,
+        "retainedHandles": 0,
+        "liveRegions": 0,
+        "openObservers": 0
+      }
+    },
+    "browserRuntime": {
+      "small": {
+        "rows": 100,
+        "mountedRows": 100,
+        "firstSamples": 10,
+        "firstP50Ms": 0.7999999970197678,
+        "firstP95Ms": 4.199999988079071,
+        "subsequentSamples": 30,
+        "subsequentP50Ms": 0.6000000089406967,
+        "subsequentP95Ms": 1.5
+      },
+      "medium": {
+        "rows": 10000,
+        "rowFields": 100,
+        "views": 30,
+        "virtualRows": 1320,
+        "firstSamples": 10,
+        "firstP50Ms": 139.69999998807907,
+        "firstP95Ms": 178.8999999910593,
+        "subsequentSamples": 30,
+        "subsequentP50Ms": 137,
+        "subsequentP95Ms": 152.6000000089407
+      },
+      "largeWindow": {
+        "declaredPopulationRows": 1000000,
+        "requestedRows": 100,
+        "transferredRows": 100,
+        "executedRows": 100,
+        "examinedRows": 100,
+        "mountedRows": 44,
+        "maxMountedRows": 100,
+        "geometryWidth": 1248,
+        "responseBodyBytes": 5888,
+        "firstP50Ms": 1,
+        "firstP95Ms": 3.4000000059604645,
+        "subsequentP50Ms": 0.7999999970197678,
+        "subsequentP95Ms": 1
+      },
+      "presentationPlannerP95Ms": 10.099999994039536,
+      "targetedReducerDispatchP95Ms": 0.20000000298023224,
+      "cleanup": {
+        "cycles": 100,
+        "activeListeners": 0,
+        "remainingElements": 0,
+        "retainedHandles": 0,
+        "liveRegions": 0,
+        "openObservers": 0,
+        "heapDeltaBytes": 0
+      },
+      "trace": {
+        "events": 112293,
+        "scriptP50Ms": 0.002,
+        "scriptP95Ms": 0.011,
+        "layoutP50Ms": 0.016,
+        "layoutP95Ms": 3.004,
+        "paintP50Ms": 0.001,
+        "paintP95Ms": 0.02,
+        "compositeLayerEvents": 0
+      }
+    },
+    "bundles": [
+      {
+        "id": "button",
+        "gzipBytesExcludingLit": 3346,
+        "budgetBytes": 15360
+      },
+      {
+        "id": "input",
+        "gzipBytesExcludingLit": 6187,
+        "budgetBytes": 15360
+      },
+      {
+        "id": "metric",
+        "gzipBytesExcludingLit": 3444,
+        "budgetBytes": 15360
+      },
+      {
+        "id": "table",
+        "gzipBytesExcludingLit": 8280,
+        "budgetBytes": 40960
+      },
+      {
+        "id": "core-planner-validation",
+        "gzipBytesTotal": 54625,
+        "budgetBytes": 71680
+      },
+      {
+        "id": "region-table",
+        "gzipBytesTotal": 143754,
+        "budgetBytes": 163840
+      }
+    ],
+    "adverseRuntime": {
+      "elapsedMs": 21.240792000000006,
+      "supersedingRequests": 16,
+      "supersededRequests": 15,
+      "staleRows": 0,
+      "activeSourcesAfterCleanup": 0,
+      "retainedAfterDispose": false,
+      "regionStoreEntryAfterDispose": false,
+      "authorizationAborted": true
+    },
+    "adverseVisualization": {
+      "rows": 1000,
+      "nullRows": 250,
+      "selectedIdentities": 1000,
+      "samples": 40,
+      "p50Ms": 13.700000002980232,
+      "p95Ms": 16.700000002980232,
+      "wideSamples": 20,
+      "requestedWideWidth": 3600,
+      "wideViewportScrollWidth": 3600,
+      "narrowSamples": 20,
+      "narrowViewportScrollWidth": 0,
+      "networkRequests": 0
+    },
+    "perceivedInput": {
+      "mode": "extended-observation",
+      "trustedKeyboardSamples": 30,
+      "visibleDomUpdateP50Ms": 0.7000000029802322,
+      "visibleDomUpdateP95Ms": 0.8999999910593033,
+      "eventTimingObserved": 0,
+      "eventTimingMissingOrThresholdCensored": 30,
+      "eventTimingThresholdMs": 16,
+      "networkRequests": 0,
+      "calibrationRequestedHandlerMs": 60,
+      "calibrationEventDurationMs": 64,
+      "calibrationProcessingDurationMs": 60.1000000089407
+    },
+    "heapLifecycle": {
+      "mode": "full-100-cycle",
+      "batches": 10,
+      "cyclesPerBatch": 10,
+      "baselineFootprintBytes": 4224625,
+      "firstPostGcFootprintBytes": 4242383,
+      "lastPostGcFootprintBytes": 4264263,
+      "netPostGcDeltaBytes": 21880,
+      "finalDomNodes": 0,
+      "finalTrackedListeners": 0,
+      "positiveControlHeldIncreaseBytes": 24637339,
+      "positiveControlReleaseReductionBytes": 24636616,
+      "positiveControlResponsive": true
+    },
+    "standalone": {
+      "rows": 100,
+      "coldSamples": 1,
+      "coldDomContentLoadedP50Ms": 12.700000002980232,
+      "coldDomContentLoadedP95Ms": 12.700000002980232,
+      "coldFixtureReadyP50Ms": 12.599999994039536,
+      "coldFixtureReadyP95Ms": 12.599999994039536,
+      "coldFirstContentfulPaintMs": 16,
+      "warmSamples": 1,
+      "warmDomContentLoadedP50Ms": 6.5,
+      "warmDomContentLoadedP95Ms": 6.5,
+      "warmFixtureReadyP50Ms": 6.5,
+      "warmFixtureReadyP95Ms": 6.5,
+      "warmFirstContentfulPaintMs": null,
+      "revalidatedCacheSamples": 1,
+      "forbiddenModules": 0
+    },
+    "sitePage": {
+      "routes": [
+        "home",
+        "component-docs",
+        "playground"
+      ],
+      "coldSamplesPerRoute": 1,
+      "warmSamplesPerRoute": 1,
+      "coldNavigationDurationMs": [
+        26.399999991059303,
+        19.700000002980232,
+        12.5
+      ],
+      "warmNavigationDurationMs": [
+        6.4000000059604645,
+        8.799999997019768,
+        5.5
+      ],
+      "coldTotalTransferBytes": [
+        457333,
+        618532,
+        679284
+      ],
+      "warmTotalTransferBytes": [
+        900,
+        2100,
+        1800
+      ],
+      "layoutShiftEntries": 0
+    },
+    "documentLayout": {
+      "routes": 71,
+      "layoutShiftBudgetPerRoute": 0.1,
+      "maximumObservedHydrationLayoutShift": 0,
+      "staticHydratedSentinelMismatchCount": 0,
+      "copyVerificationRoute": "data.table"
+    }
+  },
+  "qualification": {
+    "allAssignedGatesPassed": true,
+    "budgetChanges": [],
+    "releaseBlockersObserved": [],
+    "independentReview": "not-performed-for-this-artifact",
+    "releaseApprovalIssued": false
+  },
+  "limitations": [
+    "Measurements describe one isolated Apple M4 Pro/macOS runner and one headless Chromium build; they do not establish lower-powered-device, cross-browser or field behavior.",
+    "The Node and loaded-page first/subsequent observations are not equivalent to process, HTTP-cache or device cold starts.",
+    "Standalone and site-page probes retain one cold and one warm diagnostic sample per fixture or route; their p50/p95 values equal that single observation and are not asserted as timing budgets.",
+    "Visible-input timing ends at an observed DOM mutation, not paint. Missing sub-threshold Event Timing entries do not prove a fast interaction; the deliberate calibration only proves the observation path can report a long event.",
+    "Trace phase durations can overlap. Zero composite-layer events means no such event was exposed in this trace, not zero compositing cost.",
+    "The heap probe is a requested-GC diagnostic from one Chromium process. Empty DOM/listener/resource counters and a responsive positive control do not prove every object is collectible or establish a universal memory budget.",
+    "Adverse runtime uses an in-process adapter and does not prove HTTP, socket, proxy, backend cancellation or network capacity.",
+    "Bundle rows cover selected production package entry points and retained module graphs; they do not establish parse, execution or interaction latency.",
+    "Site paint/LCP/layout observations are raw controlled-run entries, not field Core Web Vitals or universal INP. No reference-model, model-provider, backend-capacity or network-performance benchmark is claimed."
+  ],
+  "sourceInputs": [
+    {
+      "path": "docs/12-performance.md",
+      "sha256": "94d6e0a5e823a592f38e17a7c84498df712f18ef5dba4dea7c8a2961a8bb1bca"
+    },
+    {
+      "path": "docs/33-performance-experiments.md",
+      "sha256": "21075d1c55de7bf81f82b9dbb581129c2ce530c43f91feb5605d0b5d81bac88f"
+    },
+    {
+      "path": "tests/performance/README.md",
+      "sha256": "b790ada47685b5de3b1f0e355b4d4302c55424bc026cd615286a3b40d1b5a250"
+    },
+    {
+      "path": "package.json",
+      "sha256": "f2c323a2bef1c72004a72d58ee7f5a5961abe19fba5546be6b1f588d692024d7"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "78166cbb9ce3ea799bd3a25be247cc02a808abaabc62f029a4931e587232b33b"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "adverse-runtime.json",
+      "sha256": "e6d0ff137fb0393ef1848d600de7051ffc65bce70bc2537e2a84545bc64c3c3f"
+    },
+    {
+      "path": "adverse-visualization.json",
+      "sha256": "0fbc0a927dd509f71aa1f7e85dc52deb0f09da1193695b67bf1833b41e825789"
+    },
+    {
+      "path": "browser.json",
+      "sha256": "961ff81a0cf301e10245244e77e57e4c3fc463908f993419248e57c0c54e1c33"
+    },
+    {
+      "path": "bundles-consumer-package-lock.json",
+      "sha256": "27b7a8ec003014ece9d807037fa70dfe35e07440d9e0e92abe4f562c33712a6e"
+    },
+    {
+      "path": "bundles.json",
+      "sha256": "eed153995a01bfd7696f5379b2d51fb24787a8c3f466781e03cdecfb10d5b54d"
+    },
+    {
+      "path": "document-layout.json",
+      "sha256": "31547c7d822272910963ece3be54c00c7c41533ff3d6f08e9954ce5a74439ae8"
+    },
+    {
+      "path": "heap-lifecycle.json",
+      "sha256": "3dde1320a3fac995470f34941bf8733abd97949767f81cf67e081f35cc52faa3"
+    },
+    {
+      "path": "perceived-input-calibration.json",
+      "sha256": "d6ec0d80e0058ea9653b51a9b82c7430dcb763e3dc410195c30b6ae0f4dcedb4"
+    },
+    {
+      "path": "perceived-input.json",
+      "sha256": "19333c4087380a50e64e69edc4e124ab868d11f2ac4028f4db611417f14e0998"
+    },
+    {
+      "path": "runtime.json",
+      "sha256": "02f8e0289e199e6298105c25419f4450b692c287aefcb68abe400765110e1750"
+    },
+    {
+      "path": "site-page.json",
+      "sha256": "ce5803db15fb69a91bcde7252d209f542f000bf1e5c5a38a27ff3f0413df570f"
+    },
+    {
+      "path": "standalone.json",
+      "sha256": "09c6176d139af514ab038475435161d63634035289c95f1fce434d78027aa335"
+    }
+  ]
+}

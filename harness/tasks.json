@@ -1278,9 +1278,13 @@
         {
           "path": "harness/evidence/t30/5d81a21-release-revalidation/manifest.json",
           "sha256": "4ae8b60a6b609f8bec582b3682a2525e1b1ed10ce958b2b95d64a4cb994d436f"
+        },
+        {
+          "path": "harness/evidence/t30/4f82c54-release-revalidation/manifest.json",
+          "sha256": "64e436ec14817595c23451473213ef0975ffbb73e253812ca0564801068548db"
         }
       ],
-      "notes": "Release-qualified at source 5d81a21 and digest e7d035e2 after current-source runtime, Chromium, installed sdk package bundle, adverse workload, visible-input, heap lifecycle, standalone and representative site-route revalidation. Warm planner p95 13.715ms <=16ms, reducer p95 0.158ms <=4ms, six bundle rows pass, and 100 lifecycle cycles finish with zero DOM nodes or tracked listeners. One retained same-source Node sample at 16.504ms remains visible as measurement noise. No lower-powered-device, field-CWV, universal input-to-paint, backend/network-capacity or model-performance claim.",
+      "notes": "Fresh qualification is complete at exact source 4f82c54 and digest 05e59904 after lint, pinned performance types, Node and browser cold/warm workloads, six installed sdk package bundle rows, adverse runtime/visualization, 30-sample visible input, 100-cycle heap lifecycle, standalone, representative site routes and all 71 component-document layout routes passed. Enforced Node planner p95 is 13.001ms <=16ms and targeted reducer p95 is 0.120ms <=4ms; wide charts retain 3600px internal scroll geometry; final heap DOM/listener counts are zero. This exact artifact awaits separate independent review. The retained approved review is historical for source 5d81a21 only and does not approve 4f82c54. No lower-powered-device, cross-browser, field-CWV, universal input-to-paint, backend/network-capacity or model-performance claim.",
       "review": {
         "status": "approved",
         "author": "fast_t30_quality + root evidence integration",
@@ -1291,7 +1295,7 @@
             "sha256": "2b558340b071c8a9dfef8c4e92b1dd7b16b962f03244538f2999b96eb8340d44"
           }
         ],
-        "scope": "Approves the current-source performance and exact sdk package-identity revalidation; excludes publication and universal performance claims."
+        "scope": "Historical approval for source 5d81a21 and its exact sdk package-identity revalidation only. It does not approve the later 4f82c54 qualification artifact, publication or universal performance claims."
       }
     },
     {

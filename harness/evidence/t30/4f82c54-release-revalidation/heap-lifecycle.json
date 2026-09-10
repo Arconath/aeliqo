@@ -1,0 +1,1358 @@
+{
+  "schema": "aeliqo.performance.heap-lifecycle.v1",
+  "sourceCommit": "4f82c548d4178f5c33151e39d7011fac93465308",
+  "mode": "full-100-cycle",
+  "environment": {
+    "node": "v24.20.0",
+    "browser": "153.0.8010.12",
+    "project": "",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+    "platform": "MacIntel",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "devicePixelRatio": 1,
+    "hardwareConcurrency": 12
+  },
+  "method": {
+    "fixture": "/tests/performance/browser.html",
+    "measuredBatchCount": 10,
+    "batchSize": 10,
+    "measuredCycles": 100,
+    "warmup": "The exported smallStandalone workload and mountDispose runtime cleanup probe run before the measured batches; their work is excluded from measured heap samples.",
+    "heapUsage": "Chromium CDP Runtime.getHeapUsage",
+    "collection": "Chromium CDP HeapProfiler.collectGarbage requested before every heap sample; dead listener WeakRefs are pruned synchronously after collection and before Runtime.getHeapUsage.",
+    "heapMetric": "combinedLiveHeapFootprintBytes = usedSize + embedderHeapUsedSize + backingStorageSize; totalSize is retained as a raw field but excluded from the metric because it includes allocator capacity.",
+    "listenerInstrumentation": "EventTarget registration bookkeeping installed only for measured component batches, deduplicated per target, pruned after collection, and restored before the report is written."
+  },
+  "warmup": {
+    "smallFixture": {
+      "rowCount": 100,
+      "renderedRows": 100,
+      "inputValue": "ready"
+    },
+    "runtimeCleanup": {
+      "cycles": 100,
+      "resources": {
+        "cycles": 100,
+        "retainedHandles": 0,
+        "liveRegions": 0,
+        "openObservers": 0,
+        "bounded": true
+      },
+      "bounded": true
+    },
+    "remainingChildren": 0
+  },
+  "baseline": {
+    "usedSize": 3270712,
+    "totalSize": 3997696,
+    "embedderHeapUsedSize": 544888,
+    "backingStorageSize": 409025,
+    "availableFieldCount": 4,
+    "missingFields": [],
+    "label": "baseline-after-warmup",
+    "footprintBytes": 4224625
+  },
+  "batches": [
+    {
+      "batch": 1,
+      "before": {
+        "usedSize": 3270712,
+        "totalSize": 3997696,
+        "embedderHeapUsedSize": 544888,
+        "backingStorageSize": 409025,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "baseline-after-warmup",
+        "footprintBytes": 4224625
+      },
+      "after": {
+        "usedSize": 3310404,
+        "totalSize": 3997696,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "batch-1-after-gc",
+        "footprintBytes": 4242383
+      },
+      "observation": {
+        "batch": 1,
+        "cycles": 10,
+        "peakComponentCount": 2,
+        "peakRenderedRows": 12,
+        "disposalChecks": [
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          }
+        ],
+        "listeners": {
+          "trackedRegistrationCount": 0,
+          "connectedListenerCount": 0,
+          "detachedListenerCount": 0,
+          "trackedTargetCount": 0
+        },
+        "finalDom": {
+          "rootChildren": 0,
+          "componentCount": 0,
+          "inputCount": 0,
+          "tableCount": 0,
+          "documentComponentCount": 0
+        }
+      }
+    },
+    {
+      "batch": 2,
+      "before": {
+        "usedSize": 3310404,
+        "totalSize": 3997696,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "batch-1-after-gc",
+        "footprintBytes": 4242383
+      },
+      "after": {
+        "usedSize": 3320344,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "batch-2-after-gc",
+        "footprintBytes": 4252323
+      },
+      "observation": {
+        "batch": 2,
+        "cycles": 10,
+        "peakComponentCount": 2,
+        "peakRenderedRows": 12,
+        "disposalChecks": [
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          }
+        ],
+        "listeners": {
+          "trackedRegistrationCount": 0,
+          "connectedListenerCount": 0,
+          "detachedListenerCount": 0,
+          "trackedTargetCount": 0
+        },
+        "finalDom": {
+          "rootChildren": 0,
+          "componentCount": 0,
+          "inputCount": 0,
+          "tableCount": 0,
+          "documentComponentCount": 0
+        }
+      }
+    },
+    {
+      "batch": 3,
+      "before": {
+        "usedSize": 3320344,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "batch-2-after-gc",
+        "footprintBytes": 4252323
+      },
+      "after": {
+        "usedSize": 3323104,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "batch-3-after-gc",
+        "footprintBytes": 4255083
+      },
+      "observation": {
+        "batch": 3,
+        "cycles": 10,
+        "peakComponentCount": 2,
+        "peakRenderedRows": 12,
+        "disposalChecks": [
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          }
+        ],
+        "listeners": {
+          "trackedRegistrationCount": 0,
+          "connectedListenerCount": 0,
+          "detachedListenerCount": 0,
+          "trackedTargetCount": 0
+        },
+        "finalDom": {
+          "rootChildren": 0,
+          "componentCount": 0,
+          "inputCount": 0,
+          "tableCount": 0,
+          "documentComponentCount": 0
+        }
+      }
+    },
+    {
+      "batch": 4,
+      "before": {
+        "usedSize": 3323104,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "batch-3-after-gc",
+        "footprintBytes": 4255083
+      },
+      "after": {
+        "usedSize": 3324100,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "batch-4-after-gc",
+        "footprintBytes": 4256079
+      },
+      "observation": {
+        "batch": 4,
+        "cycles": 10,
+        "peakComponentCount": 2,
+        "peakRenderedRows": 12,
+        "disposalChecks": [
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          }
+        ],
+        "listeners": {
+          "trackedRegistrationCount": 0,
+          "connectedListenerCount": 0,
+          "detachedListenerCount": 0,
+          "trackedTargetCount": 0
+        },
+        "finalDom": {
+          "rootChildren": 0,
+          "componentCount": 0,
+          "inputCount": 0,
+          "tableCount": 0,
+          "documentComponentCount": 0
+        }
+      }
+    },
+    {
+      "batch": 5,
+      "before": {
+        "usedSize": 3324100,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "batch-4-after-gc",
+        "footprintBytes": 4256079
+      },
+      "after": {
+        "usedSize": 3324356,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "batch-5-after-gc",
+        "footprintBytes": 4256335
+      },
+      "observation": {
+        "batch": 5,
+        "cycles": 10,
+        "peakComponentCount": 2,
+        "peakRenderedRows": 12,
+        "disposalChecks": [
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          }
+        ],
+        "listeners": {
+          "trackedRegistrationCount": 0,
+          "connectedListenerCount": 0,
+          "detachedListenerCount": 0,
+          "trackedTargetCount": 0
+        },
+        "finalDom": {
+          "rootChildren": 0,
+          "componentCount": 0,
+          "inputCount": 0,
+          "tableCount": 0,
+          "documentComponentCount": 0
+        }
+      }
+    },
+    {
+      "batch": 6,
+      "before": {
+        "usedSize": 3324356,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "batch-5-after-gc",
+        "footprintBytes": 4256335
+      },
+      "after": {
+        "usedSize": 3325776,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522568,
+        "backingStorageSize": 409259,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "batch-6-after-gc",
+        "footprintBytes": 4257603
+      },
+      "observation": {
+        "batch": 6,
+        "cycles": 10,
+        "peakComponentCount": 2,
+        "peakRenderedRows": 12,
+        "disposalChecks": [
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          }
+        ],
+        "listeners": {
+          "trackedRegistrationCount": 0,
+          "connectedListenerCount": 0,
+          "detachedListenerCount": 0,
+          "trackedTargetCount": 0
+        },
+        "finalDom": {
+          "rootChildren": 0,
+          "componentCount": 0,
+          "inputCount": 0,
+          "tableCount": 0,
+          "documentComponentCount": 0
+        }
+      }
+    },
+    {
+      "batch": 7,
+      "before": {
+        "usedSize": 3325776,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522568,
+        "backingStorageSize": 409259,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "batch-6-after-gc",
+        "footprintBytes": 4257603
+      },
+      "after": {
+        "usedSize": 3327172,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "batch-7-after-gc",
+        "footprintBytes": 4259151
+      },
+      "observation": {
+        "batch": 7,
+        "cycles": 10,
+        "peakComponentCount": 2,
+        "peakRenderedRows": 12,
+        "disposalChecks": [
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          }
+        ],
+        "listeners": {
+          "trackedRegistrationCount": 0,
+          "connectedListenerCount": 0,
+          "detachedListenerCount": 0,
+          "trackedTargetCount": 0
+        },
+        "finalDom": {
+          "rootChildren": 0,
+          "componentCount": 0,
+          "inputCount": 0,
+          "tableCount": 0,
+          "documentComponentCount": 0
+        }
+      }
+    },
+    {
+      "batch": 8,
+      "before": {
+        "usedSize": 3327172,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "batch-7-after-gc",
+        "footprintBytes": 4259151
+      },
+      "after": {
+        "usedSize": 3327120,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522568,
+        "backingStorageSize": 409259,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "batch-8-after-gc",
+        "footprintBytes": 4258947
+      },
+      "observation": {
+        "batch": 8,
+        "cycles": 10,
+        "peakComponentCount": 2,
+        "peakRenderedRows": 12,
+        "disposalChecks": [
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          }
+        ],
+        "listeners": {
+          "trackedRegistrationCount": 0,
+          "connectedListenerCount": 0,
+          "detachedListenerCount": 0,
+          "trackedTargetCount": 0
+        },
+        "finalDom": {
+          "rootChildren": 0,
+          "componentCount": 0,
+          "inputCount": 0,
+          "tableCount": 0,
+          "documentComponentCount": 0
+        }
+      }
+    },
+    {
+      "batch": 9,
+      "before": {
+        "usedSize": 3327120,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522568,
+        "backingStorageSize": 409259,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "batch-8-after-gc",
+        "footprintBytes": 4258947
+      },
+      "after": {
+        "usedSize": 3328972,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "batch-9-after-gc",
+        "footprintBytes": 4260951
+      },
+      "observation": {
+        "batch": 9,
+        "cycles": 10,
+        "peakComponentCount": 2,
+        "peakRenderedRows": 12,
+        "disposalChecks": [
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          }
+        ],
+        "listeners": {
+          "trackedRegistrationCount": 0,
+          "connectedListenerCount": 0,
+          "detachedListenerCount": 0,
+          "trackedTargetCount": 0
+        },
+        "finalDom": {
+          "rootChildren": 0,
+          "componentCount": 0,
+          "inputCount": 0,
+          "tableCount": 0,
+          "documentComponentCount": 0
+        }
+      }
+    },
+    {
+      "batch": 10,
+      "before": {
+        "usedSize": 3328972,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "batch-9-after-gc",
+        "footprintBytes": 4260951
+      },
+      "after": {
+        "usedSize": 3332284,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259,
+        "availableFieldCount": 4,
+        "missingFields": [],
+        "label": "batch-10-after-gc",
+        "footprintBytes": 4264263
+      },
+      "observation": {
+        "batch": 10,
+        "cycles": 10,
+        "peakComponentCount": 2,
+        "peakRenderedRows": 12,
+        "disposalChecks": [
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          },
+          {
+            "rootChildren": 0,
+            "componentCount": 0,
+            "inputCount": 0,
+            "tableCount": 0,
+            "documentComponentCount": 0
+          }
+        ],
+        "listeners": {
+          "trackedRegistrationCount": 0,
+          "connectedListenerCount": 0,
+          "detachedListenerCount": 0,
+          "trackedTargetCount": 0
+        },
+        "finalDom": {
+          "rootChildren": 0,
+          "componentCount": 0,
+          "inputCount": 0,
+          "tableCount": 0,
+          "documentComponentCount": 0
+        }
+      }
+    }
+  ],
+  "cleanup": {
+    "finalDom": {
+      "rootChildren": 0,
+      "documentComponentCount": 0
+    },
+    "finalListeners": {
+      "trackedRegistrationCount": 0,
+      "connectedListenerCount": 0,
+      "detachedListenerCount": 0,
+      "trackedTargetCount": 0
+    },
+    "lastBatch": {
+      "rootChildren": 0,
+      "componentCount": 0,
+      "inputCount": 0,
+      "tableCount": 0,
+      "documentComponentCount": 0
+    }
+  },
+  "positiveControl": {
+    "allocation": {
+      "stringCount": 131072,
+      "byteLength": 8388608
+    },
+    "metric": "combinedLiveHeapFootprintBytes = usedSize + embedderHeapUsedSize + backingStorageSize; all three fields must be finite for byte deltas, while totalSize remains a raw allocator-capacity observation.",
+    "before": {
+      "usedSize": 3332284,
+      "totalSize": 4259840,
+      "embedderHeapUsedSize": 522720,
+      "backingStorageSize": 409259,
+      "availableFieldCount": 4,
+      "missingFields": [],
+      "label": "batch-10-after-gc",
+      "footprintBytes": 4264263
+    },
+    "held": {
+      "usedSize": 19581140,
+      "totalSize": 20791296,
+      "embedderHeapUsedSize": 522568,
+      "backingStorageSize": 8797894,
+      "availableFieldCount": 4,
+      "missingFields": [],
+      "label": "positive-control-held-after-gc",
+      "footprintBytes": 28901602
+    },
+    "released": {
+      "usedSize": 3333132,
+      "totalSize": 3997696,
+      "embedderHeapUsedSize": 522568,
+      "backingStorageSize": 409286,
+      "availableFieldCount": 4,
+      "missingFields": [],
+      "label": "positive-control-released-after-gc",
+      "footprintBytes": 4264986
+    },
+    "heldIncreaseBytes": 24637339,
+    "releaseReductionBytes": 24636616,
+    "responsive": true
+  },
+  "trend": {
+    "postGcFootprints": [
+      {
+        "batch": 1,
+        "footprintBytes": 4242383,
+        "usedSize": 3310404,
+        "totalSize": 3997696,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259
+      },
+      {
+        "batch": 2,
+        "footprintBytes": 4252323,
+        "usedSize": 3320344,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259
+      },
+      {
+        "batch": 3,
+        "footprintBytes": 4255083,
+        "usedSize": 3323104,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259
+      },
+      {
+        "batch": 4,
+        "footprintBytes": 4256079,
+        "usedSize": 3324100,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259
+      },
+      {
+        "batch": 5,
+        "footprintBytes": 4256335,
+        "usedSize": 3324356,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259
+      },
+      {
+        "batch": 6,
+        "footprintBytes": 4257603,
+        "usedSize": 3325776,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522568,
+        "backingStorageSize": 409259
+      },
+      {
+        "batch": 7,
+        "footprintBytes": 4259151,
+        "usedSize": 3327172,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259
+      },
+      {
+        "batch": 8,
+        "footprintBytes": 4258947,
+        "usedSize": 3327120,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522568,
+        "backingStorageSize": 409259
+      },
+      {
+        "batch": 9,
+        "footprintBytes": 4260951,
+        "usedSize": 3328972,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259
+      },
+      {
+        "batch": 10,
+        "footprintBytes": 4264263,
+        "usedSize": 3332284,
+        "totalSize": 4259840,
+        "embedderHeapUsedSize": 522720,
+        "backingStorageSize": 409259
+      }
+    ],
+    "firstPostGcFootprintBytes": 4242383,
+    "lastPostGcFootprintBytes": 4264263,
+    "netPostGcDeltaBytes": 21880
+  },
+  "interpretation": {
+    "observed": "Batch samples are raw post-requested-GC observations. A rising or falling trend is an investigation signal for this browser run, not a leak verdict or a heap budget.",
+    "positiveControl": "The held allocation must increase combinedLiveHeapFootprintBytes and release must reduce it; deltas become explicit null when any of the three metric fields is unavailable.",
+    "limitations": [
+      "This is one Chromium process and one production Vite fixture.",
+      "Heap totals are allocator/runtime observations; retained capacity can remain in totalSize after release.",
+      "The listener tracker uses deduplicated WeakRefs and prunes dead references after requested collection; registration and detached-listener counts are diagnostic bookkeeping and do not prove a production retention path.",
+      "Automatic once or AbortSignal listener removal is not observed as a removeEventListener call, so listener counters are diagnostic rather than a complete event-listener inventory.",
+      "Zero connected listeners and empty DOM/resource counters do not prove that every object is collectible.",
+      "No universal memory budget or cross-device leak claim is inferred."
+    ]
+  }
+}

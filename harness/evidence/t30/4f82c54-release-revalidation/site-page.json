@@ -1,0 +1,2204 @@
+{
+  "schema": "aeliqo.performance.site-page.v1",
+  "sourceCommit": "4f82c548d4178f5c33151e39d7011fac93465308",
+  "buildId": "unknown",
+  "mode": "functional-observation",
+  "samplePlan": {
+    "coldPerRoute": 1,
+    "warmPerRoute": 1,
+    "extended": false
+  },
+  "environment": {
+    "browser": "chromium",
+    "browserVersion": "153.0.8010.12",
+    "node": "v24.20.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "sourceCommit": "4f82c548d4178f5c33151e39d7011fac93465308",
+    "buildId": "unknown"
+  },
+  "routes": [
+    {
+      "id": "home",
+      "path": "/"
+    },
+    {
+      "id": "component-docs",
+      "path": "/docs/components/data.table/"
+    },
+    {
+      "id": "playground",
+      "path": "/playground/"
+    }
+  ],
+  "cold": [
+    {
+      "index": 1,
+      "route": {
+        "id": "home",
+        "path": "/"
+      },
+      "condition": {
+        "cache": "disabled",
+        "cacheCleared": true,
+        "cacheDisabled": true,
+        "freshContext": true,
+        "sameContextAsWarmup": false
+      },
+      "responseStatus": 200,
+      "readiness": {
+        "visible": "hero heading + home record list",
+        "functional": "local home demo reports 4 of 4 synthetic people"
+      },
+      "environment": {
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+        "platform": "MacIntel",
+        "language": "en-US",
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "devicePixelRatio": 1,
+        "hardwareConcurrency": 12
+      },
+      "performance": {
+        "navigation": {
+          "name": "http://127.0.0.1:51619/",
+          "entryType": "navigation",
+          "startTime": 0,
+          "duration": 26.399999991059303,
+          "initiatorType": "navigation",
+          "type": "navigate",
+          "redirectCount": 0,
+          "unloadEventStart": 0,
+          "unloadEventEnd": 0,
+          "workerStart": 0,
+          "fetchStart": 0.09999999403953552,
+          "domainLookupStart": 0.5999999940395355,
+          "domainLookupEnd": 0.5999999940395355,
+          "connectStart": 0.5999999940395355,
+          "connectEnd": 0.8999999910593033,
+          "secureConnectionStart": 0,
+          "requestStart": 0.8999999910593033,
+          "responseStart": 2.0999999940395355,
+          "responseEnd": 2.3999999910593033,
+          "transferSize": 2187,
+          "encodedBodySize": 1887,
+          "decodedBodySize": 4293,
+          "domInteractive": 8.099999994039536,
+          "domContentLoadedEventStart": 23.5,
+          "domContentLoadedEventEnd": 23.5,
+          "domComplete": 26.399999991059303,
+          "loadEventStart": 26.399999991059303,
+          "loadEventEnd": 26.399999991059303
+        },
+        "resources": [
+          {
+            "name": "http://127.0.0.1:51619/assets/site-BTwOohK1.js",
+            "entryType": "resource",
+            "startTime": 4,
+            "duration": 2.7000000029802322,
+            "initiatorType": "script",
+            "fetchStart": 4,
+            "requestStart": 4.299999997019768,
+            "responseStart": 6.200000002980232,
+            "responseEnd": 6.700000002980232,
+            "transferSize": 16000,
+            "encodedBodySize": 15700,
+            "decodedBodySize": 44640,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/assets/site-CHB0njnh.css",
+            "entryType": "resource",
+            "startTime": 4.0999999940395355,
+            "duration": 2,
+            "initiatorType": "link",
+            "fetchStart": 4.0999999940395355,
+            "requestStart": 4.299999997019768,
+            "responseStart": 5.899999991059303,
+            "responseEnd": 6.0999999940395355,
+            "transferSize": 3061,
+            "encodedBodySize": 2761,
+            "decodedBodySize": 10185,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/aeliqo.png",
+            "entryType": "resource",
+            "startTime": 4.0999999940395355,
+            "duration": 3.2000000029802322,
+            "initiatorType": "img",
+            "fetchStart": 4.0999999940395355,
+            "requestStart": 6.200000002980232,
+            "responseStart": 6.799999997019768,
+            "responseEnd": 7.299999997019768,
+            "transferSize": 438272,
+            "encodedBodySize": 437972,
+            "decodedBodySize": 437972,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          }
+        ],
+        "resourceEntriesTruncated": 0,
+        "resourceTimingBufferFull": false,
+        "paints": [
+          {
+            "name": "first-paint",
+            "entryType": "paint",
+            "startTime": 28,
+            "duration": 0
+          },
+          {
+            "name": "first-contentful-paint",
+            "entryType": "paint",
+            "startTime": 28,
+            "duration": 0
+          }
+        ],
+        "largestContentfulPaint": [
+          {
+            "name": "",
+            "entryType": "largest-contentful-paint",
+            "startTime": 28,
+            "duration": 0,
+            "renderTime": 28,
+            "loadTime": 0,
+            "size": 82695,
+            "id": "",
+            "url": "",
+            "element": {
+              "tagName": "H1",
+              "id": "",
+              "className": ""
+            }
+          }
+        ],
+        "layoutShifts": [],
+        "observerEntriesDropped": {
+          "paint": 0,
+          "largestContentfulPaint": 0,
+          "layoutShift": 0
+        },
+        "observerAvailability": {
+          "paint": true,
+          "largestContentfulPaint": true,
+          "layoutShift": true
+        }
+      },
+      "resourceTimingBytes": {
+        "all": {
+          "totalTransferBytes": 457333,
+          "totalEncodedBytes": 456433,
+          "totalDecodedBytes": 492797,
+          "resourceCount": 3,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "javascript": {
+          "totalTransferBytes": 16000,
+          "totalEncodedBytes": 15700,
+          "totalDecodedBytes": 44640,
+          "resourceCount": 1,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "stylesheet": {
+          "totalTransferBytes": 3061,
+          "totalEncodedBytes": 2761,
+          "totalDecodedBytes": 10185,
+          "resourceCount": 1,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "image": {
+          "totalTransferBytes": 438272,
+          "totalEncodedBytes": 437972,
+          "totalDecodedBytes": 437972,
+          "resourceCount": 1,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "other": {
+          "totalTransferBytes": null,
+          "totalEncodedBytes": null,
+          "totalDecodedBytes": null,
+          "resourceCount": 0,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        }
+      },
+      "network": {
+        "responses": [
+          {
+            "requestId": "23691295296B011129195D283EFCF7D8",
+            "url": "http://127.0.0.1:51619/",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "242.3",
+            "url": "http://127.0.0.1:51619/assets/site-CHB0njnh.css",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "242.4",
+            "url": "http://127.0.0.1:51619/aeliqo.png",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "242.2",
+            "url": "http://127.0.0.1:51619/assets/site-BTwOohK1.js",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          }
+        ],
+        "extraInfo": [
+          {
+            "requestId": "23691295296B011129195D283EFCF7D8",
+            "statusCode": 200
+          },
+          {
+            "requestId": "242.3",
+            "statusCode": 200
+          },
+          {
+            "requestId": "242.2",
+            "statusCode": 200
+          },
+          {
+            "requestId": "242.4",
+            "statusCode": 200
+          }
+        ],
+        "loadingFinished": [
+          {
+            "requestId": "242.3",
+            "encodedDataLength": 3126
+          },
+          {
+            "requestId": "242.4",
+            "encodedDataLength": 438241
+          },
+          {
+            "requestId": "23691295296B011129195D283EFCF7D8",
+            "encodedDataLength": 2167
+          },
+          {
+            "requestId": "242.2",
+            "encodedDataLength": 16073
+          }
+        ],
+        "loadingFailedCount": 0
+      },
+      "cacheEvidence": {
+        "resourceTimingZeroTransferCount": 0,
+        "diskCacheResponseCount": 0,
+        "serviceWorkerResponseCount": 0,
+        "revalidated304Count": 0,
+        "networkLoadingFinishedEncodedBytes": 459607,
+        "status": "incomplete"
+      }
+    },
+    {
+      "index": 1,
+      "route": {
+        "id": "component-docs",
+        "path": "/docs/components/data.table/"
+      },
+      "condition": {
+        "cache": "disabled",
+        "cacheCleared": true,
+        "cacheDisabled": true,
+        "freshContext": true,
+        "sameContextAsWarmup": false
+      },
+      "responseStatus": 200,
+      "readiness": {
+        "visible": "Table heading + real table preview",
+        "functional": "component documentation exposes expected-result content"
+      },
+      "environment": {
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+        "platform": "MacIntel",
+        "language": "en-US",
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "devicePixelRatio": 1,
+        "hardwareConcurrency": 12
+      },
+      "performance": {
+        "navigation": {
+          "name": "http://127.0.0.1:51619/docs/components/data.table/",
+          "entryType": "navigation",
+          "startTime": 0,
+          "duration": 19.700000002980232,
+          "initiatorType": "navigation",
+          "type": "navigate",
+          "redirectCount": 0,
+          "unloadEventStart": 0,
+          "unloadEventEnd": 0,
+          "workerStart": 0,
+          "fetchStart": 0.5,
+          "domainLookupStart": 0.7000000029802322,
+          "domainLookupEnd": 0.7000000029802322,
+          "connectStart": 0.7000000029802322,
+          "connectEnd": 0.8999999910593033,
+          "secureConnectionStart": 0,
+          "requestStart": 1,
+          "responseStart": 1.7000000029802322,
+          "responseEnd": 1.7999999970197678,
+          "transferSize": 5109,
+          "encodedBodySize": 4809,
+          "decodedBodySize": 17484,
+          "domInteractive": 6.5999999940395355,
+          "domContentLoadedEventStart": 19.599999994039536,
+          "domContentLoadedEventEnd": 19.599999994039536,
+          "domComplete": 19.700000002980232,
+          "loadEventStart": 19.700000002980232,
+          "loadEventEnd": 19.700000002980232
+        },
+        "resources": [
+          {
+            "name": "http://127.0.0.1:51619/assets/site-BTwOohK1.js",
+            "entryType": "resource",
+            "startTime": 3.5999999940395355,
+            "duration": 2.1000000089406967,
+            "initiatorType": "script",
+            "fetchStart": 3.5999999940395355,
+            "requestStart": 4.0999999940395355,
+            "responseStart": 5.299999997019768,
+            "responseEnd": 5.700000002980232,
+            "transferSize": 16000,
+            "encodedBodySize": 15700,
+            "decodedBodySize": 44640,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/assets/site-CHB0njnh.css",
+            "entryType": "resource",
+            "startTime": 3.7000000029802322,
+            "duration": 1.5,
+            "initiatorType": "link",
+            "fetchStart": 3.7000000029802322,
+            "requestStart": 4.0999999940395355,
+            "responseStart": 4.899999991059303,
+            "responseEnd": 5.200000002980232,
+            "transferSize": 3061,
+            "encodedBodySize": 2761,
+            "decodedBodySize": 10185,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/aeliqo.png",
+            "entryType": "resource",
+            "startTime": 3.7000000029802322,
+            "duration": 2.3999999910593033,
+            "initiatorType": "img",
+            "fetchStart": 3.7000000029802322,
+            "requestStart": 5.200000002980232,
+            "responseStart": 5.799999997019768,
+            "responseEnd": 6.0999999940395355,
+            "transferSize": 438272,
+            "encodedBodySize": 437972,
+            "decodedBodySize": 437972,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/assets/docs-XI__hbbB.js",
+            "entryType": "resource",
+            "startTime": 19.299999997019768,
+            "duration": 1.7999999970197678,
+            "initiatorType": "script",
+            "fetchStart": 19.299999997019768,
+            "requestStart": 19.599999994039536,
+            "responseStart": 20.799999997019768,
+            "responseEnd": 21.099999994039536,
+            "transferSize": 2245,
+            "encodedBodySize": 1945,
+            "decodedBodySize": 4559,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/assets/dialog-DhgWo0I7.js",
+            "entryType": "resource",
+            "startTime": 19.299999997019768,
+            "duration": 1.9000000059604645,
+            "initiatorType": "script",
+            "fetchStart": 19.299999997019768,
+            "requestStart": 19.700000002980232,
+            "responseStart": 20.899999991059303,
+            "responseEnd": 21.200000002980232,
+            "transferSize": 3520,
+            "encodedBodySize": 3220,
+            "decodedBodySize": 9076,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/assets/catalog-DYtNpzJ7.js",
+            "entryType": "resource",
+            "startTime": 25.200000002980232,
+            "duration": 2.5,
+            "initiatorType": "script",
+            "fetchStart": 25.200000002980232,
+            "requestStart": 25.399999991059303,
+            "responseStart": 26.799999997019768,
+            "responseEnd": 27.700000002980232,
+            "transferSize": 25294,
+            "encodedBodySize": 24994,
+            "decodedBodySize": 104106,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/assets/register-C6W6AUqt.js",
+            "entryType": "resource",
+            "startTime": 25.200000002980232,
+            "duration": 8.299999997019768,
+            "initiatorType": "script",
+            "fetchStart": 25.200000002980232,
+            "requestStart": 25.399999991059303,
+            "responseStart": 26.899999991059303,
+            "responseEnd": 33.5,
+            "transferSize": 130140,
+            "encodedBodySize": 129840,
+            "decodedBodySize": 508898,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          }
+        ],
+        "resourceEntriesTruncated": 0,
+        "resourceTimingBufferFull": false,
+        "paints": [
+          {
+            "name": "first-paint",
+            "entryType": "paint",
+            "startTime": 24,
+            "duration": 0
+          },
+          {
+            "name": "first-contentful-paint",
+            "entryType": "paint",
+            "startTime": 24,
+            "duration": 0
+          }
+        ],
+        "largestContentfulPaint": [
+          {
+            "name": "",
+            "entryType": "largest-contentful-paint",
+            "startTime": 24,
+            "duration": 0,
+            "renderTime": 24,
+            "loadTime": 0,
+            "size": 34874,
+            "id": "",
+            "url": "",
+            "element": {
+              "tagName": "P",
+              "id": "",
+              "className": "lead"
+            }
+          }
+        ],
+        "layoutShifts": [],
+        "observerEntriesDropped": {
+          "paint": 0,
+          "largestContentfulPaint": 0,
+          "layoutShift": 0
+        },
+        "observerAvailability": {
+          "paint": true,
+          "largestContentfulPaint": true,
+          "layoutShift": true
+        }
+      },
+      "resourceTimingBytes": {
+        "all": {
+          "totalTransferBytes": 618532,
+          "totalEncodedBytes": 616432,
+          "totalDecodedBytes": 1119436,
+          "resourceCount": 7,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "javascript": {
+          "totalTransferBytes": 177199,
+          "totalEncodedBytes": 175699,
+          "totalDecodedBytes": 671279,
+          "resourceCount": 5,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "stylesheet": {
+          "totalTransferBytes": 3061,
+          "totalEncodedBytes": 2761,
+          "totalDecodedBytes": 10185,
+          "resourceCount": 1,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "image": {
+          "totalTransferBytes": 438272,
+          "totalEncodedBytes": 437972,
+          "totalDecodedBytes": 437972,
+          "resourceCount": 1,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "other": {
+          "totalTransferBytes": null,
+          "totalEncodedBytes": null,
+          "totalDecodedBytes": null,
+          "resourceCount": 0,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        }
+      },
+      "network": {
+        "responses": [
+          {
+            "requestId": "DA6CE9986A4AED680C49CF3543D49C5D",
+            "url": "http://127.0.0.1:51619/docs/components/data.table/",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "244.3",
+            "url": "http://127.0.0.1:51619/assets/site-CHB0njnh.css",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "244.4",
+            "url": "http://127.0.0.1:51619/aeliqo.png",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "244.2",
+            "url": "http://127.0.0.1:51619/assets/site-BTwOohK1.js",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "244.8",
+            "url": "http://127.0.0.1:51619/assets/docs-XI__hbbB.js",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "244.9",
+            "url": "http://127.0.0.1:51619/assets/dialog-DhgWo0I7.js",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "244.10",
+            "url": "http://127.0.0.1:51619/assets/catalog-DYtNpzJ7.js",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "244.11",
+            "url": "http://127.0.0.1:51619/assets/register-C6W6AUqt.js",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          }
+        ],
+        "extraInfo": [
+          {
+            "requestId": "DA6CE9986A4AED680C49CF3543D49C5D",
+            "statusCode": 200
+          },
+          {
+            "requestId": "244.3",
+            "statusCode": 200
+          },
+          {
+            "requestId": "244.2",
+            "statusCode": 200
+          },
+          {
+            "requestId": "244.4",
+            "statusCode": 200
+          },
+          {
+            "requestId": "244.8",
+            "statusCode": 200
+          },
+          {
+            "requestId": "244.9",
+            "statusCode": 200
+          },
+          {
+            "requestId": "244.10",
+            "statusCode": 200
+          },
+          {
+            "requestId": "244.11",
+            "statusCode": 200
+          }
+        ],
+        "loadingFinished": [
+          {
+            "requestId": "244.3",
+            "encodedDataLength": 3126
+          },
+          {
+            "requestId": "244.4",
+            "encodedDataLength": 438241
+          },
+          {
+            "requestId": "DA6CE9986A4AED680C49CF3543D49C5D",
+            "encodedDataLength": 5090
+          },
+          {
+            "requestId": "244.2",
+            "encodedDataLength": 16073
+          },
+          {
+            "requestId": "244.8",
+            "encodedDataLength": 2316
+          },
+          {
+            "requestId": "244.9",
+            "encodedDataLength": 3591
+          },
+          {
+            "requestId": "244.10",
+            "encodedDataLength": 25376
+          },
+          {
+            "requestId": "244.11",
+            "encodedDataLength": 130307
+          }
+        ],
+        "loadingFailedCount": 0
+      },
+      "cacheEvidence": {
+        "resourceTimingZeroTransferCount": 0,
+        "diskCacheResponseCount": 0,
+        "serviceWorkerResponseCount": 0,
+        "revalidated304Count": 0,
+        "networkLoadingFinishedEncodedBytes": 624120,
+        "status": "incomplete"
+      }
+    },
+    {
+      "index": 1,
+      "route": {
+        "id": "playground",
+        "path": "/playground/"
+      },
+      "condition": {
+        "cache": "disabled",
+        "cacheCleared": true,
+        "cacheDisabled": true,
+        "freshContext": true,
+        "sameContextAsWarmup": false
+      },
+      "responseStatus": 200,
+      "readiness": {
+        "visible": "playground result status + evaluated table",
+        "functional": "local evaluator reports 4 result rows"
+      },
+      "environment": {
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+        "platform": "MacIntel",
+        "language": "en-US",
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "devicePixelRatio": 1,
+        "hardwareConcurrency": 12
+      },
+      "performance": {
+        "navigation": {
+          "name": "http://127.0.0.1:51619/playground/",
+          "entryType": "navigation",
+          "startTime": 0,
+          "duration": 12.5,
+          "initiatorType": "navigation",
+          "type": "navigate",
+          "redirectCount": 0,
+          "unloadEventStart": 0,
+          "unloadEventEnd": 0,
+          "workerStart": 0,
+          "fetchStart": 0,
+          "domainLookupStart": 0.29999999701976776,
+          "domainLookupEnd": 0.29999999701976776,
+          "connectStart": 0.29999999701976776,
+          "connectEnd": 0.4000000059604645,
+          "secureConnectionStart": 0,
+          "requestStart": 0.5,
+          "responseStart": 1.1000000089406967,
+          "responseEnd": 1.2000000029802322,
+          "transferSize": 2569,
+          "encodedBodySize": 2269,
+          "decodedBodySize": 6040,
+          "domInteractive": 4.700000002980232,
+          "domContentLoadedEventStart": 12.400000005960464,
+          "domContentLoadedEventEnd": 12.400000005960464,
+          "domComplete": 12.5,
+          "loadEventStart": 12.5,
+          "loadEventEnd": 12.5
+        },
+        "resources": [
+          {
+            "name": "http://127.0.0.1:51619/assets/site-BTwOohK1.js",
+            "entryType": "resource",
+            "startTime": 2.7000000029802322,
+            "duration": 1.7000000029802322,
+            "initiatorType": "script",
+            "fetchStart": 2.7000000029802322,
+            "requestStart": 3.2000000029802322,
+            "responseStart": 4.299999997019768,
+            "responseEnd": 4.4000000059604645,
+            "transferSize": 16000,
+            "encodedBodySize": 15700,
+            "decodedBodySize": 44640,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/assets/site-CHB0njnh.css",
+            "entryType": "resource",
+            "startTime": 2.7999999970197678,
+            "duration": 1.300000011920929,
+            "initiatorType": "link",
+            "fetchStart": 2.7999999970197678,
+            "requestStart": 3.2000000029802322,
+            "responseStart": 3.9000000059604645,
+            "responseEnd": 4.100000008940697,
+            "transferSize": 3061,
+            "encodedBodySize": 2761,
+            "decodedBodySize": 10185,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/aeliqo.png",
+            "entryType": "resource",
+            "startTime": 2.9000000059604645,
+            "duration": 2.2999999970197678,
+            "initiatorType": "img",
+            "fetchStart": 2.9000000059604645,
+            "requestStart": 4.4000000059604645,
+            "responseStart": 4.799999997019768,
+            "responseEnd": 5.200000002980232,
+            "transferSize": 438272,
+            "encodedBodySize": 437972,
+            "decodedBodySize": 437972,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/assets/playground-D3tixfom.js",
+            "entryType": "resource",
+            "startTime": 12.200000002980232,
+            "duration": 7.0999999940395355,
+            "initiatorType": "script",
+            "fetchStart": 12.200000002980232,
+            "requestStart": 12.600000008940697,
+            "responseStart": 14.299999997019768,
+            "responseEnd": 19.299999997019768,
+            "transferSize": 88291,
+            "encodedBodySize": 87991,
+            "decodedBodySize": 346802,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/assets/dialog-DhgWo0I7.js",
+            "entryType": "resource",
+            "startTime": 12.299999997019768,
+            "duration": 1.4000000059604645,
+            "initiatorType": "script",
+            "fetchStart": 12.299999997019768,
+            "requestStart": 12.700000002980232,
+            "responseStart": 13.600000008940697,
+            "responseEnd": 13.700000002980232,
+            "transferSize": 3520,
+            "encodedBodySize": 3220,
+            "decodedBodySize": 9076,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/assets/register-C6W6AUqt.js",
+            "entryType": "resource",
+            "startTime": 12.299999997019768,
+            "duration": 9.100000008940697,
+            "initiatorType": "script",
+            "fetchStart": 12.299999997019768,
+            "requestStart": 12.700000002980232,
+            "responseStart": 14.299999997019768,
+            "responseEnd": 21.400000005960464,
+            "transferSize": 130140,
+            "encodedBodySize": 129840,
+            "decodedBodySize": 508898,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          }
+        ],
+        "resourceEntriesTruncated": 0,
+        "resourceTimingBufferFull": false,
+        "paints": [
+          {
+            "name": "first-paint",
+            "entryType": "paint",
+            "startTime": 20,
+            "duration": 0
+          },
+          {
+            "name": "first-contentful-paint",
+            "entryType": "paint",
+            "startTime": 20,
+            "duration": 0
+          }
+        ],
+        "largestContentfulPaint": [
+          {
+            "name": "",
+            "entryType": "largest-contentful-paint",
+            "startTime": 20,
+            "duration": 0,
+            "renderTime": 20,
+            "loadTime": 0,
+            "size": 27023,
+            "id": "",
+            "url": "",
+            "element": {
+              "tagName": "H1",
+              "id": "",
+              "className": ""
+            }
+          }
+        ],
+        "layoutShifts": [],
+        "observerEntriesDropped": {
+          "paint": 0,
+          "largestContentfulPaint": 0,
+          "layoutShift": 0
+        },
+        "observerAvailability": {
+          "paint": true,
+          "largestContentfulPaint": true,
+          "layoutShift": true
+        }
+      },
+      "resourceTimingBytes": {
+        "all": {
+          "totalTransferBytes": 679284,
+          "totalEncodedBytes": 677484,
+          "totalDecodedBytes": 1357573,
+          "resourceCount": 6,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "javascript": {
+          "totalTransferBytes": 237951,
+          "totalEncodedBytes": 236751,
+          "totalDecodedBytes": 909416,
+          "resourceCount": 4,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "stylesheet": {
+          "totalTransferBytes": 3061,
+          "totalEncodedBytes": 2761,
+          "totalDecodedBytes": 10185,
+          "resourceCount": 1,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "image": {
+          "totalTransferBytes": 438272,
+          "totalEncodedBytes": 437972,
+          "totalDecodedBytes": 437972,
+          "resourceCount": 1,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "other": {
+          "totalTransferBytes": null,
+          "totalEncodedBytes": null,
+          "totalDecodedBytes": null,
+          "resourceCount": 0,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        }
+      },
+      "network": {
+        "responses": [
+          {
+            "requestId": "94076712A1C99C0E9CBCC65AFC0454E5",
+            "url": "http://127.0.0.1:51619/playground/",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "246.3",
+            "url": "http://127.0.0.1:51619/assets/site-CHB0njnh.css",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "246.4",
+            "url": "http://127.0.0.1:51619/aeliqo.png",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "246.2",
+            "url": "http://127.0.0.1:51619/assets/site-BTwOohK1.js",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "246.10",
+            "url": "http://127.0.0.1:51619/assets/dialog-DhgWo0I7.js",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "246.8",
+            "url": "http://127.0.0.1:51619/assets/playground-D3tixfom.js",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "246.9",
+            "url": "http://127.0.0.1:51619/assets/register-C6W6AUqt.js",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          }
+        ],
+        "extraInfo": [
+          {
+            "requestId": "94076712A1C99C0E9CBCC65AFC0454E5",
+            "statusCode": 200
+          },
+          {
+            "requestId": "246.3",
+            "statusCode": 200
+          },
+          {
+            "requestId": "246.2",
+            "statusCode": 200
+          },
+          {
+            "requestId": "246.4",
+            "statusCode": 200
+          },
+          {
+            "requestId": "246.10",
+            "statusCode": 200
+          },
+          {
+            "requestId": "246.8",
+            "statusCode": 200
+          },
+          {
+            "requestId": "246.9",
+            "statusCode": 200
+          }
+        ],
+        "loadingFinished": [
+          {
+            "requestId": "246.3",
+            "encodedDataLength": 3126
+          },
+          {
+            "requestId": "94076712A1C99C0E9CBCC65AFC0454E5",
+            "encodedDataLength": 2549
+          },
+          {
+            "requestId": "246.4",
+            "encodedDataLength": 438241
+          },
+          {
+            "requestId": "246.2",
+            "encodedDataLength": 16073
+          },
+          {
+            "requestId": "246.10",
+            "encodedDataLength": 3591
+          },
+          {
+            "requestId": "246.8",
+            "encodedDataLength": 88428
+          },
+          {
+            "requestId": "246.9",
+            "encodedDataLength": 130307
+          }
+        ],
+        "loadingFailedCount": 0
+      },
+      "cacheEvidence": {
+        "resourceTimingZeroTransferCount": 0,
+        "diskCacheResponseCount": 0,
+        "serviceWorkerResponseCount": 0,
+        "revalidated304Count": 0,
+        "networkLoadingFinishedEncodedBytes": 682315,
+        "status": "incomplete"
+      }
+    }
+  ],
+  "warm": [
+    {
+      "index": 1,
+      "route": {
+        "id": "home",
+        "path": "/"
+      },
+      "condition": {
+        "cache": "enabled",
+        "cacheCleared": false,
+        "cacheDisabled": false,
+        "freshContext": false,
+        "sameContextAsWarmup": true
+      },
+      "responseStatus": 200,
+      "readiness": {
+        "visible": "hero heading + home record list",
+        "functional": "local home demo reports 4 of 4 synthetic people"
+      },
+      "environment": {
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+        "platform": "MacIntel",
+        "language": "en-US",
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "devicePixelRatio": 1,
+        "hardwareConcurrency": 12
+      },
+      "performance": {
+        "navigation": {
+          "name": "http://127.0.0.1:51619/",
+          "entryType": "navigation",
+          "startTime": 0,
+          "duration": 6.4000000059604645,
+          "initiatorType": "navigation",
+          "type": "reload",
+          "redirectCount": 0,
+          "unloadEventStart": 1.7000000029802322,
+          "unloadEventEnd": 1.7000000029802322,
+          "workerStart": 0,
+          "fetchStart": 0.10000000894069672,
+          "domainLookupStart": 0.10000000894069672,
+          "domainLookupEnd": 0.10000000894069672,
+          "connectStart": 0.10000000894069672,
+          "connectEnd": 0.10000000894069672,
+          "secureConnectionStart": 0,
+          "requestStart": 0.4000000059604645,
+          "responseStart": 0.9000000059604645,
+          "responseEnd": 1.1000000089406967,
+          "transferSize": 300,
+          "encodedBodySize": 1887,
+          "decodedBodySize": 4293,
+          "domInteractive": 4.200000002980232,
+          "domContentLoadedEventStart": 5.4000000059604645,
+          "domContentLoadedEventEnd": 5.4000000059604645,
+          "domComplete": 6.4000000059604645,
+          "loadEventStart": 6.4000000059604645,
+          "loadEventEnd": 6.4000000059604645
+        },
+        "resources": [
+          {
+            "name": "http://127.0.0.1:51619/assets/site-CHB0njnh.css",
+            "entryType": "resource",
+            "startTime": 2.800000011920929,
+            "duration": 0.699999988079071,
+            "initiatorType": "link",
+            "fetchStart": 2.800000011920929,
+            "requestStart": 3,
+            "responseStart": 3.5,
+            "responseEnd": 3.5,
+            "transferSize": 300,
+            "encodedBodySize": 0,
+            "decodedBodySize": 0,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/assets/site-BTwOohK1.js",
+            "entryType": "resource",
+            "startTime": 2.800000011920929,
+            "duration": 1,
+            "initiatorType": "script",
+            "fetchStart": 2.800000011920929,
+            "requestStart": 3,
+            "responseStart": 3.7000000029802322,
+            "responseEnd": 3.800000011920929,
+            "transferSize": 300,
+            "encodedBodySize": 0,
+            "decodedBodySize": 0,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/aeliqo.png",
+            "entryType": "resource",
+            "startTime": 2.800000011920929,
+            "duration": 1.3999999910593033,
+            "initiatorType": "img",
+            "fetchStart": 2.800000011920929,
+            "requestStart": 3.9000000059604645,
+            "responseStart": 4.200000002980232,
+            "responseEnd": 4.200000002980232,
+            "transferSize": 300,
+            "encodedBodySize": 0,
+            "decodedBodySize": 0,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          }
+        ],
+        "resourceEntriesTruncated": 0,
+        "resourceTimingBufferFull": false,
+        "paints": [
+          {
+            "name": "first-paint",
+            "entryType": "paint",
+            "startTime": 16,
+            "duration": 0
+          },
+          {
+            "name": "first-contentful-paint",
+            "entryType": "paint",
+            "startTime": 16,
+            "duration": 0
+          }
+        ],
+        "largestContentfulPaint": [
+          {
+            "name": "",
+            "entryType": "largest-contentful-paint",
+            "startTime": 16,
+            "duration": 0,
+            "renderTime": 16,
+            "loadTime": 0,
+            "size": 82695,
+            "id": "",
+            "url": "",
+            "element": {
+              "tagName": "H1",
+              "id": "",
+              "className": ""
+            }
+          }
+        ],
+        "layoutShifts": [],
+        "observerEntriesDropped": {
+          "paint": 0,
+          "largestContentfulPaint": 0,
+          "layoutShift": 0
+        },
+        "observerAvailability": {
+          "paint": true,
+          "largestContentfulPaint": true,
+          "layoutShift": true
+        }
+      },
+      "resourceTimingBytes": {
+        "all": {
+          "totalTransferBytes": 900,
+          "totalEncodedBytes": 0,
+          "totalDecodedBytes": 0,
+          "resourceCount": 3,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "javascript": {
+          "totalTransferBytes": 300,
+          "totalEncodedBytes": 0,
+          "totalDecodedBytes": 0,
+          "resourceCount": 1,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "stylesheet": {
+          "totalTransferBytes": 300,
+          "totalEncodedBytes": 0,
+          "totalDecodedBytes": 0,
+          "resourceCount": 1,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "image": {
+          "totalTransferBytes": 300,
+          "totalEncodedBytes": 0,
+          "totalDecodedBytes": 0,
+          "resourceCount": 1,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "other": {
+          "totalTransferBytes": null,
+          "totalEncodedBytes": null,
+          "totalDecodedBytes": null,
+          "resourceCount": 0,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        }
+      },
+      "network": {
+        "responses": [
+          {
+            "requestId": "45A39CAF6F4D77DD0CF05CFB4D393850",
+            "url": "http://127.0.0.1:51619/",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "243.10",
+            "url": "http://127.0.0.1:51619/assets/site-CHB0njnh.css",
+            "status": 304,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "243.9",
+            "url": "http://127.0.0.1:51619/assets/site-BTwOohK1.js",
+            "status": 304,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "243.11",
+            "url": "http://127.0.0.1:51619/aeliqo.png",
+            "status": 304,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          }
+        ],
+        "extraInfo": [
+          {
+            "requestId": "45A39CAF6F4D77DD0CF05CFB4D393850",
+            "statusCode": 304
+          },
+          {
+            "requestId": "243.10",
+            "statusCode": 304
+          },
+          {
+            "requestId": "243.9",
+            "statusCode": 304
+          },
+          {
+            "requestId": "243.11",
+            "statusCode": 304
+          }
+        ],
+        "loadingFinished": [
+          {
+            "requestId": "243.10",
+            "encodedDataLength": 180
+          },
+          {
+            "requestId": "45A39CAF6F4D77DD0CF05CFB4D393850",
+            "encodedDataLength": 127
+          },
+          {
+            "requestId": "243.9",
+            "encodedDataLength": 180
+          },
+          {
+            "requestId": "243.11",
+            "encodedDataLength": 127
+          }
+        ],
+        "loadingFailedCount": 0
+      },
+      "cacheEvidence": {
+        "resourceTimingZeroTransferCount": 0,
+        "diskCacheResponseCount": 0,
+        "serviceWorkerResponseCount": 0,
+        "revalidated304Count": 4,
+        "networkLoadingFinishedEncodedBytes": 614,
+        "status": "observed"
+      }
+    },
+    {
+      "index": 1,
+      "route": {
+        "id": "component-docs",
+        "path": "/docs/components/data.table/"
+      },
+      "condition": {
+        "cache": "enabled",
+        "cacheCleared": false,
+        "cacheDisabled": false,
+        "freshContext": false,
+        "sameContextAsWarmup": true
+      },
+      "responseStatus": 200,
+      "readiness": {
+        "visible": "Table heading + real table preview",
+        "functional": "component documentation exposes expected-result content"
+      },
+      "environment": {
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+        "platform": "MacIntel",
+        "language": "en-US",
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "devicePixelRatio": 1,
+        "hardwareConcurrency": 12
+      },
+      "performance": {
+        "navigation": {
+          "name": "http://127.0.0.1:51619/docs/components/data.table/",
+          "entryType": "navigation",
+          "startTime": 0,
+          "duration": 8.799999997019768,
+          "initiatorType": "navigation",
+          "type": "reload",
+          "redirectCount": 0,
+          "unloadEventStart": 3.1000000089406967,
+          "unloadEventEnd": 3.1000000089406967,
+          "workerStart": 0,
+          "fetchStart": 0,
+          "domainLookupStart": 0,
+          "domainLookupEnd": 0,
+          "connectStart": 0,
+          "connectEnd": 0,
+          "secureConnectionStart": 0,
+          "requestStart": 0.29999999701976776,
+          "responseStart": 0.9000000059604645,
+          "responseEnd": 1,
+          "transferSize": 300,
+          "encodedBodySize": 4809,
+          "decodedBodySize": 17484,
+          "domInteractive": 5.299999997019768,
+          "domContentLoadedEventStart": 8.700000002980232,
+          "domContentLoadedEventEnd": 8.700000002980232,
+          "domComplete": 8.799999997019768,
+          "loadEventStart": 8.799999997019768,
+          "loadEventEnd": 8.799999997019768
+        },
+        "resources": [
+          {
+            "name": "http://127.0.0.1:51619/assets/site-BTwOohK1.js",
+            "entryType": "resource",
+            "startTime": 3.9000000059604645,
+            "duration": 0.8999999910593033,
+            "initiatorType": "script",
+            "fetchStart": 3.9000000059604645,
+            "requestStart": 4.200000002980232,
+            "responseStart": 4.799999997019768,
+            "responseEnd": 4.799999997019768,
+            "transferSize": 300,
+            "encodedBodySize": 0,
+            "decodedBodySize": 0,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/assets/site-CHB0njnh.css",
+            "entryType": "resource",
+            "startTime": 4,
+            "duration": 0.7000000029802322,
+            "initiatorType": "link",
+            "fetchStart": 4,
+            "requestStart": 4.100000008940697,
+            "responseStart": 4.600000008940697,
+            "responseEnd": 4.700000002980232,
+            "transferSize": 300,
+            "encodedBodySize": 0,
+            "decodedBodySize": 0,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/aeliqo.png",
+            "entryType": "resource",
+            "startTime": 4,
+            "duration": 1.2000000029802322,
+            "initiatorType": "img",
+            "fetchStart": 4,
+            "requestStart": 4.9000000059604645,
+            "responseStart": 5.200000002980232,
+            "responseEnd": 5.200000002980232,
+            "transferSize": 300,
+            "encodedBodySize": 0,
+            "decodedBodySize": 0,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/assets/docs-XI__hbbB.js",
+            "entryType": "resource",
+            "startTime": 8.600000008940697,
+            "duration": 0.699999988079071,
+            "initiatorType": "script",
+            "fetchStart": 8.600000008940697,
+            "requestStart": 8.799999997019768,
+            "responseStart": 9.200000002980232,
+            "responseEnd": 9.299999997019768,
+            "transferSize": 300,
+            "encodedBodySize": 0,
+            "decodedBodySize": 0,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/assets/dialog-DhgWo0I7.js",
+            "entryType": "resource",
+            "startTime": 8.700000002980232,
+            "duration": 0.7000000029802322,
+            "initiatorType": "script",
+            "fetchStart": 8.700000002980232,
+            "requestStart": 8.900000005960464,
+            "responseStart": 9.400000005960464,
+            "responseEnd": 9.400000005960464,
+            "transferSize": 300,
+            "encodedBodySize": 0,
+            "decodedBodySize": 0,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/assets/catalog-DYtNpzJ7.js",
+            "entryType": "resource",
+            "startTime": 11.700000002980232,
+            "duration": 0.5999999940395355,
+            "initiatorType": "script",
+            "fetchStart": 11.700000002980232,
+            "requestStart": 11.900000005960464,
+            "responseStart": 12.200000002980232,
+            "responseEnd": 12.299999997019768,
+            "transferSize": 300,
+            "encodedBodySize": 0,
+            "decodedBodySize": 0,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/assets/register-C6W6AUqt.js",
+            "entryType": "resource",
+            "startTime": 11.700000002980232,
+            "duration": 0.7999999970197678,
+            "initiatorType": "script",
+            "fetchStart": 11.700000002980232,
+            "requestStart": 11.900000005960464,
+            "responseStart": 12.400000005960464,
+            "responseEnd": 12.5,
+            "transferSize": 300,
+            "encodedBodySize": 0,
+            "decodedBodySize": 0,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          }
+        ],
+        "resourceEntriesTruncated": 0,
+        "resourceTimingBufferFull": false,
+        "paints": [
+          {
+            "name": "first-paint",
+            "entryType": "paint",
+            "startTime": 16,
+            "duration": 0
+          },
+          {
+            "name": "first-contentful-paint",
+            "entryType": "paint",
+            "startTime": 16,
+            "duration": 0
+          }
+        ],
+        "largestContentfulPaint": [
+          {
+            "name": "",
+            "entryType": "largest-contentful-paint",
+            "startTime": 16,
+            "duration": 0,
+            "renderTime": 16,
+            "loadTime": 0,
+            "size": 34874,
+            "id": "",
+            "url": "",
+            "element": {
+              "tagName": "P",
+              "id": "",
+              "className": "lead"
+            }
+          }
+        ],
+        "layoutShifts": [],
+        "observerEntriesDropped": {
+          "paint": 0,
+          "largestContentfulPaint": 0,
+          "layoutShift": 0
+        },
+        "observerAvailability": {
+          "paint": true,
+          "largestContentfulPaint": true,
+          "layoutShift": true
+        }
+      },
+      "resourceTimingBytes": {
+        "all": {
+          "totalTransferBytes": 2100,
+          "totalEncodedBytes": 0,
+          "totalDecodedBytes": 0,
+          "resourceCount": 7,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "javascript": {
+          "totalTransferBytes": 1500,
+          "totalEncodedBytes": 0,
+          "totalDecodedBytes": 0,
+          "resourceCount": 5,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "stylesheet": {
+          "totalTransferBytes": 300,
+          "totalEncodedBytes": 0,
+          "totalDecodedBytes": 0,
+          "resourceCount": 1,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "image": {
+          "totalTransferBytes": 300,
+          "totalEncodedBytes": 0,
+          "totalDecodedBytes": 0,
+          "resourceCount": 1,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "other": {
+          "totalTransferBytes": null,
+          "totalEncodedBytes": null,
+          "totalDecodedBytes": null,
+          "resourceCount": 0,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        }
+      },
+      "network": {
+        "responses": [
+          {
+            "requestId": "14F487C018C515906E9FDE65CF240585",
+            "url": "http://127.0.0.1:51619/docs/components/data.table/",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "245.14",
+            "url": "http://127.0.0.1:51619/assets/site-CHB0njnh.css",
+            "status": 304,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "245.15",
+            "url": "http://127.0.0.1:51619/aeliqo.png",
+            "status": 304,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "245.13",
+            "url": "http://127.0.0.1:51619/assets/site-BTwOohK1.js",
+            "status": 304,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "245.19",
+            "url": "http://127.0.0.1:51619/assets/docs-XI__hbbB.js",
+            "status": 304,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "245.20",
+            "url": "http://127.0.0.1:51619/assets/dialog-DhgWo0I7.js",
+            "status": 304,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "245.21",
+            "url": "http://127.0.0.1:51619/assets/catalog-DYtNpzJ7.js",
+            "status": 304,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "245.22",
+            "url": "http://127.0.0.1:51619/assets/register-C6W6AUqt.js",
+            "status": 304,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          }
+        ],
+        "extraInfo": [
+          {
+            "requestId": "14F487C018C515906E9FDE65CF240585",
+            "statusCode": 304
+          },
+          {
+            "requestId": "245.14",
+            "statusCode": 304
+          },
+          {
+            "requestId": "245.13",
+            "statusCode": 304
+          },
+          {
+            "requestId": "245.15",
+            "statusCode": 304
+          },
+          {
+            "requestId": "245.19",
+            "statusCode": 304
+          },
+          {
+            "requestId": "245.20",
+            "statusCode": 304
+          },
+          {
+            "requestId": "245.21",
+            "statusCode": 304
+          },
+          {
+            "requestId": "245.22",
+            "statusCode": 304
+          }
+        ],
+        "loadingFinished": [
+          {
+            "requestId": "245.14",
+            "encodedDataLength": 180
+          },
+          {
+            "requestId": "14F487C018C515906E9FDE65CF240585",
+            "encodedDataLength": 127
+          },
+          {
+            "requestId": "245.15",
+            "encodedDataLength": 127
+          },
+          {
+            "requestId": "245.13",
+            "encodedDataLength": 180
+          },
+          {
+            "requestId": "245.19",
+            "encodedDataLength": 180
+          },
+          {
+            "requestId": "245.20",
+            "encodedDataLength": 180
+          },
+          {
+            "requestId": "245.21",
+            "encodedDataLength": 180
+          },
+          {
+            "requestId": "245.22",
+            "encodedDataLength": 180
+          }
+        ],
+        "loadingFailedCount": 0
+      },
+      "cacheEvidence": {
+        "resourceTimingZeroTransferCount": 0,
+        "diskCacheResponseCount": 0,
+        "serviceWorkerResponseCount": 0,
+        "revalidated304Count": 8,
+        "networkLoadingFinishedEncodedBytes": 1334,
+        "status": "observed"
+      }
+    },
+    {
+      "index": 1,
+      "route": {
+        "id": "playground",
+        "path": "/playground/"
+      },
+      "condition": {
+        "cache": "enabled",
+        "cacheCleared": false,
+        "cacheDisabled": false,
+        "freshContext": false,
+        "sameContextAsWarmup": true
+      },
+      "responseStatus": 200,
+      "readiness": {
+        "visible": "playground result status + evaluated table",
+        "functional": "local evaluator reports 4 result rows"
+      },
+      "environment": {
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+        "platform": "MacIntel",
+        "language": "en-US",
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "devicePixelRatio": 1,
+        "hardwareConcurrency": 12
+      },
+      "performance": {
+        "navigation": {
+          "name": "http://127.0.0.1:51619/playground/",
+          "entryType": "navigation",
+          "startTime": 0,
+          "duration": 5.5,
+          "initiatorType": "navigation",
+          "type": "reload",
+          "redirectCount": 0,
+          "unloadEventStart": 1.8999999910593033,
+          "unloadEventEnd": 1.8999999910593033,
+          "workerStart": 0,
+          "fetchStart": 0.19999998807907104,
+          "domainLookupStart": 0.19999998807907104,
+          "domainLookupEnd": 0.19999998807907104,
+          "connectStart": 0.19999998807907104,
+          "connectEnd": 0.19999998807907104,
+          "secureConnectionStart": 0,
+          "requestStart": 0.3999999910593033,
+          "responseStart": 1,
+          "responseEnd": 1.0999999940395355,
+          "transferSize": 300,
+          "encodedBodySize": 2269,
+          "decodedBodySize": 6040,
+          "domInteractive": 4.0999999940395355,
+          "domContentLoadedEventStart": 4.5999999940395355,
+          "domContentLoadedEventEnd": 4.5999999940395355,
+          "domComplete": 5.5,
+          "loadEventStart": 5.5,
+          "loadEventEnd": 5.5
+        },
+        "resources": [
+          {
+            "name": "http://127.0.0.1:51619/assets/site-BTwOohK1.js",
+            "entryType": "resource",
+            "startTime": 2.5999999940395355,
+            "duration": 0.7999999970197678,
+            "initiatorType": "script",
+            "fetchStart": 2.5999999940395355,
+            "requestStart": 2.8999999910593033,
+            "responseStart": 3.3999999910593033,
+            "responseEnd": 3.3999999910593033,
+            "transferSize": 300,
+            "encodedBodySize": 0,
+            "decodedBodySize": 0,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/assets/site-CHB0njnh.css",
+            "entryType": "resource",
+            "startTime": 2.699999988079071,
+            "duration": 0.6000000089406967,
+            "initiatorType": "link",
+            "fetchStart": 2.699999988079071,
+            "requestStart": 2.8999999910593033,
+            "responseStart": 3.2999999970197678,
+            "responseEnd": 3.2999999970197678,
+            "transferSize": 300,
+            "encodedBodySize": 0,
+            "decodedBodySize": 0,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/aeliqo.png",
+            "entryType": "resource",
+            "startTime": 2.699999988079071,
+            "duration": 1.300000011920929,
+            "initiatorType": "img",
+            "fetchStart": 2.699999988079071,
+            "requestStart": 3.699999988079071,
+            "responseStart": 3.8999999910593033,
+            "responseEnd": 4,
+            "transferSize": 300,
+            "encodedBodySize": 0,
+            "decodedBodySize": 0,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/assets/playground-D3tixfom.js",
+            "entryType": "resource",
+            "startTime": 4.5,
+            "duration": 0.5,
+            "initiatorType": "script",
+            "fetchStart": 4.5,
+            "requestStart": 4.699999988079071,
+            "responseStart": 4.899999991059303,
+            "responseEnd": 5,
+            "transferSize": 300,
+            "encodedBodySize": 0,
+            "decodedBodySize": 0,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/assets/register-C6W6AUqt.js",
+            "entryType": "resource",
+            "startTime": 4.5,
+            "duration": 0.5999999940395355,
+            "initiatorType": "script",
+            "fetchStart": 4.5,
+            "requestStart": 4.799999997019768,
+            "responseStart": 5.0999999940395355,
+            "responseEnd": 5.0999999940395355,
+            "transferSize": 300,
+            "encodedBodySize": 0,
+            "decodedBodySize": 0,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          },
+          {
+            "name": "http://127.0.0.1:51619/assets/dialog-DhgWo0I7.js",
+            "entryType": "resource",
+            "startTime": 4.5999999940395355,
+            "duration": 0.5999999940395355,
+            "initiatorType": "script",
+            "fetchStart": 4.5999999940395355,
+            "requestStart": 4.799999997019768,
+            "responseStart": 5.199999988079071,
+            "responseEnd": 5.199999988079071,
+            "transferSize": 300,
+            "encodedBodySize": 0,
+            "decodedBodySize": 0,
+            "nextHopProtocol": "http/1.1",
+            "renderBlockingStatus": "non-blocking"
+          }
+        ],
+        "resourceEntriesTruncated": 0,
+        "resourceTimingBufferFull": false,
+        "paints": [
+          {
+            "name": "first-paint",
+            "entryType": "paint",
+            "startTime": 16,
+            "duration": 0
+          },
+          {
+            "name": "first-contentful-paint",
+            "entryType": "paint",
+            "startTime": 16,
+            "duration": 0
+          }
+        ],
+        "largestContentfulPaint": [
+          {
+            "name": "",
+            "entryType": "largest-contentful-paint",
+            "startTime": 16,
+            "duration": 0,
+            "renderTime": 16,
+            "loadTime": 0,
+            "size": 27023,
+            "id": "",
+            "url": "",
+            "element": {
+              "tagName": "H1",
+              "id": "",
+              "className": ""
+            }
+          }
+        ],
+        "layoutShifts": [],
+        "observerEntriesDropped": {
+          "paint": 0,
+          "largestContentfulPaint": 0,
+          "layoutShift": 0
+        },
+        "observerAvailability": {
+          "paint": true,
+          "largestContentfulPaint": true,
+          "layoutShift": true
+        }
+      },
+      "resourceTimingBytes": {
+        "all": {
+          "totalTransferBytes": 1800,
+          "totalEncodedBytes": 0,
+          "totalDecodedBytes": 0,
+          "resourceCount": 6,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "javascript": {
+          "totalTransferBytes": 1200,
+          "totalEncodedBytes": 0,
+          "totalDecodedBytes": 0,
+          "resourceCount": 4,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "stylesheet": {
+          "totalTransferBytes": 300,
+          "totalEncodedBytes": 0,
+          "totalDecodedBytes": 0,
+          "resourceCount": 1,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "image": {
+          "totalTransferBytes": 300,
+          "totalEncodedBytes": 0,
+          "totalDecodedBytes": 0,
+          "resourceCount": 1,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        },
+        "other": {
+          "totalTransferBytes": null,
+          "totalEncodedBytes": null,
+          "totalDecodedBytes": null,
+          "resourceCount": 0,
+          "unavailableTransferCount": 0,
+          "unavailableEncodedCount": 0,
+          "unavailableDecodedCount": 0
+        }
+      },
+      "network": {
+        "responses": [
+          {
+            "requestId": "E828C7FD512F8F52C1DF5CFF7D15C729",
+            "url": "http://127.0.0.1:51619/playground/",
+            "status": 200,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "247.13",
+            "url": "http://127.0.0.1:51619/assets/site-CHB0njnh.css",
+            "status": 304,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "247.12",
+            "url": "http://127.0.0.1:51619/assets/site-BTwOohK1.js",
+            "status": 304,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "247.14",
+            "url": "http://127.0.0.1:51619/aeliqo.png",
+            "status": 304,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "247.18",
+            "url": "http://127.0.0.1:51619/assets/playground-D3tixfom.js",
+            "status": 304,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "247.19",
+            "url": "http://127.0.0.1:51619/assets/register-C6W6AUqt.js",
+            "status": 304,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          },
+          {
+            "requestId": "247.20",
+            "url": "http://127.0.0.1:51619/assets/dialog-DhgWo0I7.js",
+            "status": 304,
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "fromPrefetchCache": false
+          }
+        ],
+        "extraInfo": [
+          {
+            "requestId": "E828C7FD512F8F52C1DF5CFF7D15C729",
+            "statusCode": 304
+          },
+          {
+            "requestId": "247.13",
+            "statusCode": 304
+          },
+          {
+            "requestId": "247.12",
+            "statusCode": 304
+          },
+          {
+            "requestId": "247.14",
+            "statusCode": 304
+          },
+          {
+            "requestId": "247.18",
+            "statusCode": 304
+          },
+          {
+            "requestId": "247.19",
+            "statusCode": 304
+          },
+          {
+            "requestId": "247.20",
+            "statusCode": 304
+          }
+        ],
+        "loadingFinished": [
+          {
+            "requestId": "247.13",
+            "encodedDataLength": 180
+          },
+          {
+            "requestId": "E828C7FD512F8F52C1DF5CFF7D15C729",
+            "encodedDataLength": 127
+          },
+          {
+            "requestId": "247.12",
+            "encodedDataLength": 180
+          },
+          {
+            "requestId": "247.14",
+            "encodedDataLength": 127
+          },
+          {
+            "requestId": "247.18",
+            "encodedDataLength": 180
+          },
+          {
+            "requestId": "247.19",
+            "encodedDataLength": 180
+          },
+          {
+            "requestId": "247.20",
+            "encodedDataLength": 180
+          }
+        ],
+        "loadingFailedCount": 0
+      },
+      "cacheEvidence": {
+        "resourceTimingZeroTransferCount": 0,
+        "diskCacheResponseCount": 0,
+        "serviceWorkerResponseCount": 0,
+        "revalidated304Count": 7,
+        "networkLoadingFinishedEncodedBytes": 1154,
+        "status": "observed"
+      }
+    }
+  ],
+  "notes": [
+    "This is a whole-site production build+preview observation for three representative routes; it is not a library-only performance claim.",
+    "Cold samples use a fresh browser context, clear the Chromium browser cache through CDP, and disable the network cache. Warm samples use one context per route after one warmup navigation with the browser cache enabled.",
+    "Navigation, ResourceTiming, PaintTiming, largest-contentful-paint, and layout-shift values are browser observations. Missing APIs or entries are represented as null; no synthetic INP or input-to-paint metric is generated.",
+    "The latest observed LCP candidate is retained as raw observer data; it is not presented as a final lifecycle or field LCP percentile. Layout-shift entries are retained individually; their values are not summed or labeled as Core Web Vitals CLS.",
+    "ResourceTiming byte totals and CDP loadingFinished byte totals are separate observations. Cache evidence distinguishes zero-transfer ResourceTiming entries, disk-cache responses, service-worker responses, and matching 304 statuses; incomplete cache evidence remains incomplete.",
+    "The smoke plan uses one cold and one warm sample per route. A 10-cold/30-warm run is opt-in through AELIQO_RUN_PERFORMANCE=1. No timing threshold or performance pass budget is asserted."
+  ]
+}
