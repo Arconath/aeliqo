@@ -1,0 +1,267 @@
+{
+  "schema": "aeliqo.performance.adverse-runtime.v1",
+  "sourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+  "sourceAdapter": "in-process async-iterator adapter; no network/server capacity claim",
+  "packageEntry": "@aeliqo/sdk-runtime/results and @aeliqo/sdk-runtime/regions built package exports",
+  "environment": {
+    "node": "v24.20.0",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "method": {
+    "slowSourceDelayMs": 12,
+    "supersedingRequests": 16,
+    "lifecycle": "ResultStore subscription cancellation, source revision change with explicit prior-handle disposal, RegionStore pending commit disposal",
+    "publicSignals": [
+      "ResultHandle.snapshot",
+      "ResultStore.get",
+      "RegionHandle.snapshot",
+      "RegionHandle.history",
+      "RegionObserver.closed"
+    ],
+    "rawSourceMetrics": true,
+    "sourceRevisionPolicy": "source-a and source-b use independent cache slots; the prior source-a handle is explicitly disposed before late delivery"
+  },
+  "elapsedMs": 21.90225000000001,
+  "slowSource": {
+    "elapsedMs": 15.789666000000004,
+    "updateCount": 3,
+    "finalStatus": "ready",
+    "sourceRevision": "source-a",
+    "loadedRows": 1,
+    "retainedBatches": 1,
+    "activeSources": 0,
+    "maxActiveSources": 1,
+    "retainedHandleBeforeCleanup": true,
+    "retainedHandleAfterCleanup": false,
+    "retainedBatchesAfterCleanup": 0
+  },
+  "supersedingStorm": {
+    "requestCount": 16,
+    "supersededCount": 15,
+    "disposedBeforeCleanup": 0,
+    "staleRows": 0,
+    "finalStatus": "ready",
+    "finalRows": [
+      "new-row"
+    ],
+    "finalGeneration": 16,
+    "currentGeneration": 16,
+    "terminalUpdates": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "ready"
+    ],
+    "activeSources": 0,
+    "maxActiveSources": 1,
+    "lateDropped": 45,
+    "deliveredAfterReturn": 0,
+    "retainedAfterDispose": false,
+    "disposedAfterCleanup": 16,
+    "retainedBuffersAfterCleanup": 0
+  },
+  "nonCooperativeLateDelivery": {
+    "supersededStatus": "stale",
+    "supersededDescriptorRetained": false,
+    "supersededRows": 0,
+    "supersededUpdates": 0,
+    "currentStatus": "ready",
+    "currentRows": [
+      "current-row"
+    ],
+    "currentUpdates": 3,
+    "disposedStatus": "disposed",
+    "disposedDescriptorRetained": false,
+    "disposedRows": 0,
+    "disposedUpdates": 0,
+    "activeSources": 0,
+    "maxActiveSources": 1,
+    "deliveredAfterReturn": 2
+  },
+  "revisionAndRegionCleanup": {
+    "elapsedMs": 3.4126250000000056,
+    "oldUpdates": 0,
+    "oldStatus": "disposed",
+    "oldRows": 0,
+    "oldSourceRevision": "source-a",
+    "freshUpdates": 3,
+    "freshStatus": "ready",
+    "freshRows": [
+      "fresh-row"
+    ],
+    "freshSourceRevision": "source-b",
+    "freshGeneration": 2,
+    "oldGeneration": 1,
+    "activeSources": 0,
+    "staleLateEventsDropped": 3,
+    "deliveredAfterDispose": 0,
+    "regionCommitCode": "runtime.region-disposed",
+    "regionStatus": "disposed",
+    "regionObserverClosed": true,
+    "regionStoreEntryAfterDispose": false,
+    "regionHistoryLength": 0,
+    "observerUpdates": 1,
+    "authorizationAborted": true,
+    "disposeToCommitMs": 0.22304200000000662
+  },
+  "sourceMetrics": {
+    "slowSource": {
+      "sources": [
+        {
+          "label": "slow-source",
+          "closed": true
+        }
+      ],
+      "pulls": 3,
+      "startedSources": 1,
+      "returnedSources": 1,
+      "lateDropped": 0,
+      "deliveredAfterReturn": 0,
+      "activeSources": 0,
+      "maxActiveSources": 1
+    },
+    "supersedingStorm": {
+      "sources": [
+        {
+          "label": "storm-1",
+          "closed": true
+        },
+        {
+          "label": "storm-2",
+          "closed": true
+        },
+        {
+          "label": "storm-3",
+          "closed": true
+        },
+        {
+          "label": "storm-4",
+          "closed": true
+        },
+        {
+          "label": "storm-5",
+          "closed": true
+        },
+        {
+          "label": "storm-6",
+          "closed": true
+        },
+        {
+          "label": "storm-7",
+          "closed": true
+        },
+        {
+          "label": "storm-8",
+          "closed": true
+        },
+        {
+          "label": "storm-9",
+          "closed": true
+        },
+        {
+          "label": "storm-10",
+          "closed": true
+        },
+        {
+          "label": "storm-11",
+          "closed": true
+        },
+        {
+          "label": "storm-12",
+          "closed": true
+        },
+        {
+          "label": "storm-13",
+          "closed": true
+        },
+        {
+          "label": "storm-14",
+          "closed": true
+        },
+        {
+          "label": "storm-15",
+          "closed": true
+        },
+        {
+          "label": "storm-16",
+          "closed": true
+        }
+      ],
+      "pulls": 18,
+      "startedSources": 16,
+      "returnedSources": 16,
+      "lateDropped": 45,
+      "deliveredAfterReturn": 0,
+      "activeSources": 0,
+      "maxActiveSources": 1
+    },
+    "nonCooperativeLateDelivery": {
+      "sources": [
+        {
+          "label": "non-cooperative-superseded",
+          "closed": true
+        },
+        {
+          "label": "non-cooperative-current",
+          "closed": true
+        },
+        {
+          "label": "non-cooperative-disposed",
+          "closed": true
+        }
+      ],
+      "pulls": 5,
+      "startedSources": 3,
+      "returnedSources": 3,
+      "lateDropped": 0,
+      "deliveredAfterReturn": 2,
+      "activeSources": 0,
+      "maxActiveSources": 1
+    },
+    "revision": {
+      "sources": [
+        {
+          "label": "source-a",
+          "closed": true
+        },
+        {
+          "label": "source-b",
+          "closed": true
+        }
+      ],
+      "pulls": 4,
+      "startedSources": 2,
+      "returnedSources": 2,
+      "lateDropped": 3,
+      "deliveredAfterReturn": 0,
+      "activeSources": 0,
+      "maxActiveSources": 2
+    }
+  },
+  "interpretation": {
+    "observed": [
+      "Late events from superseded or disposed subscriptions were not committed to their ResultHandle snapshots.",
+      "A non-cooperative source resolved one outstanding next() after runtime return/dispose; the delivered descriptor/batch did not alter the closed or stale handle.",
+      "The newest superseding generation retained the expected row identity and source revision.",
+      "A pending RegionStore authorization was aborted by dispose and did not publish a commit."
+    ],
+    "limitations": [
+      "The adapter is in-process; this report does not prove HTTP, socket, proxy or backend cancellation.",
+      "No heap or garbage-collection verdict is inferred from public handle/store counts.",
+      "Timing values are raw observations from one Node process and are not product performance qualification."
+    ]
+  }
+}

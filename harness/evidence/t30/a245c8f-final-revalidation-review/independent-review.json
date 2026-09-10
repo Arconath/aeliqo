@@ -1,0 +1,163 @@
+{
+  "task": "T30",
+  "status": "approved-with-nonblocking-findings",
+  "reviewedAt": "2026-09-10T14:38:24Z",
+  "sourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+  "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+  "authorEvidenceCommit": "e0dbca5f933a901598fceae01731d20d5c5dc7fb",
+  "reviewBaseCommit": "343bbec394fc1225a8a3fa1a5e7479a118c0925d",
+  "reviewer": "/root/fix_remaining_narrow_overflow",
+  "independentOfAuthor": true,
+  "decision": "approve",
+  "scope": "Independent review of the final T30 exact-source performance requalification packet, its retained raw artifacts, logs, exit records, source and budget bindings, and fresh exact-source reproductions. This review does not claim lower-powered-device, cross-browser, field Core Web Vitals, paint-complete input latency, backend or network capacity, reference-model quality, publication, deployment, or universal memory behavior.",
+  "authorPacketIntegrity": {
+    "manifestSha256": "f16f0fcc90d3edf90a693c63870a47f77cee189ae5c0b2a355c1d687e662ddbc",
+    "sha256IndexSha256": "2ac5859f16acbe581b6f9a0acb4d7587497aacad9611c30d8403bf63b99b7869",
+    "indexedArtifacts": 54,
+    "indexedArtifactsVerified": 54,
+    "packetFiles": 56,
+    "unindexedPacketFiles": [
+      "manifest.json",
+      "SHA256SUMS"
+    ],
+    "principalArtifactHashesVerified": 14,
+    "sourceInputHashesVerified": 8,
+    "exitRecordsVerified": 17,
+    "exitRecordsExactZeroNewline": 17,
+    "pairedCommandLogsVerified": 17,
+    "sourceCommitVerified": true,
+    "sourceDigestVerified": true,
+    "productSourceChangesFromReview": [],
+    "budgetChangesFromReview": []
+  },
+  "authorMeasurementsReviewed": {
+    "nodeRuntime": {
+      "qualifyingAttempts": 2,
+      "plannerP95Ms": [14.839042000000063, 13.778959000000214],
+      "plannerBudgetMs": 16,
+      "actualTargetedReducerDispatchP95Ms": [0.1367920000002414, 0.12833299999965675],
+      "targetedReducerBudgetMs": 4,
+      "cleanupCyclesPerAttempt": 100,
+      "allCleanupCountersZero": true
+    },
+    "browserRuntime": {
+      "plannerP95Ms": 9.900000005960464,
+      "plannerBudgetMs": 16,
+      "targetedReducerDispatchP95Ms": 0.20000000298023224,
+      "targetedReducerBudgetMs": 4,
+      "largeDeclaredRows": 1000000,
+      "largeTransferredRows": 100,
+      "largeMountedRows": 44,
+      "cleanupCycles": 100,
+      "cleanupCountersZero": true,
+      "traceEvents": 113614,
+      "scriptEvents": 5030,
+      "layoutEvents": 9,
+      "paintEvents": 2,
+      "compositeLayerEvents": 0
+    },
+    "heapLifecycle": {
+      "cycles": 100,
+      "baselineFootprintBytes": 4224469,
+      "firstPostGcFootprintBytes": 4242147,
+      "lastPostGcFootprintBytes": 4264167,
+      "firstToLastDeltaBytes": 22020,
+      "finalDomNodes": 0,
+      "finalTrackedListeners": 0,
+      "positiveControlHeldIncreaseBytes": 24637387,
+      "responsivePositiveControl": true
+    },
+    "siteAndLayout": {
+      "siteRoutes": 3,
+      "coldSamplesPerRoute": 10,
+      "warmSamplesPerRoute": 30,
+      "catalogRoutesPerLayoutAttempt": 71,
+      "completeLayoutAttempts": 2,
+      "maximumLayoutShift": 0,
+      "maximumSentinelGeometryDeltaPx": 0,
+      "trendSentinelHeightPx": 944
+    },
+    "adverseCases": {
+      "runtimeSupersedingRequests": 16,
+      "runtimeLateEventsDropped": 45,
+      "runtimeRetainedBuffersAfterCleanup": 0,
+      "runtimeAuthorizationAborted": true,
+      "visualizationRows": 1000,
+      "visualizationNullRows": 250,
+      "visualizationSelectedIdentities": 1000,
+      "visualizationOscillationSamples": 40,
+      "visualizationNetworkRequests": 0,
+      "visualizationP95Ms": 17.19999998807907
+    },
+    "bundles": {
+      "rows": 6,
+      "allPassed": true,
+      "installedPackageConsumerLockVerified": true,
+      "forbiddenModuleMatches": 0
+    }
+  },
+  "freshReproductions": {
+    "homebrewNode24Zlib1212": {
+      "runtimeAttempts": [
+        {"attempt": 1, "plannerP95Ms": 13.695166999999856, "plannerPassed": true, "targetedReducerDispatchP95Ms": 0.14487499999995634, "targetedReducerPassed": true, "cleanupPassed": true},
+        {"attempt": 2, "plannerP95Ms": 13.836874999999964, "plannerPassed": true, "targetedReducerDispatchP95Ms": 0.3584579999997004, "targetedReducerPassed": true, "cleanupPassed": true},
+        {"attempt": 3, "plannerP95Ms": 14.412874999999985, "plannerPassed": true, "targetedReducerDispatchP95Ms": 0.1513330000007045, "targetedReducerPassed": true, "cleanupPassed": true}
+      ],
+      "bundleRowsPassed": 6,
+      "bundleRowsTotal": 6
+    },
+    "nvmNode24Zlib1321": {
+      "runtimeAttempts": [
+        {"attempt": 1, "plannerP95Ms": 12.884666000000152, "plannerPassed": true, "targetedReducerDispatchP95Ms": 0.12083299999994779, "targetedReducerPassed": true, "cleanupPassed": true},
+        {"attempt": 2, "plannerP95Ms": 13.308500000000095, "plannerPassed": true, "targetedReducerDispatchP95Ms": 0.12516599999980826, "targetedReducerPassed": true, "cleanupPassed": true},
+        {"attempt": 3, "plannerP95Ms": 21.31487499999912, "plannerPassed": false, "targetedReducerDispatchP95Ms": 0.1617499999993015, "targetedReducerPassed": true, "cleanupPassed": true}
+      ],
+      "plannerBudgetMs": 16,
+      "bundleRowsPassed": 6,
+      "bundleRowsTotal": 6,
+      "bundleGzipBytesExactlyMatchAuthorPacket": true
+    },
+    "bundleEnvironmentComparison": {
+      "sameNodeSemver": "v24.20.0",
+      "homebrewZlib": "1.2.12",
+      "nvmZlib": "1.3.2.1-motley-42c2f19",
+      "uncompressedChunkHashesIdenticalAcrossEnvironments": true,
+      "gzipBytesDifferAcrossZlibBuilds": true,
+      "allRowsRemainWithinBudgetAcrossEnvironments": true
+    },
+    "adverseRuntimePassed": true,
+    "adverseVisualizationPassed": true,
+    "documentLayoutPassed": true,
+    "documentLayoutRoutes": 71,
+    "documentLayoutMaximumShift": 0,
+    "documentLayoutMaximumGeometryDeltaPx": 0
+  },
+  "findings": [
+    {
+      "priority": "P2",
+      "blocking": false,
+      "title": "Node planner timing has recurring headroom variability",
+      "detail": "Five of six fresh reviewer repetitions passed the unchanged 16 ms planner p95 budget, while retained NVM repetition 3 measured 21.314875 ms and exited 1. A prior author-era isolated 17.153 ms miss was already retained and investigated. The author qualification still contains the required two clean exact-source repetitions and browser planner evidence is 9.9 ms, so this does not invalidate the packet, but it is a real reliability/headroom follow-up rather than proof of universal conformance."
+    },
+    {
+      "priority": "P3",
+      "blocking": false,
+      "title": "Two author manifest reducer fields use the functional-run p95 under a dispatch label",
+      "detail": "The manifest values 0.134667 ms and 0.153042 ms equal targetedReducer.functional.p95Ms. The enforced dispatchP95Ms values in the retained raw attempts are 0.136792 ms and 0.128333 ms. Both actual enforced values remain far below the unchanged 4 ms budget; the correction is recorded here without mutating the immutable author packet."
+    },
+    {
+      "priority": "P3",
+      "blocking": false,
+      "title": "Site observation mode label is imprecise",
+      "detail": "The author manifest describes the site run as extended-observation, while retained site-page.json records mode functional-observation with samplePlan.extended=true and the full requested 10 cold plus 30 warm samples per route. The sample counts and measurements are intact."
+    },
+    {
+      "priority": "P3",
+      "blocking": false,
+      "title": "Bundle gzip output depends on the Node zlib build",
+      "detail": "Two Node v24.20.0 distributions produced identical uncompressed chunk SHA-256 values but slightly different gzip byte counts. The NVM zlib 1.3.2.1 build exactly reproduced the author packet; the Homebrew zlib 1.2.12 build remained within every budget."
+    }
+  ],
+  "blockingFindings": [],
+  "conclusion": "The exact-source T30 author packet is complete, hash-consistent, source- and budget-bound, and supported by fresh adverse, layout, bundle, cleanup, and repeated runtime evidence. Approval is granted with the retained planner headroom reliability finding and evidence-label precision corrections above."
+}

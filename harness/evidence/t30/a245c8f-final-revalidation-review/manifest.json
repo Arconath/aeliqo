@@ -1,0 +1,211 @@
+{
+  "schema": "aeliqo.t30.final-revalidation-independent-review.v1",
+  "task": "T30",
+  "status": "review-complete-with-nonblocking-findings",
+  "generatedAt": "2026-09-10T14:38:24Z",
+  "sourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+  "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+  "authorEvidenceCommit": "e0dbca5f933a901598fceae01731d20d5c5dc7fb",
+  "reviewBaseCommit": "343bbec394fc1225a8a3fa1a5e7479a118c0925d",
+  "scope": "Evidence-only independent review of the final T30 exact-source performance requalification. Product source, task state, root configuration, budgets and lockfiles were not modified.",
+  "environment": {
+    "os": "macOS 26.6.2 (25G83)",
+    "kernelRelease": "25.6.0",
+    "cpu": "Apple M4 Pro",
+    "logicalCpuCount": 12,
+    "memoryBytes": 25769803776,
+    "runtimeVariants": [
+      {
+        "name": "homebrew-node-24",
+        "node": "v24.20.0",
+        "zlib": "1.2.12"
+      },
+      {
+        "name": "nvm-node-24",
+        "node": "v24.20.0",
+        "zlib": "1.3.2.1-motley-42c2f19"
+      }
+    ]
+  },
+  "authorPacketChecks": {
+    "manifestSha256": "f16f0fcc90d3edf90a693c63870a47f77cee189ae5c0b2a355c1d687e662ddbc",
+    "sha256IndexSha256": "2ac5859f16acbe581b6f9a0acb4d7587497aacad9611c30d8403bf63b99b7869",
+    "indexedFiles": 54,
+    "indexedFilesPassed": 54,
+    "principalArtifactsPassed": 14,
+    "sourceInputsPassed": 8,
+    "exitLogPairsPassed": 17,
+    "sourceAndBudgetBindingPassed": true,
+    "manifestClaimAuditPassedWithPrecisionCorrections": true
+  },
+  "freshChecks": [
+    {
+      "id": "homebrew-runtime-attempt-1",
+      "command": "AELIQO_PERFORMANCE_OUTPUT=artifacts/t30-a245c8f-final-review/runtime-attempt-1 pnpm test:performance:runtime",
+      "status": "pass",
+      "plannerP95Ms": 13.695166999999856,
+      "plannerBudgetMs": 16,
+      "targetedReducerDispatchP95Ms": 0.14487499999995634,
+      "targetedReducerBudgetMs": 4,
+      "cleanupPassed": true
+    },
+    {
+      "id": "homebrew-runtime-attempt-2",
+      "command": "AELIQO_PERFORMANCE_OUTPUT=artifacts/t30-a245c8f-final-review/runtime-attempt-2 pnpm test:performance:runtime",
+      "status": "pass",
+      "plannerP95Ms": 13.836874999999964,
+      "plannerBudgetMs": 16,
+      "targetedReducerDispatchP95Ms": 0.3584579999997004,
+      "targetedReducerBudgetMs": 4,
+      "cleanupPassed": true
+    },
+    {
+      "id": "homebrew-runtime-attempt-3",
+      "command": "AELIQO_PERFORMANCE_OUTPUT=artifacts/t30-a245c8f-final-review/runtime-attempt-3 pnpm test:performance:runtime",
+      "status": "pass",
+      "plannerP95Ms": 14.412874999999985,
+      "plannerBudgetMs": 16,
+      "targetedReducerDispatchP95Ms": 0.1513330000007045,
+      "targetedReducerBudgetMs": 4,
+      "cleanupPassed": true
+    },
+    {
+      "id": "homebrew-bundles",
+      "command": "pnpm test:performance:bundles",
+      "status": "pass",
+      "rows": 6,
+      "zlib": "1.2.12"
+    },
+    {
+      "id": "adverse-runtime",
+      "command": "AELIQO_ADVERSE_RUNTIME_OUTPUT=artifacts/t30-a245c8f-final-review/adverse-runtime.json pnpm test:performance:adverse-runtime",
+      "status": "pass",
+      "tests": 1
+    },
+    {
+      "id": "adverse-visualization",
+      "command": "pnpm test:performance:adverse-visualization",
+      "status": "pass",
+      "tests": 1
+    },
+    {
+      "id": "document-layout-71",
+      "command": "pnpm test:site:document-layout",
+      "status": "pass",
+      "tests": 1,
+      "catalogRoutes": 71
+    },
+    {
+      "id": "nvm-runtime-attempt-1",
+      "command": "AELIQO_PERFORMANCE_OUTPUT=artifacts/t30-a245c8f-final-review/nvm-runtime-attempt-1 pnpm test:performance:runtime",
+      "status": "pass",
+      "plannerP95Ms": 12.884666000000152,
+      "plannerBudgetMs": 16,
+      "targetedReducerDispatchP95Ms": 0.12083299999994779,
+      "targetedReducerBudgetMs": 4,
+      "cleanupPassed": true
+    },
+    {
+      "id": "nvm-runtime-attempt-2",
+      "command": "AELIQO_PERFORMANCE_OUTPUT=artifacts/t30-a245c8f-final-review/nvm-runtime-attempt-2 pnpm test:performance:runtime",
+      "status": "pass",
+      "plannerP95Ms": 13.308500000000095,
+      "plannerBudgetMs": 16,
+      "targetedReducerDispatchP95Ms": 0.12516599999980826,
+      "targetedReducerBudgetMs": 4,
+      "cleanupPassed": true
+    },
+    {
+      "id": "nvm-runtime-attempt-3",
+      "command": "AELIQO_PERFORMANCE_OUTPUT=artifacts/t30-a245c8f-final-review/nvm-runtime-attempt-3 pnpm test:performance:runtime",
+      "status": "retained-budget-miss",
+      "exitCode": 1,
+      "plannerP95Ms": 21.31487499999912,
+      "plannerBudgetMs": 16,
+      "targetedReducerDispatchP95Ms": 0.1617499999993015,
+      "targetedReducerBudgetMs": 4,
+      "cleanupPassed": true
+    },
+    {
+      "id": "nvm-bundles",
+      "command": "pnpm test:performance:bundles",
+      "status": "pass",
+      "rows": 6,
+      "zlib": "1.3.2.1-motley-42c2f19",
+      "gzipBytesExactlyMatchAuthorPacket": true
+    }
+  ],
+  "principalArtifacts": [
+    {
+      "path": "independent-review.json",
+      "sha256": "37b61d9b7a0b2ad75e02e3c625a0213bf85491712bfc51f5dbf6d6112d0de9c9"
+    },
+    {
+      "path": "raw/runtime-attempt-1.json",
+      "sha256": "f039418f602a6749f3806f4e11035827befcc24eb0c3e07250feee1b9730adb6"
+    },
+    {
+      "path": "raw/runtime-attempt-2.json",
+      "sha256": "5768970dd3c1696a1ae006035f2ce89857d93a485a9ff0bb830c7d91a82f3c7a"
+    },
+    {
+      "path": "raw/runtime-attempt-3.json",
+      "sha256": "35800fa8335419da0968e4539dc813e27e8369d9f386a8cf8395ca41130cacc2"
+    },
+    {
+      "path": "raw/nvm-runtime-attempt-1.json",
+      "sha256": "518173f25ad76cf7c1321d6429731d3f9f339e318b55f7f0447f6daba9e216d2"
+    },
+    {
+      "path": "raw/nvm-runtime-attempt-2.json",
+      "sha256": "c569050c7999cee6647885cb35f19893ff595a721b355765cda7d787db61d6a0"
+    },
+    {
+      "path": "raw/nvm-runtime-attempt-3.json",
+      "sha256": "9f93498564319d1a5054e2bf766364dd907740f611bd3e4a89e8af20e364bd89"
+    },
+    {
+      "path": "raw/bundles.json",
+      "sha256": "471d6d233be4ad4519e993727639a6a5ebb9a0bfce9a9ccd71699c29948894ee"
+    },
+    {
+      "path": "raw/nvm-bundles.json",
+      "sha256": "6dc2fe5946a395e06d58b2f9541a973eb254f96654bb5fcd8f549d007adacd83"
+    },
+    {
+      "path": "raw/adverse-runtime.json",
+      "sha256": "6454a6f19350b9b4f59635853bf079efa9fdf328e938c86f4f281a1cee98f78d"
+    },
+    {
+      "path": "raw/adverse-visualization.json",
+      "sha256": "cca074b70bbd5f6f68523172f6df900dca32606a9d5b7d682bf8a8bb226e3807"
+    },
+    {
+      "path": "raw/document-layout-71.json",
+      "sha256": "3f1bc1dc8b5730cddd79e4cd835ffe7e2de8a665f1631b1ea1e09d7f5354c08f"
+    }
+  ],
+  "artifactHashIndex": {
+    "path": "SHA256SUMS",
+    "entries": 26,
+    "sha256": "87d704c963b6cb363c00c6dd24853d13da39ed65c68445b4741422c2039af2b1"
+  },
+  "findings": {
+    "blocking": 0,
+    "p0": 0,
+    "p1": 0,
+    "p2": 1,
+    "p3": 3,
+    "plannerReliabilityFollowUp": true,
+    "evidencePrecisionCorrections": 2,
+    "environmentDisclosure": 1
+  },
+  "limitations": [
+    "The 21.314875 ms reviewer planner miss is retained; five other fresh repetitions passed. This approval does not claim deterministic or universal planner timing.",
+    "Measurements are from one Apple M4 Pro/macOS host and one Chromium build. Lower-powered-device, cross-browser and field behavior remain unproven.",
+    "Visible-input timing stops at an observed DOM mutation, not paint; ordinary Event Timing entries were missing or threshold-censored.",
+    "The requested-GC heap diagnostic and responsive positive control do not prove every object collectible or establish a universal memory budget.",
+    "Adverse runtime does not prove HTTP, socket, proxy, backend cancellation or network capacity.",
+    "No reference-model, model-provider, publication or deployment claim is made."
+  ]
+}
