@@ -1,0 +1,59 @@
+{
+  "schema": "aeliqo.t29.independent-review.v1",
+  "task": "T29",
+  "status": "approved-with-nonblocking-p2-follow-up",
+  "reviewedAt": "2026-09-10T14:27:51Z",
+  "reviewedSourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+  "sourceTree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+  "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+  "reviewer": "/root/investigate_hydration_shift",
+  "independentOfEvidenceAuthors": true,
+  "scope": [
+    "Verify the integrated author packet f8a5c3dac0fcfa05ea7eb9eed70c0f1765120417, retained on main through dd4f609 and reviewed at 9289ef0, against exact source a245c8f.",
+    "Recompute all 31 retained artifact hashes and manifest byte counts, including the checksum inventory self-hash.",
+    "Parse raw Playwright JSON results and logs for expected, passed, skipped, unexpected, flaky, retry and result-error counts.",
+    "Inspect installed visualization and compound consumer source digests, the adverse dense/null-heavy report, the 71-route layout report and all nine retained screenshots.",
+    "Reproduce the six affected Firefox narrow-dark-rtl cases three times and representative Chromium/WebKit trend cases after the prescribed package build step."
+  ],
+  "findings": {
+    "p0": [],
+    "p1": [],
+    "p2": [
+      {
+        "summary": "Retained Axe attachments contain 147 unresolved diagnostics in addition to zero violations.",
+        "evidence": "The full result packet contains 837 accessibility attachments: 0 violations, 123 color-contrast incompletes caused by non-text glyph/obscured-element checks, and 24 aria-valid-attr-value incompletes where Axe cannot resolve aria-controls through the custom-element boundary.",
+        "actualVsExpected": "The maintained tests explicitly fail Axe violations and aria-prohibited-attr incompletes, while retaining other incomplete diagnostics for review; no Axe violation or required test failure was observed.",
+        "consequence": "These specific automated checks remain unresolved, so they do not establish complete WCAG/AT compliance for the affected icon and popup cases.",
+        "priorityRationale": "Nonblocking follow-up: the project records incomplete Axe checks separately, the visual tests pass with zero violations, and manual assistive-technology certification is explicitly deferred rather than claimed.",
+        "recommendedCorrection": "Add targeted contrast and popup aria-controls checks that can cross the custom-element boundary, then supplement with the deferred manual AT review before making a stronger compliance claim.",
+        "verification": "Repeat the full matrix and confirm the unresolved diagnostic counts are reduced or explicitly justified without introducing violations.",
+        "status": "open-follow-up; nonblocking"
+      }
+    ]
+  },
+  "coverage": {
+    "artifactIntegrity": "satisfied; 31/31 checksum entries and all manifest byte counts match",
+    "fullThreeBrowserMatrix": "satisfied; 1137/1137 result rows passed, 379 per browser, with zero skips/unexpected/flaky/retries/result errors",
+    "focusedFirefoxGeometry": "satisfied; seven retained 360x800 RTL/dark/32px measurements report zero overflow, label intersections, data overflow, geometry escapes and page/console errors",
+    "focusedBrowserRecheck": "satisfied; Firefox affected six 18/18 across three repetitions and Chromium/WebKit representatives 2/2",
+    "installedConsumerDigest": "satisfied-by-retained-reports; both consumer reports carry the exact final source digest and pass status",
+    "adverseVisualization": "satisfied-with-provenance-limit; 1000 rows, 250 null rows, 1000 selected identities, 40 oscillations and zero interaction requests; report sourceCommit is unknown but packet source digest is unchanged",
+    "siteDocumentLayout": "satisfied; all 71 routes have identical no-script/hydrated sentinel boxes and zero layout-shift entries",
+    "retainedScreenshotReview": "satisfied; all nine assets inspected, including all seven focused Firefox captures",
+    "manualAssistiveTechnology": "unknown-and-not-claimed",
+    "publicationDeploymentAndUniversalPixelParity": "not-applicable-and-not-claimed"
+  },
+  "limitations": [
+    "The retained packet is author evidence; this record supplies the independent inspection and focused reruns but does not rerun the full 1137-case matrix.",
+    "The first fresh-worktree browser launch before pnpm typecheck could not resolve unbuilt workspace package dist entrypoints; the manifest-prescribed install/typecheck setup then reproduced the focused checks successfully.",
+    "No manual VoiceOver, NVDA or other assistive-technology certification was performed or claimed.",
+    "The adverse timing report is a desktop Chromium observation and does not establish a universal performance threshold or field behavior.",
+    "No publication, deployment, release promotion or live-site identity is claimed."
+  ],
+  "verdict": {
+    "decision": "approve-T29-final-revalidation",
+    "blockingFindings": [],
+    "releaseApprovalIssued": false,
+    "summary": "The final-source T29 author packet is internally consistent and independently rechecked in the requested focused scope. No P0 or P1 finding remains; the only P2 is the explicitly retained unresolved Axe-diagnostic follow-up, so the evidence supports T29 approval without a stronger manual-AT or universal-compliance claim."
+  }
+}

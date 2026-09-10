@@ -1,0 +1,52 @@
+{
+  "schema": "aeliqo.t29.independent-review-manifest.v1",
+  "task": "T29",
+  "status": "complete-independent-review",
+  "reviewedAt": "2026-09-10T14:27:51Z",
+  "reviewedSourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+  "integratedReviewHead": "9289ef054354b60f4124fe2a403ecf1786fb616c",
+  "sourceTree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+  "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+  "reviewedAuthorEvidence": {
+    "commit": "f8a5c3dac0fcfa05ea7eb9eed70c0f1765120417",
+    "integratedCommit": "dd4f6092a924996c3f3a9570c9b27eed72ef6475",
+    "manifest": "harness/evidence/t29/a245c8f-final-revalidation/manifest.json",
+    "manifestSha256": "48db0631d8ee5118916986d51cd149d74bc60c5a62887c256cfe20e2d6f5a2d8",
+    "checksumInventorySha256": "d3caf055315d41e4f73d09c5e4440a36db0257077bb3c57b81de3bc455dddb5e"
+  },
+  "reviewer": {
+    "agent": "/root/investigate_hydration_shift",
+    "role": "independent T29 evidence, browser and screenshot reviewer",
+    "independentOfEvidenceAuthors": true
+  },
+  "evidence": [
+    {
+      "path": "independent-review.json",
+      "sha256": "7e8cc2cb1f00c59bda3a37180b1137088474fd0c37cd4091b09ce479b34fadcf",
+      "bytes": 5405
+    },
+    {
+      "path": "recheck-summary.json",
+      "sha256": "13d7ecb7680992502a1847576361f23499f5ca9e044984feeaa9655f5e7333e0",
+      "bytes": 5968
+    },
+    {
+      "path": "SHA256SUMS",
+      "sha256": "f53fe61cfb6dcd1b3fb17197f349ea9017867df526384d755fdd3479728d05e2",
+      "bytes": 287,
+      "detail": "Inventory for the two review records; manifest and inventory are excluded to avoid a circular hash."
+    }
+  ],
+  "decision": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 1,
+    "blockingFindings": 0,
+    "status": "approved-with-nonblocking-p2-follow-up",
+    "review": "The author packet is internally consistent and supports T29 final-source approval in the inspected scope."
+  },
+  "limits": [
+    "No full 1137-case rerun was performed by the independent reviewer; focused Firefox six-case repeats and Chromium/WebKit representatives were rerun.",
+    "Manual assistive-technology certification, publication, deployment and universal pixel parity are not claimed."
+  ]
+}

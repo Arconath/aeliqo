@@ -1,0 +1,142 @@
+{
+  "schema": "aeliqo.t29.independent-recheck.v1",
+  "task": "T29",
+  "reviewedAt": "2026-09-10T14:27:51Z",
+  "reviewedSourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+  "integratedReviewHead": "9289ef054354b60f4124fe2a403ecf1786fb616c",
+  "sourceTree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+  "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+  "environment": {
+    "os": "macOS 26.6.2 arm64",
+    "node": "v24.20.0",
+    "pnpm": "11.24.0",
+    "playwright": "1.63.0",
+    "browsers": {
+      "chromium": "153.0.8010.12",
+      "firefox": "155.0",
+      "webkit": "26.6"
+    }
+  },
+  "setup": {
+    "install": {
+      "command": "pnpm install --offline --frozen-lockfile",
+      "status": "pass",
+      "detail": "15 workspace projects; lockfile unchanged."
+    },
+    "typecheck": {
+      "command": "pnpm typecheck",
+      "status": "pass",
+      "detail": "Built local package outputs and completed strict workspace typecheck."
+    },
+    "freshWorktreePrecondition": "The first browser launch before typecheck could not resolve workspace package dist entrypoints; after the manifest-prescribed typecheck/build step, the same source and focused tests passed. This is a reproducibility precondition, not a product failure."
+  },
+  "packetHashAudit": {
+    "packetManifest": "harness/evidence/t29/a245c8f-final-revalidation/manifest.json",
+    "packetManifestSha256": "48db0631d8ee5118916986d51cd149d74bc60c5a62887c256cfe20e2d6f5a2d8",
+    "checksumInventory": "harness/evidence/t29/a245c8f-final-revalidation/SHA256SUMS",
+    "checksumInventorySha256": "d3caf055315d41e4f73d09c5e4440a36db0257077bb3c57b81de3bc455dddb5e",
+    "manifestArtifactCount": 32,
+    "retainedArtifactCount": 31,
+    "checksumLineCount": 31,
+    "hashMismatches": 0,
+    "byteCountMismatches": 0,
+    "inventoryMissing": 0,
+    "inventoryExtra": 0,
+    "checksumFileSelfHashMatchesManifest": true
+  },
+  "retainedPlaywrightResults": {
+    "resultPath": "harness/evidence/t29/a245c8f-final-revalidation/results/full-visual-results.json",
+    "expected": 1137,
+    "observedResultRows": 1137,
+    "perBrowser": {
+      "chromium": {"total": 379, "passed": 379, "skipped": 0, "unexpected": 0, "flaky": 0, "retries": 0, "resultErrors": 0},
+      "firefox": {"total": 379, "passed": 379, "skipped": 0, "unexpected": 0, "flaky": 0, "retries": 0, "resultErrors": 0},
+      "webkit": {"total": 379, "passed": 379, "skipped": 0, "unexpected": 0, "flaky": 0, "retries": 0, "resultErrors": 0}
+    },
+    "axeAttachments": 837,
+    "axeViolations": 0,
+    "axeIncompleteDiagnostics": {
+      "total": 147,
+      "byRule": {
+        "color-contrast": 123,
+        "aria-valid-attr-value": 24
+      },
+      "interpretation": "Axe could not determine these checks; the maintained visual tests fail violations and aria-prohibited-attr incompletes, while retaining other incomplete diagnostics for review. No Axe violation was observed."
+    }
+  },
+  "focusedBrowserRecheck": {
+    "firefoxAffectedSix": {
+      "command": "pnpm exec playwright test --config tests/visual/playwright.config.mjs --project=firefox --grep='(trend|scatter|histogram|heatmap|investigation) narrow-dark-rtl$|[^-]area narrow-dark-rtl$' --repeat-each=3",
+      "tests": 18,
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0,
+      "flaky": 0,
+      "retries": 0,
+      "components": ["trend", "area", "scatter", "histogram", "heatmap", "investigation"]
+    },
+    "representativeChromiumWebkit": {
+      "command": "pnpm exec playwright test --config tests/visual/playwright.config.mjs --project=chromium --project=webkit --grep='trend narrow-dark-rtl$'",
+      "tests": 2,
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "flaky": 0,
+      "retries": 0,
+      "projects": ["chromium", "webkit"]
+    }
+  },
+  "retainedEvidenceChecks": {
+    "narrowFirefoxMeasurements": {
+      "components": 7,
+      "viewport": "360x800",
+      "rootFontSize": "32px",
+      "theme": "dark",
+      "direction": "rtl",
+      "documentOverflowCases": 0,
+      "consoleOrPageErrors": 0,
+      "chartLabelIntersectionCases": 0,
+      "chartDataOverflowCases": 0,
+      "chartGeometryOutOfBoundsCases": 0
+    },
+    "siteDocumentLayout": {
+      "routes": 71,
+      "noScriptHydratedBoxMismatches": 0,
+      "routesWithLayoutShiftEntries": 0,
+      "maxObservedLayoutShift": 0,
+      "layoutShiftBudget": 0.1
+    },
+    "installedConsumers": {
+      "visualizationReport": {
+        "path": "harness/evidence/t29/a245c8f-final-revalidation/visualization-consumer-report.json",
+        "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+        "sourceChangedDuringRun": false,
+        "passed": true,
+        "packageTarballs": 3
+      },
+      "compoundReport": {
+        "path": "harness/evidence/t29/a245c8f-final-revalidation/compound-consumer-report.json",
+        "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+        "passed": true,
+        "packageTarballs": 4
+      }
+    },
+    "adverseVisualization": {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/adverse-visualization-report.json",
+      "rows": 1000,
+      "nullRows": 250,
+      "selectedIdentities": 1000,
+      "resizeOscillations": 40,
+      "requestsDuringInteraction": 0,
+      "timingP50Ms": 13.3,
+      "timingP95Ms": 16.4,
+      "sourceCommitField": "unknown",
+      "packetBinding": "The packet manifest binds the run to the unchanged final source digest; the report itself does not carry a commit identifier."
+    },
+    "screenshots": {
+      "count": 9,
+      "allRetainedHashesAndByteCountsVerified": true,
+      "visualInspection": "All seven Firefox 360x800 dark RTL 32px captures and both Chromium desktop-light representatives were inspected. No visible chart-label intersection, viewport clipping, document-width overflow, or hydration placeholder artifact was observed in the retained images."
+    }
+  }
+}
