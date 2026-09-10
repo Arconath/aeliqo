@@ -1,11 +1,12 @@
 # @aeliqo/sdk-web
 
-The T02 platform slice contains the shared Lit implementation for Aeliqo's
-native input, semantic table, and accessible SVG chart. Importing this entry
-does not define custom elements. Call `registerAeliqoElements()` once at the
-application boundary, or use the isolated `@aeliqo/sdk-web/server` entry for the
-server renderer. The server entry accepts a trusted, pre-resolved Lit template
-through `renderAeliqo`; it does not own application data or routes.
+The shared Lit implementation contains Aeliqo's 71 foundation, input, navigation,
+feedback, data, plot, visualization, and semantic compound components. The root
+entry exports the component families without defining custom elements. Call
+`registerAeliqoElements()` once at the application boundary, or use the isolated
+`@aeliqo/sdk-web/server` entry for the server renderer. The server entry accepts a
+trusted, pre-resolved Lit template through `renderAeliqo`; it does not own
+application data or routes.
 
 The server entry is deliberately separate from the browser entry so a browser
 bundle never pulls in Lit SSR or its DOM shim.
@@ -31,7 +32,8 @@ interaction controller. The renderer does not authorize data access or execute
 queries. When permission is revoked, clear the presentation and rows alongside
 revoking runtime state. Registering Aeliqo elements also registers the region.
 
-The early region supports the deterministic vertical proof; it is not the
-completed 71-component catalog. Server rendering accepts an unknown environment;
-the application owns hydration wiring and must provide trusted properties before
-resuming the deferred custom element.
+The region registry exposes the implemented component families to validated
+presentation plans, including registered patterns, bounded no-preset composition,
+and renderer-advertised state mappings. Server rendering accepts an unknown
+environment; the application owns hydration wiring and must provide trusted
+properties before resuming the deferred custom element.

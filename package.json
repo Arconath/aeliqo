@@ -9,6 +9,8 @@
     "release:ready": "python3 scripts/gate.py ready",
     "release:check": "python3 scripts/gate.py release",
     "test:release-tooling": "node --test tests/release/*.test.mjs",
+    "release:bootstrap:build": "node scripts/release/candidate.mjs --version 0.1.0-rc.1",
+    "release:bootstrap:publish": "node scripts/release/publish.mjs --bootstrap-first-rc --tag next",
     "release:legacy:inspect": "node scripts/release/deprecate-legacy.mjs",
     "release:legacy:deprecate": "node scripts/release/deprecate-legacy.mjs --apply",
     "kit:test": "python3 scripts/validate_all.py",

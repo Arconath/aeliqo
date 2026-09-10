@@ -174,6 +174,8 @@ function scanTarballs(packages) {
 
 async function buildAndPack(stagingRoot) {
   const packages = [];
+  const canonicalLicense = await readFile(join(root, 'LICENSE'));
+  const canonicalNotice = await readFile(join(root, 'NOTICE'));
   for (const shortName of PUBLIC_PACKAGES) {
     const directory = join(root, 'packages', shortName);
     const source = await readJson(join(directory, 'package.json'));
@@ -194,6 +196,10 @@ async function buildAndPack(stagingRoot) {
     const paths = archivePaths(tarball);
     assertTarballPaths(paths, expectedName);
     assertExportTargets(manifest, paths, expectedName);
+    const packedLicense = commandBuffer('tar', ['-xOf', tarball, 'package/LICENSE']);
+    const packedNotice = commandBuffer('tar', ['-xOf', tarball, 'package/NOTICE']);
+    if (!packedLicense.equals(canonicalLicense)) throw new Error(`${expectedName} packed LICENSE differs from the canonical Apache-2.0 text`);
+    if (!packedNotice.equals(canonicalNotice)) throw new Error(`${expectedName} packed NOTICE differs from the canonical attribution`);
     const bytes = await readFile(tarball);
     packages.push({name: expectedName, directory, manifest, paths, file: basename(tarball), path: tarball, sha256: sha256(bytes), integrity: sha512Integrity(bytes), bytes: bytes.byteLength});
   }

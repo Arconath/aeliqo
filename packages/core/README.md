@@ -86,7 +86,7 @@ Restrictions can reduce mode, agent enablement, allowed representations/patterns
 operation revisions, extensions, budgets and automatic transition policy. They
 cannot expand the profile or an earlier restriction. Fixed mode disallows
 representation replacement; adaptive mode permits equivalent replacement;
-composable mode permits composition changes. The eventual presentation validator
+composable mode permits composition changes. The presentation validator
 must enforce those flags against the actual current view and candidate.
 
 These passes do not execute reads, validate result permissions, bind a catalog,
@@ -216,7 +216,7 @@ It runs no callbacks, grants no effects and does not establish population
 membership or field edit permission. Those contextual checks belong to the
 runtime and host before a typed interaction can affect state.
 
-## Registered presentation composition (early T39 subset)
+## Registered presentation composition
 
 `createPresentationRegistry` installs trusted versioned manifests. Each manifest
 has a synchronous, pure configuration validator, actual operation metadata and
@@ -235,13 +235,14 @@ the returned plan uses the requested plan ID/revision and validated request pins
 Named outputs with multiple available revisions require explicit descriptor
 selection before automatic composition. Unknown SSR measurements remain unknown.
 
-This early subset requires `allowWithoutPreset: true`. Pattern-only profiles are
-reported unsupported until actual registered pattern expansion is implemented;
-a caller-supplied pattern label cannot establish that a graph is an approved
-expansion. T39 supports only explicit `aeliqo.state.identity@1` transfers between
-the same view ID, role and representation. Representation replacement needs a
-later registered transfer implementation. Structural, configuration, result and
-interaction/coverage changes respect the host's focus/draft/IME transition lock.
+Profiles may allow bounded no-preset composition or require an allowed registered
+pattern. Pattern candidates identify the exact trusted pattern manifest; its local
+expander produces a complete plan that passes the same feasibility validator as
+explicit and no-preset candidates. A caller-supplied label alone never establishes
+an approved pattern expansion. State can use the built-in identity mapping for an
+unchanged view or an exact registered transfer/archive mapping advertised by the
+renderer. Structural, configuration, result and interaction/coverage changes
+respect the host's focus/draft/IME transition lock.
 The host supplies a previously committed incumbent for transition comparison;
 reuse as a new candidate still requires current feasibility validation.
 
@@ -261,5 +262,5 @@ rows or check numerical truth. The runtime must obtain authorized evidence and
 compare values; `compareScalars` exposes the existing exact scalar comparison.
 Proposal repair budgets cover turns, repairs, elapsed time and payload size;
 query, model egress and commit budgets remain with their effect authorities.
-These additive pre-release contracts do not alter existing Task proposals or
+These contracts do not alter existing Task proposals or
 create a provider, binder, permission, query or business effect in core.

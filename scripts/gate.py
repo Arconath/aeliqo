@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import os
 import re
 import subprocess
 import sys
@@ -81,7 +82,8 @@ def readiness_errors(root: Path, mode: str) -> list[str]:
         if scenario.get('status')!='done': errors.append(scenario['id']+': scenario not passed')
         else: errors+=artifact_errors(root,scenario.get('evidence'),scenario['id'])
     digest=candidate_digest(root)
-    ledger_path=root/'harness/evidence/ci.json'
+    configured_ci=os.environ.get('AELIQO_CI_EVIDENCE_PATH')
+    ledger_path=safe_file(root,configured_ci) if configured_ci else root/'harness/evidence/ci.json'
     try:
         ci=load_json(ledger_path)
         if ci.get('subjectSha256')!=digest or ci.get('status')!='pass':
