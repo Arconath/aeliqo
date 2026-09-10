@@ -1,0 +1,865 @@
+{
+  "schema": "aeliqo.t29.firefox-narrow-rtl-zoom.v1",
+  "sourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+  "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+  "browser": "Firefox",
+  "browserVersion": "155.0",
+  "viewport": {
+    "width": 360,
+    "height": 800
+  },
+  "rootFontSize": "32px",
+  "theme": "dark",
+  "direction": "rtl",
+  "components": [
+    {
+      "component": "trend",
+      "screenshot": "/private/tmp/aeliqo-t29-a245c8f-final-revalidation/harness/evidence/t29/a245c8f-final-revalidation/screenshots/trend-firefox-narrow-dark-rtl-200pct.png",
+      "errors": [],
+      "measurement": {
+        "viewport": {
+          "width": 360,
+          "height": 800
+        },
+        "documentWidth": 360,
+        "rootFontSize": "32px",
+        "theme": "dark",
+        "direction": "rtl",
+        "host": {
+          "left": 16,
+          "right": 344,
+          "top": 96,
+          "bottom": 2607.88330078125,
+          "width": 328,
+          "height": 2511.88330078125
+        },
+        "labels": [
+          {
+            "text": "2026-09-08",
+            "box": {
+              "left": 45.78334045410156,
+              "right": 135.38333129882812,
+              "top": 388.3999938964844,
+              "bottom": 408.4499969482422,
+              "width": 89.59999084472656,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "2026-09-09",
+            "box": {
+              "left": 145.46665954589844,
+              "right": 235.03334045410156,
+              "top": 410.95001220703125,
+              "bottom": 431.00001525878906,
+              "width": 89.56668090820312,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "2026-09-10",
+            "box": {
+              "left": 247.63333129882812,
+              "right": 334.71665954589844,
+              "top": 388.3999938964844,
+              "bottom": 408.4499969482422,
+              "width": 87.08332824707031,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "96",
+            "box": {
+              "left": 25.833328247070312,
+              "right": 49.76666259765625,
+              "top": 366.8833312988281,
+              "bottom": 386.93333435058594,
+              "width": 23.933334350585938,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "120",
+            "box": {
+              "left": 19.933334350585938,
+              "right": 49.76666259765625,
+              "top": 293.08331298828125,
+              "bottom": 313.13331604003906,
+              "width": 29.833328247070312,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "144",
+            "box": {
+              "left": 19.166671752929688,
+              "right": 49.76666259765625,
+              "top": 219.28334045410156,
+              "bottom": 239.3333282470703,
+              "width": 30.599990844726562,
+              "height": 20.04998779296875
+            }
+          },
+          {
+            "text": "Date",
+            "box": {
+              "left": 159.63333129882812,
+              "right": 200.36666870117188,
+              "top": 433.54998779296875,
+              "bottom": 455.59999084472656,
+              "width": 40.73333740234375,
+              "height": 22.050003051757812
+            }
+          },
+          {
+            "text": "Amount",
+            "box": {
+              "left": 49.883331298828125,
+              "right": 113.80000305175781,
+              "top": 221.38333129882812,
+              "bottom": 243.43333435058594,
+              "width": 63.91667175292969,
+              "height": 22.050003051757812
+            }
+          }
+        ],
+        "intersections": [],
+        "chartGeometry": {
+          "direction": "ltr",
+          "dataOverflow": 0,
+          "graphicStart": 0,
+          "graphicEnd": 0
+        }
+      }
+    },
+    {
+      "component": "bar",
+      "screenshot": "/private/tmp/aeliqo-t29-a245c8f-final-revalidation/harness/evidence/t29/a245c8f-final-revalidation/screenshots/bar-firefox-narrow-dark-rtl-200pct.png",
+      "errors": [],
+      "measurement": {
+        "viewport": {
+          "width": 360,
+          "height": 800
+        },
+        "documentWidth": 360,
+        "rootFontSize": "32px",
+        "theme": "dark",
+        "direction": "rtl",
+        "host": {
+          "left": 16,
+          "right": 344,
+          "top": 96,
+          "bottom": 2781.88330078125,
+          "width": 328,
+          "height": 2685.88330078125
+        },
+        "labels": [
+          {
+            "text": "Research",
+            "box": {
+              "left": 116.5,
+              "right": 183.81666564941406,
+              "top": 388.3999938964844,
+              "bottom": 408.4499969482422,
+              "width": 67.31666564941406,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "Product",
+            "box": {
+              "left": 205.81666564941406,
+              "right": 264,
+              "top": 410.95001220703125,
+              "bottom": 431.00001525878906,
+              "width": 58.18333435058594,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "96",
+            "box": {
+              "left": 25.833328247070312,
+              "right": 49.76666259765625,
+              "top": 268.48333740234375,
+              "bottom": 288.53334045410156,
+              "width": 23.933334350585938,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "120",
+            "box": {
+              "left": 19.933334350585938,
+              "right": 49.76666259765625,
+              "top": 243.88333129882812,
+              "bottom": 263.93333435058594,
+              "width": 29.833328247070312,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "144",
+            "box": {
+              "left": 19.166671752929688,
+              "right": 49.76666259765625,
+              "top": 219.28334045410156,
+              "bottom": 239.3333282470703,
+              "width": 30.599990844726562,
+              "height": 20.04998779296875
+            }
+          },
+          {
+            "text": "Team",
+            "box": {
+              "left": 156.96665954589844,
+              "right": 203.03334045410156,
+              "top": 433.54998779296875,
+              "bottom": 455.59999084472656,
+              "width": 46.066680908203125,
+              "height": 22.050003051757812
+            }
+          },
+          {
+            "text": "Amount",
+            "box": {
+              "left": 49.883331298828125,
+              "right": 113.80000305175781,
+              "top": 221.38333129882812,
+              "bottom": 243.43333435058594,
+              "width": 63.91667175292969,
+              "height": 22.050003051757812
+            }
+          }
+        ],
+        "intersections": [],
+        "chartGeometry": {
+          "direction": "ltr",
+          "dataOverflow": 0,
+          "graphicStart": 0,
+          "graphicEnd": 0
+        }
+      }
+    },
+    {
+      "component": "area",
+      "screenshot": "/private/tmp/aeliqo-t29-a245c8f-final-revalidation/harness/evidence/t29/a245c8f-final-revalidation/screenshots/area-firefox-narrow-dark-rtl-200pct.png",
+      "errors": [],
+      "measurement": {
+        "viewport": {
+          "width": 360,
+          "height": 800
+        },
+        "documentWidth": 360,
+        "rootFontSize": "32px",
+        "theme": "dark",
+        "direction": "rtl",
+        "host": {
+          "left": 16,
+          "right": 344,
+          "top": 96,
+          "bottom": 2607.88330078125,
+          "width": 328,
+          "height": 2511.88330078125
+        },
+        "labels": [
+          {
+            "text": "2026-09-08",
+            "box": {
+              "left": 45.78334045410156,
+              "right": 135.38333129882812,
+              "top": 388.3999938964844,
+              "bottom": 408.4499969482422,
+              "width": 89.59999084472656,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "2026-09-09",
+            "box": {
+              "left": 145.46665954589844,
+              "right": 235.03334045410156,
+              "top": 410.95001220703125,
+              "bottom": 431.00001525878906,
+              "width": 89.56668090820312,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "2026-09-10",
+            "box": {
+              "left": 247.63333129882812,
+              "right": 334.71665954589844,
+              "top": 388.3999938964844,
+              "bottom": 408.4499969482422,
+              "width": 87.08332824707031,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "96",
+            "box": {
+              "left": 25.833328247070312,
+              "right": 49.76666259765625,
+              "top": 268.48333740234375,
+              "bottom": 288.53334045410156,
+              "width": 23.933334350585938,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "120",
+            "box": {
+              "left": 19.933334350585938,
+              "right": 49.76666259765625,
+              "top": 243.88333129882812,
+              "bottom": 263.93333435058594,
+              "width": 29.833328247070312,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "144",
+            "box": {
+              "left": 19.166671752929688,
+              "right": 49.76666259765625,
+              "top": 219.28334045410156,
+              "bottom": 239.3333282470703,
+              "width": 30.599990844726562,
+              "height": 20.04998779296875
+            }
+          },
+          {
+            "text": "Date",
+            "box": {
+              "left": 159.63333129882812,
+              "right": 200.36666870117188,
+              "top": 433.54998779296875,
+              "bottom": 455.59999084472656,
+              "width": 40.73333740234375,
+              "height": 22.050003051757812
+            }
+          },
+          {
+            "text": "Amount",
+            "box": {
+              "left": 49.883331298828125,
+              "right": 113.80000305175781,
+              "top": 221.38333129882812,
+              "bottom": 243.43333435058594,
+              "width": 63.91667175292969,
+              "height": 22.050003051757812
+            }
+          }
+        ],
+        "intersections": [],
+        "chartGeometry": {
+          "direction": "ltr",
+          "dataOverflow": 0,
+          "graphicStart": 0,
+          "graphicEnd": 0
+        }
+      }
+    },
+    {
+      "component": "scatter",
+      "screenshot": "/private/tmp/aeliqo-t29-a245c8f-final-revalidation/harness/evidence/t29/a245c8f-final-revalidation/screenshots/scatter-firefox-narrow-dark-rtl-200pct.png",
+      "errors": [],
+      "measurement": {
+        "viewport": {
+          "width": 360,
+          "height": 800
+        },
+        "documentWidth": 360,
+        "rootFontSize": "32px",
+        "theme": "dark",
+        "direction": "rtl",
+        "host": {
+          "left": 16,
+          "right": 344,
+          "top": 96,
+          "bottom": 2607.88330078125,
+          "width": 328,
+          "height": 2511.88330078125
+        },
+        "labels": [
+          {
+            "text": "96",
+            "box": {
+              "left": 45.78334045410156,
+              "right": 69.71665954589844,
+              "top": 388.3999938964844,
+              "bottom": 408.4499969482422,
+              "width": 23.933319091796875,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "120",
+            "box": {
+              "left": 175.3333282470703,
+              "right": 205.1666717529297,
+              "top": 410.95001220703125,
+              "bottom": 431.00001525878906,
+              "width": 29.833343505859375,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "144",
+            "box": {
+              "left": 304.1166687011719,
+              "right": 334.71665954589844,
+              "top": 388.3999938964844,
+              "bottom": 408.4499969482422,
+              "width": 30.599990844726562,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "96",
+            "box": {
+              "left": 25.833328247070312,
+              "right": 49.76666259765625,
+              "top": 366.8833312988281,
+              "bottom": 386.93333435058594,
+              "width": 23.933334350585938,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "120",
+            "box": {
+              "left": 19.933334350585938,
+              "right": 49.76666259765625,
+              "top": 293.08331298828125,
+              "bottom": 313.13331604003906,
+              "width": 29.833328247070312,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "144",
+            "box": {
+              "left": 19.166671752929688,
+              "right": 49.76666259765625,
+              "top": 219.28334045410156,
+              "bottom": 239.3333282470703,
+              "width": 30.599990844726562,
+              "height": 20.04998779296875
+            }
+          },
+          {
+            "text": "Amount",
+            "box": {
+              "left": 148.03334045410156,
+              "right": 211.96665954589844,
+              "top": 433.54998779296875,
+              "bottom": 455.59999084472656,
+              "width": 63.933319091796875,
+              "height": 22.050003051757812
+            }
+          },
+          {
+            "text": "Amount",
+            "box": {
+              "left": 49.883331298828125,
+              "right": 113.80000305175781,
+              "top": 221.38333129882812,
+              "bottom": 243.43333435058594,
+              "width": 63.91667175292969,
+              "height": 22.050003051757812
+            }
+          }
+        ],
+        "intersections": [],
+        "chartGeometry": {
+          "direction": "ltr",
+          "dataOverflow": 0,
+          "graphicStart": 0,
+          "graphicEnd": 0
+        }
+      }
+    },
+    {
+      "component": "histogram",
+      "screenshot": "/private/tmp/aeliqo-t29-a245c8f-final-revalidation/harness/evidence/t29/a245c8f-final-revalidation/screenshots/histogram-firefox-narrow-dark-rtl-200pct.png",
+      "errors": [],
+      "measurement": {
+        "viewport": {
+          "width": 360,
+          "height": 800
+        },
+        "documentWidth": 360,
+        "rootFontSize": "32px",
+        "theme": "dark",
+        "direction": "rtl",
+        "host": {
+          "left": 16,
+          "right": 344,
+          "top": 96,
+          "bottom": 2889.88330078125,
+          "width": 328,
+          "height": 2793.88330078125
+        },
+        "labels": [
+          {
+            "text": "80",
+            "box": {
+              "left": 45.78334045410156,
+              "right": 69.64999389648438,
+              "top": 628.4000244140625,
+              "bottom": 648.4500274658203,
+              "width": 23.866653442382812,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "100",
+            "box": {
+              "left": 104.41667175292969,
+              "right": 134.63333129882812,
+              "top": 650.9500122070312,
+              "bottom": 671.0000152587891,
+              "width": 30.216659545898438,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "140",
+            "box": {
+              "left": 245.76666259765625,
+              "right": 276.18333435058594,
+              "top": 628.4000244140625,
+              "bottom": 648.4500274658203,
+              "width": 30.416671752929688,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "160",
+            "box": {
+              "left": 304.41668701171875,
+              "right": 334.7166748046875,
+              "top": 650.9500122070312,
+              "bottom": 671.0000152587891,
+              "width": 30.29998779296875,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "0",
+            "box": {
+              "left": 34.883331298828125,
+              "right": 49.76666259765625,
+              "top": 606.88330078125,
+              "bottom": 626.9333038330078,
+              "width": 14.883331298828125,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "96",
+            "box": {
+              "left": 25.833328247070312,
+              "right": 49.76666259765625,
+              "top": 508.48333740234375,
+              "bottom": 528.5333404541016,
+              "width": 23.933334350585938,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "120",
+            "box": {
+              "left": 19.933334350585938,
+              "right": 49.76666259765625,
+              "top": 483.8833312988281,
+              "bottom": 503.93333435058594,
+              "width": 29.833328247070312,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "144",
+            "box": {
+              "left": 19.166671752929688,
+              "right": 49.76666259765625,
+              "top": 459.2833251953125,
+              "bottom": 479.33331298828125,
+              "width": 30.599990844726562,
+              "height": 20.04998779296875
+            }
+          },
+          {
+            "text": "Bin start",
+            "box": {
+              "left": 146.01666259765625,
+              "right": 213.98333740234375,
+              "top": 673.5499877929688,
+              "bottom": 695.5999908447266,
+              "width": 67.9666748046875,
+              "height": 22.050003051757812
+            }
+          },
+          {
+            "text": "Amount",
+            "box": {
+              "left": 49.883331298828125,
+              "right": 113.80000305175781,
+              "top": 461.3833312988281,
+              "bottom": 483.43333435058594,
+              "width": 63.91667175292969,
+              "height": 22.050003051757812
+            }
+          }
+        ],
+        "intersections": [],
+        "chartGeometry": {
+          "direction": "ltr",
+          "dataOverflow": 0,
+          "graphicStart": 0,
+          "graphicEnd": 0
+        }
+      }
+    },
+    {
+      "component": "heatmap",
+      "screenshot": "/private/tmp/aeliqo-t29-a245c8f-final-revalidation/harness/evidence/t29/a245c8f-final-revalidation/screenshots/heatmap-firefox-narrow-dark-rtl-200pct.png",
+      "errors": [],
+      "measurement": {
+        "viewport": {
+          "width": 360,
+          "height": 800
+        },
+        "documentWidth": 360,
+        "rootFontSize": "32px",
+        "theme": "dark",
+        "direction": "rtl",
+        "host": {
+          "left": 16,
+          "right": 344,
+          "top": 96,
+          "bottom": 2719.88330078125,
+          "width": 328,
+          "height": 2623.88330078125
+        },
+        "labels": [
+          {
+            "text": "Research",
+            "box": {
+              "left": 165.6999969482422,
+              "right": 233.01666259765625,
+              "top": 388.3999938964844,
+              "bottom": 408.4499969482422,
+              "width": 67.31666564941406,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "Product",
+            "box": {
+              "left": 222.21665954589844,
+              "right": 280.3999938964844,
+              "top": 410.95001220703125,
+              "bottom": 431.00001525878906,
+              "width": 58.18333435058594,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "Ada Lovelace",
+            "box": {
+              "left": 21.850006103515625,
+              "right": 115.36666870117188,
+              "top": 342.2833251953125,
+              "bottom": 362.33331298828125,
+              "width": 93.51666259765625,
+              "height": 20.04998779296875
+            }
+          },
+          {
+            "text": "Lin Chen",
+            "box": {
+              "left": 51.23333740234375,
+              "right": 115.36666870117188,
+              "top": 293.08331298828125,
+              "bottom": 313.13331604003906,
+              "width": 64.13333129882812,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "Grace Hopper",
+            "box": {
+              "left": 16.649993896484375,
+              "right": 115.36666870117188,
+              "top": 243.88333129882812,
+              "bottom": 263.93333435058594,
+              "width": 98.7166748046875,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "Team",
+            "box": {
+              "left": 156.96665954589844,
+              "right": 203.03334045410156,
+              "top": 433.54998779296875,
+              "bottom": 455.59999084472656,
+              "width": 46.066680908203125,
+              "height": 22.050003051757812
+            }
+          },
+          {
+            "text": "Name",
+            "box": {
+              "left": 115.48333740234375,
+              "right": 164.89999389648438,
+              "top": 221.38333129882812,
+              "bottom": 243.43333435058594,
+              "width": 49.416656494140625,
+              "height": 22.050003051757812
+            }
+          }
+        ],
+        "intersections": [],
+        "chartGeometry": {
+          "direction": "ltr",
+          "dataOverflow": 0,
+          "graphicStart": 0,
+          "graphicEnd": 0
+        }
+      }
+    },
+    {
+      "component": "investigation",
+      "screenshot": "/private/tmp/aeliqo-t29-a245c8f-final-revalidation/harness/evidence/t29/a245c8f-final-revalidation/screenshots/investigation-firefox-narrow-dark-rtl-200pct.png",
+      "errors": [],
+      "measurement": {
+        "viewport": {
+          "width": 360,
+          "height": 800
+        },
+        "documentWidth": 360,
+        "rootFontSize": "32px",
+        "theme": "dark",
+        "direction": "rtl",
+        "host": {
+          "left": 16,
+          "right": 344,
+          "top": 96,
+          "bottom": 4191.38330078125,
+          "width": 328,
+          "height": 4095.38330078125
+        },
+        "labels": [
+          {
+            "text": "2026-09-08",
+            "box": {
+              "left": 45.78334045410156,
+              "right": 135.38333129882812,
+              "top": 527.9000244140625,
+              "bottom": 547.9500274658203,
+              "width": 89.59999084472656,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "2026-09-09",
+            "box": {
+              "left": 145.46665954589844,
+              "right": 235.03334045410156,
+              "top": 550.4500122070312,
+              "bottom": 570.5000152587891,
+              "width": 89.56668090820312,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "2026-09-10",
+            "box": {
+              "left": 247.63333129882812,
+              "right": 334.71665954589844,
+              "top": 527.9000244140625,
+              "bottom": 547.9500274658203,
+              "width": 87.08332824707031,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "96",
+            "box": {
+              "left": 25.833328247070312,
+              "right": 49.76666259765625,
+              "top": 506.3833312988281,
+              "bottom": 526.4333343505859,
+              "width": 23.933334350585938,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "120",
+            "box": {
+              "left": 19.933334350585938,
+              "right": 49.76666259765625,
+              "top": 442.83331298828125,
+              "bottom": 462.88331604003906,
+              "width": 29.833328247070312,
+              "height": 20.050003051757812
+            }
+          },
+          {
+            "text": "144",
+            "box": {
+              "left": 19.166671752929688,
+              "right": 49.76666259765625,
+              "top": 379.2833251953125,
+              "bottom": 399.33331298828125,
+              "width": 30.599990844726562,
+              "height": 20.04998779296875
+            }
+          },
+          {
+            "text": "Date",
+            "box": {
+              "left": 159.63333129882812,
+              "right": 200.36666870117188,
+              "top": 573.0499877929688,
+              "bottom": 595.0999908447266,
+              "width": 40.73333740234375,
+              "height": 22.050003051757812
+            }
+          },
+          {
+            "text": "Amount",
+            "box": {
+              "left": 49.883331298828125,
+              "right": 113.80000305175781,
+              "top": 381.3833312988281,
+              "bottom": 403.43333435058594,
+              "width": 63.91667175292969,
+              "height": 22.050003051757812
+            }
+          }
+        ],
+        "intersections": [],
+        "chartGeometry": {
+          "direction": "ltr",
+          "dataOverflow": 0,
+          "graphicStart": 0,
+          "graphicEnd": 0
+        }
+      }
+    }
+  ],
+  "checks": {
+    "componentCount": 7,
+    "documentOverflowCases": 0,
+    "consoleOrPageErrors": 0,
+    "chartLabelIntersectionCases": 0,
+    "chartDataOverflowCases": 0,
+    "chartGeometryOutOfBoundsCases": 0
+  },
+  "interpretation": "Machine-measured narrow Firefox regression capture. The complete visual matrix supplies automated Axe, focus, interaction and responsive assertions; this report retains focused geometry, overflow, label-intersection and screenshot evidence for the visualization regression surfaces."
+}

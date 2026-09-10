@@ -1,0 +1,39 @@
+{
+  "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+  "sourceChangedDuringRun": false,
+  "scope": "Installed twelve-family public web/React strict declarations, React SSR exact data/warnings/isolation, Chromium geometry/keyboard selection/revocation",
+  "artifacts": [
+    {
+      "name": "@aeliqo/sdk-core",
+      "version": "0.1.0",
+      "path": "/private/tmp/aeliqo-t29-a245c8f-final-revalidation/artifacts/visualization-consumers/run-i7lVj5/aeliqo-core-0.1.0.tgz",
+      "sha256": "57ef75c3f102bb34df012478f0c483e03b3d8fb7d6f0704c654f36eeb2677b89",
+      "integrity": "sha512-UaAeXvPup0ZQeahQlM6nPqSNJXrxpHe7gO7b5ssz93S4ofuW14R8E1vu9UqkXi9lNLTkGxFOUZ5IB68incjcDA=="
+    },
+    {
+      "name": "@aeliqo/sdk-web",
+      "version": "0.1.0",
+      "path": "/private/tmp/aeliqo-t29-a245c8f-final-revalidation/artifacts/visualization-consumers/run-i7lVj5/aeliqo-web-0.1.0.tgz",
+      "sha256": "65b3b6964356bd4cb1484c3a4966e70f816ed31bdba1845bb58414280a5f13bd",
+      "integrity": "sha512-LYb8Xmd6+HyaJcI7e2iSU8/rpwzoIriC2O4pKsDGLl/CT5HEju1FED/GABWiYLhAND6zNIxTMP4EaD0cBsTeng=="
+    },
+    {
+      "name": "@aeliqo/sdk-react",
+      "version": "0.1.0",
+      "path": "/private/tmp/aeliqo-t29-a245c8f-final-revalidation/artifacts/visualization-consumers/run-i7lVj5/aeliqo-react-0.1.0.tgz",
+      "sha256": "0a4b7b1f742238aa16592ac7fe95e92aca6d0d9f0ef2607d968ebb0366af28e7",
+      "integrity": "sha512-03+huzoN8nOC1+zqHnnPxUjU9QKMPlm7OIiNKDUov38RZrDeebG/8elP0J1O2c4e5QoyYLmyUS7CuV7pDL4F2g=="
+    }
+  ],
+  "consumerDirectory": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-visualization-consumer-SlqSt5",
+  "consumerLock": {
+    "sha256": "b8870bc1eb1babc03c108cf959fb9be1ec01508495a7d29bc0f3bfb765b8f0ea"
+  },
+  "ssr": "Installed React twelve-family plus Matrix, Timeline, CalendarGrid SSR exact values, warnings and request isolation passed.\n",
+  "failures": [],
+  "environment": {
+    "node": "v24.20.0",
+    "chromium": "153.0.8010.12"
+  },
+  "passed": true
+}

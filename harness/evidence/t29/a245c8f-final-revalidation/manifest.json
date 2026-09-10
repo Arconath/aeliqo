@@ -1,0 +1,326 @@
+{
+  "task": "T29",
+  "status": "passed-automated-final-source-revalidation",
+  "testedSourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+  "testedSourceTree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+  "sourceDigestBefore": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+  "sourceDigestAfter": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+  "sourceChangedDuringRun": false,
+  "reviewedAt": "2026-09-10T14:13:24Z",
+  "reviewer": "fix_hydration_geometry",
+  "independent": false,
+  "worktree": "fresh isolated detached worktree created directly from the tested source commit",
+  "scope": "Final-source T29 automated requalification after the site chart-preview hydration-space fix. The run covers the complete owned 71-component three-browser visual/Axe/keyboard/IME/state/interaction matrix, focused Firefox narrow dark RTL 200%-root-text geometry, visualization and compound semantic/SSR/browser/installed-consumer paths, adverse dense/null-heavy visualization behavior, and the complete site document-layout/hydration route probe.",
+  "environment": {
+    "os": "macOS 26.6.2 (25G83)",
+    "architecture": "arm64",
+    "node": "v24.20.0",
+    "pnpm": "11.24.0",
+    "playwright": "1.63.0",
+    "browsers": {
+      "chromium": "153.0.8010.12",
+      "firefox": "155.0",
+      "webkit": "26.6"
+    },
+    "visualWorkers": 1,
+    "visualRetries": 0
+  },
+  "runs": [
+    {
+      "command": "pnpm install --offline --frozen-lockfile",
+      "result": "passed",
+      "detail": "15 workspace projects; lockfile unchanged."
+    },
+    {
+      "command": "pnpm typecheck",
+      "result": "passed",
+      "detail": "Strict workspace typecheck and package builds passed; source digest unchanged."
+    },
+    {
+      "command": "pnpm exec playwright test --config tests/visual/playwright.config.mjs --project=firefox --grep='(trend|scatter|histogram|heatmap|investigation) narrow-dark-rtl$|[^-]area narrow-dark-rtl$' --repeat-each=3",
+      "result": "passed",
+      "tests": 18,
+      "passed": 18,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    {
+      "command": "pnpm test:visualization",
+      "result": "passed",
+      "testFiles": 4,
+      "tests": 27
+    },
+    {
+      "command": "pnpm test:visualization-semantic",
+      "result": "passed",
+      "testFiles": 2,
+      "tests": 7
+    },
+    {
+      "command": "pnpm test:visualization-semantic:browser",
+      "result": "passed",
+      "tests": 4
+    },
+    {
+      "command": "pnpm test:visualization:browser",
+      "result": "passed",
+      "tests": 31,
+      "detail": "Temporal 3/3, cartesian 21/21 and hierarchy 7/7."
+    },
+    {
+      "command": "pnpm test:visualization:consumers",
+      "result": "passed",
+      "sourceDigestMatched": true,
+      "packages": 3
+    },
+    {
+      "command": "pnpm test:compounds",
+      "result": "passed",
+      "testFiles": 1,
+      "tests": 4
+    },
+    {
+      "command": "pnpm test:compounds:browser",
+      "result": "passed",
+      "tests": 12
+    },
+    {
+      "command": "pnpm test:compounds:consumers",
+      "result": "passed",
+      "sourceDigestMatched": true,
+      "packages": 4
+    },
+    {
+      "command": "pnpm test:visual",
+      "result": "passed",
+      "tests": 1137,
+      "passed": 1137,
+      "perBrowser": 379,
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "retries": 0,
+      "duration": "12.0m"
+    },
+    {
+      "command": "pnpm test:performance:adverse-visualization",
+      "result": "passed",
+      "tests": 1,
+      "passed": 1,
+      "detail": "1,000 rows, 250 null rows, 1,000 selected identities, 40 resize oscillations; observed p50 13.3ms and p95 16.4ms; zero interaction requests. Desktop Chromium observation; no universal timing threshold."
+    },
+    {
+      "command": "focused Firefox narrow dark RTL 360x800 32px-root capture and geometry measurement",
+      "result": "passed",
+      "components": 7,
+      "documentOverflowCases": 0,
+      "consoleOrPageErrors": 0,
+      "chartLabelIntersectionCases": 0,
+      "chartDataOverflowCases": 0,
+      "chartGeometryOutOfBoundsCases": 0,
+      "visuallyInspectedRepresentativeCaptures": [
+        "trend",
+        "heatmap",
+        "investigation"
+      ]
+    },
+    {
+      "command": "pnpm test:site:document-layout",
+      "result": "passed",
+      "tests": 1,
+      "routes": 71,
+      "layoutShiftBudget": 0.1,
+      "maxObservedLayoutShift": 0,
+      "routesWithLayoutShiftEntries": 0,
+      "detail": "All generated component routes passed no-JavaScript fallback, hydrated sentinel-box stability, and clipboard-copy checks."
+    }
+  ],
+  "decision": {
+    "automatedQualification": true,
+    "task": "All requested automated T29 evidence passed on exact source a245c8f and digest be201bfa.",
+    "basis": "The complete three-browser matrix passed 1,137/1,137 with no skips, unexpected results, flakes or retries; the focused Firefox regressions passed 18/18 across three repetitions; visualization and compound installed consumers retained the exact source digest; the adverse probe and complete 71-route site hydration-layout probe passed; and focused narrow RTL geometry recorded no overflow, label intersections or geometry escapes.",
+    "independentReview": "Not claimed in this author evidence packet; an independent reviewer should inspect the retained captures and sign the final review record before changing T29 task status."
+  },
+  "limits": [
+    "No manual VoiceOver, NVDA or other assistive-technology certification was performed or claimed.",
+    "Focused 200%-root-text screenshot inspection by this evidence author covered representative trend, heatmap and investigation captures; all seven focused captures are retained for independent review.",
+    "The maintained automated visual matrix covers all required catalog components across Chromium, Firefox and WebKit at its tested variants; captured fixtures do not establish universal pixel equivalence in every consumer environment.",
+    "The adverse run is a desktop Chromium observation without a universal performance threshold; it does not establish lower-powered-device, field Core Web Vitals, paint or universal performance behavior.",
+    "This evidence does not qualify T30, T31, T40, publication, deployment or release promotion."
+  ],
+  "artifacts": [
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/adverse-visualization-report.json",
+      "sha256": "5fe400074e99ecd10650e61db8816bf2bda883c3109f3509e478d064e023e6bd",
+      "bytes": 28664,
+      "detail": "Dense/null-heavy visualization probe report: 1,000 rows, 250 null values, 40 resize oscillations and zero interaction requests."
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/compound-consumer-report.json",
+      "sha256": "1854a277d038cc4e0cb00d697dc4e1ccfc028504ad6f12349b8ca38c5f4b2b8c",
+      "bytes": 2357,
+      "detail": "Installed core/runtime/web/React compound consumer report with exact source digest."
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/firefox-narrow-rtl-200pct-measurements.json",
+      "sha256": "cc9adc3df469462a8cd32b1f9142e5dbf40140b72308c33edd9de75c299d34c0",
+      "bytes": 26212,
+      "detail": "Focused Firefox 155 narrow 360x800 dark RTL 32px-root geometry, overflow, label-intersection and console/page-error measurements."
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/raw-logs/00-install.log",
+      "sha256": "b1c6a0465ef7f0762e472de6c32f9394e9fb72e5eb38c2c1c0296390f8c92f12",
+      "bytes": 86
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/raw-logs/01-typecheck.log",
+      "sha256": "2eabafa8fb837dc99f577cf275f677fe111d9e3acaceaba169bbb6a58f18ccf0",
+      "bytes": 588
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/raw-logs/02-firefox-focused-repeat.log",
+      "sha256": "0a85df263e88c1aa9ce3955064c8dacad77ae9b9f27b1c63a58d1817048f7a78",
+      "bytes": 6373
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/raw-logs/03-visualization.log",
+      "sha256": "760591edc313d870fb9acf875590681d5135e23de85eacc4db28bf6aafca1b0d",
+      "bytes": 1614
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/raw-logs/04-visualization-semantic.log",
+      "sha256": "4ad096ae54e2254e19ac6b46e8d30815d6a4e4571162a602a685d13a76a88b59",
+      "bytes": 826
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/raw-logs/05-visualization-semantic-browser.log",
+      "sha256": "34d18466c313058310b04c260674a8272267a8d3ca1c17dcdf72ff206852acf4",
+      "bytes": 1662
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/raw-logs/06-visualization-browser.log",
+      "sha256": "537c48fc0c2f0ea33b012345ddcf6c2537f3761e4a937eabe1b2d257a1f18c0a",
+      "bytes": 11372
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/raw-logs/07-visualization-consumers.log",
+      "sha256": "d781cbbfb48c703d272458166b6d2d534992608107a4170c3e2a1f166ea8e032",
+      "bytes": 670
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/raw-logs/08-compounds.log",
+      "sha256": "7ffd37b814f1cdb6dfbeaf338f62cacf2f4a679c79b952392e2f4c21ab4980b2",
+      "bytes": 791
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/raw-logs/09-compounds-browser.log",
+      "sha256": "456cac947f66f928d6e302b6f2bdb7608eb1b03c0b9fc68c368c2e86afb678c9",
+      "bytes": 4213
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/raw-logs/10-compounds-consumers.log",
+      "sha256": "9e6fd5581b454e209b381b3201e1bd352ef049783e4084db963a9f1cf9d12f9c",
+      "bytes": 194
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/raw-logs/11-full-visual.log",
+      "sha256": "40d818a8261afe6c7ff0b1c52d341d9788bc055fc6d6abde4ce55e422e77dfe9",
+      "bytes": 331673
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/raw-logs/12-adverse-visualization.log",
+      "sha256": "9909df03eb28429733891470b0e9b86888b3c1888137d02b24cc3d1fe374d88c",
+      "bytes": 2994
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/raw-logs/13-firefox-narrow-rtl-zoom.log",
+      "sha256": "22c23a1d114a6c5d88718242dd93f3e49494705aadb390d35dc43aa9b0b2febb",
+      "bytes": 554
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/raw-logs/13-focused-firefox-server.log",
+      "sha256": "9acd22624fcb17cb90d01944091dedf01fd3d15d5f585111aef07041a0014573",
+      "bytes": 1115
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/raw-logs/14-site-document-layout.log",
+      "sha256": "bdc7e3e4107a745ee9daa8eda2b78460734ca4c52b0b0cdbcd0cd7c55c0227b9",
+      "bytes": 10705
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/results/full-visual-results.json",
+      "sha256": "0d42ce8ffda2e2d208e10934345d3c9006d9b42d8f5abf7f0d5faaea7ebacc7d",
+      "bytes": 4544966,
+      "detail": "Playwright JSON result for the complete three-browser visual matrix."
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/results/site-document-layout/document-layout-evidence.json",
+      "sha256": "3f1bc1dc8b5730cddd79e4cd835ffe7e2de8a665f1631b1ea1e09d7f5354c08f",
+      "bytes": 122905,
+      "detail": "Machine-readable 71-route no-JavaScript/static-vs-hydrated box and layout-shift evidence."
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/screenshots/area-firefox-narrow-dark-rtl-200pct.png",
+      "sha256": "80821f129500044a94ce9bfe322dcc73bf526ac4016b08646faeefe610c8d61a",
+      "bytes": 145575
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/screenshots/bar-firefox-narrow-dark-rtl-200pct.png",
+      "sha256": "65e7cf0e3f4dcf1e37e4e66b871adda49b16b742044817f89f67fcf8f1acfed3",
+      "bytes": 155267
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/screenshots/heatmap-firefox-narrow-dark-rtl-200pct.png",
+      "sha256": "da0387adcc89fdc9ad81831a237233aec6074602fadf4323ef3b877ae911b1d2",
+      "bytes": 152987
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/screenshots/histogram-firefox-narrow-dark-rtl-200pct.png",
+      "sha256": "383fc7c904100fcb3a6dde8ff6477735ae50035f32b9fc7da295eadfe82ad67a",
+      "bytes": 182757
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/screenshots/investigation-chromium-desktop-light.png",
+      "sha256": "c622d992cadb6b20a87e5b069df91db8c3d816baceb3073f4891a764d57c6148",
+      "bytes": 92233
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/screenshots/investigation-firefox-narrow-dark-rtl-200pct.png",
+      "sha256": "301680c15c2dcf0bfcfa072e697f4b0cac104b3487c5cb0392b007e5d33e4460",
+      "bytes": 241588
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/screenshots/scatter-firefox-narrow-dark-rtl-200pct.png",
+      "sha256": "c7661b4c55e866ed4c2d7f7f75739bce01130a74a99f66d9062d5493f84d32e8",
+      "bytes": 140293
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/screenshots/trend-chromium-desktop-light.png",
+      "sha256": "de555c3130ed56373294b64bb2e010646100818b9ec3591786012d66558cb244",
+      "bytes": 55756
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/screenshots/trend-firefox-narrow-dark-rtl-200pct.png",
+      "sha256": "ab6a5adb8250d90c0f2a23ff1cd35e8498ebb53546364ed1e62e059843b714b0",
+      "bytes": 147586
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/visualization-consumer-report.json",
+      "sha256": "1a67f6ae6c7d5775fe2807aadd25b875051b04412e25bd668fb2f0a7e0201db7",
+      "bytes": 2008,
+      "detail": "Installed core/web/React visualization consumer report with exact source digest."
+    },
+    {
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/SHA256SUMS",
+      "sha256": "d3caf055315d41e4f73d09c5e4440a36db0257077bb3c57b81de3bc455dddb5e",
+      "bytes": 4812,
+      "detail": "SHA-256 inventory for every retained report, result, raw log and screenshot; manifest and this inventory are excluded to avoid a circular hash."
+    }
+  ]
+}

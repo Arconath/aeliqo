@@ -1,0 +1,59 @@
+[WebServer] (node:19914) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:19917) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (!) Failed to run dependency scan. Skipping dependency pre-bundling. Error: The following dependencies are imported but could not be resolved:
+[WebServer] 
+[WebServer]   @aeliqo/sdk-agent/protocol (imported by /private/tmp/aeliqo-t29-a245c8f-final-revalidation/tests/agent-evaluation/ui-development/host.ts)
+[WebServer]   @aeliqo/sdk-agent (imported by /private/tmp/aeliqo-t29-a245c8f-final-revalidation/tests/agent-evaluation/ui-development/host.ts)
+[WebServer] 
+[WebServer] Are they installed?
+[WebServer]     at file:///private/tmp/aeliqo-t29-a245c8f-final-revalidation/node_modules/.pnpm/vite@8.2.2_@types+node@24.13.3/node_modules/vite/dist/node/chunks/node.js:32187:33
+[WebServer]     at async file:///private/tmp/aeliqo-t29-a245c8f-final-revalidation/node_modules/.pnpm/vite@8.2.2_@types+node@24.13.3/node_modules/vite/dist/node/chunks/node.js:34462:15
+
+Running 18 tests using 1 worker
+
+(node:19939) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 8:54:27 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   1 [firefox] › tests/visual/catalog.spec.ts:7:6 › trend narrow-dark-rtl (1.2s)
+[WebServer] 8:54:28 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   2 [firefox] › tests/visual/catalog.spec.ts:7:6 › area narrow-dark-rtl (735ms)
+[WebServer] 8:54:29 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   3 [firefox] › tests/visual/catalog.spec.ts:7:6 › scatter narrow-dark-rtl (697ms)
+[WebServer] 8:54:29 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   4 [firefox] › tests/visual/catalog.spec.ts:7:6 › histogram narrow-dark-rtl (744ms)
+[WebServer] 8:54:30 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   5 [firefox] › tests/visual/catalog.spec.ts:7:6 › heatmap narrow-dark-rtl (701ms)
+[WebServer] 8:54:31 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   6 [firefox] › tests/visual/catalog.spec.ts:7:6 › investigation narrow-dark-rtl (748ms)
+(node:20002) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 8:54:33 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   7 [firefox] › tests/visual/catalog.spec.ts:7:6 › trend narrow-dark-rtl (1.2s)
+[WebServer] 8:54:34 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   8 [firefox] › tests/visual/catalog.spec.ts:7:6 › area narrow-dark-rtl (714ms)
+[WebServer] 8:54:34 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓   9 [firefox] › tests/visual/catalog.spec.ts:7:6 › scatter narrow-dark-rtl (852ms)
+[WebServer] 8:54:35 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  10 [firefox] › tests/visual/catalog.spec.ts:7:6 › histogram narrow-dark-rtl (746ms)
+[WebServer] 8:54:36 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  11 [firefox] › tests/visual/catalog.spec.ts:7:6 › heatmap narrow-dark-rtl (693ms)
+[WebServer] 8:54:37 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  12 [firefox] › tests/visual/catalog.spec.ts:7:6 › investigation narrow-dark-rtl (754ms)
+(node:20638) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 8:54:39 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  13 [firefox] › tests/visual/catalog.spec.ts:7:6 › trend narrow-dark-rtl (1.1s)
+[WebServer] 8:54:39 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  14 [firefox] › tests/visual/catalog.spec.ts:7:6 › area narrow-dark-rtl (694ms)
+[WebServer] 8:54:40 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  15 [firefox] › tests/visual/catalog.spec.ts:7:6 › scatter narrow-dark-rtl (695ms)
+[WebServer] 8:54:41 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  16 [firefox] › tests/visual/catalog.spec.ts:7:6 › histogram narrow-dark-rtl (738ms)
+[WebServer] 8:54:42 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  17 [firefox] › tests/visual/catalog.spec.ts:7:6 › heatmap narrow-dark-rtl (693ms)
+[WebServer] 8:54:42 PM [vite] (client) [console.warn] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✓  18 [firefox] › tests/visual/catalog.spec.ts:7:6 › investigation narrow-dark-rtl (755ms)
+
+  18 passed (19.1s)
