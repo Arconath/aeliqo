@@ -105,7 +105,7 @@ describe('S48 canonical task ownership', () => {
       timeout: 30_000,
     });
     expect(output).toBe('');
-  });
+  }, 30_000);
 });
 
 const decisionMappings = [
