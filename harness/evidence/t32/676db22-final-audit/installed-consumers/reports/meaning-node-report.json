@@ -1,0 +1,21 @@
+{
+  "manualRows": [
+    {
+      "orders.total": 5
+    }
+  ],
+  "aiRows": [
+    {
+      "orders.total": 5
+    }
+  ],
+  "manualAiParity": true,
+  "invalidFieldRejected": true,
+  "proposalAccepted": true,
+  "registrationIdempotent": true,
+  "versionConflictRejected": true,
+  "activationReads": 2,
+  "deniedWithoutGrant": true,
+  "staleRejected": true,
+  "revokedAndCleared": true
+}

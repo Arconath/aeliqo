@@ -1,0 +1,12 @@
+$ pnpm build:core && vitest run --config tests/contracts/vitest.config.mjs && tsc -p tests/contracts/tsconfig.json --noEmit
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+
+ RUN  v5.0.0 /private/tmp/aeliqo-t32-final-audit
+
+
+ Test Files  15 passed (15)
+      Tests  157 passed (157)
+   Start at  03:04:05
+   Duration  751ms (transform 49%, import 25%, tests 25%, worker 1%)
+

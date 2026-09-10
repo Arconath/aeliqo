@@ -1,0 +1,89 @@
+{
+  "schema": "aeliqo.t32.external-onboarding.v2",
+  "task": "T32",
+  "source": {
+    "commit": "41c4078d86b4b277128caeb763e9f7fff8109fad",
+    "digest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+    "sourceChangedDuringRun": false
+  },
+  "requirement": "docs/09-experience-dx.md requires a new developer to render a standalone table, connect local semantic and HTTP sources, mount a region, enable an agent, and use copyable examples; a designer must edit tokens, preview narrow/zoom/RTL states, constrain a pattern, export a profile and understand one planning decision. It also requires at least one independent developer and one design reviewer session with completion, errors and confusing terminology recorded.",
+  "automatedInstalledConsumerEvidence": {
+    "status": "observed",
+    "evidence": [
+      {
+        "journey": "developer: schema-reuse meaning and standalone code path",
+        "report": "installed-consumers/reports/meaning-report.json",
+        "observed": [
+          "manualRows and aiRows both produce orders.total = 5",
+          "invalid field rejected",
+          "registration idempotence and version conflict rejection",
+          "activation denied without grant",
+          "stale proposal rejected",
+          "revocation clears result"
+        ]
+      },
+      {
+        "journey": "developer: local/HTTP source, region and governed actions",
+        "report": "installed-consumers/reports/runtime-report.json",
+        "observed": [
+          "local and HTTP transport flows",
+          "region stale commit rejection and fresh-query restore",
+          "independent action grant, confirmation, one-use receipt and stale execution rejection",
+          "interaction cancellation, linked selection and late permission rejection",
+          "bounded redacted audit with no browser I/O"
+        ]
+      },
+      {
+        "journey": "developer: framework-free/React/Vue recipes and SSR",
+        "report": "installed-consumers/reports/framework-report.json",
+        "observed": [
+          "71 React wrapper exports",
+          "typed vanilla, React and Vue recipes",
+          "declarative Shadow DOM SSR",
+          "Chromium property/event behavior"
+        ]
+      },
+      {
+        "journey": "designer: Studio document, profile and code-owned meaning workflow",
+        "report": "installed-consumers/reports/studio-report.json",
+        "observed": [
+          "document/session JSON roundtrip",
+          "standalone TypeScript code export compiles",
+          "code-owned revisions remain immutable/read-only",
+          "personal Experience revisions remain distinct and activatable without Studio, agent or model packages"
+        ]
+      }
+    ],
+    "interpretation": "These are clean installed-package journeys and automated browser/Node observations, not human usability sessions. They show executable onboarding paths but do not establish task completion time, confusion rate or terminology quality."
+  },
+  "humanSessions": {
+    "independentDeveloper": {
+      "status": "unknown-not-run",
+      "completion": null,
+      "errors": null,
+      "confusingTerminology": null
+    },
+    "independentDesignReviewer": {
+      "status": "unknown-not-run",
+      "completion": null,
+      "errors": null,
+      "confusingTerminology": null
+    },
+    "reason": "No independent human developer or design-reviewer session was available in this exact-source packet. It must not be inferred from automated consumer proofs or source inspection."
+  },
+  "finding": {
+    "id": "T32-P2-04",
+    "priority": "P2",
+    "status": "open-follow-up-nonblocking",
+    "summary": "Human onboarding acceptance remains unqualified even though installed consumer journeys are executable.",
+    "consequence": "The project cannot honestly claim measured external onboarding success, setup-error rate, time-to-first-useful-view or terminology clarity from this packet.",
+    "nextAction": "Run the documented developer and design-reviewer sessions against the exact direct-name candidate, record completion/errors/confusing terms, then retain the session artifacts with source identity.",
+    "verification": "Independent session records link to the same source digest and include the required developer and designer task checklist."
+  },
+  "limits": [
+    "Automated consumer evidence does not prove a human can complete the same tasks unaided.",
+    "No manual VoiceOver/NVDA or other assistive-technology certification is claimed.",
+    "No native WebMCP host qualification is claimed.",
+    "No model-answer accuracy or zero-hallucination claim is made."
+  ]
+}

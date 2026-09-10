@@ -1,0 +1,2 @@
+$ node tests/framework-consumers/framework-tarballs.mjs
+Installed framework consumer proof passed. Evidence: /private/tmp/aeliqo-t32-final-audit/artifacts/framework-consumers/run-IYO1mh/report.json

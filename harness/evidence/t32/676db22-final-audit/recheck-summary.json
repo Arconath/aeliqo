@@ -1,0 +1,88 @@
+{
+  "schema": "aeliqo.t32.recheck-summary.v2",
+  "task": "T32",
+  "source": {
+    "commit": "41c4078d86b4b277128caeb763e9f7fff8109fad",
+    "tree": "3732be0756134f19912c40c2fa98fe0f6e81fc76",
+    "digestBefore": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+    "digestAfter": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+    "sourceChangedDuringAllRuns": false,
+    "worktree": "/private/tmp/aeliqo-t32-final-audit",
+    "branch": "codex/t32-final-audit"
+  },
+  "execution": {
+    "runtime": "Node v24.20.0 / pnpm 11.24.0",
+    "browser": "Chromium 153.0.8010.12; Firefox 155.0; WebKit 26.6 available for retained T29 evidence",
+    "install": "offline frozen install completed with 15 workspace projects and unchanged lockfile",
+    "sourceMutation": false,
+    "productMutation": false,
+    "testMutation": false,
+    "taskStateMutation": false,
+    "evidenceMutation": "only this new packet"
+  },
+  "results": {
+    "unitAndContractSuites": "boundaries 4, contracts 157, task-experience 23, query 94, agents 112, meaning-authoring 37, scenarios 58, protocol-mcp 13, protocol-webmcp 12, protocol-model 11, security 14, interaction 24, evaluation 7, agent-evaluation-host 28, runtime-audit 6, release-tooling 22; all passed",
+    "installedConsumers": "runtime, meaning-authoring, framework and Studio reports all passed from stable 0.1.0 tarballs; Node and Chromium paths retained",
+    "site": "site unit 17/17 and site browser 7/7 passed",
+    "candidate": "six direct-name 0.1.0-rc.1 packages, 130 exports, 63 SBOM components, zero secret findings, network-denied consumer with zero audit network attempts",
+    "readiness": "release:ready intentionally blocked with 96 unmet conditions because T32/T33/T34/T35/T42 remain planned and CI/integrated evidence is stale/missing"
+  },
+  "artifactChecks": {
+    "stableTarballs": {
+      "installed-consumers/packages/aeliqo-agent-0.1.0.tgz": "ee21aaa73d763174506ebd6d958d8251b5097670aefeb68c5dce1b83e172cb51",
+      "installed-consumers/packages/aeliqo-core-0.1.0.tgz": "b6c1b763a325b4714b5d8b39427eb411c7b3d08d66d265a85864bae0ba5bad91",
+      "installed-consumers/packages/aeliqo-devtools-0.1.0.tgz": "973540c7ea51d530f0dbf25d3b16b7ef9486d861ac9a8779562c5319ed748fd3",
+      "installed-consumers/packages/aeliqo-react-0.1.0.tgz": "7d9a6ee3b08d2035338fbebdf92e8156850846cf70b3cfefd6175999d1ce759b",
+      "installed-consumers/packages/aeliqo-runtime-0.1.0.tgz": "7cb3acc80b60560201c6492432e962806609c4dd028d3b8c338bcd03ab4a40c7",
+      "installed-consumers/packages/aeliqo-web-0.1.0.tgz": "fa9a5452c651cfe159d115c0f5947fadf48a2256684cb47017f233b2118ba8af"
+    },
+    "candidateTarballs": {
+      "release-candidate/aeliqo-agent-0.1.0-rc.1.tgz": "c4b77fa82e1ec5cf6cde7ba4d5b266d198be9ac2768e8d6b0fda8ad50e652e23",
+      "release-candidate/aeliqo-core-0.1.0-rc.1.tgz": "bfee566d16179ec0a222de966ff2b00cac042e238e798e09d9afeb8d689c7f38",
+      "release-candidate/aeliqo-devtools-0.1.0-rc.1.tgz": "6166f2a994458f286b979a7d32ea1a3c1ce41d3d03d91acbb9a4b386e8d8ab6d",
+      "release-candidate/aeliqo-react-0.1.0-rc.1.tgz": "d35abeee2912e50d4f3c3cc214f23f24813cecec1a6aad8dbb11b8753dc056d1",
+      "release-candidate/aeliqo-runtime-0.1.0-rc.1.tgz": "df7b183da797d6c822e56c0db3af59860e4a5a1c430ac4a2f342f6a8be520d40",
+      "release-candidate/aeliqo-web-0.1.0-rc.1.tgz": "a4260c87d1bf2147435bd0108e630bdc7eaf0d8f5a13c45dd6d4423c0c637383"
+    },
+    "reports": {
+      "installed-consumers/reports/runtime-report.json": "fab23c0dfe301eeafa2afa6ed5f550d814de10e9f581eb50fdc3246fe4ae94ea",
+      "installed-consumers/reports/runtime-browser-report.json": "2d396df64fd6e487fb3853d621dd425a89217100893df7171659f6f5ea048c50",
+      "installed-consumers/reports/meaning-report.json": "b2940c9411402bb169960a22cd3a37f7c393912f6b1a4fb00d074be4f8fb80ac",
+      "installed-consumers/reports/meaning-node-report.json": "93e98a614e04824710cf0eacf829049aea438cf74eba37b383ae0d39789d01e5",
+      "installed-consumers/reports/framework-report.json": "c270959c9345feed40cb028e59fb9dd3adb49bfd5ab0f819c3188cdafbd38e50",
+      "installed-consumers/reports/studio-report.json": "bb6f7cd1f9d442cba5f24da2b4759f67abf3bb8760906691dbab035b3ac6740a"
+    },
+    "candidateMetadata": {
+      "release-candidate/manifest.json": "3a4482bc716212805b13c11c5412e83d3c79cdd6eff00e02d3724ecc1cdae318",
+      "release-candidate/consumer.json": "9da5355191e53a6d9762988478f5ae8554a277b7dd15842513c835e07bf88219",
+      "release-candidate/sbom.cdx.json": "f7a2036d18f1d25ffeb2ed4629567bcf3a94de7d07fc834e0b2648f548b0fd29",
+      "release-candidate/secret-scan.json": "a888fe400976eb22c16046b3943fc2d9cb7b8e1504ed341e8aa0be9a8e9b6c9a"
+    }
+  },
+  "staleEvidence": {
+    "status": "detected-and-not-used",
+    "currentDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+    "ci": {
+      "path": "harness/evidence/ci.json",
+      "sha256": "036c20578c1e14f231a8893871dfaa08131e2cf142864d9667f221c9763836ef",
+      "subjectSha256": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8"
+    },
+    "integrated": {
+      "path": "harness/evidence/integrated.json",
+      "sha256": "cf62420dd28d6f1bade9dd6ff81b3386da9d984c59ac3f58e02ada83df52ae91",
+      "subjectSha256": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8"
+    },
+    "interpretation": "The fail-closed release-ready result correctly refuses to treat stale CI/integrated records as current evidence."
+  },
+  "conclusion": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 4,
+    "status": "review-complete-with-limitations",
+    "next": [
+      "Run independent human developer and design-reviewer onboarding sessions.",
+      "Preserve T30 planner/shared-chunk/tarball follow-ups.",
+      "Keep manual AT, native WebMCP, publication, deployment and model-answer accuracy unclaimed."
+    ]
+  }
+}

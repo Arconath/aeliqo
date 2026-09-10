@@ -1,0 +1,10 @@
+$ vitest run --config tests/security/vitest.config.mjs tests/security/package-boundaries.test.ts
+
+ RUN  v5.0.0 /private/tmp/aeliqo-t32-final-audit
+
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  03:04:03
+   Duration  1.24s (tests 97%, import 1%, transform 1%)
+

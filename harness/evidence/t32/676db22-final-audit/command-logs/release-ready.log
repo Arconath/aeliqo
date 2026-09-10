@@ -1,0 +1,26 @@
+READY BLOCKED: 96 unmet conditions
+- T32: planned, not done
+- T33: planned, not done
+- T34: planned, not done
+- T35: planned, not done
+- T42: planned, not done
+- CI evidence is absent, failed or stale for this candidate
+- CI typecheck: missing/mismatching artifact artifacts/product-ci/00-typecheck.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/01-unit.log
+- CI browser: missing/mismatching artifact artifacts/product-ci/02-browser.log
+- CI browser: missing/mismatching artifact artifacts/product-ci/03-browser.log
+- CI packages: missing/mismatching artifact artifacts/product-ci/04-packages.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/05-unit.log
+- CI packages: missing/mismatching artifact artifacts/product-ci/06-packages.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/07-unit.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/08-unit.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/09-unit.log
+- CI browser: missing/mismatching artifact artifacts/product-ci/10-browser.log
+- CI packages: missing/mismatching artifact artifacts/product-ci/11-packages.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/12-unit.log
+- CI packages: missing/mismatching artifact artifacts/product-ci/13-packages.log
+- CI lint: missing/mismatching artifact artifacts/product-ci/14-lint.log
+- CI security: missing/mismatching artifact artifacts/product-ci/15-security.log
+- CI boundaries: missing/mismatching artifact artifacts/product-ci/16-boundaries.log
+- CI performance: missing/mismatching artifact artifacts/product-ci/17-performance.log
+- ... and 72 more

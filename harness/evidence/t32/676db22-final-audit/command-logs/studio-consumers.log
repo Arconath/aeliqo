@@ -1,0 +1,2 @@
+$ node tests/studio-consumers/studio-tarballs.mjs
+Installed Studio consumer proof passed. Evidence: /private/tmp/aeliqo-t32-final-audit/artifacts/studio-consumers/run-s01Bc7/report.json

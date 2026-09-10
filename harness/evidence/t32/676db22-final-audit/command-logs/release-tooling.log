@@ -1,0 +1,31 @@
+$ node --test tests/release/*.test.mjs
+✔ accepts public manifest and strict packed content (0.949083ms)
+✔ rejects leaked source, secrets, workspace aliases, and missing exports (0.237667ms)
+✔ candidate manifest and CycloneDX use exact tarball identities (5.901416ms)
+✔ registry and lock classification fail closed (0.212292ms)
+✔ legacy deprecation is exact, allowlisted, and points to the migration (0.715417ms)
+✔ exact registry classification fails closed (0.140375ms)
+✔ first-RC bootstrap is a separate exact interactive path (0.814791ms)
+✔ publication reopens each tarball and binds its internal public identity (0.438792ms)
+✔ first-RC package history permits only an exact partial-publication resume (0.634875ms)
+✔ owner-unpublished names require the conservative hold and a fresh post-hold preflight (0.224375ms)
+✔ first publication removes only an automatically-created prerelease latest tag (0.46675ms)
+✔ trusted publishing and dist-tag movement fail closed (0.129333ms)
+✔ approved RC records bind source and all candidate integrities (0.177375ms)
+✔ npm provenance binds package bytes to canonical workflow and source (0.500042ms)
+✔ all public packages carry the canonical full LICENSE and NOTICE (3.776209ms)
+✔ package workflow serializes publication and binds quality plus approved RC evidence (0.42025ms)
+✔ bootstrap, registry consumer, and legacy mutations are pinned to npmjs (0.597875ms)
+✔ qualifies a source/config/corpus-bound Flash integration smoke without requiring live model answer quality (7.300125ms)
+✔ fails closed on forged source, corpus, authorization, blockers, or report fields (0.433042ms)
+✔ rejects unknown rows and provider payloads hidden in live or nested fields (1.320708ms)
+✔ rejects incomplete trials, failed live outcomes, counter overruns, and spend inconsistencies (2.578083ms)
+✔ rejects simulated MCP evidence and uncorroborated invalid-repair claims (1.445791ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 51.959459

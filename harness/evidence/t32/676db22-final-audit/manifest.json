@@ -1,0 +1,125 @@
+{
+  "schema": "aeliqo.t32.final-source-audit.v2",
+  "task": "T32",
+  "status": "independent-system-review-complete-with-p2-limitations",
+  "reviewedAt": "2026-09-11T03:20:00Z",
+  "reviewedSourceCommit": "41c4078d86b4b277128caeb763e9f7fff8109fad",
+  "reviewedSourceTree": "3732be0756134f19912c40c2fa98fe0f6e81fc76",
+  "sourceDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+  "sourceChangedDuringReview": false,
+  "baseline": {
+    "reviewedSourceCommit": "fdc29af570fe1c82bcdb63346cafc7462a3849a1",
+    "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+    "meaning": "Historical T32 audit; not used as current-source evidence."
+  },
+  "reviewer": {
+    "agent": "/root/audit_direct_name_candidate",
+    "role": "independent architecture, DX, usability and evidence reviewer",
+    "independentOfImplementationAuthors": true,
+    "worktree": "/private/tmp/aeliqo-t32-final-audit",
+    "branch": "codex/t32-final-audit"
+  },
+  "commands": {
+    "checks": "checks.json",
+    "checksSha256": "ffeb592f0cee084f62d05fff4270a215c432ef00f204707809c9d29e7e02ca68",
+    "sourceDelta": "source-delta.json",
+    "sourceDeltaSha256": "0284c7366ed891bf5f89e38d4ea27509dd33e98b5cceca5ebd0936b37a97f787",
+    "externalOnboarding": "external-onboarding.json",
+    "externalOnboardingSha256": "3e10827279024e6736e44d3b3eb8fd9fbb98e4d4613aaa051ba28cd30b8c7814",
+    "recheckSummary": "recheck-summary.json",
+    "recheckSummarySha256": "d8d37670e29130db596d1e744a92b43dc03a4419429a5c7cc1b186621d7fe957",
+    "independentReview": "independent-review.json",
+    "independentReviewSha256": "63eda472e8a43b92631e6aa828e3e766e5c37c0139196f17a205bea759b2e566",
+    "summary": "Exact-source architecture, containment, meaning-DX, installed-consumer, site and local-candidate checks passed; human onboarding remains unknown and four nonblocking P2 follow-ups are preserved."
+  },
+  "acceptance": {
+    "architectureAndContainment": "satisfied",
+    "developerMeaningDxAndS65S67": "satisfied-by-automated-consumer-and-scenario-evidence",
+    "sharedWebAndAll71Components": "satisfied-with-retained-t29-limitations",
+    "performanceAndBundles": "satisfied-with-t30-p2-followups",
+    "externalOnboarding": "automated-observed-human-sessions-unknown",
+    "evidenceInvalidation": "satisfied",
+    "releaseCandidate": "local-only-candidate-verified",
+    "modelAnswerAccuracy": "unknown-and-not-claimed",
+    "manualAssistiveTechnology": "not-qualified-and-not-claimed",
+    "nativeWebMCP": "not-qualified-and-not-claimed",
+    "publicationAndDeployment": "not-applicable-to-T32-and-not-claimed"
+  },
+  "findings": {
+    "p0": [],
+    "p1": [],
+    "p2": [
+      "T32-P2-01 planner timing headroom/variance",
+      "T32-P2-02 homepage shared-main chunk growth",
+      "T32-P2-03 portable reopenability of historical T30 consumer artifacts",
+      "T32-P2-04 missing independent human developer/design onboarding sessions"
+    ]
+  },
+  "retainedEvidence": [
+    {
+      "task": "T29",
+      "authorManifest": "harness/evidence/t29/676db22-final-revalidation/manifest.json",
+      "authorManifestSha256": "8bdcb4945de20fabb95f291496e5e573923756164ee0ec5f2b6ded8d4d9de839",
+      "reviewManifest": "harness/evidence/t29/676db22-final-revalidation-review/manifest.json",
+      "reviewManifestSha256": "500ca18d8015dd62d9617dc6fb5c2c80cafd213019b760bb7d3af91a0112e3d2"
+    },
+    {
+      "task": "T30",
+      "authorManifest": "harness/evidence/t30/676db22-final-revalidation/manifest.json",
+      "authorManifestSha256": "5e2873303f33a2aeaaf52314be508b8a493a135d0f290c06e75d8c5578ee6812",
+      "reviewManifest": "harness/evidence/t30/676db22-final-revalidation-review/manifest.json",
+      "reviewManifestSha256": "3868442c558a09cf7021e8a3935877c4f385077b4042efbfa78c115b77d4ad43"
+    },
+    {
+      "task": "T42",
+      "manifest": "harness/evidence/t42/676db22-prehold-controls/manifest.json",
+      "manifestSha256": "d761e3511aa11c1be2ae735f840226d49417c74e6008cba7541276fe3e0627f9",
+      "status": "prehold-controls-passed-publication-blocked"
+    },
+    {
+      "task": "T31",
+      "manifest": "harness/evidence/t31/final-cross-domain/manifest.json",
+      "manifestSha256": "a30b2954c8a7f85dcd5c8f219e925b5cc4aadf6e5036b8c82ae07d213c5e3a77",
+      "status": "historical-source-ab5ccc8-not-current"
+    },
+    {
+      "task": "T40",
+      "manifest": "harness/evidence/t40/final-release-smoke/manifest.json",
+      "manifestSha256": "adc0ffdebb589ad7b7144855683b81efdfcb423de6ee87c25208d4fa88148d5a",
+      "status": "historical-source-ab5ccc8-not-current-live-answer-accuracy-not-claimed"
+    }
+  ],
+  "packetFiles": {
+    "checks": "checks.json",
+    "sourceDelta": "source-delta.json",
+    "independentReview": "independent-review.json",
+    "externalOnboarding": "external-onboarding.json",
+    "recheckSummary": "recheck-summary.json",
+    "commandLogsDirectory": "command-logs",
+    "installedConsumersDirectory": "installed-consumers",
+    "releaseCandidateDirectory": "release-candidate",
+    "sha256Inventory": "SHA256SUMS",
+    "hashScope": "SHA256SUMS covers every packet file except itself; manifest references the named evidence roots and retained bindings."
+  },
+  "mutations": {
+    "productSource": false,
+    "testSource": false,
+    "taskState": false,
+    "rootConfig": false,
+    "lockfile": false,
+    "oldEvidence": false,
+    "newReviewPacketOnly": true
+  },
+  "verdict": {
+    "decision": "approve-T32-with-explicit-p2-limitations",
+    "blockingFindings": [],
+    "releaseApprovalIssued": false,
+    "summary": "No P0/P1 architecture, containment, DX or usability finding remains in the inspected exact-source scope. Automated installed consumers are current-source evidence; required human onboarding sessions, manual AT, native WebMCP, model-answer accuracy, publication and deployment remain unclaimed."
+  },
+  "limits": [
+    "This is a source-bound local audit and not a publication, deployment or registry-availability certificate.",
+    "Automated tests and consumer reports do not prove business-truth correctness or human usability.",
+    "The current stale CI/integrated records are deliberately excluded; release:ready remains fail-closed.",
+    "The signed commit containing this packet is evidence-only and must not be interpreted as a task-state closure."
+  ]
+}

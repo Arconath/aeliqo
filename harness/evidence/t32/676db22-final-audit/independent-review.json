@@ -1,0 +1,149 @@
+{
+  "schema": "aeliqo.t32.independent-system-review.v3",
+  "task": "T32",
+  "status": "approved-with-p2-limitations",
+  "reviewedAt": "2026-09-11T03:20:00Z",
+  "reviewedSourceCommit": "41c4078d86b4b277128caeb763e9f7fff8109fad",
+  "reviewedSourceTree": "3732be0756134f19912c40c2fa98fe0f6e81fc76",
+  "sourceDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+  "reviewer": "/root/audit_direct_name_candidate",
+  "independentOfImplementationAuthors": true,
+  "scope": [
+    "Reconcile the final direct-name source against MASTER-SOT and chapters 09, 16, 20, 37, 38 and 39.",
+    "Audit the four-concept architecture, pure-core/runtime/shared-web boundaries, security and agent containment, meaning authoring DX and S65-S67 parity.",
+    "Audit all-71 component/site usability claims, current T29/T30 evidence, release-candidate identity and fail-closed evidence invalidation.",
+    "Inspect clean installed stable-package consumer journeys for runtime, meaning, framework and Studio onboarding.",
+    "Separate executable automated onboarding evidence from the human developer/design-reviewer sessions required by docs/09."
+  ],
+  "findings": [
+    {
+      "id": "T32-P2-01",
+      "priority": "P2",
+      "status": "open-follow-up-nonblocking",
+      "requirement": "Performance claims must preserve documented budgets and disclose headroom/variance.",
+      "evidence": "Current T30 review packet harness/evidence/t30/676db22-final-revalidation-review/manifest.json (sha256 3868442c...) retains planner headroom/variance as an open follow-up.",
+      "actual": "The exact-source timing qualification passed, but planner headroom remains limited and raw-run variability is recorded.",
+      "consequence": "A passing local p95 run must not be generalized to every machine or repeated execution.",
+      "recommendedCorrection": "Improve planner headroom or runner stability before making a stronger reliability claim.",
+      "verification": "Repeat the bounded timing matrix on the target hardware profile and retain raw observations."
+    },
+    {
+      "id": "T32-P2-02",
+      "priority": "P2",
+      "status": "open-follow-up-nonblocking",
+      "requirement": "Bundle budgets must account for the real evaluator retained by the public site.",
+      "evidence": "Current T30 review packet harness/evidence/t30/676db22-final-revalidation-review/manifest.json (sha256 3868442c...) retains homepage shared-main growth as a follow-up.",
+      "actual": "The bundle gate passed within the recorded candidate checks, while the homepage shared chunk growth remains documented.",
+      "consequence": "Future site changes could regress first-load cost even when isolated package measurements pass.",
+      "recommendedCorrection": "Re-measure and reduce the shared homepage chunk where practical; keep the real evaluator path explicit.",
+      "verification": "Run the current site bundle report after the next site change and compare against the retained budget."
+    },
+    {
+      "id": "T32-P2-03",
+      "priority": "P2",
+      "status": "open-follow-up-nonblocking",
+      "requirement": "External installed-package evidence should remain reopenable and inspectable.",
+      "evidence": "Current T30 review packet harness/evidence/t30/676db22-final-revalidation-review/manifest.json (sha256 3868442c...) records portable retention of T30 consumer tarballs as a follow-up; this packet retains fresh stable and RC tarballs with hashes.",
+      "actual": "The T32 packet has portable package artifacts, but the prior T30 packet's original consumer captures are not itself a complete portable replay bundle.",
+      "consequence": "A later reviewer may be unable to reopen every historical performance consumer observation from the old packet alone.",
+      "recommendedCorrection": "Retain every future installed-consumer input tarball and lockfile beside its report.",
+      "verification": "Re-run the installed consumer from retained tarballs with network denied and compare source/package hashes."
+    },
+    {
+      "id": "T32-P2-04",
+      "priority": "P2",
+      "status": "open-follow-up-nonblocking",
+      "requirement": "docs/09 requires at least one independent developer and one design reviewer onboarding session, with completion, errors and confusing terminology recorded.",
+      "evidence": "external-onboarding.json records four clean installed-package automated journeys but marks both human sessions unknown-not-run.",
+      "actual": "Executable automated consumer evidence exists; no independent human-session record is present in this exact-source packet.",
+      "consequence": "Human time-to-first-useful-view, setup-error rate and terminology clarity remain unknown.",
+      "recommendedCorrection": "Run and record the required independent developer and design-reviewer sessions against the exact direct-name candidate.",
+      "verification": "Retain session records bound to source digest 676db22 with the required task checklist and observed errors/confusing terms."
+    }
+  ],
+  "coverage": {
+    "architectureAndContainment": {
+      "status": "satisfied",
+      "evidence": "checks.json boundaries/contracts/query/agent/protocol/security suites plus source inspection of core, runtime, web, agent and framework packages; no P0/P1 finding."
+    },
+    "developerMeaningDxAndS65S67": {
+      "status": "satisfied-by-automated-evidence",
+      "evidence": "37 meaning-authoring tests, 58 scenario tests and installed meaning/Studio consumers show manual/AI parity, code-owned immutable registration, conflict/stale/revocation handling and code-only activation.",
+      "limit": "These checks do not prove business truth or human usability."
+    },
+    "all71AndUsability": {
+      "status": "satisfied-with-retained-t29-limitations",
+      "evidence": "Current site unit/browser checks plus current T29 author/review manifests bound to digest 676db22; 71 catalog entries are present and executable.",
+      "limit": "Manual assistive-technology certification and universal pixel parity are not claimed."
+    },
+    "performanceAndBundles": {
+      "status": "satisfied-with-p2-followups",
+      "evidence": "Current T30 author/review manifests are exact-source direct-name evidence and preserve the three P2 follow-ups."
+    },
+    "releaseCandidateAndIdentity": {
+      "status": "satisfied-for-local-candidate-only",
+      "evidence": "Six @aeliqo/* 0.1.0-rc.1 tarballs, 130 exports, 63 SBOM components, zero secret findings and network-denied consumer are retained.",
+      "limit": "No npm publication, provenance, stable promotion, deployment or live registry acceptance is claimed."
+    },
+    "evidenceInvalidation": {
+      "status": "satisfied",
+      "evidence": "Final digest is 676db22; stale CI/integrated records remain be201b and release:ready exits 1 with those mismatches rather than treating them as current."
+    },
+    "crossDomainAndLiveModel": {
+      "status": "historical-and-not-current",
+      "evidence": "T31/T40 manifests are explicitly retained at ab5ccc8/f51e351; their deterministic/protocol boundaries do not become current model-answer accuracy claims."
+    },
+    "externalOnboarding": {
+      "status": "automated-observed-human-unknown",
+      "evidence": "external-onboarding.json"
+    }
+  },
+  "retainedBindings": [
+    {
+      "task": "T29",
+      "authorManifest": "harness/evidence/t29/676db22-final-revalidation/manifest.json",
+      "authorManifestSha256": "8bdcb4945de20fabb95f291496e5e573923756164ee0ec5f2b6ded8d4d9de839",
+      "reviewManifest": "harness/evidence/t29/676db22-final-revalidation-review/manifest.json",
+      "reviewManifestSha256": "500ca18d8015dd62d9617dc6fb5c2c80cafd213019b760bb7d3af91a0112e3d2",
+      "source": "cc7bf293 / digest 676db22"
+    },
+    {
+      "task": "T30",
+      "authorManifest": "harness/evidence/t30/676db22-final-revalidation/manifest.json",
+      "authorManifestSha256": "5e2873303f33a2aeaaf52314be508b8a493a135d0f290c06e75d8c5578ee6812",
+      "reviewManifest": "harness/evidence/t30/676db22-final-revalidation-review/manifest.json",
+      "reviewManifestSha256": "3868442c558a09cf7021e8a3935877c4f385077b4042efbfa78c115b77d4ad43",
+      "source": "cc7bf293 / digest 676db22"
+    },
+    {
+      "task": "T42",
+      "manifest": "harness/evidence/t42/676db22-prehold-controls/manifest.json",
+      "manifestSha256": "d761e3511aa11c1be2ae735f840226d49417c74e6008cba7541276fe3e0627f9",
+      "source": "cc7bf293 / digest 676db22",
+      "status": "prehold-controls-passed-publication-blocked"
+    },
+    {
+      "task": "T31",
+      "manifest": "harness/evidence/t31/final-cross-domain/manifest.json",
+      "manifestSha256": "a30b2954c8a7f85dcd5c8f219e925b5cc4aadf6e5036b8c82ae07d213c5e3a77",
+      "source": "ab5ccc8 / digest f51e351",
+      "status": "historical-not-current"
+    },
+    {
+      "task": "T40",
+      "manifest": "harness/evidence/t40/final-release-smoke/manifest.json",
+      "manifestSha256": "adc0ffdebb589ad7b7144855683b81efdfcb423de6ee87c25208d4fa88148d5a",
+      "source": "ab5ccc8 / digest f51e351",
+      "status": "historical-not-current; live answer accuracy not claimed"
+    }
+  ],
+  "verdict": {
+    "decision": "approve-T32-with-explicit-p2-limitations",
+    "blockingFindings": [],
+    "p0": 0,
+    "p1": 0,
+    "p2": 4,
+    "releaseApprovalIssued": false,
+    "summary": "No P0 or P1 architecture, containment, DX or usability finding was observed in the inspected exact-source scope. T32 is approved for the recorded source-bound review with four nonblocking P2 follow-ups, including the required human onboarding sessions. This packet does not certify publication, deployment, native WebMCP, manual AT or model-answer accuracy."
+  }
+}

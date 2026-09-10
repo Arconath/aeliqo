@@ -1,0 +1,16 @@
+$ pnpm build:agent && vitest run --config tests/meaning-authoring/vitest.config.mjs && tsc -p tests/meaning-authoring/tsconfig.json
+$ pnpm build:runtime && pnpm --filter @aeliqo/agent build
+$ pnpm build:core && pnpm --filter @aeliqo/runtime build
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+
+ RUN  v5.0.0 /private/tmp/aeliqo-t32-final-audit
+
+
+ Test Files  5 passed (5)
+      Tests  37 passed (37)
+   Start at  03:04:17
+   Duration  337ms (transform 70%, import 23%, tests 6%, worker 1%)
+

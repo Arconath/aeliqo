@@ -1,0 +1,16 @@
+$ pnpm build:agent && vitest run --config tests/protocol-mcp/vitest.config.mjs && tsc -p tests/protocol-mcp/tsconfig.json
+$ pnpm build:runtime && pnpm --filter @aeliqo/agent build
+$ pnpm build:core && pnpm --filter @aeliqo/runtime build
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+
+ RUN  v5.0.0 /private/tmp/aeliqo-t32-final-audit
+
+
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+   Start at  03:04:27
+   Duration  984ms (tests 60%, transform 24%, import 16%)
+

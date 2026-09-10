@@ -1,0 +1,216 @@
+{
+  "schema": "aeliqo.t32.final-source-checks.v2",
+  "task": "T32",
+  "source": {
+    "commit": "41c4078d86b4b277128caeb763e9f7fff8109fad",
+    "tree": "3732be0756134f19912c40c2fa98fe0f6e81fc76",
+    "digest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+    "digestCommand": "python3 scripts/gate.py digest",
+    "sourceChangedDuringRuns": false
+  },
+  "environment": {
+    "os": "Darwin 25.6.0 arm64",
+    "macOS": "26.6.2",
+    "node": "v24.20.0",
+    "pnpm": "11.24.0",
+    "playwright": "1.63.0",
+    "browsers": {
+      "chromium": "153.0.8010.12",
+      "firefox": "155.0",
+      "webkit": "26.6"
+    },
+    "cpu": "Apple M4 Pro",
+    "logicalCpuCount": 12,
+    "memoryBytes": 25769803776
+  },
+  "checks": [
+    {
+      "command": "pnpm test:boundaries",
+      "status": "pass",
+      "tests": 4,
+      "evidenceLog": "command-logs/boundaries.log",
+      "detail": "Pure-core/runtime/shared-web import boundaries and forbidden dependency checks."
+    },
+    {
+      "command": "pnpm test:contracts",
+      "status": "pass",
+      "tests": 157,
+      "evidenceLog": "command-logs/contracts.log"
+    },
+    {
+      "command": "pnpm test:task-experience",
+      "status": "pass",
+      "tests": 23,
+      "evidenceLog": "command-logs/task-experience.log",
+      "detail": "Task/result/experience lifecycle, containment and interaction contracts."
+    },
+    {
+      "command": "pnpm test:query",
+      "status": "pass",
+      "tests": 94,
+      "evidenceLog": "command-logs/query.log"
+    },
+    {
+      "command": "pnpm test:agents",
+      "status": "pass",
+      "tests": 112,
+      "evidenceLog": "command-logs/agents.log"
+    },
+    {
+      "command": "pnpm test:meaning-authoring",
+      "status": "pass",
+      "tests": 37,
+      "evidenceLog": "command-logs/meaning-authoring.log",
+      "detail": "Manual and AI authoring, validation, conflict/stale handling and grants."
+    },
+    {
+      "command": "pnpm test:scenarios",
+      "status": "pass",
+      "tests": 58,
+      "evidenceLog": "command-logs/scenarios.log",
+      "detail": "Includes current developer-authored meaning S65/S66 coverage and canonical parity paths."
+    },
+    {
+      "command": "pnpm test:protocol-mcp",
+      "status": "pass",
+      "tests": 13,
+      "evidenceLog": "command-logs/protocol-mcp.log"
+    },
+    {
+      "command": "pnpm test:protocol-webmcp",
+      "status": "pass",
+      "tests": 12,
+      "evidenceLog": "command-logs/protocol-webmcp.log",
+      "detail": "Protocol contract tests; native WebMCP host qualification remains unclaimed."
+    },
+    {
+      "command": "pnpm test:protocol-model",
+      "status": "pass",
+      "tests": 11,
+      "evidenceLog": "command-logs/protocol-model.log"
+    },
+    {
+      "command": "pnpm test:security",
+      "status": "pass",
+      "tests": 14,
+      "evidenceLog": "command-logs/security.log"
+    },
+    {
+      "command": "pnpm test:interaction",
+      "status": "pass",
+      "tests": 24,
+      "evidenceLog": "command-logs/interaction.log"
+    },
+    {
+      "command": "pnpm test:evaluation",
+      "status": "pass",
+      "tests": 7,
+      "evidenceLog": "command-logs/evaluation.log"
+    },
+    {
+      "command": "pnpm test:agent-evaluation:host",
+      "status": "pass",
+      "tests": 28,
+      "evidenceLog": "command-logs/agent-evaluation-host.log"
+    },
+    {
+      "command": "pnpm test:runtime:audit",
+      "status": "pass",
+      "tests": 6,
+      "evidenceLog": "command-logs/runtime-audit.log"
+    },
+    {
+      "command": "pnpm test:release-tooling",
+      "status": "pass",
+      "tests": 22,
+      "evidenceLog": "command-logs/release-tooling.log"
+    },
+    {
+      "command": "pnpm test:runtime:consumers",
+      "status": "pass",
+      "evidenceLog": "command-logs/runtime-consumers.log",
+      "artifact": "installed-consumers/reports/runtime-report.json",
+      "detail": "Installed stable core/runtime tarballs; local and HTTP ADC, Chromium regions/results/actions, stale/revoked paths and bounded redacted audit."
+    },
+    {
+      "command": "pnpm test:meaning-authoring:consumers",
+      "status": "pass",
+      "evidenceLog": "command-logs/meaning-consumers.log",
+      "artifact": "installed-consumers/reports/meaning-report.json",
+      "sourceDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9"
+    },
+    {
+      "command": "pnpm test:framework:consumers",
+      "status": "pass",
+      "evidenceLog": "command-logs/framework-consumers.log",
+      "artifact": "installed-consumers/reports/framework-report.json",
+      "sourceDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+      "detail": "71 React exports, framework-free/React/Vue recipes, SSR and Chromium behavior."
+    },
+    {
+      "command": "pnpm test:studio:consumers",
+      "status": "pass",
+      "evidenceLog": "command-logs/studio-consumers.log",
+      "artifact": "installed-consumers/reports/studio-report.json",
+      "sourceDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9"
+    },
+    {
+      "command": "pnpm test:site",
+      "status": "pass",
+      "tests": 17,
+      "evidenceLog": "command-logs/site-unit.log"
+    },
+    {
+      "command": "pnpm test:site:browser",
+      "status": "pass",
+      "tests": 7,
+      "evidenceLog": "command-logs/site-browser.log",
+      "detail": "Home, playground, catalog/docs navigation, responsive drawers, forced colors and offline legal/support boundaries."
+    },
+    {
+      "command": "node scripts/release/candidate.mjs --version 0.1.0-rc.1 artifacts/t32-release-candidate-final",
+      "status": "pass",
+      "artifactDirectory": "release-candidate",
+      "packages": 6,
+      "exportCount": 130,
+      "sbomComponents": 63,
+      "secretFindings": 0,
+      "networkDenied": true,
+      "auditNetworkAttempts": 0,
+      "detail": "Exact-source local candidate; six direct public names, byte hashes and isolated network-denied consumer retained."
+    },
+    {
+      "command": "pnpm release:ready",
+      "status": "expected-blocked",
+      "exitCode": 1,
+      "evidenceLog": "command-logs/release-ready.log",
+      "unmetConditions": 96,
+      "detail": "Fail-closed readiness remains blocked by planned T32/T33/T34/T35/T42, stale be201 CI/integrated records and missing product-ci artifacts; this is not a T32 test failure or publication attempt."
+    }
+  ],
+  "staticReview": {
+    "status": "pass-with-limitations",
+    "inspected": [
+      "MASTER-SOT.md",
+      "docs/09-experience-dx.md",
+      "docs/16-quality-gates.md",
+      "docs/20-execution-plan.md",
+      "docs/37-model-failure-containment.md",
+      "docs/38-public-site-docs-playground.md",
+      "docs/39-discussion-ledger.md",
+      "packages/core",
+      "packages/runtime",
+      "packages/web",
+      "packages/agent",
+      "packages/react",
+      "packages/devtools",
+      "apps/site",
+      "apps/studio",
+      "scripts/release"
+    ],
+    "architecture": "pure core, runtime effects, shared web implementation and thin framework bindings are separated by source imports and boundary tests",
+    "containment": "untrusted AI, independent read/evaluate/present/meaning/action/model grants, stale/revocation handling and protocol parity are represented in source and tests",
+    "catalog": "71 required components are represented in harness/components.json with done status and current site/component route evidence",
+    "docsAndSite": "adoption, synthetic/local evaluator, limitations, accessibility and no-universal-claim language are present in current docs/site tests"
+  }
+}

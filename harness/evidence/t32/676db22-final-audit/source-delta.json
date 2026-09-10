@@ -1,0 +1,77 @@
+{
+  "schema": "aeliqo.t32.source-delta.v2",
+  "baselineReviewedSource": {
+    "commit": "fdc29af570fe1c82bcdb63346cafc7462a3849a1",
+    "digest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+    "meaning": "Prior T32 audit source; retained only as historical evidence."
+  },
+  "finalSource": {
+    "commit": "41c4078d86b4b277128caeb763e9f7fff8109fad",
+    "tree": "3732be0756134f19912c40c2fa98fe0f6e81fc76",
+    "digest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+    "meaning": "Exact source used by all retained T32 checks and current candidate/consumer reports."
+  },
+  "productDelta": {
+    "gitDiffBase": "fdc29af570fe1c82bcdb63346cafc7462a3849a1",
+    "gitDiffHead": "41c4078d86b4b277128caeb763e9f7fff8109fad",
+    "trackedNonEvidenceFilesChanged": 290,
+    "insertions": 5082,
+    "deletions": 1558,
+    "gitBinaryDiffSha256": "0e8b893883d98370c37ceda6fc60a84e6268cc245157de61f20f52e6b3b83aae",
+    "changeClasses": [
+      {
+        "class": "direct-public-package-identities",
+        "commits": [
+          "0857d4384c4b749a5a8023e040cbe4a18e8c2b00",
+          "d7b930b77ba4f1518775cc01dc1aa5f3c9a73467",
+          "ae5d7c63d8cdf0fefe9177bb540c558526c30fbe",
+          "44b19f5c9a5c2932da253af551731d40b104e819"
+        ],
+        "purpose": "Migrate the public six-package graph and release tooling from the superseded sdk-prefixed identities to @aeliqo/core, runtime, web, agent, devtools and react."
+      },
+      {
+        "class": "public-adoption-experience",
+        "commits": [
+          "4c7640ce1513bff197ee499d8c3a3f9c815ca31d",
+          "ffe7971eb2e49ba61a7fed01ccdf92967c296a37",
+          "b591ddc8d4c76f2ec0161bae2a18d8a4a889181b",
+          "f5cf3af157b714c6fa6bd2d77e66cb18ce65812d",
+          "d6bb0bf6b743214361702f2e1cfeddcb09b0bd41",
+          "1f0820fa2cf893e75e55bf23e282a48f3516d0cb",
+          "76d1bb84aa7870842eae6c9f5b2cce105f634847",
+          "7d1f2e900263e3696fd8713b299bfba3bafe2aba",
+          "cc7bf293ba60d338d07f57a820fd058e7a4465dd"
+        ],
+        "purpose": "Refresh the shared site/docs/playground adoption path, responsive panels, executable proof, information architecture and accessible code presentation."
+      },
+      {
+        "class": "release-control-and-evidence-revalidation",
+        "commits": [
+          "73959c0a3b5786426ba119dcad6455c5af6fecc9",
+          "0f8e77451dc866a0d729399f8e6467950838344a",
+          "1e6daabec51d2b77ac3924d86cf6faa6e3542e52",
+          "8860fb1c71a5026013f856479c104580380096e0",
+          "4b60cba732efc46ec553a4a2a4241818e029de7a"
+        ],
+        "purpose": "Reopen direct-name release gates, harden fail-closed recovery and re-run exact-source release, performance and component evidence."
+      },
+      {
+        "class": "evidence-only-current-bindings",
+        "commits": [
+          "0567ee3339f5ef8e7012e8dfefb6e34f4e91aead",
+          "c0f1c61e69703479266bbd781b66acf7413001b2",
+          "a5cc32f77e647e296c9366660292a134419ff48d",
+          "41c4078d86b4b277128caeb763e9f7fff8109fad"
+        ],
+        "purpose": "Independent T29/T30 review and task-state binding; these commits do not alter the product source digest."
+      }
+    ]
+  },
+  "digestInterpretation": {
+    "sourceDigestChanged": true,
+    "evidenceOnlyCommitsDoNotChangeDigest": true,
+    "currentCandidateAndInstalledReportsMatchFinalDigest": true,
+    "staleEvidenceInvalidation": "harness/evidence/ci.json and harness/evidence/integrated.json retain subjectSha256 be201bfa... and are therefore not current-source qualification evidence."
+  },
+  "reviewConclusion": "The final packet audits the direct-name/public-adoption source represented by digest 676db22. Historical be201bf/T31/T40 claims are retained with their own identities and are not silently promoted to current evidence."
+}
