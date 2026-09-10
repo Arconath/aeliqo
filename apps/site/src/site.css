@@ -277,17 +277,17 @@ h2 {
   border-inline-start: 1px solid var(--line);
 }
 
-.hero-aside > p:not(.eyebrow) {
+.hero-aside-group > p:not(.eyebrow) {
   margin-block: 0;
   font-size: clamp(1.2rem, 2.2vw, 1.45rem);
   letter-spacing: -0.025em;
   line-height: 1.5;
 }
 
-.hero-aside hr {
-  margin-block: 2rem;
-  border: 0;
-  border-top: 1px solid var(--line);
+.hero-ownership {
+  padding-block-end: 2rem;
+  margin-block-end: 2rem;
+  border-block-end: 1px solid var(--line);
 }
 
 .demonstration {
@@ -313,6 +313,46 @@ h2 {
   font-weight: 550;
 }
 
+.demo-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.demo-controls label {
+  margin-inline-end: 0.25rem;
+}
+
+.demo-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  list-style: none;
+}
+
+.demo-flow-step {
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.demo-flow-step[aria-current="step"] {
+  border-color: var(--accent);
+  color: var(--on-accent);
+  background: var(--accent);
+}
+
+.demo-flow-arrow {
+  color: var(--muted);
+}
+
 #home-demo {
   min-height: 15rem;
   padding-block: 1.25rem;
@@ -328,6 +368,43 @@ h2 {
 #demo-status {
   min-height: 1.5rem;
   margin-block: 0.75rem;
+}
+
+.demo-result {
+  margin-block: 1.25rem;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.demo-result-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.demo-result-heading h3 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.demo-result-grid {
+  display: grid;
+  grid-template-columns: minmax(10rem, 0.28fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+#demo-result-chart {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+#demo-result-chart aeliqo-bar {
+  display: block;
+  min-width: 35rem;
 }
 
 details {
@@ -836,23 +913,28 @@ footer nav {
     border-block-start: 1px solid var(--line);
   }
 
-  .hero-aside hr {
-    display: none;
+  .hero-aside-group {
+    min-width: 0;
   }
 
-  .hero-aside .eyebrow:nth-of-type(2) {
-    grid-column: 2;
+  .hero-ownership,
+  .hero-connects {
     grid-row: 1;
+    padding: 0;
+    margin: 0;
+    border: 0;
   }
 
-  .hero-aside > p:not(.eyebrow):nth-of-type(1) {
+  .hero-ownership {
     grid-column: 1;
-    grid-row: 2;
   }
 
-  .hero-aside > p:not(.eyebrow):nth-of-type(2) {
+  .hero-connects {
     grid-column: 2;
-    grid-row: 2;
+  }
+
+  .demo-result-grid {
+    grid-template-columns: 1fr;
   }
 
   .docs-layout {
@@ -953,13 +1035,30 @@ footer nav {
     gap: 0.75rem;
   }
 
-  .demo-heading label {
+  .demo-controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .demo-controls label {
     width: 100%;
     justify-content: space-between;
   }
 
-  .demo-heading select {
+  .demo-controls select {
     min-width: 9rem;
+  }
+
+  .demo-controls button {
+    flex: 1 1 auto;
+  }
+
+  .demo-flow {
+    gap: 0.35rem;
+  }
+
+  .demo-flow-arrow {
+    display: none;
   }
 
   .levels {
@@ -1020,15 +1119,14 @@ footer nav {
     display: block;
   }
 
-  .hero-aside .eyebrow:nth-of-type(2),
-  .hero-aside > p:not(.eyebrow):nth-of-type(1),
-  .hero-aside > p:not(.eyebrow):nth-of-type(2) {
-    display: block;
-    margin-top: 1rem;
+  .hero-ownership {
+    padding-block-end: 1.5rem;
+    margin-block-end: 1.5rem;
+    border-block-end: 1px solid var(--line);
   }
 
-  .hero-aside .eyebrow:first-child {
-    margin-top: 0;
+  .hero-connects {
+    display: block;
   }
 
   #copy-status {
