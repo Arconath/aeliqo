@@ -1,11 +1,20 @@
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import test from 'node:test';
-import {qualifyT40Smoke, T40_OBSOLETE_SCOPE_BLOCK} from '../../scripts/release/t40-smoke-lib.mjs';
+import {qualifyT40Smoke, T40_MCP_TOOL_SCHEMA_SHA256, T40_OBSOLETE_SCOPE_BLOCK} from '../../scripts/release/t40-smoke-lib.mjs';
 
 const sha = value => createHash('sha256').update(value).digest('hex');
 const cases = ['commerce-browse', 'support-weekly', 'hr-record'];
-const corpusCases = cases.map(id => ({id, partition: 'heldout', independentAuthor: 'independent fixture author', exposure: 'sealed'}));
+const makeCase = id => {
+  const sourceRevision = `${id}-source`;
+  return {id, partition: 'heldout', independentAuthor: 'independent fixture author', exposure: 'sealed',
+    fixture: {sourceRevision, scopeDigest: `${id}-scope`},
+    explicitTask: {id: `${id}-task`, outputs: [{id: 'rows', kind: 'query', query: {}}]},
+    expected: [{id: 'rows', fields: ['id', 'value'], grain: ['id'], rows: [{id: 'a', value: 1}], coverage: 'complete',
+      quality: {identity: ['id'], populationCount: 1, precision: 'exact', sourceRevisions: {source: sourceRevision},
+        evidenceKind: 'observed', definitions: []}}]};
+};
+const corpusCases = cases.map(makeCase);
 const corpusSha256 = 'a'.repeat(64);
 const sourceDigest = 'b'.repeat(64);
 const corpusPath = '/tmp/aeliqo-authorized-heldout.json';
@@ -20,14 +29,25 @@ const config = {version: '1', authorized: true, authorizationReference: 'Owner-a
 const reservation = (budget.maxModelRequests * budget.maxInputTokens * weak.inputUSDPerMillion
   + budget.maxTurns * budget.maxOutputTokens * weak.outputUSDPerMillion) / 1_000_000;
 const score = () => ({dataCorrect: true, findings: [], uiTaskCompletion: null, narrativeGrounding: null});
-const deterministic = mode => cases.map(caseId => mode === 'explicit-task'
-  ? {caseId, partition: 'heldout', mode, model: null, elapsedMs: 1, score: score(), observations: [{}]}
-  : {caseId, partition: 'heldout', mode, model: null, score: score(), observation: {
+const outputFor = (testCase, resultId = '1'.repeat(64)) => ({descriptor: {version: '1', ref: {id: `result-${resultId}`,
+  revision: testCase.fixture.sourceRevision, outputId: 'rows', queryDigest: `query-${'2'.repeat(64)}`, scopeDigest: testCase.fixture.scopeDigest},
+taskId: testCase.explicitTask.id, fields: [
+  {id: 'id', label: 'ID', type: {value: 'text', nullable: false, grain: ['id']}, role: 'identity'},
+  {id: 'value', label: 'Value', type: {value: 'integer', nullable: false, grain: ['id']}, role: 'measure'},
+], identity: ['id'], rowGrain: ['id'], counts: {loaded: 1, population: {kind: 'exact', value: 1, populationDigest: `population-${'3'.repeat(64)}`}},
+precision: {kind: 'exact'}, coverage: {kind: 'complete', populationDigest: `population-${'3'.repeat(64)}`},
+consistency: {kind: 'snapshot', snapshotId: testCase.fixture.sourceRevision, sourceRevisions: {source: testCase.fixture.sourceRevision}},
+evidence: {kind: 'observed', source: {id: 'local-source', revision: testCase.fixture.sourceRevision}}, filters: [], warnings: [], lineage: []},
+rows: [{id: 'a', value: 1}]});
+const deterministic = mode => corpusCases.map((testCase, index) => mode === 'explicit-task'
+  ? {caseId: testCase.id, partition: 'heldout', mode, model: null, elapsedMs: 1, score: score(),
+    observations: [{stage: 'evaluate', elapsedMs: 1, task: testCase.explicitTask, outputs: [outputFor(testCase, String(index + 1).repeat(64))]}]}
+  : {caseId: testCase.id, partition: 'heldout', mode, model: null, score: score(), observation: {
     transport: 'official-sdk-stdio', protocolPin: '2026-07-28', server: {name: 'aeliqo-evaluation-baseline', version: '0.1.0'},
-    node: 'v24.20.0', discoveredTools: ['read_catalog', 'evaluate_task'], toolSchemaSha256: 'c'.repeat(64), receiptState: 'data-ready',
+    node: 'v24.20.0', discoveredTools: ['read_catalog', 'evaluate_task'], toolSchemaSha256: T40_MCP_TOOL_SCHEMA_SHA256, receiptState: 'data-ready',
     callElapsedMs: 1, elapsedMs: 2, transportDetached: true, childPid: 123, childExited: true, cleanupSucceeded: true,
     stderrBytes: 0, modelExecution: 'No model adapter is configured.', fixtureProjection: 'Application fixture fields only.', limits: ['Explicit baseline only.'],
-  }, outputs: [{}]});
+  }, outputs: [outputFor(testCase, String(index + 4).repeat(64))]});
 const baseLive = caseId => {
   const inputTokens = 100;
   const outputTokens = 20;
@@ -56,7 +76,9 @@ const groups = [
 ];
 const report = {schemaVersion: 1, status: 'blocked', sourceChangedDuringRun: false, mcpExplicit: true, sourceDigest,
   blocks: [T40_OBSOLETE_SCOPE_BLOCK], authorization: {reference: config.authorizationReference, maximumUSD: 1, authorizedCorpusSha256: corpusSha256},
-  corpus: {path: corpusPath, sha256: corpusSha256, cases: corpusCases, selection: {caseIds: cases, modelLabels: ['weak']}},
+  corpus: {path: corpusPath, sha256: corpusSha256,
+    cases: corpusCases.map(({id, partition, independentAuthor, exposure}) => ({id, partition, independentAuthor, exposure})),
+    selection: {caseIds: cases, modelLabels: ['weak']}},
   groups, rows: [...deterministic('explicit-task'), ...deterministic('explicit-mcp'), ...live]};
 const context = {currentSourceDigest: sourceDigest, corpusSha256, corpusPath, corpusCases, config};
 
@@ -76,6 +98,10 @@ test('fails closed on forged source, corpus, authorization, blockers, or report 
   assert.throws(() => qualifyT40Smoke({...report, blocks: [...report.blocks, 'injected']}, context), /blocker|scope claim/);
   assert.throws(() => qualifyT40Smoke({...report, injected: true}, context), /closed evidence schema/);
   assert.throws(() => qualifyT40Smoke(report, {...context, config: {...config, injected: true}}), /closed evidence schema/);
+  assert.throws(() => qualifyT40Smoke(report, {...context, config: {...config,
+    budget: {...budget, maxInputBytes: 999999999, maxOutputBytes: 999999999, maxRepeatedCalls: 999999999}}}), /budget is invalid/);
+  assert.throws(() => qualifyT40Smoke(report, {...context, config: {...config,
+    models: [weak, {...strong, model: weak.model}]}}), /distinct weak and strong/);
 });
 
 test('rejects unknown rows and provider payloads hidden in live or nested fields', () => {
@@ -109,12 +135,21 @@ test('rejects incomplete trials, failed live outcomes, counter overruns, and spe
 });
 
 test('rejects simulated MCP evidence and uncorroborated invalid-repair claims', () => {
+  const placeholderDirect = structuredClone(report);
+  placeholderDirect.rows[0].observations = [{}];
+  assert.throws(() => qualifyT40Smoke(placeholderDirect, context), /closed evidence schema/);
+  const placeholderMcp = structuredClone(report);
+  placeholderMcp.rows[3].outputs = [{}];
+  assert.throws(() => qualifyT40Smoke(placeholderMcp, context), /corpus oracle output/);
   const noMcpOutput = structuredClone(report);
   noMcpOutput.rows[3].outputs = [];
-  assert.throws(() => qualifyT40Smoke(noMcpOutput, context), /non-empty validated outputs/);
+  assert.throws(() => qualifyT40Smoke(noMcpOutput, context), /every corpus oracle output/);
   const fakeMcp = structuredClone(report);
   fakeMcp.rows[3].observation.transportDetached = false;
   assert.throws(() => qualifyT40Smoke(fakeMcp, context), /actual transport observation/);
+  const fakeSchema = structuredClone(report);
+  fakeSchema.rows[3].observation.toolSchemaSha256 = 'f'.repeat(64);
+  assert.throws(() => qualifyT40Smoke(fakeSchema, context), /actual transport observation/);
   const noInvalidDiagnostic = structuredClone(report);
   noInvalidDiagnostic.rows[7].observations[0].diagnosticCodes = [];
   assert.throws(() => qualifyT40Smoke(noInvalidDiagnostic, context), /diagnostic-backed repair/);
