@@ -1,0 +1,33 @@
+{
+  "schema": "aeliqo.t30.final-revalidation-independent-review-manifest.v2",
+  "task": "T30",
+  "status": "review-complete-with-nonblocking-findings",
+  "generatedAt": "2026-09-10T19:43:03Z",
+  "reviewedSourceCommit": "cc7bf293ba60d338d07f57a820fd058e7a4465dd",
+  "sourceTree": "bf396bd3bcabe89ba6cb14279622a5b01dfce190",
+  "sourceDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+  "authorEvidenceCommit": "8860fb1c71a5026013f856479c104580380096e0",
+  "reviewBaseCommit": "8860fb1c71a5026013f856479c104580380096e0",
+  "scope": "Evidence-only independent review of the exact-source T30 revalidation packet. Product source, task state, root configuration, budgets and lockfiles were not modified; the author timing/package commands were not rerun.",
+  "reviewer": {"agent": "/root/audit_direct_name_candidate", "independentOfEvidenceAuthors": true},
+  "reviewedAuthorEvidence": {
+    "packet": "harness/evidence/t30/676db22-final-revalidation/manifest.json",
+    "manifestSha256": "5e2873303f33a2aeaaf52314be508b8a493a135d0f290c06e75d8c5578ee6812",
+    "checksumInventorySha256": "3722dbde639b65cb1ec1a322cefd54c867591834f1eceea9718a1563fcfa264a",
+    "indexedArtifacts": 80,
+    "principalArtifacts": 14,
+    "sourceInputs": 25,
+    "sourceCommitTreeDigestBound": true
+  },
+  "evidence": [
+    {"path": "independent-review.json", "sha256": "a1d556f1b712e4d19ff9a9d1bbcf965dccabb03e5a4b88872b27b29e2e83a006", "bytes": 14832},
+    {"path": "recheck-summary.json", "sha256": "40785a67975893f8a2975955497bdbb44e91137962c25e6d4d8ba24beba50e42", "bytes": 4937},
+    {"path": "SHA256SUMS", "sha256": "4a65dbef37179962abd1aba0865a8e6ebfbb979a1d2fbf15758dec2df3001383", "bytes": 177, "detail": "Inventory for the two review records; manifest and inventory are excluded to avoid a circular hash."}
+  ],
+  "decision": {"p0": 0, "p1": 0, "p2": 3, "blockingFindings": 0, "status": "approved-with-nonblocking-findings", "review": "The author packet is internally consistent and supports bounded T30 approval with three explicit P2 follow-ups."},
+  "limits": [
+    "No full timing/browser/install rerun was performed by the independent reviewer.",
+    "The consumer lock references ephemeral author tarball paths; exact tarball bytes are not retained for independent replay.",
+    "Manual assistive-technology certification, lower-powered-device and cross-browser timing, field metrics, model/provider quality, publication and deployment are not claimed."
+  ]
+}

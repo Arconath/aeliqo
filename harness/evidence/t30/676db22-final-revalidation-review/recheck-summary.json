@@ -1,0 +1,79 @@
+{
+  "schema": "aeliqo.t30.independent-recheck.v2",
+  "task": "T30",
+  "reviewedAt": "2026-09-10T19:43:03Z",
+  "reviewer": "/root/audit_direct_name_candidate",
+  "reviewedSourceCommit": "cc7bf293ba60d338d07f57a820fd058e7a4465dd",
+  "sourceTree": "bf396bd3bcabe89ba6cb14279622a5b01dfce190",
+  "sourceDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+  "authorEvidenceCommit": "8860fb1c71a5026013f856479c104580380096e0",
+  "reviewBaseCommit": "8860fb1c71a5026013f856479c104580380096e0",
+  "inspectionMode": "read-only packet consistency audit; no product command or timing rerun",
+  "packetHashAudit": {
+    "packetManifest": "harness/evidence/t30/676db22-final-revalidation/manifest.json",
+    "packetManifestSha256": "5e2873303f33a2aeaaf52314be508b8a493a135d0f290c06e75d8c5578ee6812",
+    "checksumInventory": "harness/evidence/t30/676db22-final-revalidation/SHA256SUMS",
+    "checksumInventorySha256": "3722dbde639b65cb1ec1a322cefd54c867591834f1eceea9718a1563fcfa264a",
+    "manifestArtifactCount": 80,
+    "checksumLineCount": 80,
+    "indexedFilesVerified": 80,
+    "principalArtifactsVerified": 14,
+    "sourceInputsVerified": 25,
+    "hashMismatches": 0,
+    "missingIndexedFiles": 0,
+    "extraIndexedFiles": 0,
+    "packetRegularFiles": 82
+  },
+  "sourceBindingAudit": {
+    "gitHeadUsedForReview": "8860fb1c71a5026013f856479c104580380096e0",
+    "recordedSourceCommit": "cc7bf293ba60d338d07f57a820fd058e7a4465dd",
+    "recordedSourceTree": "bf396bd3bcabe89ba6cb14279622a5b01dfce190",
+    "recordedSourceDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+    "currentDigestCommandOutput": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+    "manifestBeforeAfterCommitStable": true,
+    "manifestBeforeAfterTreeStable": true,
+    "manifestBeforeAfterDigestStable": true,
+    "sourceInputChangeArraysEmpty": true
+  },
+  "commandLogAudit": {
+    "exitRecords": 30,
+    "pairedLogs": 30,
+    "zeroExitRecords": 29,
+    "supersededSetupFailure": {
+      "path": "command-logs/01-install-wrapper-attempt.exit",
+      "exitCode": 1,
+      "interpretation": "The wrapper failed after the shell attempted to assign its read-only status variable; the explicit frozen install in command-logs/02-install.log and .exit passed."
+    },
+    "qualifyingRecords": 11,
+    "qualifyingRecordsZero": true,
+    "qualifyingRange": "command-logs/19-runtime-qualifying-1 through command-logs/29-qualifying-isolation-end"
+  },
+  "reportedBudgetChecks": [
+    {"id": "node-planner", "status": "pass-in-author-packet", "p95Ms": [13.512291000000005, 13.925833000000239], "budgetMs": 16},
+    {"id": "node-targeted-reducer-dispatch", "status": "pass-in-author-packet", "p95Ms": [0.125, 0.12687499999992724], "budgetMs": 4},
+    {"id": "browser-planner", "status": "pass-in-author-packet", "p95Ms": 9.5, "budgetMs": 16},
+    {"id": "browser-targeted-reducer-dispatch", "status": "pass-in-author-packet", "p95Ms": 0.20000001788139343, "budgetMs": 4},
+    {"id": "installed-direct-name-bundles", "status": "pass-in-author-packet", "rows": 6, "forbiddenModuleMatches": 0}
+  ],
+  "reportedShapeAndLifecycleChecks": {
+    "node": {"rows": 10000, "rowFields": 100, "views": 30, "candidateCount": 64, "expansions": 64, "nodes": 31, "cleanupCycles": 100, "retainedHandles": 0, "liveRegions": 0, "openObservers": 0},
+    "browserLargeWindow": {"declaredPopulationRows": 1000000, "requestedRows": 100, "transferredRows": 100, "executedRows": 100, "examinedRows": 100, "mountedRows": 44, "responseBodyBytes": 5888},
+    "documentation": {"attempts": 2, "routesPerAttempt": 71, "byteIdentical": true, "maximumLayoutShift": 0, "maximumSentinelGeometryDeltaPx": 0},
+    "adverseRuntime": {"supersedingRequests": 16, "lateEventsDropped": 45, "nonCooperativeDeliveriesAfterReturn": 2, "retainedAfterDispose": false, "authorizationAborted": true},
+    "perceivedInput": {"trustedKeyboardSamples": 30, "visibleDomUpdateP95Ms": 0.800000011920929, "eventTimingObserved": 0, "eventTimingCensored": 30, "networkRequests": 0}
+  },
+  "consumerGraphAudit": {
+    "packageEntries": ["@aeliqo/core", "@aeliqo/runtime", "@aeliqo/web"],
+    "versions": ["0.1.0", "0.1.0", "0.1.0"],
+    "lockGraphDirectDependencies": true,
+    "webRuntimePeerOptional": true,
+    "tarballsRetainedInPacket": false,
+    "resolvedPathReopenableFromCheckout": false
+  },
+  "coverageResult": "The author packet is internally consistent and supports T30 approval in the bounded documented scope; independent reproduction of timing/package tarball bytes remains outside this review.",
+  "followUps": [
+    "Preserve and investigate the explicit planner headroom/variance P2 without widening the 16 ms budget.",
+    "Profile the explicitly reported homepage shared-chunk growth with a route- or interaction-level boundary.",
+    "Retain exact direct-name tarballs or a portable checksum-bound consumer fixture for independent replay."
+  ]
+}

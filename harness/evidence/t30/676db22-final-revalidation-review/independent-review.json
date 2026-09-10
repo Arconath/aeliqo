@@ -1,0 +1,201 @@
+{
+  "schema": "aeliqo.t30.final-revalidation-independent-review.v2",
+  "task": "T30",
+  "status": "approved-with-nonblocking-findings",
+  "reviewedAt": "2026-09-10T19:43:03Z",
+  "reviewedSourceCommit": "cc7bf293ba60d338d07f57a820fd058e7a4465dd",
+  "sourceTree": "bf396bd3bcabe89ba6cb14279622a5b01dfce190",
+  "sourceDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+  "authorEvidenceCommit": "8860fb1c71a5026013f856479c104580380096e0",
+  "reviewBaseCommit": "8860fb1c71a5026013f856479c104580380096e0",
+  "reviewer": "/root/audit_direct_name_candidate",
+  "independentOfEvidenceAuthors": true,
+  "scope": [
+    "Evidence-only independent audit of the exact-source T30 final revalidation packet retained at harness/evidence/t30/676db22-final-revalidation.",
+    "Recompute the packet checksum inventory, source-input and principal-artifact hashes, source commit/tree/digest bindings, command exit pairing, and selected raw-result summaries.",
+    "Inspect the reported Node, Chromium, lifecycle, input, heap, standalone, site, documentation-layout and installed direct-name package evidence against the T30 acceptance boundary.",
+    "No product source, test, budget, task state, lockfile or prior evidence was modified. No performance, browser, install, publication or network command was rerun in this review."
+  ],
+  "authorPacketIntegrity": {
+    "packetManifest": "harness/evidence/t30/676db22-final-revalidation/manifest.json",
+    "packetManifestSha256": "5e2873303f33a2aeaaf52314be508b8a493a135d0f290c06e75d8c5578ee6812",
+    "checksumInventory": "harness/evidence/t30/676db22-final-revalidation/SHA256SUMS",
+    "checksumInventorySha256": "3722dbde639b65cb1ec1a322cefd54c867591834f1eceea9718a1563fcfa264a",
+    "packetFiles": 82,
+    "indexedArtifacts": 80,
+    "indexedArtifactsVerified": 80,
+    "unindexedPacketFiles": ["manifest.json", "SHA256SUMS"],
+    "principalArtifactHashesVerified": 14,
+    "sourceInputHashesVerified": 25,
+    "commandExitRecords": 30,
+    "pairedCommandLogsVerified": 30,
+    "zeroExitRecords": 29,
+    "supersededSetupExitRecords": 1,
+    "qualifyingExitRecordsVerified": 11,
+    "qualifyingExitRecordsZero": true,
+    "sourceCommitVerified": true,
+    "sourceTreeVerified": true,
+    "sourceDigestVerified": true,
+    "sourceBeforeAfterStable": true,
+    "sourceVerificationChangeArraysEmpty": true
+  },
+  "authorMeasurementsReviewed": {
+    "nodeRuntime": {
+      "qualifyingAttempts": 2,
+      "plannerP95Ms": [13.512291000000005, 13.925833000000239],
+      "plannerBudgetMs": 16,
+      "targetedReducerDispatchP95Ms": [0.125, 0.12687499999992724],
+      "targetedReducerBudgetMs": 4,
+      "sampleCountsPerAttempt": {"plannerFirst": 10, "plannerSubsequent": 30},
+      "functionalShape": {"rows": 10000, "rowFields": 100, "views": 30, "candidateCount": 64, "expansions": 64, "nodes": 31, "plannerStatus": "search-exhausted"},
+      "cleanup": {"cyclesPerAttempt": 100, "retainedHandles": 0, "liveRegions": 0, "openObservers": 0}
+    },
+    "browserRuntime": {
+      "browser": "Chromium 153.0.8010.12",
+      "plannerP95Ms": 9.5,
+      "plannerBudgetMs": 16,
+      "targetedReducerDispatchP95Ms": 0.20000001788139343,
+      "targetedReducerBudgetMs": 4,
+      "largeWindow": {"declaredPopulationRows": 1000000, "requestedRows": 100, "transferredRows": 100, "executedRows": 100, "examinedRows": 100, "mountedRows": 44, "responseBodyBytes": 5888},
+      "cleanup": {"cycles": 100, "activeListeners": 0, "remainingElements": 0, "retainedHandles": 0, "liveRegions": 0, "openObservers": 0, "detachedRegistrationsReported": 500},
+      "trace": {"events": 111953, "scriptEvents": 5031, "layoutEvents": 10, "paintEvents": 2, "compositeLayerEvents": 0, "phaseDataAvailable": true}
+    },
+    "perceivedInput": {
+      "trustedKeyboardSamples": 30,
+      "visibleDomUpdateP50Ms": 0.699999988079071,
+      "visibleDomUpdateP95Ms": 0.800000011920929,
+      "eventTimingObserved": 0,
+      "eventTimingMissingOrThresholdCensored": 30,
+      "eventTimingThresholdMs": 16,
+      "networkRequestsDuringInteraction": 0
+    },
+    "heapLifecycle": {
+      "cycles": 100,
+      "baselineFootprintBytes": 4224605,
+      "firstPostGcFootprintBytes": 4242223,
+      "lastPostGcFootprintBytes": 4264091,
+      "netPostGcDeltaBytes": 21868,
+      "finalDomNodes": 0,
+      "finalTrackedListeners": 0,
+      "positiveControlHeldIncreaseBytes": 24637503,
+      "positiveControlReleaseReductionBytes": 24636616,
+      "positiveControlResponsive": true,
+      "verdict": "diagnostic-only"
+    },
+    "standaloneAndSite": {
+      "standalone": {"coldSamples": 10, "warmSamples": 30, "mode": "extended-observation"},
+      "site": {"routes": 3, "coldSamplesPerRoute": 10, "warmSamplesPerRoute": 30, "mode": "functional-observation", "buildId": "unknown"},
+      "siteRouteObservation": "The retained raw site report has three routes and the requested 10 cold/30 warm samples per route; the report is observational and asserts no timing threshold."
+    },
+    "documentationLayout": {
+      "catalogRoutesPerAttempt": 71,
+      "completeAttempts": 2,
+      "reportsByteIdentical": true,
+      "maximumHydrationLayoutShift": 0,
+      "maximumSentinelGeometryDeltaPx": 0,
+      "layoutShiftBudget": 0.1
+    },
+    "adverse": {
+      "runtimeSupersedingRequests": 16,
+      "runtimeSupersededRequests": 15,
+      "runtimeLateEventsDropped": 45,
+      "runtimeNonCooperativeDeliveriesAfterReturn": 2,
+      "runtimeRetainedAfterDispose": false,
+      "runtimeAuthorizationAborted": true,
+      "visualizationRows": 1000,
+      "visualizationNullRows": 250,
+      "visualizationSelectedIdentities": 1000,
+      "visualizationNetworkRequests": 0
+    },
+    "bundles": {
+      "rows": 6,
+      "allRowsPassed": true,
+      "forbiddenModuleMatches": 0,
+      "selectedRows": [
+        {"id": "button", "measuredGzipBytes": 3345, "budgetBytes": 15360},
+        {"id": "input", "measuredGzipBytes": 6168, "budgetBytes": 15360},
+        {"id": "metric", "measuredGzipBytes": 3447, "budgetBytes": 15360},
+        {"id": "table", "measuredGzipBytes": 8232, "budgetBytes": 40960},
+        {"id": "core-planner-validation", "measuredGzipBytes": 54549, "budgetBytes": 71680},
+        {"id": "region-table", "measuredGzipBytes": 143577, "budgetBytes": 163840}
+      ],
+      "directPackageVersions": {"@aeliqo/core": "0.1.0", "@aeliqo/runtime": "0.1.0", "@aeliqo/web": "0.1.0"}
+    }
+  },
+  "findings": [
+    {
+      "priority": "P2",
+      "blocking": false,
+      "id": "planner-headroom-reliability",
+      "requirement": "The unchanged planner p95 budget must remain reliable under the documented workload; a pass is not evidence of universal timing conformance.",
+      "evidence": "The two qualifying author repetitions report 13.512291 ms and 13.925833 ms p95 against 16 ms, leaving 2.49 ms and 2.07 ms headroom. The packet also retains a prior exact-a245 independent-review miss of 21.314875 ms.",
+      "actualVsExpected": "Both qualifying repetitions pass, but the retained prior miss and small headroom show timing variance.",
+      "consequence": "A single passing local packet should not be treated as deterministic or universal planner conformance.",
+      "priorityRationale": "Nonblocking because the unchanged gate passes in both qualifying repetitions and the issue is explicitly retained by the author packet.",
+      "recommendedCorrection": "Keep the 16 ms budget; measure variance on a named CI runner and a lower-powered device, then profile or reduce planner work if the miss recurs.",
+      "verification": "Repeat the qualifying workload on the named environments and record all repetitions, including misses, without widening the threshold.",
+      "status": "open-follow-up; nonblocking"
+    },
+    {
+      "priority": "P2",
+      "blocking": false,
+      "id": "homepage-shared-main-chunk-growth",
+      "requirement": "Selected package bundle budgets remain enforced, while whole-site loading observations must be labeled separately from package-byte qualification.",
+      "evidence": "The manifest records the homepage shared main chunk at 397606 raw and 112564 served encoded bytes versus 44640 and 15700 at a245c8f.",
+      "actualVsExpected": "The selected six package rows pass their stated budgets, but the homepage comparison is materially larger and has no applicable T30 whole-site byte threshold.",
+      "consequence": "Homepage loading/code-splitting cost may regress even while selected package entry-point gates pass.",
+      "priorityRationale": "Nonblocking because the packet does not mislabel the descriptive comparison as a passed byte budget and preserves the issue explicitly.",
+      "recommendedCorrection": "Profile a route- or interaction-level lazy boundary for the evaluator/runtime path while retaining the real no-network home proof and current package budgets.",
+      "verification": "Repeat the site-page observation after the boundary change and compare raw/encoded bytes and functional readiness without replacing the selected bundle gates. ",
+      "status": "open-follow-up; nonblocking"
+    },
+    {
+      "priority": "P2",
+      "blocking": false,
+      "id": "consumer-tarball-reopenability",
+      "requirement": "Installed direct-name consumer evidence should remain independently inspectable and reproducible from retained artifacts.",
+      "evidence": "The retained consumer lock and bundle report contain exact @aeliqo/core, @aeliqo/runtime and @aeliqo/web 0.1.0 entries, integrity values and package hashes, but their file: resolved paths point to the author worktree /private/tmp/aeliqo-t30-final-revalidation.1sYoht and the three tarballs are not retained in the packet.",
+      "actualVsExpected": "The lock graph and reported hashes are inspectable, but an independent reviewer cannot reopen the package bytes or independently recompute the hash/integrity pair from this checkout.",
+      "consequence": "The selected bundle result is supported by the immutable report and lock graph but has weaker artifact-level replayability.",
+      "priorityRationale": "Nonblocking evidence-quality follow-up; it does not contradict the packet's passing selected rows or source binding.",
+      "recommendedCorrection": "Retain the exact tarballs or a portable, checksum-bound consumer fixture for future independent review, while preserving the lock's direct-name graph.",
+      "verification": "Install the retained fixture offline and recompute each package tarball SHA-256 against the lock/report values.",
+      "status": "open-follow-up; nonblocking"
+    }
+  ],
+  "coverage": {
+    "packetIntegrity": "satisfied; 80/80 checksum entries, 25/25 source inputs and 14/14 principal artifacts verified",
+    "sourceBinding": "satisfied; manifest source commit/tree/digest match the recorded source, and before/after/change arrays are stable",
+    "qualifyingNodeRuntime": "satisfied-by-author-packet; two exact-source repetitions pass 16 ms planner and 4 ms reducer budgets with bounded cleanup",
+    "qualifyingBrowserRuntime": "satisfied-by-author-packet; enforced Chromium budgets, bounded large-window geometry and trace phase observations are retained",
+    "adverseLifecycleAndVisualization": "satisfied-by-author-packet; stale/cancellation/region cleanup and dense/null-heavy visualization probes pass within their stated scope",
+    "perceivedInput": "satisfied-with-evidence-limit; 30 trusted keyboard updates are observed, but ordinary Event Timing is missing or threshold-censored and the endpoint is DOM mutation, not paint",
+    "heapLifecycle": "satisfied-as-diagnostic-only; requested-GC and positive-control observations do not prove universal memory or collectability behavior",
+    "standaloneAndSite": "satisfied-as-bounded-observation; cold/warm sample plans and functional readiness are retained without universal or field performance claims",
+    "documentationLayout": "satisfied-by-author-packet; two byte-identical complete 71-route reports show zero layout shift and sentinel geometry delta",
+    "installedDirectNameConsumers": "satisfied-by-retained-report-and-lock-graph; archive re-openability is limited by ephemeral tarball paths",
+    "manualAssistiveTechnology": "unknown-and-not-claimed",
+    "publicationDeploymentBackendAndModelQuality": "not-applicable-and-not-claimed"
+  },
+  "limitations": [
+    "This review inspected the immutable author packet and did not rerun its performance, browser, install, publication or network commands; the measurements are author-produced observations.",
+    "Measurements cover one Apple M4 Pro/macOS host and one headless Chromium build; no named CI runner, lower-powered device, WebKit/Firefox timing run or field population was measured.",
+    "Node and loaded-page first/subsequent observations are reuse conditions within one process or browser fixture. Only standalone/site labels explicitly clear or revalidate browser cache; these are not device-boot or universal cold-start claims.",
+    "Visible-input timing stops at an observed DOM mutation. All ordinary Event Timing entries are missing or threshold-censored; the deliberate calibration only verifies that the observation path reports a long event.",
+    "Trace phase durations can overlap, the maximum script event encloses aggregate workload evaluation, and zero composite-layer events means no such event was exposed in the trace, not zero compositing cost.",
+    "The heap probe is a requested-GC diagnostic from one Chromium process. Empty DOM/listener/resource counters and a responsive positive control do not prove every object is collectible or establish a universal memory budget.",
+    "Adverse runtime uses an in-process adapter and does not prove HTTP, socket, proxy, backend cancellation or network capacity.",
+    "The selected bundle rows cover installed direct-name entry points and retained module graphs; they do not establish parse, execution, interaction, CSS or whole-site latency. The homepage chunk comparison has no applicable T30 byte ceiling.",
+    "The site report's buildId is unknown and its paint/LCP/layout observations are controlled local observations, not field Core Web Vitals or universal input metrics.",
+    "No manual assistive-technology certification, provider/model quality, native WebMCP, publication, deployment or backend-capacity claim is made."
+  ],
+  "verdict": {
+    "decision": "approve-T30-final-revalidation",
+    "blockingFindings": [],
+    "p0": 0,
+    "p1": 0,
+    "p2": 3,
+    "releaseApprovalIssued": false,
+    "summary": "The exact-source T30 author packet is complete, hash-consistent, source- and budget-bound, and supports approval within the inspected scope. No P0 or P1 finding was found. Three explicit P2 follow-ups remain: planner headroom reliability, homepage shared-chunk growth, and independent consumer-tarball reopenability."
+  }
+}
