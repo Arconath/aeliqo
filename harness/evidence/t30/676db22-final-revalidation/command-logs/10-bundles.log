@@ -1,0 +1,99 @@
+$ node tests/performance/bundles.mjs
+{
+  "report": "/private/tmp/aeliqo-t30-final-revalidation.1sYoht/artifacts/performance-bundles/run-TrF4DF/report.json",
+  "gate": "pass",
+  "rows": [
+    {
+      "id": "button",
+      "passed": true,
+      "budget": 15360,
+      "measurements": [
+        {
+          "mode": "total",
+          "gzip": 8811,
+          "forbidden": []
+        },
+        {
+          "mode": "excluding-lit",
+          "gzip": 3345,
+          "forbidden": []
+        }
+      ]
+    },
+    {
+      "id": "input",
+      "passed": true,
+      "budget": 15360,
+      "measurements": [
+        {
+          "mode": "total",
+          "gzip": 11575,
+          "forbidden": []
+        },
+        {
+          "mode": "excluding-lit",
+          "gzip": 6168,
+          "forbidden": []
+        }
+      ]
+    },
+    {
+      "id": "metric",
+      "passed": true,
+      "budget": 15360,
+      "measurements": [
+        {
+          "mode": "total",
+          "gzip": 8963,
+          "forbidden": []
+        },
+        {
+          "mode": "excluding-lit",
+          "gzip": 3447,
+          "forbidden": []
+        }
+      ]
+    },
+    {
+      "id": "table",
+      "passed": true,
+      "budget": 40960,
+      "measurements": [
+        {
+          "mode": "total",
+          "gzip": 13636,
+          "forbidden": []
+        },
+        {
+          "mode": "excluding-lit",
+          "gzip": 8232,
+          "forbidden": []
+        }
+      ]
+    },
+    {
+      "id": "core-planner-validation",
+      "passed": true,
+      "budget": 71680,
+      "measurements": [
+        {
+          "mode": "total",
+          "gzip": 54549,
+          "forbidden": []
+        }
+      ]
+    },
+    {
+      "id": "region-table",
+      "passed": true,
+      "budget": 163840,
+      "measurements": [
+        {
+          "mode": "total",
+          "gzip": 143577,
+          "forbidden": []
+        }
+      ]
+    }
+  ]
+}

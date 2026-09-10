@@ -1,0 +1,41 @@
+capturedAtUtc=2026-09-10T19:21:43Z
+ProductName:		macOS
+ProductVersion:		26.6.2
+BuildVersion:		25G83
+Darwin Hermawans-MacBook-Pro.local 25.6.0 Darwin Kernel Version 25.6.0: Fri Jul 31 19:17:26 PDT 2026; root:xnu-12377.161.14~5/RELEASE_ARM64_T6041 arm64
+cpu=Apple M4 Pro
+logicalCpuCount=12
+memoryBytes=25769803776
+Now drawing from 'AC Power'
+ -InternalBattery-0 (id=22282339)	100%; charged; 0:00 remaining present: true
+Graphics/Displays:
+
+    Apple M4 Pro:
+
+      Chipset Model: Apple M4 Pro
+      Type: GPU
+      Bus: Built-In
+      Total Number of Cores: 16
+      Vendor: Apple (0x106b)
+      Metal Support: Metal 4
+      Displays:
+        Color LCD:
+          Display Type: Built-in Liquid Retina XDR Display
+          Resolution: 3024 x 1964 Retina
+          Main Display: Yes
+          Mirror: Off
+          Online: Yes
+          Automatically Adjust Brightness: Yes
+          Connection Type: Internal
+
+{"node":"v24.20.0","v8":"13.6.233.17-node.53","zlib":"1.2.12","platform":"darwin","arch":"arm64"}
+11.24.0
+Version 7.0.2
+vite/8.2.2 darwin-arm64 node-v24.20.0
+Version 1.63.0
+chromium=153.0.8010.12
+locale=en_ID
+language=(     "en-ID",     "id-ID" ) 
+cc7bf293ba60d338d07f57a820fd058e7a4465dd
+bf396bd3bcabe89ba6cb14279622a5b01dfce190
+676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9

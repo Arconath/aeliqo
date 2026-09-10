@@ -1,0 +1,460 @@
+{
+  "sourceCommit": "cc7bf293ba60d338d07f57a820fd058e7a4465dd",
+  "sourceDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+  "sourceChangedDuringRun": false,
+  "environment": {
+    "node": "v24.20.0",
+    "vite": "8.2.2",
+    "os": "darwin",
+    "release": "25.6.0",
+    "arch": "arm64",
+    "target": "es2022",
+    "minified": true,
+    "gzip": "node:zlib default"
+  },
+  "packages": [
+    {
+      "name": "@aeliqo/core",
+      "path": "/private/tmp/aeliqo-t30-final-revalidation.1sYoht/artifacts/performance-bundles/run-TrF4DF/aeliqo-core-0.1.0.tgz",
+      "sha256": "08d134746e14743cc26aeb24bc69146725e0cd0cb15e0e9e24c3e09b77d7c309"
+    },
+    {
+      "name": "@aeliqo/runtime",
+      "path": "/private/tmp/aeliqo-t30-final-revalidation.1sYoht/artifacts/performance-bundles/run-TrF4DF/aeliqo-runtime-0.1.0.tgz",
+      "sha256": "c631e226de504c388f916a9d2475391bf9beac47a2f72360120f4cb31c696e11"
+    },
+    {
+      "name": "@aeliqo/web",
+      "path": "/private/tmp/aeliqo-t30-final-revalidation.1sYoht/artifacts/performance-bundles/run-TrF4DF/aeliqo-web-0.1.0.tgz",
+      "sha256": "cdb28e0f648c56b225b85a6a1677dfcc10a97cd3a58f144d653c754d0dffaec4"
+    }
+  ],
+  "consumerLockSha256": "a04c136a142730fbcee2db620f9f84e67d343e856d6df82a9f4165e425d92c45",
+  "consumerDirectory": "/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6",
+  "rows": [
+    {
+      "id": "button",
+      "entry": "import {AeliqoButtonElement} from '@aeliqo/web/button'; customElements.define('perf-button',AeliqoButtonElement);",
+      "budgetBytes": 15360,
+      "budgetMetric": "JS gzip with only Lit packages external",
+      "passed": true,
+      "measurements": [
+        {
+          "mode": "total",
+          "chunks": [
+            {
+              "path": "button-total-assets_button-Cs29gmMi.js",
+              "kind": "chunk",
+              "bytes": 26536,
+              "gzipBytes": 8811,
+              "sha256": "3842076d37d214a80f8ff478cc3b462653eb9d0a984433ee07349a652f5b6518"
+            }
+          ],
+          "modules": [
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/button.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/foundation/action-base.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/foundation/base.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/foundation/button.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/foundation/events.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/styles/theme.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/styles/tokens.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@lit/reactive-element/css-tag.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@lit/reactive-element/reactive-element.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/lit-element/lit-element.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/lit-html/lit-html.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/lit/index.js"
+          ],
+          "forbidden": [],
+          "jsGzipBytes": 8811,
+          "cssBytes": 0
+        },
+        {
+          "mode": "excluding-lit",
+          "chunks": [
+            {
+              "path": "button-excluding-lit-assets_button-D4jxDzXk.js",
+              "kind": "chunk",
+              "bytes": 11731,
+              "gzipBytes": 3345,
+              "sha256": "673ce0de4aaa0473783fbaa81f9f909365ed989b7134a035872ab74eb296fd48"
+            }
+          ],
+          "modules": [
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/button.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/foundation/action-base.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/foundation/base.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/foundation/button.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/foundation/events.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/styles/theme.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/styles/tokens.js"
+          ],
+          "forbidden": [],
+          "jsGzipBytes": 3345,
+          "cssBytes": 0
+        }
+      ]
+    },
+    {
+      "id": "input",
+      "entry": "import {AeliqoInputElement} from '@aeliqo/web/input'; customElements.define('perf-input',AeliqoInputElement);",
+      "budgetBytes": 15360,
+      "budgetMetric": "JS gzip with only Lit packages external",
+      "passed": true,
+      "measurements": [
+        {
+          "mode": "total",
+          "chunks": [
+            {
+              "path": "input-total-assets_input-EHO4xb31.js",
+              "kind": "chunk",
+              "bytes": 38964,
+              "gzipBytes": 11575,
+              "sha256": "a372a06e6389b177ddb94cd53af7828786eb044ad1237741ce6cb078f4ae5f6b"
+            }
+          ],
+          "modules": [
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/input.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/elements/aeliqo-input.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/events.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/foundation/base.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/input/base.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/input/events.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/input/text-control.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/input/text-field.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/styles/theme.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/styles/tokens.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@lit/reactive-element/css-tag.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@lit/reactive-element/reactive-element.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/lit-element/lit-element.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/lit-html/lit-html.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/lit/index.js"
+          ],
+          "forbidden": [],
+          "jsGzipBytes": 11575,
+          "cssBytes": 0
+        },
+        {
+          "mode": "excluding-lit",
+          "chunks": [
+            {
+              "path": "input-excluding-lit-assets_input-J9GQ_Y4s.js",
+              "kind": "chunk",
+              "bytes": 24157,
+              "gzipBytes": 6168,
+              "sha256": "90f48028e79f1cf34c53458d2a04827c9e7e4c2c0eab3deb3f2f4497941ec8a2"
+            }
+          ],
+          "modules": [
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/input.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/elements/aeliqo-input.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/events.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/foundation/base.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/input/base.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/input/events.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/input/text-control.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/input/text-field.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/styles/theme.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/styles/tokens.js"
+          ],
+          "forbidden": [],
+          "jsGzipBytes": 6168,
+          "cssBytes": 0
+        }
+      ]
+    },
+    {
+      "id": "metric",
+      "entry": "import {AeliqoMetricElement} from '@aeliqo/web/metric'; customElements.define('perf-metric',AeliqoMetricElement);",
+      "budgetBytes": 15360,
+      "budgetMetric": "JS gzip with only Lit packages external",
+      "passed": true,
+      "measurements": [
+        {
+          "mode": "total",
+          "chunks": [
+            {
+              "path": "metric-total-assets_metric-Bsqr1Qlq.js",
+              "kind": "chunk",
+              "bytes": 26466,
+              "gzipBytes": 8963,
+              "sha256": "1c6f2091e4449db5593b583a5688339adf8d6562a68a49f43b533281a2558a4e"
+            }
+          ],
+          "modules": [
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/metric.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/data/metric.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/data/shared.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/styles/theme.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/styles/tokens.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@lit/reactive-element/css-tag.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@lit/reactive-element/reactive-element.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/lit-element/lit-element.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/lit-html/lit-html.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/lit/index.js"
+          ],
+          "forbidden": [],
+          "jsGzipBytes": 8963,
+          "cssBytes": 0
+        },
+        {
+          "mode": "excluding-lit",
+          "chunks": [
+            {
+              "path": "metric-excluding-lit-assets_metric-BaJrykrM.js",
+              "kind": "chunk",
+              "bytes": 11665,
+              "gzipBytes": 3447,
+              "sha256": "0039233cf0516c74838fb9d8ca71d1d5751639a06be3adf3947079f028c56b05"
+            }
+          ],
+          "modules": [
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/metric.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/data/metric.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/data/shared.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/styles/theme.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/styles/tokens.js"
+          ],
+          "forbidden": [],
+          "jsGzipBytes": 3447,
+          "cssBytes": 0
+        }
+      ]
+    },
+    {
+      "id": "table",
+      "entry": "import {AeliqoTableElement} from '@aeliqo/web/table'; customElements.define('perf-table',AeliqoTableElement);",
+      "budgetBytes": 40960,
+      "budgetMetric": "JS gzip with only Lit packages external",
+      "passed": true,
+      "measurements": [
+        {
+          "mode": "total",
+          "chunks": [
+            {
+              "path": "table-total-assets_table-B62PI9c_.js",
+              "kind": "chunk",
+              "bytes": 43892,
+              "gzipBytes": 13636,
+              "sha256": "82098c391817f9595083206ca44d4cf4a23ad910412a664e33e35dc4fdd000e6"
+            }
+          ],
+          "modules": [
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/limits.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/scalars.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/data/events.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/data/shared.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/elements/aeliqo-table.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/events.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/styles/theme.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/styles/tokens.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@lit/reactive-element/css-tag.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@lit/reactive-element/reactive-element.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/lit-element/lit-element.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/lit-html/lit-html.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/lit/index.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/table.js"
+          ],
+          "forbidden": [],
+          "jsGzipBytes": 13636,
+          "cssBytes": 0
+        },
+        {
+          "mode": "excluding-lit",
+          "chunks": [
+            {
+              "path": "table-excluding-lit-assets_table-Ddt41Hfk.js",
+              "kind": "chunk",
+              "bytes": 29050,
+              "gzipBytes": 8232,
+              "sha256": "513c154e9dfdf3627955bfd2586541e4064d03f4bae5dafaed10ed3b2b2c10f0"
+            }
+          ],
+          "modules": [
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/limits.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/scalars.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/data/events.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/data/shared.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/elements/aeliqo-table.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/events.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/styles/theme.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/styles/tokens.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/table.js"
+          ],
+          "forbidden": [],
+          "jsGzipBytes": 8232,
+          "cssBytes": 0
+        }
+      ]
+    },
+    {
+      "id": "core-planner-validation",
+      "entry": "import {parseCatalog,parseTask,parseExperience,createQueryPlanner,validatePresentationPlan,composePresentation} from '@aeliqo/core'; globalThis.aeliqoPerformance={parseCatalog,parseTask,parseExperience,createQueryPlanner,validatePresentationPlan,composePresentation};",
+      "budgetBytes": 71680,
+      "budgetMetric": "total JS gzip",
+      "passed": true,
+      "measurements": [
+        {
+          "mode": "total",
+          "chunks": [
+            {
+              "path": "core-planner-validation-total-assets_core-planner-validation-Bt9Sv4xp.js",
+              "kind": "chunk",
+              "bytes": 201953,
+              "gzipBytes": 54549,
+              "sha256": "8675e05e7abe0f01736039c331d0cb1a1468fe6758f27bf485b2ee142719e96b"
+            }
+          ],
+          "modules": [
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/core-planner-validation.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/commit.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/experience/index.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/ingress.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/limits.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/parse.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/scalars.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/schemas.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/task/index.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/diagnostics/wire.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/expressions/check.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/expressions/registry.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/interaction/graph.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/presentation/compose.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/presentation/registry.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/presentation/state.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/presentation/validate.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/query/evaluator.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/query/planner.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/semantics/catalog.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/semantics/errors.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/semantics/type-utils.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/core/api.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/core/checks.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/core/core.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/core/errors.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/core/parse.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/core/regexes.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/core/schemas.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/core/util.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/core/versions.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/mini/iso.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/mini/schemas.js"
+          ],
+          "forbidden": [],
+          "jsGzipBytes": 54549,
+          "cssBytes": 0
+        }
+      ]
+    },
+    {
+      "id": "region-table",
+      "entry": "import {AeliqoRegionElement,createAeliqoPresentationRegistry} from '@aeliqo/web/region'; import {createLocalDataService} from '@aeliqo/runtime/data'; import {createResultStore} from '@aeliqo/runtime/results'; import {parseTask,validatePresentationPlan,createStandardFunctionRegistry} from '@aeliqo/core'; import {AeliqoTableElement} from '@aeliqo/web/table'; import {createRegionStore} from '@aeliqo/runtime/regions'; import {createTaskEvaluator} from '@aeliqo/runtime/evaluation'; customElements.define('perf-region',AeliqoRegionElement); customElements.define('aeliqo-table',AeliqoTableElement); globalThis.aeliqoPerformance={createRegionStore,createTaskEvaluator,createLocalDataService,createResultStore,createAeliqoPresentationRegistry,parseTask,validatePresentationPlan,createStandardFunctionRegistry};",
+      "budgetBytes": 163840,
+      "budgetMetric": "total JS gzip",
+      "passed": true,
+      "measurements": [
+        {
+          "mode": "total",
+          "chunks": [
+            {
+              "path": "region-table-total-assets_region-table-BfNLuwOA.js",
+              "kind": "chunk",
+              "bytes": 565776,
+              "gzipBytes": 143577,
+              "sha256": "814a3db8546e29010ca8a4a1a6dd769c886e910489eff3a878de94bf50165e75"
+            }
+          ],
+          "modules": [
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/commit.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/experience/index.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/ingress.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/limits.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/parse.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/plot/index.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/plot/validate.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/scalars.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/schemas.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/task/index.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/visualization/index.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/contracts/visualization/validate.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/diagnostics/wire.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/expressions/check.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/expressions/registry.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/interaction/graph.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/interaction/state.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/presentation/registry.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/presentation/state.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/presentation/validate.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/query/evaluator.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/query/planner.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/semantics/catalog.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/semantics/errors.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/semantics/meaning.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/core/dist/semantics/type-utils.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/runtime/dist/data/local.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/runtime/dist/data/schema.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/runtime/dist/evaluation/cohort.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/runtime/dist/evaluation/task.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/runtime/dist/persistence/document.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/runtime/dist/regions/store.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/runtime/dist/results/store.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/runtime/dist/scheduling/serial.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/data/events.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/data/shared.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/elements/aeliqo-table.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/events.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/foundation/manifest.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/input/events.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/input/manifest.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/region/aeliqo-region.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/region/data-presentation.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/region/data-registry.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/region/data-renderer.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/region/foundation-registry.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/region/foundation-renderer.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/region/input-registry.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/region/input-renderer.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/region/navigation-feedback-registry.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/region/navigation-feedback-renderer.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/region/registry.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/region/visualization-registry.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/region/visualization-renderer.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/styles/theme.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/styles/tokens.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@aeliqo/web/dist/visualization/materialization.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@lit/reactive-element/css-tag.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/@lit/reactive-element/reactive-element.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/lit-element/lit-element.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/lit-html/directive-helpers.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/lit-html/directive.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/lit-html/directives/repeat.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/lit-html/lit-html.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/lit/directives/repeat.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/lit/index.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/core/api.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/core/checks.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/core/core.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/core/errors.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/core/parse.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/core/regexes.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/core/schemas.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/core/util.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/core/versions.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/mini/iso.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/node_modules/zod/v4/mini/schemas.js",
+            "/private/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T/aeliqo-performance-consumer-vx6HD6/region-table.js"
+          ],
+          "forbidden": [],
+          "jsGzipBytes": 143577,
+          "cssBytes": 0
+        }
+      ]
+    }
+  ],
+  "bundleGate": "pass",
+  "T30": "blocked",
+  "limits": [
+    "This proves selected browser export byte sizes and rendered module graphs, not actual interaction correctness or execution/parse latency.",
+    "Incremental builds externalize only Lit and retain all Aeliqo shared platform code; total builds include Lit.",
+    "Timing, browser traces, large workloads, cleanup/heap and real mobile hardware remain required."
+  ]
+}

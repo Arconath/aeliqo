@@ -1,0 +1,38 @@
+$ pnpm build:platform && AELIQO_RUN_PERFORMANCE=1 node tests/performance/runtime-workload.mjs
+$ pnpm build:runtime && pnpm --filter @aeliqo/web build && pnpm --filter @aeliqo/react build
+$ pnpm build:core && pnpm --filter @aeliqo/runtime build
+$ pnpm --filter @aeliqo/core build
+$ tsc -p tsconfig.json && node scripts/generate-schemas.mjs
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+$ tsc -p tsconfig.json
+{
+  "output": "artifacts/t30-676db22-final-revalidation/runtime-qualifying-1/runtime-1789067851258.json",
+  "sourceCommit": "cc7bf293ba60d338d07f57a820fd058e7a4465dd",
+  "timingEnabled": true,
+  "medium": {
+    "durationMs": 12.456750000000284,
+    "status": "search-exhausted",
+    "expansions": 64,
+    "nodes": 31,
+    "candidateCount": 64,
+    "rowCount": 10000,
+    "viewCount": 30,
+    "fieldCount": 100,
+    "rowFieldCount": 100
+  },
+  "reducer": {
+    "iterations": 100,
+    "successful": 100,
+    "unrelatedRoutes": 0,
+    "p50Ms": 0.10900000000037835,
+    "p95Ms": 0.13358400000015536
+  },
+  "cleanup": {
+    "cycles": 100,
+    "retainedHandles": 0,
+    "liveRegions": 0,
+    "openObservers": 0,
+    "bounded": true
+  }
+}

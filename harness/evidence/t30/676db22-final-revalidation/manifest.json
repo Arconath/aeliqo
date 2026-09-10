@@ -1,0 +1,574 @@
+{
+  "schema": "aeliqo.t30.final-revalidation.v2",
+  "task": "T30",
+  "status": "passed-with-nonblocking-findings",
+  "generatedAt": "2026-09-10T19:28:14Z",
+  "sourceCommit": "cc7bf293ba60d338d07f57a820fd058e7a4465dd",
+  "sourceTree": "bf396bd3bcabe89ba6cb14279622a5b01dfce190",
+  "sourceDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+  "scope": "Author-produced exact-source final T30 revalidation from a new registered worktree. The complete timing-sensitive matrix was repeated from scratch inside an idle-process window: two Node runtime repetitions, enforced Chromium workloads and trace, trusted-input observation plus calibration, 100-cycle heap lifecycle, extended standalone and whole-site cold/warm observations, adverse visualization, and two complete all-71 documentation layout runs. The installed direct-name package bundle graph and adverse runtime lifecycle probe were run on the same exact source before the overlapping T29 browser job began and are retained as deterministic/functional supporting gates. Product source, tests, budgets, masks, task state, lockfile, and old evidence were not changed.",
+  "sourceVerification": {
+    "worktree": "/private/tmp/aeliqo-t30-final-revalidation.1sYoht",
+    "headBeforeMatrix": "cc7bf293ba60d338d07f57a820fd058e7a4465dd",
+    "headAfterMatrix": "cc7bf293ba60d338d07f57a820fd058e7a4465dd",
+    "treeBeforeMatrix": "bf396bd3bcabe89ba6cb14279622a5b01dfce190",
+    "treeAfterMatrix": "bf396bd3bcabe89ba6cb14279622a5b01dfce190",
+    "digestBeforeMatrix": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+    "digestAfterMatrix": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+    "productSourceChanges": [],
+    "testChanges": [],
+    "budgetChanges": [],
+    "maskChanges": [],
+    "taskStateChanges": [],
+    "lockfileChanges": []
+  },
+  "environment": {
+    "os": "macOS 26.6.2 (25G83)",
+    "kernelRelease": "25.6.0",
+    "cpu": "Apple M4 Pro",
+    "logicalCpuCount": 12,
+    "gpuCores": 16,
+    "memoryBytes": 25769803776,
+    "power": "AC power; internal battery 100% charged",
+    "display": "3024 x 1964 built-in Liquid Retina XDR",
+    "node": "v24.20.0",
+    "v8": "13.6.233.17-node.53",
+    "zlib": "1.2.12",
+    "pnpm": "11.24.0",
+    "typescript": "7.0.2",
+    "vite": "8.2.2",
+    "playwright": "1.63.0",
+    "browser": "Chromium 153.0.8010.12",
+    "locale": "en_ID",
+    "browserFixture": {
+      "viewport": {"width": 1280, "height": 720},
+      "devicePixelRatio": 1,
+      "language": "en-US",
+      "headless": true,
+      "workers": 1,
+      "syntheticThrottle": false
+    },
+    "measurementIsolation": {
+      "qualifyingStartUtc": "2026-09-10T19:17:14Z",
+      "qualifyingEndUtc": "2026-09-10T19:20:48Z",
+      "matchingTestProcessesAtStart": 0,
+      "matchingTestProcessesAtEnd": 0,
+      "processPattern": "playwright|vite preview/measurement port|pnpm test:performance|node tests/performance",
+      "noiseDisclosure": "No competing test/build/browser job matched the process probe. Normal macOS, Codex, WindowServer, GPU, and user-browser processes remained present; this was an idle local developer machine, not a dedicated CI runner."
+    }
+  },
+  "supportingChecks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "status": "pass",
+      "exitCode": 0,
+      "evidenceLog": "command-logs/02-install.log"
+    },
+    {
+      "command": "pnpm build:agent",
+      "status": "pass",
+      "exitCode": 0,
+      "evidenceLog": "command-logs/05-build-agent.log"
+    },
+    {
+      "command": "pnpm build:devtools",
+      "status": "pass",
+      "exitCode": 0,
+      "evidenceLog": "command-logs/06-build-devtools.log"
+    },
+    {
+      "command": "pnpm lint",
+      "status": "pass",
+      "exitCode": 0,
+      "evidenceLog": "command-logs/07-lint.log"
+    },
+    {
+      "command": "pnpm exec tsc -p tests/performance/tsconfig.json --noEmit",
+      "status": "pass",
+      "exitCode": 0,
+      "evidenceLog": "command-logs/08-performance-tsc.log"
+    },
+    {
+      "command": "pnpm test:performance:bundles",
+      "status": "pass",
+      "exitCode": 0,
+      "rows": 6,
+      "evidenceLog": "command-logs/10-bundles.log",
+      "timingQualification": false
+    },
+    {
+      "command": "AELIQO_ADVERSE_RUNTIME_OUTPUT=artifacts/t30-676db22-final-revalidation/adverse-runtime.json pnpm test:performance:adverse-runtime",
+      "status": "pass",
+      "exitCode": 0,
+      "tests": 1,
+      "evidenceLog": "command-logs/11-adverse-runtime.log",
+      "timingQualification": false
+    }
+  ],
+  "qualifyingChecks": [
+    {
+      "command": "AELIQO_PERFORMANCE_OUTPUT=artifacts/t30-676db22-final-revalidation/runtime-qualifying-1 pnpm test:performance:runtime",
+      "status": "pass",
+      "exitCode": 0,
+      "attempt": 1,
+      "evidenceLog": "command-logs/19-runtime-qualifying-1.log"
+    },
+    {
+      "command": "AELIQO_PERFORMANCE_OUTPUT=artifacts/t30-676db22-final-revalidation/runtime-qualifying-2 pnpm test:performance:runtime",
+      "status": "pass",
+      "exitCode": 0,
+      "attempt": 2,
+      "evidenceLog": "command-logs/20-runtime-qualifying-2.log"
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=cc7bf293ba60d338d07f57a820fd058e7a4465dd pnpm test:performance:browser",
+      "status": "pass",
+      "exitCode": 0,
+      "tests": 2,
+      "timingEnabled": true,
+      "budgetsEnforced": true,
+      "evidenceLog": "command-logs/21-browser-qualifying.log"
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=cc7bf293ba60d338d07f57a820fd058e7a4465dd AELIQO_RUN_PERFORMANCE=1 pnpm test:performance:perceived-input",
+      "status": "pass",
+      "exitCode": 0,
+      "tests": 2,
+      "trustedKeyboardSamples": 30,
+      "evidenceLog": "command-logs/22-perceived-input-qualifying.log"
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=cc7bf293ba60d338d07f57a820fd058e7a4465dd AELIQO_RUN_HEAP_LIFECYCLE=1 pnpm test:performance:heap-lifecycle",
+      "status": "pass",
+      "exitCode": 0,
+      "tests": 1,
+      "cycles": 100,
+      "evidenceLog": "command-logs/23-heap-lifecycle-qualifying.log"
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=cc7bf293ba60d338d07f57a820fd058e7a4465dd AELIQO_RUN_PERFORMANCE=1 pnpm test:performance:standalone",
+      "status": "pass",
+      "exitCode": 0,
+      "tests": 1,
+      "coldSamples": 10,
+      "warmSamples": 30,
+      "evidenceLog": "command-logs/24-standalone-qualifying.log"
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=cc7bf293ba60d338d07f57a820fd058e7a4465dd AELIQO_RUN_PERFORMANCE=1 pnpm test:performance:site-page",
+      "status": "pass",
+      "exitCode": 0,
+      "tests": 1,
+      "routes": 3,
+      "coldSamplesPerRoute": 10,
+      "warmSamplesPerRoute": 30,
+      "evidenceLog": "command-logs/25-site-page-qualifying.log"
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=cc7bf293ba60d338d07f57a820fd058e7a4465dd pnpm test:performance:adverse-visualization",
+      "status": "pass",
+      "exitCode": 0,
+      "tests": 1,
+      "evidenceLog": "command-logs/26-adverse-visualization-qualifying.log"
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=cc7bf293ba60d338d07f57a820fd058e7a4465dd pnpm test:site:document-layout",
+      "status": "pass",
+      "exitCode": 0,
+      "attempt": 1,
+      "catalogRoutes": 71,
+      "evidenceLog": "command-logs/27-document-layout-qualifying-1.log"
+    },
+    {
+      "command": "AELIQO_SOURCE_COMMIT=cc7bf293ba60d338d07f57a820fd058e7a4465dd pnpm test:site:document-layout",
+      "status": "pass",
+      "exitCode": 0,
+      "attempt": 2,
+      "catalogRoutes": 71,
+      "evidenceLog": "command-logs/28-document-layout-qualifying-2.log"
+    }
+  ],
+  "supersededOrSetupRuns": {
+    "setupOnly": [
+      {
+        "evidenceLog": "command-logs/01-install-wrapper-attempt.log",
+        "exitCode": 1,
+        "reason": "The frozen install itself completed successfully; the wrapper then tried to assign zsh's read-only status parameter. The explicit install in log 02 passed and is the supporting result."
+      }
+    ],
+    "nonqualifyingTimingLogs": [
+      "command-logs/03-runtime-attempt-1.log",
+      "command-logs/04-runtime-attempt-2.log",
+      "command-logs/09-browser-enforced.log",
+      "command-logs/12-adverse-visualization.log",
+      "command-logs/13-perceived-input-extended.log",
+      "command-logs/14-heap-lifecycle-100.log",
+      "command-logs/15-standalone-extended.log",
+      "command-logs/16-site-page-extended.log",
+      "command-logs/17-document-layout-71-attempt-1.log"
+    ],
+    "reason": "These exact-source observations were produced before the explicit idle-process boundary or overlapped the concurrent T29 browser work. They are retained for auditability but excluded from qualification and replaced by logs 19 through 28."
+  },
+  "measurements": {
+    "nodeRuntimeAttempts": [
+      {
+        "attempt": 1,
+        "plannerP95Ms": 13.512291000000005,
+        "plannerBudgetMs": 16,
+        "plannerHeadroomMs": 2.487708999999995,
+        "plannerPassed": true,
+        "targetedReducerDispatchP95Ms": 0.125,
+        "targetedReducerBudgetMs": 4,
+        "targetedReducerPassed": true,
+        "cleanupPassed": true,
+        "mediumFirst": {"samples": 10, "p50Ms": 121.64104099999997, "p95Ms": 166.66825},
+        "mediumSubsequent": {"samples": 30, "p50Ms": 104.8250839999996, "p95Ms": 116.84924999999998}
+      },
+      {
+        "attempt": 2,
+        "plannerP95Ms": 13.925833000000239,
+        "plannerBudgetMs": 16,
+        "plannerHeadroomMs": 2.074166999999761,
+        "plannerPassed": true,
+        "targetedReducerDispatchP95Ms": 0.12687499999992724,
+        "targetedReducerBudgetMs": 4,
+        "targetedReducerPassed": true,
+        "cleanupPassed": true,
+        "mediumFirst": {"samples": 10, "p50Ms": 121.237458, "p95Ms": 166.816375},
+        "mediumSubsequent": {"samples": 30, "p50Ms": 105.55816700000014, "p95Ms": 118.78791699999988}
+      }
+    ],
+    "nodeRuntimeFunctionalShape": {
+      "rows": 10000,
+      "rowFields": 100,
+      "views": 30,
+      "candidateCount": 64,
+      "expansions": 64,
+      "nodes": 31,
+      "plannerStatus": "search-exhausted",
+      "cleanupCycles": 100,
+      "retainedHandles": 0,
+      "liveRegions": 0,
+      "openObservers": 0
+    },
+    "browserRuntime": {
+      "presentationPlannerP95Ms": 9.5,
+      "presentationPlannerBudgetMs": 16,
+      "targetedReducerDispatchP95Ms": 0.20000001788139343,
+      "targetedReducerBudgetMs": 4,
+      "budgetsEnforced": true,
+      "sourceChangedDuringRun": false,
+      "small": {
+        "rows": 100,
+        "first": {"samples": 10, "p50Ms": 0.800000011920929, "p95Ms": 4.100000023841858},
+        "subsequent": {"samples": 30, "p50Ms": 0.6000000238418579, "p95Ms": 1.4000000059604645}
+      },
+      "medium": {
+        "rows": 10000,
+        "rowFields": 100,
+        "views": 30,
+        "virtualRows": 1320,
+        "first": {"samples": 10, "p50Ms": 139.7000000178814, "p95Ms": 176.10000002384186},
+        "subsequent": {"samples": 30, "p50Ms": 136.60000002384186, "p95Ms": 150}
+      },
+      "largeWindow": {
+        "declaredPopulationRows": 1000000,
+        "requestedRows": 100,
+        "transferredRows": 100,
+        "executedRows": 100,
+        "examinedRows": 100,
+        "mountedRows": 44,
+        "maxMountedRows": 100,
+        "responseBodyBytes": 5888,
+        "first": {"samples": 10, "p50Ms": 1.100000023841858, "p95Ms": 4},
+        "subsequent": {"samples": 30, "p50Ms": 0.7000000178813934, "p95Ms": 0.9000000059604645}
+      },
+      "cleanup": {
+        "cycles": 100,
+        "activeListeners": 0,
+        "remainingElements": 0,
+        "retainedHandles": 0,
+        "liveRegions": 0,
+        "openObservers": 0,
+        "bounded": true
+      },
+      "trace": {
+        "events": 111953,
+        "script": {"events": 5031, "timedEvents": 4555, "p50Ms": 0.002, "p95Ms": 0.01, "maxMs": 5856.649},
+        "layout": {"events": 10, "p50Ms": 0.012, "p95Ms": 2.782, "maxMs": 2.782},
+        "paint": {"events": 2, "p50Ms": 0.005, "p95Ms": 0.021, "maxMs": 0.021},
+        "compositeLayers": {"events": 0, "p50Ms": null, "p95Ms": null, "maxMs": null}
+      }
+    },
+    "bundles": {
+      "gate": "pass",
+      "consumerLockSha256": "a04c136a142730fbcee2db620f9f84e67d343e856d6df82a9f4165e425d92c45",
+      "packages": [
+        {"name": "@aeliqo/core", "sha256": "08d134746e14743cc26aeb24bc69146725e0cd0cb15e0e9e24c3e09b77d7c309"},
+        {"name": "@aeliqo/runtime", "sha256": "c631e226de504c388f916a9d2475391bf9beac47a2f72360120f4cb31c696e11"},
+        {"name": "@aeliqo/web", "sha256": "cdb28e0f648c56b225b85a6a1677dfcc10a97cd3a58f144d653c754d0dffaec4"}
+      ],
+      "rows": [
+        {"id": "button", "gzipBytesExcludingLit": 3345, "budgetBytes": 15360, "forbiddenModules": []},
+        {"id": "input", "gzipBytesExcludingLit": 6168, "budgetBytes": 15360, "forbiddenModules": []},
+        {"id": "metric", "gzipBytesExcludingLit": 3447, "budgetBytes": 15360, "forbiddenModules": []},
+        {"id": "table", "gzipBytesExcludingLit": 8232, "budgetBytes": 40960, "forbiddenModules": []},
+        {"id": "core-planner-validation", "gzipBytesTotal": 54549, "budgetBytes": 71680, "forbiddenModules": []},
+        {"id": "region-table", "gzipBytesTotal": 143577, "budgetBytes": 163840, "forbiddenModules": []}
+      ]
+    },
+    "adverseRuntime": {
+      "elapsedMs": 31.01545800000001,
+      "slowSourceElapsedMs": 19.975624999999994,
+      "supersedingRequests": 16,
+      "supersededRequests": 15,
+      "staleRows": 0,
+      "lateEventsDropped": 45,
+      "nonCooperativeDeliveriesAfterReturn": 2,
+      "retainedAfterDispose": false,
+      "retainedBuffersAfterCleanup": 0,
+      "activeSourcesAfterCleanup": 0,
+      "regionStoreEntryAfterDispose": false,
+      "regionObserverClosed": true,
+      "authorizationAborted": true,
+      "interpretation": "Functional cancellation/stale-commit/cleanup proof for the in-process adapter; its elapsed values are raw observations and not a timing qualification."
+    },
+    "adverseVisualization": {
+      "rows": 1000,
+      "nullRows": 250,
+      "selectedIdentities": 1000,
+      "samples": 40,
+      "overall": {"p50Ms": 13.599999994039536, "p95Ms": 16.200000017881393},
+      "narrow": {"samples": 20, "width": 960, "p50Ms": 10.800000011920929, "p95Ms": 12.300000011920929, "containerScrollWidth": 960, "viewportScrollWidth": 0},
+      "wide": {"samples": 20, "width": 3600, "p50Ms": 14.299999982118607, "p95Ms": 16.5, "containerScrollWidth": 1408, "viewportScrollWidth": 3600},
+      "documentScrollWidth": 1440,
+      "networkRequests": 0,
+      "timingMeaning": "Raw mutation-to-DOM-and-forced-layout observation; not paint or input-to-paint and no pass threshold."
+    },
+    "perceivedInput": {
+      "mode": "extended-observation",
+      "trustedKeyboardSamples": 30,
+      "visibleDomUpdateP50Ms": 0.699999988079071,
+      "visibleDomUpdateP95Ms": 0.800000011920929,
+      "eventTimingObserved": 0,
+      "eventTimingMissingOrThresholdCensored": 30,
+      "eventTimingThresholdMs": 16,
+      "networkRequests": 0,
+      "forbiddenModules": [],
+      "calibration": {
+        "requestedHandlerMs": 60,
+        "eventDurationMs": 64,
+        "inputDelayMs": 0.09999999403953552,
+        "processingDurationMs": 60.20000001788139,
+        "visibleUpdateDelayMs": 61.19999998807907
+      }
+    },
+    "heapLifecycle": {
+      "mode": "full-100-cycle",
+      "batches": 10,
+      "cyclesPerBatch": 10,
+      "baselineFootprintBytes": 4224605,
+      "firstPostGcFootprintBytes": 4242223,
+      "lastPostGcFootprintBytes": 4264091,
+      "netPostGcDeltaBytes": 21868,
+      "finalDomNodes": 0,
+      "finalTrackedListeners": 0,
+      "runtimeWarmupCleanup": {"cycles": 100, "retainedHandles": 0, "liveRegions": 0, "openObservers": 0},
+      "positiveControlHeldIncreaseBytes": 24637503,
+      "positiveControlReleaseReductionBytes": 24636616,
+      "positiveControlResponsive": true,
+      "verdict": "diagnostic-only; no leak or universal memory-budget conclusion"
+    },
+    "standalone": {
+      "mode": "extended-observation",
+      "entrypoint": "@aeliqo/web/input + @aeliqo/web/table",
+      "rows": 100,
+      "cold": {
+        "condition": "cache disabled and cleared; fresh browser context per sample",
+        "samples": 10,
+        "navigation": {"p50Ms": 12.099999994039536, "p95Ms": 13.800000011920929},
+        "domContentLoaded": {"p50Ms": 11.600000023841858, "p95Ms": 13.400000005960464},
+        "fixtureReady": {"p50Ms": 11.5, "p95Ms": 13.300000011920929},
+        "firstContentfulPaint": {"available": 10, "p50Ms": 12, "p95Ms": 16},
+        "resourceTransfer": {"p50Bytes": 19209, "p95Bytes": 19209},
+        "revalidated304Responses": 0
+      },
+      "warm": {
+        "condition": "cache enabled; same browser context after warm-up; validator-based revalidation",
+        "samples": 30,
+        "navigation": {"p50Ms": 6.4000000059604645, "p95Ms": 8.699999988079071},
+        "domContentLoaded": {"p50Ms": 6, "p95Ms": 8.199999988079071},
+        "fixtureReady": {"p50Ms": 5.9000000059604645, "p95Ms": 8.199999988079071},
+        "firstContentfulPaint": {"available": 9, "unavailable": 21, "p50Ms": 12, "p95Ms": 16},
+        "resourceTransfer": {"p50Bytes": 300, "p95Bytes": 300},
+        "revalidated304Responses": 30
+      },
+      "forbiddenModules": []
+    },
+    "sitePage": {
+      "mode": "extended functional observation",
+      "coldCondition": "cache disabled and cleared; fresh browser context per sample",
+      "warmCondition": "cache enabled; same browser context after warm-up; validator-based revalidation",
+      "coldSamplesPerRoute": 10,
+      "warmSamplesPerRoute": 30,
+      "routes": [
+        {
+          "id": "home",
+          "cold": {"navigationP50Ms": 30.69999998807907, "navigationP95Ms": 40.70000001788139, "domContentLoadedP50Ms": 29.80000001192093, "domContentLoadedP95Ms": 39.5, "fcpP50Ms": 24, "fcpP95Ms": 36, "lcpP50Ms": 24, "lcpP95Ms": 36, "totalTransferP50Bytes": 555679, "totalTransferP95Bytes": 555679, "javascriptTransferP95Bytes": 112864},
+          "warm": {"navigationP50Ms": 8.600000023841858, "navigationP95Ms": 10.799999982118607, "domContentLoadedP50Ms": 7.4000000059604645, "domContentLoadedP95Ms": 10.399999976158142, "fcpP50Ms": 20, "fcpP95Ms": 20, "lcpP50Ms": 20, "lcpP95Ms": 20, "totalTransferP50Bytes": 900, "totalTransferP95Bytes": 900, "javascriptTransferP95Bytes": 300, "revalidated304Responses": 120},
+          "maxLayoutShiftValue": 0
+        },
+        {
+          "id": "component-docs",
+          "cold": {"navigationP50Ms": 30.80000001192093, "navigationP95Ms": 39.900000005960464, "domContentLoadedP50Ms": 30.700000017881393, "domContentLoadedP95Ms": 39.80000001192093, "fcpP50Ms": 28, "fcpP95Ms": 40, "lcpP50Ms": 28, "lcpP95Ms": 40, "totalTransferP50Bytes": 674104, "totalTransferP95Bytes": 674104, "javascriptTransferP95Bytes": 231289},
+          "warm": {"navigationP50Ms": 9.400000005960464, "navigationP95Ms": 12.299999982118607, "domContentLoadedP50Ms": 7.4000000059604645, "domContentLoadedP95Ms": 12.299999982118607, "fcpP50Ms": 20, "fcpP95Ms": 20, "lcpP50Ms": 20, "lcpP95Ms": 20, "totalTransferP50Bytes": 2100, "totalTransferP95Bytes": 2100, "javascriptTransferP95Bytes": 1500, "revalidated304Responses": 240},
+          "maxLayoutShiftValue": 0
+        },
+        {
+          "id": "playground",
+          "cold": {"navigationP50Ms": 24.400000005960464, "navigationP95Ms": 32.5, "domContentLoadedP50Ms": 24.299999982118607, "domContentLoadedP95Ms": 32.400000005960464, "fcpP50Ms": 24, "fcpP95Ms": 32, "lcpP50Ms": 24, "lcpP95Ms": 32, "totalTransferP50Bytes": 684734, "totalTransferP95Bytes": 684734, "javascriptTransferP95Bytes": 241919},
+          "warm": {"navigationP50Ms": 8.099999994039536, "navigationP95Ms": 10.599999994039536, "domContentLoadedP50Ms": 7.199999988079071, "domContentLoadedP95Ms": 10.599999994039536, "fcpP50Ms": 16, "fcpP95Ms": 20, "lcpP50Ms": 16, "lcpP95Ms": 20, "totalTransferP50Bytes": 1800, "totalTransferP95Bytes": 1800, "javascriptTransferP95Bytes": 1200, "revalidated304Responses": 210},
+          "maxLayoutShiftValue": 0.000037837028503417966
+        }
+      ]
+    },
+    "siteMainChunkComparison": {
+      "findingPriority": "P2",
+      "status": "nonblocking-regression-follow-up",
+      "baseline": {
+        "sourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+        "artifact": "site-DQwQCzVw.js",
+        "rawBytes": 44640,
+        "servedEncodedBytes": 15700,
+        "transferBytes": 16000,
+        "homeColdTotalTransferP95Bytes": 457337
+      },
+      "current": {
+        "sourceCommit": "cc7bf293ba60d338d07f57a820fd058e7a4465dd",
+        "artifact": "site-EAgs_aNb.js",
+        "rawBytes": 397606,
+        "servedEncodedBytes": 112564,
+        "transferBytes": 112864,
+        "homeColdTotalTransferP95Bytes": 555679
+      },
+      "delta": {
+        "rawBytes": 352966,
+        "rawPercent": 790.7,
+        "servedEncodedBytes": 96864,
+        "servedEncodedPercent": 617.0,
+        "homeColdTotalTransferP95Bytes": 98342,
+        "homeColdTotalTransferPercent": 21.5
+      },
+      "sourceAttribution": "The current shared site entry statically imports apps/site/src/home-example.ts. That helper statically imports @aeliqo/runtime data, results, and evaluation entry points, including createTaskEvaluator, to power the real local homepage Result path. The production main chunk therefore retains the evaluator/runtime graph. This evidence does not claim a per-module causal byte decomposition because other site source also changed between commits.",
+      "budgetInterpretation": "The published T30 budget table has entry-point budgets for selected library bundles, not a whole-site or homepage-main-chunk byte ceiling. The current controlled page observations remain functional and fast on this host, so the growth is retained as a P2 loading/code-splitting follow-up rather than treated as a passed byte budget or hidden by widening a threshold."
+    },
+    "documentLayout": {
+      "catalogRoutes": 71,
+      "attempts": 2,
+      "completeRuns": 2,
+      "maxHydrationLayoutShiftValue": 0,
+      "layoutShiftBudget": 0.1,
+      "maxSentinelDeltaPx": 0,
+      "allowedSentinelDeltaPx": 1,
+      "trend": {
+        "staticPreview": {"x": 355.1875, "y": 292.0625, "width": 832, "height": 944},
+        "hydratedPreview": {"x": 355.1875, "y": 292.0625, "width": 832, "height": 944},
+        "hydrationLayoutShiftValue": 0
+      },
+      "attemptReportsIdentical": true,
+      "qualifies": true
+    }
+  },
+  "findings": [
+    {
+      "priority": "P2",
+      "id": "planner-headroom-reliability",
+      "status": "open-nonblocking",
+      "observation": "Both author repetitions passed at 13.512291 ms and 13.925833 ms p95 against 16 ms, leaving 2.49 ms and 2.07 ms headroom. The prior exact-a245 independent review retained a 21.314875 ms miss among otherwise passing repetitions.",
+      "followUp": "Keep the unchanged gate and investigate planner variance/headroom on a named CI runner and lower-powered device; do not widen the budget."
+    },
+    {
+      "priority": "P2",
+      "id": "homepage-shared-main-chunk-growth",
+      "status": "open-nonblocking",
+      "observation": "The shared homepage entry is 397,606 raw and 112,564 served encoded bytes versus 44,640 and 15,700 at a245c8f. The source now statically retains the real local evaluator/runtime path.",
+      "followUp": "Profile a route- or interaction-level lazy boundary for the homepage evaluator path while preserving the real, no-network functional proof and without weakening current package budgets."
+    }
+  ],
+  "qualification": {
+    "allAssignedGatesPassed": true,
+    "qualifyingNodeRuntimeRepetitions": 2,
+    "releaseBlockersObserved": [],
+    "nonblockingP2Findings": 2,
+    "additionalSignals": [
+      "Both exact-source Node repetitions and the enforced browser check passed the unchanged 16 ms planner and 4 ms targeted reducer p95 budgets.",
+      "All six installed direct-name package bundle rows passed their unchanged budgets with no forbidden retained modules.",
+      "Large-window geometry stayed bounded at 44 mounted rows for a declared one-million-row population, with 100 rows requested, transferred, executed, and examined.",
+      "The complete timing-sensitive matrix ran between fresh start/end process snapshots with no matching competing test process.",
+      "Both complete 71-route documentation runs observed zero hydration layout shift and zero sentinel geometry delta; the reports are byte-identical."
+    ],
+    "independentReview": "required-after-author-commit",
+    "releaseApprovalIssued": false,
+    "signedOff": false
+  },
+  "limitations": [
+    "This is author-produced T30 evidence. Independent review is still required before release approval or signed-off status.",
+    "Measurements describe one Apple M4 Pro/macOS host and one headless Chromium build on an idle local developer machine; no named CI runner, lower-powered mobile-class device, WebKit/Firefox performance run, or field population was measured.",
+    "The Node and loaded-page first/subsequent observations are reuse conditions within one process or browser fixture. Only the standalone/site labels explicitly clear or revalidate browser cache; none is a device boot or process cold start.",
+    "Visible-input timing ends at an observed DOM mutation, not paint. All 30 ordinary Event Timing entries were missing or threshold-censored; the deliberate calibration only verifies that the observation path reports a long event.",
+    "Trace phase durations can overlap. The 5.857 s maximum script event encloses the aggregate workload evaluation, while the p95 is 0.01 ms; it is not interpreted as a single user-facing task. Zero composite-layer events means no such event was exposed in this trace, not zero compositing cost.",
+    "The heap probe is a requested-GC diagnostic from one Chromium process. Empty DOM/listener/resource counters and a responsive positive control do not prove every object is collectible or establish a universal memory budget.",
+    "Adverse runtime uses an in-process adapter and does not prove HTTP, socket, proxy, backend cancellation or network capacity.",
+    "Bundle rows cover selected installed direct-name production package entry points and retained module graphs; they do not establish parse, execution, interaction, CSS, or whole-site latency. The homepage main-chunk comparison has no applicable T30 byte threshold and remains an explicit P2 follow-up.",
+    "Site paint/LCP/layout observations are raw controlled-run entries, not field Core Web Vitals or universal INP. The cross-commit chunk comparison is descriptive and does not isolate every changed module.",
+    "No reference-model, model-provider, publication, deployment, remote service, or backend-capacity claim is made."
+  ],
+  "sourceInputs": [
+    {"path": "MASTER-SOT.md", "sha256": "c94bf4578b58750493ef3357d8c9741f41a5fede74b97ca8b820112c3107f464"},
+    {"path": "KIT-REVISION.json", "sha256": "0d96cdb93ec7174c11b4f78e6380cbb94b03b427a0b307fa07d2a50d21a799ff"},
+    {"path": "docs/20-execution-plan.md", "sha256": "72cd970b8158c76c8645ccdc60b6940d532c8b8a8729864ea43db693de7bbd03"},
+    {"path": "harness/tasks.json", "sha256": "5f1b0fc7180b1b504cb4cb34fd84e8aec5abd494d50aae0221a2530c6ee572b9"},
+    {"path": "docs/05-results-lifecycle.md", "sha256": "4be7411bd1f3044daad7d8876c4846327534e6248ea72aa4f4980d73537057e7"},
+    {"path": "docs/10-interaction-a11y.md", "sha256": "673fa0208f46488d40483b81c8ff1965e52fe4d95190df32bd717dd30cd49651"},
+    {"path": "docs/12-performance.md", "sha256": "94d6e0a5e823a592f38e17a7c84498df712f18ef5dba4dea7c8a2961a8bb1bca"},
+    {"path": "docs/33-performance-experiments.md", "sha256": "21075d1c55de7bf81f82b9dbb581129c2ce530c43f91feb5605d0b5d81bac88f"},
+    {"path": "tests/performance/README.md", "sha256": "b790ada47685b5de3b1f0e355b4d4302c55424bc026cd615286a3b40d1b5a250"},
+    {"path": "tests/performance/runtime-workload.mjs", "sha256": "76b0936be35cc69ab2b1093c61432d2818124f3d8283ee20d9341b3909f0104d"},
+    {"path": "tests/performance/bundles.mjs", "sha256": "1bf58faae883486ac82332079de17abfe053585444865c7757646fdf06372b77"},
+    {"path": "tests/performance/adverse-runtime.test.mjs", "sha256": "93dcbf2961a46d98998dfd81b332d13411e23282c8c279f463a802522b7809c8"},
+    {"path": "tests/performance/browser.spec.ts", "sha256": "980be2f63f9c44a3520608dec48238e331abb9b72cf1cec4f2a430ab1011af3c"},
+    {"path": "tests/performance/perceived-input.spec.ts", "sha256": "603222b06f625004723de1173a72045d9d6d393466133892913292b6202b4ece"},
+    {"path": "tests/performance/heap-lifecycle.spec.ts", "sha256": "cf3d87a8845c8fc1f22f4874b5ac93bb3f5918ccb78b99a032bebe1410f94fda"},
+    {"path": "tests/performance/standalone.spec.ts", "sha256": "ee9bfc9b81b6e54590b44dea61acfa33f5fdc6df1b5ca59218d6e1100485572d"},
+    {"path": "tests/performance/site-page.spec.ts", "sha256": "7054cf8799c223afc41668febb04ce215bd4a6c8220b47e5a9bca1f0da7f0e86"},
+    {"path": "tests/performance/adverse-visualization.spec.ts", "sha256": "7d170a0f9d9a2500ab11bab45f9977f92ad663ea53aca71d1efc9a668521d5b2"},
+    {"path": "tests/site/document-layout.spec.ts", "sha256": "df01f5d19d49fdc7f04c697c828defd7f094fbd2b6f4857a764e94c40f820aec"},
+    {"path": "tests/site/document-layout.playwright.config.mjs", "sha256": "caeef79d79a76152e8a160e5b64667f0e400cdf92e53835b3622b7a6d1baf4b1"},
+    {"path": "package.json", "sha256": "3f248cc56f80bdcc5ba9b84aa53b02b41269a30ee7f981f6abc3a6471b502d00"},
+    {"path": "pnpm-lock.yaml", "sha256": "add30021cbbb08b122a176dd2b87a46d74ef315d89f383f45a78cf642e5345e1"},
+    {"path": "apps/site/src/site.ts", "sha256": "f236f69f6e8c7abca052e997de520dd63e04934784eaf4b7feae642cd7202279"},
+    {"path": "apps/site/src/home-example.ts", "sha256": "acc57eef9e118fe7a02b586bf07aec0ee68813707726f53f6fd81509d0d35103"},
+    {"path": "apps/site/vite.config.mjs", "sha256": "62026a0f4a2e70490b3d5d0262810807470d854b7236a9e00bdd35f838381afc"}
+  ],
+  "principalArtifacts": [
+    {"path": "runtime-qualifying-1.json", "sha256": "1bc32ece5bbe560b08d14834f2a52b4fea653a1a40b42d96dd9d4d6288d7a0b9"},
+    {"path": "runtime-qualifying-2.json", "sha256": "f476caa5db3ad0fe3c8765130216d305d1148212ad38ecf2ee71364eec9b9669"},
+    {"path": "browser.json", "sha256": "8a8e9c6ccc059616daa1e3a90a359748b6b93101097be0eb43dd50f3a6894c23"},
+    {"path": "bundles.json", "sha256": "d2fa40b1eda9920d2e2cfdac07410a950514a524ee5dc681f67db9da1470cd80"},
+    {"path": "bundles-consumer-package-lock.json", "sha256": "a04c136a142730fbcee2db620f9f84e67d343e856d6df82a9f4165e425d92c45"},
+    {"path": "adverse-runtime.json", "sha256": "1cce0bf79f59f7ad5a49e95a72d500dd91d42695ea758b30f46f9f707bb5caf5"},
+    {"path": "adverse-visualization.json", "sha256": "e81bac1ae1ac3478a30e14be0627fc32e4a57cba288643a416a176d9e75d9d8f"},
+    {"path": "perceived-input.json", "sha256": "a774068a4d4851c4db4cc7dab07cdc10f165d0418666e53e6729b0213680846f"},
+    {"path": "perceived-input-calibration.json", "sha256": "9f2080677bd7d933067a6f55b238de1133fb9db17cb2c513e9e8d91ed356a207"},
+    {"path": "heap-lifecycle.json", "sha256": "66cb437d05cd581ac543df5a16ce401cfcbe000d980525f400e1c5d6686b9c14"},
+    {"path": "standalone.json", "sha256": "8f701bab02a2118a0ab2226d5ed7e7ccb5e4bfdf812209c8640b178d7e703149"},
+    {"path": "site-page.json", "sha256": "07e41235793a6d20f47fe9443497425a9bfaced6d82b27849a3c8256e4f310cd"},
+    {"path": "document-layout/qualifying-attempt-1.json", "sha256": "a318eea502b8ca18dc451ed9360d7dc3bb93914b47712a90f6be8bd9006dbb1f"},
+    {"path": "document-layout/qualifying-attempt-2.json", "sha256": "a318eea502b8ca18dc451ed9360d7dc3bb93914b47712a90f6be8bd9006dbb1f"}
+  ],
+  "artifactHashIndex": {
+    "path": "SHA256SUMS",
+    "entries": 80,
+    "sha256": "3722dbde639b65cb1ec1a322cefd54c867591834f1eceea9718a1563fcfa264a"
+  }
+}
