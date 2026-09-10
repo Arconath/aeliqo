@@ -1,0 +1,169 @@
+{
+  "schema": "aeliqo.integrated-candidate-evidence.v1",
+  "stage": "ready",
+  "generatedAt": "2026-09-10T15:33:12Z",
+  "subjectSha256": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+  "productSourceRevision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+  "webmcpNativeAdvertised": false,
+  "claims": [
+    {
+      "name": "actual-tests",
+      "status": "pass",
+      "scope": "Fresh 89-command product gate on the exact final candidate digest; every command exited zero and the source digest remained unchanged.",
+      "artifacts": [
+        {
+          "path": "harness/evidence/ci.json",
+          "sha256": "036c20578c1e14f231a8893871dfaa08131e2cf142864d9667f221c9763836ef"
+        }
+      ]
+    },
+    {
+      "name": "browser-matrix",
+      "status": "pass",
+      "scope": "Exact-source Chromium, Firefox and WebKit component/browser evidence, including 1,137/1,137 visual cases, Firefox narrow RTL 200%-text regressions and all 71 documentation routes.",
+      "artifacts": [
+        {
+          "path": "harness/evidence/t29/a245c8f-final-revalidation/manifest.json",
+          "sha256": "48db0631d8ee5118916986d51cd149d74bc60c5a62887c256cfe20e2d6f5a2d8"
+        }
+      ]
+    },
+    {
+      "name": "visual-review",
+      "status": "pass",
+      "scope": "Independent review of the final visual matrix with zero P0/P1 findings and zero Axe violations; 147 Axe incomplete diagnostics remain a P2 follow-up and manual AT certification is not claimed.",
+      "artifacts": [
+        {
+          "path": "harness/evidence/t29/a245c8f-final-revalidation-review/independent-review.json",
+          "sha256": "7e8cc2cb1f00c59bda3a37180b1137088474fd0c37cd4091b09ce479b34fadcf"
+        }
+      ]
+    },
+    {
+      "name": "package-consumers",
+      "status": "pass",
+      "scope": "Six exact 0.1.0-rc.1 tarballs, 130 strict exports, canonical licenses/notices, 63-component SBOM, zero secret findings and an offline installed consumer; exact bytes were independently reproduced.",
+      "artifacts": [
+        {
+          "path": "harness/evidence/t33/a245c8f-final-candidate/manifest.json",
+          "sha256": "8579fd4abc576af85cedae88f8e5a51e2d4ab154ff4943e5dcae3cb63847bb40"
+        },
+        {
+          "path": "harness/evidence/t33/a245c8f-final-candidate-review/independent-review.json",
+          "sha256": "ab509f539386595adbe971e8e1dd94f9ae001a6811d1700d0d0e27c0b76f67e4"
+        }
+      ]
+    },
+    {
+      "name": "performance",
+      "status": "pass",
+      "scope": "Exact-source runtime, browser, bundles, lifecycle, adverse, standalone, site and document-layout budgets pass the required qualification; a 21.314875 ms reviewer planner miss remains a nonblocking P2 headroom/reliability limit.",
+      "artifacts": [
+        {
+          "path": "harness/evidence/t30/a245c8f-final-revalidation/manifest.json",
+          "sha256": "f16f0fcc90d3edf90a693c63870a47f77cee189ae5c0b2a355c1d687e662ddbc"
+        },
+        {
+          "path": "harness/evidence/t30/a245c8f-final-revalidation-review/independent-review.json",
+          "sha256": "37b61d9b7a0b2ad75e02e3c625a0213bf85491712bfc51f5dbf6d6112d0de9c9"
+        }
+      ]
+    },
+    {
+      "name": "security",
+      "status": "pass",
+      "scope": "Execution authorization, isolation, bounded lifecycle and installed-package boundaries are independently reviewed; the current-source audit reran the security/containment suites. This is not a penetration-test or universal-security certification.",
+      "artifacts": [
+        {
+          "path": "harness/evidence/t28/54bb823-sourcebound/manifest.json",
+          "sha256": "949adb34090bc059a6e8a9f677ab8320f9cfd07b5637fbe1e939b829ae951d29"
+        },
+        {
+          "path": "harness/evidence/t28/54bb823-sourcebound/independent-review.json",
+          "sha256": "9d8593765916542bd2f11cef26f4f5a54744ed1fa28061ae2f5b87cb80944905"
+        },
+        {
+          "path": "harness/evidence/t32/be201bf-final-audit/manifest.json",
+          "sha256": "5f91220d80bdff72b1fd5dadb4249d8e855c1af6f46e36f54d9da9d61c993068"
+        }
+      ]
+    },
+    {
+      "name": "real-mcp",
+      "status": "pass",
+      "provenance": "live",
+      "scope": "Real official-SDK MCP process/transport execution passed 18/18 held-out typed tasks with 21/21 independent oracle outputs and is bridged by current-source protocol/containment checks. This does not claim native WebMCP or external-host reasoning quality.",
+      "artifacts": [
+        {
+          "path": "harness/evidence/t31/final-cross-domain/manifest.json",
+          "sha256": "a30b2954c8a7f85dcd5c8f219e925b5cc4aadf6e5036b8c82ae07d213c5e3a77"
+        },
+        {
+          "path": "harness/evidence/t31/final-cross-domain/independent-review.json",
+          "sha256": "2fb69273e99db4d8fd18036a909b78fb67824912defe82f228d337d2b092731a"
+        },
+        {
+          "path": "harness/evidence/t32/be201bf-final-audit/manifest.json",
+          "sha256": "5f91220d80bdff72b1fd5dadb4249d8e855c1af6f46e36f54d9da9d61c993068"
+        }
+      ]
+    },
+    {
+      "name": "real-byok",
+      "status": "pass",
+      "provenance": "live",
+      "scope": "The retained live DeepSeek provider qualification proves bounded provider-neutral transport, continuation, governed tool flow and opaque credential handling; current-source agent/security checks bridge later changes. Live answer correctness was 0/3 and no model-quality claim is made.",
+      "artifacts": [
+        {
+          "path": "harness/evidence/t40/final-release-smoke/manifest.json",
+          "sha256": "adc0ffdebb589ad7b7144855683b81efdfcb423de6ee87c25208d4fa88148d5a"
+        },
+        {
+          "path": "harness/evidence/t40/final-release-smoke/independent-review.json",
+          "sha256": "9d71aa76b8c30809b59b18182fcc5d50d751f42c04969e865a9435d6a2943abd"
+        },
+        {
+          "path": "harness/evidence/t32/be201bf-final-audit/manifest.json",
+          "sha256": "5f91220d80bdff72b1fd5dadb4249d8e855c1af6f46e36f54d9da9d61c993068"
+        }
+      ]
+    },
+    {
+      "name": "independent-review",
+      "status": "pass",
+      "scope": "Independent final-source architecture, DX, usability and evidence-reference closure found no P0/P1 issues and bound the current T29/T30 records to digest be201b.",
+      "artifacts": [
+        {
+          "path": "harness/evidence/t32/be201bf-final-audit/independent-review.json",
+          "sha256": "09d48cd0d23a250e1ad8c26a91b57aeec0c4619896956e5330ad3fabdc7f70b3"
+        },
+        {
+          "path": "harness/evidence/t32/be201bf-reference-closure/manifest.json",
+          "sha256": "834b58643cf4f6aa429016e99f06d9879e7b80468cfae995f5548099f84b492b"
+        }
+      ]
+    },
+    {
+      "name": "operational-preflight",
+      "status": "pass",
+      "scope": "Final-source linux/amd64 image, current-to-candidate-to-rollback-to-current loopback, cache skew, sticky affinity, released freeze policy and public current identity were rehearsed/read-only. Candidate publication and production canary remain unperformed.",
+      "artifacts": [
+        {
+          "path": "harness/evidence/t34/a245c8f-final-preflight/manifest.json",
+          "sha256": "b4e62cec794b4bd295c53fc510b58ac48aac202c6b2bf5f9bdfcbfa66928a58f"
+        },
+        {
+          "path": "harness/evidence/t34/a245c8f-final-preflight-review/independent-review.json",
+          "sha256": "cb50bdafa0f3a3d8db291c1b84ec3a192671f0bc82bba626433713c77cd7f5cc"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Manual VoiceOver/NVDA or other assistive-technology certification is deferred beyond 0.1.0 and is not claimed.",
+    "Native WebMCP host qualification is unavailable and not advertised; only its tested experimental adapter contract remains in scope.",
+    "The live BYOK evidence is from source digest f51e and is bridged to the current source by deterministic agent/security/protocol audit; no new provider call was made and live answer correctness remains 0/3.",
+    "Performance is qualified on the recorded Apple M4 Pro/macOS environment with limited planner headroom; lower-powered devices, field Core Web Vitals and universal performance are not claimed.",
+    "This ready report does not claim npm publication, source release, stable promotion, production deployment or live candidate identity."
+  ]
+}
