@@ -89,7 +89,7 @@ export class AeliqoDialogElement extends AeliqoFoundationElement {
   protected override render() {
     const headingId = safeElementId(`${this.id || "aeliqo-dialog"}-heading`, "aeliqo-dialog-heading");
     return html`<dialog part="dialog" aria-labelledby=${headingId} @cancel=${this.cancel} @keydown=${this.keydown}>
-      <header part="header"><h2 id=${headingId}>${this.heading}</h2><button part="close" type="button" aria-label="Close" @click=${() => this.close()}>×</button></header>
+      <div part="header"><h2 id=${headingId}>${this.heading}</h2><button part="close" type="button" aria-label="Close" @click=${() => this.close()}>×</button></div>
       <div part="content"><slot></slot></div>
     </dialog>`;
   }

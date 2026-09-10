@@ -12,7 +12,6 @@ if (!customElements.get('aeliqo-dialog')) customElements.define('aeliqo-dialog',
 const search = new AeliqoDialogElement();
 search.id = 'docs-search-dialog';
 search.heading = 'Search documentation';
-search.setAttribute('aria-label', 'Search documentation');
 const form = document.createElement('form');
 form.setAttribute('role', 'search');
 const field = document.createElement('input');
@@ -28,10 +27,15 @@ status.setAttribute('role', 'status');
 status.setAttribute('aria-live', 'polite');
 form.append(field);
 search.append(form, status, results);
-document.body.append(search);
+const main = document.querySelector<HTMLElement>('main');
+if (main === null) throw Error('Documentation main landmark is unavailable.');
+(main.querySelector<HTMLElement>('.reading') ?? main).append(search);
 
 const trigger = document.querySelector<HTMLButtonElement>('.search-trigger');
-if (trigger) trigger.disabled = false;
+if (trigger) {
+  trigger.disabled = false;
+  trigger.closest<HTMLElement>('.docs-search-tools')?.setAttribute('data-enhanced', 'true');
+}
 let entries: readonly SearchEntry[] | undefined;
 const initialQuery = new URL(location.href).searchParams.get('q')?.trim() ?? '';
 field.value = initialQuery;
@@ -57,14 +61,33 @@ async function loadSearchIndex():Promise<readonly SearchEntry[]> {
   return entries;
 }
 
+const words = (value:string):readonly string[] => value.toLocaleLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
+
+function searchScore(entry:SearchEntry, query:string):number | undefined {
+  const queryWords = words(query);
+  if (queryWords.length === 0) return 5;
+  const titleWords = words(entry.title);
+  const descriptionWords = words(entry.description);
+  if (titleWords.join(' ') === queryWords.join(' ')) return 0;
+  if (queryWords.every(word => titleWords.includes(word))) return 1;
+  if (queryWords.every(word => titleWords.some(candidate => candidate.startsWith(word)))) return 2;
+  const allWords = [...titleWords, ...descriptionWords];
+  if (queryWords.every(word => allWords.includes(word))) return 3;
+  if (queryWords.every(word => allWords.some(candidate => candidate.startsWith(word)))) return 4;
+  return undefined;
+}
+
 async function updateSearch():Promise<void> {
   results.replaceChildren();
-  const query = field.value.trim().toLocaleLowerCase();
+  const query = field.value.trim();
   if (entries === undefined) { status.textContent = 'Loading search index…'; return; }
-  const matches = entries.filter(entry => `${entry.title} ${entry.description}`.toLocaleLowerCase().includes(query)).slice(0, 20);
-  status.textContent = query ? `${matches.length} matching pages${matches.length === 20 ? ' shown' : ''}.` : 'Browse documentation or type to narrow the results.';
+  const ranked = entries.map((entry, index) => ({entry, index, score: searchScore(entry, query)}))
+    .filter((match): match is {entry:SearchEntry;index:number;score:number} => match.score !== undefined)
+    .sort((left, right) => left.score - right.score || left.index - right.index);
+  const matches = ranked.slice(0, 20);
+  status.textContent = query ? `${ranked.length} matching pages${ranked.length > matches.length ? `; first ${matches.length} shown` : ''}.` : 'Browse documentation or type to narrow the results.';
   if (matches.length === 0) status.textContent = 'No pages found. Try a component name or a broader term.';
-  for (const entry of matches) {
+  for (const {entry} of matches) {
     const item = document.createElement('li');
     const link = document.createElement('a');
     link.href = entry.path;

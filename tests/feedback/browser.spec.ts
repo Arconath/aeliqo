@@ -66,6 +66,8 @@ test("dialog uses native modal semantics and returns focus", async ({page}) => {
   await dialog.evaluate((element) => {(element as HTMLElement & {open: boolean}).open = true;});
   const nativeDialog = dialog.locator("dialog");
   await expect(nativeDialog).toBeVisible();
+  await expect(nativeDialog).toHaveAccessibleName("Confirm details");
+  await expect(dialog.getByRole("banner")).toHaveCount(0);
   await expect.poll(() => nativeDialog.evaluate((element) => element.matches(":modal"))).toBe(true);
   const action = dialog.getByRole("button", {name: "Continue"});
   const close = dialog.getByRole("button", {name: "Close"});
