@@ -1,0 +1,58 @@
+{
+  "schema": "aeliqo.t32.independent-system-review.v2",
+  "task": "T32",
+  "status": "approved",
+  "reviewedAt": "2026-09-10T14:12:31Z",
+  "reviewedSourceCommit": "fdc29af570fe1c82bcdb63346cafc7462a3849a1",
+  "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+  "reviewer": "/root/investigate_hydration_shift",
+  "independentOfImplementationAuthors": true,
+  "scope": [
+    "Reconcile the current product/source delta from the reviewed 2087b14/05e599 baseline against MASTER-SOT and chapters 09, 16, 18, 20, 37, 38 and 39.",
+    "Audit four-concept architecture, pure-core/runtime/shared-web boundaries, security/agent containment, developer meaning DX, all-71 component/site usability, performance qualification boundaries and clean installed-package onboarding.",
+    "Reproduce the T32 manifest suite plus source-relevant query/protocol/security/performance checks in a fresh exact-source worktree.",
+    "Inspect final T29/T30 evidence and preserve the stated T40 live provenance limitations."
+  ],
+  "findings": {
+    "p0": [],
+    "p1": [],
+    "p2": [
+      {
+        "summary": "Planner timing still has limited headroom and raw-run variability.",
+        "evidence": "The final-source run measured planner p95 14.417209ms <= 16ms, while raw samples included 26.966ms and 32.386ms. The prior retained T30 qualification also records one 17.153ms miss among three fresh runs.",
+        "consequence": "A single passing p95 run should not be generalized as stable performance across hardware or repeated executions.",
+        "action": "Keep the raw observations visible and improve runner stability or planner headroom before making a stronger reliability claim.",
+        "status": "open-follow-up; nonblocking"
+      }
+    ]
+  },
+  "coverage": {
+    "architectureAndContainment": "satisfied by source inspection, boundaries/contracts/agent/security/query/protocol suites and installed runtime consumer behavior",
+    "developerMeaningDxAndParity": "satisfied by meaning-authoring unit/consumer suites and Studio consumer roundtrip/activation checks",
+    "all71AndUsability": "satisfied by site unit/browser/document-layout checks, final T29 evidence and current T30 hydration/Firefox evidence",
+    "performanceAndBundles": "satisfied-with-p2-headroom-follow-up",
+    "externalOnboarding": "satisfied by fresh offline frozen install, four installed consumer journeys and a six-package candidate",
+    "digestInvalidation": "satisfied; current candidate digest remained stable at be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+    "T40LiveAnswerAccuracy": "unknown-and-not-claimed"
+  },
+  "historicalT40Boundary": {
+    "sourceCommit": "ab5ccc8de1d0636efe975504516cb204c2bb41f2",
+    "sourceDigest": "f51e351e7d5a2261293f551312ba11a222fbe5ba3dddb24324bf38c364e3c7f3",
+    "deterministic": "18/18 direct and official SDK MCP cases, 21/21 oracle outputs",
+    "live": "0/3 live data-answer correctness; informational and nonblocking under the recorded owner-superseded qualification",
+    "interpretation": "This retained historical evidence proves bounded provider/MCP integration and containment only. It is not a current-source model-accuracy claim."
+  },
+  "limitations": [
+    "No manual VoiceOver, NVDA or other assistive-technology certification was performed or claimed.",
+    "No native WebMCP host qualification was performed or claimed; protocol tests are not native-host evidence.",
+    "No publication, registry verification, deployment, promotion or live-site identity is claimed; local RC packing is not publication.",
+    "Performance observations are from one Apple M4 Pro/macOS environment and do not establish lower-powered-device, cross-browser field-CWV, backend-capacity or universal input-to-paint behavior.",
+    "The retained T29/T30/T31/T40 artifacts have their own source identities; only the fresh checks and explicitly current T30 review are bound to fdc29af/be201bf."
+  ],
+  "verdict": {
+    "decision": "approve-T32",
+    "blockingFindings": [],
+    "releaseApprovalIssued": false,
+    "summary": "No P0 or P1 architecture, DX, usability, security or containment finding remains in the inspected scope. Final-source T32 is approved with the explicit P2 timing follow-up and external/manual/publication limits above."
+  }
+}

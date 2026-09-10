@@ -1,0 +1,58 @@
+{
+  "schema": "aeliqo.t32.final-source-audit.v1",
+  "task": "T32",
+  "status": "complete-independent-system-review",
+  "reviewedAt": "2026-09-10T14:12:31Z",
+  "reviewedSourceCommit": "fdc29af570fe1c82bcdb63346cafc7462a3849a1",
+  "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+  "sourceChangedDuringReview": false,
+  "baseline": {
+    "reviewedSourceCommit": "2087b14f876aed1bbeea7084de04a63e84cda72e",
+    "sourceDigest": "05e5990492994ecd9877454cc13be94e2bd9ebe17df1985725c139f971c1be10",
+    "currentProductDelta": "apps/site/src/site.css, packages/web/src/visualization/cartesian/base.ts, tests/visualization-semantic/browser.spec.ts"
+  },
+  "reviewer": {
+    "agent": "/root/investigate_hydration_shift",
+    "role": "independent architecture, DX and usability reviewer",
+    "independentOfImplementationAuthors": true,
+    "worktree": "/private/tmp/aeliqo-t32-be201bf-final-audit"
+  },
+  "commands": {
+    "checksPath": "checks.json",
+    "checksSha256": "cfa38cd2814ce21f7e4a2b495135285dc2960c1049235da67a6aded64cf40187",
+    "summary": "Core boundaries/contracts/agent/meaning/scenario/query/protocol/security, installed consumers, site/unit/browser/document-layout, performance/bundles/lifecycle, release tooling, validation and local candidate packing all passed on the final source."
+  },
+  "acceptance": {
+    "architectureAndContainment": "satisfied",
+    "sharedWebAndAll71Components": "satisfied-with-current-site-layout-review",
+    "performanceQualification": "satisfied-with-p2-runner-headroom-follow-up",
+    "developerMeaningDxAndS65S67": "satisfied-by-current-consumers-and-retained-scenario-evidence",
+    "externalOnboarding": "satisfied",
+    "digestInvalidation": "satisfied",
+    "modelAnswerAccuracy": "unknown-and-not-claimed",
+    "manualAssistiveTechnology": "deferred-and-not-claimed",
+    "nativeWebMCP": "not-qualified-and-not-claimed",
+    "publicationAndDeployment": "not-applicable-to-T32"
+  },
+  "findings": {
+    "p0": [],
+    "p1": [],
+    "p2": ["Planner p95 passed at 14.417ms <=16ms on this run, but raw samples and prior T30 runs show limited headroom/runner variability; retain as a nonblocking follow-up."]
+  },
+  "evidence": [
+    {"path": "source-delta.json", "sha256": "6316a1c8d0e644a55f00c028e96c5b82c1daebc994a161d95418bc0bce56601f"},
+    {"path": "checks.json", "sha256": "cfa38cd2814ce21f7e4a2b495135285dc2960c1049235da67a6aded64cf40187"},
+    {"path": "independent-review.json", "sha256": "09d48cd0d23a250e1ad8c26a91b57aeec0c4619896956e5330ad3fabdc7f70b3"}
+  ],
+  "retainedEvidence": [
+    {"task": "T29", "path": "harness/evidence/t29/00aadd0-final-revalidation/manifest.json", "sha256": "9e57c5c0581c0d9bd8e1cc4cedd51e0871cac13ac345539877847fe7f639989e"},
+    {"task": "T30-current-site-review", "path": "harness/evidence/t30/a245c8f-hydration-fix-review/manifest.json", "sha256": "39c8efd7bf498ed52100b4859c44c7c164b56046459f424810c61c7bd6171156"},
+    {"task": "T30-performance", "path": "harness/evidence/t30/4f82c54-release-revalidation/manifest.json", "sha256": "64e436ec14817595c23451473213ef0975ffbb73e253812ca0564801068548db"},
+    {"task": "T31", "path": "harness/evidence/t31/final-cross-domain/manifest.json", "sha256": "a30b2954c8a7f85dcd5c8f219e925b5cc4aadf6e5036b8c82ae07d213c5e3a77"},
+    {"task": "T40", "path": "harness/evidence/t40/final-release-smoke/manifest.json", "sha256": "adc0ffdebb589ad7b7144855683b81efdfcb423de6ee87c25208d4fa88148d5a"}
+  ],
+  "limits": [
+    "This is an evidence-bound local/source audit, not publication, deployment, manual AT certification, native WebMCP qualification or a universal performance claim.",
+    "The retained live provider smoke records 0/3 live data-answer correctness and remains informational/nonblocking; no model accuracy claim is made."
+  ]
+}

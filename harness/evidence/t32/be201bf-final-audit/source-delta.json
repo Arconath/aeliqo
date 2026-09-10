@@ -1,0 +1,36 @@
+{
+  "schema": "aeliqo.t32.source-delta.v1",
+  "baselineReviewedSource": {
+    "commit": "2087b14f876aed1bbeea7084de04a63e84cda72e",
+    "digest": "05e5990492994ecd9877454cc13be94e2bd9ebe17df1985725c139f971c1be10"
+  },
+  "finalSource": {
+    "commit": "fdc29af570fe1c82bcdb63346cafc7462a3849a1",
+    "digest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8"
+  },
+  "productDeltaSha256": "239663d5ecbbd671f93598e1ee8414f0551dd973177b221110282277fde9c578",
+  "productFilesChanged": [
+    {
+      "path": "packages/web/src/visualization/cartesian/base.ts",
+      "change": "10 insertions, 5 deletions",
+      "purpose": "Reserve a taller SVG/text envelope and move x-axis labels/title to preserve readability for rem-based large-text rendering across browser engines."
+    },
+    {
+      "path": "apps/site/src/site.css",
+      "change": "1 insertion, 1 deletion",
+      "purpose": "Reserve measured chart and Investigation preview heights so static documentation geometry remains stable through hydration."
+    },
+    {
+      "path": "tests/visualization-semantic/browser.spec.ts",
+      "change": "1 insertion, 3 deletions",
+      "purpose": "Assert the canonical matrix header order as one semantic header-list contract."
+    }
+  ],
+  "relevantCommits": [
+    "74a1f62 test(web): align matrix semantic header order",
+    "00aadd0 fix(web): prevent narrow chart label intersections",
+    "a245c8f fix(site): reserve chart preview hydration space",
+    "fdc29af test(t30): review a245c8f hydration fix"
+  ],
+  "reviewConclusion": "The final product delta is bounded to visualization geometry, site preview reservation and its semantic browser assertion. No Catalog/Task/Result/Experience contract, pure-core/runtime boundary, authorization, agent, protocol or package identity was changed."
+}
