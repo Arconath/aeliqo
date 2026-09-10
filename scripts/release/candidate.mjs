@@ -248,12 +248,28 @@ async function externalConsumer(packages) {
     if (!installed || installed.version !== version || installed.integrity !== item.integrity) throw new Error(`Consumer did not install exact ${item.name} tarball`);
   }
   const exportCount = await typeCheckInstalledExports(consumer, packages);
-  await writeFile(join(consumer, 'consumer.mjs'), [
-    "import '@aeliqo/sdk-core';", "import '@aeliqo/sdk-runtime/evaluation';", "import '@aeliqo/sdk-web/server';",
-    "import '@aeliqo/sdk-agent/protocol';", "import '@aeliqo/sdk-devtools';", "import '@aeliqo/sdk-react/ssr';",
+  await writeFile(join(consumer, 'network-blocker.cjs'), [
+    "const {syncBuiltinESMExports} = require('node:module');",
+    "const blocked = () => { throw new Error('network access is forbidden in the offline release consumer'); };",
+    "globalThis.fetch = blocked;",
+    "for (const name of ['node:http', 'node:https']) { const value = require(name); value.request = blocked; value.get = blocked; }",
+    "const net = require('node:net'); net.connect = blocked; net.createConnection = blocked; net.Socket.prototype.connect = blocked;",
+    "const dns = require('node:dns'); dns.lookup = blocked; dns.resolve = blocked;",
+    "syncBuiltinESMExports();",
   ].join('\n') + '\n');
-  command('node', ['--disallow-code-generation-from-strings', 'consumer.mjs'], {cwd: consumer});
-  return {consumer, lock, lockSha256: sha256(await readFile(join(consumer, 'package-lock.json'))), packages: packages.map(item => item.name), exportCount};
+  await writeFile(join(consumer, 'consumer.mjs'), [
+    "import {parseContract} from '@aeliqo/sdk-core';",
+    "const modules = await Promise.all([",
+    "  import('@aeliqo/sdk-runtime/evaluation'), import('@aeliqo/sdk-web/server'),",
+    "  import('@aeliqo/sdk-agent/protocol'), import('@aeliqo/sdk-devtools'), import('@aeliqo/sdk-react/ssr'),",
+    "]);",
+    "const boundedRejection = parseContract('catalog', '{}');",
+    "if (boundedRejection.ok || modules.length !== 5) throw new Error('installed package runtime smoke failed');",
+    "process.stdout.write(JSON.stringify({networkDenied: true, packageModulesLoaded: 6, coreParserExecuted: true}));",
+  ].join('\n') + '\n');
+  const runtime = JSON.parse(command('node', ['--disallow-code-generation-from-strings', '--require', './network-blocker.cjs', 'consumer.mjs'], {cwd: consumer}));
+  if (runtime.networkDenied !== true || runtime.packageModulesLoaded !== 6 || runtime.coreParserExecuted !== true) throw new Error('Offline consumer returned an invalid report');
+  return {consumer, lock, lockSha256: sha256(await readFile(join(consumer, 'package-lock.json'))), packages: packages.map(item => item.name), exportCount, runtime};
 }
 
 function packageNameFromLockPath(path) {
@@ -339,6 +355,13 @@ try {
   const sbom = cyclonedxSbom({sourceRevision, packages, ...graph, version});
   await writeFile(join(output, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
   await writeFile(join(output, 'sbom.cdx.json'), JSON.stringify(sbom, null, 2) + '\n');
+  await writeFile(join(output, 'consumer.json'), JSON.stringify({
+    schema: 'aeliqo.local-tarball-consumer.v1', sourceRevision, version,
+    install: {source: 'local-candidate-tarballs', lockSha256: consumer.lockSha256},
+    execution: {...consumer.runtime, networkPrimitivesBlocked: ['fetch', 'http', 'https', 'net', 'dns']},
+    packages: packages.map(item => ({name: item.name, version, integrity: item.integrity})),
+    exportCount: consumer.exportCount,
+  }, null, 2) + '\n');
   console.log(JSON.stringify({output, sourceRevision, tarballs: packages.map(item => item.file), consumer: {lockSha256: consumer.lockSha256, packages: consumer.packages, exportCount: consumer.exportCount}, sbomComponents: sbom.components.length, secretFindings: 0}, null, 2));
 } finally {
   await rm(stagingRoot, {recursive: true, force: true});
