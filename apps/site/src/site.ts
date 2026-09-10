@@ -1,5 +1,4 @@
 import {mountPeopleExample} from './home-example.js';
-import homeExampleSource from './home-example.ts?raw';
 import {prepareDeploymentAnalytics} from './analytics.js';
 import {startDeploymentTelemetry} from './telemetry.js';
 
@@ -51,9 +50,30 @@ if (navToggle && primaryNav) {
 void startDeploymentTelemetry();
 void prepareDeploymentAnalytics();
 
-const source=homeExampleSource+"\nconst records = mountPeopleExample(document.querySelector('#home-demo')!, document.querySelector('#demo-result')!);\nrecords.filter('Engineering');\nconst result = records.evaluate('Engineering');\nrecords.showResult(result);\n// Manual path: records.showRecords();\n";
+const source = `import {mountPeopleExample} from './home-example.js';
+
+// The helper mounts @aeliqo/web and sends requests through the shipped
+// @aeliqo/runtime local evaluator over the supplied synthetic snapshot.
+const demo = document.querySelector<HTMLElement>('#home-demo');
+const resultPanel = document.querySelector<HTMLElement>('#demo-result');
+if (!demo || !resultPanel) throw new Error('Demo mount points are missing.');
+
+const records = mountPeopleExample(demo, resultPanel);
+records.filter('Engineering');
+const result = await records.evaluate('Engineering');
+records.showResult(result);
+// Manual path: records.showRecords();`;
 const demo = document.querySelector<HTMLElement>('#home-demo');
 if (demo) {
+  demo.addEventListener('keydown', event => {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight' && event.key !== 'Home' && event.key !== 'End') return;
+    if (demo.scrollWidth <= demo.clientWidth) return;
+    event.preventDefault();
+    if (event.key === 'Home') { demo.scrollLeft = 0; return; }
+    if (event.key === 'End') { demo.scrollLeft = demo.scrollWidth; return; }
+    const step = Math.max(32, Math.floor(demo.clientWidth * 0.75));
+    demo.scrollBy({left: event.key === 'ArrowRight' ? step : -step, behavior: 'auto'});
+  });
   const resultContainer = document.querySelector<HTMLElement>('#demo-result');
   const resultRoot: HTMLElement = resultContainer ?? demo;
   const example=mountPeopleExample(demo, resultContainer ?? undefined);
@@ -89,13 +109,18 @@ if (demo) {
     if (status) status.textContent = 'Requesting a bounded local result…';
     if (evaluateButton) evaluateButton.disabled = true;
     await Promise.resolve();
-    const result = example.evaluate(selectedTeam);
-    example.showResult(result);
-    if (resultRef) resultRef.textContent = `Result · revision ${result.result.ref.revision} · ${result.result.ref.scopeDigest.replace('home-people-scope-', '')} scope · exact`;
-    setFlow('view');
-    if (status) status.textContent = `${result.rows.length} of 4 synthetic people in the exact Result. Local only; no model or network request.`;
-    if (evaluateButton) evaluateButton.disabled = false;
-    void syncComponentTheme(resultRoot);
+    try {
+      const result = await example.evaluate(selectedTeam);
+      example.showResult(result);
+      if (resultRef) resultRef.textContent = `Result · revision ${result.result.ref.revision} · ${result.result.ref.scopeDigest} scope · exact`;
+      setFlow('view');
+      if (status) status.textContent = `${result.rows.length} of 4 synthetic people in the exact Result. Local only; no model or network request.`;
+      void syncComponentTheme(resultRoot);
+    } catch {
+      showManual('The bounded local result could not be evaluated. The manual component remains available.');
+    } finally {
+      if (evaluateButton) evaluateButton.disabled = false;
+    }
   }
   showManual();
   void syncComponentTheme(demo);

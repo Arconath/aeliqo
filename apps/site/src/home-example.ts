@@ -1,4 +1,8 @@
-import type {Catalog, PlotUnit, Result, ResultRef, Scalar, VisualizationBindingContext, VisualizationSpec} from '@aeliqo/core';
+import {createStandardFunctionRegistry, parseTask} from '@aeliqo/core';
+import type {Catalog, Outcome, PlotUnit, QuerySpec, Result, Scalar, Task, VisualizationBindingContext, VisualizationSpec} from '@aeliqo/core';
+import {createLocalDataService, type DataRecord, type QueryBudget} from '@aeliqo/runtime/data';
+import {createResultStore} from '@aeliqo/runtime/results';
+import {createTaskEvaluator} from '@aeliqo/runtime/evaluation';
 import {
   AeliqoBarElement,
   AeliqoMetricElement,
@@ -24,7 +28,7 @@ export type HomeResult = Readonly<{
 
 export type HomePeopleExample = Readonly<{
   filter: (team?: string) => number;
-  evaluate: (team?: string) => HomeResult;
+  evaluate: (team?: string) => Promise<HomeResult>;
   showResult: (result: HomeResult) => void;
   showRecords: () => void;
   dispose: () => void;
@@ -47,58 +51,90 @@ const fields = [
   {id: 'absenceDays', label: 'Absence days', role: 'measure', type: integer},
 ] as const;
 
+const functionRegistryResult = createStandardFunctionRegistry();
+if (!functionRegistryResult.ok) throw new Error('The standard function registry is unavailable.');
+const functionRegistry = functionRegistryResult.value;
 const catalog: Catalog = {
   version: '1',
   revision: 'home-catalog-1',
-  functionRegistryDigest: 'home-functions-1',
+  functionRegistryDigest: functionRegistry.digest,
   entities: [{id: 'person', label: 'Person', identity: ['id'], rowGrain: ['id'], fields}],
   relationships: [],
   meanings: [],
   capabilities: [],
 };
+const HOME_SCOPE = 'home-synthetic-people';
+const HOME_POLICY = 'home-policy-1';
+const HOME_SOURCE_REVISION = '1';
+const budget: QueryBudget = Object.freeze({
+  maxRows: 100,
+  maxBytes: 250_000,
+  maxMessages: 16,
+  maxMilliseconds: 5_000,
+  maxColumns: 16,
+});
 
 const define = (name: string, constructor: CustomElementConstructor): void => {
   if (!customElements.get(name)) customElements.define(name, constructor);
 };
 
+const failure = <T>(code: string, message: string): Outcome<T> => ({
+  ok: false,
+  diagnostics: [{code, message, retryable: false}],
+});
+
 function selectedRows(team = 'all'): readonly Person[] {
   return rows.filter(row => team === 'all' || row.team === team);
 }
 
-function resultFor(team = 'all'): HomeResult {
-  const selected = selectedRows(team);
-  const key = team.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'all';
-  const ref: ResultRef = {
-    id: 'aeliqo-home-people',
-    revision: '1',
-    outputId: 'people',
-    queryDigest: `home-people-query-${key}`,
-    scopeDigest: `home-people-scope-${key}`,
+function queryFor(team: string): QuerySpec {
+  return {
+    entity: 'person',
+    fields: ['id', 'name', 'team', 'location', 'absenceDays'],
+    measures: [],
+    relations: [],
+    groupBy: [],
+    population: {kind: 'all-authorized'},
+    order: [],
+    ...(team === 'all' ? {} : {where: {op: 'compare', field: 'team', comparison: 'eq', value: team}}),
   };
-  const result: Result = {
+}
+
+function taskFor(team: string, revision: number): Task {
+  return {
     version: '1',
-    ref,
-    taskId: 'home-people-task',
-    fields,
-    identity: ['id'],
-    rowGrain: ['id'],
-    counts: {loaded: selected.length, population: {kind: 'unknown'}},
-    precision: {kind: 'exact'},
-    coverage: {kind: 'complete', populationDigest: ref.scopeDigest},
-    consistency: {kind: 'snapshot', snapshotId: `home-snapshot-${key}`, sourceRevisions: {people: '1'}},
-    evidence: {kind: 'computed', queryDigest: ref.queryDigest, definitions: []},
-    filters: team === 'all' ? [] : [{op: 'compare', field: 'team', entity: 'person', comparison: 'eq', value: team}],
-    warnings: [],
-    lineage: [],
+    id: 'home-people-task',
+    revision: String(revision),
+    catalogRevision: catalog.revision,
+    functionRegistryDigest: functionRegistry.digest,
+    regionId: 'aeliqo-home-demo',
+    goal: 'Browse synthetic people',
+    needs: [],
+    assumptions: ['Synthetic demonstration data; no employee or customer records.'],
+    kind: 'data',
+    outputs: [{id: 'people', kind: 'query', query: queryFor(team), dependsOn: [], delivery: 'eager'}],
   };
+}
+
+function readPeople(records: readonly DataRecord[]): readonly Person[] {
+  return Object.freeze(records.map((record) => {
+    if (typeof record.id !== 'string' || typeof record.name !== 'string' || typeof record.team !== 'string'
+      || typeof record.location !== 'string' || typeof record.absenceDays !== 'number') {
+      throw new Error('The local result did not contain the declared person fields.');
+    }
+    return {id: record.id, name: record.name, team: record.team, location: record.location, absenceDays: record.absenceDays};
+  }));
+}
+
+function visualizationFor(result: Result): VisualizationSpec {
   const plot = (mark: PlotUnit['mark'], encoding: PlotUnit['encoding']): PlotUnit => ({
     kind: 'unit',
     mark,
-    result: ref,
+    result: result.ref,
     missing: 'gap',
     encoding,
   });
-  const visualization: VisualizationSpec = {
+  return {
     version: '1',
     view: 'bar',
     plot: {
@@ -109,16 +145,45 @@ function resultFor(team = 'all'): HomeResult {
       }),
     },
   };
-  const visualizationRows: readonly Readonly<Record<string, Scalar>>[] = selected.map(row => row);
-  const datasets: readonly VisualizationDataset[] = [{result: ref, rows: visualizationRows}];
-  return {rows: selected, result, context: {results: [result], catalog}, datasets, visualization};
 }
 
-/** Mount the real web components used by the home proof. All records are synthetic. */
+/** Mount the real web components and use the shipped local evaluator for requests. All records are synthetic. */
 export function mountPeopleExample(container: HTMLElement, resultContainer?: HTMLElement): HomePeopleExample {
   define('aeliqo-record-list', AeliqoRecordListElement);
   define('aeliqo-metric', AeliqoMetricElement);
   define('aeliqo-bar', AeliqoBarElement);
+
+  let disposed = false;
+  let taskRevision = 0;
+  const service = createLocalDataService({
+    snapshot: {catalog, sourceRevision: HOME_SOURCE_REVISION, records: {person: rows}},
+    hostBudget: budget,
+    sourceLimits: {rows: 100, bytes: 250_000},
+    authorize: () => disposed
+      ? failure('home.closed', 'The home demonstration is closed.')
+      : {ok: true, value: {scopeDigest: HOME_SCOPE, policyRevision: HOME_POLICY}},
+  });
+  const resultStore = createResultStore({maxEntries: 8, maxBytes: 250_000, ttlMs: 120_000});
+  const context = () => ({
+    principalKey: 'home-public-synthetic',
+    scopeDigest: HOME_SCOPE,
+    policyRevision: HOME_POLICY,
+    catalogRevision: catalog.revision,
+    functionRegistryDigest: functionRegistry.digest,
+    grants: ['task.evaluate', 'result.inspect'],
+    catalog,
+    data: service,
+    resultStore,
+    readContext: {principal: 'home-public-synthetic'},
+    resolveResult: () => undefined,
+    now: () => Date.now(),
+    budget,
+  });
+  const evaluator = createTaskEvaluator({
+    host: {readContext: () => disposed ? failure('home.closed', 'The home demonstration is closed.') : {ok: true, value: context()}},
+    maxMilliseconds: budget.maxMilliseconds,
+    budget,
+  });
 
   const list = new AeliqoRecordListElement();
   list.columns = [
@@ -156,6 +221,33 @@ export function mountPeopleExample(container: HTMLElement, resultContainer?: HTM
     chart = undefined;
   }
 
+  async function evaluate(team = 'all'): Promise<HomeResult> {
+    const parsed = parseTask(taskFor(team, ++taskRevision));
+    if (!parsed.ok) throw new Error(parsed.diagnostics[0]?.message ?? 'The home task is invalid.');
+    const evaluation = await evaluator.evaluate({task: parsed.value, deadlineMs: budget.maxMilliseconds});
+    if (!evaluation.ok) throw new Error(evaluation.diagnostics[0]?.message ?? 'The local result could not be evaluated.');
+    try {
+      const output = evaluation.value.outputs.find(item => item.outputId === 'people');
+      const snapshot = output?.handle.snapshot();
+      if (output === undefined || snapshot === undefined || snapshot.status !== 'ready' || snapshot.descriptor === undefined) {
+        throw new Error('The local result was not complete.');
+      }
+      const result = snapshot.descriptor;
+      const resultRows = snapshot.batches.flatMap(batch => batch.rows) as readonly DataRecord[];
+      const people = readPeople(resultRows);
+      const visualizationRows = resultRows as readonly Readonly<Record<string, Scalar>>[];
+      return {
+        rows: people,
+        result,
+        context: {results: [result], catalog},
+        datasets: [{result: result.ref, rows: visualizationRows}],
+        visualization: visualizationFor(result),
+      };
+    } finally {
+      evaluation.value.release();
+    }
+  }
+
   function showResult(result: HomeResult): void {
     if (metricHost === null || metricHost === undefined || chartHost === null || chartHost === undefined) return;
     container.setAttribute('hidden', '');
@@ -166,7 +258,7 @@ export function mountPeopleExample(container: HTMLElement, resultContainer?: HTM
     metric.unit = 'records';
     metric.description = 'Exact loaded rows from the selected local scope.';
     metric.scope = {
-      label: result.result.ref.scopeDigest.replace('home-people-scope-', '') === 'all' ? 'All synthetic people' : 'Selected synthetic team',
+      label: result.result.filters.length === 0 ? 'All synthetic people' : 'Selected synthetic team',
       kind: 'filtered',
       loaded: result.rows.length,
       filteredTotal: result.rows.length,
@@ -188,13 +280,15 @@ export function mountPeopleExample(container: HTMLElement, resultContainer?: HTM
   showRecords();
   return {
     filter,
-    evaluate: resultFor,
+    evaluate,
     showResult,
     showRecords,
     dispose() {
+      disposed = true;
       list.remove();
       metric?.remove();
       chart?.remove();
+      resultStore.dispose();
     },
   };
 }

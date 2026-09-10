@@ -270,6 +270,11 @@ h2 {
   font-size: 0.875rem;
 }
 
+.release-install {
+  margin-block-start: 1rem;
+  max-width: 48rem;
+}
+
 .hero-aside {
   align-self: center;
   max-width: 22rem;
@@ -1205,6 +1210,12 @@ footer nav {
 
   a {
     color: LinkText;
+  }
+
+  .demo-flow-step[aria-current="step"] {
+    border-color: Highlight;
+    color: HighlightText;
+    background: Highlight;
   }
 
   .nav-github,
