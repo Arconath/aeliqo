@@ -1472,20 +1472,28 @@
         {
           "path": "harness/evidence/t33/676db22-final-candidate-review/manifest.json",
           "sha256": "2551aaf2380a3fa9d3b22c3cd727bc50ecaadc871261a222e552b648142d15d8"
+        },
+        {
+          "path": "harness/evidence/t33/421deab-final-candidate/manifest.json",
+          "sha256": "d78adb730ec80c1313cc4df69f3b36ceab94332214b676b7003f241ed1cd8278"
+        },
+        {
+          "path": "harness/evidence/t33/421deab-final-candidate-review/manifest.json",
+          "sha256": "febc389621218385d0bd54cb255f407dd7e9f898e2626a76b50245db2045d7f3"
         }
       ],
-      "notes": "Requalified on exact product digest 676db22 with the direct @aeliqo/{core,runtime,web,agent,devtools,react} 0.1.0-rc.1 candidate. Two clean builds produced byte-identical six tarballs, manifest, SBOM and secret scan; an independent current-main rebuild matched all six tarballs and an explicitly offline network-denied consumer type-checked 130 exports with zero audit egress. Licenses/notices, strict exports, dependency order, 63-component SBOM and private testkit exclusion pass with no P0/P1/P2 finding. Consumer lock hashes remain output-path-sensitive and non-release evidence. Publication is still blocked until the npm unpublish hold expires and a fresh authenticated post-hold preflight passes; this task does not approve npm, provenance, dist-tags, source release or deployment.",
+      "notes": "Requalified on exact product digest 421deab after the independently reviewed three-file static-cache fix. Two clean Node 24.20/pnpm 11.24 builds produced byte-identical six direct-name tarballs, manifest, 63-component SBOM and zero-finding secret scan; an independent fresh two-build review reproduced all nine release artifacts and confirmed the six tarballs remain byte-identical to the reviewed 676db22 package bytes. The network-denied consumer type-checked 130 exports with zero audit egress; licenses/notices, strict exports, dependency order and private testkit exclusion pass with no P0-P3 finding. Consumer lock hashes remain output-path-sensitive and non-release evidence. Publication is still blocked until the npm unpublish hold expires and a fresh authenticated post-hold preflight passes; this task does not approve npm, provenance, dist-tags, source release or deployment.",
       "review": {
         "status": "approved",
         "author": "root release orchestrator plus release candidate implementation authors",
-        "reviewer": "/root/review_t29_final",
+        "reviewer": "/root/review_t33_421deab",
         "artifacts": [
           {
-            "path": "harness/evidence/t33/676db22-final-candidate-review/independent-review.json",
-            "sha256": "1516e747b79dff84df40de6a7319f8d65268e2c999e76542d2c41b689ae62d65"
+            "path": "harness/evidence/t33/421deab-final-candidate-review/independent-review.json",
+            "sha256": "e5a14ee36033567b7cbfd6768548e56a7901017f45489143781852059ce12131"
           }
         ],
-        "scope": "Approves the exact direct-name six-package 0.1.0-rc.1 local candidate, byte-for-byte tarball reproducibility, licenses/SBOM/secret scan and explicitly offline installed-consumer acceptance with no P0/P1/P2 finding. Excludes npm identity/history/hold/authentication, publication, provenance, dist-tag promotion, source release and deployment."
+        "scope": "Approves the exact 421deab direct-name six-package 0.1.0-rc.1 local candidate, byte-for-byte tarball reproducibility, licenses/SBOM/secret scan and explicitly offline installed-consumer acceptance with no P0-P3 finding. Excludes npm identity/history/hold/authentication, publication, provenance, dist-tag promotion, source release and deployment."
       }
     },
     {
