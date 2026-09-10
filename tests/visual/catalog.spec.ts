@@ -25,12 +25,18 @@ for(const component of components.components)for(const variant of ['desktop-ligh
    expect(columns.trim().split(/\s+/)).toHaveLength(1);
   }
   if(variant==='narrow-dark-rtl'&&id==='timeline'){
-   const direction=await page.locator(`aeliqo-${id}`).evaluate(element=>getComputedStyle(element.shadowRoot!.querySelector('[part="viewport"]')!).direction);
-   expect(direction).toBe('ltr');
+   const layout=await page.locator(`aeliqo-${id}`).evaluate(element=>{const root=element.shadowRoot!;const viewport=root.querySelector<HTMLElement>('[part="viewport"]')!;const data=root.querySelector<HTMLElement>('[part="data"]')!;const graphic=viewport.querySelector('svg')!.getBoundingClientRect();const viewportBox=viewport.getBoundingClientRect();return{direction:getComputedStyle(viewport).direction,dataOverflow:data.scrollWidth-data.clientWidth,graphicStart:graphic.left-viewportBox.left,graphicEnd:viewportBox.right-graphic.right};});
+   expect(layout.direction).toBe('ltr');
+   expect(layout.dataOverflow).toBeLessThanOrEqual(1);
+   expect(layout.graphicStart).toBeGreaterThanOrEqual(-1);
+   expect(layout.graphicEnd).toBeGreaterThanOrEqual(-1);
   }
   if(variant==='narrow-dark-rtl'&&id==='investigation'){
-   const direction=await page.locator('aeliqo-investigation').evaluate(element=>{const trend=element.shadowRoot!.querySelector('aeliqo-trend')!;return getComputedStyle(trend.shadowRoot!.querySelector('[part="viewport"]')!).direction;});
-   expect(direction).toBe('ltr');
+   const layout=await page.locator('aeliqo-investigation').evaluate(element=>{const trend=element.shadowRoot!.querySelector('aeliqo-trend')!;const root=trend.shadowRoot!;const viewport=root.querySelector<HTMLElement>('[part="viewport"]')!;const data=root.querySelector<HTMLElement>('[part="data"]')!;const graphic=viewport.querySelector('svg')!.getBoundingClientRect();const viewportBox=viewport.getBoundingClientRect();return{direction:getComputedStyle(viewport).direction,dataOverflow:data.scrollWidth-data.clientWidth,graphicStart:graphic.left-viewportBox.left,graphicEnd:viewportBox.right-graphic.right};});
+   expect(layout.direction).toBe('ltr');
+   expect(layout.dataOverflow).toBeLessThanOrEqual(1);
+   expect(layout.graphicStart).toBeGreaterThanOrEqual(-1);
+   expect(layout.graphicEnd).toBeGreaterThanOrEqual(-1);
   }
  });
 }

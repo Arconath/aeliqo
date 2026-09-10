@@ -54,12 +54,13 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
     :host { color: var(--aeliqo-color-text, #111827); display: block; max-inline-size: 100%; min-inline-size: 0; }
     figure { margin: 0; }
     figcaption { font-weight: var(--aeliqo-typography-font-weight-semibold, 600); margin-block-end: var(--aeliqo-space-8, .5rem); }
-    [part="scope"], [part="note"], [part="error"], [part="color-key"] { color: var(--aeliqo-color-muted, #475569); font-size: var(--aeliqo-typography-font-size-caption, .8125rem); }
+    [part="scope"], [part="note"], [part="error"], [part="color-key"] { color: var(--aeliqo-color-muted, #475569); font-size: var(--aeliqo-typography-font-size-caption, .8125rem); overflow-wrap: anywhere; unicode-bidi: plaintext; }
     [part="viewport"] { direction: ltr; max-inline-size: 100%; min-inline-size: 0; overflow: auto; position: relative; }
-    [part="viewport"] svg { background: var(--aeliqo-color-canvas, #fff); display: block; }
+    [part="viewport"] svg { background: var(--aeliqo-color-canvas, #fff); block-size: auto; display: block; max-inline-size: 100%; }
     [part="viewport"] svg text { fill: currentColor; font: 11px system-ui, sans-serif; }
-    [part="data"] { max-inline-size: 100%; overflow: auto; }
+    [part="data"] { max-inline-size: 100%; min-inline-size: 0; overflow: auto; }
     table { border-collapse: collapse; inline-size: 100%; margin-block-start: var(--aeliqo-space-12, .75rem); min-inline-size: 28rem; }
+    caption, th, td { overflow-wrap: anywhere; unicode-bidi: plaintext; }
     th, td { border-block-end: 1px solid var(--aeliqo-color-border, #64748b); padding: var(--aeliqo-space-8, .5rem); text-align: start; }
     th { font-weight: var(--aeliqo-typography-font-weight-semibold, 600); }
     button { min-block-size: var(--aeliqo-control-min-target, 2.75rem); min-inline-size: var(--aeliqo-control-min-target, 2.75rem); }
@@ -74,6 +75,19 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
     [part="concat-inline"] { overflow-inline: auto; flex-wrap: nowrap; }
     [part="layer"] { display: grid; overflow: auto; }
     [part="layer"] > div { grid-area: 1 / 1; }
+    @media (max-width: 30rem) {
+      [part="viewport"] svg { inline-size: 100%; }
+      [part="viewport"] svg text { font-size: calc(.5rem + 12px); }
+      [part="data"] { overflow: visible; }
+      table { display: block; inline-size: 100%; min-inline-size: 0; }
+      caption { display: block; margin-block: var(--aeliqo-space-12, .75rem); text-align: start; }
+      thead { block-size: 1px; clip: rect(0 0 0 0); clip-path: inset(50%); inline-size: 1px; overflow: hidden; position: absolute; white-space: nowrap; }
+      tbody { display: grid; gap: var(--aeliqo-space-12, .75rem); }
+      tr { border-block-end: 1px solid var(--aeliqo-color-border, #64748b); display: block; padding-block: var(--aeliqo-space-4, .25rem); }
+      td { border: 0; display: grid; gap: var(--aeliqo-space-8, .5rem); grid-template-columns: minmax(4.75rem, .7fr) minmax(0, 1.3fr); padding: var(--aeliqo-space-4, .25rem); }
+      td::before { content: attr(data-label); font-weight: var(--aeliqo-typography-font-weight-semibold, 600); overflow-wrap: anywhere; }
+      td > button { justify-self: start; }
+    }
     @media (forced-colors: active) { [part="viewport"] svg path, [part="viewport"] svg circle, [part="viewport"] svg rect { stroke: CanvasText; fill: CanvasText; } }
   `];
 
@@ -206,7 +220,7 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
       ${geometry.result.warnings.length > 0 && data ? html`<ul part="warnings" aria-label="Result warnings">${geometry.result.warnings.map((warning) => html`<li>${warning.message}</li>`)}</ul>` : nothing}
       ${histogramMeasure !== undefined && data ? html`<p part="note">Executor-produced ${histogramMeasure} bins. Bin delivery does not establish source observation coverage.</p>` : nothing}
       ${geometry.state === "data-only" ? html`<p part="error" role="status">${geometry.reason ?? "The chart geometry is unavailable."}</p>` : nothing}
-      ${graphic && axes && geometry.state === "plot" ? html`<div part="viewport" role="region" tabindex="0" aria-label=${`${label} ${this.expectedView} chart. Scroll to view the full graphic.`} style=${`inline-size: ${this.width}px; block-size: ${this.height}px`}>
+      ${graphic && axes && geometry.state === "plot" ? html`<div part="viewport" role="region" tabindex="0" aria-label=${`${label} ${this.expectedView} chart. Scroll to view the full graphic.`} style=${`inline-size: ${this.width}px`}>
         <svg viewBox=${`0 0 ${geometry.width} ${geometry.height}`} width=${geometry.width} height=${geometry.height} role="img" aria-label=${`${label}. ${scope} Values and selection are available in the data table below.`}>
           ${svgPlotMarks(geometry)}
           <path d=${`M64,24V${geometry.height - 48}H${geometry.width - 24}`} fill="none" stroke="currentColor"></path>
@@ -218,7 +232,7 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
       </div>` : nothing}
       ${data ? html`${this.renderLegend(geometry)}${this.renderColorKey(geometry)}<div part="data"><table>
         <caption>${label}: ${tableLabel}</caption><thead><tr><th scope="col">Select</th>${geometry.result.fields.map((field) => html`<th scope="col">${field.label}${field.type.unit ? ` (${field.type.unit.symbol})` : nothing}</th>`)}</tr></thead>
-        <tbody>${repeat(pageRows, (row) => row.identity, (row) => html`<tr><td><button type="button" ?disabled=${!this.selectionEnabled} data-aeliqo-row-identity=${row.identity} data-aeliqo-result=${resultKey(geometry.result.ref)} aria-pressed=${this.isSelected(row.identity, geometry.result.ref) ? "true" : "false"} aria-label=${`Select ${this.identityLabel(row, geometry.result)}`} @click=${() => this.select(row.identity, geometry.result.ref)}>Select</button></td>${geometry.result.fields.map((field) => html`<td>${exactLabel(row.values[field.id]!)}</td>`)}</tr>`)}</tbody>
+        <tbody>${repeat(pageRows, (row) => row.identity, (row) => html`<tr><td data-label="Select"><button type="button" ?disabled=${!this.selectionEnabled} data-aeliqo-row-identity=${row.identity} data-aeliqo-result=${resultKey(geometry.result.ref)} aria-pressed=${this.isSelected(row.identity, geometry.result.ref) ? "true" : "false"} aria-label=${`Select ${this.identityLabel(row, geometry.result)}`} @click=${() => this.select(row.identity, geometry.result.ref)}>Select</button></td>${geometry.result.fields.map((field) => html`<td data-label=${field.label}>${exactLabel(row.values[field.id]!)}</td>`)}</tr>`)}</tbody>
       </table></div>${displayed.length > 25 ? html`<nav part="pagination" aria-label="${label} data pages"><button type="button" ?disabled=${page === 0} @click=${() => { this.page = page - 1; this.requestUpdate(); }}>Previous</button><span>Rows ${page * 25 + 1}–${Math.min((page + 1) * 25, displayed.length)} of ${displayed.length}</span><button type="button" ?disabled=${page + 1 >= pageCount} @click=${() => { this.page = page + 1; this.requestUpdate(); }}>Next</button></nav>` : nothing}` : nothing}
     </figure>`;
   }
@@ -246,9 +260,8 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
   private xTickAnchor(index: number, count: number): "start" | "middle" | "end" {
     if (count === 1) return "middle";
     if (index > 0 && index < count - 1) return "middle";
-    const rtl = typeof globalThis.getComputedStyle === "function" && globalThis.getComputedStyle(this).direction === "rtl";
-    if (index === 0) return rtl ? "end" : "start";
-    return rtl ? "start" : "end";
+    if (index === 0) return "start";
+    return "end";
   }
   private uncertaintyText(uncertainty: {readonly kind: "quantified"; readonly lower: number; readonly upper: number; readonly interpretation: string} | {readonly kind: "unquantified"; readonly reason: string}): string {
     return uncertainty.kind === "quantified"
