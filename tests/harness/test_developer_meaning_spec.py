@@ -23,11 +23,9 @@ class DeveloperMeaningSpecTests(unittest.TestCase):
         req=next(r for r in data("harness/requirements.json")["requirements"] if r["id"]=="R05")
         for sid in ("S65", "S66", "S67"):
             self.assertIn(sid,req["scenarios"])
-        for sid in ("S65", "S66"):
+        for sid in ("S65", "S66", "S67"):
             self.assertEqual(cases[sid]["status"],"done")
             self.assertTrue(cases[sid].get("evidence"))
-        self.assertEqual(cases["S67"]["status"],"planned")
-        self.assertFalse(cases["S67"].get("evidence"))
     def test_manual_surfaces_not_another_evaluator(self):
         t=read("docs/03-semantics-derived.md")
         self.assertIn("Do not add a special developer evaluator",t)
