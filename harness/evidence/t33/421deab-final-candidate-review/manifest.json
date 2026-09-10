@@ -1,0 +1,74 @@
+{
+  "schema": "aeliqo.t33.final-candidate-independent-review-manifest.v3",
+  "task": "T33",
+  "status": "local-candidate-approved-independent-review-complete",
+  "generatedAt": "2026-09-10T22:11:24Z",
+  "reviewer": "/root/review_t33_421deab",
+  "source": {
+    "reviewHeadCommit": "2f1b663b9e6cd1f7644df12b062ba5b3e0e43134",
+    "reviewHeadTree": "e963219acf406ea3346204011115493bea246462",
+    "candidateDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+    "candidateAuthorCommit": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+    "candidateAuthorManifestSha256": "d78adb730ec80c1313cc4df69f3b36ceab94332214b676b7003f241ed1cd8278",
+    "priorReviewedSourceCommit": "1be6be5ea1d4d06d2e46fe0a1addbca4078492a3",
+    "trackedTreeCleanBeforeReview": true,
+    "trackedTreeCleanAfterBuild": true,
+    "fullWorkingTreeCleanBeforePacket": true
+  },
+  "candidate": {
+    "version": "0.1.0-rc.1",
+    "packageCount": 6,
+    "packedBytes": 982309,
+    "publishOrder": [
+      "@aeliqo/core",
+      "@aeliqo/runtime",
+      "@aeliqo/web",
+      "@aeliqo/agent",
+      "@aeliqo/devtools",
+      "@aeliqo/react"
+    ],
+    "privateTestkitExcluded": true,
+    "sixTarballsMatchPriorReviewed676db22": true,
+    "freshBuildsNineOfNineArtifactsByteIdentical": true,
+    "freshStrictExportsTypeChecked": 130,
+    "freshCycloneDxComponents": 63,
+    "freshSecretFindings": 0
+  },
+  "checks": {
+    "authorChecksumEntries": 25,
+    "authorChecksumsPass": true,
+    "commitSignaturesPass": true,
+    "exactToolchain": {
+      "node": "v24.20.0",
+      "pnpm": "11.24.0",
+      "npm": "11.19.0"
+    },
+    "sourceDeltaOnlyReviewedCacheFix": true,
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "p3": 0,
+    "blocking": 0
+  },
+  "principalArtifacts": [
+    {
+      "path": "independent-review.json",
+      "sha256": "e5a14ee36033567b7cbfd6768548e56a7901017f45489143781852059ce12131"
+    }
+  ],
+  "artifactHashIndex": {
+    "path": "SHA256SUMS",
+    "entries": 1,
+    "sha256": "f80771da6b11d0c71ad2ce795e63d156c36f936e9a4da4cfecbf5934a6e2554b"
+  },
+  "limitations": [
+    "This packet approves only the local package candidate and its exact tarball/rebuild evidence.",
+    "Registry, authentication, publication, provenance, source release, deployment and live verification are outside this review."
+  ],
+  "verdict": {
+    "localCandidate": "approved",
+    "releaseApprovalIssued": false,
+    "published": false,
+    "deployed": false
+  }
+}

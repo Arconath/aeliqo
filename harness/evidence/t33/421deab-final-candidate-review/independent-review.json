@@ -1,0 +1,244 @@
+{
+  "schema": "aeliqo.t33.final-candidate-independent-review.v3",
+  "task": "T33",
+  "status": "local-candidate-approved-independent-review-complete",
+  "reviewedAt": "2026-09-10T22:11:24Z",
+  "reviewer": {
+    "agent": "/root/review_t33_421deab",
+    "role": "independent release-candidate, package-integrity and offline-consumer reviewer",
+    "independentOfCandidateAuthor": true
+  },
+  "reviewScope": "Evidence-only review of the exact six-package direct-name 0.1.0-rc.1 local candidate. No product source, task state, npm package, GitHub state, GitOps state or production state was modified.",
+  "source": {
+    "reviewHeadCommit": "2f1b663b9e6cd1f7644df12b062ba5b3e0e43134",
+    "reviewHeadTree": "e963219acf406ea3346204011115493bea246462",
+    "candidateDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+    "candidateAuthorCommit": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+    "candidateAuthorTree": "122cb765c8302ccd94a9e0945f1c6bb5512da029",
+    "candidateAuthorManifestSha256": "d78adb730ec80c1313cc4df69f3b36ceab94332214b676b7003f241ed1cd8278",
+    "priorReviewedSourceCommit": "1be6be5ea1d4d06d2e46fe0a1addbca4078492a3",
+    "priorReviewedSourceTree": "39f6a0f11f97c24195cdae1c9c7ce1f4aedd8797",
+    "priorReviewedCandidateDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+    "commitSignatures": {
+      "verified": true,
+      "commits": [
+        "2f1b663b9e6cd1f7644df12b062ba5b3e0e43134",
+        "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+        "556c3225c4e5e7983441e29b27aee8809f87409e"
+      ],
+      "principal": "hermawan.remote@gmail.com",
+      "keyFingerprint": "SHA256:YgYBb0fI6WIYf0nPoYppjZX7Jifs4qqVWt8AoiictrI"
+    },
+    "trackedTreeCleanBeforeReview": true,
+    "trackedTreeCleanAfterBuild": true,
+    "fullWorkingTreeCleanBeforePacket": true
+  },
+  "authorRecord": {
+    "path": "harness/evidence/t33/421deab-final-candidate/manifest.json",
+    "sha256": "d78adb730ec80c1313cc4df69f3b36ceab94332214b676b7003f241ed1cd8278",
+    "checksumPath": "harness/evidence/t33/421deab-final-candidate/SHA256SUMS",
+    "checksumEntries": 25,
+    "checksumVerification": "pass",
+    "retainedCandidateAndRebuildNineOfNineByteIdentical": true
+  },
+  "toolchain": {
+    "node": "v24.20.0",
+    "pnpm": "11.24.0",
+    "npm": "11.19.0",
+    "workspaceInstall": {
+      "command": "pnpm install --offline --frozen-lockfile",
+      "result": "pass",
+      "workspaceProjects": 15,
+      "packagesReused": 145,
+      "packagesDownloaded": 0
+    }
+  },
+  "freshRebuild": {
+    "sourceRevision": "2f1b663b9e6cd1f7644df12b062ba5b3e0e43134",
+    "outputDirectories": [
+      "artifacts/t33-421deab-review-offline-a",
+      "artifacts/t33-421deab-review-offline-b"
+    ],
+    "command": "PATH=/Users/nino/.nvm/versions/node/v24.20.0/bin:$PATH npm_config_offline=true npm_config_prefer_offline=true npm_config_audit=false npm_config_fund=false node scripts/release/candidate.mjs --version 0.1.0-rc.1 <output>",
+    "consumerInstallOfflineEnforced": true,
+    "runLogs": [
+      {
+        "path": "/private/tmp/aeliqo-t33-421deab-review-offline-a.log",
+        "completedAt": "2026-09-10T22:01:08Z",
+        "exitCode": 0
+      },
+      {
+        "path": "/private/tmp/aeliqo-t33-421deab-review-offline-b.log",
+        "completedAt": "2026-09-10T22:02:10Z",
+        "exitCode": 0
+      }
+    ],
+    "releaseArtifactsCompared": 9,
+    "releaseArtifactsByteIdenticalAcrossFreshOutputs": true,
+    "freshVsAuthorCandidateSixTarballsByteIdentical": true,
+    "freshVsPriorReviewed676db22SixTarballsByteIdentical": true,
+    "freshMetadata": {
+      "manifestSha256": "a8f83232185467768c149f4b1e01ce56992b3f3cd6a3fee3bf43a7e3491f5ccf",
+      "sbomSha256": "1ca79db90fe0c50ab9970eb973d0480d2b157b6d2ee21bb6c6b8a3f1251e0508",
+      "secretScanSha256": "0a1394b3d964cff24b33ff8b7ea3f7a5325f6ec31740b12d957f2eaaaf224e8e"
+    },
+    "consumerRecords": {
+      "runtimeAndTypesPassedTwice": true,
+      "strictExportSpecifiersTypeChecked": 130,
+      "packageModulesLoaded": 7,
+      "coreParserExecuted": true,
+      "auditExecuted": true,
+      "networkDenied": true,
+      "deniedMethods": 10,
+      "auditNetworkAttempts": 0,
+      "lockSha256ByOutput": {
+        "a": "0cba06322363fa03f4d1c8e7ae6771f66ddc113714592331c832bccb04c3cb0a",
+        "b": "7d902f18014cd87723f23dc2ca013a460a5ff78901f482addb8052ab9ad7b0da"
+      },
+      "onlyConsumerDifference": "output-path-derived package-lock hash"
+    }
+  },
+  "candidate": {
+    "schema": "aeliqo.release-candidate.v1",
+    "version": "0.1.0-rc.1",
+    "packageCount": 6,
+    "packedBytes": 982309,
+    "publishOrder": [
+      "@aeliqo/core",
+      "@aeliqo/runtime",
+      "@aeliqo/web",
+      "@aeliqo/agent",
+      "@aeliqo/devtools",
+      "@aeliqo/react"
+    ],
+    "privateTestkitExcluded": true,
+    "tarballs": [
+      {
+        "name": "@aeliqo/core",
+        "file": "aeliqo-core-0.1.0-rc.1.tgz",
+        "bytes": 183748,
+        "sha256": "bfee566d16179ec0a222de966ff2b00cac042e238e798e09d9afeb8d689c7f38",
+        "integrity": "sha512-mlJ8Ssw2ojVgOLKahc6by8DBpONgVFghp3r92YJmm7BPkGtLDo5qnghono3Z+mO2kKA7H0HRAl+JNbgvPxtWKg=="
+      },
+      {
+        "name": "@aeliqo/runtime",
+        "file": "aeliqo-runtime-0.1.0-rc.1.tgz",
+        "bytes": 228488,
+        "sha256": "df7b183da797d6c822e56c0db3af59860e4a5a1c430ac4a2f342f6a8be520d40",
+        "integrity": "sha512-EPmpv9TNarwk6aSymK1um6RpEtgFEgNPyzZOrQgD4wainCdmyRmL6Okp1+GiKEof4yIZyEM3S3J+rr8mjABYfA=="
+      },
+      {
+        "name": "@aeliqo/web",
+        "file": "aeliqo-web-0.1.0-rc.1.tgz",
+        "bytes": 407913,
+        "sha256": "a4260c87d1bf2147435bd0108e630bdc7eaf0d8f5a13c45dd6d4423c0c637383",
+        "integrity": "sha512-ODldWO7Y5TznW8/STjRjjjvqjcJSMVT897In/ZOqdbcm4l/DHWznbBL54NP0A6/3Ja773jt0kKfbLQ6ytgTGIQ=="
+      },
+      {
+        "name": "@aeliqo/agent",
+        "file": "aeliqo-agent-0.1.0-rc.1.tgz",
+        "bytes": 125773,
+        "sha256": "c4b77fa82e1ec5cf6cde7ba4d5b266d198be9ac2768e8d6b0fda8ad50e652e23",
+        "integrity": "sha512-ZYK2lm4SAygBP9xhsNzRaZwDOdqaXX9ClamNv1E2++LhR19YX95UtOsZw6h4+UZwmIXQGpMLWJNyj8TpybnLwQ=="
+      },
+      {
+        "name": "@aeliqo/devtools",
+        "file": "aeliqo-devtools-0.1.0-rc.1.tgz",
+        "bytes": 21156,
+        "sha256": "6166f2a994458f286b979a7d32ea1a3c1ce41d3d03d91acbb9a4b386e8d8ab6d",
+        "integrity": "sha512-Wuol9zm+tp8Y0kQR4SUCh5zyxdTMSKgfgH7EgGNUb4+zpa/uNfS6hcq6Ae2ypGabeEo9HRtLV7a/CS9UR+DW4w=="
+      },
+      {
+        "name": "@aeliqo/react",
+        "file": "aeliqo-react-0.1.0-rc.1.tgz",
+        "bytes": 15231,
+        "sha256": "d35abeee2912e50d4f3c3cc214f23f24813cecec1a6aad8dbb11b8753dc056d1",
+        "integrity": "sha512-jFkF+1cXYwdJ59bn52ZSSw8QCfdGEAmU9BMZOAYrDMi+/KidEKifOpMPjMviSF+NYfgApdBzaPeCPE6vh3eTUg=="
+      }
+    ]
+  },
+  "checks": {
+    "tarballs": {
+      "result": "pass",
+      "packedFiles": 1034,
+      "exportTargets": 221,
+      "strictExportSpecifiers": 130,
+      "duplicatePaths": 0,
+      "unsafePaths": 0,
+      "nonAllowlistedPaths": 0,
+      "symlinks": 0,
+      "workspaceProtocols": 0,
+      "directPackageIdentitiesAndOrder": true,
+      "exactInternalDependencyVersions": true,
+      "canonicalLicenseAndNoticeInEveryTarball": true,
+      "privateTestkitExcluded": true,
+      "sha256AndSha512IntegritiesExact": true,
+      "priorReviewed676db22BytesMatch": true
+    },
+    "sbom": {
+      "result": "pass",
+      "format": "CycloneDX 1.5",
+      "components": 63,
+      "internalComponents": 6,
+      "externalComponents": 57,
+      "dependencyRecords": 63,
+      "dependencyEdges": 95,
+      "uniqueBomRefs": 63,
+      "allRefsAndTargetsKnown": true,
+      "allComponentsReachableFromPublicRoots": true
+    },
+    "secretScan": {
+      "result": "pass",
+      "rules": 6,
+      "retainedAuthorFindings": 0,
+      "freshBuildFindings": 0,
+      "independentFreshTarballFindings": 0
+    },
+    "sourceDelta": {
+      "result": "pass",
+      "productConfigPathsOnly": [
+        "deploy/server.go",
+        "deploy/server_test.go",
+        "scripts/ci/check-static-image.sh"
+      ],
+      "cacheFixCommit": "556c3225c4e5e7983441e29b27aee8809f87409e",
+      "independentlyReviewedEquivalentFixCommit": "67d1adb5aca689b7490a95aab0760ea928fdb6a8",
+      "currentAndReviewedFixTree": "6960040296706dfbad2145ec54e3a73582cb1f18",
+      "patchSha256": "651cc9752c3763df51852e51f67d9b85d658fb6aa32ca5ed3cf3eb0da0c5df39",
+      "cacheFixReviewPath": "harness/evidence/t34/cache-fix-67d1adb-review/independent-review.json",
+      "cacheFixReviewSha256": "d152f79c599cb3a6f8479d93de143d7bc49789e08710f364d26dd1069728d17e"
+    }
+  },
+  "findings": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "p3": 0,
+    "blocking": 0,
+    "items": []
+  },
+  "mutations": {
+    "productSource": false,
+    "taskState": false,
+    "candidateArtifacts": false,
+    "npm": false,
+    "github": false,
+    "gitops": false,
+    "production": false,
+    "reviewPacketOnly": true
+  },
+  "scopeExclusions": [
+    "registry and authenticated authority",
+    "npm publication and dist-tags",
+    "provenance",
+    "source release",
+    "deployment and live verification"
+  ],
+  "verdict": {
+    "localCandidate": "approved",
+    "publication": "out-of-scope",
+    "deployed": "out-of-scope",
+    "releaseApprovalIssued": false,
+    "summary": "The direct-name six-package 0.1.0-rc.1 local candidate is independently verified, reproducible across two exact-toolchain builds, consumable with offline installation and network-denied runtime probes, and matches the prior reviewed 676db22 tarball bytes. No P0-P3 finding remains."
+  }
+}
