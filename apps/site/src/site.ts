@@ -5,6 +5,9 @@ import {startDeploymentTelemetry} from './telemetry.js';
 
 const theme = document.querySelector<HTMLSelectElement>('#theme');
 const media = matchMedia('(prefers-color-scheme: dark)');
+const navToggle = document.querySelector<HTMLButtonElement>('#nav-toggle');
+const primaryNav = document.querySelector<HTMLElement>('#site-nav');
+const narrowNav = matchMedia('(max-width: 760px)');
 function applyTheme(value: string) {
   document.documentElement.dataset.theme = value === 'system' ? (media.matches ? 'dark' : 'light') : value;
   void syncComponentTheme(document);
@@ -21,6 +24,27 @@ let preference = 'system';
 try { const saved = localStorage.getItem('aeliqo-theme'); if (saved === 'light' || saved === 'dark') preference = saved; } catch {}
 if (theme) { theme.value = preference; applyTheme(preference); theme.addEventListener('change', () => { preference = theme.value; applyTheme(preference); try { localStorage.setItem('aeliqo-theme', preference); } catch {} }); }
 media.addEventListener('change', () => applyTheme(preference));
+
+function setNavOpen(open: boolean, restoreFocus = false): void {
+  document.documentElement.dataset.navOpen = open ? 'true' : 'false';
+  navToggle?.setAttribute('aria-expanded', String(open));
+  if (!open && restoreFocus) navToggle?.focus();
+}
+if (navToggle && primaryNav) {
+  navToggle.addEventListener('click', () => setNavOpen(navToggle.getAttribute('aria-expanded') !== 'true'));
+  primaryNav.addEventListener('click', event => {
+    if (event.target instanceof Element && event.target.closest('a')) setNavOpen(false);
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && document.documentElement.dataset.navOpen === 'true') {
+      event.preventDefault();
+      setNavOpen(false, true);
+    }
+  });
+  narrowNav.addEventListener('change', event => {
+    if (!event.matches) setNavOpen(false);
+  });
+}
 
 // Both files are deployment-owned and ship disabled. They are not requested
 // from previews, localhost, SDK examples, or any non-public origin.
