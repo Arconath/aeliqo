@@ -1,3 +1,4 @@
+runtime: Node v22.23.2 / pnpm 11.24.0 (supporting compatibility run; Python 3.9.6)
 command: python3 -m unittest tests/harness/test_master.py
 exit: 0
 result: Ran 22 tests in 0.003s; OK

@@ -1,6 +1,7 @@
 {
   "schema": "aeliqo.t42.prehold-adversarial.v1",
   "generatedAt": "2026-09-10T19:08:00.000Z",
+  "runtime": {"node": "v22.23.2", "pnpm": "11.24.0", "qualification": "supporting compatibility run; not primary qualification"},
   "cases": 33,
   "passed": 33,
   "failed": 0,

@@ -1,0 +1,33 @@
+{
+  "schema": "aeliqo.t42.prehold-adversarial.node24.v1",
+  "observedAt": "2026-09-10T19:17:00Z",
+  "runtime": {"node": "v24.20.0", "pnpm": "11.24.0"},
+  "cases": 22,
+  "passed": 22,
+  "failed": 0,
+  "unexpectedPasses": [],
+  "results": [
+    {"label":"candidate exact six/version/tags","expected":"pass","observed":"pass","matched":true},
+    {"label":"bootstrap exact rc1","expected":"pass","observed":"pass","matched":true},
+    {"label":"bootstrap later RC rejected","expected":"fail-closed","observed":"fail","matched":true,"message":"Owner bootstrap is restricted to exact 0.1.0-rc.1 on the next tag"},
+    {"label":"exact partial resume accepted","expected":"pass","observed":"pass","matched":true},
+    {"label":"unknown collision rejected","expected":"fail-closed","observed":"fail","matched":true,"message":"Owner bootstrap requires an unused package identity, or the exact deprecated legacy history plus resumable 0.1.0-rc.1, for @aeliqo/core"},
+    {"label":"active hold rejected","expected":"fail-closed","observed":"fail","matched":true,"message":"Bootstrap is blocked by npm's conservative 24-hour package-name hold"},
+    {"label":"null postHoldVerifiedAt rejected","expected":"fail-closed","observed":"fail","matched":true,"message":"Bootstrap requires a fresh authenticated post-hold registry preflight"},
+    {"label":"mismatched postHoldVerifiedAt rejected","expected":"fail-closed","observed":"fail","matched":true,"message":"Bootstrap requires a fresh authenticated post-hold registry preflight"},
+    {"label":"wrong registry rejected","expected":"fail-closed","observed":"fail","matched":true,"message":"Bootstrap requires an exact authenticated post-hold registry observation"},
+    {"label":"missing tombstone rejected","expected":"fail-closed","observed":"fail","matched":true,"message":"Bootstrap preflight does not preserve the known unpublished package history"},
+    {"label":"wrong package set rejected","expected":"fail-closed","observed":"fail","matched":true,"message":"Bootstrap preflight does not name the exact direct six-package target"},
+    {"label":"fresh post-hold accepted","expected":"pass","observed":"pass","matched":true},
+    {"label":"auto latest removal accepted","expected":"pass","observed":"pass","matched":true},
+    {"label":"unexpected tag rejected","expected":"fail-closed","observed":"fail","matched":true,"message":"Registry changed unexpected dist-tags while publishing @aeliqo/runtime"},
+    {"label":"owner auth accepted","expected":"pass","observed":"pass","matched":true},
+    {"label":"CI owner auth rejected","expected":"fail-closed","observed":"fail","matched":true,"message":"Owner bootstrap requires an interactive local terminal outside CI"},
+    {"label":"trusted main accepted","expected":"pass","observed":"pass","matched":true},
+    {"label":"wrong trusted ref rejected","expected":"fail-closed","observed":"fail","matched":true,"message":"Trusted publication requires the owner-dispatched canonical current-main workflow context"},
+    {"label":"RC advance accepted","expected":"pass","observed":"pass","matched":true},
+    {"label":"RC rollback rejected","expected":"fail-closed","observed":"fail","matched":true,"message":"Refusing to move @aeliqo/core dist-tag next from 0.1.0-rc.3 to 0.1.0-rc.2"},
+    {"label":"RC collision rejected","expected":"fail-closed","observed":"fail","matched":true,"message":"@aeliqo/core@0.1.0-rc.2 exists but dist-tag next does not select it"},
+    {"label":"npmjs pin/no unpublish remains","expected":"pass","observed":"pass","matched":true}
+  ]
+}

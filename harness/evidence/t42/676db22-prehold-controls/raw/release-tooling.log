@@ -1,3 +1,4 @@
+runtime: Node v22.23.2 / pnpm 11.24.0 (supporting compatibility run; not primary qualification)
 command: pnpm test:release-tooling
 exit: 0
 runner: node --test tests/release/*.test.mjs

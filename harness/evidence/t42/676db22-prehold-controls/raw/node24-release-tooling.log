@@ -1,0 +1,8 @@
+runtime: Node v24.20.0 / pnpm 11.24.0 (exact repository-pinned primary qualification run)
+observedAt: 2026-09-10T19:16:25Z
+command: env PATH=/Users/nino/.nvm/versions/node/v24.20.0/bin:/opt/homebrew/bin:/usr/bin:/bin pnpm test:release-tooling
+exit: 0
+runner: node --test tests/release/*.test.mjs
+tests: 22 passed, 0 failed, 0 skipped
+result: TAP 1..22, pass 22, fail 0
+engineWarning: none

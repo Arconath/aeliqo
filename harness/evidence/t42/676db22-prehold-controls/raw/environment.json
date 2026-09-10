@@ -1,13 +1,25 @@
 {
-  "observedAt": "2026-09-10T19:04:42.380Z",
-  "node": "v22.23.2",
+  "observedAt": "2026-09-10T19:16:25Z",
+  "node": "v24.20.0",
   "pnpm": "11.24.0",
-  "npm": "10.9.8",
+  "npm": "11.19.0",
   "python": "3.9.6",
   "git": "2.50.1",
   "requestedNode": "24.20.0",
   "requestedHold": "2026-09-11T16:32:51Z",
   "holdActive": true,
   "mutationsAttempted": false,
-  "note": "The Node engine warning was observed during local tests; no release readiness claim depends on Node 22."
+  "runtimeQualification": {
+    "primary": {
+      "node": "v24.20.0",
+      "pnpm": "11.24.0",
+      "qualification": "exact repository-pinned Node and pnpm run; release qualification is based on this runtime"
+    },
+    "supporting": {
+      "node": "v22.23.2",
+      "pnpm": "11.24.0",
+      "qualification": "previous compatibility/supporting run retained for traceability; not the release qualification runtime"
+    }
+  },
+  "note": "The original Node 22 run is retained as supporting compatibility evidence. The fresh Node 24.20.0 run is primary and has no engine warning."
 }
