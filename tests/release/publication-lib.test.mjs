@@ -44,11 +44,12 @@ test('publication reopens each tarball and binds its internal public identity', 
 test('first-RC package history permits only an exact partial-publication resume', () => {
   const name = '@aeliqo/sdk-core';
   const version = '0.1.0-rc.1';
-  assert.doesNotThrow(() => assertBootstrapPackageHistory({name, version, registryVersions: [], versionState: 'absent'}));
-  assert.doesNotThrow(() => assertBootstrapPackageHistory({name, version, registryVersions: [version], versionState: 'verified-existing'}));
-  assert.throws(() => assertBootstrapPackageHistory({name, version, registryVersions: [version], versionState: 'absent'}), /unused package identity/);
-  assert.throws(() => assertBootstrapPackageHistory({name, version, registryVersions: ['0.0.9'], versionState: 'absent'}), /unused package identity/);
-  assert.throws(() => assertBootstrapPackageHistory({name, version, registryVersions: [version, '0.1.0-rc.0'], versionState: 'verified-existing'}), /unused package identity/);
+  assert.doesNotThrow(() => assertBootstrapPackageHistory({name, version, identityExists: false, registryVersions: [], versionState: 'absent'}));
+  assert.doesNotThrow(() => assertBootstrapPackageHistory({name, version, identityExists: true, registryVersions: [version], versionState: 'verified-existing'}));
+  assert.throws(() => assertBootstrapPackageHistory({name, version, identityExists: true, registryVersions: [], versionState: 'absent'}), /unused package identity/);
+  assert.throws(() => assertBootstrapPackageHistory({name, version, identityExists: true, registryVersions: [version], versionState: 'absent'}), /unused package identity/);
+  assert.throws(() => assertBootstrapPackageHistory({name, version, identityExists: true, registryVersions: ['0.0.9'], versionState: 'absent'}), /unused package identity/);
+  assert.throws(() => assertBootstrapPackageHistory({name, version, identityExists: true, registryVersions: [version, '0.1.0-rc.0'], versionState: 'verified-existing'}), /unused package identity/);
 });
 
 test('trusted publishing and dist-tag movement fail closed', () => {

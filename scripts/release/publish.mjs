@@ -108,6 +108,7 @@ for (const item of candidate.packages) {
   if (bootstrap) assertBootstrapPackageHistory({
     name: item.name,
     version: candidate.version,
+    identityExists: registryPackageState.exists,
     registryVersions: registryPackageState.exists ? registryPackageState.versions : [],
     versionState: before.state,
   });
