@@ -7,6 +7,7 @@
 import {spawnSync} from 'node:child_process';
 import {resolve} from 'node:path';
 import {PUBLIC_PACKAGE_NAMES, RELEASE_VERSION, readJson} from './candidate-lib.mjs';
+import {NPM_REGISTRY} from './publication-lib.mjs';
 import {
   LEGACY_LINEAGES, classifyExactPackage, legacyDeprecationMessage,
 } from './legacy-lineage-lib.mjs';
@@ -25,7 +26,7 @@ async function registryPackage(name, version, expectedIntegrity) {
   const timer = setTimeout(() => controller.abort(), 20_000);
   try {
     const response = await fetch(
-      `https://registry.npmjs.org/${encodeURIComponent(name)}/${encodeURIComponent(version)}`,
+      `${NPM_REGISTRY}/${encodeURIComponent(name)}/${encodeURIComponent(version)}`,
       {redirect: 'error', signal: controller.signal, headers: {accept: 'application/json'}},
     );
     let payload;
@@ -37,7 +38,7 @@ async function registryPackage(name, version, expectedIntegrity) {
 }
 
 function npm(args) {
-  const result = spawnSync('npm', args, {encoding: 'utf8', timeout: 120_000});
+  const result = spawnSync('npm', [...args, '--registry', NPM_REGISTRY], {encoding: 'utf8', timeout: 120_000});
   if (result.error || result.status !== 0) {
     throw new Error(`npm ${args[0]} failed\n${result.error?.message ?? ''}\n${result.stderr ?? ''}`);
   }

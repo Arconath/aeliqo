@@ -158,3 +158,20 @@ test('package workflow serializes publication and binds quality plus approved RC
   assert.match(workflow, /--require-provenance-source "\$RC_SOURCE_SHA"/);
   assert.doesNotMatch(workflow, /bootstrap-first-rc/);
 });
+
+test('bootstrap, registry consumer, and legacy mutations are pinned to npmjs', async () => {
+  const root = resolve(import.meta.dirname, '../..');
+  const [publish, consumer, legacy, preflight, rootManifest] = await Promise.all([
+    readFile(resolve(root, 'scripts/release/publish.mjs'), 'utf8'),
+    readFile(resolve(root, 'scripts/release/registry-consumer.mjs'), 'utf8'),
+    readFile(resolve(root, 'scripts/release/deprecate-legacy.mjs'), 'utf8'),
+    readFile(resolve(root, 'scripts/release/refresh-bootstrap-preflight.mjs'), 'utf8'),
+    readFile(resolve(root, 'package.json'), 'utf8'),
+  ]);
+  for (const source of [publish, consumer, legacy, preflight]) assert.match(source, /NPM_REGISTRY/);
+  assert.match(publish, /dist-tag', 'rm'.*--registry/);
+  assert.match(consumer, /install'.*--registry/);
+  assert.match(legacy, /\.\.\.args, '--registry'/);
+  assert.match(preflight, /access', 'list', 'packages'.*--json/);
+  assert.equal(JSON.parse(rootManifest).scripts['release:bootstrap:preflight'], 'node scripts/release/refresh-bootstrap-preflight.mjs');
+});
