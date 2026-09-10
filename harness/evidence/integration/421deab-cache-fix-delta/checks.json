@@ -1,0 +1,194 @@
+{
+  "schema": "aeliqo.integration.cache-fix-delta-checks.v1",
+  "task": "T29/T30/T32 delta revalidation",
+  "scope": "Exact-source delta revalidation after the static-image hashed-asset cache fix. This packet proves the candidate source delta, unchanged site bytes, affected static delivery behavior, and proportionate T29/T30/T32 regression checks. It is not a replacement for the complete source-bound T29/T30/T32 packets.",
+  "source": {
+    "candidateCommit": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+    "candidateTree": "122cb765c8302ccd94a9e0945f1c6bb5512da029",
+    "candidateDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+    "priorCommit": "cc7bf293ba60d338d07f57a820fd058e7a4465dd",
+    "priorTree": "bf396bd3bcabe89ba6cb14279622a5b01dfce190",
+    "priorDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+    "digestCommand": "python3 scripts/gate.py digest",
+    "sourceChangedDuringQualifyingRuns": false,
+    "semanticDelta": "source-delta.json",
+    "siteIdentity": "site-byte-identity.json"
+  },
+  "environment": {
+    "os": "Darwin 25.6.0 arm64",
+    "macOS": "26.6.2",
+    "node": "v24.20.0",
+    "pnpm": "11.24.0",
+    "playwright": "1.63.0",
+    "chromium": "153.0.8010.12",
+    "go": "go1.27.0 darwin/arm64",
+    "shellcheck": "0.11.0",
+    "docker": "29.4.0",
+    "dockerBuildx": "0.33.0",
+    "cpu": "Apple M4 Pro",
+    "logicalCpuCount": 12,
+    "memoryBytes": 25769803776,
+    "hostArchitecture": "arm64",
+    "imagePlatform": "linux/amd64"
+  },
+  "checks": [
+    {
+      "id": "source-digest",
+      "command": "python3 scripts/gate.py digest",
+      "status": "pass",
+      "expected": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+      "evidence": "raw/source-digest.log"
+    },
+    {
+      "id": "semantic-source-delta",
+      "command": "Pinned semantic source/config comparison against exact prior cc7bf293",
+      "status": "pass",
+      "evidence": "source-delta.json",
+      "detail": "985 files on each side; exactly deploy/server.go, deploy/server_test.go and scripts/ci/check-static-image.sh changed; only the expected product/config delta."
+    },
+    {
+      "id": "site-byte-identity",
+      "command": "Pinned prior/current pnpm build:site comparison",
+      "status": "pass",
+      "evidence": "site-byte-identity.json",
+      "detail": "106 files and 7 assets on each side; changedCount 0; siteTreeSha256 identical."
+    },
+    {
+      "id": "site-build",
+      "command": "PATH=/Users/nino/.nvm/versions/node/v24.20.0/bin:$PATH CI=true pnpm build:site",
+      "status": "pass",
+      "evidence": "raw/site-build-node24.log",
+      "detail": "Exact Node 24.20.0 and pnpm 11.24.0 are recorded at the beginning of the log."
+    },
+    {
+      "id": "static-server-tests",
+      "command": "go test ./deploy/server.go ./deploy/server_test.go -count=1 && go test -race ./deploy/server.go ./deploy/server_test.go -count=1",
+      "status": "pass",
+      "evidence": "raw/static-image-source-check-node24.log",
+      "detail": "Matcher and server tests pass in ordinary and race modes."
+    },
+    {
+      "id": "static-smoke-script-lint",
+      "command": "sh -n scripts/ci/check-static-image.sh && shellcheck scripts/ci/check-static-image.sh",
+      "status": "pass",
+      "evidence": "raw/static-image-source-check-node24.log"
+    },
+    {
+      "id": "production-delivery-wiring",
+      "command": "scripts/ci/check-production-delivery.sh static",
+      "status": "pass",
+      "evidence": "raw/production-delivery-check-node24.log"
+    },
+    {
+      "id": "static-image-build",
+      "command": "docker build --platform linux/amd64 --build-arg SOURCE_REVISION=421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6 -t aeliqo-421deab-cache-fix:cb1e229 .",
+      "status": "pass",
+      "image": {
+        "tag": "aeliqo-421deab-cache-fix:cb1e229",
+        "digest": "sha256:7ee337bfc695b1b13e70ce4ee215f4c2f6311fec38634cee2c411c7224939dfe",
+        "revision": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+        "platform": "linux/amd64"
+      },
+      "evidence": "raw/static-image-build.log"
+    },
+    {
+      "id": "static-image-smoke",
+      "command": "scripts/ci/check-static-image.sh aeliqo-421deab-cache-fix:cb1e229 421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+      "status": "pass",
+      "evidence": "raw/static-image-smoke.log",
+      "detail": "Ready/health/version, response security headers, all referenced hashed JS/CSS asset immutable headers, 404 and graceful drain pass."
+    },
+    {
+      "id": "static-smoke-negative-matrix",
+      "command": "raw/static-smoke-negative-harness.sh scripts/ci/check-static-image.sh",
+      "status": "pass",
+      "evidence": "raw/static-smoke-negative-node24.log",
+      "detail": "Empty asset extraction rejects; a two-asset index checks both URLs; a failed asset curl rejects."
+    },
+    {
+      "id": "component-a11y",
+      "command": "CI=true pnpm test:components:a11y",
+      "status": "pass",
+      "tests": 12,
+      "evidence": "raw/components-a11y-node24.log"
+    },
+    {
+      "id": "site-browser",
+      "command": "CI=true pnpm test:site:browser",
+      "status": "pass",
+      "tests": 7,
+      "evidence": "raw/site-browser-node24.log"
+    },
+    {
+      "id": "all71-document-layout",
+      "command": "CI=true pnpm test:site:document-layout",
+      "status": "pass",
+      "tests": 1,
+      "routeCount": 71,
+      "evidence": "raw/site-document-layout-node24.log",
+      "artifact": "reports/site-document-layout.json"
+    },
+    {
+      "id": "site-page-performance",
+      "command": "CI=true pnpm test:performance:site-page",
+      "status": "pass",
+      "tests": 1,
+      "evidence": "raw/performance-site-page-node24.log",
+      "artifact": "reports/performance-site-page.json",
+      "detail": "Functional cold/warm observations for home, component docs and playground; generated report retains its own sourceCommit unknown field and is bound here only through the exact command/source logs."
+    },
+    {
+      "id": "bundle-budgets",
+      "command": "CI=true pnpm test:performance:bundles",
+      "status": "pass",
+      "tests": 6,
+      "evidence": "raw/performance-bundles-node24.log",
+      "artifact": "reports/performance-bundles.json"
+    },
+    {
+      "id": "package-boundaries",
+      "command": "CI=true pnpm test:boundaries",
+      "status": "pass",
+      "tests": 4,
+      "evidence": "raw/boundaries-node24.log"
+    },
+    {
+      "id": "core-consumer",
+      "command": "CI=true pnpm test:core:consumers",
+      "status": "pass",
+      "evidence": "raw/core-consumers-node24.log",
+      "artifact": "reports/core-consumers.json"
+    },
+    {
+      "id": "runtime-consumer",
+      "command": "CI=true pnpm test:runtime:consumers",
+      "status": "pass",
+      "evidence": "raw/runtime-consumers-node24.log",
+      "artifact": "reports/runtime-consumers.json"
+    },
+    {
+      "id": "framework-consumer",
+      "command": "CI=true pnpm test:framework:consumers",
+      "status": "pass",
+      "evidence": "raw/framework-consumers-node24.log",
+      "artifact": "reports/framework-consumers.json",
+      "detail": "Installed core/runtime/web/react packages and all 71 React wrappers; sourceDigest in report matches the candidate."
+    }
+  ],
+  "supportingRunsExcluded": {
+    "node": "v22.23.2",
+    "reason": "Earlier host-default runs were retained only as diagnostic/supporting observations and are not represented as qualifying evidence in this packet."
+  },
+  "mutations": {
+    "productSource": false,
+    "testSource": false,
+    "taskState": false,
+    "rootConfig": false,
+    "lockfile": false,
+    "registry": false,
+    "github": false,
+    "gitops": false,
+    "production": false,
+    "reviewPacketOnly": true
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "schema": "aeliqo.integration.cache-fix-delta-findings.v1",
+  "status": "no-new-blocking-findings",
+  "sourceDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+  "counts": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "p3": 0,
+    "blocking": 0
+  },
+  "findings": [],
+  "disposition": {
+    "cacheFix": "supported by exact-source static-server tests, pinned image build, live local image smoke, and negative checker matrix",
+    "unchangedSite": "supported by exact prior/current byte identity and fresh Node 24 site/a11y/layout checks",
+    "t30Performance": "fresh site-page and bundle checks pass; historical T30 P2 limitations remain in the retained prior T30 review and are not silently closed by this delta packet",
+    "t32ArchitectureDx": "fresh boundaries and installed core/runtime/framework consumer checks pass; historical T32 P2 limitations remain in the retained prior T32 review and are not silently closed by this delta packet"
+  }
+}

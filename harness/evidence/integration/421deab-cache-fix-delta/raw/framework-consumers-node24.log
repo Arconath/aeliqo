@@ -1,0 +1,4 @@
+v24.20.0
+11.24.0
+$ node tests/framework-consumers/framework-tarballs.mjs
+Installed framework consumer proof passed. Evidence: /private/tmp/aeliqo-421deab-cache-fix-delta/artifacts/framework-consumers/run-aC0V9t/report.json

@@ -1,0 +1,5 @@
+v24.20.0
+11.24.0
+$ node tests/consumers/core-tarball.mjs
+Installed @aeliqo/core types, parsers, semantic authoring, schemas, interaction graph, no-codegen probe, Vite graph, and Chromium execution pass.
+Evidence: /private/tmp/aeliqo-421deab-cache-fix-delta/artifacts/core-consumers/run-yr9zLh/report.json

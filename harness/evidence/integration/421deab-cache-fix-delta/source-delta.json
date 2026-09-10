@@ -1,0 +1,51 @@
+{
+  "schema": "aeliqo.source-semantic-delta.v1",
+  "priorSourceCommit": "cc7bf293ba60d338d07f57a820fd058e7a4465dd",
+  "priorSourceTree": "bf396bd3bcabe89ba6cb14279622a5b01dfce190",
+  "priorSourceDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+  "currentIntegratedCommit": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+  "currentSourceTree": "122cb765c8302ccd94a9e0945f1c6bb5512da029",
+  "currentSourceDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+  "semanticFileCount": {
+    "prior": 985,
+    "current": 985
+  },
+  "changedCount": 3,
+  "changed": [
+    {
+      "path": "deploy/server.go",
+      "prior": {
+        "bytes": 8514,
+        "sha256": "c0d7f090cab9e9e510c0b26c2a3fae7b6cce6e0f538a81eba008aa4117d4e17b"
+      },
+      "current": {
+        "bytes": 8597,
+        "sha256": "f8fe75778ca6c640e5e526231f297bc407f94ce3af47bb8d473ae9346589d45a"
+      }
+    },
+    {
+      "path": "deploy/server_test.go",
+      "prior": {
+        "bytes": 11890,
+        "sha256": "7813ea65dcc5c16f1ba36582fa40afeb6508013148afcc75e6b27fad667e418e"
+      },
+      "current": {
+        "bytes": 12646,
+        "sha256": "39b1652f7fc1d0cee546cec868f7d0991f57a852e15192b9834b8548fca766c9"
+      }
+    },
+    {
+      "path": "scripts/ci/check-static-image.sh",
+      "prior": {
+        "bytes": 2467,
+        "sha256": "5b764fc06f3e4bfb26e89f1b5c13850d4404bbf8c789b346adf24051a8f6e4dd"
+      },
+      "current": {
+        "bytes": 2606,
+        "sha256": "610213d1bd5cdded9ddc7846e2ff59f873d96add3a3fdcce9690005252dd3cfd"
+      }
+    }
+  ],
+  "onlyExpectedProductConfigDelta": true,
+  "note": "Candidate digest excludes evidence and mutable task bookkeeping; the integrated commit also carries review evidence and task closure metadata, which are outside this semantic source/config delta."
+}

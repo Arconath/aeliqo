@@ -1,0 +1,58 @@
+[
+    {
+        "Id": "sha256:7ee337bfc695b1b13e70ce4ee215f4c2f6311fec38634cee2c411c7224939dfe",
+        "RepoTags": [
+            "aeliqo-421deab-cache-fix:cb1e229"
+        ],
+        "RepoDigests": [
+            "aeliqo-421deab-cache-fix@sha256:7ee337bfc695b1b13e70ce4ee215f4c2f6311fec38634cee2c411c7224939dfe"
+        ],
+        "Comment": "buildkit.dockerfile.v0",
+        "Created": "2026-09-11T05:06:08.161470527+07:00",
+        "Config": {
+            "User": "101:101",
+            "ExposedPorts": {
+                "8080/tcp": {}
+            },
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            ],
+            "Entrypoint": [
+                "/aeliqo-static-server"
+            ],
+            "WorkingDir": "/srv/aeliqo",
+            "Labels": {
+                "org.opencontainers.image.description": "Aeliqo static rewrite site",
+                "org.opencontainers.image.revision": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+                "org.opencontainers.image.source": "https://github.com/Arconath/aeliqo"
+            }
+        },
+        "Architecture": "amd64",
+        "Os": "linux",
+        "Size": 3622355,
+        "RootFS": {
+            "Type": "layers",
+            "Layers": [
+                "sha256:1bf5f33401a483ec7f7f1030b01039bf00c1d0748f35c49e906ab9b78bdf4c72",
+                "sha256:1ee70dd2bc40f21b2618e600ab508ebac92a81230640a86ce9b0cd0d85a57421",
+                "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+            ]
+        },
+        "Metadata": {
+            "LastTagTime": "2026-09-10T22:06:08.495456954Z"
+        },
+        "Descriptor": {
+            "mediaType": "application/vnd.oci.image.index.v1+json",
+            "digest": "sha256:7ee337bfc695b1b13e70ce4ee215f4c2f6311fec38634cee2c411c7224939dfe",
+            "size": 855
+        },
+        "Identity": {
+            "Build": [
+                {
+                    "Ref": "2rtxltbrnxvznv4t2qs0cds2s",
+                    "CreatedAt": "2026-09-11T05:06:08.499261274+07:00"
+                }
+            ]
+        }
+    }
+]

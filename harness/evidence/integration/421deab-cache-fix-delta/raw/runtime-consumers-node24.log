@@ -1,0 +1,5 @@
+v24.20.0
+11.24.0
+$ node tests/consumers/runtime-tarballs.mjs
+Installed core/runtime data, results, regions, persistence, HTTP and Chromium consumer checks pass.
+Evidence: /private/tmp/aeliqo-421deab-cache-fix-delta/artifacts/runtime-consumers/run-i9iW0d/report.json

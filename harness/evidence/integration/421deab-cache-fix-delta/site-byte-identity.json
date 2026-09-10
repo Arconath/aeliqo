@@ -1,0 +1,23 @@
+{
+  "schema": "aeliqo.t29-t30-site-byte-identity.v1",
+  "priorSourceCommit": "cc7bf293ba60d338d07f57a820fd058e7a4465dd",
+  "priorSourceTree": "bf396bd3bcabe89ba6cb14279622a5b01dfce190",
+  "priorSourceDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+  "currentSourceCommit": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+  "currentSourceTree": "122cb765c8302ccd94a9e0945f1c6bb5512da029",
+  "currentSourceDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+  "priorDist": "/private/tmp/aeliqo-676db22-source-cc7/apps/site/dist",
+  "currentDist": "/private/tmp/aeliqo-421deab-cache-fix-delta/apps/site/dist",
+  "priorFileCount": 106,
+  "currentFileCount": 106,
+  "priorAssetCount": 7,
+  "currentAssetCount": 7,
+  "changedCount": 0,
+  "changed": [],
+  "siteByteIdentical": true,
+  "assetByteIdentical": true,
+  "siteTreeSha256": {
+    "prior": "7b757d9366174eff7f2d2b564de004b1b9141c0c921eb3b44a358125dcfdfe18",
+    "current": "7b757d9366174eff7f2d2b564de004b1b9141c0c921eb3b44a358125dcfdfe18"
+  }
+}

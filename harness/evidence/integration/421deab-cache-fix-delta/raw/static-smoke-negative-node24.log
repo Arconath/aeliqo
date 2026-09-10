@@ -1,0 +1,12 @@
+v24.20.0
+11.24.0
+empty mode=empty exit=1
+empty calls:
+multi mode=multi exit=0
+multi calls:
+http://127.0.0.1:43127/assets/site-a1b2c3d4.js
+http://127.0.0.1:43127/assets/site-b2c3d4e5.css
+failed-curl mode=fail exit=1
+failed-curl calls:
+http://127.0.0.1:43127/assets/site-a1b2c3d4.js
+negative smoke matrix passed: empty assets reject, every multi-asset URL is checked, and curl failure rejects

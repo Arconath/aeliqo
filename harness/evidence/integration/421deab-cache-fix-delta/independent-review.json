@@ -1,0 +1,127 @@
+{
+  "schema": "aeliqo.integration.cache-fix-delta-independent-review.v1",
+  "status": "approved-for-exact-source-delta-with-retained-prior-limitations",
+  "reviewedAt": "2026-09-10T22:15:40Z",
+  "reviewer": {
+    "agent": "/root/audit_direct_name_candidate",
+    "role": "independent T29/T30/T32 delta reviewer",
+    "independentOfImplementationAuthors": true
+  },
+  "subject": {
+    "candidateCommit": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+    "candidateTree": "122cb765c8302ccd94a9e0945f1c6bb5512da029",
+    "candidateDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+    "priorCommit": "cc7bf293ba60d338d07f57a820fd058e7a4465dd",
+    "priorTree": "bf396bd3bcabe89ba6cb14279622a5b01dfce190",
+    "priorDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9"
+  },
+  "reviewMethod": [
+    "Compared the exact candidate and exact prior semantic source/config sets and verified that only deploy/server.go, deploy/server_test.go and scripts/ci/check-static-image.sh changed.",
+    "Compared pinned prior/current site build outputs and verified identical 106-file, 7-asset trees.",
+    "Ran the affected static-server Go tests, race tests, shell syntax/checker lint, production-delivery wiring check and a fresh linux/amd64 image build with the candidate digest as OCI revision.",
+    "Ran the strengthened static-image smoke against the fresh image and exercised empty-asset, multi-asset and failed-curl checker behavior with a deterministic mock harness.",
+    "Ran fresh Node 24.20.0/pnpm 11.24.0 component a11y, site browser, all-71 document-layout, site-page performance, bundle-budget, package-boundary and installed consumer checks."
+  ],
+  "results": {
+    "sourceDelta": {
+      "status": "pass",
+      "changedFiles": [
+        "deploy/server.go",
+        "deploy/server_test.go",
+        "scripts/ci/check-static-image.sh"
+      ],
+      "evidence": "source-delta.json"
+    },
+    "siteIdentity": {
+      "status": "pass",
+      "fileCount": 106,
+      "assetCount": 7,
+      "changedCount": 0,
+      "siteTreeSha256": "7b757d9366174eff7f2d2b564de004b1b9141c0c921eb3b44a358125dcfdfe18",
+      "evidence": "site-byte-identity.json"
+    },
+    "staticImage": {
+      "status": "pass",
+      "digest": "sha256:7ee337bfc695b1b13e70ce4ee215f4c2f6311fec38634cee2c411c7224939dfe",
+      "revision": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+      "platform": "linux/amd64",
+      "smoke": "pass",
+      "evidence": "raw/static-image-smoke.log"
+    },
+    "checkerFailureContainment": {
+      "status": "pass",
+      "emptyAssetExtraction": "rejects",
+      "multiAssetCoverage": "both discovered URLs checked",
+      "failedCurl": "rejects",
+      "evidence": "raw/static-smoke-negative-node24.log"
+    },
+    "freshRegressionChecks": {
+      "componentA11y": "12/12 pass",
+      "siteBrowser": "7/7 pass",
+      "documentLayout": "1/1 pass across 71 routes",
+      "sitePagePerformance": "1/1 pass",
+      "bundleBudgets": "6/6 pass",
+      "packageBoundaries": "4/4 pass",
+      "coreConsumer": "pass",
+      "runtimeConsumer": "pass",
+      "frameworkConsumer": "pass with all 71 React wrappers",
+      "evidence": "checks.json"
+    }
+  },
+  "findings": {
+    "path": "findings.json",
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "p3": 0,
+    "blocking": 0
+  },
+  "retainedPriorBindings": [
+    {
+      "task": "T29",
+      "authorManifest": "harness/evidence/t29/676db22-final-revalidation/manifest.json",
+      "authorManifestSha256": "8bdcb4945de20fabb95f291496e5e573923756164ee0ec5f2b6ded8d4d9de839",
+      "reviewManifest": "harness/evidence/t29/676db22-final-revalidation-review/manifest.json",
+      "reviewManifestSha256": "500ca18d8015dd62d9617dc6fb5c2c80cafd213019b760bb7d3af91a0112e3d2",
+      "source": "cc7bf293 / digest 676db22"
+    },
+    {
+      "task": "T30",
+      "authorManifest": "harness/evidence/t30/676db22-final-revalidation/manifest.json",
+      "authorManifestSha256": "5e2873303f33a2aeaaf52314be508b8a493a135d0f290c06e75d8c5578ee6812",
+      "reviewManifest": "harness/evidence/t30/676db22-final-revalidation-review/manifest.json",
+      "reviewManifestSha256": "3868442c558a09cf7021e8a3935877c4f385077b4042efbfa78c115b77d4ad43",
+      "source": "cc7bf293 / digest 676db22"
+    },
+    {
+      "task": "T32",
+      "manifest": "harness/evidence/t32/676db22-final-audit/manifest.json",
+      "manifestSha256": "0a4e4cfcf3e81be4b2b775dd7655f3eda98a17f312305091eb2cdba39ec07e7e",
+      "independentReviewSha256": "63eda472e8a43b92631e6aa828e3e766e5c37c0139196f17a205bea759b2e566",
+      "source": "cc7bf293 / digest 676db22"
+    }
+  ],
+  "limitations": [
+    "This is a local exact-source delta review, not a full replacement for T29/T30/T32 and not a release-readiness or publication certificate.",
+    "The earlier Node 22.23.2 host-default runs were excluded; only logs beginning with Node 24.20.0 and pnpm 11.24.0 qualify here.",
+    "The generated site-page report retains sourceCommit unknown; source binding is supplied by the exact command log, source digest and byte-identity proof rather than relabeling that report.",
+    "The image was built for linux/amd64 on an arm64 host and emitted the expected platform warning during local smoke.",
+    "Manual assistive-technology certification, native WebMCP, human onboarding, model-answer accuracy, registry publication, deployment and production promotion remain unclaimed.",
+    "Historical nonblocking T30/T32 follow-ups remain retained in their prior exact-source packets; this delta does not silently close them."
+  ],
+  "mutations": {
+    "productSource": false,
+    "testSource": false,
+    "taskState": false,
+    "registry": false,
+    "github": false,
+    "gitops": false,
+    "production": false,
+    "reviewPacketOnly": true
+  },
+  "verdict": {
+    "decision": "approve-exact-source-delta",
+    "blockingFindings": [],
+    "summary": "The only candidate semantic changes are the intended static-image cache checker/server changes. The site output is byte-identical to the exact prior source, the fresh static image passes the strengthened all-asset smoke and failure matrix, and the proportionate Node 24 regression checks pass. No new P0/P1/P2/P3 finding was observed."
+  }
+}

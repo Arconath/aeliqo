@@ -1,0 +1,108 @@
+{
+  "schema": "aeliqo.integration.cache-fix-delta-manifest.v1",
+  "task": "T29/T30/T32 delta revalidation",
+  "scenario": "Exact-source static-image cache-fix and direct-name regression revalidation",
+  "status": "independent-review-complete-no-new-findings",
+  "generatedAt": "2026-09-10T22:15:40Z",
+  "reviewer": {
+    "agent": "/root/audit_direct_name_candidate",
+    "role": "independent source/delivery/regression reviewer",
+    "independentOfImplementationAuthors": true
+  },
+  "scope": "Evidence-only packet for the integrated candidate cb1e229. It binds the exact semantic delta from prior source cc7bf293, proves byte-identical site output, verifies the static-image cache checker/server fix and fresh local image, and records proportionate Node 24 T29/T30/T32 regression checks.",
+  "source": {
+    "candidateCommit": "cb1e229714564f0f5fa10687bfb59420ef0b9a57",
+    "candidateTree": "122cb765c8302ccd94a9e0945f1c6bb5512da029",
+    "candidateDigest": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+    "priorCommit": "cc7bf293ba60d338d07f57a820fd058e7a4465dd",
+    "priorTree": "bf396bd3bcabe89ba6cb14279622a5b01dfce190",
+    "priorDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+    "changedSemanticFiles": [
+      "deploy/server.go",
+      "deploy/server_test.go",
+      "scripts/ci/check-static-image.sh"
+    ],
+    "sourceChangedDuringQualifyingRuns": false,
+    "productSourceWorktreeClean": true
+  },
+  "images": {
+    "candidate": {
+      "tag": "aeliqo-421deab-cache-fix:cb1e229",
+      "digest": "sha256:7ee337bfc695b1b13e70ce4ee215f4c2f6311fec38634cee2c411c7224939dfe",
+      "revision": "421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+      "platform": "linux/amd64"
+    },
+    "buildCommand": "docker build --platform linux/amd64 --build-arg SOURCE_REVISION=421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+    "smokeCommand": "scripts/ci/check-static-image.sh aeliqo-421deab-cache-fix:cb1e229 421deab7881fdda54474e64e9556cb7edc7392361d251987d00fd4f5d85b49e6",
+    "smokeStatus": "pass"
+  },
+  "evidence": {
+    "checks": "checks.json",
+    "findings": "findings.json",
+    "independentReview": "independent-review.json",
+    "sourceDelta": "source-delta.json",
+    "siteByteIdentity": "site-byte-identity.json",
+    "rawDirectory": "raw",
+    "reportsDirectory": "reports",
+    "consumerArtifactsDirectory": "consumer-artifacts",
+    "sha256Inventory": "SHA256SUMS",
+    "artifactFileCountExcludingManifestAndInventory": 41,
+    "hashPolicy": "SHA256SUMS covers every packet file except itself; manifest and SHA256SUMS are excluded to avoid circular hashing."
+  },
+  "retainedPriorEvidence": [
+    {
+      "task": "T29",
+      "authorManifest": "harness/evidence/t29/676db22-final-revalidation/manifest.json",
+      "authorManifestSha256": "8bdcb4945de20fabb95f291496e5e573923756164ee0ec5f2b6ded8d4d9de839",
+      "reviewManifest": "harness/evidence/t29/676db22-final-revalidation-review/manifest.json",
+      "reviewManifestSha256": "500ca18d8015dd62d9617dc6fb5c2c80cafd213019b760bb7d3af91a0112e3d2"
+    },
+    {
+      "task": "T30",
+      "authorManifest": "harness/evidence/t30/676db22-final-revalidation/manifest.json",
+      "authorManifestSha256": "5e2873303f33a2aeaaf52314be508b8a493a135d0f290c06e75d8c5578ee6812",
+      "reviewManifest": "harness/evidence/t30/676db22-final-revalidation-review/manifest.json",
+      "reviewManifestSha256": "3868442c558a09cf7021e8a3935877c4f385077b4042efbfa78c115b77d4ad43"
+    },
+    {
+      "task": "T32",
+      "manifest": "harness/evidence/t32/676db22-final-audit/manifest.json",
+      "manifestSha256": "0a4e4cfcf3e81be4b2b775dd7655f3eda98a17f312305091eb2cdba39ec07e7e",
+      "independentReviewSha256": "63eda472e8a43b92631e6aa828e3e766e5c37c0139196f17a205bea759b2e566"
+    }
+  ],
+  "findings": {
+    "path": "findings.json",
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "p3": 0,
+    "blocking": 0
+  },
+  "mutations": {
+    "productSource": false,
+    "testSource": false,
+    "taskState": false,
+    "rootConfig": false,
+    "lockfile": false,
+    "registry": false,
+    "github": false,
+    "gitops": false,
+    "production": false,
+    "reviewPacketOnly": true
+  },
+  "verdict": {
+    "decision": "approve-exact-source-delta",
+    "blockingFindings": [],
+    "releaseApprovalIssued": false,
+    "summary": "Exact candidate source changes are limited to the intended static delivery cache fix and its checker/tests. The site output is byte-identical to the exact prior source, the fresh candidate image passes the strengthened all-asset smoke and negative matrix, and fresh Node 24 package/site/boundary checks pass. Historical T30/T32 limitations and release restrictions remain explicit."
+  },
+  "limitations": [
+    "This local delta packet is not a replacement for the complete T29, T30 or T32 packet and does not certify npm publication, registry provenance, deployment or production promotion.",
+    "Only the qualifying Node 24.20.0/pnpm 11.24.0 logs in this packet are used; earlier Node 22.23.2 observations were deliberately excluded.",
+    "The generated site-page performance report retains sourceCommit unknown; it is not relabeled, and is bound only through the exact command log plus source/delta and site identity proofs.",
+    "The image is linux/amd64 run on an arm64 host; Docker emitted the expected platform warning.",
+    "Manual assistive-technology certification, native WebMCP, human onboarding, model-answer accuracy and business-truth correctness remain unclaimed.",
+    "Prior nonblocking T30/T32 follow-ups remain open in their retained exact-source review packets; this delta does not silently close them."
+  ]
+}
