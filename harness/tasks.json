@@ -1446,7 +1446,7 @@
       "acceptance": [
         "Unused RC version, frozen dependencies, licenses, SBOM, exact artifact hashes and isolated consumers pass."
       ],
-      "status": "planned",
+      "status": "done",
       "stage": "ready",
       "evidence": [
         {
@@ -1464,20 +1464,28 @@
         {
           "path": "harness/evidence/t33/a245c8f-final-candidate-review/manifest.json",
           "sha256": "13bc6ea0e11618bd20f4eb438d45f0ac929bd76c8f7a83f4c67e2c1e723adcf1"
+        },
+        {
+          "path": "harness/evidence/t33/676db22-final-candidate/manifest.json",
+          "sha256": "620c6ff8b5a8b98de6d1fdd57767e3d8a0a8d296f841558240d53170a294a88d"
+        },
+        {
+          "path": "harness/evidence/t33/676db22-final-candidate-review/manifest.json",
+          "sha256": "2551aaf2380a3fa9d3b22c3cd727bc50ecaadc871261a222e552b648142d15d8"
         }
       ],
-      "notes": "Reopened because the reviewed a245c8f candidate used the superseded sdk-prefixed names. Build and independently review a new exact-source candidate for @aeliqo/{core,runtime,web,agent,devtools,react}; verify identities, dependency order, strict exports, licenses/notices, SBOM, secrets, offline reproducibility and network-denied installed consumers. @aeliqo/testkit remains private and excluded. Publication is blocked until the recorded npm unpublish hold expires and a fresh authenticated post-hold preflight passes.",
+      "notes": "Requalified on exact product digest 676db22 with the direct @aeliqo/{core,runtime,web,agent,devtools,react} 0.1.0-rc.1 candidate. Two clean builds produced byte-identical six tarballs, manifest, SBOM and secret scan; an independent current-main rebuild matched all six tarballs and an explicitly offline network-denied consumer type-checked 130 exports with zero audit egress. Licenses/notices, strict exports, dependency order, 63-component SBOM and private testkit exclusion pass with no P0/P1/P2 finding. Consumer lock hashes remain output-path-sensitive and non-release evidence. Publication is still blocked until the npm unpublish hold expires and a fresh authenticated post-hold preflight passes; this task does not approve npm, provenance, dist-tags, source release or deployment.",
       "review": {
         "status": "approved",
         "author": "root release orchestrator plus release candidate implementation authors",
-        "reviewer": "/root/fix_remaining_narrow_overflow",
+        "reviewer": "/root/review_t29_final",
         "artifacts": [
           {
-            "path": "harness/evidence/t33/a245c8f-final-candidate-review/independent-review.json",
-            "sha256": "ab509f539386595adbe971e8e1dd94f9ae001a6811d1700d0d0e27c0b76f67e4"
+            "path": "harness/evidence/t33/676db22-final-candidate-review/independent-review.json",
+            "sha256": "1516e747b79dff84df40de6a7319f8d65268e2c999e76542d2c41b689ae62d65"
           }
         ],
-        "scope": "Approves the exact final-source six-package 0.1.0-rc.1 local candidate and byte-for-byte reproducibility for T33 acceptance with no P0/P1 finding; excludes npm first-publication acceptance, provenance, dist-tag promotion, source release and deployment."
+        "scope": "Approves the exact direct-name six-package 0.1.0-rc.1 local candidate, byte-for-byte tarball reproducibility, licenses/SBOM/secret scan and explicitly offline installed-consumer acceptance with no P0/P1/P2 finding. Excludes npm identity/history/hold/authentication, publication, provenance, dist-tag promotion, source release and deployment."
       }
     },
     {
