@@ -23,6 +23,18 @@
           "sha256": "a3d8e97ec842f907ebcc0314ddc302cd4f821c460940bd46e9d511d3c9fbedc1"
         }
       ],
+      "review": {
+        "status": "approved",
+        "author": "root preflight orchestrator",
+        "reviewer": "independent Luna Max release_inventory",
+        "artifacts": [
+          {
+            "path": "harness/evidence/preflight/inventory.json",
+            "sha256": "a3d8e97ec842f907ebcc0314ddc302cd4f821c460940bd46e9d511d3c9fbedc1"
+          }
+        ],
+        "scope": "Indexes the recorded independent inventory review; unknown npm history/rights and fresh live verification remain explicit blockers."
+      },
       "notes": "Observation inventory complete; credentials/history/live uncertainty explicit. Independent release_inventory review. Main/production unchanged."
     },
     {
@@ -53,6 +65,18 @@
           "sha256": "47d511a8c221acc99d19f4e1ba249908e49137e26a8cd19d3bb6a8ccd8af573e"
         }
       ],
+      "review": {
+        "status": "approved",
+        "author": "root toolchain integrator",
+        "reviewer": "preflight_diagnosis",
+        "artifacts": [
+          {
+            "path": "harness/evidence/preflight/review.md",
+            "sha256": "42cf8478f00d1f4d71d0efc8b513a7e5de701e26a715cd82d1cb99a0362db459"
+          }
+        ],
+        "scope": "Indexes the existing independent tooling review; it is not product or release certification."
+      },
       "notes": "Actual parent/children settings and four-slot capacity verified; exact local toolchain pinned, installed, independently reviewed. Product renderer evidence is T02."
     },
     {
@@ -236,6 +260,18 @@
           "sha256": "97b9793d4fde6ecb8b8c6cb4f70c55b9d06ebbb2ebc7da3e17c0275c5830f2c8"
         }
       ],
+      "review": {
+        "status": "approved",
+        "author": "data implementation and root integration",
+        "reviewer": "preflight_diagnosis",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t06/040ab3e78d7e/review.json",
+            "sha256": "e666ba44c8c4107d182c6b555d38e4523b12114dd2d7077f6d784c40256d329a"
+          }
+        ],
+        "scope": "Indexes the existing frozen independent T06 review only; relational planning and release acceptance remain separate."
+      },
       "notes": "Bounded local ADC and authenticated HTTP completed. Frozen source 0f67cf4 passed 83 data tests, strict types, installed tarballs/real Chromium fetch and independent review. Relational query planning/evaluation remains T07/T08. No publication/deployment claim."
     },
     {
@@ -260,6 +296,18 @@
           "sha256": "b93d0ebb25570eb31ea49b32afd3c0264707c340e004221609c95a4f329de6ef"
         }
       ],
+      "review": {
+        "status": "approved",
+        "author": "query implementation and root integration",
+        "reviewer": "platform_proof and preflight_diagnosis",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t07/57ce3745e69d/review.json",
+            "sha256": "dd35b33926518f196cba4b9e364661dabaaed37fe899b668a590732674fd1cf1"
+          }
+        ],
+        "scope": "Indexes the existing frozen independent planner reviews only; business-truth and release acceptance remain separate."
+      },
       "notes": "Accepted source262f1a7 with87query tests, installedNode/no-codegen/Chromium and finalkit checks. Related54contracts/34semantics/23tasks/83data/workspaceTypes pass. Independent scoped review closed transported schema/budget/division/join-key findings. Host parity T08 and result/cohort/task lifecycle T09/T10 remain separate."
     },
     {
@@ -475,6 +523,18 @@
           "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
         }
       ],
+      "review": {
+        "status": "approved",
+        "author": "foundation implementation and integration authors",
+        "reviewer": "preflight_diagnosis",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t13-t41/d149adb10f03/review.json",
+            "sha256": "cf7ca397a5aedadab8ab2be9544ecf3bc48e1d6acb46a3e0cef43b52f3270f62"
+          }
+        ],
+        "scope": "Indexes the existing frozen independent final foundation integration review; full catalog/release qualification remains separate."
+      },
       "notes": "Accepted at source e1ae3d1 after independent review and frozen Node24.20.0 integration, installed-tarball, browser and type checks. All thirteen foundation entries work standalone and in the actual presentation grammar with binding revision pins. Manual AT/native platform and complete release remain separate required gates."
     },
     {
@@ -504,6 +564,18 @@
           "sha256": "e64ca50c658658c9184e1b5bfa10b109055bf1e1b520b3de8163d27985a3678e"
         }
       ],
+      "review": {
+        "status": "approved",
+        "author": "input implementation and integration authors",
+        "reviewer": "preflight_diagnosis and platform_proof",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t14/693ed739b36b/review.json",
+            "sha256": "548c24bf5a58ca9258ebeeb7818ffb690513cdec3733f385170d7dc4dcc55ebf"
+          }
+        ],
+        "scope": "Indexes the existing frozen independent input review; full cross-family release matrices remain separate."
+      },
       "notes": "Accepted at sourceff2befe after independent review and frozen Node24 unit, all15 canonical/LitSSR, native/semantic Chromium, desktop/narrow-dark-RTL a11y and installed core/web/React tarball evidence. Manual AT and full cross-family release matrices remain T29/T30."
     },
     {
@@ -573,6 +645,18 @@
           "sha256": "0dc8eed218b164874cefc36473a8adec9eaf82282462f7329ef226a211f18174"
         }
       ],
+      "review": {
+        "status": "approved",
+        "author": "data-component implementation and integration authors",
+        "reviewer": "release_inventory",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t16/f5d5dd06c2c6/review.json",
+            "sha256": "f09b73e5ad4b77125cfe25f64017e6f4caf48f7cbc393934ff52b84ddd8e7759"
+          }
+        ],
+        "scope": "Indexes the existing frozen independent data-component review; global qualification remains separate."
+      },
       "notes": "All nine data entries implemented and reviewed; canonical scope/materialization and lossless filters verified. Installed bundles, Lit/React SSR, native/semantic/legacy browsers and inspected RTL/a11y evidence frozen. Global manual AT, cross-browser and performance release checks remain separate."
     },
     {
@@ -602,6 +686,18 @@
           "sha256": "c7fd49a715879c2bf3d8a7d8912cf063abdecd3f05e83b6bab44360c8904e4f4"
         }
       ],
+      "review": {
+        "status": "approved",
+        "author": "plot implementation and root integration",
+        "reviewer": "platform_proof and release_inventory",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t17/8a3263a395b7/review.json",
+            "sha256": "063f24b334bcff78dfe15b925e5c8d1ea9fc2f574275d497a8c6da54d2cd7501"
+          }
+        ],
+        "scope": "Indexes the existing frozen independent plot reviews; chart-family and full release matrices remain separate."
+      },
       "notes": "Accepted source528d052 after independent review and frozen Node24 build/types,11 geometry/composition,30 core/schema,4 Chromium,actual Lit/React SSR and installed tarball checks. T18 chart families and T29/T30 full matrix remain mandatory."
     },
     {
@@ -1225,7 +1321,7 @@
           "sha256": "cf30eb8929026c17a13c7ca1bbfe1f5cdb4da5a7d39fcbf7145d5e3eed575d82"
         }
       ],
-      "notes": "Independent read-only audit recorded with no P0 findings in sampled source, but no T32 approval. P1/open findings preserve T29 human visual/AT, T30 qualification, T31/T40 provider/model evidence, S65-S67 scenario status and T42 registry blockers. T32 remains planned."
+      "notes": "Independent read-only audit recorded with no P0 findings in sampled source, but no T32 approval. Current open findings preserve independent current-candidate visual review for T29, T30 qualification, T31/T40 provider/model evidence, S67 UI/DX scenario evidence and T42 registry blockers. Manual assistive-technology certification is future-only and is not a 0.1.0 release blocker. T32 remains planned."
     },
     {
       "id": "T33",
@@ -1472,6 +1568,18 @@
           "sha256": "5e296c3b125265787cec0d002d3226248ca194c8a353468fe0eb3878c761b792"
         }
       ],
+      "review": {
+        "status": "approved",
+        "author": "containment implementation and integration authors",
+        "reviewer": "preflight_diagnosis",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t13-t41/d149adb10f03/review.json",
+            "sha256": "cf7ca397a5aedadab8ab2be9544ecf3bc48e1d6acb46a3e0cef43b52f3270f62"
+          }
+        ],
+        "scope": "Indexes the existing frozen independent final containment review; model/provider evaluation remains separate."
+      },
       "notes": "Accepted at source e1ae3d1 after independent review and frozen Node24.20.0 integration, installed-tarball, browser and type checks. No-effect binder/repair, independent grants, actual runtime fallback/revocation and structured numerical claim verification. Intent truth, prose entailment, real model evaluation and provider dispatch remain separate tasks."
     },
     {

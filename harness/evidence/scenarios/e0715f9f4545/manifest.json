@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "status": "pass",
+  "observedAt": "2026-09-10T01:55:24Z",
+  "sourceCommit": "4cc353985ef26c36b35777fd2e60ba061b6fa3bd",
+  "subjectSha256": "e0715f9f45455a944389d058ac0234bf4edf5e44051603597d6604af04b7ce3f",
+  "environment": {
+    "node": "v24.20.0",
+    "pnpm": "11.24.0",
+    "vitest": "5.0.0"
+  },
+  "command": [
+    "pnpm",
+    "test:scenarios"
+  ],
+  "scenarioIds": [
+    "S05",
+    "S06",
+    "S11",
+    "S19",
+    "S32",
+    "S41",
+    "S44",
+    "S60",
+    "S65",
+    "S66"
+  ],
+  "result": {
+    "testFilesPassed": 1,
+    "testsPassed": 3,
+    "typecheckPassed": true,
+    "exitCode": 0
+  },
+  "sourceInputs": [
+    {
+      "path": "tests/scenarios/public-api-scenarios.test.ts",
+      "sha256": "d4226b0743be52b2dd6e7d735d60cd813adefc7de8963754401bfec4f3b7e0b2"
+    },
+    {
+      "path": "tests/scenarios/tsconfig.json",
+      "sha256": "423291bdd6aedd5a87a155730e842951608ec35085fe97c57b5a2604d3cac757"
+    },
+    {
+      "path": "tests/scenarios/vitest.config.mjs",
+      "sha256": "2be487b6fc2e4fc58aa547dc85d91ca8677b0217d1ac2e15ac6482887d55e344"
+    },
+    {
+      "path": "fixtures/scenarios/public-api.ts",
+      "sha256": "387d9c5101e9ba5d4ec8c81c1451a5a5911b2494efdf086abfd42c1d4eca5fb8"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "harness/evidence/scenarios/e0715f9f4545/public-api-scenarios.log",
+      "sha256": "a53420e23c94953928c4344c0d68367e89a15984ea0c5ce92d45245819bab883"
+    }
+  ],
+  "scope": "Deterministic built public APIs for model-free meaning authoring/activation/evaluation, tenant-isolated bounded data planning, queryless presentation contracts, and explicit unknown result metadata.",
+  "limits": "This evidence does not cover S67 UI reuse, natural-language intent/model quality, browser or visual behavior, external package installation, native WebMCP, registry publication, deployment, or any scenario ID not listed."
+}

@@ -1,4 +1,4 @@
-"""Edition 1.1 specification traceability tests, not runtime meaning implementation tests."""
+"""Edition 1.1 specification traceability and product-evidence bookkeeping tests."""
 import json
 import unittest
 from pathlib import Path
@@ -18,11 +18,16 @@ class DeveloperMeaningSpecTests(unittest.TestCase):
             return seen
         for tid in ("T04", "T06"):
             self.assertFalse(ancestors(tid) & {"T22", "T23", "T24", "T40"})
-    def test_scenarios_mapped_and_still_planned(self):
+    def test_scenarios_mapped_and_evidence_backed(self):
         cases={s["id"]:s for s in data("harness/scenarios.json")["scenarios"]}
         req=next(r for r in data("harness/requirements.json")["requirements"] if r["id"]=="R05")
         for sid in ("S65", "S66", "S67"):
-            self.assertIn(sid,req["scenarios"]); self.assertEqual(cases[sid]["status"],"planned")
+            self.assertIn(sid,req["scenarios"])
+        for sid in ("S65", "S66"):
+            self.assertEqual(cases[sid]["status"],"done")
+            self.assertTrue(cases[sid].get("evidence"))
+        self.assertEqual(cases["S67"]["status"],"planned")
+        self.assertFalse(cases["S67"].get("evidence"))
     def test_manual_surfaces_not_another_evaluator(self):
         t=read("docs/03-semantics-derived.md")
         self.assertIn("Do not add a special developer evaluator",t)

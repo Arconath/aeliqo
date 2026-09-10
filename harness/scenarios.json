@@ -42,7 +42,13 @@
       "title": "AI-assisted derived meaning",
       "task": "T23",
       "assertion": "Validated draft and activation policy; same AST as manual path.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/e0715f9f4545/manifest.json",
+          "sha256": "c9aea0cf79f1a2d37c6759b33a6da063f8a55cf94f22b6c6f67c1a88971fed31"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -51,7 +57,13 @@
       "title": "Manual meaning builder/code round trip",
       "task": "T23",
       "assertion": "No string eval; dependencies/version/scope preserved.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/e0715f9f4545/manifest.json",
+          "sha256": "c9aea0cf79f1a2d37c6759b33a6da063f8a55cf94f22b6c6f67c1a88971fed31"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -96,7 +108,13 @@
       "title": "Large paginated population",
       "task": "T16",
       "assertion": "Bounded DOM, stable cursors, global versus page counts distinguished.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/e0715f9f4545/manifest.json",
+          "sha256": "c9aea0cf79f1a2d37c6759b33a6da063f8a55cf94f22b6c6f67c1a88971fed31"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -168,7 +186,13 @@
       "title": "Cross-tenant catalog/cache/cursor isolation",
       "task": "T28",
       "assertion": "No unauthorized metadata, counts, record IDs, result handles or stale access.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/e0715f9f4545/manifest.json",
+          "sha256": "c9aea0cf79f1a2d37c6759b33a6da063f8a55cf94f22b6c6f67c1a88971fed31"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -286,7 +310,13 @@
       "title": "Unsupported source query",
       "task": "T08",
       "assertion": "Typed unsupported capability and useful alternatives; no full-dataset hidden fetch.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/e0715f9f4545/manifest.json",
+          "sha256": "c9aea0cf79f1a2d37c6759b33a6da063f8a55cf94f22b6c6f67c1a88971fed31"
+        }
+      ],
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -367,7 +397,13 @@
       "title": "Presentation-only and form task",
       "task": "T05",
       "assertion": "No dummy query; reuse versioned results or form schema and keep writes separate.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/e0715f9f4545/manifest.json",
+          "sha256": "c9aea0cf79f1a2d37c6759b33a6da063f8a55cf94f22b6c6f67c1a88971fed31"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -394,7 +430,13 @@
       "title": "Unknown SSR and precision metadata states",
       "task": "T03",
       "assertion": "Known width requires value; estimated counts and approximate values require method and uncertainty.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/e0715f9f4545/manifest.json",
+          "sha256": "c9aea0cf79f1a2d37c6759b33a6da063f8a55cf94f22b6c6f67c1a88971fed31"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -538,7 +580,13 @@
       "title": "Low-risk default and meaning activation",
       "task": "T23",
       "assertion": "Known default disclosed; AI/manual same typeddefinition; session activation cannot silently overwrite organization meaning.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/e0715f9f4545/manifest.json",
+          "sha256": "c9aea0cf79f1a2d37c6759b33a6da063f8a55cf94f22b6c6f67c1a88971fed31"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -583,7 +631,13 @@
       "title": "Developer code-defined meaning bootstrap",
       "task": "T06",
       "assertion": "Typed code/config reuses existing catalog, registers an authorized reviewed default without model/Studio, and end users reuse it without reauthoring or repeated approval.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/e0715f9f4545/manifest.json",
+          "sha256": "c9aea0cf79f1a2d37c6759b33a6da063f8a55cf94f22b6c6f67c1a88971fed31"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
@@ -592,7 +646,13 @@
       "title": "Code-owned definition validation and ownership",
       "task": "T23",
       "assertion": "Invalid references/units/grain rejected; same ID/revision with changed content rejected; exact repeat idempotent; Studio only reads/proposes diff, AI/session meanings cannot silently shadow repo definitions.",
-      "status": "planned",
+      "status": "done",
+      "evidence": [
+        {
+          "path": "harness/evidence/scenarios/e0715f9f4545/manifest.json",
+          "sha256": "c9aea0cf79f1a2d37c6759b33a6da063f8a55cf94f22b6c6f67c1a88971fed31"
+        }
+      ],
       "stage": "ready",
       "nativeHostRequired": false
     },
