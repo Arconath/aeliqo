@@ -1,0 +1,125 @@
+{
+  "schema": "aeliqo.t34-final-preflight-operational-review.v1",
+  "task": "T34",
+  "scenario": "S36",
+  "reviewedAt": "2026-09-10T15:35:00Z",
+  "source": {
+    "commit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+    "tree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+    "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+    "candidateImageDigest": "sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214",
+    "sourceAndImageBindingVerified": true
+  },
+  "imageAndStaticSmoke": {
+    "candidate": {
+      "platform": "linux/amd64",
+      "revision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+      "digest": "sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214"
+    },
+    "current": {
+      "revision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e",
+      "digest": "sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+      "linuxAmd64Manifest": "sha256:30a14d85e7bba29d9dcdab1e2d47f28140b856959552a964cf1fa17477f93bc8"
+    },
+    "rollback": {
+      "revision": "41f29540bf534a23ad08b7fbb865e008f9f16105",
+      "digest": "sha256:e758c1f6548a7543fdd7a69ae7a1255c438a6e35457cfefc2b4acc4551fd4060",
+      "linuxAmd64Manifest": "sha256:27f80e22f76ac300fe15f69acff43f79cfb8ecf9ac223cbd7194faa26698eff5"
+    },
+    "assertions": {
+      "candidateRevisionExact": true,
+      "candidatePlatformLinuxAmd64": true,
+      "currentAndRollbackGhcrIndexesResolve": true,
+      "allThreeImagesRunAs101AndExpose8080": true,
+      "healthReadyVersionHeadersAssetsAnd404SmokePassed": true,
+      "allCandidateAndCurrentProcessesStoppedWithin30Seconds": true
+    }
+  },
+  "loopbackRollout": {
+    "transport": "local loopback only",
+    "sequence": [
+      "current-initial",
+      "candidate",
+      "executed-rollback",
+      "current-restored"
+    ],
+    "currentRestoredHtmlByteIdentical": true,
+    "rollbackReadyDrainObserved": false,
+    "historicalRollbackStopWithin30Seconds": true,
+    "result": "pass-with-explicit-rollback-drain-limit"
+  },
+  "skewAndAffinity": {
+    "roundRobin": {
+      "crossGenerationAsset404s": 20,
+      "browserCrossGenerationAsset404s": 2,
+      "sameHashedPathByteConflicts": 0,
+      "ownedAssetsAvailableAndImmutable": true,
+      "result": "unsafe-as-expected"
+    },
+    "cookieAffinity": {
+      "browserHealthySessions": 3,
+      "healthyGenerationAssetErrors": 0,
+      "allImmediateAndDynamicAssetsPinnedToDocumentGeneration": true,
+      "cookie": "Secure HttpOnly SameSite=Lax Max-Age=600",
+      "unhealthyBackendFailovers": 3,
+      "reloadRecoveries": 3,
+      "lateDepartedGenerationAsset404s": 3,
+      "result": "adequate-for-local-ready-stage-with-explicit-late-asset-limit"
+    },
+    "interpretation": "The rehearsal removes routine healthy-backend skew, but affinity cannot recover an already-rendered document's late uncached generation-owned asset after its selected backend becomes unhealthy; reload recovers on the reassigned healthy generation."
+  },
+  "gitopsAndFreeze": {
+    "platformAppsCommit": "8fa8319698599d32b6dfd4c3d2786ca23d07c34f",
+    "platformInfrastructureCommit": "fcf69fee37faf95b0e128216b0046de1f1bf6cae",
+    "affinityMergedCommit": "bb1b353c027608deddd75642a7b78320132e9549",
+    "affinityMergedIntoMain": true,
+    "freezeChangeId": "UPCLOUD-NYC-PRIMARY-20260910",
+    "freezeActive": false,
+    "freezeAcceptanceOutcome": "PASS",
+    "releaseGateOpen": true,
+    "prospectiveCandidateRender": true,
+    "candidateImageAndRevisionExactInRender": true,
+    "serviceAnnotationsExact": true,
+    "remoteWrite": false,
+    "productionMutation": false
+  },
+  "publicObservation": {
+    "hosts": [
+      "aeliqo.com",
+      "www.aeliqo.com"
+    ],
+    "currentRevision": "6b0c4f0c745d39c486ac8465ef6a41db39c5912e",
+    "rootsAndVersions200": true,
+    "currentHtmlAndImmutableAssetsVerified": true,
+    "secureHttpOnlyLaxCookieWithMaxAge600Observed": true,
+    "cookiePersistedWithoutRotation": true,
+    "candidateDeployed": false
+  },
+  "validation": {
+    "sourceDiffCheck": true,
+    "kitCheck": true,
+    "scenarioTests": {
+      "files": 2,
+      "tests": 58,
+      "failed": 0
+    },
+    "nextReady": "T36",
+    "blocked": 0,
+    "ownershipCheck": "not treated as a gate because this evidence-only task path is outside task-owned implementation paths"
+  },
+  "limitations": [
+    "The candidate image is local only; no immutable candidate registry publication was verified.",
+    "The proxy/browser rehearsal is not live Traefik, Kubernetes, Flux or production canary evidence.",
+    "The current public site remains revision 6b0c4f0; the candidate is not deployed and no public candidate identity was observed.",
+    "The executed historical rollback stopped within the grace period but did not expose readyz=503 during its SIGTERM window.",
+    "The raw loopback log contains harmless cleanup 'No such container' lines; structured rollout assertions still pass."
+  ],
+  "verdict": {
+    "decision": "approve-local-preflight-with-nonblocking-findings",
+    "p0": 0,
+    "p1": 0,
+    "p2": 3,
+    "promotionApproval": false,
+    "summary": "The final-source local operational preflight is semantically supported: exact-source candidate build, current/rollback identity pulls, static smoke, current→candidate→rollback→current restoration, expected skew, cookie affinity/failover/reload limits, public current identity, and prospective GitOps render are all evidenced. The review does not approve promotion and retains the integrity, stale-dependency, naming, live-environment, and rollback-drain limits."
+  }
+}

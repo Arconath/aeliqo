@@ -1,0 +1,98 @@
+{
+  "schema": "aeliqo.t34-final-preflight-artifact-integrity-review.v1",
+  "reviewedAt": "2026-09-10T15:35:00Z",
+  "subject": {
+    "packet": "harness/evidence/t34/a245c8f-final-preflight",
+    "authorManifestSha256": "b4e62cec794b4bd295c53fc510b58ac48aac202c6b2bf5f9bdfcbfa66928a58f",
+    "authorArtifactIndexSha256": "7a221d6e355a5fdb81ed500ab61db2df8dcae06a8fd9094b786d710435a08ec0",
+    "authorArtifactIndexDeclared": 68,
+    "packetFilesOnDisk": 69,
+    "unindexedFiles": [
+      "artifact-hashes.json"
+    ]
+  },
+  "verification": {
+    "algorithm": "sha256",
+    "declaredArtifactsChecked": 68,
+    "exactCheckedInBytes": 60,
+    "mismatchedCheckedInBytes": 8,
+    "missingArtifacts": [],
+    "allMismatchesArePublicHeaderCaptures": true,
+    "allMismatchesReproduceDeclaredBytesAndHashesAfterLfToCrlf": true,
+    "repositoryAttributes": "* text=auto eol=lf",
+    "interpretation": "The checked-in files are LF-normalized, while the index records the original CRLF captures. The semantic header contents remain inspectable, but the author index is not an exact hash assertion over the bytes currently checked out."
+  },
+  "mismatches": [
+    {
+      "path": "raw/public-aeliqo.com-cookie-first.headers",
+      "declaredBytes": 1215,
+      "checkedInBytes": 1196,
+      "declaredSha256": "26d807dc4b5e9ce9fa508cb15d114c2419e8f05c4d2baca578ab0879298a83ff",
+      "checkedInSha256": "b2b6fc47556365d32a70054cb5d7ff19dd6e9fe4fb8e8736a4e4724d35b1b913",
+      "lfToCrlfMatchesIndex": true
+    },
+    {
+      "path": "raw/public-aeliqo.com-cookie-second.headers",
+      "declaredBytes": 1034,
+      "checkedInBytes": 1018,
+      "declaredSha256": "b58d42790d131c515a80afc2b78696d72dfde582121cbc37d7fefb745bf52843",
+      "checkedInSha256": "05614fcf62f71d581029d22f90c91f84f72fef8634cf95b2f9781ae0dcbaf7fb",
+      "lfToCrlfMatchesIndex": true
+    },
+    {
+      "path": "raw/public-aeliqo.com-version.headers",
+      "declaredBytes": 1128,
+      "checkedInBytes": 1111,
+      "declaredSha256": "b4dc281e23c4cfb3e9cc1a34193bf9574b8fdda8c1403834600e8a34ae6f7e86",
+      "checkedInSha256": "81e8f33057a1fb4c2a43ebb2f10511b047510928c8c6a274f8f089053c82b523",
+      "lfToCrlfMatchesIndex": true
+    },
+    {
+      "path": "raw/public-aeliqo.com.headers",
+      "declaredBytes": 1209,
+      "checkedInBytes": 1190,
+      "declaredSha256": "74556dda4040075c0e8c6342d891080dd5a7aff2b73d250779e44737669b6230",
+      "checkedInSha256": "6145125434a2f896cde575287b4d83efe68fc58477e552810d5d3c9d4a126378",
+      "lfToCrlfMatchesIndex": true
+    },
+    {
+      "path": "raw/public-www.aeliqo.com-cookie-first.headers",
+      "declaredBytes": 1221,
+      "checkedInBytes": 1202,
+      "declaredSha256": "6f8067ade65b0cbb628818429e5f6a904304cc895ff26ce7ca44c783707c203b",
+      "checkedInSha256": "e397e3921a3ec60f3cac067562fa69d6ddf54615a3afb1b29381ea6c8039f9b3",
+      "lfToCrlfMatchesIndex": true
+    },
+    {
+      "path": "raw/public-www.aeliqo.com-cookie-second.headers",
+      "declaredBytes": 1046,
+      "checkedInBytes": 1030,
+      "declaredSha256": "07c4f686cf024b719a3f344065186e656a2b13d4fc4dea0c5c450eac9544b4c0",
+      "checkedInSha256": "0586c3d52b8267cf6c44b6180663e974dc1b3719e88100ade9ae0016457849b2",
+      "lfToCrlfMatchesIndex": true
+    },
+    {
+      "path": "raw/public-www.aeliqo.com-version.headers",
+      "declaredBytes": 1138,
+      "checkedInBytes": 1121,
+      "declaredSha256": "cb2f2a7cb628d906aa34272c74a8b73a8cf0121abd83422b47d36e8966400dbf",
+      "checkedInSha256": "3f2ecc2217381fa28da9d5601c05da0a6b615d78d3f18ab49876f12dbf79f366",
+      "lfToCrlfMatchesIndex": true
+    },
+    {
+      "path": "raw/public-www.aeliqo.com.headers",
+      "declaredBytes": 1221,
+      "checkedInBytes": 1202,
+      "declaredSha256": "c9a2e37655e05623d5a17abd40e3fae23c0983112f44a890ef92f69c3a81dbcc",
+      "checkedInSha256": "6f62292faceff61cf58d0004d09f6d10d42e889e543e108ab9fab023ffa4dcbc",
+      "lfToCrlfMatchesIndex": true
+    }
+  ],
+  "disposition": {
+    "priority": "P2",
+    "blocking": false,
+    "reason": "The mismatch is deterministic line-ending normalization rather than unexplained content drift, and the operational assertions can be independently read and reproduced. Exact immutable packet verification is nevertheless incomplete until the index is regenerated for checked-in LF bytes or the original CRLF bytes are preserved.",
+    "recommendedCorrection": "Regenerate artifact-hashes.json over the checked-in LF bytes, or preserve the original CRLF captures in a binary-safe evidence archive and declare the representation explicitly.",
+    "verification": "Recompute every declared byte count and SHA-256 from the committed packet; require zero mismatches and explicitly exclude only the index file itself from the inventory."
+  }
+}

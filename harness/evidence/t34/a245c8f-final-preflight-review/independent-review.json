@@ -1,0 +1,110 @@
+{
+  "schema": "aeliqo.t34-independent-final-source-preflight-review.v1",
+  "task": "T34",
+  "scenario": "S36",
+  "status": "review-complete-with-nonblocking-findings",
+  "reviewedAt": "2026-09-10T15:35:00Z",
+  "reviewer": {
+    "agent": "/root/investigate_hydration_shift",
+    "role": "independent operational preflight and evidence-integrity reviewer",
+    "independentOfRehearsalAuthor": true
+  },
+  "subject": {
+    "authorPacket": "harness/evidence/t34/a245c8f-final-preflight",
+    "authorManifestSha256": "b4e62cec794b4bd295c53fc510b58ac48aac202c6b2bf5f9bdfcbfa66928a58f",
+    "authorEvidenceCommit": "95c554c4026a51f4f10fc00d54e115059b106510",
+    "integratedReviewBaseCommit": "69e3e356d5f2be594b95944c3719351f6dfeccb7",
+    "sourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+    "sourceTree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+    "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+    "candidateImageDigest": "sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214"
+  },
+  "findings": [
+    {
+      "id": "T34-R1",
+      "priority": "P2",
+      "blocking": false,
+      "requirement": "An immutable evidence packet's declared artifact hashes must validate against the bytes committed in the packet.",
+      "evidence": {
+        "location": "harness/evidence/t34/a245c8f-final-preflight/artifact-hashes.json and raw/public-*.headers",
+        "reviewRecord": "harness/evidence/t34/a245c8f-final-preflight-review/artifact-integrity.json",
+        "observed": "60 of 68 declared artifacts match checked-in bytes; all eight mismatches are public header captures. LF-to-CRLF reconstruction exactly reproduces every declared byte count and SHA-256, and .gitattributes specifies eol=lf.",
+        "expected": "All declared artifact hashes should match the committed representation, or the representation conversion should be explicitly encoded in the evidence format."
+      },
+      "consequence": "A verifier using the checked-out bytes cannot certify the author index as an exact packet hash, although the header semantics and operational assertions remain inspectable.",
+      "priorityRationale": "Evidence-chain integrity is material to release confidence, but the deterministic line-ending explanation and successful independent reconstruction make this nonblocking for the local rehearsal.",
+      "recommendedCorrection": "Regenerate the index over checked-in LF bytes, or preserve original CRLF captures in a binary-safe archive and declare that representation.",
+      "verification": "Recompute every declared byte count and SHA-256 from the committed packet and require zero mismatches, excluding only the index file itself.",
+      "status": "open-follow-up; nonblocking"
+    },
+    {
+      "id": "T34-R2",
+      "priority": "P2",
+      "blocking": false,
+      "requirement": "A final-source preflight dependency must bind to a review of the same source revision and source digest, or explicitly identify a historical dependency.",
+      "evidence": {
+        "location": "harness/evidence/t34/a245c8f-final-preflight/manifest.json#/dependency and source-identity.json#/dependency",
+        "reviewRecord": "harness/evidence/t34/a245c8f-final-preflight-review/source-bindings.json",
+        "observed": "The pointer is T33 d7b48da/tree 6938b0a/candidate 05e5990, while this preflight is source a245c8f/tree 9343cc4/source digest be201bfa/candidate image 30f0f4a. Product source changed in apps/site/src/site.css, packages/web/src/visualization/cartesian/base.ts and tests/visualization-semantic/browser.spec.ts.",
+        "expected": "The dependency should either point to a current a245c8f/be201bfa review or be labeled historical with a direct current-source review binding."
+      },
+      "consequence": "The T33 approval does not independently prove the final-source candidate package or source behavior, even though the T34 operational checks themselves bind to a245c8f.",
+      "priorityRationale": "This is a traceability gap rather than an observed rollout failure; it matters for release evidence closure but does not invalidate the direct T34 rehearsal.",
+      "recommendedCorrection": "Replace the pointer with a current-source T33 review or mark it historical and add the current-source review manifest and digest explicitly.",
+      "verification": "Recompute the referenced manifest hash and require its source commit/tree/digest to match a245c8f/9343cc4/be201bfa, or record an explicit historical disposition.",
+      "status": "open-follow-up; nonblocking"
+    },
+    {
+      "id": "T34-R3",
+      "priority": "P2",
+      "blocking": false,
+      "requirement": "Source/content digests and built-image digests must be unambiguous in evidence records.",
+      "evidence": {
+        "location": "harness/evidence/t34/a245c8f-final-preflight/manifest.json#/source/candidateDigest and source-identity.json#/source/candidateDigest",
+        "reviewRecord": "harness/evidence/t34/a245c8f-final-preflight-review/source-bindings.json",
+        "observed": "candidateDigest contains the local image digest sha256:30f0f4a, while python3 scripts/gate.py digest produces the source/content digest be201bfa; the author packet has no explicit sourceDigest field.",
+        "expected": "Records should use distinct fields such as candidateImageDigest and sourceDigest and bind both to the revision."
+      },
+      "consequence": "A consumer can misread the source gate identity as the image identity or vice versa, weakening automated evidence joins even though the underlying values are present.",
+      "priorityRationale": "The values are independently recoverable and internally consistent, so this is a nonblocking schema/traceability issue rather than a false image claim.",
+      "recommendedCorrection": "Rename fields in future evidence to candidateImageDigest and sourceDigest, preserving both values and their producing commands.",
+      "verification": "Validate that every source binding contains revision, sourceDigest, candidateImageDigest, platform and image-label equality as separate assertions.",
+      "status": "open-follow-up; nonblocking"
+    }
+  ],
+  "coverage": {
+    "artifactIntegrity": "satisfied-with-p2-line-ending-mismatch",
+    "sourceIdentityAndInputs": "satisfied for a245c8f/be201bfa; candidate image digest separately verified",
+    "candidateImageAndStaticSmoke": "satisfied for local linux/amd64 image; candidate registry publication not verified",
+    "loopbackRollout": "satisfied for current→candidate→executed-rollback→current with restored HTML exact",
+    "roundRobinSkew": "satisfied as expected unsafe behavior: 20 matrix and 2 browser cross-generation asset 404s, no same-path conflicts",
+    "cookieAffinity": "satisfied for 3 healthy browser sessions, 3 failovers and 3 reload recoveries with explicit late-asset limit",
+    "publicEdge": "satisfied for current apex/www observation only; candidate not deployed",
+    "gitops": "satisfied for read-only topology/freeze/render reproduction; no remote write",
+    "validation": "satisfied for source diff check, kit check, 58 scenario tests and next-task computation"
+  },
+  "limitations": [
+    "This is a local operational rehearsal and evidence audit, not live Flux/Kubernetes/Traefik canary, rollback or production mutation evidence.",
+    "The candidate image is local only; no GHCR publication or immutable candidate pull was verified.",
+    "The affinity rehearsal leaves an explicit late uncached departed-generation asset 404 limit before reload.",
+    "The historical executed rollback stopped within 30 seconds but did not expose readyz=503 during its own shutdown window.",
+    "Public apex and www currently serve revision 6b0c4f0; the candidate is not deployed.",
+    "The author artifact index itself is not self-indexed; the review checks its SHA-256 separately and treats this as an inventory convention, not a mismatch."
+  ],
+  "remediationOutcome": {
+    "authorizedChanges": false,
+    "authorPacketChanged": false,
+    "productSourceChanged": false,
+    "taskStateChanged": false,
+    "reviewPacketOnly": true
+  },
+  "verdict": {
+    "decision": "approve-T34-local-preflight-with-nonblocking-findings",
+    "blockingFindings": [],
+    "p0": 0,
+    "p1": 0,
+    "p2": 3,
+    "promotionApprovalIssued": false,
+    "summary": "The final-source T34 operational rehearsal is independently supported for its stated local scope and limits. No P0/P1 finding blocks evidence closure of the local preflight, but exact artifact-byte integrity, stale T33 traceability and digest-field naming require follow-up before treating this packet as a clean immutable release record."
+  }
+}

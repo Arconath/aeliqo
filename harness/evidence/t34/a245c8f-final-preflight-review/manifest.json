@@ -1,0 +1,65 @@
+{
+  "schema": "aeliqo.t34-final-preflight-review-manifest.v1",
+  "task": "T34",
+  "scenario": "S36",
+  "status": "review-complete-with-nonblocking-findings",
+  "generatedAt": "2026-09-10T15:35:00Z",
+  "reviewer": "/root/investigate_hydration_shift",
+  "reviewBaseCommit": "69e3e356d5f2be594b95944c3719351f6dfeccb7",
+  "authorEvidenceCommit": "95c554c4026a51f4f10fc00d54e115059b106510",
+  "authorPacket": {
+    "path": "harness/evidence/t34/a245c8f-final-preflight",
+    "manifestSha256": "b4e62cec794b4bd295c53fc510b58ac48aac202c6b2bf5f9bdfcbfa66928a58f",
+    "artifactIndexSha256": "7a221d6e355a5fdb81ed500ab61db2df8dcae06a8fd9094b786d710435a08ec0",
+    "declaredArtifacts": 68,
+    "exactCheckedInArtifacts": 60,
+    "mismatchedCheckedInArtifacts": 8
+  },
+  "source": {
+    "commit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+    "tree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+    "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+    "candidateImageDigest": "sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214"
+  },
+  "findings": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 3,
+    "blocking": 0
+  },
+  "artifacts": [
+    {
+      "path": "artifact-integrity.json",
+      "bytes": 4763,
+      "sha256": "3377c56a4b97ab8c0cb3e1d12ab1aac05aefe101c8d59b54871419a17904cf0e"
+    },
+    {
+      "path": "source-bindings.json",
+      "bytes": 4256,
+      "sha256": "3e884683c1b74c4cd50424bbe9f2049fea7170131799bfdff9581db6d840f0af"
+    },
+    {
+      "path": "operational-review.json",
+      "bytes": 5586,
+      "sha256": "a74fed82d15ccc4e010ee3f214183c43025d19217420f0892e19dc2a4ad384fa"
+    },
+    {
+      "path": "independent-review.json",
+      "bytes": 8687,
+      "sha256": "cb50bdafa0f3a3d8db291c1b84ec3a192671f0bc82bba626433713c77cd7f5cc"
+    }
+  ],
+  "checksumPolicy": "SHA256SUMS inventories the four review records only; manifest and checksum inventory are excluded to avoid circular hashes.",
+  "scope": "Independent evidence and operational review of the final-source T34 local preflight. The author packet, product source, task state, registry, GitHub, GitOps remote and production were not changed.",
+  "promotionApprovalIssued": false,
+  "mutations": {
+    "authorPacket": false,
+    "aeliqoSource": false,
+    "taskState": false,
+    "registry": false,
+    "github": false,
+    "gitopsRemote": false,
+    "production": false,
+    "reviewPacketOnly": true
+  }
+}

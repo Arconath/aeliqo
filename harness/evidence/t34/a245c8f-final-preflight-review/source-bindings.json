@@ -1,0 +1,80 @@
+{
+  "schema": "aeliqo.t34-final-preflight-source-binding-review.v1",
+  "reviewedAt": "2026-09-10T15:35:00Z",
+  "reviewBaseCommit": "69e3e356d5f2be594b95944c3719351f6dfeccb7",
+  "authorEvidenceCommit": "95c554c4026a51f4f10fc00d54e115059b106510",
+  "authorManifest": {
+    "path": "harness/evidence/t34/a245c8f-final-preflight/manifest.json",
+    "sha256": "b4e62cec794b4bd295c53fc510b58ac48aac202c6b2bf5f9bdfcbfa66928a58f",
+    "status": "passed-final-source-preflight-not-promoted"
+  },
+  "productSource": {
+    "commit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+    "tree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+    "gateDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+    "gateDigestCommand": "python3 scripts/gate.py digest",
+    "candidateImageDigest": "sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214",
+    "sourceTreeMatchesCommit": true,
+    "sourceInputsRecomputedExact": true,
+    "sourceChangedAfterCandidateCommit": false,
+    "sourceInputs": {
+      "Dockerfile": "6039bc2e70ba19a130f2aa7b71d1cc22c0e4d65931c01b56b2d41aae5dcba265",
+      "deploy/server.go": "c0d7f090cab9e9e510c0b26c2a3fae7b6cce6e0f538a81eba008aa4117d4e17b",
+      "scripts/ci/check-static-image.sh": "5b764fc06f3e4bfb26e89f1b5c13850d4404bbf8c789b346adf24051a8f6e4dd",
+      "package.json": "f2c323a2bef1c72004a72d58ee7f5a5961abe19fba5546be6b1f588d692024d7",
+      "pnpm-lock.yaml": "78166cbb9ce3ea799bd3a25be247cc02a808abaabc62f029a4931e587232b33b"
+    }
+  },
+  "candidateIdentity": {
+    "revisionMatchesImageLabel": true,
+    "platform": "linux/amd64",
+    "candidateImageDigestIsLocalOnly": true,
+    "currentGhcrDigest": "sha256:13564b4a32b0bfcf33a1f46cb2ac62b929b8dd85cab5264427e7ae59afc15ea4",
+    "rollbackGhcrDigest": "sha256:e758c1f6548a7543fdd7a69ae7a1255c438a6e35457cfefc2b4acc4551fd4060",
+    "candidateRegistryPublicationVerified": false
+  },
+  "dependency": {
+    "task": "T33",
+    "declaredPath": "harness/evidence/t33/d7b48da-rc1-review/manifest.json",
+    "declaredManifestSha256": "3ccd42da1c85ad8b397781c7d7ca5b2bdcaa623a191a873cd014bcaa7562ad7a",
+    "declaredSourceCommit": "d7b48da0b9d3fc2c1ee48c8de7dd6edfaf11cb22",
+    "declaredSourceTree": "6938b0a95801b000045e54b38ceb2ba8a12342a7",
+    "declaredCandidateDigest": "05e5990492994ecd9877454cc13be94e2bd9ebe17df1985725c139f971c1be10",
+    "declaredReviewStatus": "approved",
+    "matchesCurrentProductSource": false,
+    "currentSourceDiffIncludes": [
+      "apps/site/src/site.css",
+      "packages/web/src/visualization/cartesian/base.ts",
+      "tests/visualization-semantic/browser.spec.ts"
+    ],
+    "interpretation": "The T33 packet is a valid historical RC review, but its dependency pointer does not establish review coverage for the a245c8f/be201bfa final source or the local 30f0f4a image. T34 operational evidence remains directly bound to a245c8f; the pointer is stale."
+  },
+  "fieldNaming": {
+    "observedAmbiguity": true,
+    "fields": [
+      {
+        "path": "manifest.json#/source/candidateDigest",
+        "observedValue": "sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214",
+        "actualMeaning": "local candidate image digest"
+      },
+      {
+        "path": "source-identity.json#/source/candidateDigest",
+        "observedValue": "sha256:30f0f4a07bf673f30ef2ff1a5d4c614ebc1124cdd9dea49fe707882ffedd2214",
+        "actualMeaning": "local candidate image digest"
+      },
+      {
+        "path": "scripts/gate.py digest",
+        "observedValue": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+        "actualMeaning": "source/content gate digest"
+      }
+    ],
+    "recommendedCorrection": "Use distinct names such as candidateImageDigest and sourceDigest in future manifests; retain both values when binding a source to a built image."
+  },
+  "disposition": {
+    "staleDependencyPriority": "P2",
+    "staleDependencyBlocking": false,
+    "namingPriority": "P2",
+    "namingBlocking": false,
+    "verification": "Replace the T33 pointer with a current-source review manifest, or explicitly label it historical and add a direct a245c8f/be201bfa dependency. Validate that source digest, image digest, revision label and artifact index each use distinct fields."
+  }
+}
