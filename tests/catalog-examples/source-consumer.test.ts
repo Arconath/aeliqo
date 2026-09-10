@@ -233,7 +233,7 @@ for (const example of catalogExamples) {
       await copyFile(lockPath, lockCopy);
       lockArtifact = {path: lockCopy.slice(workspace.length + 1), ...(await hashFile(lockCopy))};
       for (const packageName of ["core", "web"] as const) {
-        const installed = join(consumer, "node_modules", "@aeliqo", packageName);
+        const installed = join(consumer, "node_modules", "@aeliqo", `sdk-${packageName}`);
         expect((await lstat(installed)).isSymbolicLink()).toBe(false);
         expect(await realpath(installed)).not.toBe(await realpath(join(workspace, "packages", packageName)));
       }

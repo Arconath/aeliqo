@@ -55,7 +55,7 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
     figure { margin: 0; }
     figcaption { font-weight: var(--aeliqo-typography-font-weight-semibold, 600); margin-block-end: var(--aeliqo-space-8, .5rem); }
     [part="scope"], [part="note"], [part="error"], [part="color-key"] { color: var(--aeliqo-color-muted, #475569); font-size: var(--aeliqo-typography-font-size-caption, .8125rem); }
-    [part="viewport"] { max-inline-size: 100%; min-inline-size: 0; overflow: auto; position: relative; }
+    [part="viewport"] { direction: ltr; max-inline-size: 100%; min-inline-size: 0; overflow: auto; position: relative; }
     [part="viewport"] svg { background: var(--aeliqo-color-canvas, #fff); display: block; }
     [part="viewport"] svg text { fill: currentColor; font: 11px system-ui, sans-serif; }
     [part="data"] { max-inline-size: 100%; overflow: auto; }

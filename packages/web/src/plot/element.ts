@@ -19,7 +19,7 @@ export class AeliqoPlotElement extends AeliqoFoundationElement {
    label:{type:String},page:{state:true},selectedIdentity:{type:String,attribute:'selected-identity'},selectedResult:{attribute:false}};
  static readonly styles=[...aeliqoFoundationThemeStyles,css`
   :host{display:block;max-inline-size:100%;color:var(--aeliqo-color-text,#111827)}
-  figure{margin:0} [part=viewport]{position:relative;max-inline-size:100%;overflow:auto}
+  figure{margin:0} [part=viewport]{direction:ltr;position:relative;max-inline-size:100%;overflow:auto}
   [part=canvas]{position:absolute;inset:0;pointer-events:none} svg{display:block}
   svg text{font:11px system-ui;fill:currentColor} table{border-collapse:collapse;inline-size:100%}
   th,td{text-align:start;padding:.5rem;border-block-end:1px solid var(--aeliqo-color-border,#64748b)}

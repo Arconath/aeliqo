@@ -397,9 +397,9 @@ export class AeliqoTableElement extends LitElement {
   }
 
   static readonly styles = [aeliqoThemeStyles, css`
-    :host { color: var(--aeliqo-table-color, var(--aeliqo-color-text, #18202a)); display: block; max-inline-size: 100%; }
+    :host { color: var(--aeliqo-table-color, var(--aeliqo-color-text, #18202a)); display: block; inline-size: 100%; max-inline-size: 100%; min-inline-size: 0; }
     :host, :host * { box-sizing: border-box; }
-    [part="scroll"] { max-inline-size: 100%; overflow-x: auto; }
+    [part="scroll"] { inline-size: 100%; max-inline-size: 100%; min-inline-size: 0; overflow-x: auto; }
     .visually-hidden { block-size: 1px; clip-path: inset(50%); clip: rect(0 0 0 0); inline-size: 1px; overflow: hidden; position: absolute; white-space: nowrap; }
     [part="scroll"]:focus-visible, [part="cell"]:focus-visible, [part="selection-cell"]:focus-visible, [part="grid-row"]:focus-visible, :is(button, input):focus-visible { outline: var(--aeliqo-focus-width, 0.1875rem) solid var(--aeliqo-table-focus, var(--aeliqo-color-focus, #0b63ce)); outline-offset: var(--aeliqo-focus-offset, 0.1875rem); }
     table { border-collapse: collapse; min-inline-size: 100%; }
@@ -414,7 +414,7 @@ export class AeliqoTableElement extends LitElement {
     [part="grid-row"] [part="heading"], [part="grid-row"] [part="cell"], [part="grid-row"] [part="selection-cell"], [part="grid-head"] [part="grid-row"] > * { border-block-end: var(--aeliqo-control-border-width, 1px) solid var(--aeliqo-table-rule, var(--aeliqo-color-border, #c9d0d8)); min-inline-size: 9rem; padding: var(--aeliqo-space-8, 0.5rem) var(--aeliqo-space-12, 0.75rem); }
     [part="grid-head"] [part="grid-row"] > * { background: var(--aeliqo-table-heading-background, var(--aeliqo-color-surface, #eef2f5)); }
     [part="grid-row"] [part="selection-cell"], [part="grid-head"] [part="grid-row"] > [part="selection-heading"] { min-inline-size: 3.25rem; }
-    [part="scope"], [part="status"] { color: var(--aeliqo-color-muted, #475569); font-size: var(--aeliqo-typography-font-size-caption, 0.8125rem); margin: var(--aeliqo-space-8, 0.5rem) 0 0; }
+    [part="scope"], [part="status"] { color: var(--aeliqo-color-muted, #475569); font-size: var(--aeliqo-typography-font-size-caption, 0.8125rem); margin: var(--aeliqo-space-8, 0.5rem) 0 0; max-inline-size: 100%; overflow-wrap: anywhere; }
     [part="scope"] { unicode-bidi: plaintext; }
     [part="status"].error, [part="status"].unavailable { color: var(--aeliqo-color-danger, #b91c1c); }
     [part="status"].partial, [part="status"].stale { color: var(--aeliqo-color-warning, #854d0e); }

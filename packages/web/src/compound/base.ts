@@ -11,7 +11,7 @@ export const compoundStyles = css`
   h2, h3 { overflow-wrap: anywhere; }
   h2 { font-size: var(--aeliqo-typography-font-size-title, 1.125rem); margin: 0; }
   h3 { font-size: var(--aeliqo-typography-font-size-body, 1rem); margin: 0; }
-  [part="status"], [part="scope"], [part="hint"], [part="meta"] { color: var(--aeliqo-color-muted, #475569); overflow-wrap: anywhere; }
+  [part="status"], [part="scope"], [part="hint"], [part="meta"] { color: var(--aeliqo-color-muted, #475569); overflow-wrap: anywhere; unicode-bidi: plaintext; }
   [part="status"] { margin-block: var(--aeliqo-space-8, .5rem); }
   [part="grid"] { display: grid; gap: var(--aeliqo-space-16, 1rem); grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
   [part="actions"], [part="navigation"] { display: flex; flex-wrap: wrap; gap: var(--aeliqo-space-8, .5rem); margin-block-start: var(--aeliqo-space-16, 1rem); }

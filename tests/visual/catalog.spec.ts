@@ -19,5 +19,18 @@ for(const component of components.components)for(const variant of ['desktop-ligh
   await page.screenshot({path:info.outputPath('review.png'),fullPage:true});
   expect(errors).toEqual([]);
   expect(axe.violations.map(({id,impact,nodes})=>({id,impact,nodes:nodes.map(({target,failureSummary})=>({target,failureSummary}))}))).toEqual([]);
+  expect(measurements.documentWidth).toBeLessThanOrEqual(measurements.viewport.width);
+  if(variant==='narrow-dark-rtl'&&id==='quality-panel'){
+   const columns=await page.locator('aeliqo-quality-panel').evaluate(element=>getComputedStyle(element.shadowRoot!.querySelector('dl')!).gridTemplateColumns);
+   expect(columns.trim().split(/\s+/)).toHaveLength(1);
+  }
+  if(variant==='narrow-dark-rtl'&&id==='timeline'){
+   const direction=await page.locator(`aeliqo-${id}`).evaluate(element=>getComputedStyle(element.shadowRoot!.querySelector('[part="viewport"]')!).direction);
+   expect(direction).toBe('ltr');
+  }
+  if(variant==='narrow-dark-rtl'&&id==='investigation'){
+   const direction=await page.locator('aeliqo-investigation').evaluate(element=>{const trend=element.shadowRoot!.querySelector('aeliqo-trend')!;return getComputedStyle(trend.shadowRoot!.querySelector('[part="viewport"]')!).direction;});
+   expect(direction).toBe('ltr');
+  }
  });
 }
