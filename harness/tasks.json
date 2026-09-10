@@ -1393,7 +1393,7 @@
         "Master/chapter37 containment, chapter39 decision coverage, production implementation, and actual tests are reconciled. No zero-hallucination claim or source/document drift.",
         "Review edition 1.1 developer-authored meaning DX and S65\u2013S67 evidence, including code-only operation and canonical parity; do not claim documentation checks prove runtime correctness."
       ],
-      "status": "planned",
+      "status": "done",
       "stage": "ready",
       "evidence": [
         {
@@ -1411,20 +1411,24 @@
         {
           "path": "harness/evidence/t32/be201bf-reference-closure/manifest.json",
           "sha256": "834b58643cf4f6aa429016e99f06d9879e7b80468cfae995f5548099f84b492b"
+        },
+        {
+          "path": "harness/evidence/t32/676db22-final-audit/manifest.json",
+          "sha256": "0a4e4cfcf3e81be4b2b775dd7655f3eda98a17f312305091eb2cdba39ec07e7e"
         }
       ],
-      "notes": "Reopened after the direct-name public contract migration and public adoption-experience revision. The retained be201bf audit and reference closure are historical. Re-audit architecture, DX, usability, installed direct-name consumers, release tooling and current T29/T30 evidence on the exact final source. Preserve the limited planner-headroom P2 and explicit manual-AT, native-WebMCP, model-quality, publication and deployment limits.",
+      "notes": "Requalified by an independent exact-source audit on commit 41c4078/tree 3732be07/digest 676db22 after the direct-name and adoption-experience revision. Architecture/containment, code-only meaning DX and S65-S67, installed runtime/meaning/framework/Studio consumers, site journeys, release controls and a local six-package candidate all passed. Four nonblocking P2 limits remain: planner headroom, homepage shared-main growth, portable retention of historical T30 consumer tarballs, and missing independent human developer/design onboarding sessions. Automated onboarding does not substitute for those human sessions; manual AT, native WebMCP, authorized model-answer accuracy, publication and deployment remain unclaimed.",
       "review": {
         "status": "approved",
         "author": "T32 implementation and evidence authors",
-        "reviewer": "/root/investigate_hydration_shift",
+        "reviewer": "/root/audit_direct_name_candidate",
         "artifacts": [
           {
-            "path": "harness/evidence/t32/be201bf-final-audit/independent-review.json",
-            "sha256": "09d48cd0d23a250e1ad8c26a91b57aeec0c4619896956e5330ad3fabdc7f70b3"
+            "path": "harness/evidence/t32/676db22-final-audit/independent-review.json",
+            "sha256": "63eda472e8a43b92631e6aa828e3e766e5c37c0139196f17a205bea759b2e566"
           }
         ],
-        "scope": "Approves T32 architecture, DX, usability, evidence-invalidation and external onboarding acceptance for final product source a245c8f/digest be201b; excludes manual AT, native WebMCP, unrestricted model quality, universal performance, publication, deployment and later release gates."
+        "scope": "Approves exact direct-name source 41c4078/digest 676db22 architecture, containment, DX, usability, evidence invalidation and automated onboarding acceptance with four disclosed nonblocking P2 limits. Excludes human onboarding completion, manual AT, native WebMCP, unrestricted model quality, universal performance, publication, deployment and later release gates."
       }
     },
     {
