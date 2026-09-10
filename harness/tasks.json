@@ -1190,20 +1190,24 @@
         {
           "path": "harness/evidence/t29/ab5ccc8-final-review/manifest.json",
           "sha256": "9fdef9b0b5d525038ad19a07b0c48336fc810cbe26e796c369601cb21c1a9938"
+        },
+        {
+          "path": "harness/evidence/t29/00aadd0-final-revalidation/manifest.json",
+          "sha256": "9e57c5c0581c0d9bd8e1cc4cedd51e0871cac13ac345539877847fe7f639989e"
         }
       ],
-      "notes": "Accepted exact source ab5ccc8 after independent review. Fresh Node24.20 build/types, all-71 source/installed-package consumer and mount/dispose checks pass; the requested WebKit catalog/data/compound/visualization slice passes 227/227 with zero skips/unexpected/flaky results, zero Axe violations and zero prohibited-ARIA indeterminates. All 71 narrow dark/RTL/200%-root-text captures and 16 representative desktop captures were inspected; containment, text scaling, label separation, hierarchy contrast, touch targets, Team Select semantics and full-width Investigation layout are acceptable. Prior three-browser and maintained family behavior/keyboard evidence remains retained. Manual assistive-technology certification is explicitly deferred, is not a 0.1.0 release gate and is not claimed.",
+      "notes": "Requalified on exact final product source 00aadd0/digest 0bf62c after the semantic-header and Firefox chart-label fixes. Fresh strict types, semantic/unit/SSR/browser/installed-consumer checks, Firefox repeats 18/18, full three-browser visual matrix 1137/1137 with no skips/flakes/retries/unexpected results, adverse visualization, and focused Firefox narrow RTL 200%-text inspection all pass. Manual assistive-technology certification remains explicitly deferred beyond 0.1.0 and is not claimed.",
       "review": {
         "status": "approved",
         "author": "T29 component and test implementation authors",
-        "reviewer": "close_ready_scenarios",
+        "reviewer": "/root/close_ready_scenarios",
         "artifacts": [
           {
-            "path": "harness/evidence/t29/ab5ccc8-final-review/independent-review.json",
-            "sha256": "ff707b80571690671b7350563140185b7242e9ee0c46b1f7f6f9af2393b10e20"
+            "path": "harness/evidence/t29/00aadd0-final-revalidation/independent-review.json",
+            "sha256": "bdc4509a45a534c67a5ab2bce80c827a0d501907f8365813799c5e8dda3d93cc"
           }
         ],
-        "scope": "Approves the complete owned 71-component T29 matrix at exact source ab5ccc8; excludes manual screen-reader certification, T30/T31/T40, publication and deployment."
+        "scope": "Approves the complete owned 71-component T29 matrix on exact product source 00aadd0/digest 0bf62c, including the final three-browser and Firefox 200%-text regressions; excludes manual assistive-technology certification, T30/T31/T40, publication and deployment."
       }
     },
     {
