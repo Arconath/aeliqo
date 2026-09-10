@@ -1,0 +1,31 @@
+{
+  "schema": "aeliqo.t30.site-document-layout-review.v1",
+  "task": "T30",
+  "sourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+  "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+  "command": "pnpm test:site:document-layout",
+  "status": "passed",
+  "tests": 1,
+  "routes": 71,
+  "browser": {
+    "name": "chromium",
+    "version": "134.0.6998.35",
+    "playwright": "1.63.0",
+    "viewport": "configured by the site document-layout probe"
+  },
+  "assertions": {
+    "noScriptRoutes": 71,
+    "hydratedRoutes": 71,
+    "layoutShiftBudgetPerRoute": 0.1,
+    "maxObservedHydrationLayoutShift": 0,
+    "routesWithNonInputLayoutShift": 0,
+    "layoutShiftEntries": 0,
+    "geometryDifferencesBeyondOnePixel": 0,
+    "representativeClipboardCopy": "passed"
+  },
+  "rawArtifact": {
+    "path": "artifacts/site-document-layout/document-layout-all-compon-395b8-ontent-and-hydration-layout/document-layout-evidence.json",
+    "sha256": "3f1bc1dc8b5730cddd79e4cd835ffe7e2de8a665f1631b1ea1e09d7f5354c08f"
+  },
+  "claimBoundary": "This is a controlled local hydration/layout observation, not a field Core Web Vitals or p75 CLS claim."
+}

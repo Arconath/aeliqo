@@ -1,0 +1,33 @@
+{
+  "schema": "aeliqo.t30.firefox-narrow-catalog-review.v1",
+  "task": "T30",
+  "sourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+  "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+  "command": "pnpm exec playwright test tests/visual/catalog.spec.ts --config tests/visual/playwright.config.mjs --project=firefox --grep narrow-dark-rtl",
+  "status": "passed",
+  "tests": 71,
+  "passed": 71,
+  "unexpected": 0,
+  "skipped": 0,
+  "browser": {
+    "project": "firefox",
+    "version": "155.0",
+    "playwright": "1.63.0",
+    "viewport": {"width": 360, "height": 800},
+    "colorScheme": "dark",
+    "direction": "rtl"
+  },
+  "assertions": [
+    "All 71 catalog component routes mounted successfully.",
+    "No page errors or console errors were observed.",
+    "Axe violations and aria-prohibited-attr incomplete results were empty.",
+    "Every route stayed within the 360px document width budget.",
+    "Affected chart and compound routes passed narrow 200%-text label/intersection checks.",
+    "Trend, bar, area, scatter, histogram, heatmap and investigation passed the affected geometry checks."
+  ],
+  "rawArtifact": {
+    "path": "artifacts/visual-catalog/results.json",
+    "sha256": "7fa9e77ea9d8e882b1c1691bdaf5fb89465f0a8f7be7d8661084a61c8c0e6fcf"
+  },
+  "claimBoundary": "This is an automated Firefox narrow dark RTL review; it does not claim manual assistive-technology certification or universal cross-device behavior."
+}

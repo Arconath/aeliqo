@@ -1,0 +1,53 @@
+{
+  "schema": "aeliqo.t30.hydration-fix-review.v1",
+  "task": "T30",
+  "status": "review-complete",
+  "generatedAt": "2026-09-10T13:56:40Z",
+  "sourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+  "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+  "scope": "Independent review evidence for the bounded site preview hydration-space correction. Product source, task state, root configuration and lockfiles were not modified by this review.",
+  "checks": [
+    {
+      "command": "pnpm test:site:document-layout",
+      "status": "pass",
+      "tests": 1,
+      "routes": 71
+    },
+    {
+      "command": "pnpm exec playwright test tests/visual/catalog.spec.ts --config tests/visual/playwright.config.mjs --project=firefox --grep narrow-dark-rtl",
+      "status": "pass",
+      "tests": 71,
+      "passed": 71,
+      "unexpected": 0,
+      "skipped": 0
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "document-layout-summary.json",
+      "sha256": "2945f1edf7cf5dee3c606a363b95aac39617e4c419abaece6d5947d481039138"
+    },
+    {
+      "path": "firefox-narrow-catalog-summary.json",
+      "sha256": "cd18642d1dee123adf78d5366409d02d0b1a7968b76eb1dbebb95ff7dfe440bb"
+    },
+    {
+      "path": "independent-review.json",
+      "sha256": "bf8c2a7b4939663faf825f857f614a9e64ee761309f33c500f51f851ffea0539"
+    }
+  ],
+  "rawArtifacts": [
+    {
+      "path": "artifacts/site-document-layout/document-layout-all-compon-395b8-ontent-and-hydration-layout/document-layout-evidence.json",
+      "sha256": "3f1bc1dc8b5730cddd79e4cd835ffe7e2de8a665f1631b1ea1e09d7f5354c08f"
+    },
+    {
+      "path": "artifacts/visual-catalog/results.json",
+      "sha256": "7fa9e77ea9d8e882b1c1691bdaf5fb89465f0a8f7be7d8661084a61c8c0e6fcf"
+    }
+  ],
+  "limitations": [
+    "The hydration probe is a controlled local Chromium observation, not a field Core Web Vitals or p75 CLS claim.",
+    "The Firefox run is automated narrow dark RTL coverage; manual assistive-technology, lower-powered-device, publication and deployment claims remain outside this review."
+  ]
+}

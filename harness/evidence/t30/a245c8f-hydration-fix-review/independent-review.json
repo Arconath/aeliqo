@@ -1,0 +1,40 @@
+{
+  "task": "T30",
+  "status": "approved",
+  "reviewedAt": "2026-09-10T13:56:40Z",
+  "sourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+  "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+  "reviewer": "/root/investigate_hydration_shift",
+  "independentOfAuthor": true,
+  "decision": "approve",
+  "scope": "Approves the exact site hydration-space correction in a245c8f and the reproduced 71-route Chromium document-layout plus 71-case Firefox narrow-dark-rtl catalog checks. It does not requalify the existing T30 performance manifest, claim field Core Web Vitals, manual assistive-technology certification, lower-powered-device behavior, publication, or deployment.",
+  "reviewedChange": {
+    "files": ["apps/site/src/site.css"],
+    "diffStat": "1 insertion, 1 deletion",
+    "diffSha256": "92abc89ea8064769210580e9b99009ee1b808747e47b399ffac7036b3d6009d1",
+    "reservedPreviewMinimums": {
+      "visualization.trend-area-scatter": "59rem",
+      "visualization.bar-histogram": "61rem",
+      "visualization.heatmap": "63rem",
+      "compound.investigation": "92rem"
+    }
+  },
+  "reproducedOutcomes": [
+    {
+      "check": "pnpm test:site:document-layout",
+      "result": "passed",
+      "detail": "One test covered all 71 generated component documentation routes, with no-script fallback evidence, hydrated sentinel geometry, zero recorded non-input layout-shift entries, zero nonzero route shift sums, and successful representative clipboard verification."
+    },
+    {
+      "check": "Firefox narrow-dark-rtl catalog",
+      "result": "passed",
+      "detail": "The 71 catalog cases all passed on Firefox 155.0 at 360x800; no unexpected or skipped cases, page/console errors, Axe violations, width overflows, or affected chart/compound label intersections were observed."
+    }
+  ],
+  "findings": [],
+  "observations": [
+    "The correction is bounded to the site preview shell and reserves the measured post-hydration chart/compound heights; it does not alter component or runtime behavior.",
+    "The exact source tree remained clean after both runs, and the candidate digest stayed bound to a245c8f."
+  ],
+  "followUps": []
+}
