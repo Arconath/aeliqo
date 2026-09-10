@@ -153,8 +153,14 @@ export class AeliqoSliderElement extends AeliqoFieldElement<AeliqoSliderValue> {
   }
 
   static readonly styles = [...aeliqoInputStyles, css`
-    .slider-row { align-items: center; display: grid; gap: var(--aeliqo-space-8, 0.5rem); grid-template-columns: minmax(8rem, 1fr) minmax(5rem, 7rem) auto; }
+    .slider-row { align-items: center; display: grid; gap: var(--aeliqo-space-8, 0.5rem); grid-template-columns: minmax(0, 1fr) minmax(5rem, 7rem) auto; min-inline-size: 0; }
     input[type=range] { accent-color: var(--aeliqo-color-accent, #4338ca); min-inline-size: 0; }
     input[type=number] { min-block-size: var(--aeliqo-control-min-target, 2.75rem); }
+    @media (max-width: 30rem) {
+      .slider-row { grid-template-columns: minmax(5rem, 7rem) auto 1fr; }
+      input[type=range] { grid-column: 1 / -1; }
+      input[type=number] { grid-column: 1; }
+      [part="unit"] { grid-column: 2; }
+    }
   `];
 }

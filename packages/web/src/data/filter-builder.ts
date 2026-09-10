@@ -490,15 +490,17 @@ export class AeliqoFilterBuilderElement extends LitElement {
   }
 
   static readonly styles = [aeliqoThemeStyles, dataStyles, css`
+    :host { min-inline-size: 0; }
     form { max-inline-size: 100%; }
     fieldset { border: 0; display: flex; flex-wrap: wrap; gap: var(--aeliqo-space-8, 0.5rem); margin: 0; min-inline-size: 0; padding: 0; }
     legend { font-weight: var(--aeliqo-typography-font-weight-semibold, 600); padding: 0; }
     [part="clauses"] { display: grid; flex-basis: 100%; gap: var(--aeliqo-space-8, 0.5rem); }
     [part="clause"] { align-items: end; display: flex; flex-wrap: wrap; gap: var(--aeliqo-space-8, 0.5rem); }
-    label { display: grid; gap: var(--aeliqo-space-4, 0.25rem); min-inline-size: 9rem; }
+    label { display: grid; gap: var(--aeliqo-space-4, 0.25rem); max-inline-size: 100%; min-inline-size: min(100%, 9rem); }
     [part="scope"] { color: var(--aeliqo-color-muted, #475569); flex-basis: 100%; font-size: var(--aeliqo-typography-font-size-caption, 0.8125rem); }
     [part="unsupported-predicate"], [part="inherited-predicate"] { background: var(--aeliqo-color-surface-muted, #f1f5f9); border-inline-start: 0.1875rem solid var(--aeliqo-color-warning, #b45309); flex-basis: 100%; padding: var(--aeliqo-space-8, 0.5rem); }
     select, input, [part="add-condition"], [part="remove-condition"], [part="apply"] { background: var(--aeliqo-color-surface, #fff); border: var(--aeliqo-control-border-width, 0.0625rem) solid var(--aeliqo-color-border, #94a3b8); border-radius: var(--aeliqo-radius-small, 0.375rem); color: inherit; font: inherit; min-block-size: var(--aeliqo-control-min-target, 2.75rem); padding-inline: var(--aeliqo-space-8, 0.5rem); }
+    select, input { inline-size: 100%; min-inline-size: 0; }
     [part="add-condition"], [part="remove-condition"] { cursor: pointer; }
     [part="apply"] { align-self: end; background: var(--aeliqo-color-accent, #4338ca); border-color: var(--aeliqo-color-accent, #4338ca); color: var(--aeliqo-color-on-accent, #fff); cursor: pointer; }
     [part="validation"] { color: var(--aeliqo-color-danger, #b91c1c); flex-basis: 100%; margin: 0; }

@@ -1,4 +1,4 @@
-import {css, html, nothing} from "lit";
+import {html, nothing} from "lit";
 import {AeliqoFieldElement, aeliqoInputStyles} from "./base.js";
 import {AeliqoInputChangeEvent, AeliqoInputCommitEvent} from "./events.js";
 import {compareDateOnly, dateOnly} from "./locale.js";
@@ -108,7 +108,5 @@ export class AeliqoDateFieldElement extends AeliqoFieldElement<string> {
     else this.updateValidity(this.native(), this.value.length === 0);
   }
 
-  static readonly styles = [...aeliqoInputStyles, css`
-    input { min-inline-size: 12rem; }
-  `];
+  static readonly styles = aeliqoInputStyles;
 }

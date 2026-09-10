@@ -23,8 +23,8 @@ export class AeliqoTabsElement extends AeliqoFoundationElement {
 
   static readonly aeliqoVersion = "0.1.0";
   static readonly styles = [...aeliqoFoundationThemeStyles, aeliqoNavigationStyles, css`
-    :host { border-block-end: 0.0625rem solid var(--aeliqo-color-border, #64748b); }
-    [role="tablist"] { display: flex; gap: var(--aeliqo-space-4, 0.25rem); }
+    :host { border-block-end: 0.0625rem solid var(--aeliqo-color-border, #64748b); min-inline-size: 0; }
+    [role="tablist"] { display: flex; gap: var(--aeliqo-space-4, 0.25rem); max-inline-size: 100%; overflow-x: auto; }
     [role="tablist"][aria-orientation="vertical"] { flex-direction: column; }
     [role="tab"] { background: transparent; border: 0; border-block-end: 0.1875rem solid transparent; cursor: pointer; min-block-size: var(--aeliqo-control-min-target, 2.75rem); padding: var(--aeliqo-space-8, 0.5rem) var(--aeliqo-space-12, 0.75rem); }
     [role="tab"][aria-selected="true"] { border-block-end-color: var(--aeliqo-color-accent, #4338ca); color: var(--aeliqo-color-accent, #4338ca); font-weight: var(--aeliqo-typography-font-weight-semibold, 600); }
