@@ -1,13 +1,115 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Aeliqo — adaptive interfaces from data and intent</title><meta name="description" content="Owned web components, typed data semantics, and optional AI orchestration. Explore the Aeliqo 0.1.0 rewrite."><link rel="icon" href="/aeliqo.png"><link rel="stylesheet" href="/src/site.css"></head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Aeliqo — adaptive interfaces from data and intent</title>
+  <meta name="description" content="Owned web components, typed data semantics, and optional AI orchestration. Explore the Aeliqo 0.1.0 rewrite.">
+  <link rel="icon" href="/aeliqo.png">
+  <link rel="stylesheet" href="/src/site.css">
+</head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header class="shell topbar"><a class="brand" href="/" aria-label="Aeliqo home"><img src="/aeliqo.png" width="52" height="52" alt=""><span>Aeliqo</span></a><nav class="primary-nav" id="site-nav" aria-label="Main"><a href="/docs/">Docs</a><a href="/playground/">Playground</a><a href="/blog/">Blog</a><a class="nav-github" href="https://github.com/Arconath/aeliqo">GitHub ↗</a></nav><div class="utilities"><label class="theme-label"><span class="theme-label-text">Theme</span><select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label><button class="nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span class="nav-toggle-label">Menu</span><span aria-hidden="true">☰</span></button></div></header>
+<header class="shell topbar">
+  <a class="brand" href="/" aria-label="Aeliqo home" aria-current="page"><img src="/aeliqo.png" width="52" height="52" alt=""><span>Aeliqo</span></a>
+  <nav class="primary-nav" id="site-nav" aria-label="Main"><a href="/docs/">Docs</a><a href="/playground/">Playground</a><a href="/blog/">Blog</a><a class="nav-github" href="https://github.com/Arconath/aeliqo">GitHub <span aria-hidden="true">↗</span></a></nav>
+  <div class="utilities">
+    <label class="theme-label"><span class="theme-label-text">Theme</span><select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+    <button class="nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span class="nav-toggle-label">Menu</span><span aria-hidden="true">☰</span></button>
+  </div>
+</header>
+
 <main id="main">
-<section class="shell hero"><div class="hero-copy"><p class="eyebrow">THE 0.1.0 REWRITE · IN DEVELOPMENT</p><h1>From application data<br>to a useful interface.</h1><p class="lead">Build adaptive interfaces from application data and intent. Start with ready-to-use components, connect typed semantics, and add AI when it helps.</p><div class="actions"><a class="primary" href="/docs/getting-started/">Get started <span aria-hidden="true">↗</span></a><a href="/playground/">Open playground <span aria-hidden="true">→</span></a></div><p class="release-note">0.1.0-rc.1 is staged locally, not yet available from npm. <a href="/docs/getting-started/">Read the integration paths ↗</a></p><details class="release-install"><summary>Install the staged candidate locally</summary><p>Run the release build first; it writes the exact tarballs listed by <code>artifacts/release-candidate/manifest.json</code>.</p><pre tabindex="0"><code>pnpm release:bootstrap:build&#10;npm install --save-exact &#92;&#10;  ./artifacts/release-candidate/aeliqo-core-0.1.0-rc.1.tgz &#92;&#10;  ./artifacts/release-candidate/aeliqo-runtime-0.1.0-rc.1.tgz &#92;&#10;  ./artifacts/release-candidate/aeliqo-web-0.1.0-rc.1.tgz &#92;&#10;  ./artifacts/release-candidate/aeliqo-agent-0.1.0-rc.1.tgz &#92;&#10;  ./artifacts/release-candidate/aeliqo-devtools-0.1.0-rc.1.tgz &#92;&#10;  ./artifacts/release-candidate/aeliqo-react-0.1.0-rc.1.tgz</code></pre><p class="caption">This is a checked-out-source fallback for the staged candidate. npm publication and registry availability are not claimed.</p></details></div><div class="hero-aside"><div class="hero-aside-group hero-ownership"><p class="eyebrow">YOUR APPLICATION OWNS</p><p>Data. Identity.<br>Business execution.</p></div><div class="hero-aside-group hero-connects"><p class="eyebrow">AELIQO CONNECTS</p><p>Catalog → Task<br>Result → Experience</p></div></div></section>
-<section class="shell demonstration" aria-labelledby="demo-title"><div class="demo-heading"><div><p class="eyebrow">TRY A REAL COMPONENT</p><h2 id="demo-title">From records to a result.</h2></div><div class="demo-controls"><label for="team">Team <select id="team"><option value="all">All teams</option><option value="Design">Design</option><option value="Engineering">Engineering</option><option value="Operations">Operations</option></select></label><button class="primary" id="demo-evaluate" type="button">Request a local result</button><button id="demo-manual" type="button">Use component directly</button></div></div><p class="caption">Synthetic people dataset · Deterministic local evaluator · No model call · No network request</p><ol class="demo-flow" aria-label="Local proof flow"><li class="demo-flow-step" data-flow-step="records" aria-current="step">Records</li><li class="demo-flow-arrow" aria-hidden="true">→</li><li class="demo-flow-step" data-flow-step="request">Request</li><li class="demo-flow-arrow" aria-hidden="true">→</li><li class="demo-flow-step" data-flow-step="result">Result</li><li class="demo-flow-arrow" aria-hidden="true">→</li><li class="demo-flow-step" data-flow-step="view">2D view</li></ol><div id="home-demo" role="region" aria-label="Synthetic people records; horizontal scrolling is available" tabindex="0"><noscript><p>Enable JavaScript to filter the interactive component. The documentation remains readable without it.</p></noscript></div><section class="demo-result" id="demo-result" hidden aria-labelledby="demo-result-title"><div class="demo-result-heading"><div><p class="eyebrow">LOCAL RESULT</p><h3 id="demo-result-title">Exact supplied output</h3></div><p class="caption" id="demo-result-ref"></p></div><div class="demo-result-grid"><div id="demo-result-metric"></div><div id="demo-result-chart"></div></div></section><p class="caption" id="demo-status" role="status"></p><details><summary>View the component source</summary><pre tabindex="0"><code id="demo-source"></code></pre><button id="copy-demo" type="button">Copy source</button><span id="copy-status" role="status"></span></details></section>
-<section class="shell levels"><div><p class="eyebrow">01 / COMPONENTS</p><h2>Use one piece.</h2><p>Embed a form control, table, or chart directly. Ordinary interaction needs no planner or model.</p></div><div><p class="eyebrow">02 / SEMANTICS</p><h2>Give data meaning.</h2><p>Describe identity, units, grain, and scope once. Manual code and optional AI proposals use the same definitions.</p></div><div><p class="eyebrow">03 / REGIONS</p><h2>Adapt with purpose.</h2><p>Evaluate a task, inspect its results, then commit a validated presentation within the host’s permissions.</p></div></section>
-</main><footer class="shell"><span>Aeliqo · Apache-2.0</span><nav aria-label="Footer"><a href="/about/">About</a><a href="/legal/license/">License</a><a href="/legal/privacy/">Privacy</a><a href="/legal/security/">Security</a><a href="/legal/support/">Support</a></nav></footer>
+  <section class="shell hero">
+    <div class="hero-copy">
+      <p class="eyebrow hero-status"><span class="status-pulse" aria-hidden="true"></span>THE 0.1.0 REWRITE · IN DEVELOPMENT</p>
+      <h1>From application data to interfaces that <em>explain themselves.</em></h1>
+      <p class="lead">Build adaptive interfaces from application data and intent. Start with ready-to-use components, connect typed semantics, and add AI only when it helps.</p>
+      <div class="actions">
+        <a class="primary" href="/docs/getting-started/">Get started <span aria-hidden="true">↗</span></a>
+        <a class="text-action" href="/playground/">Open playground <span aria-hidden="true">→</span></a>
+      </div>
+      <ul class="hero-proof" aria-label="Framework highlights">
+        <li><strong>Owned UI</strong><span>71 components</span></li>
+        <li><strong>Typed evidence</strong><span>scope + lineage</span></li>
+        <li><strong>Optional AI</strong><span>manual stays first-class</span></li>
+      </ul>
+      <p class="release-note"><span>Preview</span> 0.1.0-rc.1 is staged locally, not yet available from npm. <a href="/docs/getting-started/">Read the integration paths ↗</a></p>
+      <details class="release-install">
+        <summary>Install the staged candidate locally</summary>
+        <p>Run the release build first; it writes the exact tarballs listed by <code>artifacts/release-candidate/manifest.json</code>.</p>
+        <pre tabindex="0"><code>pnpm release:bootstrap:build&#10;npm install --save-exact &#92;&#10;  ./artifacts/release-candidate/aeliqo-core-0.1.0-rc.1.tgz &#92;&#10;  ./artifacts/release-candidate/aeliqo-runtime-0.1.0-rc.1.tgz &#92;&#10;  ./artifacts/release-candidate/aeliqo-web-0.1.0-rc.1.tgz &#92;&#10;  ./artifacts/release-candidate/aeliqo-agent-0.1.0-rc.1.tgz &#92;&#10;  ./artifacts/release-candidate/aeliqo-devtools-0.1.0-rc.1.tgz &#92;&#10;  ./artifacts/release-candidate/aeliqo-react-0.1.0-rc.1.tgz</code></pre>
+        <p class="caption">This is a checked-out-source fallback for the staged candidate. npm publication and registry availability are not claimed.</p>
+      </details>
+    </div>
+
+    <aside class="system-map" aria-label="Aeliqo system flow">
+      <div class="system-map-head"><p class="eyebrow">A VALIDATED PATH</p><span aria-hidden="true">01—04</span></div>
+      <ol>
+        <li><span class="map-index">01</span><div><strong>Catalog</strong><small>What exists and what it means</small></div></li>
+        <li><span class="map-index">02</span><div><strong>Task</strong><small>The outputs and operations requested</small></div></li>
+        <li><span class="map-index">03</span><div><strong>Result</strong><small>Evaluated scope, grain, and lineage</small></div></li>
+        <li><span class="map-index">04</span><div><strong>Experience</strong><small>A presentation that preserves the task</small></div></li>
+      </ol>
+      <div class="host-boundary"><span>YOUR APPLICATION KEEPS AUTHORITY</span><p>Data · Identity · Business execution</p></div>
+    </aside>
+  </section>
+
+  <section class="proof-strip" aria-label="Aeliqo framework facts">
+    <div class="shell proof-grid">
+      <div><strong>71</strong><span>owned primitives + 2D views</span></div>
+      <div><strong>04</strong><span>public concepts, one typed flow</span></div>
+      <div><strong>01</strong><span>shared web implementation</span></div>
+      <div><strong>0</strong><span>model calls for ordinary interaction</span></div>
+    </div>
+  </section>
+
+  <section class="demonstration" aria-labelledby="demo-title">
+    <div class="shell">
+      <div class="demo-heading">
+        <div><p class="eyebrow">A REAL COMPONENT · A REAL RESULT</p><h2 id="demo-title">Watch the contract become a view.</h2><p class="demo-lead">Filter supplied records directly, or ask the bounded local evaluator for a typed Result. The interface changes; the evidence stays attached.</p></div>
+        <div class="demo-controls">
+          <label for="team">Team <select id="team"><option value="all">All teams</option><option value="Design">Design</option><option value="Engineering">Engineering</option><option value="Operations">Operations</option></select></label>
+          <button class="primary" id="demo-evaluate" type="button">Request a local result</button>
+          <button id="demo-manual" type="button">Use component directly</button>
+        </div>
+      </div>
+      <p class="caption demo-caption">Synthetic people dataset · Deterministic local evaluator · No model call · No network request</p>
+      <div class="demo-stage">
+        <ol class="demo-flow" aria-label="Local proof flow"><li class="demo-flow-step" data-flow-step="records" aria-current="step"><span>01</span>Records</li><li class="demo-flow-arrow" aria-hidden="true">→</li><li class="demo-flow-step" data-flow-step="request"><span>02</span>Request</li><li class="demo-flow-arrow" aria-hidden="true">→</li><li class="demo-flow-step" data-flow-step="result"><span>03</span>Result</li><li class="demo-flow-arrow" aria-hidden="true">→</li><li class="demo-flow-step" data-flow-step="view"><span>04</span>2D view</li></ol>
+        <div id="home-demo" role="region" aria-label="Synthetic people records; horizontal scrolling is available" tabindex="0"><noscript><p>Enable JavaScript to filter the interactive component. The documentation remains readable without it.</p></noscript></div>
+        <section class="demo-result" id="demo-result" hidden aria-labelledby="demo-result-title"><div class="demo-result-heading"><div><p class="eyebrow">LOCAL RESULT</p><h3 id="demo-result-title">Exact supplied output</h3></div><p class="caption" id="demo-result-ref"></p></div><div class="demo-result-grid"><div id="demo-result-metric"></div><div id="demo-result-chart"></div></div></section>
+        <p class="caption" id="demo-status" role="status"></p>
+        <details class="demo-source"><summary>View the component source</summary><pre tabindex="0"><code id="demo-source"></code></pre><button id="copy-demo" type="button">Copy source</button><span id="copy-status" role="status"></span></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="shell approach" aria-labelledby="approach-title">
+    <div class="approach-intro"><p class="eyebrow">ONE SYSTEM, THREE STARTING POINTS</p><h2 id="approach-title">Start small.<br>Keep the semantics.</h2><p>Use only the layer the task needs. Every path stays inside the same typed, versioned system.</p></div>
+    <div class="approach-list">
+      <article><span>01</span><div><h3>Use one piece.</h3><p>Embed a form control, table, or chart directly. Ordinary interaction needs no planner or model.</p><a href="/docs/components/">Browse 71 components <span aria-hidden="true">→</span></a></div></article>
+      <article><span>02</span><div><h3>Give data meaning.</h3><p>Describe identity, units, grain, and scope once. Manual code and optional AI proposals use the same definitions.</p><a href="/docs/meaning/">Define meaning <span aria-hidden="true">→</span></a></div></article>
+      <article><span>03</span><div><h3>Adapt with purpose.</h3><p>Evaluate a task, inspect its results, then commit a validated presentation within the host’s permissions.</p><a href="/docs/getting-started/region/">Build a region <span aria-hidden="true">→</span></a></div></article>
+    </div>
+  </section>
+
+  <section class="boundary-section">
+    <div class="shell boundary-grid">
+      <div><p class="eyebrow">THE TRUST BOUNDARY IS PART OF THE DESIGN</p><h2>Useful without pretending to be the authority.</h2></div>
+      <div class="boundary-copy"><p>Aeliqo validates semantics, queries, results, and presentation plans. Your application still owns its data, authenticated principal, routes, and business execution.</p><ul><li>Manual authoring stays fully supported.</li><li>AI proposals are typed, bounded, and untrusted.</li><li>Offline runtime and local Studio remain Apache-2.0.</li></ul><a class="text-action" href="/docs/production/">Read the production boundary <span aria-hidden="true">→</span></a></div>
+    </div>
+  </section>
+
+  <section class="shell closing">
+    <p class="eyebrow">BUILD FROM EVIDENCE</p>
+    <h2>One component today.<br>An adaptive system when you need it.</h2>
+    <div class="closing-actions"><a class="primary" href="/docs/getting-started/">Start the quickstart <span aria-hidden="true">↗</span></a><a class="text-action" href="https://github.com/Arconath/aeliqo">Explore the source <span aria-hidden="true">↗</span></a></div>
+  </section>
+</main>
+
+<footer class="shell"><a class="footer-brand" href="/"><img src="/aeliqo.png" width="36" height="36" alt=""><span>Aeliqo · Apache-2.0</span></a><nav aria-label="Footer"><a href="/about/">About</a><a href="/legal/license/">License</a><a href="/legal/privacy/">Privacy</a><a href="/legal/security/">Security</a><a href="/legal/support/">Support</a></nav></footer>
 <div class="analytics-consent" id="analytics-consent" role="dialog" aria-labelledby="analytics-consent-title" hidden><p id="analytics-consent-title">Optional site analytics</p><p>With your permission, the public Aeliqo site may send aggregate page use to Google Analytics. Form content and URL query parameters are not sent.</p><div><button id="analytics-decline" type="button">Decline</button><button class="primary" id="analytics-allow" type="button">Allow analytics</button></div></div>
-<script type="module" src="/src/site.ts"></script></body></html>
+<script type="module" src="/src/site.ts"></script>
+</body>
+</html>

@@ -41,7 +41,7 @@ export async function generatePages(){
  const home=await readFile(join(root,'index.html'),'utf8');
  await writeFile(join(generatedRoot,'index.html'),home);
  await copyFile(join(root,'public/aeliqo.png'),join(generatedPublic,'aeliqo.png'));
- const header=home.slice(home.indexOf('<a class="skip"'),home.indexOf('<main id="main">'));
+ const header=home.slice(home.indexOf('<a class="skip"'),home.indexOf('<main id="main">')).replace(' aria-current="page"','');
  const footer=home.slice(home.indexOf('<footer'),home.indexOf('<script type="module"'));
  const catalog=JSON.parse(await readFile(resolve(root,'../../harness/components.json'),'utf8')).components;
  const declarations=await Promise.all((await filesAt(resolve(root,'../../packages/web/dist'))).map(async path=>({path,text:await readFile(path,'utf8')})));
