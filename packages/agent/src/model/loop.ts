@@ -28,6 +28,7 @@ function validBudget(b: ToolModelBudget): boolean {
 function validPolicy(policy: ToolModelLoopOptions['policy']): boolean {
   if (policy === undefined) return true;
   return policy !== null && typeof policy === 'object' && Array.isArray(policy.requiredOperationSequence)
+    && (policy.providerToolChoice === undefined || policy.providerToolChoice === 'auto' || policy.providerToolChoice === 'required')
     && policy.requiredOperationSequence.length > 0 && policy.requiredOperationSequence.length <= 16
     && policy.requiredOperationSequence.every(step => step !== null && typeof step === 'object'
       && typeof step.operation === 'string' && operations.has(step.operation) && Array.isArray(step.acceptedStates)
@@ -131,7 +132,7 @@ export async function runToolModel(options: ToolModelLoopOptions): Promise<ToolM
       const required = policy?.requiredOperationSequence[requiredIndex(policy, receipts)];
       const tools = required === undefined ? discovery.value : discovery.value.filter(tool => tool.operation === required.operation);
       if (required !== undefined && tools.length === 0) return finish('failed');
-      const request: ToolModelRequest = snapshot({messages, tools, toolChoice: required === undefined ? 'auto' : 'required', maxOutputTokens: budget.maxOutputTokens});
+      const request: ToolModelRequest = snapshot({messages, tools, toolChoice: required === undefined ? 'auto' : policy?.providerToolChoice ?? 'auto', maxOutputTokens: budget.maxOutputTokens});
       const countIsRemote = count !== undefined;
       const continuationBytes = request.messages.reduce((total, message) => total + (message.role === 'assistant' ? message.continuation?.bytes ?? 0 : 0), 0);
       if (bytes(request) + continuationBytes > budget.maxInputBytes || modelRequests + (countIsRemote ? 2 : 1) > budget.maxModelRequests) return finish('budget');

@@ -57,7 +57,8 @@ preserve explicitly requested output identifiers, and avoid authoritative
 arithmetic or self-declared grants. A host-owned required-operation sequence
 also withholds final text until trusted `catalog.read/data-ready` and then
 `task.evaluate/data-ready` receipts have been observed. Provider tool choice is
-only an adherence hint; the loop enforces ordering before dispatch and final text.
+only an adherence hint; this provider's thinking mode uses portable `auto`, while
+the loop itself enforces ordering before dispatch and final text.
 
 Before each trial, the runner reserves a conservative bound using all permitted
 model requests, input tokens, turns, output tokens, and the supplied rates. It

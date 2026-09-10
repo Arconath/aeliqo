@@ -13,7 +13,7 @@ const proposal = (calls: ToolModelResponse['calls'] = [], text = 'Unverified ans
 const sequencePolicy = {requiredOperationSequence: [
   {operation: 'catalog.read' as const, acceptedStates: ['data-ready' as const]},
   {operation: 'task.evaluate' as const, acceptedStates: ['data-ready' as const]},
-]};
+], providerToolChoice: 'required' as const};
 function fixture(model: ToolModelPort, handler: AgentCapabilityManifest['invoke'] = () => ({state: 'data-ready', value: {count: 2}}), operation: OperationGrant = 'catalog.read') {
   let grants: readonly OperationGrant[] = [operation, 'model.egress'];
   let regionId = 'region';
@@ -101,8 +101,11 @@ describe('synthetic model-port boundary contract (not live reasoning evidence)',
   });
   it('does not advance a required milestone from a non-accepted receipt state', async () => {
     let calls = 0;
-    const f = sequenceFixture({estimateInputTokens: () => 10, complete: async () => proposal([{id: `read-${++calls}`, name: 'read_catalog', input: {}}])}, 'accepted');
-    expect(await runToolModel({...f.options, budget: {...budget, maxTurns: 1}})).toMatchObject({ok: true, value: {
+    const f = sequenceFixture({estimateInputTokens: () => 10, complete: async request => {
+      expect(request.toolChoice).toBe('auto');
+      return proposal([{id: `read-${++calls}`, name: 'read_catalog', input: {}}]);
+    }}, 'accepted');
+    expect(await runToolModel({...f.options, policy: {requiredOperationSequence: sequencePolicy.requiredOperationSequence}, budget: {...budget, maxTurns: 1}})).toMatchObject({ok: true, value: {
       stop: 'required-sequence', incompleteRequiredOperations: ['catalog.read', 'task.evaluate'], receipts: [{operation: 'catalog.read', state: 'accepted'}],
     }});
     expect(f.invoked).toEqual(['read_catalog']);

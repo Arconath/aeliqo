@@ -36,8 +36,9 @@ does not certify browser paint or human attention.
 
 Applications may provide an opt-in `policy.requiredOperationSequence`. Each
 milestone names an operation and explicit positive receipt states. While a
-milestone is pending, the loop exposes only tools for that operation and sends
-`toolChoice: 'required'` as a provider adherence hint. Final text remains blocked
+milestone is pending, the loop exposes only tools for that operation. A host may
+explicitly select `providerToolChoice: 'required'` as an adherence hint when its
+endpoint supports it; the portable default is `auto`. Final text remains blocked
 until trusted dispatcher receipts satisfy the sequence in order; model prose,
 tool names and result values cannot advance it. Premature text or an out-of-order
 proposal receives bounded repair feedback, and an out-of-order proposal is not

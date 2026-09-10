@@ -93,6 +93,8 @@ export interface ToolModelRequiredOperation {
 export interface ToolModelRunPolicy {
   /** Ordered milestones proven only by trusted dispatcher receipts. */
   readonly requiredOperationSequence: readonly ToolModelRequiredOperation[];
+  /** Optional provider adherence hint. Omit for endpoints that reject required tool choice. */
+  readonly providerToolChoice?: 'auto' | 'required';
 }
 export interface ToolModelReceipt {
   readonly stop: ToolModelStop;
