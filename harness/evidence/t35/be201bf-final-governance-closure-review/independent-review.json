@@ -1,0 +1,88 @@
+{
+  "schema": "aeliqo.t35.final-governance-closure-independent-review.v1",
+  "task": "T35",
+  "status": "approved-with-no-findings",
+  "reviewer": {
+    "agent": "/root/fix_hydration_geometry",
+    "independentOfAuthor": true,
+    "role": "independent governance, package-boundary and release-truth reviewer"
+  },
+  "reviewedAt": "2026-09-10T15:36:07Z",
+  "reviewBaseCommit": "3fa44f957c68ea8f4a7fdfb22c0b6c74a3ef5f22",
+  "reviewScope": "Evidence-only review of the root-authored T35 final governance closure. Product source, task state, package artifacts, registry, GitHub, GitOps and production were not changed.",
+  "authorClosure": {
+    "path": "harness/evidence/t35/be201bf-final-governance-closure/manifest.json",
+    "sha256": "443a246314ed9a34741a74942ec3219a7748e5ba017e137c9c7749f4d153ce89",
+    "sourceCandidateDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+    "productSourceRevision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+    "declaredStatus": "passed-awaiting-independent-review"
+  },
+  "checks": {
+    "governanceInputs": {
+      "expected": 13,
+      "observed": 13,
+      "allUnchangedHashes": true,
+      "result": "pass",
+      "evidence": "raw/governance-recheck.json"
+    },
+    "finalT33Bindings": {
+      "baselineManifestSha256Matches": true,
+      "authorManifestSha256Matches": true,
+      "independentReviewSha256Matches": true,
+      "candidateDigestMatchesAuthorAndReview": true,
+      "productSourceRevisionMatchesAuthorAndReview": true,
+      "result": "pass",
+      "evidence": "raw/candidate-boundary-recheck.json"
+    },
+    "apachePrivateTestkitBoundary": {
+      "sixPublicTarballsApache20": true,
+      "sixPublicTarballsContainLicenseAndNotice": true,
+      "testkitAbsentFromPublicTarballs": true,
+      "sourceTestkitPrivateApache20": true,
+      "sourcePublicPackagesDeclareApache20AndPublicAccess": true,
+      "result": "pass",
+      "evidence": "raw/candidate-boundary-recheck.json"
+    },
+    "offlineBoundary": {
+      "candidateOfflineConsumerPass": true,
+      "runtimeNetworkAttemptsZero": true,
+      "reviewWorkspaceDownloadsZero": true,
+      "result": "pass",
+      "evidence": "raw/candidate-boundary-recheck.json"
+    },
+    "commercialTruthBoundary": {
+      "ossAndOfflineClaimsGroundedInDocs": true,
+      "futureCommercialServiceClearlyHypothetical": true,
+      "noSalesDemandPriceSlaClaim": true,
+      "noPublicationDeploymentOrCommercialLaunchClaim": true,
+      "result": "pass",
+      "evidence": "raw/candidate-boundary-recheck.json"
+    }
+  },
+  "findings": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "blocking": 0,
+    "items": []
+  },
+  "limitations": [
+    "This review confirms the closure's unchanged governance bindings and documented OSS/commercial boundaries; it does not certify legal interpretation, publication, provenance, stable promotion, deployment or accessibility beyond the referenced evidence.",
+    "Authenticated npm visibility is reviewed separately by the T42 packet; E404 current non-visibility remains distinct from historical non-use and first-publication acceptance."
+  ],
+  "mutations": {
+    "productSource": false,
+    "taskState": false,
+    "candidateArtifacts": false,
+    "npm": false,
+    "github": false,
+    "gitops": false,
+    "production": false,
+    "reviewPacketOnly": true
+  },
+  "verdict": {
+    "decision": "approve-T35",
+    "summary": "All 13 governance hashes are unchanged, the final T33 candidate and independent-review bindings are exact, and the Apache-2.0/private-testkit/offline/commercial truth boundaries are supported without a blocking or nonblocking finding.",
+    "releaseApprovalIssued": false
+  }
+}

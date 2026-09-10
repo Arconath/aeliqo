@@ -1,0 +1,73 @@
+{
+  "schema": "aeliqo.t42.npm-authenticated-refresh-review-manifest.v1",
+  "task": "T42",
+  "status": "complete-independent-review",
+  "reviewer": "/root/fix_hydration_geometry",
+  "reviewBaseCommit": "3fa44f957c68ea8f4a7fdfb22c0b6c74a3ef5f22",
+  "scope": "Independent fresh read-only review of the root-authored authenticated npm refresh. No npm publication, package mutation, dist-tag change, GitHub, GitOps, production or task-state mutation was attempted.",
+  "authorEvidence": {
+    "path": "harness/evidence/t42/20260910-reauthenticated/manifest.json",
+    "sha256": "f55e1b2c8937e254babb8c8addbc561e2c39712a0a8ea754a3028789442dd788",
+    "status": "matched"
+  },
+  "freshReadOnlyChecks": {
+    "actor": "arconath",
+    "organization": "aeliqo",
+    "organizationRole": "owner",
+    "tfaMode": "auth-and-writes",
+    "identityQueries": 6,
+    "identityE404": 6,
+    "exactRcQueries": 6,
+    "exactRcE404": 6,
+    "allAssertionsPass": true,
+    "evidence": "raw/npm-readonly.json"
+  },
+  "evidence": [
+    {
+      "path": "independent-review.json",
+      "bytes": 3067,
+      "sha256": "08e5dcf6401456bacec540ea38d93085a092766cc8184d751a2ceb4ccea5eaed"
+    },
+    {
+      "path": "raw/npm-readonly.json",
+      "bytes": 2883,
+      "sha256": "ba031099a95ef58a2ef32370b9b8a5993a65f9daf8d42c8ea0665b05ed24fd3d"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 178,
+      "sha256": "896121899bc52dbac4e7da79a24f15437ad8149901c0562561a5c3992d729b3a"
+    }
+  ],
+  "findings": {
+    "blocking": 0,
+    "p0": 0,
+    "p1": 0,
+    "p2": 0
+  },
+  "externalBlockers": [
+    {
+      "id": "historical-use-and-first-publication-acceptance",
+      "scope": "publication-only",
+      "status": "unresolved-by-design",
+      "detail": "Authenticated E404 proves current non-visibility only; it does not prove historical non-use, reserve identities, or guarantee first-publication acceptance."
+    }
+  ],
+  "mutations": {
+    "npm": false,
+    "github": false,
+    "gitops": false,
+    "production": false,
+    "taskState": false,
+    "reviewPacketOnly": true
+  },
+  "limitations": [
+    "The packet records normalized command outcomes and intentionally omits profile email, credentials, OTP values and raw registry error bodies.",
+    "No publication, provenance, stable promotion or deployment claim is made."
+  ],
+  "verdict": {
+    "decision": "approve-T42-authenticated-readonly-refresh",
+    "summary": "Fresh authenticated whoami, organization owner, auth-and-writes TFA, six package identity E404 and six exact RC1 E404 checks all pass.",
+    "releaseApprovalIssued": false
+  }
+}

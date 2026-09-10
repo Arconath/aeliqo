@@ -1,0 +1,71 @@
+{
+  "schema": "aeliqo.t35.candidate-boundary-recheck.v1",
+  "reviewedAt": "2026-09-10T15:36:07Z",
+  "bindings": {
+    "baseline": {
+      "path": "harness/evidence/t35/05e5990-exact-candidate/manifest.json",
+      "expectedSha256": "068edde6ff3a1d3164ef1d1369b0d68b20d852cbfb1994a02b5fa876e86d8279",
+      "observedSha256": "068edde6ff3a1d3164ef1d1369b0d68b20d852cbfb1994a02b5fa876e86d8279",
+      "result": "pass"
+    },
+    "t33Author": {
+      "path": "harness/evidence/t33/a245c8f-final-candidate/manifest.json",
+      "expectedSha256": "8579fd4abc576af85cedae88f8e5a51e2d4ab154ff4943e5dcae3cb63847bb40",
+      "observedSha256": "8579fd4abc576af85cedae88f8e5a51e2d4ab154ff4943e5dcae3cb63847bb40",
+      "result": "pass"
+    },
+    "t33IndependentReview": {
+      "path": "harness/evidence/t33/a245c8f-final-candidate-review/independent-review.json",
+      "expectedSha256": "ab509f539386595adbe971e8e1dd94f9ae001a6811d1700d0d0e27c0b76f67e4",
+      "observedSha256": "ab509f539386595adbe971e8e1dd94f9ae001a6811d1700d0d0e27c0b76f67e4",
+      "result": "pass"
+    }
+  },
+  "candidateIdentity": {
+    "candidateDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+    "authorCandidateDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+    "reviewCandidateDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+    "productSourceRevision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+    "authorProductSourceRevision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+    "reviewProductSourceRevision": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+    "allBindingsMatch": true
+  },
+  "packageBoundary": {
+    "publicPackageCount": 6,
+    "publicPackageNames": [
+      "@aeliqo/sdk-core",
+      "@aeliqo/sdk-runtime",
+      "@aeliqo/sdk-web",
+      "@aeliqo/sdk-agent",
+      "@aeliqo/sdk-devtools",
+      "@aeliqo/sdk-react"
+    ],
+    "candidateVersion": "0.1.0-rc.1",
+    "allTarballsApache20": true,
+    "allTarballsContainLicenseAndNotice": true,
+    "testkitAbsentFromTarballs": true,
+    "allTarballIntegrityAndBytesMatchT33": true,
+    "sourcePackagesApache20": true,
+    "sourceTestkitPrivateApache20": true,
+    "sourcePublicPackageAccessIsPublic": true,
+    "result": "pass"
+  },
+  "offlineBoundary": {
+    "t35RuntimeNetworkAttempts": 0,
+    "t33AuthorNetworkDenied": true,
+    "t33AuthorAuditNetworkAttempts": 0,
+    "t33ReviewRuntimeNetworkAttempts": 0,
+    "t33ReviewWorkspacePackagesDownloaded": 0,
+    "t33AuthorOfflineConsumer": "pass",
+    "t33ReviewOfflineConsumer": "pass",
+    "result": "pass"
+  },
+  "commercialTruthBoundary": {
+    "ossDocsStateApache20": true,
+    "ossDocsStateOfflineLocalUse": true,
+    "ossDocsSeparateFutureCommercialHypothesis": true,
+    "ossDocsDoNotClaimHostedServicePriceSlaDemand": true,
+    "closureDoesNotClaimPublicationDeploymentOrCommercialLaunch": true,
+    "result": "pass"
+  }
+}

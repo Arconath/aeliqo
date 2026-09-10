@@ -1,0 +1,84 @@
+{
+  "schema": "aeliqo.t42.npm-authenticated-refresh-independent-review.v1",
+  "task": "T42",
+  "status": "review-complete-authenticated-readonly",
+  "reviewer": {
+    "agent": "/root/fix_hydration_geometry",
+    "independentOfAuthor": true,
+    "role": "independent authenticated npm authority and visibility reviewer"
+  },
+  "reviewedAt": "2026-09-10T15:36:46.847Z",
+  "reviewBaseCommit": "3fa44f957c68ea8f4a7fdfb22c0b6c74a3ef5f22",
+  "reviewScope": "Fresh safe read-only npm checks for the root-authored T42 refresh. No npm publication, package mutation, dist-tag change, GitHub, GitOps, production or task-state mutation was attempted.",
+  "authorManifest": {
+    "path": "harness/evidence/t42/20260910-reauthenticated/manifest.json",
+    "sha256": "f55e1b2c8937e254babb8c8addbc561e2c39712a0a8ea754a3028789442dd788"
+  },
+  "freshChecks": {
+    "authentication": {
+      "whoami": "arconath",
+      "organization": "aeliqo",
+      "organizationRole": "owner",
+      "tfaMode": "auth-and-writes",
+      "pendingTfaChange": null,
+      "result": "pass",
+      "evidence": "raw/npm-readonly.json"
+    },
+    "packageIdentities": {
+      "packageCount": 6,
+      "allIdentityQueriesE404": true,
+      "allExactRc1QueriesE404": true,
+      "result": "pass-current-authenticated-non-visibility",
+      "evidence": "raw/npm-readonly.json"
+    }
+  },
+  "checkedPackages": [
+    "@aeliqo/sdk-core",
+    "@aeliqo/sdk-runtime",
+    "@aeliqo/sdk-web",
+    "@aeliqo/sdk-agent",
+    "@aeliqo/sdk-devtools",
+    "@aeliqo/sdk-react"
+  ],
+  "assertions": {
+    "actorAuthenticated": true,
+    "namespaceAuthorityReadVerified": true,
+    "authAndWritesTfaVerified": true,
+    "allSixCurrentIdentityQueriesE404": true,
+    "allSixExactRcQueriesE404": true,
+    "noSecretsPersisted": true,
+    "noMutations": true
+  },
+  "findings": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "blocking": 0,
+    "items": []
+  },
+  "externalBlockers": [
+    {
+      "id": "historical-use-and-first-publication-acceptance",
+      "scope": "publication-only",
+      "detail": "Authenticated E404 establishes current non-visibility only. It does not prove historical non-use, reserve the identities, or guarantee npm acceptance of the first publication; the authorized bootstrap publish remains the authority check.",
+      "status": "unresolved-by-design"
+    }
+  ],
+  "limitations": [
+    "The review records normalized command outcomes and omits profile email, credentials, OTP values and raw registry error bodies.",
+    "No publication, provenance, stable promotion or deployment claim is made."
+  ],
+  "mutations": {
+    "npm": false,
+    "github": false,
+    "gitops": false,
+    "production": false,
+    "taskState": false,
+    "reviewPacketOnly": true
+  },
+  "verdict": {
+    "decision": "approve-T42-authenticated-readonly-refresh",
+    "summary": "Fresh authenticated whoami, organization owner, auth-and-writes TFA, six package identity and six exact RC visibility checks all passed as recorded; publication remains a separate authorized operation.",
+    "releaseApprovalIssued": false
+  }
+}

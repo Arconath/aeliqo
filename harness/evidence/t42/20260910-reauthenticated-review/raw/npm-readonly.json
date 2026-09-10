@@ -1,0 +1,117 @@
+{
+  "schema": "aeliqo.t42.npm-readonly-recheck.v1",
+  "checkedAt": "2026-09-10T15:36:46.847Z",
+  "registry": "https://registry.npmjs.org/",
+  "commands": {
+    "whoami": "npm whoami --registry=https://registry.npmjs.org/",
+    "orgRole": "npm org ls aeliqo arconath --json --registry=https://registry.npmjs.org/",
+    "tfa": "npm profile get tfa --json --registry=https://registry.npmjs.org/",
+    "identity": "npm view <name> name version dist-tags --json --registry=https://registry.npmjs.org/",
+    "exactRc": "npm view <name>@0.1.0-rc.1 version --json --registry=https://registry.npmjs.org/"
+  },
+  "authentication": {
+    "whoami": {
+      "exitCode": 0,
+      "status": "pass",
+      "actor": "arconath"
+    },
+    "organization": {
+      "exitCode": 0,
+      "status": "pass",
+      "organization": "aeliqo",
+      "role": "owner"
+    },
+    "tfa": {
+      "exitCode": 0,
+      "status": "pass",
+      "mode": "auth-and-writes",
+      "pending": null
+    }
+  },
+  "packages": [
+    {
+      "name": "@aeliqo/sdk-core",
+      "identity": {
+        "exitCode": 1,
+        "status": "E404-currently-not-visible"
+      },
+      "exactRc1": {
+        "exitCode": 1,
+        "status": "E404-currently-not-visible"
+      }
+    },
+    {
+      "name": "@aeliqo/sdk-runtime",
+      "identity": {
+        "exitCode": 1,
+        "status": "E404-currently-not-visible"
+      },
+      "exactRc1": {
+        "exitCode": 1,
+        "status": "E404-currently-not-visible"
+      }
+    },
+    {
+      "name": "@aeliqo/sdk-web",
+      "identity": {
+        "exitCode": 1,
+        "status": "E404-currently-not-visible"
+      },
+      "exactRc1": {
+        "exitCode": 1,
+        "status": "E404-currently-not-visible"
+      }
+    },
+    {
+      "name": "@aeliqo/sdk-agent",
+      "identity": {
+        "exitCode": 1,
+        "status": "E404-currently-not-visible"
+      },
+      "exactRc1": {
+        "exitCode": 1,
+        "status": "E404-currently-not-visible"
+      }
+    },
+    {
+      "name": "@aeliqo/sdk-devtools",
+      "identity": {
+        "exitCode": 1,
+        "status": "E404-currently-not-visible"
+      },
+      "exactRc1": {
+        "exitCode": 1,
+        "status": "E404-currently-not-visible"
+      }
+    },
+    {
+      "name": "@aeliqo/sdk-react",
+      "identity": {
+        "exitCode": 1,
+        "status": "E404-currently-not-visible"
+      },
+      "exactRc1": {
+        "exitCode": 1,
+        "status": "E404-currently-not-visible"
+      }
+    }
+  ],
+  "assertions": {
+    "actorAuthenticated": true,
+    "organizationOwner": true,
+    "authAndWritesTfa": true,
+    "allSixIdentityE404": true,
+    "allSixRcE404": true
+  },
+  "mutations": {
+    "npm": false,
+    "github": false,
+    "gitops": false,
+    "production": false
+  },
+  "secretHandling": {
+    "credentialsOrOtpPersisted": false,
+    "commandOutputSecretSuppressed": true,
+    "profileEmailOmitted": true
+  }
+}

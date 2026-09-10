@@ -1,0 +1,75 @@
+{
+  "schema": "aeliqo.t35.final-governance-closure-review-manifest.v1",
+  "task": "T35",
+  "status": "complete-independent-review",
+  "reviewer": "/root/fix_hydration_geometry",
+  "reviewBaseCommit": "3fa44f957c68ea8f4a7fdfb22c0b6c74a3ef5f22",
+  "scope": "Independent evidence-only review of the root-authored final governance closure. No product source, task state, candidate bytes, registry, GitHub, GitOps or production state was changed.",
+  "authorEvidence": {
+    "path": "harness/evidence/t35/be201bf-final-governance-closure/manifest.json",
+    "sha256": "443a246314ed9a34741a74942ec3219a7748e5ba017e137c9c7749f4d153ce89",
+    "sourceCandidateDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+    "productSourceRevision": "a245c8f946030f930c9145e44dd7211bcd0fb774"
+  },
+  "reviewedBindings": {
+    "baselineManifest": {
+      "path": "harness/evidence/t35/05e5990-exact-candidate/manifest.json",
+      "sha256": "068edde6ff3a1d3164ef1d1369b0d68b20d852cbfb1994a02b5fa876e86d8279"
+    },
+    "t33AuthorManifest": {
+      "path": "harness/evidence/t33/a245c8f-final-candidate/manifest.json",
+      "sha256": "8579fd4abc576af85cedae88f8e5a51e2d4ab154ff4943e5dcae3cb63847bb40"
+    },
+    "t33IndependentReview": {
+      "path": "harness/evidence/t33/a245c8f-final-candidate-review/independent-review.json",
+      "sha256": "ab509f539386595adbe971e8e1dd94f9ae001a6811d1700d0d0e27c0b76f67e4"
+    }
+  },
+  "evidence": [
+    {
+      "path": "independent-review.json",
+      "bytes": 3668,
+      "sha256": "209a83719162dee5a174c8ebef13d26680788dc7a6775b39f670f37f689de392"
+    },
+    {
+      "path": "raw/candidate-boundary-recheck.json",
+      "bytes": 2903,
+      "sha256": "4c3d75d9d11fe6b7b3465a1c9e492eee3c7a36d2e8ea9a11284f4dba5c5271ee"
+    },
+    {
+      "path": "raw/governance-recheck.json",
+      "bytes": 3837,
+      "sha256": "f74447a4abbee6f9550766082375cc338a8122288d51b7aa663c695c09dffb35"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 286,
+      "sha256": "46f7110ea31c745a198ae710ea71a02250e82a3e3d97ef463ddcd0c4359ec212"
+    }
+  ],
+  "findings": {
+    "blocking": 0,
+    "p0": 0,
+    "p1": 0,
+    "p2": 0
+  },
+  "mutations": {
+    "productSource": false,
+    "taskState": false,
+    "candidateArtifacts": false,
+    "npm": false,
+    "github": false,
+    "gitops": false,
+    "production": false,
+    "reviewPacketOnly": true
+  },
+  "limitations": [
+    "This packet verifies governance binding and truth boundaries; it is not a legal, accessibility, publication, provenance, stable-promotion or deployment certification.",
+    "Authenticated registry visibility and publication acceptance remain separate T42/release gates."
+  ],
+  "verdict": {
+    "decision": "approve-T35",
+    "summary": "All 13 governance inputs match their recorded SHA-256 values, final T33 author/reviewer bindings are exact, and Apache-2.0/private-testkit/offline/commercial boundaries are supported.",
+    "releaseApprovalIssued": false
+  }
+}
