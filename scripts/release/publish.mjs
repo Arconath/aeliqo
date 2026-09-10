@@ -5,7 +5,7 @@ import {readFile, writeFile} from 'node:fs/promises';
 import {basename, dirname, relative, resolve} from 'node:path';
 import {classifyRegistryVersionResponse, readJson} from './candidate-lib.mjs';
 import {
-  NPM_ORG, assertBootstrapAuthority, assertCandidateIdentity,
+  NPM_ORG, assertBootstrapAuthority, assertCandidateIdentity, assertCandidateTarball,
   assertTagMayAdvance, assertTrustedPublishingContext, expectedIntegrity,
 } from './publication-lib.mjs';
 
@@ -31,6 +31,11 @@ function gitOutput(commandArgs) {
   if (result.error || result.status !== 0) throw new Error(`git ${commandArgs.join(' ')} failed`);
   return result.stdout.trim();
 }
+function tarBuffer(commandArgs) {
+  const result = spawnSync('tar', commandArgs, {cwd: root, encoding: null, timeout: 30_000, maxBuffer: 128 * 1024 * 1024});
+  if (result.error || result.status !== 0) throw new Error(`tar ${commandArgs.join(' ')} failed`);
+  return result.stdout;
+}
 function publishTarball(path) {
   const publishArgs = ['publish', path, '--access', 'public'];
   if (!bootstrap) publishArgs.push('--provenance');
@@ -52,17 +57,19 @@ async function registryState(item) {
     return classifyRegistryVersionResponse(response.status, payload, item.name, candidate.version, item.integrity);
   } finally { clearTimeout(timer); }
 }
-async function registryTag(item) {
+async function registryPackage(item) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 20_000);
   try {
     const response = await fetch(`https://registry.npmjs.org/${encodeURIComponent(item.name)}`, {redirect: 'error', signal: controller.signal, headers: {accept: 'application/json'}});
-    if (response.status === 404) return undefined;
+    if (response.status === 404) return {exists: false, selected: undefined};
     if (response.status !== 200) throw new Error(`Registry returned HTTP ${response.status} for ${item.name} dist-tags`);
     const payload = await response.json();
     const selected = payload?.['dist-tags']?.[tag];
     if (selected !== undefined && typeof selected !== 'string') throw new Error(`Registry returned malformed ${item.name} dist-tag ${tag}`);
-    return selected;
+    const versions = payload?.versions;
+    if (!versions || typeof versions !== 'object' || Array.isArray(versions)) throw new Error(`Registry returned malformed ${item.name} version history`);
+    return {exists: true, selected};
   } finally { clearTimeout(timer); }
 }
 
@@ -80,14 +87,26 @@ if (bootstrap) {
 } else assertTrustedPublishingContext(process.env, candidate.sourceRevision);
 
 const prepared = [];
+const [canonicalLicense, canonicalNotice] = await Promise.all([readFile(resolve(root, 'LICENSE')), readFile(resolve(root, 'NOTICE'))]);
 for (const item of candidate.packages) {
   if (basename(item.file) !== item.file || !/^aeliqo-sdk-[a-z]+-0\.1\.0(?:-rc\.[1-9]\d*)?\.tgz$/.test(item.file)) throw new Error(`Unsafe candidate tarball name for ${item.name}`);
   const tarball = resolve(dirname(candidatePath), item.file);
   if (relative(dirname(candidatePath), tarball).startsWith('..')) throw new Error(`Candidate tarball escapes its directory for ${item.name}`);
   expectedIntegrity(await readFile(tarball), item);
+  const paths = tarBuffer(['-tzf', tarball]).toString('utf8').split('\n').filter(Boolean).sort();
+  let manifest;
+  try { manifest = JSON.parse(tarBuffer(['-xOzf', tarball, 'package/package.json']).toString('utf8')); }
+  catch { throw new Error(`${item.name} packed package.json is invalid`); }
+  assertCandidateTarball({
+    item, candidateVersion: candidate.version, manifest, paths,
+    license: tarBuffer(['-xOzf', tarball, 'package/LICENSE']),
+    notice: tarBuffer(['-xOzf', tarball, 'package/NOTICE']),
+    canonicalLicense, canonicalNotice,
+  });
   const before = await registryState(item);
-  const beforeTag = await registryTag(item);
-  assertTagMayAdvance({name: item.name, tag, desiredVersion: candidate.version, currentVersion: beforeTag, versionAlreadyExists: before.state === 'verified-existing'});
+  const registryPackageState = await registryPackage(item);
+  if (bootstrap && registryPackageState.exists) throw new Error(`Owner bootstrap requires unused package identity ${item.name}`);
+  assertTagMayAdvance({name: item.name, tag, desiredVersion: candidate.version, currentVersion: registryPackageState.selected, versionAlreadyExists: before.state === 'verified-existing'});
   prepared.push({item, tarball, before});
 }
 
@@ -103,7 +122,7 @@ for (const {item, tarball, before} of prepared) {
   let afterTag;
   for (let attempt = 0; attempt < 6; attempt += 1) {
     if (attempt) await new Promise(resolvePromise => setTimeout(resolvePromise, 5_000));
-    try { after = await registryState(item); afterTag = await registryTag(item); } catch (error) { if (attempt === 5) throw error; }
+    try { after = await registryState(item); afterTag = (await registryPackage(item)).selected; } catch (error) { if (attempt === 5) throw error; }
     if (after?.state === 'verified-existing' && afterTag === candidate.version) break;
   }
   if (after?.state !== 'verified-existing') throw new Error(`Registry did not expose verified ${item.name}@${candidate.version} after publication`);

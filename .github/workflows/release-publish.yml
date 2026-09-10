@@ -65,7 +65,7 @@ jobs:
           test "$(gh api "repos/$GH_REPO/branches/main" --jq '.commit.sha')" = "$SOURCE_SHA"
           if [ "$STAGE" = rc ] && [[ "$VERSION" =~ ^0\.1\.0-rc\.([1-9][0-9]*)$ ]] && [ "${BASH_REMATCH[1]}" -ge 2 ] && [ -z "$RC_VERSION$RC_SOURCE_SHA$RC_RUN_ID" ]; then
             :
-          elif [ "$STAGE" = stable ] && [ "$VERSION" = 0.1.0 ] && [[ "$RC_VERSION" =~ ^0\.1\.0-rc\.([1-9][0-9]*)$ ]] && [ "${BASH_REMATCH[1]}" -ge 2 ] && [[ "$RC_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]] && [[ "$RC_RUN_ID" =~ ^[1-9][0-9]*$ ]]; then
+          elif [ "$STAGE" = stable ] && [ "$VERSION" = 0.1.0 ] && [[ "$RC_VERSION" =~ ^0\.1\.0-rc\.([1-9][0-9]*)$ ]] && [ "${BASH_REMATCH[1]}" -ge 2 ] && [ "$RC_SOURCE_SHA" = "$SOURCE_SHA" ] && [[ "$RC_RUN_ID" =~ ^[1-9][0-9]*$ ]]; then
             :
           else
             echo "Stage, version, and approved RC identity are not allowed." >&2

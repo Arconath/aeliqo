@@ -5,24 +5,40 @@ import test from 'node:test';
 import {PUBLIC_PACKAGE_NAMES, sha256, sha512Integrity} from '../../scripts/release/candidate-lib.mjs';
 import {
   assertApprovedRc, assertBootstrapAuthority, assertCandidateIdentity,
-  assertTagMayAdvance, assertTrustedPublishingContext, expectedIntegrity,
+  assertCandidateTarball, assertTagMayAdvance, assertTrustedPublishingContext, expectedIntegrity,
   verifyNpmProvenance,
 } from '../../scripts/release/publication-lib.mjs';
 
 const sourceRevision = 'a'.repeat(40);
-const packages = PUBLIC_PACKAGE_NAMES.map((name, index) => ({name, integrity: `sha512-${index}`, bytes: 1, file: `aeliqo-sdk-${name.slice('@aeliqo/sdk-'.length)}-0.1.0-rc.2.tgz`}));
+const packages = PUBLIC_PACKAGE_NAMES.map((name, index) => ({name, version: '0.1.0-rc.2', sha256: String(index).padStart(64, '0'), integrity: `sha512-${index}`, bytes: 1, file: `aeliqo-sdk-${name.slice('@aeliqo/sdk-'.length)}-0.1.0-rc.2.tgz`}));
 const candidate = {schema: 'aeliqo.release-candidate.v1', sourceRevision, version: '0.1.0-rc.2', publishOrder: PUBLIC_PACKAGE_NAMES, packages};
+const withVersion = (value) => ({...candidate, version: value, packages: packages.map(item => ({...item, version: value, file: item.file.replace('0.1.0-rc.2', value)}))});
 
 test('first-RC bootstrap is a separate exact interactive path', () => {
   assert.doesNotThrow(() => assertCandidateIdentity(candidate, {tag: 'next'}));
   assert.throws(() => assertCandidateIdentity(candidate, {tag: 'rewrite'}), /RC candidates require next/);
-  assert.throws(() => assertCandidateIdentity({...candidate, version: '0.1.0-rc.1'}, {tag: 'next'}), /reserved/);
-  assert.doesNotThrow(() => assertCandidateIdentity({...candidate, version: '0.1.0-rc.1'}, {bootstrap: true, tag: 'next'}));
-  assert.throws(() => assertCandidateIdentity({...candidate, version: '0.1.0-rc.2'}, {bootstrap: true, tag: 'next'}), /restricted/);
+  assert.throws(() => assertCandidateIdentity(withVersion('0.1.0-rc.1'), {tag: 'next'}), /reserved/);
+  assert.doesNotThrow(() => assertCandidateIdentity(withVersion('0.1.0-rc.1'), {bootstrap: true, tag: 'next'}));
+  assert.throws(() => assertCandidateIdentity(withVersion('0.1.0-rc.2'), {bootstrap: true, tag: 'next'}), /restricted/);
+  assert.throws(() => assertCandidateIdentity({...candidate, packages: candidate.packages.map((item, index) => index ? item : {...item, version: '9.9.9'})}, {tag: 'next'}), /metadata is invalid/);
+  assert.throws(() => assertCandidateIdentity({...candidate, packages: candidate.packages.map((item, index) => index ? item : {...item, file: 'aeliqo-sdk-core-9.9.9.tgz'})}, {tag: 'next'}), /metadata is invalid/);
   const authority = {whoami: 'arconath', membership: {arconath: 'owner'}, tfa: {tfa: {mode: 'auth-and-writes'}}, stdinTTY: true, stdoutTTY: true, stderrTTY: true, ci: false};
   assert.doesNotThrow(() => assertBootstrapAuthority(authority));
   assert.throws(() => assertBootstrapAuthority({...authority, ci: true}), /interactive local terminal/);
   assert.throws(() => assertBootstrapAuthority({...authority, whoami: 'someone-else'}), /requires arconath/);
+});
+
+test('publication reopens each tarball and binds its internal public identity', () => {
+  const item = packages[0];
+  const manifest = {name: item.name, version: candidate.version, license: 'Apache-2.0', exports: {'.': './dist/index.js'}};
+  const paths = ['package/', 'package/LICENSE', 'package/NOTICE', 'package/README.md', 'package/dist/index.js', 'package/package.json'];
+  const canonicalLicense = Buffer.from('license');
+  const canonicalNotice = Buffer.from('notice');
+  const input = {item, candidateVersion: candidate.version, manifest, paths, license: canonicalLicense, notice: canonicalNotice, canonicalLicense, canonicalNotice};
+  assert.doesNotThrow(() => assertCandidateTarball(input));
+  assert.throws(() => assertCandidateTarball({...input, manifest: {...manifest, name: '@aeliqo/sdk-runtime'}}), /Expected @aeliqo\/sdk-core/);
+  assert.throws(() => assertCandidateTarball({...input, manifest: {...manifest, version: '9.9.9'}}), /must be version/);
+  assert.throws(() => assertCandidateTarball({...input, notice: Buffer.from('changed')}), /NOTICE differs/);
 });
 
 test('trusted publishing and dist-tag movement fail closed', () => {
@@ -86,6 +102,7 @@ test('package workflow serializes publication and binds quality plus approved RC
   assert.match(workflow, /actions\/workflows\/quality\.yml\/runs/);
   assert.match(workflow, /aeliqo-quality-evidence-\$GITHUB_SHA/);
   assert.match(workflow, /verify-approved-rc\.mjs/);
+  assert.match(workflow, /\[ "\$RC_SOURCE_SHA" = "\$SOURCE_SHA" \]/);
   assert.match(workflow, /--require-provenance-source "\$RC_SOURCE_SHA"/);
   assert.doesNotMatch(workflow, /bootstrap-first-rc/);
 });

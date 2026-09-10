@@ -66,6 +66,11 @@ async function prepareOutput() {
     if ((await readdir(output)).length > 0) throw new Error(`Refusing to overwrite non-empty candidate output ${output}`);
   } else await mkdir(output, {recursive: true});
 }
+async function clearGeneratedPackageOutputs() {
+  for (const shortName of PUBLIC_PACKAGES) {
+    await rm(join(root, 'packages', shortName, 'dist'), {recursive: true, force: true});
+  }
+}
 function archivePaths(tarball) {
   return command('tar', ['-tzf', tarball]).split('\n').filter(Boolean).sort();
 }
@@ -314,6 +319,7 @@ function sbomGraph(consumerLock, workspaceLockText, packages) {
 
 verifyToolchainAndSource();
 await prepareOutput();
+await clearGeneratedPackageOutputs();
 const stagingRoot = await mkdtemp(join(tmpdir(), 'aeliqo-release-pack-'));
 let consumerDirectory;
 try {

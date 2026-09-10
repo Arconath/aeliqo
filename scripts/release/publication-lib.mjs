@@ -1,4 +1,7 @@
-import {PUBLIC_PACKAGE_NAMES, packagePurl, sha256, sha512Integrity} from './candidate-lib.mjs';
+import {
+  PUBLIC_PACKAGE_NAMES, assertExportTargets, assertPublicManifest,
+  assertTarballPaths, packagePurl, packageShortName, sha256, sha512Integrity,
+} from './candidate-lib.mjs';
 
 export const NPM_OWNER = 'arconath';
 export const NPM_ORG = 'aeliqo';
@@ -27,6 +30,27 @@ export function assertCandidateIdentity(candidate, {bootstrap = false, tag} = {}
   }
   if ((candidate.version === '0.1.0' && tag !== 'rewrite') || (RC.test(candidate.version) && tag !== 'next')) {
     throw new Error('Stable candidates require rewrite; RC candidates require next');
+  }
+  for (const item of candidate.packages) {
+    const expectedFile = `aeliqo-sdk-${packageShortName(item.name)}-${candidate.version}.tgz`;
+    if (item.version !== candidate.version || item.file !== expectedFile
+      || !/^[0-9a-f]{64}$/.test(item.sha256 ?? '')
+      || !/^sha512-[A-Za-z0-9+/]+={0,2}$/.test(item.integrity ?? '')
+      || !Number.isSafeInteger(item.bytes) || item.bytes <= 0) {
+      throw new Error(`Candidate package metadata is invalid for ${item.name}`);
+    }
+  }
+}
+
+export function assertCandidateTarball({item, candidateVersion, manifest, paths, license, notice, canonicalLicense, canonicalNotice}) {
+  assertPublicManifest(manifest, item.name, candidateVersion);
+  assertTarballPaths(paths, item.name);
+  assertExportTargets(manifest, paths, item.name);
+  if (!Buffer.isBuffer(license) || !license.equals(canonicalLicense)) {
+    throw new Error(`${item.name} packed LICENSE differs from the canonical Apache-2.0 text`);
+  }
+  if (!Buffer.isBuffer(notice) || !notice.equals(canonicalNotice)) {
+    throw new Error(`${item.name} packed NOTICE differs from the canonical attribution`);
   }
 }
 
