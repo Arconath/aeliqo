@@ -1,0 +1,48 @@
+{
+  "schema": "aeliqo.t34-cache-fix-independent-findings.v1",
+  "task": "T34",
+  "scenario": "S36",
+  "status": "review-complete-no-blocking-findings",
+  "reviewer": "/root/audit_direct_name_candidate",
+  "findings": {
+    "p0": [],
+    "p1": [],
+    "p2": [],
+    "p3": []
+  },
+  "qualifyingEvidence": {
+    "newScript": "The script at the reviewed 67d1adb source commit, not the workspace-main copy, was used for both image runs.",
+    "preFix": {
+      "image": "aeliqo-t34-candidate:59c45a6",
+      "exitCode": 1,
+      "meaning": "Expected regression: the pre-fix image exposes a Vite URL-safe hashed JavaScript asset without immutable caching.",
+      "evidence": "raw/pre-fix-new-script-trace.log"
+    },
+    "fixed": {
+      "image": "aeliqo-t34-cache-fix:67d1adb",
+      "exitCode": 0,
+      "meaning": "The fixed image passes the expanded all-JS-and-CSS asset smoke and shutdown probe.",
+      "evidence": "raw/fixed-new-script-trace.log"
+    }
+  },
+  "legacyControlDisposition": {
+    "result": "nonqualifying-pre-fix-control-only",
+    "observed": {
+      "empty": 1,
+      "multiasset": 0,
+      "failedPipeline": 0
+    },
+    "explanation": "The earlier mock matrix sourced the old single-JS checker from the workspace main path. Its empty-index rejection is a useful pre-fix control, but its multiasset and failed-pipeline results cannot certify the strengthened loop; those logs are intentionally excluded from the pass claim. The new-script real-image regression above is the qualifying evidence."
+  },
+  "limitations": [
+    "The image and smoke checks are local linux/amd64 Docker evidence; no registry pull or live production edge was attempted.",
+    "The linux/amd64 image was exercised on an arm64 host through the local container runtime; the platform warning is recorded in the smoke log.",
+    "The exact-toolchain log includes an initial non-TTY pnpm install abort followed by the successful CI=true rerun; only the rerun is treated as a build pass."
+  ],
+  "verdict": {
+    "decision": "approve-local-cache-fix-review",
+    "blockingFindings": [],
+    "releaseApprovalIssued": false,
+    "summary": "The matcher fix correctly recognizes Vite/Rollup URL-safe eight-character hashes and the smoke now checks every indexed JavaScript and CSS asset. The decisive pre-fix failure and fixed-image pass are reproduced against exact local image identities."
+  }
+}

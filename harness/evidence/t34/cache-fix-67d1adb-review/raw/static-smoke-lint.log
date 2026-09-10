@@ -1,0 +1,3 @@
+$ sh -n scripts/ci/check-static-image.sh
+$ shellcheck scripts/ci/check-static-image.sh
+result=pass

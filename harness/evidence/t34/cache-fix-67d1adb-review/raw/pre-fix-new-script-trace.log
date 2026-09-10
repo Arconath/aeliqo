@@ -1,0 +1,87 @@
++ set -eu
++ image=aeliqo-t34-candidate:59c45a6
++ revision=59c45a6d75ef227e53a1353fa7f323ce1789724e
++ container=aeliqo-static-10799
+++ mktemp -d /var/folders/02/x09mj32544v14j3lsr3crd100000gn/T//aeliqo-image-check.XXXXXX
++ temp_dir=/var/folders/02/x09mj32544v14j3lsr3crd100000gn/T//aeliqo-image-check.a030L0
+++ docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' aeliqo-t34-candidate:59c45a6
++ test 59c45a6d75ef227e53a1353fa7f323ce1789724e = 59c45a6d75ef227e53a1353fa7f323ce1789724e
++ trap cleanup EXIT INT TERM
++ docker run --detach --rm --name aeliqo-static-10799 -p 127.0.0.1::8080 aeliqo-t34-candidate:59c45a6
+WARNING: The requested image's platform (linux/amd64) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested
+++ docker port aeliqo-static-10799 8080/tcp
+++ sed 's/.*://'
++ port=32885
++ base=http://127.0.0.1:32885
++ attempt=1
++ '[' 1 -le 30 ']'
++ curl --fail --silent http://127.0.0.1:32885/readyz
++ grep -qx '{"status":"ready"}'
++ break
++ curl --fail --silent http://127.0.0.1:32885/healthz
++ grep -qx '{"status":"ok"}'
++ curl --fail --silent http://127.0.0.1:32885/version
++ grep -Fq '"revision":"59c45a6d75ef227e53a1353fa7f323ce1789724e"'
+++ curl --fail --silent --head http://127.0.0.1:32885/
++ headers='HTTP/1.1 200 OK
+Cache-Control: no-cache
+Content-Security-Policy: default-src '\''self'\''; base-uri '\''self'\''; object-src '\''none'\''; frame-ancestors '\''none'\''; form-action '\''self'\''; img-src '\''self'\'' data:; font-src '\''self'\''; style-src '\''self'\''; script-src '\''self'\'' https://www.googletagmanager.com; connect-src '\''self'\'' https://www.google-analytics.com https://region1.google-analytics.com
+Content-Type: text/html; charset=utf-8
+Cross-Origin-Opener-Policy: same-origin
+Referrer-Policy: strict-origin-when-cross-origin
+X-Content-Type-Options: nosniff
+Date: Thu, 10 Sep 2026 21:44:46 GMT
+'
++ printf '%s\n' 'HTTP/1.1 200 OK
+Cache-Control: no-cache
+Content-Security-Policy: default-src '\''self'\''; base-uri '\''self'\''; object-src '\''none'\''; frame-ancestors '\''none'\''; form-action '\''self'\''; img-src '\''self'\'' data:; font-src '\''self'\''; style-src '\''self'\''; script-src '\''self'\'' https://www.googletagmanager.com; connect-src '\''self'\'' https://www.google-analytics.com https://region1.google-analytics.com
+Content-Type: text/html; charset=utf-8
+Cross-Origin-Opener-Policy: same-origin
+Referrer-Policy: strict-origin-when-cross-origin
+X-Content-Type-Options: nosniff
+Date: Thu, 10 Sep 2026 21:44:46 GMT
+'
++ grep -qi '^cache-control: no-cache'
++ printf '%s\n' 'HTTP/1.1 200 OK
+Cache-Control: no-cache
+Content-Security-Policy: default-src '\''self'\''; base-uri '\''self'\''; object-src '\''none'\''; frame-ancestors '\''none'\''; form-action '\''self'\''; img-src '\''self'\'' data:; font-src '\''self'\''; style-src '\''self'\''; script-src '\''self'\'' https://www.googletagmanager.com; connect-src '\''self'\'' https://www.google-analytics.com https://region1.google-analytics.com
+Content-Type: text/html; charset=utf-8
+Cross-Origin-Opener-Policy: same-origin
+Referrer-Policy: strict-origin-when-cross-origin
+X-Content-Type-Options: nosniff
+Date: Thu, 10 Sep 2026 21:44:46 GMT
+'
++ grep -qi '^content-security-policy: default-src '\''self'\'''
++ printf '%s\n' 'HTTP/1.1 200 OK
+Cache-Control: no-cache
+Content-Security-Policy: default-src '\''self'\''; base-uri '\''self'\''; object-src '\''none'\''; frame-ancestors '\''none'\''; form-action '\''self'\''; img-src '\''self'\'' data:; font-src '\''self'\''; style-src '\''self'\''; script-src '\''self'\'' https://www.googletagmanager.com; connect-src '\''self'\'' https://www.google-analytics.com https://region1.google-analytics.com
+Content-Type: text/html; charset=utf-8
+Cross-Origin-Opener-Policy: same-origin
+Referrer-Policy: strict-origin-when-cross-origin
+X-Content-Type-Options: nosniff
+Date: Thu, 10 Sep 2026 21:44:46 GMT
+'
++ grep -qi '^x-content-type-options: nosniff'
++ curl --fail --silent http://127.0.0.1:32885/
+++ grep -Eo '/assets/[^"?[:space:]]+\.(js|css)' /var/folders/02/x09mj32544v14j3lsr3crd100000gn/T//aeliqo-image-check.a030L0/index.html
+++ sort -u
++ assets='/assets/site-DB2aX8vP.css
+/assets/site-EAgs_aNb.js'
++ test -n '/assets/site-DB2aX8vP.css
+/assets/site-EAgs_aNb.js'
++ printf '%s\n' '/assets/site-DB2aX8vP.css
+/assets/site-EAgs_aNb.js'
++ IFS=
++ read -r asset
++ test -n /assets/site-DB2aX8vP.css
++ curl --fail --silent --head http://127.0.0.1:32885/assets/site-DB2aX8vP.css
++ grep -qi '^cache-control: public, max-age=31536000, immutable'
++ IFS=
++ read -r asset
++ test -n /assets/site-EAgs_aNb.js
++ curl --fail --silent --head http://127.0.0.1:32885/assets/site-EAgs_aNb.js
++ grep -qi '^cache-control: public, max-age=31536000, immutable'
++ cleanup
++ docker rm --force aeliqo-static-10799
++ rm -rf /var/folders/02/x09mj32544v14j3lsr3crd100000gn/T//aeliqo-image-check.a030L0
+pre_trace_status=1 expected=1

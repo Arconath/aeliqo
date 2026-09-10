@@ -1,0 +1,2 @@
+$ scripts/ci/check-production-delivery.sh static
+result=pass

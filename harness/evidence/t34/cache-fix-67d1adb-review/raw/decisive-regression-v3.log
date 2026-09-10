@@ -1,0 +1,10 @@
+script=/private/tmp/aeliqo-static-image-hash-fix/scripts/ci/check-static-image.sh
+pre_image=aeliqo-t34-candidate:59c45a6
+pre_revision=59c45a6d75ef227e53a1353fa7f323ce1789724e
+WARNING: The requested image's platform (linux/amd64) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested
+pre_status=1 expected=1
+fix_image=aeliqo-t34-cache-fix:67d1adb
+fix_revision=67d1adb5aca689b7490a95aab0760ea928fdb6a8
+WARNING: The requested image's platform (linux/amd64) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested
+fix_status=0 expected=0
+regression=PASS

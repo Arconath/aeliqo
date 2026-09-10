@@ -1,0 +1,78 @@
+{
+  "schema": "aeliqo.t34-cache-fix-independent-review-manifest.v1",
+  "task": "T34",
+  "scenario": "S36",
+  "status": "review-complete-no-blocking-findings",
+  "generatedAt": "2026-09-11T04:47:00+07:00",
+  "reviewer": "/root/audit_direct_name_candidate",
+  "scope": "Independent review of cache fix 67d1adb and its static-image smoke against exact local source and image identities. No product, task-state, registry, GitHub, GitOps or production mutation.",
+  "source": {
+    "commit": "67d1adb5aca689b7490a95aab0760ea928fdb6a8",
+    "tree": "6960040296706dfbad2145ec54e3a73582cb1f18",
+    "parent": "aca015ee77d635545923b5ed560d998f91e72813",
+    "changedFiles": [
+      "deploy/server.go",
+      "deploy/server_test.go",
+      "scripts/ci/check-static-image.sh"
+    ],
+    "sourceWorktreeClean": true
+  },
+  "images": {
+    "preFix": {
+      "tag": "aeliqo-t34-candidate:59c45a6",
+      "digest": "sha256:db5a9bf348054fffa47aca0b158089bdc43c602e3946492b2cea00f68f931af6",
+      "revision": "59c45a6d75ef227e53a1353fa7f323ce1789724e"
+    },
+    "fixed": {
+      "tag": "aeliqo-t34-cache-fix:67d1adb",
+      "digest": "sha256:f514e88f9ee8dbf38f3a8e528d5273a980ca21f2a8bec23b6ecad553d7fde5d4",
+      "revision": "67d1adb5aca689b7490a95aab0760ea928fdb6a8",
+      "platform": "linux/amd64"
+    }
+  },
+  "decisiveRegression": {
+    "script": "scripts/ci/check-static-image.sh from source commit 67d1adb5aca689b7490a95aab0760ea928fdb6a8",
+    "preFixExitCode": 1,
+    "fixedExitCode": 0,
+    "preFixFailure": "The all-asset loop reaches /assets/site-EAgs_aNb.js after CSS and rejects its non-immutable cache header.",
+    "evidence": "raw/decisive-regression-v3.log"
+  },
+  "findings": {
+    "path": "findings.json",
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "p3": 0,
+    "blocking": 0
+  },
+  "artifacts": [
+    {"path": "checks.json", "bytes": 3743, "sha256": "9a9c60318924afbbe540b9f323277a83e3e3c26633e16b854758ad86da91ea61"},
+    {"path": "findings.json", "bytes": 2384, "sha256": "ad240b379a2b3542168e764a9bdd2fa481009b97dfc1c5c499f7c768e9e3d6f8"},
+    {"path": "independent-review.json", "bytes": 3282, "sha256": "d152f79c599cb3a6f8479d93de143d7bc49789e08710f364d26dd1069728d17e"},
+    {"path": "raw/decisive-regression-v3.log", "bytes": 636, "sha256": "160941c7143df7c55c9684969f9ae124d0ca045ca79d69b65449a1036ef406e0"},
+    {"path": "raw/exact-toolchain-site-build-rerun.log", "bytes": 12003, "sha256": "80190c32a3d59cda04e3c1e31190c14da99c657c144592dd58960ababfe8d48d"},
+    {"path": "raw/fixed-build-metadata.json", "bytes": 1659, "sha256": "8d3d8771aaca82f30f0d1b25755d834013192359e0d1b0ee1912a03f884a5f58"},
+    {"path": "raw/fixed-build.log", "bytes": 3961, "sha256": "a1e34eac0f3f5b7b9929252103978c5066a1df12ad6857318d66d930279455bb"},
+    {"path": "raw/fixed-cache-audit.json", "bytes": 1402, "sha256": "48b0daca7fe4e5151130866892eb03e62bd9bb10d6a9c39fd5564ea06f6f20f2"},
+    {"path": "raw/fixed-image-inspect.json", "bytes": 1391, "sha256": "91056caa08e88e2d042f34c7d0af0bc635a251b8e1729ab1ab476dc0779e2e26"},
+    {"path": "raw/fixed-new-script-trace.log", "bytes": 9067, "sha256": "ff5ddb8e0a3e57f665b88e66d6ac4f2c94bba1545c146fa0571f459251ad26a7"},
+    {"path": "raw/fixed-static-smoke.log", "bytes": 152, "sha256": "b1147cb5841b87f1888d23e40ba93c2531d31271164b9b705b89fc2786edcacb"},
+    {"path": "raw/go-test-race.log", "bytes": 115, "sha256": "3e1db3c90d09bf3ba5973e717c18bd22b16d06acc0ee8942b9bb5e8eb06ce2df"},
+    {"path": "raw/go-test.log", "bytes": 109, "sha256": "b579799b6bf24ac2ec0da21978d7fbd43a8b5fc7ba80093d36721abb8726733c"},
+    {"path": "raw/pre-fix-new-script-trace.log", "bytes": 4979, "sha256": "995f2d17ca78b7aa27d821b7e8b040db1bf542802ec7fe4f7cd2391366528377"},
+    {"path": "raw/production-delivery-check.log", "bytes": 61, "sha256": "da269e77545317b9a0ffbac46c3a4100ba6c80c085c0ecf236449d8b5cb9a4dc"},
+    {"path": "raw/reviewed-diff.patch", "bytes": 4286, "sha256": "c21d5f3361845dc8b401edef162125f3ebb4244355392ec39f3e4c64c7164523"},
+    {"path": "raw/source-identity.txt", "bytes": 326, "sha256": "e54b01ce12c3283c199bcc2c8837e932321bde301d7794a45e4f55c2956c4bab"},
+    {"path": "raw/static-smoke-lint.log", "bytes": 99, "sha256": "5c19c366b9f5c4447ebd2b589ad8cca859104eb1269e5f9f09d71246f0a3fe1b"}
+  ],
+  "checksumPolicy": "SHA256SUMS inventories manifest and all review artifacts except itself; the manifest's artifact list excludes manifest and SHA256SUMS to avoid a circular hash.",
+  "mutations": {
+    "aeliqoSource": false,
+    "taskState": false,
+    "registry": false,
+    "github": false,
+    "gitops": false,
+    "production": false,
+    "reviewPacketOnly": true
+  }
+}

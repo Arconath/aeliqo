@@ -1,0 +1,3 @@
+$ go test -race ./deploy/server.go ./deploy/server_test.go -count=1
+ok  	command-line-arguments	1.639s
+result=pass

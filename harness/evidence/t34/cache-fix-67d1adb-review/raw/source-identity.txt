@@ -1,0 +1,5 @@
+reviewed_commit=67d1adb5aca689b7490a95aab0760ea928fdb6a8
+reviewed_tree=6960040296706dfbad2145ec54e3a73582cb1f18
+review_worktree_head=67d1adb5aca689b7490a95aab0760ea928fdb6a8
+review_worktree_status=review_branch=codex/static-image-hash-fix
+reviewed_files=deploy/server.go deploy/server_test.go scripts/ci/check-static-image.sh

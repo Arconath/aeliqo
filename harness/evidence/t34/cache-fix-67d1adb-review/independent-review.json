@@ -1,0 +1,90 @@
+{
+  "schema": "aeliqo.t34-cache-fix-independent-review.v1",
+  "task": "T34",
+  "scenario": "S36",
+  "status": "review-complete-no-blocking-findings",
+  "reviewedAt": "2026-09-11T04:47:00+07:00",
+  "reviewer": {
+    "agent": "/root/audit_direct_name_candidate",
+    "role": "independent cache-classification and static-delivery reviewer",
+    "independentOfFixAuthor": true
+  },
+  "subject": {
+    "commit": "67d1adb5aca689b7490a95aab0760ea928fdb6a8",
+    "tree": "6960040296706dfbad2145ec54e3a73582cb1f18",
+    "parent": "aca015ee77d635545923b5ed560d998f91e72813",
+    "changedFiles": [
+      "deploy/server.go",
+      "deploy/server_test.go",
+      "scripts/ci/check-static-image.sh"
+    ],
+    "sourceWorktreeClean": true
+  },
+  "reviewMethod": [
+    "Inspected the exact three-file diff and tested the matcher boundary cases added by the fix.",
+    "Ran targeted Go tests, race tests, shell syntax validation, shellcheck and static delivery wiring checks from the fix worktree.",
+    "Inspected the exact pinned Node 24.20.0/pnpm 11.24.0 site-build rerun and fixed image labels, platform and digest.",
+    "Ran the reviewed new smoke script against the cached pre-fix and fixed images with exact full revision labels.",
+    "Audited the fixed image HTML and verified both referenced hashed assets returned immutable cache headers."
+  ],
+  "results": {
+    "matcher": {
+      "result": "pass",
+      "accepted": [
+        "site-EAgs_aNb.js",
+        "site-abc-def1.js"
+      ],
+      "rejected": [
+        "site-abcdefg.js",
+        "site-abcdefghi.js",
+        "site-abc!def1.js",
+        "manual.js",
+        "assets/../static/site-abcdefgh.js"
+      ],
+      "evidence": "raw/go-test.log"
+    },
+    "smokeRegression": {
+      "preFixExitCode": 1,
+      "fixedExitCode": 0,
+      "evidence": "raw/decisive-regression-v3.log"
+    },
+    "fixedImage": {
+      "digest": "sha256:f514e88f9ee8dbf38f3a8e528d5273a980ca21f2a8bec23b6ecad553d7fde5d4",
+      "revision": "67d1adb5aca689b7490a95aab0760ea928fdb6a8",
+      "htmlAssets": 2,
+      "allHashedAssetsImmutable": true,
+      "evidence": "raw/fixed-cache-audit.json"
+    }
+  },
+  "findings": {
+    "path": "findings.json",
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "p3": 0,
+    "blocking": 0
+  },
+  "controlDisposition": {
+    "legacyOldScriptMatrix": "nonqualifying-pre-fix-control-only",
+    "qualifyingEvidence": "raw/pre-fix-new-script-trace.log and raw/decisive-regression-v3.log"
+  },
+  "limitations": [
+    "Local image and local container smoke only; this review does not approve registry publication or production promotion.",
+    "Host architecture is arm64 while the candidate image is linux/amd64; the runtime emitted a platform warning."
+  ],
+  "mutations": {
+    "aeliqoSource": false,
+    "taskState": false,
+    "registry": false,
+    "github": false,
+    "gitops": false,
+    "production": false,
+    "reviewPacketOnly": true
+  },
+  "verdict": {
+    "decision": "approve-local-cache-fix-review",
+    "blockingFindings": [],
+    "releaseApprovalIssued": false,
+    "summary": "The cache-classification fix and strengthened all-asset smoke are independently supported for the exact local source and image scope. The pre-fix image fails and the fixed image passes the new checker; no P0-P2 finding remains."
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "schema": "aeliqo.t34-cache-fix-independent-checks.v1",
+  "task": "T34",
+  "scenario": "S36",
+  "status": "passed-with-scope-limitations",
+  "capturedAt": "2026-09-11T04:47:00+07:00",
+  "reviewer": "/root/audit_direct_name_candidate",
+  "source": {
+    "commit": "67d1adb5aca689b7490a95aab0760ea928fdb6a8",
+    "tree": "6960040296706dfbad2145ec54e3a73582cb1f18",
+    "parent": "aca015ee77d635545923b5ed560d998f91e72813",
+    "files": [
+      "deploy/server.go",
+      "deploy/server_test.go",
+      "scripts/ci/check-static-image.sh"
+    ],
+    "worktreeClean": true
+  },
+  "checks": [
+    {
+      "name": "targeted-go-tests",
+      "result": "pass",
+      "command": "go test ./deploy/server.go ./deploy/server_test.go -count=1",
+      "evidence": "raw/go-test.log"
+    },
+    {
+      "name": "targeted-go-race-tests",
+      "result": "pass",
+      "command": "go test -race ./deploy/server.go ./deploy/server_test.go -count=1",
+      "evidence": "raw/go-test-race.log"
+    },
+    {
+      "name": "static-smoke-shell-validation",
+      "result": "pass",
+      "command": "sh -n scripts/ci/check-static-image.sh && shellcheck scripts/ci/check-static-image.sh",
+      "evidence": "raw/static-smoke-lint.log"
+    },
+    {
+      "name": "production-delivery-static-wiring",
+      "result": "pass",
+      "command": "scripts/ci/check-production-delivery.sh static",
+      "evidence": "raw/production-delivery-check.log"
+    },
+    {
+      "name": "exact-pinned-site-build",
+      "result": "pass",
+      "toolchain": {
+        "node": "24.20.0",
+        "pnpm": "11.24.0"
+      },
+      "evidence": "raw/exact-toolchain-site-build-rerun.log",
+      "note": "The first no-TTY install attempt was a harness setup failure; the CI=true rerun completed successfully and is the qualifying build result."
+    },
+    {
+      "name": "fixed-image-identity",
+      "result": "pass",
+      "image": "aeliqo-t34-cache-fix:67d1adb",
+      "imageDigest": "sha256:f514e88f9ee8dbf38f3a8e528d5273a980ca21f2a8bec23b6ecad553d7fde5d4",
+      "revisionLabel": "67d1adb5aca689b7490a95aab0760ea928fdb6a8",
+      "platform": "linux/amd64",
+      "evidence": [
+        "raw/fixed-image-inspect.json",
+        "raw/fixed-build-metadata.json"
+      ]
+    },
+    {
+      "name": "fixed-image-static-smoke",
+      "result": "pass",
+      "image": "aeliqo-t34-cache-fix:67d1adb",
+      "exitCode": 0,
+      "evidence": [
+        "raw/fixed-new-script-trace.log",
+        "raw/fixed-cache-audit.json"
+      ]
+    },
+    {
+      "name": "new-smoke-pre-fix-regression",
+      "result": "fail-as-required",
+      "image": "aeliqo-t34-candidate:59c45a6",
+      "imageDigest": "sha256:db5a9bf348054fffa47aca0b158089bdc43c602e3946492b2cea00f68f931af6",
+      "revisionLabel": "59c45a6d75ef227e53a1353fa7f323ce1789724e",
+      "exitCode": 1,
+      "observed": "The reviewed new script enumerated /assets/site-DB2aX8vP.css and /assets/site-EAgs_aNb.js; CSS passed and the JS immutable-cache assertion failed.",
+      "evidence": [
+        "raw/pre-fix-new-script-trace.log",
+        "raw/decisive-regression-v3.log"
+      ]
+    },
+    {
+      "name": "new-smoke-fixed-regression",
+      "result": "pass",
+      "image": "aeliqo-t34-cache-fix:67d1adb",
+      "exitCode": 0,
+      "evidence": "raw/decisive-regression-v3.log"
+    }
+  ],
+  "assetAudit": {
+    "result": "pass",
+    "htmlAssetsEnumerated": 2,
+    "assets": [
+      "/assets/site-DB2aX8vP.css",
+      "/assets/site-EAgs_aNb.js"
+    ],
+    "allHashedAssetsImmutable": true,
+    "evidence": "raw/fixed-cache-audit.json"
+  },
+  "exclusions": {
+    "registryPublication": false,
+    "productionMutation": false,
+    "liveEdge": false,
+    "github": false,
+    "gitops": false,
+    "npm": false,
+    "taskState": false
+  }
+}

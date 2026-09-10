@@ -1,0 +1,102 @@
+#0 building with "orbstack" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.98kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:24.20.0-alpine@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/golang:1.27.0-alpine@sha256:4c9fe60190a2a3350ddc51de80d0224b8a6698d12bdfc999fee45ea9d6c46dbc
+#3 DONE 0.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 894B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [server-build 1/4] FROM docker.io/library/golang:1.27.0-alpine@sha256:4c9fe60190a2a3350ddc51de80d0224b8a6698d12bdfc999fee45ea9d6c46dbc
+#6 resolve docker.io/library/golang:1.27.0-alpine@sha256:4c9fe60190a2a3350ddc51de80d0224b8a6698d12bdfc999fee45ea9d6c46dbc 0.0s done
+#6 DONE 0.0s
+
+#7 [site-build  1/13] FROM docker.io/library/node:24.20.0-alpine@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf
+#7 resolve docker.io/library/node:24.20.0-alpine@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf
+#7 resolve docker.io/library/node:24.20.0-alpine@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf 0.0s done
+#7 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 791.54kB 0.0s done
+#5 DONE 0.0s
+
+#8 [server-build 2/4] WORKDIR /src
+#8 CACHED
+
+#9 [server-build 3/4] COPY deploy/server.go ./server.go
+#9 DONE 0.0s
+
+#10 [server-build 4/4] RUN CGO_ENABLED=0 GOOS=linux go build -trimpath   -ldflags="-s -w -X main.revision=67d1adb5aca689b7490a95aab0760ea928fdb6a8"   -o /aeliqo-static-server ./server.go
+#10 DONE 23.0s
+
+#11 [site-build  7/13] COPY examples ./examples
+#11 CACHED
+
+#12 [site-build 12/13] RUN pnpm build:platform && pnpm build:agent
+#12 CACHED
+
+#13 [site-build  3/13] RUN corepack enable && corepack prepare pnpm@11.24.0 --activate
+#13 CACHED
+
+#14 [site-build  9/13] COPY design ./design
+#14 CACHED
+
+#15 [site-build 11/13] RUN pnpm install --frozen-lockfile
+#15 CACHED
+
+#16 [site-build  8/13] COPY tests ./tests
+#16 CACHED
+
+#17 [site-build  4/13] COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json ./
+#17 CACHED
+
+#18 [site-build  2/13] WORKDIR /workspace
+#18 CACHED
+
+#19 [site-build  6/13] COPY apps ./apps
+#19 CACHED
+
+#20 [site-build 10/13] COPY harness/components.json ./harness/components.json
+#20 CACHED
+
+#21 [site-build 13/13] RUN rm -rf /workspace/apps/site/dist /workspace/artifacts/site-source /workspace/artifacts/site-public   && node --input-type=module -e 'const {generatePages}=await import("./apps/site/generate-pages.mjs"); await generatePages()'   && test -f /workspace/artifacts/site-source/index.html
+#21 CACHED
+
+#22 [site-build  5/13] COPY packages ./packages
+#22 CACHED
+
+#23 [site-generated 1/1] RUN pnpm --filter @aeliqo/site build   && test -f /workspace/apps/site/dist/404/index.html   && test -f /workspace/apps/site/dist/404.html
+#23 CACHED
+
+#24 [stage-3 1/3] COPY --from=server-build /aeliqo-static-server /aeliqo-static-server
+#24 DONE 0.0s
+
+#25 [stage-3 2/3] COPY --from=site-generated /workspace/apps/site/dist /srv/aeliqo
+#25 DONE 0.1s
+
+#26 [stage-3 3/3] WORKDIR /srv/aeliqo
+#26 DONE 0.1s
+
+#27 exporting to image
+#27 exporting layers
+#27 exporting layers 0.2s done
+#27 exporting manifest sha256:651fc356ad04095a6c51dad22241d384acf3d7a3dda11a5e26a7c1690339e409
+#27 exporting manifest sha256:651fc356ad04095a6c51dad22241d384acf3d7a3dda11a5e26a7c1690339e409 done
+#27 exporting config sha256:3b3635f12dab9036f5096711087f48abbe22a925f82bf2ec2cfe6c0cc5b0c35f done
+#27 exporting attestation manifest sha256:8546535230aa6af1c955fd8157b3dd13a90dfc876e446e6d9d27ff100bf074d6 0.0s done
+#27 exporting manifest list sha256:f514e88f9ee8dbf38f3a8e528d5273a980ca21f2a8bec23b6ecad553d7fde5d4 done
+#27 naming to docker.io/library/aeliqo-t34-cache-fix:67d1adb done
+#27 DONE 0.3s
+
+#28 resolving provenance for metadata file
+#28 DONE 0.0s

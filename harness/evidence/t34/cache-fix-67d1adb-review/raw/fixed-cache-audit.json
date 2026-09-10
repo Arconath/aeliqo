@@ -1,0 +1,42 @@
+{
+  "schema": "aeliqo.t34-cache-fix-image-audit.v1",
+  "capturedAt": "2026-09-10T21:30:14.242102+00:00",
+  "image": "aeliqo-t34-cache-fix:67d1adb",
+  "imageId": "sha256:f514e88f9ee8dbf38f3a8e528d5273a980ca21f2a8bec23b6ecad553d7fde5d4",
+  "repoDigests": [
+    "aeliqo-t34-cache-fix@sha256:f514e88f9ee8dbf38f3a8e528d5273a980ca21f2a8bec23b6ecad553d7fde5d4"
+  ],
+  "architecture": "amd64",
+  "os": "linux",
+  "labelRevision": "67d1adb5aca689b7490a95aab0760ea928fdb6a8",
+  "root": {
+    "path": "/",
+    "method": "GET",
+    "status": 200,
+    "cacheControl": "no-cache",
+    "contentType": "text/html; charset=utf-8",
+    "bytes": 6869,
+    "sha256": "6a71cb5a0a21af8cb27d24380a83b18039f0b3e4da1139b50d2c90d2bb775eeb"
+  },
+  "assets": [
+    {
+      "path": "/assets/site-DB2aX8vP.css",
+      "method": "HEAD",
+      "status": 200,
+      "cacheControl": "public, max-age=31536000, immutable",
+      "contentType": "text/css; charset=utf-8",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/assets/site-EAgs_aNb.js",
+      "method": "HEAD",
+      "status": 200,
+      "cacheControl": "public, max-age=31536000, immutable",
+      "contentType": "text/javascript; charset=utf-8",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "allHashedAssetsImmutable": true
+}
