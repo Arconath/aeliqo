@@ -1284,18 +1284,18 @@
           "sha256": "64e436ec14817595c23451473213ef0975ffbb73e253812ca0564801068548db"
         }
       ],
-      "notes": "Fresh qualification is complete at exact source 4f82c54 and digest 05e59904 after lint, pinned performance types, Node and browser cold/warm workloads, six installed sdk package bundle rows, adverse runtime/visualization, 30-sample visible input, 100-cycle heap lifecycle, standalone, representative site routes and all 71 component-document layout routes passed. Enforced Node planner p95 is 13.001ms <=16ms and targeted reducer p95 is 0.120ms <=4ms; wide charts retain 3600px internal scroll geometry; final heap DOM/listener counts are zero. This exact artifact awaits separate independent review. The retained approved review is historical for source 5d81a21 only and does not approve 4f82c54. No lower-powered-device, cross-browser, field-CWV, universal input-to-paint, backend/network-capacity or model-performance claim.",
+      "notes": "Accepted at exact source 4f82c54/digest 05e599 after independent review. The immutable qualification has verified source/artifact hashes and raw percentiles; Node/browser, six bundle rows, adverse probes, visible input, 100-cycle heap lifecycle, standalone, representative site routes and all 71 document-layout routes passed. Qualification planner p95 is 13.001ms <=16ms and reducer p95 is 0.120ms <=4ms. One fresh review run measured 17.153ms, while two immediate repeats measured 13.265ms and 13.060ms; this retained variability is a P2 headroom/reliability follow-up, not a universal performance claim. Lower-powered-device, cross-browser, field-CWV, universal input-to-paint, backend/network-capacity and model performance remain unclaimed.",
       "review": {
         "status": "approved",
         "author": "fast_t30_quality + root evidence integration",
-        "reviewer": "review_t40_release",
+        "reviewer": "/root/fix_remaining_narrow_overflow",
         "artifacts": [
           {
-            "path": "harness/evidence/t30/5d81a21-release-revalidation/independent-review.json",
-            "sha256": "2b558340b071c8a9dfef8c4e92b1dd7b16b962f03244538f2999b96eb8340d44"
+            "path": "harness/evidence/t30/4f82c54-release-revalidation/independent-review.json",
+            "sha256": "1b61c6151a6a3e34f95a712f9d9f50383ff6d3af0a536f90dbaa28e4357691c0"
           }
         ],
-        "scope": "Historical approval for source 5d81a21 and its exact sdk package-identity revalidation only. It does not approve the later 4f82c54 qualification artifact, publication or universal performance claims."
+        "scope": "Approves exact source 4f82c54/digest 05e599 performance qualification and bounded package/runtime measurements. Excludes publication, lower-powered-device and cross-browser behavior, field Core Web Vitals, universal input-to-paint, backend/network capacity and model performance."
       }
     },
     {
@@ -1365,15 +1365,31 @@
         "Master/chapter37 containment, chapter39 decision coverage, production implementation, and actual tests are reconciled. No zero-hallucination claim or source/document drift.",
         "Review edition 1.1 developer-authored meaning DX and S65\u2013S67 evidence, including code-only operation and canonical parity; do not claim documentation checks prove runtime correctness."
       ],
-      "status": "planned",
+      "status": "done",
       "stage": "ready",
       "evidence": [
         {
           "path": "harness/evidence/t32/c5b33c1-independent-audit/manifest.json",
           "sha256": "cf30eb8929026c17a13c7ca1bbfe1f5cdb4da5a7d39fcbf7145d5e3eed575d82"
+        },
+        {
+          "path": "harness/evidence/t32/05e5990-final-audit/manifest.json",
+          "sha256": "fe41ba14e7a829bd46615e10a6e23ebdbbf93aa4367a92d098764ab2e61905ca"
         }
       ],
-      "notes": "Independent read-only audit recorded with no P0 findings in sampled source, but no T32 approval. Current open findings preserve independent current-candidate visual review for T29, T30 qualification, T31/T40 provider/model evidence, S67 UI/DX scenario evidence and T42 registry blockers. Manual assistive-technology certification is future-only and is not a 0.1.0 release blocker. T32 remains planned."
+      "notes": "Accepted on exact reviewed source 2087b14/digest 05e599 after independent architecture, DX and usability review with no P0/P1 findings. Fresh boundary/contract/agent/meaning/scenario/site checks, four installed-package onboarding journeys and a six-package local candidate validate the scoped implementation. T29 covers all 71 components; T30 is current and independently reviewed; T31/T40 retain explicit 0/3 live-answer correctness as informational; S65-S67 prove code-only and canonical meaning parity. One noisy planner-budget miss is retained as P2. Manual AT, lower-powered/cross-browser/field performance, model generalization, publication and deployment are not claimed and remain separate later/deferred gates.",
+      "review": {
+        "status": "approved",
+        "author": "T32 implementation and evidence authors",
+        "reviewer": "/root/fix_remaining_narrow_overflow",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t32/05e5990-final-audit/manifest.json",
+            "sha256": "fe41ba14e7a829bd46615e10a6e23ebdbbf93aa4367a92d098764ab2e61905ca"
+          }
+        ],
+        "scope": "Approves T32 architecture, DX, usability, evidence-invalidation and external onboarding acceptance for source 2087b14/digest 05e599; excludes manual AT, unrestricted model quality, universal performance, publication, deployment and later release gates."
+      }
     },
     {
       "id": "T33",

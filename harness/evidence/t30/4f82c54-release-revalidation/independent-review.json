@@ -1,0 +1,59 @@
+{
+  "task": "T30",
+  "status": "approved",
+  "reviewedAt": "2026-09-10T08:19:06Z",
+  "sourceCommit": "4f82c548d4178f5c33151e39d7011fac93465308",
+  "sourceDigest": "05e5990492994ecd9877454cc13be94e2bd9ebe17df1985725c139f971c1be10",
+  "qualificationManifest": {
+    "path": "harness/evidence/t30/4f82c54-release-revalidation/manifest.json",
+    "sha256": "64e436ec14817595c23451473213ef0975ffbb73e253812ca0564801068548db"
+  },
+  "reviewer": "/root/fix_remaining_narrow_overflow",
+  "independentOfAuthor": true,
+  "decision": "approve",
+  "scope": "Approves the exact 4f82c54 performance qualification and its bounded claims. It does not approve publication, lower-powered-device or cross-browser behavior, field Core Web Vitals, universal input-to-paint latency, backend or network capacity, or model performance.",
+  "reproducedOutcomes": [
+    {
+      "check": "qualification artifact integrity and raw-summary recomputation",
+      "result": "passed",
+      "detail": "Verified 5 source-input hashes and 12 artifact hashes, recomputed 92 raw timing summaries with nearest-rank percentiles, and matched 5 manifest-to-raw measurements."
+    },
+    {
+      "check": "pnpm test:performance:bundles",
+      "result": "passed",
+      "detail": "Six exact installed-package bundle rows matched the qualification values and budgets."
+    },
+    {
+      "check": "pnpm test:performance:adverse-visualization",
+      "result": "passed",
+      "detail": "One test passed; the 3600px requested chart retained 3600px internal scroll geometry."
+    },
+    {
+      "check": "pnpm test:performance:runtime, fresh run 1",
+      "result": "budget-failed",
+      "detail": "Functional, reducer and cleanup behavior passed, but planner p95 was 17.15279099999998ms against the 16ms budget; the two largest samples were 17.15279099999998ms and 18.602249999999913ms."
+    },
+    {
+      "check": "pnpm test:performance:runtime, immediate isolated repeat 1",
+      "result": "passed",
+      "detail": "Planner p95 was 13.264834000000064ms and reducer p95 was 0.12016700000003766ms."
+    },
+    {
+      "check": "pnpm test:performance:runtime, immediate isolated repeat 2",
+      "result": "passed",
+      "detail": "Planner p95 was 13.060416999999688ms and reducer p95 was 0.11999999999989086ms."
+    }
+  ],
+  "observations": [
+    "The immutable qualification artifact reports planner p95 13.000792000000274ms <=16ms, reducer p95 0.12033400000018446ms <=4ms, passing browser budgets, six passing bundle rows, 100-cycle cleanup, bounded million-row transfer, wide-chart containment, visible-update, heap, standalone, site-route and all-71 document-layout probes.",
+    "The retained 17.153ms fresh sample and two passing repeats show run-to-run timing variability and limited headroom. This is a P2 measurement-stability/performance-headroom follow-up, not a hidden success or a current P0/P1 functional blocker.",
+    "All qualification limitations remain binding; the evidence describes one Apple M4 Pro/macOS runner and one headless Chromium build."
+  ],
+  "blockingFindings": [],
+  "followUps": [
+    {
+      "priority": "P2",
+      "summary": "Increase planner headroom or reduce timing-runner variability before treating a single isolated run as reliably budget-stable."
+    }
+  ]
+}

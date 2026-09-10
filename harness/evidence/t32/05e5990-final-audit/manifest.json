@@ -1,0 +1,201 @@
+{
+  "task": "T32",
+  "status": "complete-independent-system-review",
+  "reviewedAt": "2026-09-10T08:19:06Z",
+  "reviewedSourceCommit": "2087b14f876aed1bbeea7084de04a63e84cda72e",
+  "sourceDigest": "05e5990492994ecd9877454cc13be94e2bd9ebe17df1985725c139f971c1be10",
+  "sourceChangedDuringReview": false,
+  "reviewer": {
+    "agent": "/root/fix_remaining_narrow_overflow",
+    "role": "independent architecture, DX and usability reviewer",
+    "independentOfImplementationAuthors": true
+  },
+  "scope": [
+    "MASTER-SOT and chapters 09, 16, 18, 20, 37, 38 and 39 reconciliation",
+    "four-concept architecture and pure-core/runtime/shared-web boundaries",
+    "all-71 owned component, accessibility and narrow-layout evidence",
+    "performance, bundle, cleanup and evidence-qualification boundaries",
+    "agent containment, cross-domain semantics and explicit MCP/provider evidence",
+    "developer-authored meaning DX, code-only operation and S65-S67 canonical parity",
+    "clean installed-package onboarding, site/docs/playground and release-candidate consumption",
+    "bounded OSS local audit export and governance/public-support claims",
+    "source-digest invalidation and readiness without publication"
+  ],
+  "commands": [
+    {
+      "command": "pnpm install --offline --frozen-lockfile",
+      "result": "passed",
+      "detail": "15 workspace projects; 145 packages reused; zero downloads."
+    },
+    {
+      "command": "pnpm test:audit",
+      "result": "passed",
+      "tests": 6
+    },
+    {
+      "command": "pnpm test:boundaries",
+      "result": "passed",
+      "tests": 4
+    },
+    {
+      "command": "pnpm test:contracts",
+      "result": "passed",
+      "tests": 157
+    },
+    {
+      "command": "pnpm test:agents",
+      "result": "passed",
+      "tests": 112
+    },
+    {
+      "command": "pnpm test:meaning-authoring",
+      "result": "passed",
+      "tests": 37
+    },
+    {
+      "command": "pnpm test:scenarios",
+      "result": "passed",
+      "tests": 58
+    },
+    {
+      "command": "pnpm test:runtime:consumers",
+      "result": "passed",
+      "detail": "Exact installed core/runtime tarballs; strict declarations, local/HTTP/browser behavior, bounded redacted audit export and zero audit I/O attempts."
+    },
+    {
+      "command": "pnpm test:meaning-authoring:consumers",
+      "result": "passed",
+      "detail": "Exact installed core/runtime/agent tarballs; manual/AI evaluator parity, immutable conflicts, independent grants, stale/revoked handling and Node/Chromium execution."
+    },
+    {
+      "command": "pnpm test:framework:consumers",
+      "result": "passed",
+      "detail": "Exact installed core/runtime/web/react tarballs; 71 React exports, typed vanilla/React/Vue recipes, SSR and Chromium behavior."
+    },
+    {
+      "command": "pnpm test:studio:consumers",
+      "result": "passed",
+      "detail": "Exact installed core/runtime/devtools tarballs; document roundtrip, compiled export, immutable code-owned definitions and activation without Studio, agent or model packages."
+    },
+    {
+      "command": "pnpm test:site",
+      "result": "passed",
+      "tests": 14
+    },
+    {
+      "command": "pnpm test:site:browser",
+      "result": "passed",
+      "tests": 6
+    },
+    {
+      "command": "pnpm test:site:document-layout",
+      "result": "passed",
+      "tests": 1,
+      "routes": 71
+    },
+    {
+      "command": "pnpm test:release-tooling",
+      "result": "passed",
+      "tests": 19
+    },
+    {
+      "command": "node scripts/release/candidate.mjs --version 0.1.0-rc.1 artifacts/t32-2087-release-candidate",
+      "result": "passed",
+      "detail": "Six local candidate tarballs, 130 installed export checks, offline audit execution with zero audit network attempts, 63 SBOM components and zero secret findings. No publication occurred."
+    },
+    {
+      "command": "python3 scripts/validate_all.py",
+      "result": "passed",
+      "checks": 8,
+      "detail": "Kit/reference validation only; the generated validation/current files were restored and are not part of this evidence change."
+    },
+    {
+      "command": "T30 manifest/hash/raw timing verification",
+      "result": "passed",
+      "detail": "5 source-input hashes, 12 artifact hashes, 92 raw percentile summaries and 5 manifest cross-checks."
+    },
+    {
+      "command": "pnpm test:performance:runtime (three fresh executions)",
+      "result": "qualified-with-p2-variability",
+      "detail": "Planner p95 values were 17.15279099999998ms (failed 16ms budget), 13.264834000000064ms (passed) and 13.060416999999688ms (passed); functional/reducer/cleanup behavior passed throughout."
+    },
+    {
+      "command": "pnpm test:performance:bundles and pnpm test:performance:adverse-visualization",
+      "result": "passed",
+      "detail": "Six bundle rows and one adverse wide/narrow visualization test passed."
+    }
+  ],
+  "externalOnboarding": {
+    "result": "satisfied",
+    "evidence": [
+      "Fresh clean-worktree, offline-frozen installation under Node 24.20.0 and pnpm 11.24.0.",
+      "Four independent installed-tarball consumer journeys cover runtime, meaning authoring, framework bindings/SSR and Studio export/activation.",
+      "A fresh six-package candidate was packed, type-checked across 130 exports and executed under explicit network blockers.",
+      "Site unit/browser checks cover the quickstart, component documentation, playground, governance/support claims and default no-egress behavior."
+    ]
+  },
+  "acceptance": {
+    "architectureAndContainment": "satisfied",
+    "sharedWebAndAll71Components": "satisfied",
+    "performanceQualification": "satisfied-with-p2-runner-variability-follow-up",
+    "developerMeaningDxAndS65S67": "satisfied",
+    "externalOnboarding": "satisfied",
+    "digestInvalidation": "satisfied",
+    "publicationIndependentReadiness": "satisfied",
+    "modelAnswerAccuracy": "unknown-and-not-claimed",
+    "manualAssistiveTechnology": "deferred-for-release-and-not-claimed",
+    "publicationAndDeployment": "not-applicable-to-T32"
+  },
+  "evidenceReferences": [
+    {
+      "purpose": "all-71 independent component and narrow-layout review",
+      "path": "harness/evidence/t29/ab5ccc8-final-review/manifest.json",
+      "sha256": "9fdef9b0b5d525038ad19a07b0c48336fc810cbe26e796c369601cb21c1a9938"
+    },
+    {
+      "purpose": "current performance qualification",
+      "path": "harness/evidence/t30/4f82c54-release-revalidation/manifest.json",
+      "sha256": "64e436ec14817595c23451473213ef0975ffbb73e253812ca0564801068548db"
+    },
+    {
+      "purpose": "cross-domain semantics and fixed-cohort evidence",
+      "path": "harness/evidence/t31/final-cross-domain/manifest.json",
+      "sha256": "a30b2954c8a7f85dcd5c8f219e925b5cc4aadf6e5036b8c82ae07d213c5e3a77"
+    },
+    {
+      "purpose": "bounded provider and official MCP release smoke",
+      "path": "harness/evidence/t40/final-release-smoke/manifest.json",
+      "sha256": "adc0ffdebb589ad7b7144855683b81efdfcb423de6ee87c25208d4fa88148d5a"
+    },
+    {
+      "purpose": "S65 and S66 developer meaning flows",
+      "path": "harness/evidence/scenarios/e0715f9f4545/manifest.json",
+      "sha256": "c9aea0cf79f1a2d37c6759b33a6da063f8a55cf94f22b6c6f67c1a88971fed31"
+    },
+    {
+      "purpose": "S67 canonical meaning parity and UI/DX flow",
+      "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
+      "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
+    }
+  ],
+  "findings": {
+    "p0": [],
+    "p1": [],
+    "p2": [
+      "The enforced Node planner timing has limited headroom and produced one 17.153ms budget miss among three fresh executions; preserve the sample and improve headroom or runner stability before making stronger reliability claims."
+    ]
+  },
+  "limitations": [
+    "This is a source-bound review of commit 2087b14 and digest 05e599; later implementation, acceptance, design or quality-command changes require fresh evidence.",
+    "The three-case live Flash smoke achieved 0/3 answer correctness. It proves bounded provider integration only and supports no unrestricted intent, narrative, UI-completion, strong-model or zero-hallucination claim.",
+    "Manual VoiceOver, NVDA or other assistive-technology certification remains deferred and is not claimed.",
+    "Performance evidence is from one Apple M4 Pro/macOS environment and one headless Chromium build; lower-powered-device, cross-browser and field behavior remain unknown.",
+    "Local candidate packing is not npm publication, registry verification, source release, site deployment or promotion. Those remain later release gates."
+  ],
+  "verdict": {
+    "decision": "approve-T32",
+    "blockingFindings": [],
+    "releaseApprovalIssued": false,
+    "summary": "No P0 or P1 architecture, DX or usability finding remains within T32 scope. T32 acceptance is satisfied with the stated P2 timing follow-up and explicit evidence limits."
+  }
+}
