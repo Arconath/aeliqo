@@ -14,9 +14,9 @@ No artificial row/region/user quota inside the OSS library. Performance/resource
 
 Managed collaborative Studio; synchronized shared catalogs and profiles; organization approval workflows and audit retention; semantic/profile rollout management across applications; management-console SSO/SCIM; managed secrets/infrastructure; policy dashboards and fleet diagnostics; private managed deployment; enterprise support/SLA, training and migration services.
 
-The **interfaces** needed to integrate existing customer security stay OSS. Paid SSO means SSO for Aeliqo's management service, not withholding authentication from customer applications. Basic local audit export stays OSS; paid means storage/retention/search/organizational operation. Local semantic activation/validation stays OSS; managed multi-team governance is paid.
+The **interfaces** needed to integrate existing customer security stay OSS. A future paid SSO capability would apply to Aeliqo's management service, not withhold authentication from customer applications. Basic local audit export stays OSS; a future paid boundary may cover storage, retention, search and organizational operation. Local semantic activation/validation stays OSS; managed multi-team governance is a possible paid capability, not a service-availability claim.
 
-Aeliqo runtime should consume signed/versioned manifests through the same public interfaces regardless of whether they come from local files or Aeliqo Cloud. Cloud outage must not destroy already configured application UI. Graceful service fallback and retention are contractual commercial behaviors.
+Aeliqo runtime should consume signed/versioned manifests through the same public interfaces regardless of whether they come from local files or a future hosted service. A hosted-service outage must not destroy already configured application UI. Graceful fallback and retention would require separate commercial contracts and verification; none is claimed for 0.1.0.
 
 ## No hidden incomplete component tier
 
@@ -24,7 +24,7 @@ Do not sell accessibility fixes, reliable tables, complete form states, SSR, pro
 
 ## Licensing hygiene
 
-The public repository is Apache-2.0, including future contributions under a documented DCO/inbound policy. Commercial service code lives separately with a reviewed proprietary license. Do not copy private implementation into the public kit. Maintain third-party notices/SBOM, package-level license declarations and trademark rules. Any later licensing change needs an explicit decision and cannot erase existing grants.
+The public repository is Apache-2.0. CONTRIBUTING.md documents the DCO sign-off and same-license inbound policy, and TRADEMARKS.md documents descriptive project-name and logo use. Any future commercial service code must live separately with a reviewed proprietary license; no such service implementation is claimed by 0.1.0. Do not copy private implementation into the public repository. Maintain third-party notices/SBOM and package-level license declarations. Any later licensing change needs an explicit decision and cannot erase existing grants.
 
 This is product/license structure, not legal advice on a specific distribution transaction; obtain legal review before final commercial contracts.
 

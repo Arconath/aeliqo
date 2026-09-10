@@ -44,7 +44,7 @@ Runtime instances are isolated per SSR request/user region. Avoid a globally mut
 
 ## Observability
 
-Emit typed low-cardinality events for plan latency, rejected capabilities, cancellations, source errors, cache hit/miss, renderer status and resource counts. Redact records, secrets and prompts by default. User opt-in controls sensitive debugging. Basic logging/trace export is OSS; managed retention/cross-team analytics may be paid.
+Emit typed low-cardinality events for plan latency, rejected capabilities, cancellations, source errors, cache hit/miss, renderer status and resource counts. `@aeliqo/sdk-runtime/audit` is the basic OSS local export: an in-memory collector with closed event shapes, count/byte budgets, explicit dropped-history disclosure and no I/O. It rejects arbitrary messages, records, prompts, credentials, URLs, identity fields and unknown properties. Applications own collector scoping, access, persistence and transport; host integrations map source detail to stable codes. Managed retention/cross-team analytics may be paid. Sensitive debugging, if a host adds it separately, requires explicit opt-in and must not be routed through the basic exporter.
 
 Trace spans connect request, plan, result and region revisions without exposing a model's private reasoning. Error budgets measure failed user tasks and experience regressions, not just server uptime.
 

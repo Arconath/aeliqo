@@ -123,6 +123,10 @@ assert.deepEqual(runtimeManifest.exports?.['./data'], {
   types: './dist/data/index.d.ts',
   import: './dist/data/index.js',
 });
+assert.deepEqual(runtimeManifest.exports?.['./audit'], {
+  types: './dist/audit/index.d.ts',
+  import: './dist/audit/index.js',
+});
 assert.equal(runtimeManifest.exports?.['./data']?.types, './dist/data/index.d.ts');
 assert.equal(runtimeManifest.exports?.['./data']?.import, './dist/data/index.js');
 assert(await fileExists(join(runtimeDirectory, 'src', 'data')), 'Runtime data source is not ready');
@@ -190,6 +194,8 @@ for (const [name, entries] of [['@aeliqo/sdk-core', coreEntries], ['@aeliqo/sdk-
 assert(coreEntries.includes('package/dist/index.js'), 'Core dist entry is absent from tarball');
 assert(runtimeEntries.includes('package/dist/data/index.js'), 'Runtime data dist entry is absent from tarball');
 assert(runtimeEntries.includes('package/dist/data/index.d.ts'), 'Runtime data declarations are absent from tarball');
+assert(runtimeEntries.includes('package/dist/audit/index.js'), 'Runtime audit dist entry is absent from tarball');
+assert(runtimeEntries.includes('package/dist/audit/index.d.ts'), 'Runtime audit declarations are absent from tarball');
 
 await writeFile(join(consumerDirectory, 'package.json'), JSON.stringify({private: true, type: 'module'}));
 run([
@@ -545,6 +551,28 @@ async function exerciseActions() {
 }
 `;
 
+const auditExerciseSource = `
+function exerciseAudit() {
+  let at = 100;
+  const audit = createLocalAuditExporter({maxEvents: 2, maxBytes: 1024, now: () => at++});
+  const first = audit.record({kind: 'plan', phase: 'query', status: 'completed', durationMs: 4});
+  if (!first.ok) throw new Error('Installed local audit rejected a valid plan event');
+  const second = audit.record({kind: 'capability', operation: 'present', status: 'rejected', code: 'policy.denied'});
+  if (!second.ok) throw new Error('Installed local audit rejected a valid capability event');
+  const redaction = audit.record({kind: 'source', transport: 'http', status: 'error', code: 'source.invalid', prompt: 'must-not-retain'});
+  if (redaction.ok || redaction.diagnostics[0]?.code !== 'audit.invalid') throw new Error('Installed local audit accepted arbitrary sensitive context');
+  const third = audit.record({kind: 'resource', resource: 'rows', status: 'exhausted', count: 101, limit: 100});
+  if (!third.ok) throw new Error('Installed local audit rejected a valid resource event');
+  const exported = audit.exportSnapshot();
+  if (!exported.ok || exported.value.records.length !== 2 || exported.value.dropped !== 1 || exported.value.complete !== false ||
+      exported.value.records[0]?.sequence !== 2 || JSON.stringify(exported.value).includes('must-not-retain'))
+    throw new Error('Installed local audit export did not remain bounded and redacted');
+  audit.dispose();
+  if (audit.exportSnapshot().ok) throw new Error('Disposed local audit exporter retained readable state');
+  return {bounded: true, redacted: true, droppedDisclosed: true};
+}
+`;
+
 await writeFile(join(consumerDirectory, 'consumer-types.ts'), `
 import {createDataHttpHandler, createHttpDataService, createLocalDataService, parseBudget, parseResultEvent} from '@aeliqo/sdk-runtime/data';
 import type {DataHttpHandler, DataRecord, DataService, LocalSnapshot, QueryBudget, ReadContext, ResultEvent} from '@aeliqo/sdk-runtime/data';
@@ -553,6 +581,7 @@ import {createResultStore, type ResultStore, type ResultCacheKey} from '@aeliqo/
 import {createRegionStore, type RegionHandle, type RegionStore} from '@aeliqo/sdk-runtime/regions';
 import {parseRegionDocument} from '@aeliqo/sdk-runtime/persistence';
 import {createActionPort, createActionRegistry, type ActionRequest, type ActionPort} from '@aeliqo/sdk-runtime/actions';
+import {createLocalAuditExporter, type LocalAuditEvent, type LocalAuditExporter} from '@aeliqo/sdk-runtime/audit';
 import {createInteractionController, createInteractionGraph, type InteractionControllerOptions, type InteractionEvent} from '@aeliqo/sdk-runtime/interaction';
 declare const interactionOptions: InteractionControllerOptions;
 declare const interactionEvent: InteractionEvent;
@@ -575,6 +604,12 @@ const forgedActionRequest: ActionRequest = {...actionRequest, actor: 'human'};
 // @ts-expect-error Execution only accepts a boundary-issued receipt, not an arbitrary request.
 actionPort.execute(actionRequest);
 void [createActionPort, createActionRegistry, forgedActionRequest];
+const localAudit: LocalAuditExporter = createLocalAuditExporter();
+const auditEvent: LocalAuditEvent = {kind: 'cache', cache: 'catalog', status: 'hit'};
+localAudit.record(auditEvent);
+// @ts-expect-error Audit events do not accept free-form messages.
+const sensitiveAuditEvent: LocalAuditEvent = {kind: 'source', transport: 'http', status: 'error', code: 'source.invalid', message: 'raw source response'};
+void sensitiveAuditEvent;
 declare const region: RegionHandle;
 // @ts-expect-error Only a runtime-staged opaque token can be committed.
 region.commit({regionRevision: '1'});
@@ -613,6 +648,37 @@ await writeFile(join(consumerDirectory, 'tsconfig.json'), JSON.stringify({
 }));
 run([join(consumerDirectory, 'node_modules/.bin/tsc'), '--project', 'tsconfig.json'], consumerDirectory);
 
+await writeFile(join(consumerDirectory, 'audit-io-blocker.cjs'), [
+  "const {syncBuiltinESMExports} = require('node:module');",
+  "const state = {attempts: []}; globalThis.__aeliqoAuditIo = state;",
+  "const blocked = label => () => { state.attempts.push(label); const error = new Error('I/O is forbidden in the local audit proof'); error.code = 'AELIQO_AUDIT_IO_BLOCKED'; throw error; };",
+  "globalThis.fetch = blocked('fetch');",
+  "for (const name of ['node:http', 'node:https']) { const value = require(name); value.request = blocked(name + '.request'); value.get = blocked(name + '.get'); }",
+  "const net = require('node:net'); net.connect = blocked('node:net.connect'); net.createConnection = blocked('node:net.createConnection'); net.Socket.prototype.connect = blocked('node:net.Socket.connect');",
+  "const dns = require('node:dns'); dns.lookup = blocked('node:dns.lookup'); dns.resolve = blocked('node:dns.resolve');",
+  "syncBuiltinESMExports();",
+].join('\n') + '\n');
+await writeFile(join(consumerDirectory, 'audit-offline.mjs'), [
+  "const auditModule = await import('@aeliqo/sdk-runtime/audit');",
+  "const {createRequire, syncBuiltinESMExports} = await import('node:module'); const require = createRequire(import.meta.url);",
+  "const state = globalThis.__aeliqoAuditIo; const blocked = label => () => { state.attempts.push(label); const error = new Error('I/O is forbidden in the local audit proof'); error.code = 'AELIQO_AUDIT_IO_BLOCKED'; throw error; };",
+  "const fsMutable = require('node:fs'); for (const name of ['readFile', 'readFileSync', 'writeFile', 'writeFileSync', 'appendFile', 'appendFileSync', 'open', 'openSync', 'createReadStream', 'createWriteStream']) fsMutable[name] = blocked('node:fs.' + name); const fsp = require('node:fs/promises'); for (const name of ['readFile', 'writeFile', 'appendFile', 'open']) fsp[name] = blocked('node:fs/promises.' + name); syncBuiltinESMExports();",
+  "const audit = auditModule.createLocalAuditExporter({maxEvents: 2, maxBytes: 1024, now: () => 1});",
+  "const recorded = audit.record({kind: 'source', transport: 'local', status: 'error', code: 'source.invalid'}); const exported = audit.exportSnapshot(); audit.dispose();",
+  "const auditIoAttempts = [...state.attempts];",
+  "if (!recorded.ok || !exported.ok || exported.value.records.length !== 1 || auditIoAttempts.length !== 0) throw new Error('installed audit did not execute offline');",
+  "const [http, fs] = await Promise.all([import('node:http'), import('node:fs')]);",
+  "const probes = [['fetch', () => fetch('https://example.invalid')], ['node:http.get', () => http.get('http://example.invalid')], ['node:fs.readFileSync', () => fs.readFileSync('/not-read')]];",
+  "for (const [label, probe] of probes) { try { probe(); throw new Error('I/O blocker probe unexpectedly succeeded: ' + label); } catch (error) { if (error?.code !== 'AELIQO_AUDIT_IO_BLOCKED') throw error; } }",
+  "process.stdout.write(JSON.stringify({auditExecuted:true,auditIoAttempts,blockerProbeAttempts:state.attempts.slice(auditIoAttempts.length)}));",
+].join('\n') + '\n');
+const auditOfflineProof = JSON.parse(run([process.execPath, '--require', './audit-io-blocker.cjs', 'audit-offline.mjs'], consumerDirectory));
+assert.deepEqual(auditOfflineProof, {
+  auditExecuted: true,
+  auditIoAttempts: [],
+  blockerProbeAttempts: ['fetch', 'node:http.get', 'node:fs.readFileSync'],
+});
+
 await writeFile(join(consumerDirectory, 'consumer.mjs'), `
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
@@ -630,6 +696,7 @@ import {createResultStore} from '@aeliqo/sdk-runtime/results';
 import {createRegionStore} from '@aeliqo/sdk-runtime/regions';
 import {parseRegionDocument, serializeRegionDocument} from '@aeliqo/sdk-runtime/persistence';
 import {createActionPort, createActionRegistry} from '@aeliqo/sdk-runtime/actions';
+import {createLocalAuditExporter} from '@aeliqo/sdk-runtime/audit';
 import {createInteractionController, createInteractionGraph} from '@aeliqo/sdk-runtime/interaction';
 
 const run = (argv, cwd) => {
@@ -705,6 +772,8 @@ ${interactionExerciseSource}
 const interactionProof = await exerciseInteraction();
 ${actionExerciseSource}
 const actionProof = await exerciseActions();
+${auditExerciseSource}
+const auditProof = exerciseAudit();
 assert(observations.some(item => item.operation === 'execute' && item.principal === 'alice'));
 
 authMode = 'policy-change';
@@ -782,12 +851,14 @@ import {createResultStore} from '@aeliqo/sdk-runtime/results';
 import {createRegionStore} from '@aeliqo/sdk-runtime/regions';
 import {parseRegionDocument, serializeRegionDocument} from '@aeliqo/sdk-runtime/persistence';
 import {createActionPort, createActionRegistry} from '@aeliqo/sdk-runtime/actions';
+import {createLocalAuditExporter} from '@aeliqo/sdk-runtime/audit';
 import {createInteractionController, createInteractionGraph} from '@aeliqo/sdk-runtime/interaction';
 const fixture = ${fixtureSource};
 const {catalog, rows, budget, query} = fixture;
 ${regionExerciseSource}
 ${interactionExerciseSource}
 ${actionExerciseSource}
+${auditExerciseSource}
 const describeRequest = requestId => ({version:'1',requestId,catalogRevision:null,target:{kind:'catalog'},budget,pageSize:1});
 const planRequest = requestId => ({version:'1',requestId,catalogRevision:'catalog-1',target:{outputId:'employees-output'},query,budget});
 const collect = async iterable => {const events=[];for await (const event of iterable) events.push(event);return events;};
@@ -824,7 +895,18 @@ for (let flow = 1; flow < transportFlows; flow++) await runFlow(networkClient);
 const regions = await exerciseRegions();
 const actions = await exerciseActions();
 const interaction = await exerciseInteraction();
-globalThis.__aeliqoBrowserData = {local,network,transportFlows,regions,actions,interaction};
+const auditBrowserIoAttempts = [];
+const realFetch = globalThis.fetch;
+const RealXMLHttpRequest = globalThis.XMLHttpRequest;
+const RealWebSocket = globalThis.WebSocket;
+globalThis.fetch = () => { auditBrowserIoAttempts.push('fetch'); throw new Error('audit browser fetch blocked'); };
+globalThis.XMLHttpRequest = class { constructor() { auditBrowserIoAttempts.push('XMLHttpRequest'); throw new Error('audit browser XHR blocked'); } };
+globalThis.WebSocket = class { constructor() { auditBrowserIoAttempts.push('WebSocket'); throw new Error('audit browser WebSocket blocked'); } };
+const audit = {...exerciseAudit(), browserIoAttempts: [...auditBrowserIoAttempts]};
+globalThis.fetch = realFetch;
+globalThis.XMLHttpRequest = RealXMLHttpRequest;
+globalThis.WebSocket = RealWebSocket;
+globalThis.__aeliqoBrowserData = {local,network,transportFlows,regions,actions,interaction,audit};
 \`);
   await writeFile('vite.config.mjs', \`export default {build:{minify:true,outDir:'dist',rollupOptions:{input:'index.html'}},plugins:[{name:'record-runtime-modules',generateBundle(_,bundle){const modules=Object.values(bundle).filter(item=>item.type==='chunk').flatMap(item=>Object.keys(item.modules));this.emitFile({type:'asset',fileName:'modules.json',source:JSON.stringify(modules)});}}]};\`);
   run(['node_modules/.bin/vite', 'build'], process.cwd());
@@ -888,6 +970,7 @@ globalThis.__aeliqoBrowserData = {local,network,transportFlows,regions,actions,i
     assert.equal(browserResult.network.rows, 1);
     assert.equal(browserResult.transportFlows, 21);
     assert.deepEqual(browserResult.interaction, interactionProof);
+    assert.deepEqual(browserResult.audit, {...auditProof, browserIoAttempts: []});
     assert.deepEqual(browserResult.regions, {queryCount: 2, staleCommitRejected: true, leasesReleased: true, restoreRequeried: true});
     assert.deepEqual(browserFailures, []);
   } finally {
@@ -902,6 +985,8 @@ globalThis.__aeliqoBrowserData = {local,network,transportFlows,regions,actions,i
     observations,
     regions: regionProof,
     actions: actionProof,
+    audit: auditProof,
+    auditOffline: ${JSON.stringify(auditOfflineProof)},
     interaction: interactionProof,
   };
   await writeFile(${JSON.stringify(join(runDirectory, 'runtime-report.json'))}, JSON.stringify(report, null, 2) + '\\n');
@@ -919,7 +1004,7 @@ const sourceDigestAfter = {
 assert.deepEqual(sourceDigestAfter, sourceDigestBefore, 'Package source changed during consumer verification');
 const report = {
   passed: true,
-  scope: '@aeliqo/sdk-core and @aeliqo/sdk-runtime 0.1.0 installed tarballs; strict declarations; local/HTTP ADC roundtrip; authorization and stale-plan checks; region commits, result leases and fresh-query restore in Node and Chromium.',
+  scope: '@aeliqo/sdk-core and @aeliqo/sdk-runtime 0.1.0 installed tarballs; strict declarations; local/HTTP ADC roundtrip; authorization and stale-plan checks; region commits, result leases, fresh-query restore and bounded redacted local audit export in Node and Chromium.',
   artifacts: artifacts.map(({name, version, path, sha256, integrity}) => ({name, version, path, sha256, integrity})),
   consumer: {directory: consumerDirectory, lockPath: join(runDirectory, 'consumer-package-lock.json'), lockSha256: hash(lockBytes)},
   sourceDigestBefore,

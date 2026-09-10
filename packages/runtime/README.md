@@ -95,6 +95,44 @@ These checks establish framing and lineage, not arithmetic correctness, field
 authorization, completeness truth, or permission to send results to a model.
 The host and later data/evaluation passes retain those responsibilities.
 
+## Basic local audit export
+
+`@aeliqo/sdk-runtime/audit` exposes `createLocalAuditExporter`. The exporter is
+an in-memory, JSON-serializable event buffer; it never writes to a file, sends a
+request, or chooses an organizational retention policy. Applications create one
+exporter per appropriate authorization/lifecycle scope and explicitly record
+the outcomes they want to retain:
+
+```ts
+import {createLocalAuditExporter} from '@aeliqo/sdk-runtime/audit';
+
+const audit = createLocalAuditExporter({maxEvents: 256, maxBytes: 256 * 1024});
+audit.record({kind: 'plan', phase: 'query', status: 'completed', durationMs: 12});
+audit.record({kind: 'capability', operation: 'present', status: 'rejected', code: 'policy.denied'});
+
+const exported = audit.exportSnapshot();
+if (exported.ok) {
+  // The application may persist or transport exported.value under its own policy.
+  // exported.value.complete is false if an older record was evicted.
+}
+```
+
+The accepted families cover plan latency, rejected capabilities, cancellation,
+source errors, cache hit/miss, renderer status, and resource counts. Event,
+status, and error-code values are closed enums; consult the exported
+`AuditCode` type for the exact version-1 vocabulary. Unknown fields and
+free-form strings are rejected, so records, prompts, credentials, URLs,
+principal/actor identifiers, and arbitrary debug context cannot enter through
+this API. Hosts must map source-specific errors to the closest documented code
+and must still protect any exported snapshot.
+
+Count and UTF-8 byte ceilings evict the oldest records first and increment
+`dropped`; snapshots report `complete: false` after eviction. `clear` starts a
+new retention window, while `dispose` releases exporter-held records and its
+clock callback and permanently closes the exporter. Snapshots already returned
+to the application remain application-owned. These local primitives are Apache-2.0. Central storage, search,
+cross-team analytics, and managed retention are outside this API.
+
 ## Result handles
 
 `@aeliqo/sdk-runtime/results` exposes `createResultStore`. Begin a handle with the

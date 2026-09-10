@@ -237,6 +237,14 @@
       "kind": "unit",
       "argv": [
         "pnpm",
+        "test:audit"
+      ],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "unit",
+      "argv": [
+        "pnpm",
         "test:interaction"
       ],
       "timeoutSeconds": 180

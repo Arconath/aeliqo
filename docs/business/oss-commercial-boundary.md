@@ -20,6 +20,14 @@ Security, authorization hooks, accessibility behavior, and the required
 component families are not paid upgrades. A configured local application keeps
 working when a future hosted service is unavailable.
 
+`@aeliqo/sdk-runtime/audit` supplies the basic local audit export: a bounded,
+in-memory collector for fixed plan, capability, cancellation, source, cache,
+renderer, and resource event families. It rejects arbitrary messages, prompts,
+records, identity fields, URLs, and unknown properties, and discloses when its
+count or byte ceiling evicts older records. The application owns collector
+scoping, persistence, transport, access control, and any longer retention. The
+runtime performs no audit network or filesystem I/O.
+
 ## Separate commercial hypothesis
 
 A future commercial service may operate cross-organization collaboration,
