@@ -282,7 +282,7 @@ function assertLiveRow(row, caseId, trial, weak, budget) {
     || !integer(result.inputTokens) || result.inputTokens > budget.maxInputTokens * result.modelRequests
     || !integer(result.outputTokens) || result.outputTokens > budget.maxOutputTokens * result.turns
     || result.inputTokens + result.outputTokens > budget.maxTotalTokens
-    || row.snapshots.length > result.modelRequests || !Array.isArray(result.receiptStates) || result.receiptStates.length !== result.toolCalls) {
+    || row.snapshots.length !== result.modelRequests || !Array.isArray(result.receiptStates) || result.receiptStates.length !== result.toolCalls) {
     throw new Error('Live attempt counters exceed or do not bind the configured budget');
   }
   if (Object.hasOwn(result, 'incompleteRequiredOperations')
@@ -389,6 +389,8 @@ export function qualifyT40Smoke(report, context) {
     if (matches.length !== 1) throw new Error('Every selected case must contain one contiguous configured set of live trials');
     assertLiveRow(matches[0], caseId, trial, weak, context.config.budget);
   }
+  const responseIds = live.flatMap(row => row.snapshots.map(snapshot => snapshot.responseIdSha256));
+  if (new Set(responseIds).size !== responseIds.length) throw new Error('Live provider response identities must be unique across every configured trial');
   assertGroups(report.groups, live);
   const reservedUSD = live.reduce((sum, row) => sum + row.reservedUSD, 0);
   const usageEstimatedUSD = live.reduce((sum, row) => sum + row.usageEstimatedUSD, 0);

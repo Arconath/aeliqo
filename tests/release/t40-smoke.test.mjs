@@ -48,13 +48,13 @@ const deterministic = mode => corpusCases.map((testCase, index) => mode === 'exp
     callElapsedMs: 1, elapsedMs: 2, transportDetached: true, childPid: 123, childExited: true, cleanupSucceeded: true,
     stderrBytes: 0, modelExecution: 'No model adapter is configured.', fixtureProjection: 'Application fixture fields only.', limits: ['Explicit baseline only.'],
   }, outputs: [outputFor(testCase, String(index + 4).repeat(64))]});
-const baseLive = caseId => {
+const baseLive = (caseId, trial = 1) => {
   const inputTokens = 100;
   const outputTokens = 20;
   return {caseId, partition: 'heldout', mode: 'governed-model-data', model: weak.model, modelLabel: 'weak', qualifiedModelSnapshot: true,
     connection: {protocol: weak.protocol, origin: 'https://api.deepseek.com', authScheme: 'bearer', capabilities: weak.capabilities},
-    snapshots: [{reportedModel: 'deepseek-flash', reportedModelSha256: sha('deepseek-flash'), matchesExpected: true, responseIdSha256: 'd'.repeat(64)}],
-    trial: 1, elapsedMs: 1000, reservedUSD: reservation, firstAttempt: {dataCorrect: false}, score: {dataCorrect: false},
+    snapshots: [{reportedModel: 'deepseek-flash', reportedModelSha256: sha('deepseek-flash'), matchesExpected: true, responseIdSha256: sha(`${caseId}:${trial}`)}],
+    trial, elapsedMs: 1000, reservedUSD: reservation, firstAttempt: {dataCorrect: false}, score: {dataCorrect: false},
     result: {ok: true, stop: 'text-ready', turns: 3, modelRequests: 1, toolCalls: 2, inputTokens, outputTokens,
       receiptStates: [{operation: 'catalog.read', state: 'data-ready'}, {operation: 'task.evaluate', state: 'data-ready'}]},
     observations: [{stage: 'evaluate', elapsedMs: 1, outputCount: 1, rowCount: 2, diagnosticCodes: []}],
@@ -62,7 +62,7 @@ const baseLive = caseId => {
     usageEstimatedUSD: (inputTokens * weak.inputUSDPerMillion + outputTokens * weak.outputUSDPerMillion) / 1_000_000,
     priceSource: weak.priceSource};
 };
-const live = cases.map(baseLive);
+const live = cases.map(caseId => baseLive(caseId));
 live[1] = {...baseLive(cases[1]), result: {...baseLive(cases[1]).result, toolCalls: 3, receiptStates: [
   {operation: 'catalog.read', state: 'data-ready'}, {operation: 'task.evaluate', state: 'invalid'}, {operation: 'task.evaluate', state: 'data-ready'},
 ]}, observations: [
@@ -132,6 +132,12 @@ test('rejects incomplete trials, failed live outcomes, counter overruns, and spe
   const overSpend = structuredClone(report);
   overSpend.rows[6].reservedUSD *= 2;
   assert.throws(() => qualifyT40Smoke(overSpend, context), /reservation/);
+  const missingSnapshot = structuredClone(report);
+  missingSnapshot.rows[6].result.modelRequests = 2;
+  assert.throws(() => qualifyT40Smoke(missingSnapshot, context), /counters exceed/);
+  const replayedSnapshot = structuredClone(report);
+  replayedSnapshot.rows[7].snapshots[0].responseIdSha256 = replayedSnapshot.rows[6].snapshots[0].responseIdSha256;
+  assert.throws(() => qualifyT40Smoke(replayedSnapshot, context), /identities must be unique/);
 });
 
 test('rejects simulated MCP evidence and uncorroborated invalid-repair claims', () => {
