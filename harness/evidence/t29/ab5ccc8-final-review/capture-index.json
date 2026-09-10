@@ -1,0 +1,1428 @@
+{
+  "sourceCommit": "ab5ccc8de1d0636efe975504516cb204c2bb41f2",
+  "reviewedAt": "2026-09-10T06:10:06Z",
+  "reviewer": "close_ready_scenarios",
+  "count": 142,
+  "entries": [
+    {
+      "component": "alert",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-alert-desktop-light-webkit/review.png",
+      "sha256": "d866a010e796d808fafee5c3e6ab19f9c14033999a00e67cf520fc9c647d109b",
+      "bytes": 34977,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "alert",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-alert-narrow-dark-rtl-webkit/review.png",
+      "sha256": "08bf222965ebba59f6a15c505e9e00e66b279ddd526a6561789f225298315beb",
+      "bytes": 33095,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "area",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-area-desktop-light-webkit/review.png",
+      "sha256": "11009dfc8147a14cdbb5db6aca8d3d105f4ac89774c486f9850d8b7cf5586f10",
+      "bytes": 73560,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "area",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-area-narrow-dark-rtl-webkit/review.png",
+      "sha256": "8462d79e03ebc639e7e948ee01dd08285eb87b91001ea03c74d324dc4713d266",
+      "bytes": 160345,
+      "width": 360,
+      "height": 2604,
+      "inspected": true
+    },
+    {
+      "component": "avatar",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-avatar-desktop-light-webkit/review.png",
+      "sha256": "a8a89e48eb5225d6752c50a621ee3757edac684f84b0b47d9d58e935c368175b",
+      "bytes": 26602,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "avatar",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-avatar-narrow-dark-rtl-webkit/review.png",
+      "sha256": "cb6b0a74e97e0ac7b51de3e6bc2fe2634228c6baffd81e5615101bfda0736b8a",
+      "bytes": 13760,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "badge",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-badge-desktop-light-webkit/review.png",
+      "sha256": "16f5aea17e990584529c13c5d6b56dad251685e94531aa35de1e5724b979e20c",
+      "bytes": 27521,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "badge",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-badge-narrow-dark-rtl-webkit/review.png",
+      "sha256": "cd81243cf456d4896c26649091016c4c398161cafab2d498a96d27a2ec27dc61",
+      "bytes": 15929,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "bar",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-bar-desktop-light-webkit/review.png",
+      "sha256": "4a4fd2008d48a75ccf5938a1c73a2e84737d52a73ed19becdaa49f53445acabd",
+      "bytes": 70720,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "bar",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-bar-narrow-dark-rtl-webkit/review.png",
+      "sha256": "b438816c27bd64284130fb79a4bdddd16470f98a5d051d3ffb9fc6f761a6cc5f",
+      "bytes": 171230,
+      "width": 360,
+      "height": 2778,
+      "inspected": true
+    },
+    {
+      "component": "breadcrumb",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-breadcrumb-desktop-light-webkit/review.png",
+      "sha256": "1748926c41f5036e3e01c150efbfa0a8055fc17967dbbfb03572060d8c7d0790",
+      "bytes": 30982,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "breadcrumb",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-breadcrumb-narrow-dark-rtl-webkit/review.png",
+      "sha256": "1c9de1fd0db6ba3fe38ada1959f30e65a2b882f8527fbeef8c1e71ee1a4daa1e",
+      "bytes": 21450,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "breakdown",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-breakdown-desktop-light-webkit/review.png",
+      "sha256": "7ccfb05127d13114e1f3bf97ce33a08d8470016d59dc1c4cbe3c4fa5e16e85eb",
+      "bytes": 48271,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "breakdown",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-breakdown-narrow-dark-rtl-webkit/review.png",
+      "sha256": "719313bebd908652056f8b5a13e15baf8081d6af52c477bb3cc9ad87b1392e14",
+      "bytes": 70258,
+      "width": 360,
+      "height": 958,
+      "inspected": true
+    },
+    {
+      "component": "button",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-button-desktop-light-webkit/review.png",
+      "sha256": "e4ab835e4e05f9071507ae9a403100d371037336a90ec40df5ba4f8d199c1cf8",
+      "bytes": 27779,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "button",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-button-narrow-dark-rtl-webkit/review.png",
+      "sha256": "ee11b1e23830ca45eefc77604943f560b6979505b99af0050c86233f9a86600b",
+      "bytes": 15270,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "calendar-grid",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-calendar-grid-desktop-light-webkit/review.png",
+      "sha256": "d5f410514f666e5d61fa8f0f90ac6318ea22e38b1fe1092098935705de31d91f",
+      "bytes": 81221,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "calendar-grid",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-calendar-grid-narrow-dark-rtl-webkit/review.png",
+      "sha256": "432be46fdf0886eed6fbe1e1499ccd78f6c4b1cc76ab6d0f4ed8d140d94711ce",
+      "bytes": 202511,
+      "width": 360,
+      "height": 2986,
+      "inspected": true
+    },
+    {
+      "component": "card-collection",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-card-collection-desktop-light-webkit/review.png",
+      "sha256": "adf3331513f8c13b3daedf10326fc6f4f5a5f0971167519e54f5ccdffd037730",
+      "bytes": 56492,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "card-collection",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-card-collection-narrow-dark-rtl-webkit/review.png",
+      "sha256": "5721e1387b10b38893e0d1aef071ae154ec4c9fa9e618a721a6a5252cc3ca070",
+      "bytes": 119017,
+      "width": 360,
+      "height": 2300,
+      "inspected": true
+    },
+    {
+      "component": "checkbox",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-checkbox-desktop-light-webkit/review.png",
+      "sha256": "941b1c9aa6627e230eaa634af5e38005946544c9900ed2a2438c58f489eff39b",
+      "bytes": 29677,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "checkbox",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-checkbox-narrow-dark-rtl-webkit/review.png",
+      "sha256": "2aefadbd1edf713e24860e6ab0389b7192488449dad6b63cd6b8fc84fd4149d2",
+      "bytes": 20734,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "combobox",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-combobox-desktop-light-webkit/review.png",
+      "sha256": "9bf4bfb25303080520e66371b0280af4bdaf9486d3f530589a276e13006bd7dc",
+      "bytes": 33711,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "combobox",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-combobox-narrow-dark-rtl-webkit/review.png",
+      "sha256": "02289416231c2c0c8ae2aa506f2c9ce2709a5dc7e9861e31eb3ddb791cac70c2",
+      "bytes": 26642,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "comparison",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-comparison-desktop-light-webkit/review.png",
+      "sha256": "6a5848e2effc17a3ab86626f95b0738792d79551f93d29eb2d11f36acf95c0f1",
+      "bytes": 51340,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "comparison",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-comparison-narrow-dark-rtl-webkit/review.png",
+      "sha256": "605eff1fb4d7be9d36f30fdb421a4a13df220e51f8c1bd1e3fff3a64b8aa4826",
+      "bytes": 58320,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "date-field",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-date-field-desktop-light-webkit/review.png",
+      "sha256": "6ae9456ce689bff1d31abd4e315ccd6038f43afd1b75fdeadf5e6ef40458bb2c",
+      "bytes": 30893,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "date-field",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-date-field-narrow-dark-rtl-webkit/review.png",
+      "sha256": "93d0fc7c087a28bd4d4acb54742777c85ae6b9dcaf33ea2be0a72bb8b7ca5952",
+      "bytes": 20670,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "date-range",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-date-range-desktop-light-webkit/review.png",
+      "sha256": "3298dd537a1d121c8e33bcee6c8612ed2ef2163c50ecd590a8cd11fe332bd0f1",
+      "bytes": 36859,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "date-range",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-date-range-narrow-dark-rtl-webkit/review.png",
+      "sha256": "0d4278943eb78b42212cac52ef1807e676be3c2d3e9a4c7965500cd52d1941fc",
+      "bytes": 37445,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "delta",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-delta-desktop-light-webkit/review.png",
+      "sha256": "cdd2bee44dc3c86f3512f6e2d35310a17ef981caa9a66c5245eb06f842fc982d",
+      "bytes": 36480,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "delta",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-delta-narrow-dark-rtl-webkit/review.png",
+      "sha256": "e948e6f28997c21936fc0acaf4f288a9779fe879311d564146897d04d08350b3",
+      "bytes": 32206,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "detail",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-detail-desktop-light-webkit/review.png",
+      "sha256": "9110dd016403c9ffc60aca5f7486e78d1bb3071c16bc30ed93d4e74df30dcacb",
+      "bytes": 41404,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "detail",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-detail-narrow-dark-rtl-webkit/review.png",
+      "sha256": "ea0b25480f54d9ef581758cefc3845723952e8321858be3d742c15df5c3c5147",
+      "bytes": 51697,
+      "width": 360,
+      "height": 846,
+      "inspected": true
+    },
+    {
+      "component": "dialog",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-dialog-desktop-light-webkit/review.png",
+      "sha256": "54fffb2d4d3add157ea63004c2d0a9d4c928ec4269cd67fce3e6083a37e9212f",
+      "bytes": 33145,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "dialog",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-dialog-narrow-dark-rtl-webkit/review.png",
+      "sha256": "45cde22aa4c1ed25f1f2b575f26fe7dffc2dd94998c515756c49ea0984c08107",
+      "bytes": 25109,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "drawer",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-drawer-desktop-light-webkit/review.png",
+      "sha256": "f68887963b828b544915f88839a6af568b80a7084402a0fec73869b901433519",
+      "bytes": 33321,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "drawer",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-drawer-narrow-dark-rtl-webkit/review.png",
+      "sha256": "5f9bdff9faa79d242f778082575ed6a60c7961b43210c1f03eac7461c5826e1c",
+      "bytes": 32574,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "empty-state",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-empty-state-desktop-light-webkit/review.png",
+      "sha256": "68b2b92d5cfc04fc34897ac6126128d7f584cb08d2a54b6bd69168b6b12e1013",
+      "bytes": 41765,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "empty-state",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-empty-state-narrow-dark-rtl-webkit/review.png",
+      "sha256": "34fbc6eb8dfcfd28262569ed5dccade3ba43eb8a0a471ae20d7fb1604d78be07",
+      "bytes": 32067,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "explorer",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-explorer-desktop-light-webkit/review.png",
+      "sha256": "91b659640ffe7a9104172c53f4dc253181ebe187300a233cd69b9aefa0848338",
+      "bytes": 98640,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "explorer",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-explorer-narrow-dark-rtl-webkit/review.png",
+      "sha256": "cd7fc6c983f048fb9ff8aae2f05f4a93f8d1b6c05477fb97cfb7d68849f635c2",
+      "bytes": 194405,
+      "width": 360,
+      "height": 2968,
+      "inspected": true
+    },
+    {
+      "component": "field-group",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-field-group-desktop-light-webkit/review.png",
+      "sha256": "48cf6ba574f07ea1d999a6edcab85b5c657532d4bcdb3d535c19cc54ee9803da",
+      "bytes": 33901,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "field-group",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-field-group-narrow-dark-rtl-webkit/review.png",
+      "sha256": "af08930a2bbff3ee6a6217f17f37dc4c82bb067e0ff4178171259627566db7df",
+      "bytes": 27627,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "file-input",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-file-input-desktop-light-webkit/review.png",
+      "sha256": "3e201f8e42d4453cc153b3e5313c938e7fc2984888c47fec2b46a8791f8b7442",
+      "bytes": 31403,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "file-input",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-file-input-narrow-dark-rtl-webkit/review.png",
+      "sha256": "cecb17d8c48630e52964fbe3fc4af4b7ea67a7ebda03fbd5dac9534375d59345",
+      "bytes": 21296,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "filter-builder",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-filter-builder-desktop-light-webkit/review.png",
+      "sha256": "a4de43c2b1aa579032657d9951c8199cc3974f8817ce90d3ce65c4260d2a710d",
+      "bytes": 41705,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "filter-builder",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-filter-builder-narrow-dark-rtl-webkit/review.png",
+      "sha256": "d588f614660173b31adb4b09cedb62a3cf1558922677f1464a3bdf7b3c47dd48",
+      "bytes": 46188,
+      "width": 360,
+      "height": 868,
+      "inspected": true
+    },
+    {
+      "component": "form",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-form-desktop-light-webkit/review.png",
+      "sha256": "849172e2f66d78718c254f4310e5100a184ce74cea10669bf2eb55d3b5ef85ef",
+      "bytes": 28543,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "form-flow",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-form-flow-desktop-light-webkit/review.png",
+      "sha256": "aa8041b2830274defc9989b043f13e45b29d7a2bb62bffaba7d99174cf905846",
+      "bytes": 37817,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "form-flow",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-form-flow-narrow-dark-rtl-webkit/review.png",
+      "sha256": "418224885329eba9f275aad6494b2a23ea225a664151243b3b3de402f8fe97b5",
+      "bytes": 36456,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "form",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-form-narrow-dark-rtl-webkit/review.png",
+      "sha256": "7868b746c82421763eb513bc6acd3642af139222b39bde8e761fbf759484ed78",
+      "bytes": 16990,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "grid",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-grid-desktop-light-webkit/review.png",
+      "sha256": "3eaca140999248e76b61fe5e6669624b2881cb6eddafeb333484b60aa4af7fee",
+      "bytes": 26212,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "grid",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-grid-narrow-dark-rtl-webkit/review.png",
+      "sha256": "ff12658826afce6d387ef57da18d26ce2c394ca9bd93de0eee2e84542172fb6a",
+      "bytes": 13460,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "heading",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-heading-desktop-light-webkit/review.png",
+      "sha256": "3cd208b9250e7b6e9787f6da9536224748dd9bde92f76b3564496d0b6a7cb808",
+      "bytes": 29685,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "heading",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-heading-narrow-dark-rtl-webkit/review.png",
+      "sha256": "49b42f41e04001f72843b77c4e918063d379e69dee3648b6e7d412a473e553ee",
+      "bytes": 17658,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "heatmap",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-heatmap-desktop-light-webkit/review.png",
+      "sha256": "1afd389f19570e0d242d2be4c44b60fd338ad7fb3b9595a9f18a8bfe66f311b5",
+      "bytes": 76535,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "heatmap",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-heatmap-narrow-dark-rtl-webkit/review.png",
+      "sha256": "8416c48d1cf7a02388f664f6e47e9963cdf0c868574e686f9f37613f3e62cc10",
+      "bytes": 175516,
+      "width": 360,
+      "height": 2716,
+      "inspected": true
+    },
+    {
+      "component": "histogram",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-histogram-desktop-light-webkit/review.png",
+      "sha256": "9eae7a756dea288b77398ae02df1e7af6cef08b04f278d86a90dc236b458e98f",
+      "bytes": 79033,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "histogram",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-histogram-narrow-dark-rtl-webkit/review.png",
+      "sha256": "e2e6092d79ae23be11ead86c5ec255b4a81b62137e869c746ba53a6407f379ae",
+      "bytes": 199744,
+      "width": 360,
+      "height": 2886,
+      "inspected": true
+    },
+    {
+      "component": "icon-button",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-icon-button-desktop-light-webkit/review.png",
+      "sha256": "6743ff19820052c57d7fe21bc24baa281e42adca54dde1271505184adf935e04",
+      "bytes": 27415,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "icon-button",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-icon-button-narrow-dark-rtl-webkit/review.png",
+      "sha256": "42eb6a61a626173f07fc60894619a2219d79574b88bc8c2267e0fe91cc06c933",
+      "bytes": 15179,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "investigation",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-investigation-desktop-light-webkit/review.png",
+      "sha256": "8d853a16aa3b9dafdc40ed001c0455940d94dc986593059bb8994f64c2d58179",
+      "bytes": 128839,
+      "width": 1280,
+      "height": 1241,
+      "inspected": true
+    },
+    {
+      "component": "investigation",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-investigation-narrow-dark-rtl-webkit/review.png",
+      "sha256": "ee442d6802189354c28b79156eae82fafb5447039d95ff6555d0d97e59ac6f26",
+      "bytes": 271034,
+      "width": 360,
+      "height": 4188,
+      "inspected": true
+    },
+    {
+      "component": "key-value",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-key-value-desktop-light-webkit/review.png",
+      "sha256": "154019f843d4c8e8c30f0565f37d8e22575de3bfddb36bcdff57cee758ac5275",
+      "bytes": 38477,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "key-value",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-key-value-narrow-dark-rtl-webkit/review.png",
+      "sha256": "e2612a3e9a075a4e839a9ef0c7a8c99862b036868152199d9b82d9559a7a4d05",
+      "bytes": 39634,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "link",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-link-desktop-light-webkit/review.png",
+      "sha256": "12d60cce632b6d1b52b7a4023658f11217e908954a83ff6f22a49ef64a71289b",
+      "bytes": 26433,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "link",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-link-narrow-dark-rtl-webkit/review.png",
+      "sha256": "83d216bb87b7dc432bdd50b0d04826563354462ae53b74e3c7ab07c22e365eb5",
+      "bytes": 13024,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "matrix",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-matrix-desktop-light-webkit/review.png",
+      "sha256": "c64fe1f9a017b6d23ed55c7fc325f878c164c3a77f3d16b6edb05862f0fae8e9",
+      "bytes": 54474,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "matrix",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-matrix-narrow-dark-rtl-webkit/review.png",
+      "sha256": "8333793e618e3e6a1f5f2779be7de4494b4918762f9c71b9c10b857be2792c92",
+      "bytes": 57332,
+      "width": 360,
+      "height": 931,
+      "inspected": true
+    },
+    {
+      "component": "menu",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-menu-desktop-light-webkit/review.png",
+      "sha256": "ef00dfb848561f335b6bdc0d8fa990d8bab6685fc703c31a968090d9e8dac894",
+      "bytes": 32858,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "menu",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-menu-narrow-dark-rtl-webkit/review.png",
+      "sha256": "34e2dd782b9124bae7326e59f4df2ff5beca46c4aebd00e1ed8bd3b2e73fccce",
+      "bytes": 26462,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "metric",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-metric-desktop-light-webkit/review.png",
+      "sha256": "f675e8dcaef94e901a496938ae794ac9500d83207c56223c888e76b50ee00c01",
+      "bytes": 35865,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "metric",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-metric-narrow-dark-rtl-webkit/review.png",
+      "sha256": "7265ef3d9143c9148a5763e0f172e93a19c7404750d1085be02cc50bf8f13c25",
+      "bytes": 32222,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "number-field",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-number-field-desktop-light-webkit/review.png",
+      "sha256": "8e961e88eb47883cacbfb6ebc64696dac118399510f3996be8656cff6b2649ed",
+      "bytes": 29553,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "number-field",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-number-field-narrow-dark-rtl-webkit/review.png",
+      "sha256": "4da16a31a77d8376bad4e1b8de43fde6fadb9e9068f50c5271bb1777459aa358",
+      "bytes": 20301,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "pagination",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-pagination-desktop-light-webkit/review.png",
+      "sha256": "f1bbe07c5c57c985362392a22aa589506acf3c8474e7dfe436bb91b740509bdc",
+      "bytes": 28123,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "pagination",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-pagination-narrow-dark-rtl-webkit/review.png",
+      "sha256": "b4b50040ac6722b1fd9c0778ab0294780f6b875f55f661d005743e2da5402ce1",
+      "bytes": 18115,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "popover",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-popover-desktop-light-webkit/review.png",
+      "sha256": "ea0f0f2dc03dfec20c889043a304c9079ed636f5c251a21f072ffcfab389d71d",
+      "bytes": 34959,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "popover",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-popover-narrow-dark-rtl-webkit/review.png",
+      "sha256": "6fbe4cb35c65563dbff101d7a2ef17aac930a9ee797b18323fca2c6ff2cae694",
+      "bytes": 32228,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "progress",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-progress-desktop-light-webkit/review.png",
+      "sha256": "34e9fb1ea2a8d6bbbd7aab4de043cb55aece605c99cf6259f9063c4a0f4f544a",
+      "bytes": 28449,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "progress",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-progress-narrow-dark-rtl-webkit/review.png",
+      "sha256": "5bca1e11167b522d751d58fc7c92d8fbd23c5806254dec73191a218f23609340",
+      "bytes": 16720,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "quality-panel",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-quality-panel-desktop-light-webkit/review.png",
+      "sha256": "833e45ea55a6436686dd4097eb913c3559bc8f746852969f9e89b4a985231346",
+      "bytes": 60897,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "quality-panel",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-quality-panel-narrow-dark-rtl-webkit/review.png",
+      "sha256": "a782c7e953f97e513c696bc130de90948af48206a3231a14827c6e69f36edc5e",
+      "bytes": 89465,
+      "width": 360,
+      "height": 1116,
+      "inspected": true
+    },
+    {
+      "component": "radio-group",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-radio-group-desktop-light-webkit/review.png",
+      "sha256": "816d7111cfb140384e00b8e98e2ee917e8f80b7f4517b9f583c338da97247ccd",
+      "bytes": 35190,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "radio-group",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-radio-group-narrow-dark-rtl-webkit/review.png",
+      "sha256": "c08075341e57f84e7c80aa63a9ee43cde5b8d2b0da9e1a37a0096b6e0b70017c",
+      "bytes": 29548,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "record-editor",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-record-editor-desktop-light-webkit/review.png",
+      "sha256": "02df34b87ddf76ae822950440f2a2c95cad6cc4503520a099c844413e3555b76",
+      "bytes": 50572,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "record-editor",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-record-editor-narrow-dark-rtl-webkit/review.png",
+      "sha256": "9f29c7ed61c69932068efc0845d496d15ea6d487c8fd717ad9f8d3f2e9e8a489",
+      "bytes": 66611,
+      "width": 360,
+      "height": 996,
+      "inspected": true
+    },
+    {
+      "component": "record-list",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-record-list-desktop-light-webkit/review.png",
+      "sha256": "42c29b62ded280d1c8119dbb5ff06f15ecae954457d4d41e0d8c4fbde73e7065",
+      "bytes": 57101,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "record-list",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-record-list-narrow-dark-rtl-webkit/review.png",
+      "sha256": "20dbe80d74013bfa604785447782c5470160c0204548d40dcf75ed7a214b32b9",
+      "bytes": 91531,
+      "width": 360,
+      "height": 1214,
+      "inspected": true
+    },
+    {
+      "component": "relationship",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-relationship-desktop-light-webkit/review.png",
+      "sha256": "4048c38efdb4ad997463b8f9e71e846af9f0d5a2b0a8c89fd5481985fab2823d",
+      "bytes": 65121,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "relationship",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-relationship-narrow-dark-rtl-webkit/review.png",
+      "sha256": "1758cd21e5791329b77fd9f111fd4120f16a633a82a236fa338b551c613dfd20",
+      "bytes": 88425,
+      "width": 360,
+      "height": 1452,
+      "inspected": true
+    },
+    {
+      "component": "scatter",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-scatter-desktop-light-webkit/review.png",
+      "sha256": "05d10df1599213361c63b4da84835bc7b9a7c868aff3be8079c7dd0496d09b76",
+      "bytes": 66453,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "scatter",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-scatter-narrow-dark-rtl-webkit/review.png",
+      "sha256": "4e3f0621d3fa8b71877f958b0bd058c762aff760a3b6f0f2e25ac6f237e52fcf",
+      "bytes": 156693,
+      "width": 360,
+      "height": 2604,
+      "inspected": true
+    },
+    {
+      "component": "scroll-area",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-scroll-area-desktop-light-webkit/review.png",
+      "sha256": "6b9bd91a857deb258256e8fd74c3b2aea2f440b3e7f8fd49a9e0832a0541014d",
+      "bytes": 31330,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "scroll-area",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-scroll-area-narrow-dark-rtl-webkit/review.png",
+      "sha256": "ec8d7ebafd77e46e5957698f01473c86993dc891a8b479bea9c8db08abcc7c2f",
+      "bytes": 25030,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "search-field",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-search-field-desktop-light-webkit/review.png",
+      "sha256": "e5afb6278676906419443070c4681ce266c2781d2566339c085e6b37c68ad970",
+      "bytes": 30404,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "search-field",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-search-field-narrow-dark-rtl-webkit/review.png",
+      "sha256": "4b3d641b8f26d229f12661f3e7378f7229c5e6988661e919798726e50deda1e3",
+      "bytes": 20862,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "search-results",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-search-results-desktop-light-webkit/review.png",
+      "sha256": "2817e62b7af1d012411db1a45e982fd6efac7306e1a04ab161a1bc81ae72cca2",
+      "bytes": 37800,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "search-results",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-search-results-narrow-dark-rtl-webkit/review.png",
+      "sha256": "02a4af4ebd77ac1d56faf14232c2b06ff8dd9405076eb9c3697f42df4acb908b",
+      "bytes": 36816,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "select",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-select-desktop-light-webkit/review.png",
+      "sha256": "d95af840d47e3a425ace73b4fbf5dd5bc761506c2ac571e88f92d2131d2901dd",
+      "bytes": 28342,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "select",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-select-narrow-dark-rtl-webkit/review.png",
+      "sha256": "da4cf4df60b3f91970626dec947b4e1b71cfd238d40bd5e3233ab7353718ea4e",
+      "bytes": 17436,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "selection-summary",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-selection-summary-desktop-light-webkit/review.png",
+      "sha256": "3b47f92674eaed17bac653dc6fb03aee0357aecdb68deca9c1b4b033f9388c12",
+      "bytes": 38407,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "selection-summary",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-selection-summary-narrow-dark-rtl-webkit/review.png",
+      "sha256": "ff82b7695d435507b000145f3a5351e16109ee9a4e26c4669c137c50a6ffbf5d",
+      "bytes": 36295,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "separator",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-separator-desktop-light-webkit/review.png",
+      "sha256": "605e1ba2bdad0e312209f336f524a489390fcede0014fd4c3460a8ce2c858aef",
+      "bytes": 26091,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "separator",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-separator-narrow-dark-rtl-webkit/review.png",
+      "sha256": "8605f256ce2922c7b35c8a1f566db8c5af566cf53131947d46a75c95bc5df202",
+      "bytes": 12489,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "skeleton",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-skeleton-desktop-light-webkit/review.png",
+      "sha256": "782b2f76434686390e47f35c6196f1381a67f7a58fccf272b39110021b41c52d",
+      "bytes": 26620,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "skeleton",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-skeleton-narrow-dark-rtl-webkit/review.png",
+      "sha256": "a1f11202ea5f1f758e474f32d92bf9293adffea6cafbadaaf27b52c0cdb9e6ab",
+      "bytes": 13527,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "slider",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-slider-desktop-light-webkit/review.png",
+      "sha256": "1672f491e45b0590b2e29136038db98774c0232bbf70f74be355ac6264a1c065",
+      "bytes": 29680,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "slider",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-slider-narrow-dark-rtl-webkit/review.png",
+      "sha256": "46ea9d4382ebce8f6f7c8fd40c86dd5a95692c74bcaf64b2967a74d8fa671294",
+      "bytes": 19738,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "split-pane",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-split-pane-desktop-light-webkit/review.png",
+      "sha256": "c53abf6ad63575c9d72cf903d2bab2fd35eb6622403f2cc951ac0beaafce68ee",
+      "bytes": 30006,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "split-pane",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-split-pane-narrow-dark-rtl-webkit/review.png",
+      "sha256": "291c088ea64eda6adb3c9429b054115c1b923c46813f8de91aacc3693f65d876",
+      "bytes": 20925,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "stack",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-stack-desktop-light-webkit/review.png",
+      "sha256": "52b6b72f68944281642de2bd8c4c623139087e2dbdbfdd01fe987c29fa414520",
+      "bytes": 27484,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "stack",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-stack-narrow-dark-rtl-webkit/review.png",
+      "sha256": "f3b01540b5177ec44030bf90f9d33dd35dd0a68b2aa30cbd2e327ea84402475c",
+      "bytes": 15323,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "surface",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-surface-desktop-light-webkit/review.png",
+      "sha256": "68d14f8f68a1d8bdce3dadc35ab1e266c530910f1eeb646d3a9357cf953419d9",
+      "bytes": 29794,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "surface",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-surface-narrow-dark-rtl-webkit/review.png",
+      "sha256": "aba9fb552e54b4ad75e7a050871b52b116ca7c1db2e58c0adfb5069a72b9ea53",
+      "bytes": 20947,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "switch",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-switch-desktop-light-webkit/review.png",
+      "sha256": "d88b025eaacadf012c8c5d3bb7a280e3f7aae6ef134e2867748e620e6dfbb4b2",
+      "bytes": 27933,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "switch",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-switch-narrow-dark-rtl-webkit/review.png",
+      "sha256": "4113e1d6b578a93e3137d98c061f5bca0cf32328e06fda820429134669ef2b8c",
+      "bytes": 16826,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "table",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-table-desktop-light-webkit/review.png",
+      "sha256": "5b3b3bda5c072feacf5ab098fc42e5063ba2f0a27524d4b2f7f85917fab9e5a3",
+      "bytes": 50239,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "table",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-table-narrow-dark-rtl-webkit/review.png",
+      "sha256": "a85d675c35473ab50886d230b83d21e6ea5466daa1ce78fd395d98e0686fd059",
+      "bytes": 38745,
+      "width": 360,
+      "height": 810,
+      "inspected": true
+    },
+    {
+      "component": "tabs",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-tabs-desktop-light-webkit/review.png",
+      "sha256": "ed64a90ad8bc45c63cf7e31864c5482b32e5d9b53b50f29c0c23217282aaac70",
+      "bytes": 31387,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "tabs",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-tabs-narrow-dark-rtl-webkit/review.png",
+      "sha256": "5e446c9f7732b86e378247730e042a45c57863097d0303f53b7a62548d37c33d",
+      "bytes": 21599,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "text-area",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-text-area-desktop-light-webkit/review.png",
+      "sha256": "f8364e9449040aada4c27114da4d8ae8f10b783022836b84fd4f82953ef66849",
+      "bytes": 27737,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "text-area",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-text-area-narrow-dark-rtl-webkit/review.png",
+      "sha256": "636454d24c0243d4c9a80d295f42a6afb3e9337d747e6a4a3bebac7bb66e51c2",
+      "bytes": 15465,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "text",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-text-desktop-light-webkit/review.png",
+      "sha256": "c98df8b2f31187345b9a786c732891fa5963616a700c412160c8c2318c69430a",
+      "bytes": 27663,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "text-field",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-text-field-desktop-light-webkit/review.png",
+      "sha256": "dbc0e90ef44e66cfc0b6b3ecdaeb16a46db7dc9d6d4b4a6db1706516182bfe70",
+      "bytes": 32748,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "text-field",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-text-field-narrow-dark-rtl-webkit/review.png",
+      "sha256": "97e1b3b3eaf1b9aa6242b60159b5f01b968185a4723ed8ec212dc4ced6f23fa1",
+      "bytes": 25097,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "text",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-text-narrow-dark-rtl-webkit/review.png",
+      "sha256": "26d8065267c1aa27fb4eb814e530507353d248cd4d0ec66ea92543096649016b",
+      "bytes": 16793,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "timeline",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-timeline-desktop-light-webkit/review.png",
+      "sha256": "a6698158c075902add97ef50ad2bccbf8526414fae0413ad90d5404cbd4be516",
+      "bytes": 76011,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "timeline",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-timeline-narrow-dark-rtl-webkit/review.png",
+      "sha256": "cc4f007b084c1be9e9fc7515104a7e2039b6064ffe0cb620c440afa20ea1f6d2",
+      "bytes": 206191,
+      "width": 360,
+      "height": 2940,
+      "inspected": true
+    },
+    {
+      "component": "toast",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-toast-desktop-light-webkit/review.png",
+      "sha256": "313a34a6c9cd831023fc1d19ff4445b72c5fd9f7ff893b2e87644e3b9c3b49da",
+      "bytes": 28353,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "toast",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-toast-narrow-dark-rtl-webkit/review.png",
+      "sha256": "5570148f24c37aa405fdf175405f9939efd7adf52a0b0cb4a741a9e850cdc7b5",
+      "bytes": 17780,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "tooltip",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-tooltip-desktop-light-webkit/review.png",
+      "sha256": "785d3ee57d438a2d4da152ddc784da4b3d3448ec17deef0ffdb09d3c7d9ff6f3",
+      "bytes": 31901,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "tooltip",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-tooltip-narrow-dark-rtl-webkit/review.png",
+      "sha256": "38ea5f56417344406ce8c74c08b87efc4ff84d415798ef10f86c21868527fd82",
+      "bytes": 24315,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "tree",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-tree-desktop-light-webkit/review.png",
+      "sha256": "75c1eea0dc11c260542de62c35a2bf0eda777d17ef29f0f2fc4c800310337940",
+      "bytes": 59138,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "tree",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-tree-narrow-dark-rtl-webkit/review.png",
+      "sha256": "3e3ab6304a7ae4ca7350f96f08215a702b61f28f99f47e309e76d0291dfb9097",
+      "bytes": 103153,
+      "width": 360,
+      "height": 1903,
+      "inspected": true
+    },
+    {
+      "component": "tree-nav",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-tree-nav-desktop-light-webkit/review.png",
+      "sha256": "92baf0f7db5ca455752096d5d7e3df674478b5dc174adb65a83924a09b894cb4",
+      "bytes": 30848,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "tree-nav",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-tree-nav-narrow-dark-rtl-webkit/review.png",
+      "sha256": "ad091fe12ee3a46a74a2a9561b2a6f51564ae0a6921ab2e27eccaf8c30fd0bfa",
+      "bytes": 24008,
+      "width": 360,
+      "height": 800,
+      "inspected": true
+    },
+    {
+      "component": "treemap",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-treemap-desktop-light-webkit/review.png",
+      "sha256": "c435116a0dcd9297b274710efe6eb9a60e4fca6ccfab0f9031ec057f2418da0d",
+      "bytes": 58428,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "treemap",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-treemap-narrow-dark-rtl-webkit/review.png",
+      "sha256": "2865959f3f9b139cfc1c018e36dd6fe7b15fb8d2e997283842abb398bb126096",
+      "bytes": 107607,
+      "width": 360,
+      "height": 1903,
+      "inspected": true
+    },
+    {
+      "component": "trend",
+      "variant": "desktop-light",
+      "path": "artifacts/visual-catalog/catalog-trend-desktop-light-webkit/review.png",
+      "sha256": "374516ab60c327db25e77d05bc34049407ed36d6799f3d71dfc2d1414c75cb43",
+      "bytes": 80022,
+      "width": 1280,
+      "height": 900,
+      "inspected": true
+    },
+    {
+      "component": "trend",
+      "variant": "narrow-dark-rtl",
+      "path": "artifacts/visual-catalog/catalog-trend-narrow-dark-rtl-webkit/review.png",
+      "sha256": "574078b1b22e7eff1f9c4087d011c64675db40e2051c25830e9666dc9e55ce92",
+      "bytes": 162376,
+      "width": 360,
+      "height": 2604,
+      "inspected": true
+    }
+  ]
+}

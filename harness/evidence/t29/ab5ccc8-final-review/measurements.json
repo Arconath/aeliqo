@@ -1,0 +1,114 @@
+{
+  "sourceCommit": "ab5ccc8de1d0636efe975504516cb204c2bb41f2",
+  "sourceDigest": "f51e351e7d5a2261293f551312ba11a222fbe5ba3dddb24324bf38c364e3c7f3",
+  "measuredAt": "2026-09-10T06:10:06Z",
+  "visualEnvironment": {
+    "project": "webkit",
+    "browser": "26.6",
+    "devicePixelRatio": 1,
+    "desktop": {
+      "cases": 71,
+      "viewport": "1280x900",
+      "rootFontSizePx": 16,
+      "theme": "light",
+      "direction": "ltr"
+    },
+    "narrow": {
+      "cases": 71,
+      "viewport": "360x800",
+      "rootFontSizePx": 32,
+      "theme": "dark",
+      "direction": "rtl"
+    },
+    "documentOverflowCases": 0
+  },
+  "accessibility": {
+    "attachments": 157,
+    "violationBatches": 0,
+    "violationNodes": 0,
+    "prohibitedAriaIncompleteBatches": 0,
+    "prohibitedAriaIncompleteNodes": 0,
+    "remainingIncomplete": {
+      "batches": 37,
+      "nodes": 184,
+      "rules": {
+        "aria-valid-attr-value": {
+          "batches": 4,
+          "nodes": 4,
+          "classification": "Axe cannot resolve open-shadow aria-controls targets for the menu and popover triggers; the targets exist and the expanded menu/dialog semantics are present."
+        },
+        "color-contrast": {
+          "batches": 33,
+          "nodes": 180,
+          "classification": "Axe could not determine contrast for SVG text, glyph-only text or partially obscured responsive cells. Pixel inspection and focused computed-color checks found no unresolved contrast failure."
+        }
+      }
+    }
+  },
+  "textScale": {
+    "normalRootFontSizePx": 16,
+    "zoomedRootFontSizePx": 32,
+    "minimumRatio": 1.9990508259258055,
+    "components": {
+      "trend": 1.9990508259258055,
+      "bar": 1.9990508259258055,
+      "area": 1.9990508259258055,
+      "scatter": 1.9990508259258055,
+      "histogram": 1.9990544349527037,
+      "heatmap": 1.9990508259258055,
+      "timeline": 1.9999968399880552,
+      "investigation": 1.9990544315401217
+    }
+  },
+  "hierarchyContrast": {
+    "tree": {
+      "labels": 3,
+      "foreground": "rgb(17, 24, 39)",
+      "background": "rgb(226, 232, 240)",
+      "minimumRatio": 14.389993321727427
+    },
+    "treemap": {
+      "labels": 2,
+      "foreground": "rgb(17, 24, 39)",
+      "background": "rgb(165, 180, 252)",
+      "minimumRatio": 8.898600916846645
+    }
+  },
+  "touchAndTypography": {
+    "form": {
+      "controlFontSizePx": 28,
+      "hostFontSizePx": 28,
+      "controlWidthPx": 328,
+      "controlHeightPx": 88
+    },
+    "dialog": {
+      "controlFontSizePx": 28,
+      "hostFontSizePx": 28,
+      "controlWidthPx": 221.3125,
+      "controlHeightPx": 88
+    }
+  },
+  "catalogSemantics": {
+    "select": {
+      "label": "Team",
+      "value": "research",
+      "options": ["Choose a team", "Research", "Product"]
+    },
+    "desktopInvestigation": {
+      "gridWidthPx": 1248,
+      "trendPanelWidthPx": 1248,
+      "dataOverflowPx": 0,
+      "captionContained": true,
+      "dataCellCount": 9,
+      "minimumDataCellWidthPx": 96.703125
+    }
+  },
+  "layoutAssertions": {
+    "stackAndGridChildrenSeparated": true,
+    "cartesianLabelsIntersect": false,
+    "relationshipHierarchyTimelineLabelsIntersect": false,
+    "heatmapLabelsContained": true,
+    "responsiveDataOverflowCases": 0,
+    "qualityPanelSingleColumnAtNarrowWidth": true
+  }
+}

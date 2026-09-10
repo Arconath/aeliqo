@@ -1,0 +1,65 @@
+{
+  "task": "T29",
+  "decision": "approved",
+  "reviewedSourceCommit": "ab5ccc8de1d0636efe975504516cb204c2bb41f2",
+  "reviewedSourceDigest": "f51e351e7d5a2261293f551312ba11a222fbe5ba3dddb24324bf38c364e3c7f3",
+  "reviewedAt": "2026-09-10T06:10:06Z",
+  "reviewer": "close_ready_scenarios",
+  "independence": "The reviewer did not author the T29 product or test fixes and made no product/test changes during this review.",
+  "scope": "Final independent component-quality review of the exact clean ab5ccc8 candidate: all 71 narrow dark/RTL/200%-root-text captures, representative desktop layouts, the all-component source/installed-consumer path, and the exact WebKit catalog/data/compound/visualization interaction slice.",
+  "sourceReview": {
+    "acceptedChanges": [
+      "The Select catalog fixture now uses the Team domain with Research and Product options and the Research value.",
+      "Investigation gives its trend panel the full grid width so its chart and exact-data table remain usable on desktop.",
+      "Stack, Grid and Select preserved source snippets remain lexically aligned with their executable authored mounts.",
+      "The final accessibility cleanup removes prohibited ARIA from unsupported elements without removing visible or native semantics."
+    ],
+    "unrelatedChanges": "No unrelated source was changed by this review. Existing scenario traceability changes in the reviewed commit range were outside T29 and were not used as T29 evidence."
+  },
+  "pixelReview": {
+    "narrow": {
+      "variant": "360x800, dark, RTL, 32px root font",
+      "inspected": 71,
+      "componentIds": [
+        "button", "icon-button", "link", "text", "heading", "badge", "avatar", "separator", "surface", "stack", "grid", "split-pane", "scroll-area",
+        "text-field", "text-area", "number-field", "checkbox", "radio-group", "switch", "select", "combobox", "date-field", "date-range", "slider", "search-field", "file-input", "field-group", "form",
+        "tabs", "breadcrumb", "pagination", "menu", "tree-nav",
+        "tooltip", "popover", "dialog", "drawer", "toast", "alert", "progress", "skeleton", "empty-state",
+        "metric", "delta", "key-value", "detail", "record-list", "card-collection", "table", "filter-builder", "selection-summary",
+        "trend", "bar", "area", "scatter", "histogram", "heatmap", "matrix", "relationship", "tree", "treemap", "timeline", "calendar-grid",
+        "explorer", "comparison", "breakdown", "investigation", "search-results", "record-editor", "form-flow", "quality-panel"
+      ],
+      "decision": "approved",
+      "observations": "Essential content remains present without document overflow; logical RTL ordering is coherent; large text reflows rather than clipping; chart/table containment, label separation, contrast and touch targets are acceptable."
+    },
+    "desktop": {
+      "variant": "1280x900, light, LTR, 16px root font",
+      "inspected": 16,
+      "componentIds": ["select", "investigation", "stack", "grid", "form", "dialog", "trend", "bar", "heatmap", "relationship", "tree", "treemap", "timeline", "card-collection", "explorer", "comparison"],
+      "decision": "approved",
+      "observations": "The Team Select is domain-correct and the Investigation trend, chart, caption and nine-column exact-data table occupy the full available width without overflow or cramped character wrapping. Representative component families remain coherent."
+    }
+  },
+  "accessibilityReview": {
+    "axeViolations": 0,
+    "prohibitedAriaIncomplete": 0,
+    "remainingIncompleteDisposition": [
+      "Menu and Popover aria-controls targets exist inside their open shadow roots and expose the expected expanded menu/dialog semantics; Axe cannot resolve these four cross-shadow references.",
+      "The remaining contrast indeterminates concern SVG text, glyph-only labels or responsive cells whose backgrounds Axe reports as image/partially obscured. Direct contrast checks establish 14.39:1 for Tree labels and 8.90:1 for Treemap labels; the remaining visible labels were inspected in both reviewed variants and no unresolved contrast defect remains."
+    ],
+    "manualAssistiveTechnology": "Not performed and not claimed. Scenario S28 remains deferredForRelease=true and planned."
+  },
+  "acceptance": {
+    "typedApiAndPackageImport": "approved from the fresh 71/71 minified source extraction and exact installed @aeliqo/sdk-core and @aeliqo/sdk-web consumer run",
+    "behaviorKeyboardFocus": "approved from the exact 227/227 WebKit slice together with the existing maintained family and three-browser T29 evidence",
+    "visualMatrix": "approved from the 142 source-bound reviewed captures",
+    "cleanup": "approved from the fresh 71-entry browser mount/focus/dispose run",
+    "componentInventory": "all 71 release entries retain every required evidence category",
+    "taskDecision": "T29 acceptance is satisfied"
+  },
+  "limitations": [
+    "This approval is for the owned 0.1.0 component inventory and the captured states; it is not a universal pixel-equivalence claim.",
+    "It does not claim VoiceOver, NVDA or other manual assistive-technology certification.",
+    "It does not qualify T30, T31, T40, publication or deployment."
+  ]
+}

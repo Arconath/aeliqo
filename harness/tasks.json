@@ -1164,7 +1164,7 @@
       "acceptance": [
         "Every required component done with automated accessibility, keyboard/focus, cross-browser behavior and independently reviewed screenshot evidence."
       ],
-      "status": "active",
+      "status": "done",
       "stage": "ready",
       "evidence": [
         {
@@ -1186,9 +1186,25 @@
         {
           "path": "harness/evidence/t29/afa1f19-family-behavior/manifest.json",
           "sha256": "d100763c319a2fd69460f623df291c0c6a7a7b4ee1fb0163d98f7e1ec748b1f4"
+        },
+        {
+          "path": "harness/evidence/t29/ab5ccc8-final-review/manifest.json",
+          "sha256": "9fdef9b0b5d525038ad19a07b0c48336fc810cbe26e796c369601cb21c1a9938"
         }
       ],
-      "notes": "Automated catalog matrix: 882 checks passed at source a73b4a9. Added interaction matrix: 255 passed, zero skips/flakes across Chromium/Firefox/WebKit at ea7957d after independently reviewed form/filter/selection/contrast/pointer fixes. A fresh source-bound run at fea7772 passed 1,137/1,137 Playwright cases across Chromium/Firefox/WebKit with zero skips/unexpected/flaky results. Current 86884f8 all-71 catalog source consumer passes 3/3 files with 71/71 source roots and exact installed core/web tarballs; current browser catalog run passes 3/3, including all-71 mount and cleanup. A fresh current-source family behavior sweep at afa1f19 passes 105/105 Chromium/cross-browser cases across foundation, input, navigation, feedback, data, visualization and compound suites; automated behavior and keyboard/semantic a11y categories are evidenced for all 71 entries. Manual assistive-technology certification is explicitly deferred and is not a 0.1.0 release gate; no certification claim is made. Independent current-candidate visual review remains required."
+      "notes": "Accepted exact source ab5ccc8 after independent review. Fresh Node24.20 build/types, all-71 source/installed-package consumer and mount/dispose checks pass; the requested WebKit catalog/data/compound/visualization slice passes 227/227 with zero skips/unexpected/flaky results, zero Axe violations and zero prohibited-ARIA indeterminates. All 71 narrow dark/RTL/200%-root-text captures and 16 representative desktop captures were inspected; containment, text scaling, label separation, hierarchy contrast, touch targets, Team Select semantics and full-width Investigation layout are acceptable. Prior three-browser and maintained family behavior/keyboard evidence remains retained. Manual assistive-technology certification is explicitly deferred, is not a 0.1.0 release gate and is not claimed.",
+      "review": {
+        "status": "approved",
+        "author": "T29 component and test implementation authors",
+        "reviewer": "close_ready_scenarios",
+        "artifacts": [
+          {
+            "path": "harness/evidence/t29/ab5ccc8-final-review/independent-review.json",
+            "sha256": "ff707b80571690671b7350563140185b7242e9ee0c46b1f7f6f9af2393b10e20"
+          }
+        ],
+        "scope": "Approves the complete owned 71-component T29 matrix at exact source ab5ccc8; excludes manual screen-reader certification, T30/T31/T40, publication and deployment."
+      }
     },
     {
       "id": "T30",

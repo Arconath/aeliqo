@@ -1,0 +1,144 @@
+{
+  "task": "T29",
+  "status": "complete-independent-component-matrix-approval",
+  "testedSourceCommit": "ab5ccc8de1d0636efe975504516cb204c2bb41f2",
+  "sourceDigest": "f51e351e7d5a2261293f551312ba11a222fbe5ba3dddb24324bf38c364e3c7f3",
+  "sourceChangedDuringRun": false,
+  "reviewedAt": "2026-09-10T06:10:06Z",
+  "reviewer": "close_ready_scenarios",
+  "independent": true,
+  "scope": "Final source-bound review of every required Aeliqo 0.1.0 component, with a fresh exact installed catalog consumer, all-entry mount/dispose proof, the requested WebKit catalog and interaction slice, and independent pixel inspection.",
+  "environment": {
+    "os": "macOS 26.6.2 (25G83)",
+    "architecture": "arm64",
+    "node": "v24.20.0",
+    "pnpm": "11.24.0",
+    "playwright": "1.63.0",
+    "webkit": "26.6",
+    "workers": 1,
+    "retries": 0
+  },
+  "runs": [
+    {
+      "command": "pnpm install --offline --frozen-lockfile",
+      "result": "passed",
+      "detail": "15 workspace projects; 145 packages reused from the content-addressable store; no downloads"
+    },
+    {
+      "command": "pnpm build:platform",
+      "result": "passed"
+    },
+    {
+      "command": "pnpm exec tsc -p tests/visual/tsconfig.json",
+      "result": "passed"
+    },
+    {
+      "command": "pnpm exec vitest run --config tests/catalog-examples/vitest.config.mjs",
+      "result": "passed",
+      "testFiles": 3,
+      "tests": 3,
+      "detail": "71 catalog definitions, lexical source parity, minified extraction, strict external TypeScript, exact packed package install, and 71/71 fingerprint matches"
+    },
+    {
+      "command": "pnpm exec playwright test --config tests/catalog-examples/playwright.config.mjs",
+      "result": "passed",
+      "tests": 3,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "detail": "71/71 mounts, real renderer/compound boundaries, direct keyboard action and complete root disposal"
+    },
+    {
+      "command": "pnpm exec playwright test --config tests/visual/playwright.config.mjs --project=webkit catalog.spec.ts data-interactions.spec.ts compound-interactions.spec.ts visualization-interactions.spec.ts",
+      "result": "passed",
+      "tests": 227,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "durationMs": 136220.819
+    }
+  ],
+  "coverage": {
+    "components": 71,
+    "catalogCaptures": 142,
+    "reviewedNarrowCaptures": 71,
+    "reviewedRepresentativeDesktopCaptures": 16,
+    "visualVariants": [
+      "1280x900 light LTR at 16px root font",
+      "360x800 dark RTL at 32px root font"
+    ],
+    "documentOverflowCases": 0,
+    "axeViolationBatches": 0,
+    "axeViolationNodes": 0,
+    "prohibitedAriaIncompleteBatches": 0,
+    "prohibitedAriaIncompleteNodes": 0,
+    "textScaleMinimumRatio": 1.9990508259258055,
+    "treeLabelContrastMinimumRatio": 14.389993321727427,
+    "treemapLabelContrastMinimumRatio": 8.898600916846645,
+    "minimumReviewedControlTargetPx": 88,
+    "catalogSourceRoots": 71,
+    "catalogConsumerMismatches": 0,
+    "cleanupRootsRemaining": 0
+  },
+  "priorEvidenceRetained": [
+    {
+      "purpose": "three-browser all-component automated matrix",
+      "path": "harness/evidence/t29/fea7772-visual-matrix/manifest.json",
+      "sha256": "6239fb10afc8993b8f5e1ba2fcf48c077858b5c77e095951ff3214b7f2137383"
+    },
+    {
+      "purpose": "maintained family behavior, keyboard and semantic accessibility suites",
+      "path": "harness/evidence/t29/afa1f19-family-behavior/manifest.json",
+      "sha256": "d100763c319a2fd69460f623df291c0c6a7a7b4ee1fb0163d98f7e1ec748b1f4"
+    }
+  ],
+  "decision": {
+    "qualification": true,
+    "componentInventory": "All 71 entries remain done and now reference this final independently reviewed visual-matrix artifact.",
+    "task": "T29 acceptance is satisfied and the task may be marked done.",
+    "scenarios": "S29 and S35 were already done. No additional scenario is directly completed by this review; S28 remains planned and deferredForRelease=true because manual screen-reader certification was not performed."
+  },
+  "limits": [
+    "Manual VoiceOver, NVDA or other assistive-technology certification was not performed or claimed.",
+    "The remaining Axe incomplete findings are retained and classified in measurements.json; none is a prohibited-ARIA finding or an unresolved observed contrast failure.",
+    "This evidence does not qualify T30, T31, T40, registry publication, site deployment or release promotion.",
+    "The reviewed captures prove the owned fixtures and states, not universal pixel equivalence for every consumer environment."
+  ],
+  "artifacts": [
+    {
+      "path": "harness/evidence/t29/ab5ccc8-final-review/capture-index.json",
+      "sha256": "5a72a81d20e37c6282b4336a1f32e086566eaa84f3df49dd801158c6ba736c42",
+      "bytes": 48905
+    },
+    {
+      "path": "harness/evidence/t29/ab5ccc8-final-review/catalog-review-captures.zip",
+      "sha256": "93633a14545ff6e7b0904edfdd7a33d178ee3247def52af0cff0a4757721bfaf",
+      "bytes": 4957221
+    },
+    {
+      "path": "harness/evidence/t29/ab5ccc8-final-review/catalog-source-consumer-artifacts.zip",
+      "sha256": "cff48af5f53780017f5840d35525e0f77711acf94ebff80d09d3b0859a8329b4",
+      "bytes": 711150
+    },
+    {
+      "path": "harness/evidence/t29/ab5ccc8-final-review/catalog-source-consumer-report.json",
+      "sha256": "47a87a1712780764ab3fa4bfbaebb68d8a78552362d0953c24b8b691251f8fbc",
+      "bytes": 23518
+    },
+    {
+      "path": "harness/evidence/t29/ab5ccc8-final-review/webkit-results.json",
+      "sha256": "577a8b7813fed8121c04ae8c5a2c5a451d6d4dc486d306caf0e6194c779b24eb",
+      "bytes": 850496
+    },
+    {
+      "path": "harness/evidence/t29/ab5ccc8-final-review/measurements.json",
+      "sha256": "fe2294a7d623486911687c757039b762099e1fc0622432d94ad4b6e64fde0ffc",
+      "bytes": 3288
+    },
+    {
+      "path": "harness/evidence/t29/ab5ccc8-final-review/independent-review.json",
+      "sha256": "ff707b80571690671b7350563140185b7242e9ee0c46b1f7f6f9af2393b10e20",
+      "bytes": 5215
+    }
+  ]
+}
