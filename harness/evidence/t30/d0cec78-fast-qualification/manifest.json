@@ -1,0 +1,130 @@
+{
+  "task": "T30",
+  "status": "release-complete",
+  "sourceCommit": "d0cec781e03608fb3de32e0c5e7ef5a5ad3ed3aa",
+  "baselineCommit": "68b89d613e895f44d348f1a3ba79a04031f912e1",
+  "scope": "Source-bound Node 24 and Chromium planner, reducer, bounded-source, bundle, trace, perceived-input, heap/cleanup, cancellation and adverse-visualization qualification on the current release candidate.",
+  "environment": {
+    "os": "macOS 26.6.2 (25G83)",
+    "node": "v24.20.0",
+    "cpu": "Apple M4 Pro",
+    "logicalCpuCount": 12,
+    "memoryBytes": 25769803776,
+    "browser": "Chromium 153.0.8010.12",
+    "browserViewport": "1280x720 DPR 1",
+    "adverseViewport": "1440x900 DPR 1"
+  },
+  "comparison": {
+    "historicalBaseline": {
+      "nodeWarmPlannerP95Ms": 12.364208,
+      "browserPlannerP95Ms": 8.9,
+      "nodeReducerP95Ms": 0.105,
+      "source": "harness/evidence/t30/68b89d6-runtime/manifest.json and harness task notes"
+    },
+    "current": {
+      "nodeWarmPlannerP50Ms": 12.645666,
+      "nodeWarmPlannerP95Ms": 14.103916,
+      "nodePlannerBudgetMs": 16,
+      "browserPlannerP95Ms": 9.700000003,
+      "browserReducerP95Ms": 0.200000003,
+      "nodeReducerP95Ms": 0.125375,
+      "reducerBudgetMs": 4,
+      "mountedRows": 44,
+      "mountedRowBudget": 100
+    },
+    "noise": {
+      "sameSourceNodeWarmPlannerP95Ms": [16.503667, 13.853459, 14.103916],
+      "interpretation": "One of three isolated samples exceeded the 16 ms target by 0.504 ms while the other two and the independent browser run passed. The raw over-budget observation is retained; thresholds and workloads were unchanged."
+    }
+  },
+  "profile": {
+    "sourceCommit": "4cc353985ef26c36b35777fd2e60ba061b6fa3bd",
+    "candidateCoreEquivalent": true,
+    "observation": "The 10,000-row fixture constructor dominated sampled CPU. Within production core, inspectWire and validatePreparedPresentationPlan were the leading sampled functions; no new superlinear or release-safe algorithmic fix was identified.",
+    "topSelfSamples": {
+      "fixtureMakeRows": 1929,
+      "garbageCollector": 559,
+      "fixtureMediumPlan": 306,
+      "coreInspectWireAtLeadingSite": 52,
+      "coreValidatePreparedPresentationPlan": 25
+    }
+  },
+  "checks": [
+    {"command": "pnpm lint", "status": "pass"},
+    {"command": "pnpm exec tsc -p tests/performance/tsconfig.json --noEmit", "status": "pass"},
+    {"command": "pnpm test:protocol-model", "status": "pass", "tests": 11},
+    {"command": "pnpm test:performance:runtime", "status": "pass"},
+    {"command": "pnpm test:performance:browser", "status": "pass", "tests": 2},
+    {"command": "pnpm test:performance:bundles", "status": "pass", "rows": 6},
+    {"command": "pnpm test:performance:adverse-runtime", "status": "pass", "tests": 1},
+    {"command": "AELIQO_RUN_PERFORMANCE=1 pnpm test:performance:perceived-input", "status": "pass", "tests": 2},
+    {"command": "AELIQO_RUN_HEAP_LIFECYCLE=1 pnpm test:performance:heap-lifecycle", "status": "pass", "tests": 1},
+    {"command": "pnpm test:performance:adverse-visualization", "status": "pass", "tests": 1}
+  ],
+  "bundleGzipBytes": {
+    "buttonExcludingLit": 3345,
+    "inputExcludingLit": 6168,
+    "metricExcludingLit": 3447,
+    "tableExcludingLit": 8011,
+    "corePlannerValidationTotal": 54549,
+    "regionTableTotal": 143343
+  },
+  "lifecycle": {
+    "runtimeCycles": 100,
+    "retainedHandles": 0,
+    "liveRegions": 0,
+    "openObservers": 0,
+    "componentCycles": 100,
+    "postGcTrendBytes": 22248,
+    "positiveControlResponsive": true,
+    "finalDomNodes": 0,
+    "finalTrackedListeners": 0
+  },
+  "interaction": {
+    "trustedKeyboardSamples": 30,
+    "visibleDomUpdateP50Ms": 0.699999988,
+    "visibleDomUpdateP95Ms": 0.800000012,
+    "eventTimingObserved": 1,
+    "eventTimingThresholdCensored": 29,
+    "claim": "DOM-visible update observation only; it is not presented as paint timing."
+  },
+  "adverse": {
+    "supersedingRequests": 16,
+    "supersededRequests": 15,
+    "staleRowsCommitted": 0,
+    "nonCooperativeDeliveriesAfterReturn": 2,
+    "adverseCategories": 1000,
+    "nullRows": 250,
+    "selectedIdentities": 1000,
+    "resizeOscillations": 40,
+    "resizeDomAndLayoutP95Ms": 15.700000003,
+    "networkRequestsDuringResize": 0
+  },
+  "trace": {
+    "events": 112981,
+    "layoutEventCount": 9,
+    "layoutP95Ms": 4.136,
+    "paintEventCount": 2,
+    "paintP95Ms": 0.024,
+    "note": "Trace phase durations are retained separately and are not summed as wall-clock or input-to-paint latency."
+  },
+  "futureImprovements": [
+    "Add lower-powered physical-device observations to broaden the supported-environment claim.",
+    "Collect field Core Web Vitals and actual input-to-paint observations after deployment; current DOM timing is not relabeled as paint.",
+    "Continue tracking Node planner p95 noise because one retained repeat was 0.504 ms above budget."
+  ],
+  "releaseBlockers": [],
+  "artifacts": [
+    {"path": "runtime.json", "sha256": "4c1d8ab44b3fdbcdf7e81f70036126aa38b1d6dab8f22e9fb93fd327989afe06"},
+    {"path": "node-repeat-over-budget.json", "sha256": "3fdd835d7ce0896db69df370f7f873dcebfec5b499a677d036b933931af278fe"},
+    {"path": "node-repeat-pass.json", "sha256": "5a44bd294967f00ca7ca1564e634ff60a84f3474add70a7e6cb7e5c406fb2841"},
+    {"path": "browser.json", "sha256": "c1876794ba93cedae8a2cbb16a58663500c660b23b8a968492bfac009d896df9"},
+    {"path": "bundles.json", "sha256": "d0a16712cfd3582f50fb52fab2450c726bc9d5ccbd6a8859a03d1d24e1660a62"},
+    {"path": "adverse-runtime.json", "sha256": "22196ad94a8a10d274ca84bea160ab946fe3928865aa9682c776fab2fb65d398"},
+    {"path": "perceived-input.json", "sha256": "521b155d76f6dffa5f654bfe4b18fd3d34a144fe7d84b6de6fc94976aca02651"},
+    {"path": "heap-lifecycle.json", "sha256": "49df2e1aeb630926f1d302ff54c435b1a64802c4e3aa662aea28c3c5be599db3"},
+    {"path": "adverse-visualization.json", "sha256": "ebe8f0d4e2c4638d120a2ae8654cf26363796f875ab1c9c91c05fdbed8876dff"},
+    {"path": "planner.cpuprofile", "sha256": "6b499e121c2bc9a02257d08c60874227e5bb30ff4a7aceaaf9e932dabc074272"},
+    {"path": "profile-runtime.json", "sha256": "910e85fec1fccd42a1a77b2bdaf3ff3a5466e4fdea1407e5e567a539c0ba2a0d"}
+  ]
+}
