@@ -16,9 +16,7 @@ test("renders all twelve views from one core validated region plan", async ({pag
   for (const view of ["trend", "bar", "area", "scatter", "histogram", "heatmap", "matrix", "timeline", "calendar-grid", "tree", "treemap", "relationship"]) {
     await expect(region.locator(`aeliqo-${view}`)).toHaveCount(1);
   }
-  await expect(region.locator("aeliqo-matrix").getByRole("columnheader")).toHaveCount(3);
-  await expect(region.locator("aeliqo-matrix").getByRole("columnheader").nth(1)).toHaveText("ID");
-  await expect(region.locator("aeliqo-matrix").getByRole("columnheader").nth(2)).toHaveText("Date");
+  await expect(region.locator("aeliqo-matrix").getByRole("columnheader")).toHaveText(["ID", "Date", "Select"]);
 });
 
 test("emits a typed selection and retains the authorized identity", async ({page}) => {
