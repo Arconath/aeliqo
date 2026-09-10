@@ -1,0 +1,206 @@
+{
+  "schema": "aeliqo.t35.integrated-candidate-boundary-recheck.v1",
+  "candidateRoot": "harness/evidence/t33/676db22-final-candidate",
+  "authorManifest": {
+    "path": "harness/evidence/t33/676db22-final-candidate/manifest.json",
+    "sha256": "620c6ff8b5a8b98de6d1fdd57767e3d8a0a8d296f841558240d53170a294a88d"
+  },
+  "retainedCandidateManifest": {
+    "path": "harness/evidence/t33/676db22-final-candidate/candidate/manifest.json",
+    "sha256": "e8fda7789396c20eb928d1aee5af15570c3dd5b39209aee08cc2e82f9891a789"
+  },
+  "checks": {
+    "wrapperSource": true,
+    "sourceDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+    "sourceCommit": "1be6be5ea1d4d06d2e46fe0a1addbca4078492a3",
+    "wrapperManifestSha256": "620c6ff8b5a8b98de6d1fdd57767e3d8a0a8d296f841558240d53170a294a88d",
+    "retainedCandidateManifestSha256": "e8fda7789396c20eb928d1aee5af15570c3dd5b39209aee08cc2e82f9891a789",
+    "version": "0.1.0-rc.1",
+    "packageCount": 6,
+    "expectedNames": [
+      "@aeliqo/core",
+      "@aeliqo/runtime",
+      "@aeliqo/web",
+      "@aeliqo/agent",
+      "@aeliqo/devtools",
+      "@aeliqo/react"
+    ],
+    "actualNames": [
+      "@aeliqo/core",
+      "@aeliqo/runtime",
+      "@aeliqo/web",
+      "@aeliqo/agent",
+      "@aeliqo/devtools",
+      "@aeliqo/react"
+    ],
+    "directNameOrder": true,
+    "privateTestkitExcluded": true,
+    "packageRecords": [
+      {
+        "name": "@aeliqo/core",
+        "file": "aeliqo-core-0.1.0-rc.1.tgz",
+        "manifestSha256": "bfee566d16179ec0a222de966ff2b00cac042e238e798e09d9afeb8d689c7f38",
+        "manifestBytes": 183748,
+        "computedSha256": "bfee566d16179ec0a222de966ff2b00cac042e238e798e09d9afeb8d689c7f38",
+        "computedBytes": 183748,
+        "manifestIntegrity": "sha512-mlJ8Ssw2ojVgOLKahc6by8DBpONgVFghp3r92YJmm7BPkGtLDo5qnghono3Z+mO2kKA7H0HRAl+JNbgvPxtWKg==",
+        "computedIntegrity": "sha512-mlJ8Ssw2ojVgOLKahc6by8DBpONgVFghp3r92YJmm7BPkGtLDo5qnghono3Z+mO2kKA7H0HRAl+JNbgvPxtWKg==",
+        "byteEqualToRebuild": true,
+        "packedName": "@aeliqo/core",
+        "packedVersion": "0.1.0-rc.1",
+        "packedLicense": "Apache-2.0",
+        "packedPrivate": false,
+        "hasLicense": true,
+        "hasNotice": true,
+        "leakedWorkspace": false,
+        "leakedSource": false
+      },
+      {
+        "name": "@aeliqo/runtime",
+        "file": "aeliqo-runtime-0.1.0-rc.1.tgz",
+        "manifestSha256": "df7b183da797d6c822e56c0db3af59860e4a5a1c430ac4a2f342f6a8be520d40",
+        "manifestBytes": 228488,
+        "computedSha256": "df7b183da797d6c822e56c0db3af59860e4a5a1c430ac4a2f342f6a8be520d40",
+        "computedBytes": 228488,
+        "manifestIntegrity": "sha512-EPmpv9TNarwk6aSymK1um6RpEtgFEgNPyzZOrQgD4wainCdmyRmL6Okp1+GiKEof4yIZyEM3S3J+rr8mjABYfA==",
+        "computedIntegrity": "sha512-EPmpv9TNarwk6aSymK1um6RpEtgFEgNPyzZOrQgD4wainCdmyRmL6Okp1+GiKEof4yIZyEM3S3J+rr8mjABYfA==",
+        "byteEqualToRebuild": true,
+        "packedName": "@aeliqo/runtime",
+        "packedVersion": "0.1.0-rc.1",
+        "packedLicense": "Apache-2.0",
+        "packedPrivate": false,
+        "hasLicense": true,
+        "hasNotice": true,
+        "leakedWorkspace": false,
+        "leakedSource": false
+      },
+      {
+        "name": "@aeliqo/web",
+        "file": "aeliqo-web-0.1.0-rc.1.tgz",
+        "manifestSha256": "a4260c87d1bf2147435bd0108e630bdc7eaf0d8f5a13c45dd6d4423c0c637383",
+        "manifestBytes": 407913,
+        "computedSha256": "a4260c87d1bf2147435bd0108e630bdc7eaf0d8f5a13c45dd6d4423c0c637383",
+        "computedBytes": 407913,
+        "manifestIntegrity": "sha512-ODldWO7Y5TznW8/STjRjjjvqjcJSMVT897In/ZOqdbcm4l/DHWznbBL54NP0A6/3Ja773jt0kKfbLQ6ytgTGIQ==",
+        "computedIntegrity": "sha512-ODldWO7Y5TznW8/STjRjjjvqjcJSMVT897In/ZOqdbcm4l/DHWznbBL54NP0A6/3Ja773jt0kKfbLQ6ytgTGIQ==",
+        "byteEqualToRebuild": true,
+        "packedName": "@aeliqo/web",
+        "packedVersion": "0.1.0-rc.1",
+        "packedLicense": "Apache-2.0",
+        "packedPrivate": false,
+        "hasLicense": true,
+        "hasNotice": true,
+        "leakedWorkspace": false,
+        "leakedSource": false
+      },
+      {
+        "name": "@aeliqo/agent",
+        "file": "aeliqo-agent-0.1.0-rc.1.tgz",
+        "manifestSha256": "c4b77fa82e1ec5cf6cde7ba4d5b266d198be9ac2768e8d6b0fda8ad50e652e23",
+        "manifestBytes": 125773,
+        "computedSha256": "c4b77fa82e1ec5cf6cde7ba4d5b266d198be9ac2768e8d6b0fda8ad50e652e23",
+        "computedBytes": 125773,
+        "manifestIntegrity": "sha512-ZYK2lm4SAygBP9xhsNzRaZwDOdqaXX9ClamNv1E2++LhR19YX95UtOsZw6h4+UZwmIXQGpMLWJNyj8TpybnLwQ==",
+        "computedIntegrity": "sha512-ZYK2lm4SAygBP9xhsNzRaZwDOdqaXX9ClamNv1E2++LhR19YX95UtOsZw6h4+UZwmIXQGpMLWJNyj8TpybnLwQ==",
+        "byteEqualToRebuild": true,
+        "packedName": "@aeliqo/agent",
+        "packedVersion": "0.1.0-rc.1",
+        "packedLicense": "Apache-2.0",
+        "packedPrivate": false,
+        "hasLicense": true,
+        "hasNotice": true,
+        "leakedWorkspace": false,
+        "leakedSource": false
+      },
+      {
+        "name": "@aeliqo/devtools",
+        "file": "aeliqo-devtools-0.1.0-rc.1.tgz",
+        "manifestSha256": "6166f2a994458f286b979a7d32ea1a3c1ce41d3d03d91acbb9a4b386e8d8ab6d",
+        "manifestBytes": 21156,
+        "computedSha256": "6166f2a994458f286b979a7d32ea1a3c1ce41d3d03d91acbb9a4b386e8d8ab6d",
+        "computedBytes": 21156,
+        "manifestIntegrity": "sha512-Wuol9zm+tp8Y0kQR4SUCh5zyxdTMSKgfgH7EgGNUb4+zpa/uNfS6hcq6Ae2ypGabeEo9HRtLV7a/CS9UR+DW4w==",
+        "computedIntegrity": "sha512-Wuol9zm+tp8Y0kQR4SUCh5zyxdTMSKgfgH7EgGNUb4+zpa/uNfS6hcq6Ae2ypGabeEo9HRtLV7a/CS9UR+DW4w==",
+        "byteEqualToRebuild": true,
+        "packedName": "@aeliqo/devtools",
+        "packedVersion": "0.1.0-rc.1",
+        "packedLicense": "Apache-2.0",
+        "packedPrivate": false,
+        "hasLicense": true,
+        "hasNotice": true,
+        "leakedWorkspace": false,
+        "leakedSource": false
+      },
+      {
+        "name": "@aeliqo/react",
+        "file": "aeliqo-react-0.1.0-rc.1.tgz",
+        "manifestSha256": "d35abeee2912e50d4f3c3cc214f23f24813cecec1a6aad8dbb11b8753dc056d1",
+        "manifestBytes": 15231,
+        "computedSha256": "d35abeee2912e50d4f3c3cc214f23f24813cecec1a6aad8dbb11b8753dc056d1",
+        "computedBytes": 15231,
+        "manifestIntegrity": "sha512-jFkF+1cXYwdJ59bn52ZSSw8QCfdGEAmU9BMZOAYrDMi+/KidEKifOpMPjMviSF+NYfgApdBzaPeCPE6vh3eTUg==",
+        "computedIntegrity": "sha512-jFkF+1cXYwdJ59bn52ZSSw8QCfdGEAmU9BMZOAYrDMi+/KidEKifOpMPjMviSF+NYfgApdBzaPeCPE6vh3eTUg==",
+        "byteEqualToRebuild": true,
+        "packedName": "@aeliqo/react",
+        "packedVersion": "0.1.0-rc.1",
+        "packedLicense": "Apache-2.0",
+        "packedPrivate": false,
+        "hasLicense": true,
+        "hasNotice": true,
+        "leakedWorkspace": false,
+        "leakedSource": false
+      }
+    ],
+    "allPackageHashes": true,
+    "allPackageBytesReproducible": true,
+    "allPackageMetadataBound": true,
+    "consumer": {
+      "sourceRevision": "1be6be5ea1d4d06d2e46fe0a1addbca4078492a3",
+      "networkDenied": true,
+      "auditNetworkAttempts": 0,
+      "auditExecuted": true,
+      "packageModulesLoaded": 7,
+      "packageNames": [
+        "@aeliqo/core",
+        "@aeliqo/runtime",
+        "@aeliqo/web",
+        "@aeliqo/agent",
+        "@aeliqo/devtools",
+        "@aeliqo/react"
+      ],
+      "integritiesMatch": true,
+      "exportCount": 130,
+      "semanticEqualToRebuild": true
+    },
+    "sbom": {
+      "sourceRevision": "1be6be5ea1d4d06d2e46fe0a1addbca4078492a3",
+      "format": "CycloneDX",
+      "specVersion": "1.5",
+      "components": 63,
+      "directApache20": true,
+      "directSourceMatches": true
+    },
+    "secretScan": {
+      "sourceRevision": "1be6be5ea1d4d06d2e46fe0a1addbca4078492a3",
+      "findings": 0,
+      "allScopesZero": true
+    },
+    "checksumInventory": {
+      "entries": 24,
+      "allMatch": true
+    },
+    "wrapperReproducibility": {
+      "sha256": "cd54b39e0accc57ffb0f8904c90048960be2df61e6569d6873eccef54834d0f4",
+      "releaseArtifactsByteIdentical": true,
+      "consumerRecordsByteIdentical": false,
+      "differenceOnlyLockPath": true
+    }
+  },
+  "verdict": {
+    "passed": true,
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "blocking": 0
+  }
+}

@@ -1,0 +1,31 @@
+$ node --test tests/release/*.test.mjs
+✔ accepts public manifest and strict packed content (0.965167ms)
+✔ rejects leaked source, secrets, workspace aliases, and missing exports (0.226584ms)
+✔ candidate manifest and CycloneDX use exact tarball identities (5.444542ms)
+✔ registry and lock classification fail closed (0.21575ms)
+✔ legacy deprecation is exact, allowlisted, and points to the migration (0.657708ms)
+✔ exact registry classification fails closed (0.1255ms)
+✔ first-RC bootstrap is a separate exact interactive path (0.7925ms)
+✔ publication reopens each tarball and binds its internal public identity (0.434625ms)
+✔ first-RC package history permits only an exact partial-publication resume (0.54025ms)
+✔ owner-unpublished names require the conservative hold and a fresh post-hold preflight (0.17525ms)
+✔ first publication removes only an automatically-created prerelease latest tag (0.416667ms)
+✔ trusted publishing and dist-tag movement fail closed (0.114833ms)
+✔ approved RC records bind source and all candidate integrities (0.1625ms)
+✔ npm provenance binds package bytes to canonical workflow and source (0.488916ms)
+✔ all public packages carry the canonical full LICENSE and NOTICE (4.059875ms)
+✔ package workflow serializes publication and binds quality plus approved RC evidence (0.42475ms)
+✔ bootstrap, registry consumer, and legacy mutations are pinned to npmjs (0.5755ms)
+✔ qualifies a source/config/corpus-bound Flash integration smoke without requiring live model answer quality (7.28975ms)
+✔ fails closed on forged source, corpus, authorization, blockers, or report fields (0.414959ms)
+✔ rejects unknown rows and provider payloads hidden in live or nested fields (1.08975ms)
+✔ rejects incomplete trials, failed live outcomes, counter overruns, and spend inconsistencies (2.322667ms)
+✔ rejects simulated MCP evidence and uncorroborated invalid-repair claims (1.422917ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 51.489542

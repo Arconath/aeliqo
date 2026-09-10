@@ -1,0 +1,157 @@
+{
+  "schema": "aeliqo.t35.final-governance-closure.v2",
+  "task": "T35",
+  "status": "complete-independent-governance-review",
+  "recordedAt": "2026-09-10T21:01:58Z",
+  "author": "T35 governance evidence author",
+  "source": {
+    "productSourceRevision": "1be6be5ea1d4d06d2e46fe0a1addbca4078492a3",
+    "productSourceTree": "39f6a0f11f97c24195cdae1c9c7ce1f4aedd8797",
+    "candidateDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+    "currentIntegrationCommit": "59c45a6d75ef227e53a1353fa7f323ce1789724e",
+    "currentIntegrationTree": "38a3b8d1acd99495f3e64894e917c17af64daa48",
+    "trackedTreeClean": true
+  },
+  "historicalBaseline": {
+    "path": "harness/evidence/t35/be201bf-final-governance-closure/manifest.json",
+    "sha256": "443a246314ed9a34741a74942ec3219a7748e5ba017e137c9c7749f4d153ce89",
+    "comparison": "The prior closure used superseded sdk-prefixed candidate identities. Three recorded governance hashes therefore differ after the accepted direct-name migration; raw/15-governance-semantic-recheck.json proves that those three differences normalize exactly to 44b19f5^ and that the substantive OSS/commercial boundary is unchanged."
+  },
+  "currentCandidate": {
+    "authorManifest": {
+      "path": "harness/evidence/t33/676db22-final-candidate/manifest.json",
+      "sha256": "620c6ff8b5a8b98de6d1fdd57767e3d8a0a8d296f841558240d53170a294a88d"
+    },
+    "retainedCandidateManifest": {
+      "path": "harness/evidence/t33/676db22-final-candidate/candidate/manifest.json",
+      "sha256": "e8fda7789396c20eb928d1aee5af15570c3dd5b39209aee08cc2e82f9891a789"
+    },
+    "status": "local-candidate-approved-independent-review-complete",
+    "version": "0.1.0-rc.1",
+    "packageCount": 6,
+    "packageNames": [
+      "@aeliqo/core",
+      "@aeliqo/runtime",
+      "@aeliqo/web",
+      "@aeliqo/agent",
+      "@aeliqo/devtools",
+      "@aeliqo/react"
+    ],
+    "allApache20": true,
+    "canonicalLicenseAndNotice": true,
+    "privateTestkitExcluded": true,
+    "strictExportSpecifiers": 130,
+    "offlineConsumer": "pass",
+    "runtimeNetworkAttempts": 0,
+    "sbomComponents": 63,
+    "secretFindings": 0,
+    "releaseArtifactsReproducible": true,
+    "consumerRecordDifference": "install.lockSha256 only; output-directory-derived and not a release artifact"
+  },
+  "independentReview": {
+    "manifest": {
+      "path": "harness/evidence/t33/676db22-final-candidate-review/manifest.json",
+      "sha256": "2551aaf2380a3fa9d3b22c3cd727bc50ecaadc871261a222e552b648142d15d8"
+    },
+    "record": {
+      "path": "harness/evidence/t33/676db22-final-candidate-review/independent-review.json",
+      "sha256": "1516e747b79dff84df40de6a7319f8d65268e2c999e76542d2c41b689ae62d65"
+    },
+    "reviewer": "/root/review_t29_final",
+    "reviewBaseCommit": "7e7ce06345935193bc7c67654265a3fdd689ab41",
+    "reviewBaseTree": "bfc76f0fe40a3c9296f7646e7e69edf534022db4",
+    "candidateSourceCommit": "1be6be5ea1d4d06d2e46fe0a1addbca4078492a3",
+    "candidateSourceTree": "39f6a0f11f97c24195cdae1c9c7ce1f4aedd8797",
+    "candidateDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+    "reviewBaseIsCandidateSourceChild": true,
+    "reviewBaseDeltaOnlyEvidence": true,
+    "retainedChecksumEntries": 24,
+    "retainedChecksumVerification": "pass",
+    "decision": "approve",
+    "findings": {"p0": 0, "p1": 0, "p2": 0, "blocking": 0},
+    "candidateBinding": "exact",
+    "sourceBinding": "exact"
+  },
+  "governanceInputs": [
+    {"path": "MASTER-SOT.md", "sha256": "c94bf4578b58750493ef3357d8c9741f41a5fede74b97ca8b820112c3107f464"},
+    {"path": "README.md", "sha256": "675842e98e42c8461341163a21bc8a24ae20bc4d773a8f058693aad9eaf09688"},
+    {"path": "docs/15-oss-business.md", "sha256": "03fce1133b20709db917391f6ee976fb35362f0989ee56b97a0bc26ee9e6b99c"},
+    {"path": "docs/business/oss-commercial-boundary.md", "sha256": "5a78ee11805502a0660251b2c98d5c8275b1d2f45e37981f8437aa3fad1287ca"},
+    {"path": "docs/public/0.1.0-support-boundary.md", "sha256": "114bb77acd108b12e2322da997afa925e9d3b153808fc2c11e228f40f51172c6"},
+    {"path": "SECURITY.md", "sha256": "fe3d6c1baaea1ad390cede80816dddfc83f1a632caf3d93a340d6cc4e4ed7e84"},
+    {"path": "SUPPORT.md", "sha256": "481068b56729ec84982aa2ead44a0b3c1864ccdfaddc4fa3831200bf0a17b3eb"},
+    {"path": "CONTRIBUTING.md", "sha256": "26c4a4da674639c3f3df4575db73860302cf4ed83a9e71ed4dd98fbca83058f0"},
+    {"path": "TRADEMARKS.md", "sha256": "e7ef8da971bb4ef53ba8dd44568aa1f6170a382a2207ac6909c514f7902c1785"},
+    {"path": "LICENSE", "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"},
+    {"path": "NOTICE", "sha256": "3b685bb536ef72b2063fb7450720cc2f6f79752dbc2ebd750a304508a553b69b"},
+    {"path": "apps/site/public/browser-monitoring.json", "sha256": "7187d1e8e2a4d61b1dc5dfedb22d703a462df21470e0c145365b20fb3ed467c3"},
+    {"path": "apps/site/public/google-analytics.json", "sha256": "7187d1e8e2a4d61b1dc5dfedb22d703a462df21470e0c145365b20fb3ed467c3"}
+  ],
+  "verification": {
+    "governanceInputsCurrentSnapshot": "pass",
+    "historicalHashDrift": {
+      "changedInputs": [
+        "README.md",
+        "docs/business/oss-commercial-boundary.md",
+        "docs/public/0.1.0-support-boundary.md"
+      ],
+      "expectedDirectNameMigrationOnly": true,
+      "substantiveBoundaryUnchanged": true
+    },
+    "currentBoundaryClaims": "pass",
+    "candidatePackageBoundary": "pass",
+    "candidateDependencyBoundary": "pass",
+    "candidateOfflineAndReproducibility": "pass",
+    "boundedLocalAudit": "pass-6/6",
+    "releaseTooling": "pass-22/22",
+    "siteBuild": "pass",
+    "siteGovernanceBrowser": "pass-7/7",
+    "t33ChecksumInventory": "pass-24/24",
+    "evidenceChecksumInventory": "pass-23/23",
+    "reviewBinding": "pass-exact-source-candidate-review-record",
+    "staleSdkIdentityScan": "pass-0-findings",
+    "allPromisedOssCapabilitiesRemainOfflineAndApache20": "satisfied-sampled",
+    "commercialHypothesesNotRepresentedAsProvenSales": "satisfied",
+    "publicationOrDeploymentClaimed": false,
+    "t33IndependentReview": "pass-independent-review-complete"
+  },
+  "evidence": {
+    "checksSummary": "checks/summary.json",
+    "sourceBinding": "raw/25-final-binding-recheck.json",
+    "governanceSemanticRecheck": "raw/15-governance-semantic-recheck.json",
+    "candidateBoundaryRecheck": "raw/19-integrated-candidate-boundary-recheck.json",
+    "candidateDependencyBoundary": "raw/13-candidate-dependency-boundary.json",
+    "packageBoundarySnapshot": "raw/05-package-boundary-snapshot.json",
+    "t33RetainedChecksumVerify": "raw/22-t33-retained-checksum-verify-final.log",
+    "publicPackageNotices": "raw/17-public-package-notices-integrated.log",
+    "audit": "raw/26-test-audit-final.log",
+    "releaseTooling": "raw/27-release-tooling-final.log",
+    "siteBuild": "raw/28-site-build-final.log",
+    "siteBrowser": "raw/29-site-browser-final.log",
+    "t33AuthorManifest": "harness/evidence/t33/676db22-final-candidate/manifest.json",
+    "t33Reproducibility": "harness/evidence/t33/676db22-final-candidate/reproducibility.json",
+    "t33ReviewManifest": "harness/evidence/t33/676db22-final-candidate-review/manifest.json",
+    "t33ReviewRecord": "harness/evidence/t33/676db22-final-candidate-review/independent-review.json",
+    "t33ReviewChecksum": "raw/23-t33-review-checksum-verify-final.log",
+    "finalBinding": "raw/25-final-binding-recheck.json",
+    "currentClaimsIdentityScan": "raw/21-current-claims-identity-scan.json",
+    "checksumInventory": "SHA256SUMS"
+  },
+  "limitations": [
+    "This is a T35 governance, package-boundary and sampled offline-use closure; it is not a legal, accessibility, publication, provenance, stable-promotion or deployment certification.",
+    "The T33 independent review is bound exactly by its review manifest and record hashes and found no P0, P1 or P2 issue.",
+    "The three changed governance hashes are intentional direct-name identity rebinds, not evidence that the current governance text is byte-identical to the superseded sdk-prefixed closure.",
+    "Optional authenticated HTTP, MCP and BYOK/provider integrations require explicit host-authorized effects and are outside the offline claim.",
+    "Registry publication, source release, website deployment and commercial availability remain separate states."
+  ],
+  "mutations": {
+    "productSource": false,
+    "taskState": false,
+    "candidateArtifacts": false,
+    "npm": false,
+    "github": false,
+    "gitops": false,
+    "production": false,
+    "reviewPacketOnly": true
+  }
+}

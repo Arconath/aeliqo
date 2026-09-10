@@ -1,0 +1,32 @@
+{
+  "schema": "aeliqo.t35.governance-checks.v1",
+  "task": "T35",
+  "status": "complete-independent-governance-review",
+  "source": {
+    "productSourceRevision": "1be6be5ea1d4d06d2e46fe0a1addbca4078492a3",
+    "candidateDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9"
+  },
+  "checks": [
+    {"id": "governance-current-snapshot", "result": "pass", "evidence": "raw/15-governance-semantic-recheck.json", "detail": "13 governance inputs captured; 10 historical hashes unchanged and 3 differences are exactly the accepted direct-name identity rebind."},
+    {"id": "governance-commercial-truth", "result": "pass", "evidence": "raw/15-governance-semantic-recheck.json", "detail": "OSS/offline/no-license-callback/no-paid-row-cap claims are present; future hosted services are conditional and no sales, demand, price, SLA, revenue or PMF is claimed."},
+    {"id": "candidate-source-binding", "result": "pass", "evidence": "raw/25-final-binding-recheck.json; raw/19-integrated-candidate-boundary-recheck.json", "detail": "Integrated T33 wrapper and retained candidate bind exactly to source revision 1be6be5 and digest 676db22 at current integration commit 59c45a6."},
+    {"id": "candidate-public-boundary", "result": "pass", "evidence": "raw/19-integrated-candidate-boundary-recheck.json", "detail": "Six direct public packages are Apache-2.0, contain canonical LICENSE/NOTICE, exclude private testkit and source files, and have exact manifest hashes/integrities."},
+    {"id": "candidate-dependency-boundary", "result": "pass", "evidence": "raw/13-candidate-dependency-boundary.json", "detail": "Packed dependency names and versions match the direct-name internal dependency graph without sdk-prefixed or testkit dependencies."},
+    {"id": "offline-local-use", "result": "pass", "evidence": "raw/19-integrated-candidate-boundary-recheck.json; raw/26-test-audit-final.log; raw/17-public-package-notices-integrated.log", "detail": "Network-denied candidate consumer loaded six public package modules plus audit, recorded zero audit network attempts, and the final bounded local audit passed 6/6."},
+    {"id": "candidate-reproducibility", "result": "pass", "evidence": "raw/19-integrated-candidate-boundary-recheck.json; raw/22-t33-retained-checksum-verify-final.log", "detail": "All 24 retained T33 checksums match; nine release artifacts are byte-identical across candidate and rebuild; consumer records differ only in output-path-derived lock hash."},
+    {"id": "t33-independent-review", "result": "pass", "evidence": "harness/evidence/t33/676db22-final-candidate-review/manifest.json; harness/evidence/t33/676db22-final-candidate-review/independent-review.json; raw/22-t33-retained-checksum-verify-final.log; raw/23-t33-review-checksum-verify-final.log; raw/25-final-binding-recheck.json", "detail": "The independent T33 review is exact-bound to the author candidate and source digest, both retained review artifacts checksum-verify, found no P0/P1/P2 issue, and reports no stale sdk-prefixed identity in active candidate claims."},
+    {"id": "current-claims-identity-scan", "result": "pass", "evidence": "raw/21-current-claims-identity-scan.json", "detail": "Current governance inputs and active T33 candidate/review evidence contain zero stale sdk-prefixed identities; historical release notes and superseded evidence are explicitly excluded."},
+    {"id": "release-tooling", "result": "pass", "evidence": "raw/27-release-tooling-final.log", "detail": "22 release-tooling tests passed in the final pinned Node 24 run."},
+    {"id": "site-governance", "result": "pass", "evidence": "raw/28-site-build-final.log; raw/29-site-browser-final.log", "detail": "Final site build passed and seven browser governance/offline/navigation checks passed."}
+  ],
+  "findings": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "blocking": 0,
+    "items": []
+  },
+  "limitations": [
+    "T35 does not approve publication, provenance, stable promotion, source release, deployment, manual assistive-technology certification or commercial launch."
+  ]
+}

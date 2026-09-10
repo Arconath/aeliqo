@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "publicPackages": [
+    "core",
+    "runtime",
+    "web",
+    "react",
+    "agent",
+    "devtools"
+  ],
+  "internalWorkspace": "@aeliqo/testkit"
+}

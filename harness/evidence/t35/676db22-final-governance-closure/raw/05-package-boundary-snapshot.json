@@ -1,0 +1,299 @@
+{
+  "node": "v24.20.0",
+  "publicPackages": [
+    {
+      "directory": "core",
+      "name": "@aeliqo/core",
+      "version": "0.1.0",
+      "private": false,
+      "license": "Apache-2.0",
+      "files": [
+        "dist",
+        "schemas",
+        "README.md",
+        "LICENSE",
+        "NOTICE"
+      ],
+      "exports": [
+        ".",
+        "./schema",
+        "./schemas/*"
+      ],
+      "dependencies": {
+        "zod": "4.5.4"
+      },
+      "hasNotice": true,
+      "hasLicense": true
+    },
+    {
+      "directory": "runtime",
+      "name": "@aeliqo/runtime",
+      "version": "0.1.0",
+      "private": false,
+      "license": "Apache-2.0",
+      "files": [
+        "dist",
+        "README.md",
+        "LICENSE",
+        "NOTICE"
+      ],
+      "exports": [
+        "./evaluation",
+        "./data",
+        "./results",
+        "./regions",
+        "./persistence",
+        "./actions",
+        "./audit",
+        "./interaction",
+        "./presentation",
+        "./meaning"
+      ],
+      "dependencies": {
+        "@aeliqo/core": "workspace:*",
+        "zod": "4.5.4"
+      },
+      "hasNotice": true,
+      "hasLicense": true
+    },
+    {
+      "directory": "web",
+      "name": "@aeliqo/web",
+      "version": "0.1.0",
+      "private": false,
+      "license": "Apache-2.0",
+      "files": [
+        "dist",
+        "README.md",
+        "LICENSE",
+        "NOTICE"
+      ],
+      "exports": [
+        ".",
+        "./register",
+        "./server",
+        "./input",
+        "./table",
+        "./chart",
+        "./styles",
+        "./region",
+        "./foundation",
+        "./foundation/manifest",
+        "./button",
+        "./icon-button",
+        "./link",
+        "./text",
+        "./heading",
+        "./badge",
+        "./avatar",
+        "./separator",
+        "./surface",
+        "./stack",
+        "./grid",
+        "./split-pane",
+        "./scroll-area",
+        "./plot",
+        "./inputs",
+        "./inputs/manifest",
+        "./text-field",
+        "./text-area",
+        "./number-field",
+        "./checkbox",
+        "./radio-group",
+        "./switch",
+        "./select",
+        "./combobox",
+        "./date-field",
+        "./date-range",
+        "./slider",
+        "./search-field",
+        "./file-input",
+        "./field-group",
+        "./form",
+        "./navigation",
+        "./tabs",
+        "./breadcrumb",
+        "./pagination",
+        "./menu",
+        "./tree-nav",
+        "./feedback",
+        "./dialog",
+        "./drawer",
+        "./popover",
+        "./tooltip",
+        "./alert",
+        "./toast",
+        "./progress",
+        "./skeleton",
+        "./empty-state",
+        "./data",
+        "./metric",
+        "./delta",
+        "./key-value",
+        "./detail",
+        "./record-list",
+        "./card-collection",
+        "./selection-summary",
+        "./filter-builder",
+        "./visualization",
+        "./visualization/temporal",
+        "./visualization/cartesian",
+        "./visualization/hierarchy",
+        "./region/adaptation",
+        "./compound",
+        "./explorer",
+        "./comparison",
+        "./breakdown",
+        "./investigation",
+        "./search-results",
+        "./record-editor",
+        "./form-flow",
+        "./quality-panel"
+      ],
+      "dependencies": {
+        "@aeliqo/core": "workspace:*",
+        "@lit-labs/ssr": "4.1.0",
+        "@lit-labs/ssr-client": "1.1.8",
+        "d3-scale": "4.0.2",
+        "d3-shape": "3.2.0",
+        "lit": "3.3.3"
+      },
+      "hasNotice": true,
+      "hasLicense": true
+    },
+    {
+      "directory": "react",
+      "name": "@aeliqo/react",
+      "version": "0.1.0",
+      "private": false,
+      "license": "Apache-2.0",
+      "files": [
+        "dist",
+        "README.md",
+        "LICENSE",
+        "NOTICE"
+      ],
+      "exports": [
+        ".",
+        "./foundation",
+        "./inputs",
+        "./navigation",
+        "./feedback",
+        "./data",
+        "./ssr",
+        "./plot",
+        "./visualization",
+        "./compound"
+      ],
+      "dependencies": {
+        "@aeliqo/web": "workspace:*",
+        "@lit-labs/ssr-react": "0.3.4",
+        "@lit/react": "1.0.8"
+      },
+      "hasNotice": true,
+      "hasLicense": true
+    },
+    {
+      "directory": "agent",
+      "name": "@aeliqo/agent",
+      "version": "0.1.0",
+      "private": false,
+      "license": "Apache-2.0",
+      "files": [
+        "dist",
+        "README.md",
+        "LICENSE",
+        "NOTICE"
+      ],
+      "exports": [
+        ".",
+        "./protocol",
+        "./model",
+        "./model/openai",
+        "./model/responses",
+        "./webmcp",
+        "./mcp"
+      ],
+      "dependencies": {
+        "@aeliqo/core": "workspace:*",
+        "@aeliqo/runtime": "workspace:*"
+      },
+      "hasNotice": true,
+      "hasLicense": true
+    },
+    {
+      "directory": "devtools",
+      "name": "@aeliqo/devtools",
+      "version": "0.1.0",
+      "private": false,
+      "license": "Apache-2.0",
+      "files": [
+        "dist",
+        "README.md",
+        "LICENSE",
+        "NOTICE"
+      ],
+      "exports": [
+        "."
+      ],
+      "dependencies": {
+        "@aeliqo/core": "workspace:*",
+        "@aeliqo/runtime": "workspace:*"
+      },
+      "hasNotice": true,
+      "hasLicense": true
+    }
+  ],
+  "internalPackage": {
+    "directory": "testkit",
+    "name": "@aeliqo/testkit",
+    "version": "0.1.0",
+    "private": true,
+    "license": "Apache-2.0",
+    "files": [
+      "dist",
+      "README.md",
+      "LICENSE"
+    ],
+    "exports": [
+      "."
+    ],
+    "dependencies": {
+      "@aeliqo/runtime": "workspace:*"
+    },
+    "hasNotice": false,
+    "hasLicense": true
+  },
+  "rootLicenseSha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+  "rootNoticeSha256": "3b685bb536ef72b2063fb7450720cc2f6f79752dbc2ebd750a304508a553b69b",
+  "packageLicenseHashes": {
+    "core": {
+      "license": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "notice": "3b685bb536ef72b2063fb7450720cc2f6f79752dbc2ebd750a304508a553b69b"
+    },
+    "runtime": {
+      "license": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "notice": "3b685bb536ef72b2063fb7450720cc2f6f79752dbc2ebd750a304508a553b69b"
+    },
+    "web": {
+      "license": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "notice": "3b685bb536ef72b2063fb7450720cc2f6f79752dbc2ebd750a304508a553b69b"
+    },
+    "react": {
+      "license": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "notice": "3b685bb536ef72b2063fb7450720cc2f6f79752dbc2ebd750a304508a553b69b"
+    },
+    "agent": {
+      "license": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "notice": "3b685bb536ef72b2063fb7450720cc2f6f79752dbc2ebd750a304508a553b69b"
+    },
+    "devtools": {
+      "license": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "notice": "3b685bb536ef72b2063fb7450720cc2f6f79752dbc2ebd750a304508a553b69b"
+    },
+    "testkit": {
+      "license": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "notice": null
+    }
+  }
+}

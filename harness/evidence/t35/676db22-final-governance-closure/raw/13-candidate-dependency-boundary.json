@@ -1,0 +1,109 @@
+{
+  "schema": "aeliqo.t35.candidate-dependency-boundary.v1",
+  "candidatePath": "harness/evidence/t33/676db22-final-candidate/candidate",
+  "packageCount": 6,
+  "packageNames": [
+    "@aeliqo/agent",
+    "@aeliqo/core",
+    "@aeliqo/devtools",
+    "@aeliqo/react",
+    "@aeliqo/runtime",
+    "@aeliqo/web"
+  ],
+  "allExpectedNames": true,
+  "allApache20": true,
+  "allPublic": true,
+  "noTestkitDependency": true,
+  "noSdkDependency": true,
+  "exactDependencies": true,
+  "packages": [
+    {
+      "file": "aeliqo-agent-0.1.0-rc.1.tgz",
+      "name": "@aeliqo/agent",
+      "version": "0.1.0-rc.1",
+      "private": false,
+      "license": "Apache-2.0",
+      "dependencies": {
+        "@aeliqo/core": "0.1.0-rc.1",
+        "@aeliqo/runtime": "0.1.0-rc.1"
+      },
+      "hasTestkitDependency": false,
+      "hasSdkDependency": false,
+      "archiveSha256": "c4b77fa82e1ec5cf6cde7ba4d5b266d198be9ac2768e8d6b0fda8ad50e652e23"
+    },
+    {
+      "file": "aeliqo-core-0.1.0-rc.1.tgz",
+      "name": "@aeliqo/core",
+      "version": "0.1.0-rc.1",
+      "private": false,
+      "license": "Apache-2.0",
+      "dependencies": {
+        "zod": "4.5.4"
+      },
+      "hasTestkitDependency": false,
+      "hasSdkDependency": false,
+      "archiveSha256": "bfee566d16179ec0a222de966ff2b00cac042e238e798e09d9afeb8d689c7f38"
+    },
+    {
+      "file": "aeliqo-devtools-0.1.0-rc.1.tgz",
+      "name": "@aeliqo/devtools",
+      "version": "0.1.0-rc.1",
+      "private": false,
+      "license": "Apache-2.0",
+      "dependencies": {
+        "@aeliqo/core": "0.1.0-rc.1",
+        "@aeliqo/runtime": "0.1.0-rc.1"
+      },
+      "hasTestkitDependency": false,
+      "hasSdkDependency": false,
+      "archiveSha256": "6166f2a994458f286b979a7d32ea1a3c1ce41d3d03d91acbb9a4b386e8d8ab6d"
+    },
+    {
+      "file": "aeliqo-react-0.1.0-rc.1.tgz",
+      "name": "@aeliqo/react",
+      "version": "0.1.0-rc.1",
+      "private": false,
+      "license": "Apache-2.0",
+      "dependencies": {
+        "@aeliqo/web": "0.1.0-rc.1",
+        "@lit-labs/ssr-react": "0.3.4",
+        "@lit/react": "1.0.8"
+      },
+      "hasTestkitDependency": false,
+      "hasSdkDependency": false,
+      "archiveSha256": "d35abeee2912e50d4f3c3cc214f23f24813cecec1a6aad8dbb11b8753dc056d1"
+    },
+    {
+      "file": "aeliqo-runtime-0.1.0-rc.1.tgz",
+      "name": "@aeliqo/runtime",
+      "version": "0.1.0-rc.1",
+      "private": false,
+      "license": "Apache-2.0",
+      "dependencies": {
+        "@aeliqo/core": "0.1.0-rc.1",
+        "zod": "4.5.4"
+      },
+      "hasTestkitDependency": false,
+      "hasSdkDependency": false,
+      "archiveSha256": "df7b183da797d6c822e56c0db3af59860e4a5a1c430ac4a2f342f6a8be520d40"
+    },
+    {
+      "file": "aeliqo-web-0.1.0-rc.1.tgz",
+      "name": "@aeliqo/web",
+      "version": "0.1.0-rc.1",
+      "private": false,
+      "license": "Apache-2.0",
+      "dependencies": {
+        "@aeliqo/core": "0.1.0-rc.1",
+        "@lit-labs/ssr": "4.1.0",
+        "@lit-labs/ssr-client": "1.1.8",
+        "d3-scale": "4.0.2",
+        "d3-shape": "3.2.0",
+        "lit": "3.3.3"
+      },
+      "hasTestkitDependency": false,
+      "hasSdkDependency": false,
+      "archiveSha256": "a4260c87d1bf2147435bd0108e630bdc7eaf0d8f5a13c45dd6d4423c0c637383"
+    }
+  ]
+}

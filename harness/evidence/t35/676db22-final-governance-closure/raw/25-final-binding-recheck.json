@@ -1,0 +1,35 @@
+{
+  "schema": "aeliqo.t35.final-binding-recheck.v1",
+  "checks": {
+    "currentMain": "59c45a6d75ef227e53a1353fa7f323ce1789724e",
+    "sourceDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+    "sourceDigestStable": true,
+    "candidateSourceCommit": "1be6be5ea1d4d06d2e46fe0a1addbca4078492a3",
+    "candidateSourceCommitExact": true,
+    "authorManifestSha256": "620c6ff8b5a8b98de6d1fdd57767e3d8a0a8d296f841558240d53170a294a88d",
+    "authorManifestExact": true,
+    "reviewManifestSha256": "2551aaf2380a3fa9d3b22c3cd727bc50ecaadc871261a222e552b648142d15d8",
+    "reviewManifestExact": true,
+    "reviewRecordSha256": "1516e747b79dff84df40de6a7319f8d65268e2c999e76542d2c41b689ae62d65",
+    "reviewRecordExact": true,
+    "reviewStatus": "local-candidate-approved-independent-review-complete",
+    "reviewVerdict": "approve",
+    "reviewFindings": {
+      "p0": [],
+      "p1": [],
+      "p2": []
+    },
+    "reviewBindsCandidate": true,
+    "reviewBindsSource": true,
+    "reviewBaseOnlyEvidence": true,
+    "reviewNoSdk": true,
+    "reviewNoRegistry": true
+  },
+  "verdict": {
+    "passed": true,
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "blocking": 0
+  }
+}

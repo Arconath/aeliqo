@@ -1,0 +1,169 @@
+{
+  "schema": "aeliqo.t35.governance-semantic-recheck.v1",
+  "sourceRevision": "1be6be5ea1d4d06d2e46fe0a1addbca4078492a3",
+  "sourceDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+  "historicalBaseline": {
+    "path": "harness/evidence/t35/be201bf-final-governance-closure/manifest.json",
+    "inputCount": 13,
+    "unchangedCount": 10,
+    "changedInputs": [
+      "README.md",
+      "docs/business/oss-commercial-boundary.md",
+      "docs/public/0.1.0-support-boundary.md"
+    ],
+    "changedInputsExactlyExpected": true
+  },
+  "expectedDirectNameRebind": {
+    "comparisonParent": "44b19f5^",
+    "reason": "The accepted direct-name release migration changed only package-identity wording in these three governance pages; the old sdk-prefixed wording is historical and must not bind the current candidate.",
+    "normalizationChecks": {
+      "README.md": {
+        "normalizesToHistoricalDirectMigrationParent": true,
+        "normalizedSha256": "428979e2daa28133d44352d00d1d11cfb1be7843230afa4b7901ab417e02a6f2",
+        "historicalSha256": "428979e2daa28133d44352d00d1d11cfb1be7843230afa4b7901ab417e02a6f2"
+      },
+      "docs/business/oss-commercial-boundary.md": {
+        "normalizesToHistoricalDirectMigrationParent": true,
+        "normalizedSha256": "789deb2de9170ec38db6d2bc3859b414a0f71458762a006c5dd5e6b6ab026447",
+        "historicalSha256": "789deb2de9170ec38db6d2bc3859b414a0f71458762a006c5dd5e6b6ab026447"
+      },
+      "docs/public/0.1.0-support-boundary.md": {
+        "normalizesToHistoricalDirectMigrationParent": true,
+        "normalizedSha256": "50b9586511bf5213163205e8f414bca5ee58f9b59a2e37b7e732013bb634ff9f",
+        "historicalSha256": "50b9586511bf5213163205e8f414bca5ee58f9b59a2e37b7e732013bb634ff9f"
+      }
+    },
+    "onlyExpectedMigrationDrift": true
+  },
+  "currentGovernanceSnapshot": [
+    {
+      "path": "MASTER-SOT.md",
+      "sha256": "c94bf4578b58750493ef3357d8c9741f41a5fede74b97ca8b820112c3107f464",
+      "baselineSha256": "c94bf4578b58750493ef3357d8c9741f41a5fede74b97ca8b820112c3107f464",
+      "unchanged": true
+    },
+    {
+      "path": "README.md",
+      "sha256": "675842e98e42c8461341163a21bc8a24ae20bc4d773a8f058693aad9eaf09688",
+      "baselineSha256": "428979e2daa28133d44352d00d1d11cfb1be7843230afa4b7901ab417e02a6f2",
+      "unchanged": false
+    },
+    {
+      "path": "docs/15-oss-business.md",
+      "sha256": "03fce1133b20709db917391f6ee976fb35362f0989ee56b97a0bc26ee9e6b99c",
+      "baselineSha256": "03fce1133b20709db917391f6ee976fb35362f0989ee56b97a0bc26ee9e6b99c",
+      "unchanged": true
+    },
+    {
+      "path": "docs/business/oss-commercial-boundary.md",
+      "sha256": "5a78ee11805502a0660251b2c98d5c8275b1d2f45e37981f8437aa3fad1287ca",
+      "baselineSha256": "789deb2de9170ec38db6d2bc3859b414a0f71458762a006c5dd5e6b6ab026447",
+      "unchanged": false
+    },
+    {
+      "path": "docs/public/0.1.0-support-boundary.md",
+      "sha256": "114bb77acd108b12e2322da997afa925e9d3b153808fc2c11e228f40f51172c6",
+      "baselineSha256": "50b9586511bf5213163205e8f414bca5ee58f9b59a2e37b7e732013bb634ff9f",
+      "unchanged": false
+    },
+    {
+      "path": "SECURITY.md",
+      "sha256": "fe3d6c1baaea1ad390cede80816dddfc83f1a632caf3d93a340d6cc4e4ed7e84",
+      "baselineSha256": "fe3d6c1baaea1ad390cede80816dddfc83f1a632caf3d93a340d6cc4e4ed7e84",
+      "unchanged": true
+    },
+    {
+      "path": "SUPPORT.md",
+      "sha256": "481068b56729ec84982aa2ead44a0b3c1864ccdfaddc4fa3831200bf0a17b3eb",
+      "baselineSha256": "481068b56729ec84982aa2ead44a0b3c1864ccdfaddc4fa3831200bf0a17b3eb",
+      "unchanged": true
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "sha256": "26c4a4da674639c3f3df4575db73860302cf4ed83a9e71ed4dd98fbca83058f0",
+      "baselineSha256": "26c4a4da674639c3f3df4575db73860302cf4ed83a9e71ed4dd98fbca83058f0",
+      "unchanged": true
+    },
+    {
+      "path": "TRADEMARKS.md",
+      "sha256": "e7ef8da971bb4ef53ba8dd44568aa1f6170a382a2207ac6909c514f7902c1785",
+      "baselineSha256": "e7ef8da971bb4ef53ba8dd44568aa1f6170a382a2207ac6909c514f7902c1785",
+      "unchanged": true
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "baselineSha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "unchanged": true
+    },
+    {
+      "path": "NOTICE",
+      "sha256": "3b685bb536ef72b2063fb7450720cc2f6f79752dbc2ebd750a304508a553b69b",
+      "baselineSha256": "3b685bb536ef72b2063fb7450720cc2f6f79752dbc2ebd750a304508a553b69b",
+      "unchanged": true
+    },
+    {
+      "path": "apps/site/public/browser-monitoring.json",
+      "sha256": "7187d1e8e2a4d61b1dc5dfedb22d703a462df21470e0c145365b20fb3ed467c3",
+      "baselineSha256": "7187d1e8e2a4d61b1dc5dfedb22d703a462df21470e0c145365b20fb3ed467c3",
+      "unchanged": true
+    },
+    {
+      "path": "apps/site/public/google-analytics.json",
+      "sha256": "7187d1e8e2a4d61b1dc5dfedb22d703a462df21470e0c145365b20fb3ed467c3",
+      "baselineSha256": "7187d1e8e2a4d61b1dc5dfedb22d703a462df21470e0c145365b20fb3ed467c3",
+      "unchanged": true
+    }
+  ],
+  "claimChecks": {
+    "readme": {
+      "directPackageFamily": true,
+      "privateTestkit": true,
+      "apache": true,
+      "noCommercialClaim": true,
+      "noLicenseCallback": true
+    },
+    "oss": {
+      "Apache-2.0": true,
+      "@aeliqo/core": true,
+      "@aeliqo/runtime": true,
+      "@aeliqo/web": true,
+      "@aeliqo/react": true,
+      "@aeliqo/agent": true,
+      "@aeliqo/devtools": true,
+      "private\nworkspace": true,
+      "without a license server, account callback": true,
+      "entirely offline": true,
+      "optional host-configured effects": true,
+      "future commercial service": true,
+      "No hosted commercial service, price, SLA, customer demand, recurring revenue,": true,
+      "product-market fit is claimed": true
+    },
+    "support": {
+      "six public Apache-2.0 packages": true,
+      "do not need\nan Aeliqo account or license service": true,
+      "A model is optional": true,
+      "Basic local audit export": true,
+      "verified independently during release": true
+    },
+    "ossBusiness": {
+      "OSS, Apache-2.0": true,
+      "No artificial row/region/user quota": true,
+      "No runtime “phone home” or license-check requirement": true,
+      "future paid boundary": true,
+      "hypothesis requiring external adoption/paid validation": true,
+      "not proven product-market fit": true
+    }
+  },
+  "allRequiredBoundaryClaimsPresent": true,
+  "commercialTruth": {
+    "futureServicesConditional": true,
+    "noSalesDemandPriceSlaOrPmfClaim": true
+  },
+  "verdict": {
+    "historicalBytesUnchanged": false,
+    "expectedMigrationDrift": true,
+    "currentBoundaryClaimsSupported": true,
+    "blocking": false
+  }
+}

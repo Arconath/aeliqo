@@ -1,0 +1,18 @@
+{
+  "schema": "aeliqo.t35.source-binding.v1",
+  "currentIntegrationCommit": "7e7ce06345935193bc7c67654265a3fdd689ab41",
+  "currentIntegrationTree": "bfc76f0fe40a3c9296f7646e7e69edf534022db4",
+  "trackedTreeClean": true,
+  "productSourceCommit": "1be6be5ea1d4d06d2e46fe0a1addbca4078492a3",
+  "productSourceTree": "39f6a0f11f97c24195cdae1c9c7ce1f4aedd8797",
+  "productSourceDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+  "t33AuthorManifest": {
+    "path": "harness/evidence/t33/676db22-final-candidate/manifest.json",
+    "sha256": "620c6ff8b5a8b98de6d1fdd57767e3d8a0a8d296f841558240d53170a294a88d"
+  },
+  "t33RetainedManifest": {
+    "path": "harness/evidence/t33/676db22-final-candidate/candidate/manifest.json",
+    "sha256": "e8fda7789396c20eb928d1aee5af15570c3dd5b39209aee08cc2e82f9891a789"
+  },
+  "candidateStatus": "local-candidate-passed-independent-review-pending"
+}

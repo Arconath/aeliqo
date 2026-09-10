@@ -1,0 +1,42 @@
+{
+  "schema": "aeliqo.t35.current-claims-identity-scan.v1",
+  "scope": {
+    "governanceInputs": [
+      "README.md",
+      "docs/15-oss-business.md",
+      "docs/business/oss-commercial-boundary.md",
+      "docs/public/0.1.0-support-boundary.md",
+      "SECURITY.md",
+      "SUPPORT.md",
+      "CONTRIBUTING.md",
+      "TRADEMARKS.md",
+      "LICENSE",
+      "NOTICE",
+      "apps/site/public/browser-monitoring.json",
+      "apps/site/public/google-analytics.json"
+    ],
+    "activeCandidateEvidence": [
+      "harness/evidence/t33/676db22-final-candidate",
+      "harness/evidence/t33/676db22-final-candidate-review"
+    ],
+    "excludedHistoricalPaths": [
+      "docs/18-release-migration.md",
+      "docs/release/npm-registry-preflight-2026-09-10.md",
+      "harness/evidence/t35/be201bf-final-governance-closure",
+      "harness/evidence/t35/05e5990-exact-candidate"
+    ],
+    "patterns": [
+      "@aeliqo/sdk",
+      "@aeliqo/sdk-core",
+      "@aeliqo/sdk-runtime",
+      "@aeliqo/sdk-web",
+      "@aeliqo/sdk-react",
+      "@aeliqo/sdk-agent",
+      "@aeliqo/sdk-devtools"
+    ]
+  },
+  "governanceFindings": [],
+  "activeFindings": [],
+  "staleSdkIdentityFindings": 0,
+  "passed": true
+}

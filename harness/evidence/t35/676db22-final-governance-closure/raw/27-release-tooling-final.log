@@ -1,0 +1,33 @@
+v24.20.0
+11.24.0
+$ node --test tests/release/*.test.mjs
+✔ accepts public manifest and strict packed content (1.039708ms)
+✔ rejects leaked source, secrets, workspace aliases, and missing exports (0.274875ms)
+✔ candidate manifest and CycloneDX use exact tarball identities (6.447375ms)
+✔ registry and lock classification fail closed (0.299125ms)
+✔ legacy deprecation is exact, allowlisted, and points to the migration (0.981917ms)
+✔ exact registry classification fails closed (0.169875ms)
+✔ first-RC bootstrap is a separate exact interactive path (0.91775ms)
+✔ publication reopens each tarball and binds its internal public identity (0.466959ms)
+✔ first-RC package history permits only an exact partial-publication resume (0.204583ms)
+✔ owner-unpublished names require the conservative hold and a fresh post-hold preflight (0.228042ms)
+✔ first publication removes only an automatically-created prerelease latest tag (1.155375ms)
+✔ trusted publishing and dist-tag movement fail closed (0.163166ms)
+✔ approved RC records bind source and all candidate integrities (0.206208ms)
+✔ npm provenance binds package bytes to canonical workflow and source (0.532125ms)
+✔ all public packages carry the canonical full LICENSE and NOTICE (8.468791ms)
+✔ package workflow serializes publication and binds quality plus approved RC evidence (1.439834ms)
+✔ bootstrap, registry consumer, and legacy mutations are pinned to npmjs (0.991ms)
+✔ qualifies a source/config/corpus-bound Flash integration smoke without requiring live model answer quality (8.307833ms)
+✔ fails closed on forged source, corpus, authorization, blockers, or report fields (0.588666ms)
+✔ rejects unknown rows and provider payloads hidden in live or nested fields (1.431916ms)
+✔ rejects incomplete trials, failed live outcomes, counter overruns, and spend inconsistencies (3.360542ms)
+✔ rejects simulated MCP evidence and uncorroborated invalid-repair claims (1.833833ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 59.488459
