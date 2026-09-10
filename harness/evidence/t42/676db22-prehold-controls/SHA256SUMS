@@ -1,0 +1,12 @@
+3abad724c5a64f4cf2ca601d272ee3c05d784139f32142443c0a0eb28947ae23  ./manifest.json
+3e1a5911e43ef8204a06a8286f37eed5c6a51c88eb6841ecb774ad6c8885fecb  ./raw/adversarial-fixtures.json
+cbba6faff55993be20ecd48078772190b73b1ad8f5ac17cf9250d7736ed93b9f  ./raw/environment.json
+2cadc71cd03a3431a85196fd1e83997ce05a1b7f319aa8992860c5b97b223571  ./raw/legacy-inspect.json
+51755545db44279eb45dc17a10d4cffd4760871c6e43b035c82f8140dc3de9f8  ./raw/npm-authority.json
+a5ca6162a014de435aa976985000cc2f0ec1228462e04c6f649fed1aac2bf6b9  ./raw/npm-registry.json
+f708e5e2041a11223afeb1ec5cf0b31e2b1883bdd3333b2b66d5dedfca6a885b  ./raw/preflight-hold.log
+d73c4c3ec3d2058dc657f7eb5f211b0778c43cd6ead67cbb7fe646e554567ecf  ./raw/release-tooling.log
+d15e44cd7e0566da458f89154dc37097c0c8e1a4dfaede3b0d9a8e117ae292c8  ./raw/source-identity.txt
+522359b563d6540fa337546940d9578964af93922b10726380313ec6d9b1f15e  ./raw/source-scan.json
+836131c1f1d82418c4455df4dd07f5aec5a1c70dfb392221544237901c76c1c8  ./raw/version-reset.log
+7900d247b8b69b378694f9b0e94f1943edd03c63791b02d50915ddcb5adcf600  ./source-bindings.json

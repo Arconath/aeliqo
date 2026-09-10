@@ -1,0 +1,28 @@
+command: pnpm test:release-tooling
+exit: 0
+runner: node --test tests/release/*.test.mjs
+tests: 22 passed, 0 failed, 0 skipped
+subtests:
+  accepts public manifest and strict packed content
+  rejects leaked source, secrets, workspace aliases, and missing exports
+  candidate manifest and CycloneDX use exact tarball identities
+  registry and lock classification fail closed
+  legacy deprecation is exact, allowlisted, and points to the migration
+  exact registry classification fails closed
+  first-RC bootstrap is a separate exact interactive path
+  publication reopens each tarball and binds its internal public identity
+  first-RC package history permits only an exact partial-publication resume
+  owner-unpublished names require the conservative hold and a fresh post-hold preflight
+  first publication removes only an automatically-created prerelease latest tag
+  trusted publishing and dist-tag movement fail closed
+  approved RC records bind source and all candidate integrities
+  npm provenance binds package bytes to canonical workflow and source
+  all public packages carry the canonical full LICENSE and NOTICE
+  package workflow serializes publication and binds quality plus approved RC evidence
+  bootstrap, registry consumer, and legacy mutations are pinned to npmjs
+  qualifies a source/config/corpus-bound Flash integration smoke without requiring live model answer quality
+  fails closed on forged source, corpus, authorization, blockers, or report fields
+  rejects unknown rows and provider payloads hidden in live or nested fields
+  rejects incomplete trials, failed live outcomes, counter overruns, and spend inconsistencies
+  rejects simulated MCP evidence and uncorroborated invalid-repair claims
+result: TAP 1..22, pass 22, fail 0

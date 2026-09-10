@@ -1,0 +1,9 @@
+command: git rev-parse HEAD
+cc7bf293ba60d338d07f57a820fd058e7a4465dd
+command: git rev-parse HEAD^{tree}
+bf396bd3bcabe89ba6cb14279622a5b01dfce190
+command: python3 scripts/gate.py digest
+676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9
+command: git status --porcelain=v1 --untracked-files=no (before evidence creation)
+clean
+source identity matches the requested commit, tree, and digest.

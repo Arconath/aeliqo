@@ -1,0 +1,13 @@
+{
+  "observedAt": "2026-09-10T19:04:42.380Z",
+  "node": "v22.23.2",
+  "pnpm": "11.24.0",
+  "npm": "10.9.8",
+  "python": "3.9.6",
+  "git": "2.50.1",
+  "requestedNode": "24.20.0",
+  "requestedHold": "2026-09-11T16:32:51Z",
+  "holdActive": true,
+  "mutationsAttempted": false,
+  "note": "The Node engine warning was observed during local tests; no release readiness claim depends on Node 22."
+}

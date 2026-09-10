@@ -1,0 +1,16 @@
+{
+  "schema": "aeliqo.t42.readonly-authority-observation.v1",
+  "observedAt": "2026-09-10T19:02:00Z",
+  "registry": "https://registry.npmjs.org",
+  "mode": "authenticated-read-only",
+  "commands": {
+    "whoami": "npm whoami --json --registry=https://registry.npmjs.org",
+    "organization": "npm org ls aeliqo --json --registry=https://registry.npmjs.org",
+    "tfa": "npm profile get tfa --json --registry=https://registry.npmjs.org"
+  },
+  "whoami": {"exitCode": 0, "actor": "arconath"},
+  "organization": {"exitCode": 0, "organization": "aeliqo", "role": "owner"},
+  "tfa": {"exitCode": 0, "mode": "auth-and-writes", "pending": null},
+  "redaction": "Profile email and account timestamps were intentionally omitted; no credentials, OTPs, or tokens were recorded.",
+  "interpretation": "Current authority is observed read-only, but this is not the post-hold preflight because the hold gate correctly stopped refresh before it rewrote postHoldVerifiedAt."
+}

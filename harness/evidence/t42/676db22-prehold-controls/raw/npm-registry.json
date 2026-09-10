@@ -1,0 +1,27 @@
+{
+  "schema": "aeliqo.t42.public-registry-observation.v1",
+  "observedAt": "2026-09-10T19:05:08.334Z",
+  "registry": "https://registry.npmjs.org",
+  "mode": "unauthenticated-public-read-only",
+  "commands": {
+    "package": "GET https://registry.npmjs.org/<encoded-package>",
+    "exactVersion": "GET https://registry.npmjs.org/<encoded-package>/<encoded-version>"
+  },
+  "directNames": [
+    {"name": "@aeliqo/core", "package": 404, "stable": 404, "rc1": 404},
+    {"name": "@aeliqo/runtime", "package": 404, "stable": 404, "rc1": 404},
+    {"name": "@aeliqo/web", "package": 404, "stable": 404, "rc1": 404},
+    {"name": "@aeliqo/react", "package": 404, "stable": 404, "rc1": 404},
+    {"name": "@aeliqo/agent", "package": 404, "stable": 404, "rc1": 404},
+    {"name": "@aeliqo/devtools", "package": 404, "stable": 404, "rc1": 404}
+  ],
+  "historicalTombstones": [
+    {"name": "@aeliqo/core", "version": "0.2.0", "status": 404},
+    {"name": "@aeliqo/react", "version": "0.2.0", "status": 404},
+    {"name": "@aeliqo/mcp", "version": "0.2.0", "status": 404},
+    {"name": "@aeliqo/byok", "version": "0.2.0", "status": 404},
+    {"name": "@aeliqo/webmcp-experimental", "version": "0.2.0", "status": 404},
+    {"name": "@aeliqo/sdk-core", "version": "0.1.0-rc.1", "status": 404}
+  ],
+  "interpretation": "All reads show current public non-visibility. They do not prove historical non-use, permanent unavailability, or npm acceptance of a first publication. The conservative hold and fresh authenticated post-hold preflight remain required."
+}

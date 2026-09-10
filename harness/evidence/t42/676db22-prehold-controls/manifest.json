@@ -1,0 +1,128 @@
+{
+  "schema": "aeliqo.t42.prehold-controls.v1",
+  "task": "T42",
+  "status": "prehold-controls-passed-publication-blocked",
+  "t42Complete": false,
+  "releaseApprovalIssued": false,
+  "reviewer": {
+    "agent": "/root/review_home_flow",
+    "independentOfAuthors": true,
+    "role": "independent source-bound release-control reviewer"
+  },
+  "reviewedAt": "2026-09-10T19:04:42.380Z",
+  "scope": "Read-only T42 pre-hold control audit from an isolated registered worktree. No npm publish, unpublish, deprecate, dist-tag, GitHub, deploy, task-state, product-source, test-source, root-config, lockfile, or old-evidence mutation was attempted.",
+  "source": {
+    "commit": "cc7bf293ba60d338d07f57a820fd058e7a4465dd",
+    "tree": "bf396bd3bcabe89ba6cb14279622a5b01dfce190",
+    "sourceDigest": "676db22d92ab3d13c2cd2f4d44afaf3bfa4cba49e0fc0ee34975b98f875a02d9",
+    "worktree": "/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo-t42-prehold-controls",
+    "branch": "codex/t42-prehold-controls-20260911",
+    "sourceUnchangedBeforeEvidence": true
+  },
+  "registry": {
+    "url": "https://registry.npmjs.org",
+    "readMode": "public-read-only",
+    "directNames": [
+      "@aeliqo/core",
+      "@aeliqo/runtime",
+      "@aeliqo/web",
+      "@aeliqo/react",
+      "@aeliqo/agent",
+      "@aeliqo/devtools"
+    ],
+    "directNamePackage404": 6,
+    "directStableTarget404": 6,
+    "directFirstRc404": 6,
+    "observedAt": "2026-09-10T19:05:08.334Z",
+    "observationMeaning": "Current public non-visibility only; 404 is not historical-use or first-publication acceptance proof."
+  },
+  "historicalTombstones": {
+    "allowlisted": [
+      "@aeliqo/core@0.2.0",
+      "@aeliqo/react@0.2.0",
+      "@aeliqo/mcp@0.2.0",
+      "@aeliqo/byok@0.2.0",
+      "@aeliqo/webmcp-experimental@0.2.0",
+      "@aeliqo/sdk-core@0.1.0-rc.1"
+    ],
+    "publicExact404": 6,
+    "status": "recorded-history-and-current-absence-only",
+    "limitation": "The supplied owner-unpublished history and current 404 responses do not independently prove permanent historical unavailability."
+  },
+  "authority": {
+    "currentReadOnlyActor": "arconath",
+    "organization": "aeliqo",
+    "organizationRole": "owner",
+    "tfaMode": "auth-and-writes",
+    "postHoldRefreshCompleted": false,
+    "sourcePinnedRegistry": true,
+    "evidence": "raw/npm-authority.json"
+  },
+  "hold": {
+    "conservativePublishNotBefore": "2026-09-11T16:32:51Z",
+    "checkedAt": "2026-09-10T19:04:42.380Z",
+    "active": true,
+    "postHoldVerifiedAt": null,
+    "refreshOutcome": "blocked-before-network-authority-refresh"
+  },
+  "controls": {
+    "exactSixNamesAndOrder": "pass",
+    "exactStableAndRcIdentity": "pass",
+    "postHoldTimestampFailClosed": "pass",
+    "partialPublicationResumability": "pass",
+    "collisionRefusal": "pass",
+    "firstRcLatestTagReconciliation": "pass",
+    "trustedPublishingAuthorityGuards": "pass",
+    "npmjsPinning": "pass",
+    "noOldNpmRollbackOrUnpublishPath": "pass",
+    "legacyCleanupAllowlist": "pass",
+    "publication": "blocked-by-hold-and-null-postHoldVerifiedAt"
+  },
+  "tests": {
+    "releaseTooling": {"command": "pnpm test:release-tooling", "passed": 22, "failed": 0},
+    "versionReset": {"command": "python3 -m unittest tests/harness/test_master.py", "passed": 22, "failed": 0},
+    "offlineInventory": {"command": "python3 scripts/version_preflight.py harness/release-preflight.json", "exit": 1, "status": "blocked", "reason": "historical-use-unknown"},
+    "postHoldRefresh": {"command": "pnpm release:bootstrap:preflight", "exit": 1, "status": "blocked", "reason": "npm package-name hold remains active"},
+    "legacyInspection": {"command": "pnpm release:legacy:inspect", "exit": 0, "status": "read-only", "readyToDeprecate": false},
+    "adversarialFixtures": {"schema": "aeliqo.t42.prehold-adversarial.v1", "cases": 33, "unexpectedPasses": 0},
+    "releaseReady": {"command": "pnpm release:ready", "exit": 1, "status": "blocked", "scope": "broader candidate gates; not a T42 control failure"}
+  },
+  "mutations": {
+    "npmPublish": false,
+    "npmUnpublish": false,
+    "npmDeprecate": false,
+    "npmDistTag": false,
+    "github": false,
+    "deployment": false,
+    "taskState": false,
+    "productSource": false,
+    "reviewPacketOnly": true
+  },
+  "findings": {"p0": 0, "p1": 0, "p2": 0, "p3": 0},
+  "publicationBlockers": [
+    "npm conservative package-name hold remains active until 2026-09-11T16:32:51Z",
+    "harness/release-preflight.json has postHoldVerifiedAt: null",
+    "fresh authenticated post-hold preflight has not run and must not be inferred from current 404 responses",
+    "successful exact RC publication, registry consumer, provenance, stable promotion, and live verification remain unperformed"
+  ],
+  "remainingPostHoldStep": "After 2026-09-11T16:32:51Z, rerun pnpm release:bootstrap:preflight from a clean registered worktree at this exact source; review the rewritten preflight and only then consider the owner-interactive bootstrap with the exact 0.1.0-rc.1 six-package candidate on the next tag.",
+  "limitations": [
+    "The environment used Node v22.23.2 while the repository requests Node 24.20.0; release tooling passed with the package-manager engine warning.",
+    "No publication or external mutation was authorized or attempted.",
+    "This packet is pre-hold control evidence, not a T42 completion certificate and not an npm availability attestation."
+  ],
+  "evidenceFiles": [
+    "raw/source-identity.txt",
+    "raw/environment.json",
+    "raw/npm-registry.json",
+    "raw/npm-authority.json",
+    "raw/release-tooling.log",
+    "raw/version-reset.log",
+    "raw/preflight-hold.log",
+    "raw/legacy-inspect.json",
+    "raw/adversarial-fixtures.json",
+    "raw/source-scan.json",
+    "source-bindings.json",
+    "SHA256SUMS"
+  ]
+}

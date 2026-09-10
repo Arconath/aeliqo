@@ -1,0 +1,25 @@
+{
+  "command": "pnpm release:legacy:inspect",
+  "exitCode": 0,
+  "mode": "read-only",
+  "registry": "https://registry.npmjs.org",
+  "replacementStableVersionsVisible": 0,
+  "readyToDeprecate": false,
+  "replacementBlockers": [
+    "@aeliqo/core@0.1.0 is not visible",
+    "@aeliqo/runtime@0.1.0 is not visible",
+    "@aeliqo/web@0.1.0 is not visible",
+    "@aeliqo/agent@0.1.0 is not visible",
+    "@aeliqo/devtools@0.1.0 is not visible",
+    "@aeliqo/react@0.1.0 is not visible"
+  ],
+  "legacyReads": [
+    {"name": "@aeliqo/core", "version": "0.2.0", "state": "absent"},
+    {"name": "@aeliqo/react", "version": "0.2.0", "state": "absent"},
+    {"name": "@aeliqo/mcp", "version": "0.2.0", "state": "absent"},
+    {"name": "@aeliqo/byok", "version": "0.2.0", "state": "absent"},
+    {"name": "@aeliqo/webmcp-experimental", "version": "0.2.0", "state": "absent"},
+    {"name": "@aeliqo/sdk-core", "version": "0.1.0-rc.1", "state": "absent"}
+  ],
+  "mutationGuard": "No deprecation is attempted until every exact 0.1.0 replacement is visible; already-absent legacy versions are treated as historical state, not as proof that they were unused."
+}

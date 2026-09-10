@@ -1,0 +1,14 @@
+command: python3 -m unittest tests/harness/test_master.py
+exit: 0
+result: Ran 22 tests in 0.003s; OK
+
+command: python3 scripts/version_preflight.py harness/release-preflight.json
+exit: 1 (expected fail-closed result)
+result:
+  target: 0.1.0
+  publishReady: false
+  mutations: false
+  status: blocked
+  reason: historical-use-unknown
+
+The supplied normalized inventory intentionally does not convert current 404 observations into historical-use proof.

@@ -1,0 +1,5 @@
+command: pnpm release:bootstrap:preflight
+exit: 1 (expected fail-closed result)
+observed error: npm package-name hold remains active until 2026-09-11T16:32:51Z
+control behavior: refresh-bootstrap-preflight.mjs stopped at the hold check before npm authority/package refresh and before writing harness/release-preflight.json.
+mutation result: no npm, registry, GitHub, task-state, or source mutation.

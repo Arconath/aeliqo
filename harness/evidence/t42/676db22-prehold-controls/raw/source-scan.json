@@ -1,0 +1,32 @@
+{
+  "schema": "aeliqo.t42.source-control-scan.v1",
+  "registryConstant": "https://registry.npmjs.org",
+  "npmjsPinnedIn": [
+    "scripts/release/publish.mjs",
+    "scripts/release/registry-consumer.mjs",
+    "scripts/release/deprecate-legacy.mjs",
+    "scripts/release/refresh-bootstrap-preflight.mjs"
+  ],
+  "noUnpublishPathInPublishSource": true,
+  "cleanup": {
+    "legacyLineages": [
+      "@aeliqo/core@0.2.0",
+      "@aeliqo/react@0.2.0",
+      "@aeliqo/mcp@0.2.0",
+      "@aeliqo/byok@0.2.0",
+      "@aeliqo/webmcp-experimental@0.2.0",
+      "@aeliqo/sdk-core@0.1.0-rc.1"
+    ],
+    "confirmation": "deprecate-obsolete-packages-after-v0.1.0",
+    "distTagRemoval": "only latest when npm auto-creates latest for first RC and bootstrap reconciliation proves it"
+  },
+  "workflow": {
+    "repository": "Arconath/aeliqo",
+    "ownerActor": "hermawan22",
+    "ref": "refs/heads/main",
+    "event": "workflow_dispatch",
+    "rcTag": "next",
+    "stableTag": "rewrite",
+    "latestPromotion": "not an automatic workflow step"
+  }
+}
