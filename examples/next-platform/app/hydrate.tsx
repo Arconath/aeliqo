@@ -15,7 +15,7 @@ export function HydrateAeliqo() {
     root?.addEventListener('aeliqo-input', accept);
     async function hydrate() {
       await import('@lit-labs/ssr-client/lit-element-hydrate-support.js');
-      const {registerAeliqoElements} = await import('@aeliqo/sdk-web');
+      const {registerAeliqoElements} = await import('@aeliqo/web');
       if (!disposed) registerAeliqoElements();
     }
     void hydrate().catch(error => {

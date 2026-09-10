@@ -31,7 +31,7 @@ const before = sourceDigest();
 for (const [name, version] of [["core", "0.1.0"], ["runtime", "0.1.0"], ["web", "0.1.0"], ["react", "0.1.0"]]) {
   const directory = join(root, "packages", name);
   const manifest = JSON.parse(await readFile(join(directory, "package.json"), "utf8"));
-  assert.equal(manifest.name, `@aeliqo/sdk-${name}`);
+  assert.equal(manifest.name, `@aeliqo/${name}`);
   assert.equal(manifest.version, version);
   assert.notEqual(manifest.private, true);
   run(["pnpm", "build"], directory);

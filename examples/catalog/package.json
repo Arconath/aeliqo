@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@aeliqo/sdk-core": "workspace:*",
-    "@aeliqo/sdk-web": "workspace:*"
+    "@aeliqo/core": "workspace:*",
+    "@aeliqo/web": "workspace:*"
   }
 }

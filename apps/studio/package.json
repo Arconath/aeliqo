@@ -9,10 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@aeliqo/sdk-core": "workspace:*",
-    "@aeliqo/sdk-devtools": "workspace:*",
-    "@aeliqo/sdk-runtime": "workspace:*",
-    "@aeliqo/sdk-web": "workspace:*"
+    "@aeliqo/core": "workspace:*",
+    "@aeliqo/devtools": "workspace:*",
+    "@aeliqo/runtime": "workspace:*",
+    "@aeliqo/web": "workspace:*"
   },
   "devDependencies": {
     "vite": "8.2.2"

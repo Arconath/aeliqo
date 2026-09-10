@@ -18,9 +18,9 @@ const consumer=await mkdtemp(join(tmpdir(),'aeliqo-performance-consumer-'));
 const packages=[];
 for(const name of ['core','runtime','web']){
  const cwd=join(root,'packages',name);run(['pnpm','build'],cwd);
- const tarball=join(output,`aeliqo-sdk-${name}-0.1.0.tgz`);run(['pnpm','pack','--out',tarball],cwd);
+ const tarball=join(output,`aeliqo-${name}-0.1.0.tgz`);run(['pnpm','pack','--out',tarball],cwd);
  const manifest=JSON.parse(run(['tar','-xOf',tarball,'package/package.json']));
- assert.equal(manifest.version,'0.1.0');assert.equal(manifest.name,`@aeliqo/sdk-${name}`);
+ assert.equal(manifest.version,'0.1.0');assert.equal(manifest.name,`@aeliqo/${name}`);
  packages.push({name:manifest.name,path:tarball,sha256:hash(await readFile(tarball))});
 }
 await writeFile(join(consumer,'package.json'),JSON.stringify({private:true,type:'module',dependencies:Object.fromEntries(packages.map(p=>[p.name,`file:${p.path}`]))}));

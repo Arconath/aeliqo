@@ -7,8 +7,8 @@
     "dev": "vite"
   },
   "dependencies": {
-    "@aeliqo/sdk-react": "workspace:*",
-    "@aeliqo/sdk-web": "workspace:*",
+    "@aeliqo/react": "workspace:*",
+    "@aeliqo/web": "workspace:*",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "vue": "3.5.42"

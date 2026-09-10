@@ -1,5 +1,5 @@
 import {readFileSync} from 'node:fs';
-import {createQueryFunctionRegistry} from '@aeliqo/sdk-core';
+import {createQueryFunctionRegistry} from '@aeliqo/core';
 
 const registered = createQueryFunctionRegistry({version: '2'});
 if (!registered.ok) throw new Error('Reference function registry is unavailable.');

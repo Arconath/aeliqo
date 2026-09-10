@@ -1,4 +1,4 @@
-import type {ResultRef} from "@aeliqo/sdk-core";
+import type {ResultRef} from "@aeliqo/core";
 
 /** The finite public component names used by the 0.1.0 catalog. */
 export type CatalogExampleId =

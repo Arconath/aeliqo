@@ -8,7 +8,7 @@ import {
   type AeliqoMenuItem,
   type AeliqoTabItem,
   type AeliqoTreeNavNode,
-} from "@aeliqo/sdk-web";
+} from "@aeliqo/web";
 import {cleanupCatalogRoot, createCatalogElement, createCatalogRoot} from "./fixture.js";
 import {catalogMountSource, catalogSource} from "./source.js";
 import type {CatalogExampleDefinition, CatalogExampleId, CatalogExampleMetadata} from "./types.js";
@@ -24,7 +24,7 @@ const sourceImports = `import {
   type AeliqoMenuItem,
   type AeliqoTabItem,
   type AeliqoTreeNavNode,
-} from "@aeliqo/sdk-web";`;
+} from "@aeliqo/web";`;
 
 const sourceSetup = `const tabs: readonly AeliqoTabItem[] = [
   {id: "overview", label: "Overview", content: "Overview content"},

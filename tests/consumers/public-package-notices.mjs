@@ -33,9 +33,9 @@ try {
     const directory = join(root, 'packages', name);
     run(['pnpm', 'pack', '--out', join(output, `${name}.tgz`)], directory);
     const entries = run(['tar', '-tzf', join(output, `${name}.tgz`)], root).trim().split('\n');
-    assert(entries.includes('package/NOTICE'), `@aeliqo/sdk-${name} tarball is missing NOTICE`);
-    assert(entries.includes('package/LICENSE'), `@aeliqo/sdk-${name} tarball is missing LICENSE`);
-    assert(entries.includes('package/README.md'), `@aeliqo/sdk-${name} tarball is missing README`);
+    assert(entries.includes('package/NOTICE'), `@aeliqo/${name} tarball is missing NOTICE`);
+    assert(entries.includes('package/LICENSE'), `@aeliqo/${name} tarball is missing LICENSE`);
+    assert(entries.includes('package/README.md'), `@aeliqo/${name} tarball is missing README`);
   }
   console.log(JSON.stringify({passed: true, publicPackages, internalWorkspace: '@aeliqo/testkit'}, null, 2));
 } finally {

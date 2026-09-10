@@ -217,7 +217,7 @@ for (const example of catalogExamples) {
         const tarball = join(runDirectory, `aeliqo-${packageName}-0.1.0.tgz`);
         run(["pnpm", "pack", "--out", tarball], packageDirectory);
         const packedManifest = JSON.parse(run(["tar", "-xOf", tarball, "package/package.json"], workspace)) as {name?: string; version?: string; private?: boolean; dependencies?: Record<string, string>};
-        expect(packedManifest.name).toBe(`@aeliqo/sdk-${packageName}`);
+        expect(packedManifest.name).toBe(`@aeliqo/${packageName}`);
         expect(packedManifest.version).toBe("0.1.0");
         expect(packedManifest.private).not.toBe(true);
         expect(JSON.stringify(packedManifest.dependencies ?? {})).not.toContain("workspace:");
@@ -233,7 +233,7 @@ for (const example of catalogExamples) {
       await copyFile(lockPath, lockCopy);
       lockArtifact = {path: lockCopy.slice(workspace.length + 1), ...(await hashFile(lockCopy))};
       for (const packageName of ["core", "web"] as const) {
-        const installed = join(consumer, "node_modules", "@aeliqo", `sdk-${packageName}`);
+        const installed = join(consumer, "node_modules", "@aeliqo", packageName);
         expect((await lstat(installed)).isSymbolicLink()).toBe(false);
         expect(await realpath(installed)).not.toBe(await realpath(join(workspace, "packages", packageName)));
       }

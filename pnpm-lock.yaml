@@ -8,27 +8,27 @@ importers:
 
   .:
     devDependencies:
-      '@aeliqo/sdk-agent':
+      '@aeliqo/agent':
         specifier: workspace:*
         version: link:packages/agent
-      '@aeliqo/sdk-core':
+      '@aeliqo/core':
         specifier: workspace:*
         version: link:packages/core
-      '@aeliqo/sdk-devtools':
+      '@aeliqo/devtools':
         specifier: workspace:*
         version: link:packages/devtools
-      '@aeliqo/sdk-react':
+      '@aeliqo/react':
         specifier: workspace:*
         version: link:packages/react
-      '@aeliqo/sdk-runtime':
+      '@aeliqo/runtime':
         specifier: workspace:*
         version: link:packages/runtime
-      '@aeliqo/sdk-web':
-        specifier: workspace:*
-        version: link:packages/web
       '@aeliqo/testkit':
         specifier: workspace:*
         version: link:packages/testkit
+      '@aeliqo/web':
+        specifier: workspace:*
+        version: link:packages/web
       '@axe-core/playwright':
         specifier: 4.13.0
         version: 4.13.0(playwright-core@1.63.0)
@@ -89,31 +89,31 @@ importers:
 
   apps/site:
     dependencies:
-      '@aeliqo/sdk-agent':
+      '@aeliqo/agent':
         specifier: workspace:*
         version: link:../../packages/agent
-      '@aeliqo/sdk-core':
+      '@aeliqo/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@aeliqo/sdk-runtime':
+      '@aeliqo/runtime':
         specifier: workspace:*
         version: link:../../packages/runtime
-      '@aeliqo/sdk-web':
+      '@aeliqo/web':
         specifier: workspace:*
         version: link:../../packages/web
 
   apps/studio:
     dependencies:
-      '@aeliqo/sdk-core':
+      '@aeliqo/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@aeliqo/sdk-devtools':
+      '@aeliqo/devtools':
         specifier: workspace:*
         version: link:../../packages/devtools
-      '@aeliqo/sdk-runtime':
+      '@aeliqo/runtime':
         specifier: workspace:*
         version: link:../../packages/runtime
-      '@aeliqo/sdk-web':
+      '@aeliqo/web':
         specifier: workspace:*
         version: link:../../packages/web
     devDependencies:
@@ -123,16 +123,16 @@ importers:
 
   examples/catalog:
     dependencies:
-      '@aeliqo/sdk-core':
+      '@aeliqo/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@aeliqo/sdk-web':
+      '@aeliqo/web':
         specifier: workspace:*
         version: link:../../packages/web
 
   examples/next-platform:
     dependencies:
-      '@aeliqo/sdk-web':
+      '@aeliqo/web':
         specifier: workspace:*
         version: link:../../packages/web
       '@lit-labs/ssr-client':
@@ -166,10 +166,10 @@ importers:
 
   examples/platform:
     dependencies:
-      '@aeliqo/sdk-react':
+      '@aeliqo/react':
         specifier: workspace:*
         version: link:../../packages/react
-      '@aeliqo/sdk-web':
+      '@aeliqo/web':
         specifier: workspace:*
         version: link:../../packages/web
       react:
@@ -184,22 +184,22 @@ importers:
 
   examples/reference-host:
     dependencies:
-      '@aeliqo/sdk-core':
+      '@aeliqo/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@aeliqo/sdk-runtime':
+      '@aeliqo/runtime':
         specifier: workspace:*
         version: link:../../packages/runtime
 
   examples/vertical-slice:
     dependencies:
-      '@aeliqo/sdk-core':
+      '@aeliqo/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@aeliqo/sdk-runtime':
+      '@aeliqo/runtime':
         specifier: workspace:*
         version: link:../../packages/runtime
-      '@aeliqo/sdk-web':
+      '@aeliqo/web':
         specifier: workspace:*
         version: link:../../packages/web
       '@lit-labs/ssr-client':
@@ -211,10 +211,10 @@ importers:
 
   packages/agent:
     dependencies:
-      '@aeliqo/sdk-core':
+      '@aeliqo/core':
         specifier: workspace:*
         version: link:../core
-      '@aeliqo/sdk-runtime':
+      '@aeliqo/runtime':
         specifier: workspace:*
         version: link:../runtime
     devDependencies:
@@ -239,16 +239,16 @@ importers:
 
   packages/devtools:
     dependencies:
-      '@aeliqo/sdk-core':
+      '@aeliqo/core':
         specifier: workspace:*
         version: link:../core
-      '@aeliqo/sdk-runtime':
+      '@aeliqo/runtime':
         specifier: workspace:*
         version: link:../runtime
 
   packages/react:
     dependencies:
-      '@aeliqo/sdk-web':
+      '@aeliqo/web':
         specifier: workspace:*
         version: link:../web
       '@lit-labs/ssr-react':
@@ -266,7 +266,7 @@ importers:
 
   packages/runtime:
     dependencies:
-      '@aeliqo/sdk-core':
+      '@aeliqo/core':
         specifier: workspace:*
         version: link:../core
       zod:
@@ -275,13 +275,13 @@ importers:
 
   packages/testkit:
     dependencies:
-      '@aeliqo/sdk-runtime':
+      '@aeliqo/runtime':
         specifier: workspace:*
         version: link:../runtime
 
   packages/web:
     dependencies:
-      '@aeliqo/sdk-core':
+      '@aeliqo/core':
         specifier: workspace:*
         version: link:../core
       '@lit-labs/ssr':
@@ -300,7 +300,7 @@ importers:
         specifier: 3.3.3
         version: 3.3.3
     devDependencies:
-      '@aeliqo/sdk-runtime':
+      '@aeliqo/runtime':
         specifier: workspace:*
         version: link:../runtime
       '@types/d3-scale':

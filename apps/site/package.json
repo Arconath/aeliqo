@@ -4,5 +4,5 @@
   "private": true,
   "type": "module",
   "scripts": {"dev": "vite --host 127.0.0.1", "build": "tsc -p tsconfig.json && vite build"},
-  "dependencies": {"@aeliqo/sdk-web": "workspace:*", "@aeliqo/sdk-core": "workspace:*", "@aeliqo/sdk-runtime": "workspace:*", "@aeliqo/sdk-agent": "workspace:*"}
+  "dependencies": {"@aeliqo/web": "workspace:*", "@aeliqo/core": "workspace:*", "@aeliqo/runtime": "workspace:*", "@aeliqo/agent": "workspace:*"}
 }

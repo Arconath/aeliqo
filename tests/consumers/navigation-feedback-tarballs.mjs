@@ -71,7 +71,7 @@ const packages = [];
 for (const name of ["core", "web", "react"]) {
   const directory = join(root, "packages", name);
   const manifest = JSON.parse(await readFile(join(directory, "package.json"), "utf8"));
-  assert.equal(manifest.name, `@aeliqo/sdk-${name}`);
+  assert.equal(manifest.name, `@aeliqo/${name}`);
   assert.equal(manifest.version, "0.1.0");
   assert.notEqual(manifest.private, true);
   const dist = join(directory, "dist");

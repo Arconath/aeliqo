@@ -16,7 +16,7 @@ run(['pnpm','build:platform']);
 const artifacts=[];
 for(const name of ['core','runtime','web']){
  const dir=join(root,'packages',name);const path=join(runDirectory,`${name}.tgz`);run(['pnpm','pack','--out',path],dir);
- const packed=JSON.parse(run(['tar','-xOf',path,'package/package.json']));assert.equal(packed.name,`@aeliqo/sdk-${name}`);assert.equal(packed.version,'0.1.0');assert.equal(packed.license,'Apache-2.0');
+ const packed=JSON.parse(run(['tar','-xOf',path,'package/package.json']));assert.equal(packed.name,`@aeliqo/${name}`);assert.equal(packed.version,'0.1.0');assert.equal(packed.license,'Apache-2.0');
  for(const key of ['dependencies','peerDependencies'])assert(!JSON.stringify(packed[key]??{}).includes('workspace:'));
  if(name==='web'){assert.equal(packed.peerDependenciesMeta['@aeliqo/runtime'].optional,true);assert.equal(packed.dependencies['@aeliqo/runtime'],undefined);}
  artifacts.push({name:packed.name,path,sha256:hash(await readFile(path))});

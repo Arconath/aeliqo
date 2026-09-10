@@ -4,5 +4,5 @@
   "private": true,
   "type": "module",
   "scripts": {"start": "node server.mjs", "test": "node verify.mjs"},
-  "dependencies": {"@aeliqo/sdk-core": "workspace:*", "@aeliqo/sdk-runtime": "workspace:*"}
+  "dependencies": {"@aeliqo/core": "workspace:*", "@aeliqo/runtime": "workspace:*"}
 }

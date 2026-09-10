@@ -1,7 +1,7 @@
 import rawText from '../../../fixtures/hr/raw.json?raw';
-import {createQueryFunctionRegistry} from '@aeliqo/sdk-core';
-import type {Catalog, Expression, FieldDefinition, MeaningDefinition, QuerySpec, SemanticType, Task} from '@aeliqo/sdk-core';
-import type {DataRecord, LocalSnapshot} from '@aeliqo/sdk-runtime/data';
+import {createQueryFunctionRegistry} from '@aeliqo/core';
+import type {Catalog, Expression, FieldDefinition, MeaningDefinition, QuerySpec, SemanticType, Task} from '@aeliqo/core';
+import type {DataRecord, LocalSnapshot} from '@aeliqo/runtime/data';
 
 interface RawHr {
   readonly synthetic: boolean;

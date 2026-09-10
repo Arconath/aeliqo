@@ -11,9 +11,9 @@ import {
   AeliqoTrendElement,
   AeliqoTreeElement,
   AeliqoTreemapElement,
-} from "@aeliqo/sdk-web";
-import type {VisualizationBindingContext, VisualizationSpec} from "@aeliqo/sdk-core";
-import type {VisualizationDataset} from "@aeliqo/sdk-web/visualization";
+} from "@aeliqo/web";
+import type {VisualizationBindingContext, VisualizationSpec} from "@aeliqo/core";
+import type {VisualizationDataset} from "@aeliqo/web/visualization";
 import {
   catalogRef,
   catalogTemporalSpecs,
@@ -48,11 +48,11 @@ const sourceImports = `import {
   AeliqoTreeElement,
   AeliqoTreemapElement,
   registerAeliqoElements,
-} from "@aeliqo/sdk-web";
+} from "@aeliqo/web";
 `;
 
-const sourceTypeImports = `import type {Catalog, PlotUnit, Result, ResultRef, Scalar, VisualizationBindingContext, VisualizationSpec} from "@aeliqo/sdk-core";
-import type {VisualizationDataset} from "@aeliqo/sdk-web/visualization";`;
+const sourceTypeImports = `import type {Catalog, PlotUnit, Result, ResultRef, Scalar, VisualizationBindingContext, VisualizationSpec} from "@aeliqo/core";
+import type {VisualizationDataset} from "@aeliqo/web/visualization";`;
 
 const sourceSetup = `${sourceTypeImports}
 

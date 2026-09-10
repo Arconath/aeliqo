@@ -36,7 +36,7 @@ const packageNames = ['core', 'runtime', 'agent'];
 for (const name of packageNames) {
   const directory = join(root, 'packages', name);
   const manifest = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
-  assert.equal(manifest.name, `@aeliqo/sdk-${name}`);
+  assert.equal(manifest.name, `@aeliqo/${name}`);
   assert.equal(manifest.version, '0.1.0');
   assert.equal(manifest.license, 'Apache-2.0');
   assert.notEqual(manifest.private, true);

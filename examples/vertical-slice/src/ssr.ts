@@ -1,6 +1,6 @@
 import {html} from 'lit';
-import {renderAeliqo} from '@aeliqo/sdk-web/server';
-import {aeliqoStandaloneThemeStyles} from '@aeliqo/sdk-web/styles';
+import {renderAeliqo} from '@aeliqo/web/server';
+import {aeliqoStandaloneThemeStyles} from '@aeliqo/web/styles';
 import {createHrViewSession} from './view-session.js';
 
 /** Server-side public synthetic fixture: the same raw source, evaluator and composition pass. */

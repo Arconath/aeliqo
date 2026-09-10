@@ -11,7 +11,7 @@ import {
   type AeliqoKeyValueItem,
   type AeliqoTableColumn,
   type AeliqoTableRow,
-} from "@aeliqo/sdk-web";
+} from "@aeliqo/web";
 import {catalogColumns, catalogFields, catalogRef, catalogRows, catalogScope, cleanupCatalogRoot, createCatalogElement, createCatalogRoot} from "./fixture.js";
 import {catalogMountSource, catalogSource} from "./source.js";
 import type {CatalogExampleDefinition, CatalogExampleId, CatalogExampleMetadata} from "./types.js";
@@ -30,9 +30,9 @@ const sourceImports = `import {
   type AeliqoKeyValueItem,
   type AeliqoTableColumn,
   type AeliqoTableRow,
-} from "@aeliqo/sdk-web";`;
-const sourceTypeImports = `import type {ResultRef, Scalar} from "@aeliqo/sdk-core";
-import type {AeliqoDataColumn, AeliqoDataScope, AeliqoFieldOption} from "@aeliqo/sdk-web/data";`;
+} from "@aeliqo/web";`;
+const sourceTypeImports = `import type {ResultRef, Scalar} from "@aeliqo/core";
+import type {AeliqoDataColumn, AeliqoDataScope, AeliqoFieldOption} from "@aeliqo/web/data";`;
 
 const sourceSetup = `${sourceTypeImports}
 

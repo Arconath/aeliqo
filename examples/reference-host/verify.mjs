@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {createHttpDataService} from '@aeliqo/sdk-runtime/data';
+import {createHttpDataService} from '@aeliqo/runtime/data';
 import {budget, commerceFixture, hrFixture} from './fixtures.mjs';
 import {startReferenceHost} from './server.mjs';
 

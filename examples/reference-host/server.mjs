@@ -2,7 +2,7 @@ import {createServer} from 'node:http';
 import {Readable} from 'node:stream';
 import {pipeline} from 'node:stream/promises';
 import {pathToFileURL} from 'node:url';
-import {createDataHttpHandler, createLocalDataService} from '@aeliqo/sdk-runtime/data';
+import {createDataHttpHandler, createLocalDataService} from '@aeliqo/runtime/data';
 import {budget, commerceFixture, hrFixture, registry} from './fixtures.mjs';
 
 /** Local synthetic reference only. Production authentication belongs to the host. */

@@ -1,11 +1,11 @@
-import {registerAeliqoElements} from '@aeliqo/sdk-web';
-import {detectWebMcp} from '@aeliqo/sdk-agent/webmcp';
-import {AeliqoRegionElement} from '@aeliqo/sdk-web/region';
-import {AeliqoComparisonElement} from '@aeliqo/sdk-web/comparison';
-import {AeliqoDetailElement} from '@aeliqo/sdk-web/detail';
-import {AeliqoTextFieldElement} from '@aeliqo/sdk-web/text-field';
+import {registerAeliqoElements} from '@aeliqo/web';
+import {detectWebMcp} from '@aeliqo/agent/webmcp';
+import {AeliqoRegionElement} from '@aeliqo/web/region';
+import {AeliqoComparisonElement} from '@aeliqo/web/comparison';
+import {AeliqoDetailElement} from '@aeliqo/web/detail';
+import {AeliqoTextFieldElement} from '@aeliqo/web/text-field';
 import {createDemoEngine,type DemoOutput,type DemoView,type DemoPresentation} from './playground-engine.js';
-import type {Outcome,Task} from '@aeliqo/sdk-core';
+import type {Outcome,Task} from '@aeliqo/core';
 import {syncComponentTheme} from './site.js';
 
 const $=<T extends HTMLElement=HTMLElement>(id:string):T=>{const node=document.getElementById(id);if(!node)throw Error(`Missing playground control ${id}`);return node as T;};

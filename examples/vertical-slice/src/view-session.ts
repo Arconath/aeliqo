@@ -1,9 +1,9 @@
-import {composePresentation, validatePresentationPlan, type CommitPreconditions, type Experience, type Outcome, type PresentationContext, type PresentationPlan, type Task, type ValidatedPresentation} from '@aeliqo/sdk-core';
-import {createRegionStore, type RegionReadSet} from '@aeliqo/sdk-runtime/regions';
-import {createInteractionController, createInteractionGraph} from '@aeliqo/sdk-runtime/interaction';
-import type {MaterializedTaskOutput} from '@aeliqo/sdk-runtime/evaluation';
-import {AELIQO_PRESENTATION_REFS, createAeliqoPresentationRegistry, type AeliqoRegionResult, type AeliqoSemanticInteractionRequest} from '@aeliqo/sdk-web/region';
-import {stableTableRowKey} from '@aeliqo/sdk-web/table';
+import {composePresentation, validatePresentationPlan, type CommitPreconditions, type Experience, type Outcome, type PresentationContext, type PresentationPlan, type Task, type ValidatedPresentation} from '@aeliqo/core';
+import {createRegionStore, type RegionReadSet} from '@aeliqo/runtime/regions';
+import {createInteractionController, createInteractionGraph} from '@aeliqo/runtime/interaction';
+import type {MaterializedTaskOutput} from '@aeliqo/runtime/evaluation';
+import {AELIQO_PRESENTATION_REFS, createAeliqoPresentationRegistry, type AeliqoRegionResult, type AeliqoSemanticInteractionRequest} from '@aeliqo/web/region';
+import {stableTableRowKey} from '@aeliqo/web/table';
 import {catalog, functionRegistry, initialTask} from './hr.js';
 import {createHrDataSession, policyRevision, principalKey, refKey, scopeDigest} from './data-session.js';
 

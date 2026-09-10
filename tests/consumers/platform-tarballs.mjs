@@ -44,7 +44,7 @@ const artifacts = [];
 for (const name of ['core', 'web', 'react']) {
   const directory = join(root, 'packages', name);
   const manifest = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
-  assert.equal(manifest.name, `@aeliqo/sdk-${name}`);
+  assert.equal(manifest.name, `@aeliqo/${name}`);
   assert.equal(manifest.version, '0.1.0');
   assert.notEqual(manifest.private, true);
   const dist = join(directory, 'dist');
@@ -150,7 +150,7 @@ run([join(consumer,'node_modules/.bin/vite'),'build'],consumer);
 const modules=JSON.parse(await readFile(join(consumer,'dist/modules.json'),'utf8'));
 // AeliqoInput delegates to the shared TextField; these are its exact required bases/events.
 // Runtime, planner, agent, chart, and other component modules remain excluded.
-const allowed=/(?:\/browser\.js$|\/index\.html$|vite\/modulepreload-polyfill|\/node_modules\/(?:lit(?:-html|-element)?\/|@lit\/reactive-element\/|@aeliqo\/sdk-web\/dist\/(?:elements\/aeliqo-input|events|input\/(?:events|base|text-control|text-field)|foundation\/base|styles\/(?:theme|tokens))\.js$))/;
+const allowed=/(?:\/browser\.js$|\/index\.html$|vite\/modulepreload-polyfill|\/node_modules\/(?:lit(?:-html|-element)?\/|@lit\/reactive-element\/|@aeliqo\/web\/dist\/(?:elements\/aeliqo-input|events|input\/(?:events|base|text-control|text-field)|foundation\/base|styles\/(?:theme|tokens))\.js$))/;
 assert.deepEqual(modules.filter(id=>!allowed.test(id)),[], 'Unexpected standalone input module');
 const browserBundles=[];
 for (const file of await readdir(join(consumer,'dist/assets'))) {

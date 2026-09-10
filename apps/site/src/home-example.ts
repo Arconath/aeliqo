@@ -1,4 +1,4 @@
-import {AeliqoRecordListElement} from '@aeliqo/sdk-web/record-list';
+import {AeliqoRecordListElement} from '@aeliqo/web/record-list';
 
 /** Mount into an empty host element. All supplied records are synthetic. */
 export function mountPeopleExample(container:HTMLElement){

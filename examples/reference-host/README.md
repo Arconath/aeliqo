@@ -1,7 +1,7 @@
 # Synthetic ADC reference host
 
 This local example serves synthetic commerce or HR records through the same
-`@aeliqo/sdk-runtime/data` service used in process. It binds only to `127.0.0.1` on an
+`@aeliqo/runtime/data` service used in process. It binds only to `127.0.0.1` on an
 available port and exposes the generic describe/plan/execute API. It performs no
 database discovery, provider calls, or production data access.
 

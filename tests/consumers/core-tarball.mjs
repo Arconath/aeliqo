@@ -184,7 +184,7 @@ const lock = JSON.parse(lockBytes);
 const coreLock = lock.packages["node_modules/@aeliqo/core"];
 assert.equal(coreLock.version, "0.1.0");
 assert.equal(coreLock.integrity, tarballIntegrity);
-const corePackageEntries = Object.keys(lock.packages).filter((key) => /(?:^|\/)node_modules\/@aeliqo\/sdk-core$/.test(key));
+const corePackageEntries = Object.keys(lock.packages).filter((key) => /(?:^|\/)node_modules\/@aeliqo\/core$/.test(key));
 assert.deepEqual(corePackageEntries, ["node_modules/@aeliqo/core"], "Expected exactly one installed @aeliqo/core package");
 assert.equal(lock.packages["node_modules/zod"].version, "4.5.4");
 assert.match(lock.packages["node_modules/zod"].integrity, /^sha512-/);

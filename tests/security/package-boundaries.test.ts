@@ -92,7 +92,7 @@ function flattenedExportTargets(value: unknown): string[] {
 
 function exportedSourceEntries(name: PackageName, manifest: Record<string, unknown>): string[] {
   const exports = manifest.exports;
-  if (!exports || typeof exports !== 'object') throw new Error(`@aeliqo/sdk-${name} has no exports map`);
+  if (!exports || typeof exports !== 'object') throw new Error(`@aeliqo/${name} has no exports map`);
   const entries: string[] = [];
   for (const [key, value] of Object.entries(exports as Record<string, unknown>)) {
     if (key.includes('*')) continue;
@@ -209,16 +209,16 @@ describe('T28 package boundary graph', () => {
         const exports = manifests[i]!.exports as Record<string, unknown>;
         for (const [key, value] of Object.entries(exports)) {
           if (key.includes('*') || typeof value === 'string') continue;
-          expect(value, `@aeliqo/sdk-${name} ${key} export descriptor`).toMatchObject({
+          expect(value, `@aeliqo/${name} ${key} export descriptor`).toMatchObject({
             types: expect.stringMatching(/^\.\/dist\/.+\.d\.ts$/),
             import: expect.stringMatching(/^\.\/dist\/.+\.js$/),
           });
         }
         const entries = exportedSourceEntries(name, manifests[i]!);
-        expect(entries.length, `@aeliqo/sdk-${name} should declare source exports`).toBeGreaterThan(0);
+        expect(entries.length, `@aeliqo/${name} should declare source exports`).toBeGreaterThan(0);
         const graph = reachableEntries(name, entries, files);
-        expect(graph.findings, `@aeliqo/sdk-${name} export/local graph`).toEqual([]);
-        expect(graph.files.size, `@aeliqo/sdk-${name} graph should contain implementation`).toBeGreaterThan(0);
+        expect(graph.findings, `@aeliqo/${name} export/local graph`).toEqual([]);
+        expect(graph.files.size, `@aeliqo/${name} graph should contain implementation`).toBeGreaterThan(0);
       }
     } finally {
       snapshot.dispose();

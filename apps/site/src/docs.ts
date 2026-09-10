@@ -1,5 +1,5 @@
-import {AeliqoDialogElement} from '@aeliqo/sdk-web/dialog';
-import {AeliqoRecordListElement} from '@aeliqo/sdk-web/record-list';
+import {AeliqoDialogElement} from '@aeliqo/web/dialog';
+import {AeliqoRecordListElement} from '@aeliqo/web/record-list';
 import {syncComponentTheme} from './site.js';
 
 if (!customElements.get('aeliqo-dialog')) customElements.define('aeliqo-dialog', AeliqoDialogElement);
@@ -32,7 +32,7 @@ document.addEventListener('keydown',event=>{if((event.metaKey||event.ctrlKey)&&e
 for (const mount of document.querySelectorAll<HTMLElement>('[data-example="record-list"]')) {
  if(!customElements.get('aeliqo-record-list'))customElements.define('aeliqo-record-list',AeliqoRecordListElement);
  const list=new AeliqoRecordListElement();list.columns=[{key:'name',label:'Name'},{key:'team',label:'Team'}];list.identity=['id'];list.rows=[{id:'ada',name:'Ada Chen',team:'Design'}];list.scope={label:'Synthetic people',kind:'filtered',loaded:1,filteredTotal:1};mount.append(list);void syncComponentTheme(mount);
- const pre=document.createElement('pre');const code=document.createElement('code');code.textContent=`import {AeliqoRecordListElement} from '@aeliqo/sdk-web/record-list';
+ const pre=document.createElement('pre');const code=document.createElement('code');code.textContent=`import {AeliqoRecordListElement} from '@aeliqo/web/record-list';
 if (!customElements.get('aeliqo-record-list')) customElements.define('aeliqo-record-list', AeliqoRecordListElement);
 const list = new AeliqoRecordListElement();
 list.columns = [{key:'name', label:'Name'}, {key:'team', label:'Team'}];
