@@ -1,0 +1,41 @@
+{
+  "schema": "aeliqo.t32.reference-closure-manifest.v1",
+  "task": "T32",
+  "status": "verified-supplemental-reference-closure",
+  "generatedAt": "2026-09-10T14:46:38Z",
+  "sourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+  "sourceTree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+  "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+  "evidenceTipCommit": "274117ff566f45d4239d34fd9dcdfb0206766b9b",
+  "scope": "Evidence-only closure of the current T29 and T30 author/reviewer records to the existing T32 final-source audit. Product source, task state, root configuration, budgets and lockfiles were not modified.",
+  "sourceVerification": {
+    "gateDigestCommand": "python3 scripts/gate.py digest",
+    "gateDigestMatched": true,
+    "productSourceTreeMatched": true,
+    "nonEvidencePathsAfterSource": [],
+    "sourceChangedDuringClosure": false
+  },
+  "references": {
+    "t32FinalAuditManifestSha256": "5f91220d80bdff72b1fd5dadb4249d8e855c1af6f46e36f54d9da9d61c993068",
+    "t32FinalAuditReviewSha256": "09d48cd0d23a250e1ad8c26a91b57aeec0c4619896956e5330ad3fabdc7f70b3",
+    "t29AuthorManifestSha256": "48db0631d8ee5118916986d51cd149d74bc60c5a62887c256cfe20e2d6f5a2d8",
+    "t29IndependentReviewManifestSha256": "21ff362033b70d7a6b22daae4f0a75159ea642fa6bbd7f20fdc09e2494a80e5f",
+    "t29IndependentReviewSha256": "7e8cc2cb1f00c59bda3a37180b1137088474fd0c37cd4091b09ce479b34fadcf",
+    "t30AuthorManifestSha256": "f16f0fcc90d3edf90a693c63870a47f77cee189ae5c0b2a355c1d687e662ddbc",
+    "t30IndependentReviewManifestSha256": "4b84a525bec3cf579fac63efa696d8c3b5a2b1bf9750407a704758364e575667",
+    "t30IndependentReviewSha256": "37b61d9b7a0b2ad75e02e3c625a0213bf85491712bfc51f5dbf6d6112d0de9c9"
+  },
+  "artifacts": [
+    {
+      "path": "harness/evidence/t32/be201bf-reference-closure/reference-closure.json",
+      "sha256": "b2db9e6f5a3cfc4c3853c54f87aae248620154b0a899a48f4ec7808ea1ec1da3",
+      "bytes": 12100,
+      "detail": "Hash-bound source identity, current T29/T30 references, historical-reference disposition, inherited nonblocking findings and explicit limits."
+    }
+  ],
+  "checksumPolicy": "SHA256SUMS inventories the reference-closure record only; manifest and inventory are excluded to avoid circular hashes.",
+  "limits": [
+    "This is a supplemental evidence-reference record, not a product or task-state mutation and not release approval.",
+    "The bound evidence retains its own manual assistive-technology, lower-powered-device, cross-browser field-performance, model-quality, publication and deployment limits."
+  ]
+}

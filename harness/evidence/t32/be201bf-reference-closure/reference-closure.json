@@ -1,0 +1,243 @@
+{
+  "schema": "aeliqo.t32.reference-closure.v1",
+  "task": "T32",
+  "status": "verified-supplemental-reference-closure",
+  "reviewedAt": "2026-09-10T14:46:38Z",
+  "purpose": "Bind the current final-source T29 and T30 evidence to the existing T32 final-source audit without changing product source, task state, budgets, or release claims.",
+  "subject": {
+    "productSourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+    "productSourceTree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+    "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+    "sourceDigestCommand": "python3 scripts/gate.py digest",
+    "evidenceTipCommit": "274117ff566f45d4239d34fd9dcdfb0206766b9b",
+    "evidenceTipTree": "cf7d0aecf8310dddff3c7aff887fdecce7b753a1",
+    "productSourceUnchangedThroughEvidenceTip": true,
+    "nonEvidencePathsAfterProductSource": [],
+    "evidenceOnlyCommitsAfterProductSource": [
+      "fdc29af570fe1c82bcdb63346cafc7462a3849a1",
+      "343bbec394fc1225a8a3fa1a5e7479a118c0925d",
+      "dd4f6092a924996c3f3a9570c9b27eed72ef6475",
+      "9289ef054354b60f4124fe2a403ecf1786fb616c",
+      "ec96debab75a9a23446c29aa11a8d7fcecfb3d5a",
+      "274117ff566f45d4239d34fd9dcdfb0206766b9b"
+    ]
+  },
+  "verification": {
+    "sourceIdentity": {
+      "gateDigestMatchedExpected": true,
+      "productCommitTreeMatchedExpected": true,
+      "allChangesFromProductCommitToEvidenceTipAreUnderHarnessEvidence": true,
+      "sourceChangedDuringClosure": false
+    },
+    "referenceIntegrity": {
+      "recordsChecked": 12,
+      "fileHashesRecomputed": true,
+      "jsonRecordsParsed": true,
+      "sourceAndDigestBindingsChecked": true,
+      "allChecksPassed": true
+    },
+    "currentEvidenceBindings": {
+      "t29Author": {
+        "manifestSha256": "48db0631d8ee5118916986d51cd149d74bc60c5a62887c256cfe20e2d6f5a2d8",
+        "sourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+        "sourceTree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+        "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+        "status": "passed-automated-final-source-revalidation",
+        "sourceChangedDuringRun": false
+      },
+      "t29IndependentReview": {
+        "manifestSha256": "21ff362033b70d7a6b22daae4f0a75159ea642fa6bbd7f20fdc09e2494a80e5f",
+        "reviewSha256": "7e8cc2cb1f00c59bda3a37180b1137088474fd0c37cd4091b09ce479b34fadcf",
+        "sourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+        "sourceTree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+        "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+        "status": "approved-with-nonblocking-p2-follow-up",
+        "independentOfEvidenceAuthors": true
+      },
+      "t30Author": {
+        "manifestSha256": "f16f0fcc90d3edf90a693c63870a47f77cee189ae5c0b2a355c1d687e662ddbc",
+        "sourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+        "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+        "status": "passed",
+        "sourceChangedDuringRun": false,
+        "productSourceChanges": [],
+        "budgetChanges": []
+      },
+      "t30IndependentReview": {
+        "integratedReviewManifestSha256": "4b84a525bec3cf579fac63efa696d8c3b5a2b1bf9750407a704758364e575667",
+        "reviewSha256": "37b61d9b7a0b2ad75e02e3c625a0213bf85491712bfc51f5dbf6d6112d0de9c9",
+        "reviewInventorySha256": "87d704c963b6cb363c00c6dd24853d13da39ed65c68445b4741422c2039af2b1",
+        "reviewedProductSourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+        "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+        "reviewWorktreeCommit": "221f7a075d635b88c75e6ee2098d039b36d9edcf",
+        "integratedEvidenceCommit": "274117ff566f45d4239d34fd9dcdfb0206766b9b",
+        "status": "approved-with-nonblocking-findings",
+        "independentOfAuthor": true,
+        "blockingFindings": 0,
+        "p0": 0,
+        "p1": 0,
+        "p2": 1
+      }
+    }
+  },
+  "boundReferences": [
+    {
+      "role": "t32-final-audit-manifest",
+      "path": "harness/evidence/t32/be201bf-final-audit/manifest.json",
+      "sha256": "5f91220d80bdff72b1fd5dadb4249d8e855c1af6f46e36f54d9da9d61c993068",
+      "bytes": 3802,
+      "reviewedSourceCommit": "fdc29af570fe1c82bcdb63346cafc7462a3849a1",
+      "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+      "status": "complete-independent-system-review"
+    },
+    {
+      "role": "t32-independent-review",
+      "path": "harness/evidence/t32/be201bf-final-audit/independent-review.json",
+      "sha256": "09d48cd0d23a250e1ad8c26a91b57aeec0c4619896956e5330ad3fabdc7f70b3",
+      "bytes": 4314,
+      "reviewedSourceCommit": "fdc29af570fe1c82bcdb63346cafc7462a3849a1",
+      "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+      "status": "approved"
+    },
+    {
+      "role": "t32-final-source-checks",
+      "path": "harness/evidence/t32/be201bf-final-audit/checks.json",
+      "sha256": "cfa38cd2814ce21f7e4a2b495135285dc2960c1049235da67a6aded64cf40187",
+      "bytes": 6231,
+      "sourceCommit": "fdc29af570fe1c82bcdb63346cafc7462a3849a1",
+      "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8"
+    },
+    {
+      "role": "t32-source-delta",
+      "path": "harness/evidence/t32/be201bf-final-audit/source-delta.json",
+      "sha256": "6316a1c8d0e644a55f00c028e96c5b82c1daebc994a161d95418bc0bce56601f",
+      "bytes": 1809,
+      "finalSourceCommit": "fdc29af570fe1c82bcdb63346cafc7462a3849a1",
+      "finalSourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8"
+    },
+    {
+      "role": "t29-author-manifest-current-source",
+      "path": "harness/evidence/t29/a245c8f-final-revalidation/manifest.json",
+      "sha256": "48db0631d8ee5118916986d51cd149d74bc60c5a62887c256cfe20e2d6f5a2d8",
+      "bytes": 14410,
+      "sourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+      "sourceTree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+      "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+      "status": "passed-automated-final-source-revalidation"
+    },
+    {
+      "role": "t29-independent-review-manifest",
+      "path": "harness/evidence/t29/a245c8f-final-revalidation-review/manifest.json",
+      "sha256": "21ff362033b70d7a6b22daae4f0a75159ea642fa6bbd7f20fdc09e2494a80e5f",
+      "bytes": 2213,
+      "sourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+      "sourceTree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+      "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+      "status": "complete-independent-review"
+    },
+    {
+      "role": "t29-independent-review",
+      "path": "harness/evidence/t29/a245c8f-final-revalidation-review/independent-review.json",
+      "sha256": "7e8cc2cb1f00c59bda3a37180b1137088474fd0c37cd4091b09ce479b34fadcf",
+      "bytes": 5405,
+      "sourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+      "sourceTree": "9343cc4dd0087c67268743c2f433e712fa42a114",
+      "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+      "status": "approved-with-nonblocking-p2-follow-up"
+    },
+    {
+      "role": "t29-independent-review-summary",
+      "path": "harness/evidence/t29/a245c8f-final-revalidation-review/recheck-summary.json",
+      "sha256": "13d7ecb7680992502a1847576361f23499f5ca9e044984feeaa9655f5e7333e0",
+      "bytes": 5968,
+      "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8"
+    },
+    {
+      "role": "t30-author-manifest-current-source",
+      "path": "harness/evidence/t30/a245c8f-final-revalidation/manifest.json",
+      "sha256": "f16f0fcc90d3edf90a693c63870a47f77cee189ae5c0b2a355c1d687e662ddbc",
+      "bytes": 18782,
+      "sourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+      "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+      "status": "passed"
+    },
+    {
+      "role": "t30-independent-review-manifest",
+      "path": "harness/evidence/t30/a245c8f-final-revalidation-review/manifest.json",
+      "sha256": "4b84a525bec3cf579fac63efa696d8c3b5a2b1bf9750407a704758364e575667",
+      "bytes": 7834,
+      "reviewedProductSourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+      "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+      "status": "review-complete-with-nonblocking-findings"
+    },
+    {
+      "role": "t30-independent-review",
+      "path": "harness/evidence/t30/a245c8f-final-revalidation-review/independent-review.json",
+      "sha256": "37b61d9b7a0b2ad75e02e3c625a0213bf85491712bfc51f5dbf6d6112d0de9c9",
+      "bytes": 8215,
+      "reviewedProductSourceCommit": "a245c8f946030f930c9145e44dd7211bcd0fb774",
+      "sourceDigest": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+      "status": "approved-with-nonblocking-findings"
+    },
+    {
+      "role": "t30-independent-review-checksum-index",
+      "path": "harness/evidence/t30/a245c8f-final-revalidation-review/SHA256SUMS",
+      "sha256": "87d704c963b6cb363c00c6dd24853d13da39ed65c68445b4741422c2039af2b1",
+      "bytes": 2569
+    }
+  ],
+  "historicalOrSupersededReferences": [
+    {
+      "path": "harness/evidence/t29/00aadd0-final-revalidation/manifest.json",
+      "sha256": "9e57c5c0581c0d9bd8e1cc4cedd51e0871cac13ac345539877847fe7f639989e",
+      "disposition": "historical-superseded",
+      "reason": "Retained by the earlier T32 audit, but the current T29 closure is the exact a245c8f packet bound above."
+    },
+    {
+      "path": "harness/evidence/t30/4f82c54-release-revalidation/manifest.json",
+      "sha256": "64e436ec14817595c23451473213ef0975ffbb73e253812ca0564801068548db",
+      "disposition": "historical-superseded",
+      "reason": "Earlier T30 performance qualification; current performance author and independent-review packets are the a245c8f records bound above."
+    },
+    {
+      "path": "harness/evidence/t30/a245c8f-hydration-fix-review/manifest.json",
+      "sha256": "39c8efd7bf498ed52100b4859c44c7c164b56046459f424810c61c7bd6171156",
+      "disposition": "historical-partial-review",
+      "reason": "Valid bounded hydration/layout review retained by T32, but it is not the current T30 final-performance independent review."
+    }
+  ],
+  "inheritedNonblockingFindings": [
+    {
+      "task": "T29",
+      "priority": "P2",
+      "summary": "Retained Axe incomplete diagnostics remain outside the claimed manual assistive-technology qualification.",
+      "source": "harness/evidence/t29/a245c8f-final-revalidation-review/independent-review.json"
+    },
+    {
+      "task": "T30",
+      "priority": "P2",
+      "summary": "Planner timing has recurring headroom variability across fresh runtime repetitions.",
+      "source": "harness/evidence/t30/a245c8f-final-revalidation-review/independent-review.json"
+    },
+    {
+      "task": "T32",
+      "priority": "P2",
+      "summary": "Final-source planner timing remains a nonblocking reliability/headroom follow-up.",
+      "source": "harness/evidence/t32/be201bf-final-audit/independent-review.json"
+    }
+  ],
+  "decision": {
+    "sourceReferenceClosure": true,
+    "p0": 0,
+    "p1": 0,
+    "newFindings": [],
+    "taskStateChanged": false,
+    "releaseApprovalIssued": false,
+    "summary": "Current a245c8f/be201bfa T29 and T30 author/reviewer records are hash-bound to the existing T32 final audit. Historical retained records are explicitly labeled and do not replace the current closure."
+  },
+  "limits": [
+    "This supplemental record closes evidence references only; it does not rerun the T29 full 1137-case matrix or the T32 full audit suite.",
+    "The bound records retain their own manual assistive-technology, lower-powered-device, cross-browser field-performance, model-quality, publication and deployment limits.",
+    "No task-state, source, budget, lockfile, registry, GitHub or deployment mutation is authorized or claimed by this packet."
+  ]
+}
