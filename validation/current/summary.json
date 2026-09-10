@@ -1,10 +1,10 @@
 {
   "kitRevision": "0.1.0-master1.1",
-  "timestamp": "2026-09-10T06:47:51.111647+00:00",
+  "timestamp": "2026-09-10T07:57:24.412603+00:00",
   "scope": "kit/harness/reference experiments only",
   "productImplemented": false,
   "productReady": false,
-  "candidateDigest": "3ad344968a47326c5b745915e1985a941cf4e098c625f2b91808decfa5dbb627",
+  "candidateDigest": "05e5990492994ecd9877454cc13be94e2bd9ebe17df1985725c139f971c1be10",
   "sourceChangedDuringRun": false,
   "environment": {
     "python": "3.14.7 (main, Aug  5 2026, 10:29:49) [Clang 21.0.0 (clang-2100.1.1.101)]",
@@ -25,7 +25,7 @@
       "expectedExitCode": 0,
       "outcome": "pass",
       "log": "validation/current/kit-consistency.log",
-      "sha256": "451e5c16e853eaee4162e5c50abf4eb5cc1b92f578321f876c470af8963546e6"
+      "sha256": "ea6982d74d61957f9c14ae4f167a42ba53812b0bdd0a52a8b7e5272c129e9fd6"
     },
     {
       "check": "python-harness",
@@ -42,7 +42,7 @@
       "expectedExitCode": 0,
       "outcome": "pass",
       "log": "validation/current/python-harness.log",
-      "sha256": "3b6fc72846d347aa211cf0102b36c11481e93a14d5298187067745c708daf9bd"
+      "sha256": "5caf17de7687510ef156ce51caa71f06051eaaf3415ac0adb4667108dc4b7572"
     },
     {
       "check": "independent-semantics-composition",
@@ -59,7 +59,7 @@
       "expectedExitCode": 0,
       "outcome": "pass",
       "log": "validation/current/independent-semantics-composition.log",
-      "sha256": "972998de2f92b48e1238a514dd800f82d773879f661dfe4ed41d9ab712f6d986"
+      "sha256": "80e88a93d16195ba246e7d5cb23e70184601cf734f9dea8bea5c4646e7a16f7d"
     },
     {
       "check": "strict-ts-and-node-guards",
@@ -71,7 +71,7 @@
       "expectedExitCode": 0,
       "outcome": "pass",
       "log": "validation/current/strict-ts-and-node-guards.log",
-      "sha256": "de4e16f6e7a3b316717514b70bfeea5ce07bdda1d3a197f97426ef63ac907d2d"
+      "sha256": "c9ac8e73d7202b31379b130830b09a06d7883aa5c3b988b105e8c2c6a8ed5228"
     },
     {
       "check": "reference-search-measurements",
@@ -83,7 +83,7 @@
       "expectedExitCode": 0,
       "outcome": "pass",
       "log": "validation/current/reference-search-measurements.log",
-      "sha256": "93421ed3c8b418e1842fcbadf0952b80420c32701488f19bb232244e6024a774"
+      "sha256": "983a665a814bad8f7f964e78a1c8a796867a430f3f888227ebf40ad0aeb1fa23"
     },
     {
       "check": "publisher-dry-run",
@@ -95,7 +95,7 @@
       "expectedExitCode": 0,
       "outcome": "pass",
       "log": "validation/current/publisher-dry-run.log",
-      "sha256": "0ccf2744bab229df04431499731e994ea153e3546d950dc204938b745012ead5"
+      "sha256": "637f8a0b9e5479dcba1070d85f4f64490cdfe00ebb11f6495115232fbf9f249e"
     },
     {
       "check": "product-ready-expected-block",
