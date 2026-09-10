@@ -1,5 +1,5 @@
-import {parseContract, WIRE_LIMITS} from '@aeliqo/sdk-core';
-import type {Contract, Diagnostic, ResultRef} from '@aeliqo/sdk-core';
+import {parseContract, WIRE_LIMITS} from '@aeliqo/core';
+import type {Contract, Diagnostic, ResultRef} from '@aeliqo/core';
 
 type ResultEvent = Contract<'result-event'>;
 

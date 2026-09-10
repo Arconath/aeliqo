@@ -9,7 +9,7 @@ import {
   type ResultRef,
   type VersionRef,
   type ValidatedPresentation,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 
 /** Agent proposals and manual authoring use the same canonical registry. */
 export type AgentRegisteredViewManifest = PresentationManifest;

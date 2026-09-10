@@ -7,7 +7,7 @@ import {
   type PresentationValues,
   type Scalar,
   type VersionRef,
-} from "@aeliqo/sdk-core";
+} from "@aeliqo/core";
 import type {AeliqoEmptyStateKind} from "../feedback/empty-state.js";
 
 /**

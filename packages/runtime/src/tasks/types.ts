@@ -1,4 +1,4 @@
-import type {InteractionState, PresentationPlan as CorePresentationPlan, ResultRef, Task} from '@aeliqo/sdk-core';
+import type {InteractionState, PresentationPlan as CorePresentationPlan, ResultRef, Task} from '@aeliqo/core';
 
 /** The only state a region owns. Records remain in the result store. */
 export type PresentationPlan = CorePresentationPlan;

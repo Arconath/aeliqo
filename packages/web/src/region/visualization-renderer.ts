@@ -7,10 +7,10 @@ import {
   type Result,
   type ResultRef,
   type ValidatedPresentation,
-} from "@aeliqo/sdk-core";
+} from "@aeliqo/core";
 import {html, nothing, type TemplateResult} from "lit";
 import {materializeVisualizationRows} from "../visualization/materialization.js";
-import type {VisualizationSpec} from "@aeliqo/sdk-core";
+import type {VisualizationSpec} from "@aeliqo/core";
 import type {
   AeliqoVisualizationBinding,
   AeliqoVisualizationPresentationRenderContext,

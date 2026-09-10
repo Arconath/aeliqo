@@ -1,10 +1,10 @@
-# @aeliqo/sdk-web
+# @aeliqo/web
 
 The shared Lit implementation contains Aeliqo's 71 foundation, input, navigation,
 feedback, data, plot, visualization, and semantic compound components. The root
 entry exports the component families without defining custom elements. Call
 `registerAeliqoElements()` once at the application boundary, or use the isolated
-`@aeliqo/sdk-web/server` entry for the server renderer. The server entry accepts a
+`@aeliqo/web/server` entry for the server renderer. The server entry accepts a
 trusted, pre-resolved Lit template through `renderAeliqo`; it does not own
 application data or routes.
 
@@ -19,7 +19,7 @@ response headers. The platform fixture exercises the browser nonce path and
 blocks inline scripts; it is not a manual assistive-technology certification.
 
 
-`@aeliqo/sdk-web/region` adds `createAeliqoPresentationRegistry` and
+`@aeliqo/web/region` adds `createAeliqoPresentationRegistry` and
 `AeliqoRegionElement`. The registry connects the pure presentation compiler to
 the shared table, trend, filter, and stack implementations. The host supplies
 `resolveEntity` for authorized result identities. No-preset composition uses the

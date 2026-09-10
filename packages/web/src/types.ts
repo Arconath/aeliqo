@@ -1,4 +1,4 @@
-import type {ResultRef} from "@aeliqo/sdk-core";
+import type {ResultRef} from "@aeliqo/core";
 
 /** Exact decimal values stay structured so tables never round them through IEEE-754. */
 export interface AeliqoDecimalCell {

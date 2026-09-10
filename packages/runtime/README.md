@@ -1,7 +1,7 @@
-# @aeliqo/sdk-runtime
+# @aeliqo/runtime
 
 Effectful Aeliqo integration, separate from the pure core. The
-`@aeliqo/sdk-runtime/data` entry provides the bounded Application Data Contract (ADC)
+`@aeliqo/runtime/data` entry provides the bounded Application Data Contract (ADC)
 boundary and its in-process evaluator. A host owns authentication, policy and
 physical execution; the runtime never treats a client-supplied principal or tenant
 field as authority.
@@ -97,14 +97,14 @@ The host and later data/evaluation passes retain those responsibilities.
 
 ## Basic local audit export
 
-`@aeliqo/sdk-runtime/audit` exposes `createLocalAuditExporter`. The exporter is
+`@aeliqo/runtime/audit` exposes `createLocalAuditExporter`. The exporter is
 an in-memory, JSON-serializable event buffer; it never writes to a file, sends a
 request, or chooses an organizational retention policy. Applications create one
 exporter per appropriate authorization/lifecycle scope and explicitly record
 the outcomes they want to retain:
 
 ```ts
-import {createLocalAuditExporter} from '@aeliqo/sdk-runtime/audit';
+import {createLocalAuditExporter} from '@aeliqo/runtime/audit';
 
 const audit = createLocalAuditExporter({maxEvents: 256, maxBytes: 256 * 1024});
 audit.record({kind: 'plan', phase: 'query', status: 'completed', durationMs: 12});
@@ -135,7 +135,7 @@ cross-team analytics, and managed retention are outside this API.
 
 ## Result handles
 
-`@aeliqo/sdk-runtime/results` exposes `createResultStore`. Begin a handle with the
+`@aeliqo/runtime/results` exposes `createResultStore`. Begin a handle with the
 host's principal partition, accepted scope/policy/query/catalog/function/source
 pins, output/task/request IDs and accepted population digest. Consume
 `handle.subscribe(service.execute(accepted, {signal}), {signal})` as an async
@@ -162,7 +162,7 @@ egress. Persistence and columnar codecs are not implemented by this memory store
 
 ## Region transactions
 
-`@aeliqo/sdk-runtime/regions` exposes `createRegionStore`. The application supplies
+`@aeliqo/runtime/regions` exposes `createRegionStore`. The application supplies
 `readAuthority` and `authorizeCommit`; neither comes from a proposal. Current
 authority includes the private principal partition, scope, policy, catalog,
 experience and function-registry revisions, and authorized result references.
@@ -211,7 +211,7 @@ uncooperative callbacks, whose late results cannot commit.
 before the atomic state swap and releases the proposal's leases. Cancellation
 after the swap does not undo an already completed commit.
 
-`@aeliqo/sdk-runtime/persistence` serializes versioned task metadata and semantic
+`@aeliqo/runtime/persistence` serializes versioned task metadata and semantic
 pins, without result rows, principal keys or presentation plans. Storage remains
 the application's responsibility. `await regions.restore(document)` requires a
 host `restoreRegion` callback: requery the persisted task under current
@@ -233,7 +233,7 @@ potentially sensitive selections or drafts.
 
 ## Typed interactions
 
-`@aeliqo/sdk-runtime/interaction` exposes `createInteractionGraph` and
+`@aeliqo/runtime/interaction` exposes `createInteractionGraph` and
 `createInteractionController`. Register typed ports and mapping manifests through
 the core graph validator. Selection-equivalence links use built-in identity
 propagation; directed mappings require registered local callbacks. The controller
@@ -268,7 +268,7 @@ withdrawn, the host must also revoke the region and affected result-store partit
 
 ## Host actions
 
-`@aeliqo/sdk-runtime/actions` exposes `createActionRegistry` and `createActionPort`.
+`@aeliqo/runtime/actions` exposes `createActionRegistry` and `createActionPort`.
 The application registers versioned input/output schemas and its business dispatch
 callback. Requests contain an action reference, scalar input, and any required
 entity revision or idempotency key. They cannot supply an actor or approval.
@@ -308,7 +308,7 @@ but cannot terminate an application's external operation.
 
 ## Named task evaluation
 
-`@aeliqo/sdk-runtime/evaluation` exposes `createTaskEvaluator` and
+`@aeliqo/runtime/evaluation` exposes `createTaskEvaluator` and
 `createResultCohortResolver`. The evaluator validates a Task, evaluates selected
 outputs in dependency order through the host's data service, and returns leased
 result handles with their original descriptors and lineage. It does not commit

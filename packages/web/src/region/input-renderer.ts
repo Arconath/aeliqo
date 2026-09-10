@@ -4,7 +4,7 @@ import {
   type Scalar,
   type SemanticType,
   type ValidatedPresentation,
-} from "@aeliqo/sdk-core";
+} from "@aeliqo/core";
 import {html, nothing, type TemplateResult} from "lit";
 import {repeat} from "lit/directives/repeat.js";
 import {

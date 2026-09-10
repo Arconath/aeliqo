@@ -1,5 +1,5 @@
-import type {ResultRef, Scalar, SemanticType} from "@aeliqo/sdk-core";
-export type {ResultRef} from "@aeliqo/sdk-core";
+import type {ResultRef, Scalar, SemanticType} from "@aeliqo/core";
+export type {ResultRef} from "@aeliqo/core";
 
 /** Values accepted by the shared data views. Decimal values remain strings so
  * a browser render never rounds an authoritative value through IEEE-754. */

@@ -8,7 +8,7 @@ import {
   createQueryPlanner,
   createStandardFunctionRegistry,
   lowerQuerySpec,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 import type {
   Catalog,
   CatalogEntity,
@@ -30,8 +30,8 @@ import type {
   QuerySchema,
   Expression,
   PredicateSpec,
-} from '@aeliqo/sdk-core';
-import {WIRE_LIMITS} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
+import {WIRE_LIMITS} from '@aeliqo/core';
 import {parseAcceptedQuery, parseCatalogRequest, parsePlanRequest} from './schema.js';
 import type {
   AcceptedQuery,

@@ -1,4 +1,4 @@
-import type {CommitPreconditions, Diagnostic, ResultRef, Task} from '@aeliqo/sdk-core';
+import type {CommitPreconditions, Diagnostic, ResultRef, Task} from '@aeliqo/core';
 import type {ResultHandle} from '../results/types.js';
 import type {PresentationPlan, RegionContent, RegionStatus} from '../tasks/types.js';
 

@@ -1,5 +1,5 @@
-import {parseContract, parseInteractionState, WIRE_LIMITS} from '@aeliqo/sdk-core';
-import type {InteractionState as CoreInteractionState, ResultRef} from '@aeliqo/sdk-core';
+import {parseContract, parseInteractionState, WIRE_LIMITS} from '@aeliqo/core';
+import type {InteractionState as CoreInteractionState, ResultRef} from '@aeliqo/core';
 import {createSerialQueue, type SerialQueue} from '../scheduling/index.js';
 import {resultRefForHandle} from '../regions/index.js';
 import type {RegionObserver, RegionHandle, RegionReadSet, RegionSnapshot} from '../regions/types.js';

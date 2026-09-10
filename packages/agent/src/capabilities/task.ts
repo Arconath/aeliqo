@@ -1,4 +1,4 @@
-import {parseContract, type AgentBindingOutcome, type AgentTaskProposal, type Outcome, type Task, type VersionRef} from '@aeliqo/sdk-core';
+import {parseContract, type AgentBindingOutcome, type AgentTaskProposal, type Outcome, type Task, type VersionRef} from '@aeliqo/core';
 import type {AgentBinder} from '../binder-types.js';
 import type {AgentCapabilityContext, AgentCapabilityHandlerResult, AgentCapabilityManifest} from './types.js';
 

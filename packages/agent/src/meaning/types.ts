@@ -6,7 +6,7 @@ import type {
   Outcome,
   SemanticPolicy,
   VersionRef,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 import type {
   MeaningAuthoring,
   MeaningAuthoringOptions,
@@ -17,7 +17,7 @@ import type {
   MeaningEvaluatorOptions,
   MeaningSource,
   MeaningRegistry,
-} from '@aeliqo/sdk-runtime/meaning';
+} from '@aeliqo/runtime/meaning';
 
 /** Host policy for AI drafts. It controls proposal scope, never activation. */
 export interface MeaningProposalPolicy {

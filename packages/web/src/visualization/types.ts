@@ -1,4 +1,4 @@
-import type {ResultRef, Scalar, VisualizationBindingContext, VisualizationSpec} from '@aeliqo/sdk-core';
+import type {ResultRef, Scalar, VisualizationBindingContext, VisualizationSpec} from '@aeliqo/core';
 import type {PlotDataset} from '../plot/composition.js';
 export type VisualizationDataset = PlotDataset;
 export interface VisualizationRow {readonly identity: string; readonly values: Readonly<Record<string, Scalar>>}

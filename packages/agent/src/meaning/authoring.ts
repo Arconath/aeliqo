@@ -6,14 +6,14 @@ import {
   type MeaningDraft,
   type MeaningDiff,
   type MeaningEvaluator,
-} from '@aeliqo/sdk-runtime/meaning';
+} from '@aeliqo/runtime/meaning';
 import type {
   Catalog,
   MeaningDefinition,
   Outcome,
   VersionRef,
-} from '@aeliqo/sdk-core';
-import {parseWireValue} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
+import {parseWireValue} from '@aeliqo/core';
 import type {
   AgentMeaningAuthoring,
   AgentMeaningAuthoringOptions,

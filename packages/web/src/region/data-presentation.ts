@@ -9,7 +9,7 @@ import {
   type ResolvedPresentationConfig,
   type ValidatedPresentation,
   type VersionRef,
-} from "@aeliqo/sdk-core";
+} from "@aeliqo/core";
 import {nothing, type TemplateResult} from "lit";
 import {
   AELIQO_DATA_CONFIG_SCHEMAS,

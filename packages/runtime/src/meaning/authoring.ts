@@ -11,7 +11,7 @@ import {
   type Outcome,
   type TypedAuthoring,
   type VersionRef,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 import type {
   MeaningAuthoring,
   MeaningAuthoringOptions,

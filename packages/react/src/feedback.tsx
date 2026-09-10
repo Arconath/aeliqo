@@ -1,6 +1,6 @@
 import React from "react";
 import {createComponent,type EventName} from "@lit/react";
-import {AeliqoDialogElement, AeliqoDrawerElement, AeliqoPopoverElement, AeliqoTooltipElement, AeliqoAlertElement, AeliqoToastElement, AeliqoProgressElement, AeliqoSkeletonElement, AeliqoEmptyStateElement} from "@aeliqo/sdk-web/feedback";
+import {AeliqoDialogElement, AeliqoDrawerElement, AeliqoPopoverElement, AeliqoTooltipElement, AeliqoAlertElement, AeliqoToastElement, AeliqoProgressElement, AeliqoSkeletonElement, AeliqoEmptyStateElement} from "@aeliqo/web/feedback";
 type UserEvent<T> = CustomEvent<Readonly<T & {source:"user"}>>;
 export const AeliqoDialog = createComponent({react:React,tagName:"aeliqo-dialog",elementClass:AeliqoDialogElement,events:{onClose: "aeliqo-dialog-close" as EventName<UserEvent<{}>>},displayName:"AeliqoDialog"});
 export const AeliqoDrawer = createComponent({react:React,tagName:"aeliqo-drawer",elementClass:AeliqoDrawerElement,events:{onClose: "aeliqo-drawer-close" as EventName<UserEvent<{}>>},displayName:"AeliqoDrawer"});
@@ -10,4 +10,4 @@ export const AeliqoAlert = createComponent({react:React,tagName:"aeliqo-alert",e
 export const AeliqoToast = createComponent({react:React,tagName:"aeliqo-toast",elementClass:AeliqoToastElement,events:{onDismiss: "aeliqo-toast-dismiss" as EventName<UserEvent<{}>>},displayName:"AeliqoToast"});
 export const AeliqoProgress = createComponent({react:React,tagName:"aeliqo-progress",elementClass:AeliqoProgressElement,events:{},displayName:"AeliqoProgress"});
 export const AeliqoSkeleton = createComponent({react:React,tagName:"aeliqo-skeleton",elementClass:AeliqoSkeletonElement,events:{},displayName:"AeliqoSkeleton"});
-export const AeliqoEmptyState = createComponent({react:React,tagName:"aeliqo-empty-state",elementClass:AeliqoEmptyStateElement,events:{onAction: "aeliqo-empty-state-action" as EventName<UserEvent<{kind:import("@aeliqo/sdk-web/feedback").AeliqoEmptyStateKind}>>},displayName:"AeliqoEmptyState"});
+export const AeliqoEmptyState = createComponent({react:React,tagName:"aeliqo-empty-state",elementClass:AeliqoEmptyStateElement,events:{onAction: "aeliqo-empty-state-action" as EventName<UserEvent<{kind:import("@aeliqo/web/feedback").AeliqoEmptyStateKind}>>},displayName:"AeliqoEmptyState"});

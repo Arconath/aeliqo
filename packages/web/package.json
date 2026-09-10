@@ -1,5 +1,5 @@
 {
-  "name": "@aeliqo/sdk-web",
+  "name": "@aeliqo/web",
   "version": "0.1.0",
   "repository": {
     "type": "git",
@@ -348,7 +348,7 @@
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@aeliqo/sdk-core": "workspace:*",
+    "@aeliqo/core": "workspace:*",
     "@lit-labs/ssr": "4.1.0",
     "@lit-labs/ssr-client": "1.1.8",
     "d3-scale": "4.0.2",
@@ -358,13 +358,13 @@
   "devDependencies": {
     "@types/d3-scale": "4.0.9",
     "@types/d3-shape": "3.2.0",
-    "@aeliqo/sdk-runtime": "workspace:*"
+    "@aeliqo/runtime": "workspace:*"
   },
   "peerDependencies": {
-    "@aeliqo/sdk-runtime": "0.1.0"
+    "@aeliqo/runtime": "0.1.0"
   },
   "peerDependenciesMeta": {
-    "@aeliqo/sdk-runtime": {
+    "@aeliqo/runtime": {
       "optional": true
     }
   }

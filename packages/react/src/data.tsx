@@ -1,7 +1,7 @@
 import React from "react";
 import {createComponent,type EventName} from "@lit/react";
-import {AeliqoMetricElement, AeliqoDeltaElement, AeliqoKeyValueElement, AeliqoDetailElement, AeliqoRecordListElement, AeliqoCardCollectionElement, AeliqoSelectionSummaryElement, AeliqoFilterBuilderElement, AeliqoTableElement,type AeliqoDataSelectionEvent,type AeliqoDataLoadMoreEvent,type AeliqoFilterChangeEvent,type AeliqoTableSortEvent,type AeliqoTablePageEvent,type AeliqoTableWindowEvent} from "@aeliqo/sdk-web/data";
-import type {AeliqoTableSelectionEvent} from "@aeliqo/sdk-web";
+import {AeliqoMetricElement, AeliqoDeltaElement, AeliqoKeyValueElement, AeliqoDetailElement, AeliqoRecordListElement, AeliqoCardCollectionElement, AeliqoSelectionSummaryElement, AeliqoFilterBuilderElement, AeliqoTableElement,type AeliqoDataSelectionEvent,type AeliqoDataLoadMoreEvent,type AeliqoFilterChangeEvent,type AeliqoTableSortEvent,type AeliqoTablePageEvent,type AeliqoTableWindowEvent} from "@aeliqo/web/data";
+import type {AeliqoTableSelectionEvent} from "@aeliqo/web";
 export const AeliqoMetric=createComponent({react:React,tagName:"aeliqo-metric",elementClass:AeliqoMetricElement,events:{},displayName:"AeliqoMetric"});
 export const AeliqoDelta=createComponent({react:React,tagName:"aeliqo-delta",elementClass:AeliqoDeltaElement,events:{},displayName:"AeliqoDelta"});
 export const AeliqoKeyValue=createComponent({react:React,tagName:"aeliqo-key-value",elementClass:AeliqoKeyValueElement,events:{},displayName:"AeliqoKeyValue"});

@@ -1,4 +1,4 @@
-import type {CommitPreconditions, InteractionLink, PresentationPlan, PresentationContext, PresentationRegistry, ResultRef, Scalar, VersionRef} from "@aeliqo/sdk-core";
+import type {CommitPreconditions, InteractionLink, PresentationPlan, PresentationContext, PresentationRegistry, ResultRef, Scalar, VersionRef} from "@aeliqo/core";
 import type {AeliqoDataColumn, AeliqoDataRecord, AeliqoDataScope, AeliqoDataStatus, AeliqoFieldOption, AeliqoFilterPredicate} from "../data/types.js";
 
 export type AeliqoCompoundStatus = AeliqoDataStatus;

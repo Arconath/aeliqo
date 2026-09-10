@@ -26,7 +26,7 @@ import {
   type Transport,
 } from '@modelcontextprotocol/client';
 import {StdioClientTransport, type StdioServerParameters} from '@modelcontextprotocol/client/stdio';
-import {parseContract, parseWireValue, WIRE_LIMITS, type Diagnostic, type OperationGrant, type Outcome, type ResultRef, type VersionRef} from '@aeliqo/sdk-core';
+import {parseContract, parseWireValue, WIRE_LIMITS, type Diagnostic, type OperationGrant, type Outcome, type ResultRef, type VersionRef} from '@aeliqo/core';
 import type {
   AgentCapabilityReceipt,
   AgentJsonValue,

@@ -8,7 +8,7 @@ import {
   type Outcome,
   type QueryResult,
   type VersionRef,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 import {
   createMeaningAuthoring,
   createMeaningEvaluator,
@@ -18,7 +18,7 @@ import {
   type MeaningDiff,
   type MeaningRegistry,
   type MeaningSource,
-} from '@aeliqo/sdk-runtime/meaning';
+} from '@aeliqo/runtime/meaning';
 import {
   createStudioDocument,
   canonical,

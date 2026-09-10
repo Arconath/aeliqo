@@ -1,6 +1,6 @@
 import {css, html, nothing, type TemplateResult} from "lit";
-import {scalarIdentity} from "@aeliqo/sdk-core";
-import type {Result} from "@aeliqo/sdk-core";
+import {scalarIdentity} from "@aeliqo/core";
+import type {Result} from "@aeliqo/core";
 import type {AeliqoDataRecord, AeliqoDataScope, AeliqoDataStatus, AeliqoDataValue} from "./types.js";
 
 /** Materialized observations remain readable even when population coverage is unknown. */

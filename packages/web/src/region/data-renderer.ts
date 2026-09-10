@@ -3,8 +3,8 @@ import type {
   InteractionState,
   ResultRef,
   Scalar,
-} from "@aeliqo/sdk-core";
-import { validateScalar } from "@aeliqo/sdk-core";
+} from "@aeliqo/core";
+import { validateScalar } from "@aeliqo/core";
 import { html, nothing, type TemplateResult } from "lit";
 import type { AeliqoKeyValueItem } from "../data/key-value.js";
 import type { AeliqoSelectionScope } from "../data/selection-summary.js";

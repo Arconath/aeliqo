@@ -1,4 +1,4 @@
-import {parseContract, validateInteractionGraph, INTERACTION_GRAPH_LIMITS} from '@aeliqo/sdk-core';
+import {parseContract, validateInteractionGraph, INTERACTION_GRAPH_LIMITS} from '@aeliqo/core';
 import type {
   InteractionEvent,
   InteractionFailure,

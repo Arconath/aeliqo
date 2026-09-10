@@ -6,9 +6,9 @@ import type {
   Outcome,
   ResultRef,
   VersionRef,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 
-/** Local public alias because @aeliqo/sdk-core intentionally keeps the wire value
+/** Local public alias because @aeliqo/core intentionally keeps the wire value
  * helper internal to its contract barrel. */
 export type AgentJsonValue = null | boolean | number | string | readonly AgentJsonValue[] | {readonly [key: string]: AgentJsonValue};
 

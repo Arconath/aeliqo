@@ -1,4 +1,4 @@
-import type {Outcome} from '@aeliqo/sdk-core';
+import type {Outcome} from '@aeliqo/core';
 
 export type AuditPlanPhase = 'validate' | 'query' | 'present';
 export type AuditOperation = 'read' | 'evaluate' | 'present' | 'meaning' | 'action' | 'model-egress';

@@ -12,7 +12,7 @@ import {
   type QuerySpec,
   type SemanticPolicy,
   type VersionRef,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 import type {MeaningEvaluationInput, MeaningEvaluator, MeaningEvaluatorOptions} from './types.js';
 import {freezeMeaningValue, snapshotMeaningAuthoringOptions} from './authoring.js';
 

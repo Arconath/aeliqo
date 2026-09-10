@@ -1,6 +1,6 @@
 import {aeliqoThemeStyles} from "../styles/theme.js";
 import {css, html, LitElement, nothing, svg} from "lit";
-import {scalarIdentity} from "@aeliqo/sdk-core";
+import {scalarIdentity} from "@aeliqo/core";
 import type {AeliqoChartPoint, AeliqoChartSeries} from "../types.js";
 
 const CHART_WIDTH = 320;

@@ -1,4 +1,4 @@
-import {parseWireValue, WIRE_LIMITS, type Outcome} from '@aeliqo/sdk-core';
+import {parseWireValue, WIRE_LIMITS, type Outcome} from '@aeliqo/core';
 import {awaitAgentBoundary, createAgentCapabilityDispatcher, normalizeAgentCapabilityAuthority} from '../capabilities/dispatcher.js';
 import type {AgentCapabilityAuthority, AgentCapabilityHost, AgentCapabilityRequest} from '../capabilities/types.js';
 import type {AgentModelScope, AgentModelToolEndpoint, AgentToolBinding, AgentToolDefinition, AgentToolEndpointOptions} from './types.js';

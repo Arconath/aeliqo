@@ -11,7 +11,7 @@ import type {
   Catalog,
   ResultRef,
   Task,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 
 /**
  * A host-owned decision which explains a material semantic gap.  Decisions

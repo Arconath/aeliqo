@@ -1,6 +1,6 @@
 import {line,area} from 'd3-shape';
-import {bindPlotSpec,parseWireValue,scalarIdentity,validateScalar,compareScalars} from '@aeliqo/sdk-core';
-import type {PlotUnit,Result,Scalar,Outcome} from '@aeliqo/sdk-core';
+import {bindPlotSpec,parseWireValue,scalarIdentity,validateScalar,compareScalars} from '@aeliqo/core';
+import type {PlotUnit,Result,Scalar,Outcome} from '@aeliqo/core';
 import {makePlotScale,exactLabel} from './scales.js';
 import type {PlotScale,PlotTick} from './scales.js';
 import {quantitativeColor} from './palette.js';

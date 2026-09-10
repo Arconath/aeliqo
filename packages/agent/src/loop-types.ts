@@ -4,7 +4,7 @@ import type {
   AgentStopReason,
   Diagnostic,
   Outcome,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 import type {AgentBinder} from './binder-types.js';
 
 export type AgentAttemptProgress = 'new' | 'gap-closed' | 'scope-changed' | 'none';

@@ -1,5 +1,5 @@
 import {html,svg,css,nothing} from 'lit';
-import type {PlotUnit,PlotSpec,Result,ResultRef,Outcome} from '@aeliqo/sdk-core';
+import type {PlotUnit,PlotSpec,Result,ResultRef,Outcome} from '@aeliqo/core';
 import {AeliqoFoundationElement,aeliqoFoundationThemeStyles} from '../foundation/base.js';
 import {compilePlotComposition,type PlotDataset,type CompiledPlot,type CompiledPlotNode} from './composition.js';
 import {compilePlotUnit} from './geometry.js';

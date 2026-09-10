@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import type {ResponseInputItem, FunctionTool} from 'openai/resources/responses/responses';
-import {parseWireValue} from '@aeliqo/sdk-core';
+import {parseWireValue} from '@aeliqo/core';
 import type {AgentJsonValue} from '../capabilities/types.js';
 import type {ToolModelPort, ToolModelRequest} from './types.js';
 

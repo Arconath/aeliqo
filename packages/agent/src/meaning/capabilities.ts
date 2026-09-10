@@ -4,7 +4,7 @@ import {
   type MeaningDefinition,
   type Outcome,
   type VersionRef,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 import type {
   AgentCapabilityContext,
   AgentCapabilityHandlerResult,
@@ -66,7 +66,7 @@ function output<T>(state: AgentCapabilityHandlerResult<T>['state'], value: T): A
 }
 
 /** Registered proposal adapter; it never activates or executes a meaning. */
-export function createMeaningProposalCapability<C extends import('@aeliqo/sdk-core').Catalog = import('@aeliqo/sdk-core').Catalog>(options: MeaningProposalCapabilityOptions<C>): AgentCapabilityManifest<MeaningProposalInput, MeaningDraftJson> {
+export function createMeaningProposalCapability<C extends import('@aeliqo/core').Catalog = import('@aeliqo/core').Catalog>(options: MeaningProposalCapabilityOptions<C>): AgentCapabilityManifest<MeaningProposalInput, MeaningDraftJson> {
   if (options === null || typeof options !== 'object' || options.authoring === undefined) throw new TypeError('Meaning proposal authoring is required.');
   const ref = options.ref ?? PROPOSAL_REF;
   return Object.freeze({

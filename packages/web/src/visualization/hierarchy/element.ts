@@ -1,6 +1,6 @@
 import {css, html, svg} from 'lit';
 import {repeat} from 'lit/directives/repeat.js';
-import type {Result, ResultRef, Scalar, VisualizationBindingContext} from '@aeliqo/sdk-core';
+import type {Result, ResultRef, Scalar, VisualizationBindingContext} from '@aeliqo/core';
 import {AeliqoFoundationElement, aeliqoFoundationThemeStyles} from '../../foundation/base.js';
 import {compileHierarchyVisualization} from './geometry.js';
 import type {HierarchyGeometry, HierarchyVisualizationGeometry, RelationshipGeometry} from './geometry.js';

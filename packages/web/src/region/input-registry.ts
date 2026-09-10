@@ -8,7 +8,7 @@ import {
   type Scalar,
   type SemanticType,
   type VersionRef,
-} from "@aeliqo/sdk-core";
+} from "@aeliqo/core";
 import {
   AELIQO_INPUT_REFS,
   type AeliqoInputId,

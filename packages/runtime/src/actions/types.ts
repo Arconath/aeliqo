@@ -1,4 +1,4 @@
-import type {Diagnostic, Outcome, Scalar, VersionRef} from '@aeliqo/sdk-core';
+import type {Diagnostic, Outcome, Scalar, VersionRef} from '@aeliqo/core';
 
 /** Grants are intentionally independent. A proposal grant never implies execution. */
 export type ActionGrant = 'action.propose' | 'action.execute';

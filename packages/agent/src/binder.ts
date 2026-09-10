@@ -17,7 +17,7 @@ import {
   type QueryLimits,
   type ResultRef,
   type Task,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 import type {
   AgentBindOptions,
   AgentBinder,

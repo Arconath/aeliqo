@@ -1,5 +1,5 @@
 import {css, html, nothing, type PropertyValues} from "lit";
-import type {ResultRef, Scalar, VersionRef, VisualizationBindingContext, VisualizationSpec} from "@aeliqo/sdk-core";
+import type {ResultRef, Scalar, VersionRef, VisualizationBindingContext, VisualizationSpec} from "@aeliqo/core";
 import {AeliqoCompoundElement, aeliqoCompoundThemeStyles} from "./base.js";
 import {stableDataRecordKey, stableDataValueKey} from "../data/shared.js";
 import type {

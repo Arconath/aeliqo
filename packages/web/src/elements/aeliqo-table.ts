@@ -2,9 +2,9 @@ import {aeliqoThemeStyles} from "../styles/theme.js";
 import {css, html, LitElement, nothing} from "lit";
 import {AeliqoTableSelectionEvent} from "../events.js";
 import {AeliqoTablePageEvent, AeliqoTableSortEvent, AeliqoTableWindowEvent} from "../data/events.js";
-import {scalarIdentity} from "@aeliqo/sdk-core";
+import {scalarIdentity} from "@aeliqo/core";
 import {scopeText} from "../data/shared.js";
-import type {ResultRef} from "@aeliqo/sdk-core";
+import type {ResultRef} from "@aeliqo/core";
 import type {AeliqoDataScope, AeliqoDataStatus, AeliqoSortState} from "../data/types.js";
 import type {AeliqoTableColumn, AeliqoTableRow, AeliqoTableSelectionMode, TableCell} from "../types.js";
 

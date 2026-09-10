@@ -1,5 +1,5 @@
-import {parseContract, parseWireValue, WIRE_LIMITS} from '@aeliqo/sdk-core';
-import type {Diagnostic} from '@aeliqo/sdk-core';
+import {parseContract, parseWireValue, WIRE_LIMITS} from '@aeliqo/core';
+import type {Diagnostic} from '@aeliqo/core';
 import type {RegionDocument, RegionDocumentInput, RegionPersistence} from './types.js';
 import type {RegionHistoryEntry, RegionOutcome, RegionReadSet, RegionSnapshot} from '../regions/types.js';
 

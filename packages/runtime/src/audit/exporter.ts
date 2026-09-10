@@ -1,4 +1,4 @@
-import type {Diagnostic} from '@aeliqo/sdk-core';
+import type {Diagnostic} from '@aeliqo/core';
 import type {
   AuditCache,
   AuditOperation,

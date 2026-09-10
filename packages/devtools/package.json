@@ -1,5 +1,5 @@
 {
-  "name": "@aeliqo/sdk-devtools",
+  "name": "@aeliqo/devtools",
   "version": "0.1.0",
   "repository": {
     "type": "git",
@@ -23,7 +23,7 @@
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@aeliqo/sdk-core": "workspace:*",
-    "@aeliqo/sdk-runtime": "workspace:*"
+    "@aeliqo/core": "workspace:*",
+    "@aeliqo/runtime": "workspace:*"
   }
 }

@@ -15,7 +15,7 @@ import {
   type ResolvedPresentationConfig,
   type Task,
   type VersionRef,
-} from "@aeliqo/sdk-core";
+} from "@aeliqo/core";
 
 const MAX_ITEMS = 128;
 const MAX_LABEL = 160;

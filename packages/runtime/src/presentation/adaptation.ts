@@ -9,7 +9,7 @@ import {
   type PresentationPlan,
   type PresentationRegistry,
   type ValidatedPresentation,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 import type {
   RegionFailure,
   RegionHandle,

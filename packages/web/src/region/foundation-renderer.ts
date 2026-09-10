@@ -1,4 +1,4 @@
-import type {InteractionPayload, ValidatedPresentation} from '@aeliqo/sdk-core';
+import type {InteractionPayload, ValidatedPresentation} from '@aeliqo/core';
 import {html, nothing, type TemplateResult} from 'lit';
 import {repeat} from 'lit/directives/repeat.js';
 import type {AeliqoFoundationId} from '../foundation/manifest.js';

@@ -6,10 +6,10 @@ import {
   querySchema,
   resultEventSchema,
   revisionSchema,
-} from '@aeliqo/sdk-core/schema';
-import {parseCatalog, parseContract, parseWireValue, WIRE_LIMITS} from '@aeliqo/sdk-core';
+} from '@aeliqo/core/schema';
+import {parseCatalog, parseContract, parseWireValue, WIRE_LIMITS} from '@aeliqo/core';
 import type {CatalogRequest, CatalogPage, DataErrorPayload, PlanAcceptance, PlanRequest, AcceptedQuery, QueryBudget} from './types.js';
-import type {Catalog, Diagnostic, Outcome, QuerySpec} from '@aeliqo/sdk-core';
+import type {Catalog, Diagnostic, Outcome, QuerySpec} from '@aeliqo/core';
 import type {ResultEvent} from './types.js';
 
 const strictObject = z.strictObject;

@@ -3,7 +3,7 @@ import type {
   InteractionGraphInput, InteractionLink, InteractionMappingManifest, InteractionNode,
   InteractionPayload as CoreInteractionPayload, InteractionPort, InteractionPortShape,
   InteractionState as CoreInteractionState, ResultRef, RetainedInteractionPayload, Scalar, VersionRef,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 import type {RegionContent, RegionHandle, RegionSnapshot} from '../regions/types.js';
 import type {ResultHandle} from '../results/types.js';
 

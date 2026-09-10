@@ -1,9 +1,9 @@
-import {parseContract, scalarIdentity, validateScalar, WIRE_LIMITS} from '@aeliqo/sdk-core';
+import {parseContract, scalarIdentity, validateScalar, WIRE_LIMITS} from '@aeliqo/core';
 import type {
   Diagnostic,
   Result,
   ResultRef,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 import type {
   ResultBatch,
   ResultBeginInput,

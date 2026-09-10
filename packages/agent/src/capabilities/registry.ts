@@ -1,4 +1,4 @@
-import {parseContract, parseWireValue, WIRE_LIMITS, type Diagnostic, type Outcome, type OperationGrant, type VersionRef} from '@aeliqo/sdk-core';
+import {parseContract, parseWireValue, WIRE_LIMITS, type Diagnostic, type Outcome, type OperationGrant, type VersionRef} from '@aeliqo/core';
 import type {AgentCapabilityLimits, AgentCapabilityManifest, AgentCapabilityRegistry} from './types.js';
 
 const failure = <T>(code: string, message: string, path?: readonly (string | number)[]): Outcome<T> => ({

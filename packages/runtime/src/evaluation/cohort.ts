@@ -1,5 +1,5 @@
-import {scalarIdentity, WIRE_LIMITS} from '@aeliqo/sdk-core';
-import type {Catalog, Diagnostic, Outcome, QuerySpec, Result, ResultRef, SemanticType} from '@aeliqo/sdk-core';
+import {scalarIdentity, WIRE_LIMITS} from '@aeliqo/core';
+import type {Catalog, Diagnostic, Outcome, QuerySpec, Result, ResultRef, SemanticType} from '@aeliqo/core';
 import type {DataValue} from '../data/types.js';
 import type {ResultHandle, ResultSnapshot} from '../results/types.js';
 import type {CohortMembership, CohortRequest, CohortResolver, CohortResolverContext} from './types.js';

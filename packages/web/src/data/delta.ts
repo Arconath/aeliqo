@@ -1,6 +1,6 @@
 import {css, html, LitElement, nothing} from "lit";
 import {aeliqoThemeStyles} from "../styles/theme.js";
-import {validateScalar} from "@aeliqo/sdk-core";
+import {validateScalar} from "@aeliqo/core";
 import type {AeliqoDataScope, AeliqoDataStatus, AeliqoDataValue, AeliqoDeltaResult} from "./types.js";
 import {dataStyles, dataStatusMessage, scopeText, statusTemplate} from "./shared.js";
 

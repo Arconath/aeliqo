@@ -1,4 +1,4 @@
-# `@aeliqo/sdk-devtools`
+# `@aeliqo/devtools`
 
 The local, OSS Studio document and authoring controller. It edits the same
 versioned Catalog, meaning drafts, and Experience contracts used by code. The

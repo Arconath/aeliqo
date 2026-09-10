@@ -1,4 +1,4 @@
-# @aeliqo/sdk-agent
+# @aeliqo/agent
 
 Optional agent boundaries for the Aeliqo 0.1.0 rewrite. The package depends on the
 pure core and effect-owning runtime; direct components and normal interactions do
@@ -24,7 +24,7 @@ advertised or enabled by this adapter. Fixture compatibility tests are transport
 tests, not live-provider or reasoning-quality qualification.
 
 For an OpenAI-compatible Responses endpoint, applications may instead use
-`createOpenAICompatibleResponsesToolModel` from `@aeliqo/sdk-agent/model/responses`.
+`createOpenAICompatibleResponsesToolModel` from `@aeliqo/agent/model/responses`.
 That adapter accepts a server-owned opaque credential reference and resolver,
 explicit HTTPS endpoint/model/request policy, and complete non-streaming function
 calls. It performs no undocumented token-counting request, provider detection, or

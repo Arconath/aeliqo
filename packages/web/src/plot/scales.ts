@@ -1,6 +1,6 @@
 import {scaleLinear, scaleLog, scalePoint} from 'd3-scale';
-import {compareScalars, scalarIdentity, scalarInstantParts, validateScalar} from '@aeliqo/sdk-core';
-import type {PlotEncoding, Scalar, SemanticType} from '@aeliqo/sdk-core';
+import {compareScalars, scalarIdentity, scalarInstantParts, validateScalar} from '@aeliqo/core';
+import type {PlotEncoding, Scalar, SemanticType} from '@aeliqo/core';
 
 export interface PlotTick {readonly position:number; readonly value:Scalar; readonly label:string}
 export interface PlotScale {

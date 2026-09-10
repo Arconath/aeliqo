@@ -1,4 +1,4 @@
-import {parseWireValue, type Outcome, type PresentationManifest, type PresentationValues, type Scalar, type VersionRef} from '@aeliqo/sdk-core';
+import {parseWireValue, type Outcome, type PresentationManifest, type PresentationValues, type Scalar, type VersionRef} from '@aeliqo/core';
 import {AELIQO_FOUNDATION_MANIFESTS} from '../foundation/manifest.js';
 
 /** Immutable application-owned bindings. Change the Experience revision when these change. */

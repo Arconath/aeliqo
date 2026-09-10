@@ -6,7 +6,7 @@ import type {AeliqoRegionDataRequestHandler} from "./types.js";
 import {renderNavigationFeedbackNode} from "./navigation-feedback-renderer.js";
 import {renderInputNode} from "./input-renderer.js";
 import {renderFoundationNode} from "./foundation-renderer.js";
-import type {InteractionPayload, InteractionState, Result, ResultRef, ValidatedPresentation} from "@aeliqo/sdk-core";
+import type {InteractionPayload, InteractionState, Result, ResultRef, ValidatedPresentation} from "@aeliqo/core";
 import {css, html, LitElement, nothing, type TemplateResult} from "lit";
 import {repeat} from "lit/directives/repeat.js";
 import type {PropertyValues} from "lit";

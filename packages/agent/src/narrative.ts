@@ -1,5 +1,5 @@
-import {compareScalars, parseContract, scalarIdentity, validateScalar, type NarrativeCell, type NarrativeClaim, type OperationGrant, type Outcome, type ResultRef, type Scalar} from '@aeliqo/sdk-core';
-import type {ResultHandle} from '@aeliqo/sdk-runtime/results';
+import {compareScalars, parseContract, scalarIdentity, validateScalar, type NarrativeCell, type NarrativeClaim, type OperationGrant, type Outcome, type ResultRef, type Scalar} from '@aeliqo/core';
+import type {ResultHandle} from '@aeliqo/runtime/results';
 
 /** Fresh host authority. A model may never supply this context or its resolver. */
 export interface NarrativeAuthority {

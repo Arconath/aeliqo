@@ -10,13 +10,13 @@ import {
   type MeaningDefinition,
   type Outcome,
   type VersionRef,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 import {
   createMeaningDraft,
   meaningDigest,
   type MeaningDraft,
   type MeaningSource,
-} from '@aeliqo/sdk-runtime/meaning';
+} from '@aeliqo/runtime/meaning';
 
 export type StudioArea = 'data-meaning' | 'experience' | 'gallery' | 'inspect';
 export type StudioTheme = 'light' | 'dark';

@@ -1,5 +1,5 @@
-import {parseContract, parseWireValue, WIRE_LIMITS} from '@aeliqo/sdk-core';
-import type {Diagnostic, Outcome, Scalar, VersionRef} from '@aeliqo/sdk-core';
+import {parseContract, parseWireValue, WIRE_LIMITS} from '@aeliqo/core';
+import type {Diagnostic, Outcome, Scalar, VersionRef} from '@aeliqo/core';
 import {resolveRegisteredAction} from './registry.js';
 import type {
   ActionBoundaryOptions,

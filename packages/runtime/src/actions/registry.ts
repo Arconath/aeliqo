@@ -1,4 +1,4 @@
-import type {Outcome, VersionRef} from '@aeliqo/sdk-core';
+import type {Outcome, VersionRef} from '@aeliqo/core';
 import type {ActionDescriptor, ActionPayload, ActionRegistration} from './types.js';
 
 const MAX_ACTIONS = 512;

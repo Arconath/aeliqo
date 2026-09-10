@@ -1,10 +1,10 @@
-import {validateTaskStructure, WIRE_LIMITS} from '@aeliqo/sdk-core';
+import {validateTaskStructure, WIRE_LIMITS} from '@aeliqo/core';
 import type {
   Diagnostic,
   Outcome,
   QuerySpec,
   ResultRef,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 import type {
   DataService,
   PlanRequest,

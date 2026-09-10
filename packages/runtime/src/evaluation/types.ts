@@ -7,7 +7,7 @@ import type {
   ResultRef,
   SemanticType,
   Task,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 import type {
   AcceptedQuery,
   DataService,

@@ -8,7 +8,7 @@ import {
   type MeaningBundle,
   type Outcome,
   type VersionRef,
-} from '@aeliqo/sdk-core';
+} from '@aeliqo/core';
 import {canonicalMeaning, createMeaningDraft, freezeMeaningValue, meaningDigest, meaningRefKey, snapshotMeaningAuthoringOptions} from './authoring.js';
 import type {
   MeaningEntry,
