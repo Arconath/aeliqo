@@ -85,4 +85,8 @@ class GateRegressionTests(unittest.TestCase):
             return load_json(path)
         with patch('gate.load_json',side_effect=read):errs=readiness_errors(ROOT,'ready')
         self.assertTrue(any(x.startswith('S24:') for x in errs))
+    def test_historical_evidence_never_satisfies_current_readiness(self):
+        errs=readiness_errors(ROOT,'ready')
+        for identifier in ('T27','S30','S31','S63'):
+            self.assertIn(identifier+': historical evidence cannot satisfy current readiness',errs)
 if __name__=='__main__':unittest.main()

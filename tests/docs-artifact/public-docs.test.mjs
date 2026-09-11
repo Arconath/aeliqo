@@ -84,7 +84,8 @@ test('verification rejects a changed executable catalog example', async () => {
 
 test('producer can bind the docs artifact to one exact release-candidate package set', async () => {
   const scratch = await mkdtemp(join(tmpdir(), 'aeliqo-public-docs-rc-test-'));
-  const revision = 'a'.repeat(40);
+  const { stdout } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: root });
+  const revision = stdout.trim();
   await execFileAsync(
     process.execPath,
     [
@@ -103,6 +104,26 @@ test('producer can bind the docs artifact to one exact release-candidate package
   assert.equal(artifact.source.revision, revision);
   assert.ok(Object.values(artifact.packageVersions).every((version) => version === '0.1.0-rc.2'));
   assert.deepEqual(artifact.packageVersions, manifest.packageVersions);
+});
+
+test('producer rejects a shaped source revision that is not a repository commit', async () => {
+  const scratch = await mkdtemp(join(tmpdir(), 'aeliqo-public-docs-forged-revision-'));
+  await assert.rejects(
+    execFileAsync(
+      process.execPath,
+      [
+        'scripts/docs/build-public-docs.mjs',
+        '--output',
+        scratch,
+        '--source-revision',
+        'a'.repeat(40),
+        '--version',
+        '0.1.0-rc.2',
+      ],
+      { cwd: root },
+    ),
+    /source revision must identify a commit/u,
+  );
 });
 
 test('verification rejects a catalog symlink that escapes the artifact directory', async () => {

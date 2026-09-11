@@ -252,6 +252,11 @@ async function sourceIdentity() {
       : (arguments_[revisionIndex + 1] ?? '');
   if (!/^[a-f0-9]{40}$/u.test(revision))
     throw new Error('The public docs artifact requires an exact 40-character source revision.');
+  try {
+    await command('git', ['cat-file', '-e', `${revision}^{commit}`]);
+  } catch {
+    throw new Error('The public docs artifact source revision must identify a commit in this repository.');
+  }
   const sourceTree = isReleaseSourceClean((await command('git', RELEASE_SOURCE_STATUS_ARGS)).stdout)
     ? 'clean'
     : 'modified';
