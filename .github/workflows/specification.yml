@@ -1,6 +1,7 @@
 name: Specification and harness checks (not product readiness)
 on:
   push:
+    branches: [main]
   pull_request:
 permissions:
   contents: read
