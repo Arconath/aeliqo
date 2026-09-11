@@ -95,10 +95,6 @@
     "test:studio:browser": "playwright test --config tests/studio/playwright.config.mjs",
     "build:docs-artifact": "pnpm build:platform && node scripts/docs/build-public-docs.mjs",
     "test:docs-artifact": "pnpm build:docs-artifact && node scripts/docs/verify-public-docs.mjs && node --test tests/docs-artifact/*.test.mjs && vitest run --config tests/docs-artifact/vitest.config.mjs && tsc -p tests/docs-artifact/tsconfig.json",
-    "build:site": "pnpm build:docs-artifact && pnpm build:agent && pnpm --filter @aeliqo/site build",
-    "test:site": "pnpm build:docs-artifact && pnpm build:agent && vitest run --config tests/site/vitest.config.mjs && tsc -p tests/site/tsconfig.json && tsc -p apps/site/tsconfig.json",
-    "test:site:browser": "playwright test --config tests/site/playwright.config.mjs",
-    "test:site:document-layout": "pnpm build:site && playwright test --config tests/site/document-layout.playwright.config.mjs",
     "test:studio:consumers": "node tests/studio-consumers/studio-tarballs.mjs",
     "test:agent-evaluation:host": "pnpm build:agent && vitest run --config tests/agent-evaluation/vitest.config.mjs && tsc -p tests/agent-evaluation/tsconfig.json",
     "test:scenarios": "pnpm build:runtime && vitest run --config tests/scenarios/vitest.config.mjs && tsc -p tests/scenarios/tsconfig.json --noEmit",
@@ -106,7 +102,7 @@
     "test:performance:bundles": "node tests/performance/bundles.mjs",
     "build:testkit": "pnpm build:runtime && pnpm --filter @aeliqo/testkit build",
     "test:visual": "pnpm build:platform && tsc -p tests/visual/tsconfig.json && playwright test --config tests/visual/playwright.config.mjs",
-    "lint": "tsc -p tsconfig.lint.json && tsc -p apps/site/tsconfig.json --noUnusedLocals --noUnusedParameters && tsc -p apps/studio/tsconfig.json --noUnusedLocals --noUnusedParameters",
+    "lint": "tsc -p tsconfig.lint.json && tsc -p apps/studio/tsconfig.json --noUnusedLocals --noUnusedParameters",
     "format:check": "prettier --check package.json pnpm-workspace.yaml 'packages/*/package.json' 'apps/*/package.json' 'examples/*/package.json' '.github/workflows/*.yml' 'tsconfig*.json'",
     "test:boundaries": "vitest run --config tests/security/vitest.config.mjs tests/security/package-boundaries.test.ts",
     "test:performance:runtime": "pnpm build:platform && AELIQO_RUN_PERFORMANCE=1 node tests/performance/runtime-workload.mjs",
@@ -116,7 +112,6 @@
     "test:performance:heap-lifecycle": "playwright test --config tests/performance/heap-lifecycle.playwright.config.mjs",
     "test:performance:adverse-runtime": "pnpm build:runtime && node --test tests/performance/adverse-runtime.test.mjs",
     "test:performance:adverse-visualization": "playwright test --config tests/performance/adverse-visualization.playwright.config.mjs",
-    "test:performance:site-page": "playwright test --config tests/performance/site-page.playwright.config.mjs",
     "test:agent-evaluation:ui": "pnpm build:platform && pnpm build:agent && playwright test --config tests/agent-evaluation/ui-development/playwright.config.mjs"
   },
   "devDependencies": {

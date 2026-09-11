@@ -152,6 +152,7 @@ test_ready_excludes_release_only_scenario (test_r2.GateRegressionTests.test_read
 test_release_excludes_explicitly_deferred_scenario (test_r2.GateRegressionTests.test_release_excludes_explicitly_deferred_scenario) ... ok
 test_release_includes_live_scenario (test_r2.GateRegressionTests.test_release_includes_live_scenario) ... ok
 test_shell_string_refused (test_r2.GateRegressionTests.test_shell_string_refused) ... ok
+test_timeout_terminates_descendants (test_r2.GateRegressionTests.test_timeout_terminates_descendants) ... ok
 test_unknown_kind_rejected (test_r2.GateRegressionTests.test_unknown_kind_rejected) ... ok
 test_absolute_traversal_refused (test_r2.OwnershipAndTaskTests.test_absolute_traversal_refused) ... ok
 test_all_real_task_paths_canonical (test_r2.OwnershipAndTaskTests.test_all_real_task_paths_canonical) ... ok
@@ -168,6 +169,6 @@ test_global_compiler_cannot_satisfy_missing_install (test_toolchain.LocalToolTes
 test_project_executable_is_selected (test_toolchain.LocalToolTests.test_project_executable_is_selected) ... ok
 
 ----------------------------------------------------------------------
-Ran 168 tests in 17.100s
+Ran 169 tests in 21.183s
 
 OK

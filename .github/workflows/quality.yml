@@ -25,21 +25,18 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: '24.20.0'
+          package-manager-cache: false
       - name: Install the locked Node 24 and pnpm 11 toolchain
         run: |
           corepack enable
           corepack prepare pnpm@11.24.0 --activate
           pnpm install --frozen-lockfile
           pnpm exec playwright install --with-deps chromium firefox webkit
-      - name: Check production delivery policy
-        run: scripts/ci/check-production-delivery.sh
-      - name: Test graceful static delivery
-        run: go test ./deploy/server.go ./deploy/server_test.go
-      - name: Build the public site and exact package candidate
+      - name: Build the exact public package candidate and documentation contract
         run: |
-          pnpm build:site
           pnpm test:release-tooling
           node scripts/release/candidate.mjs
+          pnpm test:docs-artifact
       - name: Run the complete product command ledger
         run: pnpm check
       - name: Upload source-bound product evidence
@@ -52,28 +49,4 @@ jobs:
             artifacts/release-candidate
             harness/evidence/ci.json
           if-no-files-found: warn
-          retention-days: 7
-
-  image-contract:
-    needs: product
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          persist-credentials: false
-      - name: Build the exact-SHA production image
-        run: docker build --build-arg SOURCE_REVISION=${{ github.sha }} --tag aeliqo-quality:${{ github.sha }} .
-      - name: Smoke identity, caching, security, readiness drain, and shutdown
-        run: scripts/ci/check-static-image.sh aeliqo-quality:${{ github.sha }} ${{ github.sha }}
-      - name: Record the tested image contract
-        run: |
-          mkdir -p artifacts/image-contract
-          docker image inspect aeliqo-quality:${{ github.sha }} > artifacts/image-contract/inspect.json
-          sha256sum Dockerfile deploy/server.go scripts/ci/check-static-image.sh > artifacts/image-contract/source-sha256.txt
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: aeliqo-image-contract-${{ github.sha }}
-          path: artifacts/image-contract
-          if-no-files-found: error
           retention-days: 7

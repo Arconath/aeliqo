@@ -259,6 +259,9 @@ async function externalConsumer(packages) {
     "const dns = require('node:dns'); dns.lookup = blocked('dns.lookup'); dns.resolve = blocked('dns.resolve');",
     "syncBuiltinESMExports();",
   ].join('\n') + '\n');
+  await cp(join(root, 'examples/quickstart.mjs'), join(consumer, 'quickstart.mjs'));
+  const quickstart = command('node', ['--disallow-code-generation-from-strings', '--require', './network-blocker.cjs', 'quickstart.mjs'], {cwd: consumer});
+  if (quickstart !== '{"ok":true,"revision":"catalog-1","entities":["employees"]}') throw new Error('Packed quickstart returned an invalid result');
   await writeFile(join(consumer, 'consumer.mjs'), [
     `const installedExportSpecifiers = ${JSON.stringify(installedExportSpecifiers)};`,
     "const installedExports = await Promise.all(installedExportSpecifiers.map(specifier => specifier.endsWith('.json') ? import(specifier, {with: {type: 'json'}}) : import(specifier)));",
@@ -282,7 +285,7 @@ async function externalConsumer(packages) {
   const deniedMethods = ['fetch', 'http.request', 'http.get', 'https.request', 'https.get', 'net.connect', 'net.createConnection', 'net.Socket.connect', 'dns.lookup', 'dns.resolve'];
   if (runtime.networkDenied !== true || runtime.packageModulesLoaded !== 7 || runtime.publicExportsLoaded !== exportCount || runtime.coreParserExecuted !== true || runtime.auditExecuted !== true || runtime.auditNetworkAttempts !== 0
     || JSON.stringify(runtime.deniedMethods) !== JSON.stringify(deniedMethods)) throw new Error('Offline consumer returned an invalid report');
-  return {consumer, lock, lockSha256: sha256(await readFile(join(consumer, 'package-lock.json'))), packages: packages.map(item => item.name), exportCount, runtime};
+  return {consumer, lock, lockSha256: sha256(await readFile(join(consumer, 'package-lock.json'))), packages: packages.map(item => item.name), exportCount, quickstart, runtime};
 }
 
 function packageNameFromLockPath(path) {
@@ -371,7 +374,7 @@ try {
   await writeFile(join(output, 'consumer.json'), JSON.stringify({
     schema: 'aeliqo.local-tarball-consumer.v1', sourceRevision, version,
     install: {source: 'local-candidate-tarballs', lockSha256: consumer.lockSha256},
-    execution: consumer.runtime,
+    execution: {...consumer.runtime, quickstart: consumer.quickstart},
     packages: packages.map(item => ({name: item.name, version, integrity: item.integrity})),
     exportCount: consumer.exportCount,
   }, null, 2) + '\n');

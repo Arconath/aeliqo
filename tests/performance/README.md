@@ -142,23 +142,16 @@ budget. Their patches and paired raw observations were preserved under
 `harness/evidence/t30/91731d9-tie-memo-experiment`; both experimental source
 changes were reverted. The required planner budget remains unchanged.
 
-## Whole-site local pages
+## Website-owned observations
 
-`pnpm test:performance:site-page` builds and previews the real site, then
-observes home, Table documentation and playground routes. Each route uses
-one fresh context with the cache cleared and disabled, plus one reload after
-warmup with caching enabled. `AELIQO_RUN_PERFORMANCE=1` expands this to
-10 cold and 30 warm observations per route.
+Whole-page home, documentation, playground, 71-route layout, cache, and static
+delivery probes moved with the presentation shell to the private
+`Arconath/aeliqo-site` repository. They install exact package tarballs and a
+checksum-verified public documentation artifact, so those tests do not require
+workspace imports or a sibling SDK checkout.
 
-`pnpm test:site:document-layout` separately builds the site and visits all 71
-component documentation routes. It records controlled hydration layout-shift
-entries, verifies real component mounts and static expected-result content, and
-checks the Table documentation structure with JavaScript disabled. Its 0.1
-per-route limit is a local browser observation, not a p75 field CLS claim.
-
-Navigation, resource/body bytes, cache responses, paint entries, LCP candidates
-and individual layout shifts are retained separately. Unsupported observations
-remain null; observer/resource-buffer limits are recorded. LCP candidates are
-not final field LCP, and shifts are not combined into a CLS score. This local
-page probe has no timing-budget pass claim and does not measure INP or actual
-mobile hardware.
+Historical whole-site reports remain under `harness/evidence`; they are not
+current evidence for the split repositories. This public suite retains reusable
+runtime, bundle, component, standalone, perceived-input, heap-lifecycle, and
+adverse-visualization coverage. Website performance and deployment evidence is
+reported separately from SDK correctness and package qualification.

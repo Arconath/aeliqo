@@ -1,9 +1,15 @@
-RELEASE BLOCKED: 8 unmet conditions
-- T30: missing/mismatching artifact harness/evidence/t30/a245c8f-final-revalidation/manifest.json
+RELEASE BLOCKED: 14 unmet conditions
+- T34: planned, not done
+- T35: planned, not done
 - T36: planned, not done
 - T37: planned, not done
 - T38: planned, not done
+- T42: planned, not done
 - S52: scenario not passed
 - S62: scenario not passed
 - CI evidence is absent, failed or stale for this candidate
-- No valid integrated candidate evidence
+- Integrated evidence does not match candidate source digest
+- Missing passing integrated evidence: npm-integrity
+- Missing passing integrated evidence: rollback-verification
+- Missing passing integrated evidence: site-digest
+- Missing passing integrated evidence: source-release

@@ -110,6 +110,7 @@ jobs:
         with:
           node-version: '24.20.0'
           registry-url: https://registry.npmjs.org
+          package-manager-cache: false
       - name: Install the locked package manager and dependencies
         run: |
           corepack enable

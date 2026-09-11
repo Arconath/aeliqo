@@ -36,3 +36,22 @@ Production authority stays on the old path until the private repository has a
 successful exact-main quality run, immutable image evidence, reviewed GitOps
 change, Flux reconciliation, and route/header/health smoke. The previous image
 digest and GitOps revision are the rollback inputs.
+
+## Cutover record
+
+The private-site cutover completed on 11 September 2026. The production site is
+built from private site revision `f7e692b18f8168487c6aa53e606b0b1ceef728b8`,
+public SDK revision `fb16bc90965b117f77d7c09974eecdedf26d2f6a`, and
+SDK version `0.1.0-rc.2`. UpCloud selects immutable image digest
+`sha256:843c81baf2696039fc36b8209191ebc5cfce74c4fe06d5cce7898422a4c7de09`.
+
+Normal GitOps pull requests
+[166](https://github.com/Arconath/platform-apps/pull/166),
+[167](https://github.com/Arconath/platform-apps/pull/167), and
+[168](https://github.com/Arconath/platform-apps/pull/168) record the initial
+cutover, production CSP correction, and live acceptance. Apex and `www` exposed
+the exact site/SDK identities; route, health, readiness, 404/method, cache/CSP,
+and live browser checks passed. Direct authenticated Flux/Kubernetes inspection
+was unavailable, so the evidence distinguishes exact live convergence from an
+observed controller-status claim. The unchanged shared runtime remains the
+last-known-good rollback path.

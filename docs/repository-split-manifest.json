@@ -27,7 +27,10 @@
   },
   "destination": {
     "repository": "https://github.com/Arconath/aeliqo-site",
-    "requiredVisibility": "private"
+    "requiredVisibility": "private",
+    "verifiedVisibility": "private",
+    "initialRevision": "b88dd0267000be8a50718a1f0d046dd786530bd4",
+    "productionRevision": "f7e692b18f8168487c6aa53e606b0b1ceef728b8"
   },
   "entries": [
     {
@@ -45,7 +48,7 @@
         "private tests/site-browser",
         "private tests/playground-responsive"
       ],
-      "provenance": "git:Arconath/aeliqo@4970c7e7b06530f1e0a2a3f69a93c9c812e6da46:apps/site/src"
+      "provenance": "git:Arconath/aeliqo@fb16bc90965b117f77d7c09974eecdedf26d2f6a:apps/site/src"
     },
     {
       "sourcePath": "apps/site/{index.html,playground.html,generate-pages.mjs,docs-artifact.mjs,vite.config.mjs,tsconfig.json,package.json,README.md}",
@@ -64,7 +67,7 @@
         "private pnpm test:browser",
         "public pnpm test:docs-artifact"
       ],
-      "provenance": "git:Arconath/aeliqo@4970c7e7b06530f1e0a2a3f69a93c9c812e6da46:apps/site"
+      "provenance": "git:Arconath/aeliqo@fb16bc90965b117f77d7c09974eecdedf26d2f6a:apps/site"
     },
     {
       "sourcePath": "apps/site/public/**",
@@ -76,7 +79,7 @@
         "private telemetry configuration tests",
         "private static image smoke"
       ],
-      "provenance": "git:Arconath/aeliqo@4970c7e7b06530f1e0a2a3f69a93c9c812e6da46:apps/site/public"
+      "provenance": "git:Arconath/aeliqo@fb16bc90965b117f77d7c09974eecdedf26d2f6a:apps/site/public"
     },
     {
       "sourcePath": "tests/site/**",
@@ -93,7 +96,7 @@
         "private pnpm test:browser",
         "public tests/docs-artifact/component-api.test.ts"
       ],
-      "provenance": "git:Arconath/aeliqo@4970c7e7b06530f1e0a2a3f69a93c9c812e6da46:tests/site"
+      "provenance": "git:Arconath/aeliqo@fb16bc90965b117f77d7c09974eecdedf26d2f6a:tests/site"
     },
     {
       "sourcePath": "tests/performance/{site-page.playwright.config.mjs,site-page.spec.ts}",
@@ -106,7 +109,7 @@
       "tests": [
         "private pnpm test:performance"
       ],
-      "provenance": "git:Arconath/aeliqo@4970c7e7b06530f1e0a2a3f69a93c9c812e6da46:tests/performance"
+      "provenance": "git:Arconath/aeliqo@fb16bc90965b117f77d7c09974eecdedf26d2f6a:tests/performance"
     },
     {
       "sourcePath": "{Dockerfile,.dockerignore,deploy/**,scripts/ci/check-static-image.sh,scripts/ci/publish-production-image.sh}",
@@ -123,7 +126,7 @@
         "private docker image contract",
         "private readiness/drain/cache/security-header smoke"
       ],
-      "provenance": "git:Arconath/aeliqo@4970c7e7b06530f1e0a2a3f69a93c9c812e6da46"
+      "provenance": "git:Arconath/aeliqo@fb16bc90965b117f77d7c09974eecdedf26d2f6a"
     },
     {
       "sourcePath": ".github/workflows/release.yml",
@@ -139,7 +142,7 @@
         "private workflow policy tests",
         "server-side workflow run evidence"
       ],
-      "provenance": "git:Arconath/aeliqo@4970c7e7b06530f1e0a2a3f69a93c9c812e6da46:.github/workflows/release.yml"
+      "provenance": "git:Arconath/aeliqo@fb16bc90965b117f77d7c09974eecdedf26d2f6a:.github/workflows/release.yml"
     },
     {
       "sourcePath": ".github/workflows/quality.yml",
@@ -156,7 +159,7 @@
         "public release candidate consumer",
         "private full site gates"
       ],
-      "provenance": "git:Arconath/aeliqo@4970c7e7b06530f1e0a2a3f69a93c9c812e6da46:.github/workflows/quality.yml"
+      "provenance": "git:Arconath/aeliqo@fb16bc90965b117f77d7c09974eecdedf26d2f6a:.github/workflows/quality.yml"
     },
     {
       "sourcePath": "{docs/public-site/content.mjs,scripts/docs/**,tests/docs-artifact/**}",
@@ -172,7 +175,7 @@
       "tests": [
         "pnpm test:docs-artifact"
       ],
-      "provenance": "git:Arconath/aeliqo:audit/notion-implementation-20260911"
+      "provenance": "git:Arconath/aeliqo@fb16bc90965b117f77d7c09974eecdedf26d2f6a"
     },
     {
       "sourcePath": "{packages/**,apps/studio/**,examples/**,harness/components.json,design/**,tests except site-only tests}",
@@ -187,7 +190,7 @@
         "public package consumer tests",
         "public browser and SSR/hydration tests"
       ],
-      "provenance": "git:Arconath/aeliqo@4970c7e7b06530f1e0a2a3f69a93c9c812e6da46"
+      "provenance": "git:Arconath/aeliqo@fb16bc90965b117f77d7c09974eecdedf26d2f6a"
     },
     {
       "sourcePath": "{package.json,pnpm-lock.yaml,pnpm-workspace.yaml,tsconfig.json,tsconfig.lint.json}",
@@ -222,5 +225,15 @@
     "siteInput": "one exact SDK version plus a checksum-verified public docs artifact",
     "production": "exact approved private-site main SHA to immutable image digest to reviewed Aeliqo-only GitOps change",
     "retirement": "remove the OSS site and its production authority only after private clone verification and a healthy cutover; preserve rollback"
+  },
+  "cutoverEvidence": {
+    "siteQualityRun": "https://github.com/Arconath/aeliqo-site/actions/runs/34570510156",
+    "siteImageRun": "https://github.com/Arconath/aeliqo-site/actions/runs/34570932541",
+    "imageDigest": "sha256:843c81baf2696039fc36b8209191ebc5cfce74c4fe06d5cce7898422a4c7de09",
+    "gitopsPromotion": "https://github.com/Arconath/platform-apps/pull/167",
+    "gitopsAcceptance": "https://github.com/Arconath/platform-apps/pull/168",
+    "liveApex": "https://aeliqo.com",
+    "liveWww": "https://www.aeliqo.com",
+    "directClusterInspection": false
   }
 }

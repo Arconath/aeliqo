@@ -90,21 +90,6 @@ importers:
         specifier: 3.5.42
         version: 3.5.42(typescript@7.0.2)
 
-  apps/site:
-    dependencies:
-      '@aeliqo/agent':
-        specifier: workspace:*
-        version: link:../../packages/agent
-      '@aeliqo/core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      '@aeliqo/runtime':
-        specifier: workspace:*
-        version: link:../../packages/runtime
-      '@aeliqo/web':
-        specifier: workspace:*
-        version: link:../../packages/web
-
   apps/studio:
     dependencies:
       '@aeliqo/core':
