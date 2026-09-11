@@ -582,7 +582,14 @@ test("SSR declarative shadow content upgrades and hydrates without duplication",
   }
   await serverInput.fill("typed before hydration");
   await serverInput.focus();
-  await page.addScriptTag({url: `${new URL("/src/hydrate.ts", page.url())}`, type: "module"});
+  const hydrationEntryUrl = new URL("/src/hydrate.ts", page.url()).href;
+  const hydrationEntry = await page.request.get(hydrationEntryUrl);
+  expect(
+    hydrationEntry.status(),
+    `Vite must transform the hydration entry before the browser evaluates it: ${await hydrationEntry.text()}`,
+  ).toBe(200);
+  await hydrationEntry.dispose();
+  await page.addScriptTag({url: hydrationEntryUrl, type: "module"});
   await page.waitForFunction(() => {
     const constructor = customElements.get("aeliqo-input");
     const element = document.querySelector("aeliqo-input");
