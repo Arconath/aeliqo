@@ -14,10 +14,12 @@ COPY apps ./apps
 COPY examples ./examples
 COPY tests ./tests
 COPY design ./design
+COPY docs/public-site ./docs/public-site
+COPY scripts/docs ./scripts/docs
 COPY harness/components.json ./harness/components.json
 
 RUN pnpm install --frozen-lockfile
-RUN pnpm build:platform && pnpm build:agent
+RUN pnpm build:docs-artifact && pnpm build:agent
 RUN rm -rf /workspace/apps/site/dist /workspace/artifacts/site-source /workspace/artifacts/site-public \
   && node --input-type=module -e 'const {generatePages}=await import("./apps/site/generate-pages.mjs"); await generatePages()' \
   && test -f /workspace/artifacts/site-source/index.html

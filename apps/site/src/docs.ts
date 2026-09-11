@@ -1,5 +1,6 @@
 import {AeliqoDialogElement} from '@aeliqo/web/dialog';
 import {AeliqoRecordListElement} from '@aeliqo/web/record-list';
+import {catalogExample, CATALOG_EXAMPLE_IDS} from '@aeliqo/catalog-examples';
 import {syncComponentTheme} from './site.js';
 
 type SearchEntry = {readonly path:string;readonly title:string;readonly description:string};
@@ -131,7 +132,7 @@ document.body.append(list);`; pre.append(code); mount.append(pre);
 
 const componentMount = document.querySelector<HTMLElement>('[data-component-preview]');
 if (componentMount) {
- void import('../../../examples/catalog/index.js').then(({catalogExample, CATALOG_EXAMPLE_IDS}) => {
+ void Promise.resolve().then(() => {
   const full = componentMount.dataset.componentPreview ?? ''; const candidate = full.slice(full.indexOf('.') + 1); const id = CATALOG_EXAMPLE_IDS.find(item => item === candidate); if (!id) throw Error('The component example is unavailable.');
   const previewMount = componentMount.querySelector<HTMLElement>('[data-preview-mount]'); if (!previewMount) throw Error('The component preview mount is unavailable.');
   const previewStatus = previewMount.querySelector<HTMLElement>('[data-preview-status]'); const cleanup = catalogExample(id, previewMount); window.addEventListener('pagehide', cleanup, {once:true}); void syncComponentTheme(previewMount); if (previewStatus) previewStatus.textContent = 'Interactive preview loaded.';

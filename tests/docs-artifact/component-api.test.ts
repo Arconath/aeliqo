@@ -14,8 +14,7 @@ type ComponentApiModule = {
 };
 
 it("keeps generated component metadata inside the selected class lineage", async () => {
-  // @ts-expect-error The site generator is an executable ESM module without a declaration file.
-  const api = await import("../../apps/site/component-api.mjs") as ComponentApiModule;
+  const api = await import("../../scripts/docs/component-api.mjs") as ComponentApiModule;
   const classes = await api.loadComponentSources(resolve(process.cwd(), "packages/web/src"));
   const table = api.componentApi(classes, "AeliqoTableElement");
   const formFlow = api.componentApi(classes, "AeliqoFormFlowElement");

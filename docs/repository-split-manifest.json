@@ -1,0 +1,226 @@
+{
+  "schema": "aeliqo.repository-split.v1",
+  "decisionScope": [
+    "D01",
+    "D02",
+    "D03",
+    "D04",
+    "D05",
+    "D06",
+    "D07",
+    "D08"
+  ],
+  "supersededRecommendations": [
+    "S01",
+    "S02",
+    "S03",
+    "S04",
+    "S05",
+    "S06",
+    "S07"
+  ],
+  "source": {
+    "repository": "https://github.com/Arconath/aeliqo",
+    "visibility": "public",
+    "license": "Apache-2.0",
+    "auditBaseline": "4970c7e7b06530f1e0a2a3f69a93c9c812e6da46"
+  },
+  "destination": {
+    "repository": "https://github.com/Arconath/aeliqo-site",
+    "requiredVisibility": "private"
+  },
+  "entries": [
+    {
+      "sourcePath": "apps/site/src/**",
+      "destinationPath": "src/**",
+      "disposition": "move-private",
+      "reason": "Website presentation, browser telemetry, search interaction, and the synthetic playground belong to the independently operated website.",
+      "dependencies": [
+        "exact @aeliqo package tarballs or registry versions",
+        "versioned public docs artifact",
+        "public/aeliqo.png"
+      ],
+      "tests": [
+        "private tests/site-unit",
+        "private tests/site-browser",
+        "private tests/playground-responsive"
+      ],
+      "provenance": "git:Arconath/aeliqo@4970c7e7b06530f1e0a2a3f69a93c9c812e6da46:apps/site/src"
+    },
+    {
+      "sourcePath": "apps/site/{index.html,playground.html,generate-pages.mjs,docs-artifact.mjs,vite.config.mjs,tsconfig.json,package.json,README.md}",
+      "destinationPath": "{index.html,playground.html,scripts/generate-pages.mjs,scripts/docs-artifact.mjs,vite.config.mjs,tsconfig.json,package.json,README.md}",
+      "disposition": "move-private-and-decouple",
+      "reason": "The static Vite shell and route assembly are website-owned; the generator must consume a verified artifact rather than an SDK checkout.",
+      "dependencies": [
+        "vendor/public-docs/manifest.json",
+        "vendor/packages/*.tgz",
+        "Node 24.20.0",
+        "pnpm 11.24.0"
+      ],
+      "tests": [
+        "private pnpm build",
+        "private pnpm test",
+        "private pnpm test:browser",
+        "public pnpm test:docs-artifact"
+      ],
+      "provenance": "git:Arconath/aeliqo@4970c7e7b06530f1e0a2a3f69a93c9c812e6da46:apps/site"
+    },
+    {
+      "sourcePath": "apps/site/public/**",
+      "destinationPath": "public/**",
+      "disposition": "move-private",
+      "reason": "The site logo copy and disabled-by-default production telemetry configuration are website deployment inputs.",
+      "dependencies": [],
+      "tests": [
+        "private telemetry configuration tests",
+        "private static image smoke"
+      ],
+      "provenance": "git:Arconath/aeliqo@4970c7e7b06530f1e0a2a3f69a93c9c812e6da46:apps/site/public"
+    },
+    {
+      "sourcePath": "tests/site/**",
+      "destinationPath": "tests/**",
+      "disposition": "move-private-except-public-contract-tests",
+      "reason": "Website navigation, responsive behavior, telemetry, playground, and document-layout behavior move with the shell; component metadata extraction remains an OSS contract.",
+      "dependencies": [
+        "private src/**",
+        "public docs artifact",
+        "exact @aeliqo package tarballs"
+      ],
+      "tests": [
+        "private pnpm test",
+        "private pnpm test:browser",
+        "public tests/docs-artifact/component-api.test.ts"
+      ],
+      "provenance": "git:Arconath/aeliqo@4970c7e7b06530f1e0a2a3f69a93c9c812e6da46:tests/site"
+    },
+    {
+      "sourcePath": "tests/performance/{site-page.playwright.config.mjs,site-page.spec.ts}",
+      "destinationPath": "tests/performance/**",
+      "disposition": "move-private",
+      "reason": "These measurements exercise the composed website page, not the reusable SDK bundles or runtime workloads.",
+      "dependencies": [
+        "private production site build"
+      ],
+      "tests": [
+        "private pnpm test:performance"
+      ],
+      "provenance": "git:Arconath/aeliqo@4970c7e7b06530f1e0a2a3f69a93c9c812e6da46:tests/performance"
+    },
+    {
+      "sourcePath": "{Dockerfile,.dockerignore,deploy/**,scripts/ci/check-static-image.sh,scripts/ci/publish-production-image.sh}",
+      "destinationPath": "same relative paths",
+      "disposition": "move-private-and-rebind-identity",
+      "reason": "The container and static server deploy only the website and must identify the site repository and both site/SDK source identities.",
+      "dependencies": [
+        "private dist/**",
+        "GHCR write authority",
+        "GitHub-hosted Actions"
+      ],
+      "tests": [
+        "private go test ./deploy/...",
+        "private docker image contract",
+        "private readiness/drain/cache/security-header smoke"
+      ],
+      "provenance": "git:Arconath/aeliqo@4970c7e7b06530f1e0a2a3f69a93c9c812e6da46"
+    },
+    {
+      "sourcePath": ".github/workflows/release.yml",
+      "destinationPath": ".github/workflows/release.yml",
+      "disposition": "move-private-and-rebind-authority",
+      "reason": "Only the site repository may publish the production website image after cutover.",
+      "dependencies": [
+        "successful same-site-SHA private quality run",
+        "owner dispatch",
+        "GHCR package permission"
+      ],
+      "tests": [
+        "private workflow policy tests",
+        "server-side workflow run evidence"
+      ],
+      "provenance": "git:Arconath/aeliqo@4970c7e7b06530f1e0a2a3f69a93c9c812e6da46:.github/workflows/release.yml"
+    },
+    {
+      "sourcePath": ".github/workflows/quality.yml",
+      "destinationPath": "split between both repositories",
+      "disposition": "replace-by-independent-workflows",
+      "reason": "Public SDK quality must remain GitHub-hosted and credential-free; private site quality owns its build, browser, server, and image checks.",
+      "dependencies": [
+        "public locked toolchain",
+        "private vendored exact public inputs"
+      ],
+      "tests": [
+        "public pnpm check",
+        "public pnpm test:docs-artifact",
+        "public release candidate consumer",
+        "private full site gates"
+      ],
+      "provenance": "git:Arconath/aeliqo@4970c7e7b06530f1e0a2a3f69a93c9c812e6da46:.github/workflows/quality.yml"
+    },
+    {
+      "sourcePath": "{docs/public-site/content.mjs,scripts/docs/**,tests/docs-artifact/**}",
+      "destinationPath": "same relative paths in Arconath/aeliqo",
+      "disposition": "retain-public",
+      "reason": "Developer documentation source, generated API metadata, artifact validation, and integrity rejection evidence must remain contributor-accessible.",
+      "dependencies": [
+        "harness/components.json",
+        "packages/web/src/**",
+        "packages/web/dist/**",
+        "examples/catalog/**"
+      ],
+      "tests": [
+        "pnpm test:docs-artifact"
+      ],
+      "provenance": "git:Arconath/aeliqo:audit/notion-implementation-20260911"
+    },
+    {
+      "sourcePath": "{packages/**,apps/studio/**,examples/**,harness/components.json,design/**,tests except site-only tests}",
+      "destinationPath": "same relative paths in Arconath/aeliqo",
+      "disposition": "retain-public",
+      "reason": "The complete framework, local Studio/testkit, source examples, design contracts, security/accessibility, and conformance coverage remain Apache-2.0 OSS.",
+      "dependencies": [
+        "public pnpm-lock.yaml"
+      ],
+      "tests": [
+        "public product command ledger",
+        "public package consumer tests",
+        "public browser and SSR/hydration tests"
+      ],
+      "provenance": "git:Arconath/aeliqo@4970c7e7b06530f1e0a2a3f69a93c9c812e6da46"
+    },
+    {
+      "sourcePath": "{package.json,pnpm-lock.yaml,pnpm-workspace.yaml,tsconfig.json,tsconfig.lint.json}",
+      "destinationPath": "independent root files in each repository",
+      "disposition": "split-and-regenerate",
+      "reason": "Each repository needs a standalone locked dependency graph; the private site may not use workspace links or a sibling checkout.",
+      "dependencies": [
+        "exact public candidate tarballs before npm availability",
+        "exact registry versions after verified publication"
+      ],
+      "tests": [
+        "fresh public clone install/build/test",
+        "fresh private clone install/build/test",
+        "lockfile integrity checks"
+      ],
+      "provenance": "generated from the two final package manifests; never copied as a shared mutable lockfile"
+    },
+    {
+      "sourcePath": "harness/evidence/**",
+      "destinationPath": "no bulk move",
+      "disposition": "retain-public-history",
+      "reason": "Historical evidence remains immutable; new site evidence is recorded in the private repository and public replacement gates get new OSS evidence.",
+      "dependencies": [],
+      "tests": [
+        "fresh evidence references must bind the applicable repository SHA"
+      ],
+      "provenance": "existing Git history"
+    }
+  ],
+  "cutoverRules": {
+    "publicCI": "GitHub-hosted GitHub Actions only; no private credential on pull_request and no private-site checkout",
+    "siteInput": "one exact SDK version plus a checksum-verified public docs artifact",
+    "production": "exact approved private-site main SHA to immutable image digest to reviewed Aeliqo-only GitOps change",
+    "retirement": "remove the OSS site and its production authority only after private clone verification and a healthy cutover; preserve rollback"
+  }
+}

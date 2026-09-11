@@ -17,6 +17,12 @@
 !tests/**
 !design/
 !design/**
+!docs/
+!docs/public-site/
+!docs/public-site/**
+!scripts/
+!scripts/docs/
+!scripts/docs/**
 !harness/
 !harness/components.json
 !deploy/
