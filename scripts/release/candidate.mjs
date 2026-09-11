@@ -248,6 +248,7 @@ async function externalConsumer(packages) {
     if (!installed || installed.version !== version || installed.integrity !== item.integrity) throw new Error(`Consumer did not install exact ${item.name} tarball`);
   }
   const exportCount = await typeCheckInstalledExports(consumer, packages);
+  const installedExportSpecifiers = packages.flatMap(item => exportSpecifiers(item.manifest, item.paths));
   await writeFile(join(consumer, 'network-blocker.cjs'), [
     "const {syncBuiltinESMExports} = require('node:module');",
     "const state = {attempts: []}; globalThis.__aeliqoOfflineNetwork = state;",
@@ -259,6 +260,8 @@ async function externalConsumer(packages) {
     "syncBuiltinESMExports();",
   ].join('\n') + '\n');
   await writeFile(join(consumer, 'consumer.mjs'), [
+    `const installedExportSpecifiers = ${JSON.stringify(installedExportSpecifiers)};`,
+    "const installedExports = await Promise.all(installedExportSpecifiers.map(specifier => specifier.endsWith('.json') ? import(specifier, {with: {type: 'json'}}) : import(specifier)));",
     "import {parseContract} from '@aeliqo/core';",
     "const modules = await Promise.all([",
     "  import('@aeliqo/runtime/evaluation'), import('@aeliqo/runtime/audit'), import('@aeliqo/web/server'),",
@@ -268,16 +271,16 @@ async function externalConsumer(packages) {
     "const audit = modules[1].createLocalAuditExporter({maxEvents: 2, maxBytes: 1024, now: () => 1});",
     "const auditRecord = audit.record({kind: 'source', transport: 'local', status: 'error', code: 'source.invalid'}); const auditExport = audit.exportSnapshot(); audit.dispose();",
     "const stateBeforeProbes = globalThis.__aeliqoOfflineNetwork;",
-    "if (boundedRejection.ok || modules.length !== 6 || !auditRecord.ok || !auditExport.ok || auditExport.value.records.length !== 1 || !stateBeforeProbes || stateBeforeProbes.attempts.length !== 0) throw new Error('installed package runtime smoke failed');",
+    "if (installedExports.length !== installedExportSpecifiers.length || installedExports.some(module => module === null || typeof module !== 'object') || boundedRejection.ok || modules.length !== 6 || !auditRecord.ok || !auditExport.ok || auditExport.value.records.length !== 1 || !stateBeforeProbes || stateBeforeProbes.attempts.length !== 0) throw new Error('installed package runtime smoke failed');",
     "const [http, https, net, dns] = await Promise.all([import('node:http'), import('node:https'), import('node:net'), import('node:dns')]);",
     "const probes = [['fetch', () => fetch('https://example.invalid')], ['http.request', () => http.request('http://example.invalid')], ['http.get', () => http.get('http://example.invalid')], ['https.request', () => https.request('https://example.invalid')], ['https.get', () => https.get('https://example.invalid')], ['net.connect', () => net.connect(9, 'example.invalid')], ['net.createConnection', () => net.createConnection(9, 'example.invalid')], ['net.Socket.connect', () => new net.Socket().connect(9, 'example.invalid')], ['dns.lookup', () => dns.lookup('example.invalid', () => {})], ['dns.resolve', () => dns.resolve('example.invalid', () => {})]];",
     "for (const [label, probe] of probes) { try { probe(); throw new Error(`network probe unexpectedly succeeded: ${label}`); } catch (error) { if (error?.code !== 'AELIQO_OFFLINE_NETWORK_BLOCKED') throw error; } }",
     "const state = globalThis.__aeliqoOfflineNetwork; if (!state || JSON.stringify(state.attempts) !== JSON.stringify(probes.map(([label]) => label))) throw new Error('network blocker did not observe every exact probe');",
-    "process.stdout.write(JSON.stringify({networkDenied: true, deniedMethods: state.attempts, packageModulesLoaded: 7, coreParserExecuted: true, auditNetworkAttempts: 0, auditExecuted: true}));",
+    "process.stdout.write(JSON.stringify({networkDenied: true, deniedMethods: state.attempts, packageModulesLoaded: 7, publicExportsLoaded: installedExports.length, coreParserExecuted: true, auditNetworkAttempts: 0, auditExecuted: true}));",
   ].join('\n') + '\n');
   const runtime = JSON.parse(command('node', ['--disallow-code-generation-from-strings', '--require', './network-blocker.cjs', 'consumer.mjs'], {cwd: consumer}));
   const deniedMethods = ['fetch', 'http.request', 'http.get', 'https.request', 'https.get', 'net.connect', 'net.createConnection', 'net.Socket.connect', 'dns.lookup', 'dns.resolve'];
-  if (runtime.networkDenied !== true || runtime.packageModulesLoaded !== 7 || runtime.coreParserExecuted !== true || runtime.auditExecuted !== true || runtime.auditNetworkAttempts !== 0
+  if (runtime.networkDenied !== true || runtime.packageModulesLoaded !== 7 || runtime.publicExportsLoaded !== exportCount || runtime.coreParserExecuted !== true || runtime.auditExecuted !== true || runtime.auditNetworkAttempts !== 0
     || JSON.stringify(runtime.deniedMethods) !== JSON.stringify(deniedMethods)) throw new Error('Offline consumer returned an invalid report');
   return {consumer, lock, lockSha256: sha256(await readFile(join(consumer, 'package-lock.json'))), packages: packages.map(item => item.name), exportCount, runtime};
 }

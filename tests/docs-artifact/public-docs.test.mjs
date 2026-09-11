@@ -5,7 +5,6 @@ import {tmpdir} from 'node:os';
 import {join, resolve} from 'node:path';
 import test from 'node:test';
 import {promisify} from 'node:util';
-import {loadPublicDocs} from '../../apps/site/docs-artifact.mjs';
 import {readVerifiedPublicDocs, sha256} from '../../scripts/docs/public-docs-contract.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
@@ -30,8 +29,8 @@ test('public docs artifact binds exact source, packages, API metadata, and runna
   assert.ok(manifest.inputs.some(input => input.path.startsWith('packages/web/dist/') && input.path.endsWith('.d.ts')));
 });
 
-test('site consumer accepts the verified public artifact without SDK source paths', async () => {
-  const {artifact, manifest} = await loadPublicDocs(manifestPath);
+test('an external consumer can accept the verified public artifact without private site source', async () => {
+  const {artifact, manifest} = await readVerifiedPublicDocs(manifestPath);
   assert.equal(artifact.pages.length, 93);
   assert.equal(manifest.packageVersions['@aeliqo/web'], '0.1.0');
   assert.equal(JSON.stringify(manifest).includes('packages/web/src'), true);
@@ -45,12 +44,10 @@ test('verification rejects changed bytes, path traversal, and forged package ide
   const artifactPath = join(scratch, manifest.artifact.file);
   await writeFile(artifactPath, `${await readFile(artifactPath, 'utf8')} `);
   await assert.rejects(readVerifiedPublicDocs(copiedManifest), /checksum|byte length/u);
-  await assert.rejects(loadPublicDocs(copiedManifest), /integrity/u);
 
   manifest.artifact.file = '../escape.json';
   await writeFile(copiedManifest, `${JSON.stringify(manifest)}\n`);
   await assert.rejects(readVerifiedPublicDocs(copiedManifest), /local file name/u);
-  await assert.rejects(loadPublicDocs(copiedManifest), /artifact path/u);
 
   await cp(resolve(root, 'artifacts/public-docs/0.1.0'), scratch, {recursive: true, force: true});
   const forgedManifest = JSON.parse(await readFile(copiedManifest, 'utf8'));
@@ -63,7 +60,6 @@ test('verification rejects changed bytes, path traversal, and forged package ide
   await writeFile(forgedArtifactPath, forgedBytes);
   await writeFile(copiedManifest, `${JSON.stringify(forgedManifest, null, 2)}\n`);
   await assert.rejects(readVerifiedPublicDocs(copiedManifest), /packageVersions/u);
-  await assert.rejects(loadPublicDocs(copiedManifest), /identity differs/u);
 });
 
 test('verification rejects a changed executable catalog example', async () => {
@@ -73,7 +69,6 @@ test('verification rejects a changed executable catalog example', async () => {
   const indexPath = join(scratch, 'catalog-examples/index.ts');
   await writeFile(indexPath, `${await readFile(indexPath, 'utf8')} `);
   await assert.rejects(readVerifiedPublicDocs(copiedManifest), /catalog example integrity/u);
-  await assert.rejects(loadPublicDocs(copiedManifest), /catalog example integrity/u);
 });
 
 test('producer can bind the docs artifact to one exact release-candidate package set', async () => {
@@ -99,6 +94,5 @@ test('verification rejects a catalog symlink that escapes the artifact directory
   await rm(indexPath);
   await symlink(outside, indexPath);
   await assert.rejects(readVerifiedPublicDocs(join(scratch, 'manifest.json')), /escapes/u);
-  await assert.rejects(loadPublicDocs(join(scratch, 'manifest.json')), /escapes/u);
   await rm(outside);
 });
