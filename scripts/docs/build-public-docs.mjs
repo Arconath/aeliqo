@@ -246,10 +246,8 @@ async function catalogArtifactFiles() {
 }
 
 async function sourceIdentity() {
-  const revision =
-    revisionIndex === -1
-      ? (await command('git', ['rev-parse', 'HEAD'])).stdout.trim()
-      : (arguments_[revisionIndex + 1] ?? '');
+  const checkedOutRevision = (await command('git', ['rev-parse', 'HEAD'])).stdout.trim();
+  const revision = revisionIndex === -1 ? checkedOutRevision : (arguments_[revisionIndex + 1] ?? '');
   if (!/^[a-f0-9]{40}$/u.test(revision))
     throw new Error('The public docs artifact requires an exact 40-character source revision.');
   try {
@@ -257,6 +255,8 @@ async function sourceIdentity() {
   } catch {
     throw new Error('The public docs artifact source revision must identify a commit in this repository.');
   }
+  if (revision !== checkedOutRevision)
+    throw new Error('The public docs artifact source revision must match the checked-out HEAD commit.');
   const sourceTree = isReleaseSourceClean((await command('git', RELEASE_SOURCE_STATUS_ARGS)).stdout)
     ? 'clean'
     : 'modified';

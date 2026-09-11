@@ -126,6 +126,27 @@ test('producer rejects a shaped source revision that is not a repository commit'
   );
 });
 
+test('producer rejects an existing repository commit that is not checked-out HEAD', async () => {
+  const scratch = await mkdtemp(join(tmpdir(), 'aeliqo-public-docs-stale-revision-'));
+  const { stdout } = await execFileAsync('git', ['rev-parse', 'HEAD^'], { cwd: root });
+  await assert.rejects(
+    execFileAsync(
+      process.execPath,
+      [
+        'scripts/docs/build-public-docs.mjs',
+        '--output',
+        scratch,
+        '--source-revision',
+        stdout.trim(),
+        '--version',
+        '0.1.0-rc.2',
+      ],
+      { cwd: root },
+    ),
+    /source revision must match the checked-out HEAD/u,
+  );
+});
+
 test('verification rejects a catalog symlink that escapes the artifact directory', async () => {
   const scratch = await mkdtemp(join(tmpdir(), 'aeliqo-public-docs-symlink-test-'));
   await cp(resolve(root, 'artifacts/public-docs/0.1.0'), scratch, { recursive: true });
