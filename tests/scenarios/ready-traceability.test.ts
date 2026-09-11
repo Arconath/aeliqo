@@ -172,6 +172,18 @@ describe('S63 split-era evidence scope', () => {
   });
 });
 
+describe('S30/S31 corrected ownership evidence scope', () => {
+  it.each(['S30', 'S31'])('%s does not present its pre-rebinding scenario bundle as current-source proof', (id) => {
+    expect(scenarioById.get(id)).toMatchObject({
+      task: 'T31',
+      status: 'done',
+      stage: 'ready',
+      evidenceScope: 'historical-pre-task-rebinding',
+    });
+    expect(scenarioById.get(id)?.notes).toContain('not current-source proof');
+  });
+});
+
 describe('S48 canonical task ownership', () => {
   it('executes the canonical lease, sibling-prefix, traversal and acceptance-freshness regressions', () => {
     const output = execFileSync('python3', ['tests/harness/test_r2.py'], {
