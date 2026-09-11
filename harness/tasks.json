@@ -8,10 +8,7 @@
       "title": "Inventory current source, registry, GitOps and rollback",
       "ownerRole": "release",
       "dependsOn": [],
-      "paths": [
-        "docs",
-        "harness"
-      ],
+      "paths": ["docs", "harness"],
       "acceptance": [
         "Evidence distinguishes observations, claims and unavailable credentials; old service stays live."
       ],
@@ -42,14 +39,8 @@
       "phase": "M0",
       "title": "Verify local agent/runtime and locked toolchain",
       "ownerRole": "integration",
-      "dependsOn": [
-        "T00"
-      ],
-      "paths": [
-        "harness",
-        "scripts",
-        ".codex"
-      ],
+      "dependsOn": ["T00"],
+      "paths": ["harness", "scripts", ".codex"],
       "acceptance": [
         "Actual model IDs/efforts, useful concurrency and dependency/license versions verified; no global skill changes."
       ],
@@ -84,15 +75,8 @@
       "phase": "M0",
       "title": "Prove shared web rendering and SSR boundary",
       "ownerRole": "platform",
-      "dependsOn": [
-        "T01"
-      ],
-      "paths": [
-        "packages/web",
-        "packages/react",
-        "examples",
-        "tests/platform"
-      ],
+      "dependsOn": ["T01"],
+      "paths": ["packages/web", "packages/react", "examples", "tests/platform"],
       "acceptance": [
         "Vanilla, React/Next, Vue embedding, SSR/hydration, forms, shadow accessibility, CSP and style isolation pass or architecture ADR revised."
       ],
@@ -122,14 +106,8 @@
       "phase": "M1",
       "title": "Implement canonical schemas, IDs and errors",
       "ownerRole": "contracts",
-      "dependsOn": [
-        "T02"
-      ],
-      "paths": [
-        "packages/core",
-        "tests/contracts",
-        "tests/consumers/core-tarball.mjs"
-      ],
+      "dependsOn": ["T02"],
+      "paths": ["packages/core", "tests/contracts", "tests/consumers/core-tarball.mjs"],
       "acceptance": [
         "One schema source generates types/wire validators; versions, limits and error paths round-trip.",
         "Replace reference sketches with canonical generated validators, including tagged unknown/exact/approximate states and negative type/wire tests."
@@ -160,14 +138,8 @@
       "phase": "M1",
       "title": "Implement semantic types and expression checker",
       "ownerRole": "semantics",
-      "dependsOn": [
-        "T03"
-      ],
-      "paths": [
-        "packages/core/src/expressions",
-        "packages/core/src/semantics",
-        "tests/semantics"
-      ],
+      "dependsOn": ["T03"],
+      "paths": ["packages/core/src/expressions", "packages/core/src/semantics", "tests/semantics"],
       "acceptance": [
         "Grain, units, null, aggregation, authority/scope and cyclic definition tests reject invalid meanings.",
         "Pin function/definition versions; ratio-of-sums versus mean-of-rates is selected by declared meaning, not a blanket math rule.",
@@ -199,9 +171,7 @@
       "phase": "M1",
       "title": "Define task and experience contracts",
       "ownerRole": "contracts",
-      "dependsOn": [
-        "T03"
-      ],
+      "dependsOn": ["T03"],
       "paths": [
         "packages/core/src/contracts/task",
         "packages/core/src/contracts/experience",
@@ -238,10 +208,7 @@
       "phase": "M2",
       "title": "Implement in-process ADC and generic HTTP client/host",
       "ownerRole": "data",
-      "dependsOn": [
-        "T04",
-        "T05"
-      ],
+      "dependsOn": ["T04", "T05"],
       "paths": [
         "examples/reference-host",
         "packages/runtime/src/data",
@@ -279,12 +246,8 @@
       "phase": "M2",
       "title": "Implement bounded relational planner",
       "ownerRole": "query",
-      "dependsOn": [
-        "T06"
-      ],
-      "paths": [
-        "packages/core/src/query"
-      ],
+      "dependsOn": ["T06"],
+      "paths": ["packages/core/src/query"],
       "acceptance": [
         "Fanout-safe joins, group/filter/project/aggregate/order/topK/time operators have an independent numerical oracle."
       ],
@@ -315,13 +278,8 @@
       "phase": "M2",
       "title": "Implement host execution and capability negotiation",
       "ownerRole": "data",
-      "dependsOn": [
-        "T07"
-      ],
-      "paths": [
-        "packages/runtime/src/data",
-        "examples/reference-host"
-      ],
+      "dependsOn": ["T07"],
+      "paths": ["packages/runtime/src/data", "examples/reference-host"],
       "acceptance": [
         "Local and HTTP parity; unsupported query fails explicitly; no download-all fallback or vendor SDK in core."
       ],
@@ -351,13 +309,8 @@
       "phase": "M2",
       "title": "Implement results, cache and stream lifecycle",
       "ownerRole": "runtime",
-      "dependsOn": [
-        "T07"
-      ],
-      "paths": [
-        "packages/runtime/src/results",
-        "packages/core/src/contracts/result"
-      ],
+      "dependsOn": ["T07"],
+      "paths": ["packages/runtime/src/results", "packages/core/src/contracts/result"],
       "acceptance": [
         "Principal-scoped immutable handles, completeness, backpressure, cancellation and stale-result ordering proven.",
         "Results distinguish count value/scope, precision, completeness, inference evidence and consistency."
@@ -388,10 +341,7 @@
       "phase": "M3",
       "title": "Implement region store and transactional commands",
       "ownerRole": "runtime",
-      "dependsOn": [
-        "T05",
-        "T09"
-      ],
+      "dependsOn": ["T05", "T09"],
       "paths": [
         "packages/runtime/src/persistence",
         "packages/runtime/src/regions",
@@ -428,13 +378,8 @@
       "phase": "M3",
       "title": "Implement interaction graph and action boundary",
       "ownerRole": "interaction",
-      "dependsOn": [
-        "T10"
-      ],
-      "paths": [
-        "packages/runtime/src/interaction",
-        "packages/runtime/src/actions"
-      ],
+      "dependsOn": ["T10"],
+      "paths": ["packages/runtime/src/interaction", "packages/runtime/src/actions"],
       "acceptance": [
         "Typed causal events converge; selection/filter/range and host action preview/confirm/recheck do not cross authority.",
         "Trusted actor derives from host context; typed event schema cannot self-assign human privilege."
@@ -466,15 +411,8 @@
       "phase": "M3",
       "title": "Implement tokens, locale and owned design baseline",
       "ownerRole": "design",
-      "dependsOn": [
-        "T02",
-        "T05"
-      ],
-      "paths": [
-        "design",
-        "docs/design",
-        "packages/web/src/styles"
-      ],
+      "dependsOn": ["T02", "T05"],
+      "paths": ["design", "docs/design", "packages/web/src/styles"],
       "acceptance": [
         "DTCG-compatible tokens, named parts, default visual system and accessible baseline approved as testable reference."
       ],
@@ -504,14 +442,8 @@
       "phase": "M4",
       "title": "Implement foundation primitive family",
       "ownerRole": "components",
-      "dependsOn": [
-        "T11",
-        "T12",
-        "T39"
-      ],
-      "paths": [
-        "packages/web/src/foundation"
-      ],
+      "dependsOn": ["T11", "T12", "T39"],
+      "paths": ["packages/web/src/foundation"],
       "acceptance": [
         "Every required foundation inventory entry works standalone and in grammar; no decorative fake controls."
       ],
@@ -542,20 +474,9 @@
       "phase": "M4",
       "title": "Implement input primitive family",
       "ownerRole": "components",
-      "dependsOn": [
-        "T11",
-        "T12",
-        "T39"
-      ],
-      "paths": [
-        "packages/web/src/input",
-        "packages/web/src/elements/aeliqo-input.ts",
-        "tests/input",
-        "docs/input"
-      ],
-      "acceptance": [
-        "Every input entry proves native forms, IME/draft/focus, locale and async validation."
-      ],
+      "dependsOn": ["T11", "T12", "T39"],
+      "paths": ["packages/web/src/input", "packages/web/src/elements/aeliqo-input.ts", "tests/input", "docs/input"],
+      "acceptance": ["Every input entry proves native forms, IME/draft/focus, locale and async validation."],
       "status": "done",
       "stage": "ready",
       "evidence": [
@@ -583,11 +504,7 @@
       "phase": "M4",
       "title": "Implement navigation and feedback families",
       "ownerRole": "components",
-      "dependsOn": [
-        "T11",
-        "T12",
-        "T39"
-      ],
+      "dependsOn": ["T11", "T12", "T39"],
       "paths": [
         "packages/web/src/navigation",
         "packages/web/src/feedback",
@@ -626,14 +543,8 @@
       "phase": "M4",
       "title": "Implement data collection and table family",
       "ownerRole": "components",
-      "dependsOn": [
-        "T11",
-        "T12",
-        "T39"
-      ],
-      "paths": [
-        "packages/web/src/data"
-      ],
+      "dependsOn": ["T11", "T12", "T39"],
+      "paths": ["packages/web/src/data"],
       "acceptance": [
         "Every data entry and bounded virtual table preserve identity, precise scope and accessible reading."
       ],
@@ -664,17 +575,8 @@
       "phase": "M5",
       "title": "Implement PlotSpec and shared D3 geometry",
       "ownerRole": "visualization",
-      "dependsOn": [
-        "T12",
-        "T09",
-        "T39"
-      ],
-      "paths": [
-        "packages/core/src/contracts/plot",
-        "packages/web/src/plot",
-        "tests/plot",
-        "docs/plot"
-      ],
+      "dependsOn": ["T12", "T09", "T39"],
+      "paths": ["packages/core/src/contracts/plot", "packages/web/src/plot", "tests/plot", "docs/plot"],
       "acceptance": [
         "Same spec/geometry feeds SVG and bounded Canvas; axes, units, gaps and accessible exact values proven."
       ],
@@ -705,13 +607,8 @@
       "phase": "M5",
       "title": "Implement all required 2D views",
       "ownerRole": "visualization",
-      "dependsOn": [
-        "T17",
-        "T16"
-      ],
-      "paths": [
-        "packages/web/src/visualization"
-      ],
+      "dependsOn": ["T17", "T16"],
+      "paths": ["packages/web/src/visualization"],
       "acceptance": [
         "Every visualization inventory entry passes adversarial semantics, interaction, pixel and performance matrix."
       ],
@@ -752,17 +649,8 @@
       "phase": "M5",
       "title": "Implement deterministic presentation compiler",
       "ownerRole": "planner",
-      "dependsOn": [
-        "T05",
-        "T09",
-        "T13",
-        "T16",
-        "T17",
-        "T39"
-      ],
-      "paths": [
-        "packages/core/src/presentation"
-      ],
+      "dependsOn": ["T05", "T09", "T13", "T16", "T17", "T39"],
+      "paths": ["packages/core/src/presentation"],
       "acceptance": [
         "Bounded candidate search, task-operation coverage, explicit preferences, incompatibility reports and incremental incumbency work.",
         "Patterns are candidate shortcuts, not a mandatory gate. Distinguish search budget exhaustion from proven invalidity."
@@ -794,15 +682,8 @@
       "phase": "M5",
       "title": "Implement adaptive composition/runtime projection",
       "ownerRole": "platform",
-      "dependsOn": [
-        "T19",
-        "T15"
-      ],
-      "paths": [
-        "packages/runtime/src/presentation",
-        "packages/runtime/src/renderer",
-        "packages/web/src/region"
-      ],
+      "dependsOn": ["T19", "T15"],
+      "paths": ["packages/runtime/src/presentation", "packages/runtime/src/renderer", "packages/web/src/region"],
       "acceptance": [
         "Wide/narrow/zoom/resize transitions preserve task, focus, draft, selection and navigation; no model call on resize."
       ],
@@ -840,19 +721,9 @@
       "phase": "M5",
       "title": "Implement all required compound components",
       "ownerRole": "components",
-      "dependsOn": [
-        "T14",
-        "T15",
-        "T16",
-        "T18",
-        "T20"
-      ],
-      "paths": [
-        "packages/web/src/compound"
-      ],
-      "acceptance": [
-        "Every compound is a typed macro/recipe over shared primitives, not a duplicate runtime."
-      ],
+      "dependsOn": ["T14", "T15", "T16", "T18", "T20"],
+      "paths": ["packages/web/src/compound"],
+      "acceptance": ["Every compound is a typed macro/recipe over shared primitives, not a duplicate runtime."],
       "status": "done",
       "stage": "ready",
       "evidence": [
@@ -879,16 +750,8 @@
       "phase": "M6",
       "title": "Implement agent capability dispatcher and task binding",
       "ownerRole": "agents",
-      "dependsOn": [
-        "T07",
-        "T10",
-        "T19",
-        "T41"
-      ],
-      "paths": [
-        "packages/agent/src/capabilities",
-        "packages/agent/src/session"
-      ],
+      "dependsOn": ["T07", "T10", "T19", "T41"],
+      "paths": ["packages/agent/src/capabilities", "packages/agent/src/session"],
       "acceptance": [
         "Manual/tool parity, schema limits, bounded turns, untrusted metadata treatment and recovery receipts proven.",
         "AI may propose bounded expression/query/view graphs; shared validation; evaluate and visible presentation are different operations."
@@ -920,14 +783,8 @@
       "phase": "M6",
       "title": "Implement manual and AI-assisted meaning authoring",
       "ownerRole": "semantics",
-      "dependsOn": [
-        "T04",
-        "T22"
-      ],
-      "paths": [
-        "packages/runtime/src/meaning",
-        "packages/agent/src/meaning"
-      ],
+      "dependsOn": ["T04", "T22"],
+      "paths": ["packages/runtime/src/meaning", "packages/agent/src/meaning"],
       "acceptance": [
         "Both paths generate same typed definition; draft/activation/scope/approval and low-risk hypothesis policy work.",
         "Studio/manual and AI-assisted authoring share code definitions/evaluator; code-owned entries are read-only or proposed diffs, not silent repo overwrites. Preserve origin, version/scope, and no implicit shadowing."
@@ -958,15 +815,8 @@
       "phase": "M6",
       "title": "Implement MCP, BYOK and optional WebMCP projections",
       "ownerRole": "agents",
-      "dependsOn": [
-        "T22",
-        "T23"
-      ],
-      "paths": [
-        "packages/agent/src/mcp",
-        "packages/agent/src/byok",
-        "packages/agent/src/webmcp"
-      ],
+      "dependsOn": ["T22", "T23"],
+      "paths": ["packages/agent/src/mcp", "packages/agent/src/byok", "packages/agent/src/webmcp"],
       "acceptance": [
         "Same executor; real supported MCP/BYOK flow, feature-detected WebMCP with honest native versus simulated evidence."
       ],
@@ -996,14 +846,8 @@
       "phase": "M7",
       "title": "Complete React wrappers and vanilla/Vue integration recipes",
       "ownerRole": "platform",
-      "dependsOn": [
-        "T21",
-        "T24"
-      ],
-      "paths": [
-        "packages/react",
-        "examples"
-      ],
+      "dependsOn": ["T21", "T24"],
+      "paths": ["packages/react", "examples"],
       "acceptance": [
         "Thin wrappers only; all release consumers install actual tarballs outside workspace and preserve events/SSR.",
         "Compile developer meaning registration quickstart from built tarballs; useful negative type examples and schema reuse; manual path has zero model/Studio requirement and no chart/layout coupling."
@@ -1034,15 +878,8 @@
       "phase": "M7",
       "title": "Build OSS local Studio and DevTools",
       "ownerRole": "studio",
-      "dependsOn": [
-        "T21",
-        "T23",
-        "T24"
-      ],
-      "paths": [
-        "packages/devtools",
-        "apps/studio"
-      ],
+      "dependsOn": ["T21", "T23", "T24"],
+      "paths": ["packages/devtools", "apps/studio"],
       "acceptance": [
         "Data/meaning/experience/inspect flows functional; valid code/file export; no separate source of truth or required cloud."
       ],
@@ -1073,29 +910,23 @@
       "phase": "M7",
       "title": "Build real product site, docs, blog and playground",
       "ownerRole": "docs",
-      "dependsOn": [
-        "T21",
-        "T24",
-        "T25"
-      ],
-      "paths": [
-        "apps/site",
-        "apps/playground",
-        "docs/public"
-      ],
+      "dependsOn": ["T21", "T24", "T25"],
+      "paths": ["apps/site", "apps/playground", "docs/public"],
       "acceptance": [
         "Clean coherent routes, source-copy examples, honest support status, actual end-to-end demos, app-shell ownership.",
         "All chapter38 routes, real per-component snippets, source/agent disclosure, responsive inspector and actual preview behavior pass browser/DX checks."
       ],
       "status": "done",
       "stage": "ready",
+      "evidenceScope": "historical-pre-split-site-acceptance",
+      "currentDeliveryOwner": "private Arconath/aeliqo-site repository; this public repository owns the verified docs input artifact",
       "evidence": [
         {
           "path": "harness/evidence/t27/3edaa47d2bb2/manifest.json",
           "sha256": "714b16dfd93142d3f1f4d89506843caa89f44703d6b4a50323b2cb93850cad16"
         }
       ],
-      "notes": "Accepted after independent clean-install29ac210 review and fresh c55a9a9 sourcecopyconsumer:71actualpackage renders match,3exampletests+strict,6site+strict,5browserroutes/journeys. No public deployment/live-model/manualAT/performance claim.",
+      "notes": "Historical pre-split acceptance only: accepted after independent clean-install29ac210 review and fresh c55a9a9 sourcecopyconsumer:71actualpackage renders match,3exampletests+strict,6site+strict,5browserroutes/journeys. The accepted apps/site and apps/playground paths were subsequently extracted; this frozen manifest does not certify current public source. Current public ownership is the verified docs input artifact, while live site UI and deployment evidence are owned by the private Arconath/aeliqo-site repository. No npm publication/live-model/manualAT/performance claim.",
       "review": {
         "status": "approved",
         "author": "release_inventory site/docs; root integration/fixes",
@@ -1114,14 +945,8 @@
       "phase": "M8",
       "title": "Enforce security, tenant isolation and lifecycle robustness",
       "ownerRole": "security",
-      "dependsOn": [
-        "T24",
-        "T26"
-      ],
-      "paths": [
-        "tests/security",
-        "packages/testkit"
-      ],
+      "dependsOn": ["T24", "T26"],
+      "paths": ["tests/security", "packages/testkit"],
       "acceptance": [
         "Permissions enforced at execution, metadata/data minimization, cache/cursor isolation, injection/cancel/revoke tests."
       ],
@@ -1151,16 +976,8 @@
       "phase": "M8",
       "title": "Run full component/pixel/accessibility matrix",
       "ownerRole": "quality",
-      "dependsOn": [
-        "T25",
-        "T26",
-        "T27"
-      ],
-      "paths": [
-        "tests/browser",
-        "tests/visual",
-        "tests/accessibility"
-      ],
+      "dependsOn": ["T25", "T26", "T27"],
+      "paths": ["tests/browser", "tests/visual", "tests/accessibility"],
       "acceptance": [
         "Every required component done with automated accessibility, keyboard/focus, cross-browser behavior and independently reviewed screenshot evidence."
       ],
@@ -1235,15 +1052,8 @@
       "phase": "M8",
       "title": "Enforce performance and bundle budgets",
       "ownerRole": "performance",
-      "dependsOn": [
-        "T25",
-        "T26",
-        "T27"
-      ],
-      "paths": [
-        "tests/performance",
-        "scripts/performance"
-      ],
+      "dependsOn": ["T25", "T26", "T27"],
+      "paths": ["tests/performance", "scripts/performance"],
       "acceptance": [
         "Documented actual hardware/browser workloads; p50/p95, bytes, geometry, DOM, memory and cleanup budgets pass.",
         "Measure cold/warm and user-perceived latency, network, model, DOM/layout/paint separately; no reference-model benchmark claimed as product."
@@ -1347,16 +1157,8 @@
       "phase": "M8",
       "title": "Run cross-domain unseen-intent and task coverage suite",
       "ownerRole": "quality",
-      "dependsOn": [
-        "T24",
-        "T26",
-        "T27",
-        "T40"
-      ],
-      "paths": [
-        "tests/scenarios",
-        "fixtures"
-      ],
+      "dependsOn": ["T24", "T26", "T27", "T40"],
+      "paths": ["tests/scenarios", "fixtures"],
       "acceptance": [
         "HR raw data plus non-HR and non-dashboard tasks work without prompt-specific endpoint or resolver cases."
       ],
@@ -1391,18 +1193,8 @@
       "phase": "M8",
       "title": "Independent architecture, DX and usability review",
       "ownerRole": "review",
-      "dependsOn": [
-        "T28",
-        "T29",
-        "T30",
-        "T31"
-      ],
-      "paths": [
-        ".github/workflows",
-        "docs/reviews",
-        "harness/evidence",
-        "harness/product-commands.json"
-      ],
+      "dependsOn": ["T28", "T29", "T30", "T31"],
+      "paths": [".github/workflows", "docs/reviews", "harness/evidence", "harness/product-commands.json"],
       "acceptance": [
         "Separate review and external onboarding evidence; all P0/P1 issues closed, tradeoffs/limitations documented.",
         "Quality command/design/acceptance changes invalidate previous evidence; readiness must not require production publication.",
@@ -1460,13 +1252,8 @@
       "phase": "M9",
       "title": "Build audited release-candidate tarballs and compatibility report",
       "ownerRole": "release",
-      "dependsOn": [
-        "T32"
-      ],
-      "paths": [
-        "scripts/release",
-        "docs/releases"
-      ],
+      "dependsOn": ["T32"],
+      "paths": ["scripts/release", "docs/releases"],
       "acceptance": [
         "Unused RC version, frozen dependencies, licenses, SBOM, exact artifact hashes and isolated consumers pass."
       ],
@@ -1525,13 +1312,8 @@
       "phase": "M9",
       "title": "Rehearse staging deployment and rollback",
       "ownerRole": "release",
-      "dependsOn": [
-        "T33"
-      ],
-      "paths": [
-        "deploy",
-        "docs/releases"
-      ],
+      "dependsOn": ["T33"],
+      "paths": ["deploy", "docs/releases"],
       "acceptance": [
         "Existing GitOps topology inspected; candidate digest canary, cache/version skew and rollback rehearsed without live outage."
       ],
@@ -1574,14 +1356,8 @@
       "phase": "M9",
       "title": "Prepare OSS governance and commercial boundary materials",
       "ownerRole": "product",
-      "dependsOn": [
-        "T27",
-        "T32"
-      ],
-      "paths": [
-        "docs/business",
-        "docs/public"
-      ],
+      "dependsOn": ["T27", "T32"],
+      "paths": ["docs/business", "docs/public"],
       "acceptance": [
         "All promised OSS capabilities usable offline; commercial hypotheses not represented as proven sales."
       ],
@@ -1620,16 +1396,8 @@
       "phase": "M10",
       "title": "Publish unused stable 0.1.0 packages and source release",
       "ownerRole": "release",
-      "dependsOn": [
-        "T33",
-        "T34",
-        "T35",
-        "T42"
-      ],
-      "paths": [
-        "harness/evidence",
-        "docs/releases"
-      ],
+      "dependsOn": ["T33", "T34", "T35", "T42"],
+      "paths": ["harness/evidence", "docs/releases"],
       "acceptance": [
         "Approved exact stable bytes published in dependency order; latest moves only after complete registry smoke."
       ],
@@ -1642,14 +1410,8 @@
       "phase": "M10",
       "title": "Promote website and verify live identities/rollback",
       "ownerRole": "release",
-      "dependsOn": [
-        "T36"
-      ],
-      "paths": [
-        "deploy",
-        "harness/evidence",
-        "docs/releases"
-      ],
+      "dependsOn": ["T36"],
+      "paths": ["deploy", "harness/evidence", "docs/releases"],
       "acceptance": [
         "Reviewed immutable digest promoted by existing GitOps; live routes, docs/npm identity and rollback work."
       ],
@@ -1662,13 +1424,8 @@
       "phase": "M10",
       "title": "Close delivery with independent source-to-live reconciliation",
       "ownerRole": "review",
-      "dependsOn": [
-        "T37"
-      ],
-      "paths": [
-        "harness",
-        "docs/releases"
-      ],
+      "dependsOn": ["T37"],
+      "paths": ["harness", "docs/releases"],
       "acceptance": [
         "No planned required tasks/components; evidence binds actual source/build/registry/deployment and human/provider limitations."
       ],
@@ -1681,16 +1438,7 @@
       "phase": "M3-Early",
       "title": "Early raw-data to compositional interactive UI proof",
       "ownerRole": "orchestrator + independent reviewer",
-      "dependsOn": [
-        "T02",
-        "T04",
-        "T05",
-        "T07",
-        "T09",
-        "T10",
-        "T11",
-        "T12"
-      ],
+      "dependsOn": ["T02", "T04", "T05", "T07", "T09", "T10", "T11", "T12"],
       "paths": [
         "examples/vertical-slice",
         "tests/vertical-slice",
@@ -1730,10 +1478,7 @@
       "phase": "M6-Eval",
       "title": "Provider-neutral BYOK, dispatcher and MCP integration qualification",
       "ownerRole": "agent evaluation + independent reviewer",
-      "dependsOn": [
-        "T24",
-        "T39"
-      ],
+      "dependsOn": ["T24", "T39"],
       "paths": [
         "packages/agent/src/model",
         "packages/agent/src/capabilities",
@@ -1798,12 +1543,7 @@
       "phase": "M3",
       "title": "Implement model-failure containment and independent effect grants",
       "ownerRole": "runtime-security",
-      "dependsOn": [
-        "T03",
-        "T05",
-        "T10",
-        "T11"
-      ],
+      "dependsOn": ["T03", "T05", "T10", "T11"],
       "paths": [
         "packages/agent",
         "packages/core/src/contracts/agent",
@@ -1843,14 +1583,8 @@
       "phase": "M0",
       "title": "Validate exact 0.1.0 reset and safe legacy replacement",
       "ownerRole": "release",
-      "dependsOn": [
-        "T00"
-      ],
-      "paths": [
-        "harness/release-preflight.json",
-        "docs/18-release-migration.md",
-        "tests/release/version-reset"
-      ],
+      "dependsOn": ["T00"],
+      "paths": ["harness/release-preflight.json", "docs/18-release-migration.md", "tests/release/version-reset"],
       "acceptance": [
         "Record actual namespace/package history/collision checks and lower-semver reset migration. Unknown registry access is a recorded publish blocker, not available.",
         "Exact target0.1.0 retained; previously published identities not overwritten/unpublished to reset; staging tags/rollback/cleanup allowlist documented."

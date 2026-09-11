@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import {spawnSync} from 'node:child_process';
-import {mkdtemp, rm, writeFile} from 'node:fs/promises';
-import {tmpdir} from 'node:os';
-import {join, resolve} from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import test from 'node:test';
 
 const root = resolve(import.meta.dirname, '../..');
@@ -29,6 +29,6 @@ test('source lint rejects a correctness violation and accepts valid JavaScript',
     const valid = lint(fixture);
     assert.equal(valid.status, 0, `${valid.stdout}\n${valid.stderr}`);
   } finally {
-    await rm(directory, {recursive: true, force: true});
+    await rm(directory, { recursive: true, force: true });
   }
 });

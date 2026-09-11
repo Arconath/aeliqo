@@ -919,6 +919,7 @@
       "task": "T27",
       "assertion": "Component routes and snippet copies are specific and compiled; live preview uses actual package; agent inspector is secondary and keys server-side.",
       "status": "done",
+      "evidenceScope": "historical-pre-split-site-acceptance",
       "evidence": [
         {
           "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
@@ -926,7 +927,8 @@
         }
       ],
       "stage": "ready",
-      "nativeHostRequired": false
+      "nativeHostRequired": false,
+      "notes": "Historical pre-split scenario acceptance. The frozen T27/scenario evidence does not certify the current public tree; current docs-artifact verification is public and live website verification is private-repository evidence."
     },
     {
       "id": "S64",
