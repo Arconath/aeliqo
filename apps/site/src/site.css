@@ -1342,7 +1342,7 @@ footer nav {
 }
 
 .component-preview[data-preview-family="visualization"] {
-  min-block-size: 56rem;
+  min-block-size: 58rem;
 }
 
 .component-preview[data-preview-family="visualization"][data-preview-id="trend"],

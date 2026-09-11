@@ -160,15 +160,16 @@ function tableConfig(values: PresentationValues, result: Result | undefined, res
   if (result === undefined) return fail("binding", "A table requires a bound result.");
   const input = record(values); if (input === undefined) return fail("config", "The table configuration must be an object.");
   if (Object.keys(input).some((key) => !["columns", "identity", "selection"].includes(key))) return fail("config", "The table configuration contains an unknown field.");
-  const columnList = columns(input, result); if (!columnList.ok) return columnList;
+  const columnList = input.columns === undefined ? undefined : columns(input, result); if (columnList !== undefined && !columnList.ok) return columnList;
   const selected = input.selection ?? "none";
   if (selected !== "none" && selected !== "single" && selected !== "multiple") return fail("config", "selection must be none, single or multiple.");
   const identityFields = input.identity === undefined ? {ok: true as const, value: undefined} : identity(input, result);
   if (!identityFields.ok) return identityFields;
   const port = selectionPort(input, result, "selection", resolveEntity); if (!port.ok) return port;
-  const output: Record<string, unknown> = {columns: columnList.value, selection: selected, ...(identityFields.value === undefined ? {} : {identity: identityFields.value})};
+  const output: Record<string, unknown> = {...(columnList === undefined ? {} : {columns: columnList.value}), selection: selected, ...(identityFields.value === undefined ? {} : {identity: identityFields.value})};
   const operations = selected === "none" ? [AELIQO_OPERATION_REFS.read] : [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.selection];
-  return {ok: true, value: {values: output as PresentationValues, fields: columnList.value.map((column) => column.key), ports: port.value, operations}};
+  const fields = columnList === undefined ? result.fields.map((field) => field.id) : columnList.value.map((column) => column.key);
+  return {ok: true, value: {values: output as PresentationValues, fields, ports: port.value, operations}};
 }
 
 function trendConfig(values: PresentationValues, result: Result | undefined): Outcome<ResolvedPresentationConfig> {

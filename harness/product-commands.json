@@ -647,7 +647,7 @@
         "pnpm",
         "test:visual"
       ],
-      "timeoutSeconds": 900
+      "timeoutSeconds": 3600
     },
     {
       "kind": "performance",

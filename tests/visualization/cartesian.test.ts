@@ -89,8 +89,8 @@ describe('Cartesian geometry family', () => {
     const colored = compile(heatmap, result, rows, 'heatmap');
     expect(colored.ok).toBe(true);
     if (colored.ok) {
-      expect(colored.value.axisLeft).toBe(192);
-      expect(colored.value.axes?.x.ticks.every(tick => tick.position >= 192)).toBe(true);
+      expect(colored.value.axisLeft).toBe(208);
+      expect(colored.value.axes?.x.ticks.every(tick => tick.position >= 208)).toBe(true);
       expect(colored.value.colorField).toBe('color');
       expect(colored.value.colorTicks?.length).toBeGreaterThan(0);
       expect(colored.value.marks.some(mark => mark.kind === 'rect' && mark.color !== undefined)).toBe(true);

@@ -6,8 +6,10 @@ import datetime as dt
 import json
 import os
 import re
+import signal
 import subprocess
 import sys
+import time
 from pathlib import Path
 from common import ROOT,candidate_digest,load_json,safe_file,sha256
 from kit_check import validate
@@ -16,6 +18,35 @@ KINDS={'typecheck','lint','unit','browser','packages','security','performance','
 READY_CLAIMS={'browser-matrix','visual-review','package-consumers',
               'performance','security','real-mcp','real-byok','independent-review'}
 RELEASE_CLAIMS={'source-release','npm-integrity','site-digest','rollback-verification'}
+
+def _process_group_exists(process_group: int) -> bool:
+    try:
+        os.killpg(process_group,0)
+        return True
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+
+def _terminate_process_tree(process: subprocess.Popen[bytes]) -> None:
+    if os.name!='posix':
+        process.kill(); process.wait(); return
+    try: os.killpg(process.pid,signal.SIGTERM)
+    except (ProcessLookupError,PermissionError): pass
+    deadline=time.monotonic()+2
+    while _process_group_exists(process.pid) and time.monotonic()<deadline:
+        time.sleep(0.05)
+    if _process_group_exists(process.pid):
+        try: os.killpg(process.pid,signal.SIGKILL)
+        except (ProcessLookupError,PermissionError): pass
+    process.wait()
+
+def run_logged_command(argv: list[str], root: Path, log: object, timeout: int | float) -> int:
+    process=subprocess.Popen(argv,cwd=root,stdout=log,stderr=subprocess.STDOUT,start_new_session=os.name=='posix')
+    try: return process.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        _terminate_process_tree(process)
+        return 124
 
 def artifact_errors(root: Path, records: object, label: str) -> list[str]:
     if not isinstance(records,list) or not records:
@@ -120,10 +151,7 @@ def run_ci(root: Path) -> int:
         output=directory/f'{index:02d}-{command["kind"]}.log'
         try:
             with output.open('wb') as log:
-                completed=subprocess.run(command['argv'],cwd=root,stdout=log,stderr=subprocess.STDOUT,
-                                         timeout=command.get('timeoutSeconds',900),check=False)
-            code=completed.returncode
-        except subprocess.TimeoutExpired: code=124
+                code=run_logged_command(command['argv'],root,log,command.get('timeoutSeconds',900))
         except OSError as exc:
             output.write_text(str(exc)); code=127
         results.append({'kind':command['kind'],'argv':command['argv'],'exitCode':code,

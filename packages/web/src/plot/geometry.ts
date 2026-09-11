@@ -74,7 +74,7 @@ export function compilePlotUnit(unit:PlotUnit,result:Result,inputRows:unknown,op
  const e=normalizedUnit.encoding;
   const label=(id:string)=>{const f=fields.get(id)!;return `${f.label}${f.type.unit?` (${f.type.unit.symbol})`:''}`;};
  try {
-  const axisLeft=family==='heatmap'?192:64;
+  const axisLeft=family==='heatmap'?208:64;
   const x=makePlotScale(e.x,fields.get(e.x.field)!.type,projection.domains?.x??displayed.flatMap(d=>[d.values[e.x.field]!,...(e.x2?[d.values[e.x2.field]!]:[])]),[axisLeft,width-24]);
   if(e.size&&normalizedUnit.mark!=='point'&&normalizedUnit.mark!=='line')return dataOnly('Size is supported only for point marks.');
   if((e.x2||e.y2)&&normalizedUnit.mark!=='rect'&&normalizedUnit.mark!=='link')return dataOnly('Second endpoints require rect or link marks.');

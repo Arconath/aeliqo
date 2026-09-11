@@ -1,13 +1,13 @@
 """Regression tests for Master consolidation harness gaps; not product/CI attestation."""
 from __future__ import annotations
-import copy,json,sys,tempfile,unittest
+import copy,json,os,sys,tempfile,time,unittest
 from pathlib import Path
 from unittest.mock import patch
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'scripts'))
 from common import candidate_digest,dag_errors,load_json
 from check_ownership import canonical_lease,ownership_errors
-from gate import readiness_errors,command_errors
+from gate import readiness_errors,command_errors,run_logged_command
 from next_tasks import choose
 
 class EvidenceFreshnessTests(unittest.TestCase):
@@ -51,6 +51,16 @@ class OwnershipAndTaskTests(unittest.TestCase):
         with self.assertRaises(ValueError):choose([{'id':'a','status':'planned','dependsOn':[],'paths':['../x']}],2)
 
 class GateRegressionTests(unittest.TestCase):
+    @unittest.skipUnless(os.name=='posix','process-group cleanup is a POSIX CI contract')
+    def test_timeout_terminates_descendants(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);marker=root/'survived';log=root/'command.log'
+            child="import sys,time;from pathlib import Path;time.sleep(1.5);Path(sys.argv[1]).write_text('survived')"
+            parent="import subprocess,sys,time;subprocess.Popen([sys.executable,'-c',sys.argv[1],sys.argv[2]]);time.sleep(60)"
+            with log.open('wb') as stream:
+                self.assertEqual(run_logged_command([sys.executable,'-c',parent,child,str(marker)],root,stream,1),124)
+            time.sleep(.75)
+            self.assertFalse(marker.exists())
     def test_non_object_command_gracefully_refused(self):
         with patch('gate.load_json',return_value={'commands':[1,None,'true']}):errors,_=command_errors(ROOT)
         self.assertTrue(any('object' in x for x in errors))
