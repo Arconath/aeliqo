@@ -128,7 +128,17 @@ test('producer rejects a shaped source revision that is not a repository commit'
 
 test('producer rejects an existing repository commit that is not checked-out HEAD', async () => {
   const scratch = await mkdtemp(join(tmpdir(), 'aeliqo-public-docs-stale-revision-'));
-  const { stdout } = await execFileAsync('git', ['rev-parse', 'HEAD^'], { cwd: root });
+  const { stdout: tree } = await execFileAsync('git', ['rev-parse', 'HEAD^{tree}'], { cwd: root });
+  const { stdout } = await execFileAsync('git', ['commit-tree', tree.trim(), '-m', 'stale docs producer test'], {
+    cwd: root,
+    env: {
+      ...process.env,
+      GIT_AUTHOR_NAME: 'Aeliqo test',
+      GIT_AUTHOR_EMAIL: 'test@aeliqo.invalid',
+      GIT_COMMITTER_NAME: 'Aeliqo test',
+      GIT_COMMITTER_EMAIL: 'test@aeliqo.invalid',
+    },
+  });
   await assert.rejects(
     execFileAsync(
       process.execPath,
