@@ -17,5 +17,7 @@ Do not submit proprietary customer data, API keys, third-party assets without ri
 `.github/CODEOWNERS` routes reviews to the current maintainer. It is not a claim
 that a second independent maintainer is available, and repository protection
 does not require a second approval while that would lock the only maintainer
-out. Required source, package, specification, and product checks remain the
-server-enforced merge controls.
+out. Pull requests require the specification/harness, shared-platform, and exact
+packed-candidate checks. The complete product ledger is a separate
+owner-dispatched exact-main release qualification; package publication refuses
+a source SHA without that successful qualification.

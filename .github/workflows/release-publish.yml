@@ -73,10 +73,10 @@ jobs:
           fi
           mkdir -p artifacts/package-release-policy
           gh api --method GET "repos/$GH_REPO/actions/workflows/quality.yml/runs" \
-            -f head_sha="$SOURCE_SHA" -f branch=main -f event=push -f status=success \
+            -f head_sha="$SOURCE_SHA" -f branch=main -f event=workflow_dispatch -f status=success \
             --jq '.workflow_runs' > artifacts/package-release-policy/quality-runs.json
           jq -e --arg sha "$SOURCE_SHA" \
-            '[.[] | select(.head_sha == $sha and .head_branch == "main" and .event == "push" and .conclusion == "success")] | if length == 0 then error("no successful same-SHA main quality run") else max_by(.run_number) | {id,run_number,head_sha,head_branch,event,conclusion,html_url} end' \
+            '[.[] | select(.head_sha == $sha and .head_branch == "main" and .event == "workflow_dispatch" and .conclusion == "success")] | if length == 0 then error("no successful same-SHA owner-dispatched quality run") else max_by(.run_number) | {id,run_number,head_sha,head_branch,event,conclusion,html_url} end' \
             artifacts/package-release-policy/quality-runs.json > artifacts/package-release-policy/quality-run.json
           echo "quality_run_id=$(jq -r '.id' artifacts/package-release-policy/quality-run.json)" >> "$GITHUB_OUTPUT"
           if [ "$STAGE" = stable ]; then
