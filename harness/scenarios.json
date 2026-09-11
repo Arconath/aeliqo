@@ -437,6 +437,8 @@
           "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
         }
       ],
+      "evidenceScope": "historical-pre-task-rebinding",
+      "notes": "The frozen scenario-run bundle predates the T31 ownership correction. Current traceability and the owning T31 evidence are verified by tests/scenarios/ready-traceability.test.ts; this historical bundle is not current-source proof.",
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -452,6 +454,8 @@
           "sha256": "8c3006b83bbf75dcab14401d3142784bb9492e8e674837d1262fe399140fd45b"
         }
       ],
+      "evidenceScope": "historical-pre-task-rebinding",
+      "notes": "The frozen scenario-run bundle predates the T31 ownership correction. Current traceability and the owning T31/T25 evidence are verified by tests/scenarios/ready-traceability.test.ts; this historical bundle is not current-source proof.",
       "nativeHostRequired": false,
       "stage": "ready"
     },
@@ -919,6 +923,7 @@
       "task": "T27",
       "assertion": "Component routes and snippet copies are specific and compiled; live preview uses actual package; agent inspector is secondary and keys server-side.",
       "status": "done",
+      "evidenceScope": "historical-pre-split-site-acceptance",
       "evidence": [
         {
           "path": "harness/evidence/scenarios/4edfb36cee75/manifest.json",
@@ -926,7 +931,8 @@
         }
       ],
       "stage": "ready",
-      "nativeHostRequired": false
+      "nativeHostRequired": false,
+      "notes": "Historical pre-split scenario acceptance. The frozen T27/scenario evidence does not certify the current public tree; current docs-artifact verification is public and live website verification is private-repository evidence."
     },
     {
       "id": "S64",

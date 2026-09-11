@@ -13,3 +13,11 @@ Contributions are accepted under Apache-2.0, the same license as the public repo
 Every commit contributed for inclusion must carry a `Signed-off-by: Name <email>` trailer. By adding that trailer, the contributor certifies the [Developer Certificate of Origin 1.1](https://developercertificate.org/) for that commit. Use `git commit --signoff`; maintainers may ask for a corrected sign-off before merging. Sign-off records authorship and permission to contribute—it does not grant maintainership, release authority, or permission to include third-party material.
 
 Do not submit proprietary customer data, API keys, third-party assets without rights, or fabricated execution evidence. See [TRADEMARKS.md](TRADEMARKS.md) for project-name and logo use. Repository owners decide maintainership and release permissions; this file grants none.
+
+`.github/CODEOWNERS` routes reviews to the current maintainer. It is not a claim
+that a second independent maintainer is available, and repository protection
+does not require a second approval while that would lock the only maintainer
+out. Pull requests require the specification/harness, shared-platform, and exact
+packed-candidate checks. The complete product ledger is a separate
+owner-dispatched exact-main release qualification; package publication refuses
+a source SHA without that successful qualification.

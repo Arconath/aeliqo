@@ -12,7 +12,12 @@
   "type": "module",
   "description": "Local OSS Studio and versioned authoring tools for Aeliqo",
   "license": "Apache-2.0",
-  "files": ["dist", "README.md", "LICENSE", "NOTICE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

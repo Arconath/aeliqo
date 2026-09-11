@@ -1,4 +1,26 @@
-READY BLOCKED: 3 unmet conditions
-- T30: missing/mismatching artifact harness/evidence/t30/a245c8f-final-revalidation/manifest.json
+READY BLOCKED: 41 unmet conditions
+- T34: planned, not done
+- T35: planned, not done
+- T42: planned, not done
 - CI evidence is absent, failed or stale for this candidate
-- No valid integrated candidate evidence
+- CI typecheck: missing/mismatching artifact artifacts/product-ci/00-typecheck.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/01-unit.log
+- CI browser: missing/mismatching artifact artifacts/product-ci/02-browser.log
+- CI browser: missing/mismatching artifact artifacts/product-ci/03-browser.log
+- CI packages: missing/mismatching artifact artifacts/product-ci/04-packages.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/05-unit.log
+- CI packages: missing/mismatching artifact artifacts/product-ci/06-packages.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/07-unit.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/08-unit.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/09-unit.log
+- CI browser: missing/mismatching artifact artifacts/product-ci/10-browser.log
+- CI packages: missing/mismatching artifact artifacts/product-ci/11-packages.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/12-unit.log
+- CI packages: missing/mismatching artifact artifacts/product-ci/13-packages.log
+- CI lint: missing/mismatching artifact artifacts/product-ci/14-lint.log
+- CI performance: missing/mismatching artifact artifacts/product-ci/18-performance.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/20-unit.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/21-unit.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/26-unit.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/27-unit.log
+- ... and 17 more

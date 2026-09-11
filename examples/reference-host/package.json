@@ -3,6 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "scripts": {"start": "node server.mjs", "test": "node verify.mjs"},
-  "dependencies": {"@aeliqo/core": "workspace:*", "@aeliqo/runtime": "workspace:*"}
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node verify.mjs"
+  },
+  "dependencies": {
+    "@aeliqo/core": "workspace:*",
+    "@aeliqo/runtime": "workspace:*"
+  }
 }

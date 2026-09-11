@@ -52,4 +52,14 @@ class AeliqoTemporalElement extends AeliqoFoundationElement implements Visualiza
 export class AeliqoMatrixElement extends AeliqoTemporalElement {protected override readonly view='matrix' as const;}
 export class AeliqoTimelineElement extends AeliqoTemporalElement {protected override readonly view='timeline' as const;}
 export class AeliqoCalendarGridElement extends AeliqoTemporalElement {protected override readonly view='calendar-grid' as const;}
-export function defineTemporalElements():void {for(const [tag,element] of [['aeliqo-matrix',AeliqoMatrixElement],['aeliqo-timeline',AeliqoTimelineElement],['aeliqo-calendar-grid',AeliqoCalendarGridElement]] as const)if(!customElements.get(tag))customElements.define(tag,element);}
+
+/** Idempotently register the temporal family in an application-owned registry. */
+export function defineTemporalElements(registry?:CustomElementRegistry):void {
+ const target=registry??globalThis.customElements;
+ if(target===undefined)throw new Error('Temporal visualization elements require a CustomElementRegistry.');
+ for(const [tag,element] of [['aeliqo-matrix',AeliqoMatrixElement],['aeliqo-timeline',AeliqoTimelineElement],['aeliqo-calendar-grid',AeliqoCalendarGridElement]] as const){
+  const current=target.get(tag);
+  if(current===undefined)target.define(tag,element);
+  else if(current!==element&&(current as typeof element).aeliqoVersion!=='0.1.0')throw new Error(`Cannot register ${tag}: an incompatible custom element is already defined.`);
+ }
+}

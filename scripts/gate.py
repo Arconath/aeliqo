@@ -88,6 +88,8 @@ def readiness_errors(root: Path, mode: str) -> list[str]:
     tasks=load_json(root/'harness/tasks.json')['tasks']
     for task in tasks:
         if mode=='ready' and task['stage']=='release': continue
+        if str(task.get('evidenceScope','')).startswith('historical-'):
+            errors.append(task['id']+': historical evidence cannot satisfy current readiness')
         if task['status']!='done': errors.append(f'{task["id"]}: {task["status"]}, not done')
         else:
             errors+=artifact_errors(root,task.get('evidence'),task['id'])
@@ -110,6 +112,8 @@ def readiness_errors(root: Path, mode: str) -> list[str]:
         if mode=='ready' and scenario.get('stage','ready')=='release': continue
         if scenario.get('deferredForRelease') is True: continue
         if scenario.get('nativeHostRequired') and not native_advertised: continue
+        if str(scenario.get('evidenceScope','')).startswith('historical-'):
+            errors.append(scenario['id']+': historical evidence cannot satisfy current readiness')
         if scenario.get('status')!='done': errors.append(scenario['id']+': scenario not passed')
         else: errors+=artifact_errors(root,scenario.get('evidence'),scenario['id'])
     digest=candidate_digest(root)

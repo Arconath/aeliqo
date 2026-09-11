@@ -122,6 +122,14 @@
       "timeoutSeconds": 120
     },
     {
+      "kind": "lint",
+      "argv": [
+        "pnpm",
+        "format:check"
+      ],
+      "timeoutSeconds": 120
+    },
+    {
       "kind": "security",
       "argv": [
         "pnpm",
@@ -597,25 +605,9 @@
       "kind": "unit",
       "argv": [
         "pnpm",
-        "test:site"
-      ],
-      "timeoutSeconds": 180
-    },
-    {
-      "kind": "browser",
-      "argv": [
-        "pnpm",
-        "test:site:browser"
+        "test:docs-artifact"
       ],
       "timeoutSeconds": 300
-    },
-    {
-      "kind": "browser",
-      "argv": [
-        "pnpm",
-        "test:site:document-layout"
-      ],
-      "timeoutSeconds": 600
     },
     {
       "kind": "packages",
@@ -701,18 +693,10 @@
       "kind": "browser",
       "argv": [
         "pnpm",
-        "test:performance:site-page"
-      ],
-      "timeoutSeconds": 600
-    },
-    {
-      "kind": "browser",
-      "argv": [
-        "pnpm",
         "test:agent-evaluation:ui"
       ],
       "timeoutSeconds": 300
     }
   ],
-  "note": "Every implemented package test script is indexed except test:data-stream (alias of test:data) and test:visualization:temporal:browser (already included by test:visualization:browser). The deterministic public-API scenario suite is an explicit unit gate; it proves only the scenario IDs named by its assertions. Source lint checks unused locals/parameters across packages, examples and separately scoped apps. Security, static module boundaries, installed byte budgets and forced-on Node and browser timing remain separate checks. Runtime timing currently exceeds16ms; it cannot pass by skipping. Standalone, perceived-input and heap-lifecycle smoke collect cache/DOM/heap observations without a timing-budget or leak qualification claim. Adverse/low-powered timing and human/live integrated evidence remain required independently of this command ledger."
+  "note": "Every implemented package test script is indexed except test:data-stream (alias of test:data) and test:visualization:temporal:browser (already included by test:visualization:browser). The deterministic public-API scenario suite is an explicit unit gate; it proves only the scenario IDs named by its assertions. Source lint first proves its active configuration rejects a known correctness violation, then runs Oxlint correctness rules across packages, apps, examples and scripts, followed by TypeScript unused-local/parameter checks across packages, examples and the local Studio. Deliberate control-character validation regexes and three reviewed Unicorn rewrite rules are disabled explicitly. The separate Prettier gate covers workspace/package/workflow configuration plus the public-docs, release, platform-fixture, and associated test surfaces; it does not claim whole-repository formatting. Release, publication, bootstrap-preflight, and docs producers share a tested source-state contract that rejects non-ignored untracked inputs before assigning a clean source identity. Security, static module boundaries, installed byte budgets and forced-on Node and browser timing remain separate checks. Runtime timing currently exceeds16ms; it cannot pass by skipping. Standalone, perceived-input and heap-lifecycle smoke collect cache/DOM/heap observations without a timing-budget or leak qualification claim. Website page, navigation, layout and deployment checks are owned by the private Arconath/aeliqo-site repository after the split. Historical T27/S63 evidence remains explicitly pre-split and is not rebound to current public source. Adverse/low-powered timing and human/live integrated evidence remain required independently of this command ledger."
 }

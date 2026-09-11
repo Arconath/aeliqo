@@ -5,7 +5,11 @@
   "description": "Internal assertions and stream helpers for Aeliqo host and security tests",
   "private": true,
   "license": "Apache-2.0",
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

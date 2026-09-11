@@ -3,6 +3,6 @@ declare global {
 }
 
 // Lit uses this documented hook for generated shadow-root style elements.
-globalThis.litNonce = "t02nonce";
+globalThis.litNonce = 't02nonce';
 
 export {};

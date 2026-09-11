@@ -6,9 +6,7 @@
     "target": "ES2022",
     "module": "ES2022",
     "moduleResolution": "Bundler",
-    "lib": [
-      "ES2022"
-    ],
+    "lib": ["ES2022"],
     "types": [],
     "outDir": "artifacts/reference-build",
     "rootDir": "contracts"

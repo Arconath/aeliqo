@@ -45,7 +45,7 @@ export function legacyDeprecationMessage(lineage) {
 }
 
 export function classifyExactPackage(status, payload, name, version, expectedIntegrity) {
-  if (status === 404) return {state: 'absent'};
+  if (status === 404) return { state: 'absent' };
   if (status !== 200) throw new Error(`Registry returned HTTP ${status} for ${name}@${version}`);
   if (payload?.name !== name || payload?.version !== version) {
     throw new Error(`Registry returned the wrong identity for ${name}@${version}`);
@@ -54,5 +54,9 @@ export function classifyExactPackage(status, payload, name, version, expectedInt
   if (expectedIntegrity && integrity !== expectedIntegrity) {
     throw new Error(`${name}@${version} exists with bytes that differ from the verified candidate`);
   }
-  return {state: 'visible', deprecated: typeof payload.deprecated === 'string' ? payload.deprecated : null, integrity};
+  return {
+    state: 'visible',
+    deprecated: typeof payload.deprecated === 'string' ? payload.deprecated : null,
+    integrity,
+  };
 }
