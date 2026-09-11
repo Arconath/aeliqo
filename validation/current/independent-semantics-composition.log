@@ -15,736 +15,736 @@ test_no_observations_is_unknown (test_math.NumericalContractTests.test_no_observ
 test_partial_page_cannot_prove_global_winner (test_math.NumericalContractTests.test_partial_page_cannot_prove_global_winner) ... ok
 test_permutations_preserve_exact_pooled_rate_100_seeds (test_math.NumericalContractTests.test_permutations_preserve_exact_pooled_rate_100_seeds) ... ok
 test_shards_preserve_sufficient_statistics_100_seeds (test_math.NumericalContractTests.test_shards_preserve_sufficient_statistics_100_seeds) ... ok
-test_sql_python_equivalence_300_seeds (test_math.NumericalContractTests.test_sql_python_equivalence_300_seeds) ... /opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1d4e0>
+test_sql_python_equivalence_300_seeds (test_math.NumericalContractTests.test_sql_python_equivalence_300_seeds) ... /opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7114e0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105910b80>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a3c4b80>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x1056d1990>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a129990>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1d210>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a711210>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1d5d0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7115d0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1d6c0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7116c0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1d7b0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7117b0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1d8a0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7118a0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1d990>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a711990>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1da80>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a711a80>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1db70>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a711b70>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1dc60>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a711c60>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1dd50>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a711d50>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1de40>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a711e40>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1df30>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a711f30>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e020>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712020>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e110>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712110>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e200>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712200>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e2f0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7122f0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e3e0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7123e0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e4d0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7124d0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e5c0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7125c0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e6b0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7126b0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e7a0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7127a0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e890>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712890>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e980>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712980>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1ea70>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712a70>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1eb60>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712b60>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1ec50>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712c50>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1ed40>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712d40>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1ee30>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712e30>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1ef20>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712f20>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f010>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713010>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f100>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713100>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f1f0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7131f0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f2e0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7132e0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f3d0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7133d0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f4c0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7134c0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f5b0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7135b0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f6a0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7136a0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f790>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713790>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f880>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713880>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f970>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713970>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1fa60>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713a60>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1fb50>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713b50>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1fc40>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713c40>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1fd30>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713d30>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1fe20>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713e20>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1ff10>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713f10>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c040>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760040>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c130>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760130>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c220>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760220>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c310>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760310>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c400>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760400>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c4f0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7604f0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c5e0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7605e0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c6d0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7606d0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c7c0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7607c0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c8b0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7608b0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c9a0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7609a0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6ca90>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760a90>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6cb80>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760b80>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6cc70>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760c70>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6cd60>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760d60>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6ce50>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760e50>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6cf40>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760f40>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d030>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761030>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d120>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761120>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d210>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761210>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d300>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761300>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d3f0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7613f0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d4e0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7614e0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d5d0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7615d0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d6c0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7616c0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d7b0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7617b0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d8a0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7618a0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d990>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761990>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6da80>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761a80>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6db70>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761b70>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6dc60>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761c60>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6dd50>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761d50>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6de40>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761e40>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6df30>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761f30>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e020>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762020>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e110>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762110>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e200>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762200>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e2f0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7622f0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e3e0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7623e0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e4d0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7624d0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e5c0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7625c0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e6b0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7626b0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e7a0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7627a0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e890>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762890>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e980>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762980>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6ea70>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762a70>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6eb60>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762b60>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6ec50>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762c50>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6ed40>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762d40>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6ee30>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762e30>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6ef20>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762f20>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6f010>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a763010>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6f100>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a763100>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6f1f0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7631f0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6f2e0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7632e0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6f3d0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7633d0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6f4c0>
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/fractions.py:237: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7634c0>
   self = super(Fraction, cls).__new__(cls)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x1056d1990>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a129990>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105910b80>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a3c4b80>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1ff10>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713f10>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1fe20>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713e20>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1fd30>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713d30>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1fc40>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713c40>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1fb50>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713b50>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1fa60>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713a60>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f970>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713970>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f880>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713880>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f790>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713790>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f6a0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7136a0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f5b0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7135b0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f4c0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7134c0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f3d0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7133d0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f2e0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7132e0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f1f0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7131f0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f100>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713100>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1f010>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a713010>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1ef20>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712f20>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1ee30>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712e30>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1ed40>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712d40>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1ec50>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712c50>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1eb60>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712b60>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1ea70>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712a70>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e980>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712980>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e890>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712890>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e7a0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7127a0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e6b0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7126b0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e5c0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7125c0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e4d0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7124d0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e3e0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7123e0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e2f0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7122f0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e200>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712200>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e110>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712110>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1e020>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a712020>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1df30>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a711f30>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1de40>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a711e40>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1dd50>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a711d50>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1dc60>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a711c60>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1db70>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a711b70>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1da80>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a711a80>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1d990>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a711990>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1d8a0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7118a0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1d7b0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7117b0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1d6c0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7116c0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1d5d0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7115d0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1d210>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a711210>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a1d4e0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7114e0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6f4c0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7634c0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6f3d0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7633d0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6f2e0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7632e0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6f1f0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7631f0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6f100>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a763100>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6f010>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a763010>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6ef20>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762f20>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6ee30>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762e30>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6ed40>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762d40>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6ec50>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762c50>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6eb60>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762b60>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6ea70>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762a70>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e980>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762980>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e890>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762890>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e7a0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7627a0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e6b0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7626b0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e5c0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7625c0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e4d0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7624d0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e3e0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7623e0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e2f0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7622f0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e200>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762200>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e110>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762110>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e020>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762020>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6df30>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761f30>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6de40>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761e40>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6dd50>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761d50>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6dc60>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761c60>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6db70>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761b70>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6da80>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761a80>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d990>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761990>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d8a0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7618a0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d7b0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7617b0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d6c0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7616c0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d5d0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7615d0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d4e0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7614e0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d3f0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7613f0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d300>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761300>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d210>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761210>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d120>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761120>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d030>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761030>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6cf40>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760f40>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6ce50>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760e50>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6cd60>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760d60>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6cc70>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760c70>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6cb80>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760b80>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6ca90>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760a90>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c9a0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7609a0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c8b0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7608b0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c7c0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7607c0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c6d0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7606d0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c5e0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7605e0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c4f0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7604f0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c400>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760400>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c310>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760310>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c220>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760220>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c130>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760130>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c040>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760040>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6fc40>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a763c40>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6fd30>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a763d30>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6fe20>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a763e20>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa8310>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79c310>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa8400>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79c400>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa84f0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79c4f0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa85e0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79c5e0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa86d0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79c6d0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa87c0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79c7c0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa88b0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79c8b0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa89a0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79c9a0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa8a90>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79ca90>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa8c70>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79cc70>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa8d60>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79cd60>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa8e50>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79ce50>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa8f40>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79cf40>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa9030>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79d030>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa9120>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79d120>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa9210>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79d210>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa9300>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79d300>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa93f0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79d3f0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa94e0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79d4e0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa95d0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79d5d0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa96c0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79d6c0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa97b0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79d7b0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa98a0>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79d8a0>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa9990>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79d990>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa9a80>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79da80>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa9b70>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79db70>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa9c60>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79dc60>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa9d50>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79dd50>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105aa9e40>
+/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo/scripts/semantic_reference.py:39: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a79de40>
   result={g:Fraction(n,d) for g,n,d in db.execute('SELECT g,SUM(n),SUM(d) FROM observations GROUP BY g')}
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
 ok
@@ -764,121 +764,121 @@ test_profile_conflict_not_ignored (test_presentation.PresentationReferenceTests.
 test_registry_order_deterministic_100_seeds (test_presentation.PresentationReferenceTests.test_registry_order_deterministic_100_seeds) ... ok
 test_stale_incumbent_not_retained (test_presentation.PresentationReferenceTests.test_stale_incumbent_not_retained) ... ok
 test_tested_pattern_can_also_cover (test_presentation.PresentationReferenceTests.test_tested_pattern_can_also_cover) ... ok
-test_thousands_unrelated_components_no_search_explosion (test_presentation.PresentationReferenceTests.test_thousands_unrelated_components_no_search_explosion) ... <string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6fe20>
+test_thousands_unrelated_components_no_search_explosion (test_presentation.PresentationReferenceTests.test_thousands_unrelated_components_no_search_explosion) ... <string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a763e20>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6fd30>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a763d30>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6fc40>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a763c40>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c040>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760040>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c130>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760130>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c220>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760220>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c310>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760310>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c400>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760400>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c4f0>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7604f0>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c5e0>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7605e0>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c6d0>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7606d0>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c7c0>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7607c0>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c8b0>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7608b0>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6c9a0>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7609a0>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6ca90>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760a90>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6cb80>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760b80>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6cc70>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760c70>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6cd60>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760d60>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6ce50>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760e50>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6cf40>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a760f40>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d030>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761030>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d120>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761120>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d210>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761210>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d300>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761300>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d3f0>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7613f0>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d4e0>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7614e0>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d5d0>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7615d0>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d6c0>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7616c0>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d7b0>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7617b0>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d8a0>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7618a0>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6d990>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761990>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6da80>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761a80>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6db70>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761b70>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6dc60>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761c60>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6dd50>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761d50>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6de40>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761e40>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6df30>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a761f30>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e020>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762020>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e110>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762110>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e200>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762200>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e2f0>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7622f0>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e3e0>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7623e0>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e4d0>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7624d0>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e5c0>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7625c0>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e6b0>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7626b0>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e7a0>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a7627a0>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e890>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762890>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6e980>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762980>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6ea70>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762a70>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6eb60>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762b60>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6ec50>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762c50>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6ed40>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762d40>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6ee30>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762e30>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6ef20>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a762f20>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x105a6f010>
+<string>:2: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10a763010>
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
 ok
 test_unknown_ssr_not_fictional_width (test_presentation.PresentationReferenceTests.test_unknown_ssr_not_fictional_width) ... ok
 test_valid_first_avoids_duplicate_candidate_starvation (test_presentation.PresentationReferenceTests.test_valid_first_avoids_duplicate_candidate_starvation) ... ok
 
 ----------------------------------------------------------------------
-Ran 37 tests in 0.060s
+Ran 37 tests in 0.058s
 
 OK

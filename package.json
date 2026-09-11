@@ -102,7 +102,7 @@
     "test:performance:bundles": "node tests/performance/bundles.mjs",
     "build:testkit": "pnpm build:runtime && pnpm --filter @aeliqo/testkit build",
     "test:visual": "pnpm build:platform && tsc -p tests/visual/tsconfig.json && playwright test --config tests/visual/playwright.config.mjs",
-    "lint": "oxlint --deny-warnings packages apps examples scripts && tsc -p tsconfig.lint.json && tsc -p apps/studio/tsconfig.json --noUnusedLocals --noUnusedParameters",
+    "lint": "node --test tests/quality/lint-config.test.mjs && oxlint --deny-warnings packages apps examples scripts && tsc -p tsconfig.lint.json && tsc -p apps/studio/tsconfig.json --noUnusedLocals --noUnusedParameters",
     "format:check": "prettier --check package.json pnpm-workspace.yaml .oxlintrc.json .prettierrc.json 'packages/*/package.json' 'apps/*/package.json' 'examples/*/package.json' '.github/workflows/*.yml' 'tsconfig*.json'",
     "test:boundaries": "vitest run --config tests/security/vitest.config.mjs tests/security/package-boundaries.test.ts",
     "test:performance:runtime": "pnpm build:platform && AELIQO_RUN_PERFORMANCE=1 node tests/performance/runtime-workload.mjs",

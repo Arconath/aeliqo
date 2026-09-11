@@ -169,6 +169,6 @@ test_global_compiler_cannot_satisfy_missing_install (test_toolchain.LocalToolTes
 test_project_executable_is_selected (test_toolchain.LocalToolTests.test_project_executable_is_selected) ... ok
 
 ----------------------------------------------------------------------
-Ran 169 tests in 22.944s
+Ran 169 tests in 23.123s
 
 OK
