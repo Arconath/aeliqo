@@ -37,7 +37,7 @@ export abstract class AeliqoHierarchyElementBase extends AeliqoFoundationElement
     [part="node"][aria-pressed="true"] { stroke: var(--aeliqo-color-focus, #4338ca); stroke-width: 3; }
     [part="edge"][aria-pressed="true"] { stroke: var(--aeliqo-color-focus, #4338ca); stroke-width: 3; }
     [part="data"] { overflow: auto; margin-block-start: 1rem; }
-    button {font:inherit;min-block-size:2.75rem;min-inline-size:2.75rem;}
+    button {background:var(--aeliqo-color-surface,#f8fafc);border:var(--aeliqo-control-border-width,.0625rem) solid var(--aeliqo-color-border,#64748b);color:var(--aeliqo-color-text,#111827);font:inherit;min-block-size:2.75rem;min-inline-size:2.75rem;}
     table { border-collapse: collapse; inline-size: 100%; }
     th, td { text-align: start; padding: .5rem; border-block-end: 1px solid var(--aeliqo-color-border, #cbd5e1); vertical-align: top; }
     [aria-selected="true"] { background: color-mix(in srgb, var(--aeliqo-color-accent, #4338ca) 12%, transparent); }
@@ -53,7 +53,7 @@ export abstract class AeliqoHierarchyElementBase extends AeliqoFoundationElement
       td::before { content: attr(data-label); font-weight: 600; overflow-wrap: anywhere; }
       td > button { justify-self: start; }
     }
-    @media (forced-colors: active) { svg path, svg line, svg rect, svg circle { stroke: CanvasText; fill: Canvas; } }
+    @media (forced-colors: active) { button { background: Canvas; color: CanvasText; } svg path, svg line, svg rect, svg circle { stroke: CanvasText; fill: Canvas; } }
   `];
 
   visualization: VisualizationInputs['visualization'];

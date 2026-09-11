@@ -119,5 +119,11 @@ for(const component of components.components)for(const variant of ['desktop-ligh
    expect(title.start).toBeGreaterThanOrEqual(title.mainStart);
    expect(title.end).toBeLessThanOrEqual(title.mainEnd);
   }
+  if(variant==='narrow-dark-rtl'&&['form','dialog','trend','bar','area','scatter','histogram','heatmap','matrix','relationship','tree','treemap','timeline','calendar-grid','investigation'].includes(id)){
+   await page.emulateMedia({forcedColors:'active'});
+   const controls=await page.locator(`aeliqo-${id} button:not([part="close"])`).evaluateAll(buttons=>buttons.map(button=>{const style=getComputedStyle(button);return{background:style.backgroundColor,color:style.color,borderStyle:style.borderStyle,borderWidth:parseFloat(style.borderWidth)};}));
+   expect(controls.length).toBeGreaterThan(0);
+   for(const control of controls){expect(control.background).not.toBe('rgba(0, 0, 0, 0)');expect(control.color).not.toBe(control.background);expect(control.borderStyle).not.toBe('none');expect(control.borderWidth).toBeGreaterThanOrEqual(1);}
+  }
  });
 }

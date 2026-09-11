@@ -226,6 +226,21 @@ describe('registered presentation feasibility', () => {
     expect(composePresentation({id: 'compose', revision: '1', context: c, preconditions: c.current, candidates: [{source:'explicit',plan:plan()}]}, r)).toMatchObject({ok: true, value: {status: 'search-exhausted', expansions: 1, presentation: {plan: {coverage: plan().coverage}}}});
     expect(createPresentationRegistry([table, table]).ok).toBe(false);
   });
+  it('finalizes an explicit incumbent immediately when it consumes the exact search budget', () => {
+    const c: PresentationContext = {...context(), experience: {...context().experience,
+      composition: {...context().experience.composition, maxExpansions: 1}}};
+    const installed = registry();
+    let fallbackFilterReads = 0;
+    const manifests = new Proxy(installed.manifests, {get(target, property, receiver) {
+      if (property === 'filter') fallbackFilterReads++;
+      return Reflect.get(target, property, receiver);
+    }});
+    const composed = composePresentation({id: 'exact-budget', revision: '1', context: c, preconditions: c.current,
+      candidates: [{source: 'explicit', plan: plan()}]}, {...installed, manifests});
+    expect(composed).toMatchObject({ok: true, value: {status: 'search-exhausted', expansions: 1,
+      presentation: {plan: {id: 'exact-budget'}}}});
+    expect(fallbackFilterReads).toBe(0);
+  });
 });
 
 describe('configuration-dependent child layout',()=>{

@@ -89,12 +89,14 @@ describe('Cartesian geometry family', () => {
     const colored = compile(heatmap, result, rows, 'heatmap');
     expect(colored.ok).toBe(true);
     if (colored.ok) {
-      expect(colored.value.axisLeft).toBe(208);
-      expect(colored.value.axes?.x.ticks.every(tick => tick.position >= 208)).toBe(true);
+      expect(colored.value.axisLeft).toBe(216);
+      expect(colored.value.axes?.x.ticks.every(tick => tick.position >= 216)).toBe(true);
       expect(colored.value.colorField).toBe('color');
       expect(colored.value.colorTicks?.length).toBeGreaterThan(0);
       expect(colored.value.marks.some(mark => mark.kind === 'rect' && mark.color !== undefined)).toBe(true);
     }
+    const narrow = compilePlotUnit(heatmap, result, rows, {...options, width: 160, family: 'heatmap'});
+    expect(narrow).toMatchObject({ok: true, value: {state: 'data-only', rows: {length: rows.length}, reason: expect.stringContaining('304 CSS pixels')}});
   });
 
   it('rejects ambiguous or overcrowded bars and preserves unplottable rows for the data view', () => {

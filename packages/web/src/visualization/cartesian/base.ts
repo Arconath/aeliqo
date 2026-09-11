@@ -63,7 +63,7 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
     caption, th, td { overflow-wrap: anywhere; unicode-bidi: plaintext; }
     th, td { border-block-end: 1px solid var(--aeliqo-color-border, #64748b); padding: var(--aeliqo-space-8, .5rem); text-align: start; }
     th { font-weight: var(--aeliqo-typography-font-weight-semibold, 600); }
-    button { min-block-size: var(--aeliqo-control-min-target, 2.75rem); min-inline-size: var(--aeliqo-control-min-target, 2.75rem); }
+    button { background: var(--aeliqo-color-surface, #f8fafc); border: var(--aeliqo-control-border-width, .0625rem) solid var(--aeliqo-color-border, #64748b); color: var(--aeliqo-color-text, #111827); font: inherit; min-block-size: var(--aeliqo-control-min-target, 2.75rem); min-inline-size: var(--aeliqo-control-min-target, 2.75rem); }
     button:focus-visible { outline: var(--aeliqo-focus-width, 3px) solid var(--aeliqo-color-focus, #4338ca); outline-offset: var(--aeliqo-focus-offset, 2px); }
     [part="legend"], [part="color-key-ticks"] { display: flex; flex-wrap: wrap; gap: var(--aeliqo-space-8, .5rem) var(--aeliqo-space-16, 1rem); list-style: none; margin: var(--aeliqo-space-8, .5rem) 0 0; padding: 0; }
     [part="legend"] li { align-items: center; display: inline-flex; gap: var(--aeliqo-space-4, .25rem); }
@@ -89,7 +89,7 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
       td::before { content: attr(data-label); font-weight: var(--aeliqo-typography-font-weight-semibold, 600); overflow-wrap: anywhere; }
       td > button { justify-self: start; }
     }
-    @media (forced-colors: active) { [part="viewport"] svg path, [part="viewport"] svg circle, [part="viewport"] svg rect { stroke: CanvasText; fill: CanvasText; } }
+    @media (forced-colors: active) { button { background: Canvas; color: CanvasText; } [part="viewport"] svg path, [part="viewport"] svg circle, [part="viewport"] svg rect { stroke: CanvasText; fill: CanvasText; } }
   `];
 
   visualization: VisualizationSpec | undefined = undefined;

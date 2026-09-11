@@ -1364,6 +1364,10 @@ footer nav {
   min-block-size: 61rem;
 }
 
+.component-preview[data-preview-family="compound"][data-preview-id="explorer"] {
+  min-block-size: 65rem;
+}
+
 .component-preview[data-preview-family="compound"][data-preview-id="investigation"] {
   min-block-size: 94rem;
 }

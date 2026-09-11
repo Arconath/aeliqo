@@ -386,16 +386,22 @@ export function composePresentation(request: PresentationCompositionRequest, reg
     } else validateCandidate(candidate.plan, `candidate.${index}`, {}, false, false, true);
     if (budgetBlocked) break;
   }
-  const allowed = registry.manifests.filter(manifest => constraints.allowedRepresentations.includes(manifest.ref.id)
-    && contextHasRenderer(request.context.rendererCapabilities, manifest.ref)
-    && manifest.suggestConfig !== undefined
-    && (!manifest.extension || constraints.extensionAllowlist.some(ref => sameRef(ref, manifest.ref))))
-    .sort((a, b) => compareText(versionKey(a.ref), versionKey(b.ref)));
   const required = constraints.taskNeeds.filter(need => need.required);
   for (const need of required) {
     if (need.outputId !== undefined && prepared.value.results.filter(result => result.ref.outputId === need.outputId).length > 1)
       return fail('ambiguous-result', 'Several result revisions match a named output; select an exact authorized descriptor before composing.');
   }
+  // Explicit candidates consumed the complete bounded search. Finalize the
+  // incumbent without preparing a registered fallback that cannot be tried.
+  if (expansions >= constraints.maxExpansions) {
+    if (best === undefined) return {ok: true, value: freezePresentation({status: 'search-exhausted', expansions, rejected})};
+    return {ok: true, value: freezePresentation({status: 'search-exhausted', presentation: best.presentation, expansions, rejected})};
+  }
+  const allowed = registry.manifests.filter(manifest => constraints.allowedRepresentations.includes(manifest.ref.id)
+    && contextHasRenderer(request.context.rendererCapabilities, manifest.ref)
+    && manifest.suggestConfig !== undefined
+    && (!manifest.extension || constraints.extensionAllowlist.some(ref => sameRef(ref, manifest.ref))))
+    .sort((a, b) => compareText(versionKey(a.ref), versionKey(b.ref)));
   const choices = required.map(need => allowed.filter(manifest => manifest.visibility === 'leaf' && manifest.children.min === 0
     && manifest.operations.some(op => sameRef(op, need.operation)) && (need.outputId === undefined ? manifest.result !== 'required' : manifest.result !== 'none')));
   const layouts = allowed.filter(manifest => manifest.result === 'none' && manifest.visibility === 'simultaneous'

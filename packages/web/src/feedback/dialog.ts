@@ -12,7 +12,8 @@ export class AeliqoDialogElement extends AeliqoFoundationElement {
     [part="header"] { align-items: center; border-block-end: 0.0625rem solid var(--aeliqo-color-border, #64748b); display: flex; gap: var(--aeliqo-space-8, 0.5rem); justify-content: space-between; padding: var(--aeliqo-space-12, 0.75rem) var(--aeliqo-space-16, 1rem); }
     [part="content"] { overflow: auto; padding: var(--aeliqo-space-16, 1rem); }
     [part="close"] { background: transparent; border: 0; cursor: pointer; min-block-size: var(--aeliqo-control-min-target, 2.75rem); min-inline-size: var(--aeliqo-control-min-target, 2.75rem); }
-    ::slotted(button) { font: inherit; min-block-size: var(--aeliqo-control-min-target, 2.75rem); min-inline-size: var(--aeliqo-control-min-target, 2.75rem); padding: var(--aeliqo-space-8, .5rem) var(--aeliqo-control-inline-padding, .875rem); }
+    ::slotted(button) { background: var(--aeliqo-color-surface, #f8fafc); border: var(--aeliqo-control-border-width, .0625rem) solid var(--aeliqo-color-border, #64748b); color: var(--aeliqo-color-text, #111827); font: inherit; min-block-size: var(--aeliqo-control-min-target, 2.75rem); min-inline-size: var(--aeliqo-control-min-target, 2.75rem); padding: var(--aeliqo-space-8, .5rem) var(--aeliqo-control-inline-padding, .875rem); }
+    @media (forced-colors: active) { ::slotted(button) { background: Canvas; color: CanvasText; } }
   `];
 
   open = false;
