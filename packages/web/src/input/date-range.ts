@@ -34,8 +34,8 @@ export class AeliqoDateRangeElement extends AeliqoFieldElement<AeliqoDateRangeVa
   defaultStart = "";
   defaultEnd = "";
   boundary: AeliqoRangeBoundary = "inclusive";
-  timezone: "calendar" = "calendar";
-  calendar: "gregory" = "gregory";
+  timezone = "calendar" as const;
+  calendar = "gregory" as const;
 
   override connectedCallback(): void {
     if (this.start.length === 0 && this.defaultStart.length > 0) this.start = dateOnly(this.defaultStart) ?? "";

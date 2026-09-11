@@ -42,7 +42,10 @@ export class AeliqoDrawerElement extends AeliqoFoundationElement {
     if (this.mode === "modal" && dialog !== null) {
       if (this.open) {
         this.returnFocus ??= activeElement(this);
-        if (!dialog.open) typeof dialog.showModal === "function" ? dialog.showModal() : dialog.setAttribute("open", "");
+        if (!dialog.open) {
+          if (typeof dialog.showModal === "function") dialog.showModal();
+          else dialog.setAttribute("open", "");
+        }
         const target = this.pendingFocus;
         this.pendingFocus = undefined;
         const focusIfNeeded = (restoreTarget: boolean): void => {

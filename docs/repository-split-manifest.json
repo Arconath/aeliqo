@@ -193,7 +193,7 @@
       "provenance": "git:Arconath/aeliqo@fb16bc90965b117f77d7c09974eecdedf26d2f6a"
     },
     {
-      "sourcePath": "{package.json,pnpm-lock.yaml,pnpm-workspace.yaml,tsconfig.json,tsconfig.lint.json}",
+      "sourcePath": "{package.json,pnpm-lock.yaml,pnpm-workspace.yaml,.oxlintrc.json,.prettierrc.json,tsconfig.json,tsconfig.lint.json}",
       "destinationPath": "independent root files in each repository",
       "disposition": "split-and-regenerate",
       "reason": "Each repository needs a standalone locked dependency graph; the private site may not use workspace links or a sibling checkout.",

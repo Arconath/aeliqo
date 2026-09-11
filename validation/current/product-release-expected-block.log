@@ -1,4 +1,4 @@
-RELEASE BLOCKED: 14 unmet conditions
+RELEASE BLOCKED: 50 unmet conditions
 - T34: planned, not done
 - T35: planned, not done
 - T36: planned, not done
@@ -8,8 +8,19 @@ RELEASE BLOCKED: 14 unmet conditions
 - S52: scenario not passed
 - S62: scenario not passed
 - CI evidence is absent, failed or stale for this candidate
-- Integrated evidence does not match candidate source digest
-- Missing passing integrated evidence: npm-integrity
-- Missing passing integrated evidence: rollback-verification
-- Missing passing integrated evidence: site-digest
-- Missing passing integrated evidence: source-release
+- CI typecheck: missing/mismatching artifact artifacts/product-ci/00-typecheck.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/01-unit.log
+- CI browser: missing/mismatching artifact artifacts/product-ci/02-browser.log
+- CI browser: missing/mismatching artifact artifacts/product-ci/03-browser.log
+- CI packages: missing/mismatching artifact artifacts/product-ci/04-packages.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/05-unit.log
+- CI packages: missing/mismatching artifact artifacts/product-ci/06-packages.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/07-unit.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/08-unit.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/09-unit.log
+- CI browser: missing/mismatching artifact artifacts/product-ci/10-browser.log
+- CI packages: missing/mismatching artifact artifacts/product-ci/11-packages.log
+- CI unit: missing/mismatching artifact artifacts/product-ci/12-unit.log
+- CI packages: missing/mismatching artifact artifacts/product-ci/13-packages.log
+- CI lint: missing/mismatching artifact artifacts/product-ci/14-lint.log
+- ... and 26 more

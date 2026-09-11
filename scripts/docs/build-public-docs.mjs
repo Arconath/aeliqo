@@ -2,7 +2,7 @@
 import {execFile} from 'node:child_process';
 import {copyFile, mkdir, mkdtemp, readFile, readdir, rm, writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
-import {basename, dirname, join, relative, resolve} from 'node:path';
+import {basename, join, relative, resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {promisify} from 'node:util';
 import {pages as authoredPages} from '../../docs/public-site/content.mjs';
