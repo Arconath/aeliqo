@@ -136,7 +136,9 @@ const head = gitOutput(['rev-parse', 'HEAD']);
 if (candidate.sourceRevision !== head) throw new Error('Candidate source revision differs from the checked-out source');
 assertReleaseSourceClean(gitOutput(RELEASE_SOURCE_STATUS_ARGS), 'Publishing a release candidate');
 if (bootstrap) {
-  assertBootstrapRegistryReset(await readJson(resolve(root, 'harness/release-preflight.json')));
+  const preflight = await readJson(resolve(root, 'artifacts/release-bootstrap-preflight.json'));
+  if (preflight.sourceRevision !== head) throw new Error('Bootstrap preflight source revision differs from HEAD');
+  assertBootstrapRegistryReset(preflight);
   assertBootstrapAuthority({
     whoami: commandJson('npm', ['whoami', '--json', '--registry', NPM_REGISTRY]),
     membership: commandJson('npm', ['org', 'ls', NPM_ORG, '--json', '--registry', NPM_REGISTRY]),

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /** Refresh the authenticated, post-hold npm snapshot required by first-RC bootstrap. */
 import { spawnSync } from 'node:child_process';
-import { readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { PUBLIC_PACKAGE_NAMES } from './candidate-lib.mjs';
 import { NPM_ORG, NPM_OWNER, NPM_REGISTRY } from './publication-lib.mjs';
@@ -9,6 +9,7 @@ import { RELEASE_SOURCE_STATUS_ARGS, assertReleaseSourceClean } from './source-s
 
 const root = resolve(import.meta.dirname, '../..');
 const preflightPath = resolve(root, 'harness/release-preflight.json');
+const evidencePath = resolve(root, 'artifacts/release-bootstrap-preflight.json');
 
 function commandJson(commandArgs) {
   const result = spawnSync('npm', [...commandArgs, '--registry', NPM_REGISTRY], {
@@ -50,6 +51,8 @@ if (sourceStatus.error || sourceStatus.status !== 0) {
   throw new Error(`Could not inspect the release source worktree\n${sourceStatus.error?.message ?? ''}`);
 }
 assertReleaseSourceClean(sourceStatus.stdout, 'Running the post-hold preflight');
+const revision = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', timeout: 30_000 });
+if (revision.error || revision.status !== 0) throw new Error('Could not identify the release source revision');
 
 const preflight = JSON.parse(await readFile(preflightPath, 'utf8'));
 const notBefore = Date.parse(preflight.conservativePublishNotBefore ?? '');
@@ -80,6 +83,7 @@ for (const name of PUBLIC_PACKAGE_NAMES) {
 const observedAt = new Date(now).toISOString();
 const refreshed = {
   ...preflight,
+  sourceRevision: revision.stdout.trim(),
   observedAt,
   registry: NPM_REGISTRY,
   registryRead: 'verified',
@@ -96,10 +100,11 @@ const refreshed = {
   availabilityCaveat:
     'Authenticated owner access and public registry reads found the exact direct six-package RC identities absent after the hold. Successful exact first publication remains the registry acceptance proof.',
 };
-await writeFile(preflightPath, JSON.stringify(refreshed, null, 2) + '\n');
+await mkdir(resolve(root, 'artifacts'), { recursive: true });
+await writeFile(evidencePath, JSON.stringify(refreshed, null, 2) + '\n');
 console.log(
   JSON.stringify(
-    { observedAt, actor: NPM_OWNER, packages: PUBLIC_PACKAGE_NAMES.length, preflight: preflightPath },
+    { observedAt, actor: NPM_OWNER, packages: PUBLIC_PACKAGE_NAMES.length, preflight: evidencePath },
     null,
     2,
   ),
