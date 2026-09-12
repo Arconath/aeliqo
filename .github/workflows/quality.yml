@@ -45,6 +45,9 @@ jobs:
           name: aeliqo-quality-evidence-${{ github.sha }}
           path: |
             artifacts/product-ci
+            artifacts/performance-workloads
+            artifacts/performance-browser
+            artifacts/visual-catalog
             artifacts/release-candidate
             harness/evidence/ci.json
           if-no-files-found: warn
