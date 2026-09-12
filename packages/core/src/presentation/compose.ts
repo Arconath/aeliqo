@@ -13,7 +13,7 @@ import type {
   PresentationComposition, PresentationCompositionRequest, PresentationManifest, PresentationPatternManifest, PresentationRegistry,
   PresentationValues, ValidatedPresentation, ResolvedPresentationNode,
 } from './types.js';
-import {freezePresentation, isThenable, presentationFailure as fail, versionKey} from './registry.js';
+import {freezePresentation, freezePresentationContainer, isThenable, presentationFailure as fail, versionKey} from './registry.js';
 import {preparePresentationContext, preparePresentationRegistry, preparePresentationValidationCache, validatePreparedPresentationPlan, type PresentationValidationOptions, type PreparedPresentationContext} from './validate.js';
 
 const compareText = (left: string, right: string): number => left < right ? -1 : left > right ? 1 : 0;
@@ -70,7 +70,7 @@ function parseCachedArray<S extends z.ZodMiniType>(input: unknown, schema: S, ma
     if (parsed === undefined) return undefined;
     output.push(parsed);
   }
-  const value = Object.freeze(output) as readonly z.infer<S>[];
+  const value = freezePresentationContainer(output) as readonly z.infer<S>[];
   arrayCache.set(input, value);
   return value;
 }
@@ -95,7 +95,7 @@ function parseInspectedPresentationPlan(input: unknown, cache: PresentationParse
   const diagnostics = parseCachedArray(raw.diagnostics, diagnosticSchema, WIRE_LIMITS.diagnostics, cache.diagnostics, cache.diagnosticArrays);
   if (preconditions === undefined || nodes === undefined || links === undefined || coverage === undefined || stateTransfer === undefined || diagnostics === undefined)
     return parseInspectedContract('presentation-plan', input);
-  return {ok: true, value: Object.freeze({id: envelope.data.id, revision: envelope.data.revision, rootId: envelope.data.rootId,
+  return {ok: true, value: freezePresentationContainer({id: envelope.data.id, revision: envelope.data.revision, rootId: envelope.data.rootId,
     preconditions, nodes, links, coverage, stateTransfer, diagnostics}) as PresentationPlan};
 }
 
