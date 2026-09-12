@@ -636,6 +636,28 @@
     {
       "kind": "browser",
       "argv": [
+        "env",
+        "AELIQO_VISUAL_PROJECT=chromium",
+        "pnpm",
+        "test:visual"
+      ],
+      "timeoutSeconds": 3600
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "env",
+        "AELIQO_VISUAL_PROJECT=firefox",
+        "pnpm",
+        "test:visual"
+      ],
+      "timeoutSeconds": 3600
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "env",
+        "AELIQO_VISUAL_PROJECT=webkit",
         "pnpm",
         "test:visual"
       ],
@@ -698,5 +720,5 @@
       "timeoutSeconds": 300
     }
   ],
-  "note": "Every implemented package test script is indexed except test:data-stream (alias of test:data) and test:visualization:temporal:browser (already included by test:visualization:browser). The deterministic public-API scenario suite is an explicit unit gate; it proves only the scenario IDs named by its assertions. Source lint first proves its active configuration rejects a known correctness violation, then runs Oxlint correctness rules across packages, apps, examples and scripts, followed by TypeScript unused-local/parameter checks across packages, examples and the local Studio. Deliberate control-character validation regexes and three reviewed Unicorn rewrite rules are disabled explicitly. The separate Prettier gate covers workspace/package/workflow configuration plus the public-docs, release, platform-fixture, and associated test surfaces; it does not claim whole-repository formatting. Release, publication, bootstrap-preflight, and docs producers share a tested source-state contract that rejects non-ignored untracked inputs before assigning a clean source identity. Security, static module boundaries, installed byte budgets and forced-on Node and browser timing remain separate checks. Runtime timing currently exceeds16ms; it cannot pass by skipping. Standalone, perceived-input and heap-lifecycle smoke collect cache/DOM/heap observations without a timing-budget or leak qualification claim. Website page, navigation, layout and deployment checks are owned by the private Arconath/aeliqo-site repository after the split. Historical T27/S63 evidence remains explicitly pre-split and is not rebound to current public source. Adverse/low-powered timing and human/live integrated evidence remain required independently of this command ledger."
+  "note": "Every implemented package test script is indexed except test:data-stream (alias of test:data) and test:visualization:temporal:browser (already included by test:visualization:browser). The deterministic public-API scenario suite is an explicit unit gate; it proves only the scenario IDs named by its assertions. Source lint first proves its active configuration rejects a known correctness violation, then runs Oxlint correctness rules across packages, apps, examples and scripts, followed by TypeScript unused-local/parameter checks across packages, examples and the local Studio. Deliberate control-character validation regexes and three reviewed Unicorn rewrite rules are disabled explicitly. The separate Prettier gate covers workspace/package/workflow configuration plus the public-docs, release, platform-fixture, and associated test surfaces; it does not claim whole-repository formatting. Release, publication, bootstrap-preflight, and docs producers share a tested source-state contract that rejects non-ignored untracked inputs before assigning a clean source identity. Security, static module boundaries, installed byte budgets and forced-on Node and browser timing remain separate checks. Runtime timing currently exceeds16ms; it cannot pass by skipping. Standalone, perceived-input and heap-lifecycle smoke collect cache/DOM/heap observations without a timing-budget or leak qualification claim. Website page, navigation, layout and deployment checks are owned by the private Arconath/aeliqo-site repository after the split. Historical T27/S63 evidence remains explicitly pre-split and is not rebound to current public source. Adverse/low-powered timing and human/live integrated evidence remain required independently of this command ledger. The visual corpus is executed as three sequential browser-project commands with isolated output directories; each retains the existing 3600-second timeout. This changes the visual worst-case allowance from 3600 to 10800 seconds, while the workflow-level 180-minute cap remains unchanged. No case, browser, assertion, or performance budget is removed."
 }
