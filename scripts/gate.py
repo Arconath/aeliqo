@@ -9,6 +9,7 @@ import re
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 from common import ROOT,candidate_digest,load_json,safe_file,sha256
@@ -41,12 +42,20 @@ def _terminate_process_tree(process: subprocess.Popen[bytes]) -> None:
         except (ProcessLookupError,PermissionError): pass
     process.wait()
 
-def run_logged_command(argv: list[str], root: Path, log: object, timeout: int | float) -> int:
-    process=subprocess.Popen(argv,cwd=root,stdout=log,stderr=subprocess.STDOUT,start_new_session=os.name=='posix')
+def run_logged_command(argv: list[str], root: Path, log: object, timeout: int | float,
+                       environment: dict[str,str] | None=None) -> int:
+    process=subprocess.Popen(argv,cwd=root,stdout=log,stderr=subprocess.STDOUT,
+                             start_new_session=os.name=='posix',env=environment)
     try: return process.wait(timeout=timeout)
     except subprocess.TimeoutExpired:
         _terminate_process_tree(process)
         return 124
+
+def run_timed_logged_command(argv: list[str], root: Path, log: object, timeout: int | float,
+                             environment: dict[str,str] | None=None) -> tuple[int,float]:
+    started=time.monotonic()
+    code=run_logged_command(argv,root,log,timeout,environment)
+    return code,time.monotonic()-started
 
 def artifact_errors(root: Path, records: object, label: str) -> list[str]:
     if not isinstance(records,list) or not records:
@@ -151,16 +160,20 @@ def run_ci(root: Path) -> int:
     before=candidate_digest(root)
     directory=root/'artifacts/product-ci'; directory.mkdir(parents=True,exist_ok=True)
     results=[]
-    for index,command in enumerate(commands):
-        output=directory/f'{index:02d}-{command["kind"]}.log'
-        try:
-            with output.open('wb') as log:
-                code=run_logged_command(command['argv'],root,log,command.get('timeoutSeconds',900))
-        except OSError as exc:
-            output.write_text(str(exc)); code=127
-        results.append({'kind':command['kind'],'argv':command['argv'],'exitCode':code,
-                        'artifacts':[{'path':output.relative_to(root).as_posix(),'sha256':sha256(output)}]})
-        print(f'{command["kind"]}: exit {code}')
+    with tempfile.TemporaryDirectory(prefix='aeliqo-build-reuse-') as reuse_directory:
+        environment={**os.environ,'AELIQO_BUILD_REUSE_DIRECTORY':reuse_directory}
+        for index,command in enumerate(commands):
+            output=directory/f'{index:02d}-{command["kind"]}.log'
+            started=time.monotonic()
+            try:
+                with output.open('wb') as log:
+                    code,elapsed=run_timed_logged_command(command['argv'],root,log,command.get('timeoutSeconds',900),environment)
+            except OSError as exc:
+                output.write_text(str(exc)); code=127; elapsed=time.monotonic()-started
+            results.append({'kind':command['kind'],'argv':command['argv'],'exitCode':code,
+                            'elapsedSeconds':round(elapsed,3),
+                            'artifacts':[{'path':output.relative_to(root).as_posix(),'sha256':sha256(output)}]})
+            print(f'{command["kind"]}: exit {code} ({elapsed:.3f}s)')
     after=candidate_digest(root)
     passed=all(r['exitCode']==0 for r in results) and before==after
     report={'subjectSha256':after,'status':'pass' if passed else 'fail',
