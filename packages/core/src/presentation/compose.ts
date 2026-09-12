@@ -20,14 +20,8 @@ const compareText = (left: string, right: string): number => left < right ? -1 :
 const stateIdentity = {id: 'aeliqo.state.identity', revision: '1'} as const;
 const suggestionSchema = z.record(z.string(), jsonSchema);
 type CanonicalCache = WeakMap<object, string>;
-const inspectedPlanEnvelopeSchema = z.strictObject({
-  id: idSchema, revision: revisionSchema, rootId: idSchema, preconditions: z.unknown(),
-  nodes: z.array(z.unknown()).check(z.maxLength(WIRE_LIMITS.presentationNodes)),
-  links: z.array(z.unknown()).check(z.maxLength(WIRE_LIMITS.links)),
-  coverage: z.array(z.unknown()).check(z.maxLength(WIRE_LIMITS.array)),
-  stateTransfer: z.array(z.unknown()).check(z.maxLength(WIRE_LIMITS.array)),
-  diagnostics: z.array(z.unknown()).check(z.maxLength(WIRE_LIMITS.diagnostics)),
-});
+const inspectedPlanIdentitySchema = z.tuple([idSchema, revisionSchema, idSchema]);
+const PLAN_KEYS = new Set(['id', 'revision', 'rootId', 'preconditions', 'nodes', 'links', 'coverage', 'stateTransfer', 'diagnostics']);
 
 interface PresentationParseCache {
   readonly preconditions: WeakMap<object, z.infer<typeof commitPreconditionsSchema>>;
@@ -36,6 +30,7 @@ interface PresentationParseCache {
   readonly coverage: WeakMap<object, z.infer<typeof presentationCoverageSchema>>;
   readonly stateTransfer: WeakMap<object, z.infer<typeof presentationStateTransferSchema>>;
   readonly diagnostics: WeakMap<object, z.infer<typeof diagnosticSchema>>;
+  readonly nodeChildren: WeakMap<object, string[]>;
   readonly nodeArrays: WeakMap<object, readonly z.infer<typeof presentationNodeSchema>[]>;
   readonly linkArrays: WeakMap<object, readonly z.infer<typeof interactionLinkSchema>[]>;
   readonly coverageArrays: WeakMap<object, readonly z.infer<typeof presentationCoverageSchema>[]>;
@@ -44,7 +39,7 @@ interface PresentationParseCache {
 }
 
 function createPresentationParseCache(): PresentationParseCache {
-  return {preconditions: new WeakMap(), nodes: new WeakMap(), links: new WeakMap(), coverage: new WeakMap(), stateTransfer: new WeakMap(), diagnostics: new WeakMap(),
+  return {preconditions: new WeakMap(), nodes: new WeakMap(), links: new WeakMap(), coverage: new WeakMap(), stateTransfer: new WeakMap(), diagnostics: new WeakMap(), nodeChildren: new WeakMap(),
     nodeArrays: new WeakMap(), linkArrays: new WeakMap(), coverageArrays: new WeakMap(), stateTransferArrays: new WeakMap(), diagnosticArrays: new WeakMap()};
 }
 
@@ -56,6 +51,20 @@ function parseCachedObject<S extends z.ZodMiniType>(input: unknown, schema: S, c
   if (!parsed.success) return undefined;
   const value = freezePresentation(parsed.data);
   cache.set(input, value);
+  return value;
+}
+
+function parseCachedNode(input: unknown, cache: PresentationParseCache): z.infer<typeof presentationNodeSchema> | undefined {
+  if (input === null || typeof input !== 'object' || Array.isArray(input)) return undefined;
+  const cached = cache.nodes.get(input); if (cached !== undefined) return cached;
+  const parsed = z.safeParse(presentationNodeSchema, input); if (!parsed.success) return undefined;
+  const rawChildren = (input as {children?: unknown}).children;
+  const cachedChildren = rawChildren !== null && typeof rawChildren === 'object' ? cache.nodeChildren.get(rawChildren) : undefined;
+  const reused = cachedChildren !== undefined && cachedChildren.length === parsed.data.children.length
+    && cachedChildren.every((child, index) => child === parsed.data.children[index]) ? cachedChildren : undefined;
+  const value = freezePresentation(reused === undefined ? parsed.data : {...parsed.data, children: reused});
+  cache.nodes.set(input, value);
+  if (reused === undefined && rawChildren !== null && typeof rawChildren === 'object') cache.nodeChildren.set(rawChildren, value.children);
   return value;
 }
 
@@ -75,27 +84,42 @@ function parseCachedArray<S extends z.ZodMiniType>(input: unknown, schema: S, ma
   return value;
 }
 
+function parseCachedNodes(input: unknown, cache: PresentationParseCache): readonly z.infer<typeof presentationNodeSchema>[] | undefined {
+  if (!Array.isArray(input) || input.length > WIRE_LIMITS.presentationNodes) return undefined;
+  const cached = cache.nodeArrays.get(input); if (cached !== undefined) return cached;
+  const output: z.infer<typeof presentationNodeSchema>[] = [];
+  for (const item of input) {const parsed = parseCachedNode(item, cache); if (parsed === undefined) return undefined; output.push(parsed);}
+  const value = freezePresentationContainer(output) as readonly z.infer<typeof presentationNodeSchema>[];
+  cache.nodeArrays.set(input, value); return value;
+}
+
 /**
  * Parse a plan after the containing candidate list has passed inspectWire.
  * Shared fragments are memoized only for this synchronous composition; this
  * never trusts an uninspected object or carries authority across invocations.
  */
 function parseInspectedPresentationPlan(input: unknown, cache: PresentationParseCache): Outcome<PresentationPlan> {
-  const envelope = z.safeParse(inspectedPlanEnvelopeSchema, input);
-  if (!envelope.success) {
+  if (input === null || typeof input !== 'object' || Array.isArray(input)) return parseInspectedContract('presentation-plan', input);
+  const raw = input as Record<string, unknown>; const keys = Object.keys(raw);
+  const arraysAreBounded = Array.isArray(raw.nodes) && raw.nodes.length <= WIRE_LIMITS.presentationNodes
+    && Array.isArray(raw.links) && raw.links.length <= WIRE_LIMITS.links
+    && Array.isArray(raw.coverage) && raw.coverage.length <= WIRE_LIMITS.array
+    && Array.isArray(raw.stateTransfer) && raw.stateTransfer.length <= WIRE_LIMITS.array
+    && Array.isArray(raw.diagnostics) && raw.diagnostics.length <= WIRE_LIMITS.diagnostics;
+  const identity = z.safeParse(inspectedPlanIdentitySchema, [raw.id, raw.revision, raw.rootId]);
+  if (keys.length !== PLAN_KEYS.size || keys.some(key => !PLAN_KEYS.has(key)) || !arraysAreBounded || !identity.success) {
     const fallback = parseInspectedContract('presentation-plan', input);
     return fallback.ok ? {ok: true, value: freezePresentation(fallback.value)} : fallback;
   }
-  const raw = input as Record<string, unknown>;
   const preconditions = parseCachedObject(raw.preconditions, commitPreconditionsSchema, cache.preconditions);
-  const nodes = parseCachedArray(raw.nodes, presentationNodeSchema, WIRE_LIMITS.presentationNodes, cache.nodes, cache.nodeArrays);
+  const nodes = parseCachedNodes(raw.nodes, cache);
   const links = parseCachedArray(raw.links, interactionLinkSchema, WIRE_LIMITS.links, cache.links, cache.linkArrays);
   const coverage = parseCachedArray(raw.coverage, presentationCoverageSchema, WIRE_LIMITS.array, cache.coverage, cache.coverageArrays);
   const stateTransfer = parseCachedArray(raw.stateTransfer, presentationStateTransferSchema, WIRE_LIMITS.array, cache.stateTransfer, cache.stateTransferArrays);
   const diagnostics = parseCachedArray(raw.diagnostics, diagnosticSchema, WIRE_LIMITS.diagnostics, cache.diagnostics, cache.diagnosticArrays);
   if (preconditions === undefined || nodes === undefined || links === undefined || coverage === undefined || stateTransfer === undefined || diagnostics === undefined)
     return parseInspectedContract('presentation-plan', input);
-  return {ok: true, value: freezePresentationContainer({id: envelope.data.id, revision: envelope.data.revision, rootId: envelope.data.rootId,
+  return {ok: true, value: freezePresentationContainer({id: identity.data[0], revision: identity.data[1], rootId: identity.data[2],
     preconditions, nodes, links, coverage, stateTransfer, diagnostics}) as PresentationPlan};
 }
 

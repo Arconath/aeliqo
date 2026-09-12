@@ -549,12 +549,13 @@ export function validatePreparedPresentationPlan(
     }
   } else if (plan.stateTransfer.length) return fail('state-transfer', 'State transfer requires an existing presentation.');
   const graphInput = {nodes: resolved.map(n => ({id: n.node.id, ports: n.config.ports})), links: plan.links};
-  const graphKey = canonicalJSON(graphInput);
-  const cachedGraph = preparedCache.value.presentationGraphs.get(graphKey);
-  const graph: Outcome<InteractionGraph> = cachedGraph ?? (plan.links.length === 0
-    ? {ok: true, value: freezePresentation({nodes: graphInput.nodes, links: [], mappings: []})}
-    : validateInteractionGraph(graphInput, registry.mappings));
-  if (cachedGraph === undefined) preparedCache.value.presentationGraphs.set(graphKey, graph);
+  let graph: Outcome<InteractionGraph>;
+  if (plan.links.length === 0) graph = {ok: true, value: freezePresentation({nodes: graphInput.nodes, links: [], mappings: []})};
+  else {
+    const graphKey = canonicalJSON(graphInput); const cachedGraph = preparedCache.value.presentationGraphs.get(graphKey);
+    graph = cachedGraph ?? validateInteractionGraph(graphInput, registry.mappings);
+    if (cachedGraph === undefined) preparedCache.value.presentationGraphs.set(graphKey, graph);
+  }
   if (!graph.ok) return graph;
   const finalNodes = freezePresentationContainer(resolved.map(n => n.node));
   const finalPlan = freezePresentationContainer({...plan, nodes: finalNodes}) as PresentationPlan;

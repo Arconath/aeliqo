@@ -1,5 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import {composePresentation, createPresentationRegistry, validatePresentationPlan} from '../../packages/core/src/presentation/index.js';
+import {canonicalJSON} from '../../packages/core/src/contracts/parse.js';
 import type {PresentationContext, PresentationManifest, PresentationRegistry} from '../../packages/core/src/presentation/index.js';
 import type {PresentationPlan, ResultRef} from '../../packages/core/src/contracts/types.js';
 import {environment, experience, field, presentationPlan, presentationTask, ref, result} from './fixtures.js';
@@ -184,6 +185,20 @@ describe('presentation validation memoization', () => {
 
     expect(composed).toMatchObject({ok: true, value: {status: 'search-exhausted',
       presentation: {plan: {nodes: [{id: 'same-root'}, {id: 'same-leaf', config: {values: {order: [1, 2]}}}]}}}});
+  });
+
+  it('matches canonical ordering across nested JSON value and prefix boundaries', () => {
+    const leaf = tableManifest((values, descriptor) => ({ok: true, value: {values, fields: descriptor!.fields.map(item => item.id), ports: []}}));
+    const root = layoutManifest((values) => ({ok: true, value: {values, fields: [], ports: []}}));
+    const activeContext = {...context(), experience: {...context().experience, composition: {...context().experience.composition, maxExpansions: 2}}};
+    const values: unknown[] = [[], [{}], [1], [10], [1, 2], {}, {a: 1}, {a: 1, b: 2}, '', 'a', false, true, null, -1, -10, 0];
+    for (let left = 0; left < values.length; left++) for (let right = left + 1; right < values.length; right++) {
+      const first = basePlan('same-root', 'same-leaf', {order: values[left]}); const second = basePlan('same-root', 'same-leaf', {order: values[right]});
+      const composed = composePresentation(request(first, activeContext, [{source: 'explicit', plan: first}, {source: 'explicit', plan: second}]), registry([leaf, root]));
+      expect(composed.ok).toBe(true); if (!composed.ok || composed.value.presentation === undefined) continue;
+      const expected = canonicalJSON(first) < canonicalJSON(second) ? values[left] : values[right];
+      expect(composed.value.presentation.plan.nodes[1]!.config.values).toEqual({order: expected});
+    }
   });
 
   it('does not carry acceptance across compose calls when policy, result fields, or experience changes', () => {
