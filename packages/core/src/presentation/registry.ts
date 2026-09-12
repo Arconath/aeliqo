@@ -21,10 +21,22 @@ export const isThenable = (value: unknown): value is {then: (...args: readonly u
 const ownedFrozenGraphs = new WeakSet<object>();
 export function freezePresentation<T>(value: T): T {
   if (value !== null && typeof value === 'object' && !ownedFrozenGraphs.has(value)) {
-    for (const child of Object.values(value)) freezePresentation(child);
+    for (const child of Object.values(value)) {
+      if (child !== null && typeof child === 'object' && !ownedFrozenGraphs.has(child)) freezePresentation(child);
+    }
     Object.freeze(value);
     ownedFrozenGraphs.add(value);
   }
+  return value;
+}
+/** Freeze a new container cheaply when each object child is already recursively owned. */
+export function freezePresentationContainer<T>(value: T): T {
+  if (value === null || typeof value !== 'object' || ownedFrozenGraphs.has(value)) return value;
+  for (const child of Object.values(value)) {
+    if (child !== null && typeof child === 'object' && !ownedFrozenGraphs.has(child)) return freezePresentation(value);
+  }
+  Object.freeze(value);
+  ownedFrozenGraphs.add(value);
   return value;
 }
 const bound = z.int().check(z.minimum(0), z.maximum(WIRE_LIMITS.presentationNodes));

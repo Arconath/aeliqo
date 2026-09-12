@@ -13,7 +13,7 @@ import type {
   PresentationContext, PresentationEnvironment, PresentationPatternContext, PresentationPatternManifest,
   PresentationRegistry, PresentationValues, PresentationQuality, ResolvedPresentationNode, ValidatedPresentation,
 } from './types.js';
-import {freezePresentation, isThenable, presentationFailure as fail, versionKey} from './registry.js';
+import {freezePresentation, freezePresentationContainer, isThenable, presentationFailure as fail, versionKey} from './registry.js';
 
 const refKey = (r: ResultRef): string => JSON.stringify([r.id, r.revision, r.outputId, r.queryDigest, r.scopeDigest]);
 const MAX_MEASURED_MICROSECONDS = 1_000_000_000_000;
@@ -91,6 +91,18 @@ interface PresentationTreeCacheEntry {
   readonly children: readonly object[];
   readonly childrenById: ReadonlyMap<string, readonly string[]>;
   readonly parents: ReadonlyMap<string, string>;
+}
+
+/** Stable memo identity for one schema-parsed node. Fixed-shape fields use
+ * native serialization; only the open JSON configuration needs canonical key
+ * ordering. This avoids recursively sorting the whole node for every candidate. */
+function resolvedNodeMemoKey(node: PresentationPlanLike['nodes'][number]): string {
+  const result = node.result;
+  return JSON.stringify([
+    node.id, node.role, versionKey(node.representation),
+    result === undefined ? null : [result.id, result.revision, result.outputId, result.queryDigest, result.scopeDigest],
+    versionKey(node.config.schema), canonicalJSON(node.config.values), node.children,
+  ]);
 }
 
 /** Per-composition manifest index. It contains no authority beyond the supplied registry. */
@@ -399,7 +411,7 @@ export function validatePreparedPresentationPlan(
     // Full schema-owned node identity includes config, children, representation and
     // exact result reference. The memo belongs only to one immutable composition context.
     const identityCached = nodeIdentityMemo?.get(node as object);
-    const memoKey = identityCached === undefined && nodeMemo !== undefined ? canonicalJSON(node) : undefined;
+    const memoKey = identityCached === undefined && nodeMemo !== undefined ? resolvedNodeMemoKey(node) : undefined;
     const cached = identityCached ?? (memoKey === undefined ? undefined : nodeMemo?.get(memoKey));
     if (cached !== undefined) { resolved.push(cached); continue; }
     const key = versionKey(node.representation);
@@ -444,7 +456,7 @@ export function validatePreparedPresentationPlan(
     }
     if (!portGraph.ok) return portGraph;
     const values = freezePresentation(config.data.values as PresentationValues);
-    const resolvedConfig = freezePresentation({values, fields: freezePresentation(config.data.fields), ports: portGraph.value.nodes[0]!.ports,
+    const resolvedConfig = freezePresentationContainer({values, fields: freezePresentation(config.data.fields), ports: freezePresentation(portGraph.value.nodes[0]!.ports),
       operations: freezePresentation(enabled)});
     let quality: PresentationQuality | undefined;
     if (m.assess !== undefined) {
@@ -456,7 +468,7 @@ export function validatePreparedPresentationPlan(
     }
     // Preserve the validated wire proposal for replay; resolved values may
     // contain host-only labels/defaults that the input schema correctly rejects.
-    const resolvedNode = freezePresentation({node, manifest: m.ref,
+    const resolvedNode = freezePresentationContainer({node, manifest: m.ref,
       config: resolvedConfig, result, ...(quality === undefined ? {} : {quality})});
     resolved.push(resolvedNode);
     nodeIdentityMemo?.set(node as object, resolvedNode);
@@ -540,16 +552,17 @@ export function validatePreparedPresentationPlan(
   let graph: Outcome<InteractionGraph>;
   if (plan.links.length === 0) graph = {ok: true, value: freezePresentation({nodes: graphInput.nodes, links: [], mappings: []})};
   else {
-    const graphKey = canonicalJSON(graphInput);
-    const cachedGraph = preparedCache.value.presentationGraphs.get(graphKey);
+    const graphKey = canonicalJSON(graphInput); const cachedGraph = preparedCache.value.presentationGraphs.get(graphKey);
     graph = cachedGraph ?? validateInteractionGraph(graphInput, registry.mappings);
     if (cachedGraph === undefined) preparedCache.value.presentationGraphs.set(graphKey, graph);
   }
   if (!graph.ok) return graph;
-  const finalPlan = Object.freeze({...plan, nodes: Object.freeze(resolved.map(n => n.node))}) as PresentationPlan;
+  const finalNodes = freezePresentationContainer(resolved.map(n => n.node));
+  const finalPlan = freezePresentationContainer({...plan, nodes: finalNodes}) as PresentationPlan;
   if (options.requiredPattern !== undefined && (!patternIsAllowed(options.requiredPattern, c) || !matchesPattern(finalPlan, prepared.value, registry, options.requiredPattern)))
     return fail('pattern-required', 'The candidate does not match its allowed registered pattern.');
   if (!c.allowWithoutPreset && !matchesPattern(finalPlan, prepared.value, registry))
     return fail('pattern-required', 'This presentation requires an allowed registered pattern match.');
-  return {ok: true, value: freezePresentation({plan: finalPlan, nodes: resolved, graph: graph.value, environment: prepared.value.environment})};
+  const finalResolved = freezePresentationContainer(resolved);
+  return {ok: true, value: freezePresentationContainer({plan: finalPlan, nodes: finalResolved, graph: graph.value, environment: prepared.value.environment})};
 }

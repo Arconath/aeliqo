@@ -4,7 +4,7 @@
  * must be able to inspect the bytes that `pnpm pack` actually produced.
  */
 import { createHash } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
+import { readFile, rm } from 'node:fs/promises';
 
 export const RELEASE_VERSION = '0.1.0';
 // Dependency order is publication order. Keep this explicit and fail closed if
@@ -22,6 +22,15 @@ export function sha256(bytes) {
 
 export function sha512Integrity(bytes) {
   return `sha512-${createHash('sha512').update(bytes).digest('base64')}`;
+}
+
+export async function removeDirectoryOnFailure(directory, operation) {
+  try {
+    return await operation();
+  } catch (error) {
+    await rm(directory, { recursive: true, force: true });
+    throw error;
+  }
 }
 
 export function packageShortName(packageName) {
@@ -204,6 +213,70 @@ export function pnpmLockIntegrities(lockText) {
     if (current && integrity) result.set(current, integrity[1]);
   }
   return result;
+}
+
+function lockedPackageIdentity(value, label) {
+  const match = /^(@[^/]+\/[^@]+|[^@]+)@([^()]+)(?:\(.*\))?$/.exec(value);
+  if (!match || !/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(match[2])) {
+    throw new Error(`Unsupported ${label} ${value}`);
+  }
+  return { name: match[1], version: match[2] };
+}
+
+export function npmOverridesFromPnpmLock(lockText, { ignoredPackages = [] } = {}) {
+  const ignored = new Set(ignoredPackages);
+  const overrides = new Map();
+  let inSnapshots = false;
+  let current;
+  let inDependencies = false;
+  for (const line of lockText.split(/\r?\n/)) {
+    if (line === 'snapshots:') {
+      inSnapshots = true;
+      continue;
+    }
+    if (!inSnapshots) continue;
+    const key = /^  (?:'([^']+)'|([^:\s]+)):\s*(?:\{\})?\s*$/.exec(line);
+    if (key) {
+      const identity = lockedPackageIdentity(key[1] ?? key[2], 'locked parent');
+      current = `${identity.name}@${identity.version}`;
+      inDependencies = false;
+      continue;
+    }
+    if (/^    (?:dependencies|optionalDependencies):\s*$/.test(line)) {
+      inDependencies = true;
+      continue;
+    }
+    if (/^    \S/.test(line)) {
+      inDependencies = false;
+      continue;
+    }
+    if (!inDependencies || !current) continue;
+    const child = /^      (?:'([^']+)'|([^:\s]+)):\s+(.+?)\s*$/.exec(line);
+    if (!child) continue;
+    const name = child[1] ?? child[2];
+    if (ignored.has(name)) continue;
+    const value = child[3];
+    const peerSuffix = value.indexOf('(');
+    const version = peerSuffix === -1 ? value : value.slice(0, peerSuffix);
+    if (!/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(version)) {
+      throw new Error(`Unsupported locked child ${name}@${value}`);
+    }
+    const dependencies = overrides.get(current) ?? new Map();
+    const previous = dependencies.get(name);
+    if (previous && previous !== version) {
+      throw new Error(`Conflicting locked child ${current}>${name}: ${previous} and ${version}`);
+    }
+    dependencies.set(name, version);
+    overrides.set(current, dependencies);
+  }
+  return Object.fromEntries(
+    [...overrides]
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([parent, dependencies]) => [
+        parent,
+        Object.fromEntries([...dependencies].sort(([a], [b]) => a.localeCompare(b))),
+      ]),
+  );
 }
 
 export function cyclonedxSbom({
