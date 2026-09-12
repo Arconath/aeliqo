@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict';
+import { access, mkdtemp, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import test from 'node:test';
 import {
   PUBLIC_PACKAGE_NAMES,
@@ -11,8 +14,10 @@ import {
   classifyRegistryVersionResponse,
   cyclonedxSbom,
   exportSpecifiers,
+  npmOverridesFromPnpmLock,
   packagePurl,
   pnpmLockIntegrities,
+  removeDirectoryOnFailure,
   sha256,
   sha512Integrity,
 } from '../../scripts/release/candidate-lib.mjs';
@@ -126,4 +131,59 @@ test('registry and lock classification fail closed', () => {
     "packages:\n\n  'zod@4.5.4':\n    resolution: {integrity: sha512-dGVzdA==}\n\nsnapshots:\n",
   );
   assert.equal(lock.get('zod@4.5.4'), integrity);
+});
+
+test('npm consumer overrides reproduce parent-scoped pnpm resolutions', () => {
+  const lock = [
+    "lockfileVersion: '9.0'",
+    '',
+    'snapshots:',
+    '',
+    "  'parent@1.0.0(peer@2.0.0)':",
+    '    dependencies:',
+    '      child: 2.0.0',
+    '    optionalDependencies:',
+    '      optional-child: 4.0.0',
+    '',
+    '  parent@2.0.0:',
+    '    dependencies:',
+    '      child: 3.0.0',
+    "      '@aeliqo/core': link:../core",
+    '',
+    '  child@2.0.0: {}',
+    '',
+  ].join('\n');
+  assert.deepEqual(npmOverridesFromPnpmLock(lock, { ignoredPackages: PUBLIC_PACKAGE_NAMES }), {
+    'parent@1.0.0': { child: '2.0.0', 'optional-child': '4.0.0' },
+    'parent@2.0.0': { child: '3.0.0' },
+  });
+});
+
+test('npm consumer override generation fails closed on ambiguous or exotic resolution', () => {
+  const conflict = [
+    'snapshots:',
+    '  parent@1.0.0(peer@1.0.0):',
+    '    dependencies:',
+    '      child: 1.0.0',
+    '  parent@1.0.0(peer@2.0.0):',
+    '    dependencies:',
+    '      child: 2.0.0',
+  ].join('\n');
+  assert.throws(() => npmOverridesFromPnpmLock(conflict), /Conflicting locked child/);
+  assert.throws(
+    () => npmOverridesFromPnpmLock('snapshots:\n  parent@1.0.0:\n    dependencies:\n      child: github:user/repo'),
+    /Unsupported locked child/,
+  );
+});
+
+test('failed temporary consumer work removes its allocated directory', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'aeliqo-consumer-cleanup-test-'));
+  await writeFile(join(directory, 'partial-package-lock.json'), '{}\n');
+  await assert.rejects(
+    removeDirectoryOnFailure(directory, async () => {
+      throw new Error('synthetic install failure');
+    }),
+    /synthetic install failure/,
+  );
+  await assert.rejects(access(directory), { code: 'ENOENT' });
 });

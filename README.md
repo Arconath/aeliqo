@@ -19,6 +19,9 @@ API is major-zero. Source, npm publication, and the production website are
 qualified separately; do not infer registry availability from this repository.
 Until a registry release is verified, build this workspace or use the exact
 checksum-verified candidate tarballs produced by `scripts/release/candidate.mjs`.
+The candidate's clean npm consumer reproduces the reviewed pnpm lock graph for
+artifact acceptance. It does not claim compatibility with every newer version
+that package manifests might admit through semver ranges.
 
 Requirements: Node `24.20.0`, pnpm `11.24.0`, and the browser/support matrix in
 [the 0.1.0 support boundary](docs/public/0.1.0-support-boundary.md).

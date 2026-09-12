@@ -14,10 +14,12 @@ import {
   candidateManifest,
   cyclonedxSbom,
   exportSpecifiers,
+  npmOverridesFromPnpmLock,
   packagePurl,
   pnpmLockIntegrities,
   publicPackageName,
   readJson,
+  removeDirectoryOnFailure,
   sha256,
   sha512Integrity,
 } from './candidate-lib.mjs';
@@ -301,9 +303,12 @@ async function typeCheckInstalledExports(consumer, packages) {
   command(join(consumer, 'node_modules/.bin/tsc'), ['--project', 'tsconfig.json'], { cwd: consumer });
   return imports.length;
 }
-async function externalConsumer(packages) {
-  const consumer = await mkdtemp(join(tmpdir(), 'aeliqo-release-consumer-'));
-  await writeFile(join(consumer, 'package.json'), JSON.stringify({ private: true, type: 'module' }, null, 2) + '\n');
+async function externalConsumerInDirectory(consumer, packages, workspaceLockText) {
+  const overrides = npmOverridesFromPnpmLock(workspaceLockText, { ignoredPackages: PUBLIC_PACKAGE_NAMES });
+  await writeFile(
+    join(consumer, 'package.json'),
+    JSON.stringify({ private: true, type: 'module', overrides }, null, 2) + '\n',
+  );
   const tools = ['typescript@7.0.2', '@types/node@24.13.3', '@types/react@19.2.18', '@types/react-dom@19.2.7'];
   command(
     'npm',
@@ -325,6 +330,9 @@ async function externalConsumer(packages) {
     if (!installed || installed.version !== version || installed.integrity !== item.integrity)
       throw new Error(`Consumer did not install exact ${item.name} tarball`);
   }
+  // npm installs with scripts disabled. Validate every installed external byte
+  // against the pnpm lock before executing TypeScript or any package export.
+  const graph = sbomGraph(lock, workspaceLockText, packages);
   const exportCount = await typeCheckInstalledExports(consumer, packages);
   const installedExportSpecifiers = packages.flatMap((item) => exportSpecifiers(item.manifest, item.paths));
   await writeFile(
@@ -405,7 +413,14 @@ async function externalConsumer(packages) {
     exportCount,
     quickstart,
     runtime,
+    graph,
+    overrideParents: Object.keys(overrides).length,
   };
+}
+
+async function externalConsumer(packages, workspaceLockText) {
+  const consumer = await mkdtemp(join(tmpdir(), 'aeliqo-release-consumer-'));
+  return removeDirectoryOnFailure(consumer, () => externalConsumerInDirectory(consumer, packages, workspaceLockText));
 }
 
 function packageNameFromLockPath(path) {
@@ -508,11 +523,11 @@ try {
       `Secret scan found ${findings.length} high-confidence credential pattern(s); inspect secret-scan.json`,
     );
 
-  const consumer = await externalConsumer(packages);
+  const workspaceLockText = await readFile(join(root, 'pnpm-lock.yaml'), 'utf8');
+  const consumer = await externalConsumer(packages, workspaceLockText);
   consumerDirectory = consumer.consumer;
-  const graph = sbomGraph(consumer.lock, await readFile(join(root, 'pnpm-lock.yaml'), 'utf8'), packages);
   const manifest = candidateManifest({ sourceRevision, packages, version });
-  const sbom = cyclonedxSbom({ sourceRevision, packages, ...graph, version });
+  const sbom = cyclonedxSbom({ sourceRevision, packages, ...consumer.graph, version });
   await writeFile(join(output, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
   await writeFile(join(output, 'sbom.cdx.json'), JSON.stringify(sbom, null, 2) + '\n');
   await writeFile(
@@ -522,7 +537,12 @@ try {
         schema: 'aeliqo.local-tarball-consumer.v1',
         sourceRevision,
         version,
-        install: { source: 'local-candidate-tarballs', lockSha256: consumer.lockSha256 },
+        install: {
+          source: 'local-candidate-tarballs',
+          resolution: 'reviewed-pnpm-parent-scoped-overrides',
+          overrideParents: consumer.overrideParents,
+          lockSha256: consumer.lockSha256,
+        },
         execution: { ...consumer.runtime, quickstart: consumer.quickstart },
         packages: packages.map((item) => ({ name: item.name, version, integrity: item.integrity })),
         exportCount: consumer.exportCount,
