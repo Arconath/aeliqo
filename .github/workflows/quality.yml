@@ -2,6 +2,11 @@ name: Aeliqo product quality
 
 on:
   workflow_dispatch:
+    inputs:
+      expected_source_sha:
+        description: Exact source commit; required for codex/* candidates and optional on main
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -11,8 +16,43 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  policy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enforce owner-dispatched main or exact candidate source
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REPOSITORY: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+          SOURCE_REF: ${{ github.ref }}
+          SOURCE_SHA: ${{ github.sha }}
+          EXPECTED_SOURCE_SHA: ${{ inputs.expected_source_sha }}
+        run: |
+          test "$EVENT_NAME" = "workflow_dispatch"
+          test "$REPOSITORY" = "Arconath/aeliqo"
+          test "$ACTOR" = "hermawan22"
+          test "$TRIGGERING_ACTOR" = "hermawan22"
+
+          case "$SOURCE_REF" in
+            refs/heads/main)
+              if test -n "$EXPECTED_SOURCE_SHA"; then
+                printf '%s\n' "$EXPECTED_SOURCE_SHA" | grep -Eq '^[0-9a-fA-F]{40}$'
+                test "$(printf '%s' "$EXPECTED_SOURCE_SHA" | tr '[:upper:]' '[:lower:]')" = "$SOURCE_SHA"
+              fi
+              ;;
+            refs/heads/codex/*)
+              printf '%s\n' "$EXPECTED_SOURCE_SHA" | grep -Eq '^[0-9a-fA-F]{40}$'
+              test "$(printf '%s' "$EXPECTED_SOURCE_SHA" | tr '[:upper:]' '[:lower:]')" = "$SOURCE_SHA"
+              ;;
+            *)
+              echo "Quality dispatch source must be main or an owner-repository codex/* branch." >&2
+              exit 1
+              ;;
+          esac
+
   product:
-    if: github.repository == 'Arconath/aeliqo' && github.ref == 'refs/heads/main' && github.actor == 'hermawan22' && github.triggering_actor == 'hermawan22'
+    needs: policy
     runs-on: ubuntu-latest
     timeout-minutes: 180
     env:
@@ -20,6 +60,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
+          ref: ${{ github.sha }}
           persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
