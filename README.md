@@ -23,6 +23,12 @@ checksum-verified candidate tarballs produced by `scripts/release/candidate.mjs`
 Requirements: Node `24.20.0`, pnpm `11.24.0`, and the browser/support matrix in
 [the 0.1.0 support boundary](docs/public/0.1.0-support-boundary.md).
 
+The manually dispatched product-quality workflow accepts `main` and reviewed
+owner-repository `codex/*` candidates. Candidate dispatches must provide the
+exact 40-character commit as `expected_source_sha`; this validates that source
+but does not authorize publication. Package publication still requires a
+successful quality run for the same commit on `main`.
+
 ## Minimal working example
 
 Install the smallest boundary you need once the version is available:
