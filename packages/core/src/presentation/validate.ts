@@ -93,6 +93,18 @@ interface PresentationTreeCacheEntry {
   readonly parents: ReadonlyMap<string, string>;
 }
 
+/** Stable memo identity for one schema-parsed node. Fixed-shape fields use
+ * native serialization; only the open JSON configuration needs canonical key
+ * ordering. This avoids recursively sorting the whole node for every candidate. */
+function resolvedNodeMemoKey(node: PresentationPlanLike['nodes'][number]): string {
+  const result = node.result;
+  return JSON.stringify([
+    node.id, node.role, versionKey(node.representation),
+    result === undefined ? null : [result.id, result.revision, result.outputId, result.queryDigest, result.scopeDigest],
+    versionKey(node.config.schema), canonicalJSON(node.config.values), node.children,
+  ]);
+}
+
 /** Per-composition manifest index. It contains no authority beyond the supplied registry. */
 export function preparePresentationRegistry(registry: PresentationRegistry): Outcome<ReadonlyMap<string, PresentationRegistry['manifests'][number]>> {
   if (!Array.isArray(registry?.manifests) || registry.manifests.length === 0 || registry.manifests.length > WIRE_LIMITS.presentationNodes)
@@ -399,7 +411,7 @@ export function validatePreparedPresentationPlan(
     // Full schema-owned node identity includes config, children, representation and
     // exact result reference. The memo belongs only to one immutable composition context.
     const identityCached = nodeIdentityMemo?.get(node as object);
-    const memoKey = identityCached === undefined && nodeMemo !== undefined ? canonicalJSON(node) : undefined;
+    const memoKey = identityCached === undefined && nodeMemo !== undefined ? resolvedNodeMemoKey(node) : undefined;
     const cached = identityCached ?? (memoKey === undefined ? undefined : nodeMemo?.get(memoKey));
     if (cached !== undefined) { resolved.push(cached); continue; }
     const key = versionKey(node.representation);

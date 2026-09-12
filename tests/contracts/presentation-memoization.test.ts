@@ -171,6 +171,21 @@ describe('presentation validation memoization', () => {
     expect(Object.is(resolved?.config.values.signedZero, -0)).toBe(false);
   });
 
+  it('keeps canonical equal-score tie ordering for shared candidate plans', () => {
+    const leaf = tableManifest((values, descriptor) => ({ok: true, value: {values, fields: descriptor!.fields.map(item => item.id), ports: []}}));
+    const root = layoutManifest((values) => ({ok: true, value: {values, fields: [], ports: []}}));
+    const activeContext = {...context(), experience: {...context().experience,
+      composition: {...context().experience.composition, maxExpansions: 2}}};
+    const shorter = basePlan('same-root', 'same-leaf', {order: [1]});
+    const longer = basePlan('same-root', 'same-leaf', {order: [1, 2]});
+    const composed = composePresentation(request(shorter, activeContext, [
+      {source: 'explicit', plan: shorter}, {source: 'explicit', plan: longer},
+    ]), registry([leaf, root]));
+
+    expect(composed).toMatchObject({ok: true, value: {status: 'search-exhausted',
+      presentation: {plan: {nodes: [{id: 'same-root'}, {id: 'same-leaf', config: {values: {order: [1, 2]}}}]}}}});
+  });
+
   it('does not carry acceptance across compose calls when policy, result fields, or experience changes', () => {
     let leafCalls = 0;
     const leaf = tableManifest((values, descriptor) => {
