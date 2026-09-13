@@ -1,57 +1,51 @@
-# Public framework and private website split
+# Website repository history and reunification
 
-`Arconath/aeliqo` remains the complete Apache-2.0 framework. Its packages,
-runtime, evaluator, semantic and presentation validators, web/React bindings,
-agent plumbing, local Studio, devtools, source testkit, examples, developer
-documentation source, and conformance coverage do not depend on the private
-website repository.
+## Current ownership — 13 September 2026
 
-`Arconath/aeliqo-site` owns only the website presentation shell, static server,
-container, site tests, and site deployment workflow. Before registry publication,
-the site installs the exact verified Aeliqo candidate tarballs committed to its
-private `vendor` directory. It also verifies the public documentation artifact's
-SHA-256 digest before generating routes. A sibling SDK checkout, a mutable branch,
-or an npm `latest` tag is not a supported build input.
+`Arconath/aeliqo` is the single public source repository for the Apache-2.0
+framework, packages, runtime, evaluator, semantic and presentation validators,
+web/React bindings, agent plumbing, Studio, developer documentation, website,
+docs routes and playground. The website workspace lives under `apps/site`; its
+static server, browser tests and image-delivery tooling live beside it.
 
-The machine-readable [extraction manifest](./repository-split-manifest.json)
-records each source path, destination, reason, dependency, test owner, and
-provenance. Historical evidence remains in place; it is not recast as evidence
-for either repository's post-split source.
+The site keeps an isolated lockfile and exact vendored `0.1.0-rc.2` package/docs
+candidate so the already-reviewed production input remains reproducible during
+the repository transition. This is a temporary release input, not a second
+framework source. New framework and documentation work starts in the canonical
+root source and must refresh the site input through a reviewed release step.
 
-## Independent gates
+Public pull requests run only on GitHub-hosted runners with read-only source
+permission and no npm, GHCR-write, GitOps or production credentials. Package
+publication, website image publication, GitOps promotion and live deployment
+remain separate claims and effects.
 
-- A fresh public clone installs and runs SDK builds, package consumers, public
-  documentation validation, browser tests, and the release candidate producer
-  without a private repository or token.
-- A fresh private clone installs and builds the whole 96-route site from vendored
-  exact package artifacts and the verified public documentation input without a
-  sibling framework checkout.
-- Public pull requests run on GitHub-hosted Actions with read-only repository
-  permission and receive no production, private-site, npm-publish, or GitOps
-  credential.
-- Package publication and website deployment remain separate owner-authorized
-  effects. Neither one proves the other occurred.
+## Historical split — 11 September 2026
 
-Production authority stays on the old path until the private repository has a
-successful exact-main quality run, immutable image evidence, reviewed GitOps
-change, Flux reconciliation, and route/header/health smoke. The previous image
-digest and GitOps revision are the rollback inputs.
+The website shell was previously extracted to private `Arconath/aeliqo-site`.
+That repository consumed checksum-verified package tarballs and a generated
+public docs artifact without sibling-checkout imports. The machine-readable
+`repository-split-manifest.json` remains as provenance for that extraction and
+must be read as historical evidence.
 
-## Cutover record
-
-The private-site cutover completed on 11 September 2026. The production site is
-built from private site revision `f7e692b18f8168487c6aa53e606b0b1ceef728b8`,
-public SDK revision `fb16bc90965b117f77d7c09974eecdedf26d2f6a`, and
-SDK version `0.1.0-rc.2`. UpCloud selects immutable image digest
+The production cutover used private site revision
+`f7e692b18f8168487c6aa53e606b0b1ceef728b8`, public SDK revision
+`fb16bc90965b117f77d7c09974eecdedf26d2f6a`, SDK `0.1.0-rc.2`, and image digest
 `sha256:843c81baf2696039fc36b8209191ebc5cfce74c4fe06d5cce7898422a4c7de09`.
+GitOps pull requests 166–168 recorded the original cutover and CSP/live
+acceptance. Those facts remain rollback evidence; they do not prove that the
+new unified source has been released or deployed.
 
-Normal GitOps pull requests
-[166](https://github.com/Arconath/platform-apps/pull/166),
-[167](https://github.com/Arconath/platform-apps/pull/167), and
-[168](https://github.com/Arconath/platform-apps/pull/168) record the initial
-cutover, production CSP correction, and live acceptance. Apex and `www` exposed
-the exact site/SDK identities; route, health, readiness, 404/method, cache/CSP,
-and live browser checks passed. Direct authenticated Flux/Kubernetes inspection
-was unavailable, so the evidence distinguishes exact live convergence from an
-observed controller-status claim. The unchanged shared runtime remains the
-last-known-good rollback path.
+## Reunification controls
+
+- The former private repository's complete refs were bundled before local
+  retirement; ignored dependencies and generated outputs were not promoted to
+  source.
+- Current site sources, tests, exact vendored inputs and static delivery tooling
+  were copied into `apps/site` without importing private Git history.
+- The public workflow uses GitHub-hosted runners. Public PR code must never run
+  on the private R640 runner.
+- A new site image requires a successful exact-main site-quality run, an
+  owner-dispatched image build, immutable GHCR digest and scan/provenance
+  evidence, then a reviewed GitOps digest change and runtime smoke.
+- The old production digest remains the rollback target until the unified source
+  completes those gates.
