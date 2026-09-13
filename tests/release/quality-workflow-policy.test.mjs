@@ -96,3 +96,13 @@ test('repository exposes exactly one functional and two publication lanes', asyn
     'site-release.yml',
   ]);
 });
+
+test('image publication preserves same-source quality evidence after checkout', async () => {
+  const imageWorkflow = await readFile(new URL('../../.github/workflows/site-release.yml', import.meta.url), 'utf8');
+  const checkout = imageWorkflow.indexOf('- uses: actions/checkout@');
+  const policy = imageWorkflow.indexOf('- name: Require owner-dispatched current main');
+  const publish = imageWorkflow.indexOf('- name: Publish, attest, and scan');
+  assert.ok(checkout >= 0 && checkout < policy && policy < publish);
+  assert.match(imageWorkflow, /artifacts\/site-release-policy/);
+  assert.match(releaseWorkflow, /-f event=push -f status=success/);
+});

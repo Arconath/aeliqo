@@ -21,7 +21,11 @@ jobs:
       actions: read
       packages: write
     steps:
-      - name: Require owner-dispatched current main with successful same-SHA site quality
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Require owner-dispatched current main with successful same-SHA functional quality
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -35,12 +39,8 @@ jobs:
             -f head_sha="$SOURCE_SHA" -f branch=main -f event=push -f status=success \
             --jq '.workflow_runs' > artifacts/site-release-policy/quality-runs.json
           jq -e --arg sha "$SOURCE_SHA" \
-            '[.[] | select(.head_sha == $sha and .head_branch == "main" and .event == "push" and .conclusion == "success")] | if length == 0 then error("no successful same-SHA site quality run") else max_by(.run_number) end' \
+            '[.[] | select(.head_sha == $sha and .head_branch == "main" and .event == "push" and .conclusion == "success")] | if length == 0 then error("no successful same-SHA functional quality run") else max_by(.run_number) end' \
             artifacts/site-release-policy/quality-runs.json > artifacts/site-release-policy/quality-run.json
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
-        with:
-          ref: ${{ github.sha }}
-          persist-credentials: false
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
           node-version: '24.20.0'
