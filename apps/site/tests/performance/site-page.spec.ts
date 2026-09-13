@@ -7,9 +7,6 @@ const DEFAULT_WARM_SAMPLE_COUNT = 1;
 const EXTENDED_COLD_SAMPLE_COUNT = 10;
 const EXTENDED_WARM_SAMPLE_COUNT = 30;
 const MAX_RESOURCE_ENTRIES = 2_048;
-const MAX_PAINT_ENTRIES = 128;
-const MAX_LCP_ENTRIES = 128;
-const MAX_LAYOUT_SHIFT_ENTRIES = 1_024;
 
 const ROUTES = [
   {id: "home", path: "/"},
@@ -355,7 +352,7 @@ function collectPerformance(page: Page): Promise<PerformanceObservation> {
 function byteTotals(entries: readonly ResourceEntry[]): ByteTotals {
   const total = (key: "transferSize" | "encodedBodySize" | "decodedBodySize"): number | null => {
     const values = entries.map(entry => safeNumber(entry[key]));
-    if (values.length === 0 || values.every(value => value === null)) return null;
+    if (values.every(value => value === null)) return null;
     return values.reduce<number>((sum, value) => sum + (value ?? 0), 0);
   };
   return {
