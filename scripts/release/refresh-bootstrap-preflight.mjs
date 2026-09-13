@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { PUBLIC_PACKAGE_NAMES } from './candidate-lib.mjs';
-import { NPM_ORG, NPM_OWNER, NPM_REGISTRY } from './publication-lib.mjs';
+import { classifyRegistryPackageResponse, NPM_ORG, NPM_OWNER, NPM_REGISTRY } from './publication-lib.mjs';
 import { RELEASE_SOURCE_STATUS_ARGS, assertReleaseSourceClean } from './source-state.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
@@ -33,7 +33,12 @@ async function expectAbsent(name, version) {
       signal: controller.signal,
       headers: { accept: 'application/json' },
     });
-    if (response.status !== 404)
+    let absent = response.status === 404;
+    if (!absent && version === undefined && response.status === 200) {
+      const payload = await response.json();
+      absent = classifyRegistryPackageResponse(response.status, payload, name).exists === false;
+    }
+    if (!absent)
       throw new Error(
         `Expected ${name}${version ? `@${version}` : ''} to be absent after the hold; registry returned HTTP ${response.status}`,
       );

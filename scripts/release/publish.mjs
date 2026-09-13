@@ -12,6 +12,7 @@ import {
   assertBootstrapRegistryReset,
   assertCandidateIdentity,
   assertCandidateTarball,
+  classifyRegistryPackageResponse,
   bootstrapTagReconciliation,
   assertTagMayAdvance,
   assertTrustedPublishingContext,
@@ -108,25 +109,8 @@ async function registryPackage(item) {
       signal: controller.signal,
       headers: { accept: 'application/json' },
     });
-    if (response.status === 404)
-      return { exists: false, selected: undefined, tags: {}, versions: [], deprecatedVersions: [] };
-    if (response.status !== 200)
-      throw new Error(`Registry returned HTTP ${response.status} for ${item.name} dist-tags`);
     const payload = await response.json();
-    const tags = payload?.['dist-tags'];
-    if (!tags || typeof tags !== 'object' || Array.isArray(tags))
-      throw new Error(`Registry returned malformed ${item.name} dist-tags`);
-    const selected = tags[tag];
-    if (selected !== undefined && typeof selected !== 'string')
-      throw new Error(`Registry returned malformed ${item.name} dist-tag ${tag}`);
-    const versions = payload?.versions;
-    if (!versions || typeof versions !== 'object' || Array.isArray(versions))
-      throw new Error(`Registry returned malformed ${item.name} version history`);
-    const deprecatedVersions = Object.entries(versions)
-      .filter(([, manifest]) => typeof manifest?.deprecated === 'string' && manifest.deprecated.trim())
-      .map(([version]) => version)
-      .sort();
-    return { exists: true, selected, tags, versions: Object.keys(versions).sort(), deprecatedVersions };
+    return classifyRegistryPackageResponse(response.status, payload, item.name, tag);
   } finally {
     clearTimeout(timer);
   }
