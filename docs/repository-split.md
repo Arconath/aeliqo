@@ -5,8 +5,9 @@
 `Arconath/aeliqo` is the single public source repository for the Apache-2.0
 framework, packages, runtime, evaluator, semantic and presentation validators,
 web/React bindings, agent plumbing, Studio, developer documentation, website,
-docs routes and playground. The website workspace lives under `apps/site`; its
-static server, browser tests and image-delivery tooling live beside it.
+docs routes and playground. Public source lives in `apps/web`, `apps/docs` and
+`apps/playground`. The `apps/site` shell retains the isolated package inputs,
+static assembly/server, browser checks and image delivery.
 
 The site keeps an isolated lockfile and exact vendored `0.1.0-rc.2` package/docs
 candidate so the already-reviewed production input remains reproducible during
@@ -44,7 +45,7 @@ new unified source has been released or deployed.
   were copied into `apps/site` without importing private Git history.
 - The public workflow uses GitHub-hosted runners. Public PR code must never run
   on the private R640 runner.
-- A new site image requires a successful exact-main site-quality run, an
+- A new site image requires a successful exact-main functional-quality run, an
   owner-dispatched image build, immutable GHCR digest and scan/provenance
   evidence, then a reviewed GitOps digest change and runtime smoke.
 - The old production digest remains the rollback target until the unified source

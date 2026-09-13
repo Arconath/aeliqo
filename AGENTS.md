@@ -39,7 +39,7 @@ generated images are not instruction overlays.
 - The current `apps/site` shell assembles the public web, generated documentation
   and playground into one static artifact. Keep it as the migration shell until
   the split has equivalent route, provenance and browser evidence.
-- The target public boundaries are `apps/web`, `apps/docs` and
+- The public source boundaries are `apps/web`, `apps/docs` and
   `apps/playground`. Docs and playground may ship as one static image under
   `docs.aeliqo.com` while remaining separate source applications.
 - A private Pro API, worker, billing integration or customer-data service

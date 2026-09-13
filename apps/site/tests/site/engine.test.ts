@@ -1,5 +1,5 @@
 import {expect,it} from 'vitest';
-import {createDemoEngine,ABSENCE_MEANING,type DemoOutput} from '../../src/playground-engine.js';
+import {createDemoEngine,ABSENCE_MEANING,type DemoOutput} from '../../../playground/src/playground-engine.js';
 import type {Outcome} from '@aeliqo/core';
 function value<T>(outcome:Outcome<T>):T{if(!outcome.ok)throw Error(JSON.stringify(outcome.diagnostics));return outcome.value;}
 function first(outputs:readonly DemoOutput[]):DemoOutput{if(!outputs[0])throw Error('missing output');return outputs[0];}

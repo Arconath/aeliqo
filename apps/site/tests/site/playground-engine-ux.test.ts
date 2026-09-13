@@ -1,6 +1,6 @@
 import {expect, it} from 'vitest';
 import type {Outcome} from '@aeliqo/core';
-import {createDemoEngine, type DemoOutput} from '../../src/playground-engine.js';
+import {createDemoEngine, type DemoOutput} from '../../../playground/src/playground-engine.js';
 
 function value<T>(outcome: Outcome<T>): T {
   if (!outcome.ok) throw Error(JSON.stringify(outcome.diagnostics));

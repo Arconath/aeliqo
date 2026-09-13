@@ -1,7 +1,7 @@
 import {AeliqoDialogElement} from '@aeliqo/web/dialog';
 import {AeliqoRecordListElement} from '@aeliqo/web/record-list';
 import {catalogExample, CATALOG_EXAMPLE_IDS} from '@aeliqo/catalog-examples';
-import {syncComponentTheme} from './site.js';
+import {syncComponentTheme} from '/src/site.js';
 
 type SearchEntry = {readonly path:string;readonly title:string;readonly description:string};
 

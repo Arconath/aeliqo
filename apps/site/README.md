@@ -1,13 +1,13 @@
 # Aeliqo website
 
-This directory owns the presentation and delivery shell for `aeliqo.com` inside
+This directory owns the static assembly and delivery shell for `aeliqo.com` inside
 the public [Arconath/aeliqo](https://github.com/Arconath/aeliqo) repository. The
 framework, developer documentation source, API metadata producer, runnable
 examples, Studio, testkit, docs and playground now share one repository.
 
 The site does not read a sibling SDK checkout. It installs six source-bound
 `0.1.0-rc.2` candidate tarballs from `vendor/packages` and consumes the public
-documentation/example artifact in `vendor/public-docs`. `pnpm verify:inputs`
+documentation/example artifact in `../docs/vendor/public-docs`. `pnpm verify:inputs`
 checks every candidate and documentation checksum, exact version, source SHA,
 and path before a build starts.
 

@@ -1,8 +1,8 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
-import {parseAnalyticsConfig, prepareGoogleAnalytics, setAnalyticsConsent, startGoogleAnalytics} from '../../src/analytics.js';
-import {isPublicAeliqoSite, parseMonitoringConfig, startBasicTelemetry, webVitalData} from '../../src/telemetry.js';
+import {parseAnalyticsConfig, prepareGoogleAnalytics, setAnalyticsConsent, startGoogleAnalytics} from '../../../web/src/analytics.js';
+import {isPublicAeliqoSite, parseMonitoringConfig, startBasicTelemetry, webVitalData} from '../../../web/src/telemetry.js';
 
 function storage() {
   const values = new Map<string, string>();
@@ -23,8 +23,8 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe('public telemetry boundary', () => {
   it('ships both deployment controls disabled', () => {
-    expect(JSON.parse(readFileSync(resolve(process.cwd(), 'public/browser-monitoring.json'), 'utf8'))).toEqual({enabled: false});
-    expect(JSON.parse(readFileSync(resolve(process.cwd(), 'public/google-analytics.json'), 'utf8'))).toEqual({enabled: false});
+    expect(JSON.parse(readFileSync(resolve(process.cwd(), '../web/public/browser-monitoring.json'), 'utf8'))).toEqual({enabled: false});
+    expect(JSON.parse(readFileSync(resolve(process.cwd(), '../web/public/google-analytics.json'), 'utf8'))).toEqual({enabled: false});
   });
 
   it('allows only the public HTTPS Aeliqo origins', () => {

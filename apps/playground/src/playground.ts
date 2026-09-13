@@ -13,7 +13,7 @@ import {
   type DemoView,
 } from './playground-engine.js';
 import type {Diagnostic, Outcome, Task} from '@aeliqo/core';
-import {syncComponentTheme} from './site.js';
+import {syncComponentTheme} from '/src/site.js';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   const node = document.getElementById(id);

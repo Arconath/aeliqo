@@ -99,12 +99,12 @@ def fixture(statement_change=None):
     statement = {
         "_type": PROVENANCE.STATEMENT_TYPE,
         "predicateType": PROVENANCE.PREDICATE_TYPE,
-        "subject": [{"name": "pkg:docker/aeliqo-site", "digest": {"sha256": image_digest.removeprefix("sha256:")}}],
+        "subject": [{"name": "pkg:docker/aeliqo-web", "digest": {"sha256": image_digest.removeprefix("sha256:")}}],
         "predicate": {
             "buildDefinition": {
                 "buildType": PROVENANCE.BUILD_TYPE,
                 "externalParameters": {
-                    "configSource": {"path": "Dockerfile"},
+                    "configSource": {"path": "site/Dockerfile"},
                     "request": {
                         "frontend": "dockerfile.v0",
                         "args": {
@@ -293,14 +293,14 @@ class GhcrClientTests(unittest.TestCase):
             PROVENANCE.urllib.request, "urlopen", side_effect=[token, payload]
         ) as opener:
             client = PROVENANCE.GhcrClient(
-                "ghcr.io/arconath/aeliqo-site", "owner", "credential"
+                "ghcr.io/arconath/aeliqo-web", "owner", "credential"
             )
             value = client.manifest("sha256:" + "a" * 64)
 
         self.assertEqual(value, manifest)
         token_request = opener.call_args_list[0].args[0]
         manifest_request = opener.call_args_list[1].args[0]
-        self.assertIn("scope=repository%3Aarconath%2Faeliqo-site%3Apull", token_request.full_url)
+        self.assertIn("scope=repository%3Aarconath%2Faeliqo-web%3Apull", token_request.full_url)
         self.assertTrue(token_request.get_header("Authorization").startswith("Basic "))
         self.assertEqual(manifest_request.get_header("Authorization"), "Bearer registry-token")
         self.assertIn(PROVENANCE.INDEX_MEDIA_TYPE, manifest_request.get_header("Accept"))

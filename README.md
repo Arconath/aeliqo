@@ -165,9 +165,8 @@ not functionality or customer demand claimed by 0.1.0. See the
 
 ## Application boundaries
 
-The current `apps/site` shell assembles the public web, generated documentation
-and playground into one static artifact. It is retained as the migration shell
-while the source boundaries are made explicit:
+The public applications have separate source ownership and assemble into one
+static artifact through the retained `apps/site` build and delivery shell:
 
 ```text
 apps/web/          public product and marketing web
@@ -175,7 +174,7 @@ apps/docs/         public documentation application
 apps/playground/   public interactive playground application
 ```
 
-The target split keeps docs and playground as separate source applications while
+The split keeps docs and playground as separate source applications while
 allowing them to ship as one static image under `docs.aeliqo.com` at `/` and
 `/playground/`. During migration, old `aeliqo.com/docs/*` and
 `aeliqo.com/playground/*` links should redirect or remain aliases. A future

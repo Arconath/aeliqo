@@ -2,13 +2,16 @@
 import {createHash} from 'node:crypto';
 import {lstat, readFile, realpath, readdir} from 'node:fs/promises';
 import {basename, join, relative, resolve, sep} from 'node:path';
-import {loadPublicDocs} from '../docs-artifact.mjs';
+import {loadPublicDocs} from '../../docs/docs-artifact.mjs';
 
 const root = process.env.AELIQO_VERIFY_ROOT === undefined
   ? resolve(import.meta.dirname, '..')
   : resolve(process.env.AELIQO_VERIFY_ROOT);
+const docsRoot = process.env.AELIQO_VERIFY_ROOT === undefined
+  ? resolve(root, '../docs')
+  : resolve(root, 'docs');
 const packageRoot = resolve(root, 'vendor/packages');
-const docsManifestPath = resolve(root, 'vendor/public-docs/manifest.json');
+const docsManifestPath = resolve(docsRoot, 'vendor/public-docs/manifest.json');
 const expectedNames = ['@aeliqo/core', '@aeliqo/runtime', '@aeliqo/web', '@aeliqo/agent', '@aeliqo/devtools', '@aeliqo/react'];
 const sha256 = value => createHash('sha256').update(value).digest('hex');
 
@@ -26,6 +29,7 @@ async function rejectSymlinks(directory) {
 
 if (process.versions.node !== '24.20.0') throw new Error(`Node 24.20.0 is required; received ${process.versions.node}`);
 await rejectSymlinks(resolve(root, 'vendor'));
+await rejectSymlinks(resolve(docsRoot, 'vendor'));
 const canonicalPackageRoot = await realpath(packageRoot);
 if (!canonicalPackageRoot.startsWith(`${await realpath(root)}${sep}`)) throw new Error('Package vendor directory escapes the site repository.');
 
@@ -37,11 +41,11 @@ const [sitePackage, workspace, candidate, consumer, secretScan, sbom, docs, docs
   json(resolve(packageRoot, 'secret-scan.json')),
   json(resolve(packageRoot, 'sbom.cdx.json')),
   loadPublicDocs(docsManifestPath),
-  readFile(resolve(root, 'vendor/public-docs/SHA256SUMS'), 'utf8'),
+  readFile(resolve(docsRoot, 'vendor/public-docs/SHA256SUMS'), 'utf8'),
 ]);
 
 if (candidate.schema !== 'aeliqo.release-candidate.v1' || candidate.version !== '0.1.0-rc.2' || !/^[a-f0-9]{40}$/u.test(candidate.sourceRevision)) throw new Error('Invalid SDK candidate identity.');
-if (sitePackage.name !== '@aeliqo/site' || sitePackage.private !== true || sitePackage.version !== candidate.version) throw new Error('Site and SDK candidate versions differ.');
+if (sitePackage.name !== '@aeliqo/site-assembly' || sitePackage.private !== true || sitePackage.version !== candidate.version) throw new Error('Site assembly and SDK candidate versions differ.');
 if (JSON.stringify(candidate.publishOrder) !== JSON.stringify(expectedNames)) throw new Error('SDK candidate publish order is incomplete.');
 if (!Array.isArray(candidate.packages) || candidate.packages.length !== expectedNames.length) throw new Error('SDK candidate must contain all six public packages.');
 for (const [index, item] of candidate.packages.entries()) {

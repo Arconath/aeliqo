@@ -176,7 +176,7 @@ def verify_graph(client, index_digest, source, sdk_revision, sdk_version, builde
     definition = predicate.get("buildDefinition", {})
     require(definition.get("buildType") == BUILD_TYPE, "unexpected BuildKit provenance build type")
     external = definition.get("externalParameters", {})
-    require(external.get("configSource", {}).get("path") == "Dockerfile", "provenance config source differs")
+    require(external.get("configSource", {}).get("path") == "site/Dockerfile", "provenance config source differs")
     request = external.get("request", {})
     require(request.get("frontend") == "dockerfile.v0", "provenance frontend differs")
     args = request.get("args", {})

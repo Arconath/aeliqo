@@ -13,15 +13,19 @@ function fixture(): string {
   const root = mkdtempSync(join(tmpdir(), 'aeliqo-site-inputs-'));
   temporaryRoots.push(root);
   cpSync(resolve(repositoryRoot, 'vendor'), resolve(root, 'vendor'), {recursive: true});
+  cpSync(resolve(repositoryRoot, '../docs/vendor'), resolve(root, 'docs/vendor'), {recursive: true});
   cpSync(resolve(repositoryRoot, 'package.json'), resolve(root, 'package.json'));
   cpSync(resolve(repositoryRoot, 'pnpm-workspace.yaml'), resolve(root, 'pnpm-workspace.yaml'));
   return root;
 }
 
 function verify(root: string) {
+  const environment = {...process.env};
+  if (root !== repositoryRoot) environment.AELIQO_VERIFY_ROOT = root;
+  else delete environment.AELIQO_VERIFY_ROOT;
   return spawnSync(process.execPath, [verifier], {
     cwd: repositoryRoot,
-    env: {...process.env, AELIQO_VERIFY_ROOT: root},
+    env: environment,
     encoding: 'utf8',
   });
 }
@@ -46,9 +50,9 @@ describe('vendored build input verification', () => {
     expect(result.stderr).toContain('integrity check failed');
   });
 
-  it('rejects symlinked vendored inputs', () => {
+  it.each(['vendor/packages/consumer.json', 'docs/vendor/public-docs/manifest.json'])('rejects symlinked vendored input %s', (path) => {
     const root = fixture();
-    const target = resolve(root, 'vendor/packages/consumer.json');
+    const target = resolve(root, path);
     const bytes = readFileSync(target);
     rmSync(target);
     const outside = resolve(root, 'consumer-outside.json');
@@ -72,7 +76,7 @@ describe('vendored build input verification', () => {
 
   it('rejects a missing documentation manifest', () => {
     const root = fixture();
-    rmSync(resolve(root, 'vendor/public-docs/manifest.json'));
+    rmSync(resolve(root, 'docs/vendor/public-docs/manifest.json'));
     const result = verify(root);
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('ENOENT');
@@ -80,7 +84,7 @@ describe('vendored build input verification', () => {
 
   it('rejects an unsupported documentation schema', () => {
     const root = fixture();
-    const path = resolve(root, 'vendor/public-docs/manifest.json');
+    const path = resolve(root, 'docs/vendor/public-docs/manifest.json');
     const manifest = JSON.parse(readFileSync(path, 'utf8')) as {schema: string};
     manifest.schema = 'aeliqo.public-docs-manifest.invalid';
     writeFileSync(path, `${JSON.stringify(manifest)}\n`);
@@ -91,7 +95,7 @@ describe('vendored build input verification', () => {
 
   it('rejects documentation produced from a modified source tree', () => {
     const root = fixture();
-    const path = resolve(root, 'vendor/public-docs/manifest.json');
+    const path = resolve(root, 'docs/vendor/public-docs/manifest.json');
     const manifest = JSON.parse(readFileSync(path, 'utf8')) as {sourceTree: string};
     manifest.sourceTree = 'modified';
     writeFileSync(path, `${JSON.stringify(manifest)}\n`);
@@ -102,7 +106,7 @@ describe('vendored build input verification', () => {
 
   it('rejects a documentation checksum inventory that differs from the manifest', () => {
     const root = fixture();
-    appendFileSync(resolve(root, 'vendor/public-docs/SHA256SUMS'), `${'0'.repeat(64)}  unexpected.ts\n`);
+    appendFileSync(resolve(root, 'docs/vendor/public-docs/SHA256SUMS'), `${'0'.repeat(64)}  unexpected.ts\n`);
     const result = verify(root);
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('checksum inventory differs');
@@ -125,9 +129,9 @@ describe('vendored build input verification', () => {
 
   it('rejects duplicate documentation routes even when the outer checksum matches', () => {
     const root = fixture();
-    const manifestPath = resolve(root, 'vendor/public-docs/manifest.json');
+    const manifestPath = resolve(root, 'docs/vendor/public-docs/manifest.json');
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as {artifact: {file: string; bytes: number; sha256: string}};
-    const artifactPath = resolve(root, 'vendor/public-docs', manifest.artifact.file);
+    const artifactPath = resolve(root, 'docs/vendor/public-docs', manifest.artifact.file);
     const artifact = JSON.parse(readFileSync(artifactPath, 'utf8')) as {pages: unknown[]};
     artifact.pages.push(artifact.pages[0]);
     const bytes = Buffer.from(JSON.stringify(artifact));

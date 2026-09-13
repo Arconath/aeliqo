@@ -144,5 +144,5 @@ if (demo) {
   document.querySelector('#demo-source')!.textContent = source;
   document.querySelector('#copy-demo')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(source);document.querySelector('#copy-status')!.textContent='Source copied.';}catch{document.querySelector('#copy-status')!.textContent='Copy unavailable. Select the source above to copy it manually.';}});
 }
-if (location.pathname.startsWith('/docs/')) void import('./docs.js');
-if (location.pathname.startsWith('/playground/')) void import('./playground.js');
+if (location.pathname.startsWith('/docs/')) void import('/docs-src/docs.js');
+if (location.pathname.startsWith('/playground/')) void import('/playground-src/playground.js');

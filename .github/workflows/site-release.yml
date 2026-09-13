@@ -1,4 +1,4 @@
-name: Publish Aeliqo docs and playground image
+name: Publish Aeliqo public web image
 
 on:
   workflow_dispatch:
@@ -31,7 +31,7 @@ jobs:
           test "$GH_REPO" = "Arconath/aeliqo"
           test "$(gh api "repos/$GH_REPO/branches/main" --jq '.commit.sha')" = "$SOURCE_SHA"
           mkdir -p artifacts/site-release-policy
-          gh api --method GET "repos/$GH_REPO/actions/workflows/site-quality.yml/runs" \
+          gh api --method GET "repos/$GH_REPO/actions/workflows/quality.yml/runs" \
             -f head_sha="$SOURCE_SHA" -f branch=main -f event=push -f status=success \
             --jq '.workflow_runs' > artifacts/site-release-policy/quality-runs.json
           jq -e --arg sha "$SOURCE_SHA" \
@@ -57,7 +57,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: aeliqo-site-production-image-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: aeliqo-web-production-image-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             artifacts/site-release-policy
             apps/site/artifacts/production-image

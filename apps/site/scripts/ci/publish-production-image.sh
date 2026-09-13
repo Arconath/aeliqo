@@ -27,7 +27,7 @@ node scripts/verify-inputs.mjs >/dev/null
 sdk_revision="$(jq -er '.sourceRevision | select(test("^[0-9a-f]{40}$"))' vendor/packages/manifest.json)"
 sdk_version="$(jq -er '.version | select(test("^0\\.1\\.0-rc\\.[1-9][0-9]*$"))' vendor/packages/manifest.json)"
 
-image="ghcr.io/arconath/aeliqo-site"
+image="ghcr.io/arconath/aeliqo-web"
 tag="${SOURCE_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
 reference="$image:$tag"
 output="artifacts/production-image"
@@ -54,7 +54,7 @@ trap 'rm -rf "$docker_config" "$trivy_dir"' EXIT
 # The tag includes the immutable source, workflow run, and run attempt. GitHub
 # never reuses a run attempt, so this build cannot overwrite a prior execution.
 builder_id="https://github.com/$GH_REPO/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT"
-builder_name="aeliqo-site-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+builder_name="aeliqo-web-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
 docker buildx create --name "$builder_name" --driver docker-container --use >/dev/null
 trap 'docker buildx rm --force "$builder_name" >/dev/null 2>&1 || true; rm -rf "$docker_config" "$trivy_dir"' EXIT
 docker buildx build \
@@ -69,7 +69,8 @@ docker buildx build \
 	--attest "type=provenance,mode=max,builder-id=$builder_id" \
 	--output "type=image,name=$reference,push=true,oci-mediatypes=true,oci-artifact=true" \
 	--metadata-file "$output/build-metadata.json" \
-	.
+	--file Dockerfile \
+	..
 
 digest="$(jq -er '."containerimage.digest" | select(test("^sha256:[0-9a-f]{64}$"))' "$output/build-metadata.json")"
 jq -e --arg digest "$digest" \
