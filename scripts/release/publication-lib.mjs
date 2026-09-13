@@ -30,6 +30,38 @@ const REQUIRED_UNPUBLISHED_HISTORY = Object.freeze([
 
 const RC = /^0\.1\.0-rc\.([1-9]\d*)$/;
 
+export function classifyRegistryPackageResponse(status, payload, name, tag = 'next') {
+  const absent = { exists: false, selected: undefined, tags: {}, versions: [], deprecatedVersions: [] };
+  if (status === 404) return absent;
+  if (status !== 200) throw new Error(`Registry returned HTTP ${status} for ${name} dist-tags`);
+
+  const tags = payload?.['dist-tags'];
+  const versions = payload?.versions;
+  const emptyUnpublishedTombstone =
+    payload?.name === name &&
+    typeof payload?._rev === 'string' &&
+    payload._rev.length > 0 &&
+    payload?.time?.unpublished &&
+    typeof payload.time.unpublished === 'object' &&
+    !Array.isArray(payload.time.unpublished) &&
+    tags === undefined &&
+    versions === undefined;
+  if (emptyUnpublishedTombstone) return absent;
+  if (!tags || typeof tags !== 'object' || Array.isArray(tags))
+    throw new Error(`Registry returned malformed ${name} dist-tags`);
+  if (!versions || typeof versions !== 'object' || Array.isArray(versions))
+    throw new Error(`Registry returned malformed ${name} version history`);
+
+  const selected = tags[tag];
+  if (selected !== undefined && typeof selected !== 'string')
+    throw new Error(`Registry returned malformed ${name} dist-tag ${tag}`);
+  const deprecatedVersions = Object.entries(versions)
+    .filter(([, manifest]) => typeof manifest?.deprecated === 'string' && manifest.deprecated.trim())
+    .map(([version]) => version)
+    .sort();
+  return { exists: true, selected, tags, versions: Object.keys(versions).sort(), deprecatedVersions };
+}
+
 export function assertCandidateIdentity(candidate, { bootstrap = false, tag } = {}) {
   const names = candidate?.packages?.map((item) => item.name);
   if (

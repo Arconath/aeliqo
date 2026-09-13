@@ -13,6 +13,7 @@ import {
   assertTagMayAdvance,
   assertTrustedPublishingContext,
   bootstrapTagReconciliation,
+  classifyRegistryPackageResponse,
   expectedIntegrity,
   verifyNpmProvenance,
 } from '../../scripts/release/publication-lib.mjs';
@@ -37,6 +38,27 @@ const withVersion = (value) => ({
   ...candidate,
   version: value,
   packages: packages.map((item) => ({ ...item, version: value, file: item.file.replace('0.1.0-rc.2', value) })),
+});
+
+test('an empty npm unpublish tombstone remains an absent bootstrap identity', () => {
+  const name = '@aeliqo/core';
+  const tombstone = {
+    _id: name,
+    name,
+    _rev: '5-deadbeef',
+    time: { unpublished: { time: '2026-09-10T16:30:07.119Z', versions: ['0.2.0'] } },
+  };
+  assert.deepEqual(classifyRegistryPackageResponse(200, tombstone, name), {
+    exists: false,
+    selected: undefined,
+    tags: {},
+    versions: [],
+    deprecatedVersions: [],
+  });
+  assert.throws(
+    () => classifyRegistryPackageResponse(200, { name, _rev: tombstone._rev }, name),
+    /malformed .* dist-tags/,
+  );
 });
 
 test('first-RC bootstrap is a separate exact interactive path', () => {
