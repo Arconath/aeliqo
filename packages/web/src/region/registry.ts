@@ -153,22 +153,54 @@ function stackConfig(values: PresentationValues): Outcome<ResolvedPresentationCo
   const input = record(values); if (input === undefined) return fail("config", "The stack configuration must be an object.");
   if (Object.keys(input).some((key) => key !== "gap")) return fail("config", "The stack configuration only accepts gap.");
   if (input.gap !== undefined && (!Number.isSafeInteger(input.gap) || (input.gap as number) < 0 || (input.gap as number) > 64)) return fail("config", "gap must be a bounded nonnegative integer.");
-  return {ok: true, value: {values: Object.keys(input).length === 0 ? {} : {gap: input.gap as number}, fields: [], ports: [], operations: []}};
+  return {ok: true, value: {values, fields: [], ports: [], operations: []}};
 }
 
-function tableConfig(values: PresentationValues, result: Result | undefined, resolveEntity: AeliqoPresentationRegistryOptions["resolveEntity"]): Outcome<ResolvedPresentationConfig> {
+/** The default table depends only on this immutable field-ID path. Do not
+ * admit a shallow-frozen Result whose array, entries or getters can change. */
+function hasFrozenFieldIds(result: Result): boolean {
+  if (!Object.isFrozen(result)) return false;
+  const descriptor = Object.getOwnPropertyDescriptor(result, "fields");
+  if (descriptor === undefined || !("value" in descriptor)) return false;
+  const fields: unknown = descriptor.value;
+  if (!Array.isArray(fields) || !Object.isFrozen(fields) || Object.getPrototypeOf(fields) !== Array.prototype
+    || Reflect.ownKeys(fields).length !== fields.length + 1) return false;
+  for (let index = 0; index < fields.length; index++) {
+    const entry = Object.getOwnPropertyDescriptor(fields, String(index));
+    if (entry === undefined || !("value" in entry) || entry.value === null || typeof entry.value !== "object" || !Object.isFrozen(entry.value)) return false;
+    const id = Object.getOwnPropertyDescriptor(entry.value, "id");
+    if (id === undefined || !("value" in id) || typeof id.value !== "string") return false;
+  }
+  return true;
+}
+
+function tableConfig(values: PresentationValues, result: Result | undefined, resolveEntity: AeliqoPresentationRegistryOptions["resolveEntity"],
+  defaultConfigs: WeakMap<Result, Outcome<ResolvedPresentationConfig>>): Outcome<ResolvedPresentationConfig> {
   if (result === undefined) return fail("binding", "A table requires a bound result.");
   const input = record(values); if (input === undefined) return fail("config", "The table configuration must be an object.");
   if (Object.keys(input).some((key) => !["columns", "identity", "selection"].includes(key))) return fail("config", "The table configuration contains an unknown field.");
   const columnList = input.columns === undefined ? undefined : columns(input, result); if (columnList !== undefined && !columnList.ok) return columnList;
   const selected = input.selection ?? "none";
   if (selected !== "none" && selected !== "single" && selected !== "multiple") return fail("config", "selection must be none, single or multiple.");
+  const isDefault = input.columns === undefined && input.identity === undefined && selected === "none";
+  if (isDefault) {
+    const cached = defaultConfigs.get(result);
+    if (cached !== undefined) return cached;
+  }
   const identityFields = input.identity === undefined ? {ok: true as const, value: undefined} : identity(input, result);
   if (!identityFields.ok) return identityFields;
   const port = selectionPort(input, result, "selection", resolveEntity); if (!port.ok) return port;
   const output: Record<string, unknown> = {...(columnList === undefined ? {} : {columns: columnList.value}), selection: selected, ...(identityFields.value === undefined ? {} : {identity: identityFields.value})};
   const operations = selected === "none" ? [AELIQO_OPERATION_REFS.read] : [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.selection];
   const fields = columnList === undefined ? result.fields.map((field) => field.id) : columnList.value.map((column) => column.key);
+  if (isDefault && hasFrozenFieldIds(result)) {
+    const outcome: Outcome<ResolvedPresentationConfig> = Object.freeze({ok: true, value: Object.freeze({
+      values: Object.freeze(output) as PresentationValues, fields: Object.freeze(fields),
+      ports: Object.freeze([]), operations: Object.freeze([Object.freeze({...AELIQO_OPERATION_REFS.read})]),
+    })});
+    defaultConfigs.set(result, outcome);
+    return outcome;
+  }
   return {ok: true, value: {values: output as PresentationValues, fields, ports: port.value, operations}};
 }
 
@@ -251,10 +283,11 @@ function suggestFilter(needs: readonly Task["needs"][number][], result: Result |
 }
 
 function buildManifests(options: AeliqoPresentationRegistryOptions): readonly PresentationManifest[] {
+  const defaultTableConfigs = new WeakMap<Result, Outcome<ResolvedPresentationConfig>>();
   const resolveEntity = options.resolveEntity;
   return Object.freeze([
     {ref: AELIQO_PRESENTATION_REFS.stack, configSchema: AELIQO_CONFIG_SCHEMAS.stack, roles: ["structure"], operations: [], result: "none", children: {min: 0, max: 32}, visibility: "simultaneous", extension: false, resolveConfig: stackConfig, suggestConfig: (): Outcome<PresentationValues> => ({ok: true, value: {}})},
-    {ref: AELIQO_PRESENTATION_REFS.table, configSchema: AELIQO_CONFIG_SCHEMAS.table, roles: ["table"], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.selection], result: "required", children: {min: 0, max: 0}, visibility: "leaf", extension: false, resolveConfig: (values, result) => tableConfig(values, result, resolveEntity), suggestConfig: suggestTable},
+    {ref: AELIQO_PRESENTATION_REFS.table, configSchema: AELIQO_CONFIG_SCHEMAS.table, roles: ["table"], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.selection], result: "required", children: {min: 0, max: 0}, visibility: "leaf", extension: false, resolveConfig: (values, result) => tableConfig(values, result, resolveEntity, defaultTableConfigs), suggestConfig: suggestTable},
     {ref: AELIQO_PRESENTATION_REFS.trend, configSchema: AELIQO_CONFIG_SCHEMAS.trend, roles: ["trend", "chart"], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.compare], result: "required", children: {min: 0, max: 0}, visibility: "leaf", extension: false, resolveConfig: (values, result) => trendConfig(values, result), suggestConfig: suggestTrend},
     {ref: AELIQO_PRESENTATION_REFS.filter, configSchema: AELIQO_CONFIG_SCHEMAS.filter, roles: ["filter"], operations: [AELIQO_OPERATION_REFS.filter], result: "required", children: {min: 0, max: 0}, visibility: "leaf", extension: false, resolveConfig: (values, result) => filterConfig(values, result, resolveEntity), suggestConfig: suggestFilter},
   ]);

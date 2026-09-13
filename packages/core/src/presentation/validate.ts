@@ -11,7 +11,7 @@ import {validateInteractionGraph, type InteractionGraph} from '../interaction/gr
 import type {CommitPreconditions, Experience, Outcome, PresentationPlan, Result, ResultRef, Task, VersionRef} from '../contracts/types.js';
 import type {
   PresentationContext, PresentationEnvironment, PresentationPatternContext, PresentationPatternManifest,
-  PresentationRegistry, PresentationValues, PresentationQuality, ResolvedPresentationNode, ValidatedPresentation,
+  PresentationRegistry, PresentationValues, PresentationQuality, ResolvedPresentationConfig, ResolvedPresentationNode, ValidatedPresentation,
 } from './types.js';
 import {freezePresentation, freezePresentationContainer, isThenable, presentationFailure as fail, versionKey} from './registry.js';
 
@@ -23,6 +23,50 @@ const resolvedSchema = z.strictObject({
   ports: z.array(z.unknown()).check(z.maxLength(128)),
   operations: z.optional(z.array(versionRefSchema).check(z.maxLength(WIRE_LIMITS.array))),
 });
+const EMPTY_RESOLVED_LIST = Object.freeze([]) as readonly never[];
+
+/** Identity-preserving layout resolvers can return the already parsed config
+ * with no fields, ports, or operations. Verify that exact accessor-free shape
+ * without rescanning the same owned config; every other result takes the full
+ * wire and schema path below. */
+function ownedEmptyConfigOutcome(raw: unknown, values: PresentationValues): ResolvedPresentationConfig | undefined {
+  try {
+    if (isThenable(raw) || raw === null || typeof raw !== 'object' || Array.isArray(raw) || Object.getPrototypeOf(raw) !== Object.prototype) return undefined;
+    const outer = Object.getOwnPropertyDescriptors(raw);
+    if (Reflect.ownKeys(outer).length !== 2 || outer.ok?.value !== true || !outer.ok.enumerable || !outer.value?.enumerable || !('value' in outer.value)) return undefined;
+    const config = outer.value.value;
+    if (config === null || typeof config !== 'object' || Array.isArray(config) || Object.getPrototypeOf(config) !== Object.prototype) return undefined;
+    const descriptors = Object.getOwnPropertyDescriptors(config);
+    if (Reflect.ownKeys(descriptors).length !== 4 || descriptors.values?.value !== values
+      || !descriptors.values.enumerable || !descriptors.fields?.enumerable || !descriptors.ports?.enumerable || !descriptors.operations?.enumerable) return undefined;
+    for (const key of ['fields', 'ports', 'operations'] as const) {
+      const list = descriptors[key]!.value;
+      if (!Array.isArray(list) || Object.getPrototypeOf(list) !== Array.prototype || Reflect.ownKeys(list).length !== 1 || list.length !== 0) return undefined;
+    }
+    return {values, fields: EMPTY_RESOLVED_LIST, ports: EMPTY_RESOLVED_LIST, operations: EMPTY_RESOLVED_LIST};
+  } catch { return undefined; }
+}
+/** Only completed wire/schema validation may admit a callback outcome here.
+ * Shallow freezing is insufficient: every reachable data container must be fixed. */
+function isRecursivelyFrozenOutcome(value: object): boolean {
+  const pending: object[] = [value];
+  const seen = new WeakSet<object>();
+  try {
+    while (pending.length > 0) {
+      const current = pending.pop()!;
+      if (seen.has(current)) continue;
+      if (!Object.isFrozen(current)) return false;
+      seen.add(current);
+      for (const key of Reflect.ownKeys(current)) {
+        const descriptor = Object.getOwnPropertyDescriptor(current, key);
+        if (descriptor === undefined || !('value' in descriptor)) return false;
+        const child: unknown = descriptor.value;
+        if (child !== null && typeof child === 'object') pending.push(child);
+      }
+    }
+    return true;
+  } catch { return false; }
+}
 const qualitySchema = z.strictObject({
   taskFit: z.number().check(z.int(), z.minimum(0), z.maximum(100)),
   informationDensity: z.number().check(z.int(), z.minimum(0), z.maximum(100)),
@@ -71,14 +115,11 @@ export interface PresentationValidationCache {
   readonly nodeGraphs: Map<string, Outcome<InteractionGraph>>;
   readonly presentationGraphs: Map<string, Outcome<InteractionGraph>>;
   readonly emptyGraphs: Map<PresentationTreeCacheEntry, EmptyPresentationGraphCacheEntry[]>;
-  readonly coverageIds: WeakMap<object, number>;
-  readonly coverageAnalyses: Map<string, Outcome<PresentationCoverageAnalysis>>;
+  readonly coverageAnalyses: WeakMap<object, CoverageCacheEntry[]>;
   /** Read-set outcomes are reusable only for frozen plans in this invocation. */
-  readonly readSetReferences: WeakMap<object, number>;
-  readonly readSetOutcomes: WeakMap<object, Map<string, Outcome<CommitPreconditions>>>;
+  readonly readSetOutcomes: WeakMap<object, ReadSetCacheEntry[]>;
+  readonly resolvedConfigs: WeakMap<object, ResolvedPresentationConfig>;
   readonly treeEntries: PresentationTreeCacheEntry[];
-  nextReadSetReference: number;
-  nextCoverageId: number;
 }
 
 interface PresentationCoverageAnalysis {
@@ -86,9 +127,20 @@ interface PresentationCoverageAnalysis {
   readonly operations: ReadonlySet<string>;
 }
 
+interface CoverageCacheEntry {
+  readonly nodes: readonly (ResolvedPresentationNode | undefined)[];
+  readonly outcome: Outcome<PresentationCoverageAnalysis>;
+}
+
+interface ReadSetCacheEntry {
+  readonly references: readonly ResultRef[];
+  readonly outcome: Outcome<CommitPreconditions>;
+}
+
 interface PresentationTreeCacheEntry {
   readonly rootId: string;
   readonly nodeIds: readonly string[];
+  readonly nodeIndexes: ReadonlyMap<string, number>;
   readonly children: readonly (readonly string[])[];
   readonly childrenById: ReadonlyMap<string, readonly string[]>;
   readonly parents: ReadonlyMap<string, string>;
@@ -147,22 +199,8 @@ export function preparePresentationValidationCache(
     taskInputs: new Set(prepared.task.kind === 'presentation' ? prepared.task.inputs.map(refKey) : []),
     taskNeeds: new Map(prepared.constraints.taskNeeds.map(need => [need.id, need])), taskOutputs,
     nodeGraphs: new Map(), presentationGraphs: new Map(), emptyGraphs: new Map(),
-    coverageIds: new WeakMap(), coverageAnalyses: new Map(),
-    readSetReferences: new WeakMap(), readSetOutcomes: new WeakMap(), treeEntries: [], nextReadSetReference: 0, nextCoverageId: 0,
+    coverageAnalyses: new WeakMap(), readSetOutcomes: new WeakMap(), resolvedConfigs: new WeakMap(), treeEntries: [],
   }};
-}
-
-function readSetDependencyKey(requiredResults: readonly ResultRef[], cache: PresentationValidationCache): string {
-  let key = '';
-  for (const reference of requiredResults) {
-    let identity = cache.readSetReferences.get(reference as object);
-    if (identity === undefined) {
-      identity = ++cache.nextReadSetReference;
-      cache.readSetReferences.set(reference as object, identity);
-    }
-    key += `${identity},`;
-  }
-  return key;
 }
 
 function preparePresentationTree(plan: PresentationPlanLike, cache: PresentationValidationCache): Outcome<PresentationTreeCacheEntry> {
@@ -200,32 +238,22 @@ function preparePresentationTree(plan: PresentationPlanLike, cache: Presentation
     visited.add(id); visit.push(...childrenById.get(id)!);
   }
   if (visited.size !== childrenById.size) return fail('tree', 'All nodes must be reachable from the declared root.');
-  const entry = {rootId: plan.rootId, nodeIds, children, childrenById, parents};
+  const entry = {rootId: plan.rootId, nodeIds, nodeIndexes: new Map(nodeIds.map((id, index) => [id, index])), children, childrenById, parents};
   cache.treeEntries.push(entry);
   return {ok: true, value: entry};
 }
 
-function coverageObjectId(cache: PresentationValidationCache, value: object): number {
-  const cached = cache.coverageIds.get(value);
-  if (cached !== undefined) return cached;
-  cache.nextCoverageId += 1;
-  cache.coverageIds.set(value, cache.nextCoverageId);
-  return cache.nextCoverageId;
-}
-
-function coverageMemoKey(
-  plan: PresentationPlanLike,
-  byId: ReadonlyMap<string, ResolvedPresentationNode>,
-  cache: PresentationValidationCache,
-): string {
-  const nodes: unknown[] = [];
+function coverageNodes(
+  plan: PresentationPlanLike, resolved: readonly ResolvedPresentationNode[], tree: PresentationTreeCacheEntry,
+): readonly (ResolvedPresentationNode | undefined)[] {
+  const nodes: (ResolvedPresentationNode | undefined)[] = [];
   for (const entry of plan.coverage) {
     for (const id of entry.nodeIds) {
-      const node = byId.get(id);
-      nodes.push([id, node === undefined ? 0 : coverageObjectId(cache, node as object)]);
+      const index = tree.nodeIndexes.get(id);
+      nodes.push(index === undefined ? undefined : resolved[index]);
     }
   }
-  return `${coverageObjectId(cache, plan.coverage as object)}:${JSON.stringify(nodes)}`;
+  return nodes;
 }
 
 function prepareCoverage(
@@ -396,16 +424,16 @@ export function validatePreparedPresentationPlan(
   const requiredResults = [...prepared.value.taskStructure.resultReferences, ...plan.nodes.flatMap(n => n.result === undefined ? [] : [n.result])];
   let readSet: Outcome<CommitPreconditions> | undefined;
   if (ownedPlan && validationCache !== undefined && Object.isFrozen(plan) && Object.isFrozen(plan.preconditions)) {
-    const key = readSetDependencyKey(requiredResults, validationCache);
     let outcomes = validationCache.readSetOutcomes.get(plan.preconditions as object);
     if (outcomes === undefined) {
-      outcomes = new Map();
+      outcomes = [];
       validationCache.readSetOutcomes.set(plan.preconditions as object, outcomes);
     }
-    readSet = outcomes.get(key);
+    readSet = outcomes.find(entry => entry.references.length === requiredResults.length
+      && entry.references.every((reference, index) => reference === requiredResults[index]))?.outcome;
     if (readSet === undefined) {
       readSet = validateParsedCommitReadSet(plan.preconditions, prepared.value.current, requiredResults);
-      outcomes.set(key, readSet);
+      outcomes.push({references: requiredResults, outcome: readSet});
     }
   } else readSet = validateParsedCommitReadSet(plan.preconditions, prepared.value.current, requiredResults);
   if (!readSet.ok) return readSet;
@@ -451,17 +479,31 @@ export function validatePreparedPresentationPlan(
     freezePresentation(node);
     let output: unknown;
     try { output = m.resolveConfig(node.config.values, result, node); } catch { return fail('configuration', 'The registered configuration validator failed.'); }
-    const outcome = callbackOutcome(output, 'configuration', 'The registered configuration validator failed.');
-    if (!outcome.ok) return outcome;
-    const config = z.safeParse(resolvedSchema, outcome.value);
-    if (!config.success || new Set(config.data.fields).size !== config.data.fields.length) return fail('configuration', 'The registered configuration result is malformed.');
-    const enabled = (config.data.operations ?? m.operations) as readonly VersionRef[];
+    let config: ResolvedPresentationConfig;
+    const cachedConfig = output !== null && typeof output === 'object'
+      ? preparedCache.value.resolvedConfigs.get(output) : undefined;
+    const ownedEmpty = cachedConfig === undefined ? ownedEmptyConfigOutcome(output, node.config.values) : undefined;
+    if (cachedConfig !== undefined) config = cachedConfig;
+    else if (ownedEmpty !== undefined) config = ownedEmpty;
+    else {
+      const outcome = callbackOutcome(output, 'configuration', 'The registered configuration validator failed.');
+      if (!outcome.ok) return outcome;
+      const parsedConfig = z.safeParse(resolvedSchema, outcome.value);
+      if (!parsedConfig.success) return fail('configuration', 'The registered configuration result is malformed.');
+      config = parsedConfig.data as ResolvedPresentationConfig;
+      if (output !== null && typeof output === 'object' && isRecursivelyFrozenOutcome(output)) {
+        config = freezePresentation(config);
+        preparedCache.value.resolvedConfigs.set(output, config);
+      }
+    }
+    if (new Set(config.fields).size !== config.fields.length) return fail('configuration', 'The registered configuration result is malformed.');
+    const enabled = (config.operations ?? m.operations) as readonly VersionRef[];
     if (new Set(enabled.map(versionKey)).size !== enabled.length || enabled.some(op => !m.operations.some((declared: VersionRef) => versionKey(op) === versionKey(declared))))
       return fail('configuration', 'Enabled operations must be a unique subset of the registered manifest.');
     if (allowedOperations !== undefined && enabled.some(op => !allowedOperations.has(versionKey(op))))
       return fail('restricted', 'The representation exposes an operation restricted by the active experience.');
-    if (config.data.fields.some((field: string) => result === undefined || !resultFields.get(result)!.has(field))) return fail('field', 'A representation refers to a field absent from its result.');
-    const nodeGraphInput = {nodes: [{id: node.id, ports: config.data.ports}], links: []};
+    if (config.fields.some((field: string) => result === undefined || !resultFields.get(result)!.has(field))) return fail('field', 'A representation refers to a field absent from its result.');
+    const nodeGraphInput = {nodes: [{id: node.id, ports: config.ports}], links: []};
     const nodeGraphKey = canonicalJSON(nodeGraphInput);
     let portGraph = preparedCache.value.nodeGraphs.get(nodeGraphKey);
     if (portGraph === undefined) {
@@ -469,8 +511,8 @@ export function validatePreparedPresentationPlan(
       preparedCache.value.nodeGraphs.set(nodeGraphKey, portGraph);
     }
     if (!portGraph.ok) return portGraph;
-    const values = freezePresentation(config.data.values as PresentationValues);
-    const resolvedConfig = freezePresentationContainer({values, fields: freezePresentation(config.data.fields), ports: freezePresentation(portGraph.value.nodes[0]!.ports),
+    const values = freezePresentation(config.values as PresentationValues);
+    const resolvedConfig = freezePresentationContainer({values, fields: freezePresentation(config.fields), ports: freezePresentation(portGraph.value.nodes[0]!.ports),
       operations: freezePresentation(enabled)});
     let quality: PresentationQuality | undefined;
     if (m.assess !== undefined) {
@@ -488,18 +530,26 @@ export function validatePreparedPresentationPlan(
     nodeIdentityMemo?.set(node as object, resolvedNode);
     if (memoKey !== undefined) nodeMemo?.set(memoKey, resolvedNode);
   }
-  const byId = new Map(resolved.map(n => [n.node.id, n]));
-  const coverageKey = coverageMemoKey(plan, byId, preparedCache.value);
-  let preparedCoverage = preparedCache.value.coverageAnalyses.get(coverageKey);
+  let byId: Map<string, ResolvedPresentationNode> | undefined;
+  const coverageRefs = coverageNodes(plan, resolved, tree.value);
+  let coverageVariants = preparedCache.value.coverageAnalyses.get(plan.coverage as object);
+  let preparedCoverage = coverageVariants?.find(entry => entry.nodes.length === coverageRefs.length
+    && entry.nodes.every((node, index) => node === coverageRefs[index]))?.outcome;
   if (preparedCoverage === undefined) {
+    byId = new Map(resolved.map(n => [n.node.id, n]));
     preparedCoverage = prepareCoverage(plan, byId, preparedCache.value);
-    preparedCache.value.coverageAnalyses.set(coverageKey, preparedCoverage);
+    const entry = {nodes: coverageRefs, outcome: preparedCoverage};
+    if (coverageVariants === undefined) {
+      coverageVariants = [entry];
+      preparedCache.value.coverageAnalyses.set(plan.coverage as object, coverageVariants);
+    } else coverageVariants.push(entry);
   }
   if (!preparedCoverage.ok) return preparedCoverage;
   const {coverage} = preparedCoverage.value;
   const hasPotentialComparison = [...coverage.values()].some(entry => entry.nodeIds.length > 1)
     || c.task.needs.some(need => need.simultaneousGroup !== undefined);
   if (hasPotentialComparison) {
+    byId ??= new Map(resolved.map(n => [n.node.id, n]));
     const groups = new Map<string, Set<string>>();
     for (const need of c.task.needs) {
       const entry = coverage.get(need.id);
