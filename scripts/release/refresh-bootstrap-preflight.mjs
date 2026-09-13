@@ -74,9 +74,14 @@ if (whoami !== NPM_OWNER || membership?.[NPM_OWNER] !== 'owner' || tfa?.tfa?.mod
   throw new Error(`Post-hold preflight requires ${NPM_OWNER} organization-owner authority and auth-and-writes 2FA`);
 }
 const visible = commandJson(['access', 'list', 'packages', NPM_ORG, '--json']);
-if (visible === null || typeof visible !== 'object' || Array.isArray(visible) || Object.keys(visible).length !== 0) {
+if (
+  visible === null ||
+  typeof visible !== 'object' ||
+  Array.isArray(visible) ||
+  Object.keys(visible).some((name) => !PUBLIC_PACKAGE_NAMES.includes(name))
+) {
   throw new Error(
-    'The organization is not empty after the owner-directed unpublish; inspect registry history before bootstrap',
+    'The organization contains an unexpected package after the owner-directed unpublish; inspect registry history before bootstrap',
   );
 }
 

@@ -31,7 +31,7 @@ const replies = {
   'whoami --json --registry https://registry.npmjs.org': 'arconath',
   'org ls aeliqo --json --registry https://registry.npmjs.org': {arconath: 'owner'},
   'profile get tfa --json --registry https://registry.npmjs.org': {tfa: {mode: 'auth-and-writes'}},
-  'access list packages aeliqo --json --registry https://registry.npmjs.org': {},
+  'access list packages aeliqo --json --registry https://registry.npmjs.org': {'@aeliqo/core': 'read-write'},
 };
 if (!(args in replies)) process.exit(2);
 console.log(JSON.stringify(replies[args]));
@@ -43,6 +43,9 @@ console.log(JSON.stringify(replies[args]));
       preload,
       `globalThis.fetch = async (url) => {
   if (!String(url).startsWith('https://registry.npmjs.org/%40aeliqo%2F')) throw new Error('Unexpected registry');
+  if (String(url) === 'https://registry.npmjs.org/%40aeliqo%2Fcore') {
+    return Response.json({_id: '@aeliqo/core', name: '@aeliqo/core', _rev: '5-deadbeef', time: {unpublished: {time: '2026-09-10T16:30:07.119Z', versions: ['0.2.0']}}});
+  }
   return new Response(null, {status: 404});
 };\n`,
     );
