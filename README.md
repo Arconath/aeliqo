@@ -176,7 +176,9 @@ apps/playground/   public interactive playground application
 ```
 
 The target split keeps docs and playground as separate source applications while
-allowing them to ship as one static image under `docs.aeliqo.com`. A future
+allowing them to ship as one static image under `docs.aeliqo.com` at `/` and
+`/playground/`. During migration, old `aeliqo.com/docs/*` and
+`aeliqo.com/playground/*` links should redirect or remain aliases. A future
 private Pro API, worker, billing logic or customer-data service belongs in the
 separate private `products/aeliqo-pro` repository; this public repository must
 not contain its credentials or proprietary server implementation.
