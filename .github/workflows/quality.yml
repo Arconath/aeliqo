@@ -151,7 +151,6 @@ jobs:
             artifacts/performance-browser
             artifacts/visual-catalog
             artifacts/release-candidate
-            harness/evidence/ci.json
             apps/site/artifacts
           if-no-files-found: warn
           retention-days: 7

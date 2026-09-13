@@ -104,6 +104,38 @@ def command_errors(root: Path) -> tuple[list[str],list[dict]]:
             errors.append('Command timeout must be 1..3600 seconds')
     return errors,commands
 
+def ci_evidence_errors(root: Path) -> list[str]:
+    errors=[]
+    deferred=performance_deferred(root)
+    digest=candidate_digest(root)
+    configured_ci=os.environ.get('AELIQO_CI_EVIDENCE_PATH')
+    ledger_path=safe_file(root,configured_ci) if configured_ci else root/'harness/evidence/ci.json'
+    try:
+        ci=load_json(ledger_path)
+        if ci.get('subjectSha256')!=digest or ci.get('status')!='pass':
+            errors.append('CI evidence is absent, failed or stale for this candidate')
+        required_kinds=KINDS-{'performance'} if deferred else KINDS
+        if deferred and ci.get('performanceQualification',{}).get('status')!='deferred':
+            errors.append('CI evidence must disclose owner-deferred performance')
+        if not required_kinds.issubset({r.get('kind') for r in ci.get('results',[]) if r.get('exitCode')==0}):
+            errors.append('CI evidence does not cover all required command kinds')
+        for result in ci.get('results',[]):
+            if result.get('status')=='deferred':
+                if not deferred or result.get('exitCode') is not None or result.get('argv') not in [['pnpm',name] for name in DEFERRED_MEASUREMENT_SCRIPTS]:
+                    errors.append('Invalid deferred CI result')
+                continue
+            errors+=artifact_errors(root,result.get('artifacts'),'CI '+str(result.get('kind')))
+    except (OSError,ValueError): errors.append('No actual CI command evidence')
+    return errors
+
+
+def publication_evidence_errors(root: Path) -> list[str]:
+    errors,_=validate(root)
+    cmd_errors,_=command_errors(root); errors+=cmd_errors
+    errors+=ci_evidence_errors(root)
+    return errors
+
+
 def readiness_errors(root: Path, mode: str) -> list[str]:
     errors,_=validate(root)
     cmd_errors,_=command_errors(root); errors+=cmd_errors
@@ -140,25 +172,8 @@ def readiness_errors(root: Path, mode: str) -> list[str]:
             errors.append(scenario['id']+': historical evidence cannot satisfy current readiness')
         if scenario.get('status')!='done': errors.append(scenario['id']+': scenario not passed')
         else: errors+=artifact_errors(root,scenario.get('evidence'),scenario['id'])
+    errors+=ci_evidence_errors(root)
     digest=candidate_digest(root)
-    configured_ci=os.environ.get('AELIQO_CI_EVIDENCE_PATH')
-    ledger_path=safe_file(root,configured_ci) if configured_ci else root/'harness/evidence/ci.json'
-    try:
-        ci=load_json(ledger_path)
-        if ci.get('subjectSha256')!=digest or ci.get('status')!='pass':
-            errors.append('CI evidence is absent, failed or stale for this candidate')
-        required_kinds=KINDS-{'performance'} if deferred else KINDS
-        if deferred and ci.get('performanceQualification',{}).get('status')!='deferred':
-            errors.append('CI evidence must disclose owner-deferred performance')
-        if not required_kinds.issubset({r.get('kind') for r in ci.get('results',[]) if r.get('exitCode')==0}):
-            errors.append('CI evidence does not cover all required command kinds')
-        for result in ci.get('results',[]):
-            if result.get('status')=='deferred':
-                if not deferred or result.get('exitCode') is not None or result.get('argv') not in [['pnpm',name] for name in DEFERRED_MEASUREMENT_SCRIPTS]:
-                    errors.append('Invalid deferred CI result')
-                continue
-            errors+=artifact_errors(root,result.get('artifacts'),'CI '+str(result.get('kind')))
-    except (OSError,ValueError): errors.append('No actual CI command evidence')
     try:
         integrated=load_json(root/'harness/evidence/integrated.json')
         if integrated.get('subjectSha256')!=digest:
@@ -231,10 +246,20 @@ def run_ci(root: Path) -> int:
 
 def main() -> int:
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('mode',choices=['ci','ready','release','digest'])
+    parser.add_argument('mode',choices=['ci','ci-evidence','ready','release','digest'])
     args=parser.parse_args()
     if args.mode=='digest': print(candidate_digest(ROOT)); return 0
     if args.mode=='ci': return run_ci(ROOT)
+    if args.mode=='ci-evidence':
+        try: errors=publication_evidence_errors(ROOT)
+        except (OSError,ValueError,KeyError,TypeError) as exc: errors=[str(exc)]
+        if errors:
+            print(f'CI EVIDENCE BLOCKED: {len(errors)} unmet conditions',file=sys.stderr)
+            for error in errors[:24]: print('- '+error,file=sys.stderr)
+            if len(errors)>24: print(f'- ... and {len(errors)-24} more',file=sys.stderr)
+            return 1
+        print('CI evidence structure, exact source identity and artifact hashes pass.')
+        return 0
     try: errors=readiness_errors(ROOT,args.mode)
     except (OSError,ValueError,KeyError,TypeError) as exc: errors=[str(exc)]
     if errors:

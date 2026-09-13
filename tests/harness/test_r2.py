@@ -1,6 +1,6 @@
 """Regression tests for Master consolidation harness gaps; not product/CI attestation."""
 from __future__ import annotations
-import copy,io,json,os,sys,tempfile,time,unittest
+import copy,hashlib,io,json,os,sys,tempfile,time,unittest
 from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
@@ -8,7 +8,7 @@ ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'scripts'))
 from common import candidate_digest,dag_errors,load_json
 from check_ownership import canonical_lease,ownership_errors
-from gate import DEFERRED_MEASUREMENT_SCRIPTS,readiness_errors,command_errors,run_ci,run_logged_command
+from gate import DEFERRED_MEASUREMENT_SCRIPTS,ci_evidence_errors,readiness_errors,command_errors,run_ci,run_logged_command
 from next_tasks import choose
 
 class EvidenceFreshnessTests(unittest.TestCase):
@@ -86,6 +86,20 @@ class GateRegressionTests(unittest.TestCase):
             self.assertEqual(report['status'],'pass')
             self.assertEqual(len(report['results']),len(commands))
             self.assertTrue(all(result['exitCode']==0 for result in report['results']))
+    def test_publication_accepts_only_exact_external_ci_artifacts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);(root/'harness').mkdir()
+            proof=root/'artifacts/product-ci/00-unit.log';proof.parent.mkdir(parents=True);proof.write_text('passed')
+            policy={'status':'deferred','ownerDecision':'2026-09-13'}
+            kinds=['typecheck','lint','unit','browser','packages','security','boundaries']
+            ledger=root/'artifacts/product-ci/ci.json'
+            ledger.write_text(json.dumps({'subjectSha256':'c'*64,'status':'pass','performanceQualification':policy,
+                'results':[{'kind':kind,'exitCode':0,'artifacts':[{'path':'artifacts/product-ci/00-unit.log','sha256':hashlib.sha256(proof.read_bytes()).hexdigest()}]} for kind in kinds]}))
+            (root/'harness/product-commands.json').write_text(json.dumps({'commands':[],'performanceQualification':policy}))
+            with patch.dict(os.environ,{'AELIQO_CI_EVIDENCE_PATH':'artifacts/product-ci/ci.json'}),patch('gate.candidate_digest',return_value='c'*64):
+                self.assertEqual(ci_evidence_errors(root),[])
+                proof.write_text('changed')
+                self.assertTrue(any('missing/mismatching artifact' in error for error in ci_evidence_errors(root)))
     def test_owner_deferred_performance_is_not_executed_in_ci(self):
         commands=load_json(ROOT/'harness/product-commands.json')['commands']
         self.assertEqual(len(commands),89)
