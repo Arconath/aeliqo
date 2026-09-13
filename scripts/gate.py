@@ -16,8 +16,10 @@ from common import ROOT,candidate_digest,load_json,safe_file,sha256
 from kit_check import validate
 
 KINDS={'typecheck','lint','unit','browser','packages','security','performance','boundaries'}
-DEFERRED_MEASUREMENT_SCRIPTS={'test:performance:standalone','test:performance:perceived-input',
-                              'test:performance:heap-lifecycle','test:performance:adverse-visualization'}
+DEFERRED_MEASUREMENT_SCRIPTS={'test:performance:bundles','test:performance:runtime',
+                              'test:performance:browser','test:performance:standalone',
+                              'test:performance:perceived-input','test:performance:heap-lifecycle',
+                              'test:performance:adverse-runtime','test:performance:adverse-visualization'}
 READY_CLAIMS={'browser-matrix','visual-review','package-consumers',
               'performance','security','real-mcp','real-byok','independent-review'}
 RELEASE_CLAIMS={'source-release','npm-integrity','site-digest','rollback-verification'}

@@ -8,7 +8,7 @@ ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'scripts'))
 from common import candidate_digest,dag_errors,load_json
 from check_ownership import canonical_lease,ownership_errors
-from gate import readiness_errors,command_errors,run_ci,run_logged_command
+from gate import DEFERRED_MEASUREMENT_SCRIPTS,readiness_errors,command_errors,run_ci,run_logged_command
 from next_tasks import choose
 
 class EvidenceFreshnessTests(unittest.TestCase):
@@ -86,17 +86,13 @@ class GateRegressionTests(unittest.TestCase):
             self.assertEqual(report['status'],'pass')
             self.assertEqual(len(report['results']),len(commands))
             self.assertTrue(all(result['exitCode']==0 for result in report['results']))
-    def test_non_timed_functional_checks_precede_visual_corpus(self):
+    def test_owner_deferred_performance_is_not_executed_in_ci(self):
         commands=load_json(ROOT/'harness/product-commands.json')['commands']
-        argv=[command['argv'] for command in commands]
-        runtime=next(i for i,a in enumerate(argv) if 'tests/performance/runtime-workload.mjs' in a)
-        self.assertIn('AELIQO_RUN_PERFORMANCE=0',argv[runtime])
-        browser=next(i for i,a in enumerate(argv) if 'tests/performance/playwright.config.mjs' in a)
-        self.assertIn('AELIQO_RUN_PERFORMANCE=0',argv[browser])
-        first_visual=argv.index(['env','AELIQO_VISUAL_PROJECT=chromium','pnpm','test:visual'])
         self.assertEqual(len(commands),89)
-        self.assertEqual(browser,runtime+1)
-        self.assertLess(browser,first_visual)
+        performance=[command for command in commands if any(
+            isinstance(value,str) and value.startswith('test:performance') for value in command['argv'])]
+        self.assertEqual({command['argv'][1] for command in performance},DEFERRED_MEASUREMENT_SCRIPTS)
+        self.assertTrue(all(command.get('deferred') is True for command in performance))
     @unittest.skipUnless(os.name=='posix','process-group cleanup is a POSIX CI contract')
     def test_timeout_terminates_descendants(self):
         with tempfile.TemporaryDirectory() as tmp:

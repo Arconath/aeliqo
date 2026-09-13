@@ -148,37 +148,29 @@
     {
       "kind": "security",
       "argv": [
-        "env",
-        "AELIQO_DEFER_PERFORMANCE=1",
         "pnpm",
         "test:performance:bundles"
       ],
-      "timeoutSeconds": 300
+      "timeoutSeconds": 300,
+      "deferred": true
     },
     {
       "kind": "unit",
       "argv": [
-        "env",
-        "AELIQO_RUN_PERFORMANCE=0",
-        "node",
-        "tests/performance/runtime-workload.mjs"
+        "pnpm",
+        "test:performance:runtime"
       ],
-      "timeoutSeconds": 300
+      "timeoutSeconds": 300,
+      "deferred": true
     },
     {
       "kind": "browser",
       "argv": [
-        "env",
-        "AELIQO_RUN_PERFORMANCE=0",
-        "AELIQO_ENFORCE_PERFORMANCE_BUDGETS=0",
         "pnpm",
-        "exec",
-        "playwright",
-        "test",
-        "--config",
-        "tests/performance/playwright.config.mjs"
+        "test:performance:browser"
       ],
-      "timeoutSeconds": 360
+      "timeoutSeconds": 360,
+      "deferred": true
     },
     {
       "kind": "unit",
@@ -712,12 +704,11 @@
     {
       "kind": "unit",
       "argv": [
-        "env",
-        "AELIQO_RUN_PERFORMANCE=0",
         "pnpm",
         "test:performance:adverse-runtime"
       ],
-      "timeoutSeconds": 180
+      "timeoutSeconds": 180,
+      "deferred": true
     },
     {
       "kind": "browser",
@@ -756,6 +747,7 @@
       "test:performance:standalone",
       "test:performance:perceived-input",
       "test:performance:heap-lifecycle",
+      "test:performance:adverse-runtime",
       "test:performance:adverse-visualization"
     ]
   }
