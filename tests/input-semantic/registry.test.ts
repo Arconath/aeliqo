@@ -1,6 +1,9 @@
 import {describe, expect, it} from "vitest";
 import {createInputPresentationManifests, type AeliqoInputBinding, type AeliqoInputBindings, type AeliqoInputDraftBinding} from "../../packages/web/src/region/input-registry.js";
-import type {SemanticType} from "../../packages/core/src/index.js";
+import {validatePresentationPlan, type PresentationContext, type PresentationPlan, type Result, type SemanticType} from "../../packages/core/src/index.js";
+import {freezePresentation} from "../../packages/core/src/presentation/registry.js";
+import {createAeliqoPresentationRegistry} from "../../packages/web/src/region/registry.js";
+import {environment, experience, presentationPlan, presentationTask, result} from "../contracts/fixtures.js";
 
 const textType: SemanticType = {value: "text", nullable: false};
 const numberType: SemanticType = {value: "float", nullable: false, unit: {dimension: "temperature", symbol: "degC"}};
@@ -22,6 +25,91 @@ function bindings(overrides: Partial<AeliqoInputBindings["inputs"][number]>[] = 
 }
 
 describe("semantic input registry", () => {
+  it("preserves frozen stack values while keeping mutable and frozen validation equivalent", () => {
+    const created = createAeliqoPresentationRegistry();
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const stack = created.value.manifests.find((manifest) => manifest.ref.id === "layout.stack");
+    expect(stack).toBeDefined();
+    if (stack === undefined) return;
+
+    const frozenValues = Object.freeze({gap: 12});
+    const frozen = stack.resolveConfig(frozenValues, undefined);
+    const mutable = stack.resolveConfig({gap: 12}, undefined);
+    expect(frozen.ok).toBe(true);
+    expect(mutable.ok).toBe(true);
+    if (!frozen.ok || !mutable.ok) return;
+    expect(frozen.value.values).toBe(frozenValues);
+    expect(frozen.value).toEqual(mutable.value);
+
+    const current = {...presentationPlan.preconditions, results: []};
+    const plan: PresentationPlan = {...presentationPlan, preconditions: current, rootId: "stack", nodes: [{
+      id: "stack", role: "structure", representation: stack.ref,
+      config: {schema: stack.configSchema, values: {gap: 12}}, children: [],
+    }], coverage: []};
+    const context: PresentationContext = {
+      task: {...presentationTask, inputs: [], needs: []},
+      experience: {...experience, mode: "composable", allowedRepresentations: [stack.ref.id]},
+      results: [], current, environment, rendererCapabilities: [stack.ref],
+    };
+    const checked = validatePresentationPlan(plan, context, created.value);
+    expect(checked.ok).toBe(true);
+    if (!checked.ok) return;
+    expect(checked.value.nodes[0]!.config.values).toBe(checked.value.plan.nodes[0]!.config.values);
+    expect(checked.value.nodes[0]!.config.values).toEqual({gap: 12});
+    expect(Object.isFrozen(checked.value.nodes[0]!.config.values)).toBe(true);
+  });
+
+  it("shares the default nonselectable table resolution only within one registry", () => {
+    const descriptor = freezePresentation(structuredClone(result)) as Result;
+    const firstRegistry = createAeliqoPresentationRegistry();
+    const secondRegistry = createAeliqoPresentationRegistry();
+    expect(firstRegistry.ok).toBe(true);
+    expect(secondRegistry.ok).toBe(true);
+    if (!firstRegistry.ok || !secondRegistry.ok) return;
+    const firstTable = firstRegistry.value.manifests.find((manifest) => manifest.ref.id === "data.table")!;
+    const secondTable = secondRegistry.value.manifests.find((manifest) => manifest.ref.id === "data.table")!;
+
+    const first = firstTable.resolveConfig({}, descriptor);
+    const repeated = firstTable.resolveConfig({}, descriptor);
+    const explicitNone = firstTable.resolveConfig({selection: "none"}, descriptor);
+    const separateRegistry = secondTable.resolveConfig({}, descriptor);
+    expect(first.ok).toBe(true);
+    expect(repeated).toBe(first);
+    expect(explicitNone).toBe(first);
+    expect(separateRegistry.ok).toBe(true);
+    expect(separateRegistry).not.toBe(first);
+    expect(firstTable.resolveConfig({unknown: true}, descriptor).ok).toBe(false);
+    expect(firstTable.resolveConfig({columns: []}, descriptor).ok).toBe(false);
+    expect(firstTable.resolveConfig({identity: []}, descriptor).ok).toBe(false);
+
+    const shallowDescriptor = Object.freeze(structuredClone(result)) as Result;
+    expect(firstTable.resolveConfig({}, shallowDescriptor)).not.toBe(firstTable.resolveConfig({}, shallowDescriptor));
+    const decoratedDescriptor = structuredClone(result);
+    Object.defineProperty(decoratedDescriptor.fields, "metadata", {value: true, enumerable: true});
+    const frozenDecorated = freezePresentation(decoratedDescriptor) as Result;
+    expect(firstTable.resolveConfig({}, frozenDecorated)).not.toBe(firstTable.resolveConfig({}, frozenDecorated));
+  });
+
+  it("does not cache selectable table resolution or skip trusted entity lookup", () => {
+    let entityCalls = 0;
+    const created = createAeliqoPresentationRegistry({resolveEntity: () => {
+      entityCalls++;
+      return "employees";
+    }});
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const table = created.value.manifests.find((manifest) => manifest.ref.id === "data.table")!;
+    const descriptor = freezePresentation(structuredClone(result)) as Result;
+
+    const first = table.resolveConfig({selection: "single"}, descriptor);
+    const second = table.resolveConfig({selection: "single"}, descriptor);
+    expect(first.ok).toBe(true);
+    expect(second.ok).toBe(true);
+    expect(second).not.toBe(first);
+    expect(entityCalls).toBe(2);
+  });
+
   it("registers all 15 primitives and resolves only host-owned binding values", () => {
     const result = createInputPresentationManifests(bindings());
     expect(result.ok).toBe(true);

@@ -47,6 +47,7 @@ jobs:
           package-manager-cache: false
       - name: Install pinned package manager and dependencies
         run: |
+          echo "AELIQO_BUILD_REUSE_DIRECTORY=$RUNNER_TEMP/aeliqo-platform-build-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
           npm install --global pnpm@11.24.0
           pnpm install --frozen-lockfile
           pnpm exec playwright install --with-deps chromium

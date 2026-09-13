@@ -72,13 +72,13 @@ jobs:
           corepack prepare pnpm@11.24.0 --activate
           pnpm install --frozen-lockfile
           pnpm exec playwright install --with-deps chromium firefox webkit
+      - name: Run the complete product command ledger
+        run: pnpm check
       - name: Build the exact public package candidate and documentation contract
         run: |
           pnpm test:release-tooling
           node scripts/release/candidate.mjs
           pnpm test:docs-artifact
-      - name: Run the complete product command ledger
-        run: pnpm check
       - name: Upload source-bound product evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
