@@ -70,6 +70,9 @@ export interface PresentationValidationCache {
   readonly taskOutputs: ReadonlyMap<string, Extract<Task, {kind: 'data'}>['outputs'][number]>;
   readonly nodeGraphs: Map<string, Outcome<InteractionGraph>>;
   readonly presentationGraphs: Map<string, Outcome<InteractionGraph>>;
+  readonly emptyGraphs: Map<string, InteractionGraph>;
+  readonly graphPortIds: WeakMap<object, number>;
+  nextGraphPortId: number;
   readonly coverageIds: WeakMap<object, number>;
   readonly coverageAnalyses: Map<string, Outcome<PresentationCoverageAnalysis>>;
   /** Read-set outcomes are reusable only for frozen plans in this invocation. */
@@ -140,7 +143,8 @@ export function preparePresentationValidationCache(
     resultFields, resultsByRef,
     taskInputs: new Set(prepared.task.kind === 'presentation' ? prepared.task.inputs.map(refKey) : []),
     taskNeeds: new Map(prepared.constraints.taskNeeds.map(need => [need.id, need])), taskOutputs,
-    nodeGraphs: new Map(), presentationGraphs: new Map(), coverageIds: new WeakMap(), coverageAnalyses: new Map(),
+    nodeGraphs: new Map(), presentationGraphs: new Map(), emptyGraphs: new Map(), graphPortIds: new WeakMap(), nextGraphPortId: 0,
+    coverageIds: new WeakMap(), coverageAnalyses: new Map(),
     readSetReferences: new WeakMap(), readSetOutcomes: new WeakMap(), treeEntries: [], nextReadSetReference: 0, nextCoverageId: 0,
   }};
 }
@@ -548,10 +552,31 @@ export function validatePreparedPresentationPlan(
         return fail('state-transfer', 'This state transfer has no exact registered renderer capability.');
     }
   } else if (plan.stateTransfer.length) return fail('state-transfer', 'State transfer requires an existing presentation.');
-  const graphInput = {nodes: resolved.map(n => ({id: n.node.id, ports: n.config.ports})), links: plan.links};
   let graph: Outcome<InteractionGraph>;
-  if (plan.links.length === 0) graph = {ok: true, value: freezePresentation({nodes: graphInput.nodes, links: [], mappings: []})};
+  if (plan.links.length === 0) {
+    // Ports are already validated and recursively owned. A graph with no links
+    // depends only on their identities and the ordered node IDs, not layout
+    // configuration. Reuse it within this invocation without allocating and
+    // freezing every graph node again for otherwise equivalent candidates.
+    const cache = preparedCache.value;
+    let graphKey = '';
+    for (const node of resolved) {
+      let portId = cache.graphPortIds.get(node.config.ports);
+      if (portId === undefined) {
+        portId = ++cache.nextGraphPortId;
+        cache.graphPortIds.set(node.config.ports, portId);
+      }
+      graphKey += `${JSON.stringify(node.node.id)}:${portId},`;
+    }
+    let value = cache.emptyGraphs.get(graphKey);
+    if (value === undefined) {
+      value = freezePresentation({nodes: resolved.map(n => ({id: n.node.id, ports: n.config.ports})), links: [], mappings: []});
+      cache.emptyGraphs.set(graphKey, value);
+    }
+    graph = {ok: true, value};
+  }
   else {
+    const graphInput = {nodes: resolved.map(n => ({id: n.node.id, ports: n.config.ports})), links: plan.links};
     const graphKey = canonicalJSON(graphInput); const cachedGraph = preparedCache.value.presentationGraphs.get(graphKey);
     graph = cachedGraph ?? validateInteractionGraph(graphInput, registry.mappings);
     if (cachedGraph === undefined) preparedCache.value.presentationGraphs.set(graphKey, graph);
