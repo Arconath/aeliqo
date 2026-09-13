@@ -1,0 +1,7 @@
+overrides:
+  '@aeliqo/agent': file:vendor/packages/aeliqo-agent-0.1.0-rc.2.tgz
+  '@aeliqo/core': file:vendor/packages/aeliqo-core-0.1.0-rc.2.tgz
+  '@aeliqo/devtools': file:vendor/packages/aeliqo-devtools-0.1.0-rc.2.tgz
+  '@aeliqo/react': file:vendor/packages/aeliqo-react-0.1.0-rc.2.tgz
+  '@aeliqo/runtime': file:vendor/packages/aeliqo-runtime-0.1.0-rc.2.tgz
+  '@aeliqo/web': file:vendor/packages/aeliqo-web-0.1.0-rc.2.tgz

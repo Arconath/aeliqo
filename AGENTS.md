@@ -48,11 +48,13 @@ Never count planned, skipped-required, synthetic, stale, or unreviewed evidence
 as a pass. `python3 scripts/validate_all.py` validates the retained spec kit;
 `pnpm check` runs product gates.
 
-Public documentation source, API metadata, examples, packages, Studio, and SDK
-tests stay here. The website shell, site tests, static server/container, and
-website deployment live in private `Arconath/aeliqo-site`; OSS builds and GitHub
-Actions must not require that repository, its token, or private runners. See
-`docs/repository-split.md`.
+Public documentation source, API metadata, examples, packages, Studio, SDK
+tests, the website shell, playground, site tests, static server/container, and
+website delivery configuration all live in this public repository. The website
+workspace is isolated under `apps/site` so its exact vendored release input can
+still be checked independently. Public pull requests run only on GitHub-hosted
+runners and receive no release credentials. See `docs/repository-split.md` for
+the historical split and the 13 September 2026 reunification decision.
 
 Release `0.1.0` only from exact reviewed source through audited tarballs,
 non-`latest` RC tags, verified registry consumers, and explicit promotion. npm
