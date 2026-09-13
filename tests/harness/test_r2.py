@@ -1,6 +1,7 @@
 """Regression tests for Master consolidation harness gaps; not product/CI attestation."""
 from __future__ import annotations
-import copy,json,os,sys,tempfile,time,unittest
+import copy,io,json,os,sys,tempfile,time,unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 ROOT=Path(__file__).resolve().parents[2]
@@ -63,8 +64,10 @@ class GateRegressionTests(unittest.TestCase):
             commands=self.ci_commands(fail)
             commands[1]['argv']=[sys.executable,'-c',f'from pathlib import Path;Path({str(marker)!r}).write_text("ran")']
             (root/'harness/product-commands.json').write_text(json.dumps({'commands':commands}))
-            with patch('gate.validate',return_value=([],{})),patch('gate.candidate_digest',return_value='a'*64):
+            output=io.StringIO()
+            with patch('gate.validate',return_value=([],{})),patch('gate.candidate_digest',return_value='a'*64),redirect_stdout(output):
                 self.assertEqual(run_ci(root),1)
+            self.assertRegex(output.getvalue(),r'^boundaries: exit 7 \(\d+\.\d{3}s\)\n$')
             report=load_json(root/'harness/evidence/ci.json')
             self.assertEqual(report['status'],'fail')
             self.assertEqual([result['exitCode'] for result in report['results']],[7])
@@ -74,8 +77,11 @@ class GateRegressionTests(unittest.TestCase):
             root=Path(tmp);(root/'harness').mkdir()
             commands=self.ci_commands([sys.executable,'-c','pass'])
             (root/'harness/product-commands.json').write_text(json.dumps({'commands':commands}))
-            with patch('gate.validate',return_value=([],{})),patch('gate.candidate_digest',return_value='b'*64):
+            output=io.StringIO()
+            with patch('gate.validate',return_value=([],{})),patch('gate.candidate_digest',return_value='b'*64),redirect_stdout(output):
                 self.assertEqual(run_ci(root),0)
+            self.assertEqual([line.split(':',1)[0] for line in output.getvalue().splitlines()],
+                             sorted({'typecheck','lint','unit','browser','packages','security','performance','boundaries'}))
             report=load_json(root/'harness/evidence/ci.json')
             self.assertEqual(report['status'],'pass')
             self.assertEqual(len(report['results']),len(commands))
@@ -129,13 +135,12 @@ class GateRegressionTests(unittest.TestCase):
         errs=readiness_errors(ROOT,'ready')
         for identifier in ('T27','S30','S31','S63'):
             self.assertIn(identifier+': historical evidence cannot satisfy current readiness',errs)
-if __name__=='__main__':unittest.main()
-
 class OwnerPerformanceDeferralTests(unittest.TestCase):
     def test_only_explicit_owner_policy_relaxes_performance_kind(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);(root/'harness').mkdir()
-            commands=[{'kind':kind,'argv':[sys.executable,'-c','pass']} for kind in ['typecheck','lint','unit','browser','packages','security','boundaries']]
+            kinds=['typecheck','lint','unit','browser','packages','security','boundaries']
+            commands=[{'kind':kind,'argv':[sys.executable,'-c','pass']} for kind in kinds]
             path=root/'harness/product-commands.json'
             path.write_text(json.dumps({'commands':commands}))
             self.assertTrue(command_errors(root)[0])
@@ -143,8 +148,10 @@ class OwnerPerformanceDeferralTests(unittest.TestCase):
             commands.append({'kind':'browser','argv':['pnpm','test:performance:heap-lifecycle'],'deferred':True})
             path.write_text(json.dumps({'commands':commands,'performanceQualification':policy}))
             self.assertFalse(command_errors(root)[0])
-            with patch('gate.validate',return_value=([],{})),patch('gate.candidate_digest',return_value='d'*64):
+            output=io.StringIO()
+            with patch('gate.validate',return_value=([],{})),patch('gate.candidate_digest',return_value='d'*64),redirect_stdout(output):
                 self.assertEqual(run_ci(root),0)
+            self.assertEqual([line.split(':',1)[0] for line in output.getvalue().splitlines()],kinds)
             report=load_json(root/'harness/evidence/ci.json')
             self.assertEqual(report['performanceQualification']['status'],'deferred')
             self.assertEqual(report['results'][-1]['status'],'deferred')
@@ -178,3 +185,5 @@ class OwnerPerformanceDeferralTests(unittest.TestCase):
                 self.assertEqual(readiness_errors(root,'ready'),[])
                 integrated.write_text(json.dumps({'subjectSha256':'e'*64,'claims':[claim for claim in claims if claim['name']!='security']}))
                 self.assertIn('Missing passing integrated evidence: security',readiness_errors(root,'ready'))
+
+if __name__=='__main__':unittest.main()
