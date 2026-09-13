@@ -93,6 +93,10 @@ importers:
         specifier: 3.5.42
         version: 3.5.42(typescript@7.0.2)
 
+  apps/docs: {}
+
+  apps/playground: {}
+
   apps/studio:
     dependencies:
       '@aeliqo/core':
@@ -111,6 +115,8 @@ importers:
       vite:
         specifier: 8.2.2
         version: 8.2.2(@types/node@24.13.3)
+
+  apps/web: {}
 
   examples/catalog:
     dependencies:

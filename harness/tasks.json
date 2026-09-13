@@ -919,14 +919,14 @@
       "status": "done",
       "stage": "ready",
       "evidenceScope": "historical-pre-split-site-acceptance",
-      "currentDeliveryOwner": "private Arconath/aeliqo-site repository; this public repository owns the verified docs input artifact",
+      "currentDeliveryOwner": "public Arconath/aeliqo repository apps/site workspace",
       "evidence": [
         {
           "path": "harness/evidence/t27/3edaa47d2bb2/manifest.json",
           "sha256": "714b16dfd93142d3f1f4d89506843caa89f44703d6b4a50323b2cb93850cad16"
         }
       ],
-      "notes": "Historical pre-split acceptance only: accepted after independent clean-install29ac210 review and fresh c55a9a9 sourcecopyconsumer:71actualpackage renders match,3exampletests+strict,6site+strict,5browserroutes/journeys. The accepted apps/site and apps/playground paths were subsequently extracted; this frozen manifest does not certify current public source. Current public ownership is the verified docs input artifact, while live site UI and deployment evidence are owned by the private Arconath/aeliqo-site repository. No npm publication/live-model/manualAT/performance claim.",
+      "notes": "Historical pre-split acceptance only: accepted after independent clean-install29ac210 review and fresh c55a9a9 sourcecopyconsumer:71actualpackage renders match,3exampletests+strict,6site+strict,5browserroutes/journeys. The frozen manifest does not certify the reunited apps/site source. Current website, docs and playground source lives in this public repository; package publication, site image publication, GitOps promotion and live runtime evidence remain separate. No npm publication/live-model/manualAT/performance claim.",
       "review": {
         "status": "approved",
         "author": "release_inventory site/docs; root integration/fixes",

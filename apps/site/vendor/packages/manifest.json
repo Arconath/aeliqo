@@ -1,0 +1,63 @@
+{
+  "schema": "aeliqo.release-candidate.v1",
+  "sourceRevision": "fb16bc90965b117f77d7c09974eecdedf26d2f6a",
+  "version": "0.1.0-rc.2",
+  "publishOrder": [
+    "@aeliqo/core",
+    "@aeliqo/runtime",
+    "@aeliqo/web",
+    "@aeliqo/agent",
+    "@aeliqo/devtools",
+    "@aeliqo/react"
+  ],
+  "packages": [
+    {
+      "name": "@aeliqo/core",
+      "version": "0.1.0-rc.2",
+      "file": "aeliqo-core-0.1.0-rc.2.tgz",
+      "sha256": "bc07c724859dd8a9f16f327cfbf78364d76a89a980f9c0266eb6c4403dcc0542",
+      "integrity": "sha512-PzanB3q3l+ByvlkjHlRFRQ0E9fzq5QFfJN2SqR7nkE7LuFdKFcKI9EMMVK07oSfxtula8l/IXu4btak5bis3Ig==",
+      "bytes": 183850
+    },
+    {
+      "name": "@aeliqo/runtime",
+      "version": "0.1.0-rc.2",
+      "file": "aeliqo-runtime-0.1.0-rc.2.tgz",
+      "sha256": "0d9080e18c14cf94618f2f220c4db7d3e7db0a405ad5238d3ad21f6d32d35b76",
+      "integrity": "sha512-zKksDVndtKt8Q9pFTwxbQGmRccnoib6sTIWzoVyIvkxeA6r/RKz2ygsP/GHQl4F0ywRusElKxJeDBhUSyn6GYQ==",
+      "bytes": 228488
+    },
+    {
+      "name": "@aeliqo/web",
+      "version": "0.1.0-rc.2",
+      "file": "aeliqo-web-0.1.0-rc.2.tgz",
+      "sha256": "a24d73bc15c0780ae065a3694e25b6df79a46f54af92b3bc07f7115a48f60580",
+      "integrity": "sha512-TbU2JwLjWwuvYwpxsBG4Gt0zGPF4YnHfV18nrUy3py1wsXCq248Wm+MmAS0EbX9PTLd+rw2PMkGmTDrZa3Uxqg==",
+      "bytes": 408345
+    },
+    {
+      "name": "@aeliqo/agent",
+      "version": "0.1.0-rc.2",
+      "file": "aeliqo-agent-0.1.0-rc.2.tgz",
+      "sha256": "714773e6117b82605cb725f15ad0f2248078006013abe6bcf9277f8f2c4e846b",
+      "integrity": "sha512-5NGA6fJ6j/mNm7sM+GO7kAPgEtbKqhobnVaZ3EuJ24HtYieu7UDYHM6oWSaHzwo5ciToVPfsQBLR/Ddzlr0AmQ==",
+      "bytes": 125774
+    },
+    {
+      "name": "@aeliqo/devtools",
+      "version": "0.1.0-rc.2",
+      "file": "aeliqo-devtools-0.1.0-rc.2.tgz",
+      "sha256": "b541a6fe23e66a9b0ba8a3f6875c70b0dd0cd916d373a8d8dded22732341067b",
+      "integrity": "sha512-/SlwfNSwxbw8Adn6hNUYy5FI1sos6WvzDLUFoqXtsvUGksGCD0nu+tmBCpsx9k5BpCdvWi9IndQiNkMYo4uKRA==",
+      "bytes": 21156
+    },
+    {
+      "name": "@aeliqo/react",
+      "version": "0.1.0-rc.2",
+      "file": "aeliqo-react-0.1.0-rc.2.tgz",
+      "sha256": "b8f13b4e2735837f110ee12179ffdd285b3aac3517ecd88827e5e94bb18dcf20",
+      "integrity": "sha512-XcelpIQEAKau9f5Z133PjT9YJZH4XuCItU6fDFzhggHKTHfkPsfBjuQOqIWMkXPTdFrtowOfNJCWMlLoNxqb/w==",
+      "bytes": 15231
+    }
+  ]
+}

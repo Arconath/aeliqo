@@ -1,0 +1,12 @@
+node_modules/
+dist/
+artifacts/
+coverage/
+.env
+.env.*
+*.local.json
+playwright-report/
+test-results/
+*.tsbuildinfo
+.vitest/
+.DS_Store

@@ -100,10 +100,10 @@ workspace source.
 Start with the [platform examples](examples/platform/README.md), the
 [end-to-end vertical slice](examples/vertical-slice/README.md), or the
 [synthetic ADC host](examples/reference-host/README.md). Public documentation
-source, API metadata, and runnable catalog examples remain in this repository.
-The marketing/docs presentation shell and its deployment live separately in the
-private `Arconath/aeliqo-site` repository and are not required to build or test
-the SDK.
+source, API metadata, runnable catalog examples, the docs website and playground
+all live in this repository. The deployable static site is isolated under
+[`apps/site`](apps/site/README.md); package publication, site-image publication
+and GitOps promotion remain separately authorized and verified effects.
 
 ## Development
 
@@ -125,10 +125,10 @@ results; Node and browser planner budgets run before the visual corpus. A
 successful run still executes every command. `python3 scripts/validate_all.py` validates the retained
 specification/reference kit; it is not a substitute for product tests. Public
 pull requests run on GitHub-hosted GitHub Actions with read-only repository
-permission and no private-site or production credential.
+permission and no site-release or production credential.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [the technical chapter map](docs/README.md),
-and [the repository split contract](docs/repository-split.md). The concise
+and [the repository reunification record](docs/repository-split.md). The concise
 [AGENTS.md](AGENTS.md) preserves contributor boundaries and points to the
 canonical product contracts.
 
@@ -153,7 +153,7 @@ lockfile or deployment.
 ## Security, license, and product boundary
 
 Report vulnerabilities through [SECURITY.md](SECURITY.md). Never put provider,
-npm, GitHub, private-site, or application credentials into client bundles,
+npm, GitHub, site-release, or application credentials into client bundles,
 examples, logs, or issues. Aeliqo has no mandatory account, license callback,
 safety paywall, or artificial paid row cap.
 
@@ -162,3 +162,22 @@ local Studio/devtools, testkit source, and agent plumbing—is Apache-2.0. Futur
 hosted organizational operations or support are a separate business hypothesis,
 not functionality or customer demand claimed by 0.1.0. See the
 [OSS/commercial boundary](docs/business/oss-commercial-boundary.md).
+
+## Application boundaries
+
+The public applications have separate source ownership and assemble into one
+static artifact through the retained `apps/site` build and delivery shell:
+
+```text
+apps/web/          public product and marketing web
+apps/docs/         public documentation application
+apps/playground/   public interactive playground application
+```
+
+The split keeps docs and playground as separate source applications while
+allowing them to ship as one static image under `docs.aeliqo.com` at `/` and
+`/playground/`. During migration, old `aeliqo.com/docs/*` and
+`aeliqo.com/playground/*` links should redirect or remain aliases. A future
+private Pro API, worker, billing logic or customer-data service belongs in the
+separate private `products/aeliqo-pro` repository; this public repository must
+not contain its credentials or proprietary server implementation.

@@ -1,0 +1,1576 @@
+{
+  "schema": "aeliqo.public-docs-manifest.v1",
+  "docsVersion": "0.1.0-rc.2",
+  "source": {
+    "repository": "https://github.com/Arconath/aeliqo",
+    "revision": "fb16bc90965b117f77d7c09974eecdedf26d2f6a"
+  },
+  "sourceTree": "clean",
+  "packageVersions": {
+    "@aeliqo/agent": "0.1.0-rc.2",
+    "@aeliqo/core": "0.1.0-rc.2",
+    "@aeliqo/devtools": "0.1.0-rc.2",
+    "@aeliqo/react": "0.1.0-rc.2",
+    "@aeliqo/runtime": "0.1.0-rc.2",
+    "@aeliqo/web": "0.1.0-rc.2"
+  },
+  "artifact": {
+    "file": "aeliqo-public-docs-0.1.0-rc.2.json",
+    "sha256": "5d47295e906fa4659690ab733dfe479b0318edb69baca38ab03c17f6a879d7fd",
+    "bytes": 973326
+  },
+  "catalogFiles": [
+    {
+      "path": "catalog-examples/compound.ts",
+      "sha256": "7f3ab6c68f079cb3ef2820e1d52f660e14cea037c5732ed3a902ba5d11692639",
+      "bytes": 15380
+    },
+    {
+      "path": "catalog-examples/data.ts",
+      "sha256": "e4b7d5250375cab9aa35a7955973a3264b1b082788b798cc063a7a678ca5ff56",
+      "bytes": 14223
+    },
+    {
+      "path": "catalog-examples/feedback.ts",
+      "sha256": "cfb16381a60a3610d5f880debdece5c8b6b3efb13596e0b61f9b0f959fc7453b",
+      "bytes": 9705
+    },
+    {
+      "path": "catalog-examples/fixture.ts",
+      "sha256": "c668e8c9aa6dbeb616f546e3c8f6785e70597b0c9557e8f5482ac9a0a4f27da9",
+      "bytes": 10219
+    },
+    {
+      "path": "catalog-examples/foundation.ts",
+      "sha256": "307e6e9676f50267e20d9ee37f422ef5672b45d302e3bb628a6bb98c0b2c44ca",
+      "bytes": 11428
+    },
+    {
+      "path": "catalog-examples/index.ts",
+      "sha256": "3d2172f9d9b851d0deb06f5184020605575d70ad5a7afc6e4b56b2e626541831",
+      "bytes": 3434
+    },
+    {
+      "path": "catalog-examples/input.ts",
+      "sha256": "cdce8eb116b110944c341f6603d06fe95dfc5c1dffb8ffb7dcb55cece9b5c5a6",
+      "bytes": 16840
+    },
+    {
+      "path": "catalog-examples/navigation.ts",
+      "sha256": "1fb2d8d866fd0291bdbf6726223240a127f3902d0b479c7e985da205b265abe6",
+      "bytes": 7528
+    },
+    {
+      "path": "catalog-examples/source-snippets.ts",
+      "sha256": "9f5c46a93d22231903276d44bec5464dd273b0b1d13d61312c1345c541d58b61",
+      "bytes": 23062
+    },
+    {
+      "path": "catalog-examples/source.ts",
+      "sha256": "dbe5b4208e2fba5c391aa724dab89ae15a6b360c4f95d7813d7f3e90d6351dd3",
+      "bytes": 1724
+    },
+    {
+      "path": "catalog-examples/types.ts",
+      "sha256": "18f7e8fb7b0cad58687a9765f744bfdde0feb39e7ef9f75231ec451f137db0a2",
+      "bytes": 2221
+    },
+    {
+      "path": "catalog-examples/visualization.ts",
+      "sha256": "444a7feed04e4de6705ca8cd60b6bbc920203e94dce3f0963f5d7226ec6811b0",
+      "bytes": 22963
+    }
+  ],
+  "inputs": [
+    {
+      "path": "docs/public-site/content.mjs",
+      "sha256": "1cf618b57299bc46ff7f119f57039da36b40e8f575f7df559523971323ddcd9a",
+      "bytes": 25776
+    },
+    {
+      "path": "examples/catalog/compound.ts",
+      "sha256": "7f3ab6c68f079cb3ef2820e1d52f660e14cea037c5732ed3a902ba5d11692639",
+      "bytes": 15380
+    },
+    {
+      "path": "examples/catalog/data.ts",
+      "sha256": "e4b7d5250375cab9aa35a7955973a3264b1b082788b798cc063a7a678ca5ff56",
+      "bytes": 14223
+    },
+    {
+      "path": "examples/catalog/feedback.ts",
+      "sha256": "cfb16381a60a3610d5f880debdece5c8b6b3efb13596e0b61f9b0f959fc7453b",
+      "bytes": 9705
+    },
+    {
+      "path": "examples/catalog/fixture.ts",
+      "sha256": "c668e8c9aa6dbeb616f546e3c8f6785e70597b0c9557e8f5482ac9a0a4f27da9",
+      "bytes": 10219
+    },
+    {
+      "path": "examples/catalog/foundation.ts",
+      "sha256": "307e6e9676f50267e20d9ee37f422ef5672b45d302e3bb628a6bb98c0b2c44ca",
+      "bytes": 11428
+    },
+    {
+      "path": "examples/catalog/index.ts",
+      "sha256": "3d2172f9d9b851d0deb06f5184020605575d70ad5a7afc6e4b56b2e626541831",
+      "bytes": 3434
+    },
+    {
+      "path": "examples/catalog/input.ts",
+      "sha256": "cdce8eb116b110944c341f6603d06fe95dfc5c1dffb8ffb7dcb55cece9b5c5a6",
+      "bytes": 16840
+    },
+    {
+      "path": "examples/catalog/navigation.ts",
+      "sha256": "1fb2d8d866fd0291bdbf6726223240a127f3902d0b479c7e985da205b265abe6",
+      "bytes": 7528
+    },
+    {
+      "path": "examples/catalog/package.json",
+      "sha256": "6dfb114eac2714fa864ef999a1d0b2791f5025c26f492395339fceaf4dbcd7b1",
+      "bytes": 195
+    },
+    {
+      "path": "examples/catalog/source-snippets.ts",
+      "sha256": "9f5c46a93d22231903276d44bec5464dd273b0b1d13d61312c1345c541d58b61",
+      "bytes": 23062
+    },
+    {
+      "path": "examples/catalog/source.ts",
+      "sha256": "dbe5b4208e2fba5c391aa724dab89ae15a6b360c4f95d7813d7f3e90d6351dd3",
+      "bytes": 1724
+    },
+    {
+      "path": "examples/catalog/types.ts",
+      "sha256": "18f7e8fb7b0cad58687a9765f744bfdde0feb39e7ef9f75231ec451f137db0a2",
+      "bytes": 2221
+    },
+    {
+      "path": "examples/catalog/visualization.ts",
+      "sha256": "444a7feed04e4de6705ca8cd60b6bbc920203e94dce3f0963f5d7226ec6811b0",
+      "bytes": 22963
+    },
+    {
+      "path": "harness/components.json",
+      "sha256": "b31648989a4f1b5cd3611c9bb1595c8c09d2e7fc4d9c133d6d96ce422b6e4d51",
+      "bytes": 163699
+    },
+    {
+      "path": "packages/agent/package.json",
+      "sha256": "e2aa5829b26b4b08f2434adde758f42b7218167907374014934d055955c7ca2e",
+      "bytes": 1958
+    },
+    {
+      "path": "packages/core/package.json",
+      "sha256": "23aa7ace2d982282c3186704f0531186cf7726704add9976d0a0132eda4458e2",
+      "bytes": 860
+    },
+    {
+      "path": "packages/devtools/package.json",
+      "sha256": "e5f35dd467ee67897971f63520d7792772d4704d5c276d8762d11513b9a4f936",
+      "bytes": 680
+    },
+    {
+      "path": "packages/react/package.json",
+      "sha256": "0484e2f313522d34b91d7d56a505c039fa2137754de76930c218893f7f0e6705",
+      "bytes": 1755
+    },
+    {
+      "path": "packages/runtime/package.json",
+      "sha256": "3dfccc7730b2ce2d153439b232a6ad6672fd60b74e43b8107e38ebe97aa6a9f1",
+      "bytes": 1691
+    },
+    {
+      "path": "packages/web/dist/compound/base.d.ts",
+      "sha256": "955ff0f99bd6a48fb4b33a547fc89d9854ec5729926a2e1e6605834afa173ad6",
+      "bytes": 908
+    },
+    {
+      "path": "packages/web/dist/compound/breakdown.d.ts",
+      "sha256": "c9773713a469b5d985293002ecfa80eaaa9c885a2715e0afeff4c259a1c44ec7",
+      "bytes": 267
+    },
+    {
+      "path": "packages/web/dist/compound/comparison.d.ts",
+      "sha256": "2f295a483836745ebf5da3fd77b246bc56d779b5a6f7b4f8fc147edd662b9149",
+      "bytes": 272
+    },
+    {
+      "path": "packages/web/dist/compound/elements.d.ts",
+      "sha256": "7ad2240082be8e783611d770ad06d06e2af58a03316e133e0ca9617748bd7f38",
+      "bytes": 14363
+    },
+    {
+      "path": "packages/web/dist/compound/explorer.d.ts",
+      "sha256": "98f4acf44214a45c590a9a48dcf006cf068b066ede5020e60c54f976b4ead5dc",
+      "bytes": 234
+    },
+    {
+      "path": "packages/web/dist/compound/form-flow.d.ts",
+      "sha256": "fa6eb5ad5a0cb62b0cd3aeb4ec862326cd233965c6464305775670143422ea56",
+      "bytes": 288
+    },
+    {
+      "path": "packages/web/dist/compound/index.d.ts",
+      "sha256": "4cb2638fb9c28b8ddbe22c7d7a172d9e3490f59195beb70fc1ee1e20e38fbded",
+      "bytes": 1747
+    },
+    {
+      "path": "packages/web/dist/compound/investigation.d.ts",
+      "sha256": "efc24c56b79c6072d5f570ebb55eae5759a22518923f103646106665e3f460fc",
+      "bytes": 233
+    },
+    {
+      "path": "packages/web/dist/compound/quality-panel.d.ts",
+      "sha256": "04a6f77dd8773b4c371376b5fd96e3c9836d30ccdd0aece68398b4b58b6443d7",
+      "bytes": 250
+    },
+    {
+      "path": "packages/web/dist/compound/recipes.d.ts",
+      "sha256": "73097ff85ebe70ba383f97e1e1472b6d258191218956d09382277539ad1c5966",
+      "bytes": 2721
+    },
+    {
+      "path": "packages/web/dist/compound/record-editor.d.ts",
+      "sha256": "713b96f0683b3ed23b511313b3779b5376fdd6a2b93e30aea840cc43537acc63",
+      "bytes": 292
+    },
+    {
+      "path": "packages/web/dist/compound/search-results.d.ts",
+      "sha256": "b889f779d929731041742c22a6fa5e3399631f69d512c2c36d0dafbe587a0cd7",
+      "bytes": 259
+    },
+    {
+      "path": "packages/web/dist/compound/types.d.ts",
+      "sha256": "b190311e7fde7ace6753dff30f22248cba33785870fe8778e9d1fe90f961bbeb",
+      "bytes": 6136
+    },
+    {
+      "path": "packages/web/dist/data/card-collection.d.ts",
+      "sha256": "09ba453d6b6f52b99baf5b76e7c58fdbefdf001117ec517035113881d647d3d9",
+      "bytes": 2254
+    },
+    {
+      "path": "packages/web/dist/data/delta.d.ts",
+      "sha256": "3c86c76b9c7e8c2a0b8ba8a046c7b46a318435e809ddfbb0c7af647421099a60",
+      "bytes": 1786
+    },
+    {
+      "path": "packages/web/dist/data/detail.d.ts",
+      "sha256": "f5077114c39c11d7c2a8d3a30bc157e7dc149f42a7ecf23860cca21a6797082f",
+      "bytes": 1473
+    },
+    {
+      "path": "packages/web/dist/data/events.d.ts",
+      "sha256": "c74598f6fb1b6662033feaa8750e49b0a7abfefd7e2df2d66ffde0937c60a629",
+      "bytes": 1096
+    },
+    {
+      "path": "packages/web/dist/data/filter-builder.d.ts",
+      "sha256": "ccf739f895ee717b35515923967968767ac06cfa6da147e21a016e32b395708b",
+      "bytes": 3404
+    },
+    {
+      "path": "packages/web/dist/data/index.d.ts",
+      "sha256": "7c6d6e0e5f6dae3b2341ffcf3556d32e9ccde7de5f788944b60051f73bfcf40f",
+      "bytes": 1321
+    },
+    {
+      "path": "packages/web/dist/data/key-value.d.ts",
+      "sha256": "2ba5f6cc5ea3456ada19a57f2ee0433d6d59cb92ad9ed860153e341936cfd7f8",
+      "bytes": 1217
+    },
+    {
+      "path": "packages/web/dist/data/metric.d.ts",
+      "sha256": "6cb6e660c403d8cc2f4abd829239f3dbb11744bc1ba9716cde08c514c8180c20",
+      "bytes": 1670
+    },
+    {
+      "path": "packages/web/dist/data/record-list.d.ts",
+      "sha256": "97fd17bf58274d9e33f2edfb705f27eeef0a47e912f58f2a981780b648da5be7",
+      "bytes": 1971
+    },
+    {
+      "path": "packages/web/dist/data/selection-summary.d.ts",
+      "sha256": "469b40d6e5f5f30a4f02dacd262fb1b70b6b0cd80e40c5a5cf193bb597a6f5b3",
+      "bytes": 1763
+    },
+    {
+      "path": "packages/web/dist/data/shared.d.ts",
+      "sha256": "f9c86aab6a175695b459affea0a351ed4bee5951a2cb99d394f944e7e5176037",
+      "bytes": 1352
+    },
+    {
+      "path": "packages/web/dist/data/table.d.ts",
+      "sha256": "8d2419afe5318f830f7df6b1c02d824cef19d1ac71ad4ec53ff0328382dfc924",
+      "bytes": 567
+    },
+    {
+      "path": "packages/web/dist/data/types.d.ts",
+      "sha256": "5827f16feaeef22e3674858623098091022c40c32b836ccc817b2a409d2cf676",
+      "bytes": 4323
+    },
+    {
+      "path": "packages/web/dist/elements/aeliqo-chart.d.ts",
+      "sha256": "4194d3fa7faa6cb6a3afe377c0ed28adc3c8948fe8e3237cb94cc802b613a67e",
+      "bytes": 2116
+    },
+    {
+      "path": "packages/web/dist/elements/aeliqo-input.d.ts",
+      "sha256": "2c7d2a8f2e24c8fbf20bca5365d313e742415bf34c065a8d2d1a6e1c4a69b5de",
+      "bytes": 308
+    },
+    {
+      "path": "packages/web/dist/elements/aeliqo-table.d.ts",
+      "sha256": "2abaac16293c163e2b1c1a112e2bc5a91918bf5ab22821435cf8c68e93f2341a",
+      "bytes": 3972
+    },
+    {
+      "path": "packages/web/dist/elements/index.d.ts",
+      "sha256": "8a5c2d0afeb730728ca4365272dad7ff4db211e0c8647f72ee2032cce718f8c8",
+      "bytes": 203
+    },
+    {
+      "path": "packages/web/dist/events.d.ts",
+      "sha256": "88891cf2d9b771640f6238c4cdf442db40a5ccc246f0d526f191b1f080a9ec48",
+      "bytes": 491
+    },
+    {
+      "path": "packages/web/dist/feedback/alert.d.ts",
+      "sha256": "67556a4e939837b219c1d135ec01ae27ccf3efce7fecb68d2231c210f9fe7786",
+      "bytes": 1079
+    },
+    {
+      "path": "packages/web/dist/feedback/dialog.d.ts",
+      "sha256": "19f58dfd1624cc8f426c15232d09bd10695ef8a6f06b44cf9b2440c9dd8ce0ce",
+      "bytes": 1079
+    },
+    {
+      "path": "packages/web/dist/feedback/drawer.d.ts",
+      "sha256": "089a9f75556dd150390bb86bd63561c25655b624f4e24f1137b7f0f6cdf0fa22",
+      "bytes": 1078
+    },
+    {
+      "path": "packages/web/dist/feedback/empty-state.d.ts",
+      "sha256": "33432c08970e1315ec6c47a230c74b5c5ee4aa66b8689323e9200d6d9026da7f",
+      "bytes": 989
+    },
+    {
+      "path": "packages/web/dist/feedback/index.d.ts",
+      "sha256": "e5d86fcacada7ecd6477bb892d22022c4516e68415c571808144d0433c83aa72",
+      "bytes": 305
+    },
+    {
+      "path": "packages/web/dist/feedback/popover.d.ts",
+      "sha256": "20efb496e336de364977dc347d663d7e43c31bfd7737d6e42ff0712ea783773a",
+      "bytes": 1202
+    },
+    {
+      "path": "packages/web/dist/feedback/progress.d.ts",
+      "sha256": "3d4304157a74930275f620430b30eacc088e0aca31063702c97311fc9d87bfd1",
+      "bytes": 629
+    },
+    {
+      "path": "packages/web/dist/feedback/shared.d.ts",
+      "sha256": "bce156a19e1cd955212d6c9d03b91e36a4a11d1b0721e271a48b150a71db2814",
+      "bytes": 263
+    },
+    {
+      "path": "packages/web/dist/feedback/skeleton.d.ts",
+      "sha256": "ae43450b3e80b1b20e9979c49982188229fac3d7bfc85c8f2a31959097bbcf17",
+      "bytes": 890
+    },
+    {
+      "path": "packages/web/dist/feedback/toast.d.ts",
+      "sha256": "4bbb8f12d3b463d18aaf53d28ec144f8a652985e9455a33f8cd57411a90e6d0d",
+      "bytes": 1047
+    },
+    {
+      "path": "packages/web/dist/feedback/tooltip.d.ts",
+      "sha256": "92f934825a7bca42b8d7af393c76a989a8bb713a760cddb5551c88b72e9b48ed",
+      "bytes": 779
+    },
+    {
+      "path": "packages/web/dist/foundation/action-base.d.ts",
+      "sha256": "460d71cc2fb9bf8d64b4c4ab6a0b391f01c88924d6ca097b1b5d7f6c53089f68",
+      "bytes": 969
+    },
+    {
+      "path": "packages/web/dist/foundation/avatar.d.ts",
+      "sha256": "67ad49b8be40e66d3b3ccaf940bd316e069456af4abd7ac0d2a0dfef8b595287",
+      "bytes": 1098
+    },
+    {
+      "path": "packages/web/dist/foundation/badge.d.ts",
+      "sha256": "6a8c725438f99963f70a10aa923f252bdf58518be3a87e5529e3551a05aa2a3c",
+      "bytes": 699
+    },
+    {
+      "path": "packages/web/dist/foundation/base.d.ts",
+      "sha256": "59b1091fd7a303daeae8a995f392b612a65bf2ea1deb54fa6ac13fd745c41612",
+      "bytes": 915
+    },
+    {
+      "path": "packages/web/dist/foundation/button.d.ts",
+      "sha256": "05f4371411940dec7d0d7295d3da525f9a825e373960ad4103471940db5bdc70",
+      "bytes": 1337
+    },
+    {
+      "path": "packages/web/dist/foundation/events.d.ts",
+      "sha256": "232ca687a2099ca77513313ce7bf3c02b0086f9ebeba18a451f3b0b51986075d",
+      "bytes": 1221
+    },
+    {
+      "path": "packages/web/dist/foundation/grid.d.ts",
+      "sha256": "9e0baf7c670c82bd6b25f19bd1a8085622f8d7ae5fbc521fbde233dc1cd5407f",
+      "bytes": 802
+    },
+    {
+      "path": "packages/web/dist/foundation/heading.d.ts",
+      "sha256": "26db75d90ac3be350ee63d46a3c30fbb4fb20490b11dd1eaa4fd9a4890270ecc",
+      "bytes": 858
+    },
+    {
+      "path": "packages/web/dist/foundation/icon-button.d.ts",
+      "sha256": "fdf3337f682f7a5a8deeecc057c7b97ff3acd604134b5d785bf7e2f61ebc2009",
+      "bytes": 1183
+    },
+    {
+      "path": "packages/web/dist/foundation/index.d.ts",
+      "sha256": "0ded3848f4a69389e0d9f70cab5a0aca0826b07837716fc4f2cee62b703aa050",
+      "bytes": 2073
+    },
+    {
+      "path": "packages/web/dist/foundation/link.d.ts",
+      "sha256": "de14b7d3cf20e9ef0b478dfd5b12083be28638782918f32877acdb541e82b794",
+      "bytes": 924
+    },
+    {
+      "path": "packages/web/dist/foundation/manifest.d.ts",
+      "sha256": "dc0e7c5a256b95ee7249e8a87e2eacf4e832c39f3f63006fab5f9fcc3f13719e",
+      "bytes": 2974
+    },
+    {
+      "path": "packages/web/dist/foundation/scroll-area.d.ts",
+      "sha256": "772d50a377cd68139544a7baff3e71658661ad7f373fb3d7f41e3571792eba53",
+      "bytes": 812
+    },
+    {
+      "path": "packages/web/dist/foundation/separator.d.ts",
+      "sha256": "3b31ff920f5362338b5c1c2a6750856b6b352b180d6af9af06da6eb453560458",
+      "bytes": 813
+    },
+    {
+      "path": "packages/web/dist/foundation/split-pane.d.ts",
+      "sha256": "165af9d24f1189abee70f79dfc298476497f84a944bce7c3136a0aa0004334eb",
+      "bytes": 2041
+    },
+    {
+      "path": "packages/web/dist/foundation/stack.d.ts",
+      "sha256": "770aeed8462dea19e7c49ba360f77163f4b17792589f8fcc81836571e22da30b",
+      "bytes": 1126
+    },
+    {
+      "path": "packages/web/dist/foundation/surface.d.ts",
+      "sha256": "6e7bf2f717bd4ef15aaa58172291478175e039d08b0f44566ed27db655b9b41f",
+      "bytes": 999
+    },
+    {
+      "path": "packages/web/dist/foundation/text.d.ts",
+      "sha256": "da34e16dbd1023f5d496021caa89d5cda99d2978c86e5aeb1ee29c2fbf7f0cb9",
+      "bytes": 803
+    },
+    {
+      "path": "packages/web/dist/index.d.ts",
+      "sha256": "d7fe25cf4e94800d2be012e53bff0affabe05b4dc1e463d27f2123acd69f00cc",
+      "bytes": 1019
+    },
+    {
+      "path": "packages/web/dist/input/base.d.ts",
+      "sha256": "d342b09eed8dafdde74bb84c4c006ea90a9d83d81ba7525271df0bf652f01c4f",
+      "bytes": 4437
+    },
+    {
+      "path": "packages/web/dist/input/checkbox.d.ts",
+      "sha256": "ab906a85df500e2d5f15c86c89851e84cf271f0f22838867e97e20a95a1ede0b",
+      "bytes": 2187
+    },
+    {
+      "path": "packages/web/dist/input/combobox.d.ts",
+      "sha256": "4a0f63af0d59f72065e6700d18b97a4241e0304638ab4e31fd823a7bec21fa06",
+      "bytes": 3520
+    },
+    {
+      "path": "packages/web/dist/input/date-field.d.ts",
+      "sha256": "1274c3e35c8b4a744c9a865501b8da30dcdf42b9df242f600ef725fbc3f54c3c",
+      "bytes": 2294
+    },
+    {
+      "path": "packages/web/dist/input/date-range.d.ts",
+      "sha256": "70a4cab17d9809a6a6194e673f93b81194fae1df503809cc7ad6883779bc153f",
+      "bytes": 2937
+    },
+    {
+      "path": "packages/web/dist/input/events.d.ts",
+      "sha256": "d4c9191b0953101ac543c077202a2bbf0117128738a689583076e424878b5cc7",
+      "bytes": 2784
+    },
+    {
+      "path": "packages/web/dist/input/field-group.d.ts",
+      "sha256": "0dae0045e9c315e2ee6a87fc8370796b011f6cc15e86b79079ef76a9f0da144b",
+      "bytes": 1157
+    },
+    {
+      "path": "packages/web/dist/input/file-input.d.ts",
+      "sha256": "9f3d9d703f518f14ff7277d682f5ceb62341b047e45dc0bb9605392146a50d8f",
+      "bytes": 2444
+    },
+    {
+      "path": "packages/web/dist/input/form.d.ts",
+      "sha256": "0f110b5b73d5b39c76318c456f42c62aaa35f4d317c6daea818bfa3b23587983",
+      "bytes": 1619
+    },
+    {
+      "path": "packages/web/dist/input/index.d.ts",
+      "sha256": "6999ae6bfcf73c0d8f8ee652ad401ccd5755b047d9884a8133fab4441e4c53f5",
+      "bytes": 2264
+    },
+    {
+      "path": "packages/web/dist/input/locale.d.ts",
+      "sha256": "e8fe710be1fd0b0656441fcf83bba013f5fabe64468929e6c89a0cd6c6db601e",
+      "bytes": 744
+    },
+    {
+      "path": "packages/web/dist/input/manifest.d.ts",
+      "sha256": "10fdb0055ef0d9a766cd9065dca4ce93da04f91b653f800307c9adbf66f6cea0",
+      "bytes": 2879
+    },
+    {
+      "path": "packages/web/dist/input/number-field.d.ts",
+      "sha256": "ee962bd035c72cc9c22bf642e9550c65aa8a56b13cf7f24941d8527677e832a2",
+      "bytes": 2653
+    },
+    {
+      "path": "packages/web/dist/input/options.d.ts",
+      "sha256": "3fdb209e410b2a1b7966a79d31f78915afe21d269fae2fcded3331a38212b3e5",
+      "bytes": 276
+    },
+    {
+      "path": "packages/web/dist/input/radio-group.d.ts",
+      "sha256": "de9cd34cbff55887e08b33978690271892ebc8a997a1103b0eec331ddb502296",
+      "bytes": 2196
+    },
+    {
+      "path": "packages/web/dist/input/search-field.d.ts",
+      "sha256": "b577ebc2d835a0f2cd654e1f0e59175fdb898406c5d34e135d48e9842c378c49",
+      "bytes": 3077
+    },
+    {
+      "path": "packages/web/dist/input/select.d.ts",
+      "sha256": "a095640d61810519080966efcad223df8a69d9e39dfc974d7a5129e4eddd915a",
+      "bytes": 2327
+    },
+    {
+      "path": "packages/web/dist/input/slider.d.ts",
+      "sha256": "2b1721c91f0dff0335852720b94ebcd384db56060b718018788e2d0b3b13a0c1",
+      "bytes": 2516
+    },
+    {
+      "path": "packages/web/dist/input/switch.d.ts",
+      "sha256": "d41c4b101a92e2bfd8e552e10cbd5d805de7a02574711072691a64bbf7cbe6e6",
+      "bytes": 404
+    },
+    {
+      "path": "packages/web/dist/input/text-area.d.ts",
+      "sha256": "baa9fddeb1416ea18fad6341312945ba4a4b87b59ffc2d12815c1a1258e0a42d",
+      "bytes": 347
+    },
+    {
+      "path": "packages/web/dist/input/text-control.d.ts",
+      "sha256": "75e775e5a4c059ed301fa4d6d6874e23859c9bf8eeadaae4d3abefff51e395ac",
+      "bytes": 3832
+    },
+    {
+      "path": "packages/web/dist/input/text-field.d.ts",
+      "sha256": "4da23b0374fe7480f3da270e83b1736ffc48e9a42ccfa2faaeeb7bb5256cb982",
+      "bytes": 354
+    },
+    {
+      "path": "packages/web/dist/navigation/breadcrumb.d.ts",
+      "sha256": "afe44fa5bc78f2128b1ea9a6a1656905d43b47837b6c824f44fc7acce9e38755",
+      "bytes": 830
+    },
+    {
+      "path": "packages/web/dist/navigation/index.d.ts",
+      "sha256": "4c982f8976e3deee1ee195b4a819cece7bf030acab28a382e1079da614f39e3c",
+      "bytes": 186
+    },
+    {
+      "path": "packages/web/dist/navigation/menu.d.ts",
+      "sha256": "0e851cd6917f125d7fd9e171dd089d14505ceb330cb41c2207f8b21967272696",
+      "bytes": 996
+    },
+    {
+      "path": "packages/web/dist/navigation/pagination.d.ts",
+      "sha256": "de43aeb223b96947f7b060546c4c008f76f16e804aa6d53a1a83cc3c9532f7cd",
+      "bytes": 1123
+    },
+    {
+      "path": "packages/web/dist/navigation/shared.d.ts",
+      "sha256": "088d2b984ec6d4a01619d5c904f876cbba176d41074b08896462ac57077ee7a8",
+      "bytes": 978
+    },
+    {
+      "path": "packages/web/dist/navigation/tabs.d.ts",
+      "sha256": "24ed02b5687edada1d25d4d5ff4104fdbca2c356740d6ddf93b1423390320a61",
+      "bytes": 1374
+    },
+    {
+      "path": "packages/web/dist/navigation/tree-nav.d.ts",
+      "sha256": "8f563b9952f1c1d8d47a24b03f5ed76f69b576897add9f16c7779f76442c737a",
+      "bytes": 1293
+    },
+    {
+      "path": "packages/web/dist/plot/composition.d.ts",
+      "sha256": "294f9cb4054be06ac1ed7c89d7b318502f14bebaa7eddb0c240cb3ac4b8a4d44",
+      "bytes": 1411
+    },
+    {
+      "path": "packages/web/dist/plot/element.d.ts",
+      "sha256": "29ee0f5f1d3645c9ed0fff7b0ecd5db3f108a1a693999b0fca54410f5cb96d9c",
+      "bytes": 2359
+    },
+    {
+      "path": "packages/web/dist/plot/geometry.d.ts",
+      "sha256": "fac032d0392d03b6be8c5940070cb5470b266487607803898a48243fad9ad93d",
+      "bytes": 2496
+    },
+    {
+      "path": "packages/web/dist/plot/index.d.ts",
+      "sha256": "0a40153822d388fa6a05e1253d0573f82de627459a99ebc034869c0e0c278d2a",
+      "bytes": 582
+    },
+    {
+      "path": "packages/web/dist/plot/palette.d.ts",
+      "sha256": "9c83bc8045fad24468dc2458f602fc64f33dd3ec90e7eb2c8a85b6e3a050ed3d",
+      "bytes": 297
+    },
+    {
+      "path": "packages/web/dist/plot/render.d.ts",
+      "sha256": "c4348aee18146b7a98f5e8f7f30b0f39aabb0b06cffbf91110159e006c99f4dd",
+      "bytes": 553
+    },
+    {
+      "path": "packages/web/dist/plot/scales.d.ts",
+      "sha256": "fa5ea969c0b7da2b995519d83e25ef211f93c57f987127f884fbdb202f8db72f",
+      "bytes": 679
+    },
+    {
+      "path": "packages/web/dist/region/adaptation.d.ts",
+      "sha256": "1fb8eb5f065fbad6995f9bf03917fb8ba17ca0a4aa8b783775761f6d371d7572",
+      "bytes": 2939
+    },
+    {
+      "path": "packages/web/dist/region/aeliqo-region.d.ts",
+      "sha256": "c447f48c955ade2389831667f892a307d9fce07e1d57b1cd5119ccde18d9c387",
+      "bytes": 2259
+    },
+    {
+      "path": "packages/web/dist/region/data-presentation.d.ts",
+      "sha256": "ffffa0de40e8a34d9247f2a22e34bef55c580aeb3b0fd17d53c88c3389a7a9d8",
+      "bytes": 3249
+    },
+    {
+      "path": "packages/web/dist/region/data-registry.d.ts",
+      "sha256": "d98b11a488b34ab8eb1aab07cf45f71baeb3d472c24758f4f9b3bbc7e5c758a1",
+      "bytes": 5769
+    },
+    {
+      "path": "packages/web/dist/region/data-renderer.d.ts",
+      "sha256": "1b4fb58088d3b19b533a6e229deb34a1e136088bfbd8827438f343e6350dc68a",
+      "bytes": 2236
+    },
+    {
+      "path": "packages/web/dist/region/foundation-registry.d.ts",
+      "sha256": "87eeb35ef1e705a5298b16f20d83ff315db9a50ea84bea115ff354f4b44fe0e4",
+      "bytes": 1189
+    },
+    {
+      "path": "packages/web/dist/region/foundation-renderer.d.ts",
+      "sha256": "5634534307f9bd8063782d6111a1ba83e1239aaa61b482692bd86cdaef456023",
+      "bytes": 536
+    },
+    {
+      "path": "packages/web/dist/region/index.d.ts",
+      "sha256": "c03d47f24cb8ef85472b93a11770c1c487f21ee6a3f125b23eb52477b762047d",
+      "bytes": 1878
+    },
+    {
+      "path": "packages/web/dist/region/input-registry.d.ts",
+      "sha256": "1a0ad4b50ac03a9c6f93aa955013fff534180ac542e25a822cc18928105e201c",
+      "bytes": 1924
+    },
+    {
+      "path": "packages/web/dist/region/input-renderer.d.ts",
+      "sha256": "ab4263f33ee4a99a22e0cb722334357d5f5b05f2e5744a13b44fcc1bdb2bb707",
+      "bytes": 946
+    },
+    {
+      "path": "packages/web/dist/region/navigation-feedback-registry.d.ts",
+      "sha256": "60b665852be170aa30ec09e644fd500074b5aadb4fc663472abfc37f0de29a8d",
+      "bytes": 5983
+    },
+    {
+      "path": "packages/web/dist/region/navigation-feedback-renderer.d.ts",
+      "sha256": "c82f815180612cb18c45446cd247cb69ac44c7ca91dc85eee699f39723ce3173",
+      "bytes": 852
+    },
+    {
+      "path": "packages/web/dist/region/registry.d.ts",
+      "sha256": "508c500b5c352dfe0983c2b2df9f91e20433adea991dd135a95ca279ab483944",
+      "bytes": 2977
+    },
+    {
+      "path": "packages/web/dist/region/types.d.ts",
+      "sha256": "06b079b9235b685c94fea8e476eb7d001f14dca76323791756ac20dfc7128004",
+      "bytes": 1643
+    },
+    {
+      "path": "packages/web/dist/region/visualization-registry.d.ts",
+      "sha256": "7679df9f364ddf5185914486daaa7f72a1e71e0e39d9e24b03393579d4c50aa9",
+      "bytes": 4995
+    },
+    {
+      "path": "packages/web/dist/region/visualization-renderer.d.ts",
+      "sha256": "b3b99f5c405185a4050b442c8a503952003b663812fa90bb7fda64ef5b9c1655",
+      "bytes": 708
+    },
+    {
+      "path": "packages/web/dist/register.d.ts",
+      "sha256": "a89a00e240aac84f2a4dc6898efef8022d10d717fe2b97fe22f37f581bc64f53",
+      "bytes": 260
+    },
+    {
+      "path": "packages/web/dist/server.d.ts",
+      "sha256": "042bb614c17e8535fe679bf28d6b6807750ecd99331c80ae8a712f785124034f",
+      "bytes": 243
+    },
+    {
+      "path": "packages/web/dist/styles/index.d.ts",
+      "sha256": "0be43f32a14d938182a8dc8996505c21060310ca4d665f4bc752efaca62fc39c",
+      "bytes": 692
+    },
+    {
+      "path": "packages/web/dist/styles/locale.d.ts",
+      "sha256": "e5c9da3bac64253ec98f4fc394374299276529488ee7c350e2fcc43deb490bb4",
+      "bytes": 1058
+    },
+    {
+      "path": "packages/web/dist/styles/parts.d.ts",
+      "sha256": "eda55f4c3a755e068f56581d2cdf71c9841b934aa32113d3dd65acd953400624",
+      "bytes": 536
+    },
+    {
+      "path": "packages/web/dist/styles/theme.d.ts",
+      "sha256": "3a56d8cfc64c25a0f7134467f76d965e8645d8be7025d779011dac2b01e1f203",
+      "bytes": 669
+    },
+    {
+      "path": "packages/web/dist/styles/tokens.d.ts",
+      "sha256": "4dec898072d085f88438309b0f8a5b35127ab4d086e3698b4d27fb26da78fc88",
+      "bytes": 4261
+    },
+    {
+      "path": "packages/web/dist/types.d.ts",
+      "sha256": "22a64604f192e0ef05d4a0169fab5cdd0c12ce74dc536e9dff74746312c250a6",
+      "bytes": 1650
+    },
+    {
+      "path": "packages/web/dist/visualization/cartesian/area.d.ts",
+      "sha256": "1fd3a01bb842ac927ec51ab3e6c805f5cb8451ae4ddec29aa91e8431dd94359e",
+      "bytes": 205
+    },
+    {
+      "path": "packages/web/dist/visualization/cartesian/bar.d.ts",
+      "sha256": "07632f49f67e9cc832f62c7e3f20d664c7f78efd376bb9bd6fbe488e0da211e7",
+      "bytes": 202
+    },
+    {
+      "path": "packages/web/dist/visualization/cartesian/base.d.ts",
+      "sha256": "be808a204cf43643790897f69402d9839197c51368d760a695c90a5f8e10f150",
+      "bytes": 2766
+    },
+    {
+      "path": "packages/web/dist/visualization/cartesian/heatmap.d.ts",
+      "sha256": "22f95f535031adb1c4da29cdaec9a300cee171c79353b90a147709518f964177",
+      "bytes": 214
+    },
+    {
+      "path": "packages/web/dist/visualization/cartesian/histogram.d.ts",
+      "sha256": "fc594ac0bf8dd53e035cca8ce89c4b22a4ab33b7ceb2eca31a5a2156e8984f2f",
+      "bytes": 220
+    },
+    {
+      "path": "packages/web/dist/visualization/cartesian/index.d.ts",
+      "sha256": "9e408265d282f57cbe4eec701a85570872e027160f3f43cfb06e4d0aaffab8de",
+      "bytes": 1324
+    },
+    {
+      "path": "packages/web/dist/visualization/cartesian/scatter.d.ts",
+      "sha256": "2293b54d44fd4186bca58af5ce5f7e813294bf7ddce244b290023b4ba54b331c",
+      "bytes": 214
+    },
+    {
+      "path": "packages/web/dist/visualization/cartesian/trend.d.ts",
+      "sha256": "3d7590461e2e3c0e9e874385090c90fec20118ac0a5522697b12eda4140d0970",
+      "bytes": 208
+    },
+    {
+      "path": "packages/web/dist/visualization/hierarchy/element.d.ts",
+      "sha256": "d95385500a705cd1da6fa9d933c9ee694938309eda762119d294b02e80e9a20b",
+      "bytes": 2999
+    },
+    {
+      "path": "packages/web/dist/visualization/hierarchy/geometry.d.ts",
+      "sha256": "a2822c74807e13e45b6003563901c1e48641a6480589af1735b7111747d44223",
+      "bytes": 3056
+    },
+    {
+      "path": "packages/web/dist/visualization/hierarchy/index.d.ts",
+      "sha256": "c336d632f13f6d479d62e79a3cc7a2362cfd25f7696f78a3c636b024ec86e62a",
+      "bytes": 894
+    },
+    {
+      "path": "packages/web/dist/visualization/index.d.ts",
+      "sha256": "0416ed44ef0954e4f103eea581e960a444d8a89d02b53ff969f4277b6da73e79",
+      "bytes": 176
+    },
+    {
+      "path": "packages/web/dist/visualization/materialization.d.ts",
+      "sha256": "24a6e77a1b8c2976455aedd89b66cfdf5cf509bd17e67acfed6512e1a249dae0",
+      "bytes": 542
+    },
+    {
+      "path": "packages/web/dist/visualization/temporal/geometry.d.ts",
+      "sha256": "3e4bbdb86a94936dcb805aad9632f1511593c264259adabc3ae26cbf7e14b98b",
+      "bytes": 1125
+    },
+    {
+      "path": "packages/web/dist/visualization/temporal/index.d.ts",
+      "sha256": "d424011f54ed721f8d29b16859262cfe24d6b7d0ff90ecb4539ac565a15aee76",
+      "bytes": 2367
+    },
+    {
+      "path": "packages/web/dist/visualization/types.d.ts",
+      "sha256": "ae71f3747aba27a2217be5054313e5a1a988a7adf9315151b60113ccabb05be3",
+      "bytes": 1029
+    },
+    {
+      "path": "packages/web/package.json",
+      "sha256": "bd51381e58b521ef8abd5a9e0df289d55d04110307ef715cc7032bbcde717b28",
+      "bytes": 10712
+    },
+    {
+      "path": "packages/web/src/compound/base.ts",
+      "sha256": "f288c066e3d237c8404f9ad8083d808338b22a9a7cfe62762a32127420e45fc7",
+      "bytes": 3637
+    },
+    {
+      "path": "packages/web/src/compound/breakdown.ts",
+      "sha256": "05a0f13d71294470fb855cd3749696f6c720ca370be2d70fda205ce32ace48f1",
+      "bytes": 222
+    },
+    {
+      "path": "packages/web/src/compound/comparison.ts",
+      "sha256": "d257d59fa1e4ca4f3348928c0df1426fbe8cadbb054c16174492941f42aeb130",
+      "bytes": 226
+    },
+    {
+      "path": "packages/web/src/compound/elements.ts",
+      "sha256": "5da14b73e3f6430707d96121e83a83296654221e673e1bb73a9c701bccd1bfa8",
+      "bytes": 38539
+    },
+    {
+      "path": "packages/web/src/compound/explorer.ts",
+      "sha256": "79830b4994bc4fbce9eccdf12c42783196947c866fba26713f5463e79d2b3119",
+      "bytes": 190
+    },
+    {
+      "path": "packages/web/src/compound/form-flow.ts",
+      "sha256": "2ca7c5fe35a20a9959f7ef827fd4eeb3d34b46e3b82c2f953f20e3c517f56d29",
+      "bytes": 243
+    },
+    {
+      "path": "packages/web/src/compound/index.ts",
+      "sha256": "2299fb5f2a18d6bde224c36b89e8661d657623563dc687770d496982c554fecf",
+      "bytes": 2157
+    },
+    {
+      "path": "packages/web/src/compound/investigation.ts",
+      "sha256": "c3379cc580a90ec2c0d5d74ca9f68045c6de2616366aabcd279a54053f337c93",
+      "bytes": 184
+    },
+    {
+      "path": "packages/web/src/compound/quality-panel.ts",
+      "sha256": "d3fc7c091aeb9d5b5ebc80f36574cbf4af9ccbc4a161b6f3f3cb49faf7b499b4",
+      "bytes": 201
+    },
+    {
+      "path": "packages/web/src/compound/recipes.ts",
+      "sha256": "cb97e26142e7b180056cc303c38049ea264351e87e3010e7e77120ae2fc53ecc",
+      "bytes": 5647
+    },
+    {
+      "path": "packages/web/src/compound/record-editor.ts",
+      "sha256": "3c7bb319b3d627f55ff00b0e326ec77da719c357f4b585a84e1c535a094b8d1b",
+      "bytes": 243
+    },
+    {
+      "path": "packages/web/src/compound/search-results.ts",
+      "sha256": "9531b7f86945d237f94a9fc83f8f31e6139928b514580752fa57576edef58841",
+      "bytes": 209
+    },
+    {
+      "path": "packages/web/src/compound/types.ts",
+      "sha256": "042fce13ef4662cd78bff1c3195502738f4ee6134ae9bb41cb028ca4115bc3d4",
+      "bytes": 5904
+    },
+    {
+      "path": "packages/web/src/data/card-collection.ts",
+      "sha256": "00c718b47d3f9fabec112a42a9b2425fc7338a6aa3098edd50d549040d0d62a9",
+      "bytes": 7331
+    },
+    {
+      "path": "packages/web/src/data/delta.ts",
+      "sha256": "d49038308647a9aa05924e1b16ad00dc721c7ffd55a4996a75e37996f6dfbfc9",
+      "bytes": 11708
+    },
+    {
+      "path": "packages/web/src/data/detail.ts",
+      "sha256": "725722a928defbdbfd84dfdb2a38e64754c7335279be1e864c895f01c3cee82a",
+      "bytes": 3560
+    },
+    {
+      "path": "packages/web/src/data/events.ts",
+      "sha256": "3aa6fe9eca6b801bc75324ef612619c39569f7bb75567fe3ba74fe861741f2de",
+      "bytes": 1478
+    },
+    {
+      "path": "packages/web/src/data/filter-builder.ts",
+      "sha256": "55792f375328c3abb0920a3d68ec962052b53b4f6b6bfbbb214036d547679838",
+      "bytes": 26815
+    },
+    {
+      "path": "packages/web/src/data/index.ts",
+      "sha256": "cae4e3cdd19af6e37dca8f73f1446e375d573b3fe2943a5e5a07b9ff227359de",
+      "bytes": 1256
+    },
+    {
+      "path": "packages/web/src/data/key-value.ts",
+      "sha256": "318a4a14d4a395fb639d15accae3fb2fa7ee1d64928e2573a1cb54e6b621cb4a",
+      "bytes": 3128
+    },
+    {
+      "path": "packages/web/src/data/metric.ts",
+      "sha256": "63d7435a98d13196aed464cbaaf44a788aa0eef546d7bf0c2a4c0adb7c8509be",
+      "bytes": 4846
+    },
+    {
+      "path": "packages/web/src/data/record-list.ts",
+      "sha256": "9f646ece7bc55ebee7b9bdae9dc0cd0b2ead0117245a4482172d8cd3d1004f4b",
+      "bytes": 6509
+    },
+    {
+      "path": "packages/web/src/data/selection-summary.ts",
+      "sha256": "ef637cbe98d626a9ba4a94daaf27cb6192baf61e2af8e74b996bd02dbe005d1d",
+      "bytes": 4104
+    },
+    {
+      "path": "packages/web/src/data/shared.ts",
+      "sha256": "7049b9b59544d7167ba9bdd32ecfa803bddf512edc86b16699bca36d8e7c1f3c",
+      "bytes": 5010
+    },
+    {
+      "path": "packages/web/src/data/table.ts",
+      "sha256": "5f1ec7579cc5bbc36f7d8b9565e24bc69114ece0251eb75ae59d711e02e3174c",
+      "bytes": 526
+    },
+    {
+      "path": "packages/web/src/data/types.ts",
+      "sha256": "0b8dce746f6d46306334e51c662701979c074acc36b07d81019aed4de3ae1fd1",
+      "bytes": 4234
+    },
+    {
+      "path": "packages/web/src/elements/aeliqo-chart.ts",
+      "sha256": "2de6898859c6b852e6feb9f3e4350cc5188fdb4bc988649745081f68f82ac91a",
+      "bytes": 19884
+    },
+    {
+      "path": "packages/web/src/elements/aeliqo-input.ts",
+      "sha256": "8089240282897602ea856e211c8ae2269b7550bd8414255f02683dd645911ff6",
+      "bytes": 286
+    },
+    {
+      "path": "packages/web/src/elements/aeliqo-table.ts",
+      "sha256": "418a3b8f910c19144ce5348464f4f932f3f4055f95d49efd1013145aa4674af0",
+      "bytes": 28522
+    },
+    {
+      "path": "packages/web/src/elements/index.ts",
+      "sha256": "8c47f3680107b56b0ad2749c9e389a727107d0106694cc85b9364db90ec7fa97",
+      "bytes": 162
+    },
+    {
+      "path": "packages/web/src/events.ts",
+      "sha256": "46f0276c01be5cdc0d2dab928ab1542e55760aab633ada8dddc532b6baf96a0b",
+      "bytes": 641
+    },
+    {
+      "path": "packages/web/src/feedback/alert.ts",
+      "sha256": "2094f3dd5393fb0bc18e15f3f4be3037e1df5d25bc0458bc204c8327bc4bc50f",
+      "bytes": 2675
+    },
+    {
+      "path": "packages/web/src/feedback/dialog.ts",
+      "sha256": "3aadb5d8601c2dc86383db2b3d03ef9a7cbdd91a63eb165a681e2a835f3f12d1",
+      "bytes": 6174
+    },
+    {
+      "path": "packages/web/src/feedback/drawer.ts",
+      "sha256": "db0796dd6fea243234ee7b360360ab3af71c71cfdb14e0861b2e94a6647dec43",
+      "bytes": 5071
+    },
+    {
+      "path": "packages/web/src/feedback/empty-state.ts",
+      "sha256": "486154f9b51a18ded03045532f9df7503709131c0290d439aa2b718f122d3dce",
+      "bytes": 2619
+    },
+    {
+      "path": "packages/web/src/feedback/index.ts",
+      "sha256": "06eaa0cae6d291ea3193fffb5de79e2cd67bccc4d79fba3663fbbaec8b15b562",
+      "bytes": 270
+    },
+    {
+      "path": "packages/web/src/feedback/popover.ts",
+      "sha256": "1a556330cee5bca84a912deec416f8b221698ad116789afc688a4553221202b3",
+      "bytes": 6843
+    },
+    {
+      "path": "packages/web/src/feedback/progress.ts",
+      "sha256": "478f9fbb5e683a6844dc281d807c6b6ebc51c26719fe07ab89f0c8001de014f8",
+      "bytes": 1995
+    },
+    {
+      "path": "packages/web/src/feedback/shared.ts",
+      "sha256": "a6160dbe45cc61d2ccf38465a82f36c3de0f26519c292e9c548b0072be3208fb",
+      "bytes": 980
+    },
+    {
+      "path": "packages/web/src/feedback/skeleton.ts",
+      "sha256": "19ef8551c7ab88e274e7c135a09d429466398361c2db239c9fa27d9e61d04d9b",
+      "bytes": 2157
+    },
+    {
+      "path": "packages/web/src/feedback/toast.ts",
+      "sha256": "b237b930cd95dc8972851f3ee621045fa1595f6478c6f0dc9d200d2dc7af89d2",
+      "bytes": 2803
+    },
+    {
+      "path": "packages/web/src/feedback/tooltip.ts",
+      "sha256": "59c7eac9485c28dc2e3a382ad28d5755c9f3f27478793b4d65963727dd4f51e4",
+      "bytes": 2373
+    },
+    {
+      "path": "packages/web/src/foundation/action-base.ts",
+      "sha256": "bc1a1a9a20cb31e22262a5edb6707cdc96a34316f200fa4f8157014a77283960",
+      "bytes": 2305
+    },
+    {
+      "path": "packages/web/src/foundation/avatar.ts",
+      "sha256": "294143b89649a20402da82384f9a612435cec0bd7eb4ba79e8c49c72aa5d53fc",
+      "bytes": 2787
+    },
+    {
+      "path": "packages/web/src/foundation/badge.ts",
+      "sha256": "8a46c3982538cbc9d8023d22b5efd252237e8216bf33442e9d0eb3299b3e9f0f",
+      "bytes": 1968
+    },
+    {
+      "path": "packages/web/src/foundation/base.ts",
+      "sha256": "6ceb2f941f143644b2c4b45b82713663e37b01b1a2124b7f4dc9972d85dc7b10",
+      "bytes": 2292
+    },
+    {
+      "path": "packages/web/src/foundation/button.ts",
+      "sha256": "be0a7a81adb20a9db09a307ead826a1fe24d1847cdef92d48a7420053b85fea5",
+      "bytes": 4192
+    },
+    {
+      "path": "packages/web/src/foundation/events.ts",
+      "sha256": "8774854e8d5717a0d0d47a991ac37e57a85641116397da690d09e6fe30aec4cf",
+      "bytes": 2028
+    },
+    {
+      "path": "packages/web/src/foundation/grid.ts",
+      "sha256": "a23ff2b5ca7429b3e3eecaa9f58cc08961c3eea79c0006246aa3cb6206021533",
+      "bytes": 1969
+    },
+    {
+      "path": "packages/web/src/foundation/heading.ts",
+      "sha256": "42a22e8d8eca7eff0e73e5264c09e7a6627b38bb87659ab0db8fbd7ab54e1077",
+      "bytes": 2102
+    },
+    {
+      "path": "packages/web/src/foundation/icon-button.ts",
+      "sha256": "54c01daba220d5b770d4dc6e3d9f720a87d8bb6bde8adf61915601eb096c99cd",
+      "bytes": 3272
+    },
+    {
+      "path": "packages/web/src/foundation/index.ts",
+      "sha256": "56048f2c5fc756771231429a0bc4787b41f57bdc3eaa8b777ceaf7b3620fa3f0",
+      "bytes": 2002
+    },
+    {
+      "path": "packages/web/src/foundation/link.ts",
+      "sha256": "e515a9b1d90310bcb3ebcca822178aa750a48296b7e6509080829c7374c5c7c0",
+      "bytes": 2188
+    },
+    {
+      "path": "packages/web/src/foundation/manifest.ts",
+      "sha256": "9ac49b4380d86cf80777ecc0a5dd7d2eff83e6da936447f99e0331de5769f5af",
+      "bytes": 13756
+    },
+    {
+      "path": "packages/web/src/foundation/scroll-area.ts",
+      "sha256": "bbe938aca926c818cb76d32287d06dbde43f5e068e39b555289f8f528c5f95c6",
+      "bytes": 1372
+    },
+    {
+      "path": "packages/web/src/foundation/separator.ts",
+      "sha256": "01c5b7bc0e48bbc1557ef09f016b8b29a445d58bdf94dc30c50131f2aa2b9ba2",
+      "bytes": 1617
+    },
+    {
+      "path": "packages/web/src/foundation/split-pane.ts",
+      "sha256": "e86d10616847f153db6641c60b3d15a2e75c4909fc1ce17ddc8157b46ba3bcdd",
+      "bytes": 8213
+    },
+    {
+      "path": "packages/web/src/foundation/stack.ts",
+      "sha256": "7ff2869a460e83f7262139468788e992869b1db5e2b5b87c0db104e2c022137d",
+      "bytes": 2520
+    },
+    {
+      "path": "packages/web/src/foundation/surface.ts",
+      "sha256": "cfa3eea4379a48ad591b285ed35bb509e14f17d01409d8a6cc75ca8553083fc0",
+      "bytes": 2670
+    },
+    {
+      "path": "packages/web/src/foundation/text.ts",
+      "sha256": "b3d16e996db7097bf7df727891a3bf9004db2d9ca3979ab9f4f8b58dc475fd4f",
+      "bytes": 1665
+    },
+    {
+      "path": "packages/web/src/index.ts",
+      "sha256": "4a720e4c82f7b854a2d77c6d48d81711056c699b36d121bb91775d4ce2f6a4ec",
+      "bytes": 995
+    },
+    {
+      "path": "packages/web/src/input/base.ts",
+      "sha256": "25e3f1ea1ded35f279c1f4319cfe10b847a6fca642639fe7b5d881248ff1d3d2",
+      "bytes": 13690
+    },
+    {
+      "path": "packages/web/src/input/checkbox.ts",
+      "sha256": "917a10c5c756cb8482558c42fe2d9a45a3e12825ab7994a0f379afb4b66282b9",
+      "bytes": 3572
+    },
+    {
+      "path": "packages/web/src/input/combobox.ts",
+      "sha256": "b3a51ab9a9e53cc1cca7165e0e302c1a9322b32b219b8cc6baa604b9ab3ac65c",
+      "bytes": 14375
+    },
+    {
+      "path": "packages/web/src/input/date-field.ts",
+      "sha256": "d36282f77b7717c17492bc85a6aa0113edadeb7087974dcbc38b5fb648a2ab97",
+      "bytes": 3862
+    },
+    {
+      "path": "packages/web/src/input/date-range.ts",
+      "sha256": "4faf5b42a3e81368d1fcbd68b3a7b000cb2fef76776e0e825518052f953bad7e",
+      "bytes": 7323
+    },
+    {
+      "path": "packages/web/src/input/events.ts",
+      "sha256": "e4b8091bf565d39280adb1e202dfa6d19a50c0cefb6462c0fa2565ae4ee2e1fc",
+      "bytes": 4018
+    },
+    {
+      "path": "packages/web/src/input/field-group.ts",
+      "sha256": "7b3642e3720d815350ae1d8e31a774d0380e9c3cb7850b3f696e9ac0566f534c",
+      "bytes": 4080
+    },
+    {
+      "path": "packages/web/src/input/file-input.ts",
+      "sha256": "c6de895e9b59eaf45808b9487e5a9b99fe3a5a42865fd909d919811c457934c0",
+      "bytes": 4495
+    },
+    {
+      "path": "packages/web/src/input/form.ts",
+      "sha256": "b1625af7479dbaa0cb4f5f2fd8c19189506c27e2a49ee443d8143ffe31fd5ab3",
+      "bytes": 14986
+    },
+    {
+      "path": "packages/web/src/input/index.ts",
+      "sha256": "230e0b070d4b4ce113e69e7e2f8fd4d7513cf3c2e9fe00c4a57b5837c95fa370",
+      "bytes": 2171
+    },
+    {
+      "path": "packages/web/src/input/locale.ts",
+      "sha256": "191ba937391641ae206321520bea7ef37f16485a35f8920468dc514f673ec6e0",
+      "bytes": 7110
+    },
+    {
+      "path": "packages/web/src/input/manifest.ts",
+      "sha256": "8c97b8c3457d8a663eecd8c0fb064c6e6022aa33deb712f4f3332af1ecd5af4e",
+      "bytes": 13308
+    },
+    {
+      "path": "packages/web/src/input/number-field.ts",
+      "sha256": "3f808097ea8e75b569dff7ee029af4b8e332b1229ee3de24892c244e43dd572e",
+      "bytes": 7753
+    },
+    {
+      "path": "packages/web/src/input/options.ts",
+      "sha256": "d13f2096d4d190d18d506aac17470cd43d7e063e3b4424c6fd55e370fc35e5b3",
+      "bytes": 708
+    },
+    {
+      "path": "packages/web/src/input/radio-group.ts",
+      "sha256": "be62d70e5c834a0e10250365eedb0e7af74561fc308ac4ce3e626fa2be31991e",
+      "bytes": 4326
+    },
+    {
+      "path": "packages/web/src/input/search-field.ts",
+      "sha256": "c979d4d82ff7f094beda7eef44150f37cdc751ba769ae0f6006564b20c2c5ffd",
+      "bytes": 3712
+    },
+    {
+      "path": "packages/web/src/input/select.ts",
+      "sha256": "50ff3388e8f0e5b59d7297815b90b8cd8b209a12b824e6a220db2fa747938027",
+      "bytes": 4052
+    },
+    {
+      "path": "packages/web/src/input/slider.ts",
+      "sha256": "9743cd2e1f1d16fc304039bf050459a680ee2a4d41f1799f2f06df03edb08c72",
+      "bytes": 6232
+    },
+    {
+      "path": "packages/web/src/input/switch.ts",
+      "sha256": "9de8330db16eddd2e0d7134bf98001a2e265af964b85e5ac2b24d7b425750e25",
+      "bytes": 2248
+    },
+    {
+      "path": "packages/web/src/input/text-area.ts",
+      "sha256": "e5ea36275775405b27410ae09aaa20a4b323975ebdf6eb5ee1c5adb9f178b532",
+      "bytes": 296
+    },
+    {
+      "path": "packages/web/src/input/text-control.ts",
+      "sha256": "e8dbff3f123ec597eb029f9496e5a92277f4c79b52a29d2c0b61c6b29820ba7a",
+      "bytes": 13896
+    },
+    {
+      "path": "packages/web/src/input/text-field.ts",
+      "sha256": "6bc2f45fbb70f0ba315066eb8e456021e4f7f0c6f15a2812cada0ee4e21f7137",
+      "bytes": 302
+    },
+    {
+      "path": "packages/web/src/navigation/breadcrumb.ts",
+      "sha256": "66d61d39bb11f061d7d2592484acd87c2f318f594b86b385bf2deb403e49d1bf",
+      "bytes": 2396
+    },
+    {
+      "path": "packages/web/src/navigation/index.ts",
+      "sha256": "6258ad47d2943e678f5ecf2d553727942e2b171f8403882c8f7b2cb29fa98d0c",
+      "bytes": 151
+    },
+    {
+      "path": "packages/web/src/navigation/menu.ts",
+      "sha256": "2fbaccce3950dd00c2ca0cd8b3a7c39c320f2238c7f1cb7b99a7c6d0ac080994",
+      "bytes": 5116
+    },
+    {
+      "path": "packages/web/src/navigation/pagination.ts",
+      "sha256": "eaebccfc7b6bef05aa28c5e53747167d01fde7a21026c33a3a18ed2becdb0a6f",
+      "bytes": 3103
+    },
+    {
+      "path": "packages/web/src/navigation/shared.ts",
+      "sha256": "a16d5fc9d55aec2dfaaab4c8f524fc197873a0895069071a6528eeb57a9a6d5f",
+      "bytes": 7369
+    },
+    {
+      "path": "packages/web/src/navigation/tabs.ts",
+      "sha256": "f7ae46662ab39b85aa547cfcb3357670ea17d7b06206c4e42e007f2618dd4307",
+      "bytes": 5637
+    },
+    {
+      "path": "packages/web/src/navigation/tree-nav.ts",
+      "sha256": "3217b6803bcf181f942a4ab411a984396e04648fbb262349cb0f057b6dabc139",
+      "bytes": 9587
+    },
+    {
+      "path": "packages/web/src/plot/composition.ts",
+      "sha256": "365bd9b0c49f96ba83abd1d337e5f5744959f65391ae233201d24625066a8b56",
+      "bytes": 6401
+    },
+    {
+      "path": "packages/web/src/plot/element.ts",
+      "sha256": "c8c29c8e936dca21a4388794e81fc209a773b7527c71bb42ca2ddb05fe21188e",
+      "bytes": 11378
+    },
+    {
+      "path": "packages/web/src/plot/geometry.ts",
+      "sha256": "be21335780605366257bb76745109e6a3854891f0592186b083df2b09f71c888",
+      "bytes": 22681
+    },
+    {
+      "path": "packages/web/src/plot/index.ts",
+      "sha256": "5412f1fe5af7c6c9f3aeb42dab512ab6ba1c30395648e449fb3d75f96068f798",
+      "bytes": 522
+    },
+    {
+      "path": "packages/web/src/plot/palette.ts",
+      "sha256": "47ccad7bf92d17e3e27e15612a3208a87af38e9c8bad800f0bf0098837d511b4",
+      "bytes": 498
+    },
+    {
+      "path": "packages/web/src/plot/render.ts",
+      "sha256": "942ca600d8b4fdac7c88a29eff2f3e1f10875a26aee42dfb06a06fb42fc75855",
+      "bytes": 2737
+    },
+    {
+      "path": "packages/web/src/plot/scales.ts",
+      "sha256": "6a0290dc54a2052422db40a39ab280c052f31192c7991c3f6fd85c2ee2ffa2bc",
+      "bytes": 4429
+    },
+    {
+      "path": "packages/web/src/region/adaptation.ts",
+      "sha256": "43b75381c0aa07d9b2d55ed5ba0a71b2513a5425f07a675c48f2d4cd57463a3d",
+      "bytes": 17057
+    },
+    {
+      "path": "packages/web/src/region/aeliqo-region.ts",
+      "sha256": "8a0acdd7933bcc56177c278d19374df594541199ebc92d3be1db30b141a42d13",
+      "bytes": 24645
+    },
+    {
+      "path": "packages/web/src/region/data-presentation.ts",
+      "sha256": "667c6bf13be5d5b0bd6ff00b09d0cf346f282652fd24ebdbabe6c33f456e0961",
+      "bytes": 14762
+    },
+    {
+      "path": "packages/web/src/region/data-registry.ts",
+      "sha256": "7f88ca2d7991ea09befb8ce652fe85f2c24498bfb0da924233643bcf906234b6",
+      "bytes": 57069
+    },
+    {
+      "path": "packages/web/src/region/data-renderer.ts",
+      "sha256": "055440a0e77c3ab9c26e8ab2a1fc341697edc869872b04d731b2201a11ea4e30",
+      "bytes": 35234
+    },
+    {
+      "path": "packages/web/src/region/foundation-registry.ts",
+      "sha256": "c49dff9fd84bd65216b5e6824df4579ae03dc68ab538c5cc6b3f3110e38be55c",
+      "bytes": 8386
+    },
+    {
+      "path": "packages/web/src/region/foundation-renderer.ts",
+      "sha256": "9e75119f317800f8c885b43d5c3dfe751006d33fff43be89464f731da448c1b6",
+      "bytes": 4923
+    },
+    {
+      "path": "packages/web/src/region/index.ts",
+      "sha256": "24d375226afcc4be50d316123b14d8e1fe1bb9d669801087006de222d9e9b8de",
+      "bytes": 1833
+    },
+    {
+      "path": "packages/web/src/region/input-registry.ts",
+      "sha256": "3852647139d599220c6f40606a3aec5b7805388127a45263ca3a480868e9c085",
+      "bytes": 27559
+    },
+    {
+      "path": "packages/web/src/region/input-renderer.ts",
+      "sha256": "3230b019a785d5d5dbd543e953f6a497754d6fc9f0b5fac2b37ca7aee7e6827a",
+      "bytes": 26433
+    },
+    {
+      "path": "packages/web/src/region/navigation-feedback-registry.ts",
+      "sha256": "53cf24a0891227dc2e0ec7c6ae94b2755eb5586899331e754a55038cbcedeb59",
+      "bytes": 60469
+    },
+    {
+      "path": "packages/web/src/region/navigation-feedback-renderer.ts",
+      "sha256": "9e413827d7b2954a9dc34b72f659d8cfe756462e304c3c03ab227595981ccf4b",
+      "bytes": 13599
+    },
+    {
+      "path": "packages/web/src/region/registry.ts",
+      "sha256": "feeb009d110481ec4ccef99188301d1f556d71cafd8a392cf1e2fefbacc7068a",
+      "bytes": 23350
+    },
+    {
+      "path": "packages/web/src/region/types.ts",
+      "sha256": "6a97905dcf5c0a542cfa47724e7473b62c723adc1280775b32b559c1bfc85a92",
+      "bytes": 1574
+    },
+    {
+      "path": "packages/web/src/region/visualization-registry.ts",
+      "sha256": "d8bf8d151cd919878fd3020fff9303585754ff251c18390cf826733b5625c193",
+      "bytes": 17009
+    },
+    {
+      "path": "packages/web/src/region/visualization-renderer.ts",
+      "sha256": "1d0dd67f74953b078a374063d8ae228d40e40e780bc61458744b6cc7bc8eaa92",
+      "bytes": 13247
+    },
+    {
+      "path": "packages/web/src/register.ts",
+      "sha256": "b589e0ab5680e154644d2c0d1297ba28d68ab03337795c1b901783bb63c5440d",
+      "bytes": 7620
+    },
+    {
+      "path": "packages/web/src/server.ts",
+      "sha256": "76ef3bc1b1db26d4e22552bb985f0120b729f87f279653360f793b7ceed81d86",
+      "bytes": 449
+    },
+    {
+      "path": "packages/web/src/styles/index.ts",
+      "sha256": "a764979a095a87ac42b5e699badfaf0481b5492553b3640f8d239a6793ebed23",
+      "bytes": 665
+    },
+    {
+      "path": "packages/web/src/styles/locale.ts",
+      "sha256": "bc28c32e45afc79fa7e2288ac9d94716991f2144670bc2fd7bb51b189e3320b6",
+      "bytes": 3274
+    },
+    {
+      "path": "packages/web/src/styles/parts.ts",
+      "sha256": "b7fa09c6eb8a5b8ac4b99fc9046e2d71b313728aff3bd78412d6281641cd88f4",
+      "bytes": 444
+    },
+    {
+      "path": "packages/web/src/styles/theme.ts",
+      "sha256": "3c0660289a8986ff2718fe4e37f47597337c2608e47e7de38e795b8e0ec5a971",
+      "bytes": 4793
+    },
+    {
+      "path": "packages/web/src/styles/tokens.ts",
+      "sha256": "2b2c97aeb1d5e90cc7c12b34dc0ad48249169e09457f4b78968e0ecfe5c1e364",
+      "bytes": 7694
+    },
+    {
+      "path": "packages/web/src/types.ts",
+      "sha256": "05d39723077b24f1f6ea48c356359276d68d8081c19ce75e89027dcf81235080",
+      "bytes": 1579
+    },
+    {
+      "path": "packages/web/src/visualization/cartesian/area.ts",
+      "sha256": "06683c01f39a26a66f7aacf910569e833802e92c3ae97143d8f8e5c3d24ec177",
+      "bytes": 167
+    },
+    {
+      "path": "packages/web/src/visualization/cartesian/bar.ts",
+      "sha256": "b51675daf55294e181acb793445f1fc94b67410c4584f96e78f31e5fa289f875",
+      "bytes": 165
+    },
+    {
+      "path": "packages/web/src/visualization/cartesian/base.ts",
+      "sha256": "e4aefeb9bbc58b1e496662190f3302f1d66dc8b0808b20d7546feb988b0aed28",
+      "bytes": 23053
+    },
+    {
+      "path": "packages/web/src/visualization/cartesian/heatmap.ts",
+      "sha256": "ce38907c8916ef2f0b9ed098c1238fd98700a6b095f13ddb25b401cf82be57ac",
+      "bytes": 173
+    },
+    {
+      "path": "packages/web/src/visualization/cartesian/histogram.ts",
+      "sha256": "414384c1ea6b8b192507c1ce74d9fd5413819b938f02721dcbc4213d6d3bd6f6",
+      "bytes": 177
+    },
+    {
+      "path": "packages/web/src/visualization/cartesian/index.ts",
+      "sha256": "7e25e979a831be1892d85363442cd62dbdc5028e9c57e6b1ff9617e78f266c4b",
+      "bytes": 1732
+    },
+    {
+      "path": "packages/web/src/visualization/cartesian/scatter.ts",
+      "sha256": "8e28aa5514aa26fdd31801b431f0f35719e556cf6289bbf2f9262aa464506d58",
+      "bytes": 173
+    },
+    {
+      "path": "packages/web/src/visualization/cartesian/trend.ts",
+      "sha256": "9a3f4d1fd054c5d34de47af6186d73675966fa13c7c04f2383c00b5f76179887",
+      "bytes": 169
+    },
+    {
+      "path": "packages/web/src/visualization/hierarchy/element.ts",
+      "sha256": "c1d62b20a03d3c098ddf5b2783924149ed674c24958e93b15dd00b5be81eb5da",
+      "bytes": 17608
+    },
+    {
+      "path": "packages/web/src/visualization/hierarchy/geometry.ts",
+      "sha256": "e6d633a4759469777d9dcfacab092b59f10a593135dc19df635642bb008003a0",
+      "bytes": 32830
+    },
+    {
+      "path": "packages/web/src/visualization/hierarchy/index.ts",
+      "sha256": "66e44920062937d36dd4dce05b33f24251d7389f3fb1b6c6fb1872e6bbb0d992",
+      "bytes": 1550
+    },
+    {
+      "path": "packages/web/src/visualization/index.ts",
+      "sha256": "681d58f36c6b519fe177af04310bc8b7bb47cbbad0d56d7ea9ed5fe65bdada4f",
+      "bytes": 141
+    },
+    {
+      "path": "packages/web/src/visualization/materialization.ts",
+      "sha256": "890971f999bd31b98b1685233431362c10ae4fa4fa2bfb591961cef5de6a47b7",
+      "bytes": 4439
+    },
+    {
+      "path": "packages/web/src/visualization/temporal/geometry.ts",
+      "sha256": "2a310452c6d0ae20282207d77e283fac297c476b7ee03b1f6d647e5de23b0376",
+      "bytes": 6576
+    },
+    {
+      "path": "packages/web/src/visualization/temporal/index.ts",
+      "sha256": "ea626c71822402b0911075d05cc6054ca301fb31e1f7c31a9f650f2550956267",
+      "bytes": 12305
+    },
+    {
+      "path": "packages/web/src/visualization/types.ts",
+      "sha256": "fb89e59e6ff22abd1fa962b7c3282a2b14d5271337c0882a52386e8fe7b2742f",
+      "bytes": 950
+    },
+    {
+      "path": "scripts/docs/build-public-docs.mjs",
+      "sha256": "c53a8ab6e63696e11b73cca89a45d7723ca78e6f2844829b4b2134904fd14190",
+      "bytes": 17970
+    },
+    {
+      "path": "scripts/docs/component-api.mjs",
+      "sha256": "f51ba21d66c20320ab42c7d23d1ab5dab36c83a8b7b07ab1c2b3fca5d8441c54",
+      "bytes": 7988
+    },
+    {
+      "path": "scripts/docs/public-docs-contract.mjs",
+      "sha256": "1531e9668b3329ee8464d4e34acff885832de0a7e2d15b092df80b969d0e14fd",
+      "bytes": 9760
+    }
+  ]
+}

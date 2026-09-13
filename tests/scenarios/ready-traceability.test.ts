@@ -161,7 +161,7 @@ describe('S63 split-era evidence scope', () => {
     });
     expect(task?.evidenceScope).toBe('historical-pre-split-site-acceptance');
     expect(scenario?.notes).toContain('does not certify the current public tree');
-    expect(task?.notes).toContain('does not certify current public source');
+    expect(task?.notes).toContain('does not certify the reunited apps/site source');
     expect(readyScenarioTraceability.some((trace) => trace.id === 'S63')).toBe(false);
 
     for (const reference of [...(scenario?.evidence ?? []), ...(task?.evidence ?? [])]) {

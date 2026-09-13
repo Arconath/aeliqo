@@ -39,7 +39,19 @@ function runPolicy(overrides = {}) {
   });
 }
 
-test('quality dispatch accepts legacy main and an exact codex candidate', () => {
+test('quality policy accepts automatic main and pull-request checks plus an exact codex candidate', () => {
+  assert.equal(runPolicy({ EVENT_NAME: 'push' }).status, 0);
+  assert.equal(
+    runPolicy({
+      EVENT_NAME: 'pull_request',
+      SOURCE_REF: 'refs/pull/14/merge',
+      SOURCE_SHA: 'b'.repeat(40),
+      EXPECTED_SOURCE_SHA: '',
+      ACTOR: 'contributor',
+      TRIGGERING_ACTOR: 'contributor',
+    }).status,
+    0,
+  );
   assert.equal(runPolicy().status, 0);
   assert.equal(
     runPolicy({
@@ -66,11 +78,31 @@ test('quality dispatch rejects wrong and malformed candidate SHAs', () => {
 test('quality dispatch retains the workflow trust and release boundaries', () => {
   assert.match(workflow, /^permissions:\n  contents: read$/m);
   assert.match(workflow, /runs-on: ubuntu-latest/);
-  assert.match(workflow, /ref: \$\{\{ github\.sha \}\}/);
+  assert.match(workflow, /ref: \$\{\{ env\.SOURCE_SHA \}\}/);
   assert.match(workflow, /persist-credentials: false/);
   assert.doesNotMatch(workflow, /secrets\./);
   assert.match(releaseWorkflow, /github\.ref == 'refs\/heads\/main'/);
   assert.match(releaseWorkflow, /head_sha == \$sha/);
   assert.match(releaseWorkflow, /head_branch == "main"/);
   assert.match(releaseWorkflow, /conclusion == "success"/);
+});
+
+test('repository exposes exactly one functional and two publication lanes', async () => {
+  const workflowDirectory = new URL('../../.github/workflows/', import.meta.url);
+  const { readdir } = await import('node:fs/promises');
+  assert.deepEqual((await readdir(workflowDirectory)).sort(), [
+    'quality.yml',
+    'release-publish.yml',
+    'site-release.yml',
+  ]);
+});
+
+test('image publication preserves same-source quality evidence after checkout', async () => {
+  const imageWorkflow = await readFile(new URL('../../.github/workflows/site-release.yml', import.meta.url), 'utf8');
+  const checkout = imageWorkflow.indexOf('- uses: actions/checkout@');
+  const policy = imageWorkflow.indexOf('- name: Require owner-dispatched current main');
+  const publish = imageWorkflow.indexOf('- name: Publish, attest, and scan');
+  assert.ok(checkout >= 0 && checkout < policy && policy < publish);
+  assert.match(imageWorkflow, /artifacts\/site-release-policy/);
+  assert.match(releaseWorkflow, /-f event=push -f status=success/);
 });

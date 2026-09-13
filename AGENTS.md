@@ -33,6 +33,18 @@ generated images are not instruction overlays.
 - Aeliqo owns all 71 primitive/2D components. Keep one shared web implementation,
   thin framework bindings, direct-component use, SSR/hydration, accessibility,
   and bounded no-preset composition.
+
+## Application boundaries
+
+- The current `apps/site` shell assembles the public web, generated documentation
+  and playground into one static artifact. Keep it as the migration shell until
+  the split has equivalent route, provenance and browser evidence.
+- The public source boundaries are `apps/web`, `apps/docs` and
+  `apps/playground`. Docs and playground may ship as one static image under
+  `docs.aeliqo.com` while remaining separate source applications.
+- A private Pro API, worker, billing integration or customer-data service
+  belongs in the separate private `products/aeliqo-pro` repository. Never put
+  its credentials or proprietary server code in this public repository.
 - Do not add a safety paywall, license callback, mandatory account, artificial
   paid row cap, arbitrary executable model output, or hidden source execution.
 
@@ -48,11 +60,13 @@ Never count planned, skipped-required, synthetic, stale, or unreviewed evidence
 as a pass. `python3 scripts/validate_all.py` validates the retained spec kit;
 `pnpm check` runs product gates.
 
-Public documentation source, API metadata, examples, packages, Studio, and SDK
-tests stay here. The website shell, site tests, static server/container, and
-website deployment live in private `Arconath/aeliqo-site`; OSS builds and GitHub
-Actions must not require that repository, its token, or private runners. See
-`docs/repository-split.md`.
+Public documentation source, API metadata, examples, packages, Studio, SDK
+tests, the website shell, playground, site tests, static server/container, and
+website delivery configuration all live in this public repository. The website
+workspace is isolated under `apps/site` so its exact vendored release input can
+still be checked independently. Public pull requests run only on GitHub-hosted
+runners and receive no release credentials. See `docs/repository-split.md` for
+the historical split and the 13 September 2026 reunification decision.
 
 Release `0.1.0` only from exact reviewed source through audited tarballs,
 non-`latest` RC tags, verified registry consumers, and explicit promotion. npm

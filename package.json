@@ -4,6 +4,9 @@
   "version": "0.1.0-dev.0",
   "description": "Aeliqo 0.1.0 framework source and release workspace",
   "scripts": {
+    "site:verify": "pnpm --dir apps/site verify:inputs",
+    "site:build": "pnpm --dir apps/site build",
+    "site:test": "pnpm --dir apps/site check",
     "kit:check": "python3 scripts/kit_check.py",
     "check": "python3 scripts/gate.py ci",
     "release:ready": "python3 scripts/gate.py ready",

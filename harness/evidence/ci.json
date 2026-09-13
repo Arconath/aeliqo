@@ -1,8 +1,8 @@
 {
-  "subjectSha256": "be201bfa2b471c83a3777ed81404d66a7b10a0f4ba97514ef61281d7a67786a8",
+  "subjectSha256": "b1792e2b5f1a47c8c4a38dacd1481c729ceb993775683441969e2dc176a51292",
   "status": "pass",
   "sourceChangedDuringRun": false,
-  "timestamp": "2026-09-10T15:14:37.230815+00:00",
+  "timestamp": "2026-09-13T17:52:35.026906+00:00",
   "results": [
     {
       "kind": "typecheck",
@@ -11,10 +11,11 @@
         "typecheck"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 6.379,
       "artifacts": [
         {
           "path": "artifacts/product-ci/00-typecheck.log",
-          "sha256": "2eabafa8fb837dc99f577cf275f677fe111d9e3acaceaba169bbb6a58f18ccf0"
+          "sha256": "1bc6b3d325bb0ad005c9556995b095a02049966dd86f1b00bbdfbc48bfa73ab1"
         }
       ]
     },
@@ -25,10 +26,11 @@
         "test:platform"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.053,
       "artifacts": [
         {
           "path": "artifacts/product-ci/01-unit.log",
-          "sha256": "2efbf5bc26f62a03f491abe8c4380ddd87bc843b8c122b38f088ad3d5a30b9b5"
+          "sha256": "514ddcf2300a5714ffbd23ad9c3a28bdaf1d07529722e86463f7820846e4c5d6"
         }
       ]
     },
@@ -39,10 +41,11 @@
         "test:platform:browser"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 6.694,
       "artifacts": [
         {
           "path": "artifacts/product-ci/02-browser.log",
-          "sha256": "e042e31808ffea645b09cc235c44e908c51c651e1fa9af09eded8b8bbffced14"
+          "sha256": "99ff03852b52f0e56fbf7b9b88c4d0bad27967e1f89b08b77df2b428792312f3"
         }
       ]
     },
@@ -53,10 +56,11 @@
         "test:next-platform"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 4.505,
       "artifacts": [
         {
           "path": "artifacts/product-ci/03-browser.log",
-          "sha256": "dc5def4ae20eae37c2aa8f2e865ce94cacba6468aa8b8617ab1c6c48b5a95922"
+          "sha256": "8d067ed3f6f3897f5305ce1dc92e5dd84039e20d715cdbc4a0c0226fe795c2b2"
         }
       ]
     },
@@ -67,10 +71,11 @@
         "test:platform:consumers"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 12.777,
       "artifacts": [
         {
           "path": "artifacts/product-ci/04-packages.log",
-          "sha256": "26ee09af0098192d05d2d3d938cab42a953a74c18e81a224d875102740ddfa9a"
+          "sha256": "5030a4e2645e0ef8cdce447036a701e4a5a4fd85012e5d8bb2657227380f3e8e"
         }
       ]
     },
@@ -81,10 +86,11 @@
         "test:contracts"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.81,
       "artifacts": [
         {
           "path": "artifacts/product-ci/05-unit.log",
-          "sha256": "da7d79f512d919a45e1779d72e27bd63852447aab38e15423e1dc248c17542a0"
+          "sha256": "21d49b3218cd3bf2b748516736b4519fb4c98b675d15432528fc273616042ef0"
         }
       ]
     },
@@ -95,10 +101,11 @@
         "test:core:consumers"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 4.441,
       "artifacts": [
         {
           "path": "artifacts/product-ci/06-packages.log",
-          "sha256": "10b13458dad361c5ddc560d9bba486b6ab13f6140e8c4a20e90ee788a06a7997"
+          "sha256": "32e68fc57ab47fa47970f4037e616135e6a4d20f164e79f5e1e1a88fc074afb3"
         }
       ]
     },
@@ -109,10 +116,11 @@
         "test:task-experience"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.269,
       "artifacts": [
         {
           "path": "artifacts/product-ci/07-unit.log",
-          "sha256": "78a82646ec945d7d77e2d1c5c1dcbf20eea5e64fb5287be1e3f7e5b0408c9535"
+          "sha256": "85aa979e1a1cab7256ef25fd7d4a74c31b98a992f856dc3d4cb1618fffebf400"
         }
       ]
     },
@@ -123,10 +131,11 @@
         "test:evaluation"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.853,
       "artifacts": [
         {
           "path": "artifacts/product-ci/08-unit.log",
-          "sha256": "e91f75a363e2184538dd57b67254afb5e305d4ad0b86fa96c99f77de55e830d6"
+          "sha256": "6e0ffbb0068e633dc2bfec4b6ffaa5f0c4a943647f2ee0ea6be81db1cfdc2d63"
         }
       ]
     },
@@ -137,10 +146,11 @@
         "test:vertical"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 4.826,
       "artifacts": [
         {
           "path": "artifacts/product-ci/09-unit.log",
-          "sha256": "9a8ad3f938d7ec258db1cc8c0eb9140837fb5d53664b001e23d2f8c1350b871d"
+          "sha256": "3ed948841bfcfb2b2ba4dceb37b08135637c606e2a2f273e42b52ebd45d28660"
         }
       ]
     },
@@ -151,10 +161,11 @@
         "test:vertical:browser"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 6.459,
       "artifacts": [
         {
           "path": "artifacts/product-ci/10-browser.log",
-          "sha256": "49a6dcbbce6e81b3cddc57785ed4d2ae28f9a90b05b93d84e9b044438c30379b"
+          "sha256": "3f70a7924dad8effd9d2833ddc61587ea8b4462be259cc9fef640a702c045eb3"
         }
       ]
     },
@@ -165,10 +176,11 @@
         "test:vertical:consumers"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 13.649,
       "artifacts": [
         {
           "path": "artifacts/product-ci/11-packages.log",
-          "sha256": "44fac5bb9941c34f0e0ebd5845ad2374d2ebccea7c5de7cf9f5f9a9dde032d8a"
+          "sha256": "d987d50481c5bf1f90bd35e054f69efe21cf62938bd93cbc4253e48e637bfbe1"
         }
       ]
     },
@@ -179,10 +191,11 @@
         "test:agents"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 3.242,
       "artifacts": [
         {
           "path": "artifacts/product-ci/12-unit.log",
-          "sha256": "756e29045832b1e5153a068ae2e52284c55b13000d54fd90752a3e54260d373e"
+          "sha256": "2b1c562a38029a99ac5b422372933d3bb716b2b5069f4fc56894c98d6c8d1c66"
         }
       ]
     },
@@ -193,10 +206,11 @@
         "test:agent:consumers"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 12.102,
       "artifacts": [
         {
           "path": "artifacts/product-ci/13-packages.log",
-          "sha256": "39f202c23642ef8923ce57d12ec15c043852ab7baaca36fc3d769cb9812d4d09"
+          "sha256": "b311a3e780e0966d52a4d90ac5db2ea23cf67e850796ed7de6ebcef37e270286"
         }
       ]
     },
@@ -207,10 +221,26 @@
         "lint"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 5.815,
       "artifacts": [
         {
           "path": "artifacts/product-ci/14-lint.log",
-          "sha256": "6e04e1bb4a604a205b7e4267383ea4a8293b89c8fd925aad730ea7fe0335cacf"
+          "sha256": "0e35626633712411280f678df4d3530ab34b5e30a5ecaf486c12d662daf7952c"
+        }
+      ]
+    },
+    {
+      "kind": "lint",
+      "argv": [
+        "pnpm",
+        "format:check"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.673,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/15-lint.log",
+          "sha256": "c221deac8a6bd1a41ff8f3987ada1e6562c593ee63a8d6249c9ffeecbfb72bb4"
         }
       ]
     },
@@ -221,10 +251,11 @@
         "test:security"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 3.697,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/15-security.log",
-          "sha256": "252d5e9f68ec5c6d24143f301499b0b3f7f6a4ef81aabd0180c1315aa2899108"
+          "path": "artifacts/product-ci/16-security.log",
+          "sha256": "8f8c4ffa0d0da4e9cdc3cff06fee4812c1022e8525fe3a392e6f4802b12d436b"
         }
       ]
     },
@@ -235,38 +266,67 @@
         "test:boundaries"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.692,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/16-boundaries.log",
-          "sha256": "97ec666ce46e449a5f4cef0fc23c9d9ed4302ca9b9d7a3a50ef329394b1da1e3"
+          "path": "artifacts/product-ci/17-boundaries.log",
+          "sha256": "8f38cff2de682a6275ffa7437981464898c398c4eafa57a0d426ab456b26e3b5"
         }
       ]
     },
     {
-      "kind": "performance",
+      "kind": "security",
       "argv": [
+        "env",
+        "AELIQO_DEFER_PERFORMANCE=1",
         "pnpm",
         "test:performance:bundles"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 6.427,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/17-performance.log",
-          "sha256": "ae62a827fbd25650e049b54ee22054c2e4520b0aa924a066ce7b9e5720968fb1"
+          "path": "artifacts/product-ci/18-security.log",
+          "sha256": "a900b104b8caa2b4a8c0166a56b9d9a7815e4106b3e410c21661741c1fb7a5e9"
         }
       ]
     },
     {
-      "kind": "performance",
+      "kind": "unit",
       "argv": [
-        "pnpm",
-        "test:performance:runtime"
+        "env",
+        "AELIQO_RUN_PERFORMANCE=0",
+        "node",
+        "tests/performance/runtime-workload.mjs"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 0.183,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/18-performance.log",
-          "sha256": "6af95a0574a87b7e7cdc660eee85150f7a9e939e83a86cd80e6012c3f726125b"
+          "path": "artifacts/product-ci/19-unit.log",
+          "sha256": "d5791a55d2fac9a490be7fcd97c8bea503c959d0b166697bc113809224e181bc"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "env",
+        "AELIQO_RUN_PERFORMANCE=0",
+        "AELIQO_ENFORCE_PERFORMANCE_BUDGETS=0",
+        "pnpm",
+        "exec",
+        "playwright",
+        "test",
+        "--config",
+        "tests/performance/playwright.config.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 3.092,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/20-browser.log",
+          "sha256": "6eb6ae6cc871acc72a04d8efe035ccaa3511227b7b16672f8f8d65505da625b1"
         }
       ]
     },
@@ -277,10 +337,11 @@
         "test:semantics"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 0.989,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/19-unit.log",
-          "sha256": "aa16da383e34439ffe3e6e8b627a418a8c2ac34cc0f51611e29e37c760a777f0"
+          "path": "artifacts/product-ci/21-unit.log",
+          "sha256": "8231ffbb363ef2e4ede76a146bd1411a085a44a0f9e6ce6b67d015dd6a9e76c5"
         }
       ]
     },
@@ -291,10 +352,11 @@
         "test:query"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.797,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/20-unit.log",
-          "sha256": "222044a7e93ebf60846244db55ea92aba978727ee3caebf42b37cfa9647b7195"
+          "path": "artifacts/product-ci/22-unit.log",
+          "sha256": "c7d36e057b6c58af5ae0485b399d74ea335eb6a148ce3f2e1a853df06d17c52a"
         }
       ]
     },
@@ -305,10 +367,11 @@
         "test:design"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 0.612,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/21-unit.log",
-          "sha256": "48b4b4951647d7105d534962736aa761bc7ff37b18aea0ede656f75e9d1a71a5"
+          "path": "artifacts/product-ci/23-unit.log",
+          "sha256": "b865dee61f22ea18bd42ae8c7d3fdccd22dd2f50e851599025598f5ba2521d07"
         }
       ]
     },
@@ -319,10 +382,11 @@
         "test:design:browser"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 4.461,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/22-browser.log",
-          "sha256": "d6d66d0d3d0aef501f87204839272e5c05600a019fe358e6765c247e15cb1d81"
+          "path": "artifacts/product-ci/24-browser.log",
+          "sha256": "074b06a300e349ea3c3e6d7edfcb1fd09e26c0d8b3ec33c064e8b886507a3cb0"
         }
       ]
     },
@@ -333,10 +397,11 @@
         "test:data"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.998,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/23-unit.log",
-          "sha256": "7b4f5ad74d34b19b0c20e3b3909aa2ee75bb9a6f7e5d29415240c32425202386"
+          "path": "artifacts/product-ci/25-unit.log",
+          "sha256": "c5a8eda1042f916c16eb52911af918a209fef0d52ebc41010edaab1397578c19"
         }
       ]
     },
@@ -347,10 +412,11 @@
         "test:runtime:consumers"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 12.595,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/24-packages.log",
-          "sha256": "4c9a6332d649e3aec2aa3d3174669ec10e7e4fcab92f1ab2188a48a837f32bbb"
+          "path": "artifacts/product-ci/26-packages.log",
+          "sha256": "da1ab909fe5e4dce4d3215e1404cf8706c7b61670a474c0dcd6f84df0c5fe0fa"
         }
       ]
     },
@@ -361,10 +427,11 @@
         "test:data:auth-retention"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 26.214,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/25-unit.log",
-          "sha256": "3c8b54232ad92fd6c3306c5df372849a27fd7f566d3a517a49c79fb280ead484"
+          "path": "artifacts/product-ci/27-unit.log",
+          "sha256": "338dfb54601a1cefcde512d410bea7e0f2297852e6752931bb250f5525a91933"
         }
       ]
     },
@@ -375,10 +442,11 @@
         "test:results"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.635,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/26-unit.log",
-          "sha256": "fc8c335a98305e3266f67811f09ef2c7709d7f983f5196f09f31021b46101ff5"
+          "path": "artifacts/product-ci/28-unit.log",
+          "sha256": "ea9b40f32f05a63c2b30443785bcd0f3baa2b7a76ab0316597485658fe198532"
         }
       ]
     },
@@ -389,10 +457,11 @@
         "test:regions"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.683,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/27-unit.log",
-          "sha256": "07891a40e57e205ce0aa650bab73d93182e8d6c466b993aba40f58db467032cd"
+          "path": "artifacts/product-ci/29-unit.log",
+          "sha256": "cfa33b1175f986521b233d20507a4591067e4f8cd9f49ec8e78af09dbea59f25"
         }
       ]
     },
@@ -403,10 +472,11 @@
         "test:actions"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.859,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/28-unit.log",
-          "sha256": "13c23a74abfc711352bedb3cf5666d7b08089b62359c079c227a1a29f4d52c69"
+          "path": "artifacts/product-ci/30-unit.log",
+          "sha256": "f718eb6e338be5a31deb8c595a3a1d6e21408d7fda339d193b2fb0ab5aa88c67"
         }
       ]
     },
@@ -417,10 +487,11 @@
         "test:audit"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.428,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/29-unit.log",
-          "sha256": "8b0b5ad602ff009c09c8e8ee3258a953bdbc34d1bd7d05bc8acdae05d7a6faea"
+          "path": "artifacts/product-ci/31-unit.log",
+          "sha256": "06fab05288962dd5ddf8b5f84fc4608cfb4e247833912e189da02d7a1efbf8be"
         }
       ]
     },
@@ -431,10 +502,11 @@
         "test:interaction"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 2.181,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/30-unit.log",
-          "sha256": "eef5d327bc0325ede1b0b403f68a12c6c9c5c72ec77e89be452ffed7ee278a6c"
+          "path": "artifacts/product-ci/32-unit.log",
+          "sha256": "4472e15655a61b075b2cb7f94a79ebf241a5d1a5f26c8c380ae3a850d0c9c1de"
         }
       ]
     },
@@ -445,10 +517,11 @@
         "test:foundation"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 2.876,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/31-unit.log",
-          "sha256": "d78a7c5b6830b922f44a07d1fcb9da16822e29d57640b017727d98931009708c"
+          "path": "artifacts/product-ci/33-unit.log",
+          "sha256": "d386d7c812a44d74d3b386d29aea23dba74f9b47d38e6eb6addb932023f0b13d"
         }
       ]
     },
@@ -459,10 +532,11 @@
         "test:foundation:browser"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 5.914,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/32-browser.log",
-          "sha256": "47b3289021b38a6f1caff822454551ba20701c2420412cc1e74c046c96ecc1be"
+          "path": "artifacts/product-ci/34-browser.log",
+          "sha256": "3855b75ea993a3cddc0dc2f85e683f1b708c9cad3076fa485210de6aac84bed5"
         }
       ]
     },
@@ -473,10 +547,11 @@
         "test:inputs"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.865,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/33-unit.log",
-          "sha256": "191fb91a9905e2e6f35a9d800bdc5534e3a752489753238dfb2a9aa8a8efab60"
+          "path": "artifacts/product-ci/35-unit.log",
+          "sha256": "b251e311e7fd8f3efbbfa553c3061dfad7c7a8e433d8f512cf09f4f323cb7bc2"
         }
       ]
     },
@@ -487,10 +562,11 @@
         "test:inputs:browser"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 3.454,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/34-browser.log",
-          "sha256": "e6d8b361cd57791753fdaff1e0f47186053291f536fcaaa4c2f2f67f13923b0e"
+          "path": "artifacts/product-ci/36-browser.log",
+          "sha256": "a89591c5b799e4a75e1d978335de92dbaf4a0cc143cb375ece94196dbb9938b5"
         }
       ]
     },
@@ -501,10 +577,11 @@
         "test:inputs:consumers"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 14.857,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/35-packages.log",
-          "sha256": "8f9ff02017cf39316ba4655e09a3da3909bda9d3486426a503cabad2c840b7e9"
+          "path": "artifacts/product-ci/37-packages.log",
+          "sha256": "30796a53f3ddbad94cb9158ff7ae960bad6046136c5c86b3be58b0e94ab555e2"
         }
       ]
     },
@@ -515,10 +592,11 @@
         "test:navigation:browser"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.685,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/36-browser.log",
-          "sha256": "24b13cac87fe3131838db2ee4fef78be853fe01d0378284fc7404985f50b02ba"
+          "path": "artifacts/product-ci/38-browser.log",
+          "sha256": "328d4ddd19f12213bb79ac5a3096ae26ad61eba20f549510366a6699480ea4ab"
         }
       ]
     },
@@ -529,10 +607,11 @@
         "test:feedback:browser"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 2.91,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/37-browser.log",
-          "sha256": "2f847b83122c8c60a083ab1860982ca5f9f77869c90cac5eede6f9622d77fe55"
+          "path": "artifacts/product-ci/39-browser.log",
+          "sha256": "af4798b09c90b12d0fa2b8385d3d4533ccfb0190a7fa1b5d50f999d4c5a7023b"
         }
       ]
     },
@@ -543,10 +622,11 @@
         "test:data-components"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.998,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/38-unit.log",
-          "sha256": "2209bfce493b57bb202dce618a9cde410588702f14b4e9487738f128af0acfdb"
+          "path": "artifacts/product-ci/40-unit.log",
+          "sha256": "d0512628bfc87eaa78ada13215a5f03609b16184b24c0859d110d0601d344d2c"
         }
       ]
     },
@@ -557,10 +637,11 @@
         "test:data-components:browser"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 4.625,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/39-browser.log",
-          "sha256": "c7925d1893c0dfbe3dbfc7819f5cdec85851f30891dae20bfdcf9e1e2500b869"
+          "path": "artifacts/product-ci/41-browser.log",
+          "sha256": "1805f602312a2978c1e3e67543e9117b77e36f6096928a9680a3dc1db66e678a"
         }
       ]
     },
@@ -571,10 +652,11 @@
         "test:data-components:consumers"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 13.418,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/40-packages.log",
-          "sha256": "c04a7fb88a2cb0d124d855c91ea117ba8293760f995d09c84240c4f98f440f1b"
+          "path": "artifacts/product-ci/42-packages.log",
+          "sha256": "8f0d8e776d45e2cf66e1be235e2aad5e8bfbf0a24440f2bca31cd4d2bc39f137"
         }
       ]
     },
@@ -585,10 +667,11 @@
         "test:plot"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 2.714,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/41-unit.log",
-          "sha256": "c85b42f0a970e54c4550a2d9c235aa668cc67ad01cb6cd062be46b40b354e880"
+          "path": "artifacts/product-ci/43-unit.log",
+          "sha256": "f88b9a5eede72b5369bedb8525f437d398d313f782c42695b17f7c36a45824af"
         }
       ]
     },
@@ -599,10 +682,11 @@
         "test:plot:browser"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 2.108,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/42-browser.log",
-          "sha256": "a2bcca5057a912fa3b5a2c0bcf4785df43f8e8254ce4a606982f101fc0489ec2"
+          "path": "artifacts/product-ci/44-browser.log",
+          "sha256": "16eafd500e1e229bc053f8b7424cc42dfb86ab40c79329bdb348f3cb11f72254"
         }
       ]
     },
@@ -613,10 +697,11 @@
         "test:plot:consumers"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 12.27,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/43-packages.log",
-          "sha256": "3144ff3636388a328021df1e99c0fb9e67641d4efd5673617cc63c8711ea7252"
+          "path": "artifacts/product-ci/45-packages.log",
+          "sha256": "ca5012e3eb5db40d2b47f020d23c8af5e106bf472047045a8c1c361eb8d2ed14"
         }
       ]
     },
@@ -627,10 +712,11 @@
         "test:navigation-feedback:consumers"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 12.976,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/44-packages.log",
-          "sha256": "8de3a92d402d0856ac6d0c7dbe2053bda3c691c410fb6d98401840d2d44a2415"
+          "path": "artifacts/product-ci/46-packages.log",
+          "sha256": "e25272d693b283bcac7585e5511481b18ac59c7671c67c6fb90b2688ed2068a4"
         }
       ]
     },
@@ -641,10 +727,11 @@
         "test:components:a11y"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 4.666,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/45-browser.log",
-          "sha256": "6eda575b641fe4620c7f70749ba493836fb9c93272d341dd09ad093bb1902ce4"
+          "path": "artifacts/product-ci/47-browser.log",
+          "sha256": "6552c38ac605b5bba7cbf708743234b33a694742d4e0a44e1c8d3cdc60369694"
         }
       ]
     },
@@ -655,10 +742,11 @@
         "test:input-semantic"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 3.52,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/46-unit.log",
-          "sha256": "bbb1d5ead133cbb6210633299118c778254b273c617e42fd194b2d22e81e1d0d"
+          "path": "artifacts/product-ci/48-unit.log",
+          "sha256": "553263b68e08265bf6f183221ee0adb26660bb91c50a70fe6eae29e7806a806b"
         }
       ]
     },
@@ -669,10 +757,11 @@
         "test:input-semantic:browser"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.689,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/47-browser.log",
-          "sha256": "4c459634773457ec067133805a4eb918f7cb17113f5209184a58b3a884c5c922"
+          "path": "artifacts/product-ci/49-browser.log",
+          "sha256": "0cbe783e06aab96710deee7daeb0f7cc9c154857a415ca3f326b9f8e3f45f749"
         }
       ]
     },
@@ -683,10 +772,11 @@
         "test:navigation-feedback-semantic"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 2.916,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/48-unit.log",
-          "sha256": "6614ba5b8dd0071d64591ff4e1c54c1e4120abaa7136b8a8caf0f1b414a1f250"
+          "path": "artifacts/product-ci/50-unit.log",
+          "sha256": "a4ba0364c38e3d2b173b1dd18dfbee986ef7918d2d9d0dfa10003dd029d040f1"
         }
       ]
     },
@@ -697,10 +787,11 @@
         "test:data-semantic"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 3.106,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/49-unit.log",
-          "sha256": "0585125c7a267d4d877204aba116c49c4f04368d10127e5780868b4d91476c80"
+          "path": "artifacts/product-ci/51-unit.log",
+          "sha256": "9ded58bce0bf144117ef9789d6271445f36bdfed005dda941f4edc06874b1398"
         }
       ]
     },
@@ -711,10 +802,11 @@
         "test:navigation-feedback-semantic:browser"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.896,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/50-browser.log",
-          "sha256": "d0e8d850311a15cf76c321fe0e805a97596758c4326c7a7b76e9a6a4ac328904"
+          "path": "artifacts/product-ci/52-browser.log",
+          "sha256": "ace03f50869068769b11f087c77ed48577edf1de926ff34a38108d196bc94f9d"
         }
       ]
     },
@@ -725,10 +817,11 @@
         "test:data-semantic:browser"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 2.002,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/51-browser.log",
-          "sha256": "411823b3721c797a0491828567eec0bc13c10f18340d2e12c1e69b58171e13cf"
+          "path": "artifacts/product-ci/53-browser.log",
+          "sha256": "be3f2e9de63788e23002b959df68da70bd4eb350246abd793aa1d72d6ab9aff5"
         }
       ]
     },
@@ -739,10 +832,11 @@
         "test:visualization"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 3.321,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/52-unit.log",
-          "sha256": "cc9204eedb6011afa08a13dbd358c33f8c5194bf39e3b10dfaf3e9fed69c7876"
+          "path": "artifacts/product-ci/54-unit.log",
+          "sha256": "772f788f1671b705cab85c4f1689fe4c23afee0ebded1b60f3554ddb3102c942"
         }
       ]
     },
@@ -753,10 +847,11 @@
         "test:visualization:consumers"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 12.9,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/53-packages.log",
-          "sha256": "adbb641971dbe8644e35b5bcb86221e58cec71ebd2c29468657bc57223b6f2e5"
+          "path": "artifacts/product-ci/55-packages.log",
+          "sha256": "792d969b1abb19c0e84267a2af05e347f786b296459452aed71d6bb54a0bbc73"
         }
       ]
     },
@@ -767,10 +862,11 @@
         "test:visualization:browser"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 11.689,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/54-browser.log",
-          "sha256": "93835780e4d6fb06ad794dcbbdb39af5cf3159fa1dabb255b2898819912322fd"
+          "path": "artifacts/product-ci/56-browser.log",
+          "sha256": "03a346668dc30d12c1969224b2a7219e0f13243af2a9f201f4e8dc55448c79f7"
         }
       ]
     },
@@ -781,10 +877,11 @@
         "test:presentation-adaptation"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 3.616,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/55-unit.log",
-          "sha256": "e9c13e16857e96c1cc2ac6f276eb02befe735c4a48a21a639697054061879828"
+          "path": "artifacts/product-ci/57-unit.log",
+          "sha256": "4ec4cce1efcd4cea574a5d21f8ee6368313b20d7e354decde9c3d7d46ef2e39a"
         }
       ]
     },
@@ -795,10 +892,11 @@
         "test:presentation-adaptation:browser"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.74,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/56-browser.log",
-          "sha256": "f1eac718679f40505408ee5d638c45ab528a8150d53f7a2069d0a2cabf57d884"
+          "path": "artifacts/product-ci/58-browser.log",
+          "sha256": "5f955987901dc5ec9478e939a0d0f98d9e911c9edcffe526c640d847ac203616"
         }
       ]
     },
@@ -809,10 +907,11 @@
         "test:visualization-semantic"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 2.98,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/57-unit.log",
-          "sha256": "9b7777f0b948c5f05692dded40e966594141e9820264b4396d3675ec03257c86"
+          "path": "artifacts/product-ci/59-unit.log",
+          "sha256": "7581145076214a619fa0cf15121325d803b6ce6313691780d6d087f2c2f7953b"
         }
       ]
     },
@@ -823,10 +922,11 @@
         "test:visualization-semantic:browser"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 2.493,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/58-browser.log",
-          "sha256": "e37deb663d7bc2d3267543282bd8b523b696de62340afd144a62b770abad9bea"
+          "path": "artifacts/product-ci/60-browser.log",
+          "sha256": "016dd5dc1b42e0201f3b45443e067706f48849fc2bb5e4bc60332afda8dd1b50"
         }
       ]
     },
@@ -837,10 +937,11 @@
         "test:presentation-adaptation:consumers"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 12.04,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/59-packages.log",
-          "sha256": "48b85dd350dc959278fef89ee7be799ab3b14a037760451af76a9bc0f74d9438"
+          "path": "artifacts/product-ci/61-packages.log",
+          "sha256": "8ef327f44b58e64139c3a93378b0c95ea1a23204e39d666d54ebb7abb397122e"
         }
       ]
     },
@@ -851,10 +952,11 @@
         "test:meaning-authoring"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 2.046,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/60-unit.log",
-          "sha256": "b6ea47b1a65c0e7d5a07f7d89f0de9ca99a0be67eef936f78ba76f8c736c4614"
+          "path": "artifacts/product-ci/62-unit.log",
+          "sha256": "708c1f1ce0cfa3ba50f2af06270926b80a87fca392334514e8a4427b51a29a13"
         }
       ]
     },
@@ -865,10 +967,11 @@
         "test:meaning-authoring:consumers"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 10.093,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/61-packages.log",
-          "sha256": "095ec7365ac0699bc16d189bbe0a10760af53d92da11d68f2331e74703617376"
+          "path": "artifacts/product-ci/63-packages.log",
+          "sha256": "44e5d6afa8f86b6b1aef072690ca655cb229ffb2a339c4219d780ac0a2fa1c4a"
         }
       ]
     },
@@ -879,10 +982,11 @@
         "test:protocol-mcp"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 2.434,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/62-unit.log",
-          "sha256": "f6e1cd38b64f4eafc3dc94c8e32a0b65275fea3c4011a1968a372b4a5b0313fc"
+          "path": "artifacts/product-ci/64-unit.log",
+          "sha256": "fa4f20c2622e114d04e2501afaba4d8158d9346efee50f088225308ca157fd81"
         }
       ]
     },
@@ -893,10 +997,11 @@
         "test:protocol-webmcp"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.97,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/63-unit.log",
-          "sha256": "812b5f4d31f348819eb226cf87b6ea974048addc8390ba1e4d677460407c3850"
+          "path": "artifacts/product-ci/65-unit.log",
+          "sha256": "426c6687b86e390e6f0ad30ee2415d4a924148b7178e59b6ec66cf51a906121f"
         }
       ]
     },
@@ -907,10 +1012,11 @@
         "test:protocol-model"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.899,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/64-unit.log",
-          "sha256": "4764b5fba2782352b964f08c23e8253fc627fdc7d547dbfd2ac0f09bb1372222"
+          "path": "artifacts/product-ci/66-unit.log",
+          "sha256": "f267c4749c767f988546a9ee2dac5ba000db86cf75c231fa4d0fced6e89338f3"
         }
       ]
     },
@@ -921,10 +1027,11 @@
         "test:compounds"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 2.873,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/65-unit.log",
-          "sha256": "fd42ff7d05f525d98545e5fc2d7676a96d32ab0ccfc2265df4b2b5c0f6cd7e3c"
+          "path": "artifacts/product-ci/67-unit.log",
+          "sha256": "c97bd5af47988da46bd69875c1e9e8046d798c76cb4a4a509cee33e7f076e62e"
         }
       ]
     },
@@ -935,10 +1042,11 @@
         "test:compounds:browser"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 4.279,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/66-browser.log",
-          "sha256": "9a356177118f2fc7542ab5e63c480bba905be747367ff50f180cc8c6e506b448"
+          "path": "artifacts/product-ci/68-browser.log",
+          "sha256": "96f3f2a069b974c3bf56f930a8d66dc284097fd5d8db44cccfc0d5e5fdec8dad"
         }
       ]
     },
@@ -949,10 +1057,11 @@
         "test:protocol:consumers"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 11.333,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/67-packages.log",
-          "sha256": "4feabb9a96f4357a92aba2c16105debea77136ce94875df86e89c154fe088f48"
+          "path": "artifacts/product-ci/69-packages.log",
+          "sha256": "a9fc7d3f9f943634a318647d559d2ddaf41ede9fc1a090202bc317944b94fb3a"
         }
       ]
     },
@@ -963,10 +1072,11 @@
         "test:compounds:consumers"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 13.677,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/68-packages.log",
-          "sha256": "d33dacf8b1008a8f63a147535d2e9e45b64ad0feaec74fcb00afd07fb2cffa0d"
+          "path": "artifacts/product-ci/70-packages.log",
+          "sha256": "287d93e9789eb10eba7b76c946c18592aacef790fe6378f0ac705477055b1ef9"
         }
       ]
     },
@@ -977,10 +1087,11 @@
         "test:compound-semantic"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 3.233,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/69-unit.log",
-          "sha256": "f0fc19f640a07142737c515258ec3f594ced068739e20862cb1a8453645ac3b8"
+          "path": "artifacts/product-ci/71-unit.log",
+          "sha256": "24ae78afd76008254ae07362ab0cd5e11e6e42905428996804ccd9494bdbf6f1"
         }
       ]
     },
@@ -991,10 +1102,11 @@
         "test:compound-semantic:browser"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.46,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/70-browser.log",
-          "sha256": "d27a8d712061059ac79168c4d90dcc3e8308eee7c371ab7bde4e07935cd92628"
+          "path": "artifacts/product-ci/72-browser.log",
+          "sha256": "bb64831232a7a15e93e0ef8d151ff6e1d375e05b90ce6b152f5d517078dacd1b"
         }
       ]
     },
@@ -1005,10 +1117,11 @@
         "test:framework:consumers"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 16.581,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/71-packages.log",
-          "sha256": "b682ebd49453a6e2b05b1adcf156dff8d74bcea729c8a673ca7f89fd366c9783"
+          "path": "artifacts/product-ci/73-packages.log",
+          "sha256": "357954e0f0330afc0d002338cbd21134900b34693c515f88d508820b83c92664"
         }
       ]
     },
@@ -1019,10 +1132,11 @@
         "test:studio"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.953,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/72-unit.log",
-          "sha256": "858dec7c123e297b6f832da09a855afc0955fb89e75dff5c62dcf7711f7ba803"
+          "path": "artifacts/product-ci/74-unit.log",
+          "sha256": "4e1a913555430fd98bd94722dad6924716f1851927a36337277225cf053d514a"
         }
       ]
     },
@@ -1033,10 +1147,11 @@
         "test:studio:browser"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 1.732,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/73-browser.log",
-          "sha256": "cc6001655aa5b65559a17ada49a8ad16c30f7bc82eb02500708423cb602efdef"
+          "path": "artifacts/product-ci/75-browser.log",
+          "sha256": "4cb0f9fae36519cdf7a2924c903c0a3a8a4578008c6f4b022c552e4ede438ddf"
         }
       ]
     },
@@ -1044,41 +1159,14 @@
       "kind": "unit",
       "argv": [
         "pnpm",
-        "test:site"
+        "test:docs-artifact"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 3.678,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/74-unit.log",
-          "sha256": "0f190c405655ff0485633aec0864c964879bf1205ec4dd2408a0e70fc12f68d9"
-        }
-      ]
-    },
-    {
-      "kind": "browser",
-      "argv": [
-        "pnpm",
-        "test:site:browser"
-      ],
-      "exitCode": 0,
-      "artifacts": [
-        {
-          "path": "artifacts/product-ci/75-browser.log",
-          "sha256": "ebf61e10d06ad084c93c4fd659b460b2805a1f43a2f6d5c66b4a14328f82e93a"
-        }
-      ]
-    },
-    {
-      "kind": "browser",
-      "argv": [
-        "pnpm",
-        "test:site:document-layout"
-      ],
-      "exitCode": 0,
-      "artifacts": [
-        {
-          "path": "artifacts/product-ci/76-browser.log",
-          "sha256": "789a95a3fed5652fa06d839d273ef56fee8b4809b26ef6c5c20aa1d6b5783be7"
+          "path": "artifacts/product-ci/76-unit.log",
+          "sha256": "c187366984a77d0da10d777cff0a581820d3a2092e8592e44c3d317e996d7670"
         }
       ]
     },
@@ -1089,10 +1177,11 @@
         "test:studio:consumers"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 6.528,
       "artifacts": [
         {
           "path": "artifacts/product-ci/77-packages.log",
-          "sha256": "cc18a9df4bfd8a41345979973a987eb86420d96a96697d85af455808309793a9"
+          "sha256": "f388b64b562f264dcb43fa3d97436089b6055cbffba4d2ebdadb0bde07362db7"
         }
       ]
     },
@@ -1103,10 +1192,11 @@
         "test:agent-evaluation:host"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 15.153,
       "artifacts": [
         {
           "path": "artifacts/product-ci/78-unit.log",
-          "sha256": "c9747bd675cd7234615eac75b093c08d7f0a8cb8800c341238c493a01d7cb3bc"
+          "sha256": "b830b5edae25615e0be563cda69fa5255fcf096d52b25dadc91f8c5814035d4a"
         }
       ]
     },
@@ -1117,38 +1207,62 @@
         "test:scenarios"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 16.413,
       "artifacts": [
         {
           "path": "artifacts/product-ci/79-unit.log",
-          "sha256": "fb53cc700a856fcc578c8074217c6b38a4b3a84f10f98cfad054055d4eb24a42"
+          "sha256": "92206ed59d12944000cb228871cd65f95430289a2f87788fd8a999f6173e2ac5"
         }
       ]
     },
     {
       "kind": "browser",
       "argv": [
+        "env",
+        "AELIQO_VISUAL_PROJECT=chromium",
         "pnpm",
         "test:visual"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 180.791,
       "artifacts": [
         {
           "path": "artifacts/product-ci/80-browser.log",
-          "sha256": "ee4722f24db0710bb9365b59af72f9d3843754373a5e5ed90f5a9ca05753e89c"
+          "sha256": "70e1906985247426dc35562f0e3e664fe4a23ec07f39e689345fdd7eb859fd82"
         }
       ]
     },
     {
-      "kind": "performance",
+      "kind": "browser",
       "argv": [
+        "env",
+        "AELIQO_VISUAL_PROJECT=firefox",
         "pnpm",
-        "test:performance:browser"
+        "test:visual"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 156.487,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/81-performance.log",
-          "sha256": "fcca23ea54dd745b8acc103b6d237badfbb71d89a9416936fe8e122bd7877092"
+          "path": "artifacts/product-ci/81-browser.log",
+          "sha256": "021b4fe37a97110b6c69e6b7b1e2e82623257c723aa92298600be3901f2c2134"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "argv": [
+        "env",
+        "AELIQO_VISUAL_PROJECT=webkit",
+        "pnpm",
+        "test:visual"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 254.918,
+      "artifacts": [
+        {
+          "path": "artifacts/product-ci/82-browser.log",
+          "sha256": "5535123f2c5180b8af5687af3a3ab913ae89316223eb29e93ec7f67034d0e5d9"
         }
       ]
     },
@@ -1158,13 +1272,10 @@
         "pnpm",
         "test:performance:standalone"
       ],
-      "exitCode": 0,
-      "artifacts": [
-        {
-          "path": "artifacts/product-ci/82-browser.log",
-          "sha256": "62e3b982bc495f52a0ff0d3fe505b32bc4568131e4d9bc2afbfb916a658f45e4"
-        }
-      ]
+      "status": "deferred",
+      "exitCode": null,
+      "reason": "Owner decision 2026-09-13: performance deferred",
+      "artifacts": []
     },
     {
       "kind": "browser",
@@ -1172,13 +1283,10 @@
         "pnpm",
         "test:performance:perceived-input"
       ],
-      "exitCode": 0,
-      "artifacts": [
-        {
-          "path": "artifacts/product-ci/83-browser.log",
-          "sha256": "13d73fff7b88e2764f2d7bfaa806fbcb6c1e251624b8de668cbb51863c557737"
-        }
-      ]
+      "status": "deferred",
+      "exitCode": null,
+      "reason": "Owner decision 2026-09-13: performance deferred",
+      "artifacts": []
     },
     {
       "kind": "browser",
@@ -1186,39 +1294,25 @@
         "pnpm",
         "test:performance:heap-lifecycle"
       ],
-      "exitCode": 0,
-      "artifacts": [
-        {
-          "path": "artifacts/product-ci/84-browser.log",
-          "sha256": "9cc95c5ceb88363ef2bbb84b0552cd35e34620fd29f293a04d8f3a3ff542f778"
-        }
-      ]
+      "status": "deferred",
+      "exitCode": null,
+      "reason": "Owner decision 2026-09-13: performance deferred",
+      "artifacts": []
     },
     {
-      "kind": "performance",
+      "kind": "unit",
       "argv": [
+        "env",
+        "AELIQO_RUN_PERFORMANCE=0",
         "pnpm",
         "test:performance:adverse-runtime"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 0.943,
       "artifacts": [
         {
-          "path": "artifacts/product-ci/85-performance.log",
-          "sha256": "f0921b929852cc660a0157f33edc3fb900c3ac85db302a8b5be28d300d85f084"
-        }
-      ]
-    },
-    {
-      "kind": "performance",
-      "argv": [
-        "pnpm",
-        "test:performance:adverse-visualization"
-      ],
-      "exitCode": 0,
-      "artifacts": [
-        {
-          "path": "artifacts/product-ci/86-performance.log",
-          "sha256": "b3b745fb72b1e8a9886f172db86bf3f370020e09c06c4bde270ba3b648ea85a6"
+          "path": "artifacts/product-ci/86-unit.log",
+          "sha256": "4926092e5469fc0b16fc1fd003ed7c5e35f39a3387868cd4414520858b929444"
         }
       ]
     },
@@ -1226,15 +1320,12 @@
       "kind": "browser",
       "argv": [
         "pnpm",
-        "test:performance:site-page"
+        "test:performance:adverse-visualization"
       ],
-      "exitCode": 0,
-      "artifacts": [
-        {
-          "path": "artifacts/product-ci/87-browser.log",
-          "sha256": "f9c4d27bebbc4679f8873175d62b335a78664a5f012b54d785eb6766f28f095d"
-        }
-      ]
+      "status": "deferred",
+      "exitCode": null,
+      "reason": "Owner decision 2026-09-13: performance deferred",
+      "artifacts": []
     },
     {
       "kind": "browser",
@@ -1243,12 +1334,27 @@
         "test:agent-evaluation:ui"
       ],
       "exitCode": 0,
+      "elapsedSeconds": 5.205,
       "artifacts": [
         {
           "path": "artifacts/product-ci/88-browser.log",
-          "sha256": "607f3b633ce115085e46b3ec7cf1370ffce5c7fe39cd0d1186a7d13e4f51215d"
+          "sha256": "a9dcc602b5079edf8be9c8b45e2b94928e9f01ef4b6aa776aaf0ea6210817d46"
         }
       ]
     }
-  ]
+  ],
+  "performanceQualification": {
+    "status": "deferred",
+    "ownerDecision": "2026-09-13",
+    "reason": "Owner deferred Aeliqo performance and prioritized API, servers and infrastructure.",
+    "commands": [
+      "test:performance:bundles",
+      "test:performance:runtime",
+      "test:performance:browser",
+      "test:performance:standalone",
+      "test:performance:perceived-input",
+      "test:performance:heap-lifecycle",
+      "test:performance:adverse-visualization"
+    ]
+  }
 }

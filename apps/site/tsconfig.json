@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "useDefineForClassFields": false,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "skipLibCheck": false,
+    "types": ["node", "vite/client"],
+    "paths": {
+      "/src/*": ["../web/src/*"],
+      "/docs-src/*": ["../docs/src/*"],
+      "/playground-src/*": ["../playground/src/*"],
+      "@aeliqo/catalog-examples": ["../docs/vendor/public-docs/catalog-examples/index.ts"],
+      "@aeliqo/agent/webmcp": ["./node_modules/@aeliqo/agent/dist/webmcp/index.d.ts"],
+      "@aeliqo/core": ["./node_modules/@aeliqo/core/dist/index.d.ts"],
+      "@aeliqo/runtime/data": ["./node_modules/@aeliqo/runtime/dist/data/index.d.ts"],
+      "@aeliqo/runtime/evaluation": ["./node_modules/@aeliqo/runtime/dist/evaluation/index.d.ts"],
+      "@aeliqo/runtime/meaning": ["./node_modules/@aeliqo/runtime/dist/meaning/index.d.ts"],
+      "@aeliqo/runtime/results": ["./node_modules/@aeliqo/runtime/dist/results/index.d.ts"],
+      "@aeliqo/web": ["./node_modules/@aeliqo/web/dist/index.d.ts"],
+      "@aeliqo/web/comparison": ["./node_modules/@aeliqo/web/dist/compound/comparison.d.ts"],
+      "@aeliqo/web/data": ["./node_modules/@aeliqo/web/dist/data/index.d.ts"],
+      "@aeliqo/web/detail": ["./node_modules/@aeliqo/web/dist/data/detail.d.ts"],
+      "@aeliqo/web/dialog": ["./node_modules/@aeliqo/web/dist/feedback/dialog.d.ts"],
+      "@aeliqo/web/record-list": ["./node_modules/@aeliqo/web/dist/data/record-list.d.ts"],
+      "@aeliqo/web/region": ["./node_modules/@aeliqo/web/dist/region/index.d.ts"],
+      "@aeliqo/web/text-field": ["./node_modules/@aeliqo/web/dist/input/text-field.d.ts"],
+      "@aeliqo/web/visualization": ["./node_modules/@aeliqo/web/dist/visualization/index.d.ts"]
+    }
+  },
+  "include": ["../web/src/**/*.ts", "../docs/src/**/*.ts", "../playground/src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "artifacts", "vendor"]
+}

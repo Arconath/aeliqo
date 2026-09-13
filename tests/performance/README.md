@@ -145,13 +145,12 @@ changes were reverted. The required planner budget remains unchanged.
 ## Website-owned observations
 
 Whole-page home, documentation, playground, 71-route layout, cache, and static
-delivery probes moved with the presentation shell to the private
-`Arconath/aeliqo-site` repository. They install exact package tarballs and a
-checksum-verified public documentation artifact, so those tests do not require
-workspace imports or a sibling SDK checkout.
+delivery probes live under `apps/site` in this public repository. Its isolated
+workspace installs exact package tarballs and a checksum-verified public
+documentation artifact, so those tests do not require mutable workspace imports.
 
 Historical whole-site reports remain under `harness/evidence`; they are not
-current evidence for the split repositories. This public suite retains reusable
+current evidence for the reunited source. This public suite retains reusable
 runtime, bundle, component, standalone, perceived-input, heap-lifecycle, and
 adverse-visualization coverage. Website performance and deployment evidence is
 reported separately from SDK correctness and package qualification.
