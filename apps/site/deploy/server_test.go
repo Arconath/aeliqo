@@ -22,6 +22,7 @@ func fixtureSite(t *testing.T) string {
 	for name, content := range map[string]string{
 		"index.html":                            "<h1>Aeliqo</h1>",
 		"404.html":                              "<h1>Not found</h1>",
+		"playground/index.html":                 "<h1>Playground</h1>",
 		"docs/index.html":                       "<h1>Docs</h1>",
 		"docs/components/data.table/index.html": "<h1>Table</h1>",
 		"assets/site-abcdefgh.js":               "console.log('aeliqo')",
@@ -389,6 +390,24 @@ func TestOnlyHashedAssetsAreImmutable(t *testing.T) {
 		response := request(t, handler, http.MethodGet, testCase.path)
 		if got := response.Header().Get("Cache-Control"); got != testCase.want {
 			t.Fatalf("%s cache-control=%q, want %q", testCase.path, got, testCase.want)
+		}
+	}
+}
+
+func TestDocumentationHostUsesDocsRootAndSharedStaticRoutes(t *testing.T) {
+	handler := newHandler(fixtureSite(t), "docs-source")
+	for _, test := range []struct{ target, want string }{
+		{"https://docs.aeliqo.com/", "<h1>Docs</h1>"},
+		{"https://DOCS.AELIQO.COM:443/", "<h1>Docs</h1>"},
+		{"https://docs.aeliqo.com/playground", "<h1>Playground</h1>"},
+		{"https://docs.aeliqo.com/docs/components/data.table/", "<h1>Table</h1>"},
+		{"https://docs.aeliqo.com/assets/site-abcdefgh.js", "console.log('aeliqo')"},
+		{"https://aeliqo.com/", "<h1>Aeliqo</h1>"},
+		{"https://www.aeliqo.com/", "<h1>Aeliqo</h1>"},
+	} {
+		response := request(t, handler, http.MethodGet, test.target)
+		if response.Code != http.StatusOK || response.Body.String() != test.want {
+			t.Fatalf("%s: status=%d body=%q", test.target, response.Code, response.Body.String())
 		}
 	}
 }

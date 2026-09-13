@@ -160,7 +160,17 @@ func newHandlerWithReadiness(root, buildRevision string, ready *atomic.Bool) htt
 			return
 		}
 
-		file, found := staticFile(root, request.URL.Path)
+		requestPath := request.URL.Path
+		host := request.Host
+		if name, _, err := net.SplitHostPort(host); err == nil {
+			host = name
+		}
+		// The shared static image serves documentation at the docs host root.
+		// Existing /docs deep links, playground and asset paths stay valid.
+		if strings.EqualFold(host, "docs.aeliqo.com") && requestPath == "/" {
+			requestPath = "/docs/"
+		}
+		file, found := staticFile(root, requestPath)
 		if !found {
 			serveNotFound(response, request, root)
 			return
