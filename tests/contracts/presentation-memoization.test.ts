@@ -2,7 +2,7 @@ import {describe, expect, it} from 'vitest';
 import {composePresentation, createPresentationRegistry, validatePresentationPlan} from '../../packages/core/src/presentation/index.js';
 import {canonicalJSON, parseContract} from '../../packages/core/src/contracts/parse.js';
 import {preparePresentationContext, preparePresentationValidationCache, validatePreparedPresentationPlan} from '../../packages/core/src/presentation/validate.js';
-import type {PresentationContext, PresentationManifest, PresentationRegistry, PresentationValues} from '../../packages/core/src/presentation/index.js';
+import type {PresentationContext, PresentationManifest, PresentationPatternManifest, PresentationRegistry, PresentationValues} from '../../packages/core/src/presentation/index.js';
 import type {PresentationPlan, ResultRef} from '../../packages/core/src/contracts/types.js';
 import {environment, experience, field, presentationPlan, presentationTask, ref, result} from './fixtures.js';
 
@@ -292,6 +292,76 @@ describe('presentation validation memoization', () => {
     expect(rootCalls).toBe(1);
   });
 
+  it('validates changed contents and length in one shared pattern child list', () => {
+    const leaf = tableManifest((values, descriptor) => ({ok: true, value: {
+      values, fields: descriptor!.fields.map(item => item.id), ports: [],
+    }}));
+    const root = layoutManifest(values => ({ok: true, value: {values, fields: [], ports: []}}));
+    const sharedChildren: string[] = ['leaf'];
+    let expansions = 0;
+    const pattern: PresentationPatternManifest = {
+      ref: {id: 'preset.shared-children', revision: '1'},
+      expand: () => {
+        expansions++;
+        if (expansions === 2) sharedChildren.splice(0, sharedChildren.length, 'renamed-leaf');
+        if (expansions === 3) sharedChildren.push('second-leaf');
+        const primaryId = expansions === 1 ? 'leaf' : 'renamed-leaf';
+        const candidate = basePlan('layout', primaryId);
+        const nodes = [{...candidate.nodes[0]!, children: sharedChildren}, candidate.nodes[1]!];
+        if (expansions === 3) nodes.push({...candidate.nodes[1]!, id: 'second-leaf'});
+        return {ok: true, value: {...candidate, nodes}};
+      },
+      matches: () => true,
+    };
+    const installed = createPresentationRegistry([leaf, root], [], [pattern]);
+    expect(installed.ok).toBe(true); if (!installed.ok) return;
+    const ordinary = context();
+    const activeContext = {...ordinary, experience: {...ordinary.experience,
+      allowedPatterns: [pattern.ref.id], composition: {...ordinary.experience.composition, maxExpansions: 3}}};
+    const placeholder = basePlan();
+    const composed = composePresentation({id: 'shared-children', revision: '1', preconditions: activeContext.current,
+      context: activeContext, candidates: Array.from({length: 3}, () => ({source: 'pattern' as const, pattern: pattern.ref, plan: placeholder}))}, installed.value);
+
+    expect(expansions).toBe(3);
+    expect(composed).toMatchObject({ok: true, value: {status: 'search-exhausted', expansions: 3, rejected: []}});
+    if (!composed.ok || composed.value.presentation === undefined) return;
+    expect(Object.isFrozen(composed.value.presentation.plan)).toBe(true);
+    expect(Object.isFrozen(composed.value.presentation.plan.nodes)).toBe(true);
+  });
+
+  it('still rejects an unknown node key when a validated child list is reused', () => {
+    const leaf = tableManifest((values, descriptor) => ({ok: true, value: {
+      values, fields: descriptor!.fields.map(item => item.id), ports: [],
+    }}));
+    const root = layoutManifest(values => ({ok: true, value: {values, fields: [], ports: []}}));
+    const sharedChildren = ['leaf-0'];
+    let expansions = 0;
+    const pattern: PresentationPatternManifest = {
+      ref: {id: 'preset.strict-shared-children', revision: '1'},
+      expand: () => {
+        expansions++;
+        const candidate = basePlan();
+        const rootNode = {...candidate.nodes[0]!, children: sharedChildren,
+          ...(expansions === 2 ? {unknownNodeKey: true} : {})};
+        return {ok: true, value: {...candidate, nodes: [rootNode, candidate.nodes[1]!]}} as never;
+      },
+      matches: () => true,
+    };
+    const installed = createPresentationRegistry([leaf, root], [], [pattern]);
+    expect(installed.ok).toBe(true); if (!installed.ok) return;
+    const ordinary = context();
+    const activeContext = {...ordinary, experience: {...ordinary.experience,
+      allowedPatterns: [pattern.ref.id], composition: {...ordinary.experience.composition, maxExpansions: 2}}};
+    const placeholder = basePlan();
+    const composed = composePresentation({id: 'strict-shared-children', revision: '1', preconditions: activeContext.current,
+      context: activeContext, candidates: Array.from({length: 2}, () => ({source: 'pattern' as const, pattern: pattern.ref, plan: placeholder}))}, installed.value);
+
+    expect(expansions).toBe(2);
+    expect(composed).toMatchObject({ok: true, value: {status: 'search-exhausted', expansions: 2,
+      rejected: [{candidate: 'pattern.preset.strict-shared-children'}], presentation: expect.any(Object)}});
+    if (composed.ok) expect(composed.value.rejected).toHaveLength(1);
+  });
+
   it('reevaluates when node identity, configuration, or result reference changes', () => {
     const alternateRef = {...ref, outputId: 'alternate' as const};
     const alternateResult = {...result, ref: alternateRef};
@@ -440,6 +510,19 @@ describe('presentation validation memoization', () => {
     expect(Object.isFrozen(accepted.value.plan.nodes[0])).toBe(true);
     expect(Object.isFrozen(accepted.value.plan.nodes[0]!.config)).toBe(true);
     expect(Object.isFrozen(accepted.value.plan.nodes[0]!.config.values)).toBe(true);
+
+    const prepared = preparePresentationContext(activeContext);
+    expect(prepared.ok).toBe(true); if (!prepared.ok) return;
+    const cache = preparePresentationValidationCache(prepared.value, installed);
+    expect(cache.ok).toBe(true); if (!cache.ok) return;
+    const replayed = validatePreparedPresentationPlan(accepted.value.plan, activeContext, installed, prepared.value,
+      {}, new Map(), new WeakMap(), undefined, cache.value, true);
+    expect(replayed.ok).toBe(true);
+    if (replayed.ok) {
+      expect(replayed.value.plan).toBe(accepted.value.plan);
+      expect(Object.isFrozen(replayed.value.plan)).toBe(true);
+      expect(Object.isFrozen(replayed.value.plan.nodes)).toBe(true);
+    }
 
     const malformed = {...valid, unexpected: true, nodes: valid.nodes.map(node => ({...node}))} as unknown;
     expect(validatePresentationPlan(malformed, activeContext, installed).ok).toBe(false);

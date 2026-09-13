@@ -652,8 +652,13 @@ export function validatePreparedPresentationPlan(
     if (cachedGraph === undefined) preparedCache.value.presentationGraphs.set(graphKey, graph);
   }
   if (!graph.ok) return graph;
-  const finalNodes = freezePresentationContainer(resolved.map(n => n.node));
-  const finalPlan = freezePresentationContainer({...plan, nodes: finalNodes}) as PresentationPlan;
+  // Composition already owns these frozen containers. Keep them when memoized
+  // resolutions did not substitute any node; public validation still freezes its
+  // newly parsed plan through the ordinary construction path.
+  const unchangedOwnedPlan = ownedPlan && Object.isFrozen(plan) && Object.isFrozen(plan.nodes)
+    && resolved.every((node, index) => node.node === plan.nodes[index]);
+  const finalPlan = unchangedOwnedPlan ? plan as PresentationPlan
+    : freezePresentationContainer({...plan, nodes: freezePresentationContainer(resolved.map(n => n.node))}) as PresentationPlan;
   if (options.requiredPattern !== undefined && (!patternIsAllowed(options.requiredPattern, c) || !matchesPattern(finalPlan, prepared.value, registry, options.requiredPattern)))
     return fail('pattern-required', 'The candidate does not match its allowed registered pattern.');
   if (!c.allowWithoutPreset && !matchesPattern(finalPlan, prepared.value, registry))

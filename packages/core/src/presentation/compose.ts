@@ -57,11 +57,14 @@ function parseCachedObject<S extends z.ZodMiniType>(input: unknown, schema: S, c
 function parseCachedNode(input: unknown, cache: PresentationParseCache): z.infer<typeof presentationNodeSchema> | undefined {
   if (input === null || typeof input !== 'object' || Array.isArray(input)) return undefined;
   const cached = cache.nodes.get(input); if (cached !== undefined) return cached;
-  const parsed = z.safeParse(presentationNodeSchema, input); if (!parsed.success) return undefined;
   const rawChildren = (input as {children?: unknown}).children;
-  const cachedChildren = rawChildren !== null && typeof rawChildren === 'object' ? cache.nodeChildren.get(rawChildren) : undefined;
-  const reused = cachedChildren !== undefined && cachedChildren.length === parsed.data.children.length
-    && cachedChildren.every((child, index) => child === parsed.data.children[index]) ? cachedChildren : undefined;
+  const cachedChildren = Array.isArray(rawChildren) ? cache.nodeChildren.get(rawChildren) : undefined;
+  // The enclosing wire document has already been inspected. Reuse only the
+  // exact previously parsed child sequence; changed input takes the full parser.
+  const reused = cachedChildren !== undefined && Array.isArray(rawChildren) && cachedChildren.length === rawChildren.length
+    && cachedChildren.every((child, index) => child === rawChildren[index]) ? cachedChildren : undefined;
+  const parsed = z.safeParse(presentationNodeSchema, reused === undefined ? input : {...input, children: []});
+  if (!parsed.success) return undefined;
   const value = freezePresentation(reused === undefined ? parsed.data : {...parsed.data, children: reused});
   cache.nodes.set(input, value);
   if (reused === undefined && rawChildren !== null && typeof rawChildren === 'object') cache.nodeChildren.set(rawChildren, value.children);
