@@ -75,13 +75,13 @@ async function smallOnce(): Promise<{readonly rowCount: number; readonly rendere
   return {rowCount: rows.length, renderedRows, inputValue: input?.value ?? ""};
 }
 
-async function mediumOnce(): Promise<{readonly rowCount: number; readonly rowFieldCount: number; readonly views: number; readonly virtualRows: number; readonly plan: ReturnType<typeof runMediumPlanner>}> {
+async function mediumOnce(timed = false): Promise<{readonly rowCount: number; readonly rowFieldCount: number; readonly views: number; readonly virtualRows: number; readonly plan: ReturnType<typeof runMediumPlanner>}> {
   resetFixture();
   const rows = makeRows(MEDIUM_ROW_COUNT, MEDIUM_FIELD_COUNT);
   const views = Array.from({length: MEDIUM_VIEW_COUNT}, () => table(rows, true, MEDIUM_ROW_COUNT));
   await Promise.all(views.map((view) => settle(view)));
   const virtualRows = views.reduce((total, view) => total + (view.shadowRoot?.querySelectorAll("tbody tr").length ?? 0), 0);
-  const plan = runMediumPlanner();
+  const plan = runMediumPlanner({timed});
   return {rowCount: rows.length, rowFieldCount: MEDIUM_FIELD_COUNT, views: views.length, virtualRows, plan};
 }
 
@@ -115,13 +115,13 @@ async function boundedGeometry(sourceUrl: string): Promise<unknown> {
   return {result, geometry: {mountedRectCount: rects.length, maxMountedRows: 100, bounded: rects.length <= 100, totalWidth: dataTable?.getBoundingClientRect().width ?? 0}};
 }
 
-async function mountDispose(): Promise<unknown> {
+async function mountDispose(measure = false): Promise<unknown> {
   resetFixture();
   const heapMemory = (): number | undefined => {
     const memory = (performance as Performance & {memory?: {readonly usedJSHeapSize?: number}}).memory;
     return memory?.usedJSHeapSize;
   };
-  const heapBefore = heapMemory();
+  const heapBefore = measure ? heapMemory() : undefined;
   const heapSamples: Array<{readonly cycle: number; readonly usedBytes: number | undefined}> = [];
   let activeListeners = 0;
   let trackedRegistrations = 0;
@@ -157,7 +157,7 @@ async function mountDispose(): Promise<unknown> {
       root.append(field);
       await field.updateComplete;
       field.remove();
-      if ((cycle + 1) % 20 === 0) heapSamples.push({cycle: cycle + 1, usedBytes: heapMemory()});
+      if (measure && (cycle + 1) % 20 === 0) heapSamples.push({cycle: cycle + 1, usedBytes: heapMemory()});
     }
   } finally {
     EventTarget.prototype.addEventListener = originalAdd;
@@ -171,32 +171,32 @@ async function mountDispose(): Promise<unknown> {
   const detachedRegistrations = Math.max(0, trackedRegistrations - activeListeners);
   trackedTargets.clear();
   const resources = runRuntimeResourceCycles(100);
-  const heapAfter = heapMemory();
+  const heapAfter = measure ? heapMemory() : undefined;
   return {cycles: 100, activeListeners, detachedRegistrations, remainingElements: root.children.length, resources,
-    heap: {supported: heapBefore !== undefined && heapAfter !== undefined, beforeBytes: heapBefore, afterBytes: heapAfter, samples: heapSamples,
-      deltaBytes: heapBefore === undefined || heapAfter === undefined ? undefined : heapAfter - heapBefore},
+    ...(measure ? {heap: {supported: heapBefore !== undefined && heapAfter !== undefined, beforeBytes: heapBefore, afterBytes: heapAfter, samples: heapSamples,
+      deltaBytes: heapBefore === undefined || heapAfter === undefined ? undefined : heapAfter - heapBefore}} : {}),
     bounded: activeListeners === 0 && root.children.length === 0 && resources.bounded};
 }
 
 async function targetedReducer(options: {timed?: boolean} = {}): Promise<unknown> {
-  if (!options.timed) return runTargetedReducer();
+  if (!options.timed) return runTargetedReducer(100, {timed: false});
   return firstSubsequent("targeted-reducer", () => runTargetedReducer());
 }
 
 async function runAll(options: {timed?: boolean; sourceUrl?: string} = {}): Promise<unknown> {
   if (options.sourceUrl === undefined) throw new Error("A large workload source URL is required; metadata-only population probes are not accepted.");
   const timed = options.timed === true;
-  const started = performance.now();
+  const started = timed ? performance.now() : undefined;
   const small = await measured("small-standalone", smallOnce, timed);
-  const medium = await measured("medium-planner-and-views", mediumOnce, timed);
+  const medium = await measured("medium-planner-and-views", () => mediumOnce(timed), timed);
   const large = await measured("large-bounded-source-window", () => largeOnce(options.sourceUrl!), timed);
   const reducer = await targetedReducer({timed});
   const geometry = await boundedGeometry(options.sourceUrl);
-  const cleanup = await mountDispose();
-  return {environment: environmentSnapshot(), elapsedMs: performance.now() - started, small, medium, large, reducer, geometry, cleanup,
+  const cleanup = await mountDispose(timed);
+  return {environment: environmentSnapshot(), ...(timed ? {elapsedMs: performance.now() - started!} : {}), small, medium, large, reducer, geometry, cleanup,
     notes: ["First/subsequent samples reuse one already-loaded browser page; they do not claim a process or HTTP-cache cold start.", "Layout and paint evidence belongs to the Chromium timeline trace; requestAnimationFrame/updateComplete is not used as a paint measurement.", "Large workload fetches 100 records from a local indexed source fixture whose declared population is 1,000,000 rows, and records executed/examined rows plus response body bytes. Content-Length is reported as a body-byte declaration; it is not a full transport-byte measurement including headers.", "The teardown probe counts connected listeners separately from detached shadow-root registrations released with their owning elements, and checks ResultStore leases plus Region observers/controllers."]};
 }
 
 window.aeliqoPerformance = {smallStandalone: (options = {}) => measured("small-standalone", smallOnce, options.timed === true),
-  mediumViews: (options = {}) => measured("medium-planner-and-views", mediumOnce, options.timed === true),
+  mediumViews: (options = {}) => measured("medium-planner-and-views", () => mediumOnce(options.timed === true), options.timed === true),
   targetedReducer, boundedGeometry, mountDispose, runAll, ready: true};

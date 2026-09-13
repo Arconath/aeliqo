@@ -80,11 +80,13 @@ class GateRegressionTests(unittest.TestCase):
             self.assertEqual(report['status'],'pass')
             self.assertEqual(len(report['results']),len(commands))
             self.assertTrue(all(result['exitCode']==0 for result in report['results']))
-    def test_node_and_browser_performance_precede_visual_corpus(self):
+    def test_non_timed_functional_checks_precede_visual_corpus(self):
         commands=load_json(ROOT/'harness/product-commands.json')['commands']
         argv=[command['argv'] for command in commands]
-        runtime=argv.index(['pnpm','test:performance:runtime'])
-        browser=argv.index(['pnpm','test:performance:browser'])
+        runtime=next(i for i,a in enumerate(argv) if 'tests/performance/runtime-workload.mjs' in a)
+        self.assertIn('AELIQO_RUN_PERFORMANCE=0',argv[runtime])
+        browser=next(i for i,a in enumerate(argv) if 'tests/performance/playwright.config.mjs' in a)
+        self.assertIn('AELIQO_RUN_PERFORMANCE=0',argv[browser])
         first_visual=argv.index(['env','AELIQO_VISUAL_PROJECT=chromium','pnpm','test:visual'])
         self.assertEqual(len(commands),89)
         self.assertEqual(browser,runtime+1)
@@ -128,3 +130,51 @@ class GateRegressionTests(unittest.TestCase):
         for identifier in ('T27','S30','S31','S63'):
             self.assertIn(identifier+': historical evidence cannot satisfy current readiness',errs)
 if __name__=='__main__':unittest.main()
+
+class OwnerPerformanceDeferralTests(unittest.TestCase):
+    def test_only_explicit_owner_policy_relaxes_performance_kind(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);(root/'harness').mkdir()
+            commands=[{'kind':kind,'argv':[sys.executable,'-c','pass']} for kind in ['typecheck','lint','unit','browser','packages','security','boundaries']]
+            path=root/'harness/product-commands.json'
+            path.write_text(json.dumps({'commands':commands}))
+            self.assertTrue(command_errors(root)[0])
+            policy={'status':'deferred','ownerDecision':'2026-09-13'}
+            commands.append({'kind':'browser','argv':['pnpm','test:performance:heap-lifecycle'],'deferred':True})
+            path.write_text(json.dumps({'commands':commands,'performanceQualification':policy}))
+            self.assertFalse(command_errors(root)[0])
+            with patch('gate.validate',return_value=([],{})),patch('gate.candidate_digest',return_value='d'*64):
+                self.assertEqual(run_ci(root),0)
+            report=load_json(root/'harness/evidence/ci.json')
+            self.assertEqual(report['performanceQualification']['status'],'deferred')
+            self.assertEqual(report['results'][-1]['status'],'deferred')
+            self.assertIsNone(report['results'][-1]['exitCode'])
+            self.assertFalse(any(result['kind']=='performance' for result in report['results']))
+            commands=[command for command in commands if command['kind']!='security']
+            path.write_text(json.dumps({'commands':commands,'performanceQualification':policy}))
+            self.assertTrue(command_errors(root)[0])
+
+    def test_ready_defers_only_performance_task_and_claim(self):
+        import hashlib
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);(root/'harness/evidence').mkdir(parents=True)
+            artifact=root/'proof.txt';artifact.write_text('verified fixture')
+            evidence=[{'path':'proof.txt','sha256':hashlib.sha256(artifact.read_bytes()).hexdigest()}]
+            policy={'status':'deferred','ownerDecision':'2026-09-13'}
+            kinds=['typecheck','lint','unit','browser','packages','security','boundaries']
+            commands=[{'kind':kind,'argv':[sys.executable,'-c','pass']} for kind in kinds]
+            documents={'product-commands':{'commands':commands,'performanceQualification':policy},
+                'tasks':{'tasks':[{'id':'T30','stage':'ready','status':'blocked'}]},
+                'components':{'components':[]},'scenarios':{'scenarios':[]}}
+            for name,value in documents.items():
+                (root/f'harness/{name}.json').write_text(json.dumps(value))
+            (root/'harness/evidence/ci.json').write_text(json.dumps({'subjectSha256':'e'*64,'status':'pass',
+                'performanceQualification':policy,'results':[{'kind':kind,'exitCode':0,'artifacts':evidence} for kind in kinds]}))
+            claims=[{'name':name,'status':'pass','provenance':'live','artifacts':evidence} for name in
+                ['browser-matrix','visual-review','package-consumers','security','real-mcp','real-byok','independent-review']]
+            integrated=root/'harness/evidence/integrated.json'
+            integrated.write_text(json.dumps({'subjectSha256':'e'*64,'claims':claims}))
+            with patch('gate.validate',return_value=([],{})),patch('gate.candidate_digest',return_value='e'*64):
+                self.assertEqual(readiness_errors(root,'ready'),[])
+                integrated.write_text(json.dumps({'subjectSha256':'e'*64,'claims':[claim for claim in claims if claim['name']!='security']}))
+                self.assertIn('Missing passing integrated evidence: security',readiness_errors(root,'ready'))

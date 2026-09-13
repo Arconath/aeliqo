@@ -1058,7 +1058,9 @@
         "Documented actual hardware/browser workloads; p50/p95, bytes, geometry, DOM, memory and cleanup budgets pass.",
         "Measure cold/warm and user-perceived latency, network, model, DOM/layout/paint separately; no reference-model benchmark claimed as product."
       ],
-      "status": "done",
+      "status": "blocked",
+      "qualificationStatus": "deferred",
+      "ownerOverride": "2026-09-13: performance deferred, not passed, nonblocking for launch; preserve historical evidence and resume only on explicit owner instruction.",
       "stage": "ready",
       "evidence": [
         {

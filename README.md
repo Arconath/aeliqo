@@ -1,5 +1,19 @@
 # Aeliqo 0.1.0
 
+## Owner override — 13 September 2026
+
+Aeliqo performance qualification and optimization are **DEFERRED BY OWNER**,
+not passed and not a launch blocker. Prioritize API, servers and infrastructure.
+Do not run benchmarks or repeat full CI to chase performance. Preserve numeric
+budgets and historical failures. The source-controlled command ledger records
+this override; non-timed functional, security, package integrity and other
+release/recovery checks remain required. T30 is deferred; resume performance
+only on a later explicit owner instruction.
+Dedicated cold/warm, perceived-input calibration, heap/GC characterization and
+adverse-visualization measurement smokes are deferred with no passing claim.
+Ordinary component, input, visual, lifecycle, privacy and security suites remain
+required; deferred specialist measurement coverage is disclosed, not replaced.
+
 Aeliqo is an Apache-2.0 adaptive semantic UI framework. It gives applications a
 shared vocabulary—**Catalog, Task, Result, and Experience**—plus bounded query
 evaluation, validated presentation composition, 71 ready-to-use web components,

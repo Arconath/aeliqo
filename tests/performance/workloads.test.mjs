@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {environmentSnapshot, percentile, firstSubsequent, makeRows, semanticFields, mediumPlan} from './workloads.mjs';
+import {environmentSnapshot, percentile, firstSubsequent, makeRows, semanticFields, mediumPlan, runMediumPlanner, runTargetedReducer} from './workloads.mjs';
 
 test('Node with a global navigator is still recorded as Node', () => {
   assert.equal(typeof navigator, 'object');
@@ -33,4 +33,23 @@ test('the planner workload exercises 64 distinct complete candidates', () => {
   assert.equal(candidates.length, 64);
   assert.equal(new Set(candidates.map(candidate => JSON.stringify(candidate.plan))).size, 64);
   for (const candidate of candidates) assert.equal(candidate.plan.nodes.length, 31);
+});
+
+test('functional planner and reducer never sample the performance clock or report timings', async () => {
+  const original = globalThis.performance;
+  globalThis.performance = {now() {
+    const caller = new Error().stack?.split('\n')[2] ?? '';
+    assert.equal(caller.includes('/tests/performance/workloads.mjs'), false, 'Workload timing is forbidden in functional mode');
+    return original.now();
+  }};
+  try {
+    const planner = runMediumPlanner({timed: false});
+    const reducer = await runTargetedReducer(2, {timed: false});
+    assert.equal(planner.nodes, 31);
+    assert.equal(reducer.successful, 2);
+    assert.equal(reducer.unrelatedRoutes, 0);
+    for (const result of [planner, reducer]) {
+      for (const key of ['durationMs', 'rawMs', 'p50Ms', 'p95Ms']) assert.equal(key in result, false);
+    }
+  } finally {globalThis.performance = original;}
 });

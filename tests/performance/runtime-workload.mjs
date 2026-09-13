@@ -23,8 +23,8 @@ const medium = timingEnabled
 const reducer = timingEnabled
   ? await firstSubsequent('targeted-reducer', async () => runTargetedReducer(100))
   : {label: 'targeted-reducer', skipped: true};
-const functionalMedium = runMediumPlanner();
-const functionalReducer = await runTargetedReducer(100);
+const functionalMedium = runMediumPlanner({timed: false});
+const functionalReducer = await runTargetedReducer(100, {timed: false});
 const resources = runRuntimeResourceCycles(100);
 const report = {
   sourceCommit,
@@ -53,5 +53,5 @@ const output = join(outputDirectory, `runtime-${Date.now()}.json`);
 await writeFile(output, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
 console.log(JSON.stringify({output, sourceCommit, timingEnabled, medium: functionalMedium, reducer: {
   iterations: functionalReducer.iterations, successful: functionalReducer.successful, unrelatedRoutes: functionalReducer.unrelatedRoutes,
-  p50Ms: functionalReducer.p50Ms, p95Ms: functionalReducer.p95Ms,
+
 }, cleanup: resources}, null, 2));

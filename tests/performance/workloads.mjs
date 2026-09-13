@@ -154,19 +154,21 @@ export function mediumPlan() {
   return {context, registry: registryResult.value, plan, candidates, rowFieldCount: MEDIUM_FIELD_COUNT};
 }
 
-export function runMediumPlanner() {
+export function runMediumPlanner(options = {}) {
+  const timed = options.timed !== false;
   const workload = mediumPlan();
-  const started = now();
+  const started = timed ? now() : undefined;
   const composed = composePresentation({id: 'performance-medium-composition', revision: 'performance-composition-1', preconditions: workload.context.current,
     context: workload.context, candidates: workload.candidates}, workload.registry);
-  const durationMs = now() - started;
+  const timing = timed ? {durationMs: now() - started} : {};
   if (!composed.ok) throw new Error(`medium composition failed: ${JSON.stringify(composed.diagnostics)}`);
-  return {durationMs, status: composed.value.status, expansions: composed.value.expansions, nodes: composed.value.presentation?.plan.nodes.length ?? 0,
+  return {...timing, status: composed.value.status, expansions: composed.value.expansions, nodes: composed.value.presentation?.plan.nodes.length ?? 0,
     candidateCount: MEDIUM_CANDIDATE_COUNT, rowCount: MEDIUM_ROW_COUNT, viewCount: MEDIUM_VIEW_COUNT, fieldCount: MEDIUM_FIELD_COUNT,
     rowFieldCount: workload.rowFieldCount};
 }
 
-export async function runTargetedReducer(iterations = 100) {
+export async function runTargetedReducer(iterations = 100, options = {}) {
+  const timed = options.timed !== false;
   const authority = {principalKey: 'performance-principal', scopeDigest: 'performance-reducer-scope', policyRevision: 'performance-reducer-policy',
     catalogRevision: 'performance-reducer-catalog', experienceRevision: 'performance-reducer-experience', functionRegistryDigest: 'performance-reducer-functions', results: []};
   const task = {version: '1', id: 'performance-reducer-task', revision: 'performance-reducer-task-1', catalogRevision: authority.catalogRevision,
@@ -191,9 +193,9 @@ export async function runTargetedReducer(iterations = 100) {
     const event = {eventId: `draft-${index + 1}`, causationId: `cause-${index + 1}`, regionId: task.regionId,
       regionRevision: region.snapshot().regionRevision, originNodeId: 'editor',
       payload: {kind: 'draft', entity: 'record', key: 'row-1', field: 'field-001', value: `draft-${index + 1}`, entityRevision: '1'}};
-    const started = now();
+    const started = timed ? now() : undefined;
     const outcome = await controller.dispatch(event, {sourcePortId: 'draft'});
-    durations.push(now() - started);
+    if (timed) durations.push(now() - started);
     if (outcome.ok) {
       successful += 1;
       unrelatedRoutes += outcome.value.routed.filter((item) => item.route.nodeId === 'unrelated').length;
@@ -203,7 +205,7 @@ export async function runTargetedReducer(iterations = 100) {
   controller.dispose();
   graph.dispose();
   store.dispose();
-  return {iterations, successful, unrelatedRoutes, finalDraftCount: finalState.drafts.length, rawMs: durations, ...summary(durations)};
+  return {iterations, successful, unrelatedRoutes, finalDraftCount: finalState.drafts.length, ...(timed ? {rawMs: durations, ...summary(durations)} : {})};
 }
 
 /** Exercise the owning runtime leases/observers/controllers, not only DOM removal. */
