@@ -1,6 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import {composePresentation, createPresentationRegistry, validatePresentationPlan} from '../../packages/core/src/presentation/index.js';
-import {canonicalJSON} from '../../packages/core/src/contracts/parse.js';
+import {canonicalJSON, parseContract} from '../../packages/core/src/contracts/parse.js';
+import {preparePresentationContext, preparePresentationValidationCache, validatePreparedPresentationPlan} from '../../packages/core/src/presentation/validate.js';
 import type {PresentationContext, PresentationManifest, PresentationRegistry} from '../../packages/core/src/presentation/index.js';
 import type {PresentationPlan, ResultRef} from '../../packages/core/src/contracts/types.js';
 import {environment, experience, field, presentationPlan, presentationTask, ref, result} from './fixtures.js';
@@ -63,6 +64,54 @@ function request(
 }
 
 describe('presentation validation memoization', () => {
+  it('reuses an owned link-free graph only while ordered node identities and resolved ports remain identical', () => {
+    const leaf = tableManifest((values, descriptor) => ({ok: true, value: {
+      values, fields: descriptor!.fields.map(item => item.id),
+      ports: values.selectable === true ? [{id: 'selection', direction: 'output', payload: 'selection', entity: 'employees', identity: [field.id], grain: [field.id]}] : [],
+    }}));
+    const root = layoutManifest(values => ({ok: true, value: {values, fields: [], ports: []}}));
+    const installed = registry([leaf, root]);
+    const activeContext = context();
+    const prepared = preparePresentationContext(activeContext);
+    expect(prepared.ok).toBe(true); if (!prepared.ok) return;
+    const cache = preparePresentationValidationCache(prepared.value, installed);
+    expect(cache.ok).toBe(true); if (!cache.ok) return;
+    const check = (plan: PresentationPlan) => {
+      const parsed = parseContract('presentation-plan', plan);
+      expect(parsed.ok).toBe(true); if (!parsed.ok) throw new Error('fixture did not parse');
+      const checked = validatePreparedPresentationPlan(parsed.value, activeContext, installed, prepared.value, {}, undefined, undefined, undefined, cache.value);
+      expect(checked.ok).toBe(true); if (!checked.ok) throw new Error(JSON.stringify(checked.diagnostics));
+      return checked.value.graph;
+    };
+    const first = check(basePlan('layout', 'leaf', {density: 'compact'}));
+    const samePorts = check(basePlan('layout', 'leaf', {density: 'roomy'}));
+    expect(samePorts).toBe(first);
+    const changedPorts = check(basePlan('layout', 'leaf', {selectable: true}));
+    expect(changedPorts).not.toBe(first);
+    expect(changedPorts.nodes[1]!.ports).toHaveLength(1);
+    expect(first.nodes[1]!.ports).toHaveLength(0);
+    const renamed = check(basePlan('layout', 'different-leaf'));
+    expect(renamed).not.toBe(first);
+    expect(renamed.nodes[1]!.id).toBe('different-leaf');
+    const originalOrder = basePlan('layout', 'leaf');
+    const reordered = check({...originalOrder, nodes: [...originalOrder.nodes].reverse()});
+    expect(reordered).not.toBe(first);
+    expect(reordered.nodes[0]!.id).toBe('leaf');
+    const nested = basePlan('layout', 'leaf');
+    const secondLeaf = {...nested.nodes[1]!, id: 'second-leaf'};
+    const nestedLayout = {...nested.nodes[0]!, id: 'nested-layout', children: ['leaf', 'second-leaf']};
+    const firstTopology = check({...nested, nodes: [
+      {...nested.nodes[0]!, children: ['nested-layout']}, nestedLayout, nested.nodes[1]!, secondLeaf,
+    ]});
+    const changedTopology = check({...nested, nodes: [
+      {...nested.nodes[0]!, children: ['nested-layout', 'second-leaf']},
+      {...nestedLayout, children: ['leaf']}, nested.nodes[1]!, secondLeaf,
+    ]});
+    expect(changedTopology).not.toBe(firstTopology);
+    expect(Object.isFrozen(first.nodes[1]!.ports)).toBe(true);
+    expect(check(basePlan('layout', 'leaf'))).toBe(first);
+  });
+
   it('reuses structurally identical leaves across all 64 complete candidate plans while validating each distinct root', () => {
     let leafCalls = 0;
     let rootCalls = 0;

@@ -106,7 +106,9 @@ pnpm check
 
 `pnpm check` is the complete product command ledger and includes unit, package
 consumer, browser, SSR/hydration, security, accessibility, scenario, and
-performance gates. `python3 scripts/validate_all.py` validates the retained
+performance gates. It stops at the first failure and preserves the partial
+results; Node and browser planner budgets run before the visual corpus. A
+successful run still executes every command. `python3 scripts/validate_all.py` validates the retained
 specification/reference kit; it is not a substitute for product tests. Public
 pull requests run on GitHub-hosted GitHub Actions with read-only repository
 permission and no private-site or production credential.

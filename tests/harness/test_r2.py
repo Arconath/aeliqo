@@ -7,7 +7,7 @@ ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'scripts'))
 from common import candidate_digest,dag_errors,load_json
 from check_ownership import canonical_lease,ownership_errors
-from gate import readiness_errors,command_errors,run_logged_command
+from gate import readiness_errors,command_errors,run_ci,run_logged_command
 from next_tasks import choose
 
 class EvidenceFreshnessTests(unittest.TestCase):
@@ -51,6 +51,44 @@ class OwnershipAndTaskTests(unittest.TestCase):
         with self.assertRaises(ValueError):choose([{'id':'a','status':'planned','dependsOn':[],'paths':['../x']}],2)
 
 class GateRegressionTests(unittest.TestCase):
+    def ci_commands(self, first: list[str]) -> list[dict]:
+        commands=[]
+        for index,kind in enumerate(sorted({'typecheck','lint','unit','browser','packages','security','performance','boundaries'})):
+            commands.append({'kind':kind,'argv':first if index==0 else [sys.executable,'-c','pass'],'timeoutSeconds':10})
+        return commands
+    def test_ci_stops_after_first_failed_subprocess_and_records_partial_ledger(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);(root/'harness').mkdir();marker=root/'must-not-run'
+            fail=[sys.executable,'-c','import sys;sys.exit(7)']
+            commands=self.ci_commands(fail)
+            commands[1]['argv']=[sys.executable,'-c',f'from pathlib import Path;Path({str(marker)!r}).write_text("ran")']
+            (root/'harness/product-commands.json').write_text(json.dumps({'commands':commands}))
+            with patch('gate.validate',return_value=([],{})),patch('gate.candidate_digest',return_value='a'*64):
+                self.assertEqual(run_ci(root),1)
+            report=load_json(root/'harness/evidence/ci.json')
+            self.assertEqual(report['status'],'fail')
+            self.assertEqual([result['exitCode'] for result in report['results']],[7])
+            self.assertFalse(marker.exists())
+    def test_successful_ci_ledger_retains_every_command(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);(root/'harness').mkdir()
+            commands=self.ci_commands([sys.executable,'-c','pass'])
+            (root/'harness/product-commands.json').write_text(json.dumps({'commands':commands}))
+            with patch('gate.validate',return_value=([],{})),patch('gate.candidate_digest',return_value='b'*64):
+                self.assertEqual(run_ci(root),0)
+            report=load_json(root/'harness/evidence/ci.json')
+            self.assertEqual(report['status'],'pass')
+            self.assertEqual(len(report['results']),len(commands))
+            self.assertTrue(all(result['exitCode']==0 for result in report['results']))
+    def test_node_and_browser_performance_precede_visual_corpus(self):
+        commands=load_json(ROOT/'harness/product-commands.json')['commands']
+        argv=[command['argv'] for command in commands]
+        runtime=argv.index(['pnpm','test:performance:runtime'])
+        browser=argv.index(['pnpm','test:performance:browser'])
+        first_visual=argv.index(['env','AELIQO_VISUAL_PROJECT=chromium','pnpm','test:visual'])
+        self.assertEqual(len(commands),89)
+        self.assertEqual(browser,runtime+1)
+        self.assertLess(browser,first_visual)
     @unittest.skipUnless(os.name=='posix','process-group cleanup is a POSIX CI contract')
     def test_timeout_terminates_descendants(self):
         with tempfile.TemporaryDirectory() as tmp:
