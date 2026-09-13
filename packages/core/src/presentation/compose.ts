@@ -208,15 +208,40 @@ function candidateScore(
 interface RankedCandidate {
   readonly presentation: ValidatedPresentation;
   readonly score: number;
-  readonly tie: string;
   readonly incumbent: boolean;
 }
 
-function betterCandidate(next: RankedCandidate, current: RankedCandidate | undefined): boolean {
+/** Compare schema-owned plans in exactly canonical JSON order, stopping before
+ * serializing unchanged suffixes. Complete node objects cannot be JSON prefixes;
+ * array length ties use the actual comma/closing-bracket ordering. */
+function compareCanonicalPlans(left: PresentationPlan, right: PresentationPlan, cache: CanonicalCache): number {
+  for (const key of ['coverage', 'diagnostics', 'id', 'links', 'nodes', 'preconditions', 'revision', 'rootId', 'stateTransfer'] as const) {
+    if (left[key] === right[key]) continue;
+    if (key === 'nodes') {
+      const count = Math.min(left.nodes.length, right.nodes.length);
+      for (let index = 0; index < count; index++) {
+        if (left.nodes[index] === right.nodes[index]) continue;
+        const order = compareText(canonical(left.nodes[index], cache), canonical(right.nodes[index], cache));
+        if (order !== 0) return order;
+      }
+      if (left.nodes.length !== right.nodes.length) {
+        // Empty arrays end before an opening object; nonempty prefixes end
+        // after a comma, so the longer array sorts first in that case.
+        return count === 0 ? left.nodes.length - right.nodes.length : right.nodes.length - left.nodes.length;
+      }
+    } else {
+      const order = compareText(canonical(left[key], cache), canonical(right[key], cache));
+      if (order !== 0) return order;
+    }
+  }
+  return 0;
+}
+
+function betterCandidate(next: RankedCandidate, current: RankedCandidate | undefined, cache: CanonicalCache): boolean {
   if (current === undefined) return true;
   if (next.score !== current.score) return next.score > current.score;
   if (next.incumbent !== current.incumbent) return next.incumbent;
-  return next.tie < current.tie;
+  return compareCanonicalPlans(next.presentation.plan, current.presentation.plan, cache) < 0;
 }
 
 function validPattern(
@@ -371,8 +396,8 @@ export function composePresentation(request: PresentationCompositionRequest, reg
   const reject = (candidate: string, diagnostics: readonly Diagnostic[]) => rejected.push({candidate, diagnostics});
   const consider = (presentation: ValidatedPresentation, candidateIsIncumbent: boolean): void => {
     const rank: RankedCandidate = {presentation, score: candidateScore(presentation, prepared.value, request.context.incumbent),
-      tie: canonical(presentation.plan, canonicalCache), incumbent: candidateIsIncumbent};
-    if (betterCandidate(rank, best)) best = rank;
+      incumbent: candidateIsIncumbent};
+    if (betterCandidate(rank, best, canonicalCache)) best = rank;
   };
   const validateCandidate = (input: unknown, label: string, options: PresentationValidationOptions = {}, candidateIsIncumbent = false, expansionReserved = false, alreadyInspected = false): boolean => {
     if (!expansionReserved && !spend()) return false;

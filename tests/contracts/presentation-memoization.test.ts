@@ -97,6 +97,17 @@ describe('presentation validation memoization', () => {
     const reordered = check({...originalOrder, nodes: [...originalOrder.nodes].reverse()});
     expect(reordered).not.toBe(first);
     expect(reordered.nodes[0]!.id).toBe('leaf');
+    const nested = basePlan('layout', 'leaf');
+    const secondLeaf = {...nested.nodes[1]!, id: 'second-leaf'};
+    const nestedLayout = {...nested.nodes[0]!, id: 'nested-layout', children: ['leaf', 'second-leaf']};
+    const firstTopology = check({...nested, nodes: [
+      {...nested.nodes[0]!, children: ['nested-layout']}, nestedLayout, nested.nodes[1]!, secondLeaf,
+    ]});
+    const changedTopology = check({...nested, nodes: [
+      {...nested.nodes[0]!, children: ['nested-layout', 'second-leaf']},
+      {...nestedLayout, children: ['leaf']}, nested.nodes[1]!, secondLeaf,
+    ]});
+    expect(changedTopology).not.toBe(firstTopology);
     expect(Object.isFrozen(first.nodes[1]!.ports)).toBe(true);
     expect(check(basePlan('layout', 'leaf'))).toBe(first);
   });

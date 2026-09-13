@@ -70,9 +70,7 @@ export interface PresentationValidationCache {
   readonly taskOutputs: ReadonlyMap<string, Extract<Task, {kind: 'data'}>['outputs'][number]>;
   readonly nodeGraphs: Map<string, Outcome<InteractionGraph>>;
   readonly presentationGraphs: Map<string, Outcome<InteractionGraph>>;
-  readonly emptyGraphs: Map<string, InteractionGraph>;
-  readonly graphPortIds: WeakMap<object, number>;
-  nextGraphPortId: number;
+  readonly emptyGraphs: Map<PresentationTreeCacheEntry, EmptyPresentationGraphCacheEntry[]>;
   readonly coverageIds: WeakMap<object, number>;
   readonly coverageAnalyses: Map<string, Outcome<PresentationCoverageAnalysis>>;
   /** Read-set outcomes are reusable only for frozen plans in this invocation. */
@@ -91,9 +89,14 @@ interface PresentationCoverageAnalysis {
 interface PresentationTreeCacheEntry {
   readonly rootId: string;
   readonly nodeIds: readonly string[];
-  readonly children: readonly object[];
+  readonly children: readonly (readonly string[])[];
   readonly childrenById: ReadonlyMap<string, readonly string[]>;
   readonly parents: ReadonlyMap<string, string>;
+}
+
+interface EmptyPresentationGraphCacheEntry {
+  readonly ports: readonly object[];
+  readonly graph: InteractionGraph;
 }
 
 /** Stable memo identity for one schema-parsed node. Fixed-shape fields use
@@ -143,7 +146,7 @@ export function preparePresentationValidationCache(
     resultFields, resultsByRef,
     taskInputs: new Set(prepared.task.kind === 'presentation' ? prepared.task.inputs.map(refKey) : []),
     taskNeeds: new Map(prepared.constraints.taskNeeds.map(need => [need.id, need])), taskOutputs,
-    nodeGraphs: new Map(), presentationGraphs: new Map(), emptyGraphs: new Map(), graphPortIds: new WeakMap(), nextGraphPortId: 0,
+    nodeGraphs: new Map(), presentationGraphs: new Map(), emptyGraphs: new Map(),
     coverageIds: new WeakMap(), coverageAnalyses: new Map(),
     readSetReferences: new WeakMap(), readSetOutcomes: new WeakMap(), treeEntries: [], nextReadSetReference: 0, nextCoverageId: 0,
   }};
@@ -164,12 +167,19 @@ function readSetDependencyKey(requiredResults: readonly ResultRef[], cache: Pres
 
 function preparePresentationTree(plan: PresentationPlanLike, cache: PresentationValidationCache): Outcome<PresentationTreeCacheEntry> {
   const nodeIds = plan.nodes.map(node => node.id);
-  const children = plan.nodes.map(node => node.children as object);
+  const children = plan.nodes.map(node => node.children);
   for (const entry of cache.treeEntries) {
     if (entry.rootId !== plan.rootId || entry.nodeIds.length !== nodeIds.length) continue;
     let same = true;
     for (let index = 0; index < nodeIds.length; index++) {
-      if (entry.nodeIds[index] !== nodeIds[index] || entry.children[index] !== children[index]) { same = false; break; }
+      const cachedChildren = entry.children[index]!;
+      const candidateChildren = children[index]!;
+      if (entry.nodeIds[index] !== nodeIds[index]
+        || (cachedChildren !== candidateChildren && (cachedChildren.length !== candidateChildren.length
+          || cachedChildren.some((child, childIndex) => child !== candidateChildren[childIndex])))) {
+        same = false;
+        break;
+      }
     }
     if (same) return {ok: true, value: entry};
   }
@@ -555,23 +565,33 @@ export function validatePreparedPresentationPlan(
   let graph: Outcome<InteractionGraph>;
   if (plan.links.length === 0) {
     // Ports are already validated and recursively owned. A graph with no links
-    // depends only on their identities and the ordered node IDs, not layout
-    // configuration. Reuse it within this invocation without allocating and
-    // freezing every graph node again for otherwise equivalent candidates.
+    // is reusable for the same validated tree and exact resolved port-array
+    // identities. Compare the bounded variants directly so a cache hit
+    // allocates neither a serialized key nor another frozen graph.
     const cache = preparedCache.value;
-    let graphKey = '';
-    for (const node of resolved) {
-      let portId = cache.graphPortIds.get(node.config.ports);
-      if (portId === undefined) {
-        portId = ++cache.nextGraphPortId;
-        cache.graphPortIds.set(node.config.ports, portId);
+    const variants = cache.emptyGraphs.get(tree.value);
+    let value: InteractionGraph | undefined;
+    if (variants !== undefined) {
+      for (const variant of variants) {
+        if (variant.ports.length !== resolved.length) continue;
+        let same = true;
+        for (let index = 0; index < resolved.length; index++) {
+          if (variant.ports[index] !== resolved[index]!.config.ports) {
+            same = false;
+            break;
+          }
+        }
+        if (same) {
+          value = variant.graph;
+          break;
+        }
       }
-      graphKey += `${JSON.stringify(node.node.id)}:${portId},`;
     }
-    let value = cache.emptyGraphs.get(graphKey);
     if (value === undefined) {
       value = freezePresentation({nodes: resolved.map(n => ({id: n.node.id, ports: n.config.ports})), links: [], mappings: []});
-      cache.emptyGraphs.set(graphKey, value);
+      const entry = {ports: resolved.map(node => node.config.ports), graph: value};
+      if (variants === undefined) cache.emptyGraphs.set(tree.value, [entry]);
+      else variants.push(entry);
     }
     graph = {ok: true, value};
   }
