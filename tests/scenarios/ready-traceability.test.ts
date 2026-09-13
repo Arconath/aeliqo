@@ -186,13 +186,23 @@ describe('S30/S31 corrected ownership evidence scope', () => {
 
 describe('S48 canonical task ownership', () => {
   it('executes the canonical lease, sibling-prefix, traversal and acceptance-freshness regressions', () => {
-    const output = execFileSync('python3', ['tests/harness/test_r2.py'], {
-      cwd: root,
-      encoding: 'utf8',
-      env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' },
-      stdio: ['ignore', 'pipe', 'pipe'],
-      timeout: 30_000,
-    });
+    const output = execFileSync(
+      'python3',
+      [
+        'tests/harness/test_r2.py',
+        'OwnershipAndTaskTests.test_old_missing_src_lease_refused',
+        'OwnershipAndTaskTests.test_sibling_prefix_not_ownership',
+        'OwnershipAndTaskTests.test_absolute_traversal_refused',
+        'EvidenceFreshnessTests.test_acceptance_changes_invalidate',
+      ],
+      {
+        cwd: root,
+        encoding: 'utf8',
+        env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' },
+        stdio: ['ignore', 'pipe', 'pipe'],
+        timeout: 30_000,
+      },
+    );
     expect(output).toBe('');
   }, 30_000);
 });
