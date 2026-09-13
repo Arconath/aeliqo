@@ -81,6 +81,8 @@ test('quality dispatch retains the workflow trust and release boundaries', () =>
   assert.match(workflow, /ref: \$\{\{ env\.SOURCE_SHA \}\}/);
   assert.match(workflow, /persist-credentials: false/);
   assert.doesNotMatch(workflow, /secrets\./);
+  assert.match(workflow, /cp harness\/evidence\/ci\.json artifacts\/product-ci\/ci\.json/);
+  assert.match(workflow, /git restore --source=HEAD --worktree harness\/evidence\/ci\.json/);
   assert.match(releaseWorkflow, /github\.ref == 'refs\/heads\/main'/);
   assert.match(releaseWorkflow, /head_sha == \$sha/);
   assert.match(releaseWorkflow, /head_branch == "main"/);

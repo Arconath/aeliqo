@@ -102,7 +102,10 @@ jobs:
           python3 -m unittest discover -s tests/harness -v
           python3 -m unittest discover -s tests/semantics_reference -v
       - name: Run required functional, security, browser, and package checks
-        run: pnpm check
+        run: |
+          pnpm check
+          cp harness/evidence/ci.json artifacts/product-ci/ci.json
+          git restore --source=HEAD --worktree harness/evidence/ci.json
       - name: Build and consume the six exact package candidates
         run: |
           pnpm test:release-tooling
