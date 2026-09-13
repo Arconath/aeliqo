@@ -153,13 +153,28 @@ def readiness_errors(root: Path, mode: str) -> list[str]:
     except (OSError,ValueError,TypeError): errors.append('No valid integrated candidate evidence')
     return errors
 
+def write_ci_report(path: Path, subject: str, status: str, source_changed: bool, results: list[dict]) -> None:
+    report={'subjectSha256':subject,'status':status,'sourceChangedDuringRun':source_changed,
+            'timestamp':dt.datetime.now(dt.timezone.utc).isoformat(),'results':results}
+    path.parent.mkdir(parents=True,exist_ok=True)
+    temporary: Path | None=None
+    try:
+        with tempfile.NamedTemporaryFile('w',dir=path.parent,prefix='.ci.',suffix='.tmp',delete=False) as stream:
+            temporary=Path(stream.name)
+            json.dump(report,stream,indent=2);stream.write('\n');stream.flush();os.fsync(stream.fileno())
+        os.replace(temporary,path)
+    finally:
+        if temporary is not None: temporary.unlink(missing_ok=True)
+
 def run_ci(root: Path) -> int:
     kit_errors,_=validate(root); errors,commands=command_errors(root)
     if kit_errors or errors:
         print('\n'.join(kit_errors+errors),file=sys.stderr); return 1
     before=candidate_digest(root)
     directory=root/'artifacts/product-ci'; directory.mkdir(parents=True,exist_ok=True)
+    evidence=root/'harness/evidence/ci.json'
     results=[]
+    write_ci_report(evidence,before,'running',False,results)
     with tempfile.TemporaryDirectory(prefix='aeliqo-build-reuse-') as reuse_directory:
         environment={**os.environ,'AELIQO_BUILD_REUSE_DIRECTORY':reuse_directory}
         for index,command in enumerate(commands):
@@ -173,13 +188,15 @@ def run_ci(root: Path) -> int:
             results.append({'kind':command['kind'],'argv':command['argv'],'exitCode':code,
                             'elapsedSeconds':round(elapsed,3),
                             'artifacts':[{'path':output.relative_to(root).as_posix(),'sha256':sha256(output)}]})
-            print(f'{command["kind"]}: exit {code} ({elapsed:.3f}s)')
+            print(f'{command["kind"]}: exit {code} ({elapsed:.3f}s)',flush=True)
+            if code!=0:
+                after=candidate_digest(root)
+                write_ci_report(evidence,after,'fail',before!=after,results)
+                return 1
+            write_ci_report(evidence,before,'running',False,results)
     after=candidate_digest(root)
     passed=all(r['exitCode']==0 for r in results) and before==after
-    report={'subjectSha256':after,'status':'pass' if passed else 'fail',
-            'sourceChangedDuringRun':before!=after,'timestamp':dt.datetime.now(dt.timezone.utc).isoformat(),'results':results}
-    evidence=root/'harness/evidence/ci.json'; evidence.parent.mkdir(parents=True,exist_ok=True)
-    evidence.write_text(json.dumps(report,indent=2)+'\n')
+    write_ci_report(evidence,after,'pass' if passed else 'fail',before!=after,results)
     return 0 if passed else 1
 
 def main() -> int:
