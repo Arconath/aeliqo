@@ -49,8 +49,11 @@ for(const workload of workloads){
  }
  const measured=measurements.find(m=>m.mode===(workload.incremental?'excluding-lit':'total'));rows.push({id:workload.id,entry:workload.code,budgetBytes:workload.budget,budgetMetric:workload.incremental?'JS gzip with only Lit packages external':'total JS gzip',passed:measured.jsGzipBytes<=workload.budget&&measurements.every(m=>m.forbidden.length===0),measurements});
 }
+const deferred=process.env.AELIQO_DEFER_PERFORMANCE==='1';
+const functionalPassed=rows.every(row=>row.measurements.every(measurement=>measurement.forbidden.length===0));
+if(deferred)for(const row of rows){row.passed=null;row.qualificationStatus='deferred';}
 const after=digest();assert.equal(after,before,'Source changed during bundle measurement');
-const report={sourceCommit,sourceDigest:before,sourceChangedDuringRun:false,environment:{node:process.version,vite:'8.2.2',os:platform(),release:release(),arch:arch(),target:'es2022',minified:true,gzip:'node:zlib default'},packages,consumerLockSha256:hash(lock),consumerDirectory:consumer,rows,bundleGate:rows.every(r=>r.passed)?'pass':'fail',T30:'blocked',limits:['This proves selected browser export byte sizes and rendered module graphs, not actual interaction correctness or execution/parse latency.','Incremental builds externalize only Lit and retain all Aeliqo shared platform code; total builds include Lit.','Timing, browser traces, large workloads, cleanup/heap and real mobile hardware remain required.']};
+const report={sourceCommit,sourceDigest:before,sourceChangedDuringRun:false,environment:{node:process.version,vite:'8.2.2',os:platform(),release:release(),arch:arch(),target:'es2022',minified:true,gzip:'node:zlib default'},packages,consumerLockSha256:hash(lock),consumerDirectory:consumer,rows,bundleGate:deferred?'deferred':rows.every(r=>r.passed)?'pass':'fail',functionalPassed,T30:deferred?'deferred':'blocked',limits:['This proves selected browser export byte sizes and rendered module graphs, not actual interaction correctness or execution/parse latency.','Incremental builds externalize only Lit and retain all Aeliqo shared platform code; total builds include Lit.','Timing, browser traces, large workloads, cleanup/heap and real mobile hardware remain required.']};
 await writeFile(join(output,'report.json'),JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify({report:join(output,'report.json'),gate:report.bundleGate,rows:rows.map(r=>({id:r.id,passed:r.passed,budget:r.budgetBytes,measurements:r.measurements.map(m=>({mode:m.mode,gzip:m.jsGzipBytes,forbidden:m.forbidden}))}))},null,2));
-if(report.bundleGate==='fail')process.exitCode=1;
+if(!functionalPassed||report.bundleGate==='fail')process.exitCode=1;

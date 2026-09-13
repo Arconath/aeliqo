@@ -16,6 +16,8 @@ from common import ROOT,candidate_digest,load_json,safe_file,sha256
 from kit_check import validate
 
 KINDS={'typecheck','lint','unit','browser','packages','security','performance','boundaries'}
+DEFERRED_MEASUREMENT_SCRIPTS={'test:performance:standalone','test:performance:perceived-input',
+                              'test:performance:heap-lifecycle','test:performance:adverse-visualization'}
 READY_CLAIMS={'browser-matrix','visual-review','package-consumers',
               'performance','security','real-mcp','real-byok','independent-review'}
 RELEASE_CLAIMS={'source-release','npm-integrity','site-digest','rollback-verification'}
@@ -71,13 +73,19 @@ def artifact_errors(root: Path, records: object, label: str) -> list[str]:
             errors.append(label+': invalid artifact '+str(exc))
     return errors
 
+def performance_deferred(root: Path) -> bool:
+    policy=load_json(root/'harness/product-commands.json').get('performanceQualification',{})
+    return policy.get('status')=='deferred' and policy.get('ownerDecision')=='2026-09-13'
+
+
 def command_errors(root: Path) -> tuple[list[str],list[dict]]:
     try: commands=load_json(root/'harness/product-commands.json')['commands']
     except (OSError,ValueError,KeyError) as exc: return [str(exc)],[]
     if not isinstance(commands,list): return ['Command ledger is not a list'],[]
     errors=[]
     kinds={command.get('kind') for command in commands if isinstance(command,dict)}
-    if not KINDS.issubset(kinds): errors.append('Missing real product commands: '+', '.join(sorted(KINDS-kinds)))
+    required_kinds=KINDS-{'performance'} if performance_deferred(root) else KINDS
+    if not required_kinds.issubset(kinds): errors.append('Missing real product commands: '+', '.join(sorted(required_kinds-kinds)))
     for command in commands:
         if not isinstance(command,dict):
             errors.append('Each command must be an object'); continue
@@ -86,6 +94,9 @@ def command_errors(root: Path) -> tuple[list[str],list[dict]]:
         argv=command.get('argv')
         if not isinstance(argv,list) or not argv or any(not isinstance(v,str) or not v for v in argv):
             errors.append('Commands require a nonempty argv array (no shell string)')
+        if command.get('deferred') is not None and (command.get('deferred') is not True
+                or not performance_deferred(root) or argv not in [['pnpm',name] for name in DEFERRED_MEASUREMENT_SCRIPTS]):
+            errors.append('Only owner-deferred measurement commands may be deferred')
         timeout=command.get('timeoutSeconds',900)
         if not isinstance(timeout,int) or isinstance(timeout,bool) or not 1<=timeout<=3600:
             errors.append('Command timeout must be 1..3600 seconds')
@@ -94,8 +105,10 @@ def command_errors(root: Path) -> tuple[list[str],list[dict]]:
 def readiness_errors(root: Path, mode: str) -> list[str]:
     errors,_=validate(root)
     cmd_errors,_=command_errors(root); errors+=cmd_errors
+    deferred=performance_deferred(root)
     tasks=load_json(root/'harness/tasks.json')['tasks']
     for task in tasks:
+        if deferred and task['id']=='T30': continue
         if mode=='ready' and task['stage']=='release': continue
         if str(task.get('evidenceScope','')).startswith('historical-'):
             errors.append(task['id']+': historical evidence cannot satisfy current readiness')
@@ -132,9 +145,17 @@ def readiness_errors(root: Path, mode: str) -> list[str]:
         ci=load_json(ledger_path)
         if ci.get('subjectSha256')!=digest or ci.get('status')!='pass':
             errors.append('CI evidence is absent, failed or stale for this candidate')
-        if not KINDS.issubset({r.get('kind') for r in ci.get('results',[]) if r.get('exitCode')==0}):
+        required_kinds=KINDS-{'performance'} if deferred else KINDS
+        if deferred and ci.get('performanceQualification',{}).get('status')!='deferred':
+            errors.append('CI evidence must disclose owner-deferred performance')
+        if not required_kinds.issubset({r.get('kind') for r in ci.get('results',[]) if r.get('exitCode')==0}):
             errors.append('CI evidence does not cover all required command kinds')
-        for result in ci.get('results',[]): errors+=artifact_errors(root,result.get('artifacts'),'CI '+str(result.get('kind')))
+        for result in ci.get('results',[]):
+            if result.get('status')=='deferred':
+                if not deferred or result.get('exitCode') is not None or result.get('argv') not in [['pnpm',name] for name in DEFERRED_MEASUREMENT_SCRIPTS]:
+                    errors.append('Invalid deferred CI result')
+                continue
+            errors+=artifact_errors(root,result.get('artifacts'),'CI '+str(result.get('kind')))
     except (OSError,ValueError): errors.append('No actual CI command evidence')
     try:
         integrated=load_json(root/'harness/evidence/integrated.json')
@@ -142,7 +163,7 @@ def readiness_errors(root: Path, mode: str) -> list[str]:
             errors.append('Integrated evidence does not match candidate source digest')
         claims=integrated.get('claims',[])
         by_name={c.get('name'):c for c in claims}
-        required=READY_CLAIMS | (RELEASE_CLAIMS if mode=='release' else set())
+        required=(READY_CLAIMS-{'performance'} if deferred else READY_CLAIMS) | (RELEASE_CLAIMS if mode=='release' else set())
         if integrated.get('webmcpNativeAdvertised') is True: required=required|{'real-native-webmcp'}
         for name in sorted(required):
             claim=by_name.get(name)
@@ -153,9 +174,10 @@ def readiness_errors(root: Path, mode: str) -> list[str]:
     except (OSError,ValueError,TypeError): errors.append('No valid integrated candidate evidence')
     return errors
 
-def write_ci_report(path: Path, subject: str, status: str, source_changed: bool, results: list[dict]) -> None:
+def write_ci_report(path: Path, subject: str, status: str, source_changed: bool, results: list[dict], qualification: dict | None=None) -> None:
     report={'subjectSha256':subject,'status':status,'sourceChangedDuringRun':source_changed,
             'timestamp':dt.datetime.now(dt.timezone.utc).isoformat(),'results':results}
+    if qualification is not None: report['performanceQualification']=qualification
     path.parent.mkdir(parents=True,exist_ok=True)
     temporary: Path | None=None
     try:
@@ -174,10 +196,16 @@ def run_ci(root: Path) -> int:
     directory=root/'artifacts/product-ci'; directory.mkdir(parents=True,exist_ok=True)
     evidence=root/'harness/evidence/ci.json'
     results=[]
-    write_ci_report(evidence,before,'running',False,results)
+    qualification=load_json(root/'harness/product-commands.json').get('performanceQualification')
+    write_ci_report(evidence,before,'running',False,results,qualification)
     with tempfile.TemporaryDirectory(prefix='aeliqo-build-reuse-') as reuse_directory:
         environment={**os.environ,'AELIQO_BUILD_REUSE_DIRECTORY':reuse_directory}
         for index,command in enumerate(commands):
+            if command.get('deferred') is True:
+                results.append({'kind':command['kind'],'argv':command['argv'],'status':'deferred',
+                                'exitCode':None,'reason':'Owner decision 2026-09-13: performance deferred','artifacts':[]})
+                write_ci_report(evidence,before,'running',False,results,qualification)
+                continue
             output=directory/f'{index:02d}-{command["kind"]}.log'
             started=time.monotonic()
             try:
@@ -191,12 +219,12 @@ def run_ci(root: Path) -> int:
             print(f'{command["kind"]}: exit {code} ({elapsed:.3f}s)',flush=True)
             if code!=0:
                 after=candidate_digest(root)
-                write_ci_report(evidence,after,'fail',before!=after,results)
+                write_ci_report(evidence,after,'fail',before!=after,results,qualification)
                 return 1
-            write_ci_report(evidence,before,'running',False,results)
+            write_ci_report(evidence,before,'running',False,results,qualification)
     after=candidate_digest(root)
-    passed=all(r['exitCode']==0 for r in results) and before==after
-    write_ci_report(evidence,after,'pass' if passed else 'fail',before!=after,results)
+    passed=all(r.get('status')=='deferred' or r['exitCode']==0 for r in results) and before==after
+    write_ci_report(evidence,after,'pass' if passed else 'fail',before!=after,results,qualification)
     return 0 if passed else 1
 
 def main() -> int:

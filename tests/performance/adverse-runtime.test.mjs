@@ -15,6 +15,8 @@ import {createResultStore} from '@aeliqo/runtime/results';
  * not expose directly.
  */
 
+const timingEnabled = process.env.AELIQO_RUN_PERFORMANCE !== '0';
+
 const sleep = (milliseconds) => new Promise((resolvePromise) => setTimeout(resolvePromise, milliseconds));
 
 function controlledSource(label, metrics, {cooperativeReturn = true} = {}) {
@@ -154,13 +156,13 @@ async function runSlowSourceProbe() {
   const store = createResultStore({maxEntries: 8});
   const handle = store.begin(resultKey('slow-source'));
   const source = controlledSource('slow-source', metrics);
-  const startedAt = performance.now();
+  const startedAt = timingEnabled ? performance.now() : undefined;
   const updatesPromise = drain(handle.subscribe(source));
   await source.ready();
   await sleep(12);
   for (const event of resultEvents('slow-row', 'source-a')) source.push(event);
   const updates = await updatesPromise;
-  const elapsedMs = performance.now() - startedAt;
+  const elapsedMs = timingEnabled ? performance.now() - startedAt : undefined;
   const snapshot = handle.snapshot();
   const observation = {
     elapsedMs, updateCount: updates.length, finalStatus: snapshot.status,
@@ -283,7 +285,7 @@ async function runRevisionAndRegionCleanupProbe() {
   const freshSource = controlledSource('source-b', metrics);
   const freshDrain = drain(freshHandle.subscribe(freshSource));
   await freshSource.ready();
-  const revisionChangedAt = performance.now();
+  const revisionChangedAt = timingEnabled ? performance.now() : undefined;
   oldHandle.dispose();
   for (const event of resultEvents('old-row', 'source-a')) oldSource.push(event);
   for (const event of resultEvents('fresh-row', 'source-b')) freshSource.push(event);
@@ -316,14 +318,14 @@ async function runRevisionAndRegionCleanupProbe() {
   if (!staged.ok) throw new Error(staged.diagnostics[0]?.message ?? 'region stage failed');
   const commitPromise = region.commit(staged.value);
   await started;
-  const disposeStartedAt = performance.now();
+  const disposeStartedAt = timingEnabled ? performance.now() : undefined;
   region.dispose();
   resolveAuthorization({ok: true, value: undefined});
   const commit = await commitPromise;
   const regionSnapshot = region.snapshot();
   const regionHistory = region.history();
   const revisionObservation = {
-    elapsedMs: performance.now() - revisionChangedAt,
+    elapsedMs: timingEnabled ? performance.now() - revisionChangedAt : undefined,
     oldUpdates: oldUpdates.length, oldStatus: oldHandle.snapshot().status,
     oldRows: oldHandle.snapshot().loadedRows, oldSourceRevision: oldHandle.snapshot().key.sourceRevision,
     freshUpdates: freshUpdates.length, freshStatus: freshHandle.snapshot().status,
@@ -336,7 +338,7 @@ async function runRevisionAndRegionCleanupProbe() {
     regionStatus: regionSnapshot.status, regionObserverClosed: observer.closed,
     regionStoreEntryAfterDispose: regionStore.get(fixture.task.regionId) !== undefined,
     regionHistoryLength: regionHistory.length, observerUpdates,
-    authorizationAborted: aborted, disposeToCommitMs: performance.now() - disposeStartedAt,
+    authorizationAborted: aborted, disposeToCommitMs: timingEnabled ? performance.now() - disposeStartedAt : undefined,
   };
   freshHandle.dispose();
   resultStore.dispose();
@@ -345,7 +347,7 @@ async function runRevisionAndRegionCleanupProbe() {
 }
 
 async function runProbe() {
-  const startedAt = performance.now();
+  const startedAt = timingEnabled ? performance.now() : undefined;
   const slow = await runSlowSourceProbe();
   const storm = await runSupersedingStormProbe();
   const lateDelivery = await runNonCooperativeLateDeliveryProbe();
@@ -363,7 +365,7 @@ async function runProbe() {
       rawSourceMetrics: true,
       sourceRevisionPolicy: 'source-a and source-b use independent cache slots; the prior source-a handle is explicitly disposed before late delivery',
     },
-    elapsedMs: performance.now() - startedAt,
+    elapsedMs: timingEnabled ? performance.now() - startedAt : undefined,
     slowSource: slow.observation,
     supersedingStorm: storm.observation,
     nonCooperativeLateDelivery: lateDelivery.observation,
