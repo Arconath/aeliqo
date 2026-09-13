@@ -23,7 +23,7 @@
 <main id="main">
   <section class="shell hero">
     <div class="hero-copy">
-      <p class="eyebrow hero-status"><span class="status-pulse" aria-hidden="true"></span>THE 0.1.0 REWRITE · IN DEVELOPMENT</p>
+      <p class="eyebrow hero-status"><span class="status-pulse" aria-hidden="true"></span>AELIQO 0.1.0 · STABLE</p>
       <h1>From application data to interfaces that <em>explain themselves.</em></h1>
       <p class="lead">Build adaptive interfaces from application data and intent. Start with ready-to-use components, connect typed semantics, and add AI only when it helps.</p>
       <div class="actions">
@@ -35,12 +35,12 @@
         <li><strong>Typed evidence</strong><span>scope + lineage</span></li>
         <li><strong>Optional AI</strong><span>manual stays first-class</span></li>
       </ul>
-      <p class="release-note"><span>Preview</span> 0.1.0-rc.2 is staged locally, not yet available from npm. <a href="/docs/getting-started/">Read the integration paths ↗</a></p>
+      <p class="release-note"><span>Stable</span> Aeliqo 0.1.0 is available from npm as six source-aligned packages. <a href="/docs/getting-started/">Read the integration paths ↗</a></p>
       <details class="release-install">
-        <summary>Install the staged candidate locally</summary>
-        <p>This public repository contains the exact reviewed tarballs listed by <code>apps/site/vendor/packages/manifest.json</code>.</p>
-        <pre tabindex="0"><code>npm install --save-exact &#92;&#10;  ./vendor/packages/aeliqo-core-0.1.0-rc.2.tgz &#92;&#10;  ./vendor/packages/aeliqo-runtime-0.1.0-rc.2.tgz &#92;&#10;  ./vendor/packages/aeliqo-web-0.1.0-rc.2.tgz &#92;&#10;  ./vendor/packages/aeliqo-agent-0.1.0-rc.2.tgz &#92;&#10;  ./vendor/packages/aeliqo-devtools-0.1.0-rc.2.tgz &#92;&#10;  ./vendor/packages/aeliqo-react-0.1.0-rc.2.tgz</code></pre>
-        <p class="caption">This source-checkout command is only for the preserved staged candidate. npm publication and registry availability are not claimed.</p>
+        <summary>Install Aeliqo 0.1.0</summary>
+        <p>Install the exact packages your application uses. This basic web setup keeps core, runtime, and web on one stable version.</p>
+        <pre tabindex="0"><code>npm install --save-exact &#92;&#10;  @aeliqo/core@0.1.0 &#92;&#10;  @aeliqo/runtime@0.1.0 &#92;&#10;  @aeliqo/web@0.1.0</code></pre>
+        <p class="caption">Add <code>@aeliqo/react</code>, <code>@aeliqo/agent</code>, or <code>@aeliqo/devtools</code> at 0.1.0 only when your integration needs them.</p>
       </details>
     </div>
 
