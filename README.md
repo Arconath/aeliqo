@@ -162,3 +162,21 @@ local Studio/devtools, testkit source, and agent plumbing—is Apache-2.0. Futur
 hosted organizational operations or support are a separate business hypothesis,
 not functionality or customer demand claimed by 0.1.0. See the
 [OSS/commercial boundary](docs/business/oss-commercial-boundary.md).
+
+## Application boundaries
+
+The current `apps/site` shell assembles the public web, generated documentation
+and playground into one static artifact. It is retained as the migration shell
+while the source boundaries are made explicit:
+
+```text
+apps/web/          public product and marketing web
+apps/docs/         public documentation application
+apps/playground/   public interactive playground application
+```
+
+The target split keeps docs and playground as separate source applications while
+allowing them to ship as one static image under `docs.aeliqo.com`. A future
+private Pro API, worker, billing logic or customer-data service belongs in the
+separate private `products/aeliqo-pro` repository; this public repository must
+not contain its credentials or proprietary server implementation.

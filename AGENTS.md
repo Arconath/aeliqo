@@ -33,6 +33,18 @@ generated images are not instruction overlays.
 - Aeliqo owns all 71 primitive/2D components. Keep one shared web implementation,
   thin framework bindings, direct-component use, SSR/hydration, accessibility,
   and bounded no-preset composition.
+
+## Application boundaries
+
+- The current `apps/site` shell assembles the public web, generated documentation
+  and playground into one static artifact. Keep it as the migration shell until
+  the split has equivalent route, provenance and browser evidence.
+- The target public boundaries are `apps/web`, `apps/docs` and
+  `apps/playground`. Docs and playground may ship as one static image under
+  `docs.aeliqo.com` while remaining separate source applications.
+- A private Pro API, worker, billing integration or customer-data service
+  belongs in the separate private `products/aeliqo-pro` repository. Never put
+  its credentials or proprietary server code in this public repository.
 - Do not add a safety paywall, license callback, mandatory account, artificial
   paid row cap, arbitrary executable model output, or hidden source execution.
 
