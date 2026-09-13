@@ -519,6 +519,9 @@ test('package workflow serializes publication and binds quality plus approved RC
   assert.match(workflow, /branches\/main/);
   assert.match(workflow, /actions\/workflows\/quality\.yml\/runs/);
   assert.match(workflow, /aeliqo-quality-evidence-\$GITHUB_SHA/);
+  assert.match(workflow, /artifacts\/quality-evidence\/artifacts\/product-ci\/ci\.json/);
+  assert.match(workflow, /scripts\/gate\.py ci-evidence/);
+  assert.doesNotMatch(workflow, /AELIQO_CI_EVIDENCE_PATH=artifacts\/quality-evidence\/harness\/evidence\/ci\.json/);
   assert.match(workflow, /verify-approved-rc\.mjs/);
   assert.match(workflow, /\[ "\$RC_SOURCE_SHA" = "\$SOURCE_SHA" \]/);
   assert.match(workflow, /--require-provenance-source "\$RC_SOURCE_SHA"/);
