@@ -1,0 +1,326 @@
+<section class="playground-header" aria-labelledby="playground-title">
+  <div class="playground-intro">
+    <p class="eyebrow"><span aria-hidden="true"></span> Interactive playground</p>
+    <h1 id="playground-title">Build the result.<br /><em>Inspect the evidence.</em></h1>
+    <p>
+      Run real Aeliqo components, the bounded local runtime, and optional tool protocols. Follow a guided task, change
+      its scope, and inspect the exact contracts and receipts.
+    </p>
+    <div class="protocol-shortcuts" role="group" aria-label="Open a protocol demonstration">
+      <button type="button" data-agent-demo="agent-mcp">
+        <strong>MCP</strong><span>Discover and invoke a scoped server tool</span>
+      </button>
+      <button type="button" data-agent-demo="agent-webmcp">
+        <strong>WebMCP</strong><span>Register a tool with the browser host</span>
+      </button>
+      <button type="button" data-agent-demo="agent-byok">
+        <strong>BYOK</strong><span>Run a bounded host-owned model loop</span>
+      </button>
+    </div>
+  </div>
+  <dl class="playground-facts" aria-label="Playground boundaries">
+    <div>
+      <dt>Local</dt>
+      <dd>Evaluation stays in this browser</dd>
+    </div>
+    <div>
+      <dt>Synthetic</dt>
+      <dd>No customer or private records</dd>
+    </div>
+    <div>
+      <dt>Provider-free</dt>
+      <dd>No account, key, or model required</dd>
+    </div>
+  </dl>
+  <p id="session-status" class="caption">
+    Ready for a local session.<span id="webmcp-status" hidden>Checking optional browser tools…</span>
+  </p>
+</section>
+
+<div class="playground-app">
+  <div class="playground-toolbar">
+    <div class="playground-toolbar-heading">
+      <div>
+        <p class="workspace-kicker">Configure</p>
+        <h2 id="configure-title">Choose a task</h2>
+      </div>
+      <span class="local-badge"><i aria-hidden="true"></i> Local runtime</span>
+    </div>
+    <p id="dataset-status" class="caption">Sample: people and absence · Runs locally in this browser</p>
+    <div class="playground-fields">
+      <label
+        >Dataset
+        <select id="dataset">
+          <option value="employees">People &amp; absence</option>
+          <option value="products">Commerce catalog</option>
+          <option value="agents">Agents &amp; tools</option>
+        </select>
+      </label>
+      <label
+        >Task
+        <select id="task-choice">
+          <option value="people-browse" data-dataset="employees">Browse people</option>
+          <option value="people-rank" data-dataset="employees">Rank absence days</option>
+          <option value="people-trend" data-dataset="employees">Trend fixed cohort</option>
+          <option value="people-periods" data-dataset="employees">Compare periods</option>
+          <option value="people-contributor" data-dataset="employees">Inspect contributor</option>
+          <option value="products-browse" data-dataset="products">Browse, compare, and review products</option>
+          <option value="agent-mcp" data-dataset="agents">MCP server boundary</option>
+          <option value="agent-webmcp" data-dataset="agents">WebMCP browser tools</option>
+          <option value="agent-byok" data-dataset="agents">BYOK bounded model loop</option>
+        </select>
+      </label>
+      <label id="team-control"
+        >Team
+        <select id="play-team">
+          <option value="all">All teams</option>
+          <option>Design</option>
+          <option>Engineering</option>
+          <option>Operations</option>
+        </select>
+      </label>
+      <label id="contributor-control" hidden
+        >Contributor
+        <select id="contributor">
+          <option value="ada">Ada Chen</option>
+          <option value="sam">Sam Rivera</option>
+          <option value="iman">Iman Putra</option>
+          <option value="lee">Lee Morgan</option>
+        </select>
+      </label>
+    </div>
+    <div class="playground-run-actions">
+      <button id="run-task">Run task <span aria-hidden="true">→</span></button>
+      <button id="cancel" disabled>Cancel query</button>
+    </div>
+    <div class="playground-tool-actions" role="group" aria-label="Workspace tools">
+      <button id="source-toggle" aria-expanded="false" aria-controls="source-panel">
+        <span aria-hidden="true">{ }</span> Source
+      </button>
+      <button id="inspector-toggle" aria-expanded="false" aria-controls="inspector-panel">
+        <span aria-hidden="true">◎</span> Inspect
+      </button>
+    </div>
+    <div class="playground-guide">
+      <p class="workspace-kicker">What you will see</p>
+      <ol id="playground-guide-list">
+        <li>A typed task</li>
+        <li>A bounded result</li>
+        <li>An adaptive view</li>
+        <li>Scope and revision evidence</li>
+      </ol>
+    </div>
+  </div>
+
+  <div id="playground-workspace" class="playground-workspace">
+    <div id="source-panel" class="playground-panel" hidden role="complementary" aria-labelledby="source-panel-title">
+      <div class="panel-heading">
+        <div>
+          <p class="workspace-kicker">Workspace</p>
+          <h2 id="source-panel-title">Source</h2>
+        </div>
+        <button class="panel-close" id="source-close">Close source</button>
+      </div>
+      <p>
+        Browse the synthetic rows or edit the accepted typed Task. Neither view contains credentials, private data, or a
+        model transcript.
+      </p>
+      <label
+        >Source view
+        <select id="source-section">
+          <option value="task">Task document</option>
+          <option value="dataset">Dataset records</option>
+        </select>
+      </label>
+      <section id="source-data-view" hidden aria-labelledby="source-data-heading">
+        <h3 id="source-data-heading">Supplied records</h3>
+        <p id="source-description" class="caption"></p>
+        <pre id="source-content" tabindex="0"></pre>
+      </section>
+      <section id="source-task-view" aria-labelledby="source-task-heading">
+        <h3 id="source-task-heading">Accepted Task</h3>
+        <label
+          >Task document
+          <textarea id="task-draft" spellcheck="false" rows="16"></textarea>
+        </label>
+        <button id="evaluate-draft">Evaluate task</button>
+        <p class="caption">
+          The local evaluator checks this document’s shape and supported operations. It does not certify business
+          intent.
+        </p>
+        <div class="panel-actions">
+          <button id="export-task">Export Task + presentation</button><button id="reset">Reset session</button>
+        </div>
+      </section>
+      <button
+        id="source-resize"
+        class="panel-resize"
+        aria-label="Resize source panel"
+        role="separator"
+        aria-orientation="vertical"
+        aria-valuemin="260"
+        aria-valuemax="520"
+        aria-valuenow="320"
+        aria-valuetext="320 pixels"
+        title="Drag or use left and right arrow keys"
+      ></button>
+    </div>
+
+    <div class="playground-main">
+      <div class="workspace-topline">
+        <div>
+          <p class="workspace-kicker">Result workspace</p>
+          <p id="workspace-context">Guided people analysis · synthetic fixture</p>
+        </div>
+        <span id="workspace-badge">Exact source · revision visible</span>
+      </div>
+      <section id="people-workflow" aria-labelledby="workflow-title">
+        <div class="canvas-heading">
+          <div>
+            <p class="workspace-kicker">Guided journey</p>
+            <h2 id="workflow-title">Build a people result</h2>
+          </div>
+          <p id="workflow-progress" role="status">Step 1 of 4 · Browse people</p>
+        </div>
+        <progress id="workflow-meter" max="4" value="0">0 of 4</progress>
+        <div id="people-actions" class="playground-actions" role="group" aria-labelledby="workflow-title">
+          <button id="browse-people" aria-label="Browse people"><span>01</span>Browse people</button>
+          <button id="define-meaning" aria-label="Define absence days"><span>02</span>Define absence days</button>
+          <button id="freeze" aria-label="Freeze current people"><span>03</span>Freeze current people</button>
+          <button id="rank" aria-label="Rank absence days"><span>04</span>Rank absence days</button>
+          <button id="trend" aria-label="Trend fixed cohort"><span>05</span>Trend fixed cohort</button>
+          <button id="compare-periods" aria-label="Compare periods"><span>06</span>Compare periods</button>
+          <button id="inspect-contributor" aria-label="Inspect records"><span>07</span>Inspect records</button>
+        </div>
+        <p id="cohort-status" class="caption">
+          No fixed cohort yet. A fixed cohort preserves employee identities when filters change.
+        </p>
+      </section>
+
+      <section id="result-stage" class="result-stage">
+        <div class="canvas-heading result-heading">
+          <div>
+            <p class="workspace-kicker">Rendered output</p>
+            <h2 id="result-title">Result</h2>
+          </div>
+          <label
+            >View
+            <select id="result-view">
+              <option value="table">Exact table</option>
+              <option value="bar">Bar + table</option>
+              <option value="trend">Trend + table</option>
+            </select>
+          </label>
+        </div>
+        <p id="play-status" role="status" aria-live="polite">Loading the synthetic dataset…</p>
+        <div id="play-error" role="alert" hidden></div>
+        <div id="result-canvas" role="region" aria-labelledby="result-title"></div>
+      </section>
+
+      <section id="commerce" hidden aria-labelledby="commerce-title">
+        <div class="canvas-heading">
+          <div>
+            <p class="workspace-kicker">Commerce journey</p>
+            <h2 id="commerce-title">Compare, inspect, and review</h2>
+          </div>
+          <p id="commerce-progress" class="caption">Step 1 of 3 · Choose two products</p>
+        </div>
+        <p>
+          Select two products to compare supplied price and stock, inspect a detail, then review a local enquiry draft.
+          Nothing is purchased or sent.
+        </p>
+        <div id="commerce-controls"></div>
+        <div id="commerce-comparison"></div>
+        <div id="commerce-detail"></div>
+        <div id="commerce-form"></div>
+      </section>
+
+      <section id="agent-lab" hidden aria-labelledby="agent-lab-title">
+        <div class="canvas-heading">
+          <div>
+            <p class="workspace-kicker">Optional protocol lab</p>
+            <h2 id="agent-lab-title">Connect tools without surrendering control</h2>
+          </div>
+          <span id="agent-evidence-badge" class="local-badge"><i aria-hidden="true"></i> Local simulation</span>
+        </div>
+        <p id="agent-lab-intro" class="agent-lab-lead"></p>
+        <ol class="protocol-flow" aria-label="Tool execution boundary">
+          <li><span>01</span><strong>Host grant</strong><small>Current principal and scope</small></li>
+          <li><span>02</span><strong>Discover</strong><small>Only admitted tools</small></li>
+          <li><span>03</span><strong>Invoke</strong><small>Bounded typed input</small></li>
+          <li><span>04</span><strong>Receipt</strong><small>State and evidence</small></li>
+        </ol>
+        <div class="agent-lab-grid">
+          <section>
+            <p class="workspace-kicker">What runs here</p>
+            <h3 id="agent-demo-title">MCP server boundary</h3>
+            <p id="agent-demo-description"></p>
+            <button id="run-agent-demo" class="primary" type="button">
+              Run local MCP contract <span aria-hidden="true">→</span>
+            </button>
+            <p id="agent-native-status" class="caption"></p>
+          </section>
+          <section class="agent-receipt" aria-labelledby="agent-receipt-title">
+            <div>
+              <p class="workspace-kicker">Trusted output</p>
+              <h3 id="agent-receipt-title">Execution receipt</h3>
+            </div>
+            <pre id="agent-output" tabindex="0">Choose Run task to inspect the first receipt.</pre>
+          </section>
+        </div>
+        <aside class="agent-boundary-note">
+          <strong>No browser credentials</strong>
+          <p>
+            MCP authentication and BYOK secrets stay in the application’s trusted server. This page uses synthetic local
+            ports and never contacts a model provider.
+          </p>
+        </aside>
+      </section>
+    </div>
+
+    <div
+      id="inspector-panel"
+      class="playground-panel"
+      hidden
+      role="complementary"
+      aria-labelledby="inspector-panel-title"
+    >
+      <div class="panel-heading">
+        <div>
+          <p class="workspace-kicker">Evidence</p>
+          <h2 id="inspector-panel-title">Inspect</h2>
+        </div>
+        <button class="panel-close" id="inspector-close">Close inspector</button>
+      </div>
+      <label
+        >Section
+        <select id="inspector-tab">
+          <option>Task</option>
+          <option>Data</option>
+          <option>Experience</option>
+          <option>Activity</option>
+        </select>
+      </label>
+      <p id="inspector-summary" class="caption">Accepted Task, normalized queries, exact revision, and scope.</p>
+      <pre id="inspector-content" tabindex="0"></pre>
+      <button
+        id="inspector-resize"
+        class="panel-resize"
+        aria-label="Resize inspector panel"
+        role="separator"
+        aria-orientation="vertical"
+        aria-valuemin="260"
+        aria-valuemax="520"
+        aria-valuenow="320"
+        aria-valuetext="320 pixels"
+        title="Drag or use left and right arrow keys"
+      ></button>
+    </div>
+  </div>
+</div>
+
+<noscript
+  ><p>
+    The playground needs JavaScript to evaluate local records. <a href="/docs/">Read the documentation</a>.
+  </p></noscript
+>

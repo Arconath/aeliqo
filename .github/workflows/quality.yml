@@ -1,0 +1,146 @@
+name: Aeliqo functional quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      expected_source_sha:
+        description: Exact source commit; required for release/* candidates and optional on main
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aeliqo-quality-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  policy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enforce owner-dispatched main or exact candidate source
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REPOSITORY: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+          SOURCE_REF: ${{ github.ref }}
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          EXPECTED_SOURCE_SHA: ${{ inputs.expected_source_sha }}
+        run: |
+          set -eu
+          test "$REPOSITORY" = "Arconath/aeliqo"
+          printf '%s\n' "$SOURCE_SHA" | grep -Eq '^[0-9a-fA-F]{40}$'
+
+          case "$EVENT_NAME" in
+            push)
+              test "$SOURCE_REF" = "refs/heads/main"
+              ;;
+            pull_request)
+              case "$SOURCE_REF" in refs/pull/*/merge) : ;; *) exit 1 ;; esac
+              ;;
+            workflow_dispatch)
+              test "$ACTOR" = "hermawan22"
+              test "$TRIGGERING_ACTOR" = "hermawan22"
+              case "$SOURCE_REF" in
+                refs/heads/main)
+                  if test -n "$EXPECTED_SOURCE_SHA"; then
+                    printf '%s\n' "$EXPECTED_SOURCE_SHA" | grep -Eq '^[0-9a-fA-F]{40}$'
+                    test "$(printf '%s' "$EXPECTED_SOURCE_SHA" | tr '[:upper:]' '[:lower:]')" = "$SOURCE_SHA"
+                  fi
+                  ;;
+                refs/heads/release/*)
+                  printf '%s\n' "$EXPECTED_SOURCE_SHA" | grep -Eq '^[0-9a-fA-F]{40}$'
+                  test "$(printf '%s' "$EXPECTED_SOURCE_SHA" | tr '[:upper:]' '[:lower:]')" = "$SOURCE_SHA"
+                  ;;
+                *)
+                  exit 1
+                  ;;
+              esac
+              ;;
+            *)
+              exit 1
+              ;;
+          esac
+
+  functional:
+    needs: policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_SITE_BUILD_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.20.0'
+          package-manager-cache: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
+        with:
+          go-version: '1.27.0'
+          cache: false
+      - name: Install the locked framework and site toolchains
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium firefox webkit
+      - name: Run required functional, security, browser, and package checks
+        run: pnpm check
+      - name: Build and consume the six exact package candidates
+        run: |
+          pnpm test:release-tooling
+          node scripts/release/candidate.mjs
+          pnpm test:docs-artifact
+      - name: Verify the web, docs, playground, and static server contract
+        run: pnpm site:test
+      - name: Require unchanged exact source
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          git diff --quiet
+          git diff --cached --quiet
+      - name: Build and smoke the production image contract
+        run: |
+          sdk_revision="$SOURCE_SHA"
+          sdk_version="$(jq -er '.version | select(. == "0.1.0")' packages/core/package.json)"
+          image="aeliqo-web-quality:$SOURCE_SHA"
+          DOCKER_BUILDKIT=1 docker build \
+            --file apps/site/Dockerfile \
+            --build-arg "SOURCE_REVISION=$SOURCE_SHA" \
+            --build-arg "SDK_SOURCE_REVISION=$sdk_revision" \
+            --build-arg "SDK_VERSION=$sdk_version" \
+            --tag "$image" \
+            .
+          apps/site/scripts/ci/check-static-image.sh "$image" "$SOURCE_SHA" "$sdk_revision" "$sdk_version"
+          mkdir -p apps/site/artifacts/image-contract
+          docker image inspect "$image" > apps/site/artifacts/image-contract/inspect.json
+          sha256sum \
+            apps/site/Dockerfile \
+            apps/site/deploy/server.go \
+            apps/site/scripts/ci/check-static-image.sh \
+            packages/core/package.json \
+            docs/public-site/content.mjs \
+            catalog/components.json \
+            > apps/site/artifacts/image-contract/source-sha256.txt
+      - name: Upload source-bound functional evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-quality-evidence-${{ env.SOURCE_SHA }}
+          path: |
+            artifacts/product-ci
+            artifacts/visual-catalog
+            artifacts/release-candidate
+            apps/site/artifacts
+          if-no-files-found: warn
+          retention-days: 7

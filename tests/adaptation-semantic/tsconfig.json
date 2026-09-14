@@ -1,0 +1,1 @@
+{"extends":"../../tsconfig.json","compilerOptions":{"noEmit":true,"paths":{"@aeliqo/runtime/regions":["../../packages/runtime/dist/regions/index.d.ts"]}},"include":["./*.ts"]}

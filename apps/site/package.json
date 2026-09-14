@@ -1,0 +1,41 @@
+{
+  "name": "@aeliqo/site-assembly",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.24.0",
+  "engines": {
+    "node": "24.20.0",
+    "pnpm": "11.24.0"
+  },
+  "scripts": {
+    "dev": "pnpm --workspace-root build:platform && pnpm --workspace-root build:agent && vite --host 127.0.0.1",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tests/site/tsconfig.json",
+    "build": "pnpm --workspace-root build:platform && pnpm --workspace-root build:agent && tsc -p tsconfig.json && vite build",
+    "test": "pnpm test:unit",
+    "test:unit": "vitest run --config tests/site/vitest.config.mjs && pnpm typecheck",
+    "test:browser": "pnpm build && playwright test --config tests/site/playwright.config.mjs",
+    "test:docs": "pnpm build && playwright test --config tests/site/docs-navigation.playwright.config.mjs",
+    "test:responsive": "pnpm build && playwright test --config tests/site/playground-responsive.playwright.config.mjs",
+    "test:document-layout": "pnpm build && playwright test --config tests/site/document-layout.playwright.config.mjs",
+    "test:performance": "pnpm build && playwright test --config tests/performance/site-page.playwright.config.mjs",
+    "test:server": "go test ./deploy/server.go ./deploy/server_test.go",
+    "test:provenance": "python3 -m unittest discover -s tests/ci -p 'test_*.py' -v",
+    "test:boundary": "pnpm test:provenance",
+    "check": "pnpm test:unit && pnpm build && playwright test --config tests/site/playwright.config.mjs && playwright test --config tests/site/docs-navigation.playwright.config.mjs && playwright test --config tests/site/playground-responsive.playwright.config.mjs && playwright test --config tests/site/document-layout.playwright.config.mjs && pnpm test:server && pnpm test:provenance"
+  },
+  "dependencies": {
+    "@aeliqo/agent": "workspace:*",
+    "@aeliqo/core": "workspace:*",
+    "@aeliqo/runtime": "workspace:*",
+    "@aeliqo/web": "workspace:*"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.63.0",
+    "@types/node": "24.13.3",
+    "typescript": "7.0.2",
+    "vite": "8.2.2",
+    "vitest": "5.0.0"
+  }
+}
