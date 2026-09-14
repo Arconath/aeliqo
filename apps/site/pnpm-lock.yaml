@@ -5,29 +5,29 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@aeliqo/agent': file:vendor/packages/aeliqo-agent-0.1.0-rc.2.tgz
-  '@aeliqo/core': file:vendor/packages/aeliqo-core-0.1.0-rc.2.tgz
-  '@aeliqo/devtools': file:vendor/packages/aeliqo-devtools-0.1.0-rc.2.tgz
-  '@aeliqo/react': file:vendor/packages/aeliqo-react-0.1.0-rc.2.tgz
-  '@aeliqo/runtime': file:vendor/packages/aeliqo-runtime-0.1.0-rc.2.tgz
-  '@aeliqo/web': file:vendor/packages/aeliqo-web-0.1.0-rc.2.tgz
+  '@aeliqo/agent': file:vendor/packages/aeliqo-agent-0.1.0.tgz
+  '@aeliqo/core': file:vendor/packages/aeliqo-core-0.1.0.tgz
+  '@aeliqo/devtools': file:vendor/packages/aeliqo-devtools-0.1.0.tgz
+  '@aeliqo/react': file:vendor/packages/aeliqo-react-0.1.0.tgz
+  '@aeliqo/runtime': file:vendor/packages/aeliqo-runtime-0.1.0.tgz
+  '@aeliqo/web': file:vendor/packages/aeliqo-web-0.1.0.tgz
 
 importers:
 
   .:
     dependencies:
       '@aeliqo/agent':
-        specifier: file:vendor/packages/aeliqo-agent-0.1.0-rc.2.tgz
-        version: file:vendor/packages/aeliqo-agent-0.1.0-rc.2.tgz
+        specifier: file:vendor/packages/aeliqo-agent-0.1.0.tgz
+        version: file:vendor/packages/aeliqo-agent-0.1.0.tgz
       '@aeliqo/core':
-        specifier: file:vendor/packages/aeliqo-core-0.1.0-rc.2.tgz
-        version: file:vendor/packages/aeliqo-core-0.1.0-rc.2.tgz
+        specifier: file:vendor/packages/aeliqo-core-0.1.0.tgz
+        version: file:vendor/packages/aeliqo-core-0.1.0.tgz
       '@aeliqo/runtime':
-        specifier: file:vendor/packages/aeliqo-runtime-0.1.0-rc.2.tgz
-        version: file:vendor/packages/aeliqo-runtime-0.1.0-rc.2.tgz
+        specifier: file:vendor/packages/aeliqo-runtime-0.1.0.tgz
+        version: file:vendor/packages/aeliqo-runtime-0.1.0.tgz
       '@aeliqo/web':
-        specifier: file:vendor/packages/aeliqo-web-0.1.0-rc.2.tgz
-        version: file:vendor/packages/aeliqo-web-0.1.0-rc.2.tgz(@aeliqo/runtime@file:vendor/packages/aeliqo-runtime-0.1.0-rc.2.tgz)(@types/node@24.13.3)
+        specifier: file:vendor/packages/aeliqo-web-0.1.0.tgz
+        version: file:vendor/packages/aeliqo-web-0.1.0.tgz(@aeliqo/runtime@file:vendor/packages/aeliqo-runtime-0.1.0.tgz)(@types/node@24.13.3)
     devDependencies:
       '@axe-core/playwright':
         specifier: 4.13.0
@@ -50,9 +50,9 @@ importers:
 
 packages:
 
-  '@aeliqo/agent@file:vendor/packages/aeliqo-agent-0.1.0-rc.2.tgz':
-    resolution: {integrity: sha512-5NGA6fJ6j/mNm7sM+GO7kAPgEtbKqhobnVaZ3EuJ24HtYieu7UDYHM6oWSaHzwo5ciToVPfsQBLR/Ddzlr0AmQ==, tarball: file:vendor/packages/aeliqo-agent-0.1.0-rc.2.tgz}
-    version: 0.1.0-rc.2
+  '@aeliqo/agent@file:vendor/packages/aeliqo-agent-0.1.0.tgz':
+    resolution: {integrity: sha512-Ptshg40dRhXk6YK0WfWs8rQmc2TXwQNz84Ec6GeC19iTC+Q6PMPo1Z2l8NzW4fgTfyR4vme2Y+sg19gKWfNw7w==, tarball: file:vendor/packages/aeliqo-agent-0.1.0.tgz}
+    version: 0.1.0
     peerDependencies:
       '@modelcontextprotocol/client': 2.0.0
       '@modelcontextprotocol/node': 2.0.0
@@ -68,19 +68,19 @@ packages:
       openai:
         optional: true
 
-  '@aeliqo/core@file:vendor/packages/aeliqo-core-0.1.0-rc.2.tgz':
-    resolution: {integrity: sha512-PzanB3q3l+ByvlkjHlRFRQ0E9fzq5QFfJN2SqR7nkE7LuFdKFcKI9EMMVK07oSfxtula8l/IXu4btak5bis3Ig==, tarball: file:vendor/packages/aeliqo-core-0.1.0-rc.2.tgz}
-    version: 0.1.0-rc.2
+  '@aeliqo/core@file:vendor/packages/aeliqo-core-0.1.0.tgz':
+    resolution: {integrity: sha512-zXeQq+ocAxZ6TGXmQuaGEteWh8sQ7Z5Vmt2+SWePtD0LWWdnOXTGpLqwgauzgRAWQtnojJy8s1TBK9stK/dM1A==, tarball: file:vendor/packages/aeliqo-core-0.1.0.tgz}
+    version: 0.1.0
 
-  '@aeliqo/runtime@file:vendor/packages/aeliqo-runtime-0.1.0-rc.2.tgz':
-    resolution: {integrity: sha512-zKksDVndtKt8Q9pFTwxbQGmRccnoib6sTIWzoVyIvkxeA6r/RKz2ygsP/GHQl4F0ywRusElKxJeDBhUSyn6GYQ==, tarball: file:vendor/packages/aeliqo-runtime-0.1.0-rc.2.tgz}
-    version: 0.1.0-rc.2
+  '@aeliqo/runtime@file:vendor/packages/aeliqo-runtime-0.1.0.tgz':
+    resolution: {integrity: sha512-jkJmh0lE7wpTiiCUoMSxIi7kNBe6+D9n7v73fD92Sd+9RK5sD/PjpyZBXwB7VzJZz1nNItB0H/huVHV6k7Q+SA==, tarball: file:vendor/packages/aeliqo-runtime-0.1.0.tgz}
+    version: 0.1.0
 
-  '@aeliqo/web@file:vendor/packages/aeliqo-web-0.1.0-rc.2.tgz':
-    resolution: {integrity: sha512-TbU2JwLjWwuvYwpxsBG4Gt0zGPF4YnHfV18nrUy3py1wsXCq248Wm+MmAS0EbX9PTLd+rw2PMkGmTDrZa3Uxqg==, tarball: file:vendor/packages/aeliqo-web-0.1.0-rc.2.tgz}
-    version: 0.1.0-rc.2
+  '@aeliqo/web@file:vendor/packages/aeliqo-web-0.1.0.tgz':
+    resolution: {integrity: sha512-GIWyKeeGgZFitR2CfBuE2thUBC0IV1eBXlt14VbOB9HSLWHtM8cB8+Qg7YDMJocVlzdHRwP64paNKL6AQrXw8A==, tarball: file:vendor/packages/aeliqo-web-0.1.0.tgz}
+    version: 0.1.0
     peerDependencies:
-      '@aeliqo/runtime': 0.1.0-rc.2
+      '@aeliqo/runtime': 0.1.0
     peerDependenciesMeta:
       '@aeliqo/runtime':
         optional: true
@@ -748,30 +748,30 @@ packages:
 
 snapshots:
 
-  '@aeliqo/agent@file:vendor/packages/aeliqo-agent-0.1.0-rc.2.tgz':
+  '@aeliqo/agent@file:vendor/packages/aeliqo-agent-0.1.0.tgz':
     dependencies:
-      '@aeliqo/core': file:vendor/packages/aeliqo-core-0.1.0-rc.2.tgz
-      '@aeliqo/runtime': file:vendor/packages/aeliqo-runtime-0.1.0-rc.2.tgz
+      '@aeliqo/core': file:vendor/packages/aeliqo-core-0.1.0.tgz
+      '@aeliqo/runtime': file:vendor/packages/aeliqo-runtime-0.1.0.tgz
 
-  '@aeliqo/core@file:vendor/packages/aeliqo-core-0.1.0-rc.2.tgz':
+  '@aeliqo/core@file:vendor/packages/aeliqo-core-0.1.0.tgz':
     dependencies:
       zod: 4.5.4
 
-  '@aeliqo/runtime@file:vendor/packages/aeliqo-runtime-0.1.0-rc.2.tgz':
+  '@aeliqo/runtime@file:vendor/packages/aeliqo-runtime-0.1.0.tgz':
     dependencies:
-      '@aeliqo/core': file:vendor/packages/aeliqo-core-0.1.0-rc.2.tgz
+      '@aeliqo/core': file:vendor/packages/aeliqo-core-0.1.0.tgz
       zod: 4.5.4
 
-  '@aeliqo/web@file:vendor/packages/aeliqo-web-0.1.0-rc.2.tgz(@aeliqo/runtime@file:vendor/packages/aeliqo-runtime-0.1.0-rc.2.tgz)(@types/node@24.13.3)':
+  '@aeliqo/web@file:vendor/packages/aeliqo-web-0.1.0.tgz(@aeliqo/runtime@file:vendor/packages/aeliqo-runtime-0.1.0.tgz)(@types/node@24.13.3)':
     dependencies:
-      '@aeliqo/core': file:vendor/packages/aeliqo-core-0.1.0-rc.2.tgz
+      '@aeliqo/core': file:vendor/packages/aeliqo-core-0.1.0.tgz
       '@lit-labs/ssr': 4.1.0(@types/node@24.13.3)
       '@lit-labs/ssr-client': 1.1.8
       d3-scale: 4.0.2
       d3-shape: 3.2.0
       lit: 3.3.3
     optionalDependencies:
-      '@aeliqo/runtime': file:vendor/packages/aeliqo-runtime-0.1.0-rc.2.tgz
+      '@aeliqo/runtime': file:vendor/packages/aeliqo-runtime-0.1.0.tgz
     transitivePeerDependencies:
       - '@types/node'
 

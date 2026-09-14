@@ -5,7 +5,7 @@ type DocsPage = {readonly component?: unknown; readonly title?: unknown};
 type DocsArtifact = {readonly pages?: unknown};
 
 const artifact = JSON.parse(
-  readFileSync(resolve(process.cwd(), '../docs/vendor/public-docs/aeliqo-public-docs-0.1.0-rc.2.json'), 'utf8'),
+  readFileSync(resolve(process.cwd(), '../docs/vendor/public-docs/aeliqo-public-docs-0.1.0.json'), 'utf8'),
 ) as DocsArtifact;
 
 if (!Array.isArray(artifact.pages)) throw new Error('Vendored public docs pages are missing.');

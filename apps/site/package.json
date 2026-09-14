@@ -1,6 +1,6 @@
 {
   "name": "@aeliqo/site-assembly",
-  "version": "0.1.0-rc.2",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.24.0",
@@ -26,10 +26,10 @@
     "check": "pnpm test:unit && pnpm build && playwright test --config tests/site/playwright.config.mjs && playwright test --config tests/site/docs-navigation.playwright.config.mjs && playwright test --config tests/site/playground-responsive.playwright.config.mjs && playwright test --config tests/site/document-layout.playwright.config.mjs && pnpm test:server && pnpm test:provenance"
   },
   "dependencies": {
-    "@aeliqo/agent": "file:vendor/packages/aeliqo-agent-0.1.0-rc.2.tgz",
-    "@aeliqo/core": "file:vendor/packages/aeliqo-core-0.1.0-rc.2.tgz",
-    "@aeliqo/runtime": "file:vendor/packages/aeliqo-runtime-0.1.0-rc.2.tgz",
-    "@aeliqo/web": "file:vendor/packages/aeliqo-web-0.1.0-rc.2.tgz"
+    "@aeliqo/agent": "file:vendor/packages/aeliqo-agent-0.1.0.tgz",
+    "@aeliqo/core": "file:vendor/packages/aeliqo-core-0.1.0.tgz",
+    "@aeliqo/runtime": "file:vendor/packages/aeliqo-runtime-0.1.0.tgz",
+    "@aeliqo/web": "file:vendor/packages/aeliqo-web-0.1.0.tgz"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

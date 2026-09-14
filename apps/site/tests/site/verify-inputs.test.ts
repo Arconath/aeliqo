@@ -38,7 +38,7 @@ describe('vendored build input verification', () => {
   it('accepts the exact source-bound SDK and documentation set', () => {
     const result = verify(repositoryRoot);
     expect(result.status, result.stderr).toBe(0);
-    expect(JSON.parse(result.stdout)).toMatchObject({sdkVersion: '0.1.0-rc.2', packages: 6, exports: 130, docsPages: 93, secretFindings: 0});
+    expect(JSON.parse(result.stdout)).toMatchObject({sdkVersion: '0.1.0', packages: 6, exports: 130, docsPages: 93, secretFindings: 0});
   });
 
   it('rejects modified candidate package bytes', () => {
