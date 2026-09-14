@@ -15,8 +15,8 @@
   --on-accent: #ffffff;
   --text: #171827;
   --danger: #b42318;
-  --shell-max: 92rem;
-  --shell-pad: clamp(1.15rem, 4.5vw, 4.75rem);
+  --shell-max: 84rem;
+  --shell-pad: clamp(1.15rem, 3.5vw, 3.25rem);
   --radius-sm: 0.45rem;
   --radius-md: 0.85rem;
   --radius-lg: 1.4rem;
@@ -123,7 +123,7 @@ summary:focus-visible {
 .topbar {
   position: relative;
   z-index: 12;
-  min-height: 5.75rem;
+  min-height: 5rem;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
@@ -234,9 +234,9 @@ footer a:hover {
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1.12fr) minmax(22rem, 0.72fr);
-  gap: clamp(3rem, 7vw, 7rem);
+  gap: clamp(2.5rem, 6vw, 5.5rem);
   align-items: center;
-  padding-block: clamp(4.5rem, 8vw, 8rem) clamp(4rem, 7vw, 6.75rem);
+  padding-block: clamp(3.75rem, 7vw, 6.5rem) clamp(3.5rem, 6vw, 5.5rem);
 }
 
 .hero-copy {
@@ -275,12 +275,12 @@ h3 {
 }
 
 h1 {
-  max-width: 12.5ch;
+  max-width: 13.5ch;
   margin: 0 0 2rem;
-  font-size: clamp(3.15rem, 6.8vw, 7.1rem);
+  font-size: clamp(3rem, 5.8vw, 5.8rem);
   font-weight: 720;
   letter-spacing: -0.075em;
-  line-height: 0.94;
+  line-height: 0.96;
 }
 
 h1 em {
@@ -964,11 +964,11 @@ footer nav {
 /* Documentation and reusable content */
 .docs-layout {
   display: grid;
-  grid-template-columns: 17rem minmax(0, 1fr);
+  grid-template-columns: 15.5rem minmax(0, 1fr);
   grid-template-areas: "sidebar reading";
   align-items: start;
-  gap: clamp(3rem, 7vw, 7rem);
-  padding-block: clamp(2.5rem, 5vw, 5rem);
+  gap: clamp(2rem, 5vw, 4.5rem);
+  padding-block: clamp(2rem, 4vw, 3.75rem);
 }
 
 .docs-sidebar {
@@ -986,8 +986,21 @@ footer nav {
 
 .docs-sidebar nav {
   display: grid;
-  gap: 0.2rem;
+  gap: 1rem;
   margin-top: 1.5rem;
+}
+
+.docs-nav-group {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.docs-nav-group > strong {
+  margin: 0 0 0.25rem 0.6rem;
+  color: var(--muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
 }
 
 .docs-sidebar a {
@@ -1022,16 +1035,16 @@ footer nav {
 .reading {
   grid-area: reading;
   min-width: 0;
-  max-width: 56rem;
+  max-width: 64rem;
   padding-bottom: 5rem;
 }
 
 .reading h1 {
-  max-width: 14ch;
-  margin-bottom: 2.25rem;
+  max-width: 22ch;
+  margin-bottom: 1.75rem;
   overflow-wrap: anywhere;
-  font-size: clamp(3rem, 5.8vw, 5.8rem);
-  line-height: 0.96;
+  font-size: clamp(2.5rem, 4.4vw, 4.35rem);
+  line-height: 1;
 }
 
 .reading h2 {
@@ -1190,14 +1203,15 @@ footer nav {
 }
 
 .playground-header {
-  padding-block: clamp(2.5rem, 6vw, 5rem) 1.5rem;
+  max-width: 60rem;
+  padding-block: clamp(2.5rem, 5vw, 4rem) 1.5rem;
 }
 
 .playground-header h1 {
-  max-width: 18ch;
+  max-width: 20ch;
   margin: 0 0 1.2rem;
-  font-size: clamp(2.7rem, 5vw, 5.5rem);
-  line-height: 0.98;
+  font-size: clamp(2.6rem, 4.4vw, 4.5rem);
+  line-height: 1;
 }
 
 .playground-toolbar,
@@ -1212,13 +1226,40 @@ footer nav {
 }
 
 .playground-toolbar {
+  display: grid;
+  grid-template-columns: minmax(10rem, 1fr) minmax(14rem, 1.4fr) minmax(9rem, 0.8fr) auto auto auto auto;
   margin-bottom: 1rem;
   border: 1px solid var(--line);
 }
 
 .playground-toolbar > label {
+  display: grid;
+  gap: 0.3rem;
   min-width: 0;
   max-width: 100%;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.playground-toolbar > label select {
+  width: 100%;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+#run-task {
+  border-color: var(--accent);
+  color: var(--on-accent);
+  background: var(--accent);
+}
+
+#source-toggle {
+  margin-inline-start: 0.5rem;
+}
+
+#cancel:disabled {
+  display: none;
 }
 
 .playground-workspace {
@@ -1231,7 +1272,7 @@ footer nav {
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--surface-raised);
-  box-shadow: var(--shadow);
+  box-shadow: 0 1rem 3rem rgb(31 32 51 / 0.09);
 }
 
 .playground-main {
@@ -1301,6 +1342,25 @@ footer nav {
 
 .canvas-heading h2 {
   font-size: 1.55rem;
+}
+
+#people-workflow {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+#people-workflow .playground-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 0;
+  background: transparent;
+}
+
+#people-workflow .playground-actions button {
+  min-width: 0;
+  text-align: start;
 }
 
 #result-canvas section {
@@ -1647,6 +1707,18 @@ footer nav {
     gap: 0.5rem;
   }
 
+  .playground-toolbar {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  #source-toggle {
+    margin-inline-start: 0;
+  }
+
+  #people-workflow .playground-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .canvas-heading {
     align-items: flex-start;
     flex-direction: column;
@@ -1828,6 +1900,16 @@ footer nav {
 
   .playground-toolbar > label {
     flex: 1 1 100%;
+  }
+
+  .playground-toolbar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .playground-toolbar > label,
+  #team-control {
+    grid-column: 1 / -1;
   }
 
   .playground-toolbar > label select {

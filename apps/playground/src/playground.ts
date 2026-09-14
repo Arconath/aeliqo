@@ -647,8 +647,8 @@ function syncDatasetVisibility() {
   syncContributorVisibility();
   $('commerce').hidden = !commerce;
   $('dataset-status').textContent = commerce
-    ? 'Commerce catalog · Synthetic local source · Scope: synthetic-public-records'
-    : 'People & absence · Synthetic local source · Scope: synthetic-public-records';
+    ? 'Sample: commerce catalog · Runs locally in this browser'
+    : 'Sample: people and absence · Runs locally in this browser';
 }
 
 function syncContributorVisibility() {

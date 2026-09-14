@@ -64,12 +64,27 @@ export const pages = [
 <h2>Unsupported queries</h2><p>Return a typed unsupported outcome when the source cannot execute a requested operation. Do not silently fetch more data or invent a server capability.</p>
 <h2>Local audit export</h2><p>The runtime includes a bounded in-memory exporter for fixed plan, capability, cancellation, source, cache, renderer, and resource events. It rejects free-form messages, records, prompts, credentials, URLs, and identity fields. Your application owns collector scope, storage, transport, and access; the SDK performs no audit network or filesystem I/O.</p>`},
   {path:'/docs/integration/',title:'Framework integration',section:'Integration',description:'Use the shared web implementation directly or through thin framework bindings.',body:`
-<p class="lead">Aeliqo owns one web implementation. Framework bindings forward typed properties and native custom events.</p>
-<h2>Vanilla JavaScript</h2><p>Import an individual element and register its custom-element name, or use the shared registration entry. Pass structured records through properties. Use addEventListener for typed custom events.</p>
-<h2>React</h2><p>The React package uses thin wrappers over the shared elements. Import the component family you need. Wrapper event callbacks receive the original CustomEvent and its detail payload.</p>
-<h2>Vue</h2><p>Configure Vue to recognize Aeliqo tags as custom elements. Bind complex values as properties and handle the emitted DOM events. Vue does not require a separate renderer.</p>
+<p class="lead">Choose your application stack. Every option below uses the same Aeliqo web components, properties, and native events.</p>
+<h2>Vanilla JavaScript</h2><p>Import the component you need, register it once, then assign structured values as properties.</p>
+<pre tabindex="0"><code>import {AeliqoRecordListElement} from '@aeliqo/web/record-list';
+
+customElements.define('aeliqo-record-list', AeliqoRecordListElement);
+const list = document.querySelector('aeliqo-record-list');
+list.rows = people;
+list.columns = [{key: 'name', label: 'Name'}];
+list.identity = ['id'];</code></pre>
+<h2>React</h2><p>Use the thin React wrapper when you want typed props and event callbacks in JSX.</p>
+<pre tabindex="0"><code>import {RecordList} from '@aeliqo/react/record-list';
+
+&lt;RecordList
+  rows={people}
+  columns={[{key: 'name', label: 'Name'}]}
+  identity={['id']}
+  onSelectionChange={(event) =&gt; setSelected(event.detail.identity)}
+/&gt;</code></pre>
+<h2>Vue</h2><p>Configure Vue to treat <code>aeliqo-*</code> tags as custom elements, bind objects with <code>:</code>, and handle native events with <code>@</code>. No separate Vue renderer is required.</p>
 <h2>Server rendering</h2><p>The web server entry produces declarative shadow roots. React has an explicit SSR integration entry. Verify hydration, forms, focus, and event handling in your deployment environment.</p>
-<p>The <a href="/docs/getting-started/">record-list quickstart</a> is the smallest direct integration. The component catalog provides runnable examples and source-derived API details for all 71 components.</p>`},
+<p>Start with the <a href="/docs/getting-started/">record-list quickstart</a>, then use the <a href="/docs/components/">component catalog</a> for runnable examples and generated API details.</p>`},
   {path:'/docs/agents/',title:'Optional agents and protocols',section:'Integration',description:'Manual, MCP, BYOK, and experimental WebMCP share one capability dispatcher.',body:`
 <p class="lead">Add AI assistance when it helps the task. Ordinary clicks, typing, and resizing do not call a model.</p>
 <h2>MCP</h2><p>The optional MCP entries use the official SDK and support tested stdio and HTTP flows. Host authentication, tool discovery, cancellation, budgets, and current grants remain enforced at the endpoint.</p>

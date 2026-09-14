@@ -1,8 +1,8 @@
 <section class="playground-header" aria-labelledby="playground-title">
   <p class="eyebrow">INTERACTIVE PLAYGROUND</p>
-  <h1 id="playground-title">Start with a result. Inspect every decision.</h1>
-  <p>Choose a synthetic dataset and a typed task. Aeliqo evaluates it locally, presents the result, and keeps the source and evidence one panel away.</p>
-  <p id="session-status" class="caption">Synthetic records · Public demo scope · Ephemeral session · Manual mode · MCP unpaired · BYOK unconfigured · <span id="webmcp-status">Checking WebMCP availability…</span></p>
+  <h1 id="playground-title">See how data becomes an interface.</h1>
+  <p>Pick a sample dataset, run a task, and inspect the result. Everything runs in this browser with synthetic data.</p>
+  <p id="session-status" class="caption">No account, API key, or model required.<span id="webmcp-status" hidden>Checking optional browser tools…</span></p>
 </section>
 
 <div class="playground-toolbar" role="toolbar" aria-label="Playground controls">
@@ -44,7 +44,7 @@
   <button id="cancel" disabled>Cancel query</button>
 </div>
 
-<p id="dataset-status" class="caption">People &amp; absence · Synthetic local source · Scope: synthetic-public-records</p>
+<p id="dataset-status" class="caption">Sample: people and absence · Runs locally in this browser</p>
 
 <div id="playground-workspace" class="playground-workspace">
   <div id="source-panel" class="playground-panel" hidden role="complementary" aria-labelledby="source-panel-title">
@@ -78,7 +78,7 @@
   <div class="playground-main">
     <section id="people-workflow" aria-labelledby="workflow-title">
       <div class="canvas-heading">
-        <h2 id="workflow-title">Guided people workflow</h2>
+        <h2 id="workflow-title">Build a people result</h2>
         <p id="workflow-progress" role="status">Step 1 of 4 · Browse people</p>
       </div>
       <progress id="workflow-meter" max="4" value="0">0 of 4</progress>
