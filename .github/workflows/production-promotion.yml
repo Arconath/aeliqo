@@ -1,0 +1,143 @@
+name: Promote production
+run-name: Promote Aeliqo ${{ github.event.workflow_run.head_sha }}
+
+on:
+  workflow_run:
+    workflows: [Deploy production]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+  packages: read
+
+concurrency:
+  group: aeliqo-production-promotion
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    if: >-
+      github.repository == 'Arconath/aeliqo' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'workflow_dispatch' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      github.event.workflow_run.actor.login == 'hermawan22' &&
+      github.event.workflow_run.triggering_actor.login == 'hermawan22'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Verify completed exact-main release event
+        env:
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+          RELEASE_RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          set -Eeuo pipefail
+          jq -e --arg repo "$GITHUB_REPOSITORY" --arg sha "$SOURCE_SHA" --argjson run "$RELEASE_RUN_ID" '
+            .action == "completed" and
+            .workflow_run.id == $run and
+            .workflow_run.path == ".github/workflows/site-release.yml" and
+            .workflow_run.name == "Deploy production" and
+            .workflow_run.repository.full_name == $repo and
+            .workflow_run.head_repository.full_name == $repo and
+            .workflow_run.head_branch == "main" and
+            .workflow_run.head_sha == $sha and
+            .workflow_run.event == "workflow_dispatch" and
+            .workflow_run.status == "completed" and
+            .workflow_run.conclusion == "success" and
+            .workflow_run.actor.login == "hermawan22" and
+            .workflow_run.triggering_actor.login == "hermawan22"
+          ' "$GITHUB_EVENT_PATH"
+      - name: Check out production GitOps main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: Arconath/platform-apps
+          ref: main
+          fetch-depth: 0
+          path: gitops
+          ssh-key: ${{ secrets.PLATFORM_APPS_DEPLOY_KEY }}
+      - name: Download exact release artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: aeliqo-web-production-image-${{ github.event.workflow_run.head_sha }}-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
+          path: ${{ runner.temp }}/release-artifacts
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.23.2
+      - uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4
+        with:
+          version: v3.18.6
+      - name: Set up pinned kubectl
+        env:
+          KUBECTL_VERSION: v1.36.4
+          KUBECTL_SHA256: 8b8f088da2dab964f853b38464033b1be15ede2839eca751482357c45abdd05a
+        run: |
+          set -Eeuo pipefail
+          tool_dir="$(mktemp -d "${RUNNER_TEMP}/kubectl.XXXXXX")"
+          curl --fail --silent --show-error --location \
+            "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" \
+            --output "${tool_dir}/kubectl"
+          echo "${KUBECTL_SHA256}  ${tool_dir}/kubectl" | sha256sum --check --strict
+          chmod 0755 "${tool_dir}/kubectl"
+          echo "${tool_dir}" >> "$GITHUB_PATH"
+      - name: Verify artifacts and prepare immutable GitOps promotion
+        env:
+          DOCKER_CONFIG: ${{ runner.temp }}/docker-config
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_ACTOR: ${{ github.event.workflow_run.actor.login }}
+          GITHUB_TRIGGERING_ACTOR: ${{ github.event.workflow_run.triggering_actor.login }}
+          GITOPS_MAIN_VIA_GIT: '1'
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+          RELEASE_RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          set -Eeuo pipefail
+          mkdir -p "$DOCKER_CONFIG"
+          printf '%s' "$GH_TOKEN" | docker --config "$DOCKER_CONFIG" login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          cd gitops
+          python -m venv .venv
+          .venv/bin/pip install PyYAML==6.0.3
+          .venv/bin/python scripts/production-deploy.py prepare \
+            --product aeliqo \
+            --source-sha "$SOURCE_SHA" \
+            --release-run-id "$RELEASE_RUN_ID" \
+            --artifact-root "$RUNNER_TEMP/release-artifacts"
+      - name: Validate and push GitOps promotion
+        id: promotion
+        working-directory: gitops
+        run: |
+          set -Eeuo pipefail
+          base="$(git rev-parse HEAD)"
+          PRODUCTION_FREEZE_BASE_REF="$base" .venv/bin/python scripts/test-workflow-admission.py
+          .venv/bin/python scripts/test-promotion-preflight.py
+          .venv/bin/python scripts/test-production-deploy.py
+          PRODUCTION_FREEZE_BASE_REF="$base" .venv/bin/python scripts/validate.py
+          git diff --check
+          git config user.name 'Arconath Release'
+          git config user.email '6385048+hermawan22@users.noreply.github.com'
+          git add clusters/upcloud-production/apps/aeliqo clusters/upcloud-production/platform-paths.yaml
+          git commit -m "release(aeliqo): promote ${SOURCE_SHA:0:12}"
+          gitops_revision="$(git rev-parse HEAD)"
+          git push origin HEAD:main
+          printf 'gitops_revision=%s\n' "$gitops_revision" >> "$GITHUB_OUTPUT"
+        env:
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+      - name: Verify Flux rollout and record health/version
+        working-directory: gitops
+        env:
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+          GITOPS_REVISION: ${{ steps.promotion.outputs.gitops_revision }}
+        run: |
+          set -Eeuo pipefail
+          .venv/bin/python scripts/production-deploy.py accept \
+            --product aeliqo --source-sha "$SOURCE_SHA" --gitops-revision "$GITOPS_REVISION"
+          PRODUCTION_FREEZE_BASE_REF="$GITOPS_REVISION" .venv/bin/python scripts/validate.py
+          git diff --check
+          git add clusters/upcloud-production/apps/aeliqo/release-evidence.json
+          git commit -m "release(aeliqo): record production acceptance ${SOURCE_SHA:0:12}"
+          git push origin HEAD:main

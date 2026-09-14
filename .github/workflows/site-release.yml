@@ -1,4 +1,4 @@
-name: Publish Aeliqo public web image
+name: Deploy production
 
 on:
   workflow_dispatch:
