@@ -9,11 +9,10 @@ docs routes and playground. Public source lives in `apps/web`, `apps/docs` and
 `apps/playground`. The `apps/site` shell retains the isolated package inputs,
 static assembly/server, browser checks and image delivery.
 
-The site keeps an isolated lockfile and exact vendored `0.1.0-rc.2` package/docs
-candidate so the already-reviewed production input remains reproducible during
-the repository transition. This is a temporary release input, not a second
+The site keeps an isolated lockfile and exact vendored stable `0.1.0` package
+and documentation inputs. This is reproducible release input, not a second
 framework source. New framework and documentation work starts in the canonical
-root source and must refresh the site input through a reviewed release step.
+root source and refreshes the site input through a reviewed release step.
 
 Public pull requests run only on GitHub-hosted runners with read-only source
 permission and no npm, GHCR-write, GitOps or production credentials. Package

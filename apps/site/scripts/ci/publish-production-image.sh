@@ -25,7 +25,7 @@ git diff --cached --quiet
 
 node scripts/verify-inputs.mjs >/dev/null
 sdk_revision="$(jq -er '.sourceRevision | select(test("^[0-9a-f]{40}$"))' vendor/packages/manifest.json)"
-sdk_version="$(jq -er '.version | select(test("^0\\.1\\.0-rc\\.[1-9][0-9]*$"))' vendor/packages/manifest.json)"
+sdk_version="$(jq -er '.version | select(. == "0.1.0")' vendor/packages/manifest.json)"
 
 image="ghcr.io/arconath/aeliqo-web"
 tag="${SOURCE_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"

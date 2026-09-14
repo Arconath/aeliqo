@@ -14,7 +14,7 @@ SPEC.loader.exec_module(PROVENANCE)
 
 SOURCE = "1" * 40
 SDK_REVISION = "2" * 40
-SDK_VERSION = "0.1.0-rc.2"
+SDK_VERSION = "0.1.0"
 BUILDER_ID = "https://github.com/Arconath/aeliqo/actions/runs/123/attempts/1"
 def encoded(value):
     return json.dumps(value, separators=(",", ":"), sort_keys=True).encode()

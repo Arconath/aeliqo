@@ -6,11 +6,11 @@
     "component": {
       "type": "application",
       "name": "aeliqo-release-candidate",
-      "version": "0.1.0-rc.2",
+      "version": "0.1.0",
       "properties": [
         {
           "name": "aeliqo:source-revision",
-          "value": "fb16bc90965b117f77d7c09974eecdedf26d2f6a"
+          "value": "49837873077727a7d02f10367b4d47e9ad4682df"
         }
       ]
     }
@@ -18,10 +18,10 @@
   "components": [
     {
       "type": "library",
-      "bom-ref": "pkg:npm/%40aeliqo/agent@0.1.0-rc.2",
-      "purl": "pkg:npm/%40aeliqo/agent@0.1.0-rc.2",
+      "bom-ref": "pkg:npm/%40aeliqo/agent@0.1.0",
+      "purl": "pkg:npm/%40aeliqo/agent@0.1.0",
       "name": "@aeliqo/agent",
-      "version": "0.1.0-rc.2",
+      "version": "0.1.0",
       "licenses": [
         {
           "license": {
@@ -32,26 +32,26 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "714773e6117b82605cb725f15ad0f2248078006013abe6bcf9277f8f2c4e846b"
+          "content": "7d31d806dbeea9457500366d5d329e3571034bc7fb67c30d1ee23d424517893c"
         }
       ],
       "properties": [
         {
           "name": "aeliqo:tarball",
-          "value": "aeliqo-agent-0.1.0-rc.2.tgz"
+          "value": "aeliqo-agent-0.1.0.tgz"
         },
         {
           "name": "aeliqo:source-revision",
-          "value": "fb16bc90965b117f77d7c09974eecdedf26d2f6a"
+          "value": "49837873077727a7d02f10367b4d47e9ad4682df"
         }
       ]
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/%40aeliqo/core@0.1.0-rc.2",
-      "purl": "pkg:npm/%40aeliqo/core@0.1.0-rc.2",
+      "bom-ref": "pkg:npm/%40aeliqo/core@0.1.0",
+      "purl": "pkg:npm/%40aeliqo/core@0.1.0",
       "name": "@aeliqo/core",
-      "version": "0.1.0-rc.2",
+      "version": "0.1.0",
       "licenses": [
         {
           "license": {
@@ -62,26 +62,26 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "bc07c724859dd8a9f16f327cfbf78364d76a89a980f9c0266eb6c4403dcc0542"
+          "content": "34a6271d7ca2b9d6cefa74fb84ad150bb71eed531b9d6c71b88c1b63ef7a49ed"
         }
       ],
       "properties": [
         {
           "name": "aeliqo:tarball",
-          "value": "aeliqo-core-0.1.0-rc.2.tgz"
+          "value": "aeliqo-core-0.1.0.tgz"
         },
         {
           "name": "aeliqo:source-revision",
-          "value": "fb16bc90965b117f77d7c09974eecdedf26d2f6a"
+          "value": "49837873077727a7d02f10367b4d47e9ad4682df"
         }
       ]
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/%40aeliqo/devtools@0.1.0-rc.2",
-      "purl": "pkg:npm/%40aeliqo/devtools@0.1.0-rc.2",
+      "bom-ref": "pkg:npm/%40aeliqo/devtools@0.1.0",
+      "purl": "pkg:npm/%40aeliqo/devtools@0.1.0",
       "name": "@aeliqo/devtools",
-      "version": "0.1.0-rc.2",
+      "version": "0.1.0",
       "licenses": [
         {
           "license": {
@@ -92,26 +92,26 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "b541a6fe23e66a9b0ba8a3f6875c70b0dd0cd916d373a8d8dded22732341067b"
+          "content": "51d8ac7ab855d1408172053433792bc2ca2427a84409c7b1760eaee3b8aca29a"
         }
       ],
       "properties": [
         {
           "name": "aeliqo:tarball",
-          "value": "aeliqo-devtools-0.1.0-rc.2.tgz"
+          "value": "aeliqo-devtools-0.1.0.tgz"
         },
         {
           "name": "aeliqo:source-revision",
-          "value": "fb16bc90965b117f77d7c09974eecdedf26d2f6a"
+          "value": "49837873077727a7d02f10367b4d47e9ad4682df"
         }
       ]
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/%40aeliqo/react@0.1.0-rc.2",
-      "purl": "pkg:npm/%40aeliqo/react@0.1.0-rc.2",
+      "bom-ref": "pkg:npm/%40aeliqo/react@0.1.0",
+      "purl": "pkg:npm/%40aeliqo/react@0.1.0",
       "name": "@aeliqo/react",
-      "version": "0.1.0-rc.2",
+      "version": "0.1.0",
       "licenses": [
         {
           "license": {
@@ -122,26 +122,26 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "b8f13b4e2735837f110ee12179ffdd285b3aac3517ecd88827e5e94bb18dcf20"
+          "content": "04b70e3c9b37da7b37c283ad025475f683ca7078241e06dc147636feb0a99f1b"
         }
       ],
       "properties": [
         {
           "name": "aeliqo:tarball",
-          "value": "aeliqo-react-0.1.0-rc.2.tgz"
+          "value": "aeliqo-react-0.1.0.tgz"
         },
         {
           "name": "aeliqo:source-revision",
-          "value": "fb16bc90965b117f77d7c09974eecdedf26d2f6a"
+          "value": "49837873077727a7d02f10367b4d47e9ad4682df"
         }
       ]
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/%40aeliqo/runtime@0.1.0-rc.2",
-      "purl": "pkg:npm/%40aeliqo/runtime@0.1.0-rc.2",
+      "bom-ref": "pkg:npm/%40aeliqo/runtime@0.1.0",
+      "purl": "pkg:npm/%40aeliqo/runtime@0.1.0",
       "name": "@aeliqo/runtime",
-      "version": "0.1.0-rc.2",
+      "version": "0.1.0",
       "licenses": [
         {
           "license": {
@@ -152,26 +152,26 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "0d9080e18c14cf94618f2f220c4db7d3e7db0a405ad5238d3ad21f6d32d35b76"
+          "content": "2cf73b5a9ca0058678d061a8e3ac57d767f8e987e8995c55c0c9622e872aa847"
         }
       ],
       "properties": [
         {
           "name": "aeliqo:tarball",
-          "value": "aeliqo-runtime-0.1.0-rc.2.tgz"
+          "value": "aeliqo-runtime-0.1.0.tgz"
         },
         {
           "name": "aeliqo:source-revision",
-          "value": "fb16bc90965b117f77d7c09974eecdedf26d2f6a"
+          "value": "49837873077727a7d02f10367b4d47e9ad4682df"
         }
       ]
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/%40aeliqo/web@0.1.0-rc.2",
-      "purl": "pkg:npm/%40aeliqo/web@0.1.0-rc.2",
+      "bom-ref": "pkg:npm/%40aeliqo/web@0.1.0",
+      "purl": "pkg:npm/%40aeliqo/web@0.1.0",
       "name": "@aeliqo/web",
-      "version": "0.1.0-rc.2",
+      "version": "0.1.0",
       "licenses": [
         {
           "license": {
@@ -182,17 +182,17 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "a24d73bc15c0780ae065a3694e25b6df79a46f54af92b3bc07f7115a48f60580"
+          "content": "876ceeb91b9a4db3ff038f0127058b307d995ea3e25089e12dc84c5231eddd95"
         }
       ],
       "properties": [
         {
           "name": "aeliqo:tarball",
-          "value": "aeliqo-web-0.1.0-rc.2.tgz"
+          "value": "aeliqo-web-0.1.0.tgz"
         },
         {
           "name": "aeliqo:source-revision",
-          "value": "fb16bc90965b117f77d7c09974eecdedf26d2f6a"
+          "value": "49837873077727a7d02f10367b4d47e9ad4682df"
         }
       ]
     },
@@ -1339,10 +1339,10 @@
   ],
   "dependencies": [
     {
-      "ref": "pkg:npm/%40aeliqo/agent@0.1.0-rc.2",
+      "ref": "pkg:npm/%40aeliqo/agent@0.1.0",
       "dependsOn": [
-        "pkg:npm/%40aeliqo/core@0.1.0-rc.2",
-        "pkg:npm/%40aeliqo/runtime@0.1.0-rc.2",
+        "pkg:npm/%40aeliqo/core@0.1.0",
+        "pkg:npm/%40aeliqo/runtime@0.1.0",
         "pkg:npm/%40modelcontextprotocol/client@2.0.0",
         "pkg:npm/%40modelcontextprotocol/node@2.0.0",
         "pkg:npm/%40modelcontextprotocol/server@2.0.0",
@@ -1350,22 +1350,22 @@
       ]
     },
     {
-      "ref": "pkg:npm/%40aeliqo/core@0.1.0-rc.2",
+      "ref": "pkg:npm/%40aeliqo/core@0.1.0",
       "dependsOn": [
         "pkg:npm/zod@4.5.4"
       ]
     },
     {
-      "ref": "pkg:npm/%40aeliqo/devtools@0.1.0-rc.2",
+      "ref": "pkg:npm/%40aeliqo/devtools@0.1.0",
       "dependsOn": [
-        "pkg:npm/%40aeliqo/core@0.1.0-rc.2",
-        "pkg:npm/%40aeliqo/runtime@0.1.0-rc.2"
+        "pkg:npm/%40aeliqo/core@0.1.0",
+        "pkg:npm/%40aeliqo/runtime@0.1.0"
       ]
     },
     {
-      "ref": "pkg:npm/%40aeliqo/react@0.1.0-rc.2",
+      "ref": "pkg:npm/%40aeliqo/react@0.1.0",
       "dependsOn": [
-        "pkg:npm/%40aeliqo/web@0.1.0-rc.2",
+        "pkg:npm/%40aeliqo/web@0.1.0",
         "pkg:npm/%40lit-labs/ssr-react@0.3.4",
         "pkg:npm/%40lit/react@1.0.8",
         "pkg:npm/react-dom@19.2.8",
@@ -1373,17 +1373,17 @@
       ]
     },
     {
-      "ref": "pkg:npm/%40aeliqo/runtime@0.1.0-rc.2",
+      "ref": "pkg:npm/%40aeliqo/runtime@0.1.0",
       "dependsOn": [
-        "pkg:npm/%40aeliqo/core@0.1.0-rc.2",
+        "pkg:npm/%40aeliqo/core@0.1.0",
         "pkg:npm/zod@4.5.4"
       ]
     },
     {
-      "ref": "pkg:npm/%40aeliqo/web@0.1.0-rc.2",
+      "ref": "pkg:npm/%40aeliqo/web@0.1.0",
       "dependsOn": [
-        "pkg:npm/%40aeliqo/core@0.1.0-rc.2",
-        "pkg:npm/%40aeliqo/runtime@0.1.0-rc.2",
+        "pkg:npm/%40aeliqo/core@0.1.0",
+        "pkg:npm/%40aeliqo/runtime@0.1.0",
         "pkg:npm/%40lit-labs/ssr-client@1.1.8",
         "pkg:npm/%40lit-labs/ssr@4.1.0",
         "pkg:npm/d3-scale@4.0.2",

@@ -6,9 +6,9 @@ framework, developer documentation source, API metadata producer, runnable
 examples, Studio, testkit, docs and playground now share one repository.
 
 The site does not read a sibling SDK checkout. It installs six source-bound
-`0.1.0-rc.2` candidate tarballs from `vendor/packages` and consumes the public
+stable `0.1.0` tarballs from `vendor/packages` and consumes the public
 documentation/example artifact in `../docs/vendor/public-docs`. `pnpm verify:inputs`
-checks every candidate and documentation checksum, exact version, source SHA,
+checks every package and documentation checksum, exact version, source SHA,
 and path before a build starts.
 
 ## Local verification

@@ -44,7 +44,7 @@ const [sitePackage, workspace, candidate, consumer, secretScan, sbom, docs, docs
   readFile(resolve(docsRoot, 'vendor/public-docs/SHA256SUMS'), 'utf8'),
 ]);
 
-if (candidate.schema !== 'aeliqo.release-candidate.v1' || candidate.version !== '0.1.0-rc.2' || !/^[a-f0-9]{40}$/u.test(candidate.sourceRevision)) throw new Error('Invalid SDK candidate identity.');
+if (candidate.schema !== 'aeliqo.release-candidate.v1' || candidate.version !== '0.1.0' || !/^[a-f0-9]{40}$/u.test(candidate.sourceRevision)) throw new Error('Invalid SDK candidate identity.');
 if (sitePackage.name !== '@aeliqo/site-assembly' || sitePackage.private !== true || sitePackage.version !== candidate.version) throw new Error('Site assembly and SDK candidate versions differ.');
 if (JSON.stringify(candidate.publishOrder) !== JSON.stringify(expectedNames)) throw new Error('SDK candidate publish order is incomplete.');
 if (!Array.isArray(candidate.packages) || candidate.packages.length !== expectedNames.length) throw new Error('SDK candidate must contain all six public packages.');

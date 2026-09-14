@@ -1,23 +1,23 @@
 {
   "schema": "aeliqo.public-docs-manifest.v1",
-  "docsVersion": "0.1.0-rc.2",
+  "docsVersion": "0.1.0",
   "source": {
     "repository": "https://github.com/Arconath/aeliqo",
-    "revision": "fb16bc90965b117f77d7c09974eecdedf26d2f6a"
+    "revision": "49837873077727a7d02f10367b4d47e9ad4682df"
   },
   "sourceTree": "clean",
   "packageVersions": {
-    "@aeliqo/agent": "0.1.0-rc.2",
-    "@aeliqo/core": "0.1.0-rc.2",
-    "@aeliqo/devtools": "0.1.0-rc.2",
-    "@aeliqo/react": "0.1.0-rc.2",
-    "@aeliqo/runtime": "0.1.0-rc.2",
-    "@aeliqo/web": "0.1.0-rc.2"
+    "@aeliqo/agent": "0.1.0",
+    "@aeliqo/core": "0.1.0",
+    "@aeliqo/devtools": "0.1.0",
+    "@aeliqo/react": "0.1.0",
+    "@aeliqo/runtime": "0.1.0",
+    "@aeliqo/web": "0.1.0"
   },
   "artifact": {
-    "file": "aeliqo-public-docs-0.1.0-rc.2.json",
-    "sha256": "5d47295e906fa4659690ab733dfe479b0318edb69baca38ab03c17f6a879d7fd",
-    "bytes": 973326
+    "file": "aeliqo-public-docs-0.1.0.json",
+    "sha256": "762d2047198a6666dba3bf43c34f0af77e227f9c932e073a1e61c8d86c042d46",
+    "bytes": 972916
   },
   "catalogFiles": [
     {
@@ -84,8 +84,8 @@
   "inputs": [
     {
       "path": "docs/public-site/content.mjs",
-      "sha256": "1cf618b57299bc46ff7f119f57039da36b40e8f575f7df559523971323ddcd9a",
-      "bytes": 25776
+      "sha256": "3fe995c2c01a9c73939731511e210970d697b0fb9cfa9b808295e40178f4d435",
+      "bytes": 25365
     },
     {
       "path": "examples/catalog/compound.ts",
@@ -169,8 +169,8 @@
     },
     {
       "path": "packages/devtools/package.json",
-      "sha256": "e5f35dd467ee67897971f63520d7792772d4704d5c276d8762d11513b9a4f936",
-      "bytes": 680
+      "sha256": "6aa1f27640c2d93e7049532d16d18a1c723d602af3056e034407fd6e474c4697",
+      "bytes": 700
     },
     {
       "path": "packages/react/package.json",
@@ -859,8 +859,8 @@
     },
     {
       "path": "packages/web/dist/visualization/temporal/index.d.ts",
-      "sha256": "d424011f54ed721f8d29b16859262cfe24d6b7d0ff90ecb4539ac565a15aee76",
-      "bytes": 2367
+      "sha256": "f7bf776b3ffa72eac658be2aa964bab6ba07c504075ecb26d3d52b706efb7d09",
+      "bytes": 2482
     },
     {
       "path": "packages/web/dist/visualization/types.d.ts",
@@ -1039,8 +1039,8 @@
     },
     {
       "path": "packages/web/src/feedback/drawer.ts",
-      "sha256": "db0796dd6fea243234ee7b360360ab3af71c71cfdb14e0861b2e94a6647dec43",
-      "bytes": 5071
+      "sha256": "a3386a709bf6b5e957bfd3b7a8ab2602777e8866a05ab95a8bee95e346c99937",
+      "bytes": 5110
     },
     {
       "path": "packages/web/src/feedback/empty-state.ts",
@@ -1199,8 +1199,8 @@
     },
     {
       "path": "packages/web/src/input/date-range.ts",
-      "sha256": "4faf5b42a3e81368d1fcbd68b3a7b000cb2fef76776e0e825518052f953bad7e",
-      "bytes": 7323
+      "sha256": "66c2a8a95424094645cc35bae74bf1da6485c8db9e4265d56f626cd0b1631aaf",
+      "bytes": 7318
     },
     {
       "path": "packages/web/src/input/events.ts",
@@ -1419,8 +1419,8 @@
     },
     {
       "path": "packages/web/src/region/registry.ts",
-      "sha256": "feeb009d110481ec4ccef99188301d1f556d71cafd8a392cf1e2fefbacc7068a",
-      "bytes": 23350
+      "sha256": "d95e5ecc0f6d130f84e884b33a2bd02785bb61fd4e4da8a189cfac2c10de60f0",
+      "bytes": 25211
     },
     {
       "path": "packages/web/src/region/types.ts",
@@ -1549,8 +1549,8 @@
     },
     {
       "path": "packages/web/src/visualization/temporal/index.ts",
-      "sha256": "ea626c71822402b0911075d05cc6054ca301fb31e1f7c31a9f650f2550956267",
-      "bytes": 12305
+      "sha256": "9ecf48cb5c54c7a2dcde27bbc07a044a5e811e84b6caacbf1544fd75f5cac311",
+      "bytes": 12785
     },
     {
       "path": "packages/web/src/visualization/types.ts",
@@ -1559,18 +1559,23 @@
     },
     {
       "path": "scripts/docs/build-public-docs.mjs",
-      "sha256": "c53a8ab6e63696e11b73cca89a45d7723ca78e6f2844829b4b2134904fd14190",
-      "bytes": 17970
+      "sha256": "453a4e0ba40531663f21af48e83384f6450378a494a00c0f00d1eaf913ae2f94",
+      "bytes": 19147
     },
     {
       "path": "scripts/docs/component-api.mjs",
-      "sha256": "f51ba21d66c20320ab42c7d23d1ab5dab36c83a8b7b07ab1c2b3fca5d8441c54",
-      "bytes": 7988
+      "sha256": "667f5ef46bef39cdb9576e3466b4994458d1f5ce2a78fde7cf303b97206c9519",
+      "bytes": 9059
     },
     {
       "path": "scripts/docs/public-docs-contract.mjs",
-      "sha256": "1531e9668b3329ee8464d4e34acff885832de0a7e2d15b092df80b969d0e14fd",
-      "bytes": 9760
+      "sha256": "4909bfd0ee6fb829d8d406b3a25bbecf3e1eff0871ac38e2535a98f46e9306bd",
+      "bytes": 9946
+    },
+    {
+      "path": "scripts/release/source-state.mjs",
+      "sha256": "736851b46b503c68897874d7bd830d3e2dc7a210a6f45c29fd745408971a0fbb",
+      "bytes": 583
     }
   ]
 }
