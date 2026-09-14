@@ -3,7 +3,7 @@
   "docsVersion": "0.1.0",
   "source": {
     "repository": "https://github.com/Arconath/aeliqo",
-    "revision": "49837873077727a7d02f10367b4d47e9ad4682df"
+    "revision": "3110ce46ac1ae1925123d867b19065eb633e6d94"
   },
   "sourceTree": "clean",
   "packageVersions": {
@@ -16,8 +16,8 @@
   },
   "artifact": {
     "file": "aeliqo-public-docs-0.1.0.json",
-    "sha256": "762d2047198a6666dba3bf43c34f0af77e227f9c932e073a1e61c8d86c042d46",
-    "bytes": 972916
+    "sha256": "85195eddef5e2882ef09cb8b70fe72f1cd4801fffdcceb7cf697267072d26eba",
+    "bytes": 973336
   },
   "catalogFiles": [
     {
@@ -84,8 +84,8 @@
   "inputs": [
     {
       "path": "docs/public-site/content.mjs",
-      "sha256": "3fe995c2c01a9c73939731511e210970d697b0fb9cfa9b808295e40178f4d435",
-      "bytes": 25365
+      "sha256": "9806afda0db120fc8bf7270f1c8f39334114c6a2988db3b9427fd09130196481",
+      "bytes": 25764
     },
     {
       "path": "examples/catalog/compound.ts",

@@ -51,7 +51,7 @@ importers:
 packages:
 
   '@aeliqo/agent@file:vendor/packages/aeliqo-agent-0.1.0.tgz':
-    resolution: {integrity: sha512-Ptshg40dRhXk6YK0WfWs8rQmc2TXwQNz84Ec6GeC19iTC+Q6PMPo1Z2l8NzW4fgTfyR4vme2Y+sg19gKWfNw7w==, tarball: file:vendor/packages/aeliqo-agent-0.1.0.tgz}
+    resolution: {integrity: sha512-gpkV5VqizUaxxVnHOQyYY2R09y/qLI0cL3q6yYJRmVyUuIM8BIRCFWcICpBzk8/xlSHBjS1kWVFWRjqbT9rKTw==, tarball: file:vendor/packages/aeliqo-agent-0.1.0.tgz}
     version: 0.1.0
     peerDependencies:
       '@modelcontextprotocol/client': 2.0.0
@@ -69,15 +69,15 @@ packages:
         optional: true
 
   '@aeliqo/core@file:vendor/packages/aeliqo-core-0.1.0.tgz':
-    resolution: {integrity: sha512-zXeQq+ocAxZ6TGXmQuaGEteWh8sQ7Z5Vmt2+SWePtD0LWWdnOXTGpLqwgauzgRAWQtnojJy8s1TBK9stK/dM1A==, tarball: file:vendor/packages/aeliqo-core-0.1.0.tgz}
+    resolution: {integrity: sha512-SJ+LUL48LhueBD9IXtkHjQ5DRsqN/Zxp774Xvyr/fPzif5Uycj5zqS9BzeOBdg4ksNzK+bg+xR3K/cEHhFiTCQ==, tarball: file:vendor/packages/aeliqo-core-0.1.0.tgz}
     version: 0.1.0
 
   '@aeliqo/runtime@file:vendor/packages/aeliqo-runtime-0.1.0.tgz':
-    resolution: {integrity: sha512-jkJmh0lE7wpTiiCUoMSxIi7kNBe6+D9n7v73fD92Sd+9RK5sD/PjpyZBXwB7VzJZz1nNItB0H/huVHV6k7Q+SA==, tarball: file:vendor/packages/aeliqo-runtime-0.1.0.tgz}
+    resolution: {integrity: sha512-UGYPX4RklIT7cylFUztZOSWgA7pO73K+ZxNg0A2OVdGYwU+GrsIplXpVk9tFQ0qH8s+y1y8kz7cc5uaJffPghg==, tarball: file:vendor/packages/aeliqo-runtime-0.1.0.tgz}
     version: 0.1.0
 
   '@aeliqo/web@file:vendor/packages/aeliqo-web-0.1.0.tgz':
-    resolution: {integrity: sha512-GIWyKeeGgZFitR2CfBuE2thUBC0IV1eBXlt14VbOB9HSLWHtM8cB8+Qg7YDMJocVlzdHRwP64paNKL6AQrXw8A==, tarball: file:vendor/packages/aeliqo-web-0.1.0.tgz}
+    resolution: {integrity: sha512-4rrYxQZoXVafCAc2Gm/0ggAiKNE1ovzbasgx+Rp9e+vpYukBEjvLwROwJr3J8uyFdkX2rp7EZoAzo9/37tBzlg==, tarball: file:vendor/packages/aeliqo-web-0.1.0.tgz}
     version: 0.1.0
     peerDependencies:
       '@aeliqo/runtime': 0.1.0

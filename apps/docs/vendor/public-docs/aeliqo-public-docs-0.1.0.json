@@ -3,7 +3,7 @@
   "docsVersion": "0.1.0",
   "source": {
     "repository": "https://github.com/Arconath/aeliqo",
-    "revision": "49837873077727a7d02f10367b4d47e9ad4682df"
+    "revision": "3110ce46ac1ae1925123d867b19065eb633e6d94"
   },
   "packageVersions": {
     "@aeliqo/agent": "0.1.0",
@@ -89,7 +89,7 @@
       "title": "Framework integration",
       "section": "Integration",
       "description": "Use the shared web implementation directly or through thin framework bindings.",
-      "body": "\n<p class=\"lead\">Aeliqo owns one web implementation. Framework bindings forward typed properties and native custom events.</p>\n<h2>Vanilla JavaScript</h2><p>Import an individual element and register its custom-element name, or use the shared registration entry. Pass structured records through properties. Use addEventListener for typed custom events.</p>\n<h2>React</h2><p>The React package uses thin wrappers over the shared elements. Import the component family you need. Wrapper event callbacks receive the original CustomEvent and its detail payload.</p>\n<h2>Vue</h2><p>Configure Vue to recognize Aeliqo tags as custom elements. Bind complex values as properties and handle the emitted DOM events. Vue does not require a separate renderer.</p>\n<h2>Server rendering</h2><p>The web server entry produces declarative shadow roots. React has an explicit SSR integration entry. Verify hydration, forms, focus, and event handling in your deployment environment.</p>\n<p>The <a href=\"/docs/getting-started/\">record-list quickstart</a> is the smallest direct integration. The component catalog provides runnable examples and source-derived API details for all 71 components.</p>"
+      "body": "\n<p class=\"lead\">Choose your application stack. Every option below uses the same Aeliqo web components, properties, and native events.</p>\n<h2>Vanilla JavaScript</h2><p>Import the component you need, register it once, then assign structured values as properties.</p>\n<pre tabindex=\"0\"><code>import {AeliqoRecordListElement} from '@aeliqo/web/record-list';\n\ncustomElements.define('aeliqo-record-list', AeliqoRecordListElement);\nconst list = document.querySelector('aeliqo-record-list');\nlist.rows = people;\nlist.columns = [{key: 'name', label: 'Name'}];\nlist.identity = ['id'];</code></pre>\n<h2>React</h2><p>Use the thin React wrapper when you want typed props and event callbacks in JSX.</p>\n<pre tabindex=\"0\"><code>import {RecordList} from '@aeliqo/react/record-list';\n\n&lt;RecordList\n  rows={people}\n  columns={[{key: 'name', label: 'Name'}]}\n  identity={['id']}\n  onSelectionChange={(event) =&gt; setSelected(event.detail.identity)}\n/&gt;</code></pre>\n<h2>Vue</h2><p>Configure Vue to treat <code>aeliqo-*</code> tags as custom elements, bind objects with <code>:</code>, and handle native events with <code>@</code>. No separate Vue renderer is required.</p>\n<h2>Server rendering</h2><p>The web server entry produces declarative shadow roots. React has an explicit SSR integration entry. Verify hydration, forms, focus, and event handling in your deployment environment.</p>\n<p>Start with the <a href=\"/docs/getting-started/\">record-list quickstart</a>, then use the <a href=\"/docs/components/\">component catalog</a> for runnable examples and generated API details.</p>"
     },
     {
       "path": "/docs/agents/",

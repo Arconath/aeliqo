@@ -1,12 +1,12 @@
 {
   "schema": "aeliqo.local-tarball-consumer.v1",
-  "sourceRevision": "49837873077727a7d02f10367b4d47e9ad4682df",
+  "sourceRevision": "3110ce46ac1ae1925123d867b19065eb633e6d94",
   "version": "0.1.0",
   "install": {
     "source": "local-candidate-tarballs",
     "resolution": "reviewed-pnpm-parent-scoped-overrides",
     "overrideParents": 87,
-    "lockSha256": "8659dffc437e48c303135ec719563c5e910950411837c50dca7702dca99cce4c"
+    "lockSha256": "a6e22615ea7c1858f387b03497ed073d32f550c80184a168bfa46bc9d524b4bb"
   },
   "execution": {
     "networkDenied": true,
@@ -33,32 +33,32 @@
     {
       "name": "@aeliqo/core",
       "version": "0.1.0",
-      "integrity": "sha512-zXeQq+ocAxZ6TGXmQuaGEteWh8sQ7Z5Vmt2+SWePtD0LWWdnOXTGpLqwgauzgRAWQtnojJy8s1TBK9stK/dM1A=="
+      "integrity": "sha512-SJ+LUL48LhueBD9IXtkHjQ5DRsqN/Zxp774Xvyr/fPzif5Uycj5zqS9BzeOBdg4ksNzK+bg+xR3K/cEHhFiTCQ=="
     },
     {
       "name": "@aeliqo/runtime",
       "version": "0.1.0",
-      "integrity": "sha512-jkJmh0lE7wpTiiCUoMSxIi7kNBe6+D9n7v73fD92Sd+9RK5sD/PjpyZBXwB7VzJZz1nNItB0H/huVHV6k7Q+SA=="
+      "integrity": "sha512-UGYPX4RklIT7cylFUztZOSWgA7pO73K+ZxNg0A2OVdGYwU+GrsIplXpVk9tFQ0qH8s+y1y8kz7cc5uaJffPghg=="
     },
     {
       "name": "@aeliqo/web",
       "version": "0.1.0",
-      "integrity": "sha512-GIWyKeeGgZFitR2CfBuE2thUBC0IV1eBXlt14VbOB9HSLWHtM8cB8+Qg7YDMJocVlzdHRwP64paNKL6AQrXw8A=="
+      "integrity": "sha512-4rrYxQZoXVafCAc2Gm/0ggAiKNE1ovzbasgx+Rp9e+vpYukBEjvLwROwJr3J8uyFdkX2rp7EZoAzo9/37tBzlg=="
     },
     {
       "name": "@aeliqo/agent",
       "version": "0.1.0",
-      "integrity": "sha512-Ptshg40dRhXk6YK0WfWs8rQmc2TXwQNz84Ec6GeC19iTC+Q6PMPo1Z2l8NzW4fgTfyR4vme2Y+sg19gKWfNw7w=="
+      "integrity": "sha512-gpkV5VqizUaxxVnHOQyYY2R09y/qLI0cL3q6yYJRmVyUuIM8BIRCFWcICpBzk8/xlSHBjS1kWVFWRjqbT9rKTw=="
     },
     {
       "name": "@aeliqo/devtools",
       "version": "0.1.0",
-      "integrity": "sha512-5gNNy+jUIp+4hidZFIc/q+ghXVjRXIpUuILd/1OUHPv4tAFLuxFNKVKz0cfdOGBRMh7H4s99uM9Tpe8QE57klg=="
+      "integrity": "sha512-KNdPnxnvXr3okwDDQeHw2eGh4gxkHHtIcmUBjMpOkpqcFjbi0C+1WU9HcfwEGFtxijqpc2UGaNawGIHbC5Q7KA=="
     },
     {
       "name": "@aeliqo/react",
       "version": "0.1.0",
-      "integrity": "sha512-WiQYyZWVF1kPkbwi66BSOzGWNvwObO4CjZGTl+RBPKbWGPaNxCRKCBE39tGozeP/XL+q11W2tDE29j2KvhoAAA=="
+      "integrity": "sha512-GMPTHHaqlI1wkVO0pUQd7BsdpWEinorj5jxg8sJmFD+AmBrpmZnuuU3KwOB/eMC8Ku1rjhBihBhlelcw4GsQHg=="
     }
   ],
   "exportCount": 130
