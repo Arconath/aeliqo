@@ -91,14 +91,33 @@ test('quality dispatch retains the workflow trust and release boundaries', () =>
   assert.match(releaseWorkflow, /conclusion == "success"/);
 });
 
-test('repository exposes exactly one functional and two publication lanes', async () => {
+test('repository exposes quality, publication, deploy, and automatic promotion lanes', async () => {
   const workflowDirectory = new URL('../../.github/workflows/', import.meta.url);
   const { readdir } = await import('node:fs/promises');
   assert.deepEqual((await readdir(workflowDirectory)).sort(), [
+    'production-promotion.yml',
     'quality.yml',
     'release-publish.yml',
     'site-release.yml',
   ]);
+});
+
+test('production promotion follows only a completed trusted Deploy production run', async () => {
+  const promotion = await readFile(
+    new URL('../../.github/workflows/production-promotion.yml', import.meta.url),
+    'utf8',
+  );
+  assert.match(promotion, /workflows: \[Deploy production\]/);
+  assert.match(promotion, /workflow_run\.conclusion == 'success'/);
+  assert.match(promotion, /workflow_run\.head_branch == 'main'/);
+  assert.match(promotion, /workflow_run\.head_repository\.full_name == github\.repository/);
+  assert.match(promotion, /workflow_run\.actor\.login == 'hermawan22'/);
+  assert.match(promotion, /workflow_run\.triggering_actor\.login == 'hermawan22'/);
+  assert.match(promotion, /repository: Arconath\/platform-apps/);
+  assert.match(promotion, /ssh-key: \$\{\{ secrets\.PLATFORM_APPS_DEPLOY_KEY \}\}/);
+  assert.match(promotion, /scripts\/production-deploy\.py prepare/);
+  assert.match(promotion, /scripts\/production-deploy\.py accept/);
+  assert.doesNotMatch(promotion, /kubectl (apply|patch|set|rollout)/);
 });
 
 test('image publication preserves same-source quality evidence after checkout', async () => {
