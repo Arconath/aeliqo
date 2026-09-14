@@ -104,7 +104,7 @@ def fixture(statement_change=None):
             "buildDefinition": {
                 "buildType": PROVENANCE.BUILD_TYPE,
                 "externalParameters": {
-                    "configSource": {"path": "site/Dockerfile"},
+                    "configSource": {"path": "Dockerfile"},
                     "request": {
                         "frontend": "dockerfile.v0",
                         "args": {
@@ -125,7 +125,12 @@ def fixture(statement_change=None):
                 "metadata": {
                     "buildkit_completeness": {"request": True},
                     "buildkit_metadata": {
-                        "vcs": {"source": "https://github.com/Arconath/aeliqo", "revision": SOURCE}
+                        "vcs": {
+                            "source": "https://github.com/Arconath/aeliqo",
+                            "revision": SOURCE,
+                            "localdir:context": "apps",
+                            "localdir:dockerfile": "apps/site",
+                        }
                     },
                 },
             },
@@ -200,6 +205,8 @@ class ProvenanceTests(unittest.TestCase):
         changes = [
             lambda value: value["predicate"]["runDetails"]["builder"].update(id="https://example.invalid/builder"),
             lambda value: value["predicate"]["runDetails"]["metadata"]["buildkit_metadata"]["vcs"].update(revision="4" * 40),
+            lambda value: value["predicate"]["runDetails"]["metadata"]["buildkit_metadata"]["vcs"].update({"localdir:context": "."}),
+            lambda value: value["predicate"]["runDetails"]["metadata"]["buildkit_metadata"]["vcs"].update({"localdir:dockerfile": "site"}),
         ]
         for change in changes:
             with self.subTest(change=change):

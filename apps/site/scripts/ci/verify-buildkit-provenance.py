@@ -176,7 +176,7 @@ def verify_graph(client, index_digest, source, sdk_revision, sdk_version, builde
     definition = predicate.get("buildDefinition", {})
     require(definition.get("buildType") == BUILD_TYPE, "unexpected BuildKit provenance build type")
     external = definition.get("externalParameters", {})
-    require(external.get("configSource", {}).get("path") == "site/Dockerfile", "provenance config source differs")
+    require(external.get("configSource", {}).get("path") == "Dockerfile", "provenance config source differs")
     request = external.get("request", {})
     require(request.get("frontend") == "dockerfile.v0", "provenance frontend differs")
     args = request.get("args", {})
@@ -200,6 +200,8 @@ def verify_graph(client, index_digest, source, sdk_revision, sdk_version, builde
     vcs = metadata.get("buildkit_metadata", {}).get("vcs", {})
     require(vcs.get("source") == "https://github.com/Arconath/aeliqo", "provenance VCS source differs")
     require(vcs.get("revision") == source, "provenance VCS revision differs")
+    require(vcs.get("localdir:context") == "apps", "provenance build context differs")
+    require(vcs.get("localdir:dockerfile") == "apps/site", "provenance Dockerfile directory differs")
 
     return statement_bytes, {
         "schemaVersion": 1,
