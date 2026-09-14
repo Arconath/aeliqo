@@ -106,7 +106,7 @@
     "test:security": "pnpm build:agent && node scripts/reuse-build.mjs testkit packages/testkit/dist -- pnpm --filter @aeliqo/testkit build && vitest run --config tests/security/vitest.config.mjs && tsc -p tests/security/tsconfig.json",
     "test:performance:bundles": "node tests/performance/bundles.mjs",
     "build:testkit": "pnpm build:runtime && node scripts/reuse-build.mjs testkit packages/testkit/dist -- pnpm --filter @aeliqo/testkit build",
-    "test:visual": "pnpm build:platform && tsc -p tests/visual/tsconfig.json && playwright test --config tests/visual/playwright.config.mjs",
+    "test:visual": "pnpm build:platform && tsc -p tests/visual/tsconfig.json && node scripts/run-visual-suite.mjs",
     "lint": "pnpm build:platform && pnpm build:devtools && node --test tests/quality/*.test.mjs && oxlint --deny-warnings packages apps examples scripts && tsc -p tsconfig.lint.json && tsc -p apps/studio/tsconfig.json --noUnusedLocals --noUnusedParameters",
     "format:check": "prettier --check package.json pnpm-workspace.yaml .oxlintrc.json .prettierrc.json 'packages/*/package.json' 'apps/*/package.json' 'examples/*/package.json' '.github/workflows/*.yml' 'tsconfig*.json' 'examples/platform/**/*.{mjs,ts}' 'tests/platform/**/*.{mjs,ts}' 'scripts/{docs,release}/**/*.mjs' 'tests/{docs-artifact,quality,release}/**/*.{mjs,ts}' fixtures/scenarios/ready-traceability.ts tests/scenarios/ready-traceability.test.ts harness/tasks.json harness/scenarios.json",
     "test:boundaries": "vitest run --config tests/security/vitest.config.mjs tests/security/package-boundaries.test.ts",
