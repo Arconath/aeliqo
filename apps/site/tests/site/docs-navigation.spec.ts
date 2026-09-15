@@ -34,10 +34,13 @@ test('documentation information architecture exposes distinct adoption routes', 
 
 test('documentation search keeps keyboard, query, no-result, and fallback paths', async ({ browser, page }) => {
   await page.goto('/concepts/');
+  await page.locator('#theme').selectOption('light');
   await expect(page.locator('.docs-search-tools .docs-search-fallback')).toBeHidden();
   await expect(page.locator('.search-trigger')).toBeVisible();
   await page.keyboard.press('Control+K');
-  await expect(page.locator('#docs-search-dialog').getByRole('dialog')).toBeVisible();
+  const searchDialog = page.locator('#docs-search-dialog');
+  await expect(searchDialog.getByRole('dialog')).toBeVisible();
+  await expect(searchDialog).toHaveAttribute('data-aeliqo-theme', 'light');
   const field = page.locator('#docs-search-dialog input.docs-search-field');
   await field.fill('table');
   const rankedLinks = page.locator('#docs-search-dialog .search-results a');

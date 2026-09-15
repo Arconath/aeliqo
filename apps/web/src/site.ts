@@ -11,7 +11,8 @@ function applyTheme(value: string) {
   void syncComponentTheme(document);
 }
 export async function syncComponentTheme(root: Document | ShadowRoot | Element): Promise<void> {
-  for (const element of root.querySelectorAll<HTMLElement>('*')) {
+  const elements = [...(root instanceof HTMLElement ? [root] : []), ...root.querySelectorAll<HTMLElement>('*')];
+  for (const element of elements) {
     if (!element.localName.startsWith('aeliqo-')) continue;
     element.setAttribute('data-aeliqo-theme', document.documentElement.dataset.theme ?? 'light');
     await (element as HTMLElement & { updateComplete?: Promise<unknown> }).updateComplete;
