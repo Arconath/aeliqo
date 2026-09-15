@@ -156,7 +156,15 @@ export async function generatePages() {
   await writeFile(
     join(generatedPublic, 'route-map.json'),
     JSON.stringify({
-      legacyDocs: { ...LEGACY_DOC_REDIRECTS, '/docs': '/' },
+      // Every generated documentation artifact lives under /docs internally.
+      // Keep those filesystem paths as explicit legacy aliases so the landing
+      // host can never serve a documentation page directly.  The docs host
+      // also uses these aliases to canonicalize old /docs/* links.
+      legacyDocs: {
+        ...LEGACY_DOC_REDIRECTS,
+        '/docs': '/',
+        ...Object.fromEntries(docs.map((page) => [docsArtifactPath(page.path), page.path])),
+      },
       canonicalDocs: all.filter((page) => page.surface === 'docs').map((page) => page.path),
     }),
   );

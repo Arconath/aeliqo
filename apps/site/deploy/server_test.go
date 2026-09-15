@@ -25,7 +25,7 @@ func fixtureSite(t *testing.T) string {
 		"playground/index.html":                 "<h1>Playground</h1>",
 		"docs/index.html":                       "<h1>Docs</h1>",
 		"docs/components/data.table/index.html": "<h1>Table</h1>",
-		"route-map.json":                        `{"legacyDocs":{"/docs":"/","/docs/components/data.table/":"/components/data.table/"},"canonicalDocs":["/","/playground/","/components/data.table/"]}`,
+		"route-map.json":                        `{"legacyDocs":{"/docs":"/","/docs/":"/","/docs/start/":"/start/","/docs/components/data.table/":"/components/data.table/"},"canonicalDocs":["/","/playground/","/components/data.table/"]}`,
 		"robots-main.txt":                       "main robots",
 		"robots-docs.txt":                       "docs robots",
 		"sitemap-main.xml":                      "main sitemap",
@@ -288,6 +288,14 @@ func TestStaticRoutesApplySecurityAndCachePolicies(t *testing.T) {
 	docs := request(t, handler, http.MethodGet, "/docs")
 	if docs.Code != http.StatusPermanentRedirect || docs.Header().Get("Location") != "https://docs.aeliqo.com/" {
 		t.Fatalf("docs status=%d location=%q", docs.Code, docs.Header().Get("Location"))
+	}
+	docsSlash := request(t, handler, http.MethodGet, "/docs/")
+	if docsSlash.Code != http.StatusPermanentRedirect || docsSlash.Header().Get("Location") != "https://docs.aeliqo.com/" {
+		t.Fatalf("docs slash status=%d location=%q", docsSlash.Code, docsSlash.Header().Get("Location"))
+	}
+	legacyStart := request(t, handler, http.MethodGet, "/docs/start/")
+	if legacyStart.Code != http.StatusPermanentRedirect || legacyStart.Header().Get("Location") != "https://docs.aeliqo.com/start/" {
+		t.Fatalf("legacy start status=%d location=%q", legacyStart.Code, legacyStart.Header().Get("Location"))
 	}
 	dottedRoute := request(t, handler, http.MethodGet, "/docs/components/data.table/")
 	if dottedRoute.Code != http.StatusPermanentRedirect || dottedRoute.Header().Get("Location") != "https://docs.aeliqo.com/components/data.table/" {
