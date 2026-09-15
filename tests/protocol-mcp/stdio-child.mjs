@@ -43,7 +43,7 @@ const endpoint = (era) => ({
 createMcpStdioServer({
   createEndpoint: (context) => endpoint(context.era),
   name: 'aeliqo-stdio-fixture',
-  version: '0.1.0',
+  version: '0.0.0-test',
   maxBufferSize:
     process.env.AELIQO_MCP_MAX_BUFFER === undefined ? undefined : Number(process.env.AELIQO_MCP_MAX_BUFFER),
 });

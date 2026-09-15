@@ -1,6 +1,6 @@
 # Aeliqo owned design baseline
 
-Status: implementation reference for Aeliqo 0.1.0. The token source and CSS exports are testable inputs to visual review; they do not claim that a screenshot has been approved across browsers or operating systems.
+Status: current implementation reference. The token source and CSS exports are testable inputs to visual review; they do not claim that a screenshot has been approved across browsers or operating systems.
 
 ## Source and scope
 
@@ -9,13 +9,18 @@ Status: implementation reference for Aeliqo 0.1.0. The token source and CSS expo
 The package baseline is opt-in and component scoped. A Lit element prepends `aeliqoThemeStyles` to its own `static styles` array. The exported stylesheet only targets `:host`, so importing it does not reset the consumer document or mutate `document.documentElement`. Applications that want one chosen container to own the variables can opt into `aeliqoStandaloneThemeStyles` with a `data-aeliqo-theme` attribute.
 
 ```ts
-import {css, LitElement} from "lit";
-import {aeliqoThemeStyles} from "@aeliqo/web/styles";
+import { css, LitElement } from 'lit';
+import { aeliqoThemeStyles } from '@aeliqo/web/styles';
 
 export class ExampleElement extends LitElement {
-  static styles = [aeliqoThemeStyles, css`
-    :host { display: block; }
-  `];
+  static styles = [
+    aeliqoThemeStyles,
+    css`
+      :host {
+        display: block;
+      }
+    `,
+  ];
 }
 ```
 
@@ -24,7 +29,7 @@ The default mode follows the system color preference until a host reflects `data
 Forced-colors maps roles to system colors such as `Canvas`, `CanvasText`, `ButtonText`, `Highlight` and `HighlightText`. Reduced motion sets the shared transition durations to `0ms`; components choose whether a transition is applicable. Direction uses CSS logical properties and can be reflected from `createAeliqoLocaleContext` with `aeliqoLocaleAttributes`. The helper canonicalizes and validates the BCP 47 tag with `Intl.Locale`. An explicit `direction` option always wins; otherwise the platform `Intl.Locale.prototype.getTextInfo()` result is required. Hosts running without that platform method must provide `direction` explicitly, rather than relying on a language list. Invalid tags are rejected:
 
 ```ts
-const locale = createAeliqoLocaleContext("ar-EG", {direction: "rtl"});
+const locale = createAeliqoLocaleContext('ar-EG', { direction: 'rtl' });
 // {lang: "ar-EG", dir: "rtl"}
 ```
 
@@ -48,15 +53,19 @@ Color is never the only signal for selection, validation or a chart series. The 
 
 The typed `AELIQO_NAMED_PARTS` map is the initial public anatomy. Parts are stable styling hooks; internal wrappers without a listed part are implementation details.
 
-| Element | Named parts | Default state expectations |
-| --- | --- | --- |
-| `aeliqo-input` | `field`, `label`, `input`, `description`, `error` | Label and help remain associated; focus is visible; required, read-only, disabled, pending and validation error states keep their positions; draft text is not silently discarded. |
-| `aeliqo-table` | `scroll`, `table` | Header and cells preserve table semantics; empty content is explicit; essential comparison may scroll horizontally; keyboard focus reaches the scroll surface when needed. |
+| Element        | Named parts                                                                    | Default state expectations                                                                                                                                                         |
+| -------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `aeliqo-input` | `field`, `label`, `input`, `description`, `error`                              | Label and help remain associated; focus is visible; required, read-only, disabled, pending and validation error states keep their positions; draft text is not silently discarded. |
+| `aeliqo-table` | `scroll`, `table`                                                              | Header and cells preserve table semantics; empty content is explicit; essential comparison may scroll horizontally; keyboard focus reaches the scroll surface when needed.         |
 | `aeliqo-chart` | `figure`, `summary`, `unit`, `scope`, `plot`, `line`, `point`, `error`, `data` | Title, scope and unit remain available; exact values have a table path; empty, partial, invalid and loading states are explicit; selection is distinguishable without color alone. |
 
 The applicable state vocabulary is `default`, `hover`, `focus-visible`, `pressed`, `selected`, `disabled`, `loading`, `empty`, `partial`, `stale`, `validation-error` and `error`. A component documents which states apply; decoration does not get invented loading states. A failure keeps the last authorized useful view when one exists and places actionable recovery text in a reachable status surface.
 
-## Studio vocabulary
+## Deferred Studio compatibility vocabulary
+
+Studio is not a public Aeliqo 0.3 product surface. These names only preserve a
+compatible internal vocabulary for future work; no Studio journey or capability
+is claimed by this release.
 
 The Local Studio has four work areas, aligned with the Master SOT:
 

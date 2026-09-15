@@ -1,9 +1,9 @@
 # Visualization contract
 
 `VisualizationSpec@1` adds family semantics around the existing `PlotSpec@1`.
-It is an additive, opt-in contract for the unreleased 0.1.0 implementation;
-existing plot specifications and `data.trend@1` remain compatible. This contract
-packet does not mean all twelve renderers have shipped.
+It is an additive, opt-in contract; existing plot specifications and
+`data.trend@1` remain compatible. A contract entry is not, by itself, evidence
+that its renderer is included in a particular package release.
 
 Trend, Bar, Area, Scatter, Histogram and Heatmap reuse the plot grammar. Matrix
 uses explicit columns, preserving arbitrary scalar values and row/column

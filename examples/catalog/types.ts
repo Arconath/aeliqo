@@ -1,6 +1,6 @@
 import type { ResultRef } from '@aeliqo/core';
 
-/** The finite public component names used by the 0.1.0 catalog. */
+/** The finite public component names used by the current catalog example. */
 export type CatalogExampleId =
   | 'button'
   | 'icon-button'

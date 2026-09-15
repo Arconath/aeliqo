@@ -76,7 +76,7 @@ export async function runExplicitMcp(fixture: EvaluationFixture, task: Task) {
     budget: fixture.budget,
   };
   const client = new Client(
-    { name: 'aeliqo-evaluation-client', version: '0.1.0' },
+    { name: 'aeliqo-evaluation-client', version: '0.0.0-test' },
     { versionNegotiation: { mode: { pin: AELIQO_MCP_MODERN_REVISION } } },
   );
   const transport = new StdioClientTransport({
