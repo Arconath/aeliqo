@@ -38,6 +38,30 @@ const browse = (id: string, search?: string) => ({version: '1', id, resource: 'p
   fields: ['name', 'team'], ...(search === undefined ? {} : {search: {text: search, fields: ['team']}})} as const);
 
 describe('createAeliqoRuntime', () => {
+  it('discovers only same-principal, same-scope resources authorized for the paired Region', () => {
+    const app = fixture();
+    const secondary = defineResource({
+      id: 'absences', label: 'Absence history', revision: 'absences-1', identity: ['id'],
+      schema: z.object({id: z.string(), week: z.iso.date(), absence_days: z.number().int()}),
+      fields: {week: {role: 'time'}, absence_days: {role: 'measure'}}, presentation: {allowedViews: ['table', 'trend']},
+    });
+    const privateResource = defineResource({
+      id: 'private-notes', label: 'Private notes', revision: 'private-1', identity: ['id'],
+      schema: z.object({id: z.string(), note: z.string()}), presentation: {allowedViews: ['table']},
+    });
+    const runtime = createAeliqoRuntime({resources: [
+      {resource: app.resource, data: app.local}, {resource: secondary, data: app.local}, {resource: privateResource, data: app.local},
+    ], authority: {read: ({resourceId}) => resourceId === 'private-notes'
+      ? {ok: false, diagnostics: [{code: 'runtime.authority-denied', message: 'Denied.', retryable: false}]}
+      : {ok: true, value: {principalKey: 'alice', scopeDigest: 'scope-alice', policyRevision: 'policy-1', experienceRevision: 'experience-1',
+        grants: ['catalog.read', 'task.evaluate', 'result.inspect'], readContext: {principal: 'alice'}}}}});
+    runtime.mount({regionId: 'main', resourceId: 'people'});
+    expect(runtime.contexts('main')).toMatchObject({ok: true, value: [
+      {resource: {id: 'people'}}, {resource: {id: 'absences'}, views: ['table', 'trend']},
+    ]});
+    runtime.dispose();
+  });
+
   it('mounts and renders a manual intent through compiler, evaluator, ResultStore, and Region commit', async () => {
     const app = fixture();
     const runtime = createAeliqoRuntime({resources: [{resource: app.resource, data: app.local}], authority: app.authority});

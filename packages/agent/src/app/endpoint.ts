@@ -108,6 +108,8 @@ const actionSchema = toolSchema({
 export function createAppToolEndpoint(options: AppToolEndpointOptions): Outcome<AeliqoAppToolEndpoint> {
   if (options === null || typeof options !== 'object' || !bounded(options.regionId) || !bounded(options.goalEpoch))
     return failure('agent.app.invalid', 'A standard tool endpoint requires one mounted Region and goal epoch.');
+  if (options.context !== undefined && (options.context === null || typeof options.context.read !== 'function'))
+    return failure('agent.app.invalid-context', 'A custom discovery port requires a trusted read function.');
   const initial = options.runtime.context(options.regionId);
   if (!initial.ok) return initial;
   const actionPort = options.runtime.actionPort;
@@ -117,13 +119,15 @@ export function createAppToolEndpoint(options: AppToolEndpointOptions): Outcome<
 
   const contextCapability: AgentCapabilityManifest<Record<string, never>, AgentJsonValue> = {
     ref: refs.context, operation: 'catalog.read', label: 'Inspect the current Aeliqo context',
-    description: 'Lists the resources, fields, meanings, views, intents, and actions allowed in the paired Region. Returns metadata, never records or credentials.',
+    description: 'Lists the active resource and every resource, field, meaning, view, intent, and action the trusted host allows this paired Region to route. Returns metadata, never records or credentials.',
     parse(input) { return record(input) && Object.keys(input).length === 0 ? {ok: true, value: {}} : failure('agent.app.context-input', 'Context accepts an empty object.'); },
     invoke() {
-      const current = options.runtime.context(options.regionId);
+      const active = options.runtime.context(options.regionId);
+      if (!active.ok) return {state: 'denied', diagnostics: active.diagnostics};
+      const current = options.context?.read() ?? {ok: true as const, value: [active.value]};
       if (!current.ok) return {state: 'denied', diagnostics: current.diagnostics};
-      const value = wire({resource: current.value.resource, intents: current.value.intents, fields: current.value.fields,
-        views: current.value.views, actions: current.value.actions});
+      const resources = current.value.map(({resource, intents, fields, meanings, views, actions}) => ({resource, intents, fields, meanings, views, actions}));
+      const value = wire({activeResource: active.value.resource.id, resources});
       return value.ok ? {state: 'accepted', value: value.value} : {state: 'failed', diagnostics: value.diagnostics};
     },
   };

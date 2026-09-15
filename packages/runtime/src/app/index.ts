@@ -15,6 +15,7 @@ export type {
   RuntimeRenderReceipt,
   RuntimeRenderStatus,
   RuntimeResourceBinding,
+  RuntimeResourceContext,
   RuntimeUncommittedReceipt,
   RuntimeUnsubscribe,
 } from './types.js';

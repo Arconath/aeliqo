@@ -44,6 +44,32 @@ function mergeFilter(left: QuerySpec['where'], right: QuerySpec['where']): Query
   return {op: 'and', predicates: [left, right]};
 }
 
+function validateFilter(resource: ResourceDefinition, predicate: NonNullable<QuerySpec['where']>, path: Path): Outcome<undefined> {
+  if ('predicates' in predicate) {
+    for (let index = 0; index < predicate.predicates.length; index += 1) {
+      const checked = validateFilter(resource, predicate.predicates[index]!, [...path, 'predicates', index]);
+      if (!checked.ok) return checked;
+    }
+    return {ok: true, value: undefined};
+  }
+  if ('predicate' in predicate) return validateFilter(resource, predicate.predicate, [...path, 'predicate']);
+  const field = resource.entity.fields.find((candidate) => candidate.id === predicate.field);
+  if (field === undefined) return failure('intent.unknown-filter-field', `Filter field ${predicate.field} is not available on ${resource.id}.`, [...path, 'field']);
+  if (predicate.op === 'is-null') return {ok: true, value: undefined};
+  const allowed = resource.fieldMetadata[predicate.field]?.values;
+  if (allowed === undefined) return {ok: true, value: undefined};
+  const values = predicate.op === 'in' ? predicate.values : [predicate.value];
+  for (let index = 0; index < values.length; index += 1) {
+    const value = values[index];
+    if (!allowed.some((candidate) => Object.is(candidate, value))) {
+      const target = predicate.op === 'in' ? [...path, 'values', index] : [...path, 'value'];
+      return failure('intent.unknown-filter-value', `Filter value for ${predicate.field} is not in its registered closed domain.`, target,
+        ['Use the exact registered value returned by aeliqo_context.']);
+    }
+  }
+  return {ok: true, value: undefined};
+}
+
 function queryTask(intent: Intent, resource: ResourceDefinition, regionId: string, revision: string, query: QuerySpec,
   operation: string, needFields: readonly string[]): Task {
   const preferredView = intent.preferredView ?? resource.presentation.preferred?.[intent.kind === 'custom' ? 'browse' : intent.kind];
@@ -86,7 +112,14 @@ function compileStandard(intent: Exclude<Intent, {kind: 'custom'}>, context: Int
   }
 
   if (intent.kind === 'analyze') {
-    const dimensionFields = intent.dimensions ?? [];
+    if (intent.filter !== undefined) {
+      const filter = validateFilter(resource, intent.filter, ['filter']);
+      if (!filter.ok) return filter;
+    }
+    const dimensionFields = Object.freeze([...new Set([
+      ...(intent.dimensions ?? []),
+      ...(intent.time === undefined ? [] : [intent.time.field]),
+    ])]);
     const dimensions = dimensionFields.length === 0
       ? {ok: true as const, value: [] as readonly string[]}
       : validateFields(resource, dimensionFields, ['dimensions'], false);
@@ -96,8 +129,6 @@ function compileStandard(intent: Exclude<Intent, {kind: 'custom'}>, context: Int
       const meaning = resource.catalog.meanings.find((candidate) => candidate.id === measure.id && candidate.revision === measure.revision);
       if (meaning === undefined) return failure('intent.unknown-meaning', `Meaning ${measure.id}@${measure.revision} is not registered for ${resource.id}.`, ['measures', index]);
     }
-    if (intent.time !== undefined && !dimensionFields.includes(intent.time.field))
-      return failure('intent.temporal-grain', 'The temporal field must be included in analyze dimensions.', ['time', 'field']);
     const timeBucket = intent.time === undefined ? undefined : {
       field: intent.time.field, grain: intent.time.grain,
       ...(intent.time.calendar === undefined ? {} : {calendar: intent.time.calendar}),
@@ -117,6 +148,10 @@ function compileStandard(intent: Exclude<Intent, {kind: 'custom'}>, context: Int
   if (!requested.ok) return requested;
   const selected = Object.freeze([...new Set([...resource.entity.identity, ...requested.value])]);
   if (intent.kind === 'browse') {
+    if (intent.filter !== undefined) {
+      const filter = validateFilter(resource, intent.filter, ['filter']);
+      if (!filter.ok) return filter;
+    }
     const searchFields = intent.search?.fields ?? resource.entity.fields.filter((field) => field.type.value === 'text').map((field) => field.id);
     const search = intent.search === undefined ? undefined : validateFields(resource, searchFields, ['search', 'fields'], false);
     if (search !== undefined && !search.ok) return search;

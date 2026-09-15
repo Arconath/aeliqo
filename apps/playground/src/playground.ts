@@ -352,6 +352,8 @@ send.addEventListener('click', async () => {
     modelCalls.textContent = String(modelCallCount);
     connectionStatus.textContent = receipt.stop === 'renderer-ready'
       ? `The local agent completed ${receipt.toolCalls} validated tool call${receipt.toolCalls === 1 ? '' : 's'}.`
+      : receipt.stop === 'no-commit' && receipt.message !== undefined
+        ? `No validated UI change was made. Agent draft: ${receipt.message}`
       : `The local agent stopped as ${receipt.stop}; no unsupported claim is shown as success.`;
   } catch { connectionStatus.textContent = 'The local agent request failed. No UI change was committed.'; }
   finally { send.disabled = connection !== 'local'; }

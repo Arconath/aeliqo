@@ -2,7 +2,7 @@ import {describe, expect, it} from 'vitest';
 import {z} from 'zod';
 import {createQueryFunctionRegistry, defineResource} from '../../packages/core/src/index.js';
 import {createAppToolEndpoint} from '../../packages/agent/src/app/index.js';
-import {createAeliqoRuntime} from '../../packages/runtime/src/app/index.js';
+import {createAeliqoRuntime, type RuntimeResourceContext} from '../../packages/runtime/src/app/index.js';
 import {createLocalDataService} from '../../packages/runtime/src/data/index.js';
 import {ActionRegistry, createActionPort} from '../../packages/runtime/src/actions/index.js';
 
@@ -13,7 +13,7 @@ function record(value: unknown): value is Readonly<Record<string, unknown>> {
 function setup() {
   const resource = defineResource({
     id: 'people', label: 'People', description: 'People directory', revision: '1', identity: ['id'],
-    schema: z.object({id: z.string(), name: z.string(), team: z.string()}),
+    schema: z.object({id: z.string(), name: z.string(), team: z.enum(['Platform', 'Research'])}),
     fields: {team: {role: 'dimension'}}, presentation: {allowedViews: ['table', 'cards']},
     forms: {create: {schema: {id: 'people.create.input', revision: '1'}, action: {id: 'people.create', revision: '1'}}},
   });
@@ -61,9 +61,32 @@ describe('standard app tool endpoint', () => {
     if (!tools.ok) throw new Error(tools.diagnostics.map((item) => `${item.code}: ${item.message}`).join('\n'));
     expect(tools.ok && tools.value.map((tool) => tool.name)).toEqual(['aeliqo_context', 'aeliqo_render', 'aeliqo_act']);
     const context = await endpoint.value.invoke('aeliqo_context', {}, {requestId: 'context-1'});
-    expect(context).toMatchObject({ok: true, value: {state: 'accepted', value: {resource: {id: 'people'}}}});
+    expect(context).toMatchObject({ok: true, value: {state: 'accepted', value: {
+      activeResource: 'people', resources: [{resource: {id: 'people'}, fields: expect.arrayContaining([
+        expect.objectContaining({id: 'team', values: ['Platform', 'Research']}),
+      ])}],
+    }}});
     expect(JSON.stringify(context)).not.toContain('principalKey');
     expect(JSON.stringify(context)).not.toContain('scopeDigest');
+    endpoint.value.close(); runtime.dispose();
+  });
+
+  it('uses an explicit trusted discovery port when the render host can route multiple resources', async () => {
+    const {runtime} = setup();
+    const active = runtime.context('main');
+    if (!active.ok) throw new Error(active.diagnostics[0].message);
+    const secondary: RuntimeResourceContext = {...active.value, resource: {id: 'absences', label: 'Absence history'},
+      fields: [{id: 'week', label: 'Week', role: 'time', type: {value: 'date', nullable: false, temporal: {calendar: 'gregorian', grain: 'day'}}},
+        {id: 'absence_days', label: 'Absence days', role: 'measure', type: {value: 'integer', nullable: false}}],
+      meanings: [{id: 'absence-days-total', revision: '1', label: 'Total absence days', explanation: 'Sum of absence days.',
+        output: {value: 'integer', nullable: false}, aggregation: 'additive'}], views: ['table', 'trend']};
+    const endpoint = createAppToolEndpoint({runtime, regionId: 'main', goalEpoch: 'goal-multi-resource', transport: 'manual', expiresAt: Date.now() + 60_000,
+      context: {read: () => ({ok: true, value: [active.value, secondary]})}});
+    if (!endpoint.ok) throw new Error(endpoint.diagnostics[0].message);
+    const context = await endpoint.value.invoke('aeliqo_context', {}, {requestId: 'context-multi'});
+    expect(context).toMatchObject({ok: true, value: {state: 'accepted', value: {activeResource: 'people', resources: [
+      {resource: {id: 'people'}}, {resource: {id: 'absences'}, meanings: [{id: 'absence-days-total', revision: '1'}], views: ['table', 'trend']},
+    ]}}});
     endpoint.value.close(); runtime.dispose();
   });
 

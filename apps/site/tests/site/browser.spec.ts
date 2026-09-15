@@ -86,6 +86,10 @@ test('home, deep docs, search, theme and narrow playground remain navigable', as
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('/');
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('link', {name: 'Skip to content'})).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('main')).toBeFocused();
   await page.locator('#team').selectOption('Engineering');
   await expect(page.locator('#demo-status')).toContainText('2 of 4');
   await page.locator('#theme').selectOption('dark');

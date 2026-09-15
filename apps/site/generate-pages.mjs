@@ -74,10 +74,14 @@ export async function generatePages() {
   const home = await readFile(join(webRoot, 'index.html'), 'utf8');
   await writeFile(join(generatedRoot, 'index.html'), home);
   await copyFile(join(webRoot, 'public/aeliqo.png'), join(generatedPublic, 'aeliqo.png'));
-  const baseHeader = home
-    .slice(home.indexOf('<a class="skip"'), home.indexOf('<main id="main">'))
-    .replace(' aria-current="page"', '');
-  const footer = home.slice(home.lastIndexOf('<footer'), home.indexOf('<script type="module"'));
+  const headerStart = home.indexOf('<a class="skip"');
+  const mainStart = home.indexOf('<main id="main"');
+  const footerStart = home.lastIndexOf('<footer');
+  const scriptStart = home.indexOf('<script type="module"');
+  if (headerStart < 0 || mainStart <= headerStart || footerStart < 0 || scriptStart <= footerStart)
+    throw new Error('The landing shell must expose a skip link, main content, footer, and module script in that order.');
+  const baseHeader = home.slice(headerStart, mainStart).replace(' aria-current="page"', '');
+  const footer = home.slice(footerStart, scriptStart);
   const docs = (await buildPublicPages()).map((page) => ({ ...page, surface: 'docs' }));
   const docsPages = docs.filter((page) => page.component === undefined);
   const all = [...docs];
@@ -129,7 +133,7 @@ export async function generatePages() {
     const canonicalUrl = `${canonicalOrigin}${page.path}`;
     await writeFile(
       target,
-      `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(page.title)} — Aeliqo</title><meta name="description" content="${escape(page.description)}"><link rel="canonical" href="${escape(canonicalUrl)}"><meta property="og:title" content="${escape(page.title)} — Aeliqo"><meta property="og:description" content="${escape(page.description)}"><meta property="og:url" content="${escape(canonicalUrl)}"><meta property="og:type" content="website"><link rel="icon" href="/aeliqo.png"><link rel="stylesheet" href="/src/site.css"></head><body${bodyAttrs ? ` ${bodyAttrs}` : ''}>${header}<main id="main" class="shell ${layout}">${docsNavigation}${body}${toc}</main>${footer}<script type="module" src="/src/site.ts"></script></body></html>`,
+      `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(page.title)} — Aeliqo</title><meta name="description" content="${escape(page.description)}"><link rel="canonical" href="${escape(canonicalUrl)}"><meta property="og:title" content="${escape(page.title)} — Aeliqo"><meta property="og:description" content="${escape(page.description)}"><meta property="og:url" content="${escape(canonicalUrl)}"><meta property="og:type" content="website"><link rel="icon" href="/aeliqo.png"><link rel="stylesheet" href="/src/site.css"></head><body${bodyAttrs ? ` ${bodyAttrs}` : ''}>${header}<main id="main" class="shell ${layout}" tabindex="-1">${docsNavigation}${body}${toc}</main>${footer}<script type="module" src="/src/site.ts"></script></body></html>`,
     );
     inputs.push(target);
   }

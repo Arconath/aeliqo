@@ -1,2 +1,2 @@
 export {createAppToolEndpoint} from './endpoint.js';
-export type {AeliqoAppToolEndpoint, AppRenderPort, AppToolEndpointOptions} from './types.js';
+export type {AeliqoAppToolEndpoint, AppContextPort, AppRenderPort, AppToolEndpointOptions} from './types.js';

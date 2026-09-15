@@ -43,6 +43,7 @@ export interface LocalPromptReceipt {
   readonly stop: string;
   readonly modelRequests: number;
   readonly toolCalls: number;
+  readonly message?: string;
 }
 
 export async function sendLocalPrompt(prompt: string, signal?: AbortSignal): Promise<LocalPromptReceipt> {
@@ -54,5 +55,8 @@ export async function sendLocalPrompt(prompt: string, signal?: AbortSignal): Pro
   const receipt = value;
   if (typeof receipt.stop !== 'string' || typeof receipt.modelRequests !== 'number' || typeof receipt.toolCalls !== 'number')
     throw new Error('The local agent returned an invalid receipt.');
-  return {stop: receipt.stop, modelRequests: receipt.modelRequests, toolCalls: receipt.toolCalls};
+  if (receipt.message !== undefined && (typeof receipt.message !== 'string' || receipt.message.length > 4_000))
+    throw new Error('The local agent returned an invalid message.');
+  return {stop: receipt.stop, modelRequests: receipt.modelRequests, toolCalls: receipt.toolCalls,
+    ...(receipt.message === undefined ? {} : {message: receipt.message})};
 }

@@ -191,6 +191,7 @@ export function createPlaygroundSession(
     agentEgress = true;
     const {createAppToolEndpoint} = await import('@aeliqo/agent/app');
     const endpoint = createAppToolEndpoint({runtime: app.runtime, regionId: REGION_ID,
+      context: {read: () => app.runtime.contexts(REGION_ID)},
       render: {async render(input) {
         const parsed = parseIntent(input.intent);
         if (!parsed.ok) return {status: 'failed', requestId: 'playground-agent-intent', regionId: REGION_ID, diagnostics: parsed.diagnostics};
@@ -235,7 +236,7 @@ export function createPlaygroundSession(
         const receipt = await render(target, parsed.value, input.signal);
         await onAgentRender?.(parsed.value, receipt);
         return receipt;
-      }}, regionId: REGION_ID, goalEpoch: crypto.randomUUID(), transport: 'webmcp', expiresAt: Date.now() + 15 * 60_000,
+      }}, context: {read: () => app.runtime.contexts(REGION_ID)}, regionId: REGION_ID, goalEpoch: crypto.randomUUID(), transport: 'webmcp', expiresAt: Date.now() + 15 * 60_000,
         maxPending: 2, maxMilliseconds: 15_000, maxInputBytes: 32_000, maxOutputBytes: 64_000});
       if (!endpoint.ok) { syncAgentEgress(); return {ok: false, diagnostics: endpoint.diagnostics}; }
       const registered = await registerWebMcpTools({endpoint: endpoint.value});

@@ -119,10 +119,9 @@ async function runPrompt(prompt, broker, signal) {
     requestId: randomBytes(12).toString('hex'),
     goal: 'experience',
     prompt,
-    instructions: 'Use aeliqo_context first. Then call aeliqo_render with one valid intent grounded only in discovered resources and fields. Never invent HTML, code, permissions, endpoints, or data. Do not claim success without the renderer receipt.',
+    instructions: 'Use aeliqo_context first. Choose the authorized resource whose label, fields, meanings, and views match the user request; the active resource is context, not a restriction. Call aeliqo_render only when the request can be satisfied faithfully with that metadata. If a requested field, meaning, action, or resource is absent or ambiguous, do not substitute unrelated data; explain briefly that no validated UI change can be made. Use analyze only with exact meaning IDs and revisions returned by context. When a trend view exists but no matching meaning is registered, use browse with the raw time and value fields plus preferredView trend; never invent a meaning. For a weekly time grain, explicitly set weekStartsOn to 1 (Monday); otherwise choose a day grain. Never invent HTML, code, permissions, endpoints, or data. Do not claim success without the renderer receipt.',
     policy: {providerToolChoice: 'required', requiredOperationSequence: [
       {operation: 'catalog.read', acceptedStates: ['accepted']},
-      {operation: 'task.evaluate', acceptedStates: ['renderer-ready']},
     ]},
     endpoint: broker.endpoint('byok'),
     model,
@@ -131,7 +130,8 @@ async function runPrompt(prompt, broker, signal) {
     signal,
   });
   if (!result.ok) throw new Error(result.diagnostics[0]?.message ?? 'The model loop failed.');
-  return {stop: result.value.stop, modelRequests: result.value.modelRequests, toolCalls: result.value.toolCalls};
+  return {stop: result.value.stop, modelRequests: result.value.modelRequests, toolCalls: result.value.toolCalls,
+    ...(result.value.textDraft === undefined ? {} : {message: result.value.textDraft})};
 }
 
 const mcpResource = new URL('/mcp', origin);

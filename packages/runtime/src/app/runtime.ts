@@ -17,6 +17,7 @@ import type {
   RuntimeRenderInput,
   RuntimeRenderReceipt,
   RuntimeRenderStatus,
+  RuntimeResourceContext,
 } from './types.js';
 
 interface MountedRegion {
@@ -87,10 +88,10 @@ export function createAeliqoRuntime(options: AeliqoRuntimeOptions): AeliqoRuntim
     const slot = mounted.get(task.regionId);
     return slot === undefined ? undefined : resources.get(slot.resourceId);
   };
-  const authorityFor = (slot: MountedRegion, effect: 'render' | 'commit' | 'context', signal?: AbortSignal): Outcome<AppAuthorityContext> => {
+  const authorityForResource = (slot: MountedRegion, resourceId: string, effect: 'render' | 'commit' | 'context', signal?: AbortSignal): Outcome<AppAuthorityContext> => {
     if (disposed) return failure('runtime.app-disposed', 'The Aeliqo runtime is disposed.');
     let outcome: ReturnType<AeliqoRuntimeOptions['authority']['read']>;
-    try { outcome = options.authority.read({resourceId: slot.resourceId, regionId: slot.regionId, effect, ...(signal === undefined ? {} : {signal})}); }
+    try { outcome = options.authority.read({resourceId, regionId: slot.regionId, effect, ...(signal === undefined ? {} : {signal})}); }
     catch { return failure('runtime.authority-denied', 'The authority adapter failed safely.'); }
     if (!outcome.ok) return outcome;
     const value = outcome.value;
@@ -98,6 +99,33 @@ export function createAeliqoRuntime(options: AeliqoRuntimeOptions): AeliqoRuntim
       || typeof value.principalKey !== 'string' || value.principalKey.length === 0 || value.principalKey.length > WIRE_LIMITS.id * 4)
       return failure('runtime.authority-invalid', 'The authority adapter returned invalid bounded identity or revision metadata.');
     return {ok: true, value};
+  };
+  const authorityFor = (slot: MountedRegion, effect: 'render' | 'commit' | 'context', signal?: AbortSignal): Outcome<AppAuthorityContext> =>
+    authorityForResource(slot, slot.resourceId, effect, signal);
+  const describeResource = (resourceId: string, current: AppAuthorityContext): RuntimeResourceContext => {
+    const resource = resources.get(resourceId)!.resource;
+    const actions = current.grants.includes('action.propose')
+      ? (['create', 'edit'] as const).flatMap((intent) => {
+          const binding = resource.forms?.[intent];
+          return binding === undefined ? [] : [{intent, action: binding.action}];
+        })
+      : [];
+    return Object.freeze({
+      resource: Object.freeze({id: resource.id, label: resource.label, ...(resource.description === undefined ? {} : {description: resource.description})}),
+      intents: Object.freeze([...resource.intents]),
+      fields: Object.freeze(resource.entity.fields.flatMap((field) => resource.fieldMetadata[field.id]?.hidden === true ? [] : [Object.freeze({
+        id: field.id, label: field.label, ...(resource.fieldMetadata[field.id]?.description === undefined ? {} : {description: resource.fieldMetadata[field.id]!.description}),
+        role: field.role, type: field.type, ...(resource.fieldMetadata[field.id]?.values === undefined ? {} : {values: resource.fieldMetadata[field.id]!.values}),
+      })])),
+      meanings: Object.freeze(resource.catalog.meanings.map((meaning) => Object.freeze({
+        id: meaning.id, revision: meaning.revision, label: meaning.label, explanation: meaning.explanation,
+        output: meaning.output, aggregation: meaning.aggregation,
+      }))),
+      views: Object.freeze([...resource.presentation.allowedViews]),
+      actions: Object.freeze(actions.map((action) => Object.freeze(action))),
+      authority: Object.freeze({principalKey: current.principalKey, scopeDigest: current.scopeDigest, policyRevision: current.policyRevision,
+        experienceRevision: current.experienceRevision, grants: Object.freeze([...current.grants])}),
+    });
   };
   const resolveResult = (ref: ResultRef): ResultHandle | undefined => {
     for (const handle of trackedHandles) {
@@ -279,24 +307,22 @@ export function createAeliqoRuntime(options: AeliqoRuntimeOptions): AeliqoRuntim
       const current = authorityFor(slot, 'context');
       if (!current.ok) return current;
       if (!current.value.grants.includes('catalog.read')) return failure('runtime.context-denied', 'Catalog discovery is not permitted for this session.');
-      const resource = resources.get(slot.resourceId)!.resource;
-      const actions = current.value.grants.includes('action.propose')
-        ? (['create', 'edit'] as const).flatMap((intent) => {
-            const binding = resource.forms?.[intent];
-            return binding === undefined ? [] : [{intent, action: binding.action}];
-          })
-        : [];
-      return {ok: true, value: Object.freeze({
-        resource: Object.freeze({id: resource.id, label: resource.label, ...(resource.description === undefined ? {} : {description: resource.description})}),
-        intents: Object.freeze([...resource.intents]),
-        fields: Object.freeze(resource.entity.fields.flatMap((field) => resource.fieldMetadata[field.id]?.hidden === true ? [] : [Object.freeze({
-          id: field.id, label: field.label, ...(resource.fieldMetadata[field.id]?.description === undefined ? {} : {description: resource.fieldMetadata[field.id]!.description}),
-          role: field.role, type: field.type,
-        })])),
-        views: Object.freeze([...resource.presentation.allowedViews]), actions: Object.freeze(actions.map((action) => Object.freeze(action))),
-        authority: Object.freeze({principalKey: current.value.principalKey, scopeDigest: current.value.scopeDigest, policyRevision: current.value.policyRevision,
-          experienceRevision: current.value.experienceRevision, grants: Object.freeze([...current.value.grants])}),
-      })};
+      return {ok: true, value: describeResource(slot.resourceId, current.value)};
+    },
+    contexts(regionId) {
+      const slot = mounted.get(regionId);
+      if (slot === undefined) return failure('runtime.mount-missing', 'Mount the Region before reading its contexts.');
+      const active = authorityFor(slot, 'context');
+      if (!active.ok) return active;
+      if (!active.value.grants.includes('catalog.read')) return failure('runtime.context-denied', 'Catalog discovery is not permitted for this session.');
+      const visible: RuntimeResourceContext[] = [];
+      for (const resourceId of resources.keys()) {
+        const current = resourceId === slot.resourceId ? active : authorityForResource(slot, resourceId, 'context');
+        if (!current.ok || !current.value.grants.includes('catalog.read')) continue;
+        if (current.value.principalKey !== active.value.principalKey || current.value.scopeDigest !== active.value.scopeDigest) continue;
+        visible.push(describeResource(resourceId, current.value));
+      }
+      return {ok: true, value: Object.freeze(visible)};
     },
     async commitPresentation(input: RuntimePresentationInput) {
       const slot = mounted.get(input.regionId);

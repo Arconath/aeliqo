@@ -11,6 +11,7 @@ type ZodRuntimeSchema = z.ZodType & {
   readonly format?: string | null;
   readonly isInt?: boolean;
   readonly values?: ReadonlySet<unknown>;
+  readonly options?: readonly unknown[];
   unwrap?: () => z.ZodType;
 };
 
@@ -60,9 +61,34 @@ function inferType(schema: z.ZodType, path: Path): Outcome<SemanticType> {
       ['Project nested content into typed scalar fields or provide a dedicated typed binding outside the relational resource.'])]};
   }
   const temporal = value === 'date'
-    ? {calendar: 'gregorian', grain: 'day'}
+    ? {calendar: 'gregorian', timezone: 'UTC', grain: 'day'}
     : value === 'instant' ? {calendar: 'gregorian', timezone: 'UTC'} : undefined;
   return {ok: true, value: {value, nullable: unwrapped.nullable, ...(temporal === undefined ? {} : {temporal})}};
+}
+
+function inferredValues(schema: z.ZodType): readonly (string | number | boolean)[] | undefined {
+  const runtime = unwrap(schema).schema;
+  if (runtime.type !== 'enum' && runtime.type !== 'literal') return undefined;
+  const values = [...(runtime.type === 'enum' ? runtime.options ?? [] : runtime.values ?? [])].filter((value): value is string | number | boolean =>
+    typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean');
+  return values.length === 0 ? undefined : Object.freeze(values);
+}
+
+function fieldValues(schema: z.ZodType, metadata: ResourceFieldMetadata | undefined, path: Path): Outcome<readonly (string | number | boolean)[] | undefined> {
+  const values: unknown = metadata?.values ?? inferredValues(schema);
+  if (values === undefined) return {ok: true, value: undefined};
+  if (!Array.isArray(values) || values.length === 0 || values.length > 100)
+    return {ok: false, diagnostics: [diagnostic('resource.field-values', 'Field values must contain 1–100 unique scalar values.', path)]};
+  const inspected: (string | number | boolean)[] = [];
+  for (let index = 0; index < values.length; index += 1) {
+    const value: unknown = values[index];
+    const scalar = typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number' && Number.isFinite(value);
+    if (!scalar || typeof value === 'string' && (value.length === 0 || value.length > 160) || inspected.some((candidate) => Object.is(candidate, value))
+      || !schema.safeParse(value).success)
+      return {ok: false, diagnostics: [diagnostic('resource.field-values', 'A declared field value does not satisfy its runtime schema.', [...path, index])]};
+    inspected.push(value);
+  }
+  return {ok: true, value: Object.freeze(inspected)};
 }
 
 function generatedCatalog<Schema extends z.ZodObject>(input: ResourceInput<Schema>): Outcome<Catalog> {
@@ -89,7 +115,7 @@ function generatedCatalog<Schema extends z.ZodObject>(input: ResourceInput<Schem
     version: '1', revision: input.revision, functionRegistryDigest: input.functionRegistryDigest ?? 'core-query-2',
     entities: [{id: input.id, label: input.label, identity: input.identity,
       rowGrain: input.rowGrain ?? input.identity, fields}],
-    relationships: [], meanings: [], capabilities: [],
+    relationships: [], meanings: input.meanings ?? [], capabilities: [],
   };
   return parseCatalog(catalog);
 }
@@ -129,7 +155,12 @@ function inspectResource<Schema extends z.ZodObject>(input: ResourceInput<Schema
     if (!allowedViews.includes(preferred)) return {ok: false, diagnostics: [diagnostic('resource.preferred-view', `Preferred ${kind} view ${preferred} is not allowed.`, ['presentation', 'preferred', kind])]};
   }
   const mutableFieldMetadata: Record<string, ResourceFieldMetadata> = {};
-  for (const [key, value] of Object.entries(input.fields ?? {})) mutableFieldMetadata[key] = Object.freeze({...value});
+  for (const [key, schema] of Object.entries(input.schema.shape)) {
+    const metadata = input.fields?.[key];
+    const values = fieldValues(schema, metadata, ['fields', key, 'values']);
+    if (!values.ok) return values;
+    mutableFieldMetadata[key] = Object.freeze({...metadata, ...(values.value === undefined ? {} : {values: values.value})});
+  }
   const fieldMetadata: Readonly<Record<string, ResourceFieldMetadata>> = Object.freeze(mutableFieldMetadata);
   const definition: ResourceDefinition<Schema> = {
     id: input.id, label: input.label, ...(input.description === undefined ? {} : {description: input.description}), schema: input.schema,

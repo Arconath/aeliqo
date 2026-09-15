@@ -1,5 +1,5 @@
 import type * as z from 'zod';
-import type {Catalog, Diagnostic, Intent, Outcome, Scalar, SemanticType, Task, VersionRef} from '../contracts/types.js';
+import type {Catalog, Diagnostic, Intent, MeaningDefinition, Outcome, Scalar, SemanticType, Task, VersionRef} from '../contracts/types.js';
 
 export const STANDARD_INTENTS = ['browse', 'detail', 'create', 'edit', 'compare', 'analyze'] as const;
 export type StandardIntentKind = (typeof STANDARD_INTENTS)[number];
@@ -9,6 +9,8 @@ export interface ResourceFieldMetadata {
   readonly description?: string;
   readonly role?: Catalog['entities'][number]['fields'][number]['role'];
   readonly type?: SemanticType;
+  /** Closed domain values exposed to bounded intent authors and validated before query execution. */
+  readonly values?: readonly (string | number | boolean)[];
   readonly hidden?: boolean;
 }
 
@@ -38,6 +40,8 @@ export interface GeneratedResourceInput<Schema extends z.ZodObject> extends Reso
   readonly identity: readonly [string, ...string[]];
   readonly rowGrain?: readonly [string, ...string[]];
   readonly functionRegistryDigest?: string;
+  /** Reviewed business meanings available to analyze intents. */
+  readonly meanings?: readonly MeaningDefinition[];
   readonly catalog?: never;
   readonly entity?: never;
 }
@@ -49,6 +53,7 @@ export interface CatalogResourceInput<Schema extends z.ZodObject> extends Resour
   readonly identity?: never;
   readonly rowGrain?: never;
   readonly functionRegistryDigest?: never;
+  readonly meanings?: never;
 }
 
 export type ResourceInput<Schema extends z.ZodObject> = GeneratedResourceInput<Schema> | CatalogResourceInput<Schema>;

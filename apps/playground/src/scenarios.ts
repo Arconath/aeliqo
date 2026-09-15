@@ -21,7 +21,7 @@ export interface PlaygroundScenario {
 
 const people = defineResource({
   id: 'people', revision: 'people-1', label: 'People', identity: ['id'],
-  schema: z.object({id: z.string(), name: z.string(), team: z.string(), location: z.string()}),
+  schema: z.object({id: z.string(), name: z.string(), team: z.enum(['Design', 'Engineering', 'Operations']), location: z.string()}),
   fields: {id: {label: 'Person ID'}, name: {label: 'Name'}, team: {label: 'Team', role: 'dimension'}, location: {label: 'Location'}},
   presentation: {allowedViews: ['table', 'cards', 'detail']},
 });
@@ -30,12 +30,19 @@ const absences = defineResource({
   id: 'absences', revision: 'absences-1', label: 'Absence history', identity: ['id'], rowGrain: ['person', 'week'],
   schema: z.object({id: z.string(), week: z.iso.date(), person: z.string(), absence_days: z.number().int()}),
   fields: {id: {label: 'Record ID', hidden: true}, week: {label: 'Week', role: 'time'}, person: {label: 'Person', role: 'dimension'}, absence_days: {label: 'Absence days', role: 'measure'}},
+  meanings: [{
+    id: 'absence-days-total', revision: '1', label: 'Total absence days', explanation: 'Sum of recorded absence days in the selected period.',
+    output: {value: 'integer', nullable: false}, implementation: {kind: 'expression', expression: {
+      kind: 'call', function: {id: 'core.aggregate.sum', revision: '1'}, arguments: [{kind: 'field', ref: 'absence_days'}],
+    }}, dependencies: [], functionRegistryDigest: 'core-query-2', origin: 'manual', lifecycle: 'active', scope: 'workspace', authority: 'approved',
+    aggregation: 'additive', aggregationDimensions: [], missingPolicy: 'reject',
+  }],
   presentation: {allowedViews: ['table', 'trend'], preferred: {browse: 'trend'}},
 });
 
 const products = defineResource({
   id: 'products', revision: 'products-1', label: 'Products', identity: ['id'],
-  schema: z.object({id: z.string(), name: z.string(), category: z.string(), price: z.number(), stock: z.number().int()}),
+  schema: z.object({id: z.string(), name: z.string(), category: z.enum(['Stationery', 'Workspace']), price: z.number(), stock: z.number().int()}),
   fields: {id: {label: 'Product ID'}, name: {label: 'Name'}, category: {label: 'Category', role: 'dimension'}, price: {label: 'Price', role: 'measure', type: {value: 'float', nullable: false, unit: {dimension: 'currency', symbol: 'USD', currency: 'USD'}}}, stock: {label: 'Stock', role: 'measure'}},
   presentation: {allowedViews: ['table', 'cards', 'detail'], preferred: {browse: 'cards'}},
   forms: {
@@ -46,7 +53,7 @@ const products = defineResource({
 
 const tickets = defineResource({
   id: 'tickets', revision: 'tickets-1', label: 'Support tickets', identity: ['id'],
-  schema: z.object({id: z.string(), subject: z.string(), customer: z.string(), status: z.string(), priority: z.string()}),
+  schema: z.object({id: z.string(), subject: z.string(), customer: z.string(), status: z.enum(['Open', 'Pending', 'Resolved']), priority: z.enum(['High', 'Medium', 'Low'])}),
   fields: {id: {label: 'Ticket ID'}, subject: {label: 'Subject'}, customer: {label: 'Customer'}, status: {label: 'Status', role: 'dimension'}, priority: {label: 'Priority', role: 'dimension'}},
   presentation: {allowedViews: ['table', 'cards', 'detail']},
   forms: {edit: {schema: {id: 'tickets.update.input', revision: '1'}, action: {id: 'tickets.update', revision: '1'}}},

@@ -19,7 +19,7 @@ const people = defineResource({
   schema: z.object({
     id: z.string(),
     name: z.string(),
-    team: z.string(),
+    team: z.enum(['Platform', 'Research']),
     joinedAt: z.iso.date().nullable(),
   }),
   fields: {
@@ -33,16 +33,31 @@ const people = defineResource({
   },
 });
 
+const absences = defineResource({
+  id: 'absences', label: 'Absence history', revision: 'absences-1', identity: ['id'], rowGrain: ['person', 'week'],
+  schema: z.object({id: z.string(), person: z.string(), week: z.iso.date(), absenceDays: z.number().int()}),
+  fields: {person: {role: 'dimension'}, week: {role: 'time'}, absenceDays: {role: 'measure'}},
+  meanings: [{
+    id: 'absence-days-total', revision: '1', label: 'Total absence days', explanation: 'Sum of absence days.',
+    output: {value: 'integer', nullable: true}, implementation: {kind: 'expression', expression: {
+      kind: 'call', function: {id: 'core.aggregate.sum', revision: '1'}, arguments: [{kind: 'field', ref: 'absenceDays'}],
+    }}, dependencies: [], functionRegistryDigest: 'core-query-2', origin: 'manual', lifecycle: 'active', scope: 'workspace', authority: 'approved',
+    aggregation: 'additive', aggregationDimensions: [], missingPolicy: 'exclude-pair',
+  }],
+  presentation: {allowedViews: ['table', 'trend']},
+});
+
 describe('0.3 resource definitions', () => {
   it('derives a Catalog and retains semantic metadata without treating numbers as measures', () => {
     expect(people.catalog.entities).toHaveLength(1);
     expect(people.entity.identity).toEqual(['id']);
     expect(people.entity.fields.find((field) => field.id === 'team')).toMatchObject({role: 'dimension'});
     expect(people.entity.fields.find((field) => field.id === 'joinedAt')).toMatchObject({
-      role: 'time', type: {value: 'date', nullable: true, temporal: {calendar: 'gregorian', grain: 'day'}},
+      role: 'time', type: {value: 'date', nullable: true, temporal: {calendar: 'gregorian', timezone: 'UTC', grain: 'day'}},
     });
-    expect(people.parseRecord({id: 'p1', name: 'Ada', team: 'Core', joinedAt: null}).ok).toBe(true);
-    expect(people.parseRecord({id: 'p1', name: 7, team: 'Core', joinedAt: null}).ok).toBe(false);
+    expect(people.fieldMetadata.team?.values).toEqual(['Platform', 'Research']);
+    expect(people.parseRecord({id: 'p1', name: 'Ada', team: 'Platform', joinedAt: null}).ok).toBe(true);
+    expect(people.parseRecord({id: 'p1', name: 7, team: 'Platform', joinedAt: null}).ok).toBe(false);
   });
 
   it('rejects optional/missing row fields instead of pretending they are nullable', () => {
@@ -61,6 +76,14 @@ describe('0.3 resource definitions', () => {
       expect(error).toBeInstanceOf(ResourceDefinitionError);
       expect((error as ResourceDefinitionError).diagnostics[0].code).toBe('resource.optional-field');
     }
+  });
+
+  it('rejects malformed closed values without throwing across the authoring boundary', () => {
+    expect(() => defineResource({
+      id: 'unsafe-values', label: 'Unsafe values', revision: '1', identity: ['id'],
+      schema: z.object({id: z.string(), state: z.string()}),
+      fields: {state: {values: [1n] as never}}, presentation: {allowedViews: ['table']},
+    })).toThrowError(expect.objectContaining({diagnostics: [expect.objectContaining({code: 'resource.field-values'})]}));
   });
 });
 
@@ -112,5 +135,24 @@ describe('0.3 intent compiler', () => {
     if (!registry.ok) return;
     expect(compileIntent({version: '1', id: 'x', resource: 'people', kind: 'custom', intent: {id: 'example.board', revision: '1'}, input: {group: 'team'}},
       {resource: people, regionId: 'main', customIntents: registry.value})).toMatchObject({ok: false, diagnostics: [{code: 'intent.compiler-stale'}]});
+  });
+
+  it('rejects filter values outside a declared closed domain before data evaluation', () => {
+    const rejected = compileIntent({version: '1', id: 'browse-team', resource: 'people', kind: 'browse',
+      filter: {op: 'compare', field: 'team', comparison: 'eq', value: 'platform'}}, {resource: people, regionId: 'main'});
+    expect(rejected).toMatchObject({ok: false, diagnostics: [{code: 'intent.unknown-filter-value', path: ['filter', 'value']}]});
+
+    const accepted = compileIntent({version: '1', id: 'browse-team', resource: 'people', kind: 'browse',
+      filter: {op: 'compare', field: 'team', comparison: 'eq', value: 'Platform'}}, {resource: people, regionId: 'main'});
+    expect(accepted.ok).toBe(true);
+  });
+
+  it('adds the requested temporal field to analyze dimensions without duplicate intent wiring', () => {
+    const compiled = compileIntent({version: '1', id: 'absence-trend', resource: 'absences', kind: 'analyze',
+      measures: [{id: 'absence-days-total', revision: '1'}], time: {field: 'week', grain: 'week'}, preferredView: 'trend'},
+    {resource: absences, regionId: 'main'});
+    expect(compiled.ok).toBe(true);
+    if (!compiled.ok || compiled.value.kind !== 'data' || compiled.value.outputs[0]?.kind !== 'query') return;
+    expect(compiled.value.outputs[0].query).toMatchObject({fields: ['week'], groupBy: ['week'], timeBucket: {field: 'week', grain: 'week'}});
   });
 });

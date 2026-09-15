@@ -51,7 +51,10 @@ export interface AeliqoRuntimeOptions {
 export interface RuntimeResourceContext {
   readonly resource: {readonly id: string; readonly label: string; readonly description?: string};
   readonly intents: readonly string[];
-  readonly fields: readonly {readonly id: string; readonly label: string; readonly description?: string; readonly role: string; readonly type: SemanticType}[];
+  readonly fields: readonly {readonly id: string; readonly label: string; readonly description?: string; readonly role: string; readonly type: SemanticType;
+    readonly values?: readonly (string | number | boolean)[]}[];
+  readonly meanings: readonly {readonly id: string; readonly revision: string; readonly label: string; readonly explanation: string;
+    readonly output: SemanticType; readonly aggregation: string}[];
   readonly views: readonly string[];
   readonly actions: readonly {readonly intent: 'create' | 'edit'; readonly action: VersionRef}[];
   readonly authority: {readonly principalKey: string; readonly scopeDigest: string; readonly policyRevision: string; readonly experienceRevision: string; readonly grants: readonly string[]};
@@ -120,6 +123,8 @@ export interface AeliqoRuntime {
   mount(input: RuntimeMountInput): {readonly ok: true; readonly value: RuntimeRegionState} | {readonly ok: false; readonly diagnostics: readonly [Diagnostic, ...Diagnostic[]]};
   render(input: RuntimeRenderInput): Promise<RuntimeRenderReceipt>;
   context(regionId: string): Outcome<RuntimeResourceContext>;
+  /** Lists resources authorized for the paired principal and scope. Denied resources are omitted. */
+  contexts(regionId: string): Outcome<readonly RuntimeResourceContext[]>;
   commitPresentation(input: RuntimePresentationInput): Promise<
     {readonly ok: true; readonly value: RegionSnapshot}
     | {readonly ok: false; readonly diagnostics: readonly [Diagnostic, ...Diagnostic[]]}
