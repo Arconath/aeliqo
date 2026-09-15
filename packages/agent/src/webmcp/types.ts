@@ -1,6 +1,6 @@
-import type {Outcome} from '@aeliqo/core';
-import type {AgentCapabilityReceipt} from '../capabilities/types.js';
-import type {AgentToolDefinition, AgentToolEndpoint, AgentToolInputSchema} from '../protocol/types.js';
+import type { Outcome } from '@aeliqo/core';
+import type { AgentCapabilityReceipt } from '../capabilities/types.js';
+import type { AgentToolDefinition, AgentToolEndpoint, AgentToolInputSchema } from '../protocol/types.js';
 
 /** The execution context supplied by the native WebMCP host. */
 export interface WebMcpExecutionOptions {
@@ -16,10 +16,7 @@ export interface WebMcpToolAnnotations {
 
 /** The subset of Chrome's imperative modelContext API used by this adapter. */
 export interface WebMcpModelContext {
-  readonly registerTool: (
-    tool: WebMcpTool,
-    options?: {readonly signal?: AbortSignal},
-  ) => void | Promise<void>;
+  readonly registerTool: (tool: WebMcpTool, options?: { readonly signal?: AbortSignal }) => void | Promise<void>;
   readonly getTools?: () => Promise<readonly unknown[]>;
 }
 
@@ -65,9 +62,9 @@ export interface WebMcpRegistration {
 export interface WebMcpAdapter {
   readonly evidence: WebMcpEvidence;
   readonly supported: boolean;
-  readonly discover: (options?: {readonly signal?: AbortSignal}) => Promise<Outcome<readonly AgentToolDefinition[]>>;
+  readonly discover: (options?: { readonly signal?: AbortSignal }) => Promise<Outcome<readonly AgentToolDefinition[]>>;
   readonly register: (options?: WebMcpRegisterOptions) => Promise<Outcome<readonly WebMcpRegistration[]>>;
   readonly close: () => void;
 }
 
-export type {AgentToolDefinition, AgentToolEndpoint, AgentToolInputSchema, AgentCapabilityReceipt};
+export type { AgentToolDefinition, AgentToolEndpoint, AgentToolInputSchema, AgentCapabilityReceipt };

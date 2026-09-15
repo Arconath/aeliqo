@@ -1,1 +1,1 @@
-export type {PresentationPlan, RegionContent, RegionStatus, TaskResultReference} from './types.js';
+export type { PresentationPlan, RegionContent, RegionStatus, TaskResultReference } from './types.js';

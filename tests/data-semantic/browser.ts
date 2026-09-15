@@ -1,7 +1,15 @@
-import {createPresentationRegistry, validatePresentationPlan} from "../../packages/core/src/index.js";
-import {AeliqoRegionElement, createAeliqoPresentationRegistry, registerAeliqoElements} from "../../packages/web/src/index.js";
-import type {AeliqoRegionDataRequest, AeliqoRegionResult, AeliqoSemanticInteractionRequest} from "../../packages/web/src/region/types.js";
-import {binding, dataPresentationContext, dataPresentationPlan, registryOptions, resultRef, rows} from "./fixture.js";
+import { createPresentationRegistry, validatePresentationPlan } from '../../packages/core/src/index.js';
+import {
+  AeliqoRegionElement,
+  createAeliqoPresentationRegistry,
+  registerAeliqoElements,
+} from '../../packages/web/src/index.js';
+import type {
+  AeliqoRegionDataRequest,
+  AeliqoRegionResult,
+  AeliqoSemanticInteractionRequest,
+} from '../../packages/web/src/region/types.js';
+import { binding, dataPresentationContext, dataPresentationPlan, registryOptions, resultRef, rows } from './fixture.js';
 
 registerAeliqoElements();
 
@@ -10,15 +18,15 @@ if (!registry.ok) throw new Error(JSON.stringify(registry.diagnostics));
 const checked = validatePresentationPlan(dataPresentationPlan(), dataPresentationContext(), registry.value);
 if (!checked.ok) throw new Error(JSON.stringify(checked.diagnostics));
 
-const region = document.querySelector<AeliqoRegionElement>("#region");
-if (region === null) throw new Error("Data semantic region fixture is missing.");
+const region = document.querySelector<AeliqoRegionElement>('#region');
+if (region === null) throw new Error('Data semantic region fixture is missing.');
 
 const semanticEvents: AeliqoSemanticInteractionRequest[] = [];
 const dataRequests: AeliqoRegionDataRequest[] = [];
 region.onSemanticInteraction = (request) => semanticEvents.push(request);
 region.onDataRequest = (request) => dataRequests.push(request);
 region.presentation = checked.value;
-const result: AeliqoRegionResult = {ref: resultRef, rows: binding.rows as unknown as AeliqoRegionResult["rows"]};
+const result: AeliqoRegionResult = { ref: resultRef, rows: binding.rows as unknown as AeliqoRegionResult['rows'] };
 region.results = [result];
 
 Object.assign(window, {

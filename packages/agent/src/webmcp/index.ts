@@ -1,4 +1,4 @@
-export {createWebMcpAdapter, detectWebMcp, registerWebMcpTools} from './adapter.js';
+export { createWebMcpAdapter, detectWebMcp, registerWebMcpTools } from './adapter.js';
 export type {
   WebMcpAdapter,
   WebMcpAdapterOptions,

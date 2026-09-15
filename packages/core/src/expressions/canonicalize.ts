@@ -1,5 +1,5 @@
-import {serializeContract} from '../contracts/parse.js';
-import type {Outcome} from '../contracts/types.js';
+import { serializeContract } from '../contracts/parse.js';
+import type { Outcome } from '../contracts/types.js';
 
 /** Canonical expression bytes are suitable for a definition digest/read-set key. */
 export function canonicalizeExpression(input: unknown): Outcome<string> {

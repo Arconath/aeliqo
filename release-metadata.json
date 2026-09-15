@@ -1,0 +1,12 @@
+{
+  "version": "0.3.0",
+  "line": "0.3",
+  "publicPackages": [
+    "core",
+    "runtime",
+    "web",
+    "agent",
+    "devtools",
+    "react"
+  ]
+}

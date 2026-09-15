@@ -357,6 +357,16 @@
       "timeoutSeconds": 300
     },
     {
+      "kind": "packages",
+      "argv": ["pnpm", "test:export:consumers"],
+      "timeoutSeconds": 600
+    },
+    {
+      "kind": "packages",
+      "argv": ["pnpm", "test:migration:consumers"],
+      "timeoutSeconds": 600
+    },
+    {
       "kind": "unit",
       "argv": ["pnpm", "test:studio"],
       "timeoutSeconds": 180

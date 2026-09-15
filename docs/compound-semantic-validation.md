@@ -1,19 +1,19 @@
 # Canonical compound semantic validation
 
-The acceptance fixture in `tests/compound-semantic/` exercises every 0.1.0
+The acceptance fixture in `tests/compound-semantic/` exercises every current
 canonical macro through the host-owned presentation registry and the shared
 presentation validator:
 
-| Macro | Registered primitive path |
-| --- | --- |
-| Explorer | filter builder, record list, detail, table |
-| Comparison | visualization matrix |
-| Breakdown | metric, record list |
-| Investigation | trend, timeline, detail |
-| Search results | search field, record list |
-| Record editor | form |
-| Form flow | form |
-| Quality panel | detail |
+| Macro          | Registered primitive path                  |
+| -------------- | ------------------------------------------ |
+| Explorer       | filter builder, record list, detail, table |
+| Comparison     | visualization matrix                       |
+| Breakdown      | metric, record list                        |
+| Investigation  | trend, timeline, detail                    |
+| Search results | search field, record list                  |
+| Record editor  | form                                       |
+| Form flow      | form                                       |
+| Quality panel  | detail                                     |
 
 The fixture also checks an identity-equivalence selection link, result scope
 and operation coverage rejection, stale input binding rejection, SSR of the

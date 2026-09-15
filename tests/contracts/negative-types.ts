@@ -1,11 +1,4 @@
-import type {
-  Catalog,
-  Experience,
-  Expression,
-  QuerySpec,
-  Result,
-  Task,
-} from '../../packages/core/src/index.js';
+import type { Catalog, Experience, Expression, QuerySpec, Result, Task } from '../../packages/core/src/index.js';
 
 import { catalog, experience, expression, query, result, task } from './fixtures.js';
 

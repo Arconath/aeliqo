@@ -1,0 +1,15 @@
+{
+  "name": "@aeliqo/quickstart-example",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@aeliqo/core": "workspace:*",
+    "@aeliqo/runtime": "workspace:*",
+    "@aeliqo/web": "workspace:*",
+    "zod": "4.5.4"
+  }
+}

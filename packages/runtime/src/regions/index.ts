@@ -1,4 +1,4 @@
-export {createRegionStore, RegionStoreImpl, resultRefForHandle} from './store.js';
+export { createRegionStore, RegionStoreImpl, resultRefForHandle } from './store.js';
 export type {
   AuthorizeRegionCommit,
   ReadAuthority,

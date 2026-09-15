@@ -1,8 +1,8 @@
-import {createServer} from 'node:http';
-import {mkdtemp, readFile, rm} from 'node:fs/promises';
-import {tmpdir} from 'node:os';
-import {extname, join, resolve} from 'node:path';
-import {chromium} from '@playwright/test';
+import { createServer } from 'node:http';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { extname, join, resolve } from 'node:path';
+import { chromium } from '@playwright/test';
 
 const FLAG = '--enable-features=WebMCPTesting';
 const TOOL_NAME = 'aeliqo_native_adapter_probe';
@@ -211,11 +211,11 @@ async function runMode(mode, args, url) {
       args: [...args],
     });
     observation.browserVersion = context.browser()?.version() ?? 'unknown';
-    const page = context.pages()[0] ?? await context.newPage();
-    page.on('pageerror', (error) => pageErrors.push({name: error.name, message: error.message}));
-    page.on('console', (message) => consoleMessages.push({type: message.type(), text: message.text()}));
-    await page.goto(url, {waitUntil: 'load'});
-    await page.waitForFunction(() => window.__nativeProbe?.done === true, undefined, {timeout: 10_000});
+    const page = context.pages()[0] ?? (await context.newPage());
+    page.on('pageerror', (error) => pageErrors.push({ name: error.name, message: error.message }));
+    page.on('console', (message) => consoleMessages.push({ type: message.type(), text: message.text() }));
+    await page.goto(url, { waitUntil: 'load' });
+    await page.waitForFunction(() => window.__nativeProbe?.done === true, undefined, { timeout: 10_000 });
     observation.page = await page.evaluate(() => window.__nativeProbe);
     observation.pageErrors = pageErrors;
     observation.console = consoleMessages;
@@ -223,7 +223,7 @@ async function runMode(mode, args, url) {
       observation.status = 'pass';
     }
   } catch (error) {
-    observation.error = {name: error?.name ?? 'Error', message: error?.message ?? String(error)};
+    observation.error = { name: error?.name ?? 'Error', message: error?.message ?? String(error) };
     const page = context?.pages()[0];
     if (page !== undefined) {
       observation.page = await page.evaluate(() => window.__nativeProbe).catch(() => undefined);
@@ -232,7 +232,7 @@ async function runMode(mode, args, url) {
     observation.pageErrors = pageErrors;
     observation.console = consoleMessages;
     await context?.close().catch(() => undefined);
-    await rm(profile, {recursive: true, force: true});
+    await rm(profile, { recursive: true, force: true });
   }
   return observation;
 }
@@ -242,15 +242,22 @@ const server = createServer(async (request, response) => {
     const pathname = new URL(request.url ?? '/', 'http://127.0.0.1').pathname;
     if (pathname.startsWith('/packages/') || pathname.startsWith('/node_modules/.pnpm/node_modules/zod/')) {
       const candidate = resolve(repositoryRoot, `.${pathname}`);
-      const allowed = [resolve(repositoryRoot, 'packages') + '/', resolve(repositoryRoot, 'node_modules/.pnpm/node_modules/zod') + '/'];
+      const allowed = [
+        resolve(repositoryRoot, 'packages') + '/',
+        resolve(repositoryRoot, 'node_modules/.pnpm/node_modules/zod') + '/',
+      ];
       if (!allowed.some((root) => candidate.startsWith(root))) {
         response.statusCode = 403;
         response.end('Forbidden');
         return;
       }
       const body = await readFile(candidate);
-      const contentType = extname(candidate) === '.js' ? 'text/javascript; charset=utf-8'
-        : extname(candidate) === '.map' ? 'application/json; charset=utf-8' : 'application/octet-stream';
+      const contentType =
+        extname(candidate) === '.js'
+          ? 'text/javascript; charset=utf-8'
+          : extname(candidate) === '.map'
+            ? 'application/json; charset=utf-8'
+            : 'application/octet-stream';
       response.statusCode = 200;
       response.setHeader('content-type', contentType);
       response.end(body);
@@ -268,10 +275,7 @@ const address = await listen(server);
 const url = `http://127.0.0.1:${address.port}/`;
 let runs;
 try {
-  runs = [
-    await runMode('default', [], url),
-    await runMode('enable-webmcp-testing', [FLAG], url),
-  ];
+  runs = [await runMode('default', [], url), await runMode('enable-webmcp-testing', [FLAG], url)];
 } finally {
   await closeServer(server);
 }

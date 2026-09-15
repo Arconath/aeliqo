@@ -1,21 +1,43 @@
 import type {
-  Contract, Diagnostic, InteractionDraft as CoreInteractionDraft, InteractionGraph as CoreInteractionGraph,
-  InteractionGraphInput, InteractionLink, InteractionMappingManifest, InteractionNode,
-  InteractionPayload as CoreInteractionPayload, InteractionPort, InteractionPortShape,
-  InteractionState as CoreInteractionState, ResultRef, RetainedInteractionPayload, Scalar, VersionRef,
+  Contract,
+  Diagnostic,
+  InteractionDraft as CoreInteractionDraft,
+  InteractionGraph as CoreInteractionGraph,
+  InteractionGraphInput,
+  InteractionLink,
+  InteractionMappingManifest,
+  InteractionNode,
+  InteractionPayload as CoreInteractionPayload,
+  InteractionPort,
+  InteractionPortShape,
+  InteractionState as CoreInteractionState,
+  ResultRef,
+  RetainedInteractionPayload,
+  Scalar,
+  VersionRef,
 } from '@aeliqo/core';
-import type {RegionContent, RegionHandle, RegionSnapshot} from '../regions/types.js';
-import type {ResultHandle} from '../results/types.js';
+import type { RegionContent, RegionHandle, RegionSnapshot } from '../regions/types.js';
+import type { ResultHandle } from '../results/types.js';
 
-export type {InteractionGraphInput, InteractionLink, InteractionMappingManifest, InteractionNode, InteractionPort, InteractionPortShape};
+export type {
+  InteractionGraphInput,
+  InteractionLink,
+  InteractionMappingManifest,
+  InteractionNode,
+  InteractionPort,
+  InteractionPortShape,
+};
 
 /** The canonical wire event is deliberately untrusted and carries no actor or grant. */
 export type InteractionEvent = Contract<'interaction'>;
 export type InteractionPayload = CoreInteractionPayload;
 export type InteractionKind = InteractionPayload['kind'];
-export type InteractionSelection = Extract<InteractionPayload, {readonly kind: 'selection'}>['selection'];
-export type InteractionQueryPayload = Extract<InteractionPayload, {readonly kind: 'filter' | 'range' | 'group' | 'page'}>;
-export type InteractionRoute = {readonly nodeId: string; readonly portId: string};
+export type InteractionSelection = Extract<InteractionPayload, { readonly kind: 'selection' }>['selection'];
+export type InteractionQueryPayload = Extract<
+  InteractionPayload,
+  { readonly kind: 'filter' | 'range' | 'group' | 'page' }
+>;
+export type InteractionRoute = { readonly nodeId: string; readonly portId: string };
 
 /** A trusted graph registration; wire presentation plans cannot create this registry. */
 export type InteractionGraphDefinition = CoreInteractionGraph;
@@ -31,18 +53,15 @@ export type InteractionFailureCode =
   | 'runtime.interaction-unsupported'
   | string;
 
-export interface InteractionFailure extends Diagnostic { readonly code: InteractionFailureCode; }
+export interface InteractionFailure extends Diagnostic {
+  readonly code: InteractionFailureCode;
+}
 export type InteractionOutcome<T> =
-  | {readonly ok: true; readonly value: T}
-  | {readonly ok: false; readonly diagnostics: readonly [InteractionFailure, ...InteractionFailure[]]};
+  | { readonly ok: true; readonly value: T }
+  | { readonly ok: false; readonly diagnostics: readonly [InteractionFailure, ...InteractionFailure[]] };
 
 export type InteractionGrant =
-  | 'result.inspect'
-  | 'experience.commit'
-  | 'navigation.propose'
-  | 'draft.edit'
-  | 'action.propose'
-  | (string & {});
+  'result.inspect' | 'experience.commit' | 'navigation.propose' | 'draft.edit' | 'action.propose' | (string & {});
 
 export interface InteractionActor {
   readonly id: string;
@@ -127,15 +146,15 @@ export interface InteractionState extends CoreInteractionState {
 
 export interface InteractionNavigationProposal {
   readonly event: InteractionEvent;
-  readonly route: Extract<InteractionPayload, {readonly kind: 'navigate'}>['route'];
-  readonly params: Extract<InteractionPayload, {readonly kind: 'navigate'}>['params'];
+  readonly route: Extract<InteractionPayload, { readonly kind: 'navigate' }>['route'];
+  readonly params: Extract<InteractionPayload, { readonly kind: 'navigate' }>['params'];
   readonly actor: InteractionActor;
 }
 
 export interface InteractionActionProposal {
   readonly event: InteractionEvent;
-  readonly action: Extract<InteractionPayload, {readonly kind: 'action-request'}>['action'];
-  readonly input: Extract<InteractionPayload, {readonly kind: 'action-request'}>['input'];
+  readonly action: Extract<InteractionPayload, { readonly kind: 'action-request' }>['action'];
+  readonly input: Extract<InteractionPayload, { readonly kind: 'action-request' }>['input'];
   readonly actor: InteractionActor;
 }
 
@@ -165,14 +184,14 @@ export interface InteractionControllerOptions {
   /** Validates query/result/snapshot binding for filter, range, group and page payloads. */
   readonly validateScope?: InteractionHostCallback<InteractionQueryPayload>;
   /** Validates that the field is editable and entityRevision is current. */
-  readonly validateDraft?: InteractionHostCallback<Extract<InteractionPayload, {readonly kind: 'draft'}>>;
+  readonly validateDraft?: InteractionHostCallback<Extract<InteractionPayload, { readonly kind: 'draft' }>>;
   /** Query-affecting interactions must obtain a fresh full region candidate here. */
   readonly materialize?: InteractionMaterializeCallback;
   /** Validates that the destination is application-declared before navigation. */
-  readonly validateNavigation?: InteractionHostCallback<Extract<InteractionPayload, {readonly kind: 'navigate'}>>;
-  readonly onNavigate?: InteractionHostCallback<Extract<InteractionPayload, {readonly kind: 'navigate'}>>;
+  readonly validateNavigation?: InteractionHostCallback<Extract<InteractionPayload, { readonly kind: 'navigate' }>>;
+  readonly onNavigate?: InteractionHostCallback<Extract<InteractionPayload, { readonly kind: 'navigate' }>>;
   /** Proposal-only: this callback cannot execute a business write. */
-  readonly onActionProposal?: InteractionHostCallback<Extract<InteractionPayload, {readonly kind: 'action-request'}>>;
+  readonly onActionProposal?: InteractionHostCallback<Extract<InteractionPayload, { readonly kind: 'action-request' }>>;
   readonly maxQueuedEvents?: number;
   /** Per-event deadline, starting when the event begins processing after queue admission. */
   readonly maxEventMilliseconds?: number;
@@ -208,4 +227,4 @@ export interface InteractionController {
   dispose(): void;
 }
 
-export type {RetainedInteractionPayload, Scalar};
+export type { RetainedInteractionPayload, Scalar };

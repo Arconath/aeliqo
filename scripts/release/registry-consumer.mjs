@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { PUBLIC_PACKAGE_NAMES, exportSpecifiers, packageShortName, readJson, sha256 } from './candidate-lib.mjs';
 import { NPM_REGISTRY, assertCandidateIdentity, verifyNpmProvenance } from './publication-lib.mjs';
+import { isReleaseVersion, RELEASE_VERSION, releaseCandidateNumber } from './metadata.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
 const args = process.argv.slice(2);
@@ -17,8 +18,8 @@ const version = value('--version');
 const output = resolve(root, value('--output') ?? 'artifacts/registry-consumer.json');
 const expectedCandidatePath = value('--expected-candidate');
 const expectedSourceRevision = value('--require-provenance-source');
-if (!/^0\.1\.0(?:-rc\.[1-9]\d*)?$/.test(version ?? ''))
-  throw new Error('A unique 0.1.0 or 0.1.0-rc.N --version is required');
+if (!isReleaseVersion(version))
+  throw new Error(`A unique ${RELEASE_VERSION} or ${RELEASE_VERSION}-rc.N --version is required`);
 if ((expectedCandidatePath === undefined) !== (expectedSourceRevision === undefined))
   throw new Error('Expected candidate and provenance source must be supplied together');
 if (expectedSourceRevision !== undefined && !/^[0-9a-f]{40}$/.test(expectedSourceRevision))
@@ -139,7 +140,7 @@ try {
   let provenance = [];
   if (expectedCandidatePath !== undefined) {
     const candidate = await readJson(resolve(root, expectedCandidatePath));
-    assertCandidateIdentity(candidate, { tag: version === '0.1.0' ? 'rewrite' : 'next' });
+    assertCandidateIdentity(candidate, { tag: releaseCandidateNumber(version) === undefined ? 'latest' : 'next' });
     if (
       candidate.schema !== 'aeliqo.release-candidate.v1' ||
       candidate.version !== version ||

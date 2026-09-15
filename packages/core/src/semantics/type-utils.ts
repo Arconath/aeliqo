@@ -1,9 +1,9 @@
 import * as z from 'zod/mini';
-import {semanticTypeSchema} from '../contracts/schemas.js';
-import type {SemanticType} from '../contracts/types.js';
-import type {TypedExpression} from '../expressions/types.js';
-import {semanticFailure} from './errors.js';
-import type {AggregationKind} from './types.js';
+import { semanticTypeSchema } from '../contracts/schemas.js';
+import type { SemanticType } from '../contracts/types.js';
+import type { TypedExpression } from '../expressions/types.js';
+import { semanticFailure } from './errors.js';
+import type { AggregationKind } from './types.js';
 
 export function isNumericType(type: SemanticType): boolean {
   return type.value === 'integer' || type.value === 'float' || type.value === 'decimal';
@@ -28,9 +28,11 @@ export function sameUnit(left: SemanticType, right: SemanticType): boolean {
   // `dimension` is not enough to establish additivity.  A host may expose
   // metres/kilometres or cents/dollars as distinct units, so conversion must
   // be an explicitly registered operation rather than an implicit cast.
-  return left.unit.dimension === right.unit.dimension &&
+  return (
+    left.unit.dimension === right.unit.dimension &&
     left.unit.symbol === right.unit.symbol &&
-    left.unit.currency === right.unit.currency;
+    left.unit.currency === right.unit.currency
+  );
 }
 
 /** Temporal metadata is part of a type's identity. */
@@ -38,9 +40,7 @@ export function sameTemporal(left: SemanticType, right: SemanticType): boolean {
   const a = left.temporal;
   const b = right.temporal;
   if (a === undefined || b === undefined) return a === b;
-  return a.calendar === b.calendar &&
-    a.timezone === b.timezone &&
-    a.grain === b.grain;
+  return a.calendar === b.calendar && a.timezone === b.timezone && a.grain === b.grain;
 }
 
 export function compatibleType(actual: SemanticType, expected: SemanticType): boolean {
@@ -52,19 +52,20 @@ export function compatibleType(actual: SemanticType, expected: SemanticType): bo
 }
 
 export function cloneWithNullable(type: SemanticType, nullable: boolean): SemanticType {
-  return nullable === type.nullable ? type : {...type, nullable};
+  return nullable === type.nullable ? type : { ...type, nullable };
 }
 
 export function cloneWithGrain(type: SemanticType, grain: readonly string[]): SemanticType {
-  return {...type, grain};
+  return { ...type, grain };
 }
 
 export function numericOutput(
   args: readonly TypedExpression[],
-  options: {readonly unit?: SemanticType['unit']; readonly forceFloat?: boolean} = {},
+  options: { readonly unit?: SemanticType['unit']; readonly forceFloat?: boolean } = {},
 ): SemanticType {
   const nullable = args.some((arg) => arg.type.nullable);
-  const representative = args.find((arg) => grainOf(arg.type).length > 0) ?? args.find((arg) => arg.type.unit !== undefined) ?? args[0];
+  const representative =
+    args.find((arg) => grainOf(arg.type).length > 0) ?? args.find((arg) => arg.type.unit !== undefined) ?? args[0];
   const grain = representative === undefined ? [] : grainOf(representative.type);
   const hasDecimal = args.some((arg) => arg.type.value === 'decimal');
   const hasFloat = args.some((arg) => arg.type.value === 'float');
@@ -76,7 +77,7 @@ export function numericOutput(
     value,
     nullable,
     grain,
-    ...(options.unit === undefined ? {} : {unit: options.unit}),
+    ...(options.unit === undefined ? {} : { unit: options.unit }),
   };
 }
 
@@ -86,11 +87,23 @@ export function outputAggregation(kind: AggregationKind): AggregationKind {
 
 export function validateSemanticType(type: SemanticType, path: readonly (string | number)[] = []) {
   const parsed = z.safeParse(semanticTypeSchema, type);
-  if (!parsed.success) return semanticFailure<SemanticType>('semantic.type', 'A semantic type does not match the canonical type contract.', path);
+  if (!parsed.success)
+    return semanticFailure<SemanticType>(
+      'semantic.type',
+      'A semantic type does not match the canonical type contract.',
+      path,
+    );
   const canonical = parsed.data as SemanticType;
   if (canonical.grain !== undefined && new Set(canonical.grain).size !== canonical.grain.length)
-    return semanticFailure<SemanticType>('semantic.type-grain', 'A semantic grain cannot repeat a dimension.', [...path, 'grain']);
+    return semanticFailure<SemanticType>('semantic.type-grain', 'A semantic grain cannot repeat a dimension.', [
+      ...path,
+      'grain',
+    ]);
   if (canonical.temporal !== undefined && canonical.value !== 'date' && canonical.value !== 'instant')
-    return semanticFailure<SemanticType>('semantic.type-temporal', 'Temporal metadata is only valid for date or instant values.', [...path, 'temporal']);
-  return {ok: true, value: canonical} as const;
+    return semanticFailure<SemanticType>(
+      'semantic.type-temporal',
+      'Temporal metadata is only valid for date or instant values.',
+      [...path, 'temporal'],
+    );
+  return { ok: true, value: canonical } as const;
 }

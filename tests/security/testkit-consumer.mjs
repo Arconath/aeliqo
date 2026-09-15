@@ -1,3 +1,4 @@
+import { RELEASE_VERSION } from '../../scripts/release/metadata.mjs';
 /**
  * Build, pack, install and exercise the internal @aeliqo/testkit boundary.
  *
@@ -7,24 +8,15 @@
  * commit, candidate digest, package-lock hash, tarball hashes and environment.
  */
 import assert from 'node:assert/strict';
-import {createHash} from 'node:crypto';
-import {spawnSync} from 'node:child_process';
-import {
-  access,
-  lstat,
-  mkdir,
-  mkdtemp,
-  readFile,
-  readdir,
-  realpath,
-  writeFile,
-} from 'node:fs/promises';
-import {arch, cpus, platform, release, tmpdir} from 'node:os';
-import {extname, join, relative, resolve} from 'node:path';
+import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
+import { access, lstat, mkdir, mkdtemp, readFile, readdir, realpath, writeFile } from 'node:fs/promises';
+import { arch, cpus, platform, release, tmpdir } from 'node:os';
+import { extname, join, relative, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '../..');
 const outputDirectory = join(root, 'artifacts', 'security-testkit-consumers');
-await mkdir(outputDirectory, {recursive: true});
+await mkdir(outputDirectory, { recursive: true });
 const runDirectory = await mkdtemp(join(outputDirectory, 'run-'));
 const consumerDirectory = await mkdtemp(join(tmpdir(), 'aeliqo-testkit-consumer-'));
 
@@ -42,8 +34,7 @@ function run(argv, cwd, options = {}) {
   return result.stdout ?? '';
 }
 
-const hash = (bytes, algorithm = 'sha256', encoding = 'hex') =>
-  createHash(algorithm).update(bytes).digest(encoding);
+const hash = (bytes, algorithm = 'sha256', encoding = 'hex') => createHash(algorithm).update(bytes).digest(encoding);
 const sha256 = (bytes) => hash(bytes);
 const integrity = (bytes) => `sha512-${hash(bytes, 'sha512', 'base64')}`;
 
@@ -68,7 +59,12 @@ async function assertRegularTree(path, label) {
 }
 
 function packageManifest(name) {
-  return JSON.parse(run(['node', '-e', `process.stdout.write(JSON.stringify(require('./package.json')))`], join(root, 'packages', name)));
+  return JSON.parse(
+    run(
+      ['node', '-e', `process.stdout.write(JSON.stringify(require('./package.json')))`],
+      join(root, 'packages', name),
+    ),
+  );
 }
 
 const sourceCommit = run(['git', 'rev-parse', 'HEAD'], root).trim();
@@ -84,7 +80,11 @@ const manifests = {
 };
 assert.deepEqual(
   Object.values(manifests).map((manifest) => [manifest.name, manifest.version]),
-  [['@aeliqo/core', '0.1.0'], ['@aeliqo/runtime', '0.1.0'], ['@aeliqo/testkit', '0.1.0']],
+  [
+    ['@aeliqo/core', RELEASE_VERSION],
+    ['@aeliqo/runtime', RELEASE_VERSION],
+    ['@aeliqo/testkit', RELEASE_VERSION],
+  ],
 );
 for (const manifest of Object.values(manifests)) {
   assert.equal(manifest.license, 'Apache-2.0');
@@ -102,9 +102,9 @@ run(['pnpm', 'build'], join(root, 'packages', 'runtime'));
 run(['pnpm', 'build'], join(root, 'packages', 'testkit'));
 
 const artifactDefinitions = [
-  ['core', 'aeliqo-core-0.1.0.tgz'],
-  ['runtime', 'aeliqo-runtime-0.1.0.tgz'],
-  ['testkit', 'aeliqo-testkit-0.1.0.tgz'],
+  ['core', `aeliqo-core-${RELEASE_VERSION}.tgz`],
+  ['runtime', `aeliqo-runtime-${RELEASE_VERSION}.tgz`],
+  ['testkit', `aeliqo-testkit-${RELEASE_VERSION}.tgz`],
 ];
 const artifacts = [];
 for (const [directoryName, fileName] of artifactDefinitions) {
@@ -118,23 +118,29 @@ for (const [directoryName, fileName] of artifactDefinitions) {
   for (const field of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
     for (const [dependency, version] of Object.entries(expectedPackedManifest[field] ?? {})) {
       if (version === 'workspace:*' || version === 'workspace:^' || version === 'workspace:~') {
-        expectedPackedManifest[field][dependency] = '0.1.0';
+        expectedPackedManifest[field][dependency] = RELEASE_VERSION;
       }
     }
   }
   assert.deepEqual(packedManifest, expectedPackedManifest, `${manifest.name} packed manifest drift`);
   for (const field of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
-    assert(!JSON.stringify(packedManifest[field] ?? {}).includes('workspace:'), `${manifest.name} contains workspace dependency alias`);
+    assert(
+      !JSON.stringify(packedManifest[field] ?? {}).includes('workspace:'),
+      `${manifest.name} contains workspace dependency alias`,
+    );
   }
   const entries = run(['tar', '-tzf', path], root).trim().split('\n').filter(Boolean);
   for (const entry of entries) {
-    assert(entry.startsWith('package/') && !entry.split('/').includes('..'), `${manifest.name} archive traversal: ${entry}`);
+    assert(
+      entry.startsWith('package/') && !entry.split('/').includes('..'),
+      `${manifest.name} archive traversal: ${entry}`,
+    );
   }
   assert(entries.includes('package/LICENSE'), `${manifest.name} tarball has no LICENSE`);
   assert(entries.includes('package/README.md'), `${manifest.name} tarball has no README.md`);
   assert(!entries.some((entry) => entry.startsWith('package/src/')), `${manifest.name} source leaked into tarball`);
   const packedLicense = await new Promise((resolve, reject) => {
-    const child = spawnSync('tar', ['-xOf', path, 'package/LICENSE'], {encoding: 'buffer'});
+    const child = spawnSync('tar', ['-xOf', path, 'package/LICENSE'], { encoding: 'buffer' });
     if (child.error || child.status !== 0) reject(child.error ?? new Error(String(child.stderr)));
     else resolve(child.stdout);
   });
@@ -152,12 +158,20 @@ for (const [directoryName, fileName] of artifactDefinitions) {
   });
 }
 
-await writeFile(join(consumerDirectory, 'package.json'), JSON.stringify({private: true, type: 'module'}) + '\n');
-run([
-  'npm', 'install', '--ignore-scripts', '--no-audit', '--no-fund', '--save-exact',
-  ...artifacts.map((artifact) => artifact.path),
-  'typescript@7.0.2',
-], consumerDirectory);
+await writeFile(join(consumerDirectory, 'package.json'), JSON.stringify({ private: true, type: 'module' }) + '\n');
+run(
+  [
+    'npm',
+    'install',
+    '--ignore-scripts',
+    '--no-audit',
+    '--no-fund',
+    '--save-exact',
+    ...artifacts.map((artifact) => artifact.path),
+    'typescript@7.0.2',
+  ],
+  consumerDirectory,
+);
 
 const consumerReal = await realpath(consumerDirectory);
 const lockBytes = await readFile(join(consumerDirectory, 'package-lock.json'));
@@ -177,11 +191,14 @@ for (const artifact of artifacts) {
   assert(installedReal.startsWith(`${consumerReal}/node_modules/`), `${artifact.name} escaped consumer node_modules`);
   await assertRegularTree(installed, `Installed ${artifact.name}`);
 }
-assert.equal(lock.packages['node_modules/@aeliqo/testkit'].dependencies['@aeliqo/runtime'], '0.1.0');
-assert.equal(lock.packages['node_modules/@aeliqo/runtime'].dependencies['@aeliqo/core'], '0.1.0');
+assert.equal(lock.packages['node_modules/@aeliqo/testkit'].dependencies['@aeliqo/runtime'], RELEASE_VERSION);
+assert.equal(lock.packages['node_modules/@aeliqo/runtime'].dependencies['@aeliqo/core'], RELEASE_VERSION);
 assert.equal(lock.packages['node_modules/zod'].version, '4.5.4');
 assert.match(lock.packages['node_modules/zod'].integrity, /^sha512-/);
-assert.deepEqual(Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/testkit/node_modules/')), []);
+assert.deepEqual(
+  Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/testkit/node_modules/')),
+  [],
+);
 for (const artifact of artifacts) {
   const installedDirectory = join(consumerDirectory, 'node_modules', artifact.name);
   for (const entry of artifact.entries) {
@@ -189,7 +206,10 @@ for (const artifact of artifacts) {
     const relativeEntry = entry.slice('package/'.length);
     const installedPath = join(installedDirectory, relativeEntry);
     const stat = await lstat(installedPath);
-    assert(stat.isFile() && !stat.isSymbolicLink(), `Installed ${artifact.name} entry is not a regular file: ${relativeEntry}`);
+    assert(
+      stat.isFile() && !stat.isSymbolicLink(),
+      `Installed ${artifact.name} entry is not a regular file: ${relativeEntry}`,
+    );
   }
 }
 await writeFile(join(runDirectory, 'consumer-package-lock.json'), lockBytes);
@@ -197,7 +217,9 @@ await writeFile(join(runDirectory, 'consumer-package-lock.json'), lockBytes);
 // The TypeScript check imports two public package boundaries and the locally
 // packed internal testkit with the consumer's declarations. No workspace source
 // or package aliases are visible.
-await writeFile(join(consumerDirectory, 'consumer.ts'), `
+await writeFile(
+  join(consumerDirectory, 'consumer.ts'),
+  `
 import {CONTRACT_VERSION, type ResultRef} from '@aeliqo/core';
 import {createResultStore, type ResultEvent, type ResultBeginInput} from '@aeliqo/runtime/results';
 import {assertDeniedSnapshot, collectResultEvents, rowsFromResultSnapshot} from '@aeliqo/testkit';
@@ -207,18 +229,32 @@ const store = createResultStore();
 const handle = store.begin(key);
 const event: ResultEvent = {kind: 'error', requestId: 'request-1', error: {code: 'consumer', message: 'probe', retryable: false}};
 void [CONTRACT_VERSION, ref, handle, event, assertDeniedSnapshot, collectResultEvents, rowsFromResultSnapshot];
-`);
-await writeFile(join(consumerDirectory, 'tsconfig.json'), JSON.stringify({
-  compilerOptions: {
-    target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext',
-    strict: true, noEmit: true, skipLibCheck: false,
-    lib: ['ES2022', 'DOM'],
-  },
-  files: ['consumer.ts'],
-}, null, 2));
+`,
+);
+await writeFile(
+  join(consumerDirectory, 'tsconfig.json'),
+  JSON.stringify(
+    {
+      compilerOptions: {
+        target: 'ES2022',
+        module: 'NodeNext',
+        moduleResolution: 'NodeNext',
+        strict: true,
+        noEmit: true,
+        skipLibCheck: false,
+        lib: ['ES2022', 'DOM'],
+      },
+      files: ['consumer.ts'],
+    },
+    null,
+    2,
+  ),
+);
 run([join(consumerDirectory, 'node_modules', '.bin', 'tsc'), '-p', 'tsconfig.json'], consumerDirectory);
 
-await writeFile(join(consumerDirectory, 'runtime-probe.mjs'), `
+await writeFile(
+  join(consumerDirectory, 'runtime-probe.mjs'),
+  `
 import assert from 'node:assert/strict';
 import {createResultStore} from '@aeliqo/runtime/results';
 import {assertDeniedSnapshot, collectResultEvents, rowsFromResultSnapshot} from '@aeliqo/testkit';
@@ -303,7 +339,8 @@ assert.equal(removed, 1);
 assert.equal(listeners.size, 0);
 store.dispose();
 console.log(JSON.stringify({readyRows: 2, revokedRows: 0, defaultEvents: collected.length, overflowClosed, abortClosed, syncClosed, syncAbortListeners: {added, removed, remaining: listeners.size}}));
-`);
+`,
+);
 const probeOutput = run(['node', 'runtime-probe.mjs'], consumerDirectory).trim();
 const probe = JSON.parse(probeOutput.split('\n').at(-1));
 assert.deepEqual(probe, {
@@ -313,7 +350,7 @@ assert.deepEqual(probe, {
   overflowClosed: true,
   abortClosed: true,
   syncClosed: true,
-  syncAbortListeners: {added: 1, removed: 1, remaining: 0},
+  syncAbortListeners: { added: 1, removed: 1, remaining: 0 },
 });
 
 const globalDigestAfter = run(['node', 'scripts/source-digest.mjs'], root).trim();
@@ -338,7 +375,7 @@ const report = {
   sourceStatusAfter,
   globalDigestBefore,
   globalDigestAfter,
-  artifacts: artifacts.map(({path: artifactPath, ...artifact}) => artifact),
+  artifacts: artifacts.map(({ path: artifactPath, ...artifact }) => artifact),
   consumerDirectory,
   consumerPackageLock: {
     path: join(runDirectory, 'consumer-package-lock.json'),

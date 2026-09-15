@@ -1,6 +1,6 @@
 /** Typed input events are user proposals; the host remains authoritative. */
 
-export type AeliqoInputSource = "user";
+export type AeliqoInputSource = 'user';
 
 type EventInitLike = {
   readonly bubbles?: boolean;
@@ -8,21 +8,22 @@ type EventInitLike = {
   readonly composed?: boolean;
 };
 
-const EventBase: typeof Event = typeof globalThis.Event === "function"
-  ? globalThis.Event
-  : class {
-      readonly bubbles = false;
-      readonly cancelable = false;
-      readonly composed = false;
-      readonly defaultPrevented = false;
-      readonly type: string;
+const EventBase: typeof Event =
+  typeof globalThis.Event === 'function'
+    ? globalThis.Event
+    : (class {
+        readonly bubbles = false;
+        readonly cancelable = false;
+        readonly composed = false;
+        readonly defaultPrevented = false;
+        readonly type: string;
 
-      constructor(type: string, _init?: EventInitLike) {
-        this.type = type;
-      }
+        constructor(type: string, _init?: EventInitLike) {
+          this.type = type;
+        }
 
-      preventDefault(): void {}
-    } as unknown as typeof Event;
+        preventDefault(): void {}
+      } as unknown as typeof Event);
 
 export interface AeliqoInputChangeDetail<T> {
   readonly source: AeliqoInputSource;
@@ -34,7 +35,7 @@ export class AeliqoInputChangeEvent<T> extends EventBase {
   readonly detail: AeliqoInputChangeDetail<T>;
 
   constructor(detail: AeliqoInputChangeDetail<T>) {
-    super("aeliqo-input-change", {bubbles: true, composed: true, cancelable: true});
+    super('aeliqo-input-change', { bubbles: true, composed: true, cancelable: true });
     this.detail = detail;
   }
 }
@@ -48,12 +49,12 @@ export class AeliqoInputCommitEvent<T> extends EventBase {
   readonly detail: AeliqoInputCommitDetail<T>;
 
   constructor(detail: AeliqoInputCommitDetail<T>) {
-    super("aeliqo-input-commit", {bubbles: true, composed: true, cancelable: true});
+    super('aeliqo-input-commit', { bubbles: true, composed: true, cancelable: true });
     this.detail = detail;
   }
 }
 
-export type AeliqoValidationState = "idle" | "pending" | "valid" | "invalid";
+export type AeliqoValidationState = 'idle' | 'pending' | 'valid' | 'invalid';
 
 export interface AeliqoValidationDetail {
   readonly source: AeliqoInputSource;
@@ -65,7 +66,7 @@ export class AeliqoValidationEvent extends EventBase {
   readonly detail: AeliqoValidationDetail;
 
   constructor(detail: AeliqoValidationDetail) {
-    super("aeliqo-validation", {bubbles: true, composed: true});
+    super('aeliqo-validation', { bubbles: true, composed: true });
     this.detail = detail;
   }
 }
@@ -79,14 +80,14 @@ export class AeliqoFormSubmitEvent extends EventBase {
   readonly detail: AeliqoFormSubmitDetail;
 
   constructor(detail: AeliqoFormSubmitDetail) {
-    super("aeliqo-form-submit", {bubbles: true, composed: true, cancelable: true});
+    super('aeliqo-form-submit', { bubbles: true, composed: true, cancelable: true });
     this.detail = detail;
   }
 }
 
 export class AeliqoFormResetEvent extends EventBase {
   constructor() {
-    super("aeliqo-form-reset", {bubbles: true, composed: true, cancelable: true});
+    super('aeliqo-form-reset', { bubbles: true, composed: true, cancelable: true });
   }
 }
 
@@ -100,7 +101,7 @@ export class AeliqoSearchEvent extends EventBase {
   readonly detail: AeliqoSearchDetail;
 
   constructor(detail: AeliqoSearchDetail) {
-    super("aeliqo-search", {bubbles: true, composed: true, cancelable: true});
+    super('aeliqo-search', { bubbles: true, composed: true, cancelable: true });
     this.detail = detail;
   }
 }
@@ -115,7 +116,7 @@ export class AeliqoComboboxQueryEvent extends EventBase {
   readonly detail: AeliqoComboboxQueryDetail;
 
   constructor(detail: AeliqoComboboxQueryDetail) {
-    super("aeliqo-combobox-query", {bubbles: true, composed: true, cancelable: true});
+    super('aeliqo-combobox-query', { bubbles: true, composed: true, cancelable: true });
     this.detail = detail;
   }
 }
@@ -137,7 +138,7 @@ export class AeliqoFileChangeEvent extends EventBase {
   readonly detail: AeliqoFileChangeDetail;
 
   constructor(detail: AeliqoFileChangeDetail) {
-    super("aeliqo-file-change", {bubbles: true, composed: true, cancelable: true});
+    super('aeliqo-file-change', { bubbles: true, composed: true, cancelable: true });
     this.detail = detail;
   }
 }

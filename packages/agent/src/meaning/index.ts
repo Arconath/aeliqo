@@ -1,4 +1,4 @@
-export {createAgentMeaningAuthoring, createMeaningProposalAuthoring} from './authoring.js';
+export { createAgentMeaningAuthoring, createMeaningProposalAuthoring } from './authoring.js';
 export {
   createAgentMeaningActivationCapability,
   createAgentMeaningProposalCapability,
@@ -15,4 +15,4 @@ export type {
   MeaningProposalInput,
   MeaningProposalPolicy,
 } from './types.js';
-export type {MeaningDraftJson, MeaningActivationJson} from './capabilities.js';
+export type { MeaningDraftJson, MeaningActivationJson } from './capabilities.js';

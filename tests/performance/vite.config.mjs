@@ -1,7 +1,7 @@
-import {defineConfig} from "vite";
-import {resolve} from "node:path";
+import { defineConfig } from 'vite';
+import { resolve } from 'node:path';
 
-const repositoryRoot = resolve(import.meta.dirname, "../..");
+const repositoryRoot = resolve(import.meta.dirname, '../..');
 
 /**
  * Production fixture used by the performance browser gate. The preview server
@@ -10,14 +10,14 @@ const repositoryRoot = resolve(import.meta.dirname, "../..");
  */
 export default defineConfig({
   root: repositoryRoot,
-  base: "/",
+  base: '/',
   build: {
-    outDir: resolve(repositoryRoot, "artifacts/performance-browser-dist"),
+    outDir: resolve(repositoryRoot, 'artifacts/performance-browser-dist'),
     emptyOutDir: true,
     sourcemap: false,
     rollupOptions: {
-      input: resolve(repositoryRoot, "tests/performance/browser.html"),
+      input: resolve(repositoryRoot, 'tests/performance/browser.html'),
     },
   },
-  preview: {host: "127.0.0.1"},
+  preview: { host: '127.0.0.1' },
 });

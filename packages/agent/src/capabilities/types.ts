@@ -10,7 +10,8 @@ import type {
 
 /** Local public alias because @aeliqo/core intentionally keeps the wire value
  * helper internal to its contract barrel. */
-export type AgentJsonValue = null | boolean | number | string | readonly AgentJsonValue[] | {readonly [key: string]: AgentJsonValue};
+export type AgentJsonValue =
+  null | boolean | number | string | readonly AgentJsonValue[] | { readonly [key: string]: AgentJsonValue };
 
 /** The operation families are deliberately the same independent grants used by
  * the binder.  A transport or model label never widens this union. */
@@ -76,8 +77,7 @@ export interface AgentCapabilityHandlerResult<TOutput = AgentJsonValue> {
 }
 
 export type AgentCapabilityHandlerOutcome<TOutput = AgentJsonValue> =
-  | AgentCapabilityHandlerResult<TOutput>
-  | Outcome<AgentCapabilityHandlerResult<TOutput>>;
+  AgentCapabilityHandlerResult<TOutput> | Outcome<AgentCapabilityHandlerResult<TOutput>>;
 
 /** Registration is host code, never a model operation. */
 export interface AgentCapabilityManifest<TInput = AgentJsonValue, TOutput = AgentJsonValue> {
@@ -164,7 +164,7 @@ export interface AgentCapabilityDispatcherOptions {
 export interface AgentCapabilityDispatcher {
   readonly dispatch: (
     input: AgentCapabilityRequest | unknown,
-    options?: {readonly signal?: AbortSignal; readonly transport?: AgentCapabilityTransport},
+    options?: { readonly signal?: AbortSignal; readonly transport?: AgentCapabilityTransport },
   ) => Promise<Outcome<AgentCapabilityReceipt>>;
   /** All adapters call the same dispatch implementation. */
   readonly port: (transport: AgentCapabilityTransport) => AgentCapabilityPort;
@@ -181,7 +181,7 @@ export interface AgentCapabilityPort {
   readonly transport: AgentCapabilityTransport;
   readonly invoke: (
     input: AgentCapabilityRequest | unknown,
-    options?: {readonly signal?: AbortSignal},
+    options?: { readonly signal?: AbortSignal },
   ) => Promise<Outcome<AgentCapabilityReceipt>>;
 }
 
@@ -194,4 +194,4 @@ export interface AgentCapabilityRegistry {
 }
 
 /** Common result values for the task-binding capability. */
-export type AgentTaskBindingResult = Extract<AgentBindingOutcome, {readonly state: 'bound'}>['value'];
+export type AgentTaskBindingResult = Extract<AgentBindingOutcome, { readonly state: 'bound' }>['value'];

@@ -1,6 +1,11 @@
-import type {Outcome} from '@aeliqo/core';
-import type {AgentCapabilityOperation, AgentCapabilityReceipt, AgentCapabilityState, AgentJsonValue} from '../capabilities/types.js';
-import type {AgentModelToolEndpoint, AgentToolDefinition} from '../protocol/types.js';
+import type { Outcome } from '@aeliqo/core';
+import type {
+  AgentCapabilityOperation,
+  AgentCapabilityReceipt,
+  AgentCapabilityState,
+  AgentJsonValue,
+} from '../capabilities/types.js';
+import type { AgentModelToolEndpoint, AgentToolDefinition } from '../protocol/types.js';
 
 declare const opaqueModelContinuationBrand: unique symbol;
 /** In-memory protocol state. Its provider value is non-enumerable and never serializable. */
@@ -11,10 +16,15 @@ export interface ToolModelContinuation {
 }
 
 export type ToolModelMessage =
-  | {readonly role: 'system'; readonly text: string}
-  | {readonly role: 'user'; readonly text: string}
-  | {readonly role: 'assistant'; readonly text?: string; readonly calls: readonly ToolModelCall[]; readonly continuation?: ToolModelContinuation}
-  | {readonly role: 'tool'; readonly callId: string; readonly output: AgentJsonValue};
+  | { readonly role: 'system'; readonly text: string }
+  | { readonly role: 'user'; readonly text: string }
+  | {
+      readonly role: 'assistant';
+      readonly text?: string;
+      readonly calls: readonly ToolModelCall[];
+      readonly continuation?: ToolModelContinuation;
+    }
+  | { readonly role: 'tool'; readonly callId: string; readonly output: AgentJsonValue };
 export interface ToolModelCall {
   readonly id: string;
   readonly name: string;
@@ -70,8 +80,11 @@ export interface ToolModelResponse {
  */
 export interface ToolModelPort {
   readonly estimateInputTokens?: (request: ToolModelRequest) => number;
-  readonly countInputTokens?: (request: ToolModelRequest, options: {readonly signal: AbortSignal}) => Promise<number>;
-  readonly complete: (request: ToolModelRequest, options: {readonly signal: AbortSignal}) => Promise<ToolModelResponse>;
+  readonly countInputTokens?: (request: ToolModelRequest, options: { readonly signal: AbortSignal }) => Promise<number>;
+  readonly complete: (
+    request: ToolModelRequest,
+    options: { readonly signal: AbortSignal },
+  ) => Promise<ToolModelResponse>;
 }
 export interface ToolModelBudget {
   readonly maxTurns: number;
@@ -85,7 +98,17 @@ export interface ToolModelBudget {
   readonly maxOutputBytes: number;
   readonly maxRepeatedCalls: number;
 }
-export type ToolModelStop = 'text-ready' | 'renderer-ready' | 'no-commit' | 'no-progress' | 'required-sequence' | 'budget' | 'cancelled' | 'stale' | 'denied' | 'failed';
+export type ToolModelStop =
+  | 'text-ready'
+  | 'renderer-ready'
+  | 'no-commit'
+  | 'no-progress'
+  | 'required-sequence'
+  | 'budget'
+  | 'cancelled'
+  | 'stale'
+  | 'denied'
+  | 'failed';
 export interface ToolModelRequiredOperation {
   readonly operation: AgentCapabilityOperation;
   readonly acceptedStates: readonly AgentCapabilityState[];

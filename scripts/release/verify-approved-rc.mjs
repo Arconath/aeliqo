@@ -2,6 +2,7 @@
 import { resolve } from 'node:path';
 import { readJson } from './candidate-lib.mjs';
 import { assertApprovedRc } from './publication-lib.mjs';
+import { RELEASE_VERSION, releaseCandidateNumber } from './metadata.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
 const args = process.argv.slice(2);
@@ -14,17 +15,17 @@ const publicationPath = value('--publication');
 const consumerPath = value('--consumer');
 const version = value('--version');
 const sourceRevision = value('--source');
-const rc = /^0\.1\.0-rc\.([1-9]\d*)$/.exec(version ?? '');
+const rc = releaseCandidateNumber(version);
 if (
   !candidatePath ||
   !publicationPath ||
   !consumerPath ||
-  !rc ||
-  Number(rc[1]) < 2 ||
+  rc === undefined ||
+  rc < 1 ||
   !/^[0-9a-f]{40}$/.test(sourceRevision ?? '')
 ) {
   throw new Error(
-    'Approved RC verification requires candidate/publication/consumer files, 0.1.0-rc.N (N >= 2), and a full source SHA',
+    `Approved RC verification requires candidate/publication/consumer files, ${RELEASE_VERSION}-rc.N, and a full source SHA`,
   );
 }
 const [candidate, publication, consumer] = await Promise.all([

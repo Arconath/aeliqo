@@ -13,11 +13,14 @@ import {
   type SemanticPolicy,
   type VersionRef,
 } from '@aeliqo/core';
-import type {MeaningEvaluationInput, MeaningEvaluator, MeaningEvaluatorOptions} from './types.js';
-import {freezeMeaningValue, snapshotMeaningAuthoringOptions} from './authoring.js';
+import type { MeaningEvaluationInput, MeaningEvaluator, MeaningEvaluatorOptions } from './types.js';
+import { freezeMeaningValue, snapshotMeaningAuthoringOptions } from './authoring.js';
 
 function failure<T>(code: string, message: string, path?: readonly (string | number)[]): Outcome<T> {
-  return {ok: false, diagnostics: [{code, message, retryable: false, ...(path === undefined ? {} : {path: [...path]})}]};
+  return {
+    ok: false,
+    diagnostics: [{ code, message, retryable: false, ...(path === undefined ? {} : { path: [...path] }) }],
+  };
 }
 
 function sameRef(left: VersionRef, right: VersionRef): boolean {
@@ -25,9 +28,13 @@ function sameRef(left: VersionRef, right: VersionRef): boolean {
 }
 
 function validRef(value: unknown): value is VersionRef {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-    && typeof (value as Record<string, unknown>).id === 'string'
-    && typeof (value as Record<string, unknown>).revision === 'string';
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    typeof (value as Record<string, unknown>).id === 'string' &&
+    typeof (value as Record<string, unknown>).revision === 'string'
+  );
 }
 
 function isMeaningDefinition(value: VersionRef | MeaningDefinition): value is MeaningDefinition {
@@ -45,20 +52,26 @@ function resolveMeaning(
   input: VersionRef | MeaningDefinition,
   options: MeaningEvaluatorOptions,
 ): Outcome<MeaningDefinition> {
-  if (!validRef(input)) return failure('runtime.meaning-input', 'Meaning evaluation requires a canonical meaning reference or definition.', ['meaning']);
+  if (!validRef(input))
+    return failure(
+      'runtime.meaning-input',
+      'Meaning evaluation requires a canonical meaning reference or definition.',
+      ['meaning'],
+    );
   const definitions = meaningDefinitions(options);
-  const candidate = isMeaningDefinition(input)
-    ? input
-    : definitions.find((meaning) => sameRef(meaning, input));
-  if (candidate === undefined) return failure('runtime.meaning-unknown', 'The meaning definition is not available in the evaluator scope.', ['meaning']);
+  const candidate = isMeaningDefinition(input) ? input : definitions.find((meaning) => sameRef(meaning, input));
+  if (candidate === undefined)
+    return failure('runtime.meaning-unknown', 'The meaning definition is not available in the evaluator scope.', [
+      'meaning',
+    ]);
   // Validation is repeated at the evaluator boundary. A draft or hypothesis
   // can be previewed locally, but it still receives exactly the same semantic
   // checks as a reviewed definition and never gains activation authority here.
   return validateMeaning(candidate, {
     catalog: options.catalog,
     registry: options.registry,
-    ...(options.definitions === undefined ? {} : {definitions: options.definitions}),
-    ...(options.policy === undefined ? {} : {policy: options.policy}),
+    ...(options.definitions === undefined ? {} : { definitions: options.definitions }),
+    ...(options.policy === undefined ? {} : { policy: options.policy }),
   });
 }
 
@@ -68,23 +81,31 @@ function queryForMeaning(input: MeaningEvaluationInput, meaning: MeaningDefiniti
   return {
     entity: input.entity,
     fields,
-    measures: [{id: meaning.id, revision: meaning.revision}],
+    measures: [{ id: meaning.id, revision: meaning.revision }],
     relations: [],
     groupBy,
-    population: {kind: 'all-authorized'},
+    population: { kind: 'all-authorized' },
     order: [],
   };
 }
 
-function sourceContext(input: MeaningEvaluationInput, source: QuerySource): Outcome<{readonly scopeDigest?: string; readonly policyRevision?: string}> {
+function sourceContext(
+  input: MeaningEvaluationInput,
+  source: QuerySource,
+): Outcome<{ readonly scopeDigest?: string; readonly policyRevision?: string }> {
   if (input.scopeDigest !== undefined && source.scopeDigest !== input.scopeDigest)
-    return failure('runtime.meaning-scope', 'The query source is outside the requested meaning scope.', ['scopeDigest']);
+    return failure('runtime.meaning-scope', 'The query source is outside the requested meaning scope.', [
+      'scopeDigest',
+    ]);
   if (input.policyRevision !== undefined && source.policyRevision !== input.policyRevision)
     return failure('runtime.meaning-stale', 'The query source policy revision is stale.', ['policyRevision']);
-  return {ok: true, value: {
-    ...(input.scopeDigest === undefined ? {} : {scopeDigest: input.scopeDigest}),
-    ...(input.policyRevision === undefined ? {} : {policyRevision: input.policyRevision}),
-  }};
+  return {
+    ok: true,
+    value: {
+      ...(input.scopeDigest === undefined ? {} : { scopeDigest: input.scopeDigest }),
+      ...(input.policyRevision === undefined ? {} : { policyRevision: input.policyRevision }),
+    },
+  };
 }
 
 /**
@@ -94,7 +115,8 @@ function sourceContext(input: MeaningEvaluationInput, source: QuerySource): Outc
  * manual, Studio or AI-assisted previews alike.
  */
 export function createMeaningEvaluator(options: MeaningEvaluatorOptions): Outcome<MeaningEvaluator> {
-  if (options === null || typeof options !== 'object' || Array.isArray(options)) return failure('runtime.meaning-evaluator', 'Meaning evaluator options are required.');
+  if (options === null || typeof options !== 'object' || Array.isArray(options))
+    return failure('runtime.meaning-evaluator', 'Meaning evaluator options are required.');
   const context = snapshotMeaningAuthoringOptions(options);
   if (!context.ok) return context;
   let limits: Partial<QueryLimits> | undefined;
@@ -108,20 +130,21 @@ export function createMeaningEvaluator(options: MeaningEvaluatorOptions): Outcom
   const snapshot: MeaningEvaluatorOptions = {
     catalog: context.value.catalog,
     registry: context.value.registry,
-    ...(context.value.definitions === undefined ? {} : {definitions: context.value.definitions}),
-    ...(context.value.policy === undefined ? {} : {policy: context.value.policy}),
-    ...(limits === undefined ? {} : {limits}),
+    ...(context.value.definitions === undefined ? {} : { definitions: context.value.definitions }),
+    ...(context.value.policy === undefined ? {} : { policy: context.value.policy }),
+    ...(limits === undefined ? {} : { limits }),
   };
   const planner = createQueryPlanner({
     catalog: snapshot.catalog,
     registry: snapshot.registry,
-    ...(snapshot.definitions === undefined ? {} : {definitions: snapshot.definitions}),
-    ...(limits === undefined ? {} : {limits}),
+    ...(snapshot.definitions === undefined ? {} : { definitions: snapshot.definitions }),
+    ...(limits === undefined ? {} : { limits }),
   });
   if (!planner.ok) return planner;
 
   const evaluate = (input: MeaningEvaluationInput): Outcome<QueryResult> => {
-    if (input === null || typeof input !== 'object' || Array.isArray(input)) return failure('runtime.meaning-evaluation', 'Meaning evaluation input is required.');
+    if (input === null || typeof input !== 'object' || Array.isArray(input))
+      return failure('runtime.meaning-evaluation', 'Meaning evaluation input is required.');
     const meaning = resolveMeaning(input.meaning, snapshot);
     if (!meaning.ok) return meaning;
     const source = input.source;
@@ -139,7 +162,7 @@ export function createMeaningEvaluator(options: MeaningEvaluatorOptions): Outcom
       catalog: snapshot.catalog,
       registry: snapshot.registry,
       definitions,
-      ...(limits === undefined ? {} : {limits}),
+      ...(limits === undefined ? {} : { limits }),
     });
     if (!evaluationPlanner.ok) return evaluationPlanner;
     const plan = evaluationPlanner.value.plan(query);
@@ -147,14 +170,14 @@ export function createMeaningEvaluator(options: MeaningEvaluatorOptions): Outcom
     // Core intentionally accepts plain data for cancellation. Check the host
     // signal before evaluation and expose its current snapshot to the pure
     // evaluator; no asynchronous effect is hidden in this adapter.
-    const cancellation = {aborted: input.signal?.aborted === true};
+    const cancellation = { aborted: input.signal?.aborted === true };
     return evaluationPlanner.value.evaluate(plan.value, source, {
       cancellation,
-      ...(input.scopeDigest === undefined ? {} : {scopeDigest: input.scopeDigest}),
-      ...(input.policyRevision === undefined ? {} : {policyRevision: input.policyRevision}),
+      ...(input.scopeDigest === undefined ? {} : { scopeDigest: input.scopeDigest }),
+      ...(input.policyRevision === undefined ? {} : { policyRevision: input.policyRevision }),
     });
   };
-  return {ok: true, value: Object.freeze({evaluate})};
+  return { ok: true, value: Object.freeze({ evaluate }) };
 }
 
-export type {Catalog, FunctionRegistry, MeaningDefinition, Outcome, QueryResult, QuerySource, SemanticPolicy};
+export type { Catalog, FunctionRegistry, MeaningDefinition, Outcome, QueryResult, QuerySource, SemanticPolicy };

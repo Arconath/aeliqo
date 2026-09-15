@@ -1,3 +1,4 @@
+import { RELEASE_VERSION } from '../../scripts/release/metadata.mjs';
 /**
  * Build and consume the actual @aeliqo/core package outside the workspace.
  *
@@ -10,35 +11,24 @@
  * the complete product, universal browser performance, or a universal
  * secret/code scanner.
  */
-import assert from "node:assert/strict";
-import {createServer} from "node:http";
-import {chromium} from "@playwright/test";
-import {createHash} from "node:crypto";
-import {gzipSync} from "node:zlib";
-import {
-  access,
-  mkdir,
-  mkdtemp,
-  readFile,
-  realpath,
-  readdir,
-  lstat,
-  unlink,
-  rmdir,
-  writeFile,
-} from "node:fs/promises";
-import {tmpdir, platform, release, arch} from "node:os";
-import {dirname, extname, join, relative, resolve} from "node:path";
-import {spawnSync} from "node:child_process";
+import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
+import { chromium } from '@playwright/test';
+import { createHash } from 'node:crypto';
+import { gzipSync } from 'node:zlib';
+import { access, mkdir, mkdtemp, readFile, realpath, readdir, lstat, unlink, rmdir, writeFile } from 'node:fs/promises';
+import { tmpdir, platform, release, arch } from 'node:os';
+import { dirname, extname, join, relative, resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
 
-const root = resolve(import.meta.dirname, "../..");
-const coreDirectory = join(root, "packages", "core");
-const outputDirectory = join(root, "artifacts", "core-consumers");
-await mkdir(outputDirectory, {recursive: true});
-const runDirectory = await mkdtemp(join(outputDirectory, "run-"));
-const consumerDirectory = await mkdtemp(join(tmpdir(), "aeliqo-core-consumer-"));
+const root = resolve(import.meta.dirname, '../..');
+const coreDirectory = join(root, 'packages', 'core');
+const outputDirectory = join(root, 'artifacts', 'core-consumers');
+await mkdir(outputDirectory, { recursive: true });
+const runDirectory = await mkdtemp(join(outputDirectory, 'run-'));
+const consumerDirectory = await mkdtemp(join(tmpdir(), 'aeliqo-core-consumer-'));
 
-function run(argv, cwd, encoding = "utf8", env = process.env) {
+function run(argv, cwd, encoding = 'utf8', env = process.env) {
   const result = spawnSync(argv[0], argv.slice(1), {
     cwd,
     encoding,
@@ -46,22 +36,21 @@ function run(argv, cwd, encoding = "utf8", env = process.env) {
     timeout: 180_000,
   });
   if (result.error || result.status !== 0) {
-    const stdout = result.stdout == null ? "" : String(result.stdout);
-    const stderr = result.stderr == null ? "" : String(result.stderr);
-    throw new Error(`${argv.join(" ")} failed: ${result.error ?? ""}\n${stdout}\n${stderr}`);
+    const stdout = result.stdout == null ? '' : String(result.stdout);
+    const stderr = result.stderr == null ? '' : String(result.stderr);
+    throw new Error(`${argv.join(' ')} failed: ${result.error ?? ''}\n${stdout}\n${stderr}`);
   }
   return result.stdout;
 }
 
-const hash = (bytes, algorithm = "sha256", encoding = "hex") =>
-  createHash(algorithm).update(bytes).digest(encoding);
+const hash = (bytes, algorithm = 'sha256', encoding = 'hex') => createHash(algorithm).update(bytes).digest(encoding);
 
 async function fileExists(path) {
   try {
     await access(path);
     return true;
   } catch (error) {
-    if (error?.code === "ENOENT") return false;
+    if (error?.code === 'ENOENT') return false;
     throw error;
   }
 }
@@ -69,7 +58,7 @@ async function fileExists(path) {
 async function sortedFiles(directory, excluded = new Set()) {
   const result = [];
   async function visit(current) {
-    const entries = await readdir(current, {withFileTypes: true});
+    const entries = await readdir(current, { withFileTypes: true });
     for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
       if (excluded.has(entry.name)) continue;
       const path = join(current, entry.name);
@@ -87,15 +76,17 @@ async function sourceDigest() {
   // The assigned worktree intentionally symlinks packages/core to the parent
   // worktree. Resolve that one approved link and hash only source/config files;
   // generated dist/schemas and dependency trees are excluded.
-  const {realpath} = await import("node:fs/promises");
+  const { realpath } = await import('node:fs/promises');
   const actualCore = await realpath(coreDirectory);
-  const files = await sortedFiles(actualCore, new Set(["node_modules", "dist", "schemas"]));
-  const h = createHash("sha256");
+  const files = await sortedFiles(actualCore, new Set(['node_modules', 'dist', 'schemas']));
+  const h = createHash('sha256');
   for (const path of files) {
-    const name = relative(actualCore, path).split("\\").join("/");
-    h.update(name).update("\0").update(await readFile(path));
+    const name = relative(actualCore, path).split('\\').join('/');
+    h.update(name)
+      .update('\0')
+      .update(await readFile(path));
   }
-  return h.digest("hex");
+  return h.digest('hex');
 }
 
 async function clearCompiledOutput(directory, allowedPattern) {
@@ -116,316 +107,365 @@ async function clearCompiledOutput(directory, allowedPattern) {
 }
 
 const sourceBefore = await sourceDigest();
-const manifest = JSON.parse(await readFile(join(coreDirectory, "package.json"), "utf8"));
-assert.equal(manifest.name, "@aeliqo/core");
-assert.equal(manifest.version, "0.1.0");
-assert.equal(manifest.license, "Apache-2.0");
+const manifest = JSON.parse(await readFile(join(coreDirectory, 'package.json'), 'utf8'));
+assert.equal(manifest.name, '@aeliqo/core');
+assert.equal(manifest.version, RELEASE_VERSION);
+assert.equal(manifest.license, 'Apache-2.0');
 assert.notEqual(manifest.private, true);
-assert.equal(manifest.dependencies?.zod, "4.5.4");
-assert.deepEqual(Object.keys(manifest.dependencies ?? {}), ["zod"]);
+assert.equal(manifest.dependencies?.zod, '4.5.4');
+assert.deepEqual(Object.keys(manifest.dependencies ?? {}), ['zod']);
 assert.deepEqual(Object.keys(manifest.peerDependencies ?? {}), []);
 assert.deepEqual(Object.keys(manifest.optionalDependencies ?? {}), []);
-assert.equal(manifest.exports?.["./schema"]?.import, "./dist/contracts/schemas.js");
-assert.equal(typeof manifest.exports?.["./schemas/*"], "string");
-assert.equal(manifest.exports?.["."].import, "./dist/index.js");
-assert.equal(manifest.exports?.["."].types, "./dist/index.d.ts");
-assert(await fileExists(join(coreDirectory, "src")), "Core source is not ready; no PASS from a scaffold");
+assert.equal(manifest.exports?.['./schema']?.import, './dist/contracts/schemas.js');
+assert.equal(typeof manifest.exports?.['./schemas/*'], 'string');
+assert.equal(manifest.exports?.['.'].import, './dist/index.js');
+assert.equal(manifest.exports?.['.'].types, './dist/index.d.ts');
+assert(await fileExists(join(coreDirectory, 'src')), 'Core source is not ready; no PASS from a scaffold');
 
-const distDirectory = join(coreDirectory, "dist");
-const schemaDirectory = join(coreDirectory, "schemas");
+const distDirectory = join(coreDirectory, 'dist');
+const schemaDirectory = join(coreDirectory, 'schemas');
 await clearCompiledOutput(distDirectory, /(?:\.js|\.d\.ts|\.js\.map|\.d\.ts\.map|\.tsbuildinfo)$/);
 await clearCompiledOutput(schemaDirectory, /\.schema\.json$/);
-run(["pnpm", "build"], coreDirectory);
+run(['pnpm', 'build'], coreDirectory);
 
-const expectedSchemas = ["catalog", "task", "result", "experience", "expression", "query",
-  "interaction", "result-event", "environment", "presentation-plan", "task-proposal",
-  "meaning-draft", "binding-outcome", "model-evaluation",
-  "operation-grant", "agent-loop-budget", "agent-stop-reason", "narrative-claim", "plot-spec", "visualization-spec"];
+const expectedSchemas = [
+  'catalog',
+  'task',
+  'result',
+  'experience',
+  'expression',
+  'query',
+  'interaction',
+  'result-event',
+  'environment',
+  'presentation-plan',
+  'task-proposal',
+  'meaning-draft',
+  'binding-outcome',
+  'model-evaluation',
+  'operation-grant',
+  'agent-loop-budget',
+  'agent-stop-reason',
+  'narrative-claim',
+  'plot-spec',
+  'visualization-spec',
+];
 for (const name of expectedSchemas) {
   const schemaPath = join(schemaDirectory, `${name}.schema.json`);
   assert(await fileExists(schemaPath), `Missing generated schema: ${schemaPath}`);
-  const schema = JSON.parse(await readFile(schemaPath, "utf8"));
-  assert.equal(typeof schema, "object");
+  const schema = JSON.parse(await readFile(schemaPath, 'utf8'));
+  assert.equal(typeof schema, 'object');
 }
 
-const tarballPath = join(runDirectory, "aeliqo-core-0.1.0.tgz");
-run(["pnpm", "pack", "--out", tarballPath], coreDirectory);
+const tarballPath = join(runDirectory, `aeliqo-core-${RELEASE_VERSION}.tgz`);
+run(['pnpm', 'pack', '--out', tarballPath], coreDirectory);
 const tarballBytes = await readFile(tarballPath);
 const tarballSha256 = hash(tarballBytes);
-const tarballIntegrity = `sha512-${hash(tarballBytes, "sha512", "base64")}`;
-const packedManifest = JSON.parse(run(["tar", "-xOf", tarballPath, "package/package.json"], root));
+const tarballIntegrity = `sha512-${hash(tarballBytes, 'sha512', 'base64')}`;
+const packedManifest = JSON.parse(run(['tar', '-xOf', tarballPath, 'package/package.json'], root));
 assert.deepEqual(packedManifest, manifest);
-assert.equal(packedManifest.name, "@aeliqo/core");
-assert.equal(packedManifest.version, "0.1.0");
-assert.equal(packedManifest.license, "Apache-2.0");
-for (const field of ["dependencies", "peerDependencies", "optionalDependencies"]) {
-  assert(!JSON.stringify(packedManifest[field] ?? {}).includes("workspace:"), `Workspace alias in ${field}`);
+assert.equal(packedManifest.name, '@aeliqo/core');
+assert.equal(packedManifest.version, RELEASE_VERSION);
+assert.equal(packedManifest.license, 'Apache-2.0');
+for (const field of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
+  assert(!JSON.stringify(packedManifest[field] ?? {}).includes('workspace:'), `Workspace alias in ${field}`);
 }
-assert.deepEqual(Object.keys(packedManifest.dependencies ?? {}), ["zod"]);
-assert.equal(packedManifest.dependencies.zod, "4.5.4");
+assert.deepEqual(Object.keys(packedManifest.dependencies ?? {}), ['zod']);
+assert.equal(packedManifest.dependencies.zod, '4.5.4');
 
-const tarEntries = run(["tar", "-tzf", tarballPath], root).trim().split("\n");
+const tarEntries = run(['tar', '-tzf', tarballPath], root).trim().split('\n');
 for (const entry of tarEntries) {
-  assert(entry.startsWith("package/") && !entry.split("/").includes(".."), `Unexpected archive path: ${entry}`);
+  assert(entry.startsWith('package/') && !entry.split('/').includes('..'), `Unexpected archive path: ${entry}`);
 }
-assert(tarEntries.includes("package/LICENSE"), "Apache license is absent from the tarball");
+assert(tarEntries.includes('package/LICENSE'), 'Apache license is absent from the tarball');
 for (const name of expectedSchemas) {
   assert(tarEntries.includes(`package/schemas/${name}.schema.json`), `Schema is absent from tarball: ${name}`);
 }
-assert(!tarEntries.some((entry) => entry.startsWith("package/src/")), "Source tree leaked into package");
+assert(!tarEntries.some((entry) => entry.startsWith('package/src/')), 'Source tree leaked into package');
 
-await writeFile(join(consumerDirectory, "package.json"), JSON.stringify({private: true, type: "module"}));
-run([
-  "npm", "install", "--ignore-scripts", "--no-audit", "--no-fund", "--save-exact",
-  tarballPath, "typescript@7.0.2", "vite@8.2.2",
-], consumerDirectory);
-const lockBytes = await readFile(join(consumerDirectory, "package-lock.json"));
+await writeFile(join(consumerDirectory, 'package.json'), JSON.stringify({ private: true, type: 'module' }));
+run(
+  [
+    'npm',
+    'install',
+    '--ignore-scripts',
+    '--no-audit',
+    '--no-fund',
+    '--save-exact',
+    tarballPath,
+    'typescript@7.0.2',
+    'vite@8.2.2',
+  ],
+  consumerDirectory,
+);
+const lockBytes = await readFile(join(consumerDirectory, 'package-lock.json'));
 const lock = JSON.parse(lockBytes);
-const coreLock = lock.packages["node_modules/@aeliqo/core"];
-assert.equal(coreLock.version, "0.1.0");
+const coreLock = lock.packages['node_modules/@aeliqo/core'];
+assert.equal(coreLock.version, RELEASE_VERSION);
 assert.equal(coreLock.integrity, tarballIntegrity);
 const corePackageEntries = Object.keys(lock.packages).filter((key) => /(?:^|\/)node_modules\/@aeliqo\/core$/.test(key));
-assert.deepEqual(corePackageEntries, ["node_modules/@aeliqo/core"], "Expected exactly one installed @aeliqo/core package");
-assert.equal(lock.packages["node_modules/zod"].version, "4.5.4");
-assert.match(lock.packages["node_modules/zod"].integrity, /^sha512-/);
-const installedZod = JSON.parse(await readFile(join(consumerDirectory, "node_modules/zod/package.json"), "utf8"));
-assert.equal(installedZod.license, "MIT");
-for (const field of ["dependencies", "optionalDependencies", "peerDependencies"]) {
+assert.deepEqual(
+  corePackageEntries,
+  ['node_modules/@aeliqo/core'],
+  'Expected exactly one installed @aeliqo/core package',
+);
+assert.equal(lock.packages['node_modules/zod'].version, '4.5.4');
+assert.match(lock.packages['node_modules/zod'].integrity, /^sha512-/);
+const installedZod = JSON.parse(await readFile(join(consumerDirectory, 'node_modules/zod/package.json'), 'utf8'));
+assert.equal(installedZod.license, 'MIT');
+for (const field of ['dependencies', 'optionalDependencies', 'peerDependencies']) {
   assert.deepEqual(Object.keys(installedZod[field] ?? {}), [], `Unexpected Zod ${field}`);
 }
-for (const [name, version] of Object.entries({typescript: "7.0.2", vite: "8.2.2"})) {
+for (const [name, version] of Object.entries({ typescript: '7.0.2', vite: '8.2.2' })) {
   assert.equal(lock.packages[`node_modules/${name}`].version, version);
   assert.match(lock.packages[`node_modules/${name}`].integrity, /^sha512-/);
 }
 assert.deepEqual(
-  Object.keys(lock.packages).filter((key) => key.startsWith("node_modules/@aeliqo/core/node_modules/")),
+  Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/core/node_modules/')),
   [],
-  "Core has unexpected nested production dependencies",
+  'Core has unexpected nested production dependencies',
 );
 
 for (const entry of tarEntries) {
-  if (entry.endsWith("/")) continue;
-  const relativeEntry = entry.slice("package/".length);
-  const installedPath = join(consumerDirectory, "node_modules/@aeliqo/core", relativeEntry);
+  if (entry.endsWith('/')) continue;
+  const relativeEntry = entry.slice('package/'.length);
+  const installedPath = join(consumerDirectory, 'node_modules/@aeliqo/core', relativeEntry);
   const installedStat = await lstat(installedPath);
   assert(installedStat.isFile(), `Installed package entry is not a regular file: ${relativeEntry}`);
-  const packedEntry = run(["tar", "-xOf", tarballPath, entry], root, null);
+  const packedEntry = run(['tar', '-xOf', tarballPath, entry], root, null);
   assert.equal(hash(await readFile(installedPath)), hash(packedEntry), `Installed bytes differ: ${relativeEntry}`);
 }
-await writeFile(join(runDirectory, "consumer-package-lock.json"), lockBytes);
+await writeFile(join(runDirectory, 'consumer-package-lock.json'), lockBytes);
 
 const catalogInput = {
-  version: "1",
-  revision: "catalog-1",
-  functionRegistryDigest: "functions-1",
-  entities: [{
-    id: "employee",
-    label: "Employee",
-    identity: ["employee.id"],
-    rowGrain: ["employee"],
-    fields: [{
-      id: "employee.id",
-      label: "Employee ID",
-      type: {value: "text", nullable: false},
-      role: "identity",
-    }],
-  }],
+  version: '1',
+  revision: 'catalog-1',
+  functionRegistryDigest: 'functions-1',
+  entities: [
+    {
+      id: 'employee',
+      label: 'Employee',
+      identity: ['employee.id'],
+      rowGrain: ['employee'],
+      fields: [
+        {
+          id: 'employee.id',
+          label: 'Employee ID',
+          type: { value: 'text', nullable: false },
+          role: 'identity',
+        },
+      ],
+    },
+  ],
   relationships: [],
   meanings: [],
   capabilities: [],
 };
 const resultInput = {
-  version: "1",
-  ref: {id: "result-1", revision: "1", outputId: "table", queryDigest: "query-1", scopeDigest: "scope-1"},
-  taskId: "task-1",
+  version: '1',
+  ref: { id: 'result-1', revision: '1', outputId: 'table', queryDigest: 'query-1', scopeDigest: 'scope-1' },
+  taskId: 'task-1',
   fields: [],
   identity: [],
   rowGrain: [],
-  counts: {loaded: 0, population: {kind: "unknown"}},
-  precision: {kind: "exact"},
-  coverage: {kind: "unknown", reason: "No rows were loaded."},
-  consistency: {kind: "unknown", reason: "No source snapshot was requested."},
-  evidence: {kind: "computed", queryDigest: "query-1", definitions: []},
+  counts: { loaded: 0, population: { kind: 'unknown' } },
+  precision: { kind: 'exact' },
+  coverage: { kind: 'unknown', reason: 'No rows were loaded.' },
+  consistency: { kind: 'unknown', reason: 'No source snapshot was requested.' },
+  evidence: { kind: 'computed', queryDigest: 'query-1', definitions: [] },
   filters: [],
   warnings: [],
   lineage: [],
 };
 const taskInput = {
-  version: "1",
-  id: "task-1",
-  revision: "1",
-  catalogRevision: "catalog-1",
-  functionRegistryDigest: "functions-1",
-  regionId: "employees",
-  goal: "Inspect employees",
+  version: '1',
+  id: 'task-1',
+  revision: '1',
+  catalogRevision: 'catalog-1',
+  functionRegistryDigest: 'functions-1',
+  regionId: 'employees',
+  goal: 'Inspect employees',
   needs: [],
   assumptions: [],
-  kind: "presentation",
+  kind: 'presentation',
   inputs: [resultInput.ref],
 };
 const experienceInput = {
-  version: "1",
-  id: "experience-1",
-  revision: "1",
-  mode: "adaptive",
+  version: '1',
+  id: 'experience-1',
+  revision: '1',
+  mode: 'adaptive',
   agentAllowed: false,
   allowedRepresentations: [],
   allowedPatterns: [],
-  composition: {allowWithoutPreset: false, maxNodes: 1, maxExpansions: 1},
+  composition: { allowWithoutPreset: false, maxNodes: 1, maxExpansions: 1 },
   requiredOperations: [],
-  tokenProfile: {id: "tokens-1", revision: "1"},
+  tokenProfile: { id: 'tokens-1', revision: '1' },
   extensionAllowlist: [],
-  transitionPolicy: "stable",
+  transitionPolicy: 'stable',
 };
-const documents = {catalog: catalogInput, task: taskInput, result: resultInput, experience: experienceInput};
-const commitPins = {scopeDigest: resultInput.ref.scopeDigest, policyRevision: 'policy-1', taskRevision: taskInput.revision,
-  regionRevision: 'region-1', catalogRevision: catalogInput.revision, experienceRevision: experienceInput.revision,
-  functionRegistryDigest: catalogInput.functionRegistryDigest, results: [resultInput.ref]};
+const documents = { catalog: catalogInput, task: taskInput, result: resultInput, experience: experienceInput };
+const commitPins = {
+  scopeDigest: resultInput.ref.scopeDigest,
+  policyRevision: 'policy-1',
+  taskRevision: taskInput.revision,
+  regionRevision: 'region-1',
+  catalogRevision: catalogInput.revision,
+  experienceRevision: experienceInput.revision,
+  functionRegistryDigest: catalogInput.functionRegistryDigest,
+  results: [resultInput.ref],
+};
 
-const {inputs: _presentationInputs, ...taskBaseInput} = taskInput;
+const { inputs: _presentationInputs, ...taskBaseInput } = taskInput;
 const queryInput = {
-  entity: "employees",
-  fields: ["employee.id"],
+  entity: 'employees',
+  fields: ['employee.id'],
   measures: [],
   relations: [],
-  groupBy: ["employee.id"],
-  population: {kind: "all-authorized"},
+  groupBy: ['employee.id'],
+  population: { kind: 'all-authorized' },
   order: [],
 };
 const namedOutputTaskInput = {
   ...taskBaseInput,
-  id: "task-named-output",
-  revision: "1",
-  goal: "Load named employee outputs",
-  kind: "data",
+  id: 'task-named-output',
+  revision: '1',
+  goal: 'Load named employee outputs',
+  kind: 'data',
   outputs: [
-    {id: "summary", kind: "query", query: queryInput, dependsOn: ["detail"], delivery: "eager"},
-    {id: "detail", kind: "query", query: queryInput, dependsOn: [], delivery: "eager"},
+    { id: 'summary', kind: 'query', query: queryInput, dependsOn: ['detail'], delivery: 'eager' },
+    { id: 'detail', kind: 'query', query: queryInput, dependsOn: [], delivery: 'eager' },
   ],
 };
 const cyclicTaskInput = {
   ...namedOutputTaskInput,
-  id: "task-cyclic-output",
+  id: 'task-cyclic-output',
   outputs: [
-    {...namedOutputTaskInput.outputs[0], dependsOn: ["detail"]},
-    {...namedOutputTaskInput.outputs[1], dependsOn: ["summary"]},
+    { ...namedOutputTaskInput.outputs[0], dependsOn: ['detail'] },
+    { ...namedOutputTaskInput.outputs[1], dependsOn: ['summary'] },
   ],
 };
 const fixedPopulationTaskInput = {
   ...taskBaseInput,
-  id: "task-fixed-population",
-  revision: "1",
-  goal: "Load a fixed employee cohort",
-  kind: "data",
-  outputs: [{
-    id: "fixed",
-    kind: "query",
-    query: {
-      ...queryInput,
-      population: {kind: "fixed", source: resultInput.ref, identityKeys: ["employee.id"], cohortDigest: "cohort-1"},
+  id: 'task-fixed-population',
+  revision: '1',
+  goal: 'Load a fixed employee cohort',
+  kind: 'data',
+  outputs: [
+    {
+      id: 'fixed',
+      kind: 'query',
+      query: {
+        ...queryInput,
+        population: { kind: 'fixed', source: resultInput.ref, identityKeys: ['employee.id'], cohortDigest: 'cohort-1' },
+      },
+      dependsOn: [],
+      delivery: 'eager',
     },
-    dependsOn: [],
-    delivery: "eager",
-  }],
+  ],
 };
 const livePopulationTaskInput = {
   ...taskBaseInput,
-  id: "task-live-population",
-  revision: "1",
-  goal: "Load a live employee cohort",
-  kind: "data",
+  id: 'task-live-population',
+  revision: '1',
+  goal: 'Load a live employee cohort',
+  kind: 'data',
   outputs: [
-    {id: "upstream", kind: "query", query: queryInput, dependsOn: [], delivery: "eager"},
+    { id: 'upstream', kind: 'query', query: queryInput, dependsOn: [], delivery: 'eager' },
     {
-      id: "downstream",
-      kind: "query",
+      id: 'downstream',
+      kind: 'query',
       query: {
         ...queryInput,
-        population: {kind: "live-output", outputId: "upstream", identityKeys: ["employee.id"]},
+        population: { kind: 'live-output', outputId: 'upstream', identityKeys: ['employee.id'] },
       },
-      dependsOn: ["upstream"],
-      delivery: "eager",
+      dependsOn: ['upstream'],
+      delivery: 'eager',
     },
   ],
 };
 const formTaskInput = {
   ...taskBaseInput,
-  id: "task-form",
-  revision: "1",
-  goal: "Edit an employee",
-  kind: "form",
-  schema: {id: "employee.form", revision: "1"},
-  action: {id: "employee.update", revision: "1"},
+  id: 'task-form',
+  revision: '1',
+  goal: 'Edit an employee',
+  kind: 'form',
+  schema: { id: 'employee.form', revision: '1' },
+  action: { id: 'employee.update', revision: '1' },
 };
 const operationConflictTaskInput = {
   ...formTaskInput,
-  id: "task-operation-conflict",
-  needs: [{id: "save-employee", operation: {id: "employee.update", revision: "2"}, fields: [], required: true}],
+  id: 'task-operation-conflict',
+  needs: [{ id: 'save-employee', operation: { id: 'employee.update', revision: '2' }, fields: [], required: true }],
 };
 const preferredPresentationTaskInput = {
   ...taskInput,
-  id: "task-preferred-representation",
-  viewPreference: {representation: "chart.bar", strength: "preferred"},
+  id: 'task-preferred-representation',
+  viewPreference: { representation: 'chart.bar', strength: 'preferred' },
 };
 const explicitConflictTaskInput = {
   ...taskInput,
-  id: "task-explicit-representation",
-  viewPreference: {representation: "chart.line", strength: "explicit"},
+  id: 'task-explicit-representation',
+  viewPreference: { representation: 'chart.line', strength: 'explicit' },
 };
 const noPresetExperienceInput = {
   ...experienceInput,
-  id: "experience-no-preset",
-  mode: "composable",
-  allowedRepresentations: ["data.table"],
-  composition: {allowWithoutPreset: true, maxNodes: 8, maxExpansions: 16},
+  id: 'experience-no-preset',
+  mode: 'composable',
+  allowedRepresentations: ['data.table'],
+  composition: { allowWithoutPreset: true, maxNodes: 8, maxExpansions: 16 },
 };
 const preferredExperienceInput = {
   ...experienceInput,
-  id: "experience-preferred",
-  mode: "adaptive",
-  allowedRepresentations: ["data.table", "chart.bar"],
-  allowedPatterns: ["table.basic", "chart.basic"],
-  composition: {allowWithoutPreset: true, maxNodes: 8, maxExpansions: 16},
+  id: 'experience-preferred',
+  mode: 'adaptive',
+  allowedRepresentations: ['data.table', 'chart.bar'],
+  allowedPatterns: ['table.basic', 'chart.basic'],
+  composition: { allowWithoutPreset: true, maxNodes: 8, maxExpansions: 16 },
 };
 const explicitConflictExperienceInput = {
   ...experienceInput,
-  id: "experience-explicit-conflict",
-  mode: "adaptive",
-  allowedRepresentations: ["data.table"],
-  composition: {allowWithoutPreset: true, maxNodes: 8, maxExpansions: 16},
+  id: 'experience-explicit-conflict',
+  mode: 'adaptive',
+  allowedRepresentations: ['data.table'],
+  composition: { allowWithoutPreset: true, maxNodes: 8, maxExpansions: 16 },
 };
 const operationExperienceInput = {
   ...experienceInput,
-  id: "experience-operation-revision",
-  mode: "adaptive",
-  allowedRepresentations: ["data.table"],
-  requiredOperations: ["employee.update"],
-  composition: {allowWithoutPreset: true, maxNodes: 8, maxExpansions: 16},
+  id: 'experience-operation-revision',
+  mode: 'adaptive',
+  allowedRepresentations: ['data.table'],
+  requiredOperations: ['employee.update'],
+  composition: { allowWithoutPreset: true, maxNodes: 8, maxExpansions: 16 },
 };
 const restrictionIntersectionExperienceInput = {
   ...experienceInput,
-  id: "experience-restriction-intersection",
-  mode: "fixed",
+  id: 'experience-restriction-intersection',
+  mode: 'fixed',
   agentAllowed: false,
-  allowedRepresentations: ["data.table", "chart.bar"],
-  allowedPatterns: ["table.basic", "chart.basic"],
-  composition: {allowWithoutPreset: false, maxNodes: 8, maxExpansions: 16},
+  allowedRepresentations: ['data.table', 'chart.bar'],
+  allowedPatterns: ['table.basic', 'chart.basic'],
+  composition: { allowWithoutPreset: false, maxNodes: 8, maxExpansions: 16 },
 };
-const wideningRestrictionInput = [{
-  id: "host-attempted-widening",
-  allowedRepresentations: ["chart.bar"],
-  allowedPatterns: ["chart.basic"],
-  mode: "composable",
-  agentAllowed: true,
-  allowWithoutPreset: true,
-  maxNodes: 32,
-  maxExpansions: 64,
-  transitionPolicy: "stable",
-}];
-const operationRevisionRestrictionInput = [{
-  id: "host-operation-revision",
-  allowedOperations: [{id: "employee.update", revision: "1"}],
-}];
+const wideningRestrictionInput = [
+  {
+    id: 'host-attempted-widening',
+    allowedRepresentations: ['chart.bar'],
+    allowedPatterns: ['chart.basic'],
+    mode: 'composable',
+    agentAllowed: true,
+    allowWithoutPreset: true,
+    maxNodes: 32,
+    maxExpansions: 64,
+    transitionPolicy: 'stable',
+  },
+];
+const operationRevisionRestrictionInput = [
+  {
+    id: 'host-operation-revision',
+    allowedOperations: [{ id: 'employee.update', revision: '1' }],
+  },
+];
 const t05Fixtures = {
   namedOutputTaskInput,
   cyclicTaskInput,
@@ -446,27 +486,49 @@ const t05Fixtures = {
   operationRevisionRestrictionInput,
 };
 const semanticCatalogInput = {
-  version: "1",
-  revision: "catalog-1",
-  functionRegistryDigest: "core-standard-1",
-  entities: [{
-    id: "employees",
-    label: "Employees",
-    identity: ["employee.id"],
-    rowGrain: ["employee.id"],
-    fields: [
-      {id: "employee.id", label: "Employee ID", type: {value: "text", nullable: false}, role: "identity"},
-      {id: "numerator", label: "Numerator", type: {value: "integer", nullable: false, unit: {dimension: "count", symbol: "day"}}, role: "measure"},
-      {id: "denominator", label: "Denominator", type: {value: "integer", nullable: false, unit: {dimension: "count", symbol: "day"}}, role: "measure"},
-      {id: "usd", label: "US Dollars", type: {value: "integer", nullable: false, unit: {dimension: "currency", symbol: "USD"}}, role: "measure"},
-      {id: "cents", label: "Cents", type: {value: "integer", nullable: false, unit: {dimension: "currency", symbol: "cent"}}, role: "measure"},
-    ],
-  }],
+  version: '1',
+  revision: 'catalog-1',
+  functionRegistryDigest: 'core-standard-1',
+  entities: [
+    {
+      id: 'employees',
+      label: 'Employees',
+      identity: ['employee.id'],
+      rowGrain: ['employee.id'],
+      fields: [
+        { id: 'employee.id', label: 'Employee ID', type: { value: 'text', nullable: false }, role: 'identity' },
+        {
+          id: 'numerator',
+          label: 'Numerator',
+          type: { value: 'integer', nullable: false, unit: { dimension: 'count', symbol: 'day' } },
+          role: 'measure',
+        },
+        {
+          id: 'denominator',
+          label: 'Denominator',
+          type: { value: 'integer', nullable: false, unit: { dimension: 'count', symbol: 'day' } },
+          role: 'measure',
+        },
+        {
+          id: 'usd',
+          label: 'US Dollars',
+          type: { value: 'integer', nullable: false, unit: { dimension: 'currency', symbol: 'USD' } },
+          role: 'measure',
+        },
+        {
+          id: 'cents',
+          label: 'Cents',
+          type: { value: 'integer', nullable: false, unit: { dimension: 'currency', symbol: 'cent' } },
+          role: 'measure',
+        },
+      ],
+    },
+  ],
   relationships: [],
   meanings: [],
   capabilities: [],
 };
-const t04Fixtures = {semanticCatalogInput};
+const t04Fixtures = { semanticCatalogInput };
 const queryConsumerSource = `
 function runInstalledQuery() {
   const registry = createQueryFunctionRegistry();
@@ -540,70 +602,171 @@ function runInstalledQuery() {
 }
 `;
 
-
 function runInstalledInteractionGraph(validateInteractionGraph, parseInteractionState) {
-  const shape = {payload: 'selection', entity: 'employee', identity: ['employee-id'], grain: ['employee-id']};
-  const mapping = {ref: {id: 'selection.identity', revision: '1'}, source: shape, target: shape, kind: 'identity'};
-  const nodes = ['table', 'chart', 'detail'].map(id => ({id, ports: [{id: 'selection', direction: 'inout', ...shape}]}));
-  const links = nodes.map((node, index) => ({id: 'link-' + index,
-    source: {node: node.id, port: 'selection'}, target: {node: nodes[(index + 1) % nodes.length].id, port: 'selection'},
-    mapping: mapping.ref, propagation: 'identity-equivalence'}));
-  const valid = validateInteractionGraph({nodes, links}, [mapping]);
-  if (!valid.ok || !Object.isFrozen(valid.value.nodes[0].ports[0].identity)) throw new Error('Installed selection equivalence validation failed');
-  const directed = validateInteractionGraph({nodes, links: links.map(link => ({...link, propagation: 'directed'}))}, [mapping]);
-  if (directed.ok || directed.diagnostics[0].code !== 'interaction.feedback') throw new Error('Installed graph accepted arbitrary feedback');
-  if (validateInteractionGraph({nodes, links}, []).ok) throw new Error('Installed graph accepted an unregistered mapping');
-  if (validateInteractionGraph({nodes, links, actor: 'human'}, [mapping]).ok) throw new Error('Installed graph accepted forged authority');
-  const state = {version: '1', values: [{nodeId: 'table', portId: 'selection', payload: {kind: 'selection', selection: {mode: 'clear'}}}],
-    drafts: [{domain: 'directory', entity: 'employee', key: 'employee-1', field: 'name', value: 'Draft', entityRevision: '1'}]};
+  const shape = { payload: 'selection', entity: 'employee', identity: ['employee-id'], grain: ['employee-id'] };
+  const mapping = { ref: { id: 'selection.identity', revision: '1' }, source: shape, target: shape, kind: 'identity' };
+  const nodes = ['table', 'chart', 'detail'].map((id) => ({
+    id,
+    ports: [{ id: 'selection', direction: 'inout', ...shape }],
+  }));
+  const links = nodes.map((node, index) => ({
+    id: 'link-' + index,
+    source: { node: node.id, port: 'selection' },
+    target: { node: nodes[(index + 1) % nodes.length].id, port: 'selection' },
+    mapping: mapping.ref,
+    propagation: 'identity-equivalence',
+  }));
+  const valid = validateInteractionGraph({ nodes, links }, [mapping]);
+  if (!valid.ok || !Object.isFrozen(valid.value.nodes[0].ports[0].identity))
+    throw new Error('Installed selection equivalence validation failed');
+  const directed = validateInteractionGraph(
+    { nodes, links: links.map((link) => ({ ...link, propagation: 'directed' })) },
+    [mapping],
+  );
+  if (directed.ok || directed.diagnostics[0].code !== 'interaction.feedback')
+    throw new Error('Installed graph accepted arbitrary feedback');
+  if (validateInteractionGraph({ nodes, links }, []).ok)
+    throw new Error('Installed graph accepted an unregistered mapping');
+  if (validateInteractionGraph({ nodes, links, actor: 'human' }, [mapping]).ok)
+    throw new Error('Installed graph accepted forged authority');
+  const state = {
+    version: '1',
+    values: [{ nodeId: 'table', portId: 'selection', payload: { kind: 'selection', selection: { mode: 'clear' } } }],
+    drafts: [
+      {
+        domain: 'directory',
+        entity: 'employee',
+        key: 'employee-1',
+        field: 'name',
+        value: 'Draft',
+        entityRevision: '1',
+      },
+    ],
+  };
   const retained = parseInteractionState(JSON.parse(JSON.stringify(state)));
-  if (!retained.ok || !Object.isFrozen(retained.value.drafts[0])) throw new Error('Installed interaction state is not an immutable wire round trip');
-  if (parseInteractionState({...state, values: [...state.values, ...state.values]}).ok) throw new Error('Installed interaction state accepted duplicate routes');
-  if (parseInteractionState({...state, approved: true}).ok) throw new Error('Installed interaction state accepted authority');
-  return {ports: 3, selectionEquivalence: true, directedFeedbackRejected: true, unknownMappingRejected: true};
+  if (!retained.ok || !Object.isFrozen(retained.value.drafts[0]))
+    throw new Error('Installed interaction state is not an immutable wire round trip');
+  if (parseInteractionState({ ...state, values: [...state.values, ...state.values] }).ok)
+    throw new Error('Installed interaction state accepted duplicate routes');
+  if (parseInteractionState({ ...state, approved: true }).ok)
+    throw new Error('Installed interaction state accepted authority');
+  return { ports: 3, selectionEquivalence: true, directedFeedbackRejected: true, unknownMappingRejected: true };
 }
 const graphConsumerSource = runInstalledInteractionGraph.toString();
 
-function runInstalledPresentation(createPresentationRegistry, composePresentation, validatePresentationPlan, documents, current) {
-  const operation = {id: 'read', revision: '1'};
-  const resultDescriptor = {...documents.result, fields: documents.catalog.entities[0].fields};
-  const manifest = (id, container) => ({ref:{id,revision:'1'},configSchema:{id:id+'.config',revision:'1'},roles:[container?'structure':'table'],operations:container?[]:[operation],
-    result:container?'none':'required',children:{min:0,max:container?32:0},visibility:container?'simultaneous':'leaf',extension:false,
-    resolveConfig: (values, result) => ({ok:true,value:{values,fields:result?.fields.map(field=>field.id)??[],ports:[]}}),suggestConfig:()=>({ok:true,value:{}})});
-  const manifests=[manifest('table',false),manifest('stack',true)];
-  const registered=createPresentationRegistry(manifests);
-  if(!registered.ok)throw new Error('Installed presentation registry failed');
-  const context={task:{...documents.task,needs:[{id:'read',operation,outputId:documents.result.ref.outputId,fields:[resultDescriptor.fields[0].id],required:true}]},
-    experience:{...documents.experience,mode:'composable',allowedRepresentations:['table','stack'],composition:{allowWithoutPreset:true,maxNodes:8,maxExpansions:1}},
-    current,results:[resultDescriptor],rendererCapabilities:manifests.map(m=>m.ref),
-    environment:{inlineSize:{state:'unknown'},blockSize:{state:'unknown'},textScale:{state:'unknown'},pointer:'unknown',hover:'unknown',keyboard:'unknown',locale:'en-US',direction:'ltr',reducedMotion:false,forcedColors:false}};
-  const composed=composePresentation({id:'installed',revision:'1',preconditions:current,context},registered.value);
-  if(!composed.ok||composed.value.status!=='composed'||composed.value.expansions!==1)throw new Error('Installed no-preset composition failed');
-  const presentation=composed.value.presentation;
-  if(presentation.environment.inlineSize.state!=='unknown'||!Object.isFrozen(presentation.plan))throw new Error('Installed presentation lost unknown environment or ownership');
-  if(validatePresentationPlan({...presentation.plan,coverage:[]},context,registered.value).ok)throw new Error('Installed presentation accepted missing coverage');
-  if(validatePresentationPlan(presentation.plan,{...context,current:{...current,regionRevision:'changed'}},registered.value).ok)throw new Error('Installed presentation accepted stale state');
-  return {noPreset:true,unknownSSR:true,coverageChecked:true,staleRejected:true};
+function runInstalledPresentation(
+  createPresentationRegistry,
+  composePresentation,
+  validatePresentationPlan,
+  documents,
+  current,
+) {
+  const operation = { id: 'read', revision: '1' };
+  const resultDescriptor = { ...documents.result, fields: documents.catalog.entities[0].fields };
+  const manifest = (id, container) => ({
+    ref: { id, revision: '1' },
+    configSchema: { id: id + '.config', revision: '1' },
+    roles: [container ? 'structure' : 'table'],
+    operations: container ? [] : [operation],
+    result: container ? 'none' : 'required',
+    children: { min: 0, max: container ? 32 : 0 },
+    visibility: container ? 'simultaneous' : 'leaf',
+    extension: false,
+    resolveConfig: (values, result) => ({
+      ok: true,
+      value: { values, fields: result?.fields.map((field) => field.id) ?? [], ports: [] },
+    }),
+    suggestConfig: () => ({ ok: true, value: {} }),
+  });
+  const manifests = [manifest('table', false), manifest('stack', true)];
+  const registered = createPresentationRegistry(manifests);
+  if (!registered.ok) throw new Error('Installed presentation registry failed');
+  const context = {
+    task: {
+      ...documents.task,
+      needs: [
+        {
+          id: 'read',
+          operation,
+          outputId: documents.result.ref.outputId,
+          fields: [resultDescriptor.fields[0].id],
+          required: true,
+        },
+      ],
+    },
+    experience: {
+      ...documents.experience,
+      mode: 'composable',
+      allowedRepresentations: ['table', 'stack'],
+      composition: { allowWithoutPreset: true, maxNodes: 8, maxExpansions: 1 },
+    },
+    current,
+    results: [resultDescriptor],
+    rendererCapabilities: manifests.map((m) => m.ref),
+    environment: {
+      inlineSize: { state: 'unknown' },
+      blockSize: { state: 'unknown' },
+      textScale: { state: 'unknown' },
+      pointer: 'unknown',
+      hover: 'unknown',
+      keyboard: 'unknown',
+      locale: 'en-US',
+      direction: 'ltr',
+      reducedMotion: false,
+      forcedColors: false,
+    },
+  };
+  const composed = composePresentation(
+    { id: 'installed', revision: '1', preconditions: current, context },
+    registered.value,
+  );
+  if (!composed.ok || composed.value.status !== 'composed' || composed.value.expansions !== 1)
+    throw new Error('Installed no-preset composition failed');
+  const presentation = composed.value.presentation;
+  if (presentation.environment.inlineSize.state !== 'unknown' || !Object.isFrozen(presentation.plan))
+    throw new Error('Installed presentation lost unknown environment or ownership');
+  if (validatePresentationPlan({ ...presentation.plan, coverage: [] }, context, registered.value).ok)
+    throw new Error('Installed presentation accepted missing coverage');
+  if (
+    validatePresentationPlan(
+      presentation.plan,
+      { ...context, current: { ...current, regionRevision: 'changed' } },
+      registered.value,
+    ).ok
+  )
+    throw new Error('Installed presentation accepted stale state');
+  return { noPreset: true, unknownSSR: true, coverageChecked: true, staleRejected: true };
 }
 const presentationConsumerSource = runInstalledPresentation.toString();
 
 function runInstalledAgentContracts(parseContract, serializeContract, compareScalars, resultRef) {
-  const type = {value: 'decimal', nullable: false};
-  const claim = {version:'1',id:'claim',kind:'value',cell:{result:resultRef,field:'rate',identity:{id:'e1'},type,populationDigest:'cohort',filters:[]},value:{decimal:'0.1250'}};
+  const type = { value: 'decimal', nullable: false };
+  const claim = {
+    version: '1',
+    id: 'claim',
+    kind: 'value',
+    cell: { result: resultRef, field: 'rate', identity: { id: 'e1' }, type, populationDigest: 'cohort', filters: [] },
+    value: { decimal: '0.1250' },
+  };
   const wire = serializeContract('narrative-claim', claim);
-  if (!wire.ok || !parseContract('narrative-claim', wire.value).ok) throw new Error('Installed narrative round trip failed');
-  if (parseContract('narrative-claim', {...claim,text:'The cause is proved.'}).ok) throw new Error('Numerical claim accepted authorizing prose');
-  if (!parseContract('operation-grant', JSON.stringify('task.propose')).ok || parseContract('operation-grant', JSON.stringify('act')).ok) throw new Error('Independent grant vocabulary failed');
-  const compared = compareScalars({decimal:'0.125'}, claim.value, type);
+  if (!wire.ok || !parseContract('narrative-claim', wire.value).ok)
+    throw new Error('Installed narrative round trip failed');
+  if (parseContract('narrative-claim', { ...claim, text: 'The cause is proved.' }).ok)
+    throw new Error('Numerical claim accepted authorizing prose');
+  if (
+    !parseContract('operation-grant', JSON.stringify('task.propose')).ok ||
+    parseContract('operation-grant', JSON.stringify('act')).ok
+  )
+    throw new Error('Independent grant vocabulary failed');
+  const compared = compareScalars({ decimal: '0.125' }, claim.value, type);
   if (!compared.ok || compared.value !== 0) throw new Error('Installed exact scalar comparison failed');
-  return {claimShapeChecked:true,proseSeparated:true,grantsIndependent:true};
+  return { claimShapeChecked: true, proseSeparated: true, grantsIndependent: true };
 }
 const agentConsumerSource = runInstalledAgentContracts.toString();
 
-
-
-
-await writeFile(join(consumerDirectory, "consumer-types.ts"), `
+await writeFile(
+  join(consumerDirectory, 'consumer-types.ts'),
+  `
 import {
   parseCatalog, parseTask, parseResult, parseExperience, parseContract, serializeContract, parseWireValue, compareScalars, bindVisualizationSpec, parseVisualizationSpec,
   validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph, parseInteractionState, createPresentationRegistry, composePresentation, validatePresentationPlan,
@@ -727,26 +890,32 @@ restriction.id = 'unexpected';
 constraints.allowedRepresentations.push('unexpected');
 // @ts-expect-error Task contracts do not carry self-declared actor authority.
 void taskStructure.task.actor;
-`);
-await writeFile(join(consumerDirectory, "tsconfig.json"), JSON.stringify({
-  compilerOptions: {
-    target: "ES2022",
-    module: "NodeNext",
-    moduleResolution: "NodeNext",
-    strict: true,
-    exactOptionalPropertyTypes: true,
-    noUncheckedIndexedAccess: true,
-    noEmit: true,
-    skipLibCheck: false,
-  },
-  files: ["consumer-types.ts"],
-}));
-run([join(consumerDirectory, "node_modules/.bin/tsc"), "--project", "tsconfig.json"], consumerDirectory);
+`,
+);
+await writeFile(
+  join(consumerDirectory, 'tsconfig.json'),
+  JSON.stringify({
+    compilerOptions: {
+      target: 'ES2022',
+      module: 'NodeNext',
+      moduleResolution: 'NodeNext',
+      strict: true,
+      exactOptionalPropertyTypes: true,
+      noUncheckedIndexedAccess: true,
+      noEmit: true,
+      skipLibCheck: false,
+    },
+    files: ['consumer-types.ts'],
+  }),
+);
+run([join(consumerDirectory, 'node_modules/.bin/tsc'), '--project', 'tsconfig.json'], consumerDirectory);
 
 const fixtureSource = JSON.stringify(documents);
 const t05FixtureSource = JSON.stringify(t05Fixtures);
 const t04FixtureSource = JSON.stringify(t04Fixtures);
-await writeFile(join(consumerDirectory, "consumer.mjs"), `
+await writeFile(
+  join(consumerDirectory, 'consumer.mjs'),
+  `
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {readFile} from 'node:fs/promises';
@@ -928,10 +1097,13 @@ console.log('Installed @aeliqo/core query planning, exact evaluation and cancell
 console.log('Installed @aeliqo/core parsers, schema exports, and round trips pass.');
 console.log('Installed @aeliqo/core task structure and experience constraint passes pass.');
 console.log('Installed @aeliqo/core semantic checker and typed authoring passes pass.');
-`);
-const consumerOutput = run([process.execPath, "consumer.mjs"], consumerDirectory);
-const parserProbe = join(consumerDirectory, "no-codegen.mjs");
-await writeFile(parserProbe, `
+`,
+);
+const consumerOutput = run([process.execPath, 'consumer.mjs'], consumerDirectory);
+const parserProbe = join(consumerDirectory, 'no-codegen.mjs');
+await writeFile(
+  parserProbe,
+  `
 import assert from 'node:assert/strict';
 globalThis.Function = () => { throw new Error('Function constructor used by core parser'); };
 globalThis.eval = () => { throw new Error('eval used by core parser'); };
@@ -964,15 +1136,20 @@ if (registry.ok) {
   if (authoring.ok) assert.equal(authoring.value.field('employees', 'numerator').ok, true);
 }
 console.log('No dynamic code generation during core, parser, and semantic authoring calls.');
-`);
-const parserProbeOutput = run([
-  process.execPath,
-  "--disallow-code-generation-from-strings",
-  parserProbe,
-], consumerDirectory);
+`,
+);
+const parserProbeOutput = run(
+  [process.execPath, '--disallow-code-generation-from-strings', parserProbe],
+  consumerDirectory,
+);
 
-await writeFile(join(consumerDirectory, "index.html"), '<!doctype html><html><body><script type="module" src="/bundle-entry.js"></script></body></html>');
-await writeFile(join(consumerDirectory, "bundle-entry.js"), `
+await writeFile(
+  join(consumerDirectory, 'index.html'),
+  '<!doctype html><html><body><script type="module" src="/bundle-entry.js"></script></body></html>',
+);
+await writeFile(
+  join(consumerDirectory, 'bundle-entry.js'),
+  `
 import {
   parseCatalog, parseTask, parseResult, parseExperience, parseWireValue, parseContract, serializeContract, compareScalars,
   validateTaskStructure, resolveExperienceConstraints, validateCommitReadSet, validateInteractionGraph, parseInteractionState, createPresentationRegistry, composePresentation, validatePresentationPlan,
@@ -1008,8 +1185,11 @@ const parsed = [
 ];
 globalThis.__aeliqoParsed = parsed;
 export {parsed};
-`);
-await writeFile(join(consumerDirectory, "vite.config.mjs"), `
+`,
+);
+await writeFile(
+  join(consumerDirectory, 'vite.config.mjs'),
+  `
 export default {
   build: {
     minify: true,
@@ -1021,30 +1201,38 @@ export default {
     this.emitFile({type: 'asset', fileName: 'modules.json', source: JSON.stringify(modules)});
   }}],
 };
-`);
-run([join(consumerDirectory, "node_modules/.bin/vite"), "build"], consumerDirectory);
-const modules = JSON.parse(await readFile(join(consumerDirectory, "dist/modules.json"), "utf8"));
-const normalizedModules = modules.map((id) => id.replaceAll(String.fromCharCode(92), "/"));
-const normalizedConsumerDirectory = (await realpath(consumerDirectory)).replaceAll(String.fromCharCode(92), "/");
+`,
+);
+run([join(consumerDirectory, 'node_modules/.bin/vite'), 'build'], consumerDirectory);
+const modules = JSON.parse(await readFile(join(consumerDirectory, 'dist/modules.json'), 'utf8'));
+const normalizedModules = modules.map((id) => id.replaceAll(String.fromCharCode(92), '/'));
+const normalizedConsumerDirectory = (await realpath(consumerDirectory)).replaceAll(String.fromCharCode(92), '/');
 const fixtureModules = new Set([
   `${normalizedConsumerDirectory}/bundle-entry.js`,
   `${normalizedConsumerDirectory}/index.html`,
 ]);
 const coreDistPrefix = `${normalizedConsumerDirectory}/node_modules/@aeliqo/core/dist/`;
 const zodV4Prefix = `${normalizedConsumerDirectory}/node_modules/zod/v4/`;
-assert(normalizedModules.some((id) => id.startsWith(coreDistPrefix)), "Installed core is absent from Vite graph");
+assert(
+  normalizedModules.some((id) => id.startsWith(coreDistPrefix)),
+  'Installed core is absent from Vite graph',
+);
 for (const id of normalizedModules) {
-  const isViteFixture = id === String.fromCharCode(0) + "vite/modulepreload-polyfill.js" || fixtureModules.has(id);
-  const isInstalledCore = id.startsWith(coreDistPrefix) && id.endsWith(".js");
+  const isViteFixture = id === String.fromCharCode(0) + 'vite/modulepreload-polyfill.js' || fixtureModules.has(id);
+  const isInstalledCore = id.startsWith(coreDistPrefix) && id.endsWith('.js');
   const isInstalledZod = id.startsWith(zodV4Prefix) && /\/(?:core|mini)\/[^/]+\.js$/.test(id);
   assert(isViteFixture || isInstalledCore || isInstalledZod, `Unexpected module in parser graph: ${id}`);
 }
-const bundleFiles = (await sortedFiles(join(consumerDirectory, "dist"))).filter((path) => extname(path) === ".js");
+const bundleFiles = (await sortedFiles(join(consumerDirectory, 'dist'))).filter((path) => extname(path) === '.js');
 const bundleMetrics = [];
 for (const path of bundleFiles) {
   const bytes = await readFile(path);
-  assert(bytes.includes(Buffer.from("__aeliqoParsed")), `Bundle does not retain observable parser output: ${path}`);
-  bundleMetrics.push({file: relative(join(consumerDirectory, "dist"), path), bytes: bytes.length, gzipBytes: gzipSync(bytes).length});
+  assert(bytes.includes(Buffer.from('__aeliqoParsed')), `Bundle does not retain observable parser output: ${path}`);
+  bundleMetrics.push({
+    file: relative(join(consumerDirectory, 'dist'), path),
+    bytes: bytes.length,
+    gzipBytes: gzipSync(bytes).length,
+  });
 }
 const initialGzipBytes = bundleMetrics.reduce((sum, item) => sum + item.gzipBytes, 0);
 assert(initialGzipBytes <= 70 * 1024, `Core consumer entry exceeds 70 KiB gzip: ${initialGzipBytes}`);
@@ -1052,63 +1240,87 @@ assert(initialGzipBytes <= 70 * 1024, `Core consumer entry exceeds 70 KiB gzip: 
 // Execute the packed consumer in a real browser: a successful bundle alone
 // cannot detect missing globals or runtime-only import failures.
 const servedFiles = new Map();
-for (const path of await sortedFiles(join(consumerDirectory, "dist"))) {
-  servedFiles.set('/' + relative(join(consumerDirectory, "dist"), path).split("\\").join("/"), {
+for (const path of await sortedFiles(join(consumerDirectory, 'dist'))) {
+  servedFiles.set('/' + relative(join(consumerDirectory, 'dist'), path).split('\\').join('/'), {
     bytes: await readFile(path),
     type: extname(path) === '.js' ? 'text/javascript' : extname(path) === '.html' ? 'text/html' : 'application/json',
   });
 }
 const server = createServer((request, response) => {
   const file = servedFiles.get(request.url === '/' ? '/index.html' : request.url);
-  response.writeHead(file ? 200 : 404, {'Content-Type': file?.type ?? 'text/plain'});
+  response.writeHead(file ? 200 : 404, { 'Content-Type': file?.type ?? 'text/plain' });
   response.end(file?.bytes ?? 'Not found');
 });
-await new Promise((resolve, reject) => {server.once('error', reject); server.listen(0, '127.0.0.1', resolve);});
+await new Promise((resolve, reject) => {
+  server.once('error', reject);
+  server.listen(0, '127.0.0.1', resolve);
+});
 let browser;
 let browserOutcomes;
 try {
   browser = await chromium.launch();
   const page = await browser.newPage();
   const errors = [];
-  page.on('pageerror', error => errors.push(error.message));
+  page.on('pageerror', (error) => errors.push(error.message));
   await page.goto(`http://127.0.0.1:${server.address().port}/`);
   assert.deepEqual(errors, [], 'Installed browser consumer raised an exception');
-  await page.waitForFunction(() => Array.isArray(globalThis.__aeliqoParsed), null, {timeout: 10_000});
-  browserOutcomes = await page.evaluate(() => globalThis.__aeliqoParsed.map(value => value.ok));
+  await page.waitForFunction(() => Array.isArray(globalThis.__aeliqoParsed), null, { timeout: 10_000 });
+  browserOutcomes = await page.evaluate(() => globalThis.__aeliqoParsed.map((value) => value.ok));
   assert.deepEqual(errors, [], 'Installed browser consumer raised an exception');
-  assert(browserOutcomes.length > 0 && browserOutcomes.every(Boolean), 'Installed browser consumer rejected a valid fixture');
+  assert(
+    browserOutcomes.length > 0 && browserOutcomes.every(Boolean),
+    'Installed browser consumer rejected a valid fixture',
+  );
 } finally {
   await browser?.close();
-  await new Promise(resolve => server.close(resolve));
+  await new Promise((resolve) => server.close(resolve));
 }
 
 const sourceAfter = await sourceDigest();
-assert.equal(sourceAfter, sourceBefore, "Core source changed during consumer verification");
+assert.equal(sourceAfter, sourceBefore, 'Core source changed during consumer verification');
 const report = {
   sourceDigestBefore: sourceBefore,
   sourceDigestAfter: sourceAfter,
   sourceChangedDuringRun: sourceBefore !== sourceAfter,
-  scope: "@aeliqo/core 0.1.0 installed tarball; four document parsers/round trips; TaskStructure, ExperienceConstraints, semantic checker and typed authoring passes; generated schemas; Vite core graph and 70 KiB gzip budget. Includes installed exact decimal aggregate, canonical query ranking, cancellation and registered interaction graph validation in Node/no-codegen/Chromium. Full planner and product certification are outside this scoped check.",
-  artifact: {name: packedManifest.name, version: packedManifest.version, path: tarballPath, sha256: tarballSha256, integrity: tarballIntegrity},
-  consumer: {directory: consumerDirectory, lockPath: join(runDirectory, "consumer-package-lock.json"), lockSha256: hash(lockBytes)},
+  scope: `@aeliqo/core ${RELEASE_VERSION} installed tarball; four document parsers/round trips; TaskStructure, ExperienceConstraints, semantic checker and typed authoring passes; generated schemas; Vite core graph and 70 KiB gzip budget. Includes installed exact decimal aggregate, canonical query ranking, cancellation and registered interaction graph validation in Node/no-codegen/Chromium. Full planner and product certification are outside this scoped check.`,
+  artifact: {
+    name: packedManifest.name,
+    version: packedManifest.version,
+    path: tarballPath,
+    sha256: tarballSha256,
+    integrity: tarballIntegrity,
+  },
+  consumer: {
+    directory: consumerDirectory,
+    lockPath: join(runDirectory, 'consumer-package-lock.json'),
+    lockSha256: hash(lockBytes),
+  },
   schemas: expectedSchemas.map((name) => `schemas/${name}.schema.json`),
   browserOutcomes,
   consumerOutput: consumerOutput.trim(),
   parserProbeOutput: parserProbeOutput.trim(),
-  bundle: {initialGzipBytes, files: bundleMetrics, modules, moduleGraphScope: "installed package parser, semantics, query and interaction graph validation; no universal dependency/security certification"},
+  bundle: {
+    initialGzipBytes,
+    files: bundleMetrics,
+    modules,
+    moduleGraphScope:
+      'installed package parser, semantics, query and interaction graph validation; no universal dependency/security certification',
+  },
   environment: {
     node: process.version,
-    npm: run(["npm", "--version"], consumerDirectory).trim(),
-    pnpm: run(["pnpm", "--version"], root).trim(),
-    typescript: "7.0.2",
-    vite: "8.2.2",
-    zod: "4.5.4",
+    npm: run(['npm', '--version'], consumerDirectory).trim(),
+    pnpm: run(['pnpm', '--version'], root).trim(),
+    typescript: '7.0.2',
+    vite: '8.2.2',
+    zod: '4.5.4',
     os: platform(),
     release: release(),
     arch: arch(),
   },
   passed: true,
 };
-await writeFile(join(runDirectory, "report.json"), JSON.stringify(report, null, 2) + "\n");
-console.log("Installed @aeliqo/core types, parsers, semantic authoring, schemas, interaction graph, no-codegen probe, Vite graph, and Chromium execution pass.");
-console.log(`Evidence: ${join(runDirectory, "report.json")}`);
+await writeFile(join(runDirectory, 'report.json'), JSON.stringify(report, null, 2) + '\n');
+console.log(
+  'Installed @aeliqo/core types, parsers, semantic authoring, schemas, interaction graph, no-codegen probe, Vite graph, and Chromium execution pass.',
+);
+console.log(`Evidence: ${join(runDirectory, 'report.json')}`);

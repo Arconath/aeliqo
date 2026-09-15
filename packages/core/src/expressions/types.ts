@@ -1,13 +1,13 @@
-import type {Expression, Outcome, SemanticType, VersionRef} from '../contracts/types.js';
-import type {AggregationKind, EvaluationContext, ZeroDenominatorPolicy} from '../semantics/types.js';
+import type { Expression, Outcome, SemanticType, VersionRef } from '../contracts/types.js';
+import type { AggregationKind, EvaluationContext, ZeroDenominatorPolicy } from '../semantics/types.js';
 
 export type TypeConstraint =
-  | {readonly kind: 'any'; readonly allowNull?: boolean}
-  | {readonly kind: 'numeric'; readonly allowNull?: boolean}
-  | {readonly kind: 'boolean'; readonly allowNull?: boolean}
-  | {readonly kind: 'text'; readonly allowNull?: boolean}
-  | {readonly kind: 'exact'; readonly type: SemanticType}
-  | {readonly kind: 'same-as'; readonly argument: number};
+  | { readonly kind: 'any'; readonly allowNull?: boolean }
+  | { readonly kind: 'numeric'; readonly allowNull?: boolean }
+  | { readonly kind: 'boolean'; readonly allowNull?: boolean }
+  | { readonly kind: 'text'; readonly allowNull?: boolean }
+  | { readonly kind: 'exact'; readonly type: SemanticType }
+  | { readonly kind: 'same-as'; readonly argument: number };
 
 export interface FunctionParameter {
   readonly constraint: TypeConstraint;
@@ -16,15 +16,15 @@ export interface FunctionParameter {
 
 export type FunctionOutput =
   | SemanticType
-  | {readonly kind: 'same-as'; readonly argument: number}
-  | {readonly kind: 'nullable-same-as'; readonly argument: number}
+  | { readonly kind: 'same-as'; readonly argument: number }
+  | { readonly kind: 'nullable-same-as'; readonly argument: number }
   | {
-    readonly kind: 'numeric';
-    /** A registered output unit.  Omitted means unitless/inferred only where safe. */
-    readonly unit?: SemanticType['unit'];
-    /** Force a fractional representation for operations such as a mean. */
-    readonly forceFloat?: boolean;
-  };
+      readonly kind: 'numeric';
+      /** A registered output unit.  Omitted means unitless/inferred only where safe. */
+      readonly unit?: SemanticType['unit'];
+      /** Force a fractional representation for operations such as a mean. */
+      readonly forceFloat?: boolean;
+    };
 
 export type FunctionOperation =
   | 'arithmetic'
@@ -58,7 +58,7 @@ export interface FunctionSignature {
   readonly operation: FunctionOperation;
   readonly deterministic: boolean;
   /** Executor negotiation metadata; the pure checker enforces its own AST budget. */
-  readonly cost: {readonly maxNodes: number; readonly maxMilliseconds?: number};
+  readonly cost: { readonly maxNodes: number; readonly maxMilliseconds?: number };
   readonly realization: 'local' | 'host' | 'both';
   readonly zeroDenominator?: ZeroDenominatorPolicy;
 }

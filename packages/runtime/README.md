@@ -1,5 +1,37 @@
 # @aeliqo/runtime
 
+## Application facade
+
+`@aeliqo/runtime/app` owns the non-DOM pipeline: parse intent, read fresh trusted
+authority, compile a Task, evaluate the registered DataService, materialize a
+Result, stage and commit the Region, and release obsolete work. Use it in workers,
+servers, tests, or custom renderers. Most browser applications should use
+`@aeliqo/web/app`, which wraps this facade with the standard web recipes.
+
+```ts
+import {createAeliqoRuntime} from '@aeliqo/runtime/app';
+
+const runtime = createAeliqoRuntime({
+  resources: [{resource: people, data: peopleData}],
+  authority,
+});
+
+const mounted = runtime.mount({regionId: 'main', resourceId: 'people'});
+if (!mounted.ok) throw new Error(mounted.diagnostics[0].message);
+const receipt = await runtime.render({
+  regionId: 'main',
+  intent: {version: '1', id: 'browse-people', kind: 'browse', resource: 'people'},
+});
+runtime.dispose();
+```
+
+The authority adapter is application code. Principal, grants, scope, credentials,
+and endpoints are never accepted from an intent. Newer renders supersede older
+work only inside the same Region; disposal cancels pending work and releases
+owned Results and subscriptions.
+
+## Low-level integration
+
 Effectful Aeliqo integration, separate from the pure core. The
 `@aeliqo/runtime/data` entry provides the bounded Application Data Contract (ADC)
 boundary and its in-process evaluator. A host owns authentication, policy and

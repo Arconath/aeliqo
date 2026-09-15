@@ -1,24 +1,22 @@
-import {css, html, nothing} from "lit";
-import {AeliqoFieldElement, aeliqoInputStyles} from "./base.js";
-import {AeliqoFileChangeEvent, type AeliqoFileMetadata} from "./events.js";
+import { css, html, nothing } from 'lit';
+import { AeliqoFieldElement, aeliqoInputStyles } from './base.js';
+import { AeliqoFileChangeEvent, type AeliqoFileMetadata } from './events.js';
 
 /** Native file picker that exposes metadata while leaving bytes with the host. */
 export class AeliqoFileInputElement extends AeliqoFieldElement<readonly AeliqoFileMetadata[]> {
   static readonly properties = {
     ...AeliqoFieldElement.properties,
-    accept: {type: String},
-    multiple: {type: Boolean, reflect: true},
-    capture: {type: String},
-    maxFiles: {attribute: "max-files", type: Number},
-    maxBytes: {attribute: "max-bytes", type: Number},
-    selected: {attribute: false},
+    accept: { type: String },
+    multiple: { type: Boolean, reflect: true },
+    capture: { type: String },
+    maxFiles: { attribute: 'max-files', type: Number },
+    maxBytes: { attribute: 'max-bytes', type: Number },
+    selected: { attribute: false },
   };
 
-  static readonly aeliqoVersion = "0.1.0";
-
-  accept = "";
+  accept = '';
   multiple = false;
-  capture = "";
+  capture = '';
   maxFiles = 0;
   maxBytes = 0;
   selected: readonly AeliqoFileMetadata[] = [];
@@ -30,7 +28,7 @@ export class AeliqoFileInputElement extends AeliqoFieldElement<readonly AeliqoFi
   protected override resetField(): void {
     this.selected = [];
     const input = this.native();
-    if (input !== undefined) input.value = "";
+    if (input !== undefined) input.value = '';
     this.syncNative();
   }
 
@@ -48,12 +46,18 @@ export class AeliqoFileInputElement extends AeliqoFieldElement<readonly AeliqoFi
           ?multiple=${this.multiple}
           capture=${this.capture || nothing}
           ?disabled=${this.fieldDisabled || this.readOnly}
-          aria-readonly=${this.readOnly ? "true" : nothing}
+          aria-readonly=${this.readOnly ? 'true' : nothing}
           aria-describedby=${describedBy || nothing}
-          aria-invalid=${this.error ? "true" : nothing}
+          aria-invalid=${this.error ? 'true' : nothing}
           @change=${this.handleChange}
         />
-        ${this.selected.length > 0 ? html`<ul part="files">${this.selected.map((file) => html`<li>${file.name} <span>(${file.size} bytes)</span></li>`)}</ul>` : nothing}
+        ${
+          this.selected.length > 0
+            ? html`<ul part="files">
+                ${this.selected.map((file) => html`<li>${file.name} <span>(${file.size} bytes)</span></li>`)}
+              </ul>`
+            : nothing
+        }
         ${this.renderMessages()}
       </div>
     `;
@@ -67,26 +71,29 @@ export class AeliqoFileInputElement extends AeliqoFieldElement<readonly AeliqoFi
     const input = event.target;
     if (!(input instanceof HTMLInputElement) || this.fieldDisabled) return;
     if (this.readOnly) {
-      input.value = "";
+      input.value = '';
       this.syncNative();
       return;
     }
-    const metadata: AeliqoFileMetadata[] = input.files === null ? [] : Array.from(input.files, (file) => ({
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      lastModified: file.lastModified,
-    }));
+    const metadata: AeliqoFileMetadata[] =
+      input.files === null
+        ? []
+        : Array.from(input.files, (file) => ({
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            lastModified: file.lastModified,
+          }));
     this.selected = metadata;
-    this.dispatchEvent(new AeliqoFileChangeEvent({source: "user", files: metadata}));
+    this.dispatchEvent(new AeliqoFileChangeEvent({ source: 'user', files: metadata }));
     void this.validateProposed(metadata);
     this.syncNative();
   };
 
   private native(): HTMLInputElement | undefined {
     const root = this.renderRoot;
-    if (root === undefined || typeof root.querySelector !== "function") return undefined;
-    return root.querySelector<HTMLInputElement>("input[part=input]") ?? undefined;
+    if (root === undefined || typeof root.querySelector !== 'function') return undefined;
+    return root.querySelector<HTMLInputElement>('input[part=input]') ?? undefined;
   }
 
   private syncNative(): void {
@@ -95,7 +102,8 @@ export class AeliqoFileInputElement extends AeliqoFieldElement<readonly AeliqoFi
     // custom element's form value. The host can explicitly read the native
     // FileList after receiving the metadata event if it owns that capability.
     this.setFormValue(null);
-    if (this.internals !== undefined && !this.fieldDisabled && !valid) this.internals.setValidity({customError: true}, this.error || this.selectionError(), this.native());
+    if (this.internals !== undefined && !this.fieldDisabled && !valid)
+      this.internals.setValidity({ customError: true }, this.error || this.selectionError(), this.native());
     else this.updateValidity(this.native(), this.required && this.selected.length === 0);
   }
 
@@ -106,13 +114,23 @@ export class AeliqoFileInputElement extends AeliqoFieldElement<readonly AeliqoFi
   }
 
   private selectionError(): string {
-    if (this.maxFiles > 0 && this.selected.length > this.maxFiles) return `Choose at most ${this.maxFiles} file${this.maxFiles === 1 ? "" : "s"}.`;
-    if (this.maxBytes > 0 && this.selected.reduce((sum, file) => sum + file.size, 0) > this.maxBytes) return "The selected files are too large.";
-    return "Choose a file.";
+    if (this.maxFiles > 0 && this.selected.length > this.maxFiles)
+      return `Choose at most ${this.maxFiles} file${this.maxFiles === 1 ? '' : 's'}.`;
+    if (this.maxBytes > 0 && this.selected.reduce((sum, file) => sum + file.size, 0) > this.maxBytes)
+      return 'The selected files are too large.';
+    return 'Choose a file.';
   }
 
-  static readonly styles = [...aeliqoInputStyles, css`
-    [part=files] { margin: 0; padding-inline-start: 1.25rem; }
-    [part=files] span { color: var(--aeliqo-color-muted, #4b5563); }
-  `];
+  static readonly styles = [
+    ...aeliqoInputStyles,
+    css`
+      [part='files'] {
+        margin: 0;
+        padding-inline-start: 1.25rem;
+      }
+      [part='files'] span {
+        color: var(--aeliqo-color-muted, #4b5563);
+      }
+    `,
+  ];
 }

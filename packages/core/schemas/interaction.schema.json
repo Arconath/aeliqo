@@ -716,42 +716,7 @@
                 ]
               },
               "additionalProperties": {
-                "anyOf": [
-                  {
-                    "type": "null"
-                  },
-                  {
-                    "type": "boolean"
-                  },
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "string",
-                    "maxLength": 16384
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "decimal": {
-                        "type": "string",
-                        "maxLength": 512,
-                        "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$"
-                      }
-                    },
-                    "required": [
-                      "decimal"
-                    ],
-                    "additionalProperties": false,
-                    "maxProperties": 256,
-                    "propertyNames": {
-                      "maxLength": 160,
-                      "not": {
-                        "const": "__proto__"
-                      }
-                    }
-                  }
-                ]
+                "$ref": "#/$defs/__schema1"
               },
               "maxProperties": 256
             }

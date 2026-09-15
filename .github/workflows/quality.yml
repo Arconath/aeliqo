@@ -112,7 +112,8 @@ jobs:
       - name: Build and smoke the production image contract
         run: |
           sdk_revision="$SOURCE_SHA"
-          sdk_version="$(jq -er '.version | select(. == "0.1.0")' packages/core/package.json)"
+          release_version="$(jq -er '.version | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))' release-metadata.json)"
+          sdk_version="$(jq -er --arg version "$release_version" '.version | select(. == $version)' packages/core/package.json)"
           image="aeliqo-web-quality:$SOURCE_SHA"
           DOCKER_BUILDKIT=1 docker build \
             --file apps/site/Dockerfile \
@@ -129,7 +130,8 @@ jobs:
             apps/site/deploy/server.go \
             apps/site/scripts/ci/check-static-image.sh \
             packages/core/package.json \
-            docs/public-site/content.mjs \
+            release-metadata.json \
+            docs/public-site/routes.mjs \
             catalog/components.json \
             > apps/site/artifacts/image-contract/source-sha256.txt
       - name: Upload source-bound functional evidence

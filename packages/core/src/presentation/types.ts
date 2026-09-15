@@ -1,6 +1,16 @@
-import type {CommitPreconditions, Contract, Experience, Outcome, PresentationPlan, Result, Task, VersionRef, ReadonlyJsonValue} from '../contracts/types.js';
-import type {ExperienceRestriction} from '../contracts/experience/index.js';
-import type {InteractionGraph, InteractionMappingManifest, InteractionPort} from '../interaction/graph.js';
+import type {
+  CommitPreconditions,
+  Contract,
+  Experience,
+  Outcome,
+  PresentationPlan,
+  Result,
+  Task,
+  VersionRef,
+  ReadonlyJsonValue,
+} from '../contracts/types.js';
+import type { ExperienceRestriction } from '../contracts/experience/index.js';
+import type { InteractionGraph, InteractionMappingManifest, InteractionPort } from '../interaction/graph.js';
 
 export type PresentationNode = PresentationPlan['nodes'][number];
 export type PresentationValue = ReadonlyJsonValue;
@@ -27,7 +37,7 @@ export interface PresentationQuality {
   readonly informationDensity: number;
   readonly interactionEffort: number;
   readonly legibilityPenalty: number;
-  readonly cost?: {readonly microseconds: number; readonly measurement: VersionRef};
+  readonly cost?: { readonly microseconds: number; readonly measurement: VersionRef };
 }
 
 /** Parsed, owned inputs supplied to trusted local pattern callbacks. */
@@ -61,17 +71,28 @@ export interface PresentationManifest {
   readonly roles: readonly string[];
   readonly operations: readonly VersionRef[];
   readonly result: 'required' | 'optional' | 'none';
-  readonly children: {readonly min: number; readonly max: number};
+  readonly children: { readonly min: number; readonly max: number };
   /** Exclusive containers cannot satisfy a simultaneous comparison across their children. */
   readonly visibility: 'simultaneous' | 'exclusive' | 'leaf';
   readonly extension: boolean;
   /** The validator supplies the parsed node so config-dependent child layouts can reject omitted content. */
-  readonly resolveConfig: (values: PresentationValues, result: Result | undefined, node?: PresentationNode) => Outcome<ResolvedPresentationConfig>;
+  readonly resolveConfig: (
+    values: PresentationValues,
+    result: Result | undefined,
+    node?: PresentationNode,
+  ) => Outcome<ResolvedPresentationConfig>;
   /** Optional tested environment envelope and ordinal assessment. A failure is
    * infeasible; an absent assessment conveys no measured quality claim. */
-  readonly assess?: (config: ResolvedPresentationConfig, result: Result | undefined, environment: PresentationEnvironment) => Outcome<PresentationQuality>;
+  readonly assess?: (
+    config: ResolvedPresentationConfig,
+    result: Result | undefined,
+    environment: PresentationEnvironment,
+  ) => Outcome<PresentationQuality>;
   /** Optional deterministic candidate authoring. Explicit candidates use the same validator. */
-  readonly suggestConfig?: (needs: readonly Task['needs'][number][], result: Result | undefined) => Outcome<PresentationValues>;
+  readonly suggestConfig?: (
+    needs: readonly Task['needs'][number][],
+    result: Result | undefined,
+  ) => Outcome<PresentationValues>;
 }
 
 /** Trusted declaration of a renderer-implemented transition. `archive` moves a
@@ -132,12 +153,19 @@ export interface PresentationCompositionRequest {
   readonly revision: string;
   readonly preconditions: CommitPreconditions;
   readonly context: PresentationContext;
-  readonly candidates?: readonly {readonly source: 'explicit' | 'pattern'; readonly pattern?: VersionRef; readonly plan: PresentationPlan}[];
+  readonly candidates?: readonly {
+    readonly source: 'explicit' | 'pattern';
+    readonly pattern?: VersionRef;
+    readonly plan: PresentationPlan;
+  }[];
 }
 
 export interface PresentationComposition {
   readonly status: 'composed' | 'search-exhausted' | 'conflict';
   readonly presentation?: ValidatedPresentation;
   readonly expansions: number;
-  readonly rejected: readonly {readonly candidate: string; readonly diagnostics: readonly import('../contracts/types.js').Diagnostic[]}[];
+  readonly rejected: readonly {
+    readonly candidate: string;
+    readonly diagnostics: readonly import('../contracts/types.js').Diagnostic[];
+  }[];
 }

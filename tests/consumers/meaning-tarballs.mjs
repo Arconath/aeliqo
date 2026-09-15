@@ -1,3 +1,4 @@
+import { RELEASE_VERSION } from '../../scripts/release/metadata.mjs';
 /**
  * Build and consume the public meaning authoring APIs from actual package
  * tarballs outside the workspace. This proves a typed developer quickstart,
@@ -5,23 +6,23 @@
  * stale/revoked handling, and a browser import through the installed graph.
  */
 import assert from 'node:assert/strict';
-import {createHash} from 'node:crypto';
-import {spawnSync} from 'node:child_process';
-import {createServer} from 'node:http';
-import {access, mkdir, mkdtemp, readFile, readdir, lstat, realpath, writeFile} from 'node:fs/promises';
-import {tmpdir, platform, release, arch} from 'node:os';
-import {extname, join, resolve} from 'node:path';
-import {chromium} from '@playwright/test';
+import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
+import { createServer } from 'node:http';
+import { access, mkdir, mkdtemp, readFile, readdir, lstat, realpath, writeFile } from 'node:fs/promises';
+import { tmpdir, platform, release, arch } from 'node:os';
+import { extname, join, resolve } from 'node:path';
+import { chromium } from '@playwright/test';
 
 const root = resolve(import.meta.dirname, '../..');
 const outputDirectory = join(root, 'artifacts', 'meaning-consumers');
-await mkdir(outputDirectory, {recursive: true});
+await mkdir(outputDirectory, { recursive: true });
 const runDirectory = await mkdtemp(join(outputDirectory, 'run-'));
 const consumerDirectory = await mkdtemp(join(tmpdir(), 'aeliqo-meaning-consumer-'));
 const consumerReal = await realpath(consumerDirectory);
 
 function run(argv, cwd, encoding = 'utf8', env = process.env) {
-  const result = spawnSync(argv[0], argv.slice(1), {cwd, encoding, env, timeout: 180_000});
+  const result = spawnSync(argv[0], argv.slice(1), { cwd, encoding, env, timeout: 180_000 });
   if (result.error || result.status !== 0) {
     throw new Error(`${argv.join(' ')} failed: ${result.error ?? ''}\n${result.stdout ?? ''}\n${result.stderr ?? ''}`);
   }
@@ -37,7 +38,7 @@ for (const name of packageNames) {
   const directory = join(root, 'packages', name);
   const manifest = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
   assert.equal(manifest.name, `@aeliqo/${name}`);
-  assert.equal(manifest.version, '0.1.0');
+  assert.equal(manifest.version, RELEASE_VERSION);
   assert.equal(manifest.license, 'Apache-2.0');
   assert.notEqual(manifest.private, true);
   run(['pnpm', 'build'], directory);
@@ -47,36 +48,69 @@ const artifacts = [];
 for (const name of packageNames) {
   const directory = join(root, 'packages', name);
   const manifest = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
-  const tarball = join(runDirectory, `aeliqo-${name}-0.1.0.tgz`);
+  const tarball = join(runDirectory, `aeliqo-${name}-${RELEASE_VERSION}.tgz`);
   run(['pnpm', 'pack', '--out', tarball], directory);
   const bytes = await readFile(tarball);
   const packed = JSON.parse(run(['tar', '-xOf', tarball, 'package/package.json'], root));
   assert.equal(packed.name, manifest.name);
   assert.equal(packed.version, manifest.version);
   assert.equal(packed.license, manifest.license);
-  if (name === 'runtime') assert.deepEqual(packed.exports?.['./meaning'], {types: './dist/meaning/index.d.ts', import: './dist/meaning/index.js'});
-  if (name === 'agent') assert.deepEqual(packed.exports?.['.'], {types: './dist/index.d.ts', import: './dist/index.js'});
+  if (name === 'runtime')
+    assert.deepEqual(packed.exports?.['./meaning'], {
+      types: './dist/meaning/index.d.ts',
+      import: './dist/meaning/index.js',
+    });
+  if (name === 'agent')
+    assert.deepEqual(packed.exports?.['.'], { types: './dist/index.d.ts', import: './dist/index.js' });
   for (const field of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
-    assert(!JSON.stringify(packed[field] ?? {}).includes('workspace:'), `${name} has a workspace dependency in ${field}`);
+    assert(
+      !JSON.stringify(packed[field] ?? {}).includes('workspace:'),
+      `${name} has a workspace dependency in ${field}`,
+    );
   }
   const entries = run(['tar', '-tzf', tarball], root).trim().split('\n');
   assert(entries.includes('package/LICENSE'), `${name} tarball is missing LICENSE`);
   assert(entries.includes('package/README.md'), `${name} tarball is missing README.md`);
   assert(!entries.some((entry) => entry.startsWith('package/src/')), `${name} tarball leaked source files`);
-  artifacts.push({name: packed.name, version: packed.version, path: tarball, bytes,
-    sha256: hash(bytes), integrity: `sha512-${hash(bytes, 'sha512', 'base64')}`, entries});
+  artifacts.push({
+    name: packed.name,
+    version: packed.version,
+    path: tarball,
+    bytes,
+    sha256: hash(bytes),
+    integrity: `sha512-${hash(bytes, 'sha512', 'base64')}`,
+    entries,
+  });
 }
 
-await writeFile(join(consumerDirectory, 'package.json'), JSON.stringify({private: true, type: 'module'}) + '\n');
-run(['npm', 'install', '--ignore-scripts', '--no-audit', '--no-fund', '--save-exact',
-  ...artifacts.map((artifact) => artifact.path), 'typescript@7.0.2', 'vite@8.2.2', '@playwright/test@1.63.0', '@types/node@24.13.3'], consumerDirectory);
+await writeFile(join(consumerDirectory, 'package.json'), JSON.stringify({ private: true, type: 'module' }) + '\n');
+run(
+  [
+    'npm',
+    'install',
+    '--ignore-scripts',
+    '--no-audit',
+    '--no-fund',
+    '--save-exact',
+    ...artifacts.map((artifact) => artifact.path),
+    'typescript@7.0.2',
+    'vite@8.2.2',
+    '@playwright/test@1.63.0',
+    '@types/node@24.13.3',
+  ],
+  consumerDirectory,
+);
 const lockBytes = await readFile(join(consumerDirectory, 'package-lock.json'));
 const lock = JSON.parse(lockBytes);
 for (const artifact of artifacts) {
   const location = `node_modules/${artifact.name}`;
   assert.equal(lock.packages[location].version, artifact.version);
   assert.equal(lock.packages[location].integrity, artifact.integrity);
-  assert.deepEqual(Object.keys(lock.packages).filter((key) => key.endsWith(location)), [location], `Duplicate installed ${artifact.name}`);
+  assert.deepEqual(
+    Object.keys(lock.packages).filter((key) => key.endsWith(location)),
+    [location],
+    `Duplicate installed ${artifact.name}`,
+  );
   for (const entry of artifact.entries) {
     if (entry.endsWith('/')) continue;
     const installed = await readFile(join(consumerDirectory, location, entry.slice('package/'.length)));
@@ -84,10 +118,16 @@ for (const artifact of artifacts) {
     assert.equal(hash(installed), hash(packed), `Installed ${artifact.name} bytes differ for ${entry}`);
   }
 }
-assert.equal(lock.packages['node_modules/@aeliqo/runtime'].dependencies['@aeliqo/core'], '0.1.0');
-assert.equal(lock.packages['node_modules/@aeliqo/agent'].dependencies['@aeliqo/core'], '0.1.0');
-assert.deepEqual(Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/runtime/node_modules/')), []);
-assert.deepEqual(Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/agent/node_modules/')), []);
+assert.equal(lock.packages['node_modules/@aeliqo/runtime'].dependencies['@aeliqo/core'], RELEASE_VERSION);
+assert.equal(lock.packages['node_modules/@aeliqo/agent'].dependencies['@aeliqo/core'], RELEASE_VERSION);
+assert.deepEqual(
+  Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/runtime/node_modules/')),
+  [],
+);
+assert.deepEqual(
+  Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/agent/node_modules/')),
+  [],
+);
 await writeFile(join(runDirectory, 'consumer-package-lock.json'), lockBytes);
 
 const sharedSource = `
@@ -208,7 +248,9 @@ export async function runMeaningProbe() {
 `;
 
 await writeFile(join(consumerDirectory, 'shared.mjs'), sharedSource);
-await writeFile(join(consumerDirectory, 'node.mjs'), `
+await writeFile(
+  join(consumerDirectory, 'node.mjs'),
+  `
 import {realpath} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {runMeaningProbe} from './shared.mjs';
@@ -217,8 +259,11 @@ for (const specifier of ['@aeliqo/core', '@aeliqo/runtime/meaning', '@aeliqo/age
   if (!resolved.includes('/node_modules/')) throw new Error('Resolved outside installed node_modules: ' + specifier + ' -> ' + resolved);
 }
 console.log(JSON.stringify(await runMeaningProbe()));
-`);
-await writeFile(join(consumerDirectory, 'consumer.ts'), `
+`,
+);
+await writeFile(
+  join(consumerDirectory, 'consumer.ts'),
+  `
 import {createMeaningAuthoring} from '@aeliqo/runtime/meaning';
 import {createAgentMeaningAuthoring} from '@aeliqo/agent';
 import {createStandardFunctionRegistry, type Catalog} from '@aeliqo/core';
@@ -236,17 +281,38 @@ if(!ai.ok) throw new Error('ai');
 const draft=ai.value.defineMeaning({id:'orders.total',label:'Total',description:'Sum',expression:manual.value.call({id:'core.aggregate.sum',revision:'1'},[amount])});
 if(!draft.ok) throw new Error('draft');
 void draft.value.meaning.origin;
-`);
-await writeFile(join(consumerDirectory, 'tsconfig.json'), JSON.stringify({compilerOptions: {
-  target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext', strict: true, exactOptionalPropertyTypes: true,
-  noUncheckedIndexedAccess: true, skipLibCheck: false, noEmit: true,
-}, include: ['consumer.ts']}) + '\n');
+`,
+);
+await writeFile(
+  join(consumerDirectory, 'tsconfig.json'),
+  JSON.stringify({
+    compilerOptions: {
+      target: 'ES2022',
+      module: 'NodeNext',
+      moduleResolution: 'NodeNext',
+      strict: true,
+      exactOptionalPropertyTypes: true,
+      noUncheckedIndexedAccess: true,
+      skipLibCheck: false,
+      noEmit: true,
+    },
+    include: ['consumer.ts'],
+  }) + '\n',
+);
 run(['node', 'node_modules/typescript/bin/tsc', '-p', 'tsconfig.json'], consumerDirectory);
-const nodeReport = JSON.parse(run(['node', '--disallow-code-generation-from-strings', 'node.mjs'], consumerDirectory).trim());
+const nodeReport = JSON.parse(
+  run(['node', '--disallow-code-generation-from-strings', 'node.mjs'], consumerDirectory).trim(),
+);
 await writeFile(join(runDirectory, 'node-report.json'), JSON.stringify(nodeReport, null, 2) + '\n');
 
-await writeFile(join(consumerDirectory, 'index.html'), '<!doctype html><meta charset="utf-8"><div id="status">Running</div><script type="module" src="/browser.mjs"></script>');
-await writeFile(join(consumerDirectory, 'browser.mjs'), `import {runMeaningProbe} from './shared.mjs'; window.meaningReport=await runMeaningProbe(); document.querySelector('#status').textContent='Passed';`);
+await writeFile(
+  join(consumerDirectory, 'index.html'),
+  '<!doctype html><meta charset="utf-8"><div id="status">Running</div><script type="module" src="/browser.mjs"></script>',
+);
+await writeFile(
+  join(consumerDirectory, 'browser.mjs'),
+  `import {runMeaningProbe} from './shared.mjs'; window.meaningReport=await runMeaningProbe(); document.querySelector('#status').textContent='Passed';`,
+);
 await writeFile(join(consumerDirectory, 'vite.config.mjs'), 'export default {build:{target:"es2022"}};\n');
 run(['node', 'node_modules/vite/bin/vite.js', 'build'], consumerDirectory);
 
@@ -284,12 +350,29 @@ try {
 }
 
 assert.equal(sourceDigest(), before, 'Source changed during meaning tarball proof');
-await writeFile(join(runDirectory, 'report.json'), JSON.stringify({
-  sourceDigest: before, passed: true,
-  scope: 'Installed core/runtime/agent tarballs; typed schema-reuse quickstart; manual/AI evaluator parity; immutable registration conflict/idempotence; trusted grants and exact allowlist activation; stale mutation and revocation; Node no-codegen and Chromium.',
-  artifacts: artifacts.map(({bytes, entries, ...artifact}) => ({...artifact, entries})),
-  consumerDirectory, lockPath: join(runDirectory, 'consumer-package-lock.json'),
-  node: nodeReport, browser: browserReport,
-  environment: {node: process.version, chromium: chromiumVersion, os: platform(), release: release(), arch: arch()},
-}, null, 2) + '\n');
+await writeFile(
+  join(runDirectory, 'report.json'),
+  JSON.stringify(
+    {
+      sourceDigest: before,
+      passed: true,
+      scope:
+        'Installed core/runtime/agent tarballs; typed schema-reuse quickstart; manual/AI evaluator parity; immutable registration conflict/idempotence; trusted grants and exact allowlist activation; stale mutation and revocation; Node no-codegen and Chromium.',
+      artifacts: artifacts.map(({ bytes, entries, ...artifact }) => ({ ...artifact, entries })),
+      consumerDirectory,
+      lockPath: join(runDirectory, 'consumer-package-lock.json'),
+      node: nodeReport,
+      browser: browserReport,
+      environment: {
+        node: process.version,
+        chromium: chromiumVersion,
+        os: platform(),
+        release: release(),
+        arch: arch(),
+      },
+    },
+    null,
+    2,
+  ) + '\n',
+);
 console.log(`Installed meaning consumer proof passed. Evidence: ${join(runDirectory, 'report.json')}`);

@@ -1,40 +1,40 @@
-import {AeliqoAvatarElement} from "../../packages/web/src/foundation/avatar.js";
-import {AeliqoBadgeElement} from "../../packages/web/src/foundation/badge.js";
-import {AeliqoButtonElement} from "../../packages/web/src/foundation/button.js";
-import {AeliqoGridElement} from "../../packages/web/src/foundation/grid.js";
-import {AeliqoHeadingElement} from "../../packages/web/src/foundation/heading.js";
-import {AeliqoIconButtonElement} from "../../packages/web/src/foundation/icon-button.js";
-import {AeliqoLinkElement} from "../../packages/web/src/foundation/link.js";
-import {AeliqoScrollAreaElement} from "../../packages/web/src/foundation/scroll-area.js";
-import {AeliqoSeparatorElement} from "../../packages/web/src/foundation/separator.js";
-import {AeliqoSplitPaneElement} from "../../packages/web/src/foundation/split-pane.js";
-import {AeliqoStackElement} from "../../packages/web/src/foundation/stack.js";
-import {AeliqoSurfaceElement} from "../../packages/web/src/foundation/surface.js";
-import {AeliqoTextElement} from "../../packages/web/src/foundation/text.js";
+import { AeliqoAvatarElement } from '../../packages/web/src/foundation/avatar.js';
+import { AeliqoBadgeElement } from '../../packages/web/src/foundation/badge.js';
+import { AeliqoButtonElement } from '../../packages/web/src/foundation/button.js';
+import { AeliqoGridElement } from '../../packages/web/src/foundation/grid.js';
+import { AeliqoHeadingElement } from '../../packages/web/src/foundation/heading.js';
+import { AeliqoIconButtonElement } from '../../packages/web/src/foundation/icon-button.js';
+import { AeliqoLinkElement } from '../../packages/web/src/foundation/link.js';
+import { AeliqoScrollAreaElement } from '../../packages/web/src/foundation/scroll-area.js';
+import { AeliqoSeparatorElement } from '../../packages/web/src/foundation/separator.js';
+import { AeliqoSplitPaneElement } from '../../packages/web/src/foundation/split-pane.js';
+import { AeliqoStackElement } from '../../packages/web/src/foundation/stack.js';
+import { AeliqoSurfaceElement } from '../../packages/web/src/foundation/surface.js';
+import { AeliqoTextElement } from '../../packages/web/src/foundation/text.js';
 
 const registrations: readonly [string, CustomElementConstructor][] = [
-  ["aeliqo-avatar", AeliqoAvatarElement],
-  ["aeliqo-badge", AeliqoBadgeElement],
-  ["aeliqo-button", AeliqoButtonElement],
-  ["aeliqo-grid", AeliqoGridElement],
-  ["aeliqo-heading", AeliqoHeadingElement],
-  ["aeliqo-icon-button", AeliqoIconButtonElement],
-  ["aeliqo-link", AeliqoLinkElement],
-  ["aeliqo-scroll-area", AeliqoScrollAreaElement],
-  ["aeliqo-separator", AeliqoSeparatorElement],
-  ["aeliqo-split-pane", AeliqoSplitPaneElement],
-  ["aeliqo-stack", AeliqoStackElement],
-  ["aeliqo-surface", AeliqoSurfaceElement],
-  ["aeliqo-text", AeliqoTextElement],
+  ['aeliqo-avatar', AeliqoAvatarElement],
+  ['aeliqo-badge', AeliqoBadgeElement],
+  ['aeliqo-button', AeliqoButtonElement],
+  ['aeliqo-grid', AeliqoGridElement],
+  ['aeliqo-heading', AeliqoHeadingElement],
+  ['aeliqo-icon-button', AeliqoIconButtonElement],
+  ['aeliqo-link', AeliqoLinkElement],
+  ['aeliqo-scroll-area', AeliqoScrollAreaElement],
+  ['aeliqo-separator', AeliqoSeparatorElement],
+  ['aeliqo-split-pane', AeliqoSplitPaneElement],
+  ['aeliqo-stack', AeliqoStackElement],
+  ['aeliqo-surface', AeliqoSurfaceElement],
+  ['aeliqo-text', AeliqoTextElement],
 ];
 for (const [name, constructor] of registrations) customElements.define(name, constructor);
 
-const fixture = document.querySelector<HTMLElement>("#fixture");
-if (fixture === null) throw new Error("Foundation fixture root is missing.");
+const fixture = document.querySelector<HTMLElement>('#fixture');
+if (fixture === null) throw new Error('Foundation fixture root is missing.');
 const events: unknown[] = [];
 
-const form = document.createElement("form");
-form.id = "action-form";
+const form = document.createElement('form');
+form.id = 'action-form';
 form.innerHTML = `
   <input id="draft" name="draft" value="initial" />
   <aeliqo-button id="submit" type="submit" name="intent" value="save" label="Save"></aeliqo-button>
@@ -44,8 +44,8 @@ form.innerHTML = `
 </form>`;
 fixture.append(form);
 
-const content = document.createElement("aeliqo-surface");
-content.id = "composition";
+const content = document.createElement('aeliqo-surface');
+content.id = 'composition';
 content.innerHTML = `
   <aeliqo-heading id="heading" level="3" size="display">A very long heading that remains readable when text is zoomed.</aeliqo-heading>
   <aeliqo-stack direction="row" gap="8"><aeliqo-text text="Plain text"></aeliqo-text><aeliqo-badge tone="success" text="Ready"></aeliqo-badge></aeliqo-stack>
@@ -60,23 +60,34 @@ content.innerHTML = `
   <aeliqo-split-pane id="split" style="block-size: 120px; inline-size: 320px"><span slot="start">Start</span><span slot="end">End</span></aeliqo-split-pane>
   <aeliqo-split-pane id="vertical-split" orientation="vertical" style="block-size: 240px; inline-size: 320px"><span slot="start">Top</span><span slot="end">Bottom</span></aeliqo-split-pane>`;
 fixture.append(content);
-const surfaceLabel = document.createElement("h2");
-surfaceLabel.id = "surface-label";
-surfaceLabel.textContent = "Panel title";
+const surfaceLabel = document.createElement('h2');
+surfaceLabel.id = 'surface-label';
+surfaceLabel.textContent = 'Panel title';
 fixture.prepend(surfaceLabel);
-const labelledSurface = document.createElement("aeliqo-surface");
-labelledSurface.id = "labelled-surface";
-labelledSurface.setAttribute("labelled-by", surfaceLabel.id);
-labelledSurface.textContent = "Panel content";
+const labelledSurface = document.createElement('aeliqo-surface');
+labelledSurface.id = 'labelled-surface';
+labelledSurface.setAttribute('labelled-by', surfaceLabel.id);
+labelledSurface.textContent = 'Panel content';
 fixture.prepend(labelledSurface);
-content.addEventListener("aeliqo-split-change", (event) => events.push({kind: "split", event}));
+content.addEventListener('aeliqo-split-change', (event) => events.push({ kind: 'split', event }));
 
-form.addEventListener("aeliqo-action", (event) => events.push({kind: "action", event}));
-form.querySelector("#cancelled")?.addEventListener("aeliqo-action", (event) => event.preventDefault());
+form.addEventListener('aeliqo-action', (event) => events.push({ kind: 'action', event }));
+form.querySelector('#cancelled')?.addEventListener('aeliqo-action', (event) => event.preventDefault());
 let submits = 0;
 let resets = 0;
 let submittedEntries: readonly [string, FormDataEntryValue][] = [];
-form.addEventListener("submit", (event) => {event.preventDefault(); submits += 1; submittedEntries = [...new FormData(form).entries()];});
-form.addEventListener("reset", () => {resets += 1;});
+form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  submits += 1;
+  submittedEntries = [...new FormData(form).entries()];
+});
+form.addEventListener('reset', () => {
+  resets += 1;
+});
 
-Object.assign(window, {aeliqoFoundationReady: true, aeliqoFoundationEvents: events, aeliqoFoundationForm: form, aeliqoFoundationStats: () => ({submits, resets, submittedEntries})});
+Object.assign(window, {
+  aeliqoFoundationReady: true,
+  aeliqoFoundationEvents: events,
+  aeliqoFoundationForm: form,
+  aeliqoFoundationStats: () => ({ submits, resets, submittedEntries }),
+});

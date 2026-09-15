@@ -1,9 +1,9 @@
-import {describe, expect, it} from 'vitest';
-import {readFile} from 'node:fs/promises';
-import {existsSync} from 'node:fs';
-import {dirname, isAbsolute, join, relative, resolve} from 'node:path';
-import {API, type Snapshot} from 'typescript/unstable/sync';
-import type {Node, SourceFile as TsSourceFile} from 'typescript/unstable/ast';
+import { describe, expect, it } from 'vitest';
+import { readFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { API, type Snapshot } from 'typescript/unstable/sync';
+import type { Node, SourceFile as TsSourceFile } from 'typescript/unstable/ast';
 import {
   SyntaxKind,
   isCallExpression,
@@ -18,11 +18,11 @@ import {
 
 const root = resolve(import.meta.dirname, '../..');
 const packageNames = ['core', 'runtime', 'web'] as const;
-type PackageName = typeof packageNames[number];
+type PackageName = (typeof packageNames)[number];
 type SourceNode = Node;
 type SourceFile = TsSourceFile;
-type Finding = {file: string; message: string};
-type ModuleEdge = {specifier: string; file: string; dynamic?: boolean; node: SourceNode};
+type Finding = { file: string; message: string };
+type ModuleEdge = { specifier: string; file: string; dynamic?: boolean; node: SourceNode };
 
 const packageRoot = (name: PackageName): string => join(root, 'packages', name);
 const sourceRoot = (name: PackageName): string => join(packageRoot(name), 'src');
@@ -39,7 +39,8 @@ function staticSpecifier(node: SourceNode): string | undefined {
   }
   if (isImportEqualsDeclaration(node)) {
     const reference = node.moduleReference as any;
-    if (reference && reference.expression && isStringLiteralLikeNode(reference.expression)) return reference.expression.text;
+    if (reference && reference.expression && isStringLiteralLikeNode(reference.expression))
+      return reference.expression.text;
   }
   return undefined;
 }
@@ -48,15 +49,25 @@ function collectEdges(sourceFile: SourceFile): ModuleEdge[] {
   const edges: ModuleEdge[] = [];
   const visit = (node: SourceNode): void => {
     const specifier = staticSpecifier(node);
-    if (specifier !== undefined) edges.push({specifier, file: sourceFile.fileName, node});
+    if (specifier !== undefined) edges.push({ specifier, file: sourceFile.fileName, node });
     if (isCallExpression(node)) {
       const expression = node.expression;
       if (expression.kind === SyntaxKind.ImportKeyword) {
         const first = node.arguments[0];
-        edges.push({specifier: first && isStringLiteralLikeNode(first) ? first.text : '<non-literal>', file: sourceFile.fileName, dynamic: true, node});
+        edges.push({
+          specifier: first && isStringLiteralLikeNode(first) ? first.text : '<non-literal>',
+          file: sourceFile.fileName,
+          dynamic: true,
+          node,
+        });
       } else if (isIdentifier(expression) && expression.text === 'require') {
         const first = node.arguments[0];
-        edges.push({specifier: first && isStringLiteralLikeNode(first) ? first.text : '<non-literal>', file: sourceFile.fileName, dynamic: true, node});
+        edges.push({
+          specifier: first && isStringLiteralLikeNode(first) ? first.text : '<non-literal>',
+          file: sourceFile.fileName,
+          dynamic: true,
+          node,
+        });
       }
     }
     node.forEachChild(visit);
@@ -69,8 +80,19 @@ function resolveRelativeModule(fromFile: string, specifier: string): string | un
   if (!specifier.startsWith('.')) return undefined;
   const base = resolve(dirname(fromFile), specifier);
   const stem = base.replace(/\.(?:js|jsx|mjs|cjs)$/, '');
-  const candidates = [base, stem, `${stem}.ts`, `${stem}.tsx`, `${stem}.mts`, `${stem}.js`, `${stem}.jsx`, join(stem, 'index.ts'), join(stem, 'index.tsx'), join(stem, 'index.js')];
-  return candidates.find(path => sourcePathExists(path));
+  const candidates = [
+    base,
+    stem,
+    `${stem}.ts`,
+    `${stem}.tsx`,
+    `${stem}.mts`,
+    `${stem}.js`,
+    `${stem}.jsx`,
+    join(stem, 'index.ts'),
+    join(stem, 'index.tsx'),
+    join(stem, 'index.js'),
+  ];
+  return candidates.find((path) => sourcePathExists(path));
 }
 
 function sourcePathExists(path: string): boolean {
@@ -78,7 +100,10 @@ function sourcePathExists(path: string): boolean {
 }
 
 function packageExportSource(name: PackageName, target: string): string {
-  const relativeTarget = target.replace(/^\.\/dist\//, '').replace(/\.d\.ts$/, '.ts').replace(/\.js$/, '.ts');
+  const relativeTarget = target
+    .replace(/^\.\/dist\//, '')
+    .replace(/\.d\.ts$/, '.ts')
+    .replace(/\.js$/, '.ts');
   const direct = join(sourceRoot(name), relativeTarget);
   return direct;
 }
@@ -97,7 +122,7 @@ function exportedSourceEntries(name: PackageName, manifest: Record<string, unkno
   for (const [key, value] of Object.entries(exports as Record<string, unknown>)) {
     if (key.includes('*')) continue;
     const targets = flattenedExportTargets(value);
-    const imports = targets.filter(target => target.includes('/dist/') && target.endsWith('.js'));
+    const imports = targets.filter((target) => target.includes('/dist/') && target.endsWith('.js'));
     if (imports.length === 0) continue;
     const source = packageExportSource(name, imports[0]!);
     entries.push(source);
@@ -119,18 +144,32 @@ function ambientEffectFindings(sourceFile: SourceFile): Finding[] {
   const visit = (node: SourceNode): void => {
     if (isPropertyAccessExpression(node)) {
       const text = memberText(node, sourceFile);
-      if (/^(?:globalThis\.)?(?:Date\.now|Math\.random|performance\.now|crypto\.randomUUID|crypto\.getRandomValues)$/.test(text)) {
-        findings.push({file: sourceFile.fileName, message: `ambient clock/random read ${text}`});
+      if (
+        /^(?:globalThis\.)?(?:Date\.now|Math\.random|performance\.now|crypto\.randomUUID|crypto\.getRandomValues)$/.test(
+          text,
+        )
+      ) {
+        findings.push({ file: sourceFile.fileName, message: `ambient clock/random read ${text}` });
       }
       if (/^(?:globalThis\.)?(?:fetch|XMLHttpRequest|WebSocket|EventSource)$/.test(text)) {
-        findings.push({file: sourceFile.fileName, message: `ambient network/platform effect ${text}`});
+        findings.push({ file: sourceFile.fileName, message: `ambient network/platform effect ${text}` });
       }
     }
-    if (isNewExpression(node) && isIdentifier(node.expression) && node.expression.text === 'Date' && (node.arguments ?? []).length === 0) {
-      findings.push({file: sourceFile.fileName, message: 'ambient clock read new Date()'});
+    if (
+      isNewExpression(node) &&
+      isIdentifier(node.expression) &&
+      node.expression.text === 'Date' &&
+      (node.arguments ?? []).length === 0
+    ) {
+      findings.push({ file: sourceFile.fileName, message: 'ambient clock read new Date()' });
     }
-    if (isIdentifier(node) && ['fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource', 'navigator'].includes(node.text) && node.parent && node.parent.kind !== SyntaxKind.PropertyAccessExpression) {
-      findings.push({file: sourceFile.fileName, message: `ambient platform access ${node.text}`});
+    if (
+      isIdentifier(node) &&
+      ['fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource', 'navigator'].includes(node.text) &&
+      node.parent &&
+      node.parent.kind !== SyntaxKind.PropertyAccessExpression
+    ) {
+      findings.push({ file: sourceFile.fileName, message: `ambient platform access ${node.text}` });
     }
     node.forEachChild(visit);
   };
@@ -138,11 +177,16 @@ function ambientEffectFindings(sourceFile: SourceFile): Finding[] {
   return findings;
 }
 
-function parseProjects(): {api: API; snapshot: Snapshot; files: Map<string, SourceFile>} {
-  const api = new API({cwd: root});
-  const projectConfigs = packageNames.map(name => join(packageRoot(name), 'tsconfig.json'));
-  const fixtureFiles = [join(fixtureRoot, 'package-boundaries-forbidden-relative.fixture.ts'), join(fixtureRoot, 'package-boundaries-forbidden-dynamic.fixture.ts'), join(fixtureRoot, 'package-boundaries-forbidden-ambient.fixture.ts'), join(fixtureRoot, 'package-boundaries-allowed-date.fixture.ts')];
-  const snapshot = api.updateSnapshot({openProjects: projectConfigs, openFiles: fixtureFiles});
+function parseProjects(): { api: API; snapshot: Snapshot; files: Map<string, SourceFile> } {
+  const api = new API({ cwd: root });
+  const projectConfigs = packageNames.map((name) => join(packageRoot(name), 'tsconfig.json'));
+  const fixtureFiles = [
+    join(fixtureRoot, 'package-boundaries-forbidden-relative.fixture.ts'),
+    join(fixtureRoot, 'package-boundaries-forbidden-dynamic.fixture.ts'),
+    join(fixtureRoot, 'package-boundaries-forbidden-ambient.fixture.ts'),
+    join(fixtureRoot, 'package-boundaries-allowed-date.fixture.ts'),
+  ];
+  const snapshot = api.updateSnapshot({ openProjects: projectConfigs, openFiles: fixtureFiles });
   const files = new Map<string, SourceFile>();
   for (const project of snapshot.getProjects()) {
     for (const file of project.program.getSourceFileNames()) {
@@ -150,10 +194,14 @@ function parseProjects(): {api: API; snapshot: Snapshot; files: Map<string, Sour
       if (source) files.set(resolve(file), source);
     }
   }
-  return {api, snapshot, files};
+  return { api, snapshot, files };
 }
 
-function reachableEntries(name: PackageName, entries: readonly string[], files: Map<string, SourceFile>): {files: Set<string>; external: Map<string, Set<string>>; findings: Finding[]} {
+function reachableEntries(
+  name: PackageName,
+  entries: readonly string[],
+  files: Map<string, SourceFile>,
+): { files: Set<string>; external: Map<string, Set<string>>; findings: Finding[] } {
   const seen = new Set<string>();
   const external = new Map<string, Set<string>>();
   const findings: Finding[] = [];
@@ -163,18 +211,21 @@ function reachableEntries(name: PackageName, entries: readonly string[], files: 
     seen.add(absolute);
     const source = files.get(absolute);
     if (!source) {
-      findings.push({file: absolute, message: 'declared export or relative import does not resolve to a TS source file'});
+      findings.push({
+        file: absolute,
+        message: 'declared export or relative import does not resolve to a TS source file',
+      });
       return;
     }
     for (const edge of collectEdges(source)) {
       if (edge.dynamic) {
-        findings.push({file: edge.file, message: `dynamic module edge ${edge.specifier}`});
+        findings.push({ file: edge.file, message: `dynamic module edge ${edge.specifier}` });
         continue;
       }
       if (edge.specifier.startsWith('.')) {
         const target = resolveRelativeModule(absolute, edge.specifier);
         if (!target || !isWithin(target, sourceRoot(name))) {
-          findings.push({file: absolute, message: `relative import escapes ${name}: ${edge.specifier}`});
+          findings.push({ file: absolute, message: `relative import escapes ${name}: ${edge.specifier}` });
         } else visitFile(target);
       } else {
         const imported = external.get(absolute) ?? new Set<string>();
@@ -184,25 +235,27 @@ function reachableEntries(name: PackageName, entries: readonly string[], files: 
     }
   };
   for (const entry of entries) visitFile(entry);
-  return {files: seen, external, findings};
+  return { files: seen, external, findings };
 }
 
 function readManifest(name: PackageName): Promise<Record<string, unknown>> {
-  return readFile(join(packageRoot(name), 'package.json'), 'utf8').then(text => JSON.parse(text) as Record<string, unknown>);
+  return readFile(join(packageRoot(name), 'package.json'), 'utf8').then(
+    (text) => JSON.parse(text) as Record<string, unknown>,
+  );
 }
 
 function externalImports(graph: ReturnType<typeof reachableEntries>): string[] {
-  return [...graph.external.values()].flatMap(set => [...set]).sort();
+  return [...graph.external.values()].flatMap((set) => [...set]).sort();
 }
 
 function assertNoAmbientEffects(files: Iterable<string>, sourceMap: Map<string, SourceFile>): Finding[] {
-  return [...files].flatMap(file => ambientEffectFindings(sourceMap.get(file)!));
+  return [...files].flatMap((file) => ambientEffectFindings(sourceMap.get(file)!));
 }
 
 describe('package boundary graph', () => {
   it('uses TS7 ASTs to resolve every declared source export and local edge', async () => {
     const manifests = await Promise.all(packageNames.map(readManifest));
-    const {api, snapshot, files} = parseProjects();
+    const { api, snapshot, files } = parseProjects();
     try {
       for (let i = 0; i < packageNames.length; i += 1) {
         const name = packageNames[i]!;
@@ -228,13 +281,21 @@ describe('package boundary graph', () => {
 
   it('keeps core imports pure and runtime away from renderer, agents, providers and host I/O', async () => {
     const manifests = await Promise.all(packageNames.map(readManifest));
-    const {api, snapshot, files} = parseProjects();
+    const { api, snapshot, files } = parseProjects();
     try {
       const core = reachableEntries('core', exportedSourceEntries('core', manifests[0]!), files);
       const runtime = reachableEntries('runtime', exportedSourceEntries('runtime', manifests[1]!), files);
-      expect(externalImports(core).filter(name => name !== 'zod/mini' && name !== 'zod')).toEqual([]);
-      expect(externalImports(runtime).filter(name => !name.startsWith('@aeliqo/core') && name !== 'zod/mini' && name !== 'zod')).toEqual([]);
-      expect(externalImports(runtime).filter(name => /(?:web|react|agent|devtools|lit|d3|provider|mcp|openai|node:|fs|http)/i.test(name))).toEqual([]);
+      expect(externalImports(core).filter((name) => name !== 'zod/mini' && name !== 'zod')).toEqual([]);
+      expect(
+        externalImports(runtime).filter(
+          (name) => !name.startsWith('@aeliqo/core') && name !== 'zod/mini' && name !== 'zod',
+        ),
+      ).toEqual([]);
+      expect(
+        externalImports(runtime).filter((name) =>
+          /(?:web|react|agent|devtools|lit|d3|provider|mcp|openai|node:|fs|http)/i.test(name),
+        ),
+      ).toEqual([]);
       expect(assertNoAmbientEffects(core.files, files)).toEqual([]);
     } finally {
       snapshot.dispose();
@@ -244,29 +305,53 @@ describe('package boundary graph', () => {
 
   it('keeps direct web controls independent from runtime/planner/provider graphs while allowing explicit region and SSR edges', async () => {
     const manifest = await readManifest('web');
-    const {api, snapshot, files} = parseProjects();
+    const { api, snapshot, files } = parseProjects();
     try {
       const allExports = (manifest.exports ?? {}) as Record<string, unknown>;
-      const directKeys = Object.keys(allExports).filter(key => !['.', './register', './server', './region', './region/adaptation'].includes(key) && !key.includes('*'));
+      const directKeys = Object.keys(allExports).filter(
+        (key) =>
+          !['.', './app', './register', './server', './region', './region/adaptation'].includes(key) &&
+          !key.includes('*'),
+      );
       expect(directKeys.length).toBeGreaterThan(40);
       for (const key of directKeys) {
-        const target = flattenedExportTargets(allExports[key]).find(value => value.includes('/dist/') && value.endsWith('.js'));
+        const target = flattenedExportTargets(allExports[key]).find(
+          (value) => value.includes('/dist/') && value.endsWith('.js'),
+        );
         expect(target, `@aeliqo/web ${key} import target`).toBeDefined();
         const graph = reachableEntries('web', [packageExportSource('web', target!)], files);
         expect(graph.findings, `@aeliqo/web ${key} graph`).toEqual([]);
         const external = externalImports(graph);
-        expect(external.filter(name => /@aeliqo\/(?:runtime|agent|devtools)|(?:provider|mcp|openai)/i.test(name)), `${key} must stay direct-control`).toEqual([]);
-        expect(external.filter(name => name.startsWith('@aeliqo/core/query') || name.startsWith('@aeliqo/core/presentation'))).toEqual([]);
+        expect(
+          external.filter((name) => /@aeliqo\/(?:runtime|agent|devtools)|(?:provider|mcp|openai)/i.test(name)),
+          `${key} must stay direct-control`,
+        ).toEqual([]);
+        expect(
+          external.filter(
+            (name) => name.startsWith('@aeliqo/core/query') || name.startsWith('@aeliqo/core/presentation'),
+          ),
+        ).toEqual([]);
       }
       const regionTarget = packageExportSource('web', flattenedExportTargets(allExports['./region'])[0]!);
       const region = reachableEntries('web', [regionTarget], files);
       expect(region.findings).toEqual([]);
-      const adaptationTarget = packageExportSource('web', flattenedExportTargets(allExports['./region/adaptation'])[0]!);
+      const adaptationTarget = packageExportSource(
+        'web',
+        flattenedExportTargets(allExports['./region/adaptation'])[0]!,
+      );
       const adaptation = reachableEntries('web', [adaptationTarget], files);
-      expect(externalImports(adaptation).some(name => name.startsWith('@aeliqo/runtime/'))).toBe(true);
+      expect(externalImports(adaptation).some((name) => name.startsWith('@aeliqo/runtime/'))).toBe(true);
+      const appTarget = packageExportSource('web', flattenedExportTargets(allExports['./app'])[0]!);
+      const app = reachableEntries('web', [appTarget], files);
+      const appExternal = externalImports(app);
+      expect(app.findings).toEqual([]);
+      expect(appExternal.some((name) => name.startsWith('@aeliqo/runtime/'))).toBe(true);
+      expect(appExternal.filter((name) => /@aeliqo\/(?:agent|devtools)|(?:provider|mcp|openai)/i.test(name))).toEqual(
+        [],
+      );
       const serverTarget = packageExportSource('web', flattenedExportTargets(allExports['./server'])[0]!);
       const server = reachableEntries('web', [serverTarget], files);
-      expect(externalImports(server).some(name => name.startsWith('@lit-labs/ssr'))).toBe(true);
+      expect(externalImports(server).some((name) => name.startsWith('@lit-labs/ssr'))).toBe(true);
     } finally {
       snapshot.dispose();
       api.close();
@@ -274,7 +359,7 @@ describe('package boundary graph', () => {
   });
 
   it('rejects traversal, dynamic imports and ambient effects while allowing explicit input dates', async () => {
-    const {api, snapshot, files} = parseProjects();
+    const { api, snapshot, files } = parseProjects();
     try {
       const fixture = (name: string): SourceFile => {
         const path = resolve(fixtureRoot, name);
@@ -283,24 +368,32 @@ describe('package boundary graph', () => {
         return source;
       };
       const relativeFixture = fixture('package-boundaries-forbidden-relative.fixture.ts');
-      const relativeEdge = collectEdges(relativeFixture).find(edge => edge.specifier.startsWith('.'))!;
+      const relativeEdge = collectEdges(relativeFixture).find((edge) => edge.specifier.startsWith('.'))!;
       const relativeTarget = resolveRelativeModule(relativeFixture.fileName, relativeEdge.specifier);
       expect(relativeTarget).toBeDefined();
       expect(isWithin(relativeTarget!, fixtureRoot)).toBe(false);
       const relativeGraph = reachableEntries('core', [relativeFixture.fileName], files);
-      expect(relativeGraph.findings).toEqual(expect.arrayContaining([
-        {file: relativeFixture.fileName, message: 'relative import escapes core: ../../package.json'},
-      ]));
+      expect(relativeGraph.findings).toEqual(
+        expect.arrayContaining([
+          { file: relativeFixture.fileName, message: 'relative import escapes core: ../../package.json' },
+        ]),
+      );
       const dynamicFixture = fixture('package-boundaries-forbidden-dynamic.fixture.ts');
-      const dynamicEdges = collectEdges(dynamicFixture).filter(edge => edge.dynamic);
+      const dynamicEdges = collectEdges(dynamicFixture).filter((edge) => edge.dynamic);
       expect(dynamicEdges.length).toBeGreaterThanOrEqual(2);
-      expect(dynamicEdges.some(edge => edge.specifier === '<non-literal>')).toBe(true);
+      expect(dynamicEdges.some((edge) => edge.specifier === '<non-literal>')).toBe(true);
       const dynamicGraph = reachableEntries('core', [dynamicFixture.fileName], files);
-      expect(dynamicGraph.findings.some(item => item.message === 'dynamic module edge <non-literal>')).toBe(true);
-      expect(ambientEffectFindings(fixture('package-boundaries-forbidden-ambient.fixture.ts')).map(item => item.message)).toEqual(expect.arrayContaining([
-        'ambient clock/random read Date.now', 'ambient clock/random read Math.random', 'ambient clock read new Date()',
-        'ambient platform access fetch',
-      ]));
+      expect(dynamicGraph.findings.some((item) => item.message === 'dynamic module edge <non-literal>')).toBe(true);
+      expect(
+        ambientEffectFindings(fixture('package-boundaries-forbidden-ambient.fixture.ts')).map((item) => item.message),
+      ).toEqual(
+        expect.arrayContaining([
+          'ambient clock/random read Date.now',
+          'ambient clock/random read Math.random',
+          'ambient clock read new Date()',
+          'ambient platform access fetch',
+        ]),
+      );
       expect(ambientEffectFindings(fixture('package-boundaries-allowed-date.fixture.ts'))).toEqual([]);
     } finally {
       snapshot.dispose();

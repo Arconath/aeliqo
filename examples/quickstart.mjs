@@ -1,4 +1,4 @@
-import {parseCatalog} from '@aeliqo/core';
+import { parseCatalog } from '@aeliqo/core';
 
 const input = {
   version: '1',
@@ -15,7 +15,7 @@ const input = {
           id: 'employee.id',
           label: 'Employee ID',
           role: 'identity',
-          type: {value: 'text', nullable: false},
+          type: { value: 'text', nullable: false },
         },
       ],
     },

@@ -1,16 +1,16 @@
-import {css, html, nothing} from "lit";
-import {AeliqoFieldElement, aeliqoInputStyles} from "./base.js";
-import {AeliqoInputChangeEvent, AeliqoInputCommitEvent} from "./events.js";
-import {compareDateOnly, dateOnly} from "./locale.js";
+import { css, html, nothing } from 'lit';
+import { AeliqoFieldElement, aeliqoInputStyles } from './base.js';
+import { AeliqoInputChangeEvent, AeliqoInputCommitEvent } from './events.js';
+import { compareDateOnly, dateOnly } from './locale.js';
 
-export type AeliqoRangeBoundary = "inclusive" | "exclusive";
+export type AeliqoRangeBoundary = 'inclusive' | 'exclusive';
 
 export interface AeliqoDateRangeValue {
   readonly start: string;
   readonly end: string;
   readonly boundary: AeliqoRangeBoundary;
-  readonly timezone: "calendar";
-  readonly calendar: "gregory";
+  readonly timezone: 'calendar';
+  readonly calendar: 'gregory';
   readonly valid: boolean;
 }
 
@@ -18,28 +18,26 @@ export interface AeliqoDateRangeValue {
 export class AeliqoDateRangeElement extends AeliqoFieldElement<AeliqoDateRangeValue> {
   static readonly properties = {
     ...AeliqoFieldElement.properties,
-    start: {type: String, reflect: true},
-    end: {type: String, reflect: true},
-    defaultStart: {attribute: "default-start", type: String},
-    defaultEnd: {attribute: "default-end", type: String},
-    boundary: {type: String},
-    timezone: {type: String},
-    calendar: {type: String},
+    start: { type: String, reflect: true },
+    end: { type: String, reflect: true },
+    defaultStart: { attribute: 'default-start', type: String },
+    defaultEnd: { attribute: 'default-end', type: String },
+    boundary: { type: String },
+    timezone: { type: String },
+    calendar: { type: String },
   };
 
-  static readonly aeliqoVersion = "0.1.0";
-
-  start = "";
-  end = "";
-  defaultStart = "";
-  defaultEnd = "";
-  boundary: AeliqoRangeBoundary = "inclusive";
-  timezone = "calendar" as const;
-  calendar = "gregory" as const;
+  start = '';
+  end = '';
+  defaultStart = '';
+  defaultEnd = '';
+  boundary: AeliqoRangeBoundary = 'inclusive';
+  timezone = 'calendar' as const;
+  calendar = 'gregory' as const;
 
   override connectedCallback(): void {
-    if (this.start.length === 0 && this.defaultStart.length > 0) this.start = dateOnly(this.defaultStart) ?? "";
-    if (this.end.length === 0 && this.defaultEnd.length > 0) this.end = dateOnly(this.defaultEnd) ?? "";
+    if (this.start.length === 0 && this.defaultStart.length > 0) this.start = dateOnly(this.defaultStart) ?? '';
+    if (this.end.length === 0 && this.defaultEnd.length > 0) this.end = dateOnly(this.defaultEnd) ?? '';
     super.connectedCallback();
   }
 
@@ -48,8 +46,8 @@ export class AeliqoDateRangeElement extends AeliqoFieldElement<AeliqoDateRangeVa
   }
 
   protected override resetField(): void {
-    this.start = dateOnly(this.defaultStart) ?? "";
-    this.end = dateOnly(this.defaultEnd) ?? "";
+    this.start = dateOnly(this.defaultStart) ?? '';
+    this.end = dateOnly(this.defaultEnd) ?? '';
     this.syncNative();
   }
 
@@ -57,18 +55,45 @@ export class AeliqoDateRangeElement extends AeliqoFieldElement<AeliqoDateRangeVa
     const valid = this.isValid();
     const describedBy = this.describedByIds();
     return html`
-      <fieldset part="field" ?disabled=${this.fieldDisabled} aria-invalid=${!this.error && valid ? nothing : "true"}>
+      <fieldset part="field" ?disabled=${this.fieldDisabled} aria-invalid=${!this.error && valid ? nothing : 'true'}>
         <legend part="label">${this.label}</legend>
         <div class="range-inputs">
-          <label part="start-label">Start
-            <input part="input start" class="start" type="date" name="" .value=${dateOnly(this.start) ?? ""} ?disabled=${this.fieldDisabled} ?readonly=${this.readOnly} aria-readonly=${this.readOnly ? "true" : nothing} aria-describedby=${describedBy || nothing} @input=${this.handleStart} />
+          <label part="start-label"
+            >Start
+            <input
+              part="input start"
+              class="start"
+              type="date"
+              name=""
+              .value=${dateOnly(this.start) ?? ''}
+              ?disabled=${this.fieldDisabled}
+              ?readonly=${this.readOnly}
+              aria-readonly=${this.readOnly ? 'true' : nothing}
+              aria-describedby=${describedBy || nothing}
+              @input=${this.handleStart}
+            />
           </label>
           <span aria-hidden="true">–</span>
-          <label part="end-label">End
-            <input part="input end" class="end" type="date" name="" .value=${dateOnly(this.end) ?? ""} ?disabled=${this.fieldDisabled} ?readonly=${this.readOnly} aria-readonly=${this.readOnly ? "true" : nothing} aria-describedby=${describedBy || nothing} @input=${this.handleEnd} @change=${this.handleCommit} />
+          <label part="end-label"
+            >End
+            <input
+              part="input end"
+              class="end"
+              type="date"
+              name=""
+              .value=${dateOnly(this.end) ?? ''}
+              ?disabled=${this.fieldDisabled}
+              ?readonly=${this.readOnly}
+              aria-readonly=${this.readOnly ? 'true' : nothing}
+              aria-describedby=${describedBy || nothing}
+              @input=${this.handleEnd}
+              @change=${this.handleCommit}
+            />
           </label>
         </div>
-        <span class="policy" part="policy">${this.boundary === "inclusive" ? "Inclusive range" : "Exclusive range"}; calendar dates</span>
+        <span class="policy" part="policy"
+          >${this.boundary === 'inclusive' ? 'Inclusive range' : 'Exclusive range'}; calendar dates</span
+        >
         ${!valid && this.valueMissingMessage() ? html`<span part="error" id="error" role="alert">${this.valueMissingMessage()}</span>` : nothing}
         ${this.renderMessages()}
       </fieldset>
@@ -102,18 +127,25 @@ export class AeliqoDateRangeElement extends AeliqoFieldElement<AeliqoDateRangeVa
   };
 
   private readonly handleCommit = (): void => {
-    this.dispatchEvent(new AeliqoInputCommitEvent({source: "user", value: this.rangeValue()}));
+    this.dispatchEvent(new AeliqoInputCommitEvent({ source: 'user', value: this.rangeValue() }));
   };
 
   private emitChange(): void {
     const value = this.rangeValue();
-    this.dispatchEvent(new AeliqoInputChangeEvent({source: "user", value}));
+    this.dispatchEvent(new AeliqoInputChangeEvent({ source: 'user', value }));
     void this.validateProposed(value);
     this.syncNative();
   }
 
   private rangeValue(): AeliqoDateRangeValue {
-    return {start: this.start, end: this.end, boundary: this.boundary, timezone: this.timezone, calendar: this.calendar, valid: this.isValid()};
+    return {
+      start: this.start,
+      end: this.end,
+      boundary: this.boundary,
+      timezone: this.timezone,
+      calendar: this.calendar,
+      valid: this.isValid(),
+    };
   }
 
   private isValid(): boolean {
@@ -121,13 +153,14 @@ export class AeliqoDateRangeElement extends AeliqoFieldElement<AeliqoDateRangeVa
     const end = dateOnly(this.end);
     if (start === undefined || end === undefined) return this.start.length === 0 && this.end.length === 0;
     const comparison = compareDateOnly(start, end);
-    return this.boundary === "inclusive" ? comparison <= 0 : comparison < 0;
+    return this.boundary === 'inclusive' ? comparison <= 0 : comparison < 0;
   }
 
   private valueMissingMessage(): string {
-    if (this.required && (this.start.length === 0 || this.end.length === 0)) return "Enter both dates.";
-    if (!this.isValid() && this.start && this.end) return this.boundary === "inclusive" ? "Start must be on or before end." : "Start must be before end.";
-    return "";
+    if (this.required && (this.start.length === 0 || this.end.length === 0)) return 'Enter both dates.';
+    if (!this.isValid() && this.start && this.end)
+      return this.boundary === 'inclusive' ? 'Start must be on or before end.' : 'Start must be before end.';
+    return '';
   }
 
   private syncNative(): void {
@@ -145,29 +178,63 @@ export class AeliqoDateRangeElement extends AeliqoFieldElement<AeliqoDateRangeVa
     } else {
       this.internals?.setFormValue(null);
     }
-    if ((!this.error && valid && !missing) || this.fieldDisabled) this.removeAttribute("aria-invalid");
-    else this.setAttribute("aria-invalid", "true");
+    if ((!this.error && valid && !missing) || this.fieldDisabled) this.removeAttribute('aria-invalid');
+    else this.setAttribute('aria-invalid', 'true');
     const anchor = this.nativeStart();
-    if (this.internals !== undefined && !this.fieldDisabled && !valid) this.internals.setValidity({customError: true}, this.valueMissingMessage() || "Enter a valid date range.", anchor);
+    if (this.internals !== undefined && !this.fieldDisabled && !valid)
+      this.internals.setValidity(
+        { customError: true },
+        this.valueMissingMessage() || 'Enter a valid date range.',
+        anchor,
+      );
     else this.updateValidity(anchor, missing);
   }
 
   private nativeStart(): HTMLInputElement | undefined {
     const root = this.renderRoot;
-    if (root === undefined || typeof root.querySelector !== "function") return undefined;
-    return root.querySelector<HTMLInputElement>("input.start") ?? undefined;
+    if (root === undefined || typeof root.querySelector !== 'function') return undefined;
+    return root.querySelector<HTMLInputElement>('input.start') ?? undefined;
   }
 
-  static readonly styles = [...aeliqoInputStyles, css`
-    :host { container-type: inline-size; }
-    fieldset { border: 0; display: grid; gap: var(--aeliqo-space-4, 0.25rem); margin: 0; min-inline-size: 0; padding: 0; }
-    legend { font-weight: var(--aeliqo-typography-font-weight-semibold, 600); }
-    .range-inputs { align-items: end; display: grid; gap: var(--aeliqo-space-8, 0.5rem); grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
-    .range-inputs label { display: grid; gap: var(--aeliqo-space-4, 0.25rem); }
-    @container (max-width: 28rem) {
-      .range-inputs { grid-template-columns: minmax(0, 1fr); }
-      .range-inputs > span { display: none; }
-    }
-    .policy { color: var(--aeliqo-color-muted, #4b5563); font-size: 0.9em; }
-  `];
+  static readonly styles = [
+    ...aeliqoInputStyles,
+    css`
+      :host {
+        container-type: inline-size;
+      }
+      fieldset {
+        border: 0;
+        display: grid;
+        gap: var(--aeliqo-space-4, 0.25rem);
+        margin: 0;
+        min-inline-size: 0;
+        padding: 0;
+      }
+      legend {
+        font-weight: var(--aeliqo-typography-font-weight-semibold, 600);
+      }
+      .range-inputs {
+        align-items: end;
+        display: grid;
+        gap: var(--aeliqo-space-8, 0.5rem);
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      }
+      .range-inputs label {
+        display: grid;
+        gap: var(--aeliqo-space-4, 0.25rem);
+      }
+      @container (max-width: 28rem) {
+        .range-inputs {
+          grid-template-columns: minmax(0, 1fr);
+        }
+        .range-inputs > span {
+          display: none;
+        }
+      }
+      .policy {
+        color: var(--aeliqo-color-muted, #4b5563);
+        font-size: 0.9em;
+      }
+    `,
+  ];
 }

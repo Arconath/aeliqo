@@ -1,16 +1,28 @@
-import {parseContract, parseWireValue, WIRE_LIMITS, type Diagnostic, type Outcome, type OperationGrant, type VersionRef} from '@aeliqo/core';
-import type {AgentCapabilityLimits, AgentCapabilityManifest, AgentCapabilityRegistry} from './types.js';
+import {
+  parseContract,
+  parseWireValue,
+  WIRE_LIMITS,
+  type Diagnostic,
+  type Outcome,
+  type OperationGrant,
+  type VersionRef,
+} from '@aeliqo/core';
+import type { AgentCapabilityLimits, AgentCapabilityManifest, AgentCapabilityRegistry } from './types.js';
 
 const failure = <T>(code: string, message: string, path?: readonly (string | number)[]): Outcome<T> => ({
   ok: false,
-  diagnostics: [{code, message, retryable: false, ...(path === undefined ? {} : {path: [...path]})}],
+  diagnostics: [{ code, message, retryable: false, ...(path === undefined ? {} : { path: [...path] }) }],
 });
 
-export const capabilityRefKey = (ref: VersionRef): string => JSON.stringify([ref.id,ref.revision]);
+export const capabilityRefKey = (ref: VersionRef): string => JSON.stringify([ref.id, ref.revision]);
 
 function validId(value: unknown): value is string {
-  return typeof value === 'string' && value.length > 0 && value.length <= WIRE_LIMITS.id
-    && !/[\s\u0000-\u001f\u007f]/u.test(value);
+  return (
+    typeof value === 'string' &&
+    value.length > 0 &&
+    value.length <= WIRE_LIMITS.id &&
+    !/[\s\u0000-\u001f\u007f]/u.test(value)
+  );
 }
 
 function validLabel(value: unknown): value is string {
@@ -19,24 +31,44 @@ function validLabel(value: unknown): value is string {
 
 function validLimits(input: AgentCapabilityLimits | undefined): boolean {
   if (input === undefined) return true;
-  return (input.maxInputBytes === undefined || (Number.isSafeInteger(input.maxInputBytes) && input.maxInputBytes > 0 && input.maxInputBytes <= WIRE_LIMITS.bytes))
-    && (input.maxOutputBytes === undefined || (Number.isSafeInteger(input.maxOutputBytes) && input.maxOutputBytes > 0 && input.maxOutputBytes <= WIRE_LIMITS.bytes));
+  return (
+    (input.maxInputBytes === undefined ||
+      (Number.isSafeInteger(input.maxInputBytes) &&
+        input.maxInputBytes > 0 &&
+        input.maxInputBytes <= WIRE_LIMITS.bytes)) &&
+    (input.maxOutputBytes === undefined ||
+      (Number.isSafeInteger(input.maxOutputBytes) &&
+        input.maxOutputBytes > 0 &&
+        input.maxOutputBytes <= WIRE_LIMITS.bytes))
+  );
 }
 
 function validManifest<TInput, TOutput>(manifest: AgentCapabilityManifest<TInput, TOutput>): Outcome<void> {
   try {
-    if (manifest === null || typeof manifest !== 'object') return failure('agent.capability.registry', 'A capability manifest must be an object.');
-    if (!validId(manifest.ref?.id) || !validId(manifest.ref?.revision)) return failure('agent.capability.registry', 'A capability reference is malformed.', ['ref']);
+    if (manifest === null || typeof manifest !== 'object')
+      return failure('agent.capability.registry', 'A capability manifest must be an object.');
+    if (!validId(manifest.ref?.id) || !validId(manifest.ref?.revision))
+      return failure('agent.capability.registry', 'A capability reference is malformed.', ['ref']);
     const operation = parseContract('operation-grant', JSON.stringify(manifest.operation));
-    if (!operation.ok) return failure('agent.capability.registry', 'A capability operation is not a registered grant.', ['operation']);
-    if (!validLabel(manifest.label) || (manifest.description !== undefined && !validLabel(manifest.description))) return failure('agent.capability.registry', 'Capability labels and descriptions must be bounded text.');
-    if (!validLimits(manifest.limits) || typeof manifest.parse !== 'function' || typeof manifest.invoke !== 'function') return failure('agent.capability.registry', 'A capability manifest has invalid bounds or handlers.');
+    if (!operation.ok)
+      return failure('agent.capability.registry', 'A capability operation is not a registered grant.', ['operation']);
+    if (!validLabel(manifest.label) || (manifest.description !== undefined && !validLabel(manifest.description)))
+      return failure('agent.capability.registry', 'Capability labels and descriptions must be bounded text.');
+    if (!validLimits(manifest.limits) || typeof manifest.parse !== 'function' || typeof manifest.invoke !== 'function')
+      return failure('agent.capability.registry', 'A capability manifest has invalid bounds or handlers.');
     // Metadata is trusted registration data, but it must still be plain wire
     // data when the manifest is exposed to protocol adapters.
-    const metadata = {ref: manifest.ref, operation: operation.value, label: manifest.label, ...(manifest.description === undefined ? {} : {description: manifest.description}), ...(manifest.limits === undefined ? {} : {limits: manifest.limits})};
+    const metadata = {
+      ref: manifest.ref,
+      operation: operation.value,
+      label: manifest.label,
+      ...(manifest.description === undefined ? {} : { description: manifest.description }),
+      ...(manifest.limits === undefined ? {} : { limits: manifest.limits }),
+    };
     const wire = parseWireValue(metadata);
-    if (!wire.ok) return failure('agent.capability.registry', 'Capability registration metadata is not bounded wire data.');
-    return {ok: true, value: undefined};
+    if (!wire.ok)
+      return failure('agent.capability.registry', 'Capability registration metadata is not bounded wire data.');
+    return { ok: true, value: undefined };
   } catch {
     return failure('agent.capability.registry', 'Capability registration failed safely.');
   }
@@ -47,16 +79,26 @@ function validManifest<TInput, TOutput>(manifest: AgentCapabilityManifest<TInput
 export function createAgentCapabilityRegistry(
   initial: readonly AgentCapabilityManifest[] = [],
 ): Outcome<AgentCapabilityRegistry> {
-  if (!Array.isArray(initial) || initial.length > WIRE_LIMITS.presentationNodes) return failure('agent.capability.registry', 'The capability registry exceeds its bound.');
+  if (!Array.isArray(initial) || initial.length > WIRE_LIMITS.presentationNodes)
+    return failure('agent.capability.registry', 'The capability registry exceeds its bound.');
   const entries = new Map<string, AgentCapabilityManifest<unknown, unknown>>();
   const register = <TInput, TOutput>(manifest: AgentCapabilityManifest<TInput, TOutput>): Outcome<void> => {
     const valid = validManifest(manifest);
     if (!valid.ok) return valid;
     const key = capabilityRefKey(manifest.ref);
-    if (entries.has(key)) return failure('agent.capability.duplicate', 'A capability reference is already registered.', ['ref']);
-    if (entries.size >= WIRE_LIMITS.presentationNodes) return failure('agent.capability.registry', 'The capability registry is full.');
-    entries.set(key, Object.freeze({...manifest, ref: Object.freeze({id: manifest.ref.id, revision: manifest.ref.revision}), ...(manifest.limits===undefined?{}:{limits:Object.freeze({...manifest.limits})})}) as unknown as AgentCapabilityManifest<unknown, unknown>);
-    return {ok: true, value: undefined};
+    if (entries.has(key))
+      return failure('agent.capability.duplicate', 'A capability reference is already registered.', ['ref']);
+    if (entries.size >= WIRE_LIMITS.presentationNodes)
+      return failure('agent.capability.registry', 'The capability registry is full.');
+    entries.set(
+      key,
+      Object.freeze({
+        ...manifest,
+        ref: Object.freeze({ id: manifest.ref.id, revision: manifest.ref.revision }),
+        ...(manifest.limits === undefined ? {} : { limits: Object.freeze({ ...manifest.limits }) }),
+      }) as unknown as AgentCapabilityManifest<unknown, unknown>,
+    );
+    return { ok: true, value: undefined };
   };
   for (const manifest of initial) {
     const result = register(manifest);
@@ -72,7 +114,7 @@ export function createAgentCapabilityRegistry(
       return Object.freeze([...entries.values()]);
     },
   };
-  return {ok: true, value: Object.freeze(registry)};
+  return { ok: true, value: Object.freeze(registry) };
 }
 
 export function sameCapabilityRef(left: VersionRef, right: VersionRef): boolean {
@@ -80,4 +122,4 @@ export function sameCapabilityRef(left: VersionRef, right: VersionRef): boolean 
 }
 
 export type CapabilityRegistrationDiagnostic = Diagnostic;
-export type {OperationGrant};
+export type { OperationGrant };

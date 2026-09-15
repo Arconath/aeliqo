@@ -1,6 +1,13 @@
-export {canonicalMeaning, createMeaningAuthoring, createMeaningDraft, freezeMeaningValue, meaningDigest, meaningRefKey} from './authoring.js';
-export {createMeaningEvaluator} from './evaluator.js';
-export {createMeaningRegistry} from './registry.js';
+export {
+  canonicalMeaning,
+  createMeaningAuthoring,
+  createMeaningDraft,
+  freezeMeaningValue,
+  meaningDigest,
+  meaningRefKey,
+} from './authoring.js';
+export { createMeaningEvaluator } from './evaluator.js';
+export { createMeaningRegistry } from './registry.js';
 export type {
   MeaningActivationContext,
   MeaningActivationOptions,

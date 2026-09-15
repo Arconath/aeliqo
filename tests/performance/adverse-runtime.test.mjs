@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-import {mkdir, writeFile} from 'node:fs/promises';
-import {dirname} from 'node:path';
-import {test} from 'node:test';
-import {createRegionStore} from '@aeliqo/runtime/regions';
-import {createResultStore} from '@aeliqo/runtime/results';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { dirname } from 'node:path';
+import { test } from 'node:test';
+import { createRegionStore } from '@aeliqo/runtime/regions';
+import { createResultStore } from '@aeliqo/runtime/results';
 
 /**
  * Adverse lifecycle probe.
@@ -19,14 +19,16 @@ const timingEnabled = process.env.AELIQO_RUN_PERFORMANCE !== '0';
 
 const sleep = (milliseconds) => new Promise((resolvePromise) => setTimeout(resolvePromise, milliseconds));
 
-function controlledSource(label, metrics, {cooperativeReturn = true} = {}) {
+function controlledSource(label, metrics, { cooperativeReturn = true } = {}) {
   const queue = [];
   const waiters = [];
   let closed = false;
   let started = false;
   let returned = false;
   let firstPullResolve;
-  const firstPull = new Promise((resolvePromise) => { firstPullResolve = resolvePromise; });
+  const firstPull = new Promise((resolvePromise) => {
+    firstPullResolve = resolvePromise;
+  });
 
   const settle = (result) => {
     const waiter = waiters.shift();
@@ -39,12 +41,14 @@ function controlledSource(label, metrics, {cooperativeReturn = true} = {}) {
     closed = true;
     if (kind === 'return' && !returned) metrics.returnedSources += 1;
     if (started) metrics.activeSources = Math.max(0, metrics.activeSources - 1);
-    for (const waiter of waiters.splice(0)) waiter({done: true, value: undefined});
+    for (const waiter of waiters.splice(0)) waiter({ done: true, value: undefined });
   };
 
   const source = {
     label,
-    [Symbol.asyncIterator]() { return source; },
+    [Symbol.asyncIterator]() {
+      return source;
+    },
     next() {
       metrics.pulls += 1;
       if (!started) {
@@ -55,15 +59,15 @@ function controlledSource(label, metrics, {cooperativeReturn = true} = {}) {
         firstPullResolve();
       }
       if (queue.length > 0) return Promise.resolve(queue.shift());
-      if (closed) return Promise.resolve({done: true, value: undefined});
+      if (closed) return Promise.resolve({ done: true, value: undefined });
       return new Promise((resolvePromise) => waiters.push(resolvePromise));
     },
     return() {
-      if (returned) return Promise.resolve({done: true, value: undefined});
+      if (returned) return Promise.resolve({ done: true, value: undefined });
       returned = true;
       metrics.returnedSources += 1;
       if (cooperativeReturn) close('return');
-      return Promise.resolve({done: true, value: undefined});
+      return Promise.resolve({ done: true, value: undefined });
     },
     push(value) {
       if (closed) {
@@ -75,15 +79,21 @@ function controlledSource(label, metrics, {cooperativeReturn = true} = {}) {
         if (waiter === undefined) metrics.lateDropped += 1;
         else {
           metrics.deliveredAfterReturn += 1;
-          waiter({done: false, value});
+          waiter({ done: false, value });
         }
         return;
       }
-      settle({done: false, value});
+      settle({ done: false, value });
     },
-    end() { close('end'); },
-    async ready() { await firstPull; },
-    get closed() { return closed; },
+    end() {
+      close('end');
+    },
+    async ready() {
+      await firstPull;
+    },
+    get closed() {
+      return closed;
+    },
   };
   metrics.sources.push(source);
   return source;
@@ -96,64 +106,101 @@ async function drain(subscription) {
 }
 
 const baseResultRef = Object.freeze({
-  id: 'adverse-result', revision: 'result-r1', outputId: 'rows',
-  queryDigest: 'adverse-query', scopeDigest: 'adverse-scope',
+  id: 'adverse-result',
+  revision: 'result-r1',
+  outputId: 'rows',
+  queryDigest: 'adverse-query',
+  scopeDigest: 'adverse-scope',
 });
 
 function resultEvents(rowId, sourceRevision) {
-  const ref = {...baseResultRef};
+  const ref = { ...baseResultRef };
   const populationDigest = `population-${sourceRevision}`;
   const descriptor = {
-    version: '1', ref, taskId: 'adverse-task',
-    fields: [{id: 'id', label: 'ID', type: {value: 'text', nullable: false}, role: 'identity'}],
-    identity: ['id'], rowGrain: ['id'],
-    counts: {loaded: 1, population: {kind: 'exact', value: 1, populationDigest}},
-    precision: {kind: 'exact'}, coverage: {kind: 'complete', populationDigest},
-    consistency: {kind: 'snapshot', snapshotId: sourceRevision, sourceRevisions: {records: sourceRevision}},
-    evidence: {kind: 'observed', source: {id: 'records', revision: sourceRevision}},
-    filters: [], warnings: [], lineage: [],
+    version: '1',
+    ref,
+    taskId: 'adverse-task',
+    fields: [{ id: 'id', label: 'ID', type: { value: 'text', nullable: false }, role: 'identity' }],
+    identity: ['id'],
+    rowGrain: ['id'],
+    counts: { loaded: 1, population: { kind: 'exact', value: 1, populationDigest } },
+    precision: { kind: 'exact' },
+    coverage: { kind: 'complete', populationDigest },
+    consistency: { kind: 'snapshot', snapshotId: sourceRevision, sourceRevisions: { records: sourceRevision } },
+    evidence: { kind: 'observed', source: { id: 'records', revision: sourceRevision } },
+    filters: [],
+    warnings: [],
+    lineage: [],
   };
   return [
-    {kind: 'descriptor', descriptor},
-    {kind: 'batch', result: ref, sequence: 0, rows: [{id: rowId}]},
-    {kind: 'complete', result: ref, finalCoverage: {kind: 'complete', populationDigest}},
+    { kind: 'descriptor', descriptor },
+    { kind: 'batch', result: ref, sequence: 0, rows: [{ id: rowId }] },
+    { kind: 'complete', result: ref, finalCoverage: { kind: 'complete', populationDigest } },
   ];
 }
 
 function resultKey(requestId, sourceRevision = 'source-a') {
   return {
-    principalKey: 'adverse-principal', scopeDigest: baseResultRef.scopeDigest,
-    policyRevision: 'adverse-policy', populationDigest: `population-${sourceRevision}`,
-    queryDigest: baseResultRef.queryDigest, catalogRevision: 'adverse-catalog',
-    functionRegistryDigest: 'adverse-functions', sourceRevision,
-    outputId: baseResultRef.outputId, taskId: 'adverse-task', requestId,
+    principalKey: 'adverse-principal',
+    scopeDigest: baseResultRef.scopeDigest,
+    policyRevision: 'adverse-policy',
+    populationDigest: `population-${sourceRevision}`,
+    queryDigest: baseResultRef.queryDigest,
+    catalogRevision: 'adverse-catalog',
+    functionRegistryDigest: 'adverse-functions',
+    sourceRevision,
+    outputId: baseResultRef.outputId,
+    taskId: 'adverse-task',
+    requestId,
   };
 }
 
 function makeRegionFixture() {
   const authority = {
-    principalKey: 'adverse-principal', scopeDigest: 'adverse-scope', policyRevision: 'adverse-policy',
-    catalogRevision: 'adverse-catalog', experienceRevision: 'adverse-experience',
-    functionRegistryDigest: 'adverse-functions', results: [],
+    principalKey: 'adverse-principal',
+    scopeDigest: 'adverse-scope',
+    policyRevision: 'adverse-policy',
+    catalogRevision: 'adverse-catalog',
+    experienceRevision: 'adverse-experience',
+    functionRegistryDigest: 'adverse-functions',
+    results: [],
   };
   const task = {
-    version: '1', id: 'adverse-region-task', revision: 'task-r1',
-    catalogRevision: authority.catalogRevision, functionRegistryDigest: authority.functionRegistryDigest,
-    regionId: 'adverse-region', goal: 'Run an adverse lifecycle probe', kind: 'presentation',
-    needs: [], assumptions: [], inputs: [],
+    version: '1',
+    id: 'adverse-region-task',
+    revision: 'task-r1',
+    catalogRevision: authority.catalogRevision,
+    functionRegistryDigest: authority.functionRegistryDigest,
+    regionId: 'adverse-region',
+    goal: 'Run an adverse lifecycle probe',
+    kind: 'presentation',
+    needs: [],
+    assumptions: [],
+    inputs: [],
   };
-  return {authority, task, state: {task}};
+  return { authority, task, state: { task } };
 }
 
 function writeReport(report) {
   const output = process.env.AELIQO_ADVERSE_RUNTIME_OUTPUT;
   if (output === undefined || output.length === 0) return Promise.resolve();
-  return mkdir(dirname(output), {recursive: true}).then(() => writeFile(output, `${JSON.stringify(report, null, 2)}\n`, 'utf8'));
+  return mkdir(dirname(output), { recursive: true }).then(() =>
+    writeFile(output, `${JSON.stringify(report, null, 2)}\n`, 'utf8'),
+  );
 }
 
 async function runSlowSourceProbe() {
-  const metrics = {sources: [], pulls: 0, startedSources: 0, returnedSources: 0, lateDropped: 0, deliveredAfterReturn: 0, activeSources: 0, maxActiveSources: 0};
-  const store = createResultStore({maxEntries: 8});
+  const metrics = {
+    sources: [],
+    pulls: 0,
+    startedSources: 0,
+    returnedSources: 0,
+    lateDropped: 0,
+    deliveredAfterReturn: 0,
+    activeSources: 0,
+    maxActiveSources: 0,
+  };
+  const store = createResultStore({ maxEntries: 8 });
   const handle = store.begin(resultKey('slow-source'));
   const source = controlledSource('slow-source', metrics);
   const startedAt = timingEnabled ? performance.now() : undefined;
@@ -165,9 +212,13 @@ async function runSlowSourceProbe() {
   const elapsedMs = timingEnabled ? performance.now() - startedAt : undefined;
   const snapshot = handle.snapshot();
   const observation = {
-    elapsedMs, updateCount: updates.length, finalStatus: snapshot.status,
-    sourceRevision: snapshot.key.sourceRevision, loadedRows: snapshot.loadedRows,
-    retainedBatches: snapshot.batches.length, activeSources: metrics.activeSources,
+    elapsedMs,
+    updateCount: updates.length,
+    finalStatus: snapshot.status,
+    sourceRevision: snapshot.key.sourceRevision,
+    loadedRows: snapshot.loadedRows,
+    retainedBatches: snapshot.batches.length,
+    activeSources: metrics.activeSources,
     maxActiveSources: metrics.maxActiveSources,
     retainedHandleBeforeCleanup: store.get(handle.key) === handle,
   };
@@ -175,19 +226,28 @@ async function runSlowSourceProbe() {
   observation.retainedHandleAfterCleanup = store.get(handle.key) !== undefined;
   observation.retainedBatchesAfterCleanup = handle.snapshot().batches.length;
   store.dispose();
-  return {observation, metrics};
+  return { observation, metrics };
 }
 
 async function runSupersedingStormProbe() {
-  const metrics = {sources: [], pulls: 0, startedSources: 0, returnedSources: 0, lateDropped: 0, deliveredAfterReturn: 0, activeSources: 0, maxActiveSources: 0};
-  const store = createResultStore({maxEntries: 64});
+  const metrics = {
+    sources: [],
+    pulls: 0,
+    startedSources: 0,
+    returnedSources: 0,
+    lateDropped: 0,
+    deliveredAfterReturn: 0,
+    activeSources: 0,
+    maxActiveSources: 0,
+  };
+  const store = createResultStore({ maxEntries: 64 });
   const key = resultKey('storm-1');
   const handles = [];
   const sources = [];
   const drains = [];
   const requestCount = 16;
   for (let index = 0; index < requestCount; index += 1) {
-    const handle = store.begin({...key, requestId: `storm-${index + 1}`});
+    const handle = store.begin({ ...key, requestId: `storm-${index + 1}` });
     const source = controlledSource(`storm-${index + 1}`, metrics);
     handles.push(handle);
     sources.push(source);
@@ -195,13 +255,15 @@ async function runSupersedingStormProbe() {
     await source.ready();
   }
   const newest = sources.at(-1);
-  for (const source of sources.slice(0, -1)) for (const event of resultEvents('late-row', 'source-a')) source.push(event);
+  for (const source of sources.slice(0, -1))
+    for (const event of resultEvents('late-row', 'source-a')) source.push(event);
   for (const event of resultEvents('new-row', 'source-a')) newest.push(event);
   const updates = await Promise.all(drains);
   const snapshots = handles.map((handle) => handle.snapshot());
   const current = store.get(key);
   const observation = {
-    requestCount, supersededCount: snapshots.filter((snapshot) => snapshot.status === 'stale').length,
+    requestCount,
+    supersededCount: snapshots.filter((snapshot) => snapshot.status === 'stale').length,
     disposedBeforeCleanup: snapshots.filter((snapshot) => snapshot.status === 'disposed').length,
     staleRows: snapshots.slice(0, -1).reduce((sum, snapshot) => sum + snapshot.loadedRows, 0),
     finalStatus: snapshots.at(-1)?.status,
@@ -219,15 +281,27 @@ async function runSupersedingStormProbe() {
   const disposedAfterCleanup = handles.filter((handle) => handle.snapshot().status === 'disposed').length;
   const retainedBuffersAfterCleanup = handles.reduce((sum, handle) => sum + handle.snapshot().batches.length, 0);
   store.dispose();
-  return {observation: {...observation, retainedAfterDispose, disposedAfterCleanup, retainedBuffersAfterCleanup}, metrics};
+  return {
+    observation: { ...observation, retainedAfterDispose, disposedAfterCleanup, retainedBuffersAfterCleanup },
+    metrics,
+  };
 }
 
 async function runNonCooperativeLateDeliveryProbe() {
-  const metrics = {sources: [], pulls: 0, startedSources: 0, returnedSources: 0, lateDropped: 0, deliveredAfterReturn: 0, activeSources: 0, maxActiveSources: 0};
-  const store = createResultStore({maxEntries: 8});
+  const metrics = {
+    sources: [],
+    pulls: 0,
+    startedSources: 0,
+    returnedSources: 0,
+    lateDropped: 0,
+    deliveredAfterReturn: 0,
+    activeSources: 0,
+    maxActiveSources: 0,
+  };
+  const store = createResultStore({ maxEntries: 8 });
 
   const superseded = store.begin(resultKey('non-cooperative-old', 'source-a'));
-  const oldSource = controlledSource('non-cooperative-superseded', metrics, {cooperativeReturn: false});
+  const oldSource = controlledSource('non-cooperative-superseded', metrics, { cooperativeReturn: false });
   const oldDrain = drain(superseded.subscribe(oldSource));
   await oldSource.ready();
   const current = store.begin(resultKey('non-cooperative-current', 'source-a'));
@@ -243,7 +317,7 @@ async function runNonCooperativeLateDeliveryProbe() {
   const currentSnapshot = current.snapshot();
 
   const disposed = store.begin(resultKey('non-cooperative-disposed', 'source-b'));
-  const disposedSource = controlledSource('non-cooperative-disposed', metrics, {cooperativeReturn: false});
+  const disposedSource = controlledSource('non-cooperative-disposed', metrics, { cooperativeReturn: false });
   const disposedDrain = drain(disposed.subscribe(disposedSource));
   await disposedSource.ready();
   disposed.dispose();
@@ -270,12 +344,21 @@ async function runNonCooperativeLateDeliveryProbe() {
   };
   current.dispose();
   store.dispose();
-  return {observation, metrics};
+  return { observation, metrics };
 }
 
 async function runRevisionAndRegionCleanupProbe() {
-  const metrics = {sources: [], pulls: 0, startedSources: 0, returnedSources: 0, lateDropped: 0, deliveredAfterReturn: 0, activeSources: 0, maxActiveSources: 0};
-  const resultStore = createResultStore({maxEntries: 8});
+  const metrics = {
+    sources: [],
+    pulls: 0,
+    startedSources: 0,
+    returnedSources: 0,
+    lateDropped: 0,
+    deliveredAfterReturn: 0,
+    activeSources: 0,
+    maxActiveSources: 0,
+  };
+  const resultStore = createResultStore({ maxEntries: 8 });
   const oldHandle = resultStore.begin(resultKey('revision-a', 'source-a'));
   const oldSource = controlledSource('source-a', metrics);
   const oldDrain = drain(oldHandle.subscribe(oldSource));
@@ -293,57 +376,81 @@ async function runRevisionAndRegionCleanupProbe() {
 
   let authorizationStarted;
   let resolveAuthorization;
-  const authorizationPromise = new Promise((resolvePromise) => { resolveAuthorization = resolvePromise; });
+  const authorizationPromise = new Promise((resolvePromise) => {
+    resolveAuthorization = resolvePromise;
+  });
   const fixture = makeRegionFixture();
   let aborted = false;
   const regionStore = createRegionStore({
-    readAuthority: () => ({ok: true, value: fixture.authority}),
-    authorizeCommit: ({signal}) => {
+    readAuthority: () => ({ ok: true, value: fixture.authority }),
+    authorizeCommit: ({ signal }) => {
       authorizationStarted?.();
-      signal.addEventListener('abort', () => { aborted = true; }, {once: true});
+      signal.addEventListener(
+        'abort',
+        () => {
+          aborted = true;
+        },
+        { once: true },
+      );
       return authorizationPromise;
     },
   });
-  const created = regionStore.create({id: fixture.task.regionId, state: fixture.state});
+  const created = regionStore.create({ id: fixture.task.regionId, state: fixture.state });
   assert.equal(created.ok, true);
   if (!created.ok) throw new Error(created.diagnostics[0]?.message ?? 'region creation failed');
   const region = created.value;
   let observerUpdates = 0;
-  const observer = region.observe(() => { observerUpdates += 1; });
+  const observer = region.observe(() => {
+    observerUpdates += 1;
+  });
   let resolveStarted;
-  const started = new Promise((resolvePromise) => { resolveStarted = resolvePromise; });
+  const started = new Promise((resolvePromise) => {
+    resolveStarted = resolvePromise;
+  });
   authorizationStarted = resolveStarted;
-  const staged = await region.stage({requestId: 'dispose-request', expected: region.snapshot().readSet, state: fixture.state});
+  const staged = await region.stage({
+    requestId: 'dispose-request',
+    expected: region.snapshot().readSet,
+    state: fixture.state,
+  });
   assert.equal(staged.ok, true);
   if (!staged.ok) throw new Error(staged.diagnostics[0]?.message ?? 'region stage failed');
   const commitPromise = region.commit(staged.value);
   await started;
   const disposeStartedAt = timingEnabled ? performance.now() : undefined;
   region.dispose();
-  resolveAuthorization({ok: true, value: undefined});
+  resolveAuthorization({ ok: true, value: undefined });
   const commit = await commitPromise;
   const regionSnapshot = region.snapshot();
   const regionHistory = region.history();
   const revisionObservation = {
     elapsedMs: timingEnabled ? performance.now() - revisionChangedAt : undefined,
-    oldUpdates: oldUpdates.length, oldStatus: oldHandle.snapshot().status,
-    oldRows: oldHandle.snapshot().loadedRows, oldSourceRevision: oldHandle.snapshot().key.sourceRevision,
-    freshUpdates: freshUpdates.length, freshStatus: freshHandle.snapshot().status,
+    oldUpdates: oldUpdates.length,
+    oldStatus: oldHandle.snapshot().status,
+    oldRows: oldHandle.snapshot().loadedRows,
+    oldSourceRevision: oldHandle.snapshot().key.sourceRevision,
+    freshUpdates: freshUpdates.length,
+    freshStatus: freshHandle.snapshot().status,
     freshRows: freshHandle.snapshot().batches.flatMap((batch) => batch.rows.map((row) => row.id)),
     freshSourceRevision: freshHandle.snapshot().key.sourceRevision,
-    freshGeneration: freshHandle.generation, oldGeneration: oldHandle.generation,
-    activeSources: metrics.activeSources, staleLateEventsDropped: metrics.lateDropped,
+    freshGeneration: freshHandle.generation,
+    oldGeneration: oldHandle.generation,
+    activeSources: metrics.activeSources,
+    staleLateEventsDropped: metrics.lateDropped,
     deliveredAfterDispose: metrics.deliveredAfterReturn,
     regionCommitCode: commit.ok ? null : commit.diagnostics[0]?.code,
-    regionStatus: regionSnapshot.status, regionObserverClosed: observer.closed,
+    regionStatus: regionSnapshot.status,
+    regionObserverClosed: observer.closed,
     regionStoreEntryAfterDispose: regionStore.get(fixture.task.regionId) !== undefined,
-    regionHistoryLength: regionHistory.length, observerUpdates,
-    authorizationAborted: aborted, disposeToCommitMs: timingEnabled ? performance.now() - disposeStartedAt : undefined,
+    regionHistoryLength: regionHistory.length,
+    observerUpdates,
+    authorizationAborted: aborted,
+    disposeToCommitMs: timingEnabled ? performance.now() - disposeStartedAt : undefined,
   };
   freshHandle.dispose();
   resultStore.dispose();
   regionStore.dispose();
-  return {observation: revisionObservation, metrics};
+  return { observation: revisionObservation, metrics };
 }
 
 async function runProbe() {
@@ -357,13 +464,22 @@ async function runProbe() {
     sourceCommit: process.env.AELIQO_SOURCE_COMMIT ?? 'unknown',
     sourceAdapter: 'in-process async-iterator adapter; no network/server capacity claim',
     packageEntry: '@aeliqo/runtime/results and @aeliqo/runtime/regions built package exports',
-    environment: {node: process.version, platform: process.platform, arch: process.arch},
+    environment: { node: process.version, platform: process.platform, arch: process.arch },
     method: {
-      slowSourceDelayMs: 12, supersedingRequests: 16,
-      lifecycle: 'ResultStore subscription cancellation, source revision change with explicit prior-handle disposal, RegionStore pending commit disposal',
-      publicSignals: ['ResultHandle.snapshot', 'ResultStore.get', 'RegionHandle.snapshot', 'RegionHandle.history', 'RegionObserver.closed'],
+      slowSourceDelayMs: 12,
+      supersedingRequests: 16,
+      lifecycle:
+        'ResultStore subscription cancellation, source revision change with explicit prior-handle disposal, RegionStore pending commit disposal',
+      publicSignals: [
+        'ResultHandle.snapshot',
+        'ResultStore.get',
+        'RegionHandle.snapshot',
+        'RegionHandle.history',
+        'RegionObserver.closed',
+      ],
       rawSourceMetrics: true,
-      sourceRevisionPolicy: 'source-a and source-b use independent cache slots; the prior source-a handle is explicitly disposed before late delivery',
+      sourceRevisionPolicy:
+        'source-a and source-b use independent cache slots; the prior source-a handle is explicitly disposed before late delivery',
     },
     elapsedMs: timingEnabled ? performance.now() - startedAt : undefined,
     slowSource: slow.observation,
@@ -371,10 +487,19 @@ async function runProbe() {
     nonCooperativeLateDelivery: lateDelivery.observation,
     revisionAndRegionCleanup: revision.observation,
     sourceMetrics: {
-      slowSource: {...slow.metrics, sources: slow.metrics.sources.map(({label, closed}) => ({label, closed}))},
-      supersedingStorm: {...storm.metrics, sources: storm.metrics.sources.map(({label, closed}) => ({label, closed}))},
-      nonCooperativeLateDelivery: {...lateDelivery.metrics, sources: lateDelivery.metrics.sources.map(({label, closed}) => ({label, closed}))},
-      revision: {...revision.metrics, sources: revision.metrics.sources.map(({label, closed}) => ({label, closed}))},
+      slowSource: { ...slow.metrics, sources: slow.metrics.sources.map(({ label, closed }) => ({ label, closed })) },
+      supersedingStorm: {
+        ...storm.metrics,
+        sources: storm.metrics.sources.map(({ label, closed }) => ({ label, closed })),
+      },
+      nonCooperativeLateDelivery: {
+        ...lateDelivery.metrics,
+        sources: lateDelivery.metrics.sources.map(({ label, closed }) => ({ label, closed })),
+      },
+      revision: {
+        ...revision.metrics,
+        sources: revision.metrics.sources.map(({ label, closed }) => ({ label, closed })),
+      },
     },
     interpretation: {
       observed: [
@@ -405,7 +530,7 @@ test('adverse runtime lifecycle keeps final identity, rejects stale arrival, and
   assert.equal(report.supersedingStorm.deliveredAfterReturn, 0);
   assert.equal(report.sourceMetrics.supersedingStorm.startedSources, 16);
   assert.equal(report.sourceMetrics.supersedingStorm.returnedSources, 16);
-  assert.equal(report.sourceMetrics.supersedingStorm.sources.filter(({closed}) => closed).length, 16);
+  assert.equal(report.sourceMetrics.supersedingStorm.sources.filter(({ closed }) => closed).length, 16);
   assert.equal(report.supersedingStorm.maxActiveSources, 1);
   assert.equal(report.supersedingStorm.disposedAfterCleanup, 16);
   assert.equal(report.supersedingStorm.retainedBuffersAfterCleanup, 0);
@@ -423,7 +548,7 @@ test('adverse runtime lifecycle keeps final identity, rejects stale arrival, and
   assert.equal(report.nonCooperativeLateDelivery.maxActiveSources, 1);
   assert.equal(report.sourceMetrics.nonCooperativeLateDelivery.startedSources, 3);
   assert.equal(report.sourceMetrics.nonCooperativeLateDelivery.returnedSources, 3);
-  assert.equal(report.sourceMetrics.nonCooperativeLateDelivery.sources.filter(({closed}) => closed).length, 3);
+  assert.equal(report.sourceMetrics.nonCooperativeLateDelivery.sources.filter(({ closed }) => closed).length, 3);
   assert.equal(report.revisionAndRegionCleanup.oldStatus, 'disposed');
   assert.equal(report.revisionAndRegionCleanup.oldRows, 0);
   assert.deepEqual(report.revisionAndRegionCleanup.freshRows, ['fresh-row']);
@@ -433,7 +558,7 @@ test('adverse runtime lifecycle keeps final identity, rejects stale arrival, and
   assert.equal(report.revisionAndRegionCleanup.staleLateEventsDropped, 3);
   assert.equal(report.sourceMetrics.revision.startedSources, 2);
   assert.equal(report.sourceMetrics.revision.returnedSources, 2);
-  assert.equal(report.sourceMetrics.revision.sources.filter(({closed}) => closed).length, 2);
+  assert.equal(report.sourceMetrics.revision.sources.filter(({ closed }) => closed).length, 2);
   assert.equal(report.revisionAndRegionCleanup.regionCommitCode, 'runtime.region-disposed');
   assert.equal(report.revisionAndRegionCleanup.regionStatus, 'disposed');
   assert.equal(report.revisionAndRegionCleanup.regionObserverClosed, true);
@@ -444,4 +569,4 @@ test('adverse runtime lifecycle keeps final identity, rejects stale arrival, and
   process.stdout.write(`${JSON.stringify(report)}\n`);
 });
 
-export {runProbe};
+export { runProbe };

@@ -1,6 +1,6 @@
-import {parseWireValue, type Outcome} from '@aeliqo/core';
-import type {AgentCapabilityReceipt} from '../capabilities/types.js';
-import type {AgentToolDefinition, AgentToolEndpoint, AgentToolInputSchema} from '../protocol/types.js';
+import { parseWireValue, type Outcome } from '@aeliqo/core';
+import type { AgentCapabilityReceipt } from '../capabilities/types.js';
+import type { AgentToolDefinition, AgentToolEndpoint, AgentToolInputSchema } from '../protocol/types.js';
 import type {
   WebMcpAdapter,
   WebMcpAdapterOptions,
@@ -17,9 +17,17 @@ const MAX_REFERENCE = 256;
 const MAX_DESCRIPTION = 4096;
 const TOOL_NAME = /^[A-Za-z0-9_.-]{1,64}$/u;
 const OPERATIONS = new Set([
-  'catalog.read', 'result.inspect', 'task.propose', 'task.evaluate',
-  'experience.propose', 'experience.commit', 'meaning.propose', 'meaning.activate',
-  'action.propose', 'action.execute', 'model.egress',
+  'catalog.read',
+  'result.inspect',
+  'task.propose',
+  'task.evaluate',
+  'experience.propose',
+  'experience.commit',
+  'meaning.propose',
+  'meaning.activate',
+  'action.propose',
+  'action.execute',
+  'model.egress',
 ]);
 
 type Registered = {
@@ -29,12 +37,13 @@ type Registered = {
 };
 
 function failure<T>(code: string, message: string): Outcome<T> {
-  return {ok: false, diagnostics: [{code, message, retryable: false}]};
+  return { ok: false, diagnostics: [{ code, message, retryable: false }] };
 }
 
 function validText(value: unknown, maximum: number): value is string {
-  return typeof value === 'string' && value.length > 0 && value.length <= maximum
-    && !/[\u0000-\u001f\u007f]/u.test(value);
+  return (
+    typeof value === 'string' && value.length > 0 && value.length <= maximum && !/[\u0000-\u001f\u007f]/u.test(value)
+  );
 }
 
 function validToolName(value: unknown): value is string {
@@ -46,13 +55,16 @@ function isObject(value: unknown): value is Record<string, unknown> {
 }
 
 function isModelContext(value: unknown): value is WebMcpModelContext {
-  return isObject(value) && typeof value.registerTool === 'function'
-    && (value.getTools === undefined || typeof value.getTools === 'function');
+  return (
+    isObject(value) &&
+    typeof value.registerTool === 'function' &&
+    (value.getTools === undefined || typeof value.getTools === 'function')
+  );
 }
 
 function globalDocument(): unknown {
   try {
-    return (globalThis as typeof globalThis & {readonly document?: unknown}).document;
+    return (globalThis as typeof globalThis & { readonly document?: unknown }).document;
   } catch {
     return undefined;
   }
@@ -76,7 +88,7 @@ export function detectWebMcp(documentLike?: unknown): WebMcpDetection {
   const explicit = arguments.length > 0;
   const context = modelContextFromDocument(explicit ? documentLike : globalDocument());
   if (context !== undefined) {
-    return Object.freeze({evidence: explicit ? 'simulated' : 'native', supported: true, modelContext: context});
+    return Object.freeze({ evidence: explicit ? 'simulated' : 'native', supported: true, modelContext: context });
   }
   return Object.freeze({
     evidence: explicit ? 'simulated' : 'unavailable',
@@ -96,7 +108,7 @@ function freezeDefinition(input: AgentToolDefinition): AgentToolDefinition {
   return Object.freeze({
     name: input.name,
     description: input.description,
-    capability: Object.freeze({...input.capability}),
+    capability: Object.freeze({ ...input.capability }),
     operation: input.operation,
     inputSchema: schema,
   });
@@ -105,51 +117,73 @@ function freezeDefinition(input: AgentToolDefinition): AgentToolDefinition {
 function localSchemaReferences(value: unknown): boolean {
   if (value === null || typeof value !== 'object') return true;
   if (Array.isArray(value)) return value.every(localSchemaReferences);
-  return Object.entries(value).every(([key, child]) =>
-    (key !== '$ref' || (typeof child === 'string' && child.startsWith('#'))) && localSchemaReferences(child));
+  return Object.entries(value).every(
+    ([key, child]) =>
+      (key !== '$ref' || (typeof child === 'string' && child.startsWith('#'))) && localSchemaReferences(child),
+  );
 }
 
 function normalizeDefinitions(input: readonly AgentToolDefinition[]): Outcome<readonly AgentToolDefinition[]> {
-  if (!Array.isArray(input) || input.length > 128) return failure('agent.webmcp.discovery', 'Tool discovery returned an invalid list.');
+  if (!Array.isArray(input) || input.length > 128)
+    return failure('agent.webmcp.discovery', 'Tool discovery returned an invalid list.');
   const names = new Set<string>();
   const definitions: AgentToolDefinition[] = [];
   for (const candidate of input) {
-    if (!isObject(candidate) || !validToolName(candidate.name) || names.has(candidate.name)
-      || !validText(candidate.description, MAX_DESCRIPTION) || !isObject(candidate.capability)
-      || !validText(candidate.capability.id, MAX_REFERENCE) || !validText(candidate.capability.revision, MAX_REFERENCE)
-      || typeof candidate.operation !== 'string' || !OPERATIONS.has(candidate.operation) || !isObject(candidate.inputSchema)) {
+    if (
+      !isObject(candidate) ||
+      !validToolName(candidate.name) ||
+      names.has(candidate.name) ||
+      !validText(candidate.description, MAX_DESCRIPTION) ||
+      !isObject(candidate.capability) ||
+      !validText(candidate.capability.id, MAX_REFERENCE) ||
+      !validText(candidate.capability.revision, MAX_REFERENCE) ||
+      typeof candidate.operation !== 'string' ||
+      !OPERATIONS.has(candidate.operation) ||
+      !isObject(candidate.inputSchema)
+    ) {
       return failure('agent.webmcp.discovery', 'Tool discovery returned an invalid definition.');
     }
     const schema = parseWireValue(candidate.inputSchema);
     if (!schema.ok || !isObject(schema.value) || schema.value.type !== 'object' || !localSchemaReferences(schema.value))
       return failure('agent.webmcp.discovery', 'Tool discovery returned an invalid input schema.');
     names.add(candidate.name);
-    definitions.push(freezeDefinition({
-      name: candidate.name,
-      description: candidate.description,
-      capability: {id: candidate.capability.id, revision: candidate.capability.revision},
-      operation: candidate.operation as AgentToolDefinition['operation'],
-      inputSchema: schema.value as AgentToolInputSchema,
-    }));
+    definitions.push(
+      freezeDefinition({
+        name: candidate.name,
+        description: candidate.description,
+        capability: { id: candidate.capability.id, revision: candidate.capability.revision },
+        operation: candidate.operation as AgentToolDefinition['operation'],
+        inputSchema: schema.value as AgentToolInputSchema,
+      }),
+    );
   }
-  return {ok: true, value: Object.freeze(definitions)};
+  return { ok: true, value: Object.freeze(definitions) };
 }
 
 function nativeAnnotations(operation: AgentToolDefinition['operation']): WebMcpToolAnnotations {
   // A proposal is still a write to an application-owned draft boundary, and
   // model egress is a consequential disclosure even when no local state moves.
   const readOnlyHint = operation === 'catalog.read' || operation === 'result.inspect' || operation === 'task.evaluate';
-  const consequentialHint = operation === 'experience.commit' || operation === 'meaning.activate'
-    || operation === 'action.execute' || operation === 'model.egress';
+  const consequentialHint =
+    operation === 'experience.commit' ||
+    operation === 'meaning.activate' ||
+    operation === 'action.execute' ||
+    operation === 'model.egress';
   // Every endpoint receipt can carry application or source data. Keep the
   // native agent on the defensive; these hints never replace endpoint grants.
-  return Object.freeze({readOnlyHint, untrustedContentHint: true, consequentialHint});
+  return Object.freeze({ readOnlyHint, untrustedContentHint: true, consequentialHint });
 }
 
 function safeEndpoint(options: WebMcpAdapterOptions): AgentToolEndpoint {
-  if (options === null || typeof options !== 'object' || !isObject(options.endpoint)
-    || typeof options.endpoint.discover !== 'function' || typeof options.endpoint.invoke !== 'function'
-    || typeof options.endpoint.close !== 'function' || typeof options.endpoint.transport !== 'string') {
+  if (
+    options === null ||
+    typeof options !== 'object' ||
+    !isObject(options.endpoint) ||
+    typeof options.endpoint.discover !== 'function' ||
+    typeof options.endpoint.invoke !== 'function' ||
+    typeof options.endpoint.close !== 'function' ||
+    typeof options.endpoint.transport !== 'string'
+  ) {
     throw new TypeError('A WebMCP adapter requires a host-owned tool endpoint.');
   }
   return options.endpoint;
@@ -158,19 +192,23 @@ function safeEndpoint(options: WebMcpAdapterOptions): AgentToolEndpoint {
 function safeContext(options: WebMcpAdapterOptions): WebMcpDetection {
   if (options.modelContext !== undefined) {
     if (!isModelContext(options.modelContext)) throw new TypeError('The supplied WebMCP modelContext is invalid.');
-    return Object.freeze({evidence: 'simulated', supported: true, modelContext: options.modelContext});
+    return Object.freeze({ evidence: 'simulated', supported: true, modelContext: options.modelContext });
   }
   if (Object.hasOwn(options, 'document')) return detectWebMcp(options.document);
   return detectWebMcp();
 }
 
 function cancellationFailure<T>(closed: boolean): Outcome<T> {
-  return failure(closed ? 'agent.webmcp.closed' : 'agent.webmcp.cancelled', closed
-    ? 'The WebMCP adapter has been closed.'
-    : 'The WebMCP operation was cancelled.');
+  return failure(
+    closed ? 'agent.webmcp.closed' : 'agent.webmcp.cancelled',
+    closed ? 'The WebMCP adapter has been closed.' : 'The WebMCP operation was cancelled.',
+  );
 }
 
-function linkSignal(primary: AbortSignal | undefined, secondary: AbortSignal): {
+function linkSignal(
+  primary: AbortSignal | undefined,
+  secondary: AbortSignal,
+): {
   readonly signal: AbortSignal;
   readonly dispose: () => void;
 } {
@@ -178,8 +216,8 @@ function linkSignal(primary: AbortSignal | undefined, secondary: AbortSignal): {
   const abort = (): void => controller.abort();
   if (primary?.aborted || secondary.aborted) controller.abort();
   else {
-    primary?.addEventListener('abort', abort, {once: true});
-    secondary.addEventListener('abort', abort, {once: true});
+    primary?.addEventListener('abort', abort, { once: true });
+    secondary.addEventListener('abort', abort, { once: true });
   }
   return {
     signal: controller.signal,
@@ -201,16 +239,16 @@ async function registerNativeTool(
 ): Promise<'registered' | 'cancelled'> {
   if (controller.signal.aborted) return 'cancelled';
   let resolveAbort!: () => void;
-  const aborted = new Promise<'cancelled'>(resolve => {
+  const aborted = new Promise<'cancelled'>((resolve) => {
     resolveAbort = () => resolve('cancelled');
-    controller.signal.addEventListener('abort', resolveAbort, {once: true});
+    controller.signal.addEventListener('abort', resolveAbort, { once: true });
   });
   const registration = Promise.resolve().then(async () => {
     // Abort can land after the synchronous pre-check but before this native
     // registration microtask runs. Do not expose a tool in that window.
     if (controller.signal.aborted) return 'cancelled' as const;
-    await context.registerTool(tool, {signal: controller.signal});
-    return controller.signal.aborted ? 'cancelled' as const : 'registered' as const;
+    await context.registerTool(tool, { signal: controller.signal });
+    return controller.signal.aborted ? ('cancelled' as const) : ('registered' as const);
   });
   try {
     const result = await Promise.race([registration, aborted]);
@@ -245,16 +283,20 @@ export function createWebMcpAdapter(options: WebMcpAdapterOptions): WebMcpAdapte
     registrations.clear();
   };
 
-  const discover = async (discoverOptions: {readonly signal?: AbortSignal} = {}): Promise<Outcome<readonly AgentToolDefinition[]>> => {
+  const discover = async (
+    discoverOptions: { readonly signal?: AbortSignal } = {},
+  ): Promise<Outcome<readonly AgentToolDefinition[]>> => {
     if (closed) return cancellationFailure(true);
     if (!detection.supported || detection.modelContext === undefined)
       return failure('agent.webmcp.unavailable', detection.reason ?? 'The native WebMCP host is unavailable.');
     if (discoverOptions.signal?.aborted) return cancellationFailure(false);
-    if (endpoint.transport !== 'webmcp') return failure('agent.webmcp.transport', 'The endpoint is not bound to the WebMCP transport.');
+    if (endpoint.transport !== 'webmcp')
+      return failure('agent.webmcp.transport', 'The endpoint is not bound to the WebMCP transport.');
     try {
-      const result = discoverOptions.signal === undefined
-        ? await endpoint.discover()
-        : await endpoint.discover({signal: discoverOptions.signal});
+      const result =
+        discoverOptions.signal === undefined
+          ? await endpoint.discover()
+          : await endpoint.discover({ signal: discoverOptions.signal });
       if (closed) return cancellationFailure(true);
       if (discoverOptions.signal?.aborted) return cancellationFailure(false);
       if (!result.ok) return failure('agent.webmcp.discovery', 'Authorized tool discovery was unavailable.');
@@ -268,11 +310,11 @@ export function createWebMcpAdapter(options: WebMcpAdapterOptions): WebMcpAdapte
     if (registrationPromise !== undefined) return registrationPromise;
     const work = (async (): Promise<Outcome<readonly WebMcpRegistration[]>> => {
       if (closed) return cancellationFailure(true);
-      if (!detection.supported || detection.modelContext === undefined) return failure('agent.webmcp.unavailable', detection.reason ?? 'The native WebMCP host is unavailable.');
+      if (!detection.supported || detection.modelContext === undefined)
+        return failure('agent.webmcp.unavailable', detection.reason ?? 'The native WebMCP host is unavailable.');
       if (registerOptions.signal?.aborted) return cancellationFailure(false);
-      const discovered = registerOptions.signal === undefined
-        ? await discover()
-        : await discover({signal: registerOptions.signal});
+      const discovered =
+        registerOptions.signal === undefined ? await discover() : await discover({ signal: registerOptions.signal });
       if (!discovered.ok) return discovered;
       disposeRegistrations();
       const created: WebMcpRegistration[] = [];
@@ -285,22 +327,34 @@ export function createWebMcpAdapter(options: WebMcpAdapterOptions): WebMcpAdapte
           const controller = new AbortController();
           pendingControllers.add(controller);
           const abortRegistration = (): void => controller.abort();
-          registerOptions.signal?.addEventListener('abort', abortRegistration, {once: true});
-          const registered: Registered = {definition, controller, active: true};
-          controller.signal.addEventListener('abort', () => {registered.active = false;}, {once: true});
+          registerOptions.signal?.addEventListener('abort', abortRegistration, { once: true });
+          const registered: Registered = { definition, controller, active: true };
+          controller.signal.addEventListener(
+            'abort',
+            () => {
+              registered.active = false;
+            },
+            { once: true },
+          );
           const tool: WebMcpTool = Object.freeze({
             name: definition.name,
             description: definition.description,
             inputSchema: definition.inputSchema,
             annotations: nativeAnnotations(definition.operation),
-            execute: async (input: unknown, executionOptions?: WebMcpExecutionOptions): Promise<Outcome<AgentCapabilityReceipt>> => {
+            execute: async (
+              input: unknown,
+              executionOptions?: WebMcpExecutionOptions,
+            ): Promise<Outcome<AgentCapabilityReceipt>> => {
               if (closed) return cancellationFailure(true);
               if (!registered.active || controller.signal.aborted) return cancellationFailure(false);
               if (executionOptions?.signal?.aborted) return cancellationFailure(false);
               const linked = linkSignal(executionOptions?.signal, controller.signal);
               try {
                 if (linked.signal.aborted) return cancellationFailure(closed);
-                const result = await endpoint.invoke(definition.name, input, {requestId: requestId(++callCounter), signal: linked.signal});
+                const result = await endpoint.invoke(definition.name, input, {
+                  requestId: requestId(++callCounter),
+                  signal: linked.signal,
+                });
                 if (closed) return cancellationFailure(true);
                 if (!registered.active || linked.signal.aborted) return cancellationFailure(false);
                 return result;
@@ -330,15 +384,24 @@ export function createWebMcpAdapter(options: WebMcpAdapterOptions): WebMcpAdapte
             return cancellationFailure(closed);
           }
           registrations.set(definition.name, registered);
-          created.push(Object.freeze({name: definition.name, capability: Object.freeze({...definition.capability}), operation: definition.operation, evidence: detection.evidence}));
+          created.push(
+            Object.freeze({
+              name: definition.name,
+              capability: Object.freeze({ ...definition.capability }),
+              operation: definition.operation,
+              evidence: detection.evidence,
+            }),
+          );
         }
-        return {ok: true, value: Object.freeze(created)};
+        return { ok: true, value: Object.freeze(created) };
       } catch {
         disposeRegistrations();
         return failure('agent.webmcp.registration', 'WebMCP tool registration failed safely.');
       }
     })();
-    registrationPromise = work.finally(() => {registrationPromise = undefined;});
+    registrationPromise = work.finally(() => {
+      registrationPromise = undefined;
+    });
     return registrationPromise;
   };
 
@@ -346,22 +409,28 @@ export function createWebMcpAdapter(options: WebMcpAdapterOptions): WebMcpAdapte
     if (closed) return;
     closed = true;
     disposeRegistrations();
-    try { endpoint.close(); } catch { /* disposal remains closed even if the host cleanup throws */ }
+    try {
+      endpoint.close();
+    } catch {
+      /* disposal remains closed even if the host cleanup throws */
+    }
   };
 
-  return Object.freeze({evidence: detection.evidence, supported: detection.supported, discover, register, close});
+  return Object.freeze({ evidence: detection.evidence, supported: detection.supported, discover, register, close });
 }
 
 /** Register a host endpoint in one call while retaining the adapter for disposal. */
-export async function registerWebMcpTools(options: WebMcpAdapterOptions & WebMcpRegisterOptions): Promise<Outcome<{
-  readonly adapter: WebMcpAdapter;
-  readonly registrations: readonly WebMcpRegistration[];
-}>> {
+export async function registerWebMcpTools(options: WebMcpAdapterOptions & WebMcpRegisterOptions): Promise<
+  Outcome<{
+    readonly adapter: WebMcpAdapter;
+    readonly registrations: readonly WebMcpRegistration[];
+  }>
+> {
   const adapter = createWebMcpAdapter(options);
   const result = await adapter.register(options);
   if (!result.ok) {
     adapter.close();
     return result;
   }
-  return {ok: true, value: Object.freeze({adapter, registrations: result.value})};
+  return { ok: true, value: Object.freeze({ adapter, registrations: result.value }) };
 }

@@ -7,7 +7,7 @@ The public website at [docs.aeliqo.com](https://docs.aeliqo.com/) is the primary
 - [Framework integration](framework-integration.md): vanilla JavaScript, React, Vue, SSR, hydration, and package boundaries.
 - [Meaning authoring](meaning-authoring.md): define, register, review, and activate versioned business meaning.
 - [Presentation adaptation](presentation-adaptation.md): bind Results to responsive presentations without changing their claim.
-- [Migration to 0.1.0](migration-0.1.0.md): move from historical package lines to the current API.
+- [Historical migration into 0.1.0](migration-0.1.0.md): archived guidance for the previous public package line.
 - [Support boundary](public/0.1.0-support-boundary.md): supported runtimes, browsers, and package compatibility.
 
 ## Components and composition
@@ -40,4 +40,4 @@ The [ADR directory](adr/) records stable choices such as the four public contrac
 
 ## Public documentation source
 
-Authored website pages live in [`public-site/content.mjs`](public-site/content.mjs). Component reference pages are generated from the built package declarations, the public component catalog, and executable examples. Release artifacts are generated under the ignored `artifacts/public-docs` directory and must not be committed.
+Authored website pages live in [`public-site/pages/`](public-site/pages/) and are routed by the single [`public-site/routes.mjs`](public-site/routes.mjs) manifest. Component reference pages are generated from the built package declarations, the public component catalog, and executable examples. Release artifacts are generated under the ignored `artifacts/public-docs` directory and must not be committed.

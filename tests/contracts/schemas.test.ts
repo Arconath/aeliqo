@@ -64,9 +64,8 @@ describe('generated JSON Schema artifacts', () => {
     for (const kind of ['catalog', 'task', 'result', 'experience']) {
       const schema = readSchema(kind);
       const roots = schema.oneOf ?? [schema];
-      const versionSchema = roots.length === 1
-        ? roots[0]?.properties?.version
-        : roots.map((root) => root.properties?.version);
+      const versionSchema =
+        roots.length === 1 ? roots[0]?.properties?.version : roots.map((root) => root.properties?.version);
       expect(versionSchema).toEqual(
         roots.length === 1
           ? { type: 'string', const: '1', maxLength: 16_384 }
@@ -75,4 +74,3 @@ describe('generated JSON Schema artifacts', () => {
     }
   });
 });
-

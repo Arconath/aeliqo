@@ -1,6 +1,5 @@
-import {mountPeopleExample} from './home-example.js';
-import {prepareDeploymentAnalytics} from './analytics.js';
-import {startDeploymentTelemetry} from './telemetry.js';
+import { prepareDeploymentAnalytics } from './analytics.js';
+import { startDeploymentTelemetry } from './telemetry.js';
 
 const theme = document.querySelector<HTMLSelectElement>('#theme');
 const media = matchMedia('(prefers-color-scheme: dark)');
@@ -12,16 +11,30 @@ function applyTheme(value: string) {
   void syncComponentTheme(document);
 }
 export async function syncComponentTheme(root: Document | ShadowRoot | Element): Promise<void> {
-  for (const element of root.querySelectorAll<HTMLElement>('*')) {
+  const elements = [...(root instanceof HTMLElement ? [root] : []), ...root.querySelectorAll<HTMLElement>('*')];
+  for (const element of elements) {
     if (!element.localName.startsWith('aeliqo-')) continue;
     element.setAttribute('data-aeliqo-theme', document.documentElement.dataset.theme ?? 'light');
-    await (element as HTMLElement & {updateComplete?: Promise<unknown>}).updateComplete;
+    await (element as HTMLElement & { updateComplete?: Promise<unknown> }).updateComplete;
     if (element.shadowRoot) await syncComponentTheme(element.shadowRoot);
   }
 }
 let preference = 'system';
-try { const saved = localStorage.getItem('aeliqo-theme'); if (saved === 'light' || saved === 'dark') preference = saved; } catch {}
-if (theme) { theme.value = preference; applyTheme(preference); theme.addEventListener('change', () => { preference = theme.value; applyTheme(preference); try { localStorage.setItem('aeliqo-theme', preference); } catch {} }); }
+try {
+  const saved = localStorage.getItem('aeliqo-theme');
+  if (saved === 'light' || saved === 'dark') preference = saved;
+} catch {}
+if (theme) {
+  theme.value = preference;
+  applyTheme(preference);
+  theme.addEventListener('change', () => {
+    preference = theme.value;
+    applyTheme(preference);
+    try {
+      localStorage.setItem('aeliqo-theme', preference);
+    } catch {}
+  });
+}
 media.addEventListener('change', () => applyTheme(preference));
 
 function setNavOpen(open: boolean, restoreFocus = false): void {
@@ -31,16 +44,16 @@ function setNavOpen(open: boolean, restoreFocus = false): void {
 }
 if (navToggle && primaryNav) {
   navToggle.addEventListener('click', () => setNavOpen(navToggle.getAttribute('aria-expanded') !== 'true'));
-  primaryNav.addEventListener('click', event => {
+  primaryNav.addEventListener('click', (event) => {
     if (event.target instanceof Element && event.target.closest('a')) setNavOpen(false);
   });
-  document.addEventListener('keydown', event => {
+  document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && document.documentElement.dataset.navOpen === 'true') {
       event.preventDefault();
       setNavOpen(false, true);
     }
   });
-  narrowNav.addEventListener('change', event => {
+  narrowNav.addEventListener('change', (event) => {
     if (!event.matches) setNavOpen(false);
   });
 }
@@ -50,52 +63,55 @@ if (navToggle && primaryNav) {
 void startDeploymentTelemetry();
 void prepareDeploymentAnalytics();
 
-document.addEventListener('keydown', event => {
+document.addEventListener('keydown', (event) => {
   if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight' && event.key !== 'Home' && event.key !== 'End') return;
   const path = event.composedPath();
-  const viewport = path.find(node => node instanceof HTMLElement && node.getAttribute('part')?.split(/\s+/u).includes('scroll'));
-  if (!(viewport instanceof HTMLElement) || path[0] !== viewport || viewport.scrollWidth <= viewport.clientWidth) return;
+  const viewport = path.find(
+    (node) => node instanceof HTMLElement && node.getAttribute('part')?.split(/\s+/u).includes('scroll'),
+  );
+  if (!(viewport instanceof HTMLElement) || path[0] !== viewport || viewport.scrollWidth <= viewport.clientWidth)
+    return;
   event.preventDefault();
-  if (event.key === 'Home') { viewport.scrollLeft = 0; return; }
+  if (event.key === 'Home') {
+    viewport.scrollLeft = 0;
+    return;
+  }
   const rtl = getComputedStyle(viewport).direction === 'rtl';
   const end = viewport.scrollWidth - viewport.clientWidth;
-  if (event.key === 'End') { viewport.scrollLeft = rtl ? -end : end; return; }
+  if (event.key === 'End') {
+    viewport.scrollLeft = rtl ? -end : end;
+    return;
+  }
   const direction = event.key === 'ArrowRight' ? 1 : -1;
-  viewport.scrollBy({left: direction * 40, behavior: 'auto'});
+  viewport.scrollBy({ left: direction * 40, behavior: 'auto' });
 });
 
-const source = `import {mountPeopleExample} from './home-example.js';
+const source = `const app = createAeliqoApp({
+  resources: [{resource: people, data}],
+  authority,
+});
 
-// The helper mounts @aeliqo/web and sends requests through the shipped
-// @aeliqo/runtime local evaluator over the supplied synthetic snapshot.
-const demo = document.querySelector<HTMLElement>('#home-demo');
-const resultPanel = document.querySelector<HTMLElement>('#demo-result');
-if (!demo || !resultPanel) throw new Error('Demo mount points are missing.');
+app.mount({
+  target: document.querySelector('#people'),
+  regionId: 'people',
+  resourceId: 'people',
+});
 
-const records = mountPeopleExample(demo, resultPanel);
-records.filter('Engineering');
-const result = await records.evaluate('Engineering');
-records.showResult(result);
-// Manual path: records.showRecords();`;
+await app.render({
+  regionId: 'people',
+  intent: {
+    version: '1', id: 'browse-people', kind: 'browse',
+    resource: 'people', fields: ['name', 'team', 'location'],
+  },
+});`;
 const demo = document.querySelector<HTMLElement>('#home-demo');
-if (demo) {
-  demo.addEventListener('keydown', event => {
-    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight' && event.key !== 'Home' && event.key !== 'End') return;
-    if (demo.scrollWidth <= demo.clientWidth) return;
-    event.preventDefault();
-    if (event.key === 'Home') { demo.scrollLeft = 0; return; }
-    if (event.key === 'End') { demo.scrollLeft = demo.scrollWidth; return; }
-    const step = Math.max(32, Math.floor(demo.clientWidth * 0.75));
-    demo.scrollBy({left: event.key === 'ArrowRight' ? step : -step, behavior: 'auto'});
-  });
-  const resultContainer = document.querySelector<HTMLElement>('#demo-result');
-  const resultRoot: HTMLElement = resultContainer ?? demo;
-  const example=mountPeopleExample(demo, resultContainer ?? undefined);
+async function setupHomeDemo(demoRoot: HTMLElement): Promise<void> {
+  const { mountPeopleExample } = await import('./home-example.js');
+  const example = mountPeopleExample(demoRoot);
   const teamControl = document.querySelector<HTMLSelectElement>('#team');
   const status = document.querySelector<HTMLElement>('#demo-status');
   const evaluateButton = document.querySelector<HTMLButtonElement>('#demo-evaluate');
   const manualButton = document.querySelector<HTMLButtonElement>('#demo-manual');
-  const resultRef = document.querySelector<HTMLElement>('#demo-result-ref');
   const flowSteps = [...document.querySelectorAll<HTMLElement>('[data-flow-step]')];
   const setFlow = (current: string): void => {
     for (const step of flowSteps) {
@@ -103,46 +119,43 @@ if (demo) {
       else step.removeAttribute('aria-current');
     }
   };
-  let showingResult = false;
-  function showManual(message = ''): void {
-    showingResult = false;
-    example.showRecords();
-    setFlow('records');
-    if (status) status.textContent = message || `${example.filter(teamControl?.value ?? 'all')} of 4 synthetic people shown. Manual component path; choose a team, then request a local result.`;
-    if (resultRef) resultRef.textContent = '';
-  }
-  function update(): void {
-    const count = example.filter(teamControl?.value ?? 'all');
-    if (showingResult) showManual('Selection changed. The previous result was cleared; request a new local result.');
-    else if (status) status.textContent = `${count} of 4 synthetic people shown. Manual component path; choose a team, then request a local result.`;
-  }
-  async function evaluate(): Promise<void> {
+  async function renderIntent(): Promise<void> {
     const selectedTeam = teamControl?.value ?? 'all';
-    showingResult = true;
     setFlow('request');
-    if (status) status.textContent = 'Requesting a bounded local result…';
+    if (status) status.textContent = 'Validating and rendering the intent…';
     if (evaluateButton) evaluateButton.disabled = true;
-    await Promise.resolve();
     try {
-      const result = await example.evaluate(selectedTeam);
-      example.showResult(result);
-      if (resultRef) resultRef.textContent = `Result · revision ${result.result.ref.revision} · ${result.result.ref.scopeDigest} scope · exact`;
+      const receipt = await example.render(selectedTeam);
+      if (receipt.status !== 'renderer-ready') throw new Error(receipt.diagnostics[0]?.message ?? receipt.status);
       setFlow('view');
-      if (status) status.textContent = `${result.rows.length} of 4 synthetic people in the exact Result. Local only; no model or network request.`;
-      void syncComponentTheme(resultRoot);
+      if (status)
+        status.textContent = `${selectedTeam === 'all' ? '4' : '2'} of 4 synthetic people in an exact Result · ${receipt.presentation.plan.nodes[0]?.representation.id ?? 'registered view'} · 0 model calls.`;
+      void syncComponentTheme(demoRoot);
     } catch {
-      showManual('The bounded local result could not be evaluated. The manual component remains available.');
+      if (status) status.textContent = 'The intent failed safely. The previous valid interface remains available.';
     } finally {
       if (evaluateButton) evaluateButton.disabled = false;
     }
   }
-  showManual();
-  void syncComponentTheme(demo);
-  teamControl?.addEventListener('change', update);
-  evaluateButton?.addEventListener('click', () => void evaluate());
-  manualButton?.addEventListener('click', () => showManual('Manual component path restored. The record list is mounted directly; no Result or model call was made.'));
+  evaluateButton?.addEventListener('click', () => void renderIntent());
+  teamControl?.addEventListener('change', () => void renderIntent());
+  manualButton?.addEventListener('click', () => {
+    if (teamControl) teamControl.value = 'all';
+    void renderIntent();
+  });
+  void renderIntent();
   document.querySelector('#demo-source')!.textContent = source;
-  document.querySelector('#copy-demo')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(source);document.querySelector('#copy-status')!.textContent='Source copied.';}catch{document.querySelector('#copy-status')!.textContent='Copy unavailable. Select the source above to copy it manually.';}});
+  document.querySelector('#copy-demo')?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(source);
+      document.querySelector('#copy-status')!.textContent = 'Source copied.';
+    } catch {
+      document.querySelector('#copy-status')!.textContent =
+        'Copy unavailable. Select the source above to copy it manually.';
+    }
+  });
+  window.addEventListener('pagehide', () => example.dispose(), { once: true });
 }
-if (location.pathname.startsWith('/docs/')) void import('/docs-src/docs.js');
+if (demo) void setupHomeDemo(demo);
+if (document.body.dataset.docs === 'true') void import('/docs-src/docs.js');
 if (location.pathname.startsWith('/playground/')) void import('/playground-src/playground.js');

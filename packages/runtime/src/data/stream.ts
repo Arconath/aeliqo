@@ -1,5 +1,5 @@
-import {parseContract, WIRE_LIMITS} from '@aeliqo/core';
-import type {Contract, Diagnostic, ResultRef} from '@aeliqo/core';
+import { parseContract, WIRE_LIMITS } from '@aeliqo/core';
+import type { Contract, Diagnostic, ResultRef } from '@aeliqo/core';
 
 type ResultEvent = Contract<'result-event'>;
 
@@ -26,29 +26,38 @@ export class DataStreamError extends Error {
   constructor(code: string, message: string) {
     super(message);
     this.name = 'DataStreamError';
-    this.diagnostic = {code, message, retryable: false};
+    this.diagnostic = { code, message, retryable: false };
   }
 }
 
-function fail(code: string, message: string): never {throw new DataStreamError(code, message);}
+function fail(code: string, message: string): never {
+  throw new DataStreamError(code, message);
+}
 const sameRef = (a: ResultRef, b: ResultRef) =>
-  a.id === b.id && a.revision === b.revision && a.outputId === b.outputId &&
-  a.queryDigest === b.queryDigest && a.scopeDigest === b.scopeDigest;
+  a.id === b.id &&
+  a.revision === b.revision &&
+  a.outputId === b.outputId &&
+  a.queryDigest === b.queryDigest &&
+  a.scopeDigest === b.scopeDigest;
 
 /** Validates framing and stream lineage. It does not prove data or prose truth. */
 export async function* readResultStream(
-  source: ReadableStream<Uint8Array>, context: ResultStreamContext,
+  source: ReadableStream<Uint8Array>,
+  context: ResultStreamContext,
 ): AsyncGenerator<ResultEvent> {
-  const limits = {...context.limits};
-  const {requestId, queryDigest, scopeDigest, outputId, populationDigest, signal} = context;
+  const limits = { ...context.limits };
+  const { requestId, queryDigest, scopeDigest, outputId, populationDigest, signal } = context;
   for (const limit of [limits.bytes, limits.messageBytes, limits.messages, limits.rows]) {
-    if (!Number.isSafeInteger(limit) || limit < 0) fail('data.stream-budget', 'Stream limits must be nonnegative safe integers.');
+    if (!Number.isSafeInteger(limit) || limit < 0)
+      fail('data.stream-budget', 'Stream limits must be nonnegative safe integers.');
   }
   if (!limits.messageBytes || limits.messageBytes > WIRE_LIMITS.bytes || !limits.messages)
     fail('data.stream-budget', 'Stream message limits exceed the wire boundary or permit no messages.');
   const reader = source.getReader();
-  const abort = () => {void reader.cancel().catch(() => {});};
-  signal?.addEventListener('abort', abort, {once: true});
+  const abort = () => {
+    void reader.cancel().catch(() => {});
+  };
+  signal?.addEventListener('abort', abort, { once: true });
   let buffer = new Uint8Array(Math.min(4096, limits.messageBytes));
   let used = 0;
   let bytes = 0;
@@ -60,15 +69,18 @@ export async function* readResultStream(
   let terminalEvent: ResultEvent | undefined;
   let population: string | undefined;
   const progress = new Map<string, number>();
-  const decoder = new TextDecoder('utf-8', {fatal: true});
+  const decoder = new TextDecoder('utf-8', { fatal: true });
 
   const parseLine = (): ResultEvent => {
     if (signal?.aborted) fail('data.aborted', 'Result stream was cancelled.');
     if (++messages > limits.messages) fail('data.stream-budget', 'Stream message budget exceeded.');
     if (terminal) fail('data.stream-terminal', 'A result stream continued after its terminal event.');
     let text: string;
-    try {text = decoder.decode(buffer.subarray(0, used));}
-    catch {return fail('data.stream-encoding', 'Result stream contains invalid UTF-8.');}
+    try {
+      text = decoder.decode(buffer.subarray(0, used));
+    } catch {
+      return fail('data.stream-encoding', 'Result stream contains invalid UTF-8.');
+    }
     used = 0;
     const parsed = parseContract('result-event', text);
     if (!parsed.ok) fail('data.stream-shape', 'Result stream message does not match the bounded event contract.');
@@ -82,7 +94,10 @@ export async function* readResultStream(
       if (reference !== undefined) fail('data.stream-descriptor', 'A result stream has more than one descriptor.');
       const ref = event.descriptor.ref;
       if (ref.queryDigest !== queryDigest || ref.scopeDigest !== scopeDigest || ref.outputId !== outputId)
-        fail('data.stream-scope', 'Result descriptor does not match the accepted query, output and authorization scope.');
+        fail(
+          'data.stream-scope',
+          'Result descriptor does not match the accepted query, output and authorization scope.',
+        );
       reference = ref;
       const coverage = event.descriptor.coverage;
       population = coverage.kind === 'unknown' ? undefined : coverage.populationDigest;
@@ -94,18 +109,26 @@ export async function* readResultStream(
       return event;
     }
     if (reference === undefined) fail('data.stream-descriptor', 'A result stream event arrived before its descriptor.');
-    if (!sameRef(reference, event.result)) fail('data.stream-lineage', 'Result stream identity changed between messages.');
+    if (!sameRef(reference, event.result))
+      fail('data.stream-lineage', 'Result stream identity changed between messages.');
     if (event.kind === 'batch') {
-      if (event.sequence !== sequence++) fail('data.stream-sequence', 'Result batches must be consecutive and start at zero.');
+      if (event.sequence !== sequence++)
+        fail('data.stream-sequence', 'Result batches must be consecutive and start at zero.');
       rows += event.rows.length;
       if (rows > limits.rows) fail('data.stream-budget', 'Result stream row budget exceeded.');
     } else if (event.kind === 'progress') {
-      if (event.completed < (progress.get(event.unit) ?? 0) || (event.total !== undefined && event.completed > event.total))
+      if (
+        event.completed < (progress.get(event.unit) ?? 0) ||
+        (event.total !== undefined && event.completed > event.total)
+      )
         fail('data.stream-progress', 'Result stream progress is inconsistent.');
       progress.set(event.unit, event.completed);
     } else {
       const coverage = event.finalCoverage;
-      if (populationDigest !== undefined && (coverage.kind === 'unknown' || coverage.populationDigest !== populationDigest))
+      if (
+        populationDigest !== undefined &&
+        (coverage.kind === 'unknown' || coverage.populationDigest !== populationDigest)
+      )
         fail('data.stream-population', 'Result completion does not match the accepted population.');
       if (population !== undefined && coverage.kind !== 'unknown' && coverage.populationDigest !== population)
         fail('data.stream-population', 'Result stream population changed at completion.');
@@ -117,8 +140,9 @@ export async function* readResultStream(
     while (true) {
       if (signal?.aborted) fail('data.aborted', 'Result stream was cancelled.');
       let chunk: ReadableStreamReadResult<Uint8Array>;
-      try {chunk = await reader.read();}
-      catch {
+      try {
+        chunk = await reader.read();
+      } catch {
         if (signal?.aborted) fail('data.aborted', 'Result stream was cancelled.');
         fail('data.stream-network', 'Result transport failed before its stream was validated.');
       }

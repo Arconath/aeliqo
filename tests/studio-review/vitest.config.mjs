@@ -1,5 +1,5 @@
-import {defineConfig} from 'vitest/config';
-import {resolve} from 'node:path';
+import { defineConfig } from 'vitest/config';
+import { resolve } from 'node:path';
 
 // This review suite deliberately owns its runner so it can be run without
 // changing the product's test command or depending on a root package link for
@@ -12,5 +12,5 @@ export default defineConfig({
       '@aeliqo/runtime': resolve('packages/runtime/dist'),
     },
   },
-  test: {environment: 'node', include: ['tests/studio-review/**/*.test.ts']},
+  test: { environment: 'node', include: ['tests/studio-review/**/*.test.ts'] },
 });

@@ -24,7 +24,8 @@ git diff --quiet
 git diff --cached --quiet
 
 sdk_revision="$SOURCE_SHA"
-sdk_version="$(jq -er '.version | select(. == "0.1.0")' packages/core/package.json)"
+release_version="$(jq -er '.version | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))' release-metadata.json)"
+sdk_version="$(jq -er --arg version "$release_version" '.version | select(. == $version)' packages/core/package.json)"
 
 image="ghcr.io/arconath/aeliqo-web"
 tag="${SOURCE_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"

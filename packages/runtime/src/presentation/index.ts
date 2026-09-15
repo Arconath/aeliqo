@@ -1,4 +1,4 @@
-export {createPresentationAdaptationController} from './adaptation.js';
+export { createPresentationAdaptationController } from './adaptation.js';
 export type {
   PresentationAdaptationContext,
   PresentationAdaptationContextSource,

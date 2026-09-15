@@ -1,5 +1,30 @@
 # @aeliqo/react
 
+## Application binding
+
+`@aeliqo/react/app` connects one existing `AeliqoApp` to React lifecycle without
+creating another compiler or renderer. The provider owns no authority; it only
+passes the application instance to Regions. Unmount releases the Region and an
+application-level owner must dispose the app.
+
+```tsx
+import {AeliqoProvider, AeliqoRegion} from '@aeliqo/react/app';
+
+export function PeopleRegion({app}) {
+  return (
+    <AeliqoProvider app={app}>
+      <AeliqoRegion
+        regionId="people-main"
+        resourceId="people"
+        intent={{version: '1', id: 'browse-people', kind: 'browse', resource: 'people'}}
+      />
+    </AeliqoProvider>
+  );
+}
+```
+
+## Component wrappers
+
 Thin React 19 bindings for the shared `@aeliqo/web` elements. The package
 exports wrappers for all 71 catalog components from the root entry and from
 the `foundation`, `inputs`, `navigation`, `feedback`, `data`, `plot`,

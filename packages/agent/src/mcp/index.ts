@@ -11,7 +11,12 @@ import {
   type StandardSchemaWithJSON,
   type Tool,
 } from '@modelcontextprotocol/server';
-import {serveStdio, StdioServerTransport, type ServeStdioOptions, type StdioServerHandle} from '@modelcontextprotocol/server/stdio';
+import {
+  serveStdio,
+  StdioServerTransport,
+  type ServeStdioOptions,
+  type StdioServerHandle,
+} from '@modelcontextprotocol/server/stdio';
 import {
   Client,
   type AuthProvider,
@@ -25,12 +30,19 @@ import {
   type StreamableHTTPClientTransportOptions,
   type Transport,
 } from '@modelcontextprotocol/client';
-import {StdioClientTransport, type StdioServerParameters} from '@modelcontextprotocol/client/stdio';
-import {parseContract, parseWireValue, WIRE_LIMITS, type Diagnostic, type OperationGrant, type Outcome, type ResultRef, type VersionRef} from '@aeliqo/core';
-import type {
-  AgentCapabilityReceipt,
-  AgentJsonValue,
-} from '../capabilities/types.js';
+import { StdioClientTransport, type StdioServerParameters } from '@modelcontextprotocol/client/stdio';
+import { AELIQO_AGENT_VERSION } from '../version.js';
+import {
+  parseContract,
+  parseWireValue,
+  WIRE_LIMITS,
+  type Diagnostic,
+  type OperationGrant,
+  type Outcome,
+  type ResultRef,
+  type VersionRef,
+} from '@aeliqo/core';
+import type { AgentCapabilityReceipt, AgentJsonValue } from '../capabilities/types.js';
 import type {
   AgentToolCallOptions,
   AgentToolDefinition,
@@ -50,7 +62,7 @@ const MAX_TEXT_BYTES = 256 * 1024;
 const MAX_DEFINITION_COUNT = 256;
 const MAX_DESCRIPTION_LENGTH = WIRE_LIMITS.text;
 const DEFAULT_SERVER_NAME = 'aeliqo-agent';
-const DEFAULT_SERVER_VERSION = '0.1.0';
+const DEFAULT_SERVER_VERSION = AELIQO_AGENT_VERSION;
 
 type ProtocolEra = 'modern' | 'legacy';
 
@@ -63,9 +75,7 @@ export interface McpEndpointFactoryContext {
   readonly requestInfo?: Request;
 }
 
-export type McpEndpointFactory = (
-  context: McpEndpointFactoryContext,
-) => AgentToolEndpoint | Promise<AgentToolEndpoint>;
+export type McpEndpointFactory = (context: McpEndpointFactoryContext) => AgentToolEndpoint | Promise<AgentToolEndpoint>;
 
 export interface McpServerFactoryOptions {
   /** A fresh host endpoint is requested for discovery and for every tool call. */
@@ -92,9 +102,7 @@ export interface McpHttpAuthContext {
  * parse a principal, mint a token, or turn wire metadata into authority. The
  * official SDK's `requireBearerAuth` can be supplied directly as this gate.
  */
-export type McpHttpAuthGate = (
-  request: Request,
-) => Promise<AuthInfo | Response> | AuthInfo | Response;
+export type McpHttpAuthGate = (request: Request) => Promise<AuthInfo | Response> | AuthInfo | Response;
 
 export interface McpHttpServerOptions extends McpServerFactoryOptions {
   /** Required trusted authentication gate. */
@@ -163,8 +171,13 @@ interface AdapterEnvelope<T> {
 }
 
 function failure<T>(code: string, message: string, path?: readonly (string | number)[]): Outcome<T> {
-  const diagnostic: Diagnostic = {code, message, retryable: false, ...(path === undefined ? {} : {path: [...path]})};
-  return {ok: false, diagnostics: [diagnostic]};
+  const diagnostic: Diagnostic = {
+    code,
+    message,
+    retryable: false,
+    ...(path === undefined ? {} : { path: [...path] }),
+  };
+  return { ok: false, diagnostics: [diagnostic] };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -190,8 +203,9 @@ function boundedWire(value: unknown): Outcome<unknown> {
 
 function boundedText(value: unknown): Outcome<string> {
   if (typeof value !== 'string') return failure('agent.mcp.result', 'The MCP result text was malformed.');
-  if (new TextEncoder().encode(value).byteLength > MAX_TEXT_BYTES) return failure('agent.mcp.bytes', 'The MCP result text exceeds its byte budget.');
-  return {ok: true, value};
+  if (new TextEncoder().encode(value).byteLength > MAX_TEXT_BYTES)
+    return failure('agent.mcp.bytes', 'The MCP result text exceeds its byte budget.');
+  return { ok: true, value };
 }
 
 function validText(value: unknown, max: number = MAX_DESCRIPTION_LENGTH): value is string {
@@ -199,7 +213,12 @@ function validText(value: unknown, max: number = MAX_DESCRIPTION_LENGTH): value 
 }
 
 function validId(value: unknown): value is string {
-  return typeof value === 'string' && value.length > 0 && value.length <= WIRE_LIMITS.id && !/[\s\u0000-\u001f\u007f]/u.test(value);
+  return (
+    typeof value === 'string' &&
+    value.length > 0 &&
+    value.length <= WIRE_LIMITS.id &&
+    !/[\s\u0000-\u001f\u007f]/u.test(value)
+  );
 }
 
 function cloneSchema(value: AgentToolInputSchema): Record<string, unknown> {
@@ -209,9 +228,10 @@ function cloneSchema(value: AgentToolInputSchema): Record<string, unknown> {
 function localSchemaReferences(value: unknown): boolean {
   if (value === null || typeof value !== 'object') return true;
   if (Array.isArray(value)) return value.every(localSchemaReferences);
-  return Object.entries(value).every(([key, child]) =>
-    (key !== '$ref' || (typeof child === 'string' && child.startsWith('#')))
-    && localSchemaReferences(child));
+  return Object.entries(value).every(
+    ([key, child]) =>
+      (key !== '$ref' || (typeof child === 'string' && child.startsWith('#'))) && localSchemaReferences(child),
+  );
 }
 
 /**
@@ -225,7 +245,7 @@ function standardSchema(schema: AgentToolInputSchema): StandardSchemaWithJSON {
     '~standard': {
       version: 1,
       vendor: 'aeliqo',
-      validate: (value: unknown) => ({value}),
+      validate: (value: unknown) => ({ value }),
       jsonSchema: {
         input: () => jsonSchema,
         output: () => jsonSchema,
@@ -238,62 +258,85 @@ function toolMetadata(definition: AgentToolDefinition): Record<string, unknown> 
   return {
     [AELIQO_MCP_TOOL_META]: {
       version: ADAPTER_VERSION,
-      capability: {id: definition.capability.id, revision: definition.capability.revision},
+      capability: { id: definition.capability.id, revision: definition.capability.revision },
       operation: definition.operation,
     },
   };
 }
 
 function normalizeMetadata(value: unknown): Outcome<ToolMetadata> {
-  if (!isRecord(value) || value.version !== ADAPTER_VERSION || !isRecord(value.capability)
-    || !validId(value.capability.id) || !validId(value.capability.revision)) {
+  if (
+    !isRecord(value) ||
+    value.version !== ADAPTER_VERSION ||
+    !isRecord(value.capability) ||
+    !validId(value.capability.id) ||
+    !validId(value.capability.revision)
+  ) {
     return failure('agent.mcp.tool-metadata', 'The MCP tool does not carry a valid Aeliqo capability binding.');
   }
   const operation = parseContract('operation-grant', JSON.stringify(value.operation));
   if (!operation.ok) return failure('agent.mcp.tool-metadata', 'The MCP tool carries an unknown capability operation.');
-  return {ok: true, value: Object.freeze({
-    version: ADAPTER_VERSION,
-    capability: Object.freeze({id: value.capability.id, revision: value.capability.revision}),
-    operation: operation.value,
-  })};
+  return {
+    ok: true,
+    value: Object.freeze({
+      version: ADAPTER_VERSION,
+      capability: Object.freeze({ id: value.capability.id, revision: value.capability.revision }),
+      operation: operation.value,
+    }),
+  };
 }
 
 function normalizeTool(tool: Tool): Outcome<AgentToolDefinition> {
-  if (!isRecord(tool) || !validId(tool.name) || !/^[A-Za-z0-9_-]{1,64}$/u.test(tool.name)) return failure('agent.mcp.tool', 'The MCP server returned a malformed tool name.');
+  if (!isRecord(tool) || !validId(tool.name) || !/^[A-Za-z0-9_-]{1,64}$/u.test(tool.name))
+    return failure('agent.mcp.tool', 'The MCP server returned a malformed tool name.');
   const schema = boundedWire(tool.inputSchema);
-  if (!schema.ok || !isRecord(schema.value) || schema.value.type !== 'object' || !localSchemaReferences(schema.value)
-    || (safeJson(schema.value) === undefined || new TextEncoder().encode(safeJson(schema.value) as string).byteLength > 65_536)) return failure('agent.mcp.tool', 'The MCP server returned a malformed input schema.');
+  if (
+    !schema.ok ||
+    !isRecord(schema.value) ||
+    schema.value.type !== 'object' ||
+    !localSchemaReferences(schema.value) ||
+    safeJson(schema.value) === undefined ||
+    new TextEncoder().encode(safeJson(schema.value) as string).byteLength > 65_536
+  )
+    return failure('agent.mcp.tool', 'The MCP server returned a malformed input schema.');
   const metadata = normalizeMetadata(isRecord(tool._meta) ? tool._meta[AELIQO_MCP_TOOL_META] : undefined);
   if (!metadata.ok) return metadata;
   const description = tool.description === undefined ? tool.name : tool.description;
-  if (!validText(description)) return failure('agent.mcp.tool', 'The MCP server returned a malformed tool description.');
-  return {ok: true, value: Object.freeze({
-    name: tool.name,
-    description,
-    capability: metadata.value.capability,
-    operation: metadata.value.operation,
-    inputSchema: Object.freeze(schema.value as AgentToolInputSchema),
-  })};
+  if (!validText(description))
+    return failure('agent.mcp.tool', 'The MCP server returned a malformed tool description.');
+  return {
+    ok: true,
+    value: Object.freeze({
+      name: tool.name,
+      description,
+      capability: metadata.value.capability,
+      operation: metadata.value.operation,
+      inputSchema: Object.freeze(schema.value as AgentToolInputSchema),
+    }),
+  };
 }
 
-function requestIdFromContext(context: {readonly mcpReq: {readonly id: string | number; readonly _meta?: Record<string, unknown>}}): string {
+function requestIdFromContext(context: {
+  readonly mcpReq: { readonly id: string | number; readonly _meta?: Record<string, unknown> };
+}): string {
   const supplied = context.mcpReq._meta?.[AELIQO_MCP_TOOL_META];
   if (isRecord(supplied) && validId(supplied.requestId)) return supplied.requestId;
   return String(context.mcpReq.id);
 }
 
 function envelope<T>(outcome: Outcome<T>): AdapterEnvelope<T> {
-  return {version: ADAPTER_VERSION, outcome};
+  return { version: ADAPTER_VERSION, outcome };
 }
 
 function outcomeToCallToolResult<T>(outcome: Outcome<T>): CallToolResult {
   const body = envelope(outcome);
   const encoded = safeJson(body);
-  const bounded = encoded === undefined ? envelope(failure<T>('agent.mcp.bytes', 'The MCP result exceeds its byte budget.')) : body;
+  const bounded =
+    encoded === undefined ? envelope(failure<T>('agent.mcp.bytes', 'The MCP result exceeds its byte budget.')) : body;
   const text = encoded ?? JSON.stringify(bounded);
   return {
     isError: !bounded.outcome.ok,
-    content: [{type: 'text', text}],
+    content: [{ type: 'text', text }],
     structuredContent: bounded,
   };
 }
@@ -301,10 +344,13 @@ function outcomeToCallToolResult<T>(outcome: Outcome<T>): CallToolResult {
 function textFromResult(result: CallToolResult): Outcome<unknown> {
   if (!isRecord(result)) return failure('agent.mcp.result', 'The MCP server returned an invalid result.');
   if (result.structuredContent !== undefined) return boundedWire(result.structuredContent);
-  if (!Array.isArray(result.content) || result.content.length > WIRE_LIMITS.array) return failure('agent.mcp.result', 'The MCP server returned malformed content.');
-  if (safeJson(result.content) === undefined) return failure('agent.mcp.bytes', 'The MCP result content exceeds its byte budget.');
+  if (!Array.isArray(result.content) || result.content.length > WIRE_LIMITS.array)
+    return failure('agent.mcp.result', 'The MCP server returned malformed content.');
+  if (safeJson(result.content) === undefined)
+    return failure('agent.mcp.bytes', 'The MCP result content exceeds its byte budget.');
   const block = result.content.find((candidate) => isRecord(candidate) && candidate.type === 'text');
-  if (!isRecord(block) || typeof block.text !== 'string') return failure('agent.mcp.result', 'The MCP server returned no bounded JSON result.');
+  if (!isRecord(block) || typeof block.text !== 'string')
+    return failure('agent.mcp.result', 'The MCP server returned no bounded JSON result.');
   const bounded = boundedText(block.text);
   if (!bounded.ok) return bounded;
   try {
@@ -316,23 +362,37 @@ function textFromResult(result: CallToolResult): Outcome<unknown> {
 
 function normalizeResultRef(value: unknown): Outcome<ResultRef> {
   const checked = boundedWire(value);
-  if (!checked.ok || !isRecord(checked.value)
-    || !validId(checked.value.id) || !validId(checked.value.revision)
-    || !validId(checked.value.outputId) || !validId(checked.value.queryDigest)
-    || !validId(checked.value.scopeDigest)) return failure('agent.mcp.receipt', 'The MCP server returned a malformed result reference.');
-  return {ok: true, value: Object.freeze({
-    id: checked.value.id,
-    revision: checked.value.revision,
-    outputId: checked.value.outputId,
-    queryDigest: checked.value.queryDigest,
-    scopeDigest: checked.value.scopeDigest,
-  })};
+  if (
+    !checked.ok ||
+    !isRecord(checked.value) ||
+    !validId(checked.value.id) ||
+    !validId(checked.value.revision) ||
+    !validId(checked.value.outputId) ||
+    !validId(checked.value.queryDigest) ||
+    !validId(checked.value.scopeDigest)
+  )
+    return failure('agent.mcp.receipt', 'The MCP server returned a malformed result reference.');
+  return {
+    ok: true,
+    value: Object.freeze({
+      id: checked.value.id,
+      revision: checked.value.revision,
+      outputId: checked.value.outputId,
+      queryDigest: checked.value.queryDigest,
+      scopeDigest: checked.value.scopeDigest,
+    }),
+  };
 }
 
 function normalizeDiagnostic(value: unknown): Outcome<Diagnostic> {
   const checked = boundedWire(value);
-  if (!checked.ok || !isRecord(checked.value) || !validId(checked.value.code)
-    || !validText(checked.value.message, WIRE_LIMITS.label) || typeof checked.value.retryable !== 'boolean') {
+  if (
+    !checked.ok ||
+    !isRecord(checked.value) ||
+    !validId(checked.value.code) ||
+    !validText(checked.value.message, WIRE_LIMITS.label) ||
+    typeof checked.value.retryable !== 'boolean'
+  ) {
     return failure('agent.mcp.receipt', 'The MCP server returned malformed diagnostics.');
   }
   const diagnostic = checked.value;
@@ -340,36 +400,48 @@ function normalizeDiagnostic(value: unknown): Outcome<Diagnostic> {
   const message = diagnostic.message as string;
   const retryable = diagnostic.retryable as boolean;
   if (diagnostic.path !== undefined) {
-    if (!Array.isArray(diagnostic.path) || diagnostic.path.length > WIRE_LIMITS.depth
-      || diagnostic.path.some((part: unknown) => (typeof part === 'string'
-        ? part.length > WIRE_LIMITS.text || /[\u0000-\u001f\u007f]/u.test(part)
-        : !(Number.isSafeInteger(part) && (part as number) >= 0)))) {
+    if (
+      !Array.isArray(diagnostic.path) ||
+      diagnostic.path.length > WIRE_LIMITS.depth ||
+      diagnostic.path.some((part: unknown) =>
+        typeof part === 'string'
+          ? part.length > WIRE_LIMITS.text || /[\u0000-\u001f\u007f]/u.test(part)
+          : !(Number.isSafeInteger(part) && (part as number) >= 0),
+      )
+    ) {
       return failure('agent.mcp.receipt', 'The MCP server returned malformed diagnostic paths.');
     }
   }
-  if (diagnostic.remedies !== undefined
-    && (!Array.isArray(diagnostic.remedies) || diagnostic.remedies.length > WIRE_LIMITS.diagnostics
-      || diagnostic.remedies.some((remedy: unknown) => !validText(remedy, WIRE_LIMITS.label)))) {
+  if (
+    diagnostic.remedies !== undefined &&
+    (!Array.isArray(diagnostic.remedies) ||
+      diagnostic.remedies.length > WIRE_LIMITS.diagnostics ||
+      diagnostic.remedies.some((remedy: unknown) => !validText(remedy, WIRE_LIMITS.label)))
+  ) {
     return failure('agent.mcp.receipt', 'The MCP server returned malformed diagnostic remedies.');
   }
-  return {ok: true, value: Object.freeze({
-    code,
-    message,
-    retryable,
-    ...(diagnostic.path === undefined ? {} : {path: Object.freeze([...(diagnostic.path as (string | number)[])])}),
-    ...(diagnostic.remedies === undefined ? {} : {remedies: Object.freeze([...(diagnostic.remedies as string[])])}),
-  })};
+  return {
+    ok: true,
+    value: Object.freeze({
+      code,
+      message,
+      retryable,
+      ...(diagnostic.path === undefined ? {} : { path: Object.freeze([...(diagnostic.path as (string | number)[])]) }),
+      ...(diagnostic.remedies === undefined ? {} : { remedies: Object.freeze([...(diagnostic.remedies as string[])]) }),
+    }),
+  };
 }
 
 function normalizeDiagnostics(value: unknown): Outcome<readonly Diagnostic[]> {
-  if (!Array.isArray(value) || value.length > WIRE_LIMITS.diagnostics) return failure('agent.mcp.receipt', 'The MCP server returned malformed diagnostics.');
+  if (!Array.isArray(value) || value.length > WIRE_LIMITS.diagnostics)
+    return failure('agent.mcp.receipt', 'The MCP server returned malformed diagnostics.');
   const diagnostics: Diagnostic[] = [];
   for (const item of value) {
     const normalized = normalizeDiagnostic(item);
     if (!normalized.ok) return normalized;
     diagnostics.push(normalized.value);
   }
-  return {ok: true, value: Object.freeze(diagnostics)};
+  return { ok: true, value: Object.freeze(diagnostics) };
 }
 
 function normalizeReceipt(
@@ -380,28 +452,62 @@ function normalizeReceipt(
   goalEpoch: string,
 ): Outcome<AgentCapabilityReceipt> {
   const checked = boundedWire(value);
-  if (!checked.ok || !isRecord(checked.value)) return failure('agent.mcp.receipt', 'The MCP server returned a malformed receipt.');
+  if (!checked.ok || !isRecord(checked.value))
+    return failure('agent.mcp.receipt', 'The MCP server returned a malformed receipt.');
   const receipt = checked.value;
-  const states = new Set(['accepted', 'bound', 'data-ready', 'plan-committed', 'renderer-ready', 'partial', 'cancelled', 'failed', 'denied', 'stale', 'unsupported', 'invalid', 'needs-choice', 'needs-meaning']);
-  if (receipt.version !== '1' || receipt.requestId !== expected.requestId || receipt.targetRegionId !== targetRegionId
-    || receipt.goalEpoch !== goalEpoch || receipt.transport !== 'mcp' || !isRecord(receipt.capability)
-    || !validId(receipt.capability.id) || !validId(receipt.capability.revision) || !validText(receipt.state, 32) || !states.has(receipt.state)
-    || receipt.status !== receipt.state || receipt.stage !== receipt.state || !Array.isArray(receipt.diagnostics)) {
+  const states = new Set([
+    'accepted',
+    'bound',
+    'data-ready',
+    'plan-committed',
+    'renderer-ready',
+    'partial',
+    'cancelled',
+    'failed',
+    'denied',
+    'stale',
+    'unsupported',
+    'invalid',
+    'needs-choice',
+    'needs-meaning',
+  ]);
+  if (
+    receipt.version !== '1' ||
+    receipt.requestId !== expected.requestId ||
+    receipt.targetRegionId !== targetRegionId ||
+    receipt.goalEpoch !== goalEpoch ||
+    receipt.transport !== 'mcp' ||
+    !isRecord(receipt.capability) ||
+    !validId(receipt.capability.id) ||
+    !validId(receipt.capability.revision) ||
+    !validText(receipt.state, 32) ||
+    !states.has(receipt.state) ||
+    receipt.status !== receipt.state ||
+    receipt.stage !== receipt.state ||
+    !Array.isArray(receipt.diagnostics)
+  ) {
     return failure('agent.mcp.receipt', 'The MCP server returned an uncorrelated or malformed receipt.');
   }
   const operation = parseContract('operation-grant', JSON.stringify(receipt.operation));
   if (!operation.ok) return failure('agent.mcp.receipt', 'The MCP server returned an unknown receipt operation.');
-  if (receipt.capability.id !== expectedTool.capability.id || receipt.capability.revision !== expectedTool.capability.revision
-    || operation.value !== expectedTool.operation) return failure('agent.mcp.receipt', 'The MCP server returned a receipt for a different capability.');
+  if (
+    receipt.capability.id !== expectedTool.capability.id ||
+    receipt.capability.revision !== expectedTool.capability.revision ||
+    operation.value !== expectedTool.operation
+  )
+    return failure('agent.mcp.receipt', 'The MCP server returned a receipt for a different capability.');
   if ((receipt.state === 'plan-committed' || receipt.state === 'renderer-ready') && !validId(receipt.regionRevision))
     return failure('agent.mcp.receipt', 'The MCP server returned a committed receipt without a valid region revision.');
-  if (receipt.regionRevision !== undefined && !validId(receipt.regionRevision)) return failure('agent.mcp.receipt', 'The MCP server returned a malformed region revision.');
-  if (receipt.reason !== undefined && !validText(receipt.reason, WIRE_LIMITS.label)) return failure('agent.mcp.receipt', 'The MCP server returned a malformed receipt reason.');
+  if (receipt.regionRevision !== undefined && !validId(receipt.regionRevision))
+    return failure('agent.mcp.receipt', 'The MCP server returned a malformed region revision.');
+  if (receipt.reason !== undefined && !validText(receipt.reason, WIRE_LIMITS.label))
+    return failure('agent.mcp.receipt', 'The MCP server returned a malformed receipt reason.');
   const diagnostics = normalizeDiagnostics(receipt.diagnostics);
   if (!diagnostics.ok) return diagnostics;
   let affectedResults: readonly ResultRef[] | undefined;
   if (receipt.affectedResults !== undefined) {
-    if (!Array.isArray(receipt.affectedResults) || receipt.affectedResults.length > WIRE_LIMITS.outputs) return failure('agent.mcp.receipt', 'The MCP server returned malformed result references.');
+    if (!Array.isArray(receipt.affectedResults) || receipt.affectedResults.length > WIRE_LIMITS.outputs)
+      return failure('agent.mcp.receipt', 'The MCP server returned malformed result references.');
     const refs: ResultRef[] = [];
     for (const ref of receipt.affectedResults) {
       const normalized = normalizeResultRef(ref);
@@ -411,41 +517,52 @@ function normalizeReceipt(
     affectedResults = Object.freeze(refs);
   }
   const wireOutput = receipt.value === undefined ? undefined : boundedWire(receipt.value);
-  if (wireOutput !== undefined && !wireOutput.ok) return failure('agent.mcp.receipt', 'The MCP server returned non-wire receipt output.');
+  if (wireOutput !== undefined && !wireOutput.ok)
+    return failure('agent.mcp.receipt', 'The MCP server returned non-wire receipt output.');
   const metadata = receipt.metadata === undefined ? undefined : boundedWire(receipt.metadata);
-  if (metadata !== undefined && !metadata.ok) return failure('agent.mcp.receipt', 'The MCP server returned non-wire receipt metadata.');
+  if (metadata !== undefined && !metadata.ok)
+    return failure('agent.mcp.receipt', 'The MCP server returned non-wire receipt metadata.');
   const output: AgentCapabilityReceipt = Object.freeze({
     version: '1',
     requestId: expected.requestId,
     targetRegionId,
     goalEpoch,
-    capability: Object.freeze({id: receipt.capability.id, revision: receipt.capability.revision}),
+    capability: Object.freeze({ id: receipt.capability.id, revision: receipt.capability.revision }),
     operation: operation.value,
     transport: 'mcp',
     state: receipt.state as AgentCapabilityReceipt['state'],
     status: receipt.state as AgentCapabilityReceipt['status'],
     stage: receipt.state as AgentCapabilityReceipt['stage'],
     diagnostics: diagnostics.value,
-    ...(wireOutput === undefined ? {} : {value: wireOutput.value as AgentJsonValue}),
-    ...(affectedResults === undefined ? {} : {affectedResults}),
-    ...(receipt.regionRevision === undefined ? {} : {regionRevision: receipt.regionRevision as string}),
-    ...(receipt.reason === undefined ? {} : {reason: receipt.reason as string}),
-    ...(metadata === undefined ? {} : {metadata: metadata.value as AgentJsonValue}),
+    ...(wireOutput === undefined ? {} : { value: wireOutput.value as AgentJsonValue }),
+    ...(affectedResults === undefined ? {} : { affectedResults }),
+    ...(receipt.regionRevision === undefined ? {} : { regionRevision: receipt.regionRevision as string }),
+    ...(receipt.reason === undefined ? {} : { reason: receipt.reason as string }),
+    ...(metadata === undefined ? {} : { metadata: metadata.value as AgentJsonValue }),
   });
-  return {ok: true, value: output};
+  return { ok: true, value: output };
 }
 
-function resultToOutcome(result: CallToolResult, expected: AgentToolCallOptions, expectedTool: AgentToolDefinition, targetRegionId: string, goalEpoch: string): Outcome<AgentCapabilityReceipt> {
+function resultToOutcome(
+  result: CallToolResult,
+  expected: AgentToolCallOptions,
+  expectedTool: AgentToolDefinition,
+  targetRegionId: string,
+  goalEpoch: string,
+): Outcome<AgentCapabilityReceipt> {
   const parsed = textFromResult(result);
   if (!parsed.ok) return parsed;
   const body = parsed.value;
-  if (!isRecord(body) || body.version !== ADAPTER_VERSION || !('outcome' in body)) return failure('agent.mcp.result', 'The MCP server returned an unrecognized result envelope.');
+  if (!isRecord(body) || body.version !== ADAPTER_VERSION || !('outcome' in body))
+    return failure('agent.mcp.result', 'The MCP server returned an unrecognized result envelope.');
   const rawOutcome = body.outcome;
-  if (!isRecord(rawOutcome) || typeof rawOutcome.ok !== 'boolean') return failure('agent.mcp.result', 'The MCP server returned an invalid result outcome.');
+  if (!isRecord(rawOutcome) || typeof rawOutcome.ok !== 'boolean')
+    return failure('agent.mcp.result', 'The MCP server returned an invalid result outcome.');
   if (!rawOutcome.ok) {
     const diagnostics = normalizeDiagnostics(rawOutcome.diagnostics);
-    if (!diagnostics.ok || diagnostics.value.length === 0) return failure('agent.mcp.result', 'The MCP server returned malformed failure diagnostics.');
-    return {ok: false, diagnostics: diagnostics.value as [Diagnostic, ...Diagnostic[]]};
+    if (!diagnostics.ok || diagnostics.value.length === 0)
+      return failure('agent.mcp.result', 'The MCP server returned malformed failure diagnostics.');
+    return { ok: false, diagnostics: diagnostics.value as [Diagnostic, ...Diagnostic[]] };
   }
   return normalizeReceipt(rawOutcome.value, expected, expectedTool, targetRegionId, goalEpoch);
 }
@@ -464,49 +581,74 @@ function mergeServerOptions(options: McpServerFactoryOptions): ConstructorParame
 }
 
 /** Create the official SDK server factory used by both stdio and HTTP. */
-export function createMcpServerFactory(options: McpServerFactoryOptions): (context: McpRequestContext) => Promise<McpServer> {
-  if (options === null || typeof options !== 'object' || typeof options.createEndpoint !== 'function') throw new TypeError('MCP endpoint factory is required.');
+export function createMcpServerFactory(
+  options: McpServerFactoryOptions,
+): (context: McpRequestContext) => Promise<McpServer> {
+  if (options === null || typeof options !== 'object' || typeof options.createEndpoint !== 'function')
+    throw new TypeError('MCP endpoint factory is required.');
   const name = options.name ?? DEFAULT_SERVER_NAME;
   const version = options.version ?? DEFAULT_SERVER_VERSION;
   if (!validId(name) || !validId(version)) throw new TypeError('MCP server identity is invalid.');
   return async (context: McpRequestContext): Promise<McpServer> => {
-    const endpoint = await options.createEndpoint({era: context.era, ...(context.authInfo === undefined ? {} : {authInfo: context.authInfo}), ...(context.requestInfo === undefined ? {} : {requestInfo: context.requestInfo})});
+    const endpoint = await options.createEndpoint({
+      era: context.era,
+      ...(context.authInfo === undefined ? {} : { authInfo: context.authInfo }),
+      ...(context.requestInfo === undefined ? {} : { requestInfo: context.requestInfo }),
+    });
     if (endpoint.transport !== 'mcp') {
-      try { endpoint.close(); } catch { /* close is best effort on malformed host wiring */ }
+      try {
+        endpoint.close();
+      } catch {
+        /* close is best effort on malformed host wiring */
+      }
       throw new TypeError('MCP endpoint factory returned an endpoint with the wrong transport.');
     }
     let discovered: Outcome<readonly AgentToolDefinition[]>;
     try {
-      discovered = context.requestInfo?.signal === undefined
-        ? await endpoint.discover()
-        : await endpoint.discover({signal: context.requestInfo.signal});
+      discovered =
+        context.requestInfo?.signal === undefined
+          ? await endpoint.discover()
+          : await endpoint.discover({ signal: context.requestInfo.signal });
     } finally {
       endpoint.close();
     }
     if (!discovered.ok) throw new Error('MCP capability discovery was denied or unavailable.');
-    if (discovered.value.length > MAX_DEFINITION_COUNT) throw new Error('MCP capability discovery exceeded its tool budget.');
-    const server = new McpServer({name, version}, mergeServerOptions(options));
+    if (discovered.value.length > MAX_DEFINITION_COUNT)
+      throw new Error('MCP capability discovery exceeded its tool budget.');
+    const server = new McpServer({ name, version }, mergeServerOptions(options));
     const names = new Set<string>();
     for (const definition of discovered.value) {
-      if (!validId(definition.name) || names.has(definition.name) || !isRecord(definition.inputSchema)) throw new Error('MCP capability discovery returned duplicate or malformed tools.');
+      if (!validId(definition.name) || names.has(definition.name) || !isRecord(definition.inputSchema))
+        throw new Error('MCP capability discovery returned duplicate or malformed tools.');
       names.add(definition.name);
-      server.registerTool(definition.name, {
-        description: definition.description,
-        inputSchema: standardSchema(definition.inputSchema),
-        _meta: toolMetadata(definition),
-      }, async (input: unknown, callContext) => {
-        const callEndpoint = await options.createEndpoint({era: context.era, ...(context.authInfo === undefined ? {} : {authInfo: context.authInfo}), ...(context.requestInfo === undefined ? {} : {requestInfo: context.requestInfo})});
-        try {
-          if (callEndpoint.transport !== 'mcp') return outcomeToCallToolResult(failure<AgentCapabilityReceipt>('agent.mcp.endpoint', 'MCP endpoint transport changed unexpectedly.'));
-          const outcome = await callEndpoint.invoke(definition.name, input, {
-            requestId: requestIdFromContext(callContext),
-            signal: callContext.mcpReq.signal,
+      server.registerTool(
+        definition.name,
+        {
+          description: definition.description,
+          inputSchema: standardSchema(definition.inputSchema),
+          _meta: toolMetadata(definition),
+        },
+        async (input: unknown, callContext) => {
+          const callEndpoint = await options.createEndpoint({
+            era: context.era,
+            ...(context.authInfo === undefined ? {} : { authInfo: context.authInfo }),
+            ...(context.requestInfo === undefined ? {} : { requestInfo: context.requestInfo }),
           });
-          return outcomeToCallToolResult(outcome);
-        } finally {
-          callEndpoint.close();
-        }
-      });
+          try {
+            if (callEndpoint.transport !== 'mcp')
+              return outcomeToCallToolResult(
+                failure<AgentCapabilityReceipt>('agent.mcp.endpoint', 'MCP endpoint transport changed unexpectedly.'),
+              );
+            const outcome = await callEndpoint.invoke(definition.name, input, {
+              requestId: requestIdFromContext(callContext),
+              signal: callContext.mcpReq.signal,
+            });
+            return outcomeToCallToolResult(outcome);
+          } finally {
+            callEndpoint.close();
+          }
+        },
+      );
     }
     return server;
   };
@@ -516,9 +658,11 @@ export function createMcpServerFactory(options: McpServerFactoryOptions): (conte
 export function createMcpStdioServer(options: McpStdioServerOptions): StdioServerHandle {
   const factory = createMcpServerFactory(options);
   const stdioOptions: ServeStdioOptions = {
-    ...(options.legacy === undefined ? {} : {legacy: options.legacy}),
-    ...(options.maxBufferSize === undefined ? {} : {transport: new StdioServerTransport(undefined, undefined, {maxBufferSize: options.maxBufferSize})}),
-    ...(options.onerror === undefined ? {} : {onerror: options.onerror}),
+    ...(options.legacy === undefined ? {} : { legacy: options.legacy }),
+    ...(options.maxBufferSize === undefined
+      ? {}
+      : { transport: new StdioServerTransport(undefined, undefined, { maxBufferSize: options.maxBufferSize }) }),
+    ...(options.onerror === undefined ? {} : { onerror: options.onerror }),
   };
   // `maxBufferSize` belongs to the SDK transport constructor, which serveStdio
   // cannot expose without replacing its transport. Keep the option out of the
@@ -540,32 +684,46 @@ function canonicalResource(value: unknown): string | undefined {
 
 function validateAuthInfo(authInfo: unknown, options: McpHttpServerOptions): Outcome<AuthInfo> {
   try {
-    if (!isRecord(authInfo) || !validText(authInfo.token, WIRE_LIMITS.text) || !validId(authInfo.clientId)
-      || !Array.isArray(authInfo.scopes) || authInfo.scopes.some((scope: unknown) => !validId(scope))
-      || (authInfo.extra !== undefined && !isRecord(authInfo.extra))) return failure('agent.mcp.auth', 'The authentication gate returned malformed token metadata.');
+    if (
+      !isRecord(authInfo) ||
+      !validText(authInfo.token, WIRE_LIMITS.text) ||
+      !validId(authInfo.clientId) ||
+      !Array.isArray(authInfo.scopes) ||
+      authInfo.scopes.some((scope: unknown) => !validId(scope)) ||
+      (authInfo.extra !== undefined && !isRecord(authInfo.extra))
+    )
+      return failure('agent.mcp.auth', 'The authentication gate returned malformed token metadata.');
     const clock = options.now?.() ?? Date.now();
-    if (typeof clock !== 'number' || !Number.isFinite(clock)) return failure('agent.mcp.auth-clock', 'The MCP authentication clock is unavailable.');
+    if (typeof clock !== 'number' || !Number.isFinite(clock))
+      return failure('agent.mcp.auth-clock', 'The MCP authentication clock is unavailable.');
     const nowSeconds = Math.floor(clock / 1000);
-    if (!Number.isSafeInteger(nowSeconds) || typeof authInfo.expiresAt !== 'number' || !Number.isSafeInteger(authInfo.expiresAt)
-      || authInfo.expiresAt <= nowSeconds) return failure('agent.mcp.auth-expired', 'The MCP authentication grant is expired.');
+    if (
+      !Number.isSafeInteger(nowSeconds) ||
+      typeof authInfo.expiresAt !== 'number' ||
+      !Number.isSafeInteger(authInfo.expiresAt) ||
+      authInfo.expiresAt <= nowSeconds
+    )
+      return failure('agent.mcp.auth-expired', 'The MCP authentication grant is expired.');
     if (authInfo.resource !== undefined && canonicalResource(authInfo.resource) === undefined)
       return failure('agent.mcp.auth-audience', 'The MCP authentication resource is malformed.');
     if (options.resourceServerUrl !== undefined) {
       const expected = canonicalResource(options.resourceServerUrl);
       const actual = canonicalResource(authInfo.resource);
-      if (expected === undefined || actual === undefined || actual !== expected) return failure('agent.mcp.auth-audience', 'The MCP authentication audience does not match this resource.');
+      if (expected === undefined || actual === undefined || actual !== expected)
+        return failure('agent.mcp.auth-audience', 'The MCP authentication audience does not match this resource.');
     }
-    if (options.issuer !== undefined && authInfo.extra?.issuer !== options.issuer) return failure('agent.mcp.auth-issuer', 'The MCP authentication issuer is not trusted.');
-    return {ok: true, value: authInfo as unknown as AuthInfo};
+    if (options.issuer !== undefined && authInfo.extra?.issuer !== options.issuer)
+      return failure('agent.mcp.auth-issuer', 'The MCP authentication issuer is not trusted.');
+    return { ok: true, value: authInfo as unknown as AuthInfo };
   } catch {
     return failure('agent.mcp.auth', 'The authentication gate returned malformed token metadata.');
   }
 }
 
 function authFailureResponse(): Response {
-  return new Response(JSON.stringify({error: 'invalid_token'}), {
+  return new Response(JSON.stringify({ error: 'invalid_token' }), {
     status: 401,
-    headers: {'content-type': 'application/json', 'www-authenticate': 'Bearer'},
+    headers: { 'content-type': 'application/json', 'www-authenticate': 'Bearer' },
   });
 }
 
@@ -574,12 +732,13 @@ function authFailureResponse(): Response {
  * host/origin guards. The handler never derives identity from wire arguments.
  */
 export function createMcpHttpHandler(options: McpHttpServerOptions): McpHttpHandler {
-  if (options === null || typeof options !== 'object' || typeof options.authenticate !== 'function') throw new TypeError('An application-owned MCP authentication gate is required.');
+  if (options === null || typeof options !== 'object' || typeof options.authenticate !== 'function')
+    throw new TypeError('An application-owned MCP authentication gate is required.');
   const factory = createMcpServerFactory(options);
   const inner = createMcpHandler(factory, {
-    ...(options.legacy === undefined ? {} : {legacy: options.legacy}),
-    ...(options.responseMode === undefined ? {} : {responseMode: options.responseMode}),
-    ...(options.onerror === undefined ? {} : {onerror: options.onerror}),
+    ...(options.legacy === undefined ? {} : { legacy: options.legacy }),
+    ...(options.responseMode === undefined ? {} : { responseMode: options.responseMode }),
+    ...(options.onerror === undefined ? {} : { onerror: options.onerror }),
   });
   return {
     fetch: async (request: Request, requestOptions?: McpHandlerRequestOptions): Promise<Response> => {
@@ -600,7 +759,7 @@ export function createMcpHttpHandler(options: McpHttpServerOptions): McpHttpHand
       if (auth instanceof Response) return auth;
       const checked = validateAuthInfo(auth, options);
       if (!checked.ok) return authFailureResponse();
-      return inner.fetch(request, {...(requestOptions ?? {}), authInfo: checked.value});
+      return inner.fetch(request, { ...(requestOptions ?? {}), authInfo: checked.value });
     },
     close: inner.close,
     notify: inner.notify,
@@ -608,18 +767,22 @@ export function createMcpHttpHandler(options: McpHttpServerOptions): McpHttpHand
   };
 }
 
-function clientOptions(options: McpClientCommonOptions & {readonly clientOptions?: Omit<ClientOptions, 'versionNegotiation'>}): ClientOptions {
+function clientOptions(
+  options: McpClientCommonOptions & { readonly clientOptions?: Omit<ClientOptions, 'versionNegotiation'> },
+): ClientOptions {
   return {
     ...(options.clientOptions ?? {}),
-    versionNegotiation: options.versionNegotiation ?? {mode: 'auto'},
+    versionNegotiation: options.versionNegotiation ?? { mode: 'auto' },
   };
 }
 
 /** Adapt an already-connected official client into the shared endpoint port. */
 export function createMcpClientEndpoint(options: McpClientEndpointOptions): AgentToolEndpoint {
-  if (options === null || typeof options !== 'object' || !(options.client instanceof Client)) throw new TypeError('A connected MCP client is required.');
-  if (!validId(options.targetRegionId) || !validId(options.goalEpoch)) throw new TypeError('MCP target binding is invalid.');
-  const boundOptions = Object.freeze({...options});
+  if (options === null || typeof options !== 'object' || !(options.client instanceof Client))
+    throw new TypeError('A connected MCP client is required.');
+  if (!validId(options.targetRegionId) || !validId(options.goalEpoch))
+    throw new TypeError('MCP target binding is invalid.');
+  const boundOptions = Object.freeze({ ...options });
   let closed = false;
   let discoveredTools = new Map<string, AgentToolDefinition>();
   const endpoint: AgentToolEndpoint = {
@@ -628,39 +791,46 @@ export function createMcpClientEndpoint(options: McpClientEndpointOptions): Agen
     goalEpoch: boundOptions.goalEpoch,
     discover: async (discoverOptions = {}) => {
       if (closed) return failure('agent.mcp.closed', 'The MCP client endpoint is closed.');
-      if (discoverOptions.signal?.aborted) return failure('agent.mcp.cancelled', 'MCP capability discovery was cancelled.');
+      if (discoverOptions.signal?.aborted)
+        return failure('agent.mcp.cancelled', 'MCP capability discovery was cancelled.');
       discoveredTools = new Map();
       try {
-        const listOptions: CacheableRequestOptions = {cacheMode: 'bypass'};
+        const listOptions: CacheableRequestOptions = { cacheMode: 'bypass' };
         if (discoverOptions.signal !== undefined) listOptions.signal = discoverOptions.signal;
         const result = await boundOptions.client.listTools({}, listOptions);
         if (closed) return failure('agent.mcp.closed', 'The MCP client endpoint is closed.');
-        if (discoverOptions.signal?.aborted) return failure('agent.mcp.cancelled', 'MCP capability discovery was cancelled.');
+        if (discoverOptions.signal?.aborted)
+          return failure('agent.mcp.cancelled', 'MCP capability discovery was cancelled.');
         const definitions: AgentToolDefinition[] = [];
         const names = new Set<string>();
-        if (result.tools.length > MAX_DEFINITION_COUNT) return failure('agent.mcp.discovery', 'MCP capability discovery exceeded its tool budget.');
+        if (result.tools.length > MAX_DEFINITION_COUNT)
+          return failure('agent.mcp.discovery', 'MCP capability discovery exceeded its tool budget.');
         for (const tool of result.tools) {
           const normalized = normalizeTool(tool);
           if (!normalized.ok) return normalized;
-          if (names.has(normalized.value.name)) return failure('agent.mcp.tool', 'The MCP server returned duplicate tool names.');
+          if (names.has(normalized.value.name))
+            return failure('agent.mcp.tool', 'The MCP server returned duplicate tool names.');
           names.add(normalized.value.name);
           definitions.push(normalized.value);
         }
-        discoveredTools = new Map(definitions.map(definition => [definition.name, definition]));
-        return {ok: true, value: Object.freeze(definitions)};
+        discoveredTools = new Map(definitions.map((definition) => [definition.name, definition]));
+        return { ok: true, value: Object.freeze(definitions) };
       } catch {
         discoveredTools = new Map();
         if (closed) return failure('agent.mcp.closed', 'The MCP client endpoint is closed.');
-        if (discoverOptions.signal?.aborted) return failure('agent.mcp.cancelled', 'MCP capability discovery was cancelled.');
+        if (discoverOptions.signal?.aborted)
+          return failure('agent.mcp.cancelled', 'MCP capability discovery was cancelled.');
         return failure('agent.mcp.discovery', 'MCP capability discovery failed.');
       }
     },
     invoke: async (name: string, input: unknown, callOptions: AgentToolCallOptions) => {
       if (closed) return failure('agent.mcp.closed', 'The MCP client endpoint is closed.');
-      if (!validId(name) || !isRecord(callOptions) || !validId(callOptions.requestId)) return failure('agent.mcp.call', 'MCP tool identity is invalid.');
+      if (!validId(name) || !isRecord(callOptions) || !validId(callOptions.requestId))
+        return failure('agent.mcp.call', 'MCP tool identity is invalid.');
       if (callOptions.signal?.aborted) return failure('agent.mcp.cancelled', 'MCP tool invocation was cancelled.');
       const definition = discoveredTools.get(name);
-      if (definition === undefined) return failure('agent.mcp.discovery', 'MCP tool invocation requires a current discovered tool.');
+      if (definition === undefined)
+        return failure('agent.mcp.discovery', 'MCP tool invocation requires a current discovered tool.');
       if (!isRecord(input)) return failure('agent.mcp.input', 'MCP tool arguments must be an object.');
       if (!boundedWire(input).ok) return failure('agent.mcp.bytes', 'MCP tool arguments exceed the wire budget.');
       try {
@@ -669,11 +839,14 @@ export function createMcpClientEndpoint(options: McpClientEndpointOptions): Agen
           callRequestOptions.signal = callOptions.signal;
           callRequestOptions.requestSignal = callOptions.signal;
         }
-        const result = await boundOptions.client.callTool({
-          name,
-          arguments: input,
-          _meta: {[AELIQO_MCP_TOOL_META]: {version: ADAPTER_VERSION, requestId: callOptions.requestId}},
-        }, callRequestOptions);
+        const result = await boundOptions.client.callTool(
+          {
+            name,
+            arguments: input,
+            _meta: { [AELIQO_MCP_TOOL_META]: { version: ADAPTER_VERSION, requestId: callOptions.requestId } },
+          },
+          callRequestOptions,
+        );
         if (closed) return failure('agent.mcp.closed', 'The MCP client endpoint is closed.');
         if (callOptions.signal?.aborted) return failure('agent.mcp.cancelled', 'MCP tool invocation was cancelled.');
         return resultToOutcome(result, callOptions, definition, boundOptions.targetRegionId, boundOptions.goalEpoch);
@@ -695,10 +868,13 @@ export function createMcpClientEndpoint(options: McpClientEndpointOptions): Agen
 }
 
 export async function connectMcpStdioClient(options: McpStdioClientOptions): Promise<AgentToolEndpoint> {
-  const client = new Client({
-    name: options.name ?? DEFAULT_SERVER_NAME,
-    version: options.version ?? DEFAULT_SERVER_VERSION,
-  }, clientOptions(options));
+  const client = new Client(
+    {
+      name: options.name ?? DEFAULT_SERVER_NAME,
+      version: options.version ?? DEFAULT_SERVER_VERSION,
+    },
+    clientOptions(options),
+  );
   const transport = new StdioClientTransport(options.server);
   try {
     await client.connect(transport, options.connectOptions);
@@ -707,7 +883,12 @@ export async function connectMcpStdioClient(options: McpStdioClientOptions): Pro
     throw error;
   }
   try {
-    return createMcpClientEndpoint({client, targetRegionId: options.targetRegionId, goalEpoch: options.goalEpoch, transport});
+    return createMcpClientEndpoint({
+      client,
+      targetRegionId: options.targetRegionId,
+      goalEpoch: options.goalEpoch,
+      transport,
+    });
   } catch (error) {
     await Promise.allSettled([client.close(), transport.close()]);
     throw error;
@@ -719,14 +900,21 @@ function mcpHttpUrl(options: McpHttpClientOptions): URL {
   if (url.username !== '' || url.password !== '' || url.hash !== '')
     throw new TypeError('The MCP HTTP endpoint must not contain credentials or a fragment.');
   const loopback = url.hostname === '127.0.0.1' || url.hostname === 'localhost' || url.hostname === '[::1]';
-  if (url.protocol !== 'https:' && !(url.protocol === 'http:' && loopback && options.policy?.allowInsecureLoopback === true))
+  if (
+    url.protocol !== 'https:' &&
+    !(url.protocol === 'http:' && loopback && options.policy?.allowInsecureLoopback === true)
+  )
     throw new TypeError('The MCP HTTP endpoint requires HTTPS; insecure HTTP needs an explicit loopback-only policy.');
   if (options.policy?.allowedOrigins !== undefined) {
     if (options.policy.allowedOrigins.length === 0 || !options.policy.allowedOrigins.includes(url.origin))
       throw new TypeError('The MCP HTTP endpoint origin is not allowlisted.');
     for (const origin of options.policy.allowedOrigins) {
       let parsed: URL;
-      try { parsed = new URL(origin); } catch { throw new TypeError('The MCP HTTP origin allowlist is invalid.'); }
+      try {
+        parsed = new URL(origin);
+      } catch {
+        throw new TypeError('The MCP HTTP origin allowlist is invalid.');
+      }
       if (parsed.origin !== origin || !['http:', 'https:'].includes(parsed.protocol))
         throw new TypeError('The MCP HTTP origin allowlist is invalid.');
     }
@@ -738,18 +926,21 @@ export async function connectMcpHttpClient(options: McpHttpClientOptions): Promi
   const url = mcpHttpUrl(options);
   const request = options.fetch ?? globalThis.fetch;
   if (typeof request !== 'function') throw new TypeError('The MCP HTTP client requires a fetch implementation.');
-  const guardedFetch: FetchLike = (input, init) => request(input, {...init, redirect: 'error'});
+  const guardedFetch: FetchLike = (input, init) => request(input, { ...init, redirect: 'error' });
   const transportOptions: StreamableHTTPClientTransportOptions = {
     ...(options.transportOptions ?? {}),
-    ...(options.authProvider === undefined ? {} : {authProvider: options.authProvider}),
-    ...(options.requestInit === undefined ? {} : {requestInit: options.requestInit}),
+    ...(options.authProvider === undefined ? {} : { authProvider: options.authProvider }),
+    ...(options.requestInit === undefined ? {} : { requestInit: options.requestInit }),
     fetch: guardedFetch,
   };
   const transport = new StreamableHTTPClientTransport(url, transportOptions);
-  const client = new Client({
-    name: options.name ?? DEFAULT_SERVER_NAME,
-    version: options.version ?? DEFAULT_SERVER_VERSION,
-  }, clientOptions(options));
+  const client = new Client(
+    {
+      name: options.name ?? DEFAULT_SERVER_NAME,
+      version: options.version ?? DEFAULT_SERVER_VERSION,
+    },
+    clientOptions(options),
+  );
   try {
     await client.connect(transport, options.connectOptions);
   } catch (error) {
@@ -757,11 +948,25 @@ export async function connectMcpHttpClient(options: McpHttpClientOptions): Promi
     throw error;
   }
   try {
-    return createMcpClientEndpoint({client, targetRegionId: options.targetRegionId, goalEpoch: options.goalEpoch, transport});
+    return createMcpClientEndpoint({
+      client,
+      targetRegionId: options.targetRegionId,
+      goalEpoch: options.goalEpoch,
+      transport,
+    });
   } catch (error) {
     await Promise.allSettled([client.close(), transport.close()]);
     throw error;
   }
 }
 
-export type {AuthInfo, CallToolResult, McpHttpHandler, McpRequestContext, StdioServerHandle, StdioServerParameters, Tool, Transport};
+export type {
+  AuthInfo,
+  CallToolResult,
+  McpHttpHandler,
+  McpRequestContext,
+  StdioServerHandle,
+  StdioServerParameters,
+  Tool,
+  Transport,
+};

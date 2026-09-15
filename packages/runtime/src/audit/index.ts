@@ -1,4 +1,4 @@
-export {createLocalAuditExporter} from './exporter.js';
+export { createLocalAuditExporter } from './exporter.js';
 export type {
   AuditCache,
   AuditCode,

@@ -9,10 +9,10 @@ import type {
   SemanticType,
   VersionRef,
 } from '../contracts/types.js';
-import type {FunctionRegistry} from '../expressions/types.js';
+import type { FunctionRegistry } from '../expressions/types.js';
 
 /** Values which may cross the bounded in-memory query evaluator boundary. */
-export type QueryValue = null | boolean | number | string | {readonly decimal: string};
+export type QueryValue = null | boolean | number | string | { readonly decimal: string };
 export type QueryRow = Readonly<Record<string, QueryValue>>;
 
 export interface QueryLimits {
@@ -49,7 +49,7 @@ export interface QuerySource {
 
 export interface QueryExecutionContext {
   /** Host-owned cancellation view; core does not depend on DOM AbortSignal. */
-  readonly cancellation?: {readonly aborted: boolean};
+  readonly cancellation?: { readonly aborted: boolean };
   /** An injected monotonic clock. The evaluator never reads a global clock. */
   readonly clock?: () => number;
   readonly maxMilliseconds?: number;
@@ -66,7 +66,7 @@ export interface QueryField {
   readonly label: string;
   readonly type: SemanticType;
   readonly role: FieldDefinition['role'];
-  readonly source?: {readonly entity: string; readonly field: string};
+  readonly source?: { readonly entity: string; readonly field: string };
 }
 
 export interface QuerySchema {
@@ -98,11 +98,16 @@ export interface AggregateSpec {
 }
 
 export type PredicateSpec =
-  | {readonly op: 'compare'; readonly left: Expression; readonly comparison: 'eq' | 'ne' | 'lt' | 'lte' | 'gt' | 'gte'; readonly right: Expression}
-  | {readonly op: 'is-null'; readonly expression: Expression; readonly negate: boolean}
-  | {readonly op: 'in'; readonly expression: Expression; readonly values: readonly Expression[]}
-  | {readonly op: 'and' | 'or'; readonly predicates: readonly PredicateSpec[]}
-  | {readonly op: 'not'; readonly predicate: PredicateSpec};
+  | {
+      readonly op: 'compare';
+      readonly left: Expression;
+      readonly comparison: 'eq' | 'ne' | 'lt' | 'lte' | 'gt' | 'gte';
+      readonly right: Expression;
+    }
+  | { readonly op: 'is-null'; readonly expression: Expression; readonly negate: boolean }
+  | { readonly op: 'in'; readonly expression: Expression; readonly values: readonly Expression[] }
+  | { readonly op: 'and' | 'or'; readonly predicates: readonly PredicateSpec[] }
+  | { readonly op: 'not'; readonly predicate: PredicateSpec };
 
 export interface JoinSpec {
   readonly id: string;
@@ -138,7 +143,7 @@ export interface WindowSpec {
   readonly arguments: readonly Expression[];
   readonly partitionBy: readonly Expression[];
   readonly orderBy: readonly SortSpec[];
-  readonly frame: {readonly preceding: number; readonly following: number};
+  readonly frame: { readonly preceding: number; readonly following: number };
   readonly label?: string;
 }
 
@@ -185,7 +190,19 @@ export interface PlanExplanation {
   readonly estimatedBytes: number;
 }
 
-export type PlanOperation = 'scan' | 'filter' | 'project' | 'derive' | 'time-bucket' | 'window' | 'join' | 'semijoin' | 'group' | 'aggregate' | 'sort' | 'top-k';
+export type PlanOperation =
+  | 'scan'
+  | 'filter'
+  | 'project'
+  | 'derive'
+  | 'time-bucket'
+  | 'window'
+  | 'join'
+  | 'semijoin'
+  | 'group'
+  | 'aggregate'
+  | 'sort'
+  | 'top-k';
 
 interface PlanNodeBase {
   readonly id: string;
@@ -196,18 +213,26 @@ interface PlanNodeBase {
 }
 
 export type PlanNode =
-  | (PlanNodeBase & {readonly op: 'scan'; readonly entity: string})
-  | (PlanNodeBase & {readonly op: 'filter'; readonly predicate: PredicateSpec})
-  | (PlanNodeBase & {readonly op: 'project'; readonly items: readonly ProjectionSpec[]})
-  | (PlanNodeBase & {readonly op: 'derive'; readonly items: readonly DeriveSpec[]})
-  | (PlanNodeBase & {readonly op: 'time-bucket'; readonly items: readonly TimeBucketSpec[]})
-  | (PlanNodeBase & {readonly op: 'window'; readonly items: readonly WindowSpec[]})
-  | (PlanNodeBase & {readonly op: 'join'; readonly spec: JoinSpec; readonly keys: readonly {readonly left: string; readonly right: string}[]})
-  | (PlanNodeBase & {readonly op: 'semijoin'; readonly spec: SemiJoinSpec; readonly keys: readonly {readonly left: string; readonly right: string}[]})
-  | (PlanNodeBase & {readonly op: 'group'; readonly keys: readonly GroupKeySpec[]})
-  | (PlanNodeBase & {readonly op: 'aggregate'; readonly items: readonly AggregateSpec[]})
-  | (PlanNodeBase & {readonly op: 'sort'; readonly items: readonly SortSpec[]})
-  | (PlanNodeBase & {readonly op: 'top-k'; readonly limit: number});
+  | (PlanNodeBase & { readonly op: 'scan'; readonly entity: string })
+  | (PlanNodeBase & { readonly op: 'filter'; readonly predicate: PredicateSpec })
+  | (PlanNodeBase & { readonly op: 'project'; readonly items: readonly ProjectionSpec[] })
+  | (PlanNodeBase & { readonly op: 'derive'; readonly items: readonly DeriveSpec[] })
+  | (PlanNodeBase & { readonly op: 'time-bucket'; readonly items: readonly TimeBucketSpec[] })
+  | (PlanNodeBase & { readonly op: 'window'; readonly items: readonly WindowSpec[] })
+  | (PlanNodeBase & {
+      readonly op: 'join';
+      readonly spec: JoinSpec;
+      readonly keys: readonly { readonly left: string; readonly right: string }[];
+    })
+  | (PlanNodeBase & {
+      readonly op: 'semijoin';
+      readonly spec: SemiJoinSpec;
+      readonly keys: readonly { readonly left: string; readonly right: string }[];
+    })
+  | (PlanNodeBase & { readonly op: 'group'; readonly keys: readonly GroupKeySpec[] })
+  | (PlanNodeBase & { readonly op: 'aggregate'; readonly items: readonly AggregateSpec[] })
+  | (PlanNodeBase & { readonly op: 'sort'; readonly items: readonly SortSpec[] })
+  | (PlanNodeBase & { readonly op: 'top-k'; readonly limit: number });
 
 export interface LogicalPlan {
   readonly version: '1';
@@ -227,8 +252,8 @@ export interface QueryResult {
   readonly rows: readonly QueryRow[];
   readonly sourceRevision: string;
   readonly complete: boolean;
-  readonly precision: {readonly kind: 'exact'} | {readonly kind: 'approximate'; readonly method: string};
-  readonly unknown: readonly {readonly field: string; readonly reason: string}[];
+  readonly precision: { readonly kind: 'exact' } | { readonly kind: 'approximate'; readonly method: string };
+  readonly unknown: readonly { readonly field: string; readonly reason: string }[];
   readonly estimatedBytes: number;
 }
 
@@ -253,4 +278,4 @@ export interface QueryFailure extends Diagnostic {
 
 export type QueryOutcome<T> = Outcome<T>;
 
-export type {Catalog, Diagnostic, Expression, MeaningDefinition, Outcome, QuerySpec, SemanticType, VersionRef};
+export type { Catalog, Diagnostic, Expression, MeaningDefinition, Outcome, QuerySpec, SemanticType, VersionRef };

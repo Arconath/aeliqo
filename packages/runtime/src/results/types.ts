@@ -1,8 +1,8 @@
-import type {Contract, Diagnostic, Result} from '@aeliqo/core';
+import type { Contract, Diagnostic, Result } from '@aeliqo/core';
 
 export type ResultEvent = Contract<'result-event'>;
 
-export type ResultBatch = Extract<ResultEvent, {readonly kind: 'batch'}>;
+export type ResultBatch = Extract<ResultEvent, { readonly kind: 'batch' }>;
 
 export type ResultStatus =
   | 'loading'
@@ -63,8 +63,7 @@ export interface ResultSnapshot {
 }
 
 export type ResultUpdate =
-  | {readonly snapshot: ResultSnapshot; readonly event: ResultEvent}
-  | {readonly snapshot: ResultSnapshot};
+  { readonly snapshot: ResultSnapshot; readonly event: ResultEvent } | { readonly snapshot: ResultSnapshot };
 
 export interface ResultSubscription extends AsyncIterableIterator<ResultUpdate> {
   /** Requests cancellation without waiting for an uncooperative source. */
@@ -80,7 +79,10 @@ export interface ResultHandle {
   readonly key: ResultCacheKey;
   readonly generation: number;
   snapshot(): ResultSnapshot;
-  subscribe(source: AsyncIterable<unknown> | AsyncIterator<unknown>, options?: {readonly signal?: AbortSignal}): ResultSubscription;
+  subscribe(
+    source: AsyncIterable<unknown> | AsyncIterator<unknown>,
+    options?: { readonly signal?: AbortSignal },
+  ): ResultSubscription;
   retain(): ResultLease;
   release(): void;
   dispose(): void;

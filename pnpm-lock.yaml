@@ -92,10 +92,39 @@ importers:
       vue:
         specifier: 3.5.42
         version: 3.5.42(typescript@7.0.2)
+      zod:
+        specifier: 4.5.4
+        version: 4.5.4
 
-  apps/docs: {}
+  apps/docs:
+    dependencies:
+      '@aeliqo/catalog-examples':
+        specifier: workspace:*
+        version: link:../../examples/catalog
+      '@aeliqo/web':
+        specifier: workspace:*
+        version: link:../../packages/web
 
-  apps/playground: {}
+  apps/playground:
+    dependencies:
+      '@aeliqo/agent':
+        specifier: workspace:*
+        version: link:../../packages/agent
+      '@aeliqo/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@aeliqo/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
+      '@aeliqo/web':
+        specifier: workspace:*
+        version: link:../../packages/web
+      lit:
+        specifier: 3.3.3
+        version: 3.3.3
+      zod:
+        specifier: 4.5.4
+        version: 4.5.4
 
   apps/site:
     dependencies:
@@ -150,7 +179,20 @@ importers:
         specifier: 8.2.2
         version: 8.2.2(@types/node@24.13.3)
 
-  apps/web: {}
+  apps/web:
+    dependencies:
+      '@aeliqo/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@aeliqo/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
+      '@aeliqo/web':
+        specifier: workspace:*
+        version: link:../../packages/web
+      zod:
+        specifier: 4.5.4
+        version: 4.5.4
 
   examples/catalog:
     dependencies:
@@ -163,6 +205,15 @@ importers:
 
   examples/next-platform:
     dependencies:
+      '@aeliqo/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@aeliqo/react':
+        specifier: workspace:*
+        version: link:../../packages/react
+      '@aeliqo/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
       '@aeliqo/web':
         specifier: workspace:*
         version: link:../../packages/web
@@ -181,6 +232,9 @@ importers:
       react-dom:
         specifier: 19.2.8
         version: 19.2.8(react@19.2.8)
+      zod:
+        specifier: 4.5.4
+        version: 4.5.4
     devDependencies:
       '@types/node':
         specifier: 24.13.3
@@ -212,6 +266,21 @@ importers:
       vue:
         specifier: 3.5.42
         version: 3.5.42(typescript@7.0.2)
+
+  examples/quickstart:
+    dependencies:
+      '@aeliqo/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@aeliqo/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
+      '@aeliqo/web':
+        specifier: workspace:*
+        version: link:../../packages/web
+      zod:
+        specifier: 4.5.4
+        version: 4.5.4
 
   examples/reference-host:
     dependencies:

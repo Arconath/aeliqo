@@ -1,7 +1,7 @@
 import * as z from 'zod/mini';
-import {inspectWire} from '../contracts/ingress.js';
-import {interactionStateSchema} from '../contracts/schemas.js';
-import type {InteractionState, Outcome} from '../contracts/types.js';
+import { inspectWire } from '../contracts/ingress.js';
+import { interactionStateSchema } from '../contracts/schemas.js';
+import type { InteractionState, Outcome } from '../contracts/types.js';
 
 function freeze<T>(value: T): T {
   if (value !== null && typeof value === 'object') {
@@ -11,8 +11,10 @@ function freeze<T>(value: T): T {
   return value;
 }
 
-const invalid = (message: string): Outcome<never> => ({ok: false,
-  diagnostics: [{code: 'interaction.invalid-state', message, retryable: false}]});
+const invalid = (message: string): Outcome<never> => ({
+  ok: false,
+  diagnostics: [{ code: 'interaction.invalid-state', message, retryable: false }],
+});
 
 /** Shape/identity validation only. Host permissions and result membership remain separate. */
 export function parseInteractionState(input: unknown): Outcome<InteractionState> {
@@ -26,7 +28,11 @@ export function parseInteractionState(input: unknown): Outcome<InteractionState>
     if (routes.has(key)) return invalid('An interaction state cannot contain duplicate port values.');
     routes.add(key);
     const payload = entry.payload;
-    if (payload.kind === 'selection' && payload.selection.mode === 'ids' && new Set(payload.selection.keys).size !== payload.selection.keys.length)
+    if (
+      payload.kind === 'selection' &&
+      payload.selection.mode === 'ids' &&
+      new Set(payload.selection.keys).size !== payload.selection.keys.length
+    )
       return invalid('An explicit selection cannot contain duplicate identities.');
   }
   const drafts = new Set<string>();
@@ -38,7 +44,7 @@ export function parseInteractionState(input: unknown): Outcome<InteractionState>
       return invalid('A draft conflict must identify a different entity revision.');
   }
   // Ingress rejects present undefined before optional schema properties are read.
-  return {ok: true, value: freeze(parsed.data as InteractionState)};
+  return { ok: true, value: freeze(parsed.data as InteractionState) };
 }
 
-export {interactionStateSchema};
+export { interactionStateSchema };

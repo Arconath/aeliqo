@@ -24,13 +24,14 @@ import {
   sha512Integrity,
 } from './candidate-lib.mjs';
 import { RELEASE_SOURCE_STATUS_ARGS, assertReleaseSourceClean } from './source-state.mjs';
+import { isReleaseVersion } from './metadata.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
 const arguments_ = process.argv.slice(2);
 const versionIndex = arguments_.indexOf('--version');
 const version = versionIndex === -1 ? RELEASE_VERSION : arguments_[versionIndex + 1];
-if (!/^0\.1\.0(?:-rc\.[1-9]\d*)?$/.test(version ?? ''))
-  throw new Error('Expected --version 0.1.0 or a unique 0.1.0-rc.N version');
+if (!isReleaseVersion(version))
+  throw new Error(`Expected --version ${RELEASE_VERSION} or a unique ${RELEASE_VERSION}-rc.N version`);
 const positional = [];
 for (let index = 0; index < arguments_.length; index += 1) {
   if (arguments_[index] === '--version') {

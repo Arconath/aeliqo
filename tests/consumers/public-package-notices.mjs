@@ -1,9 +1,9 @@
 /** Verify that only the six public Aeliqo packages expose a packed NOTICE. */
 import assert from 'node:assert/strict';
-import {spawnSync} from 'node:child_process';
-import {mkdtemp, readFile, rm} from 'node:fs/promises';
-import {tmpdir} from 'node:os';
-import {join, resolve} from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '../..');
 const publicPackages = ['core', 'runtime', 'web', 'react', 'agent', 'devtools'];
@@ -32,12 +32,14 @@ try {
   for (const name of publicPackages) {
     const directory = join(root, 'packages', name);
     run(['pnpm', 'pack', '--out', join(output, `${name}.tgz`)], directory);
-    const entries = run(['tar', '-tzf', join(output, `${name}.tgz`)], root).trim().split('\n');
+    const entries = run(['tar', '-tzf', join(output, `${name}.tgz`)], root)
+      .trim()
+      .split('\n');
     assert(entries.includes('package/NOTICE'), `@aeliqo/${name} tarball is missing NOTICE`);
     assert(entries.includes('package/LICENSE'), `@aeliqo/${name} tarball is missing LICENSE`);
     assert(entries.includes('package/README.md'), `@aeliqo/${name} tarball is missing README`);
   }
-  console.log(JSON.stringify({passed: true, publicPackages, internalWorkspace: '@aeliqo/testkit'}, null, 2));
+  console.log(JSON.stringify({ passed: true, publicPackages, internalWorkspace: '@aeliqo/testkit' }, null, 2));
 } finally {
-  await rm(output, {recursive: true, force: true});
+  await rm(output, { recursive: true, force: true });
 }

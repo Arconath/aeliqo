@@ -1,6 +1,6 @@
 {
   "name": "@aeliqo/next-platform-fixture",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,12 +8,16 @@
     "start": "next start --hostname 127.0.0.1 --port 4174"
   },
   "dependencies": {
+    "@aeliqo/core": "workspace:*",
+    "@aeliqo/react": "workspace:*",
+    "@aeliqo/runtime": "workspace:*",
     "@aeliqo/web": "workspace:*",
     "next": "16.3.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "lit": "3.3.3",
-    "@lit-labs/ssr-client": "1.1.8"
+    "@lit-labs/ssr-client": "1.1.8",
+    "zod": "4.5.4"
   },
   "devDependencies": {
     "@types/node": "24.13.3",

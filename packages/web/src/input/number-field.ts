@@ -1,7 +1,7 @@
-import {css, html, nothing} from "lit";
-import {AeliqoFieldElement, aeliqoInputStyles} from "./base.js";
-import {AeliqoInputChangeEvent, AeliqoInputCommitEvent} from "./events.js";
-import {formatLocalizedDecimal, parseLocalizedDecimal} from "./locale.js";
+import { css, html, nothing } from 'lit';
+import { AeliqoFieldElement, aeliqoInputStyles } from './base.js';
+import { AeliqoInputChangeEvent, AeliqoInputCommitEvent } from './events.js';
+import { formatLocalizedDecimal, parseLocalizedDecimal } from './locale.js';
 
 export interface AeliqoNumberChange {
   readonly text: string;
@@ -9,11 +9,11 @@ export interface AeliqoNumberChange {
   readonly valid: boolean;
 }
 
-function decimalParts(value: string): {negative: boolean; integer: string; fraction: string} {
-  const negative = value.startsWith("-");
-  const unsigned = value.replace(/^[+-]/u, "");
-  const [integer = "0", fraction = ""] = unsigned.split(".");
-  return {negative, integer: integer.replace(/^0+(?=\d)/u, ""), fraction};
+function decimalParts(value: string): { negative: boolean; integer: string; fraction: string } {
+  const negative = value.startsWith('-');
+  const unsigned = value.replace(/^[+-]/u, '');
+  const [integer = '0', fraction = ''] = unsigned.split('.');
+  return { negative, integer: integer.replace(/^0+(?=\d)/u, ''), fraction };
 }
 
 function compareDecimal(left: string, right: string): number {
@@ -24,21 +24,21 @@ function compareDecimal(left: string, right: string): number {
   if (a.integer.length !== b.integer.length) return (a.integer.length < b.integer.length ? -1 : 1) * sign;
   if (a.integer !== b.integer) return (a.integer < b.integer ? -1 : 1) * sign;
   const scale = Math.max(a.fraction.length, b.fraction.length);
-  const af = a.fraction.padEnd(scale, "0");
-  const bf = b.fraction.padEnd(scale, "0");
+  const af = a.fraction.padEnd(scale, '0');
+  const bf = b.fraction.padEnd(scale, '0');
   if (af === bf) return 0;
   return (af < bf ? -1 : 1) * sign;
 }
 
 function stepAligned(value: string, minimum: string | undefined, step: string | undefined): boolean {
-  if (step === undefined || step === "") return true;
+  if (step === undefined || step === '') return true;
   const valueParts = decimalParts(value);
   const stepParts = decimalParts(step);
-  const minParts = decimalParts(minimum ?? "0");
+  const minParts = decimalParts(minimum ?? '0');
   const scale = Math.max(valueParts.fraction.length, stepParts.fraction.length, minParts.fraction.length);
   const scaleValue = (parts: ReturnType<typeof decimalParts>): bigint => {
-    const digits = `${parts.integer}${parts.fraction.padEnd(scale, "0")}`;
-    const integer = BigInt(digits || "0");
+    const digits = `${parts.integer}${parts.fraction.padEnd(scale, '0')}`;
+    const integer = BigInt(digits || '0');
     return parts.negative ? -integer : integer;
   };
   const divisor = scaleValue(stepParts);
@@ -50,32 +50,35 @@ function stepAligned(value: string, minimum: string | undefined, step: string | 
 export class AeliqoNumberFieldElement extends AeliqoFieldElement<AeliqoNumberChange> {
   static readonly properties = {
     ...AeliqoFieldElement.properties,
-    text: {type: String},
-    value: {type: String, reflect: true},
-    defaultValue: {attribute: "default-value", type: String},
-    min: {type: String},
-    max: {type: String},
-    step: {type: String},
-    unit: {type: String},
+    text: { type: String },
+    value: { type: String, reflect: true },
+    defaultValue: { attribute: 'default-value', type: String },
+    min: { type: String },
+    max: { type: String },
+    step: { type: String },
+    unit: { type: String },
   };
 
-  static readonly aeliqoVersion = "0.1.0";
-
-  text = "";
+  text = '';
   value: string | undefined;
-  defaultValue = "";
-  min = "";
-  max = "";
-  step = "";
-  unit = "";
+  defaultValue = '';
+  min = '';
+  max = '';
+  step = '';
+  unit = '';
 
   override connectedCallback(): void {
     if (this.value === undefined && this.defaultValue.length > 0) this.applyDefaultValue();
     super.connectedCallback();
   }
 
-  protected override updated(changed: Map<PropertyKey, unknown>): void {
-    if (changed.has("value") && this.value !== undefined && (this.text.length === 0 || !changed.has("text"))) this.text = formatLocalizedDecimal(this.value, this.locale);
+  protected override willUpdate(changed: Map<PropertyKey, unknown>): void {
+    if (changed.has('value') && this.value !== undefined && (this.text.length === 0 || !changed.has('text'))) {
+      this.text = formatLocalizedDecimal(this.value, this.locale);
+    }
+  }
+
+  protected override updated(): void {
     this.syncNative();
   }
 
@@ -85,15 +88,18 @@ export class AeliqoNumberFieldElement extends AeliqoFieldElement<AeliqoNumberCha
   }
 
   private applyDefaultValue(): void {
-    const parsed = parseLocalizedDecimal(this.defaultValue, "en-US");
+    const parsed = parseLocalizedDecimal(this.defaultValue, 'en-US');
     this.value = parsed.valid ? parsed.canonical : undefined;
-    this.text = parsed.valid && parsed.canonical !== undefined ? formatLocalizedDecimal(parsed.canonical, this.locale) : this.defaultValue;
+    this.text =
+      parsed.valid && parsed.canonical !== undefined
+        ? formatLocalizedDecimal(parsed.canonical, this.locale)
+        : this.defaultValue;
   }
 
   protected override render() {
     const parsed = parseLocalizedDecimal(this.text, this.locale);
     const valid = this.isValid(parsed.canonical);
-    const describedBy = [this.describedByIds(), this.unit ? "unit" : ""].filter((id) => id.length > 0).join(" ");
+    const describedBy = [this.describedByIds(), this.unit ? 'unit' : ''].filter((id) => id.length > 0).join(' ');
     return html`
       <div part="field">
         <label part="label" for="control"><span class="label-text">${this.label}</span></label>
@@ -108,8 +114,8 @@ export class AeliqoNumberFieldElement extends AeliqoFieldElement<AeliqoNumberCha
             .value=${this.text}
             ?disabled=${this.fieldDisabled}
             ?readonly=${this.readOnly}
-            aria-readonly=${this.readOnly ? "true" : nothing}
-            aria-invalid=${this.error || !valid ? "true" : nothing}
+            aria-readonly=${this.readOnly ? 'true' : nothing}
+            aria-invalid=${this.error || !valid ? 'true' : nothing}
             aria-describedby=${describedBy || nothing}
             @input=${this.handleInput}
             @change=${this.handleCommit}
@@ -130,23 +136,31 @@ export class AeliqoNumberFieldElement extends AeliqoFieldElement<AeliqoNumberCha
     if (!(input instanceof HTMLInputElement) || this.readOnly || this.fieldDisabled) return;
     this.text = input.value;
     const parsed = parseLocalizedDecimal(this.text, this.locale);
-    const detail: AeliqoNumberChange = {text: this.text, value: this.isValid(parsed.canonical) ? parsed.canonical : undefined, valid: this.isValid(parsed.canonical)};
+    const detail: AeliqoNumberChange = {
+      text: this.text,
+      value: this.isValid(parsed.canonical) ? parsed.canonical : undefined,
+      valid: this.isValid(parsed.canonical),
+    };
     this.value = detail.value;
-    this.dispatchEvent(new AeliqoInputChangeEvent({source: "user", value: detail}));
+    this.dispatchEvent(new AeliqoInputChangeEvent({ source: 'user', value: detail }));
     void this.validateProposed(detail);
     this.syncNative();
   };
 
   private readonly handleCommit = (): void => {
     const parsed = parseLocalizedDecimal(this.text, this.locale);
-    const detail: AeliqoNumberChange = {text: this.text, value: this.isValid(parsed.canonical) ? parsed.canonical : undefined, valid: this.isValid(parsed.canonical)};
-    this.dispatchEvent(new AeliqoInputCommitEvent({source: "user", value: detail}));
+    const detail: AeliqoNumberChange = {
+      text: this.text,
+      value: this.isValid(parsed.canonical) ? parsed.canonical : undefined,
+      valid: this.isValid(parsed.canonical),
+    };
+    this.dispatchEvent(new AeliqoInputCommitEvent({ source: 'user', value: detail }));
   };
 
   private native(): HTMLInputElement | undefined {
     const root = this.renderRoot;
-    if (root === undefined || typeof root.querySelector !== "function") return undefined;
-    return root.querySelector<HTMLInputElement>("input[part=input]") ?? undefined;
+    if (root === undefined || typeof root.querySelector !== 'function') return undefined;
+    return root.querySelector<HTMLInputElement>('input[part=input]') ?? undefined;
   }
 
   private isValid(value: string | undefined): boolean {
@@ -162,7 +176,7 @@ export class AeliqoNumberFieldElement extends AeliqoFieldElement<AeliqoNumberCha
 
   private canonicalBound(text: string): string | undefined | null {
     if (text.trim().length === 0) return undefined;
-    const parsed = parseLocalizedDecimal(text, "en-US");
+    const parsed = parseLocalizedDecimal(text, 'en-US');
     return parsed.valid ? parsed.canonical : null;
   }
 
@@ -170,13 +184,28 @@ export class AeliqoNumberFieldElement extends AeliqoFieldElement<AeliqoNumberCha
     const parsed = parseLocalizedDecimal(this.text, this.locale);
     const valid = this.isValid(parsed.canonical);
     this.setFormValue(this.fieldDisabled ? null : (this.value ?? this.text));
-    if (this.internals !== undefined && !this.fieldDisabled && !valid) this.internals.setValidity({customError: true}, "Enter a valid number.", this.native());
+    if (this.internals !== undefined && !this.fieldDisabled && !valid)
+      this.internals.setValidity({ customError: true }, 'Enter a valid number.', this.native());
     else this.updateValidity(this.native(), this.text.trim().length === 0);
   }
 
-  static readonly styles = [...aeliqoInputStyles, css`
-    .input-wrap { align-items: center; display: flex; gap: var(--aeliqo-space-8, 0.5rem); }
-    .input-wrap input { flex: 1 1 auto; min-inline-size: 0; }
-    [part=unit] { flex: 0 0 auto; white-space: nowrap; color: var(--aeliqo-color-muted, #4b5563); }
-  `];
+  static readonly styles = [
+    ...aeliqoInputStyles,
+    css`
+      .input-wrap {
+        align-items: center;
+        display: flex;
+        gap: var(--aeliqo-space-8, 0.5rem);
+      }
+      .input-wrap input {
+        flex: 1 1 auto;
+        min-inline-size: 0;
+      }
+      [part='unit'] {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        color: var(--aeliqo-color-muted, #4b5563);
+      }
+    `,
+  ];
 }

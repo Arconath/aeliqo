@@ -28,14 +28,32 @@ export function validateAgentComposition(
   registry: PresentationRegistry,
   context: PresentationContext,
 ): Outcome<ValidatedAgentComposition> {
-  if(context===undefined||context===null)return {ok:false,diagnostics:[{code:'agent.composition.context',message:'A current host presentation context is required.',retryable:false}]};
-  const checked=validatePresentationPlan(input,context,registry);
-  if(!checked.ok)return checked;
-  const refs=new Map<string,ResultRef>();
-  for(const node of checked.value.nodes){
-    const ref=node.result?.ref;
-    if(ref!==undefined)refs.set(JSON.stringify([ref.id,ref.revision,ref.outputId,ref.queryDigest,ref.scopeDigest]),ref);
+  if (context === undefined || context === null)
+    return {
+      ok: false,
+      diagnostics: [
+        {
+          code: 'agent.composition.context',
+          message: 'A current host presentation context is required.',
+          retryable: false,
+        },
+      ],
+    };
+  const checked = validatePresentationPlan(input, context, registry);
+  if (!checked.ok) return checked;
+  const refs = new Map<string, ResultRef>();
+  for (const node of checked.value.nodes) {
+    const ref = node.result?.ref;
+    if (ref !== undefined)
+      refs.set(JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]), ref);
   }
-  return {ok:true,value:Object.freeze({...checked.value,views:Object.freeze(checked.value.nodes.map(node=>node.manifest)),resultReferences:Object.freeze([...refs.values()])})};
+  return {
+    ok: true,
+    value: Object.freeze({
+      ...checked.value,
+      views: Object.freeze(checked.value.nodes.map((node) => node.manifest)),
+      resultReferences: Object.freeze([...refs.values()]),
+    }),
+  };
 }
 export type AgentCompositionDiagnostic = Diagnostic;

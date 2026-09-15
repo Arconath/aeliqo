@@ -110,7 +110,7 @@ def verify_graph(client, index_digest, source, sdk_revision, sdk_version, builde
     require(re.fullmatch(r"sha256:[0-9a-f]{64}", index_digest), "invalid index digest")
     require(re.fullmatch(r"[0-9a-f]{40}", source), "invalid source revision")
     require(re.fullmatch(r"[0-9a-f]{40}", sdk_revision), "invalid SDK revision")
-    require(sdk_version == "0.1.0", "invalid SDK version")
+    require(re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", sdk_version), "invalid SDK version")
     require(re.fullmatch(r"https://github\.com/Arconath/aeliqo/actions/runs/[1-9][0-9]*/attempts/[1-9][0-9]*", builder_id), "invalid builder ID")
 
     index_bytes = client.manifest(index_digest)

@@ -1,8 +1,4 @@
-import type {
-  ResultBatch,
-  ResultEvent,
-  ResultSnapshot,
-} from '@aeliqo/runtime/results';
+import type { ResultBatch, ResultEvent, ResultSnapshot } from '@aeliqo/runtime/results';
 
 export const DEFAULT_MAX_RESULT_EVENTS = 256;
 export const DEFAULT_MAX_RESULT_ROWS = 10_000;
@@ -89,7 +85,10 @@ export async function collectResultEvents(
       let timer: ReturnType<typeof setTimeout> | undefined;
       try {
         await Promise.race([
-          Promise.resolve(closing).then(() => undefined, () => undefined),
+          Promise.resolve(closing).then(
+            () => undefined,
+            () => undefined,
+          ),
           new Promise<void>((resolve) => {
             timer = setTimeout(resolve, Math.min(100, timeoutMs));
           }),
@@ -119,7 +118,7 @@ export async function collectResultEvents(
         };
         const onAbort = (): void => finish(() => reject(abortError(signal?.reason)));
         if (signal !== undefined) {
-          signal.addEventListener('abort', onAbort, {once: true});
+          signal.addEventListener('abort', onAbort, { once: true });
           if (signal.aborted) {
             onAbort();
             return;
@@ -153,23 +152,17 @@ export async function collectResultEvents(
 }
 
 /** Returns rows carried by runtime batch events, preserving source order. */
-export function rowsFromResultEvents(
-  events: readonly ResultEvent[],
-): ReadonlyArray<ResultBatch['rows'][number]> {
-  return events.flatMap((event) => event.kind === 'batch' ? [...event.rows] : []);
+export function rowsFromResultEvents(events: readonly ResultEvent[]): ReadonlyArray<ResultBatch['rows'][number]> {
+  return events.flatMap((event) => (event.kind === 'batch' ? [...event.rows] : []));
 }
 
 /** Returns rows currently retained in a runtime result-store snapshot. */
-export function rowsFromResultSnapshot(
-  snapshot: ResultSnapshot,
-): ReadonlyArray<ResultBatch['rows'][number]> {
+export function rowsFromResultSnapshot(snapshot: ResultSnapshot): ReadonlyArray<ResultBatch['rows'][number]> {
   return snapshot.batches.flatMap((batch) => [...batch.rows]);
 }
 
 /** Fails a host integration check if revoked/cancelled data remains materialized. */
-export function assertNoMaterializedRows(
-  value: readonly ResultEvent[] | ResultSnapshot,
-): void {
+export function assertNoMaterializedRows(value: readonly ResultEvent[] | ResultSnapshot): void {
   const rows = Array.isArray(value)
     ? rowsFromResultEvents(value as readonly ResultEvent[])
     : rowsFromResultSnapshot(value as ResultSnapshot);
@@ -179,10 +172,7 @@ export function assertNoMaterializedRows(
 }
 
 /** Fails a host integration check unless the result-store state is denied and empty. */
-export function assertDeniedSnapshot(
-  snapshot: ResultSnapshot,
-  expectedDiagnosticCode?: string,
-): void {
+export function assertDeniedSnapshot(snapshot: ResultSnapshot, expectedDiagnosticCode?: string): void {
   if (snapshot.status !== 'denied') {
     throw new Error(`Expected a denied result snapshot, received ${snapshot.status}.`);
   }
@@ -190,7 +180,10 @@ export function assertDeniedSnapshot(
     throw new Error('A denied result snapshot must not retain a descriptor.');
   }
   assertNoMaterializedRows(snapshot);
-  if (expectedDiagnosticCode !== undefined && !snapshot.diagnostics.some(({code}) => code === expectedDiagnosticCode)) {
+  if (
+    expectedDiagnosticCode !== undefined &&
+    !snapshot.diagnostics.some(({ code }) => code === expectedDiagnosticCode)
+  ) {
     throw new Error(`Expected denied snapshot diagnostic ${expectedDiagnosticCode}.`);
   }
 }

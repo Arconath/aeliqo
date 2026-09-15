@@ -5,7 +5,13 @@ import { tmpdir } from 'node:os';
 import { basename, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
-import { pages as authoredPages } from '../../docs/public-site/content.mjs';
+import { pages as authoredPages } from '../../docs/public-site/pages/index.mjs';
+import {
+  DOC_ROUTES,
+  canonicalDocsPath,
+  canonicalizeDocsMarkup,
+  docsArtifactPath,
+} from '../../docs/public-site/routes.mjs';
 import { componentApi, loadComponentSources } from './component-api.mjs';
 import {
   PUBLIC_DOCS_MANIFEST_SCHEMA,
@@ -14,6 +20,7 @@ import {
   assertPublicDocsManifest,
   sha256,
 } from './public-docs-contract.mjs';
+import { isReleaseVersion, RELEASE_VERSION } from '../release/metadata.mjs';
 import { RELEASE_SOURCE_STATUS_ARGS, isReleaseSourceClean } from '../release/source-state.mjs';
 
 const execFileAsync = promisify(execFile);
@@ -38,6 +45,58 @@ function escape(value) {
 
 function inlineCode(value) {
   return escape(value).replace(/`([^`]+)`/gu, '<code>$1</code>');
+}
+
+const sourceMarker = /<aeliqo-source data-label="([^"]+)" data-path="([^"]+)"><\/aeliqo-source>/gu;
+const projectMarker = /<aeliqo-project data-scenario="([^"]+)"><\/aeliqo-project>/gu;
+
+async function hydrateSourceMarkup(markup) {
+  const matches = [...markup.matchAll(sourceMarker)];
+  if (matches.length === 0) return markup;
+  let hydrated = '';
+  let cursor = 0;
+  for (const match of matches) {
+    const [marker, label, path] = match;
+    if (match.index === undefined || label === undefined || path === undefined)
+      throw new Error('Malformed source marker.');
+    if (path.startsWith('/') || path.split('/').includes('..') || !/\.(?:json|mjs|ts|tsx)$/u.test(path))
+      throw new Error(`Documentation source path is unsafe: ${path}`);
+    const absolute = resolve(root, path);
+    const source = await readFile(absolute, 'utf8');
+    hydrated += `${markup.slice(cursor, match.index)}<figure class="doc-code" data-source-path="${escape(path)}"><figcaption>${escape(label)} · compiled source</figcaption><pre tabindex="0"><code>${escape(source.trimEnd())}</code></pre></figure>`;
+    cursor = match.index + marker.length;
+  }
+  return hydrated + markup.slice(cursor);
+}
+
+async function loadProjectTemplates() {
+  const moduleUrl = pathToFileURL(resolve(root, 'apps/playground/src/project-template.ts')).href;
+  const script = `import(${JSON.stringify(moduleUrl)}).then(({projectFiles})=>process.stdout.write(JSON.stringify(Object.fromEntries(['people','products','support','knowledge'].map(id=>[id,projectFiles(id,${JSON.stringify(RELEASE_VERSION)})])))))`;
+  const { stdout } = await command(process.execPath, [
+    '--experimental-strip-types',
+    '--input-type=module',
+    '-e',
+    script,
+  ]);
+  const value = JSON.parse(stdout);
+  if (value === null || typeof value !== 'object' || Array.isArray(value))
+    throw new Error('Runnable project templates are unavailable.');
+  return value;
+}
+
+function hydrateProjectMarkup(markup, projects) {
+  return markup.replace(projectMarker, (_marker, scenario) => {
+    const files = projects[scenario];
+    if (!Array.isArray(files) || files.length === 0)
+      throw new Error(`Unknown runnable documentation project ${scenario}.`);
+    return files
+      .map(({ path, content }) => {
+        if (typeof path !== 'string' || typeof content !== 'string')
+          throw new Error(`Malformed runnable documentation project ${scenario}.`);
+        return `<figure class="doc-code" data-project-scenario="${escape(scenario)}" data-source-path="${escape(path)}"><figcaption>${escape(path)} · compiled export source</figcaption><pre tabindex="0"><code>${escape(content.trimEnd())}</code></pre></figure>`;
+      })
+      .join('');
+  });
 }
 
 const listItems = (values, empty = 'None recorded in the inspected source.') =>
@@ -131,12 +190,13 @@ function componentPage(component, example, metadata, api) {
     )
     .join('');
   return {
-    path: `/docs/components/${component.id}/`,
+    id: component.id,
+    path: `/components/${component.id}/`,
     title: component.name,
     section: `Components / ${component.family}`,
     description: component.contract,
     component: component.id,
-    body: `<div class="component-meta"><span><small>Family</small>${escape(component.family)}</span><span><small>Surfaces</small>${component.surfaces.map((surface) => escape(surface)).join(' · ')}</span><span><small>License</small>${escape(component.license)}</span></div>${exampleMarkup(example)}${componentDetails(component, example, metadata)}<h2>Properties and defaults</h2><p>Inherited public fields are included. Defaults come from the same source revision that builds this component. For unions and imported types, use the generated declaration below.</p><div class="api-table doc-table"><table><thead><tr><th>Property</th><th>Declared type</th><th>Initial value</th></tr></thead><tbody>${properties}</tbody></table></div><h2>Public parts and theme tokens</h2><p>Statically named shadow parts in the component and its base classes: ${metadata.parts.length ? metadata.parts.map((part) => `<code>${escape(part)}</code>`).join(', ') : 'none declared in this class chain'}. Child components expose their own parts.</p><details><summary>Referenced theme tokens</summary><p>${metadata.tokens.length ? metadata.tokens.map((token) => `<code>${escape(token)}</code>`).join(', ') : 'Uses the shared Aeliqo theme; no additional token references in this class chain.'}</p></details><h2 id="public-api-heading">Public API</h2><p>This declaration is generated from the built 0.1.0 package. Pass structured values as JavaScript properties; use an attribute only where the component metadata declares one.</p><div class="code-scroll" role="region" aria-labelledby="public-api-heading"><pre tabindex="0"><code>${escape(api)}</code></pre></div><h2>Integrate and verify</h2><div class="doc-checklist"><ul><li>Use the exact package version shown by this documentation build.</li><li>Exercise the ready state and every documented loading, empty, partial, stale, or error state your host can produce.</li><li>Verify keyboard, zoom, reflow, forced colors, and assistive technology in the final application composition.</li><li>Handle events in host code and recheck authority before any business effect.</li></ul></div><p><a href="/docs/production/">Review the complete production checklist →</a></p>`,
+    body: `<div class="component-meta"><span><small>Family</small>${escape(component.family)}</span><span><small>Surfaces</small>${component.surfaces.map((surface) => escape(surface)).join(' · ')}</span><span><small>License</small>${escape(component.license)}</span></div>${exampleMarkup(example)}${componentDetails(component, example, metadata)}<h2>Properties and defaults</h2><p>Inherited public fields are included. Defaults come from the same source revision that builds this component. For unions and imported types, use the generated declaration below.</p><div class="api-table doc-table"><table><thead><tr><th>Property</th><th>Declared type</th><th>Initial value</th></tr></thead><tbody>${properties}</tbody></table></div><h2>Public parts and theme tokens</h2><p>Statically named shadow parts in the component and its base classes: ${metadata.parts.length ? metadata.parts.map((part) => `<code>${escape(part)}</code>`).join(', ') : 'none declared in this class chain'}. Child components expose their own parts.</p><details><summary>Referenced theme tokens</summary><p>${metadata.tokens.length ? metadata.tokens.map((token) => `<code>${escape(token)}</code>`).join(', ') : 'Uses the shared Aeliqo theme; no additional token references in this class chain.'}</p></details><h2 id="public-api-heading">Public API</h2><p>This declaration is generated from the active package source. Pass structured values as JavaScript properties; use an attribute only where the component metadata declares one.</p><div class="code-scroll" role="region" aria-labelledby="public-api-heading"><pre tabindex="0"><code>${escape(api)}</code></pre></div><h2>Integrate and verify</h2><div class="doc-checklist"><ul><li>Use the exact package version shown by this documentation build.</li><li>Exercise the ready state and every documented loading, empty, partial, stale, or error state your host can produce.</li><li>Verify keyboard, zoom, reflow, forced colors, and assistive technology in the final application composition.</li><li>Handle events in host code and recheck authority before any business effect.</li></ul></div><p><a href="/ship/">Review the complete production checklist →</a></p>`,
   };
 }
 
@@ -144,14 +204,23 @@ async function packageVersions(targetVersion) {
   const result = {};
   for (const name of ['agent', 'core', 'devtools', 'react', 'runtime', 'web']) {
     const value = JSON.parse(await readFile(resolve(root, `packages/${name}/package.json`), 'utf8'));
-    if (value.version !== '0.1.0')
-      throw new Error(`${value.name} source manifest must remain at 0.1.0 before release staging.`);
+    if (value.version !== RELEASE_VERSION)
+      throw new Error(
+        `${value.name} source manifest must match release metadata ${RELEASE_VERSION} before release staging.`,
+      );
     result[value.name] = targetVersion;
   }
   return Object.fromEntries(Object.entries(result).sort(([left], [right]) => left.localeCompare(right)));
 }
 
 export async function buildPublicPages() {
+  const generatedRouteIds = new Set(['components', 'search']);
+  const expectedPageIds = DOC_ROUTES.filter((route) => !generatedRouteIds.has(route.id))
+    .map((route) => route.id)
+    .sort();
+  const authoredPageIds = authoredPages.map((page) => page.id).sort();
+  if (JSON.stringify(authoredPageIds) !== JSON.stringify(expectedPageIds))
+    throw new Error('Authored documentation pages and the canonical route manifest are out of sync.');
   const components = JSON.parse(await readFile(resolve(root, 'catalog/components.json'), 'utf8')).components;
   if (!Array.isArray(components) || components.length !== 71)
     throw new Error('The public catalog must contain exactly 71 components.');
@@ -163,12 +232,24 @@ export async function buildPublicPages() {
   );
   const componentSources = await loadComponentSources(resolve(root, 'packages/web/src'));
   const canonicalExamples = await loadCanonicalExamples();
+  const projectTemplates = await loadProjectTemplates();
   const canonicalById = new Map(canonicalExamples.map((example) => [`${example.family}.${example.id}`, example]));
   if (canonicalById.size !== 71)
     throw new Error('The runnable example catalog must contain exactly 71 unique entries.');
-  const pages = authoredPages.map((page) => ({ ...page }));
+  const pages = [];
+  for (const page of authoredPages) {
+    const path = canonicalDocsPath(page.path);
+    if (path === undefined) throw new Error(`Authored documentation page has no canonical route: ${page.path}`);
+    const markup = canonicalizeDocsMarkup(page.body);
+    pages.push({
+      ...page,
+      path,
+      body: hydrateProjectMarkup(await hydrateSourceMarkup(markup), projectTemplates),
+    });
+  }
   pages.push({
-    path: '/docs/components/',
+    id: 'components',
+    path: '/components/',
     title: 'Component catalog',
     section: 'Components',
     description: '71 owned components, grouped by purpose.',
@@ -179,7 +260,7 @@ export async function buildPublicPages() {
         (family) =>
           `<h2 id="${family}">${family[0].toUpperCase() + family.slice(1)}</h2><ul class="component-links">${components
             .filter((component) => component.family === family)
-            .map((component) => `<li><a href="/docs/components/${component.id}/">${component.name}</a></li>`)
+            .map((component) => `<li><a href="/components/${component.id}/">${component.name}</a></li>`)
             .join('')}</ul>`,
       )
       .join('')}`,
@@ -194,26 +275,34 @@ export async function buildPublicPages() {
     if (example === undefined) throw new Error(`Missing canonical catalog example ${component.id}`);
     pages.push(componentPage(component, example, metadata, api));
   }
-  const searchable = pages.filter((page) => page.path.startsWith('/docs/'));
+  const searchable = pages;
   pages.push({
-    path: '/docs/search/',
+    id: 'search',
+    path: '/search/',
     title: 'Search documentation',
     section: 'Documentation',
-    description: 'Search Aeliqo documentation by title or description.',
-    body: `<p class="lead">Search is progressively enhanced when JavaScript is available. Without it, this page remains a browsable list of documentation routes.</p><form class="docs-search-fallback" action="/docs/search/" method="get"><label for="docs-search-fallback-query">Search documentation</label><input id="docs-search-fallback-query" name="q" type="text" inputmode="search" placeholder="Component, concept, or integration"><button type="submit">Search</button></form><p class="caption">With JavaScript disabled, use your browser’s Find command after submitting the query.</p><nav aria-label="Documentation search fallback"><ul class="search-fallback-links">${searchable.map((page) => `<li><a href="${page.path}">${escape(page.title)}</a><span>${escape(page.description)}</span></li>`).join('')}</ul></nav>`,
+    description: 'Search Aeliqo documentation by title, heading, body, API, or diagnostic.',
+    body: `<p class="lead">Search is progressively enhanced when JavaScript is available and indexes page body plus headings. Without it, this page remains a browsable list of documentation routes.</p><form class="docs-search-fallback" action="/search/" method="get"><label for="docs-search-fallback-query">Search documentation</label><input id="docs-search-fallback-query" name="q" type="text" inputmode="search" placeholder="API, diagnostic, concept, or integration"><button type="submit">Search</button></form><p class="caption">With JavaScript disabled, use your browser’s Find command on this route list.</p><nav aria-label="Documentation search fallback"><ul class="search-fallback-links">${searchable.map((page) => `<li><a href="${page.path}">${escape(page.title)}</a><span>${escape(page.description)}</span></li>`).join('')}</ul></nav>`,
   });
   return pages;
 }
 
 async function sourceInputs() {
   const paths = [
-    'docs/public-site/content.mjs',
+    'docs/public-site/routes.mjs',
     'catalog/components.json',
     'scripts/docs/build-public-docs.mjs',
     'scripts/docs/component-api.mjs',
     'scripts/docs/public-docs-contract.mjs',
     'scripts/release/source-state.mjs',
+    'apps/playground/src/project-template.ts',
   ];
+  for (const path of await filesAt(resolve(root, 'docs/public-site/pages'), (path) => path.endsWith('.mjs')))
+    paths.push(relative(root, path));
+  for (const directory of ['examples/quickstart', 'examples/migration-0.1']) {
+    for (const path of await filesAt(resolve(root, directory), (path) => /\.(?:json|ts)$/u.test(path)))
+      paths.push(relative(root, path));
+  }
   for (const directory of ['examples/catalog', 'packages/web/src', 'packages/web/dist']) {
     for (const path of await filesAt(resolve(root, directory), (path) => /\.(?:json|ts)$/u.test(path)))
       paths.push(relative(root, path));
@@ -276,9 +365,9 @@ async function main() {
       !['--output', '--source-revision', '--version'].includes(arguments_[index - 1]),
   );
   if (unexpected.length) throw new Error(`Unexpected arguments: ${unexpected.join(', ')}`);
-  const docsVersion = versionIndex === -1 ? '0.1.0' : arguments_[versionIndex + 1];
-  if (!/^0\.1\.0(?:-rc\.[1-9]\d*)?$/u.test(docsVersion))
-    throw new Error('The public docs artifact must use the 0.1.0 release lineage.');
+  const docsVersion = versionIndex === -1 ? RELEASE_VERSION : arguments_[versionIndex + 1];
+  if (!isReleaseVersion(docsVersion))
+    throw new Error(`The public docs artifact must use the ${RELEASE_VERSION} release lineage.`);
   const versions = await packageVersions(docsVersion);
   const { source, sourceTree } = await sourceIdentity();
   const artifact = assertPublicDocsArtifact({
@@ -286,7 +375,7 @@ async function main() {
     docsVersion,
     source,
     packageVersions: versions,
-    pages: await buildPublicPages(),
+    pages: (await buildPublicPages()).map((page) => ({ ...page, path: docsArtifactPath(page.path) })),
   });
   const artifactName = `aeliqo-public-docs-${docsVersion}.json`;
   const artifactBytes = Buffer.from(`${JSON.stringify(artifact, null, 2)}\n`);

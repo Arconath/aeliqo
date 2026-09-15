@@ -1,40 +1,48 @@
-import {css, html, nothing} from "lit";
-import {AeliqoFoundationElement} from "../foundation/base.js";
-import {aeliqoInputStyles} from "./base.js";
+import { css, html, nothing } from 'lit';
+import { AeliqoFoundationElement } from '../foundation/base.js';
+import { aeliqoInputStyles } from './base.js';
 
 /** Semantic grouping boundary for related controls and coordinated messages. */
 export class AeliqoFieldGroupElement extends AeliqoFoundationElement {
   static readonly properties = {
-    legend: {type: String},
-    description: {type: String},
-    error: {type: String},
-    disabled: {type: Boolean, reflect: true},
+    legend: { type: String },
+    description: { type: String },
+    error: { type: String },
+    disabled: { type: Boolean, reflect: true },
   };
 
-  static readonly aeliqoVersion = "0.1.0";
-
-  legend = "";
-  description = "";
-  error = "";
+  legend = '';
+  description = '';
+  error = '';
   disabled = false;
-  private readonly restoredDisabled = new Map<HTMLElement & {disabled: boolean}, boolean>();
+  private readonly restoredDisabled = new Map<HTMLElement & { disabled: boolean }, boolean>();
   private disabledObserver: MutationObserver | undefined;
 
   override connectedCallback(): void {
     super.connectedCallback();
-    if (typeof MutationObserver === "function") {
+    if (typeof MutationObserver === 'function') {
       this.disabledObserver = new MutationObserver((records) => {
         if (this.disabled) {
           for (const record of records) {
-            const control = record.target as HTMLElement & {disabled?: boolean};
-            if (record.target instanceof HTMLElement && typeof control.disabled === "boolean" && this.restoredDisabled.has(control as HTMLElement & {disabled: boolean}) && !control.disabled) {
-              this.restoredDisabled.set(control as HTMLElement & {disabled: boolean}, false);
+            const control = record.target as HTMLElement & { disabled?: boolean };
+            if (
+              record.target instanceof HTMLElement &&
+              typeof control.disabled === 'boolean' &&
+              this.restoredDisabled.has(control as HTMLElement & { disabled: boolean }) &&
+              !control.disabled
+            ) {
+              this.restoredDisabled.set(control as HTMLElement & { disabled: boolean }, false);
             }
           }
         }
         this.syncDisabledDescendants();
       });
-      this.disabledObserver.observe(this, {subtree: true, childList: true, attributes: true, attributeFilter: ["disabled"]});
+      this.disabledObserver.observe(this, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: ['disabled'],
+      });
     }
     this.syncDisabledDescendants();
   }
@@ -48,7 +56,7 @@ export class AeliqoFieldGroupElement extends AeliqoFoundationElement {
   }
 
   protected override updated(changed: Map<PropertyKey, unknown>): void {
-    if (!changed.has("disabled")) return;
+    if (!changed.has('disabled')) return;
     this.syncDisabledDescendants();
   }
 
@@ -64,7 +72,7 @@ export class AeliqoFieldGroupElement extends AeliqoFoundationElement {
   }
 
   private describedByIds(): string {
-    return [this.description ? "description" : "", this.error ? "error" : ""].filter(Boolean).join(" ");
+    return [this.description ? 'description' : '', this.error ? 'error' : ''].filter(Boolean).join(' ');
   }
 
   private readonly handleSlotChange = (): void => {
@@ -72,8 +80,9 @@ export class AeliqoFieldGroupElement extends AeliqoFoundationElement {
   };
 
   private syncDisabledDescendants(): void {
-    const controls = Array.from(this.querySelectorAll<HTMLElement>("*")).filter((child): child is HTMLElement & {disabled: boolean} =>
-      "disabled" in child && typeof (child as {disabled?: unknown}).disabled === "boolean",
+    const controls = Array.from(this.querySelectorAll<HTMLElement>('*')).filter(
+      (child): child is HTMLElement & { disabled: boolean } =>
+        'disabled' in child && typeof (child as { disabled?: unknown }).disabled === 'boolean',
     );
     const current = new Set(controls);
     for (const control of this.restoredDisabled.keys()) {
@@ -95,8 +104,20 @@ export class AeliqoFieldGroupElement extends AeliqoFoundationElement {
     }
   }
 
-  static readonly styles = [...aeliqoInputStyles, css`
-    fieldset { border: 0; display: grid; gap: var(--aeliqo-space-8, 0.5rem); margin: 0; min-inline-size: 0; padding: 0; }
-    legend { font-weight: var(--aeliqo-typography-font-weight-semibold, 600); }
-  `];
+  static readonly styles = [
+    ...aeliqoInputStyles,
+    css`
+      fieldset {
+        border: 0;
+        display: grid;
+        gap: var(--aeliqo-space-8, 0.5rem);
+        margin: 0;
+        min-inline-size: 0;
+        padding: 0;
+      }
+      legend {
+        font-weight: var(--aeliqo-typography-font-weight-semibold, 600);
+      }
+    `,
+  ];
 }

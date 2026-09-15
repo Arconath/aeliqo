@@ -1,1 +1,1 @@
-export default {optimizeDeps: {entries: ['tests/compound/index.html']}};
+export default { optimizeDeps: { entries: ['tests/compound/index.html'] } };

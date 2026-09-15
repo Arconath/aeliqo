@@ -1,7 +1,7 @@
-import {defineConfig} from '@playwright/test';
-import {dirname, resolve} from 'node:path';
-import {fileURLToPath} from 'node:url';
-import {testPort} from '../shared/port.mjs';
+import { defineConfig } from '@playwright/test';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { testPort } from '../shared/port.mjs';
 
 const configDirectory = dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = resolve(configDirectory, '../..');
@@ -16,12 +16,12 @@ export default defineConfig({
   outputDir: resolve(repositoryRoot, 'artifacts/visual-structure-states'),
   reporter: [
     ['list'],
-    ['json', {outputFile: resolve(repositoryRoot, 'artifacts/visual-structure-states/results.json')}],
+    ['json', { outputFile: resolve(repositoryRoot, 'artifacts/visual-structure-states/results.json') }],
   ],
   projects: [
-    {name: 'chromium', use: {browserName: 'chromium'}},
-    {name: 'firefox', use: {browserName: 'firefox'}},
-    {name: 'webkit', use: {browserName: 'webkit'}},
+    { name: 'chromium', use: { browserName: 'chromium' } },
+    { name: 'firefox', use: { browserName: 'firefox' } },
+    { name: 'webkit', use: { browserName: 'webkit' } },
   ],
   use: {
     baseURL: origin,

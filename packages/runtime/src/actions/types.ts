@@ -1,4 +1,4 @@
-import type {Diagnostic, Outcome, Scalar, VersionRef} from '@aeliqo/core';
+import type { Diagnostic, Outcome, ReadonlyJsonValue, VersionRef } from '@aeliqo/core';
 
 /** Grants are intentionally independent. A proposal grant never implies execution. */
 export type ActionGrant = 'action.propose' | 'action.execute';
@@ -8,7 +8,7 @@ export type ActionConfirmationPolicy = 'none' | 'required';
 export type ActionIdempotencyPolicy = 'optional' | 'required';
 export type ActionEntityRevisionPolicy = 'none' | 'required';
 
-export type ActionPayload = Readonly<Record<string, Scalar>>;
+export type ActionPayload = Readonly<Record<string, ReadonlyJsonValue>>;
 
 /** A trusted local schema parser. It is never serialized into a proposal or receipt. */
 export interface ActionSchema<T extends ActionPayload = ActionPayload> {
@@ -81,8 +81,8 @@ export interface ActionReceipt {
 }
 
 export type ActionExecution<T extends ActionPayload = ActionPayload> =
-  | {readonly state: 'executed'; readonly receiptId: string; readonly action: VersionRef; readonly output: T}
-  | {readonly state: 'ambiguous'; readonly receiptId: string; readonly action: VersionRef; readonly reason: string};
+  | { readonly state: 'executed'; readonly receiptId: string; readonly action: VersionRef; readonly output: T }
+  | { readonly state: 'ambiguous'; readonly receiptId: string; readonly action: VersionRef; readonly reason: string };
 
 export type ActionDispatchInput<T extends ActionPayload = ActionPayload> = {
   readonly descriptor: ActionDescriptor;
@@ -95,12 +95,13 @@ export type ActionDispatchInput<T extends ActionPayload = ActionPayload> = {
 
 /** A host action may explicitly reject before a side effect, complete, or report uncertainty. */
 export type ActionDispatchResult =
-  | {readonly state: 'completed'; readonly output: unknown}
-  | {readonly state: 'rejected'; readonly diagnostics: readonly [Diagnostic, ...Diagnostic[]]}
-  | {readonly state: 'ambiguous'; readonly reason: string};
+  | { readonly state: 'completed'; readonly output: unknown }
+  | { readonly state: 'rejected'; readonly diagnostics: readonly [Diagnostic, ...Diagnostic[]] }
+  | { readonly state: 'ambiguous'; readonly reason: string };
 
-export type ActionDispatch<T extends ActionPayload = ActionPayload> =
-  (input: ActionDispatchInput<T>) => ActionDispatchResult | Promise<ActionDispatchResult>;
+export type ActionDispatch<T extends ActionPayload = ActionPayload> = (
+  input: ActionDispatchInput<T>,
+) => ActionDispatchResult | Promise<ActionDispatchResult>;
 
 export interface ActionRegistration<
   TInput extends ActionPayload = ActionPayload,
@@ -124,7 +125,9 @@ export type IssueActionConfirmation = <T extends ActionPayload = ActionPayload>(
 ) => Outcome<void> | Promise<Outcome<void>>;
 
 export interface ActionHost {
-  readonly readContext: (input: HostContextRequest) => Outcome<TrustedActionContext> | Promise<Outcome<TrustedActionContext>>;
+  readonly readContext: (
+    input: HostContextRequest,
+  ) => Outcome<TrustedActionContext> | Promise<Outcome<TrustedActionContext>>;
   readonly issueConfirmation?: IssueActionConfirmation;
 }
 
@@ -148,10 +151,11 @@ export type ActionFailureCode =
 export type ActionFailure = Diagnostic & { readonly code: ActionFailureCode | string };
 
 export type ActionOutcome<T> =
-  | {readonly ok: true; readonly value: T}
-  | {readonly ok: false; readonly diagnostics: readonly [ActionFailure, ...ActionFailure[]]};
+  | { readonly ok: true; readonly value: T }
+  | { readonly ok: false; readonly diagnostics: readonly [ActionFailure, ...ActionFailure[]] };
 
-export type ActionHistoryState = 'preview' | 'confirmed' | 'executed' | 'ambiguous' | 'rejected' | 'revoked' | 'disposed';
+export type ActionHistoryState =
+  'preview' | 'confirmed' | 'executed' | 'ambiguous' | 'rejected' | 'revoked' | 'disposed';
 
 /** Bounded metadata only; inputs, outputs and actor identity are deliberately absent. */
 export interface ActionHistoryEntry {
@@ -197,15 +201,20 @@ export interface ActionBoundaryOptions {
 }
 
 export interface ActionPort {
-  preview(request: ActionRequest, options?: {readonly signal?: AbortSignal}): Promise<ActionOutcome<ActionPreview>>;
-  preview(request: unknown, options?: {readonly signal?: AbortSignal}): Promise<ActionOutcome<ActionPreview>>;
-  previewInteraction(input: unknown, options?: {
-    readonly signal?: AbortSignal;
-    readonly entity?: ActionEntity;
-    readonly idempotencyKey?: string;
-  }): Promise<ActionOutcome<ActionPreview>>;
-  confirm(preview: ActionPreview, options?: {readonly signal?: AbortSignal}): Promise<ActionOutcome<ActionReceipt>>;
-  execute(receipt: ActionReceipt, options?: {readonly signal?: AbortSignal}): Promise<ActionOutcome<ActionExecution>>;
+  preview(request: ActionRequest, options?: { readonly signal?: AbortSignal }): Promise<ActionOutcome<ActionPreview>>;
+  preview(request: unknown, options?: { readonly signal?: AbortSignal }): Promise<ActionOutcome<ActionPreview>>;
+  previewInteraction(
+    input: unknown,
+    options?: {
+      readonly signal?: AbortSignal;
+      readonly entity?: ActionEntity;
+      readonly idempotencyKey?: string;
+    },
+  ): Promise<ActionOutcome<ActionPreview>>;
+  /** Discard one live preview token without revoking unrelated actions. */
+  cancel(preview: ActionPreview): boolean;
+  confirm(preview: ActionPreview, options?: { readonly signal?: AbortSignal }): Promise<ActionOutcome<ActionReceipt>>;
+  execute(receipt: ActionReceipt, options?: { readonly signal?: AbortSignal }): Promise<ActionOutcome<ActionExecution>>;
   inspect(idempotencyKey: string, options?: ActionReadOptions): Promise<ActionOutcome<ActionInspection | undefined>>;
   history(options?: ActionReadOptions): Promise<ActionOutcome<readonly ActionHistoryEntry[]>>;
   revoke(reason?: string): boolean;

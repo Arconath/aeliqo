@@ -1,4 +1,4 @@
-import type {Diagnostic, Outcome} from '../contracts/types.js';
+import type { Diagnostic, Outcome } from '../contracts/types.js';
 
 export type SemanticPath = readonly (string | number)[];
 
@@ -8,8 +8,8 @@ export function semanticDiagnostic(
   path: SemanticPath = [],
   remedies?: readonly string[],
 ): Diagnostic {
-  const diagnostic: Diagnostic = {code, message, path, retryable: false};
-  return remedies === undefined ? diagnostic : {...diagnostic, remedies};
+  const diagnostic: Diagnostic = { code, message, path, retryable: false };
+  return remedies === undefined ? diagnostic : { ...diagnostic, remedies };
 }
 
 export function semanticFailure<T>(
@@ -18,12 +18,12 @@ export function semanticFailure<T>(
   path: SemanticPath = [],
   remedies?: readonly string[],
 ): Outcome<T> {
-  return {ok: false, diagnostics: [semanticDiagnostic(code, message, path, remedies)]};
+  return { ok: false, diagnostics: [semanticDiagnostic(code, message, path, remedies)] };
 }
 
 export function prependDiagnostic(path: SemanticPath, diagnostic: Diagnostic): Diagnostic {
   const suffix = diagnostic.path ?? [];
-  return {...diagnostic, path: [...path, ...suffix]};
+  return { ...diagnostic, path: [...path, ...suffix] };
 }
 
 export function mapDiagnostics(
@@ -38,7 +38,10 @@ export function mapDiagnostics(
 export function prependOutcomePath<T>(path: SemanticPath, outcome: Outcome<T>): Outcome<T> {
   return outcome.ok
     ? outcome
-    : {ok: false, diagnostics: mapDiagnostics(outcome.diagnostics, (diagnostic) => prependDiagnostic(path, diagnostic))};
+    : {
+        ok: false,
+        diagnostics: mapDiagnostics(outcome.diagnostics, (diagnostic) => prependDiagnostic(path, diagnostic)),
+      };
 }
 
 export function isRecord(value: unknown): value is Record<string, unknown> {

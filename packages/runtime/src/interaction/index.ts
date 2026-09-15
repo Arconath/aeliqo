@@ -1,5 +1,5 @@
-export {createInteractionController} from './controller.js';
-export {createInteractionGraph} from './graph.js';
+export { createInteractionController } from './controller.js';
+export { createInteractionGraph } from './graph.js';
 export type {
   InteractionActionProposal,
   InteractionActor,

@@ -1,7 +1,7 @@
-export {canonicalizeExpression, expressionsEqual} from './canonicalize.js';
-export {checkExpression} from './check.js';
-export type {ExpressionCheckContext} from './check.js';
-export {createTypedAuthoring} from './builder.js';
+export { canonicalizeExpression, expressionsEqual } from './canonicalize.js';
+export { checkExpression } from './check.js';
+export type { ExpressionCheckContext } from './check.js';
+export { createTypedAuthoring } from './builder.js';
 export type {
   AuthoringOptions,
   DefineMetricInput,
@@ -9,7 +9,13 @@ export type {
   RatioOfSumsInput,
   TypedAuthoring,
 } from './builder.js';
-export {createFunctionRegistry, createStandardFunctionRegistry, standardFunctionSignatures, createQueryFunctionRegistry, queryFunctionSignatures} from './registry.js';
+export {
+  createFunctionRegistry,
+  createStandardFunctionRegistry,
+  standardFunctionSignatures,
+  createQueryFunctionRegistry,
+  queryFunctionSignatures,
+} from './registry.js';
 export type {
   ExpressionInput,
   FunctionOperation,

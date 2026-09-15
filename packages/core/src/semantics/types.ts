@@ -6,7 +6,7 @@ import type {
   SemanticType,
   VersionRef,
 } from '../contracts/types.js';
-import type {FunctionRegistry} from '../expressions/types.js';
+import type { FunctionRegistry } from '../expressions/types.js';
 
 export type PrimitiveType = SemanticType['value'];
 export type MeaningScope = MeaningDefinition['scope'];

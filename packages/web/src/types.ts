@@ -1,4 +1,4 @@
-import type {ResultRef} from "@aeliqo/core";
+import type { ResultRef } from '@aeliqo/core';
 
 /** Exact decimal values stay structured so tables never round them through IEEE-754. */
 export interface AeliqoDecimalCell {
@@ -11,7 +11,7 @@ export interface AeliqoTableColumn {
   readonly key: string;
   readonly label: string;
   readonly sortable?: boolean;
-  readonly align?: "start" | "center" | "end";
+  readonly align?: 'start' | 'center' | 'end';
 }
 
 export type AeliqoTableRow = Readonly<Record<string, TableCell>>;
@@ -19,10 +19,10 @@ export type AeliqoTableRow = Readonly<Record<string, TableCell>>;
 /** A stable identity is derived from these fields, never from a rendered row index. */
 export type AeliqoIdentityFields = readonly string[];
 
-export type AeliqoTableSelectionMode = "none" | "single" | "multiple";
+export type AeliqoTableSelectionMode = 'none' | 'single' | 'multiple';
 
 export interface AeliqoTableSelectionDetail {
-  readonly mode: "clear" | "ids";
+  readonly mode: 'clear' | 'ids';
   readonly entity: string;
   readonly keys: readonly string[];
   readonly result?: ResultRef;
@@ -47,5 +47,5 @@ export interface AeliqoChartSeries {
 
 export interface AeliqoInputChangeDetail {
   readonly value: string;
-  readonly source: "user";
+  readonly source: 'user';
 }
