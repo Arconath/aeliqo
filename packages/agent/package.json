@@ -1,6 +1,6 @@
 {
   "name": "@aeliqo/agent",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Arconath/aeliqo.git",
@@ -22,6 +22,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./app": {
+      "types": "./dist/app/index.d.ts",
+      "import": "./dist/app/index.js"
     },
     "./protocol": {
       "types": "./dist/protocol/index.d.ts",

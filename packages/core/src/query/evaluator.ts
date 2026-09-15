@@ -660,6 +660,12 @@ function evaluateCall(state: EvalState, signature: FunctionSignature, args: read
     const compared = compareValue(left, right, argumentTypes[0] ?? argumentTypes[1] ?? inferredRuntimeType(left));
     return compared === undefined ? failure('query.equal-type', 'Equality received incompatible runtime values.') : {ok: true, value: compared === 0};
   }
+  if (id === 'core.text.includes-casefold') {
+    const haystack = args[0]; const needle = args[1];
+    if (haystack === null || needle === null || haystack === undefined || needle === undefined) return {ok: true, value: null};
+    if (typeof haystack !== 'string' || typeof needle !== 'string') return failure('query.search-type', 'Text search received a non-text value.');
+    return {ok: true, value: haystack.normalize('NFKC').toLowerCase().includes(needle.normalize('NFKC').toLowerCase())};
+  }
   if (id === 'core.add' || id === 'core.subtract' || id === 'core.multiply') {
     let left = args[0]; let right = args[1];
     if (left === null || right === null || left === undefined || right === undefined) return {ok: true, value: null};

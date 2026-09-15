@@ -1,7 +1,11 @@
 {
   "name": "@aeliqo/docs-app",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
-  "description": "Public Aeliqo documentation application source"
+  "description": "Public Aeliqo documentation application source",
+  "dependencies": {
+    "@aeliqo/catalog-examples": "workspace:*",
+    "@aeliqo/web": "workspace:*"
+  }
 }

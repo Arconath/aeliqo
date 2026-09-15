@@ -1,4 +1,5 @@
 import {
+  parseWireValue,
   validateScalar,
   type InteractionPayload,
   type Scalar,
@@ -107,13 +108,6 @@ function scalarType(value: unknown): SemanticType | undefined {
   const candidate = record(value);
   if (!semanticType(candidate)) return undefined;
   return candidate as SemanticType;
-}
-
-function scalarValue(value: unknown): boolean {
-  if (value === null || typeof value === "string" || typeof value === "boolean") return true;
-  if (typeof value === "number") return Number.isFinite(value);
-  const candidate = record(value);
-  return candidate !== undefined && Object.keys(candidate).length === 1 && typeof candidate.decimal === "string" && candidate.decimal.length <= 512 && /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/u.test(candidate.decimal);
 }
 
 function numberScalar(raw: unknown, type: SemanticType): Scalar | undefined {
@@ -284,9 +278,10 @@ function interactionForForm(node: Node, event: Event): readonly AeliqoInputInter
   if (!Array.isArray(operations) || !operations.some((operation) => validRef(operation) && operation.id === action.id && operation.revision === action.revision)) return [];
   const actionInput = record(values.actionInput);
   if (actionInput === undefined) return [];
-  const input: Record<string, unknown> = actionInput;
-  if (!Object.keys(input).every((key) => bounded(key, 160) && scalarValue(input[key]))) return [];
-  const payload: ActionPayload = {kind: "action-request", action, input: input as ActionPayload["input"]};
+  if (Object.keys(actionInput).length > 128 || !Object.keys(actionInput).every((key) => bounded(key, 160))) return [];
+  const input = parseWireValue(actionInput);
+  if (!input.ok || record(input.value) === undefined) return [];
+  const payload: ActionPayload = {kind: "action-request", action, input: input.value as ActionPayload["input"]};
   return [{portId: "submit", payload}];
 }
 
@@ -350,7 +345,7 @@ export function renderInputNode(node: Node, child: (id: string) => unknown, emit
     case "input.search-field": return html`<aeliqo-search-field data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .label=${label} .description=${description} .required=${required} .disabled=${disabled} .readOnly=${readOnly} .name=${name} .value=${text(v.value)} .defaultValue=${text(v.defaultValue)} .placeholder=${text(v.placeholder)} .autocomplete=${text(v.autocomplete)} .queryOnInput=${bool(v.queryOnInput)} .debounceMs=${typeof v.debounceMs === "number" ? v.debounceMs : 250} @aeliqo-input-commit=${handle} @aeliqo-search=${handle}></aeliqo-search-field>`;
     case "input.file-input": return html`<aeliqo-file-input data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .label=${label} .description=${description} .required=${required} .disabled=${disabled} .readOnly=${readOnly} .name=${name} .accept=${text(v.accept)} .multiple=${bool(v.multiple)} .capture=${text(v.capture)} .maxFiles=${typeof v.maxFiles === "number" ? v.maxFiles : 0} .maxBytes=${typeof v.maxBytes === "number" ? v.maxBytes : 0} @aeliqo-file-change=${handle}></aeliqo-file-input>`;
     case "input.field-group": return html`<aeliqo-field-group data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .legend=${text(v.legend)} .description=${description} .error=${text(v.error)} .disabled=${disabled}>${children()}</aeliqo-field-group>`;
-    case "input.form": return html`<aeliqo-form data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .label=${text(v.label)} .noValidate=${bool(v.noValidate)} @aeliqo-form-submit=${handle}>${children()}</aeliqo-form>`;
+    case "input.form": return html`<aeliqo-form data-aeliqo-node-id=${id} data-aeliqo-theme="inherit" .label=${text(v.label)} .noValidate=${bool(v.noValidate)} @aeliqo-form-submit=${handle}>${children()}${text(v.submitLabel).length > 0 ? html`<button part="submit" type="submit">${text(v.submitLabel)}</button>` : nothing}</aeliqo-form>`;
     default: return undefined;
   }
 }

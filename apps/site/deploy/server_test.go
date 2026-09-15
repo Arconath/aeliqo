@@ -25,6 +25,11 @@ func fixtureSite(t *testing.T) string {
 		"playground/index.html":                 "<h1>Playground</h1>",
 		"docs/index.html":                       "<h1>Docs</h1>",
 		"docs/components/data.table/index.html": "<h1>Table</h1>",
+		"route-map.json":                        `{"legacyDocs":{"/docs":"/","/docs/components/data.table/":"/components/data.table/"},"canonicalDocs":["/","/playground/","/components/data.table/"]}`,
+		"robots-main.txt":                       "main robots",
+		"robots-docs.txt":                       "docs robots",
+		"sitemap-main.xml":                      "main sitemap",
+		"sitemap-docs.xml":                      "docs sitemap",
 		"assets/site-abcdefgh.js":               "console.log('aeliqo')",
 		"aeliqo.png":                            "not-a-real-png",
 	} {
@@ -281,12 +286,12 @@ func TestStaticRoutesApplySecurityAndCachePolicies(t *testing.T) {
 		t.Fatalf("asset content-type=%q", asset.Header().Get("Content-Type"))
 	}
 	docs := request(t, handler, http.MethodGet, "/docs")
-	if docs.Code != http.StatusOK || !strings.Contains(docs.Body.String(), "Docs") {
-		t.Fatalf("docs status=%d body=%q", docs.Code, docs.Body.String())
+	if docs.Code != http.StatusPermanentRedirect || docs.Header().Get("Location") != "https://docs.aeliqo.com/" {
+		t.Fatalf("docs status=%d location=%q", docs.Code, docs.Header().Get("Location"))
 	}
 	dottedRoute := request(t, handler, http.MethodGet, "/docs/components/data.table/")
-	if dottedRoute.Code != http.StatusOK || !strings.Contains(dottedRoute.Body.String(), "Table") {
-		t.Fatalf("dotted route status=%d body=%q", dottedRoute.Code, dottedRoute.Body.String())
+	if dottedRoute.Code != http.StatusPermanentRedirect || dottedRoute.Header().Get("Location") != "https://docs.aeliqo.com/components/data.table/" {
+		t.Fatalf("dotted route status=%d location=%q", dottedRoute.Code, dottedRoute.Header().Get("Location"))
 	}
 }
 
@@ -399,15 +404,29 @@ func TestDocumentationHostUsesDocsRootAndSharedStaticRoutes(t *testing.T) {
 	for _, test := range []struct{ target, want string }{
 		{"https://docs.aeliqo.com/", "<h1>Docs</h1>"},
 		{"https://DOCS.AELIQO.COM:443/", "<h1>Docs</h1>"},
-		{"https://docs.aeliqo.com/playground", "<h1>Playground</h1>"},
-		{"https://docs.aeliqo.com/docs/components/data.table/", "<h1>Table</h1>"},
+		{"http://docs.localhost/", "<h1>Docs</h1>"},
+		{"https://docs.aeliqo.com/playground/", "<h1>Playground</h1>"},
+		{"https://docs.aeliqo.com/components/data.table/", "<h1>Table</h1>"},
 		{"https://docs.aeliqo.com/assets/site-abcdefgh.js", "console.log('aeliqo')"},
 		{"https://aeliqo.com/", "<h1>Aeliqo</h1>"},
 		{"https://www.aeliqo.com/", "<h1>Aeliqo</h1>"},
+		{"https://aeliqo.com/robots.txt", "main robots"},
+		{"https://docs.aeliqo.com/robots.txt", "docs robots"},
+		{"https://aeliqo.com/sitemap.xml", "main sitemap"},
+		{"https://docs.aeliqo.com/sitemap.xml", "docs sitemap"},
 	} {
 		response := request(t, handler, http.MethodGet, test.target)
 		if response.Code != http.StatusOK || response.Body.String() != test.want {
 			t.Fatalf("%s: status=%d body=%q", test.target, response.Code, response.Body.String())
+		}
+	}
+	for _, test := range []struct{ target, location string }{
+		{"https://aeliqo.com/playground/?scenario=people", "https://docs.aeliqo.com/playground/?scenario=people"},
+		{"https://docs.aeliqo.com/docs/components/data.table/", "https://docs.aeliqo.com/components/data.table/"},
+	} {
+		response := request(t, handler, http.MethodGet, test.target)
+		if response.Code != http.StatusPermanentRedirect || response.Header().Get("Location") != test.location {
+			t.Fatalf("%s: status=%d location=%q", test.target, response.Code, response.Header().Get("Location"))
 		}
 	}
 }

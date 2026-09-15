@@ -3,7 +3,6 @@ import {AeliqoCheckboxElement} from "./checkbox.js";
 
 /** Binary setting using native checkbox form behavior with switch semantics. */
 export class AeliqoSwitchElement extends AeliqoCheckboxElement {
-  static readonly aeliqoVersion = "0.1.0";
 
   protected override render() {
     const describedBy = this.describedByIds();

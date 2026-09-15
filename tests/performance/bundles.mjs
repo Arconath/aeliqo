@@ -1,3 +1,4 @@
+import {RELEASE_VERSION} from "../../scripts/release/metadata.mjs";
 /** Installed-tarball byte/graph gate only. This is not a timing or full performance qualification. */
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
@@ -18,9 +19,9 @@ const consumer=await mkdtemp(join(tmpdir(),'aeliqo-performance-consumer-'));
 const packages=[];
 for(const name of ['core','runtime','web']){
  const cwd=join(root,'packages',name);run(['pnpm','build'],cwd);
- const tarball=join(output,`aeliqo-${name}-0.1.0.tgz`);run(['pnpm','pack','--out',tarball],cwd);
+ const tarball=join(output,`aeliqo-${name}-${RELEASE_VERSION}.tgz`);run(['pnpm','pack','--out',tarball],cwd);
  const manifest=JSON.parse(run(['tar','-xOf',tarball,'package/package.json']));
- assert.equal(manifest.version,'0.1.0');assert.equal(manifest.name,`@aeliqo/${name}`);
+ assert.equal(manifest.version,RELEASE_VERSION);assert.equal(manifest.name,`@aeliqo/${name}`);
  packages.push({name:manifest.name,path:tarball,sha256:hash(await readFile(tarball))});
 }
 await writeFile(join(consumer,'package.json'),JSON.stringify({private:true,type:'module',dependencies:Object.fromEntries(packages.map(p=>[p.name,`file:${p.path}`]))}));

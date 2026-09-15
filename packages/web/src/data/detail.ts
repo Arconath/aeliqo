@@ -1,30 +1,33 @@
 import {css, html, LitElement, nothing} from "lit";
 import {aeliqoThemeStyles} from "../styles/theme.js";
+import {AELIQO_WEB_VERSION} from "../version.js";
 import type {AeliqoDataColumn, AeliqoDataRecord, AeliqoDataScope, AeliqoDataStatus} from "./types.js";
 import {dataStyles, dataValueText, scopeText, stableDataRecordKey, statusTemplate} from "./shared.js";
 
 /** A selected record view. Fields are rendered even when missing so the
  * meaning of an absent field is visible and the record identity is stable. */
 export class AeliqoDetailElement extends LitElement {
+  static readonly aeliqoVersion = AELIQO_WEB_VERSION;
   static readonly properties = {
     record: {attribute: false},
     fields: {attribute: false},
     identity: {attribute: false},
     entity: {type: String},
     title: {type: String},
+    showIdentity: {attribute: "show-identity", type: Boolean},
     missingLabel: {attribute: "missing-label", type: String},
     scope: {attribute: false},
     status: {type: String},
     message: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   record: AeliqoDataRecord | undefined = undefined;
   fields: readonly AeliqoDataColumn[] = [];
   identity: readonly string[] = [];
   entity = "record";
   title = "Details";
+  showIdentity = false;
   missingLabel = "Not available";
   scope: AeliqoDataScope | undefined = undefined;
   status: AeliqoDataStatus = "ready";
@@ -36,7 +39,7 @@ export class AeliqoDetailElement extends LitElement {
     const scope = scopeText(this.scope);
     return html`
       <section part="detail" data-identity=${identityKey ?? "unresolved"} aria-label=${this.title}>
-        <header part="header"><h2>${this.title}</h2>${identityKey ? html`<span part="identity">${this.entity}: ${identityKey}</span>` : nothing}</header>
+        <header part="header"><h2>${this.title}</h2>${this.showIdentity && identityKey ? html`<span part="identity">${this.entity}: ${identityKey}</span>` : nothing}</header>
         ${this.record !== undefined ? html`
           <dl part="facts">
             ${this.fields.map((field) => html`

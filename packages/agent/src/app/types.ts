@@ -1,0 +1,38 @@
+import type {Diagnostic, Outcome} from '@aeliqo/core';
+import type {AgentJsonValue} from '../capabilities/types.js';
+import type {AgentModelToolEndpoint, AgentToolTransport} from '../protocol/types.js';
+import type {ActionReceipt} from '@aeliqo/runtime/actions';
+import type {AeliqoRuntime, RuntimeRenderInput, RuntimeRenderReceipt} from '@aeliqo/runtime/app';
+
+export interface AppRenderPort {
+  render(input: RuntimeRenderInput): Promise<RuntimeRenderReceipt | {
+    readonly status: 'renderer-ready' | 'unsupported' | 'failed' | 'cancelled' | 'needs-input'; readonly requestId: string; readonly regionId: string;
+    readonly runtime: Extract<RuntimeRenderReceipt, {readonly status: 'committed'}>;
+    readonly diagnostics: readonly Diagnostic[];
+  }>;
+}
+
+export interface AppToolEndpointOptions {
+  readonly runtime: AeliqoRuntime;
+  readonly regionId: string;
+  readonly goalEpoch: string;
+  readonly transport: AgentToolTransport;
+  readonly expiresAt: number;
+  readonly render?: AppRenderPort;
+  readonly now?: () => number;
+  readonly maxPending?: number;
+  readonly maxMilliseconds?: number;
+  readonly maxInputBytes?: number;
+  readonly maxOutputBytes?: number;
+}
+
+export interface AeliqoAppToolEndpoint extends AgentModelToolEndpoint {
+  /** Trusted host UI path. This method is not advertised as an agent tool. */
+  confirmAction(previewId: string, options?: {readonly signal?: AbortSignal}): Promise<Outcome<ActionReceipt>>;
+}
+
+export interface AppToolResult {
+  readonly state: string;
+  readonly value?: AgentJsonValue;
+  readonly diagnostics?: readonly Diagnostic[];
+}

@@ -321,6 +321,23 @@ function lowerQuerySpec(query: QuerySpec, catalog: Catalog, registry: FunctionRe
   if (!where.ok) return where;
   const entityDefinition = catalog.entities.find((candidate) => candidate.id === query.entity);
   if (entityDefinition === undefined) return failure('query.entity', `Entity ${query.entity} is not declared.`, ['entity']);
+  let searchPredicate: PredicateSpec | undefined;
+  if (query.search !== undefined) {
+    const uniqueFields = new Set(query.search.fields);
+    if (uniqueFields.size !== query.search.fields.length) return failure('query.search-fields', 'Search fields must be unique.', ['search', 'fields']);
+    const predicates: PredicateSpec[] = [];
+    for (let index = 0; index < query.search.fields.length; index += 1) {
+      const fieldId = query.search.fields[index]!;
+      const field = entityDefinition.fields.find((candidate) => candidate.id === fieldId);
+      if (field === undefined) return failure('query.field', `Search field ${fieldId} is not declared on ${query.entity}.`, ['search', 'fields', index]);
+      if (field.type.value !== 'text') return failure('query.search-type', `Search field ${fieldId} must be text.`, ['search', 'fields', index]);
+      const call: Expression = {kind: 'call', function: {id: 'core.text.includes-casefold', revision: '1'}, arguments: [
+        fieldExpression(query.entity, fieldId), literalExpression(query.search.text, {value: 'text', nullable: false}),
+      ]};
+      predicates.push({op: 'compare', left: call, comparison: 'eq', right: literalExpression(true, {value: 'boolean', nullable: false})});
+    }
+    searchPredicate = predicates.length === 1 ? predicates[0] : {op: 'or', predicates};
+  }
   let bucketId: string | undefined;
   let timeBuckets: TimeBucketSpec[] = [];
   if (query.timeBucket !== undefined) {
@@ -380,6 +397,7 @@ function lowerQuerySpec(query: QuerySpec, catalog: Catalog, registry: FunctionRe
   if (query.period !== undefined && query.timeBucket === undefined) return unsupported('query.period-field', 'A period needs an explicit temporal field or time bucket.', ['Provide timeBucket.field with period.'], ['period']);
   if (query.period !== undefined && (query.period.calendar !== 'gregorian' || query.period.timezone !== 'UTC')) return unsupported('temporal-policy', 'Only explicit Gregorian UTC periods are implemented in the pure evaluator.', ['Supply a host temporal policy for the requested calendar and timezone.'], ['period']);
   let filter = where.value;
+  if (searchPredicate !== undefined) filter = filter === undefined ? searchPredicate : {op: 'and', predicates: [filter, searchPredicate]};
   if (query.period !== undefined && query.timeBucket !== undefined) {
     const temporalField = entityDefinition.fields.find((candidate) => candidate.id === query.timeBucket!.field);
     if (temporalField === undefined) return failure('query.field', `Field ${query.timeBucket.field} is not declared on ${query.entity}.`, ['timeBucket', 'field']);

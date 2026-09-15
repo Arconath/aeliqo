@@ -8,6 +8,7 @@ import {
   type InteractionMappingManifest,
   type InteractionPort,
   type Outcome,
+  type PresentationEnvironment,
   type PresentationManifest,
   type PresentationRegistry,
   type PresentationValues,
@@ -53,6 +54,7 @@ export const AELIQO_OPERATION_REFS = Object.freeze({
   filter: {id: "data.filter", revision: "1"},
   range: {id: "data.range", revision: "1"},
   compare: {id: "data.compare", revision: "1"},
+  analyze: {id: "data.analyze", revision: "1"},
 } satisfies Record<string, VersionRef>);
 
 const fail = <T>(code: string, message: string): Outcome<T> => ({ok: false,
@@ -191,12 +193,17 @@ function tableConfig(values: PresentationValues, result: Result | undefined, res
   if (!identityFields.ok) return identityFields;
   const port = selectionPort(input, result, "selection", resolveEntity); if (!port.ok) return port;
   const output: Record<string, unknown> = {...(columnList === undefined ? {} : {columns: columnList.value}), selection: selected, ...(identityFields.value === undefined ? {} : {identity: identityFields.value})};
-  const operations = selected === "none" ? [AELIQO_OPERATION_REFS.read] : [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.selection];
+  const operations = selected === "none"
+    ? [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.compare, AELIQO_OPERATION_REFS.analyze]
+    : [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.compare, AELIQO_OPERATION_REFS.analyze, AELIQO_OPERATION_REFS.selection];
   const fields = columnList === undefined ? result.fields.map((field) => field.id) : columnList.value.map((column) => column.key);
   if (isDefault && hasFrozenFieldIds(result)) {
     const outcome: Outcome<ResolvedPresentationConfig> = Object.freeze({ok: true, value: Object.freeze({
       values: Object.freeze(output) as PresentationValues, fields: Object.freeze(fields),
-      ports: Object.freeze([]), operations: Object.freeze([Object.freeze({...AELIQO_OPERATION_REFS.read})]),
+      ports: Object.freeze([]), operations: Object.freeze([
+        Object.freeze({...AELIQO_OPERATION_REFS.read}), Object.freeze({...AELIQO_OPERATION_REFS.compare}),
+        Object.freeze({...AELIQO_OPERATION_REFS.analyze}),
+      ]),
     })});
     defaultConfigs.set(result, outcome);
     return outcome;
@@ -239,7 +246,17 @@ function trendConfig(values: PresentationValues, result: Result | undefined): Ou
   if (new Set(seriesBy).size !== seriesBy.length || seriesBy.some((field) => !fields.has(field) || field === labelField.value || series.some((entry) => entry.field === field))) return fail("field", "seriesBy fields must be unique grouping fields distinct from temporal and measure fields.");
   const grain = trendGrain(seriesBy, labelField.value, result); if (!grain.ok) return grain;
   const output: Record<string, unknown> = {labelField: labelField.value, series, seriesBy};
-  return {ok: true, value: {values: output as PresentationValues, fields: [labelField.value, ...seriesBy, ...series.map((entry) => entry.field)], ports: [], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.compare]}};
+  return {ok: true, value: {values: output as PresentationValues, fields: [labelField.value, ...seriesBy, ...series.map((entry) => entry.field)], ports: [], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.compare, AELIQO_OPERATION_REFS.analyze]}};
+}
+
+function assessTrend(_config: ResolvedPresentationConfig, _result: Result | undefined, environment: PresentationEnvironment) {
+  const narrow = environment.inlineSize.state === 'known' && environment.inlineSize.value < 480;
+  return {ok: true as const, value: {
+    taskFit: 90,
+    informationDensity: narrow ? 60 : 75,
+    interactionEffort: narrow ? 20 : 10,
+    legibilityPenalty: narrow ? 5 : 0,
+  }};
 }
 
 function filterConfig(values: PresentationValues, result: Result | undefined, resolveEntity: AeliqoPresentationRegistryOptions["resolveEntity"]): Outcome<ResolvedPresentationConfig> {
@@ -287,8 +304,8 @@ function buildManifests(options: AeliqoPresentationRegistryOptions): readonly Pr
   const resolveEntity = options.resolveEntity;
   return Object.freeze([
     {ref: AELIQO_PRESENTATION_REFS.stack, configSchema: AELIQO_CONFIG_SCHEMAS.stack, roles: ["structure"], operations: [], result: "none", children: {min: 0, max: 32}, visibility: "simultaneous", extension: false, resolveConfig: stackConfig, suggestConfig: (): Outcome<PresentationValues> => ({ok: true, value: {}})},
-    {ref: AELIQO_PRESENTATION_REFS.table, configSchema: AELIQO_CONFIG_SCHEMAS.table, roles: ["table"], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.selection], result: "required", children: {min: 0, max: 0}, visibility: "leaf", extension: false, resolveConfig: (values, result) => tableConfig(values, result, resolveEntity, defaultTableConfigs), suggestConfig: suggestTable},
-    {ref: AELIQO_PRESENTATION_REFS.trend, configSchema: AELIQO_CONFIG_SCHEMAS.trend, roles: ["trend", "chart"], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.compare], result: "required", children: {min: 0, max: 0}, visibility: "leaf", extension: false, resolveConfig: (values, result) => trendConfig(values, result), suggestConfig: suggestTrend},
+    {ref: AELIQO_PRESENTATION_REFS.table, configSchema: AELIQO_CONFIG_SCHEMAS.table, roles: ["table"], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.compare, AELIQO_OPERATION_REFS.analyze, AELIQO_OPERATION_REFS.selection], result: "required", children: {min: 0, max: 0}, visibility: "leaf", extension: false, resolveConfig: (values, result) => tableConfig(values, result, resolveEntity, defaultTableConfigs), suggestConfig: suggestTable},
+    {ref: AELIQO_PRESENTATION_REFS.trend, configSchema: AELIQO_CONFIG_SCHEMAS.trend, roles: ["trend", "chart"], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.compare, AELIQO_OPERATION_REFS.analyze], result: "required", children: {min: 0, max: 0}, visibility: "leaf", extension: false, resolveConfig: (values, result) => trendConfig(values, result), assess: assessTrend, suggestConfig: suggestTrend},
     {ref: AELIQO_PRESENTATION_REFS.filter, configSchema: AELIQO_CONFIG_SCHEMAS.filter, roles: ["filter"], operations: [AELIQO_OPERATION_REFS.filter], result: "required", children: {min: 0, max: 0}, visibility: "leaf", extension: false, resolveConfig: (values, result) => filterConfig(values, result, resolveEntity), suggestConfig: suggestFilter},
   ]);
 }

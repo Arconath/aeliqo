@@ -4,6 +4,7 @@ import {AeliqoHeatmapElement} from "./heatmap.js";
 import {AeliqoHistogramElement} from "./histogram.js";
 import {AeliqoScatterElement} from "./scatter.js";
 import {AeliqoTrendElement} from "./trend.js";
+import {AELIQO_WEB_VERSION} from "../../version.js";
 
 export {AeliqoCartesianElement} from "./base.js";
 export {AeliqoAreaElement} from "./area.js";
@@ -31,7 +32,7 @@ export function defineCartesianElements(registry?: CustomElementRegistry): void 
     const current = target.get(name);
     if (current === undefined) {
       target.define(name, constructor);
-    } else if (current !== constructor && (current as typeof constructor).aeliqoVersion !== "0.1.0") {
+    } else if (current !== constructor && (current as typeof constructor).aeliqoVersion !== AELIQO_WEB_VERSION) {
       throw new Error(`Cannot register ${name}: an incompatible custom element is already defined.`);
     }
   }

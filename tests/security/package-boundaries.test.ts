@@ -247,7 +247,7 @@ describe('package boundary graph', () => {
     const {api, snapshot, files} = parseProjects();
     try {
       const allExports = (manifest.exports ?? {}) as Record<string, unknown>;
-      const directKeys = Object.keys(allExports).filter(key => !['.', './register', './server', './region', './region/adaptation'].includes(key) && !key.includes('*'));
+      const directKeys = Object.keys(allExports).filter(key => !['.', './app', './register', './server', './region', './region/adaptation'].includes(key) && !key.includes('*'));
       expect(directKeys.length).toBeGreaterThan(40);
       for (const key of directKeys) {
         const target = flattenedExportTargets(allExports[key]).find(value => value.includes('/dist/') && value.endsWith('.js'));
@@ -264,6 +264,12 @@ describe('package boundary graph', () => {
       const adaptationTarget = packageExportSource('web', flattenedExportTargets(allExports['./region/adaptation'])[0]!);
       const adaptation = reachableEntries('web', [adaptationTarget], files);
       expect(externalImports(adaptation).some(name => name.startsWith('@aeliqo/runtime/'))).toBe(true);
+      const appTarget = packageExportSource('web', flattenedExportTargets(allExports['./app'])[0]!);
+      const app = reachableEntries('web', [appTarget], files);
+      const appExternal = externalImports(app);
+      expect(app.findings).toEqual([]);
+      expect(appExternal.some(name => name.startsWith('@aeliqo/runtime/'))).toBe(true);
+      expect(appExternal.filter(name => /@aeliqo\/(?:agent|devtools)|(?:provider|mcp|openai)/i.test(name))).toEqual([]);
       const serverTarget = packageExportSource('web', flattenedExportTargets(allExports['./server'])[0]!);
       const server = reachableEntries('web', [serverTarget], files);
       expect(externalImports(server).some(name => name.startsWith('@lit-labs/ssr'))).toBe(true);

@@ -128,7 +128,13 @@ func newHandler(root, buildRevision string) http.Handler {
 	return newHandlerWithReadiness(root, buildRevision, &ready)
 }
 
+type publicRoutes struct {
+	legacyDocs    map[string]string
+	canonicalDocs map[string]bool
+}
+
 func newHandlerWithReadiness(root, buildRevision string, ready *atomic.Bool) http.Handler {
+	routes := loadPublicRoutes(root)
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		setSecurityHeaders(response)
 		if request.Method != http.MethodGet && request.Method != http.MethodHead {
@@ -165,10 +171,36 @@ func newHandlerWithReadiness(root, buildRevision string, ready *atomic.Bool) htt
 		if name, _, err := net.SplitHostPort(host); err == nil {
 			host = name
 		}
-		// The shared static image serves documentation at the docs host root.
-		// Existing /docs deep links, playground and asset paths stay valid.
-		if strings.EqualFold(host, "docs.aeliqo.com") && requestPath == "/" {
-			requestPath = "/docs/"
+		isDocsHost := strings.EqualFold(host, "docs.aeliqo.com") || strings.EqualFold(host, "docs.localhost")
+		if requestPath == "/robots.txt" {
+			if isDocsHost {
+				requestPath = "/robots-docs.txt"
+			} else {
+				requestPath = "/robots-main.txt"
+			}
+		}
+		if requestPath == "/sitemap.xml" {
+			if isDocsHost {
+				requestPath = "/sitemap-docs.xml"
+			} else {
+				requestPath = "/sitemap-main.xml"
+			}
+		}
+		if canonical, legacy := routes.legacyDocs[requestPath]; legacy {
+			redirect(response, request, "https://docs.aeliqo.com"+canonical)
+			return
+		}
+		if routes.canonicalDocs[requestPath+"/"] {
+			redirect(response, request, "https://docs.aeliqo.com"+requestPath+"/")
+			return
+		}
+		if isDocsHost {
+			if requestPath != "/playground/" && !isSharedAsset(requestPath) {
+				requestPath = "/docs" + requestPath
+			}
+		} else if requestPath != "/" && routes.canonicalDocs[requestPath] {
+			redirect(response, request, "https://docs.aeliqo.com"+requestPath)
+			return
 		}
 		file, found := staticFile(root, requestPath)
 		if !found {
@@ -177,6 +209,45 @@ func newHandlerWithReadiness(root, buildRevision string, ready *atomic.Bool) htt
 		}
 		serveStatic(response, request, file)
 	})
+}
+
+func loadPublicRoutes(root string) publicRoutes {
+	empty := publicRoutes{legacyDocs: map[string]string{}, canonicalDocs: map[string]bool{}}
+	file, safe := insideRoot(root, "route-map.json")
+	if !safe {
+		return empty
+	}
+	content, err := os.ReadFile(file)
+	if err != nil {
+		return empty
+	}
+	var routes struct {
+		LegacyDocs    map[string]string `json:"legacyDocs"`
+		CanonicalDocs []string          `json:"canonicalDocs"`
+	}
+	if json.Unmarshal(content, &routes) != nil || routes.LegacyDocs == nil {
+		return empty
+	}
+	canonical := map[string]bool{}
+	for _, route := range routes.CanonicalDocs {
+		if strings.HasPrefix(route, "/") {
+			canonical[route] = true
+		}
+	}
+	return publicRoutes{legacyDocs: routes.LegacyDocs, canonicalDocs: canonical}
+}
+
+func isSharedAsset(requestPath string) bool {
+	return requestPath == "/aeliqo.png" || requestPath == "/search-index.json" || requestPath == "/route-map.json" ||
+		strings.HasPrefix(requestPath, "/assets/") || path.Ext(requestPath) != ""
+}
+
+func redirect(response http.ResponseWriter, request *http.Request, target string) {
+	if request.URL.RawQuery != "" {
+		target += "?" + request.URL.RawQuery
+	}
+	response.Header().Set("Cache-Control", "public, max-age=300")
+	http.Redirect(response, request, target, http.StatusPermanentRedirect)
 }
 
 func setSecurityHeaders(response http.ResponseWriter) {

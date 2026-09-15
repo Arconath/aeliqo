@@ -105,8 +105,7 @@ export function createPresentationRegistry(
   if (!stateParsed.success || new Set(stateParsed.data.map(m => versionKey(m.ref))).size !== stateParsed.data.length
     || stateParsed.data.some(m => m.ref.id === 'aeliqo.state.identity' || !seen.has(versionKey(m.from)) || !seen.has(versionKey(m.to))
       || !manifests.find(n => versionKey(n.ref) === versionKey(m.from))!.roles.includes(m.fromRole)
-      || !manifests.find(n => versionKey(n.ref) === versionKey(m.to))!.roles.includes(m.toRole)
-      || (m.kind === 'transfer' && m.fromRole !== m.toRole)))
+      || !manifests.find(n => versionKey(n.ref) === versionKey(m.to))!.roles.includes(m.toRole)))
     return presentationFailure('registry', 'State mappings must be unique registered representation/role pairs.');
   const mappingWire = inspectWire(mappings);
   if (!mappingWire.ok) return mappingWire;

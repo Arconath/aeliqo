@@ -1,1072 +1,367 @@
-import { registerAeliqoElements } from '@aeliqo/web';
-import { createAgentCapabilityRegistry, type AgentJsonValue } from '@aeliqo/agent';
-import { createAgentToolEndpoint, type AgentToolTransport } from '@aeliqo/agent/protocol';
-import { runToolModel } from '@aeliqo/agent/model';
-import { createWebMcpAdapter, detectWebMcp, type WebMcpTool } from '@aeliqo/agent/webmcp';
-import { AeliqoRegionElement } from '@aeliqo/web/region';
-import { AeliqoComparisonElement } from '@aeliqo/web/comparison';
-import { AeliqoDetailElement } from '@aeliqo/web/detail';
-import { AeliqoTextFieldElement } from '@aeliqo/web/text-field';
-import {
-  createDemoEngine,
-  type DemoDataset,
-  type DemoOutput,
-  type DemoPresentation,
-  type DemoTaskChoice,
-  type DemoView,
-} from './playground-engine.js';
-import { parseWireValue, type Diagnostic, type Outcome, type Task } from '@aeliqo/core';
-import { syncComponentTheme } from '/src/site.js';
+import type {Intent} from '@aeliqo/core';
+import type {AeliqoAppActionEvent, WebRenderReceipt} from '@aeliqo/web/app';
+import {syncComponentTheme} from '/src/site.js';
+import {checkConnection, sendLocalPrompt} from './connection-controller.js';
+import {evidenceFor, type InspectorSection, type PlaygroundEvidence} from './inspect.js';
+import {connectLocalHost, type LocalHostConnection} from './local-host.js';
+import {PLAYGROUND_SCENARIOS, type PlaygroundScenario, type ScenarioId} from './scenarios.js';
+import {createPlaygroundSession, type PlaygroundSession} from './session.js';
 
-const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
-  const node = document.getElementById(id);
-  if (!node) throw Error(`Missing playground control ${id}`);
-  return node as T;
-};
+type Mode = 'guided' | 'manual' | 'connected';
 
-for (const [name, ctor] of [
-  ['aeliqo-region', AeliqoRegionElement],
-  ['aeliqo-comparison', AeliqoComparisonElement],
-  ['aeliqo-detail', AeliqoDetailElement],
-  ['aeliqo-text-field', AeliqoTextFieldElement],
-] as const) {
-  if (!customElements.get(name)) customElements.define(name, ctor);
-}
-registerAeliqoElements();
-
-const draft = $<HTMLTextAreaElement>('task-draft');
-const view = $<HTMLSelectElement>('result-view');
-const team = $<HTMLSelectElement>('play-team');
-const dataset = $<HTMLSelectElement>('dataset');
-const taskChoice = $<HTMLSelectElement>('task-choice');
-const contributor = $<HTMLSelectElement>('contributor');
-const cancel = $<HTMLButtonElement>('cancel');
-const activities: { stage: string; message: string }[] = [];
-let engine = createDemoEngine();
-let outputs: readonly DemoOutput[] = [];
-let presentations: readonly DemoPresentation[] = [];
-let presentedLeases: ReturnType<DemoOutput['handle']['retain']>[] = [];
-let accepted: Task | undefined;
-let generation = 0;
-let dirty = false;
-let productFormDirty = false;
-let workflowStep = 0;
-let workflowLabel = 'Browse people';
-let agentEvidence: unknown;
-const webMcpDetection = detectWebMcp();
-
-const agentDemos = {
-  'agent-mcp': {
-    title: 'MCP server boundary',
-    description:
-      'Discover and call a read-only tool through the same expiring endpoint used by the authenticated MCP server adapter.',
-    button: 'Run local MCP contract',
-  },
-  'agent-webmcp': {
-    title: 'WebMCP browser tools',
-    description:
-      'Detect the native browser surface, then register and execute a simulated host tool through the real WebMCP adapter.',
-    button: 'Register and call WebMCP tool',
-  },
-  'agent-byok': {
-    title: 'BYOK bounded model loop',
-    description:
-      'Run a two-turn local model-port fixture with explicit token, request, tool-call, time, and egress limits.',
-    button: 'Run bounded BYOK loop',
-  },
-} as const;
-
-type AgentDemoChoice = keyof typeof agentDemos;
-
-function agentEndpoint(transport: AgentToolTransport) {
-  const capability = { id: 'catalog.summary', revision: '1' } as const;
-  const registry = createAgentCapabilityRegistry([
-    {
-      ref: capability,
-      operation: 'catalog.read',
-      label: 'Catalog summary',
-      description: 'Read a bounded summary of the synthetic playground catalog.',
-      parse: (input: unknown) => parseWireValue(input) as Outcome<AgentJsonValue>,
-      invoke: (_input: unknown, context: { readonly transport: string }) => ({
-        state: 'data-ready' as const,
-        value: { entities: 2, records: 8, scope: 'synthetic playground', transport: context.transport },
-      }),
-    },
-  ]);
-  if (!registry.ok) throw new Error('The local capability registry could not be created.');
-  const endpoint = createAgentToolEndpoint({
-    transport,
-    targetRegionId: 'playground-region',
-    goalEpoch: 'local-session-1',
-    principalKey: 'local-demo-user',
-    expiresAt: Date.now() + 60_000,
-    registry: registry.value,
-    tools: [
-      {
-        name: 'catalog_summary',
-        capability,
-        operation: 'catalog.read',
-        inputSchema: {
-          type: 'object',
-          properties: { query: { type: 'string' } },
-          required: ['query'],
-          additionalProperties: false,
-        },
-      },
-    ],
-    host: {
-      readContext: () => ({
-        ok: true as const,
-        value: {
-          principalKey: 'local-demo-user',
-          regionId: 'playground-region',
-          goalEpoch: 'local-session-1',
-          grants: ['catalog.read', 'model.egress'] as const,
-        },
-      }),
-    },
-    maxPending: 1,
-    maxMilliseconds: 2_000,
-    maxInputBytes: 4_096,
-    maxOutputBytes: 8_192,
-  });
-  if (!endpoint.ok) throw new Error(endpoint.diagnostics.map((item) => item.message).join(' '));
-  return endpoint.value;
+function required<T extends Element>(selector: string): T {
+  const element = document.querySelector<T>(selector);
+  if (element === null) throw new Error(`Playground element ${selector} is missing.`);
+  return element;
 }
 
-async function mcpEvidence() {
-  const endpoint = agentEndpoint('mcp');
-  try {
-    const discovered = await endpoint.discover();
-    const receipt = await endpoint.invoke(
-      'catalog_summary',
-      { query: 'available entities' },
-      { requestId: 'mcp-demo-1' },
-    );
-    return { protocol: 'MCP', evidence: 'local endpoint contract', discovered, receipt };
-  } finally {
-    endpoint.close();
+const scenarioSelect = required<HTMLSelectElement>('#pg-scenario');
+const appRoot = required<HTMLElement>('.pg-app');
+const bootControls = document.querySelectorAll<HTMLButtonElement | HTMLSelectElement>('[data-playground-boot-control]');
+const scenarioDescription = required<HTMLElement>('#pg-scenario-description');
+const stepsHost = required<HTMLElement>('#pg-steps');
+const manualStep = required<HTMLSelectElement>('#pg-manual-step');
+const modeLabel = required<HTMLElement>('#pg-mode-label');
+const guidedPanel = required<HTMLElement>('#pg-guided');
+const manualPanel = required<HTMLElement>('#pg-manual');
+const connectedPanel = required<HTMLElement>('#pg-connected');
+const regionHost = required<HTMLElement>('#pg-region');
+const status = required<HTMLElement>('#pg-status');
+const error = required<HTMLElement>('#pg-error');
+const viewBadge = required<HTMLElement>('#pg-view-badge');
+const receiptState = required<HTMLElement>('#pg-receipt-state');
+const modelCalls = required<HTMLElement>('#pg-model-calls');
+const inspector = required<HTMLDialogElement>('#pg-inspector');
+const inspectorSummary = required<HTMLElement>('#pg-inspector-summary');
+const inspectorContent = required<HTMLElement>('#pg-inspector-content');
+const actionDialog = required<HTMLDialogElement>('#pg-action');
+const actionContent = required<HTMLElement>('#pg-action-content');
+const actionStatus = required<HTMLElement>('#pg-action-status');
+const actionCancel = required<HTMLButtonElement>('#pg-action-cancel');
+const actionConfirm = required<HTMLButtonElement>('#pg-action-confirm');
+const connectionKind = required<HTMLSelectElement>('#pg-connection-kind');
+const connectionStatus = required<HTMLElement>('#pg-connect-status');
+const connectionLabel = required<HTMLElement>('#pg-connection-label');
+const connectionDot = required<HTMLElement>('#pg-connection-dot');
+const prompt = required<HTMLTextAreaElement>('#pg-prompt');
+const send = required<HTMLButtonElement>('#pg-send');
+
+let mode: Mode = 'guided';
+let scenario: PlaygroundScenario = PLAYGROUND_SCENARIOS[0]!;
+let activeRequest: AbortController | undefined;
+let session: PlaygroundSession;
+let last: PlaygroundEvidence = {};
+let inspectorSection: InspectorSection = 'intent';
+let pendingAction: Extract<AeliqoAppActionEvent, {readonly state: 'preview'}> | undefined;
+let actionReturnFocus: HTMLElement | undefined;
+let connection: 'none' | 'local' | 'webmcp' = 'none';
+let modelCallCount = 0;
+let localHost: LocalHostConnection | undefined;
+
+function stringify(value: unknown): string {
+  try { return JSON.stringify(value, null, 2); } catch { return '{"error":"Value could not be serialized."}'; }
+}
+
+function setError(message?: string): void {
+  error.hidden = message === undefined;
+  error.textContent = message ?? '';
+}
+
+function renderInspector(): void {
+  const section = evidenceFor(last, inspectorSection);
+  inspectorSummary.textContent = section.summary;
+  inspectorContent.textContent = stringify(section.value);
+}
+
+function deepestActiveElement(): HTMLElement | undefined {
+  let active = document.activeElement;
+  while (active instanceof HTMLElement && active.shadowRoot?.activeElement instanceof HTMLElement) {
+    active = active.shadowRoot.activeElement;
   }
+  return active instanceof HTMLElement ? active : undefined;
 }
 
-async function webMcpEvidence() {
-  const endpoint = agentEndpoint('webmcp');
-  const tools: WebMcpTool[] = [];
-  const adapter = createWebMcpAdapter({
-    endpoint,
-    modelContext: {
-      registerTool: (tool) => {
-        tools.push(tool);
-      },
-    },
-  });
-  try {
-    const registration = await adapter.register();
-    const execution = tools[0]
-      ? await tools[0].execute({ query: 'available entities' })
-      : {
-          ok: false,
-          diagnostics: [{ code: 'playground.no-tool', message: 'No tool was registered.', retryable: false }],
-        };
-    return {
-      protocol: 'WebMCP',
-      nativeDetection: webMcpDetection,
-      registration,
-      execution,
-    };
-  } finally {
-    adapter.close();
-  }
+function closeActionDialog(): void {
+  actionDialog.close();
+  const target = actionReturnFocus;
+  actionReturnFocus = undefined;
+  window.setTimeout(() => {
+    if (!actionDialog.open && target?.isConnected === true) target.focus();
+  }, 0);
 }
 
-async function byokEvidence() {
-  const endpoint = agentEndpoint('byok');
-  let turn = 0;
-  try {
-    const outcome = await runToolModel({
-      requestId: 'byok-demo',
-      goal: 'chat',
-      prompt: 'Summarize the available synthetic catalog.',
-      instructions: 'Use the admitted read-only catalog tool before drafting an answer.',
-      endpoint,
-      model: {
-        estimateInputTokens: () => 32,
-        complete: async () => {
-          turn += 1;
-          return turn === 1
-            ? {
-                calls: [{ id: 'catalog-call', name: 'catalog_summary', input: { query: 'available entities' } }],
-                usage: { inputTokens: 32, outputTokens: 8 },
-              }
-            : {
-                text: 'The synthetic catalog contains two entities and eight records.',
-                calls: [],
-                usage: { inputTokens: 48, outputTokens: 12 },
-              };
-        },
-      },
-      budget: {
-        maxTurns: 2,
-        maxModelRequests: 2,
-        maxToolCalls: 1,
-        maxMilliseconds: 2_000,
-        maxInputTokens: 128,
-        maxOutputTokens: 32,
-        maxTotalTokens: 256,
-        maxInputBytes: 8_192,
-        maxOutputBytes: 8_192,
-        maxRepeatedCalls: 1,
-      },
-    });
-    return { protocol: 'BYOK', evidence: 'local model-port fixture; no provider request', outcome };
-  } finally {
-    endpoint.close();
-  }
-}
-
-const recovery: Readonly<Record<string, string>> = {
-  'demo.needs-meaning': 'Next: run “Define absence days”, then retry.',
-  'demo.needs-cohort': 'Next: browse people, freeze the displayed collection, then retry.',
-  'demo.cohort-grain': 'Next: browse or rank people before freezing a cohort.',
-  'demo.unsupported-view': 'Next: choose Exact table, or run the matching rank/trend task first.',
-  'demo.stale': 'Next: run the selected task again to refresh it.',
-  'demo.stale-result': 'Next: run the selected task again to rematerialize its rows.',
-  'demo.cancelled': 'The previous authorized view remains available; run the task when ready.',
-};
-
-function activity(stage: string, message: string) {
-  activities.push({ stage, message });
-  if (activities.length > 40) activities.shift();
-  updateInspector();
-}
-
-function showError(message: string) {
-  $('play-error').hidden = false;
-  $('play-error').textContent = message;
-  activity('rejected', message);
-}
-
-function showDiagnostics(diagnostics: readonly Diagnostic[]) {
-  showError(
-    diagnostics
-      .map(
-        (item) =>
-          `${item.code}: ${item.message}${recovery[item.code] ? ` ${recovery[item.code]}` : ' Review the Task in Source, correct it, and retry.'}`,
-      )
-      .join(' '),
-  );
-}
-
-function value<T>(result: Outcome<T>): T | undefined {
-  if (!result.ok) {
-    showDiagnostics(result.diagnostics);
-    return undefined;
-  }
-  return result.value;
-}
-
-function inspectorValue(section: string): unknown {
-  if (dataset.value === 'agents') {
-    return {
-      section,
-      transport: taskChoice.value.replace('agent-', ''),
-      evidence: agentEvidence ?? 'Run the selected protocol demo to create a receipt.',
-    };
-  }
-  if (section === 'Task') {
-    return accepted ? { status: 'accepted', task: accepted } : { status: 'No accepted Task yet' };
-  }
-  if (section === 'Data') {
-    return outputs.map((output) => ({
-      outputId: output.descriptor.ref.outputId,
-      revision: output.descriptor.ref.revision,
-      scopeDigest: output.descriptor.ref.scopeDigest,
-      queryDigest: output.descriptor.ref.queryDigest,
-      grain: output.descriptor.rowGrain,
-      fields: output.descriptor.fields,
-      coverage: output.descriptor.coverage,
-      lineage: output.descriptor.lineage,
-      rowCount: output.rows.length,
-    }));
-  }
-  if (section === 'Experience') {
-    return presentations.map((item) => ({
-      id: item.experience.id,
-      revision: item.experience.revision,
-      mode: item.experience.mode,
-      agentAllowed: item.experience.agentAllowed,
-      allowedRepresentations: item.experience.allowedRepresentations,
-      plan: item.plan,
-    }));
-  }
-  return { budget: engine.budget, stages: activities };
-}
-
-function updateInspector() {
-  const section = $<HTMLSelectElement>('inspector-tab').value;
-  if (dataset.value === 'agents') {
-    $('inspector-summary').textContent =
-      'Sanitized protocol evidence from a local run. Credentials, provider payloads, and private reasoning are never recorded.';
-    $('inspector-content').textContent = JSON.stringify(inspectorValue(section), null, 2);
+function actionEvent(event: AeliqoAppActionEvent): void {
+  if (event.state === 'preview') {
+    pendingAction = event;
+    actionReturnFocus = deepestActiveElement();
+    actionCancel.disabled = false;
+    actionCancel.textContent = 'Cancel';
+    actionConfirm.disabled = false;
+    actionConfirm.removeAttribute('aria-busy');
+    actionStatus.textContent = 'Waiting for your confirmation.';
+    actionContent.textContent = stringify({action: event.preview.action, sideEffect: event.preview.sideEffect,
+      confirmation: event.preview.confirmation, input: event.preview.input});
+    actionDialog.showModal();
     return;
   }
-  const summaries: Record<string, string> = {
-    Task: 'Accepted typed Task and normalized query. Approval does not prove business intent.',
-    Data: 'Exact result revision, authorized scope, grain, coverage, row count, and lineage. Raw rows stay in Source.',
-    Experience: 'Committed Experience and Presentation plan. Changing a view does not call a model.',
-    Activity: 'Bounded local stages, rejected candidates, and evaluation budget. No private chain-of-thought.',
-  };
-  $('inspector-summary').textContent = summaries[section] ?? '';
-  $('inspector-content').textContent = JSON.stringify(inspectorValue(section), null, 2);
-}
-
-function renderSource() {
-  if (dataset.value === 'agents') {
-    const request = {
-      transport: taskChoice.value.replace('agent-', ''),
-      targetRegionId: 'playground-region',
-      goalEpoch: 'local-session-1',
-      tool: 'catalog_summary',
-      operation: 'catalog.read',
-      input: { query: 'available entities' },
-      limits: { maxPending: 1, maxMilliseconds: 2_000, maxInputBytes: 4_096, maxOutputBytes: 8_192 },
-    };
-    $('source-description').textContent = 'Synthetic protocol request · no credential · no provider network';
-    $('source-content').textContent = JSON.stringify(request, null, 2);
-    draft.value = JSON.stringify(request, null, 2);
+  if (event.state === 'failed') {
+    pendingAction = undefined;
+    actionCancel.disabled = false;
+    actionCancel.textContent = 'Close';
+    actionConfirm.disabled = true;
+    actionConfirm.removeAttribute('aria-busy');
+    actionStatus.textContent = event.diagnostics[0]?.message ?? 'The action failed.';
+    setError(actionStatus.textContent);
     return;
   }
-  const selected = dataset.value as DemoDataset;
-  const snapshot = engine.sourceSnapshot(selected);
-  $('source-description').textContent =
-    `${snapshot.label} · ${snapshot.sourceRevision} · ${snapshot.scopeDigest} · synthetic records supplied by this page.`;
-  $('source-content').textContent = JSON.stringify(snapshot, null, 2);
-}
-
-function setWorkflowStep(step: number, label: string) {
-  if (step >= workflowStep) {
-    workflowStep = step;
-    workflowLabel = label;
-  }
-  const shown = Math.min(4, Math.max(1, workflowStep || 1));
-  const meter = $<HTMLProgressElement>('workflow-meter');
-  meter.value = workflowStep;
-  meter.textContent = `${shown} of 4`;
-  $('workflow-progress').textContent = `Step ${shown} of 4 · ${workflowLabel}`;
-}
-
-function currentView(): DemoView {
-  return presentations[0]?.plan.nodes.some((node) => node.representation.id === 'visualization.bar')
-    ? 'bar'
-    : presentations[0]?.plan.nodes.some((node) => node.representation.id === 'visualization.trend')
-      ? 'trend'
-      : 'table';
-}
-
-function present(next: readonly DemoOutput[], requested: DemoView): boolean {
-  const prepared: DemoPresentation[] = [];
-  for (const output of next) {
-    const checked = value(engine.present(output, requested));
-    if (!checked) return false;
-    prepared.push(checked);
-  }
-  const nodes = next.map((output, index) => {
-    const section = document.createElement('section');
-    const heading = document.createElement('h3');
-    heading.textContent =
-      output.descriptor.ref.outputId === 'main'
-        ? 'Evaluated output'
-        : output.descriptor.ref.outputId === 'first-half'
-          ? '3–16 August 2026'
-          : output.descriptor.ref.outputId === 'second-half'
-            ? '17–30 August 2026'
-            : output.descriptor.ref.outputId;
-    const scrollHint = document.createElement('p');
-    scrollHint.className = 'result-scroll-hint';
-    scrollHint.textContent = 'Swipe horizontally or use the arrow keys to view every column.';
-    scrollHint.hidden = requested !== 'table';
-    const region = new AeliqoRegionElement();
-    region.presentation = prepared[index]!.validated;
-    region.results = [
-      {
-        ref: output.descriptor.ref,
-        rows: output.rows,
-        visualizationContext: { results: [output.descriptor], catalog: engine.catalog },
-      },
-    ];
-    section.append(heading, scrollHint, region);
-    return section;
-  });
-  const nextLeases = next.map((output) => output.handle.retain());
-  $('result-canvas').replaceChildren(...nodes);
-  for (const lease of presentedLeases) lease.release();
-  presentedLeases = nextLeases;
-  outputs = next;
-  presentations = prepared;
-  view.value = requested;
-  void syncComponentTheme($('result-canvas'));
-  return true;
-}
-
-async function evaluate(task: unknown, requested: DemoView = 'table', progress?: { step: number; label: string }) {
-  const token = ++generation;
-  $('play-error').hidden = true;
-  $('play-status').textContent = 'Evaluating locally…';
-  cancel.disabled = false;
-  activity('evaluate', 'Requested bounded local evaluation.');
-  const result = await engine.evaluate(task);
-  if (token !== generation) return;
-  cancel.disabled = true;
-  const next = value(result);
-  if (!next) {
-    $('play-status').textContent = outputs.length
-      ? 'The previous authorized view is retained.'
-      : 'No result was committed.';
-    return;
-  }
-  if (!present(next, requested)) {
-    $('play-status').textContent = 'The previous authorized view is retained; presentation was rejected.';
-    return;
-  }
-  accepted = next[0]?.task;
-  dirty = false;
-  draft.value = JSON.stringify(accepted, null, 2);
-  const rows = next.reduce((count, output) => count + output.rows.length, 0);
-  $('play-status').textContent =
-    `${next.length} complete output${next.length === 1 ? '' : 's'} · ${rows} result rows · Synthetic demo scope.`;
-  $('result-title').textContent = accepted?.goal ?? 'Results';
-  if (progress) setWorkflowStep(progress.step, progress.label);
-  activity('commit', `Presented Task revision ${accepted?.revision}.`);
-  if (dataset.value === 'products') mountCommerce(next[0]);
-  updateInspector();
-}
-
-function configureAgentLab() {
-  const choice = taskChoice.value as AgentDemoChoice;
-  const demo = agentDemos[choice] ?? agentDemos['agent-mcp'];
-  $('agent-demo-title').textContent = demo.title;
-  $('agent-demo-description').textContent = demo.description;
-  $('agent-lab-intro').textContent =
-    'Each route uses one expiring, scoped tool endpoint. Only the transport changes; discovery, grants, budgets, invocation, and receipts keep the same contract.';
-  $('run-agent-demo').firstChild!.textContent = `${demo.button} `;
-  $('agent-native-status').textContent =
-    choice === 'agent-webmcp'
-      ? webMcpDetection.supported
-        ? 'Native WebMCP detected in this browser. This demo still uses an isolated simulated host.'
-        : 'Native WebMCP is unavailable here. The isolated simulated host demonstrates the same adapter contract.'
-      : choice === 'agent-byok'
-        ? 'BYOK credentials belong in a trusted server. The browser demo supplies a deterministic local model port.'
-        : 'Production MCP uses authenticated HTTP or host-owned stdio. This browser demo stops at the shared endpoint.';
-  $('agent-output').textContent = 'Run the selected demo to inspect its bounded output.';
-  renderSource();
-}
-
-async function runAgentDemo() {
-  const choice = taskChoice.value as AgentDemoChoice;
-  configureAgentLab();
-  const button = $<HTMLButtonElement>('run-agent-demo');
-  button.disabled = true;
-  $('agent-output').textContent = 'Running the local contract…';
-  activity('protocol', `Started ${choice.replace('agent-', '').toUpperCase()} local demonstration.`);
-  try {
-    agentEvidence =
-      choice === 'agent-webmcp'
-        ? await webMcpEvidence()
-        : choice === 'agent-byok'
-          ? await byokEvidence()
-          : await mcpEvidence();
-    $('agent-output').textContent = JSON.stringify(agentEvidence, null, 2);
-    activity('receipt', `Completed ${choice.replace('agent-', '').toUpperCase()} with a sanitized receipt.`);
-    updateInspector();
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'The local protocol demo failed safely.';
-    $('agent-output').textContent = JSON.stringify({ ok: false, message }, null, 2);
-    activity('rejected', message);
-  } finally {
-    button.disabled = false;
+  pendingAction = undefined;
+  actionConfirm.disabled = true;
+  actionConfirm.removeAttribute('aria-busy');
+  actionStatus.textContent = event.execution.state === 'executed' ? 'Action completed.' : 'The remote result is uncertain; reconcile before retrying.';
+  status.textContent = actionStatus.textContent;
+  receiptState.textContent = event.execution.state;
+  if (event.execution.state === 'executed') {
+    closeActionDialog();
+  } else {
+    actionCancel.disabled = false;
+    actionCancel.textContent = 'Close';
   }
 }
 
-function runChoice() {
-  syncContributorVisibility();
-  if (dataset.value === 'agents') {
-    void runAgentDemo();
-    return;
-  }
-  const choice = taskChoice.value as DemoTaskChoice;
-  const task = value(engine.taskFor(choice, { team: team.value, contributor: contributor.value }));
-  if (!task) return;
-  const progress =
-    choice === 'people-browse'
-      ? { step: 1, label: 'People browsed' }
-      : choice === 'people-rank'
-        ? { step: 4, label: 'Ranking explored' }
-        : choice === 'people-trend'
-          ? { step: 4, label: 'Fixed-cohort trend explored' }
-          : choice === 'people-periods'
-            ? { step: 4, label: 'Periods compared' }
-            : choice === 'people-contributor'
-              ? { step: 4, label: 'Contributor records inspected' }
-              : undefined;
-  const requested: DemoView = choice === 'people-rank' ? 'bar' : choice === 'people-trend' ? 'trend' : 'table';
-  void evaluate(task, requested, progress);
+function resetSession(): void {
+  activeRequest?.abort();
+  localHost?.close();
+  localHost = undefined;
+  session?.dispose();
+  regionHost.replaceChildren();
+  session = createPlaygroundSession(actionEvent, applyAgentReceipt);
+  last = {};
+  pendingAction = undefined;
+  actionReturnFocus = undefined;
+  connection = 'none';
+  modelCallCount = 0;
+  modelCalls.textContent = '0';
+  connectionLabel.textContent = 'No agent · manual runtime';
+  connectionStatus.textContent = 'No local host detected. Guided and manual modes remain available.';
+  connectionDot.dataset.state = 'unavailable';
+  prompt.value = '';
+  prompt.disabled = true;
+  send.disabled = true;
+  setError();
+  status.textContent = 'Session reset. Choose a scenario step.';
+  viewBadge.textContent = 'Waiting for intent';
+  receiptState.textContent = 'None';
+  renderInspector();
 }
 
-$('run-task').addEventListener('click', runChoice);
-$('run-agent-demo').addEventListener('click', () => void runAgentDemo());
-$('browse-people').addEventListener('click', () => {
-  taskChoice.value = 'people-browse';
-  runChoice();
-});
-team.addEventListener('change', () => {
-  taskChoice.value = 'people-browse';
-  runChoice();
-});
-$('define-meaning').addEventListener('click', () => {
-  if (!value(engine.defineAbsenceMeaning())) return;
-  activity(
-    'meaning',
-    'Activated built-in sum of supplied absence days, revision 1. No rate or employee-count inference.',
-  );
-  $('cohort-status').textContent = 'Meaning ready. Browse and freeze an employee collection for a fixed-cohort trend.';
-  setWorkflowStep(2, 'Absence-days meaning defined');
-  taskChoice.value = 'people-browse';
-  runChoice();
-});
-$('rank').addEventListener('click', () => {
-  taskChoice.value = 'people-rank';
-  runChoice();
-});
-$('freeze').addEventListener('click', async () => {
-  const selected = outputs[0];
-  if (!selected) {
-    showError('demo.needs-result: Browse an employee collection before freezing it. Next: run “Browse people”.');
-    return;
-  }
-  const fixed = value(await engine.freezeCohort(selected, 'People frozen from the displayed result'));
-  if (!fixed) return;
-  $('cohort-status').textContent =
-    `Fixed cohort: ${fixed.members} people · source revision ${fixed.source.revision}. Later filters do not change these identities.`;
-  setWorkflowStep(3, 'Current people frozen');
-  activity('cohort', `Froze ${fixed.members} stable employee identities.`);
-});
-$('trend').addEventListener('click', () => {
-  taskChoice.value = 'people-trend';
-  runChoice();
-});
-$('compare-periods').addEventListener('click', () => {
-  taskChoice.value = 'people-periods';
-  runChoice();
-});
-$('inspect-contributor').addEventListener('click', () => {
-  taskChoice.value = 'people-contributor';
-  runChoice();
-});
-
-view.addEventListener('change', () => {
-  if (!outputs.length) return;
-  const previous = currentView();
-  if (!present(outputs, view.value as DemoView)) {
-    view.value = previous;
-    return;
-  }
-  $('play-error').hidden = true;
-  activity('present', `Changed to ${view.value} without a model call.`);
-});
-
-cancel.addEventListener('click', () => {
-  generation++;
-  engine.cancel();
-  cancel.disabled = true;
-  $('play-status').textContent = 'Query cancelled. The current authorized view is retained.';
-  activity('cancel', 'Cancelled the pending local evaluation.');
-});
-
-draft.addEventListener('input', () => {
-  dirty = true;
-});
-$('evaluate-draft').addEventListener('click', () => {
-  try {
-    JSON.parse(draft.value);
-    if (dataset.value === 'agents') void runAgentDemo();
-    else void evaluate(JSON.parse(draft.value));
-  } catch {
-    showError(
-      'task.invalid-json: The Task document is not valid JSON. Next: correct the highlighted text and evaluate again.',
-    );
-  }
-});
-
-$('export-task').addEventListener('click', () => {
-  if (dataset.value === 'agents' && agentEvidence !== undefined) {
-    const blob = new Blob(
-      [JSON.stringify({ schema: 'aeliqo.protocol-playground.v1', evidence: agentEvidence }, null, 2)],
-      {
-        type: 'application/json',
-      },
-    );
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'aeliqo-protocol-playground.json';
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1_000);
-    activity('export', 'Exported sanitized protocol evidence without credentials.');
-    return;
-  }
-  if (!accepted) {
-    showError('demo.no-export: Evaluate a Task before export. Next: run the selected Task.');
-    return;
-  }
-  const payload = engine.createExportDocument(accepted, presentations);
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'aeliqo-playground.json';
-  link.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1_000);
-  activity('export', 'Exported the versioned Task and Presentation without rows or credentials.');
-});
-
-$('reset').addEventListener('click', () => {
-  if ((dirty || productFormDirty) && !confirm('Reset the session and discard your local drafts?')) return;
-  generation++;
-  for (const lease of presentedLeases) lease.release();
-  presentedLeases = [];
-  $('result-canvas').replaceChildren();
-  engine.dispose();
-  engine = createDemoEngine();
-  outputs = [];
-  presentations = [];
-  accepted = undefined;
-  dirty = false;
-  productFormDirty = false;
-  agentEvidence = undefined;
-  workflowStep = 0;
-  workflowLabel = 'Browse people';
-  activities.length = 0;
-  dataset.value = 'employees';
-  team.value = 'all';
-  contributor.value = 'ada';
-  view.value = 'table';
-  taskChoice.value = 'people-browse';
-  draft.value = '';
-  $('commerce-controls').replaceChildren();
-  $('commerce-comparison').replaceChildren();
-  $('commerce-detail').replaceChildren();
-  $('commerce-form').replaceChildren();
-  $('cohort-status').textContent =
-    'No fixed cohort yet. A fixed cohort preserves employee identities when filters change.';
-  const meter = $<HTMLProgressElement>('workflow-meter');
-  meter.value = 0;
-  meter.textContent = '0 of 4';
-  $('workflow-progress').textContent = 'Step 1 of 4 · Browse people';
-  syncDatasetVisibility();
-  renderSource();
-  activity('reset', 'Started a new ephemeral session and discarded local state.');
-  runChoice();
-});
-
-let lastPanel: string | undefined;
-const narrow = matchMedia('(max-width:900px)');
-const panelMinWidth = 260;
-const panelMaxWidth = 520;
-// Reserve one extra CSS pixel so flex rounding never takes the usable canvas
-// below the documented 280px minimum.
-const canvasMinWidth = 281;
-const panels = [
-  ['source-toggle', 'source-panel', 'source-close'],
-  ['inspector-toggle', 'inspector-panel', 'inspector-close'],
-] as const;
-const workspace = $<HTMLElement>('playground-workspace');
-
-function focusPanel(panel: string) {
-  $(panel)
-    .querySelector<HTMLElement>('textarea,select,[tabindex="0"],button:not(.panel-resize):not(.panel-close)')
-    ?.focus();
+function currentScenario(id: string): PlaygroundScenario {
+  return PLAYGROUND_SCENARIOS.find((candidate) => candidate.id === id) ?? PLAYGROUND_SCENARIOS[0]!;
 }
 
-function visiblePanels() {
-  return panels.filter(([, panel]) => !$(panel).hidden);
-}
-
-function panelWidth(panel: string) {
-  return Number($(panel).querySelector<HTMLElement>('.panel-resize')?.getAttribute('aria-valuenow')) || 320;
-}
-
-function setPanelWidth(panel: string, width: number) {
-  const next = Math.max(panelMinWidth, Math.min(panelMaxWidth, Math.round(width)));
-  $(panel).style.setProperty('--panel-width', `${next}px`);
-  const handle = $(panel).querySelector<HTMLElement>('.panel-resize');
-  handle?.setAttribute('aria-valuenow', String(next));
-  handle?.setAttribute('aria-valuetext', `${next} pixels`);
-}
-
-function desktopPanelBudget() {
-  const visible = visiblePanels();
-  const style = getComputedStyle(workspace);
-  const gap = Number.parseFloat(style.columnGap) || 0;
-  const inlinePadding =
-    (Number.parseFloat(style.paddingInlineStart) || 0) + (Number.parseFloat(style.paddingInlineEnd) || 0);
-  return Math.floor(workspace.clientWidth - inlinePadding - gap * visible.length - canvasMinWidth);
-}
-
-function achievablePanelMax(panel: string) {
-  const otherWidths = visiblePanels()
-    .filter(([, visiblePanel]) => visiblePanel !== panel)
-    .reduce((sum, [, visiblePanel]) => sum + panelWidth(visiblePanel), 0);
-  return Math.max(panelMinWidth, Math.min(panelMaxWidth, desktopPanelBudget() - otherWidths));
-}
-
-function syncPanelRanges() {
-  for (const [, panel] of visiblePanels()) {
-    $(panel)
-      .querySelector<HTMLElement>('.panel-resize')
-      ?.setAttribute('aria-valuemax', String(achievablePanelMax(panel)));
-  }
-}
-
-function fitDesktopPanels() {
-  if (narrow.matches) return;
-  const visible = visiblePanels();
-  if (visible.length === 0 || workspace.clientWidth === 0) return;
-  const budget = desktopPanelBudget();
-  if (budget < panelMinWidth * visible.length) {
-    const keep = visible.find(([, panel]) => panel === lastPanel) ?? visible.at(-1)!;
-    const focused = document.activeElement;
-    let hidFocus = false;
-    for (const [toggle, panel] of visible) {
-      if (panel !== keep[1]) {
-        if (focused instanceof Node && $(panel).contains(focused)) hidFocus = true;
-        $(panel).hidden = true;
-        $(toggle).setAttribute('aria-expanded', 'false');
-      }
-    }
-    if (hidFocus) focusPanel(keep[1]);
-    syncPanelRanges();
-    return;
-  }
-  const total = visible.reduce((sum, [, panel]) => sum + panelWidth(panel), 0);
-  if (total > budget) {
-    const width = Math.floor(budget / visible.length);
-    for (const [, panel] of visible) setPanelWidth(panel, width);
-  }
-  syncPanelRanges();
-}
-
-function panelModality() {
-  if (narrow.matches) {
-    const visible = visiblePanels();
-    if (visible.length > 1) {
-      const keep = visible.find(([, panel]) => panel === lastPanel) ?? visible.at(-1)!;
-      for (const [toggle, panel] of visible) {
-        if (panel !== keep[1]) {
-          $(panel).hidden = true;
-          $(toggle).setAttribute('aria-expanded', 'false');
-        }
-      }
-      focusPanel(keep[1]);
-    }
-  } else fitDesktopPanels();
-  const opened = panels.find(([, panel]) => !$(panel).hidden);
-  const modal = narrow.matches && opened !== undefined;
-  for (const element of document.querySelectorAll<HTMLElement>(
-    '.topbar,footer,.playground-header,.playground-toolbar,.playground-main,#dataset-status',
-  ))
-    element.inert = modal;
-  for (const [, panel] of panels) {
-    $(panel).setAttribute('role', modal && !$(panel).hidden ? 'dialog' : 'complementary');
-    if (modal && !$(panel).hidden) $(panel).setAttribute('aria-modal', 'true');
-    else $(panel).removeAttribute('aria-modal');
-  }
-  if (modal && opened !== undefined && !$(opened[1]).contains(document.activeElement)) focusPanel(opened[1]);
-}
-
-function closePanel(toggle: string, panel: string) {
-  $(panel).hidden = true;
-  $(toggle).setAttribute('aria-expanded', 'false');
-  panelModality();
-  $(toggle).focus();
-}
-
-for (const [toggle, panel, close] of panels) {
-  $(toggle).addEventListener('click', () => {
-    const opening = $(panel).hidden;
-    if (opening && narrow.matches) {
-      for (const [otherToggle, otherPanel] of panels) {
-        if (otherPanel !== panel) {
-          $(otherPanel).hidden = true;
-          $(otherToggle).setAttribute('aria-expanded', 'false');
-        }
-      }
-    }
-    $(panel).hidden = !opening;
-    if (opening) lastPanel = panel;
-    $(toggle).setAttribute('aria-expanded', String(opening));
-    panelModality();
-    if (opening) focusPanel(panel);
-  });
-  $(close).addEventListener('click', () => closePanel(toggle, panel));
-  $(panel).addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      closePanel(toggle, panel);
-      return;
-    }
-    if (event.key !== 'Tab' || !narrow.matches) return;
-    const controls = [...$(panel).querySelectorAll<HTMLElement>('button,textarea,select,[tabindex="0"]')].filter(
-      (node) => node.getClientRects().length > 0,
-    );
-    const first = controls[0];
-    const last = controls.at(-1);
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last?.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first?.focus();
-    }
-  });
-}
-narrow.addEventListener('change', panelModality);
-window.addEventListener('resize', panelModality);
-
-$('inspector-tab').addEventListener('change', updateInspector);
-const sourceSection = $<HTMLSelectElement>('source-section');
-sourceSection.addEventListener('change', () => {
-  const showingTask = sourceSection.value === 'task';
-  $('source-task-view').hidden = !showingTask;
-  $('source-data-view').hidden = showingTask;
-  (showingTask ? draft : $('source-content')).focus();
-});
-
-for (const [id, panel, direction] of [
-  ['source-resize', 'source-panel', 1],
-  ['inspector-resize', 'inspector-panel', -1],
-] as const) {
-  const handle = $(id);
-  let initial = 320;
-  let start = 0;
-  const resize = (width: number) => {
-    setPanelWidth(panel, Math.min(width, achievablePanelMax(panel)));
-    syncPanelRanges();
-  };
-  const physicalDirection = () => (getComputedStyle(workspace).direction === 'rtl' ? -direction : direction);
-  handle.addEventListener('keydown', (event) => {
-    if (event.key === 'Home' || event.key === 'End') {
-      event.preventDefault();
-      resize(event.key === 'Home' ? panelMinWidth : achievablePanelMax(panel));
-    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-      event.preventDefault();
-      resize(
-        Number(handle.getAttribute('aria-valuenow')) + (event.key === 'ArrowRight' ? 16 : -16) * physicalDirection(),
-      );
-    }
-  });
-  handle.addEventListener('pointerdown', (event) => {
-    initial = Number(handle.getAttribute('aria-valuenow'));
-    start = event.clientX;
-    handle.setPointerCapture(event.pointerId);
-  });
-  handle.addEventListener('pointermove', (event) => {
-    if (handle.hasPointerCapture(event.pointerId)) resize(initial + (event.clientX - start) * physicalDirection());
-  });
-  const release = (event: PointerEvent) => {
-    if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId);
-  };
-  handle.addEventListener('pointerup', release);
-  handle.addEventListener('pointercancel', release);
-}
-
-function mountCommerce(output: DemoOutput | undefined) {
-  if (!output) return;
-  const rows = output.rows.filter((row) => typeof row.product_id === 'string');
-  const controls = $('commerce-controls');
-  controls.replaceChildren();
-  const selects = [0, 1].map((index) => {
-    const label = document.createElement('label');
-    label.textContent = index === 0 ? 'First product ' : 'Second product ';
-    const select = document.createElement('select');
-    select.setAttribute('aria-label', label.textContent.trim());
-    for (const row of rows) {
-      const option = document.createElement('option');
-      option.value = String(row.product_id);
-      option.textContent = String(row.name);
-      select.append(option);
-    }
-    select.selectedIndex = Math.min(index, rows.length - 1);
-    label.append(select);
-    controls.append(label);
-    return select;
-  });
-  function update() {
-    const chosen = selects
-      .map((select) => rows.find((row) => row.product_id === select.value))
-      .filter((row) => row !== undefined);
-    const unique = chosen.filter(
-      (row, index) => chosen.findIndex((item) => item.product_id === row.product_id) === index,
-    );
-    const comparison = new AeliqoComparisonElement();
-    comparison.entity = 'products';
-    comparison.compareSet = unique.map((row) => ({ key: String(row.product_id), label: String(row.name) }));
-    comparison.compareKeys = unique.map((row) => String(row.product_id));
-    comparison.metrics = [
-      {
-        id: 'price',
-        label: 'Price',
-        unit: 'USD',
-        values: Object.fromEntries(
-          unique.map((row) => [
-            String(row.product_id),
-            typeof row.price === 'object' && row.price !== null && 'decimal' in row.price
-              ? String(row.price.decimal)
-              : 'Unknown',
-          ]),
-        ),
-      },
-      {
-        id: 'stock',
-        label: 'Stock',
-        unit: 'items',
-        values: Object.fromEntries(unique.map((row) => [String(row.product_id), Number(row.stock)])),
-      },
-    ];
-    comparison.result = output!.descriptor.ref;
-    comparison.scope = {
-      kind: 'filtered',
-      label: 'Selected synthetic products',
-      loaded: unique.length,
-      filteredTotal: unique.length,
-    };
-    $('commerce-comparison').replaceChildren(comparison);
-    const detail = new AeliqoDetailElement();
-    detail.record = chosen[0];
-    detail.fields = [
-      { key: 'name', label: 'Name' },
-      { key: 'category', label: 'Category' },
-      { key: 'price', label: 'Price (USD)' },
-      { key: 'stock', label: 'Stock' },
-    ];
-    $('commerce-detail').replaceChildren(detail);
-    $('commerce-progress').textContent =
-      unique.length === 2
-        ? 'Step 2 of 3 · Comparison ready; inspect details and review a local draft'
-        : 'Step 1 of 3 · Choose two different products';
-    void syncComponentTheme($('commerce'));
-  }
-  selects.forEach((select) => select.addEventListener('change', update));
-  update();
-  if (!$('commerce-form').children.length) {
-    const form = document.createElement('form');
-    const name = new AeliqoTextFieldElement();
-    name.name = 'name';
-    name.label = 'Your name';
-    name.required = true;
-    const note = new AeliqoTextFieldElement();
-    note.name = 'note';
-    note.label = 'Enquiry note';
+function renderScenario(): void {
+  scenarioDescription.textContent = scenario.description;
+  stepsHost.replaceChildren();
+  manualStep.replaceChildren();
+  for (const step of scenario.steps) {
     const button = document.createElement('button');
-    button.type = 'submit';
-    button.textContent = 'Review local enquiry';
-    const receipt = document.createElement('p');
-    receipt.setAttribute('role', 'status');
-    form.append(name, note, button, receipt);
-    form.addEventListener('aeliqo-input-change', () => {
-      productFormDirty = true;
-    });
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      if (!form.reportValidity()) return;
-      receipt.textContent = `Draft reviewed for ${String(new FormData(form).get('name') ?? '')}. This remains local; no enquiry was sent.`;
-      $('commerce-progress').textContent = 'Step 3 of 3 · Local draft reviewed; nothing was sent';
-      activity('review', 'Reviewed a local commerce enquiry draft without egress or action.');
-    });
-    $('commerce-form').append(form);
+    button.type = 'button';
+    button.dataset.step = step.id;
+    const strong = document.createElement('strong'); strong.textContent = step.label;
+    const description = document.createElement('span'); description.textContent = step.description;
+    button.append(strong, description);
+    button.addEventListener('click', () => void runIntent(step.intent(), button));
+    stepsHost.append(button);
+    const option = document.createElement('option'); option.value = step.id; option.textContent = step.label; manualStep.append(option);
   }
 }
 
-function syncDatasetVisibility() {
-  const commerce = dataset.value === 'products';
-  const agents = dataset.value === 'agents';
-  for (const option of [...taskChoice.options]) {
-    const matches = option.dataset.dataset === dataset.value;
-    option.hidden = !matches;
-    option.disabled = !matches;
+function selectedView(receipt: WebRenderReceipt): string {
+  if (!('presentation' in receipt)) return receipt.status;
+  return receipt.presentation.nodes.find((node) => node.node.id === receipt.presentation.plan.rootId)?.manifest.id ?? receipt.status;
+}
+
+async function applyReceipt(intent: Intent, receipt: WebRenderReceipt): Promise<void> {
+  last = {intent, receipt};
+  receiptState.textContent = receipt.status;
+  viewBadge.textContent = selectedView(receipt);
+  if (receipt.status === 'renderer-ready') {
+    status.textContent = `${intent.kind} committed through the public runtime and ${viewBadge.textContent} renderer.`;
+    await syncComponentTheme(regionHost);
+  } else {
+    const message = receipt.diagnostics[0]?.message ?? `The request ended as ${receipt.status}.`;
+    status.textContent = message;
+    setError(message);
   }
-  if (taskChoice.selectedOptions[0]?.disabled)
-    taskChoice.value = agents ? 'agent-mcp' : commerce ? 'products-browse' : 'people-browse';
-  $('people-workflow').hidden = commerce || agents;
-  $('team-control').hidden = commerce || agents;
-  syncContributorVisibility();
-  $('commerce').hidden = !commerce;
-  $('agent-lab').hidden = !agents;
-  $('result-stage').hidden = agents;
-  $('workspace-context').textContent = agents
-    ? 'Optional tool protocols · synthetic local ports'
-    : commerce
-      ? 'Guided commerce composition · synthetic fixture'
-      : 'Guided people analysis · synthetic fixture';
-  $('workspace-badge').textContent = agents ? 'Scoped grants · bounded receipts' : 'Exact source · revision visible';
-  $('dataset-status').textContent = agents
-    ? 'Sample: MCP, WebMCP, and BYOK · No credential or provider request'
-    : commerce
-      ? 'Sample: commerce catalog · Runs locally in this browser'
-      : 'Sample: people and absence · Runs locally in this browser';
-  $('playground-guide-list').innerHTML = agents
-    ? '<li>Current host grants</li><li>Discovered tool schema</li><li>Sanitized execution receipt</li><li>Native or simulated evidence</li>'
-    : '<li>A typed task</li><li>A bounded result</li><li>An adaptive view</li><li>Scope and revision evidence</li>';
-  if (agents) configureAgentLab();
+  renderInspector();
 }
 
-function syncContributorVisibility() {
-  $('contributor-control').hidden = dataset.value !== 'employees' || taskChoice.value !== 'people-contributor';
+async function applyAgentReceipt(intent: Intent, receipt: WebRenderReceipt): Promise<void> {
+  setError();
+  await applyReceipt(intent, receipt);
 }
 
-dataset.addEventListener('change', () => {
-  taskChoice.value =
-    dataset.value === 'agents' ? 'agent-mcp' : dataset.value === 'products' ? 'products-browse' : 'people-browse';
-  agentEvidence = undefined;
-  syncDatasetVisibility();
-  renderSource();
-  runChoice();
+async function runIntent(intent: Intent, trigger?: HTMLButtonElement): Promise<void> {
+  activeRequest?.abort();
+  const controller = new AbortController();
+  activeRequest = controller;
+  setError();
+  status.textContent = `Compiling ${intent.kind} intent…`;
+  trigger?.setAttribute('aria-busy', 'true');
+  try {
+    const receipt = await session.render(regionHost, intent, controller.signal);
+    if (activeRequest !== controller) return;
+    await applyReceipt(intent, receipt);
+  } catch {
+    if (!controller.signal.aborted) setError('The playground request failed safely. Reset the session and try again.');
+  } finally {
+    trigger?.removeAttribute('aria-busy');
+    if (activeRequest === controller) activeRequest = undefined;
+  }
+}
+
+function setMode(next: Mode): void {
+  mode = next;
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]')) button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+  guidedPanel.hidden = mode !== 'guided';
+  manualPanel.hidden = mode !== 'manual';
+  connectedPanel.hidden = mode !== 'connected';
+  modeLabel.textContent = mode === 'guided' ? 'Guided demo' : mode === 'manual' ? 'Manual controls' : 'Connected agent';
+}
+
+function modeFrom(value: string | undefined): Mode | undefined {
+  return value === 'guided' || value === 'manual' || value === 'connected' ? value : undefined;
+}
+
+function inspectorFrom(value: string | undefined): InspectorSection | undefined {
+  return value === 'intent' || value === 'task' || value === 'result' || value === 'presentation' || value === 'diagnostics' ? value : undefined;
+}
+
+for (const item of PLAYGROUND_SCENARIOS) {
+  const option = document.createElement('option'); option.value = item.id; option.textContent = item.label; scenarioSelect.append(option);
+}
+scenarioSelect.value = scenario.id;
+scenarioSelect.addEventListener('change', () => { scenario = currentScenario(scenarioSelect.value); renderScenario(); void runIntent(scenario.steps[0]!.intent()); });
+for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]')) button.addEventListener('click', () => {
+  const next = modeFrom(button.dataset.mode);
+  if (next !== undefined) setMode(next);
 });
-taskChoice.addEventListener('change', () => {
-  syncContributorVisibility();
-  if (dataset.value === 'agents') {
-    agentEvidence = undefined;
-    configureAgentLab();
+required<HTMLButtonElement>('#pg-run-manual').addEventListener('click', () => {
+  const step = scenario.steps.find((candidate) => candidate.id === manualStep.value) ?? scenario.steps[0]!;
+  void runIntent(step.intent());
+});
+required<HTMLButtonElement>('#pg-reset').addEventListener('click', () => resetSession());
+required<HTMLButtonElement>('#pg-export').addEventListener('click', async () => {
+  const [{projectFiles}, {zipProject}] = await Promise.all([import('./project-template.js'), import('./zip.js')]);
+  const blob = zipProject(projectFiles(scenario.id, __AELIQO_RELEASE_VERSION__));
+  const href = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = href;
+  link.download = `aeliqo-${scenario.id}-example.zip`;
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(href), 0);
+  status.textContent = `Exported the installable ${scenario.label} project with synthetic data and no credentials.`;
+});
+required<HTMLButtonElement>('#pg-inspect').addEventListener('click', () => { renderInspector(); inspector.showModal(); });
+required<HTMLButtonElement>('#pg-inspector-close').addEventListener('click', () => inspector.close());
+for (const button of document.querySelectorAll<HTMLButtonElement>('[data-inspector]')) button.addEventListener('click', () => {
+  const next = inspectorFrom(button.dataset.inspector);
+  if (next === undefined) return;
+  inspectorSection = next;
+  for (const candidate of document.querySelectorAll<HTMLButtonElement>('[data-inspector]')) candidate.setAttribute('aria-pressed', String(candidate === button));
+  renderInspector();
+});
+actionCancel.addEventListener('click', () => { pendingAction?.cancel(); pendingAction = undefined; closeActionDialog(); });
+actionConfirm.addEventListener('click', async () => {
+  const action = pendingAction;
+  if (action === undefined) return;
+  actionCancel.disabled = true;
+  actionConfirm.disabled = true;
+  actionConfirm.setAttribute('aria-busy', 'true');
+  actionStatus.textContent = 'Rechecking authority and executing…';
+  try {
+    await action.confirm();
+  } catch {
+    if (pendingAction !== action) return;
+    action.cancel();
+    pendingAction = undefined;
+    actionCancel.disabled = false;
+    actionCancel.textContent = 'Close';
+    actionConfirm.removeAttribute('aria-busy');
+    actionStatus.textContent = 'The action failed safely. Close this review and try again.';
+    setError(actionStatus.textContent);
   }
 });
-for (const shortcut of document.querySelectorAll<HTMLButtonElement>('[data-agent-demo]')) {
-  shortcut.addEventListener('click', () => {
-    const choice = shortcut.dataset.agentDemo as AgentDemoChoice;
-    dataset.value = 'agents';
-    taskChoice.value = choice;
-    agentEvidence = undefined;
-    syncDatasetVisibility();
-    renderSource();
-    runChoice();
-    $('agent-lab').scrollIntoView({
-      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-      block: 'start',
-    });
-  });
-}
+actionDialog.addEventListener('cancel', (event) => { event.preventDefault(); pendingAction?.cancel(); pendingAction = undefined; closeActionDialog(); });
 
-$('webmcp-status').textContent = webMcpDetection.supported
-  ? 'WebMCP experimental API detected · unpaired'
-  : 'WebMCP unavailable in this browser';
-window.addEventListener('pagehide', (event) => {
-  engine.cancel();
-  if (!event.persisted) {
-    for (const lease of presentedLeases) lease.release();
-    presentedLeases = [];
-    engine.dispose();
+required<HTMLButtonElement>('#pg-connect').addEventListener('click', async () => {
+  localHost?.close();
+  localHost = undefined;
+  connectionStatus.textContent = 'Checking capability…';
+  const kind = connectionKind.value === 'webmcp' ? 'webmcp' : 'detect';
+  const result = await checkConnection(kind);
+  if (kind === 'webmcp' && result.state === 'available') {
+    const registered = await session.connectWebMcp();
+    if (registered.ok) {
+      connection = 'webmcp';
+      const label = `Native WebMCP registered ${registered.value.registrations} tools (experimental).`;
+      connectionStatus.textContent = label;
+      connectionLabel.textContent = label;
+      connectionDot.dataset.state = 'connected';
+    } else {
+      connection = 'none';
+      const label = registered.diagnostics[0]?.message ?? 'WebMCP registration failed safely.';
+      connectionStatus.textContent = label;
+      connectionLabel.textContent = label;
+      connectionDot.dataset.state = 'unavailable';
+    }
+  } else {
+    if (result.state === 'connected') {
+      try {
+        localHost = await connectLocalHost(session);
+        connection = 'local';
+        connectionStatus.textContent = result.label;
+        connectionLabel.textContent = result.label;
+        connectionDot.dataset.state = 'connected';
+      } catch (cause) {
+        connection = 'none';
+        const label = cause instanceof Error ? cause.message : 'The local host pairing failed safely.';
+        connectionStatus.textContent = label;
+        connectionLabel.textContent = label;
+        connectionDot.dataset.state = 'unavailable';
+      }
+    } else {
+      connection = 'none';
+      connectionStatus.textContent = result.label;
+      connectionLabel.textContent = result.label;
+      connectionDot.dataset.state = result.state;
+    }
   }
+  const composerReady = connection === 'local' && result.state === 'connected' && result.modelConfigured;
+  prompt.disabled = !composerReady;
+  send.disabled = !composerReady;
+});
+send.addEventListener('click', async () => {
+  const value = prompt.value.trim();
+  if (connection !== 'local' || value.length === 0) return;
+  const controller = new AbortController();
+  connectionStatus.textContent = 'Waiting for the local agent proposal…';
+  send.disabled = true;
+  try {
+    const receipt = await sendLocalPrompt(value, controller.signal);
+    modelCallCount += receipt.modelRequests;
+    modelCalls.textContent = String(modelCallCount);
+    connectionStatus.textContent = receipt.stop === 'renderer-ready'
+      ? `The local agent completed ${receipt.toolCalls} validated tool call${receipt.toolCalls === 1 ? '' : 's'}.`
+      : `The local agent stopped as ${receipt.stop}; no unsupported claim is shown as success.`;
+  } catch { connectionStatus.textContent = 'The local agent request failed. No UI change was committed.'; }
+  finally { send.disabled = connection !== 'local'; }
 });
 
-syncDatasetVisibility();
-renderSource();
-updateInspector();
-runChoice();
+resetSession();
+renderScenario();
+for (const control of bootControls) control.disabled = false;
+appRoot.removeAttribute('aria-busy');
+void runIntent(scenario.steps[0]!.intent());
+window.addEventListener('pagehide', () => { activeRequest?.abort(); localHost?.close(); session.dispose(); }, {once: true});
+
+export type {ScenarioId};

@@ -1,5 +1,6 @@
 import {css, html, LitElement, nothing} from "lit";
 import {aeliqoThemeStyles} from "../styles/theme.js";
+import {AELIQO_WEB_VERSION} from "../version.js";
 import type {ResultRef} from "@aeliqo/core";
 import type {AeliqoDataColumn, AeliqoDataRecord, AeliqoDataScope, AeliqoDataStatus, AeliqoSelectionDetail, AeliqoSelectionMode} from "./types.js";
 import {AeliqoDataSelectionEvent} from "./events.js";
@@ -9,6 +10,7 @@ import {dataStyles, dataValueText, scopeText, stableDataRecordKey, statusTemplat
  * the host: this element emits stable identity proposals and never mutates
  * `selectedKeys` itself. */
 export class AeliqoRecordListElement extends LitElement {
+  static readonly aeliqoVersion = AELIQO_WEB_VERSION;
   static readonly properties = {
     rows: {attribute: false},
     columns: {attribute: false},
@@ -24,7 +26,6 @@ export class AeliqoRecordListElement extends LitElement {
     message: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   rows: readonly AeliqoDataRecord[] = [];
   columns: readonly AeliqoDataColumn[] = [];

@@ -19,7 +19,8 @@ test("explorer forwards filter and stable identity selection to the host", async
   await record.focus();
   await page.keyboard.press("Enter");
   await expect.poll(() => page.evaluate(() => (window as unknown as FixtureWindow).compoundFixture.events.findLast(event => event.type === "aeliqo-explorer-selection")?.detail.keys)).toEqual(["string:1:a"]);
-  await expect(explorer.locator("aeliqo-detail").locator("[part=identity]")).toContainText("string:1:a");
+  await expect(explorer.locator("aeliqo-detail").locator("[part=identity]")).toHaveCount(0);
+  await expect(explorer.locator("aeliqo-detail").locator("[part=detail]")).toHaveAttribute("data-identity", "string:1:a");
   await expect(explorer.locator("aeliqo-detail")).toContainText("Authorized people");
 });
 

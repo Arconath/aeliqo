@@ -11,7 +11,6 @@ export class AeliqoTextElement extends AeliqoFoundationElement {
     muted: {type: Boolean, reflect: true},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   text = "";
   as: AeliqoTextAs = "span";

@@ -10,7 +10,6 @@ export class AeliqoSearchFieldElement extends AeliqoTextFieldElement {
     debounceMs: {attribute: "debounce-ms", type: Number},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   queryOnInput = false;
   debounceMs = 250;

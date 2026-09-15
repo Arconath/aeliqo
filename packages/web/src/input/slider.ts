@@ -19,7 +19,6 @@ export class AeliqoSliderElement extends AeliqoFieldElement<AeliqoSliderValue> {
     unit: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   value = 0;
   defaultValue = 0;

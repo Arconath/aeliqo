@@ -4,16 +4,16 @@ on:
   workflow_dispatch:
     inputs:
       stage:
-        description: 'Publish target; both targets use a non-latest dist-tag.'
+        description: 'Publish target; RC uses next and stable uses latest.'
         required: true
         type: choice
         options: [rc, stable]
       version:
-        description: '0.1.0-rc.N for RC, or exactly 0.1.0 for stable.'
+        description: 'Release version declared by release-metadata.json, optionally with -rc.N.'
         required: true
         type: string
       rc_version:
-        description: 'For stable only: the exact verified OIDC-published 0.1.0-rc.N predecessor (N >= 2).'
+        description: 'For stable only: the exact verified OIDC-published RC predecessor.'
         required: false
         type: string
       rc_source_sha:
@@ -40,6 +40,10 @@ jobs:
     outputs:
       quality_run_id: ${{ steps.policy.outputs.quality_run_id }}
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
       - name: Require owner-dispatched current main with successful same-SHA quality
         id: policy
         env:
@@ -63,9 +67,11 @@ jobs:
           test "$ACTOR" = "hermawan22"
           test "$TRIGGERING_ACTOR" = "hermawan22"
           test "$(gh api "repos/$GH_REPO/branches/main" --jq '.commit.sha')" = "$SOURCE_SHA"
-          if [ "$STAGE" = rc ] && [[ "$VERSION" =~ ^0\.1\.0-rc\.([1-9][0-9]*)$ ]] && [ "${BASH_REMATCH[1]}" -ge 2 ] && [ -z "$RC_VERSION$RC_SOURCE_SHA$RC_RUN_ID" ]; then
+          release_version="$(jq -er '.version | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))' release-metadata.json)"
+          escaped_version="${release_version//./\\.}"
+          if [ "$STAGE" = rc ] && [[ "$VERSION" =~ ^${escaped_version}-rc\.([1-9][0-9]*)$ ]] && [ -z "$RC_VERSION$RC_SOURCE_SHA$RC_RUN_ID" ]; then
             :
-          elif [ "$STAGE" = stable ] && [ "$VERSION" = 0.1.0 ] && [[ "$RC_VERSION" =~ ^0\.1\.0-rc\.([1-9][0-9]*)$ ]] && [ "${BASH_REMATCH[1]}" -ge 2 ] && [ "$RC_SOURCE_SHA" = "$SOURCE_SHA" ] && [[ "$RC_RUN_ID" =~ ^[1-9][0-9]*$ ]]; then
+          elif [ "$STAGE" = stable ] && [ "$VERSION" = "$release_version" ] && [[ "$RC_VERSION" =~ ^${escaped_version}-rc\.([1-9][0-9]*)$ ]] && [ "$RC_SOURCE_SHA" = "$SOURCE_SHA" ] && [[ "$RC_RUN_ID" =~ ^[1-9][0-9]*$ ]]; then
             :
           else
             echo "Stage, version, and approved RC identity are not allowed." >&2
@@ -159,7 +165,7 @@ jobs:
           STAGE: ${{ inputs.stage }}
         run: |
           TAG=next
-          if [ "$STAGE" = stable ]; then TAG=rewrite; fi
+          if [ "$STAGE" = stable ]; then TAG=latest; fi
           node scripts/release/publish.mjs --tag "$TAG"
       - name: Reinstall the exact registry artifacts after publication
         env:

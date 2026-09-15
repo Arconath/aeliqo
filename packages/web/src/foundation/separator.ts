@@ -10,7 +10,6 @@ export class AeliqoSeparatorElement extends AeliqoFoundationElement {
     decorative: {type: Boolean, reflect: true},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   orientation: AeliqoSeparatorOrientation = "horizontal";
   decorative = true;

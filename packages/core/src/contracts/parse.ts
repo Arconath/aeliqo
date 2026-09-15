@@ -32,6 +32,7 @@ export const parseCatalog = (input: unknown) => parseContract('catalog', input);
 export const parseTask = (input: unknown) => parseContract('task', input);
 export const parseResult = (input: unknown) => parseContract('result', input);
 export const parseExperience = (input: unknown) => parseContract('experience', input);
+export const parseIntent = (input: unknown) => parseContract('intent', input);
 
 /** Internal deterministic key for already-inspected JSON, including signed zero. */
 export function canonicalJSON(value: unknown): string {

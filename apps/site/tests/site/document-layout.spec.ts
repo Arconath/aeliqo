@@ -5,10 +5,10 @@ import {componentCatalog} from "../shared/catalog.js";
 
 const COMPONENT_ROUTES = componentCatalog.map((component) => ({
   id: component.id.slice(component.id.indexOf(".") + 1),
-  route: `/docs/components/${component.id}/`,
+  route: `/components/${component.id}/`,
   name: component.name,
 }));
-const REPRESENTATIVE_ROUTE = "/docs/components/data.table/";
+const REPRESENTATIVE_ROUTE = "/components/data.table/";
 const HYDRATION_LAYOUT_SHIFT_BUDGET = 0.1;
 
 type Box = {readonly x: number; readonly y: number; readonly width: number; readonly height: number};

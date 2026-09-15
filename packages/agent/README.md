@@ -1,6 +1,35 @@
 # @aeliqo/agent
 
-Optional agent boundaries for the Aeliqo 0.1.0 rewrite. The package depends on the
+## Pair one agent session to one application Region
+
+`@aeliqo/agent/app` exposes exactly three tools around an existing runtime or web
+application: `aeliqo_context`, `aeliqo_render`, and `aeliqo_act`. The endpoint
+discovers only session-visible metadata, sends render requests through the same
+intent pipeline used by application code, and keeps protected confirmation with
+the trusted host.
+
+```ts
+import {createAppToolEndpoint} from '@aeliqo/agent/app';
+
+const endpoint = createAppToolEndpoint({
+  runtime: app.runtime,
+  render: app,
+  regionId: 'main',
+  goalEpoch: 'people-session-1',
+  transport: 'mcp',
+  expiresAt: Date.now() + 30 * 60_000,
+});
+if (!endpoint.ok) throw new Error(endpoint.diagnostics[0].message);
+```
+
+The agent cannot add resources, views, actions, grants, HTML, SQL, code, network
+endpoints, or module paths. A valid but incorrectly interpreted filter can still
+be wrong, so material choices remain visible and ambiguous requests return a
+recoverable outcome.
+
+## Low-level agent boundaries
+
+Optional agent boundaries for the current Aeliqo release. The package depends on the
 pure core and effect-owning runtime; direct components and normal interactions do
 not import it. Capability registrations are host-owned and protocol-neutral;
 manual, direct and protocol ports all call the same authority-checked dispatcher.

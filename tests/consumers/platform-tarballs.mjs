@@ -1,3 +1,4 @@
+import {RELEASE_VERSION} from "../../scripts/release/metadata.mjs";
 /** Build, install and execute the actual M0 packages outside the workspace. */
 import assert from 'node:assert/strict';
 import {foundationProbe} from './foundation-probe.mjs';
@@ -45,14 +46,14 @@ for (const name of ['core', 'web', 'react']) {
   const directory = join(root, 'packages', name);
   const manifest = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
   assert.equal(manifest.name, `@aeliqo/${name}`);
-  assert.equal(manifest.version, '0.1.0');
+  assert.equal(manifest.version, RELEASE_VERSION);
   assert.notEqual(manifest.private, true);
   const dist = join(directory, 'dist');
   try { assert(!(await lstat(dist)).isSymbolicLink(), 'Refuse symlinked dist'); }
   catch (error) { if (error.code !== 'ENOENT') throw error; }
   await clearCompiledOutput(dist);
   run(['pnpm', 'build'], directory);
-  const tarball = join(runDirectory, `aeliqo-${name}-0.1.0.tgz`);
+  const tarball = join(runDirectory, `aeliqo-${name}-${RELEASE_VERSION}.tgz`);
   run(['pnpm', 'pack', '--out', tarball], directory);
   const bytes = await readFile(tarball);
   const packed = JSON.parse(run(['tar', '-xOf', tarball, 'package/package.json'], root));
@@ -63,8 +64,8 @@ for (const name of ['core', 'web', 'react']) {
   for (const field of ['dependencies','peerDependencies','optionalDependencies']) {
     assert(!JSON.stringify(packed[field] ?? {}).includes('workspace:'), 'Unresolved workspace dependency');
   }
-  if (name === 'web') assert.equal(packed.dependencies['@aeliqo/core'], '0.1.0');
-  if (name === 'react') assert.equal(packed.dependencies['@aeliqo/web'], '0.1.0');
+  if (name === 'web') assert.equal(packed.dependencies['@aeliqo/core'], RELEASE_VERSION);
+  if (name === 'react') assert.equal(packed.dependencies['@aeliqo/web'], RELEASE_VERSION);
   artifacts.push({name: packed.name, version: packed.version, path: tarball,
     sha256: hash(bytes), integrity: `sha512-${hash(bytes, 'sha512', 'base64')}`});
 }
@@ -148,9 +149,9 @@ export default {build:{minify:true},plugins:[{name:'record-modules',generateBund
 `);
 run([join(consumer,'node_modules/.bin/vite'),'build'],consumer);
 const modules=JSON.parse(await readFile(join(consumer,'dist/modules.json'),'utf8'));
-// AeliqoInput delegates to the shared TextField; these are its exact required bases/events.
+// AeliqoInput delegates to the shared TextField; these are its exact required bases/events and release compatibility marker.
 // Runtime, planner, agent, chart, and other component modules remain excluded.
-const allowed=/(?:\/browser\.js$|\/index\.html$|vite\/modulepreload-polyfill|\/node_modules\/(?:lit(?:-html|-element)?\/|@lit\/reactive-element\/|@aeliqo\/web\/dist\/(?:elements\/aeliqo-input|events|input\/(?:events|base|text-control|text-field)|foundation\/base|styles\/(?:theme|tokens))\.js$))/;
+const allowed=/(?:\/browser\.js$|\/index\.html$|vite\/modulepreload-polyfill|\/node_modules\/(?:lit(?:-html|-element)?\/|@lit\/reactive-element\/|@aeliqo\/web\/dist\/(?:version|elements\/aeliqo-input|events|input\/(?:events|base|text-control|text-field)|foundation\/base|styles\/(?:theme|tokens))\.js$))/;
 assert.deepEqual(modules.filter(id=>!allowed.test(id)),[], 'Unexpected standalone input module');
 const browserBundles=[];
 for (const file of await readdir(join(consumer,'dist/assets'))) {

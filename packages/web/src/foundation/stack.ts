@@ -15,7 +15,6 @@ export class AeliqoStackElement extends AeliqoFoundationElement {
     wrap: {type: Boolean, reflect: true},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   direction: AeliqoStackDirection = "column";
   gap: AeliqoStackGap = 16;

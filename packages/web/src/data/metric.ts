@@ -1,5 +1,6 @@
 import {css, html, LitElement, nothing} from "lit";
 import {aeliqoThemeStyles} from "../styles/theme.js";
+import {AELIQO_WEB_VERSION} from "../version.js";
 import type {AeliqoDataScope, AeliqoDataStatus, AeliqoDataValue} from "./types.js";
 import {dataValueText, dataStatusMessage, scopeText, dataStyles, statusTemplate} from "./shared.js";
 
@@ -8,6 +9,7 @@ export type AeliqoMetricFormat = "plain" | "number" | "percent";
 /** A single host-validated value. This component formats and labels data; it
  * never computes a metric or changes its scope. */
 export class AeliqoMetricElement extends LitElement {
+  static readonly aeliqoVersion = AELIQO_WEB_VERSION;
   static readonly properties = {
     label: {type: String},
     value: {attribute: false},
@@ -21,7 +23,6 @@ export class AeliqoMetricElement extends LitElement {
     locale: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   label = "";
   value: AeliqoDataValue | undefined = undefined;

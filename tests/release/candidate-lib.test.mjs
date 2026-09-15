@@ -97,32 +97,32 @@ test('candidate manifest and CycloneDX use exact tarball identities', () => {
   assert.equal(sbom.bomFormat, 'CycloneDX');
   assert.equal(sbom.components.length, 7);
   assert.equal(sbom.components.find((item) => item.name === 'zod').hashes[0].alg, 'SHA-512');
-  assert.equal(packagePurl('@aeliqo/core', RELEASE_VERSION), 'pkg:npm/%40aeliqo/core@0.1.0');
+  assert.equal(packagePurl('@aeliqo/core', RELEASE_VERSION), 'pkg:npm/%40aeliqo/core@0.3.0');
   assert.equal(sha256(Buffer.from('x')), '2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881');
   assert.match(sha512Integrity(Buffer.from('x')), /^sha512-/);
 });
 
 test('registry and lock classification fail closed', () => {
   const integrity = 'sha512-dGVzdA==';
-  assert.deepEqual(classifyRegistryVersionResponse(404, {}, '@aeliqo/core', '0.1.0', integrity), { state: 'absent' });
+  assert.deepEqual(classifyRegistryVersionResponse(404, {}, '@aeliqo/core', '0.2.0', integrity), { state: 'absent' });
   assert.equal(
     classifyRegistryVersionResponse(
       200,
-      { name: '@aeliqo/core', version: '0.1.0', dist: { integrity } },
+      { name: '@aeliqo/core', version: '0.2.0', dist: { integrity } },
       '@aeliqo/core',
-      '0.1.0',
+      '0.2.0',
       integrity,
     ).state,
     'verified-existing',
   );
-  assert.throws(() => classifyRegistryVersionResponse(503, {}, '@aeliqo/core', '0.1.0', integrity), /HTTP 503/);
+  assert.throws(() => classifyRegistryVersionResponse(503, {}, '@aeliqo/core', '0.2.0', integrity), /HTTP 503/);
   assert.throws(
     () =>
       classifyRegistryVersionResponse(
         200,
-        { name: '@aeliqo/core', version: '0.1.0', dist: { integrity: 'sha512-other' } },
+        { name: '@aeliqo/core', version: '0.2.0', dist: { integrity: 'sha512-other' } },
         '@aeliqo/core',
-        '0.1.0',
+        '0.2.0',
         integrity,
       ),
     /different bytes/,

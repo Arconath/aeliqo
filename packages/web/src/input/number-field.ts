@@ -59,7 +59,6 @@ export class AeliqoNumberFieldElement extends AeliqoFieldElement<AeliqoNumberCha
     unit: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   text = "";
   value: string | undefined;
@@ -74,8 +73,13 @@ export class AeliqoNumberFieldElement extends AeliqoFieldElement<AeliqoNumberCha
     super.connectedCallback();
   }
 
-  protected override updated(changed: Map<PropertyKey, unknown>): void {
-    if (changed.has("value") && this.value !== undefined && (this.text.length === 0 || !changed.has("text"))) this.text = formatLocalizedDecimal(this.value, this.locale);
+  protected override willUpdate(changed: Map<PropertyKey, unknown>): void {
+    if (changed.has("value") && this.value !== undefined && (this.text.length === 0 || !changed.has("text"))) {
+      this.text = formatLocalizedDecimal(this.value, this.locale);
+    }
+  }
+
+  protected override updated(): void {
     this.syncNative();
   }
 

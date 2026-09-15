@@ -1,5 +1,7 @@
 import type {AeliqoDataHostRequest} from "./data-renderer.js";
-import type {InteractionPayload, ResultRef, ValidatedPresentation, VisualizationBindingContext} from "@aeliqo/core";
+import type {InteractionPayload, PresentationManifest, ResultRef, ValidatedPresentation, VersionRef, VisualizationBindingContext} from "@aeliqo/core";
+import type {TemplateResult} from "lit";
+import type {nothing} from "lit";
 import type {AeliqoTableColumn, AeliqoTableRow} from "../types.js";
 import type {AeliqoDataScope} from "../data/types.js";
 
@@ -26,6 +28,19 @@ export type AeliqoSemanticInteractionHandler = (request: AeliqoSemanticInteracti
 export interface AeliqoRegionSnapshot {
   readonly presentation: ValidatedPresentation;
   readonly results: readonly AeliqoRegionResult[];
+}
+
+export interface AeliqoViewRenderContext {
+  readonly node: ValidatedPresentation["nodes"][number];
+  readonly result?: AeliqoRegionResult;
+  readonly children: () => TemplateResult | typeof nothing;
+}
+
+/** Trusted application code. A wire intent can select only a view registered here by the host. */
+export interface AeliqoViewDefinition {
+  readonly ref: VersionRef;
+  readonly manifest: PresentationManifest;
+  render(context: AeliqoViewRenderContext): TemplateResult | typeof nothing;
 }
 
 /** Component-level data requests with no implicit query or runtime effect. */

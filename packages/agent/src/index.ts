@@ -7,3 +7,4 @@ export type {AgentContainmentInput, AgentContainmentReceipt, AgentContainmentOut
 export * from './capabilities/index.js';
 export * from './session/index.js';
 export * from './meaning/index.js';
+export {AELIQO_AGENT_VERSION} from './version.js';

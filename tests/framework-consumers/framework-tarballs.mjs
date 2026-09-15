@@ -13,6 +13,7 @@ import {tmpdir, platform, release, arch} from "node:os";
 import {extname, join, resolve} from "node:path";
 import {spawnSync} from "node:child_process";
 import {chromium} from "@playwright/test";
+import {RELEASE_VERSION} from "../../scripts/release/candidate-lib.mjs";
 
 const root = resolve(import.meta.dirname, "../..");
 const output = join(root, "artifacts", "framework-consumers");
@@ -53,11 +54,11 @@ for (const name of packageNames) {
   const directory = join(root, "packages", name);
   const manifest = JSON.parse(await readFile(join(directory, "package.json"), "utf8"));
   assert.equal(manifest.name, `@aeliqo/${name}`);
-  assert.equal(manifest.version, "0.1.0");
+  assert.equal(manifest.version, RELEASE_VERSION);
   assert.equal(manifest.license, "Apache-2.0");
   assert.notEqual(manifest.private, true);
   run(["pnpm", "build"], directory);
-  const tarball = join(runDirectory, `aeliqo-${name}-0.1.0.tgz`);
+  const tarball = join(runDirectory, `aeliqo-${name}-${RELEASE_VERSION}.tgz`);
   run(["pnpm", "pack", "--out", tarball], directory);
   const bytes = await readFile(tarball);
   const packed = JSON.parse(run(["tar", "-xOf", tarball, "package/package.json"], root));
@@ -89,7 +90,7 @@ await writeFile(join(consumer, "package.json"), JSON.stringify({private: true, t
 run([
   "npm", "install", "--ignore-scripts", "--no-audit", "--no-fund", "--save-exact",
   ...artifacts.map((artifact) => artifact.path),
-  "react@19.2.8", "react-dom@19.2.8", "vue@3.5.42",
+  "react@19.2.8", "react-dom@19.2.8", "vue@3.5.42", "zod@4.5.4",
   "@types/react@19.2.18", "@types/react-dom@19.2.7", "@types/node@24.13.3",
   "typescript@7.0.2", "vite@8.2.2", "@playwright/test@1.63.0",
 ], consumer);
@@ -110,9 +111,9 @@ for (const artifact of artifacts) {
     assert.equal(hash(installed), hash(packed), `Installed ${artifact.name} bytes differ for ${entry}`);
   }
 }
-assert.equal(lock.packages["node_modules/@aeliqo/runtime"]?.dependencies?.["@aeliqo/core"], "0.1.0");
-assert.equal(lock.packages["node_modules/@aeliqo/web"]?.dependencies?.["@aeliqo/core"], "0.1.0");
-assert.equal(lock.packages["node_modules/@aeliqo/react"]?.dependencies?.["@aeliqo/web"], "0.1.0");
+assert.equal(lock.packages["node_modules/@aeliqo/runtime"]?.dependencies?.["@aeliqo/core"], RELEASE_VERSION);
+assert.equal(lock.packages["node_modules/@aeliqo/web"]?.dependencies?.["@aeliqo/core"], RELEASE_VERSION);
+assert.equal(lock.packages["node_modules/@aeliqo/react"]?.dependencies?.["@aeliqo/web"], RELEASE_VERSION);
 assert.deepEqual(Object.keys(lock.packages).filter((key) => key.startsWith("node_modules/@aeliqo/")).sort(), [
   "node_modules/@aeliqo/core",
   "node_modules/@aeliqo/react",
@@ -175,6 +176,46 @@ const Fixture = {setup(): (() => VNode) { const value = ref("Vue"); return () =>
 createApp(Fixture).mount(document.body);
 `);
 
+await writeFile(join(consumer, "adaptive-app.ts"), `
+import {createQueryFunctionRegistry, defineResource} from "@aeliqo/core";
+import {createLocalDataService} from "@aeliqo/runtime/data";
+import {createAeliqoApp, type AeliqoApp} from "@aeliqo/web/app";
+import {z} from "zod";
+
+const people = defineResource({
+  id: "people", revision: "people-1", label: "People", identity: ["id"],
+  schema: z.object({id: z.string(), name: z.string(), team: z.string()}),
+  fields: {name: {label: "Name"}, team: {label: "Team", role: "dimension"}},
+  presentation: {allowedViews: ["table", "cards"]},
+});
+
+export const browsePeople = Object.freeze({
+  version: "1", id: "browse-people", kind: "browse", resource: "people", fields: ["name", "team"],
+});
+
+export function createPeopleApp(): AeliqoApp {
+  const functions = createQueryFunctionRegistry({version: "2"});
+  if (!functions.ok) throw new Error(functions.diagnostics[0].message);
+  const data = createLocalDataService({
+    snapshot: {catalog: people.catalog, sourceRevision: "people-data-1", records: {people: [
+      {id: "ada", name: "Ada Chen", team: "Design"},
+      {id: "sam", name: "Sam Rivera", team: "Engineering"},
+    ]}},
+    functionRegistry: functions.value,
+    sourceLimits: {rows: 100, bytes: 100_000},
+    authorize: () => ({ok: true, value: {scopeDigest: "people-scope", policyRevision: "people-policy-1"}}),
+  });
+  return createAeliqoApp({
+    resources: [{resource: people, data}],
+    authority: {read: () => ({ok: true, value: {
+      principalKey: "framework-user", scopeDigest: "people-scope", policyRevision: "people-policy-1",
+      experienceRevision: "framework-web-1", grants: ["task.evaluate", "result.inspect", "experience.commit"],
+      readContext: {principal: "framework-user"},
+    }})},
+  });
+}
+`);
+
 const catalogQuickstart = `
 import {createStandardFunctionRegistry, parseCatalog, type Catalog} from "@aeliqo/core";
 import {createMeaningAuthoring} from "@aeliqo/runtime/meaning";
@@ -209,7 +250,7 @@ await writeFile(join(consumer, "tsconfig.json"), JSON.stringify({compilerOptions
   target: "ES2022", module: "NodeNext", moduleResolution: "NodeNext", strict: true,
   exactOptionalPropertyTypes: true, noUncheckedIndexedAccess: true, skipLibCheck: false,
   jsx: "react-jsx", noEmit: true, lib: ["ES2022", "DOM", "DOM.Iterable"], types: ["node", "react"],
-}, files: ["framework-types.tsx", "framework-vanilla.ts", "framework-vue.ts", "meaning-quickstart.ts"]}, null, 2) + "\n");
+}, files: ["framework-types.tsx", "framework-vanilla.ts", "framework-vue.ts", "meaning-quickstart.ts", "adaptive-app.ts"]}, null, 2) + "\n");
 run([join(consumer, "node_modules/.bin/tsc"), "--project", "tsconfig.json"], consumer);
 
 await writeFile(join(consumer, "ssr.mjs"), `
@@ -229,26 +270,44 @@ const ssr = run(["node", "ssr.mjs"], consumer).trim();
 const ssrReport = JSON.parse(ssr.split("\n").at(-1));
 assert.equal(ssrReport.hasDeclarativeShadow, true);
 
-await writeFile(join(consumer, "index.html"), `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Installed framework consumer</title></head><body>
-<main id="vanilla"><h1>Vanilla</h1><p id="vanilla-status" role="status">Ready</p><aeliqo-input id="vanilla-input" label="Vanilla person" value="Vanilla"></aeliqo-input><aeliqo-table id="vanilla-table"></aeliqo-table></main>
-<main id="react-root"><h1>React</h1></main><main id="vue-root"><h1>Vue</h1></main><script type="module" src="/framework-app.tsx"></script></body></html>`);
+await writeFile(join(consumer, "index.html"), `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Installed framework consumer</title><style>body{font-family:system-ui;margin:1rem}.framework-grid{display:grid;gap:1rem}.adaptive-region{container-type:inline-size;min-height:12rem}.adaptive-narrow{width:360px;max-width:100%}</style></head><body>
+<div class="framework-grid"><main id="vanilla"><h1>Vanilla</h1><p id="vanilla-status" role="status">Ready</p><aeliqo-input id="vanilla-input" label="Vanilla person" value="Vanilla"></aeliqo-input><aeliqo-table id="vanilla-table"></aeliqo-table><p id="vanilla-app-status" role="status">Mounting</p><div id="vanilla-region" class="adaptive-region"></div></main>
+<main id="react-root" class="adaptive-narrow"><h1>React</h1></main><main id="vue-root"><h1>Vue</h1></main></div><script type="module" src="/framework-app.tsx"></script></body></html>`);
 await writeFile(join(consumer, "framework-app.tsx"), `
 import {registerAeliqoElements, AeliqoInputEvent, type AeliqoTableElement} from "@aeliqo/web";
 import {createRoot} from "react-dom/client";
 import React, {useState} from "react";
 import {AeliqoInput, AeliqoTable, registerAeliqoReactElements} from "@aeliqo/react";
+import {AeliqoProvider, AeliqoRegion} from "@aeliqo/react/app";
 import {createApp, h, ref, type VNode} from "vue";
+import {browsePeople, createPeopleApp} from "./adaptive-app.js";
 registerAeliqoElements(); registerAeliqoReactElements();
 const vanillaInput = document.querySelector("#vanilla-input");
 const vanillaTable = document.querySelector<AeliqoTableElement>("#vanilla-table");
 const vanillaStatus = document.querySelector("#vanilla-status");
-if (!(vanillaInput instanceof HTMLElement) || !vanillaTable || !vanillaStatus) throw new Error("Vanilla shell is incomplete");
+const vanillaRegion = document.querySelector<HTMLElement>("#vanilla-region");
+const vanillaAppStatus = document.querySelector("#vanilla-app-status");
+if (!(vanillaInput instanceof HTMLElement) || !vanillaTable || !vanillaStatus || !vanillaRegion || !vanillaAppStatus) throw new Error("Vanilla shell is incomplete");
 vanillaTable.caption = "Vanilla people"; vanillaTable.columns = [{key: "name", label: "Name"}]; vanillaTable.rows = [{name: "Ada"}];
 vanillaInput.addEventListener("aeliqo-input", (event) => { if (event instanceof AeliqoInputEvent) { vanillaInput.value = event.detail.value; vanillaStatus.textContent = event.detail.value; } });
-function ReactFixture(): React.JSX.Element { const [value, setValue] = useState("React"); return <><p id="react-status" role="status">{value}</p><AeliqoInput id="react-input" label="React person" value={value} onAeliqoInput={(event) => setValue(event.detail.value)} /><AeliqoTable caption="React people" columns={[{key: "name", label: "Name"}]} rows={[{name: "Ada"}]} /></>; }
+const vanillaApp = createPeopleApp();
+const vanillaMounted = vanillaApp.mount({target: vanillaRegion, regionId: "vanilla-people", resourceId: "people"});
+if (!vanillaMounted.ok) throw new Error(vanillaMounted.diagnostics[0].message);
+vanillaAppStatus.textContent = (await vanillaApp.render({regionId: "vanilla-people", intent: browsePeople})).status;
+
+const reactApp = createPeopleApp();
+function ReactFixture(): React.JSX.Element { const [value, setValue] = useState("React"); return <AeliqoProvider app={reactApp}><p id="react-status" role="status">{value}</p><AeliqoInput id="react-input" label="React person" value={value} onAeliqoInput={(event) => setValue(event.detail.value)} /><AeliqoTable caption="React people" columns={[{key: "name", label: "Name"}]} rows={[{name: "Ada"}]} /><p id="react-app-status" role="status">Mounting</p><AeliqoRegion className="adaptive-region" regionId="react-people" resourceId="people" intent={browsePeople} onReceipt={(receipt) => { const status = document.querySelector("#react-app-status"); if (status) status.textContent = receipt.status; }} /></AeliqoProvider>; }
 createRoot(document.querySelector("#react-root")!).render(<ReactFixture />);
-const VueFixture = {setup(): (() => VNode) { const value = ref("Vue"); return () => h("section", [h("p", {id: "vue-status", role: "status"}, value.value), h("aeliqo-input", {id: "vue-input", label: "Vue person", value: value.value, "onAeliqo-input": (event: Event) => { if (event instanceof AeliqoInputEvent) value.value = event.detail.value; }}), h("aeliqo-table", {caption: "Vue people", columns: [{key: "name", label: "Name"}], rows: [{name: "Ada"}]})]); }};
+const VueFixture = {setup(): (() => VNode) { const value = ref("Vue"); return () => h("section", [h("p", {id: "vue-status", role: "status"}, value.value), h("aeliqo-input", {id: "vue-input", label: "Vue person", value: value.value, "onAeliqo-input": (event: Event) => { if (event instanceof AeliqoInputEvent) value.value = event.detail.value; }}), h("aeliqo-table", {caption: "Vue people", columns: [{key: "name", label: "Name"}], rows: [{name: "Ada"}]}), h("p", {id: "vue-app-status", role: "status"}, "Mounting"), h("div", {id: "vue-region", class: "adaptive-region"})]); }};
 createApp(VueFixture).mount(document.querySelector("#vue-root")!);
+const vueRegion = document.querySelector<HTMLElement>("#vue-region");
+const vueAppStatus = document.querySelector("#vue-app-status");
+if (!vueRegion || !vueAppStatus) throw new Error("Vue Region shell is incomplete");
+const vueApp = createPeopleApp();
+const vueMounted = vueApp.mount({target: vueRegion, regionId: "vue-people", resourceId: "people"});
+if (!vueMounted.ok) throw new Error(vueMounted.diagnostics[0].message);
+vueAppStatus.textContent = (await vueApp.render({regionId: "vue-people", intent: browsePeople})).status;
+window.addEventListener("pagehide", () => { vanillaApp.dispose(); reactApp.dispose(); vueApp.dispose(); }, {once: true});
 `);
 await writeFile(join(consumer, "vite.config.mjs"), `export default {build: {target: "es2022"}};\n`);
 run([join(consumer, "node_modules/.bin/vite"), "build"], consumer);
@@ -278,9 +337,16 @@ try {
   await page.locator("#vanilla-input").waitFor();
   await page.locator("#react-input").waitFor();
   await page.locator("#vue-input").waitFor();
+  await page.waitForFunction(() => ["vanilla", "react", "vue"].every((framework) => document.querySelector(`#${framework}-app-status`)?.textContent === "renderer-ready"));
   assert.equal(await page.locator("#vanilla-table").locator("table").count(), 1);
   assert.equal(await page.locator("#react-root aeliqo-table").locator("table").count(), 1);
-  assert.equal(await page.locator("#vue-root aeliqo-table").locator("table").count(), 1);
+  assert.equal(await page.locator("#vue-root > section > aeliqo-table").locator("table").count(), 1);
+  assert.equal(await page.locator("#vanilla-region aeliqo-table").count(), 1);
+  assert.equal(await page.locator("#react-root [data-aeliqo-react-region] aeliqo-card-collection").count(), 1);
+  assert.equal(await page.locator("#vue-region aeliqo-table").count(), 1);
+  assert.match(await page.locator("#vanilla-region aeliqo-table table").textContent(), /Ada Chen/);
+  assert.match(await page.locator("#react-root [data-aeliqo-react-region] aeliqo-card-collection [part=card]").first().textContent(), /Ada Chen/);
+  assert.match(await page.locator("#vue-region aeliqo-table table").textContent(), /Ada Chen/);
   await page.locator("#vanilla-input").locator("input").fill("Lin");
   await page.locator("#react-input").locator("input").fill("Mina");
   await page.locator("#vue-input").locator("input").fill("Noor");
@@ -301,7 +367,7 @@ assert.equal(sourceDigest(), before, "Source changed during framework consumer p
 await writeFile(join(runDirectory, "report.json"), JSON.stringify({
   sourceDigest: before,
   passed: true,
-  scope: "Installed core/runtime/web/react tarballs; all 71 React wrapper exports; typed vanilla/React/Vue recipes; React declarative Shadow DOM SSR; property/event behavior in Chromium; manual schema-reuse meaning path without model, Studio, chart, or layout imports.",
+  scope: "Installed core/runtime/web/react tarballs; all 71 React wrapper exports; one adaptive app facade rendered through Vanilla, React, and Vue hosts; React declarative Shadow DOM SSR; property/event behavior in Chromium; manual schema-reuse meaning path without model, Studio, chart, or layout imports.",
   artifacts: artifacts.map(({entries, ...artifact}) => ({...artifact, entries})),
   consumerDirectory: consumer,
   lock: {path: join(runDirectory, "consumer-package-lock.json"), sha256: hash(lockBytes)},

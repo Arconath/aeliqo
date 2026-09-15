@@ -1,3 +1,4 @@
+import {RELEASE_VERSION} from "../../scripts/release/metadata.mjs";
 /**
  * Build and consume the actual @aeliqo/core package outside the workspace.
  *
@@ -118,7 +119,7 @@ async function clearCompiledOutput(directory, allowedPattern) {
 const sourceBefore = await sourceDigest();
 const manifest = JSON.parse(await readFile(join(coreDirectory, "package.json"), "utf8"));
 assert.equal(manifest.name, "@aeliqo/core");
-assert.equal(manifest.version, "0.1.0");
+assert.equal(manifest.version, RELEASE_VERSION);
 assert.equal(manifest.license, "Apache-2.0");
 assert.notEqual(manifest.private, true);
 assert.equal(manifest.dependencies?.zod, "4.5.4");
@@ -148,7 +149,7 @@ for (const name of expectedSchemas) {
   assert.equal(typeof schema, "object");
 }
 
-const tarballPath = join(runDirectory, "aeliqo-core-0.1.0.tgz");
+const tarballPath = join(runDirectory, `aeliqo-core-${RELEASE_VERSION}.tgz`);
 run(["pnpm", "pack", "--out", tarballPath], coreDirectory);
 const tarballBytes = await readFile(tarballPath);
 const tarballSha256 = hash(tarballBytes);
@@ -156,7 +157,7 @@ const tarballIntegrity = `sha512-${hash(tarballBytes, "sha512", "base64")}`;
 const packedManifest = JSON.parse(run(["tar", "-xOf", tarballPath, "package/package.json"], root));
 assert.deepEqual(packedManifest, manifest);
 assert.equal(packedManifest.name, "@aeliqo/core");
-assert.equal(packedManifest.version, "0.1.0");
+assert.equal(packedManifest.version, RELEASE_VERSION);
 assert.equal(packedManifest.license, "Apache-2.0");
 for (const field of ["dependencies", "peerDependencies", "optionalDependencies"]) {
   assert(!JSON.stringify(packedManifest[field] ?? {}).includes("workspace:"), `Workspace alias in ${field}`);
@@ -182,7 +183,7 @@ run([
 const lockBytes = await readFile(join(consumerDirectory, "package-lock.json"));
 const lock = JSON.parse(lockBytes);
 const coreLock = lock.packages["node_modules/@aeliqo/core"];
-assert.equal(coreLock.version, "0.1.0");
+assert.equal(coreLock.version, RELEASE_VERSION);
 assert.equal(coreLock.integrity, tarballIntegrity);
 const corePackageEntries = Object.keys(lock.packages).filter((key) => /(?:^|\/)node_modules\/@aeliqo\/core$/.test(key));
 assert.deepEqual(corePackageEntries, ["node_modules/@aeliqo/core"], "Expected exactly one installed @aeliqo/core package");
@@ -1088,7 +1089,7 @@ const report = {
   sourceDigestBefore: sourceBefore,
   sourceDigestAfter: sourceAfter,
   sourceChangedDuringRun: sourceBefore !== sourceAfter,
-  scope: "@aeliqo/core 0.1.0 installed tarball; four document parsers/round trips; TaskStructure, ExperienceConstraints, semantic checker and typed authoring passes; generated schemas; Vite core graph and 70 KiB gzip budget. Includes installed exact decimal aggregate, canonical query ranking, cancellation and registered interaction graph validation in Node/no-codegen/Chromium. Full planner and product certification are outside this scoped check.",
+  scope: `@aeliqo/core ${RELEASE_VERSION} installed tarball; four document parsers/round trips; TaskStructure, ExperienceConstraints, semantic checker and typed authoring passes; generated schemas; Vite core graph and 70 KiB gzip budget. Includes installed exact decimal aggregate, canonical query ranking, cancellation and registered interaction graph validation in Node/no-codegen/Chromium. Full planner and product certification are outside this scoped check.`,
   artifact: {name: packedManifest.name, version: packedManifest.version, path: tarballPath, sha256: tarballSha256, integrity: tarballIntegrity},
   consumer: {directory: consumerDirectory, lockPath: join(runDirectory, "consumer-package-lock.json"), lockSha256: hash(lockBytes)},
   schemas: expectedSchemas.map((name) => `schemas/${name}.schema.json`),

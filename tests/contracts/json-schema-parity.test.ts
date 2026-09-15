@@ -12,6 +12,7 @@ const cases: Record<ContractKind, unknown> = {
   'visualization-spec': {version: '1', view: 'matrix', result: fixtures.ref, columns: ['employee.id']},
   'plot-spec': {version:'1',root:{kind:'unit',mark:'point',result:fixtures.ref,encoding:{x:{field:'x',scale:'linear'},y:{field:'y',scale:'linear'}},missing:'gap'}},
   expression: fixtures.expression, query: fixtures.query,
+  intent: {version: '1', id: 'browse-people', resource: 'employees', kind: 'browse', fields: ['employee.id']},
   interaction: fixtures.interaction, 'result-event': fixtures.resultEvents.batch,
   environment: fixtures.environment, 'presentation-plan': fixtures.presentationPlan,
   'task-proposal': fixtures.taskProposal, 'meaning-draft': fixtures.meaningDraft,

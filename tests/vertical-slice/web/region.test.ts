@@ -41,7 +41,7 @@ describe("registered web region", () => {
   it("derives table selection ports from the Result identity and rejects unknown config", () => {
     const manifest = registry().manifests.find((candidate) => candidate.ref.id === AELIQO_PRESENTATION_REFS.table.id)!;
     const configured = manifest.resolveConfig({selection: "multiple"}, result);
-    expect(configured).toMatchObject({ok: true, value: {fields: ["employee.id", "month", "amount"], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.selection], ports: [{id: "selection", payload: "selection", entity: "employees", identity: ["employee.id"]} ]}});
+    expect(configured).toMatchObject({ok: true, value: {fields: ["employee.id", "month", "amount"], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.compare, AELIQO_OPERATION_REFS.analyze, AELIQO_OPERATION_REFS.selection], ports: [{id: "selection", payload: "selection", entity: "employees", identity: ["employee.id"]} ]}});
     expect(manifest.resolveConfig({html: "<script>bad</script>"}, result)).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.config"}]});
     expect(manifest.resolveConfig({columns: [{key: "amount", label: "Absence"}]}, result)).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.field"}]});
     expect(manifest.resolveConfig({selection: "multiple", identity: ["month"]}, result)).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.identity"}]});
@@ -73,7 +73,7 @@ describe("registered web region", () => {
   it("keeps trend series fields and filter semantics typed", () => {
     const manifests = registry().manifests;
     const trend = manifests.find((candidate) => candidate.ref.id === AELIQO_PRESENTATION_REFS.trend.id)!;
-    expect(trend.resolveConfig({labelField: "month", series: [{field: "amount"}], seriesBy: ["employee.id"]}, result)).toMatchObject({ok: true, value: {fields: ["month", "employee.id", "amount"], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.compare]}});
+    expect(trend.resolveConfig({labelField: "month", series: [{field: "amount"}], seriesBy: ["employee.id"]}, result)).toMatchObject({ok: true, value: {fields: ["month", "employee.id", "amount"], operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.compare, AELIQO_OPERATION_REFS.analyze]}});
     expect(trend.resolveConfig({labelField: "month", series: [{field: "amount", label: "Absence"}]}, result)).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.field"}]});
     expect(trend.resolveConfig({labelField: "employee.id", series: [{field: "amount"}]}, result)).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.field"}]});
     expect(trend.resolveConfig({labelField: "month", series: [{field: "month"}]}, result)).toMatchObject({ok: false, diagnostics: [{code: "web.presentation.field"}]});

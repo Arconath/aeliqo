@@ -5,12 +5,9 @@
  */
 import { createHash } from 'node:crypto';
 import { readFile, rm } from 'node:fs/promises';
+import { PUBLIC_PACKAGE_NAMES, PUBLIC_PACKAGES, RELEASE_VERSION } from './metadata.mjs';
 
-export const RELEASE_VERSION = '0.1.0';
-// Dependency order is publication order. Keep this explicit and fail closed if
-// a future manifest introduces an edge to a package later in the list.
-export const PUBLIC_PACKAGES = Object.freeze(['core', 'runtime', 'web', 'agent', 'devtools', 'react']);
-export const PUBLIC_PACKAGE_NAMES = Object.freeze(PUBLIC_PACKAGES.map((name) => `@aeliqo/${name}`));
+export { PUBLIC_PACKAGE_NAMES, PUBLIC_PACKAGES, RELEASE_VERSION };
 
 const REQUIRED_FILES = new Set(['package/package.json', 'package/README.md', 'package/LICENSE', 'package/NOTICE']);
 const ALLOWED_PREFIXES = ['package/dist/', 'package/schemas/'];

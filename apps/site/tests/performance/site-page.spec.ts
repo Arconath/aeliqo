@@ -416,10 +416,10 @@ async function waitForObserverDelivery(page: Page): Promise<void> {
 
 async function assertRouteReady(page: Page, route: typeof ROUTES[number]): Promise<RouteReadiness> {
   if (route.id === "home") {
-    await expect(page.getByRole("heading", {name: "From application data", exact: false})).toBeVisible();
-    await expect(page.locator("#home-demo aeliqo-record-list")).toBeVisible();
+    await expect(page.getByRole("heading", {name: "Interfaces that adapt to intent", exact: false})).toBeVisible();
+    await expect(page.locator("#home-demo aeliqo-region")).toBeVisible();
     await expect(page.locator("#demo-status")).toContainText("4 of 4");
-    return {visible: "hero heading + home record list", functional: "local home demo reports 4 of 4 synthetic people"};
+    return {visible: "hero heading + adaptive Region", functional: "public app facade reports 4 of 4 synthetic people"};
   }
   if (route.id === "component-docs") {
     await expect(page.getByRole("heading", {name: "Table", exact: true})).toBeVisible();

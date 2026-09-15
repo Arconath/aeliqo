@@ -12,8 +12,9 @@ import {AeliqoChartElement} from "./elements/aeliqo-chart.js";
 import {AeliqoInputElement} from "./elements/aeliqo-input.js";
 import {AeliqoTableElement} from "./elements/aeliqo-table.js";
 import {AeliqoRegionElement} from "./region/aeliqo-region.js";
+import {AELIQO_WEB_VERSION} from "./version.js";
 
-export const AELIQO_WEB_VERSION = "0.1.0";
+export {AELIQO_WEB_VERSION} from "./version.js";
 
 type AeliqoElementConstructor = CustomElementConstructor & {
   readonly aeliqoVersion?: string;

@@ -13,7 +13,6 @@ export class AeliqoSurfaceElement extends AeliqoFoundationElement {
     label: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   as: AeliqoSurfaceAs = "div";
   tone: AeliqoSurfaceTone = "surface";

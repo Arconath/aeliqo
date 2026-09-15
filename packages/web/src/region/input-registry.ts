@@ -5,6 +5,7 @@ import {
   type Outcome,
   type PresentationManifest,
   type PresentationValues,
+  type ReadonlyJsonValue,
   type Scalar,
   type SemanticType,
   type VersionRef,
@@ -28,7 +29,7 @@ export interface AeliqoInputDraftBinding {
 /** A host reviewed, immutable form action. Input values are static parameters; drafts stay host-owned. */
 export interface AeliqoInputActionBinding {
   readonly action: VersionRef;
-  readonly input: Readonly<Record<string, Scalar>>;
+  readonly input: Readonly<Record<string, ReadonlyJsonValue>>;
 }
 
 /** A registered schema for metadata-only file selections. */
@@ -104,19 +105,10 @@ const semanticType = (value: unknown): value is SemanticType => {
   return true;
 };
 
-const scalarRecord = (value: unknown): value is Readonly<Record<string, Scalar>> => {
+const jsonRecord = (value: unknown): value is Readonly<Record<string, ReadonlyJsonValue>> => {
   const candidate = record(value);
-  return candidate !== undefined && Object.keys(candidate).length <= 128 &&
-    Object.keys(candidate).every((key) => boundedId(key) && scalarValue(candidate[key]));
+  return candidate !== undefined && Object.keys(candidate).length <= 128 && Object.keys(candidate).every((key) => boundedId(key)) && parseWireValue(candidate).ok;
 };
-
-function scalarValue(value: unknown): value is Scalar {
-  if (value === null || typeof value === "string" || typeof value === "boolean") return true;
-  if (typeof value === "number") return Number.isFinite(value);
-  const candidate = record(value);
-  return candidate !== undefined && Object.keys(candidate).length === 1 &&
-    typeof candidate.decimal === "string" && /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/u.test(candidate.decimal) && candidate.decimal.length <= 512;
-}
 
 function clone<T>(value: T): T {
   if (value !== null && typeof value === "object") {
@@ -226,7 +218,7 @@ function validateInputBinding(binding: AeliqoInputBinding): Outcome<AeliqoInputB
   if (ref === "input.date-range" && (startValue!.type.value !== "date" || endValue!.type.value !== "date")) return fail("binding", "Date range mappings must use the date semantic type.");
   if (ref === "input.date-range" && (startValue!.entity !== endValue!.entity || startValue!.key !== endValue!.key || startValue!.entityRevision !== endValue!.entityRevision)) return fail("binding", "Date range start and end mappings must target the same registered entity revision.");
   if (ref !== "input.date-range" && draftValue !== undefined && ["input.number-field", "input.slider"].includes(ref) && !["integer", "float", "decimal"].includes(draftValue.type.value)) return fail("binding", `${ref} requires a numeric semantic type.`);
-  if (ref !== "input.date-field" && ref !== "input.date-range" && draftValue !== undefined && ref !== "input.number-field" && ref !== "input.slider" && ref !== "input.checkbox" && ref !== "input.switch" && draftValue.type.value !== "text") return fail("binding", `${ref} requires a text semantic type.`);
+  if (ref !== "input.date-field" && ref !== "input.date-range" && draftValue !== undefined && ref !== "input.number-field" && ref !== "input.slider" && ref !== "input.checkbox" && ref !== "input.switch" && draftValue.type.value !== "text" && !(ref === "input.text-field" && draftValue.type.value === "instant")) return fail("binding", `${ref} requires a text semantic type.`);
   if (["input.checkbox", "input.switch"].includes(ref) && draftValue !== undefined && draftValue.type.value !== "boolean") return fail("binding", `${ref} requires a boolean semantic type.`);
   if (ref === "input.date-field" && draftValue !== undefined && draftValue.type.value !== "date") return fail("binding", "A date field requires the date semantic type.");
   const has = (key: string): boolean => Object.hasOwn(config, key);
@@ -251,7 +243,7 @@ function validateInputBinding(binding: AeliqoInputBinding): Outcome<AeliqoInputB
     "input.search-field": ["value", "defaultValue", "queryOnInput", "debounceMs", "placeholder", "autocomplete"],
     "input.file-input": ["accept", "multiple", "capture", "maxFiles", "maxBytes"],
     "input.field-group": ["legend", "description", "error", "disabled"],
-    "input.form": ["label", "noValidate"],
+    "input.form": ["label", "noValidate", "submitLabel"],
   };
   const structure = ref === "input.field-group" || ref === "input.form";
   if (!commonConfig(config, allowedByRef[ref], ref !== "input.field-group", !structure)) return fail("binding", `${ref} contains an unknown or malformed common configuration field.`);
@@ -269,7 +261,7 @@ function validateInputBinding(binding: AeliqoInputBinding): Outcome<AeliqoInputB
   if (ref === "input.search-field" && (!stringField("value", 16_384) || !stringField("defaultValue", 16_384) || !boolField("queryOnInput") || !finiteNumber(config.debounceMs, 0, 10_000) || !stringField("placeholder", 1_024) || !stringField("autocomplete", 128))) return fail("binding", "Search field configuration is invalid.");
   if (ref === "input.file-input" && (!stringField("accept", 1_024) || !boolField("multiple") || !stringField("capture", 64) || !finiteNumber(config.maxFiles, 0, 500) || !finiteNumber(config.maxBytes, 0, 1_000_000_000))) return fail("binding", "File input configuration is invalid.");
   if (ref === "input.field-group" && (!stringField("legend", 512) || !stringField("description", 2_048) || !stringField("error", 2_048) || !boolField("disabled"))) return fail("binding", "Field group configuration is invalid.");
-  if (ref === "input.form" && (!stringField("label", 512) || !boolField("noValidate"))) return fail("binding", "Form configuration is invalid.");
+  if (ref === "input.form" && (!stringField("label", 512) || !boolField("noValidate") || !stringField("submitLabel", 256))) return fail("binding", "Form configuration is invalid.");
   if (textDraft !== undefined) {
     for (const key of ["value", "defaultValue"]) {
       if (ref === "input.number-field") { const checked = numberCheck(key); if (!checked.ok) return checked; }
@@ -296,7 +288,7 @@ function validateInputBinding(binding: AeliqoInputBinding): Outcome<AeliqoInputB
     }
   }
   if (binding.action !== undefined) {
-    if (!versionRef(binding.action.action) || !scalarRecord(binding.action.input)) return fail("binding", "A registered action must contain a versioned action and scalar static parameters.");
+    if (!versionRef(binding.action.action) || !jsonRecord(binding.action.input)) return fail("binding", "A registered action must contain a versioned action and bounded JSON parameters.");
   }
   if (ref === "input.form" && binding.action === undefined) return fail("binding", "A form requires a host-registered action.");
   if (ref !== "input.form" && binding.action !== undefined) return fail("binding", "Only a form may declare an action binding.");

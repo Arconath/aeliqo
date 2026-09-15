@@ -1011,6 +1011,7 @@ function resolveDetail(
       "rowIdentity",
       "title",
       "entity",
+      "showIdentity",
     ])
   )
     return failure(
@@ -1054,6 +1055,8 @@ function resolveDetail(
     return failure("field", "Detail columns must be included in the configured fields.");
   const selected = selectOne(input, binding);
   if (!selected.ok) return selected;
+  if (input.showIdentity !== undefined && typeof input.showIdentity !== "boolean")
+    return failure("config", "Detail showIdentity must be boolean when provided.");
   return {
     ok: true,
     value: {

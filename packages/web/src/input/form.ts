@@ -10,7 +10,6 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
     noValidate: {attribute: "no-validate", type: Boolean},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   label = "";
   noValidate = false;

@@ -63,8 +63,8 @@ describe("semantic input renderer boundary", () => {
   });
 
   it("emits only registered static form actions and metadata-only file extensions", () => {
-    const form = resolved("input.form", {action: {id: "record.save", revision: "1"}, actionInput: {source: "test"}, bindingRevision: "inputs-7"}, [{id: "submit", payload: "action-request"}], [{id: "record.save", revision: "1"}]);
-    expect(resolveInputInteraction(form, new AeliqoFormSubmitEvent({source: "user", submitter: undefined}))).toEqual([{portId: "submit", payload: {kind: "action-request", action: {id: "record.save", revision: "1"}, input: {source: "test"}}}]);
+    const form = resolved("input.form", {action: {id: "record.save", revision: "1"}, actionInput: {source: "test", profile: {roles: ["admin", "editor"]}}, bindingRevision: "inputs-7"}, [{id: "submit", payload: "action-request"}], [{id: "record.save", revision: "1"}]);
+    expect(resolveInputInteraction(form, new AeliqoFormSubmitEvent({source: "user", submitter: undefined}))).toEqual([{portId: "submit", payload: {kind: "action-request", action: {id: "record.save", revision: "1"}, input: {source: "test", profile: {roles: ["admin", "editor"]}}}}]);
     const missingOperation = resolved("input.form", {action: {id: "record.save", revision: "1"}, actionInput: {source: "test"}, bindingRevision: "inputs-7"}, [{id: "submit", payload: "action-request"}]);
     expect(resolveInputInteraction(missingOperation, new AeliqoFormSubmitEvent({source: "user", submitter: undefined}))).toEqual([]);
     const files = resolved("input.file-input", {fileSchema: {id: "files.metadata", revision: "1"}, bindingRevision: "inputs-7"}, [{id: "files", payload: "extension", extension: {id: "files.metadata", revision: "1"}}]);

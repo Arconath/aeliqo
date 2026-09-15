@@ -17,6 +17,8 @@ test('Next App Router serves real shadow content and hydrates a controlled form'
   await expect(input).toHaveValue('Lin');
   await expect(page.locator('#aeliqo-server-proof')).not.toHaveAttribute('data-hydration-error',/.+/);
   expect(await page.locator('form').evaluate(form=>{if(!(form instanceof HTMLFormElement))throw new Error('Expected form');return new FormData(form).get('person');})).toBe('Lin');
-  await expect(page.locator('aeliqo-input').locator('input')).toHaveCount(1);
+  await expect(page.locator('#aeliqo-server-proof aeliqo-input').locator('input')).toHaveCount(1);
+  await expect(page.locator('#adaptive-people-status')).toHaveText('renderer-ready');
+  await expect(page.locator('[data-aeliqo-react-region="next-people"] aeliqo-table')).toContainText('Ada Chen');
   expect(errors).toEqual([]);
 });

@@ -132,6 +132,12 @@ async function close(server: Server | undefined): Promise<void> {
 describe("catalog source snippets", () => {
   it("extracts from a minified catalog bundle and runs against real packed packages", async () => {
     const workspace = resolve(import.meta.dirname, "../..");
+    const releaseMetadata: unknown = JSON.parse(await readFile(join(workspace, "release-metadata.json"), "utf8"));
+    if (typeof releaseMetadata !== "object" || releaseMetadata === null || !("version" in releaseMetadata) ||
+      typeof releaseMetadata.version !== "string" || !/^\d+\.\d+\.\d+$/u.test(releaseMetadata.version)) {
+      throw new Error("release-metadata.json has an invalid version.");
+    }
+    const releaseVersion = releaseMetadata.version;
     const evidenceRoot = join(workspace, "artifacts", "catalog-source-consumers");
     await mkdir(evidenceRoot, {recursive: true});
     const runDirectory = await mkdtemp(join(evidenceRoot, "run-"));
@@ -214,11 +220,11 @@ for (const example of catalogExamples) {
       const tarballs: string[] = [];
       for (const packageName of ["core", "web"] as const) {
         const packageDirectory = join(workspace, "packages", packageName);
-        const tarball = join(runDirectory, `aeliqo-${packageName}-0.1.0.tgz`);
+        const tarball = join(runDirectory, `aeliqo-${packageName}-${releaseVersion}.tgz`);
         run(["pnpm", "pack", "--out", tarball], packageDirectory);
         const packedManifest = JSON.parse(run(["tar", "-xOf", tarball, "package/package.json"], workspace)) as {name?: string; version?: string; private?: boolean; dependencies?: Record<string, string>};
         expect(packedManifest.name).toBe(`@aeliqo/${packageName}`);
-        expect(packedManifest.version).toBe("0.1.0");
+        expect(packedManifest.version).toBe(releaseVersion);
         expect(packedManifest.private).not.toBe(true);
         expect(JSON.stringify(packedManifest.dependencies ?? {})).not.toContain("workspace:");
         const artifact = await hashFile(tarball);

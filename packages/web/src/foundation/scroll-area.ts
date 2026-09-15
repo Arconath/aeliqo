@@ -11,7 +11,6 @@ export class AeliqoScrollAreaElement extends AeliqoFoundationElement {
     tabIndex: {attribute: "tabindex", type: Number},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   axis: AeliqoScrollAreaAxis = "y";
   label = "";

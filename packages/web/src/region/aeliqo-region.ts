@@ -10,6 +10,7 @@ import type {InteractionPayload, InteractionState, Result, ResultRef, ValidatedP
 import {css, html, LitElement, nothing, type TemplateResult} from "lit";
 import {repeat} from "lit/directives/repeat.js";
 import type {PropertyValues} from "lit";
+import {AELIQO_WEB_VERSION} from "../version.js";
 import {aeliqoThemeStyles} from "../styles/theme.js";
 import {dataStatusMessage, materializedDataStatus, scopeText} from "../data/shared.js";
 import "../elements/aeliqo-table.js";
@@ -18,7 +19,7 @@ import "../elements/aeliqo-input.js";
 import {stableTableRowKey} from "../elements/aeliqo-table.js";
 import type {AeliqoChartSeries, AeliqoTableColumn, AeliqoTableRow} from "../types.js";
 import type {AeliqoInputChangeDetail, AeliqoTableSelectionDetail} from "../types.js";
-import type {AeliqoRegionResult, AeliqoSemanticInteractionHandler, AeliqoSemanticInteractionRequest} from "./types.js";
+import type {AeliqoRegionResult, AeliqoSemanticInteractionHandler, AeliqoSemanticInteractionRequest, AeliqoViewDefinition} from "./types.js";
 
 function refKey(ref: ResultRef): string {
   return JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
@@ -145,21 +146,23 @@ function valuesOf(node: {readonly config: {readonly values: Readonly<Record<stri
  * decisions remain outside this element.
  */
 export class AeliqoRegionElement extends LitElement {
+  static readonly aeliqoVersion = AELIQO_WEB_VERSION;
   static readonly properties = {
     presentation: {attribute: false},
     results: {attribute: false},
     interaction: {attribute: false},
     onSemanticInteraction: {attribute: false},
     onDataRequest: {attribute: false},
+    viewRenderers: {attribute: false},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   presentation: ValidatedPresentation | undefined = undefined;
   results: readonly AeliqoRegionResult[] = [];
   interaction: InteractionState | undefined = undefined;
   onSemanticInteraction: AeliqoSemanticInteractionHandler | undefined = undefined;
   onDataRequest: AeliqoRegionDataRequestHandler | undefined = undefined;
+  viewRenderers: readonly AeliqoViewDefinition[] = [];
   private focusedNodeId: string | undefined;
   private focusedElement: HTMLElement | undefined;
 
@@ -225,11 +228,11 @@ export class AeliqoRegionElement extends LitElement {
   private renderNode(nodeId: string, nodes: ReadonlyMap<string, ValidatedPresentation["nodes"][number]>): TemplateResult | typeof nothing {
     const resolved = nodes.get(nodeId);
     if (resolved === undefined) return nothing;
-    const children = () => repeat(
+    const children = (): TemplateResult => html`${repeat(
       resolved.node.children,
       (childId) => childId,
       (childId) => this.renderNode(childId, nodes),
-    );
+    )}`;
     const values = valuesOf(resolved);
     switch (resolved.manifest.id) {
       case "layout.stack": {
@@ -241,8 +244,16 @@ export class AeliqoRegionElement extends LitElement {
       case "data.table": return this.renderTable(resolved, values);
       case "data.trend": return this.renderTrend(resolved, values);
       case "control.filter": return this.renderFilter(resolved, values);
-      default: return renderFoundationNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? renderInputNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload), this.presentation?.environment.locale) ?? renderNavigationFeedbackNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? this.renderData(resolved) ?? this.renderVisualization(resolved) ?? html`<div part="unsupported">Unsupported registered representation.</div>`;
+      default: return renderFoundationNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? renderInputNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload), this.presentation?.environment.locale) ?? renderNavigationFeedbackNode(resolved, childId => this.renderNode(childId, nodes), (node, portId, payload) => this.emitFoundation(node, portId, payload)) ?? this.renderData(resolved) ?? this.renderVisualization(resolved) ?? this.renderCustom(resolved, children) ?? html`<div part="unsupported">Unsupported registered representation.</div>`;
     }
+  }
+
+  private renderCustom(node: ValidatedPresentation["nodes"][number], children: () => TemplateResult | typeof nothing): TemplateResult | typeof nothing | undefined {
+    const definition = this.viewRenderers.find((candidate) => candidate.ref.id === node.manifest.id && candidate.ref.revision === node.manifest.revision);
+    if (definition === undefined) return undefined;
+    const result = resultFor(node, this.results);
+    try { return definition.render({node, ...(result === undefined ? {} : {result}), children}); }
+    catch { return html`<div part="unsupported">Custom view could not be rendered.</div>`; }
   }
 
   private renderVisualization(node: ValidatedPresentation["nodes"][number]): TemplateResult | typeof nothing | undefined {

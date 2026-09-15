@@ -1,7 +1,8 @@
 import {css, LitElement} from "lit";
 import {aeliqoThemeStyles} from "../styles/theme.js";
+import {AELIQO_WEB_VERSION} from "../version.js";
 
-export const AELIQO_FOUNDATION_VERSION = "0.1.0";
+export const AELIQO_FOUNDATION_VERSION = AELIQO_WEB_VERSION;
 
 export const aeliqoFoundationFocusStyles = css`
   :host {

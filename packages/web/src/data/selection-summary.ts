@@ -1,5 +1,6 @@
 import {css, html, LitElement, nothing} from "lit";
 import {aeliqoThemeStyles} from "../styles/theme.js";
+import {AELIQO_WEB_VERSION} from "../version.js";
 import type {ResultRef} from "@aeliqo/core";
 import type {AeliqoDataScope, AeliqoDataStatus, AeliqoFilterPredicate, AeliqoSelectionDetail} from "./types.js";
 import {AeliqoDataSelectionEvent} from "./events.js";
@@ -15,6 +16,7 @@ export interface AeliqoSelectionScope {
 /** Makes selection scope explicit. A predicate selection is never described
  * as a list of observed IDs or as an unqualified global selection. */
 export class AeliqoSelectionSummaryElement extends LitElement {
+  static readonly aeliqoVersion = AELIQO_WEB_VERSION;
   static readonly properties = {
     selectedKeys: {attribute: false},
     selectionScope: {attribute: false},
@@ -27,7 +29,6 @@ export class AeliqoSelectionSummaryElement extends LitElement {
     message: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   selectedKeys: readonly string[] = [];
   selectionScope: AeliqoSelectionScope | undefined = undefined;

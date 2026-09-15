@@ -213,6 +213,14 @@ function validateReadSet(value: unknown): RegionOutcome<RegionReadSet> {
   return {ok: true, value: frozen({...checked.value, results: refs.value, dataRevision: record.dataRevision as number})};
 }
 
+function interactionResultReferences(interaction: RegionContent['interaction']): readonly ResultRef[] {
+  const refs: ResultRef[] = [];
+  for (const entry of interaction?.values ?? []) {
+    if (entry.payload.kind === 'selection' && entry.payload.selection.mode === 'ids') refs.push(entry.payload.selection.result);
+  }
+  return refs;
+}
+
 function requiredResultReferences(state: RegionContent): readonly ResultRef[] {
   const refs: ResultRef[] = [];
   if (state.task.kind === 'presentation') refs.push(...state.task.inputs);
@@ -224,9 +232,7 @@ function requiredResultReferences(state: RegionContent): readonly ResultRef[] {
   }
   for (const node of state.presentation?.nodes ?? []) if (node.result !== undefined) refs.push(node.result);
   if (state.presentation !== undefined) refs.push(...state.presentation.preconditions.results);
-  for (const entry of state.interaction?.values ?? []) {
-    if (entry.payload.kind === 'selection' && entry.payload.selection.mode === 'ids') refs.push(entry.payload.selection.result);
-  }
+  refs.push(...interactionResultReferences(state.interaction));
   return refs;
 }
 
@@ -550,6 +556,7 @@ class RegionHandleImpl implements RegionHandle {
     if (Object.keys(input).some((key) => !allowed.includes(key)) || !validId(input.requestId)) return failure('runtime.region-invalid', FAILURE.invalid);
     let checkedState = validateState(input.state, this.id);
     if (!checkedState.ok) return checkedState;
+    const interactionWasExplicit = checkedState.value.interaction !== undefined;
     // Layout/Task updates do not implicitly discard semantic controls or drafts.
     // Explicit controller transactions supply the replacement interaction state.
     if (checkedState.value.interaction === undefined && this.state?.interaction !== undefined) {
@@ -565,6 +572,14 @@ class RegionHandleImpl implements RegionHandle {
     if (!this.live(stagedEpoch)) return this.closedOutcome();
     const actual = authorityReadSet(authorityResult.value, this.taskRevision, this.regionRevision, this.dataRevision);
     const required = [...requiredResultReferences(checkedState.value)];
+    const stateWithoutInteraction: RegionContent = {
+      task: checkedState.value.task,
+      ...(checkedState.value.presentation === undefined ? {} : {presentation: checkedState.value.presentation}),
+    };
+    const declaredRequired = Object.freeze([
+      ...requiredResultReferences(stateWithoutInteraction),
+      ...(interactionWasExplicit ? [] : interactionResultReferences(checkedState.value.interaction)),
+    ]);
     const handles = input.resultHandles ?? [];
     if (!Array.isArray(handles) || handles.length > WIRE_LIMITS.array) return failure('runtime.region-budget', FAILURE.budget);
     const generations = new Map<string, number>();
@@ -589,13 +604,15 @@ class RegionHandleImpl implements RegionHandle {
         generations.set(refKey(ref.value), generation.value);
       }
       if (expected.value.dataRevision !== actual.dataRevision) return failure('runtime.region-stale', FAILURE.stale);
-      const checked = validateCommitReadSet(stripData(expected.value), stripData(actual), required);
-      if (!checked.ok) return failure('runtime.region-stale', checked.diagnostics[0]!.message);
+      const priorCheck = validateCommitReadSet(stripData(expected.value), stripData(actual), declaredRequired);
+      if (!priorCheck.ok) return failure('runtime.region-stale', priorCheck.diagnostics[0]!.message);
       const capturedRefs = new Map<string, ResultRef>();
       for (const ref of expected.value.results) capturedRefs.set(refKey(ref), ref);
       for (const ref of required) capturedRefs.set(refKey(ref), ref);
       const capturedResults = normalizeRefs([...capturedRefs.values()], actual.scopeDigest);
       if (!capturedResults.ok) return capturedResults as RegionOutcome<RegionCommitToken>;
+      const checked = validateCommitReadSet(stripData({...expected.value, results: capturedResults.value}), stripData(actual), required);
+      if (!checked.ok) return failure('runtime.region-stale', checked.diagnostics[0]!.message);
       // Preserve the declared read set plus candidate-required dependencies. The
       // host authority may expose unrelated outputs; capturing all of them would
       // make an otherwise disjoint proposal stale when those outputs refresh.
@@ -609,7 +626,7 @@ class RegionHandleImpl implements RegionHandle {
         state: checkedState.value,
         requestId: input.requestId,
         capturedReadSet,
-        requiredResults: Object.freeze(required.map((ref) => frozen({...ref}))),
+        requiredResults: Object.freeze([...new Map(required.map((ref) => [refKey(ref), frozen({...ref})])).values()]),
         resultHandles: Object.freeze([...handles]),
         resultLeases: Object.freeze([...leases]),
         handleGenerations: generations,
@@ -792,7 +809,9 @@ class RegionHandleImpl implements RegionHandle {
         const at = this.now();
         if (!this.live(queuedEpoch)) return this.closedOutcome();
         if (signal?.aborted) return failure('runtime.region-cancelled', 'The region commit was cancelled before publication.');
-        const nextReadSet = authorityReadSet(afterAuthority.value, nextTaskRevision, nextRegionRevision, this.dataRevision);
+        const retainedResults = normalizeRefs(record.requiredResults, afterAuthority.value.scopeDigest);
+        if (!retainedResults.ok) return retainedResults as RegionOutcome<RegionSnapshot>;
+        const nextReadSet = frozen({...authorityReadSet(afterAuthority.value, nextTaskRevision, nextRegionRevision, this.dataRevision), results: retainedResults.value});
         const prospective = frozen({
           id: this.id,
           taskRevision: nextTaskRevision,

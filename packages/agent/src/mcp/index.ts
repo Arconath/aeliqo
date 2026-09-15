@@ -26,6 +26,7 @@ import {
   type Transport,
 } from '@modelcontextprotocol/client';
 import {StdioClientTransport, type StdioServerParameters} from '@modelcontextprotocol/client/stdio';
+import {AELIQO_AGENT_VERSION} from '../version.js';
 import {parseContract, parseWireValue, WIRE_LIMITS, type Diagnostic, type OperationGrant, type Outcome, type ResultRef, type VersionRef} from '@aeliqo/core';
 import type {
   AgentCapabilityReceipt,
@@ -50,7 +51,7 @@ const MAX_TEXT_BYTES = 256 * 1024;
 const MAX_DEFINITION_COUNT = 256;
 const MAX_DESCRIPTION_LENGTH = WIRE_LIMITS.text;
 const DEFAULT_SERVER_NAME = 'aeliqo-agent';
-const DEFAULT_SERVER_VERSION = '0.1.0';
+const DEFAULT_SERVER_VERSION = AELIQO_AGENT_VERSION;
 
 type ProtocolEra = 'modern' | 'legacy';
 

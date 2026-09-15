@@ -16,7 +16,6 @@ export class AeliqoDateFieldElement extends AeliqoFieldElement<string> {
     calendar: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   value = "";
   defaultValue = "";

@@ -1,7 +1,7 @@
 import type {VisualizationSpec} from './visualization/index.js';
 import type {PlotSpec} from './plot/index.js';
 import type * as z from 'zod/mini';
-import type {commitPreconditionsSchema, contractSchemas, diagnosticSchema, expressionSchema, fieldSchema, interactionStateSchema, meaningSchema,
+import type {commitPreconditionsSchema, contractSchemas, diagnosticSchema, expressionSchema, fieldSchema, interactionStateSchema, intentSchema, meaningSchema,
   querySchema, resultRefSchema, semanticTypeSchema, valueSchema, versionRefSchema} from './schemas.js';
 /** JSON optional members may be absent; present `undefined` is not wire data. */
 export type ReadonlyJsonValue = null | boolean | number | string | readonly ReadonlyJsonValue[] | {readonly [key: string]: ReadonlyJsonValue};
@@ -28,6 +28,7 @@ export type Expression = Wire<z.infer<typeof expressionSchema>>;
 export type FieldDefinition = Wire<z.infer<typeof fieldSchema>>;
 export type MeaningDefinition = Wire<z.infer<typeof meaningSchema>>;
 export type QuerySpec = Wire<z.infer<typeof querySchema>>;
+export type Intent = Wire<z.infer<typeof intentSchema>>;
 export type ResultRef = Wire<z.infer<typeof resultRefSchema>>;
 export type SemanticType = Wire<z.infer<typeof semanticTypeSchema>>;
 export type Scalar = Wire<z.infer<typeof valueSchema>>;

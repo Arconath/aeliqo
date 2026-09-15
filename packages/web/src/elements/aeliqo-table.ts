@@ -7,6 +7,7 @@ import {scopeText} from "../data/shared.js";
 import type {ResultRef} from "@aeliqo/core";
 import type {AeliqoDataScope, AeliqoDataStatus, AeliqoSortState} from "../data/types.js";
 import type {AeliqoTableColumn, AeliqoTableRow, AeliqoTableSelectionMode, TableCell} from "../types.js";
+import {AELIQO_WEB_VERSION} from "../version.js";
 
 /** Encode row identities without ever using a rendered row index. */
 function stableTableCellKey(value: TableCell | undefined): string | undefined {
@@ -58,6 +59,7 @@ interface GridFocus {
 
 /** Native table-first collection; grid mode is an explicit opt-in. */
 export class AeliqoTableElement extends LitElement {
+  static readonly aeliqoVersion = AELIQO_WEB_VERSION;
   static readonly properties = {
     columns: {attribute: false}, rows: {attribute: false}, caption: {type: String},
     emptyLabel: {attribute: "empty-label", type: String}, entity: {type: String},
@@ -69,7 +71,6 @@ export class AeliqoTableElement extends LitElement {
     overscan: {type: Number}, scope: {attribute: false}, status: {type: String}, message: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
   columns: readonly AeliqoTableColumn[] = [];
   rows: readonly AeliqoTableRow[] = [];
   caption = "";

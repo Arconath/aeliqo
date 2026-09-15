@@ -1,5 +1,6 @@
 import {css, html, LitElement, nothing} from "lit";
 import {aeliqoThemeStyles} from "../styles/theme.js";
+import {AELIQO_WEB_VERSION} from "../version.js";
 import {validateScalar} from "@aeliqo/core";
 import type {AeliqoDataStatus, AeliqoFieldOption, AeliqoFilterPredicate, AeliqoFilterValue} from "./types.js";
 import {AeliqoFilterChangeEvent} from "./events.js";
@@ -269,6 +270,7 @@ export function buildAeliqoPredicate(
 /** Builds a typed predicate locally and only emits it on an explicit Apply.
  * Typing, composition and IME input never execute a query. */
 export class AeliqoFilterBuilderElement extends LitElement {
+  static readonly aeliqoVersion = AELIQO_WEB_VERSION;
   static readonly properties = {
     fields: {attribute: false},
     predicate: {attribute: false},
@@ -283,7 +285,6 @@ export class AeliqoFilterBuilderElement extends LitElement {
     message: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   fields: readonly AeliqoFieldOption[] = [];
   predicate: AeliqoFilterPredicate | undefined = undefined;

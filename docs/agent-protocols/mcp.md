@@ -23,10 +23,13 @@ import { createMcpStdioServer } from '@aeliqo/agent/mcp';
 createMcpStdioServer({
   createEndpoint: ({ era }) => createPairedEndpoint({ era }),
   name: 'my-aeliqo-server',
-  version: '0.1.0',
+  version: '1.0.0',
   maxBufferSize: 10 * 1024 * 1024,
 });
 ```
+
+The `version` field identifies the application MCP server, not the installed
+Aeliqo package or wire-contract version.
 
 The stdio process must reserve stdout for MCP frames. Diagnostics belong on
 stderr or in bounded receipts; secrets must never be printed to either stream.

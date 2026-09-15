@@ -1,5 +1,44 @@
 # @aeliqo/core
 
+Pure resource, intent, semantic, query, and presentation contracts for Aeliqo.
+
+## Application authoring
+
+Use `defineResource` to bind a runtime schema to stable identity and business
+metadata. Send a standard intent to `compileIntent`, or register a namespaced
+custom compiler that produces the same Task contract. Both application code and
+agent transports use this boundary; an intent cannot supply authority, HTML,
+JavaScript, SQL, credentials, or an import path.
+
+```ts
+import {compileIntent, defineResource} from '@aeliqo/core';
+import {z} from 'zod';
+
+const people = defineResource({
+  id: 'people',
+  revision: 'people-1',
+  label: 'People',
+  identity: ['id'],
+  schema: z.object({id: z.string(), name: z.string(), team: z.string()}),
+  fields: {
+    name: {label: 'Name'},
+    team: {label: 'Team', role: 'dimension'},
+  },
+  presentation: {allowedViews: ['table', 'cards']},
+});
+
+const task = compileIntent(
+  {version: '1', id: 'browse-people', kind: 'browse', resource: 'people'},
+  {resource: people, regionId: 'main', taskRevision: '1'},
+);
+```
+
+`defineResource` rejects schemas it cannot map and reports the failing field.
+Technical types do not invent business meaning: aggregation, unit, period, and
+grain remain explicit Catalog semantics.
+
+## Low-level contracts
+
 Pure, versioned Aeliqo wire contracts for **Catalog**, **Task**, **Result**, and
 **Experience**. This implementation currently supplies canonical schemas, inferred
 readonly TypeScript types, bounded parsing, diagnostics, and stable serialization.
@@ -54,7 +93,7 @@ Consumers must apply the documented byte, depth, and node limits before recursiv
 JSON Schema validation. The low-level `@aeliqo/core/schema` export is the canonical
 schema source; use the bounded parsers for untrusted ingress.
 
-Wire version `1` is separate from package version `0.1.0`. There is no automatic
+Wire version `1` is separate from the npm package version. There is no automatic
 migration. All four document envelopes, including Result, require `version: '1'`.
 
 Apache-2.0. Zod is MIT licensed. No renderer, provider, filesystem, database,

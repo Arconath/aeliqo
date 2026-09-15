@@ -1,5 +1,6 @@
+import {RELEASE_VERSION} from "../../scripts/release/metadata.mjs";
 /**
- * Exercise the local Studio authoring API from installed 0.1.0 tarballs.
+ * Exercise the local Studio authoring API from installed release tarballs.
  *
  * The consumer is created outside the workspace so package links, source
  * imports, the Studio app and model/agent packages cannot make this proof pass.
@@ -42,7 +43,7 @@ for (const name of packageNames) {
   const directory = join(root, 'packages', name);
   const manifest = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
   assert.equal(manifest.name, `@aeliqo/${name}`);
-  assert.equal(manifest.version, '0.1.0');
+  assert.equal(manifest.version, RELEASE_VERSION);
   assert.equal(manifest.license, 'Apache-2.0');
   assert.notEqual(manifest.private, true);
   // Invoke the installed compiler directly so this evidence run cannot
@@ -54,7 +55,7 @@ for (const name of packageNames) {
 for (const name of packageNames) {
   const directory = join(root, 'packages', name);
   const manifest = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
-  const tarball = join(runDirectory, `aeliqo-${name}-0.1.0.tgz`);
+  const tarball = join(runDirectory, `aeliqo-${name}-${RELEASE_VERSION}.tgz`);
   run(['pnpm', 'pack', '--out', tarball], directory);
   const bytes = await readFile(tarball);
   const packed = JSON.parse(run(['tar', '-xOf', tarball, 'package/package.json'], root));
@@ -103,9 +104,9 @@ for (const artifact of artifacts) {
     assert.equal(hash(installed), hash(packed), `Installed ${artifact.name} bytes differ for ${entry}`);
   }
 }
-assert.equal(lock.packages['node_modules/@aeliqo/runtime']?.dependencies?.['@aeliqo/core'], '0.1.0');
-assert.equal(lock.packages['node_modules/@aeliqo/devtools']?.dependencies?.['@aeliqo/core'], '0.1.0');
-assert.equal(lock.packages['node_modules/@aeliqo/devtools']?.dependencies?.['@aeliqo/runtime'], '0.1.0');
+assert.equal(lock.packages['node_modules/@aeliqo/runtime']?.dependencies?.['@aeliqo/core'], RELEASE_VERSION);
+assert.equal(lock.packages['node_modules/@aeliqo/devtools']?.dependencies?.['@aeliqo/core'], RELEASE_VERSION);
+assert.equal(lock.packages['node_modules/@aeliqo/devtools']?.dependencies?.['@aeliqo/runtime'], RELEASE_VERSION);
 assert.equal(lock.packages['node_modules/typescript']?.version, '7.0.2');
 assert.deepEqual(Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/')).sort(), [
   'node_modules/@aeliqo/core',
@@ -198,7 +199,7 @@ await writeFile(join(runDirectory, 'report.json'), JSON.stringify({
   sourceDigest: before,
   sourceChangedDuringRun: before !== after,
   passed: true,
-  scope: 'Installed @aeliqo/core, @aeliqo/runtime and @aeliqo/devtools 0.1.0 tarballs; Studio document/session JSON roundtrip; standalone exportCode TypeScript compilation; immutable code-owned meaning/Experience revisions; personal Experience revision retention and activation without Studio app, agent or model packages.',
+  scope: `Installed @aeliqo/core, @aeliqo/runtime and @aeliqo/devtools ${RELEASE_VERSION} tarballs; Studio document/session JSON roundtrip; standalone exportCode TypeScript compilation; immutable code-owned meaning/Experience revisions; personal Experience revision retention and activation without Studio app, agent or model packages.`,
   artifacts: artifacts.map(({entries, ...artifact}) => ({...artifact, entries})),
   consumerDirectory: consumer,
   consumerLock: {path: join(runDirectory, 'consumer-package-lock.json'), sha256: hash(lockBytes)},

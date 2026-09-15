@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFile, realpath } from 'node:fs/promises';
 import { basename, dirname, resolve, sep } from 'node:path';
+import { isReleaseVersion, RELEASE_VERSION } from '../release/metadata.mjs';
 
 export const PUBLIC_DOCS_SCHEMA = 'aeliqo.public-docs.v1';
 export const PUBLIC_DOCS_MANIFEST_SCHEMA = 'aeliqo.public-docs-manifest.v1';
@@ -48,8 +49,8 @@ function assertSha256(value, label) {
 }
 
 function assertVersion(value, label) {
-  if (typeof value !== 'string' || !/^0\.1\.0(?:-rc\.[1-9]\d*)?$/u.test(value)) {
-    throw new Error(`${label} must use the 0.1.0 release lineage`);
+  if (!isReleaseVersion(value)) {
+    throw new Error(`${label} must use the ${RELEASE_VERSION} release lineage`);
   }
 }
 
@@ -82,7 +83,7 @@ function assertPackageVersions(value, docsVersion, label) {
 
 function assertPage(page, index) {
   assertObject(page, `artifact.pages[${index}]`);
-  const required = ['body', 'description', 'path', 'section', 'title'];
+  const required = ['body', 'description', 'id', 'path', 'section', 'title'];
   const allowed = new Set([...required, 'component']);
   for (const key of required)
     if (typeof page[key] !== 'string' || page[key] === '')
@@ -113,6 +114,8 @@ export function assertPublicDocsArtifact(value) {
   artifact.pages.forEach(assertPage);
   const paths = artifact.pages.map((page) => page.path);
   if (new Set(paths).size !== paths.length) throw new Error('artifact.pages contains duplicate routes');
+  const ids = artifact.pages.map((page) => page.id);
+  if (new Set(ids).size !== ids.length) throw new Error('artifact.pages contains duplicate IDs');
   if (artifact.pages.filter((page) => page.component !== undefined).length !== 71) {
     throw new Error('artifact must contain exactly 71 component documentation routes');
   }

@@ -93,6 +93,7 @@ export const populationSchema = z.discriminatedUnion('kind', [
 ]);
 export const querySchema = object({
   entity: idSchema, fields: ids, measures: refs, relations: refs, groupBy: ids,
+  search: optional(object({text: label, fields: nonEmpty(idSchema, 128)})),
   relationUsage: optional(array(object({relation: versionRefSchema,
     kind: z.enum(['inner','left','semi']), where: optional(predicateSchema)}))),
   windows: optional(array(object({id: idSchema, function: versionRefSchema,
@@ -105,6 +106,30 @@ export const querySchema = object({
   topK: optional(positiveCount.check(z.maximum(L.array))),
   page: optional(object({size: positiveCount.check(z.maximum(L.array)), cursor: optional(text)})),
 });
+const intentBase = {
+  version, id: idSchema, resource: idSchema,
+  preferredView: optional(idSchema),
+};
+const intentFields = optional(array(idSchema, 128));
+const intentFilter = optional(predicateSchema);
+const intentSort = optional(array(object({field: idSchema, direction: z.enum(['asc','desc']),
+  nulls: optional(z.enum(['first','last']))}), 128));
+const intentIdentity = record(valueSchema);
+export const intentSchema = z.discriminatedUnion('kind', [
+  object({...intentBase, kind: z.literal('browse'), fields: intentFields, filter: intentFilter,
+    search: optional(object({text: label, fields: optional(nonEmpty(idSchema, 128))})),
+    sort: intentSort, page: optional(object({size: positiveCount.check(z.maximum(L.array)), cursor: optional(text)}))}),
+  object({...intentBase, kind: z.literal('detail'), identity: intentIdentity, fields: intentFields}),
+  object({...intentBase, kind: z.literal('create')}),
+  object({...intentBase, kind: z.literal('edit'), identity: intentIdentity}),
+  object({...intentBase, kind: z.literal('compare'), identities: nonEmpty(intentIdentity, 128), fields: intentFields}),
+  object({...intentBase, kind: z.literal('analyze'), dimensions: optional(array(idSchema, 128)),
+    measures: nonEmpty(versionRefSchema, 128), filter: intentFilter, period: optional(periodSchema),
+    time: optional(object({field: idSchema, grain: idSchema, calendar: optional(idSchema),
+      timezone: optional(idSchema), weekStartsOn: optional(z.literal([0, 1, 2, 3, 4, 5, 6]))})),
+    sort: intentSort, limit: optional(positiveCount.check(z.maximum(L.array)))}),
+  object({...intentBase, kind: z.literal('custom'), intent: versionRefSchema, input: jsonSchema}),
+]);
 export const taskOutputSchema = z.discriminatedUnion('kind', [
   object({id: idSchema, kind: z.literal('query'), query: querySchema, dependsOn: ids,
     delivery: z.enum(['eager','on-demand'])}),
@@ -233,7 +258,7 @@ export const interactionPayloadSchema = z.discriminatedUnion('kind', [
   ...retainedInteractionPayloads,
   object({kind: z.literal('navigate'), route: versionRefSchema, params: record(valueSchema)}),
   object({kind: z.literal('draft'), entity: idSchema, key: text, field: idSchema, value: valueSchema, entityRevision: revisionSchema}),
-  object({kind: z.literal('action-request'), action: versionRefSchema, input: record(valueSchema)}),
+  object({kind: z.literal('action-request'), action: versionRefSchema, input: record(jsonSchema)}),
   object({kind: z.literal('extension'), schema: versionRefSchema, value: jsonSchema}),
 ]);
 export const interactionStateSchema = object({
@@ -359,6 +384,7 @@ export const contractSchemas: Readonly<{
   experience: typeof experienceSchema;
   expression: typeof expressionSchema;
   query: typeof querySchema;
+  intent: typeof intentSchema;
   interaction: typeof interactionSchema;
   'result-event': typeof resultEventSchema;
   environment: typeof environmentSchema;
@@ -375,7 +401,7 @@ export const contractSchemas: Readonly<{
   'plot-spec': plotSpecSchema,
   'visualization-spec': visualizationSpecSchema,
   catalog: catalogSchema, task: taskSchema, result: resultSchema, experience: experienceSchema,
-  expression: expressionSchema, query: querySchema, interaction: interactionSchema,
+  expression: expressionSchema, query: querySchema, intent: intentSchema, interaction: interactionSchema,
   'result-event': resultEventSchema, environment: environmentSchema,
   'presentation-plan': presentationPlanSchema, 'task-proposal': taskProposalSchema,
   'meaning-draft': meaningDraftSchema, 'binding-outcome': bindingOutcomeSchema,

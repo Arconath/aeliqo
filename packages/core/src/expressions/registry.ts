@@ -205,6 +205,7 @@ const booleanType = (nullable = false): SemanticType => ({value: 'boolean', null
 
 const numeric: TypeConstraint = {kind: 'numeric'};
 const any: TypeConstraint = {kind: 'any'};
+const text: TypeConstraint = {kind: 'text'};
 
 function signature(
   ref: VersionRef,
@@ -269,6 +270,7 @@ export const queryFunctionSignatures: readonly FunctionSignature[] = Object.free
 export const queryFunctionSignaturesV2: readonly FunctionSignature[] = Object.freeze([
   ...queryFunctionSignatures,
   signature({id: 'core.equal', revision: '1'}, [{constraint: any}, {constraint: any}], booleanType(false), 'comparison'),
+  signature({id: 'core.text.includes-casefold', revision: '1'}, [{constraint: text}, {constraint: text}], booleanType(false), 'comparison'),
   signature({id: 'core.if', revision: '1'}, [{constraint: {kind: 'boolean'}}, {constraint: any}, {constraint: any}], {kind: 'same-as', argument: 1}, 'conditional'),
 ].map(cloneSignature));
 

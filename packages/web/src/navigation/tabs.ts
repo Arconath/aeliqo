@@ -21,7 +21,6 @@ export class AeliqoTabsElement extends AeliqoFoundationElement {
     idPrefix: {type: String, attribute: "id-prefix"},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
   static readonly styles = [...aeliqoFoundationThemeStyles, aeliqoNavigationStyles, css`
     :host { border-block-end: 0.0625rem solid var(--aeliqo-color-border, #64748b); min-inline-size: 0; }
     [role="tablist"] { display: flex; gap: var(--aeliqo-space-4, 0.25rem); max-inline-size: 100%; overflow-x: auto; }

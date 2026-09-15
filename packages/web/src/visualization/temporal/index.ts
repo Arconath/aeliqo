@@ -5,6 +5,7 @@ import {AeliqoFoundationElement,aeliqoFoundationThemeStyles} from '../../foundat
 import {exactLabel} from '../../plot/scales.js';
 import type {VisualizationDataset,VisualizationInputs,VisualizationRow} from '../types.js';
 import {compileTemporalVisualization} from './geometry.js';
+import {AELIQO_WEB_VERSION} from '../../version.js';
 export {compileTemporalVisualization} from './geometry.js';
 export type {TemporalGeometry,TimelineMark,CalendarDay} from './geometry.js';
 class AeliqoTemporalElement extends AeliqoFoundationElement implements VisualizationInputs {
@@ -60,6 +61,6 @@ export function defineTemporalElements(registry?:CustomElementRegistry):void {
  for(const [tag,element] of [['aeliqo-matrix',AeliqoMatrixElement],['aeliqo-timeline',AeliqoTimelineElement],['aeliqo-calendar-grid',AeliqoCalendarGridElement]] as const){
   const current=target.get(tag);
   if(current===undefined)target.define(tag,element);
-  else if(current!==element&&(current as typeof element).aeliqoVersion!=='0.1.0')throw new Error(`Cannot register ${tag}: an incompatible custom element is already defined.`);
+  else if(current!==element&&(current as typeof element).aeliqoVersion!==AELIQO_WEB_VERSION)throw new Error(`Cannot register ${tag}: an incompatible custom element is already defined.`);
  }
 }

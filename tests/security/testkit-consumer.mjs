@@ -1,3 +1,4 @@
+import {RELEASE_VERSION} from "../../scripts/release/metadata.mjs";
 /**
  * Build, pack, install and exercise the internal @aeliqo/testkit boundary.
  *
@@ -84,7 +85,7 @@ const manifests = {
 };
 assert.deepEqual(
   Object.values(manifests).map((manifest) => [manifest.name, manifest.version]),
-  [['@aeliqo/core', '0.1.0'], ['@aeliqo/runtime', '0.1.0'], ['@aeliqo/testkit', '0.1.0']],
+  [['@aeliqo/core', RELEASE_VERSION], ['@aeliqo/runtime', RELEASE_VERSION], ['@aeliqo/testkit', RELEASE_VERSION]],
 );
 for (const manifest of Object.values(manifests)) {
   assert.equal(manifest.license, 'Apache-2.0');
@@ -102,9 +103,9 @@ run(['pnpm', 'build'], join(root, 'packages', 'runtime'));
 run(['pnpm', 'build'], join(root, 'packages', 'testkit'));
 
 const artifactDefinitions = [
-  ['core', 'aeliqo-core-0.1.0.tgz'],
-  ['runtime', 'aeliqo-runtime-0.1.0.tgz'],
-  ['testkit', 'aeliqo-testkit-0.1.0.tgz'],
+  ['core', `aeliqo-core-${RELEASE_VERSION}.tgz`],
+  ['runtime', `aeliqo-runtime-${RELEASE_VERSION}.tgz`],
+  ['testkit', `aeliqo-testkit-${RELEASE_VERSION}.tgz`],
 ];
 const artifacts = [];
 for (const [directoryName, fileName] of artifactDefinitions) {
@@ -118,7 +119,7 @@ for (const [directoryName, fileName] of artifactDefinitions) {
   for (const field of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
     for (const [dependency, version] of Object.entries(expectedPackedManifest[field] ?? {})) {
       if (version === 'workspace:*' || version === 'workspace:^' || version === 'workspace:~') {
-        expectedPackedManifest[field][dependency] = '0.1.0';
+        expectedPackedManifest[field][dependency] = RELEASE_VERSION;
       }
     }
   }
@@ -177,8 +178,8 @@ for (const artifact of artifacts) {
   assert(installedReal.startsWith(`${consumerReal}/node_modules/`), `${artifact.name} escaped consumer node_modules`);
   await assertRegularTree(installed, `Installed ${artifact.name}`);
 }
-assert.equal(lock.packages['node_modules/@aeliqo/testkit'].dependencies['@aeliqo/runtime'], '0.1.0');
-assert.equal(lock.packages['node_modules/@aeliqo/runtime'].dependencies['@aeliqo/core'], '0.1.0');
+assert.equal(lock.packages['node_modules/@aeliqo/testkit'].dependencies['@aeliqo/runtime'], RELEASE_VERSION);
+assert.equal(lock.packages['node_modules/@aeliqo/runtime'].dependencies['@aeliqo/core'], RELEASE_VERSION);
 assert.equal(lock.packages['node_modules/zod'].version, '4.5.4');
 assert.match(lock.packages['node_modules/zod'].integrity, /^sha512-/);
 assert.deepEqual(Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/testkit/node_modules/')), []);

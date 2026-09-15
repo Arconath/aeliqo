@@ -1,5 +1,5 @@
 import {parseContract, parseWireValue, WIRE_LIMITS} from '@aeliqo/core';
-import type {Diagnostic, Outcome, Scalar, VersionRef} from '@aeliqo/core';
+import type {Diagnostic, Outcome, VersionRef} from '@aeliqo/core';
 import {resolveRegisteredAction} from './registry.js';
 import type {
   ActionBoundaryOptions,
@@ -61,30 +61,15 @@ function bytes(value: string): number { return new TextEncoder().encode(value).b
 
 function cloneRef(value: VersionRef): VersionRef { return Object.freeze({id: value.id, revision: value.revision}); }
 
-function scalar(value: unknown): Scalar | undefined {
-  if (value === null || typeof value === 'boolean') return value;
-  if (typeof value === 'number') return Number.isFinite(value) ? value : undefined;
-  if (typeof value === 'string') return value.length <= WIRE_LIMITS.text ? value : undefined;
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return undefined;
-  const record = value as Record<string, unknown>;
-  if (Object.keys(record).length !== 1 || typeof record.decimal !== 'string' ||
-      !/^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/u.test(record.decimal) || record.decimal.length > 512) return undefined;
-  return Object.freeze({decimal: record.decimal});
-}
-
 function payload(value: unknown, path: readonly (string | number)[] = ['input']): ActionOutcome<ActionPayload> {
   const inspected = parseWireValue(value);
   if (!inspected.ok) return inspected as ActionOutcome<ActionPayload>;
-  if (inspected.value === null || typeof inspected.value !== 'object' || Array.isArray(inspected.value)) return failure('action.invalid', 'Action input must be a bounded scalar object.', path);
+  if (inspected.value === null || typeof inspected.value !== 'object' || Array.isArray(inspected.value)) return failure('action.invalid', 'Action input must be a bounded JSON object.', path);
   const record = inspected.value as Record<string, unknown>;
-  const normalized: Record<string, Scalar> = {};
   for (const key of Object.keys(record)) {
     if (!validId(key)) return failure('action.invalid', 'Action input contains an invalid field key.', [...path, key]);
-    const value = scalar(record[key]);
-    if (value === undefined) return failure('action.invalid', 'Action input fields must be bounded scalar values.', [...path, key]);
-    normalized[key] = value;
   }
-  return {ok: true, value: frozen(normalized)};
+  return {ok: true, value: frozen(record as ActionPayload)};
 }
 
 function entity(value: unknown): ActionOutcome<ActionEntity | undefined> {
@@ -455,6 +440,15 @@ class ActionPortImpl implements ActionPort {
     const payloadValue = parsed.value.payload;
     if (payloadValue.kind !== 'action-request') return this.outcome('action.invalid', 'The interaction does not contain an action request.');
     return this.preview({requestId: parsed.value.eventId, action: payloadValue.action, input: payloadValue.input, ...(options.entity === undefined ? {} : {entity: options.entity}), ...(options.idempotencyKey === undefined ? {} : {idempotencyKey: options.idempotencyKey})}, options);
+  }
+
+  cancel(preview: ActionPreview): boolean {
+    if (!this.live()) return false;
+    const matched = [...this.previews.values()].find((candidate) => candidate.preview === preview);
+    if (matched === undefined || matched.consumed || matched.confirming) return false;
+    this.consumePreview(matched);
+    this.tryHistory({state: 'rejected', action: cloneRef(matched.registration.descriptor.ref), previewId: matched.id, reasonCode: 'action.cancelled'}, partition(matched.context));
+    return true;
   }
 
   async confirm(preview: ActionPreview, options: {readonly signal?: AbortSignal} = {}): Promise<ActionOutcome<ActionReceipt>> {

@@ -1,3 +1,4 @@
+import {RELEASE_VERSION} from "../../scripts/release/metadata.mjs";
 /**
  * Build and consume the actual @aeliqo/core and @aeliqo/runtime packages
  * outside the workspace.
@@ -108,11 +109,11 @@ async function clearCompiledOutput(directory, allowedPattern) {
 const coreManifest = JSON.parse(await readFile(join(coreDirectory, 'package.json'), 'utf8'));
 const runtimeManifest = JSON.parse(await readFile(join(runtimeDirectory, 'package.json'), 'utf8'));
 assert.equal(coreManifest.name, '@aeliqo/core');
-assert.equal(coreManifest.version, '0.1.0');
+assert.equal(coreManifest.version, RELEASE_VERSION);
 assert.equal(coreManifest.license, 'Apache-2.0');
 assert.notEqual(coreManifest.private, true);
 assert.equal(runtimeManifest.name, '@aeliqo/runtime');
-assert.equal(runtimeManifest.version, '0.1.0');
+assert.equal(runtimeManifest.version, RELEASE_VERSION);
 assert.equal(runtimeManifest.license, 'Apache-2.0');
 assert.notEqual(runtimeManifest.private, true);
 assert.deepEqual(Object.keys(runtimeManifest.dependencies ?? {}), ['@aeliqo/core', 'zod']);
@@ -141,8 +142,8 @@ await clearCompiledOutput(join(runtimeDirectory, 'dist'), /(?:\.js|\.d\.ts|\.js\
 run(['pnpm', 'build'], coreDirectory);
 run(['pnpm', 'build'], runtimeDirectory);
 
-const coreTarball = join(runDirectory, 'aeliqo-core-0.1.0.tgz');
-const runtimeTarball = join(runDirectory, 'aeliqo-runtime-0.1.0.tgz');
+const coreTarball = join(runDirectory, `aeliqo-core-${RELEASE_VERSION}.tgz`);
+const runtimeTarball = join(runDirectory, `aeliqo-runtime-${RELEASE_VERSION}.tgz`);
 run(['pnpm', 'pack', '--out', coreTarball], coreDirectory);
 run(['pnpm', 'pack', '--out', runtimeTarball], runtimeDirectory);
 const coreBytes = await readFile(coreTarball);
@@ -170,11 +171,11 @@ const packedCoreManifest = JSON.parse(run(['tar', '-xOf', coreTarball, 'package/
 const packedRuntimeManifest = JSON.parse(run(['tar', '-xOf', runtimeTarball, 'package/package.json'], root));
 assert.deepEqual(packedCoreManifest, coreManifest);
 assert.equal(packedRuntimeManifest.name, '@aeliqo/runtime');
-assert.equal(packedRuntimeManifest.version, '0.1.0');
+assert.equal(packedRuntimeManifest.version, RELEASE_VERSION);
 assert.equal(packedRuntimeManifest.license, 'Apache-2.0');
 assert.deepEqual(packedRuntimeManifest.exports, runtimeManifest.exports);
 assert.deepEqual(Object.keys(packedRuntimeManifest.dependencies ?? {}), ['@aeliqo/core', 'zod']);
-assert.equal(packedRuntimeManifest.dependencies['@aeliqo/core'], '0.1.0');
+assert.equal(packedRuntimeManifest.dependencies['@aeliqo/core'], RELEASE_VERSION);
 for (const manifest of [packedCoreManifest, packedRuntimeManifest]) {
   for (const field of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
     assert(!JSON.stringify(manifest[field] ?? {}).includes('workspace:'), `Workspace alias in ${manifest.name} ${field}`);
@@ -214,8 +215,8 @@ for (const artifact of artifacts) {
     `Duplicate installed ${artifact.name}`,
   );
 }
-assert.equal(lock.packages['node_modules/@aeliqo/runtime'].dependencies['@aeliqo/core'], '0.1.0');
-assert.equal(lock.packages['node_modules/@aeliqo/core'].version, '0.1.0');
+assert.equal(lock.packages['node_modules/@aeliqo/runtime'].dependencies['@aeliqo/core'], RELEASE_VERSION);
+assert.equal(lock.packages['node_modules/@aeliqo/core'].version, RELEASE_VERSION);
 assert.equal(lock.packages['node_modules/zod'].version, '4.5.4');
 assert.match(lock.packages['node_modules/zod'].integrity, /^sha512-/);
 assert.deepEqual(
@@ -1004,7 +1005,7 @@ const sourceDigestAfter = {
 assert.deepEqual(sourceDigestAfter, sourceDigestBefore, 'Package source changed during consumer verification');
 const report = {
   passed: true,
-  scope: '@aeliqo/core and @aeliqo/runtime 0.1.0 installed tarballs; strict declarations; local/HTTP ADC roundtrip; authorization and stale-plan checks; region commits, result leases, fresh-query restore and bounded redacted local audit export in Node and Chromium.',
+  scope: `@aeliqo/core and @aeliqo/runtime ${RELEASE_VERSION} installed tarballs; strict declarations; local/HTTP ADC roundtrip; authorization and stale-plan checks; region commits, result leases, fresh-query restore and bounded redacted local audit export in Node and Chromium.`,
   artifacts: artifacts.map(({name, version, path, sha256, integrity}) => ({name, version, path, sha256, integrity})),
   consumer: {directory: consumerDirectory, lockPath: join(runDirectory, 'consumer-package-lock.json'), lockSha256: hash(lockBytes)},
   sourceDigestBefore,

@@ -1,3 +1,4 @@
+import {RELEASE_VERSION} from "../../scripts/release/metadata.mjs";
 /**
  * Build and consume the public meaning authoring APIs from actual package
  * tarballs outside the workspace. This proves a typed developer quickstart,
@@ -37,7 +38,7 @@ for (const name of packageNames) {
   const directory = join(root, 'packages', name);
   const manifest = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
   assert.equal(manifest.name, `@aeliqo/${name}`);
-  assert.equal(manifest.version, '0.1.0');
+  assert.equal(manifest.version, RELEASE_VERSION);
   assert.equal(manifest.license, 'Apache-2.0');
   assert.notEqual(manifest.private, true);
   run(['pnpm', 'build'], directory);
@@ -47,7 +48,7 @@ const artifacts = [];
 for (const name of packageNames) {
   const directory = join(root, 'packages', name);
   const manifest = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
-  const tarball = join(runDirectory, `aeliqo-${name}-0.1.0.tgz`);
+  const tarball = join(runDirectory, `aeliqo-${name}-${RELEASE_VERSION}.tgz`);
   run(['pnpm', 'pack', '--out', tarball], directory);
   const bytes = await readFile(tarball);
   const packed = JSON.parse(run(['tar', '-xOf', tarball, 'package/package.json'], root));
@@ -84,8 +85,8 @@ for (const artifact of artifacts) {
     assert.equal(hash(installed), hash(packed), `Installed ${artifact.name} bytes differ for ${entry}`);
   }
 }
-assert.equal(lock.packages['node_modules/@aeliqo/runtime'].dependencies['@aeliqo/core'], '0.1.0');
-assert.equal(lock.packages['node_modules/@aeliqo/agent'].dependencies['@aeliqo/core'], '0.1.0');
+assert.equal(lock.packages['node_modules/@aeliqo/runtime'].dependencies['@aeliqo/core'], RELEASE_VERSION);
+assert.equal(lock.packages['node_modules/@aeliqo/agent'].dependencies['@aeliqo/core'], RELEASE_VERSION);
 assert.deepEqual(Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/runtime/node_modules/')), []);
 assert.deepEqual(Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/agent/node_modules/')), []);
 await writeFile(join(runDirectory, 'consumer-package-lock.json'), lockBytes);

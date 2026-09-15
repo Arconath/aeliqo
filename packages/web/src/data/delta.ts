@@ -1,5 +1,6 @@
 import {css, html, LitElement, nothing} from "lit";
 import {aeliqoThemeStyles} from "../styles/theme.js";
+import {AELIQO_WEB_VERSION} from "../version.js";
 import {validateScalar} from "@aeliqo/core";
 import type {AeliqoDataScope, AeliqoDataStatus, AeliqoDataValue, AeliqoDeltaResult} from "./types.js";
 import {dataStyles, dataStatusMessage, scopeText, statusTemplate} from "./shared.js";
@@ -167,6 +168,7 @@ export function calculateAeliqoDelta(
 /** Displays a comparison supplied by the host. Percentage points and
  * relative percentage change use distinct modes and labels. */
 export class AeliqoDeltaElement extends LitElement {
+  static readonly aeliqoVersion = AELIQO_WEB_VERSION;
   static readonly properties = {
     label: {type: String},
     current: {attribute: false},
@@ -179,7 +181,6 @@ export class AeliqoDeltaElement extends LitElement {
     message: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   label = "Change";
   current: AeliqoDataValue | undefined = undefined;

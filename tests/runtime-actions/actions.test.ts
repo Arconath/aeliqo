@@ -299,7 +299,7 @@ describe('confirmation and execute rechecks', () => {
     const malformed = register(registry, {id: 'malformed', dispatch: () => ({state: 'rejected', diagnostics: [null] as never})});
     const invalidOutput = register(registry, {
       id: 'invalid-output',
-      dispatch: () => ({state: 'completed', output: {ok: true, value: {nested: {bad: true}}}}),
+      dispatch: () => ({state: 'completed', output: {ok: true, value: {nested: {bad: undefined}}}}),
     });
     const state = makePort({registry});
     const malformedReceipt = await previewAndConfirm(state.port, malformed);
@@ -310,6 +310,16 @@ describe('confirmation and execute rechecks', () => {
     const ambiguous = await state.port.execute(invalidReceipt);
     expect(ambiguous.ok).toBe(true);
     if (ambiguous.ok) expect(ambiguous.value.state).toBe('ambiguous');
+  });
+
+  it('accepts bounded nested JSON for forms, repeaters, and multiselect values', async () => {
+    const registry = new ActionRegistry();
+    const descriptor = register(registry, {id: 'nested-form'});
+    const state = makePort({registry});
+    const input = {profile: {name: 'Ada', locations: [{city: 'London'}, {city: 'Paris'}]}, roles: ['admin', 'editor']};
+    const proposed = await state.port.preview({requestId: 'nested-form-request', action: descriptor.ref, input});
+    expect(proposed.ok).toBe(true);
+    if (proposed.ok) expect(proposed.value.input).toEqual(input);
   });
 
   it('returns ambiguity when the caller cancels after dispatch completion', async () => {
@@ -755,6 +765,20 @@ describe('bounded idempotency and lifecycle', () => {
 });
 
 describe('interaction action ingress', () => {
+  it('cancels one preview without revoking the action port or other previews', async () => {
+    const registry = new ActionRegistry();
+    const descriptor = register(registry, {id: 'cancel-preview'});
+    const {port} = makePort({registry});
+    const first = await port.preview({requestId: 'cancel-1', action: descriptor.ref, input: {value: 1}});
+    const second = await port.preview({requestId: 'cancel-2', action: descriptor.ref, input: {value: 2}});
+    expect(first.ok && second.ok).toBe(true);
+    if (!first.ok || !second.ok) return;
+    expect(port.cancel(first.value)).toBe(true);
+    expect(port.cancel(first.value)).toBe(false);
+    expect((await port.confirm(first.value)).ok).toBe(false);
+    expect((await port.confirm(second.value)).ok).toBe(true);
+  });
+
   it('accepts only the typed action-request interaction payload', async () => {
     const registry = new ActionRegistry();
     const descriptor = register(registry, {id: 'from-interaction'});

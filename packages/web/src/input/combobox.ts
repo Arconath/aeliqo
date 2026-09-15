@@ -25,7 +25,6 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
     minQueryLength: {attribute: "min-query-length", type: Number},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   options: readonly AeliqoOption[] = [];
   optionsLoader: AeliqoOptionsLoader | undefined;

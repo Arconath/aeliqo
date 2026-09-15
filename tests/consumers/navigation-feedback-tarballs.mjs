@@ -1,3 +1,4 @@
+import {RELEASE_VERSION} from "../../scripts/release/metadata.mjs";
 /**
  * Build, install and execute the installed navigation/feedback consumer proof.
  *
@@ -72,13 +73,13 @@ for (const name of ["core", "web", "react"]) {
   const directory = join(root, "packages", name);
   const manifest = JSON.parse(await readFile(join(directory, "package.json"), "utf8"));
   assert.equal(manifest.name, `@aeliqo/${name}`);
-  assert.equal(manifest.version, "0.1.0");
+  assert.equal(manifest.version, RELEASE_VERSION);
   assert.notEqual(manifest.private, true);
   const dist = join(directory, "dist");
   await clearCompiledOutput(dist);
   run(["pnpm", "build"], directory);
   await assertRegularTree(dist);
-  const tarball = join(runDirectory, `aeliqo-${name}-0.1.0.tgz`);
+  const tarball = join(runDirectory, `aeliqo-${name}-${RELEASE_VERSION}.tgz`);
   run(["pnpm", "pack", "--out", tarball], directory);
   const bytes = await readFile(tarball);
   const packed = JSON.parse(run(["tar", "-xOf", tarball, "package/package.json"], root));
@@ -90,8 +91,8 @@ for (const name of ["core", "web", "react"]) {
   for (const field of ["dependencies", "peerDependencies", "optionalDependencies"]) {
     assert(!JSON.stringify(packed[field] ?? {}).includes("workspace:"), `${name} has a workspace dependency in ${field}`);
   }
-  if (name === "web") assert.equal(packed.dependencies?.["@aeliqo/core"], "0.1.0");
-  if (name === "react") assert.equal(packed.dependencies?.["@aeliqo/web"], "0.1.0");
+  if (name === "web") assert.equal(packed.dependencies?.["@aeliqo/core"], RELEASE_VERSION);
+  if (name === "react") assert.equal(packed.dependencies?.["@aeliqo/web"], RELEASE_VERSION);
   const entries = run(["tar", "-tzf", tarball], root).trim().split("\n");
   assert(entries.includes("package/LICENSE"), `${name} tarball has no license`);
   assert(!entries.some(entry => entry.startsWith("package/src/")), `${name} tarball leaked source files`);
@@ -138,8 +139,8 @@ for (const item of packages) {
     assert.equal(hash(installed), hash(packed), `Installed ${item.name} bytes differ for ${entry}`);
   }
 }
-assert.equal(lock.packages["node_modules/@aeliqo/web"].dependencies["@aeliqo/core"], "0.1.0");
-assert.equal(lock.packages["node_modules/@aeliqo/react"].dependencies["@aeliqo/web"], "0.1.0");
+assert.equal(lock.packages["node_modules/@aeliqo/web"].dependencies["@aeliqo/core"], RELEASE_VERSION);
+assert.equal(lock.packages["node_modules/@aeliqo/react"].dependencies["@aeliqo/web"], RELEASE_VERSION);
 assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/web/node_modules/")), []);
 assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/react/node_modules/")), []);
 await writeFile(join(runDirectory, "consumer-package-lock.json"), lockBytes);

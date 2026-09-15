@@ -1,5 +1,6 @@
 import {css, html, LitElement, nothing} from "lit";
 import {aeliqoThemeStyles} from "../styles/theme.js";
+import {AELIQO_WEB_VERSION} from "../version.js";
 import {safeResolvedHref} from "../foundation/base.js";
 import type {AeliqoDataScope, AeliqoDataStatus, AeliqoDataValue} from "./types.js";
 import {dataStyles, dataValueText, scopeText, statusTemplate} from "./shared.js";
@@ -16,6 +17,7 @@ export interface AeliqoKeyValueItem {
 
 /** Ordered facts rendered with native definition-list semantics. */
 export class AeliqoKeyValueElement extends LitElement {
+  static readonly aeliqoVersion = AELIQO_WEB_VERSION;
   static readonly properties = {
     items: {attribute: false},
     scope: {attribute: false},
@@ -23,7 +25,6 @@ export class AeliqoKeyValueElement extends LitElement {
     message: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   items: readonly AeliqoKeyValueItem[] = [];
   scope: AeliqoDataScope | undefined = undefined;

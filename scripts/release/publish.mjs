@@ -5,15 +5,11 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { basename, dirname, relative, resolve } from 'node:path';
 import { classifyRegistryVersionResponse, readJson } from './candidate-lib.mjs';
 import {
-  NPM_ORG,
   NPM_REGISTRY,
-  assertBootstrapAuthority,
-  assertBootstrapPackageHistory,
-  assertBootstrapRegistryReset,
   assertCandidateIdentity,
   assertCandidateTarball,
   classifyRegistryPackageResponse,
-  bootstrapTagReconciliation,
+  assertRegistryVersionNotUnpublished,
   assertTagMayAdvance,
   assertTrustedPublishingContext,
   expectedIntegrity,
@@ -26,25 +22,15 @@ const value = (flag) => {
   const index = args.indexOf(flag);
   return index === -1 ? undefined : args[index + 1];
 };
-const bootstrap = args.includes('--bootstrap-first-rc');
 const candidatePath = resolve(root, value('--candidate') ?? 'artifacts/release-candidate/manifest.json');
 const output = resolve(root, value('--output') ?? 'artifacts/release-candidate/publication.json');
 const tag = value('--tag');
-if (!/^(next|rewrite)$/.test(tag ?? ''))
-  throw new Error('--tag must be next or rewrite; latest promotion is a separate deliberate operation');
+if (!/^(next|latest)$/.test(tag ?? '')) throw new Error('--tag must be next for an RC or latest for a stable release');
 if (relative(root, candidatePath).startsWith('..') || relative(root, output).startsWith('..'))
   throw new Error('Release paths must remain inside the repository');
 const candidate = await readJson(candidatePath);
-assertCandidateIdentity(candidate, { bootstrap, tag });
+assertCandidateIdentity(candidate, { tag });
 
-function commandJson(command, commandArgs) {
-  const result = spawnSync(command, commandArgs, { cwd: root, encoding: 'utf8', timeout: 60_000 });
-  if (result.error || result.status !== 0)
-    throw new Error(
-      `${command} ${commandArgs.join(' ')} failed\n${result.error?.message ?? ''}\n${result.stderr ?? ''}`,
-    );
-  return JSON.parse(result.stdout);
-}
 function gitOutput(commandArgs) {
   const result = spawnSync('git', commandArgs, { cwd: root, encoding: 'utf8', timeout: 30_000 });
   if (result.error || result.status !== 0) throw new Error(`git ${commandArgs.join(' ')} failed`);
@@ -61,23 +47,11 @@ function tarBuffer(commandArgs) {
   return result.stdout;
 }
 function publishTarball(path) {
-  const publishArgs = ['publish', path, '--access', 'public', '--registry', NPM_REGISTRY];
-  if (!bootstrap) publishArgs.push('--provenance');
+  const publishArgs = ['publish', path, '--access', 'public', '--registry', NPM_REGISTRY, '--provenance'];
   publishArgs.push('--tag', tag);
-  const options = bootstrap
-    ? { cwd: root, stdio: 'inherit', timeout: 300_000 }
-    : { cwd: root, encoding: 'utf8', timeout: 300_000 };
-  const result = spawnSync('npm', publishArgs, options);
+  const result = spawnSync('npm', publishArgs, { cwd: root, encoding: 'utf8', timeout: 300_000 });
   if (result.error || result.status !== 0)
-    throw new Error(`npm publish failed${bootstrap ? '' : `\n${result.stdout ?? ''}\n${result.stderr ?? ''}`}`);
-}
-function removeDistTag(name, distTag) {
-  const result = spawnSync('npm', ['dist-tag', 'rm', name, distTag, '--registry', NPM_REGISTRY], {
-    cwd: root,
-    stdio: 'inherit',
-    timeout: 300_000,
-  });
-  if (result.error || result.status !== 0) throw new Error(`npm could not remove unexpected ${distTag} from ${name}`);
+    throw new Error(`npm publish failed\n${result.stdout ?? ''}\n${result.stderr ?? ''}`);
 }
 async function registryState(item) {
   const controller = new AbortController();
@@ -119,20 +93,7 @@ async function registryPackage(item) {
 const head = gitOutput(['rev-parse', 'HEAD']);
 if (candidate.sourceRevision !== head) throw new Error('Candidate source revision differs from the checked-out source');
 assertReleaseSourceClean(gitOutput(RELEASE_SOURCE_STATUS_ARGS), 'Publishing a release candidate');
-if (bootstrap) {
-  const preflight = await readJson(resolve(root, 'artifacts/release-bootstrap-preflight.json'));
-  if (preflight.sourceRevision !== head) throw new Error('Bootstrap preflight source revision differs from HEAD');
-  assertBootstrapRegistryReset(preflight);
-  assertBootstrapAuthority({
-    whoami: commandJson('npm', ['whoami', '--json', '--registry', NPM_REGISTRY]),
-    membership: commandJson('npm', ['org', 'ls', NPM_ORG, '--json', '--registry', NPM_REGISTRY]),
-    tfa: commandJson('npm', ['profile', 'get', 'tfa', '--json', '--registry', NPM_REGISTRY]),
-    stdinTTY: process.stdin.isTTY,
-    stdoutTTY: process.stdout.isTTY,
-    stderrTTY: process.stderr.isTTY,
-    ci: Boolean(process.env.CI || process.env.GITHUB_ACTIONS),
-  });
-} else assertTrustedPublishingContext(process.env, candidate.sourceRevision);
+assertTrustedPublishingContext(process.env, candidate.sourceRevision);
 
 const prepared = [];
 const [canonicalLicense, canonicalNotice] = await Promise.all([
@@ -140,7 +101,10 @@ const [canonicalLicense, canonicalNotice] = await Promise.all([
   readFile(resolve(root, 'NOTICE')),
 ]);
 for (const item of candidate.packages) {
-  if (basename(item.file) !== item.file || !/^aeliqo-[a-z]+-0\.1\.0(?:-rc\.[1-9]\d*)?\.tgz$/.test(item.file))
+  if (
+    basename(item.file) !== item.file ||
+    item.file !== `aeliqo-${item.name.slice('@aeliqo/'.length)}-${candidate.version}.tgz`
+  )
     throw new Error(`Unsafe candidate tarball name for ${item.name}`);
   const tarball = resolve(dirname(candidatePath), item.file);
   if (relative(dirname(candidatePath), tarball).startsWith('..'))
@@ -165,15 +129,7 @@ for (const item of candidate.packages) {
   });
   const before = await registryState(item);
   const registryPackageState = await registryPackage(item);
-  if (bootstrap)
-    assertBootstrapPackageHistory({
-      name: item.name,
-      version: candidate.version,
-      identityExists: registryPackageState.exists,
-      registryVersions: registryPackageState.exists ? registryPackageState.versions : [],
-      deprecatedVersions: registryPackageState.exists ? registryPackageState.deprecatedVersions : [],
-      versionState: before.state,
-    });
+  assertRegistryVersionNotUnpublished(item.name, candidate.version, registryPackageState);
   assertTagMayAdvance({
     name: item.name,
     tag,
@@ -181,7 +137,7 @@ for (const item of candidate.packages) {
     currentVersion: registryPackageState.selected,
     versionAlreadyExists: before.state === 'verified-existing',
   });
-  prepared.push({ item, tarball, before, beforePackage: registryPackageState });
+  prepared.push({ item, tarball, before });
 }
 
 const report = {
@@ -189,11 +145,11 @@ const report = {
   sourceRevision: candidate.sourceRevision,
   version: candidate.version,
   tag,
-  mode: bootstrap ? 'interactive-owner-bootstrap' : 'trusted-publishing',
+  mode: 'trusted-publishing',
   startedAt: new Date().toISOString(),
   packages: [],
 };
-for (const { item, tarball, before, beforePackage } of prepared) {
+for (const { item, tarball, before } of prepared) {
   let action = 'verified-existing';
   if (before.state === 'absent') {
     publishTarball(tarball);
@@ -215,43 +171,7 @@ for (const { item, tarball, before, beforePackage } of prepared) {
     throw new Error(`Registry did not expose verified ${item.name}@${candidate.version} after publication`);
   if (afterPackage?.selected !== candidate.version)
     throw new Error(`Registry dist-tag ${tag} does not select verified ${item.name}@${candidate.version}`);
-  const reconciledTags = [];
-  if (bootstrap) {
-    const reconciliation = bootstrapTagReconciliation({
-      name: item.name,
-      desiredVersion: candidate.version,
-      beforeTags: beforePackage.tags,
-      afterTags: afterPackage.tags,
-    });
-    for (const distTag of reconciliation.removeTags) {
-      removeDistTag(item.name, distTag);
-      reconciledTags.push(distTag);
-    }
-    if (reconciledTags.length) {
-      let verifiedTags;
-      for (let attempt = 0; attempt < 12; attempt += 1) {
-        if (attempt) await new Promise((resolvePromise) => setTimeout(resolvePromise, 5_000));
-        const current = await registryPackage(item);
-        try {
-          bootstrapTagReconciliation({
-            name: item.name,
-            desiredVersion: candidate.version,
-            beforeTags: beforePackage.tags,
-            afterTags: current.tags,
-          });
-          if (!reconciledTags.some((distTag) => current.tags[distTag] === candidate.version)) {
-            verifiedTags = current.tags;
-            break;
-          }
-        } catch (error) {
-          if (attempt === 11) throw error;
-        }
-      }
-      if (!verifiedTags) throw new Error(`Registry did not remove unexpected prerelease dist-tags for ${item.name}`);
-      afterPackage = { ...afterPackage, tags: verifiedTags, selected: verifiedTags[tag] };
-    }
-  }
-  report.packages.push({ name: item.name, integrity: item.integrity, distTag: tag, action, reconciledTags });
+  report.packages.push({ name: item.name, integrity: item.integrity, distTag: tag, action });
   await writeFile(output, JSON.stringify(report, null, 2) + '\n');
 }
 report.completedAt = new Date().toISOString();

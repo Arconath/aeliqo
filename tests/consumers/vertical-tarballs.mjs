@@ -1,3 +1,4 @@
+import {RELEASE_VERSION} from "../../scripts/release/metadata.mjs";
 /**
  * Build, install and execute the vertical HR slice from actual package tarballs
  * outside the pnpm workspace. This is a bounded consumer proof for the
@@ -37,7 +38,7 @@ const fileExists = async path => { try { await access(path); return true; } catc
 const sourceDigest = () => run(["node", "scripts/source-digest.mjs"], root).trim();
 
 const before = sourceDigest();
-for (const [name, version] of [["core", "0.1.0"], ["runtime", "0.1.0"], ["web", "0.1.0"]]) {
+for (const [name, version] of [["core", RELEASE_VERSION], ["runtime", RELEASE_VERSION], ["web", RELEASE_VERSION]]) {
   const directory = join(root, "packages", name);
   const manifest = JSON.parse(await readFile(join(directory, "package.json"), "utf8"));
   assert.equal(manifest.name, `@aeliqo/${name}`);
@@ -50,7 +51,7 @@ const packages = [];
 for (const name of ["core", "runtime", "web"]) {
   const directory = join(root, "packages", name);
   const manifest = JSON.parse(await readFile(join(directory, "package.json"), "utf8"));
-  const tarball = join(runDirectory, `aeliqo-${name}-0.1.0.tgz`);
+  const tarball = join(runDirectory, `aeliqo-${name}-${RELEASE_VERSION}.tgz`);
   run(["pnpm", "pack", "--out", tarball], directory);
   const bytes = await readFile(tarball);
   const packed = JSON.parse(run(["tar", "-xOf", tarball, "package/package.json"], root));
@@ -87,8 +88,8 @@ for (const [name, version] of Object.entries({typescript: "7.0.2", vite: "8.2.2"
   assert.equal(lock.packages[`node_modules/${name}`].version, version);
   assert.match(lock.packages[`node_modules/${name}`].integrity, /^sha512-/);
 }
-assert.equal(lock.packages["node_modules/@aeliqo/runtime"].dependencies["@aeliqo/core"], "0.1.0");
-assert.equal(lock.packages["node_modules/@aeliqo/web"].dependencies["@aeliqo/core"], "0.1.0");
+assert.equal(lock.packages["node_modules/@aeliqo/runtime"].dependencies["@aeliqo/core"], RELEASE_VERSION);
+assert.equal(lock.packages["node_modules/@aeliqo/web"].dependencies["@aeliqo/core"], RELEASE_VERSION);
 assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/runtime/node_modules/")), []);
 assert.deepEqual(Object.keys(lock.packages).filter(key => key.startsWith("node_modules/@aeliqo/web/node_modules/")), []);
 await writeFile(join(runDirectory, "consumer-package-lock.json"), lockBytes);

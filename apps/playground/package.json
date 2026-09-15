@@ -1,7 +1,19 @@
 {
   "name": "@aeliqo/playground-app",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
-  "description": "Public Aeliqo playground application source"
+  "description": "Public Aeliqo playground application source",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env.local runner/server.mjs",
+    "mcp:stdio": "node runner/mcp-stdio.mjs"
+  },
+  "dependencies": {
+    "@aeliqo/agent": "workspace:*",
+    "@aeliqo/core": "workspace:*",
+    "@aeliqo/runtime": "workspace:*",
+    "@aeliqo/web": "workspace:*",
+    "lit": "3.3.3",
+    "zod": "4.5.4"
+  }
 }

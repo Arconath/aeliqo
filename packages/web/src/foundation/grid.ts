@@ -11,7 +11,6 @@ export class AeliqoGridElement extends AeliqoFoundationElement {
     minItem: {attribute: "min-item", type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   columns: AeliqoGridColumns = 2;
   gap: AeliqoGridGap = 16;

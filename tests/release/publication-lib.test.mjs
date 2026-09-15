@@ -3,44 +3,40 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import test from 'node:test';
 import { PUBLIC_PACKAGE_NAMES, sha256, sha512Integrity } from '../../scripts/release/candidate-lib.mjs';
+import { RELEASE_VERSION } from '../../scripts/release/metadata.mjs';
 import {
   assertApprovedRc,
-  assertBootstrapAuthority,
-  assertBootstrapPackageHistory,
-  assertBootstrapRegistryReset,
   assertCandidateIdentity,
   assertCandidateTarball,
+  assertRegistryVersionAvailable,
+  assertRegistryVersionNotUnpublished,
   assertTagMayAdvance,
   assertTrustedPublishingContext,
-  bootstrapTagReconciliation,
   classifyRegistryPackageResponse,
   expectedIntegrity,
   verifyNpmProvenance,
 } from '../../scripts/release/publication-lib.mjs';
 
 const sourceRevision = 'a'.repeat(40);
+const rc2 = `${RELEASE_VERSION}-rc.2`;
+const rc3 = `${RELEASE_VERSION}-rc.3`;
 const packages = PUBLIC_PACKAGE_NAMES.map((name, index) => ({
   name,
-  version: '0.1.0-rc.2',
+  version: rc2,
   sha256: String(index).padStart(64, '0'),
   integrity: `sha512-${index}`,
   bytes: 1,
-  file: `aeliqo-${name.slice('@aeliqo/'.length)}-0.1.0-rc.2.tgz`,
+  file: `aeliqo-${name.slice('@aeliqo/'.length)}-${rc2}.tgz`,
 }));
 const candidate = {
   schema: 'aeliqo.release-candidate.v1',
   sourceRevision,
-  version: '0.1.0-rc.2',
+  version: rc2,
   publishOrder: PUBLIC_PACKAGE_NAMES,
   packages,
 };
-const withVersion = (value) => ({
-  ...candidate,
-  version: value,
-  packages: packages.map((item) => ({ ...item, version: value, file: item.file.replace('0.1.0-rc.2', value) })),
-});
 
-test('an empty npm unpublish tombstone remains an absent bootstrap identity', () => {
+test('an empty npm unpublish tombstone remains an absent registry identity', () => {
   const name = '@aeliqo/core';
   const tombstone = {
     _id: name,
@@ -53,59 +49,82 @@ test('an empty npm unpublish tombstone remains an absent bootstrap identity', ()
     selected: undefined,
     tags: {},
     versions: [],
+    unpublishedVersions: ['0.2.0'],
     deprecatedVersions: [],
   });
+  const state = classifyRegistryPackageResponse(200, tombstone, name);
+  assert.throws(() => assertRegistryVersionAvailable(name, '0.2.0', state), /previously unpublished/);
+  assert.throws(() => assertRegistryVersionNotUnpublished(name, '0.2.0', state), /cannot be resumed/);
+  assert.doesNotThrow(() => assertRegistryVersionAvailable(name, '0.2.1', state));
   assert.throws(
     () => classifyRegistryPackageResponse(200, { name, _rev: tombstone._rev }, name),
     /malformed .* dist-tags/,
   );
 });
 
-test('first-RC bootstrap is a separate exact interactive path', () => {
+test('registry availability rejects existing versions without blocking a new version', () => {
+  const name = '@aeliqo/runtime';
+  const state = classifyRegistryPackageResponse(
+    200,
+    {
+      name,
+      'dist-tags': { latest: '0.1.0' },
+      versions: { '0.1.0': { name, version: '0.1.0' } },
+      time: {},
+    },
+    name,
+    'latest',
+  );
+  assert.throws(() => assertRegistryVersionAvailable(name, '0.1.0', state), /already published/);
+  assert.doesNotThrow(() => assertRegistryVersionAvailable(name, '0.2.0', state));
+  assert.doesNotThrow(() => assertRegistryVersionNotUnpublished(name, '0.1.0', state));
+});
+
+test('registry availability treats orphaned version timestamps as unpublished tombstones', () => {
+  const name = '@aeliqo/core';
+  const state = classifyRegistryPackageResponse(
+    200,
+    {
+      name,
+      'dist-tags': { latest: '0.1.0' },
+      versions: { '0.1.0': { name, version: '0.1.0' } },
+      time: {
+        created: '2026-01-01T00:00:00.000Z',
+        modified: '2026-01-02T00:00:00.000Z',
+        '0.1.0': '2026-01-01T00:00:00.000Z',
+        '0.2.0': '2026-01-02T00:00:00.000Z',
+      },
+    },
+    name,
+    'latest',
+  );
+  assert.deepEqual(state.unpublishedVersions, ['0.2.0']);
+  assert.throws(() => assertRegistryVersionAvailable(name, '0.2.0', state), /previously unpublished/);
+});
+
+test('candidate identity binds the release line to its required dist-tag', () => {
   assert.doesNotThrow(() => assertCandidateIdentity(candidate, { tag: 'next' }));
-  assert.throws(() => assertCandidateIdentity(candidate, { tag: 'rewrite' }), /RC candidates require next/);
-  assert.throws(() => assertCandidateIdentity(withVersion('0.1.0-rc.1'), { tag: 'next' }), /reserved/);
-  assert.doesNotThrow(() => assertCandidateIdentity(withVersion('0.1.0-rc.1'), { bootstrap: true, tag: 'next' }));
-  assert.throws(
-    () => assertCandidateIdentity(withVersion('0.1.0-rc.2'), { bootstrap: true, tag: 'next' }),
-    /restricted/,
-  );
-  assert.throws(
-    () =>
-      assertCandidateIdentity(
-        {
-          ...candidate,
-          packages: candidate.packages.map((item, index) => (index ? item : { ...item, version: '9.9.9' })),
-        },
-        { tag: 'next' },
-      ),
-    /metadata is invalid/,
-  );
-  assert.throws(
-    () =>
-      assertCandidateIdentity(
-        {
-          ...candidate,
-          packages: candidate.packages.map((item, index) =>
-            index ? item : { ...item, file: 'aeliqo-core-9.9.9.tgz' },
-          ),
-        },
-        { tag: 'next' },
-      ),
-    /metadata is invalid/,
-  );
-  const authority = {
-    whoami: 'arconath',
-    membership: { arconath: 'owner' },
-    tfa: { tfa: { mode: 'auth-and-writes' } },
-    stdinTTY: true,
-    stdoutTTY: true,
-    stderrTTY: true,
-    ci: false,
+
+  const stable = {
+    ...candidate,
+    version: RELEASE_VERSION,
+    packages: packages.map((item) => ({
+      ...item,
+      version: RELEASE_VERSION,
+      file: item.file.replace(rc2, RELEASE_VERSION),
+    })),
   };
-  assert.doesNotThrow(() => assertBootstrapAuthority(authority));
-  assert.throws(() => assertBootstrapAuthority({ ...authority, ci: true }), /interactive local terminal/);
-  assert.throws(() => assertBootstrapAuthority({ ...authority, whoami: 'someone-else' }), /requires arconath/);
+  assert.doesNotThrow(() => assertCandidateIdentity(stable, { tag: 'latest' }));
+  assert.throws(() => assertCandidateIdentity(candidate, { tag: 'latest' }), /Stable candidates require latest/);
+  assert.throws(() => assertCandidateIdentity(stable, { tag: 'next' }), /Stable candidates require latest/);
+  assert.throws(
+    () =>
+      assertCandidateIdentity(
+        { ...candidate, packages: candidate.packages.map((item, index) => (index ? item : { ...item, bytes: 0 })) },
+        { tag: 'next' },
+      ),
+    /metadata is invalid/,
+  );
 });
 
 test('publication reopens each tarball and binds its internal public identity', () => {
@@ -148,213 +167,6 @@ test('publication reopens each tarball and binds its internal public identity', 
   assert.throws(() => assertCandidateTarball({ ...input, notice: Buffer.from('changed') }), /NOTICE differs/);
 });
 
-test('first-RC package history permits only an exact partial-publication resume', () => {
-  const name = '@aeliqo/core';
-  const version = '0.1.0-rc.1';
-  assert.doesNotThrow(() =>
-    assertBootstrapPackageHistory({
-      name,
-      version,
-      identityExists: false,
-      registryVersions: [],
-      versionState: 'absent',
-    }),
-  );
-  assert.doesNotThrow(() =>
-    assertBootstrapPackageHistory({
-      name,
-      version,
-      identityExists: true,
-      registryVersions: ['0.2.0'],
-      deprecatedVersions: ['0.2.0'],
-      versionState: 'absent',
-    }),
-  );
-  assert.doesNotThrow(() =>
-    assertBootstrapPackageHistory({
-      name,
-      version,
-      identityExists: true,
-      registryVersions: ['0.2.0', version],
-      deprecatedVersions: ['0.2.0'],
-      versionState: 'verified-existing',
-    }),
-  );
-  assert.doesNotThrow(() =>
-    assertBootstrapPackageHistory({
-      name,
-      version,
-      identityExists: true,
-      registryVersions: [version],
-      deprecatedVersions: [],
-      versionState: 'verified-existing',
-    }),
-  );
-  assert.throws(
-    () =>
-      assertBootstrapPackageHistory({
-        name,
-        version,
-        identityExists: true,
-        registryVersions: [],
-        versionState: 'absent',
-      }),
-    /unused package identity/,
-  );
-  assert.throws(
-    () =>
-      assertBootstrapPackageHistory({
-        name,
-        version,
-        identityExists: true,
-        registryVersions: ['0.2.0'],
-        deprecatedVersions: [],
-        versionState: 'absent',
-      }),
-    /deprecated legacy history/,
-  );
-  assert.throws(
-    () =>
-      assertBootstrapPackageHistory({
-        name,
-        version,
-        identityExists: true,
-        registryVersions: ['0.0.9'],
-        deprecatedVersions: [],
-        versionState: 'absent',
-      }),
-    /deprecated legacy history/,
-  );
-  assert.throws(
-    () =>
-      assertBootstrapPackageHistory({
-        name,
-        version,
-        identityExists: true,
-        registryVersions: ['0.2.0', version, '0.1.0-rc.0'],
-        deprecatedVersions: ['0.2.0'],
-        versionState: 'verified-existing',
-      }),
-    /deprecated legacy history/,
-  );
-  assert.doesNotThrow(() =>
-    assertBootstrapPackageHistory({
-      name: '@aeliqo/runtime',
-      version,
-      identityExists: true,
-      registryVersions: [version],
-      versionState: 'verified-existing',
-    }),
-  );
-  assert.throws(
-    () =>
-      assertBootstrapPackageHistory({
-        name: '@aeliqo/runtime',
-        version,
-        identityExists: true,
-        registryVersions: [version],
-        deprecatedVersions: [version],
-        versionState: 'verified-existing',
-      }),
-    /deprecated candidate/,
-  );
-});
-
-test('owner-unpublished names require the conservative hold and a fresh post-hold preflight', () => {
-  const notBefore = '2026-09-11T16:32:51Z';
-  const preflight = {
-    target: '0.1.0',
-    registry: 'https://registry.npmjs.org',
-    registryRead: 'verified',
-    namespaceAuthority: 'verified',
-    observedAt: '2026-09-11T16:33:00Z',
-    packages: PUBLIC_PACKAGE_NAMES.map((name) => ({
-      name,
-      registryStatus: 'public-404-post-hold',
-      exactTarget: 'not-visible',
-    })),
-    ownerUnpublishedHistory: [
-      '@aeliqo/core@0.2.0',
-      '@aeliqo/react@0.2.0',
-      '@aeliqo/mcp@0.2.0',
-      '@aeliqo/byok@0.2.0',
-      '@aeliqo/webmcp-experimental@0.2.0',
-      '@aeliqo/sdk-core@0.1.0-rc.1',
-    ],
-    conservativePublishNotBefore: notBefore,
-    postHoldVerifiedAt: '2026-09-11T16:33:00Z',
-  };
-  assert.throws(
-    () => assertBootstrapRegistryReset(preflight, Date.parse('2026-09-11T16:32:50Z')),
-    /24-hour package-name hold/,
-  );
-  assert.doesNotThrow(() => assertBootstrapRegistryReset(preflight, Date.parse('2026-09-11T16:33:01Z')));
-  assert.throws(
-    () => assertBootstrapRegistryReset({ ...preflight, postHoldVerifiedAt: null }, Date.parse('2026-09-11T16:33:01Z')),
-    /fresh authenticated post-hold/,
-  );
-  assert.throws(
-    () =>
-      assertBootstrapRegistryReset(
-        { ...preflight, packages: preflight.packages.slice(1) },
-        Date.parse('2026-09-11T16:33:01Z'),
-      ),
-    /exact direct six-package/,
-  );
-  assert.throws(
-    () =>
-      assertBootstrapRegistryReset({ ...preflight, ownerUnpublishedHistory: [] }, Date.parse('2026-09-11T16:33:01Z')),
-    /known unpublished/,
-  );
-  assert.throws(
-    () =>
-      assertBootstrapRegistryReset(
-        { ...preflight, observedAt: '2026-09-11T16:32:59Z' },
-        Date.parse('2026-09-11T16:33:01Z'),
-      ),
-    /fresh authenticated/,
-  );
-  assert.throws(
-    () =>
-      assertBootstrapRegistryReset(
-        { ...preflight, registry: 'https://registry.example.test' },
-        Date.parse('2026-09-11T16:33:01Z'),
-      ),
-    /exact authenticated/,
-  );
-});
-
-test('first publication removes only an automatically-created prerelease latest tag', () => {
-  const input = {
-    name: '@aeliqo/runtime',
-    desiredVersion: '0.1.0-rc.1',
-    beforeTags: {},
-    afterTags: { next: '0.1.0-rc.1', latest: '0.1.0-rc.1' },
-  };
-  assert.deepEqual(bootstrapTagReconciliation(input), { removeTags: ['latest'], expectedTags: { next: '0.1.0-rc.1' } });
-  assert.deepEqual(bootstrapTagReconciliation({ ...input, afterTags: { next: '0.1.0-rc.1' } }), {
-    removeTags: [],
-    expectedTags: { next: '0.1.0-rc.1' },
-  });
-  assert.deepEqual(
-    bootstrapTagReconciliation({
-      ...input,
-      name: '@aeliqo/core',
-      beforeTags: { latest: '0.2.0' },
-      afterTags: { latest: '0.2.0', next: '0.1.0-rc.1' },
-    }),
-    { removeTags: [], expectedTags: { latest: '0.2.0', next: '0.1.0-rc.1' } },
-  );
-  assert.throws(
-    () => bootstrapTagReconciliation({ ...input, afterTags: { next: '0.1.0-rc.1', beta: '9.9.9' } }),
-    /unexpected dist-tags/,
-  );
-  assert.throws(
-    () => bootstrapTagReconciliation({ ...input, afterTags: { latest: '0.1.0-rc.1' } }),
-    /next does not select/,
-  );
-});
-
 test('trusted publishing and dist-tag movement fail closed', () => {
   const environment = {
     GITHUB_ACTIONS: 'true',
@@ -374,8 +186,8 @@ test('trusted publishing and dist-tag movement fail closed', () => {
     assertTagMayAdvance({
       name: packages[0].name,
       tag: 'next',
-      desiredVersion: '0.1.0-rc.3',
-      currentVersion: '0.1.0-rc.2',
+      desiredVersion: rc3,
+      currentVersion: rc2,
       versionAlreadyExists: false,
     }),
   );
@@ -384,8 +196,8 @@ test('trusted publishing and dist-tag movement fail closed', () => {
       assertTagMayAdvance({
         name: packages[0].name,
         tag: 'next',
-        desiredVersion: '0.1.0-rc.2',
-        currentVersion: '0.1.0-rc.3',
+        desiredVersion: rc2,
+        currentVersion: rc3,
         versionAlreadyExists: false,
       }),
     /Refusing to move/,
@@ -395,11 +207,20 @@ test('trusted publishing and dist-tag movement fail closed', () => {
       assertTagMayAdvance({
         name: packages[0].name,
         tag: 'next',
-        desiredVersion: '0.1.0-rc.2',
+        desiredVersion: rc2,
         currentVersion: undefined,
         versionAlreadyExists: true,
       }),
     /exists but dist-tag/,
+  );
+  assert.doesNotThrow(() =>
+    assertTagMayAdvance({
+      name: packages[0].name,
+      tag: 'latest',
+      desiredVersion: RELEASE_VERSION,
+      currentVersion: '0.1.0',
+      versionAlreadyExists: false,
+    }),
   );
 });
 
@@ -451,12 +272,12 @@ test('npm provenance binds package bytes to canonical workflow and source', () =
   const bytes = Buffer.from('candidate');
   const integrity = sha512Integrity(bytes);
   const name = '@aeliqo/core';
-  const version = '0.1.0-rc.2';
+  const version = rc2;
   const statement = {
     predicateType: 'https://slsa.dev/provenance/v1',
     subject: [
       {
-        name: 'pkg:npm/%40aeliqo/core@0.1.0-rc.2',
+        name: `pkg:npm/%40aeliqo/core@${rc2}`,
         digest: { sha512: Buffer.from(integrity.slice(7), 'base64').toString('hex') },
       },
     ],
@@ -536,7 +357,7 @@ test('publication, registry consumer, and legacy mutations are pinned to npmjs',
     readFile(resolve(root, 'scripts/release/deprecate-legacy.mjs'), 'utf8'),
   ]);
   for (const source of [publish, consumer, legacy]) assert.match(source, /NPM_REGISTRY/);
-  assert.match(publish, /dist-tag', 'rm'.*--registry/);
+  assert.doesNotMatch(publish, /dist-tag', 'rm'/);
   assert.match(consumer, /install'.*--registry/);
   assert.match(legacy, /\.\.\.args, '--registry'/);
 });

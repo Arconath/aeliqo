@@ -278,6 +278,14 @@ describe('configuration-dependent child layout',()=>{
   const composed=composePresentation({id:'replacement',revision:'2',preconditions:c.current,context:c},installed.value);
   expect(composed).toMatchObject({ok:true,value:{presentation:{plan:{nodes:[{id:'table-1',representation:list.ref}],stateTransfer:[{mapping:mapping.ref}]}}}});
  });
+ it('allows an explicit renderer mapping to preserve state across different adaptive roles',()=>{
+  const cards:PresentationManifest={...table,ref:{id:'data.cards',revision:'1'},roles:['cardCollection']};
+  const mapping={ref:{id:'state.table-cards',revision:'1'},from:table.ref,to:cards.ref,fromRole:'table',toRole:'cardCollection',kind:'transfer' as const};
+  const installed=createPresentationRegistry([table,cards,stack],[],[],[mapping]);
+  expect(installed.ok).toBe(true);
+  if(!installed.ok)return;
+  expect(installed.value.stateMappings).toEqual([mapping]);
+ });
  it('requires a registered archival owner before removing a composable view',()=>{
   const archive={ref:{id:'state.archive-table',revision:'1'},from:table.ref,to:stack.ref,fromRole:'table',toRole:'structure',kind:'archive' as const};
   const installed=createPresentationRegistry([table,stack],[],[],[archive]);expect(installed.ok).toBe(true);if(!installed.ok)return;

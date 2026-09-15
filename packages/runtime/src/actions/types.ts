@@ -1,4 +1,4 @@
-import type {Diagnostic, Outcome, Scalar, VersionRef} from '@aeliqo/core';
+import type {Diagnostic, Outcome, ReadonlyJsonValue, VersionRef} from '@aeliqo/core';
 
 /** Grants are intentionally independent. A proposal grant never implies execution. */
 export type ActionGrant = 'action.propose' | 'action.execute';
@@ -8,7 +8,7 @@ export type ActionConfirmationPolicy = 'none' | 'required';
 export type ActionIdempotencyPolicy = 'optional' | 'required';
 export type ActionEntityRevisionPolicy = 'none' | 'required';
 
-export type ActionPayload = Readonly<Record<string, Scalar>>;
+export type ActionPayload = Readonly<Record<string, ReadonlyJsonValue>>;
 
 /** A trusted local schema parser. It is never serialized into a proposal or receipt. */
 export interface ActionSchema<T extends ActionPayload = ActionPayload> {
@@ -204,6 +204,8 @@ export interface ActionPort {
     readonly entity?: ActionEntity;
     readonly idempotencyKey?: string;
   }): Promise<ActionOutcome<ActionPreview>>;
+  /** Discard one live preview token without revoking unrelated actions. */
+  cancel(preview: ActionPreview): boolean;
   confirm(preview: ActionPreview, options?: {readonly signal?: AbortSignal}): Promise<ActionOutcome<ActionReceipt>>;
   execute(receipt: ActionReceipt, options?: {readonly signal?: AbortSignal}): Promise<ActionOutcome<ActionExecution>>;
   inspect(idempotencyKey: string, options?: ActionReadOptions): Promise<ActionOutcome<ActionInspection | undefined>>;

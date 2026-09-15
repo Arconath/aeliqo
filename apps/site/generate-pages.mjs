@@ -1,6 +1,8 @@
 import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { buildPublicPages } from '../../scripts/docs/build-public-docs.mjs';
+import {DOC_NAVIGATION, LEGACY_DOC_REDIRECTS, docsArtifactPath} from '../../docs/public-site/routes.mjs';
+import {RELEASE_VERSION} from '../../scripts/release/metadata.mjs';
 
 const root = dirname(new URL(import.meta.url).pathname);
 const webRoot = resolve(root, '../web');
@@ -10,6 +12,9 @@ export const generatedPublic = resolve(root, 'artifacts/site-public');
 
 const escape = (value) =>
   String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+
+const sitemap = (urls) =>
+  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map((url) => `<url><loc>${escape(url)}</loc></url>`).join('')}</urlset>\n`;
 
 const plainText = (value) =>
   value
@@ -53,7 +58,7 @@ function docsSidebar(groups, docsPages, currentPath) {
           .join('')}</div>`,
     )
     .join('');
-  return `<aside class="docs-sidebar" aria-label="Documentation navigation"><input class="docs-nav-toggle visually-hidden" id="docs-nav-toggle" type="checkbox"><label class="docs-nav-summary" for="docs-nav-toggle">Browse documentation <span aria-hidden="true">⌄</span></label><div class="docs-sidebar-content"><a class="docs-sidebar-brand" href="/docs/"><span>Aeliqo</span><strong>Documentation</strong></a><div class="docs-search-tools"><form class="docs-search-fallback" role="search" aria-label="Search documentation" action="/docs/search/" method="get"><label class="visually-hidden" for="docs-sidebar-search">Search documentation</label><input id="docs-sidebar-search" name="q" type="text" inputmode="search" placeholder="Search docs"><button type="submit">Search</button></form><button class="search-trigger" type="button" disabled aria-keyshortcuts="Control+K Meta+K" aria-controls="docs-search-dialog"><span>Search docs</span><kbd>⌘ K</kbd></button></div><div class="docs-version"><span>Version</span><strong>0.1.0</strong><i>stable</i></div><nav aria-label="Documentation">${links}</nav><a class="docs-sidebar-github" href="https://github.com/Arconath/aeliqo">View source on GitHub <span aria-hidden="true">↗</span></a></div></aside>`;
+  return `<aside class="docs-sidebar" aria-label="Documentation navigation"><input class="docs-nav-toggle visually-hidden" id="docs-nav-toggle" type="checkbox"><label class="docs-nav-summary" for="docs-nav-toggle">Browse documentation <span aria-hidden="true">⌄</span></label><div class="docs-sidebar-content"><a class="docs-sidebar-brand" href="/"><span>Aeliqo</span><strong>Documentation</strong></a><div class="docs-search-tools"><form class="docs-search-fallback" role="search" aria-label="Search documentation" action="/search/" method="get"><label class="visually-hidden" for="docs-sidebar-search">Search documentation</label><input id="docs-sidebar-search" name="q" type="text" inputmode="search" placeholder="Search docs"><button type="submit">Search</button></form><button class="search-trigger" type="button" disabled aria-keyshortcuts="Control+K Meta+K" aria-controls="docs-search-dialog"><span>Search docs</span><kbd>⌘ K</kbd></button></div><div class="docs-version"><span>Version</span><strong>${RELEASE_VERSION}</strong><i>active</i><a href="/0.1/">0.1 archive</a></div><nav aria-label="Documentation">${links}</nav><a class="docs-sidebar-github" href="https://github.com/Arconath/aeliqo">View source on GitHub <span aria-hidden="true">↗</span></a></div></aside>`;
 }
 
 function docsToc(headings) {
@@ -73,26 +78,10 @@ export async function generatePages() {
     .slice(home.indexOf('<a class="skip"'), home.indexOf('<main id="main">'))
     .replace(' aria-current="page"', '');
   const footer = home.slice(home.lastIndexOf('<footer'), home.indexOf('<script type="module"'));
-  const all = (await buildPublicPages()).map((page) => ({ ...page }));
-  const docsPages = all.filter((page) => page.path.startsWith('/docs/') && page.component === undefined);
-  const groups = [
-    [
-      'Start',
-      [
-        '/docs/',
-        '/docs/getting-started/',
-        '/docs/getting-started/standalone/',
-        '/docs/getting-started/local/',
-        '/docs/getting-started/http/',
-        '/docs/getting-started/region/',
-        '/docs/getting-started/agent/',
-      ],
-    ],
-    ['Learn', ['/docs/concepts/', '/docs/meaning/']],
-    ['Build', ['/docs/data/', '/docs/integration/', '/docs/agents/']],
-    ['Ship', ['/docs/production/']],
-    ['Reference', ['/docs/components/', '/docs/search/']],
-  ];
+  const docs = (await buildPublicPages()).map((page) => ({ ...page, surface: 'docs' }));
+  const docsPages = docs.filter((page) => page.component === undefined);
+  const all = [...docs];
+  const groups = DOC_NAVIGATION;
   const playground = await readFile(join(playgroundRoot, 'playground.html'), 'utf8');
   all.push({
     path: '/playground/',
@@ -100,21 +89,24 @@ export async function generatePages() {
     section: 'Playground',
     description: 'Evaluate and present synthetic application data with the real Aeliqo runtime.',
     body: playground,
+    surface: 'docs',
   });
   all.push({
     path: '/404/',
     title: 'Page not found',
     section: '404',
     description: 'This page is unavailable.',
-    body: '<p>The requested page could not be found.</p><p><a href="/docs/">Browse documentation</a> or <a href="/">return home</a>.</p>',
+    body: '<p>The requested page could not be found.</p><p><a href="https://docs.aeliqo.com/">Browse documentation</a> or <a href="https://aeliqo.com/">return to Aeliqo.</a></p>',
+    surface: 'shared',
   });
   const inputs = [join(generatedRoot, 'index.html')];
   for (const page of all) {
-    const target = join(generatedRoot, page.path, 'index.html');
+    const artifactPath = page.surface === 'docs' && page.path !== '/playground/' ? docsArtifactPath(page.path) : page.path;
+    const target = join(generatedRoot, artifactPath, 'index.html');
     await mkdir(dirname(target), { recursive: true });
-    const isDocs = page.path.startsWith('/docs/');
+    const isDocs = page.surface === 'docs' && page.path !== '/playground/';
     const enhanced = isDocs ? enhanceHeadings(page.body) : { html: page.body, headings: [] };
-    const articleClass = ['reading', page.path === '/docs/' ? 'docs-home' : '', page.component ? 'component-doc' : '']
+    const articleClass = ['reading', page.path === '/' ? 'docs-home' : '', page.component ? 'component-doc' : '']
       .filter(Boolean)
       .join(' ');
     const body =
@@ -123,36 +115,38 @@ export async function generatePages() {
         : `<article class="${articleClass}"><header class="doc-header"><p class="eyebrow">${escape(page.section)}</p><h1>${escape(page.title)}</h1><p class="doc-dek">${escape(page.description)}</p></header>${enhanced.html}</article>`;
     const docsNavigation = isDocs ? docsSidebar(groups, docsPages, page.path) : '';
     const toc = isDocs ? docsToc(enhanced.headings) : '';
-    const header = baseHeader.replace(
-      page.path.startsWith('/docs/')
-        ? '<a href="/docs/">Docs</a>'
-        : page.path === '/playground/'
-          ? '<a href="/playground/">Playground</a>'
-          : page.path.startsWith('/blog/')
-            ? '<a href="/blog/">Blog</a>'
-            : '<a class="brand" href="/"',
-      (match) =>
-        match.endsWith('>Docs</a>')
-          ? '<a href="/docs/" aria-current="page">Docs</a>'
-          : match.endsWith('>Playground</a>')
-            ? '<a href="/playground/" aria-current="page">Playground</a>'
-            : match.endsWith('>Blog</a>')
-              ? '<a href="/blog/" aria-current="page">Blog</a>'
-              : '<a class="brand" href="/" aria-current="page"',
-    );
+    const docsHeader = baseHeader
+      .replace('<a href="https://docs.aeliqo.com/">Docs</a>', `<a href="/"${isDocs ? ' aria-current="page"' : ''}>Docs</a>`)
+      .replace('<a href="https://docs.aeliqo.com/playground/">Playground</a>', `<a href="/playground/"${page.path === '/playground/' ? ' aria-current="page"' : ''}>Playground</a>`);
+    const header = isDocs || page.path === '/playground/'
+      ? docsHeader
+      : baseHeader.replace('<a class="brand" href="/"', '<a class="brand" href="/" aria-current="page"');
     const layout = isDocs ? 'docs-layout' : page.path === '/playground/' ? 'playground-layout' : 'content-layout';
     const bodyAttrs = [page.component ? `data-component="${page.component}"` : '', isDocs ? 'data-docs="true"' : '']
       .filter(Boolean)
       .join(' ');
+    const canonicalOrigin = page.surface === 'docs' ? 'https://docs.aeliqo.com' : 'https://aeliqo.com';
+    const canonicalUrl = `${canonicalOrigin}${page.path}`;
     await writeFile(
       target,
-      `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(page.title)} — Aeliqo</title><meta name="description" content="${escape(page.description)}"><link rel="icon" href="/aeliqo.png"><link rel="stylesheet" href="/src/site.css"></head><body${bodyAttrs ? ` ${bodyAttrs}` : ''}>${header}<main id="main" class="shell ${layout}">${docsNavigation}${body}${toc}</main>${footer}<script type="module" src="/src/site.ts"></script></body></html>`,
+      `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(page.title)} — Aeliqo</title><meta name="description" content="${escape(page.description)}"><link rel="canonical" href="${escape(canonicalUrl)}"><meta property="og:title" content="${escape(page.title)} — Aeliqo"><meta property="og:description" content="${escape(page.description)}"><meta property="og:url" content="${escape(canonicalUrl)}"><meta property="og:type" content="website"><link rel="icon" href="/aeliqo.png"><link rel="stylesheet" href="/src/site.css"></head><body${bodyAttrs ? ` ${bodyAttrs}` : ''}>${header}<main id="main" class="shell ${layout}">${docsNavigation}${body}${toc}</main>${footer}<script type="module" src="/src/site.ts"></script></body></html>`,
     );
     inputs.push(target);
   }
   await writeFile(
     join(generatedPublic, 'search-index.json'),
-    JSON.stringify(all.map(({ path, title, description }) => ({ path, title, description }))),
+    JSON.stringify(docs.map(({ path, title, description, body }) => ({ path, title, description, content: plainText(body) }))),
   );
+  await writeFile(join(generatedPublic, 'route-map.json'), JSON.stringify({
+    legacyDocs: {...LEGACY_DOC_REDIRECTS, '/docs': '/'},
+    canonicalDocs: all.filter((page) => page.surface === 'docs').map((page) => page.path),
+  }));
+  const docsUrls = all
+    .filter((page) => page.surface === 'docs')
+    .map((page) => `https://docs.aeliqo.com${page.path}`);
+  await writeFile(join(generatedPublic, 'sitemap-main.xml'), sitemap(['https://aeliqo.com/']));
+  await writeFile(join(generatedPublic, 'sitemap-docs.xml'), sitemap(docsUrls));
+  await writeFile(join(generatedPublic, 'robots-main.txt'), 'User-agent: *\nAllow: /\nSitemap: https://aeliqo.com/sitemap.xml\n');
+  await writeFile(join(generatedPublic, 'robots-docs.txt'), 'User-agent: *\nAllow: /\nSitemap: https://docs.aeliqo.com/sitemap.xml\n');
   return inputs;
 }

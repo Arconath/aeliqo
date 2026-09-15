@@ -1027,6 +1027,7 @@ function detailTemplate(
     .identity=${node.config.identity}
     .entity=${entity}
     .title=${text(node.config.values.title, "Details")}
+    .showIdentity=${node.config.values.showIdentity === true}
     .scope=${node.scope}
     .status=${status}
   ></aeliqo-detail>`;

@@ -12,6 +12,8 @@ export type {
   AeliqoRegionSnapshot,
   AeliqoSemanticInteractionHandler,
   AeliqoSemanticInteractionRequest,
+  AeliqoViewDefinition,
+  AeliqoViewRenderContext,
 } from "./types.js";
 export type {AeliqoPresentationRegistryOptions} from "./registry.js";
 export {createFoundationPresentationManifests} from "./foundation-registry.js";

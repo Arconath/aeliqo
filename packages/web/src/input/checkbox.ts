@@ -12,7 +12,6 @@ export class AeliqoCheckboxElement extends AeliqoFieldElement<boolean> {
     value: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   checked = false;
   defaultChecked = false;

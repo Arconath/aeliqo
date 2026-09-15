@@ -228,7 +228,8 @@ function allowedState(operation: OperationGrant, state: AgentCapabilityState): b
   if(['partial','cancelled','failed','denied','stale','unsupported','invalid','needs-choice','needs-meaning'].includes(state))return true;
   if(operation.endsWith('.propose'))return state==='accepted'||state==='bound';
   if(operation==='experience.commit')return state==='accepted'||state==='plan-committed'||state==='renderer-ready';
-  if(operation==='catalog.read'||operation==='result.inspect'||operation==='task.evaluate')return state==='accepted'||state==='data-ready';
+  if(operation==='task.evaluate')return state==='accepted'||state==='data-ready'||state==='plan-committed'||state==='renderer-ready';
+  if(operation==='catalog.read'||operation==='result.inspect')return state==='accepted'||state==='data-ready';
   return state==='accepted'||state==='data-ready';
 }
 
@@ -237,12 +238,13 @@ function changedAuthority(before: AgentCapabilityAuthority, after: AgentCapabili
   if (!after.grants.includes(operation)) return 'denied';
   const left = before.current;
   const right = after.current;
-  if (left === undefined || right === undefined) return left===right?'none':'changed';
+  const committed = (operation === 'experience.commit' || operation === 'task.evaluate') && (result === 'plan-committed' || result === 'renderer-ready');
+  if (left === undefined || right === undefined) return committed && left === undefined && right !== undefined ? 'none' : left === right ? 'none' : 'changed';
   const stablePins = ['scopeDigest', 'policyRevision', 'catalogRevision', 'experienceRevision', 'functionRegistryDigest'] as const;
   if (stablePins.some((pin) => left[pin] !== right[pin])) return 'changed';
   // A successful commit is allowed to advance the task/region/result pins it
   // owns; all other operations must still see the same read set.
-  if (operation === 'experience.commit' && (result === 'plan-committed' || result === 'renderer-ready')) return 'none';
+  if (committed) return 'none';
   if (!validateCommitReadSet(left,right).ok) return 'changed';
   return 'none';
 }

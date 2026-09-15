@@ -2,6 +2,7 @@ import {aeliqoThemeStyles} from "../styles/theme.js";
 import {css, html, LitElement, nothing, svg} from "lit";
 import {scalarIdentity} from "@aeliqo/core";
 import type {AeliqoChartPoint, AeliqoChartSeries} from "../types.js";
+import {AELIQO_WEB_VERSION} from "../version.js";
 
 const CHART_WIDTH = 320;
 const CHART_HEIGHT = 180;
@@ -222,6 +223,7 @@ export function buildAeliqoChartGeometry(series: readonly AeliqoChartSeries[]): 
 }
 
 export class AeliqoChartElement extends LitElement {
+  static readonly aeliqoVersion = AELIQO_WEB_VERSION;
   static readonly properties = {
     title: {type: String},
     summary: {type: String},
@@ -231,7 +233,6 @@ export class AeliqoChartElement extends LitElement {
     series: {attribute: false},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   title = "Chart";
   summary = "";

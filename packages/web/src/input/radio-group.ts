@@ -14,7 +14,6 @@ export class AeliqoRadioGroupElement extends AeliqoFieldElement<string> {
     orientation: {type: String},
   };
 
-  static readonly aeliqoVersion = "0.1.0";
 
   options: readonly AeliqoOption[] = [];
   value = "";
