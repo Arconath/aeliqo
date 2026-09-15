@@ -1,39 +1,62 @@
-import {css, html, noChange, nothing} from "lit";
-import type {PropertyValues} from "lit";
-import {AeliqoInputEvent} from "../events.js";
-import {AeliqoInputChangeEvent, AeliqoInputCommitEvent} from "./events.js";
-import {AeliqoFieldElement, aeliqoInputStyles} from "./base.js";
+import { css, html, noChange, nothing } from 'lit';
+import type { PropertyValues } from 'lit';
+import { AeliqoInputEvent } from '../events.js';
+import { AeliqoInputChangeEvent, AeliqoInputCommitEvent } from './events.js';
+import { AeliqoFieldElement, aeliqoInputStyles } from './base.js';
 
 const BLOCKING_INPUT_TYPES = new Set([
-  "text", "search", "url", "tel", "email", "password", "date", "month", "week", "time", "datetime-local", "number",
+  'text',
+  'search',
+  'url',
+  'tel',
+  'email',
+  'password',
+  'date',
+  'month',
+  'week',
+  'time',
+  'datetime-local',
+  'number',
 ]);
 
-export type AeliqoTextFieldInputType = "text" | "search" | "url" | "tel" | "email" | "password" | "date" | "month" | "week" | "time" | "datetime-local" | "number";
+export type AeliqoTextFieldInputType =
+  | 'text'
+  | 'search'
+  | 'url'
+  | 'tel'
+  | 'email'
+  | 'password'
+  | 'date'
+  | 'month'
+  | 'week'
+  | 'time'
+  | 'datetime-local'
+  | 'number';
 
 /** Shared controlled/uncontrolled, selection and IME implementation. */
 export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string> {
   static readonly properties = {
     ...AeliqoFieldElement.properties,
-    value: {type: String, reflect: true},
-    defaultValue: {attribute: "default-value", type: String},
-    inputType: {attribute: "input-type", type: String},
-    placeholder: {type: String},
-    maxLength: {attribute: "max-length", type: Number},
-    minLength: {attribute: "min-length", type: Number},
-    pattern: {type: String},
-    inputMode: {attribute: "inputmode", type: String},
-    rows: {type: Number},
-    spellcheck: {type: Boolean},
+    value: { type: String, reflect: true },
+    defaultValue: { attribute: 'default-value', type: String },
+    inputType: { attribute: 'input-type', type: String },
+    placeholder: { type: String },
+    maxLength: { attribute: 'max-length', type: Number },
+    minLength: { attribute: 'min-length', type: Number },
+    pattern: { type: String },
+    inputMode: { attribute: 'inputmode', type: String },
+    rows: { type: Number },
+    spellcheck: { type: Boolean },
   };
 
-  value = "";
-  defaultValue = "";
-  inputType: AeliqoTextFieldInputType = "text";
-  placeholder = "";
+  value = '';
+  defaultValue = '';
+  inputType: AeliqoTextFieldInputType = 'text';
+  placeholder = '';
   maxLength = -1;
   minLength = -1;
-  pattern = "";
-  inputMode = "text";
+  pattern = '';
+  inputMode = 'text';
   rows = 4;
   spellcheck = true;
 
@@ -47,12 +70,12 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
   private composing = false;
   private lastComposingProposal: string | undefined;
   private suppressTrailingCompositionInput: string | undefined;
-  private pendingSelection: {readonly start: number; readonly end: number} | undefined;
+  private pendingSelection: { readonly start: number; readonly end: number } | undefined;
   private hydratedDraft: string | undefined;
 
   constructor() {
     super();
-    const prerendered = this.shadowRoot?.querySelector<HTMLInputElement | HTMLTextAreaElement>("[part=input]");
+    const prerendered = this.shadowRoot?.querySelector<HTMLInputElement | HTMLTextAreaElement>('[part=input]');
     if (prerendered !== null && prerendered !== undefined) this.hydratedDraft = prerendered.value;
   }
 
@@ -61,7 +84,7 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
     // during custom-element upgrade. Capture the live draft once more before
     // Lit schedules its first reconciliation.
     if (this.hydratedDraft === undefined) {
-      const prerendered = this.shadowRoot?.querySelector<HTMLInputElement | HTMLTextAreaElement>("[part=input]");
+      const prerendered = this.shadowRoot?.querySelector<HTMLInputElement | HTMLTextAreaElement>('[part=input]');
       if (prerendered !== null && prerendered !== undefined) this.hydratedDraft = prerendered.value;
     }
     if (this.hydratedDraft !== undefined) {
@@ -73,24 +96,36 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
-    if (changed.has("validator")) this.invalidateValidation(false);
-    if (changed.has("value")) this.invalidateStaleValidation(this.value, false);
+    if (changed.has('validator')) this.invalidateValidation(false);
+    if (changed.has('value')) this.invalidateStaleValidation(this.value, false);
     const existing = this.nativeControl();
-    if (existing !== undefined && !this.hasUpdated && this.hydratedDraft === undefined && existing.value !== this.value) {
+    if (
+      existing !== undefined &&
+      !this.hasUpdated &&
+      this.hydratedDraft === undefined &&
+      existing.value !== this.value
+    ) {
       this.hydratedDraft = existing.value;
       this.value = existing.value;
     }
-    if (!changed.has("value")) return;
+    if (!changed.has('value')) return;
     const control = existing;
     if (control !== undefined && this.shadowRoot?.activeElement === control) {
       const start = control.selectionStart;
       const end = control.selectionEnd;
-      if (start !== null && end !== null) this.pendingSelection = {start, end};
+      if (start !== null && end !== null) this.pendingSelection = { start, end };
     }
   }
 
   protected override updated(changed: PropertyValues<this>): void {
-    if (changed.has("value") || changed.has("disabled") || changed.has("required") || changed.has("error") || changed.has("readOnly") || changed.has("defaultValue")) {
+    if (
+      changed.has('value') ||
+      changed.has('disabled') ||
+      changed.has('required') ||
+      changed.has('error') ||
+      changed.has('readOnly') ||
+      changed.has('defaultValue')
+    ) {
       this.syncNativeControl();
     }
   }
@@ -109,75 +144,77 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
     const describedBy = this.describedByIds();
     const type = this.safeInputType();
     const shared = {
-      part: "input",
-      id: "control",
-      name: "",
+      part: 'input',
+      id: 'control',
+      name: '',
       placeholder: this.placeholder || nothing,
       autocomplete: this.autocomplete || nothing,
       inputmode: this.inputMode || nothing,
       maxlength: this.maxLength >= 0 ? this.maxLength : nothing,
       minlength: this.minLength >= 0 ? this.minLength : nothing,
       pattern: this.pattern || nothing,
-      spellcheck: this.spellcheck ? "true" : "false",
+      spellcheck: this.spellcheck ? 'true' : 'false',
       required: this.required,
       disabled: this.fieldDisabled,
       readonly: this.readOnly,
-      "aria-readonly": this.readOnly ? "true" : nothing,
-      "aria-invalid": this.error ? "true" : nothing,
-      "aria-describedby": describedBy || nothing,
+      'aria-readonly': this.readOnly ? 'true' : nothing,
+      'aria-invalid': this.error ? 'true' : nothing,
+      'aria-describedby': describedBy || nothing,
     } as const;
     return html`
       <div part="field">
         <label part="label" for="control"><span class="label-text">${this.label}</span></label>
-        ${this.multiline
-          ? html`<textarea
-              part=${shared.part}
-              id=${shared.id}
-              name=${shared.name}
-              placeholder=${shared.placeholder}
-              autocomplete=${shared.autocomplete}
-              inputmode=${shared.inputmode}
-              maxlength=${shared.maxlength}
-              minlength=${shared.minlength}
-              spellcheck=${shared.spellcheck}
-              rows=${this.rows > 0 ? this.rows : 4}
-              ?required=${shared.required}
-              ?disabled=${shared.disabled}
-              ?readonly=${shared.readonly}
-              aria-readonly=${shared["aria-readonly"]}
-              aria-invalid=${shared["aria-invalid"]}
-              aria-describedby=${shared["aria-describedby"]}
-              .value=${this.composing ? noChange : this.value}
-              @input=${this.handleInput}
-              @change=${this.handleCommit}
-              @compositionstart=${this.handleCompositionStart}
-              @compositionend=${this.handleCompositionEnd}
-            ></textarea>`
-          : html`<input
-              part=${shared.part}
-              id=${shared.id}
-              type=${type}
-              name=${shared.name}
-              placeholder=${shared.placeholder}
-              autocomplete=${shared.autocomplete}
-              inputmode=${shared.inputmode}
-              maxlength=${shared.maxlength}
-              minlength=${shared.minlength}
-              pattern=${shared.pattern}
-              spellcheck=${shared.spellcheck}
-              ?required=${shared.required}
-              ?disabled=${shared.disabled}
-              ?readonly=${shared.readonly}
-              aria-readonly=${shared["aria-readonly"]}
-              aria-invalid=${shared["aria-invalid"]}
-              aria-describedby=${shared["aria-describedby"]}
-              .value=${this.composing ? noChange : this.value}
-              @input=${this.handleInput}
-              @change=${this.handleCommit}
-              @keydown=${this.handleKeyDown}
-              @compositionstart=${this.handleCompositionStart}
-              @compositionend=${this.handleCompositionEnd}
-            />`}
+        ${
+          this.multiline
+            ? html`<textarea
+                part=${shared.part}
+                id=${shared.id}
+                name=${shared.name}
+                placeholder=${shared.placeholder}
+                autocomplete=${shared.autocomplete}
+                inputmode=${shared.inputmode}
+                maxlength=${shared.maxlength}
+                minlength=${shared.minlength}
+                spellcheck=${shared.spellcheck}
+                rows=${this.rows > 0 ? this.rows : 4}
+                ?required=${shared.required}
+                ?disabled=${shared.disabled}
+                ?readonly=${shared.readonly}
+                aria-readonly=${shared['aria-readonly']}
+                aria-invalid=${shared['aria-invalid']}
+                aria-describedby=${shared['aria-describedby']}
+                .value=${this.composing ? noChange : this.value}
+                @input=${this.handleInput}
+                @change=${this.handleCommit}
+                @compositionstart=${this.handleCompositionStart}
+                @compositionend=${this.handleCompositionEnd}
+              ></textarea>`
+            : html`<input
+                part=${shared.part}
+                id=${shared.id}
+                type=${type}
+                name=${shared.name}
+                placeholder=${shared.placeholder}
+                autocomplete=${shared.autocomplete}
+                inputmode=${shared.inputmode}
+                maxlength=${shared.maxlength}
+                minlength=${shared.minlength}
+                pattern=${shared.pattern}
+                spellcheck=${shared.spellcheck}
+                ?required=${shared.required}
+                ?disabled=${shared.disabled}
+                ?readonly=${shared.readonly}
+                aria-readonly=${shared['aria-readonly']}
+                aria-invalid=${shared['aria-invalid']}
+                aria-describedby=${shared['aria-describedby']}
+                .value=${this.composing ? noChange : this.value}
+                @input=${this.handleInput}
+                @change=${this.handleCommit}
+                @keydown=${this.handleKeyDown}
+                @compositionstart=${this.handleCompositionStart}
+                @compositionend=${this.handleCompositionEnd}
+              />`
+        }
         ${this.renderMessages()}
       </div>
     `;
@@ -234,22 +271,38 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
   };
 
   private readonly handleCommit = (): void => {
-    this.dispatchEvent(new AeliqoInputCommitEvent({source: "user", value: this.value}));
+    this.dispatchEvent(new AeliqoInputCommitEvent({ source: 'user', value: this.value }));
   };
 
   private dispatchProposal(value: string): void {
     // Keep the original event for `<aeliqo-input>` consumers while exposing
     // the shared typed event used by the input family.
-    this.dispatchEvent(new AeliqoInputEvent({value, source: "user"}));
-    this.dispatchEvent(new AeliqoInputChangeEvent({source: "user", value}));
+    this.dispatchEvent(new AeliqoInputEvent({ value, source: 'user' }));
+    this.dispatchEvent(new AeliqoInputChangeEvent({ source: 'user', value }));
   }
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
-    if (this.multiline || event.key !== "Enter" || event.repeat || event.isComposing || this.composing || this.fieldDisabled) return;
+    if (
+      this.multiline ||
+      event.key !== 'Enter' ||
+      event.repeat ||
+      event.isComposing ||
+      this.composing ||
+      this.fieldDisabled
+    )
+      return;
     const form = this.internals?.form;
     if (form === undefined || form === null) return;
     setTimeout(() => {
-      if (event.defaultPrevented || !this.isConnected || this.internals?.form !== form || this.composing || event.isComposing || this.fieldDisabled) return;
+      if (
+        event.defaultPrevented ||
+        !this.isConnected ||
+        this.internals?.form !== form ||
+        this.composing ||
+        event.isComposing ||
+        this.fieldDisabled
+      )
+        return;
       const submitter = this.defaultSubmitter(form);
       if (submitter === null || (submitter === undefined && !this.hasSingleBlockingField(form))) {
         event.preventDefault();
@@ -263,11 +316,18 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
 
   private defaultSubmitter(form: HTMLFormElement): HTMLButtonElement | HTMLInputElement | null | undefined {
     const root = form.getRootNode();
-    if (typeof Document === "undefined" || typeof DocumentFragment === "undefined" || (!(root instanceof Document) && !(root instanceof DocumentFragment))) return undefined;
-    for (const control of root.querySelectorAll<HTMLButtonElement | HTMLInputElement>("button, input")) {
+    if (
+      typeof Document === 'undefined' ||
+      typeof DocumentFragment === 'undefined' ||
+      (!(root instanceof Document) && !(root instanceof DocumentFragment))
+    )
+      return undefined;
+    for (const control of root.querySelectorAll<HTMLButtonElement | HTMLInputElement>('button, input')) {
       if (control.form !== form) continue;
-      if (control instanceof HTMLButtonElement && control.type === "submit") return control.matches(":disabled") ? null : control;
-      if (control instanceof HTMLInputElement && (control.type === "submit" || control.type === "image")) return control.matches(":disabled") ? null : control;
+      if (control instanceof HTMLButtonElement && control.type === 'submit')
+        return control.matches(':disabled') ? null : control;
+      if (control instanceof HTMLInputElement && (control.type === 'submit' || control.type === 'image'))
+        return control.matches(':disabled') ? null : control;
     }
     return undefined;
   }
@@ -275,7 +335,7 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
   private hasSingleBlockingField(form: HTMLFormElement): boolean {
     let count = 0;
     for (const control of Array.from(form.elements)) {
-      if (control.matches(":disabled")) continue;
+      if (control.matches(':disabled')) continue;
       if (control instanceof AeliqoTextControlElement) count += 1;
       else if (control instanceof HTMLInputElement && BLOCKING_INPUT_TYPES.has(control.type)) count += 1;
       if (count > 1) return false;
@@ -285,8 +345,8 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
 
   private nativeControl(): HTMLInputElement | HTMLTextAreaElement | undefined {
     const root = this.renderRoot;
-    if (root === undefined || typeof root.querySelector !== "function") return undefined;
-    const control = root.querySelector<HTMLInputElement | HTMLTextAreaElement>("[part=input]");
+    if (root === undefined || typeof root.querySelector !== 'function') return undefined;
+    const control = root.querySelector<HTMLInputElement | HTMLTextAreaElement>('[part=input]');
     return control ?? undefined;
   }
 
@@ -297,16 +357,17 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
       return;
     }
     const focused = this.shadowRoot?.activeElement === control;
-    const selection = this.pendingSelection ?? {start: control.selectionStart, end: control.selectionEnd};
+    const selection = this.pendingSelection ?? { start: control.selectionStart, end: control.selectionEnd };
     if (!this.composing && control.value !== this.value) control.value = this.value;
-    control.name = "";
+    control.name = '';
     control.required = this.required;
     control.disabled = this.fieldDisabled;
     control.readOnly = this.readOnly;
-    control.setAttribute("autocomplete", this.autocomplete);
+    control.setAttribute('autocomplete', this.autocomplete);
     this.setFormValue(this.fieldDisabled ? null : control.value);
     this.updateValidity(control, control.value.length === 0);
-    if (focused && selection.start !== null && selection.end !== null) control.setSelectionRange(selection.start, selection.end);
+    if (focused && selection.start !== null && selection.end !== null)
+      control.setSelectionRange(selection.start, selection.end);
     this.pendingSelection = undefined;
   }
 
@@ -315,12 +376,35 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
   }
 
   private safeInputType(): AeliqoTextFieldInputType {
-    const allowed: readonly AeliqoTextFieldInputType[] = ["text", "search", "url", "tel", "email", "password", "date", "month", "week", "time", "datetime-local", "number"];
-    return allowed.includes(this.inputType) ? this.inputType : "text";
+    const allowed: readonly AeliqoTextFieldInputType[] = [
+      'text',
+      'search',
+      'url',
+      'tel',
+      'email',
+      'password',
+      'date',
+      'month',
+      'week',
+      'time',
+      'datetime-local',
+      'number',
+    ];
+    return allowed.includes(this.inputType) ? this.inputType : 'text';
   }
 
-  static readonly styles = [...aeliqoInputStyles, css`
-    textarea { min-block-size: 6rem; resize: vertical; }
-    input::placeholder, textarea::placeholder { color: var(--aeliqo-color-muted, #4b5563); opacity: 1; }
-  `];
+  static readonly styles = [
+    ...aeliqoInputStyles,
+    css`
+      textarea {
+        min-block-size: 6rem;
+        resize: vertical;
+      }
+      input::placeholder,
+      textarea::placeholder {
+        color: var(--aeliqo-color-muted, #4b5563);
+        opacity: 1;
+      }
+    `,
+  ];
 }

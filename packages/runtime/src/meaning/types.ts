@@ -16,7 +16,7 @@ import type {
   TypedExpression,
   VersionRef,
 } from '@aeliqo/core';
-import type {DefineMetricInput, TypedAuthoring} from '@aeliqo/core';
+import type { DefineMetricInput, TypedAuthoring } from '@aeliqo/core';
 
 /** The trusted surface that produced a canonical definition. */
 export type MeaningAuthoringSurface = 'code' | 'studio' | 'ai-assisted';
@@ -110,18 +110,27 @@ export interface MeaningRegistrationInput {
 export interface MeaningActivationOptions {
   readonly signal?: AbortSignal;
   /** Trusted calling adapter pins; never supplied by an untrusted proposal. */
-  readonly expectedAuthority?: {readonly principalKey: string; readonly readSet?: CommitPreconditions};
+  readonly expectedAuthority?: { readonly principalKey: string; readonly readSet?: CommitPreconditions };
 }
 
 export interface MeaningRegistry {
   readonly catalog: Catalog;
   readonly registry: FunctionRegistry;
   readonly register: (input: MeaningRegistrationInput) => Outcome<MeaningRegistrationReceipt>;
-  readonly registerBundle: (bundle: MeaningBundle, source?: MeaningSource) => Outcome<readonly MeaningRegistrationReceipt[]>;
+  readonly registerBundle: (
+    bundle: MeaningBundle,
+    source?: MeaningSource,
+  ) => Outcome<readonly MeaningRegistrationReceipt[]>;
   readonly get: (ref: VersionRef) => MeaningEntry | undefined;
-  readonly list: (options?: {readonly includeRevoked?: boolean; readonly activeOnly?: boolean}) => readonly MeaningEntry[];
-  readonly definitions: (options?: {readonly activeOnly?: boolean}) => readonly MeaningDefinition[];
-  readonly activate: (ref: VersionRef, options?: MeaningActivationOptions) => Promise<Outcome<MeaningActivationReceipt>>;
+  readonly list: (options?: {
+    readonly includeRevoked?: boolean;
+    readonly activeOnly?: boolean;
+  }) => readonly MeaningEntry[];
+  readonly definitions: (options?: { readonly activeOnly?: boolean }) => readonly MeaningDefinition[];
+  readonly activate: (
+    ref: VersionRef,
+    options?: MeaningActivationOptions,
+  ) => Promise<Outcome<MeaningActivationReceipt>>;
   readonly revoke: (ref: VersionRef) => Outcome<MeaningRevocationReceipt>;
   readonly revokeScope: (scopeDigest: string) => Outcome<readonly MeaningRevocationReceipt[]>;
 }
@@ -145,9 +154,20 @@ export interface MeaningDefinitionInput extends DefineMetricInput {
 
 export interface MeaningAuthoring<C extends Catalog = Catalog> extends TypedAuthoring<C> {
   readonly defineMeaning: (input: MeaningDefinitionInput) => Outcome<MeaningDraft>;
-  readonly draft: (meaning: MeaningDefinition, options?: {readonly source?: MeaningSource; readonly assumptions?: readonly string[]; readonly base?: VersionRef}) => Outcome<MeaningDraft>;
-  readonly edit: (base: MeaningDraft | MeaningDefinition, meaning: MeaningDefinition, options?: {readonly source?: MeaningSource; readonly assumptions?: readonly string[]}) => Outcome<MeaningDraft>;
-  readonly proposeDiff: (base: MeaningDraft | MeaningDefinition, meaning: MeaningDefinition, options?: {readonly source?: MeaningSource; readonly assumptions?: readonly string[]}) => Outcome<MeaningDiff>;
+  readonly draft: (
+    meaning: MeaningDefinition,
+    options?: { readonly source?: MeaningSource; readonly assumptions?: readonly string[]; readonly base?: VersionRef },
+  ) => Outcome<MeaningDraft>;
+  readonly edit: (
+    base: MeaningDraft | MeaningDefinition,
+    meaning: MeaningDefinition,
+    options?: { readonly source?: MeaningSource; readonly assumptions?: readonly string[] },
+  ) => Outcome<MeaningDraft>;
+  readonly proposeDiff: (
+    base: MeaningDraft | MeaningDefinition,
+    meaning: MeaningDefinition,
+    options?: { readonly source?: MeaningSource; readonly assumptions?: readonly string[] },
+  ) => Outcome<MeaningDiff>;
 }
 
 export interface MeaningDiff {
@@ -185,4 +205,19 @@ export type MeaningAuthoringOutcome = Outcome<MeaningDraft>;
 export type MeaningDiffOutcome = Outcome<MeaningDiff>;
 export type MeaningActivationOutcome = Outcome<MeaningActivationReceipt>;
 export type MeaningRegistrationOutcome = Outcome<MeaningRegistrationReceipt>;
-export type {Catalog, Diagnostic, FunctionRegistry, MeaningActivationPolicy, MeaningActivationReceipt, MeaningBundle, MeaningDefinition, MeaningScope, Outcome, QueryResult, QuerySource, SemanticPolicy, TypedExpression, VersionRef};
+export type {
+  Catalog,
+  Diagnostic,
+  FunctionRegistry,
+  MeaningActivationPolicy,
+  MeaningActivationReceipt,
+  MeaningBundle,
+  MeaningDefinition,
+  MeaningScope,
+  Outcome,
+  QueryResult,
+  QuerySource,
+  SemanticPolicy,
+  TypedExpression,
+  VersionRef,
+};

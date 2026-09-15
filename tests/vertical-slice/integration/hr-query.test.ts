@@ -1,19 +1,45 @@
-import {readFileSync} from 'node:fs';
-import {describe, expect, it} from 'vitest';
-import {createQueryPlanner, type QuerySpec, type QuerySource} from '../../../packages/core/dist/index.js';
-import {catalog, functionRegistry, metricQuery, rankingQuery, snapshot, sourceLimits, trendQuery} from '../../../examples/vertical-slice/src/hr.js';
+import { readFileSync } from 'node:fs';
+import { describe, expect, it } from 'vitest';
+import { createQueryPlanner, type QuerySpec, type QuerySource } from '../../../packages/core/dist/index.js';
+import {
+  catalog,
+  functionRegistry,
+  metricQuery,
+  rankingQuery,
+  snapshot,
+  sourceLimits,
+  trendQuery,
+} from '../../../examples/vertical-slice/src/hr.js';
 
-type ExpectedRow = {employee_id: string; week?: string; absent: number; expected: number; unknown: number; rate: string | null};
+type ExpectedRow = {
+  employee_id: string;
+  week?: string;
+  absent: number;
+  expected: number;
+  unknown: number;
+  rate: string | null;
+};
 const golden = JSON.parse(readFileSync(new URL('../../../fixtures/hr/expected.json', import.meta.url), 'utf8')) as {
-  employees: ExpectedRow[]; topFive: string[]; weekly: ExpectedRow[];
+  employees: ExpectedRow[];
+  topFive: string[];
+  weekly: ExpectedRow[];
 };
 function execute(query: QuerySpec) {
-  const factory = createQueryPlanner({catalog, registry: functionRegistry, limits: {maxRows: sourceLimits.rows, maxBytes: sourceLimits.bytes}});
+  const factory = createQueryPlanner({
+    catalog,
+    registry: functionRegistry,
+    limits: { maxRows: sourceLimits.rows, maxBytes: sourceLimits.bytes },
+  });
   if (!factory.ok) throw new Error(JSON.stringify(factory.diagnostics));
   const plan = factory.value.plan(query);
   if (!plan.ok) throw new Error(JSON.stringify(plan.diagnostics));
   const current = snapshot();
-  const source: QuerySource = {revision: current.sourceRevision, relations: Object.fromEntries(Object.entries(current.records).map(([entity, rows]) => [entity, {entity, complete: true, rows}]))};
+  const source: QuerySource = {
+    revision: current.sourceRevision,
+    relations: Object.fromEntries(
+      Object.entries(current.records).map(([entity, rows]) => [entity, { entity, complete: true, rows }]),
+    ),
+  };
   const result = factory.value.evaluate(plan.value, source);
   if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
   return result.value;
@@ -37,20 +63,28 @@ describe('raw HR fixture through the production query compiler', () => {
   it('matches independent employee totals and exact ranked membership', () => {
     const metrics = execute(metricQuery());
     expect(metrics.rows).toHaveLength(golden.employees.length);
-    expect(metrics.schema.fields.find(field => field.id === 'absence.rate')?.label).toBe('Absence rate');
-    for (const expected of golden.employees) checkRow(metrics.rows.find(row => row.employee_id === expected.employee_id)!, expected);
+    expect(metrics.schema.fields.find((field) => field.id === 'absence.rate')?.label).toBe('Absence rate');
+    for (const expected of golden.employees)
+      checkRow(
+        metrics.rows.find((row) => row.employee_id === expected.employee_id)!,
+        expected,
+      );
     const ranked = execute(rankingQuery());
     expect(ranked.complete).toBe(true);
-    expect(ranked.rows.map(row => row.employee_id)).toEqual(golden.topFive);
+    expect(ranked.rows.map((row) => row.employee_id)).toEqual(golden.topFive);
   });
   it('matches independent weekly numerator, denominator and unknown policy without display arithmetic', () => {
     // Cohort materialization belongs to ADC. This test isolates the same weekly query's calendar/math pass.
-    const weekly = execute({...trendQuery(), population: {kind: 'all-authorized'}});
+    const weekly = execute({ ...trendQuery(), population: { kind: 'all-authorized' } });
     for (const expected of golden.weekly) {
-      const row = weekly.rows.find(row => row.employee_id === expected.employee_id && row.date === expected.week);
+      const row = weekly.rows.find((row) => row.employee_id === expected.employee_id && row.date === expected.week);
       expect(row, `${expected.employee_id}/${expected.week}`).toBeDefined();
       checkRow(row!, expected);
     }
-    expect(weekly.schema.fields.find(field => field.id === 'date')?.type.temporal).toEqual({calendar: 'iso8601', timezone: 'Asia/Jakarta', grain: 'week'});
+    expect(weekly.schema.fields.find((field) => field.id === 'date')?.type.temporal).toEqual({
+      calendar: 'iso8601',
+      timezone: 'Asia/Jakarta',
+      grain: 'week',
+    });
   });
 });

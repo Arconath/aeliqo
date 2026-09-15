@@ -1,3 +1,3 @@
-import {defineConfig} from "vitest/config";
+import { defineConfig } from 'vitest/config';
 
-export default defineConfig({test: {include: ["tests/compound-semantic/**/*.test.ts"], environment: "node"}});
+export default defineConfig({ test: { include: ['tests/compound-semantic/**/*.test.ts'], environment: 'node' } });

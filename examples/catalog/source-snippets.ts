@@ -5,60 +5,60 @@
  * derived from a runtime function (whose name bindings can be renamed by a
  * production minifier), so a docs/site bundle can expose them unchanged.
  */
-import type {CatalogExampleId} from "./types.js";
+import type { CatalogExampleId } from './types.js';
 
 export const CATALOG_MOUNT_SOURCES = {
-  "button": String.raw`((root) => {
+  button: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoButtonElement>("aeliqo-button", root);
 		element.label = "Save report";
 		element.variant = "solid";
 		element.type = "button";
 	})`,
-  "icon-button": String.raw`((root) => {
+  'icon-button': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoIconButtonElement>("aeliqo-icon-button", root);
 		element.label = "Open details";
 		appendSlottedText(element, "icon", "⋯");
 	})`,
-  "link": String.raw`((root) => {
+  link: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoLinkElement>("aeliqo-link", root);
 		element.label = "View report";
 		element.href = "/reports/weekly";
 		element.target = "_self";
 	})`,
-  "text": String.raw`((root) => {
+  text: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoTextElement>("aeliqo-text", root);
 		element.text = "A plain, trusted text value.";
 		element.as = "p";
 	})`,
-  "heading": String.raw`((root) => {
+  heading: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoHeadingElement>("aeliqo-heading", root);
 		element.level = 2;
 		element.size = "heading";
 		element.text = "Weekly report";
 	})`,
-  "badge": String.raw`((root) => {
+  badge: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoBadgeElement>("aeliqo-badge", root);
 		element.text = "Ready";
 		element.tone = "success";
 	})`,
-  "avatar": String.raw`((root) => {
+  avatar: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoAvatarElement>("aeliqo-avatar", root);
 		element.name = "Ada Lovelace";
 		element.alt = "Ada Lovelace";
 		element.size = "medium";
 	})`,
-  "separator": String.raw`((root) => {
+  separator: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoSeparatorElement>("aeliqo-separator", root);
 		element.orientation = "horizontal";
 	})`,
-  "surface": String.raw`((root) => {
+  surface: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoSurfaceElement>("aeliqo-surface", root);
 		element.as = "section";
 		element.tone = "surface";
 		element.label = "Report panel";
 		element.textContent = "Bounded surface content";
 	})`,
-  "stack": String.raw`((root) => {
+  stack: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoStackElement>("aeliqo-stack", root);
 		element.direction = "row";
 		element.gap = 12;
@@ -69,7 +69,7 @@ export const CATALOG_MOUNT_SOURCES = {
 			element.append(item);
 		}
 	})`,
-  "grid": String.raw`((root) => {
+  grid: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoGridElement>("aeliqo-grid", root);
 		element.columns = 2;
 		element.gap = 16;
@@ -80,7 +80,7 @@ export const CATALOG_MOUNT_SOURCES = {
 			element.append(item);
 		}
 	})`,
-  "split-pane": String.raw`((root) => {
+  'split-pane': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoSplitPaneElement>("aeliqo-split-pane", root);
 		element.defaultPosition = 42;
 		element.min = 20;
@@ -90,7 +90,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		appendSlottedText(element, "start", "Primary panel");
 		appendSlottedText(element, "end", "Secondary panel");
 	})`,
-  "scroll-area": String.raw`((root) => {
+  'scroll-area': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoScrollAreaElement>("aeliqo-scroll-area", root);
 		element.axis = "y";
 		element.label = "Report rows";
@@ -99,7 +99,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		content.textContent = "Scrollable report content that retains focus visibility.";
 		element.append(content);
 	})`,
-  "text-field": String.raw`((root) => {
+  'text-field': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoTextFieldElement>("aeliqo-text-field", root);
 		element.label = "Display name";
 		element.name = "displayName";
@@ -107,7 +107,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.description = "Used in the report header.";
 		element.autocomplete = "name";
 	})`,
-  "text-area": String.raw`((root) => {
+  'text-area': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoTextAreaElement>("aeliqo-text-area", root);
 		element.label = "Notes";
 		element.name = "notes";
@@ -115,7 +115,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.rows = 4;
 		element.spellcheck = true;
 	})`,
-  "number-field": String.raw`((root) => {
+  'number-field': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoNumberFieldElement>("aeliqo-number-field", root);
 		element.label = "Amount";
 		element.name = "amount";
@@ -125,14 +125,14 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.unit = "USD";
 		element.min = "0";
 	})`,
-  "checkbox": String.raw`((root) => {
+  checkbox: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoCheckboxElement>("aeliqo-checkbox", root);
 		element.label = "Include archived records";
 		element.name = "includeArchived";
 		element.value = "yes";
 		element.checked = false;
 	})`,
-  "radio-group": String.raw`((root) => {
+  'radio-group': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoRadioGroupElement>("aeliqo-radio-group", root);
 		element.label = "Report owner";
 		element.name = "owner";
@@ -140,13 +140,13 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.value = "ada";
 		element.orientation = "vertical";
 	})`,
-  "switch": String.raw`((root) => {
+  switch: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoSwitchElement>("aeliqo-switch", root);
 		element.label = "Live updates";
 		element.name = "live";
 		element.checked = true;
 	})`,
-  "select": String.raw`((root) => {
+  select: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoSelectElement>("aeliqo-select", root);
 		element.label = "Team";
 		element.name = "team";
@@ -157,7 +157,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.value = "research";
 		element.emptyLabel = "Choose a team";
 	})`,
-  "combobox": String.raw`((root) => {
+  combobox: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoComboboxElement>("aeliqo-combobox", root);
 		element.label = "Person";
 		element.name = "person";
@@ -167,7 +167,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.open = true;
 		element.minQueryLength = 1;
 	})`,
-  "date-field": String.raw`((root) => {
+  'date-field': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoDateFieldElement>("aeliqo-date-field", root);
 		element.label = "Report date";
 		element.name = "reportDate";
@@ -176,7 +176,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.max = "2026-12-31";
 		element.calendar = "gregory";
 	})`,
-  "date-range": String.raw`((root) => {
+  'date-range': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoDateRangeElement>("aeliqo-date-range", root);
 		element.label = "Reporting period";
 		element.name = "period";
@@ -185,7 +185,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.boundary = "inclusive";
 		element.timezone = "calendar";
 	})`,
-  "slider": String.raw`((root) => {
+  slider: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoSliderElement>("aeliqo-slider", root);
 		element.label = "Confidence";
 		element.name = "confidence";
@@ -195,7 +195,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.value = 75;
 		element.unit = "%";
 	})`,
-  "search-field": String.raw`((root) => {
+  'search-field': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoSearchFieldElement>("aeliqo-search-field", root);
 		element.label = "Search reports";
 		element.name = "query";
@@ -204,7 +204,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.debounceMs = 150;
 		element.placeholder = "Search by name";
 	})`,
-  "file-input": String.raw`((root) => {
+  'file-input': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoFileInputElement>("aeliqo-file-input", root);
 		element.label = "Evidence file";
 		element.name = "evidence";
@@ -213,7 +213,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.maxFiles = 1;
 		element.maxBytes = 2e6;
 	})`,
-  "field-group": String.raw`((root) => {
+  'field-group': String.raw`((root) => {
 		const group = createCatalogElement<AeliqoFieldGroupElement>("aeliqo-field-group", root);
 		group.legend = "Profile details";
 		group.description = "All fields are validated together.";
@@ -222,7 +222,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		field.name = "preferredName";
 		group.append(field);
 	})`,
-  "form": String.raw`((root) => {
+  form: String.raw`((root) => {
 		const form = createCatalogElement<AeliqoFormElement>("aeliqo-form", root);
 		form.label = "Report filters";
 		const field = document.createElement("aeliqo-text-field") as AeliqoTextFieldElement;
@@ -234,18 +234,18 @@ export const CATALOG_MOUNT_SOURCES = {
 		submit.textContent = "Apply";
 		form.append(field, submit);
 	})`,
-  "tabs": String.raw`((root) => {
+  tabs: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoTabsElement>("aeliqo-tabs", root);
 		element.items = tabs;
 		element.value = "overview";
 		element.activation = "manual";
 	})`,
-  "breadcrumb": String.raw`((root) => {
+  breadcrumb: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoBreadcrumbElement>("aeliqo-breadcrumb", root);
 		element.items = breadcrumb;
 		element.label = "Report path";
 	})`,
-  "pagination": String.raw`((root) => {
+  pagination: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoPaginationElement>("aeliqo-pagination", root);
 		element.page = 2;
 		element.pageCount = 4;
@@ -253,33 +253,33 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.hasNext = true;
 		element.label = "Report pages";
 	})`,
-  "menu": String.raw`((root) => {
+  menu: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoMenuElement>("aeliqo-menu", root);
 		element.items = menuItems;
 		element.label = "Report actions";
 		element.open = true;
 	})`,
-  "tree-nav": String.raw`((root) => {
+  'tree-nav': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoTreeNavElement>("aeliqo-tree-nav", root);
 		element.nodes = treeNodes;
 		element.expandedIds = ["reports"];
 		element.selectedId = "weekly";
 		element.label = "Report navigation";
 	})`,
-  "tooltip": String.raw`((root) => {
+  tooltip: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoTooltipElement>("aeliqo-tooltip", root);
 		element.label = "More information";
 		element.content = "Values are scoped to the current report.";
 		element.open = true;
 	})`,
-  "popover": String.raw`((root) => {
+  popover: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoPopoverElement>("aeliqo-popover", root);
 		element.label = "Report details";
 		element.content = "The report includes the authorized current scope.";
 		element.open = true;
 		element.modal = false;
 	})`,
-  "dialog": String.raw`((root) => {
+  dialog: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoDialogElement>("aeliqo-dialog", root);
 		element.heading = "Confirm archive";
 		element.open = true;
@@ -290,7 +290,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		action.textContent = "Archive report";
 		element.append(action);
 	})`,
-  "drawer": String.raw`((root) => {
+  drawer: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoDrawerElement>("aeliqo-drawer", root);
 		element.heading = "Report details";
 		element.mode = "inline";
@@ -298,7 +298,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.open = true;
 		element.textContent = "Inline detail content keeps the surrounding task visible.";
 	})`,
-  "toast": String.raw`((root) => {
+  toast: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoToastElement>("aeliqo-toast", root);
 		element.message = "Report saved";
 		element.tone = "success";
@@ -306,7 +306,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.duration = 0;
 		element.dismissible = true;
 	})`,
-  "alert": String.raw`((root) => {
+  alert: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoAlertElement>("aeliqo-alert", root);
 		element.heading = "Review scope";
 		element.message = "This page contains the first authorized result window.";
@@ -315,27 +315,27 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.dismissible = true;
 		element.open = true;
 	})`,
-  "progress": String.raw`((root) => {
+  progress: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoProgressElement>("aeliqo-progress", root);
 		element.label = "Loading report";
 		element.value = 62;
 		element.max = 100;
 	})`,
-  "skeleton": String.raw`((root) => {
+  skeleton: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoSkeletonElement>("aeliqo-skeleton", root);
 		element.label = "Loading report rows";
 		element.lines = 3;
 		element.variant = "text";
 		element.animated = false;
 	})`,
-  "empty-state": String.raw`((root) => {
+  'empty-state': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoEmptyStateElement>("aeliqo-empty-state", root);
 		element.kind = "no-matches";
 		element.heading = "No matching reports";
 		element.message = "Try a broader team or date filter.";
 		element.actionLabel = "Clear filters";
 	})`,
-  "metric": String.raw`((root) => {
+  metric: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoMetricElement>("aeliqo-metric", root);
 		element.label = "Authorized people";
 		element.value = catalogRows.length;
@@ -343,7 +343,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.scope = catalogScope;
 		element.description = "Current filtered result";
 	})`,
-  "delta": String.raw`((root) => {
+  delta: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoDeltaElement>("aeliqo-delta", root);
 		element.label = "Change from last week";
 		element.current = .62;
@@ -352,7 +352,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.unit = "%";
 		element.scope = catalogScope;
 	})`,
-  "key-value": String.raw`((root) => {
+  'key-value': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoKeyValueElement>("aeliqo-key-value", root);
 		const items = [{
 			key: "owner",
@@ -367,7 +367,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.items = items;
 		element.scope = catalogScope;
 	})`,
-  "detail": String.raw`((root) => {
+  detail: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoDetailElement>("aeliqo-detail", root);
 		element.title = "Person detail";
 		element.record = catalogRows[0];
@@ -376,7 +376,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.entity = "person";
 		element.scope = catalogScope;
 	})`,
-  "record-list": String.raw`((root) => {
+  'record-list': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoRecordListElement>("aeliqo-record-list", root);
 		element.title = "People";
 		element.rows = catalogRows;
@@ -388,7 +388,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.result = catalogRef;
 		element.scope = catalogScope;
 	})`,
-  "card-collection": String.raw`((root) => {
+  'card-collection': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoCardCollectionElement>("aeliqo-card-collection", root);
 		element.title = "People cards";
 		element.rows = catalogRows;
@@ -401,7 +401,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.loadingMore = false;
 		element.scope = catalogScope;
 	})`,
-  "table": String.raw`((root) => {
+  table: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoTableElement>("aeliqo-table", root);
 		element.caption = "People";
 		element.columns = tableColumns;
@@ -416,7 +416,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.totalRows = catalogRows.length;
 		element.scope = catalogScope;
 	})`,
-  "filter-builder": String.raw`((root) => {
+  'filter-builder': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoFilterBuilderElement>("aeliqo-filter-builder", root);
 		element.fields = catalogFields;
 		element.entity = "person";
@@ -429,7 +429,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		}];
 		element.logical = "and";
 	})`,
-  "selection-summary": String.raw`((root) => {
+  'selection-summary': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoSelectionSummaryElement>("aeliqo-selection-summary", root);
 		element.label = "People selected";
 		element.entity = "person";
@@ -438,19 +438,19 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.scope = catalogScope;
 		element.clearable = true;
 	})`,
-  "trend": String.raw`((root) => configure(createCatalogElement<AeliqoTrendElement>("aeliqo-trend", root), catalogVisualizationSpecs.trend, catalogVisualizationContext))`,
-  "bar": String.raw`((root) => configure(createCatalogElement<AeliqoBarElement>("aeliqo-bar", root), catalogVisualizationSpecs.bar, catalogVisualizationContext))`,
-  "area": String.raw`((root) => configure(createCatalogElement<AeliqoAreaElement>("aeliqo-area", root), catalogVisualizationSpecs.area, catalogVisualizationContext))`,
-  "scatter": String.raw`((root) => configure(createCatalogElement<AeliqoScatterElement>("aeliqo-scatter", root), catalogVisualizationSpecs.scatter, catalogVisualizationContext))`,
-  "histogram": String.raw`((root) => configure(createCatalogElement<AeliqoHistogramElement>("aeliqo-histogram", root), histogramSpec, histogramContext))`,
-  "heatmap": String.raw`((root) => configure(createCatalogElement<AeliqoHeatmapElement>("aeliqo-heatmap", root), catalogVisualizationSpecs.heatmap, catalogVisualizationContext))`,
-  "matrix": String.raw`((root) => configure(createCatalogElement<AeliqoMatrixElement>("aeliqo-matrix", root), catalogTemporalSpecs.matrix, catalogVisualizationContext))`,
-  "relationship": String.raw`((root) => configure(createCatalogElement<AeliqoRelationshipElement>("aeliqo-relationship", root), relationshipSpec, relationshipContext, [relationshipDataset]))`,
-  "tree": String.raw`((root) => configure(createCatalogElement<AeliqoTreeElement>("aeliqo-tree", root), hierarchySpec, hierarchyContext, [hierarchyDataset]))`,
-  "treemap": String.raw`((root) => configure(createCatalogElement<AeliqoTreemapElement>("aeliqo-treemap", root), treemapSpec, hierarchyContext, [hierarchyDataset]))`,
-  "timeline": String.raw`((root) => configure(createCatalogElement<AeliqoTimelineElement>("aeliqo-timeline", root), catalogTemporalSpecs.timeline, catalogVisualizationContext))`,
-  "calendar-grid": String.raw`((root) => configure(createCatalogElement<AeliqoCalendarGridElement>("aeliqo-calendar-grid", root), catalogTemporalSpecs["calendar-grid"], catalogVisualizationContext))`,
-  "explorer": String.raw`((root) => {
+  trend: String.raw`((root) => configure(createCatalogElement<AeliqoTrendElement>("aeliqo-trend", root), catalogVisualizationSpecs.trend, catalogVisualizationContext))`,
+  bar: String.raw`((root) => configure(createCatalogElement<AeliqoBarElement>("aeliqo-bar", root), catalogVisualizationSpecs.bar, catalogVisualizationContext))`,
+  area: String.raw`((root) => configure(createCatalogElement<AeliqoAreaElement>("aeliqo-area", root), catalogVisualizationSpecs.area, catalogVisualizationContext))`,
+  scatter: String.raw`((root) => configure(createCatalogElement<AeliqoScatterElement>("aeliqo-scatter", root), catalogVisualizationSpecs.scatter, catalogVisualizationContext))`,
+  histogram: String.raw`((root) => configure(createCatalogElement<AeliqoHistogramElement>("aeliqo-histogram", root), histogramSpec, histogramContext))`,
+  heatmap: String.raw`((root) => configure(createCatalogElement<AeliqoHeatmapElement>("aeliqo-heatmap", root), catalogVisualizationSpecs.heatmap, catalogVisualizationContext))`,
+  matrix: String.raw`((root) => configure(createCatalogElement<AeliqoMatrixElement>("aeliqo-matrix", root), catalogTemporalSpecs.matrix, catalogVisualizationContext))`,
+  relationship: String.raw`((root) => configure(createCatalogElement<AeliqoRelationshipElement>("aeliqo-relationship", root), relationshipSpec, relationshipContext, [relationshipDataset]))`,
+  tree: String.raw`((root) => configure(createCatalogElement<AeliqoTreeElement>("aeliqo-tree", root), hierarchySpec, hierarchyContext, [hierarchyDataset]))`,
+  treemap: String.raw`((root) => configure(createCatalogElement<AeliqoTreemapElement>("aeliqo-treemap", root), treemapSpec, hierarchyContext, [hierarchyDataset]))`,
+  timeline: String.raw`((root) => configure(createCatalogElement<AeliqoTimelineElement>("aeliqo-timeline", root), catalogTemporalSpecs.timeline, catalogVisualizationContext))`,
+  'calendar-grid': String.raw`((root) => configure(createCatalogElement<AeliqoCalendarGridElement>("aeliqo-calendar-grid", root), catalogTemporalSpecs["calendar-grid"], catalogVisualizationContext))`,
+  explorer: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoExplorerElement>("aeliqo-explorer", root);
 		element.fields = catalogFields;
 		element.rows = catalogRows;
@@ -464,7 +464,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.scope = catalogScope;
 		element.selection = "single";
 	})`,
-  "comparison": String.raw`((root) => {
+  comparison: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoComparisonElement>("aeliqo-comparison", root);
 		element.compareSet = [{
 			key: "ada",
@@ -494,7 +494,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.result = catalogRef;
 		element.scope = catalogScope;
 	})`,
-  "breakdown": String.raw`((root) => {
+  breakdown: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoBreakdownElement>("aeliqo-breakdown", root);
 		element.groups = [{
 			key: "research",
@@ -516,7 +516,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.result = catalogRef;
 		element.scope = catalogScope;
 	})`,
-  "investigation": String.raw`((root) => {
+  investigation: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoInvestigationElement>("aeliqo-investigation", root);
 		element.entity = "person";
 		element.result = catalogRef;
@@ -528,7 +528,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.trendContext = catalogVisualizationContext;
 		element.trendDatasets = [catalogVisualizationDataset];
 	})`,
-  "search-results": String.raw`((root) => {
+  'search-results': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoSearchResultsElement>("aeliqo-search-results", root);
 		element.query = "research";
 		element.queryRevision = "query-2";
@@ -544,7 +544,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		element.detailRecord = catalogRows[0];
 		element.detailFields = catalogColumns;
 	})`,
-  "record-editor": String.raw`((root) => {
+  'record-editor': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoRecordEditorElement>("aeliqo-record-editor", root);
 		element.entity = "person";
 		element.entityKey = "string:3:ada";
@@ -560,7 +560,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		period.end = "2026-09-30";
 		element.append(name, period);
 	})`,
-  "form-flow": String.raw`((root) => {
+  'form-flow': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoFormFlowElement>("aeliqo-form-flow", root);
 		element.steps = [{
 			id: "identity",
@@ -585,7 +585,7 @@ export const CATALOG_MOUNT_SOURCES = {
 		review.textContent = "Review the authorized values before commit.";
 		element.append(identity, review);
 	})`,
-  "quality-panel": String.raw`((root) => {
+  'quality-panel': String.raw`((root) => {
 		const element = createCatalogElement<AeliqoQualityPanelElement>("aeliqo-quality-panel", root);
 		element.source = "People registry";
 		element.freshness = "2026-09-09 09:00 UTC";

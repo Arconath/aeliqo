@@ -1,12 +1,14 @@
-import {describe, expect, it} from 'vitest';
-import {containAgentProposal} from '../../../packages/agent/src/loop.js';
-import type {AgentBinder} from '../../../packages/agent/src/binder-types.js';
+import { describe, expect, it } from 'vitest';
+import { containAgentProposal } from '../../../packages/agent/src/loop.js';
+import type { AgentBinder } from '../../../packages/agent/src/binder-types.js';
 
 type BindingResult = Awaited<ReturnType<AgentBinder['bind']>>;
-type AgentBindingOutcome = Extract<BindingResult, {ok: true}>['value'];
-type BoundOutcome = Extract<AgentBindingOutcome, {state: 'bound'}>;
+type AgentBindingOutcome = Extract<BindingResult, { ok: true }>['value'];
+type BoundOutcome = Extract<AgentBindingOutcome, { state: 'bound' }>;
 
-const budget = (overrides: Partial<{maxTurns: number; maxRepairs: number; maxMilliseconds: number; maxProposalBytes: number}> = {}) => ({
+const budget = (
+  overrides: Partial<{ maxTurns: number; maxRepairs: number; maxMilliseconds: number; maxProposalBytes: number }> = {},
+) => ({
   maxTurns: 4,
   maxRepairs: 2,
   maxMilliseconds: 1000,
@@ -14,13 +16,15 @@ const budget = (overrides: Partial<{maxTurns: number; maxRepairs: number; maxMil
   ...overrides,
 });
 
-function binder(states: AgentBindingOutcome[], fingerprints?: string[]): AgentBinder & {bindCount: number} {
+function binder(states: AgentBindingOutcome[], fingerprints?: string[]): AgentBinder & { bindCount: number } {
   let bindCount = 0;
   return {
-    get bindCount() { return bindCount; },
+    get bindCount() {
+      return bindCount;
+    },
     bind: async (): Promise<BindingResult> => {
       const value = states[Math.min(bindCount++, states.length - 1)]!;
-      return {ok: true, value};
+      return { ok: true, value };
     },
     fingerprint: async (input): ReturnType<AgentBinder['fingerprint']> => ({
       ok: true,
@@ -29,7 +33,10 @@ function binder(states: AgentBindingOutcome[], fingerprints?: string[]): AgentBi
   };
 }
 
-const invalid: AgentBindingOutcome = {state: 'invalid', diagnostics: [{code: 'bad', message: 'repair me', retryable: true}]};
+const invalid: AgentBindingOutcome = {
+  state: 'invalid',
+  diagnostics: [{ code: 'bad', message: 'repair me', retryable: true }],
+};
 const bound: BoundOutcome = {
   state: 'bound',
   value: {} as BoundOutcome['value'],
@@ -41,8 +48,16 @@ describe('agent proposal containment', () => {
   it('accepts a bound candidate without invoking repair', async () => {
     let proposals = 0;
     const result = await containAgentProposal({
-      requestId: 'request', targetRegionId: 'region', goalEpoch: 'epoch', budget: budget(), initial: '{"candidate":1}',
-      propose: async () => { proposals++; return '{"candidate":2}'; }, binder: binder([bound]),
+      requestId: 'request',
+      targetRegionId: 'region',
+      goalEpoch: 'epoch',
+      budget: budget(),
+      initial: '{"candidate":1}',
+      propose: async () => {
+        proposals++;
+        return '{"candidate":2}';
+      },
+      binder: binder([bound]),
     });
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -56,8 +71,16 @@ describe('agent proposal containment', () => {
   it('repairs one invalid candidate and then completes', async () => {
     let proposals = 0;
     const result = await containAgentProposal({
-      requestId: 'request', targetRegionId: 'region', goalEpoch: 'epoch', budget: budget(), initial: '{"candidate":1}',
-      propose: async () => { proposals++; return '{"candidate":2}'; }, binder: binder([invalid, bound]),
+      requestId: 'request',
+      targetRegionId: 'region',
+      goalEpoch: 'epoch',
+      budget: budget(),
+      initial: '{"candidate":1}',
+      propose: async () => {
+        proposals++;
+        return '{"candidate":2}';
+      },
+      binder: binder([invalid, bound]),
     });
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.value.stop).toBe('complete');
@@ -67,8 +90,16 @@ describe('agent proposal containment', () => {
   it('stops repeated candidate fingerprints as no-progress', async () => {
     let proposals = 0;
     const result = await containAgentProposal({
-      requestId: 'request', targetRegionId: 'region', goalEpoch: 'epoch', budget: budget(), initial: '{"candidate":1}',
-      propose: async () => { proposals++; return '{"candidate":1}'; }, binder: binder([invalid], ['same']),
+      requestId: 'request',
+      targetRegionId: 'region',
+      goalEpoch: 'epoch',
+      budget: budget(),
+      initial: '{"candidate":1}',
+      propose: async () => {
+        proposals++;
+        return '{"candidate":1}';
+      },
+      binder: binder([invalid], ['same']),
     });
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -81,14 +112,24 @@ describe('agent proposal containment', () => {
   it('enforces the repair and byte budgets before another bind', async () => {
     const limited = binder([invalid]);
     const repairStop = await containAgentProposal({
-      requestId: 'request', targetRegionId: 'region', goalEpoch: 'epoch', budget: budget({maxRepairs: 0}), initial: '{"candidate":1}',
-      propose: async () => '{"candidate":2}', binder: limited,
+      requestId: 'request',
+      targetRegionId: 'region',
+      goalEpoch: 'epoch',
+      budget: budget({ maxRepairs: 0 }),
+      initial: '{"candidate":1}',
+      propose: async () => '{"candidate":2}',
+      binder: limited,
     });
     expect(repairStop.ok && repairStop.value.stop).toBe('repair-budget');
 
     const bytesStop = await containAgentProposal({
-      requestId: 'request', targetRegionId: 'region', goalEpoch: 'epoch', budget: budget({maxProposalBytes: 1}), initial: '{"candidate":1}',
-      propose: async () => '{"candidate":2}', binder: limited,
+      requestId: 'request',
+      targetRegionId: 'region',
+      goalEpoch: 'epoch',
+      budget: budget({ maxProposalBytes: 1 }),
+      initial: '{"candidate":1}',
+      propose: async () => '{"candidate":2}',
+      binder: limited,
     });
     expect(bytesStop.ok && bytesStop.value.stop).toBe('byte-budget');
   });
@@ -97,20 +138,31 @@ describe('agent proposal containment', () => {
     const controller = new AbortController();
     controller.abort();
     const result = await containAgentProposal({
-      requestId: 'request', targetRegionId: 'region', goalEpoch: 'epoch', budget: budget(), initial: '{"candidate":1}', signal: controller.signal,
-      propose: async () => '{"candidate":2}', binder: binder([bound]),
+      requestId: 'request',
+      targetRegionId: 'region',
+      goalEpoch: 'epoch',
+      budget: budget(),
+      initial: '{"candidate":1}',
+      signal: controller.signal,
+      propose: async () => '{"candidate":2}',
+      binder: binder([bound]),
     });
     expect(result.ok && result.value.stop).toBe('cancelled');
   });
 
   it('stops an uncooperative fingerprint boundary at the time budget', async () => {
     const hanging: AgentBinder = {
-      bind: async () => ({ok: true, value: bound}),
+      bind: async () => ({ ok: true, value: bound }),
       fingerprint: async () => new Promise(() => {}),
     };
     const result = await containAgentProposal({
-      requestId: 'request', targetRegionId: 'region', goalEpoch: 'epoch', budget: budget({maxMilliseconds: 10}), initial: '{"candidate":1}',
-      propose: async () => '{"candidate":2}', binder: hanging,
+      requestId: 'request',
+      targetRegionId: 'region',
+      goalEpoch: 'epoch',
+      budget: budget({ maxMilliseconds: 10 }),
+      initial: '{"candidate":1}',
+      propose: async () => '{"candidate":2}',
+      binder: hanging,
     });
     expect(result.ok && result.value.stop).toBe('time-budget');
   });
@@ -118,8 +170,13 @@ describe('agent proposal containment', () => {
   it('cancels an uncooperative proposal provider promptly', async () => {
     const controller = new AbortController();
     const resultPromise = containAgentProposal({
-      requestId: 'request', targetRegionId: 'region', goalEpoch: 'epoch', budget: budget({maxMilliseconds: 1000}),
-      signal: controller.signal, propose: async () => new Promise(() => {}), binder: binder([bound]),
+      requestId: 'request',
+      targetRegionId: 'region',
+      goalEpoch: 'epoch',
+      budget: budget({ maxMilliseconds: 1000 }),
+      signal: controller.signal,
+      propose: async () => new Promise(() => {}),
+      binder: binder([bound]),
     });
     setTimeout(() => controller.abort(), 10);
     const result = await resultPromise;

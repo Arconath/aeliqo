@@ -1,4 +1,4 @@
-export {createAeliqoApp} from './app.js';
+export { createAeliqoApp } from './app.js';
 export type {
   AeliqoApp,
   AeliqoAppActionEvent,

@@ -1,5 +1,5 @@
-import {defineConfig} from 'vite';
-import {resolve} from 'node:path';
+import { defineConfig } from 'vite';
+import { resolve } from 'node:path';
 
 const repositoryRoot = resolve(import.meta.dirname, '../../..');
 export default defineConfig({

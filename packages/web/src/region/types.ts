@@ -1,9 +1,16 @@
-import type {AeliqoDataHostRequest} from "./data-renderer.js";
-import type {InteractionPayload, PresentationManifest, ResultRef, ValidatedPresentation, VersionRef, VisualizationBindingContext} from "@aeliqo/core";
-import type {TemplateResult} from "lit";
-import type {nothing} from "lit";
-import type {AeliqoTableColumn, AeliqoTableRow} from "../types.js";
-import type {AeliqoDataScope} from "../data/types.js";
+import type { AeliqoDataHostRequest } from './data-renderer.js';
+import type {
+  InteractionPayload,
+  PresentationManifest,
+  ResultRef,
+  ValidatedPresentation,
+  VersionRef,
+  VisualizationBindingContext,
+} from '@aeliqo/core';
+import type { TemplateResult } from 'lit';
+import type { nothing } from 'lit';
+import type { AeliqoTableColumn, AeliqoTableRow } from '../types.js';
+import type { AeliqoDataScope } from '../data/types.js';
 
 /** Rows already resolved by the application for one exact authorized ResultRef. */
 export interface AeliqoRegionResult {
@@ -31,7 +38,7 @@ export interface AeliqoRegionSnapshot {
 }
 
 export interface AeliqoViewRenderContext {
-  readonly node: ValidatedPresentation["nodes"][number];
+  readonly node: ValidatedPresentation['nodes'][number];
   readonly result?: AeliqoRegionResult;
   readonly children: () => TemplateResult | typeof nothing;
 }
@@ -44,5 +51,5 @@ export interface AeliqoViewDefinition {
 }
 
 /** Component-level data requests with no implicit query or runtime effect. */
-export type AeliqoRegionDataRequest = Exclude<AeliqoDataHostRequest, {readonly kind: "selection" | "filter"}>;
+export type AeliqoRegionDataRequest = Exclude<AeliqoDataHostRequest, { readonly kind: 'selection' | 'filter' }>;
 export type AeliqoRegionDataRequestHandler = (request: AeliqoRegionDataRequest) => void;

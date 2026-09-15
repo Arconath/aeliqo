@@ -1,30 +1,29 @@
-import {html, nothing} from "lit";
-import {AeliqoFieldElement, aeliqoInputStyles} from "./base.js";
-import {AeliqoInputChangeEvent, AeliqoInputCommitEvent} from "./events.js";
-import {compareDateOnly, dateOnly} from "./locale.js";
+import { html, nothing } from 'lit';
+import { AeliqoFieldElement, aeliqoInputStyles } from './base.js';
+import { AeliqoInputChangeEvent, AeliqoInputCommitEvent } from './events.js';
+import { compareDateOnly, dateOnly } from './locale.js';
 
-export type AeliqoDateCalendar = "gregory";
+export type AeliqoDateCalendar = 'gregory';
 
 /** Calendar-date input. Values are YYYY-MM-DD strings and never timestamps. */
 export class AeliqoDateFieldElement extends AeliqoFieldElement<string> {
   static readonly properties = {
     ...AeliqoFieldElement.properties,
-    value: {type: String, reflect: true},
-    defaultValue: {attribute: "default-value", type: String},
-    min: {type: String},
-    max: {type: String},
-    calendar: {type: String},
+    value: { type: String, reflect: true },
+    defaultValue: { attribute: 'default-value', type: String },
+    min: { type: String },
+    max: { type: String },
+    calendar: { type: String },
   };
 
-
-  value = "";
-  defaultValue = "";
-  min = "";
-  max = "";
-  calendar: AeliqoDateCalendar = "gregory";
+  value = '';
+  defaultValue = '';
+  min = '';
+  max = '';
+  calendar: AeliqoDateCalendar = 'gregory';
 
   override connectedCallback(): void {
-    if (this.value.length === 0 && this.defaultValue.length > 0) this.value = dateOnly(this.defaultValue) ?? "";
+    if (this.value.length === 0 && this.defaultValue.length > 0) this.value = dateOnly(this.defaultValue) ?? '';
     super.connectedCallback();
   }
 
@@ -33,7 +32,7 @@ export class AeliqoDateFieldElement extends AeliqoFieldElement<string> {
   }
 
   protected override resetField(): void {
-    this.value = dateOnly(this.defaultValue) ?? "";
+    this.value = dateOnly(this.defaultValue) ?? '';
     this.syncNative();
   }
 
@@ -54,8 +53,8 @@ export class AeliqoDateFieldElement extends AeliqoFieldElement<string> {
           max=${dateOnly(this.max) ?? nothing}
           ?disabled=${this.fieldDisabled}
           ?readonly=${this.readOnly}
-          aria-readonly=${this.readOnly ? "true" : nothing}
-          aria-invalid=${this.error || !valid ? "true" : nothing}
+          aria-readonly=${this.readOnly ? 'true' : nothing}
+          aria-invalid=${this.error || !valid ? 'true' : nothing}
           aria-describedby=${describedBy || nothing}
           @input=${this.handleInput}
           @change=${this.handleCommit}
@@ -78,13 +77,13 @@ export class AeliqoDateFieldElement extends AeliqoFieldElement<string> {
     }
     const next = dateOnly(input.value) ?? input.value;
     this.value = next;
-    this.dispatchEvent(new AeliqoInputChangeEvent({source: "user", value: next}));
+    this.dispatchEvent(new AeliqoInputChangeEvent({ source: 'user', value: next }));
     void this.validateProposed(next);
     this.syncNative();
   };
 
   private readonly handleCommit = (): void => {
-    this.dispatchEvent(new AeliqoInputCommitEvent({source: "user", value: this.value}));
+    this.dispatchEvent(new AeliqoInputCommitEvent({ source: 'user', value: this.value }));
   };
 
   private isValid(value: string | undefined): boolean {
@@ -96,14 +95,15 @@ export class AeliqoDateFieldElement extends AeliqoFieldElement<string> {
 
   private native(): HTMLInputElement | undefined {
     const root = this.renderRoot;
-    if (root === undefined || typeof root.querySelector !== "function") return undefined;
-    return root.querySelector<HTMLInputElement>("input[part=input]") ?? undefined;
+    if (root === undefined || typeof root.querySelector !== 'function') return undefined;
+    return root.querySelector<HTMLInputElement>('input[part=input]') ?? undefined;
   }
 
   private syncNative(): void {
     const valid = this.isValid(dateOnly(this.value));
     this.setFormValue(this.fieldDisabled || !valid ? null : this.value);
-    if (this.internals !== undefined && !this.fieldDisabled && !valid) this.internals.setValidity({customError: true}, "Enter a valid date.", this.native());
+    if (this.internals !== undefined && !this.fieldDisabled && !valid)
+      this.internals.setValidity({ customError: true }, 'Enter a valid date.', this.native());
     else this.updateValidity(this.native(), this.value.length === 0);
   }
 

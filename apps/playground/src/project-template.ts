@@ -1,4 +1,4 @@
-import type {ScenarioId} from './scenarios.js';
+import type { ScenarioId } from './scenarios.js';
 
 export interface ProjectFile {
   readonly path: string;
@@ -16,30 +16,61 @@ interface TemplateResource {
 }
 
 const resources: Readonly<Record<ScenarioId, TemplateResource>> = Object.freeze({
-  people: {id: 'people', label: 'People', shape: 'id: z.string(), name: z.string(), team: z.string(), location: z.string()',
+  people: {
+    id: 'people',
+    label: 'People',
+    shape: 'id: z.string(), name: z.string(), team: z.string(), location: z.string()',
     fields: "name: {label: 'Name'}, team: {label: 'Team', role: 'dimension'}, location: {label: 'Location'}",
-    views: ['table', 'cards'], intentFields: ['name', 'team', 'location'], records: [
-      {id: 'p-1', name: 'Ada Chen', team: 'Design', location: 'Jakarta'},
-      {id: 'p-2', name: 'Sam Rivera', team: 'Engineering', location: 'Lisbon'},
-    ]},
-  products: {id: 'products', label: 'Products', shape: 'id: z.string(), name: z.string(), category: z.string(), price: z.number(), stock: z.number().int()',
-    fields: "name: {label: 'Name'}, category: {label: 'Category', role: 'dimension'}, price: {label: 'Price', role: 'measure'}, stock: {label: 'Stock'}",
-    views: ['table', 'cards'], intentFields: ['name', 'category', 'price', 'stock'], records: [
-      {id: 'pr-1', name: 'Field notebook', category: 'Stationery', price: 12, stock: 18},
-      {id: 'pr-2', name: 'Desk lamp', category: 'Workspace', price: 48, stock: 7},
-    ]},
-  support: {id: 'tickets', label: 'Support tickets', shape: 'id: z.string(), subject: z.string(), customer: z.string(), status: z.string(), priority: z.string()',
-    fields: "subject: {label: 'Subject'}, customer: {label: 'Customer'}, status: {label: 'Status', role: 'dimension'}, priority: {label: 'Priority'}",
-    views: ['table', 'cards'], intentFields: ['subject', 'customer', 'status', 'priority'], records: [
-      {id: 't-1', subject: 'Invoice PDF unavailable', customer: 'Northstar', status: 'Open', priority: 'High'},
-      {id: 't-2', subject: 'Rotate API token', customer: 'Kite Labs', status: 'Resolved', priority: 'Low'},
-    ]},
-  knowledge: {id: 'articles', label: 'Knowledge articles', shape: 'id: z.string(), title: z.string(), topic: z.string(), excerpt: z.string()',
+    views: ['table', 'cards'],
+    intentFields: ['name', 'team', 'location'],
+    records: [
+      { id: 'p-1', name: 'Ada Chen', team: 'Design', location: 'Jakarta' },
+      { id: 'p-2', name: 'Sam Rivera', team: 'Engineering', location: 'Lisbon' },
+    ],
+  },
+  products: {
+    id: 'products',
+    label: 'Products',
+    shape: 'id: z.string(), name: z.string(), category: z.string(), price: z.number(), stock: z.number().int()',
+    fields:
+      "name: {label: 'Name'}, category: {label: 'Category', role: 'dimension'}, price: {label: 'Price', role: 'measure'}, stock: {label: 'Stock'}",
+    views: ['table', 'cards'],
+    intentFields: ['name', 'category', 'price', 'stock'],
+    records: [
+      { id: 'pr-1', name: 'Field notebook', category: 'Stationery', price: 12, stock: 18 },
+      { id: 'pr-2', name: 'Desk lamp', category: 'Workspace', price: 48, stock: 7 },
+    ],
+  },
+  support: {
+    id: 'tickets',
+    label: 'Support tickets',
+    shape: 'id: z.string(), subject: z.string(), customer: z.string(), status: z.string(), priority: z.string()',
+    fields:
+      "subject: {label: 'Subject'}, customer: {label: 'Customer'}, status: {label: 'Status', role: 'dimension'}, priority: {label: 'Priority'}",
+    views: ['table', 'cards'],
+    intentFields: ['subject', 'customer', 'status', 'priority'],
+    records: [
+      { id: 't-1', subject: 'Invoice PDF unavailable', customer: 'Northstar', status: 'Open', priority: 'High' },
+      { id: 't-2', subject: 'Rotate API token', customer: 'Kite Labs', status: 'Resolved', priority: 'Low' },
+    ],
+  },
+  knowledge: {
+    id: 'articles',
+    label: 'Knowledge articles',
+    shape: 'id: z.string(), title: z.string(), topic: z.string(), excerpt: z.string()',
     fields: "title: {label: 'Title'}, topic: {label: 'Topic', role: 'dimension'}, excerpt: {label: 'Summary'}",
-    views: ['table', 'cards'], intentFields: ['title', 'topic', 'excerpt'], records: [
-      {id: 'kb-1', title: 'Rotate an API token safely', topic: 'Security', excerpt: 'Replace and revoke credentials safely.'},
-      {id: 'kb-2', title: 'Understand workspace roles', topic: 'Access', excerpt: 'Assign the smallest useful role.'},
-    ]},
+    views: ['table', 'cards'],
+    intentFields: ['title', 'topic', 'excerpt'],
+    records: [
+      {
+        id: 'kb-1',
+        title: 'Rotate an API token safely',
+        topic: 'Security',
+        excerpt: 'Replace and revoke credentials safely.',
+      },
+      { id: 'kb-2', title: 'Understand workspace roles', topic: 'Access', excerpt: 'Assign the smallest useful role.' },
+    ],
+  },
 });
 
 function application(resource: TemplateResource): string {
@@ -97,11 +128,26 @@ export function projectFiles(scenario: ScenarioId, releaseVersion: string): read
     ['@aeliqo/core', '@aeliqo/runtime', '@aeliqo/web'].map((name) => [name, releaseVersion]),
   );
   return Object.freeze([
-    {path: 'package.json', content: `${JSON.stringify({name: `aeliqo-${scenario}-example`, private: true, type: 'module', scripts: {dev: 'vite', build: 'tsc --noEmit && vite build'}, dependencies: {...packages, zod: '4.5.4'}, devDependencies: {typescript: '7.0.2', vite: '8.2.2'}}, null, 2)}\n`},
-    {path: 'tsconfig.json', content: `${JSON.stringify({compilerOptions: {target: 'ES2022', module: 'ESNext', moduleResolution: 'Bundler', lib: ['ES2022', 'DOM'], types: ['vite/client'], strict: true, noEmit: true}, include: ['src/**/*.ts']}, null, 2)}\n`},
-    {path: 'index.html', content: `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${resource.label} · Aeliqo</title></head><body><main><h1>${resource.label}</h1><p id="status" role="status">Loading…</p><div id="app"></div></main><script type="module" src="/src/main.ts"></script></body></html>\n`},
-    {path: 'src/main.ts', content: application(resource)},
-    {path: 'src/style.css', content: `:root{font-family:Inter,ui-sans-serif,system-ui;color:#202033;background:#f7f7fb}body{margin:0}main{inline-size:min(72rem,calc(100% - 2rem));margin:3rem auto}#app{container-type:inline-size;min-block-size:20rem}\n`},
-    {path: 'README.md', content: `# ${resource.label} · Aeliqo ${releaseVersion}\n\nSynthetic project exported from the Aeliqo playground.\n\n\`\`\`sh\npnpm install\npnpm dev\n\`\`\`\n\nThe application works without an AI provider. Replace the local snapshot and authority adapter with application-owned implementations before using real data.\n`},
+    {
+      path: 'package.json',
+      content: `${JSON.stringify({ name: `aeliqo-${scenario}-example`, private: true, type: 'module', scripts: { dev: 'vite', build: 'tsc --noEmit && vite build' }, dependencies: { ...packages, zod: '4.5.4' }, devDependencies: { typescript: '7.0.2', vite: '8.2.2' } }, null, 2)}\n`,
+    },
+    {
+      path: 'tsconfig.json',
+      content: `${JSON.stringify({ compilerOptions: { target: 'ES2022', module: 'ESNext', moduleResolution: 'Bundler', lib: ['ES2022', 'DOM'], types: ['vite/client'], strict: true, noEmit: true }, include: ['src/**/*.ts'] }, null, 2)}\n`,
+    },
+    {
+      path: 'index.html',
+      content: `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${resource.label} · Aeliqo</title></head><body><main><h1>${resource.label}</h1><p id="status" role="status">Loading…</p><div id="app"></div></main><script type="module" src="/src/main.ts"></script></body></html>\n`,
+    },
+    { path: 'src/main.ts', content: application(resource) },
+    {
+      path: 'src/style.css',
+      content: `:root{font-family:Inter,ui-sans-serif,system-ui;color:#202033;background:#f7f7fb}body{margin:0}main{inline-size:min(72rem,calc(100% - 2rem));margin:3rem auto}#app{container-type:inline-size;min-block-size:20rem}\n`,
+    },
+    {
+      path: 'README.md',
+      content: `# ${resource.label} · Aeliqo ${releaseVersion}\n\nSynthetic project exported from the Aeliqo playground.\n\n\`\`\`sh\npnpm install\npnpm dev\n\`\`\`\n\nThe application works without an AI provider. Replace the local snapshot and authority adapter with application-owned implementations before using real data.\n`,
+    },
   ]);
 }

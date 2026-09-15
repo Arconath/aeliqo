@@ -1,4 +1,4 @@
-import {createServer} from 'node:net';
+import { createServer } from 'node:net';
 
 /** Pick an OS-assigned local test port; child workers inherit the same choice. */
 export async function testPort(key) {
@@ -16,7 +16,7 @@ export async function testPort(key) {
   const address = server.address();
   if (address === null || typeof address === 'string') throw new Error('No TCP test port assigned');
   const port = address.port;
-  await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
+  await new Promise((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
   process.env[key] = String(port);
   return port;
 }

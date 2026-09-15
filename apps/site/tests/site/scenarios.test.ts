@@ -1,6 +1,6 @@
-import {describe, expect, it} from 'vitest';
-import {compileIntent, parseIntent} from '@aeliqo/core';
-import {PLAYGROUND_INTENTS, PLAYGROUND_RESOURCES, PLAYGROUND_SCENARIOS} from '../../../playground/src/scenarios.js';
+import { describe, expect, it } from 'vitest';
+import { compileIntent, parseIntent } from '@aeliqo/core';
+import { PLAYGROUND_INTENTS, PLAYGROUND_RESOURCES, PLAYGROUND_SCENARIOS } from '../../../playground/src/scenarios.js';
 
 describe('0.3 playground scenarios', () => {
   it('covers four application categories with valid manual intent fixtures', () => {
@@ -18,9 +18,18 @@ describe('0.3 playground scenarios', () => {
   });
 
   it('compiles a consumer-owned custom intent without modifying core', () => {
-    const outcome = compileIntent({version: '1', id: 'knowledge-security', kind: 'custom', resource: 'articles',
-      intent: {id: 'demo.knowledge.by-topic', revision: '1'}, input: {topic: 'Security'}, preferredView: 'cards'},
-    {resource: PLAYGROUND_RESOURCES.articles, regionId: 'main', customIntents: PLAYGROUND_INTENTS});
-    expect(outcome).toMatchObject({ok: true, value: {kind: 'data', viewPreference: {representation: 'cards'}}});
+    const outcome = compileIntent(
+      {
+        version: '1',
+        id: 'knowledge-security',
+        kind: 'custom',
+        resource: 'articles',
+        intent: { id: 'demo.knowledge.by-topic', revision: '1' },
+        input: { topic: 'Security' },
+        preferredView: 'cards',
+      },
+      { resource: PLAYGROUND_RESOURCES.articles, regionId: 'main', customIntents: PLAYGROUND_INTENTS },
+    );
+    expect(outcome).toMatchObject({ ok: true, value: { kind: 'data', viewPreference: { representation: 'cards' } } });
   });
 });

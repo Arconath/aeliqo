@@ -1,5 +1,5 @@
-import type {OperationGrant, Outcome, VersionRef} from '@aeliqo/core';
-import type {AgentCapabilityReceipt, AgentJsonValue} from '../capabilities/types.js';
+import type { OperationGrant, Outcome, VersionRef } from '@aeliqo/core';
+import type { AgentCapabilityReceipt, AgentJsonValue } from '../capabilities/types.js';
 
 /** Host-authored JSON Schema for the registered capability's input, not an authority grant. */
 export type AgentToolInputSchema = Readonly<Record<string, AgentJsonValue>>;
@@ -27,8 +27,12 @@ export interface AgentToolEndpoint {
   readonly transport: AgentToolTransport;
   readonly targetRegionId: string;
   readonly goalEpoch: string;
-  readonly discover: (options?: {readonly signal?: AbortSignal}) => Promise<Outcome<readonly AgentToolDefinition[]>>;
-  readonly invoke: (name: string, input: unknown, options: AgentToolCallOptions) => Promise<Outcome<AgentCapabilityReceipt>>;
+  readonly discover: (options?: { readonly signal?: AbortSignal }) => Promise<Outcome<readonly AgentToolDefinition[]>>;
+  readonly invoke: (
+    name: string,
+    input: unknown,
+    options: AgentToolCallOptions,
+  ) => Promise<Outcome<AgentCapabilityReceipt>>;
   readonly close: () => void;
 }
 
@@ -38,7 +42,7 @@ export interface AgentModelScope {
   readonly current?: import('@aeliqo/core').CommitPreconditions;
 }
 export interface AgentModelToolEndpoint extends AgentToolEndpoint {
-  readonly authorizeModel: (options?: {readonly signal?: AbortSignal}) => Promise<Outcome<AgentModelScope>>;
+  readonly authorizeModel: (options?: { readonly signal?: AbortSignal }) => Promise<Outcome<AgentModelScope>>;
 }
 export interface AgentToolEndpointOptions {
   readonly transport: AgentToolTransport;

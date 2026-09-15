@@ -1,21 +1,6 @@
-import type {
-  Catalog,
-  Diagnostic,
-  Outcome,
-  QuerySpec,
-  Result,
-  ResultRef,
-  SemanticType,
-  Task,
-} from '@aeliqo/core';
-import type {
-  AcceptedQuery,
-  DataService,
-  DataValue,
-  QueryBudget,
-  ReadContext,
-} from '../data/types.js';
-import type {ResultHandle, ResultStore} from '../results/types.js';
+import type { Catalog, Diagnostic, Outcome, QuerySpec, Result, ResultRef, SemanticType, Task } from '@aeliqo/core';
+import type { AcceptedQuery, DataService, DataValue, QueryBudget, ReadContext } from '../data/types.js';
+import type { ResultHandle, ResultStore } from '../results/types.js';
 
 /** A bounded, trusted request to derive membership from an immutable result. */
 export interface CohortRequest {
@@ -95,7 +80,9 @@ export interface TrustedEvaluationContext {
 }
 
 export interface EvaluationHost {
-  readonly readContext: (input: EvaluationContextRequest) => Outcome<TrustedEvaluationContext> | Promise<Outcome<TrustedEvaluationContext>>;
+  readonly readContext: (
+    input: EvaluationContextRequest,
+  ) => Outcome<TrustedEvaluationContext> | Promise<Outcome<TrustedEvaluationContext>>;
 }
 
 export interface TaskEvaluatorOptions {
@@ -130,7 +117,7 @@ export interface TaskEvaluation {
   readonly release: () => void;
 }
 
-export type EvaluationFailure = Diagnostic & {readonly code: string};
+export type EvaluationFailure = Diagnostic & { readonly code: string };
 export type EvaluationOutcome<T> = Outcome<T>;
 
-export type {Catalog, DataService, DataValue, QuerySpec, Result, ResultRef, SemanticType, Task};
+export type { Catalog, DataService, DataValue, QuerySpec, Result, ResultRef, SemanticType, Task };

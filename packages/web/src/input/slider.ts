@@ -1,6 +1,6 @@
-import {css, html, nothing} from "lit";
-import {AeliqoFieldElement, aeliqoInputStyles} from "./base.js";
-import {AeliqoInputChangeEvent, AeliqoInputCommitEvent} from "./events.js";
+import { css, html, nothing } from 'lit';
+import { AeliqoFieldElement, aeliqoInputStyles } from './base.js';
+import { AeliqoInputChangeEvent, AeliqoInputCommitEvent } from './events.js';
 
 export interface AeliqoSliderValue {
   readonly value: number;
@@ -11,21 +11,20 @@ export interface AeliqoSliderValue {
 export class AeliqoSliderElement extends AeliqoFieldElement<AeliqoSliderValue> {
   static readonly properties = {
     ...AeliqoFieldElement.properties,
-    value: {type: Number, reflect: true},
-    defaultValue: {attribute: "default-value", type: Number},
-    min: {type: Number},
-    max: {type: Number},
-    step: {type: Number},
-    unit: {type: String},
+    value: { type: Number, reflect: true },
+    defaultValue: { attribute: 'default-value', type: Number },
+    min: { type: Number },
+    max: { type: Number },
+    step: { type: Number },
+    unit: { type: String },
   };
-
 
   value = 0;
   defaultValue = 0;
   min = 0;
   max = 100;
   step = 1;
-  unit = "";
+  unit = '';
 
   override connectedCallback(): void {
     if (this.value === 0 && this.defaultValue !== 0) this.value = this.safeNumber(this.defaultValue, this.min);
@@ -43,7 +42,7 @@ export class AeliqoSliderElement extends AeliqoFieldElement<AeliqoSliderValue> {
 
   protected override render() {
     const valid = this.isValid(this.value);
-    const describedBy = [this.describedByIds(), this.unit ? "unit" : ""].filter((id) => id.length > 0).join(" ");
+    const describedBy = [this.describedByIds(), this.unit ? 'unit' : ''].filter((id) => id.length > 0).join(' ');
     return html`
       <div part="field">
         <label part="label" for="slider-control"><span class="label-text">${this.label}</span></label>
@@ -58,8 +57,8 @@ export class AeliqoSliderElement extends AeliqoFieldElement<AeliqoSliderValue> {
             max=${String(this.max)}
             step=${String(this.safeStep())}
             ?disabled=${this.fieldDisabled}
-            aria-readonly=${this.readOnly ? "true" : nothing}
-            aria-invalid=${this.error || !valid ? "true" : nothing}
+            aria-readonly=${this.readOnly ? 'true' : nothing}
+            aria-invalid=${this.error || !valid ? 'true' : nothing}
             aria-describedby=${describedBy || nothing}
             @input=${this.handleRange}
             @change=${this.handleCommit}
@@ -73,8 +72,8 @@ export class AeliqoSliderElement extends AeliqoFieldElement<AeliqoSliderValue> {
             step=${String(this.safeStep())}
             ?disabled=${this.fieldDisabled}
             ?readonly=${this.readOnly}
-            aria-readonly=${this.readOnly ? "true" : nothing}
-            aria-label=${this.label ? `${this.label} value` : "Value"}
+            aria-readonly=${this.readOnly ? 'true' : nothing}
+            aria-label=${this.label ? `${this.label} value` : 'Value'}
             @input=${this.handleText}
             @change=${this.handleCommit}
           />
@@ -106,21 +105,22 @@ export class AeliqoSliderElement extends AeliqoFieldElement<AeliqoSliderValue> {
   };
 
   private readonly handleCommit = (): void => {
-    this.dispatchEvent(new AeliqoInputCommitEvent({source: "user", value: {value: this.value, unit: this.unit}}));
+    this.dispatchEvent(new AeliqoInputCommitEvent({ source: 'user', value: { value: this.value, unit: this.unit } }));
   };
 
   private applyUserValue(text: string): void {
     const next = Number(text);
     if (!Number.isFinite(next)) return;
     this.value = next;
-    const detail: AeliqoSliderValue = {value: next, unit: this.unit};
-    this.dispatchEvent(new AeliqoInputChangeEvent({source: "user", value: detail}));
+    const detail: AeliqoSliderValue = { value: next, unit: this.unit };
+    this.dispatchEvent(new AeliqoInputChangeEvent({ source: 'user', value: detail }));
     void this.validateProposed(detail);
     this.syncNative();
   }
 
   private isValid(value: number): boolean {
-    if (!Number.isFinite(value) || !Number.isFinite(this.min) || !Number.isFinite(this.max) || this.min > this.max) return false;
+    if (!Number.isFinite(value) || !Number.isFinite(this.min) || !Number.isFinite(this.max) || this.min > this.max)
+      return false;
     if (value < this.min || value > this.max) return false;
     const step = this.safeStep();
     if (step <= 0) return false;
@@ -138,8 +138,8 @@ export class AeliqoSliderElement extends AeliqoFieldElement<AeliqoSliderValue> {
 
   private nativeRange(): HTMLInputElement | undefined {
     const root = this.renderRoot;
-    if (root === undefined || typeof root.querySelector !== "function") return undefined;
-    return root.querySelector<HTMLInputElement>("input[type=range]") ?? undefined;
+    if (root === undefined || typeof root.querySelector !== 'function') return undefined;
+    return root.querySelector<HTMLInputElement>('input[type=range]') ?? undefined;
   }
 
   private syncNative(): void {
@@ -147,19 +147,46 @@ export class AeliqoSliderElement extends AeliqoFieldElement<AeliqoSliderValue> {
     if (range !== undefined && range.value !== String(this.value)) range.value = String(this.value);
     const valid = this.isValid(this.value);
     this.setFormValue(this.fieldDisabled || !valid ? null : String(this.value));
-    if (this.internals !== undefined && !this.fieldDisabled && !valid) this.internals.setValidity({rangeOverflow: this.value > this.max, rangeUnderflow: this.value < this.min, stepMismatch: true}, "Enter a value in range.", this.nativeRange());
+    if (this.internals !== undefined && !this.fieldDisabled && !valid)
+      this.internals.setValidity(
+        { rangeOverflow: this.value > this.max, rangeUnderflow: this.value < this.min, stepMismatch: true },
+        'Enter a value in range.',
+        this.nativeRange(),
+      );
     else this.updateValidity(this.nativeRange(), !Number.isFinite(this.value));
   }
 
-  static readonly styles = [...aeliqoInputStyles, css`
-    .slider-row { align-items: center; display: grid; gap: var(--aeliqo-space-8, 0.5rem); grid-template-columns: minmax(0, 1fr) minmax(5rem, 7rem) auto; min-inline-size: 0; }
-    input[type=range] { accent-color: var(--aeliqo-color-accent, #4338ca); min-inline-size: 0; }
-    input[type=number] { min-block-size: var(--aeliqo-control-min-target, 2.75rem); }
-    @media (max-width: 30rem) {
-      .slider-row { grid-template-columns: minmax(5rem, 7rem) auto 1fr; }
-      input[type=range] { grid-column: 1 / -1; }
-      input[type=number] { grid-column: 1; }
-      [part="unit"] { grid-column: 2; }
-    }
-  `];
+  static readonly styles = [
+    ...aeliqoInputStyles,
+    css`
+      .slider-row {
+        align-items: center;
+        display: grid;
+        gap: var(--aeliqo-space-8, 0.5rem);
+        grid-template-columns: minmax(0, 1fr) minmax(5rem, 7rem) auto;
+        min-inline-size: 0;
+      }
+      input[type='range'] {
+        accent-color: var(--aeliqo-color-accent, #4338ca);
+        min-inline-size: 0;
+      }
+      input[type='number'] {
+        min-block-size: var(--aeliqo-control-min-target, 2.75rem);
+      }
+      @media (max-width: 30rem) {
+        .slider-row {
+          grid-template-columns: minmax(5rem, 7rem) auto 1fr;
+        }
+        input[type='range'] {
+          grid-column: 1 / -1;
+        }
+        input[type='number'] {
+          grid-column: 1;
+        }
+        [part='unit'] {
+          grid-column: 2;
+        }
+      }
+    `,
+  ];
 }

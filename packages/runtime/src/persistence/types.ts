@@ -1,5 +1,5 @@
-import type {Task} from '@aeliqo/core';
-import type {RegionHistoryEntry, RegionReadSet, RegionSnapshot} from '../regions/types.js';
+import type { Task } from '@aeliqo/core';
+import type { RegionHistoryEntry, RegionReadSet, RegionSnapshot } from '../regions/types.js';
 
 /** Versioned metadata document. Presentation plans and result rows are intentionally omitted. */
 export interface RegionDocument {

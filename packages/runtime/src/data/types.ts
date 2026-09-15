@@ -26,15 +26,21 @@ import type {
 export type ResultEvent = Contract<'result-event'>;
 
 /** Values supported by the ADC record boundary. Nested objects are not rows. */
-export type DataValue = null | boolean | number | string | {readonly decimal: string};
+export type DataValue = null | boolean | number | string | { readonly decimal: string };
 export type DataRecord = Readonly<Record<string, DataValue>>;
 
 /** Wire aliases are derived from the single strict schema source in schema.ts. */
-type ExactWire<T> = T extends readonly [infer Head, ...infer Tail] ? readonly [ExactWire<Head>, ...{[K in keyof Tail]: ExactWire<Tail[K]>}] : T extends readonly (infer U)[] ? readonly ExactWire<U>[] : T extends object ? {
-  readonly [K in keyof T as undefined extends T[K] ? never : K]: ExactWire<Exclude<T[K], undefined>>;
-} & {
-  readonly [K in keyof T as undefined extends T[K] ? K : never]?: ExactWire<Exclude<T[K], undefined>>;
-} : T;
+type ExactWire<T> = T extends readonly [infer Head, ...infer Tail]
+  ? readonly [ExactWire<Head>, ...{ [K in keyof Tail]: ExactWire<Tail[K]> }]
+  : T extends readonly (infer U)[]
+    ? readonly ExactWire<U>[]
+    : T extends object
+      ? {
+          readonly [K in keyof T as undefined extends T[K] ? never : K]: ExactWire<Exclude<T[K], undefined>>;
+        } & {
+          readonly [K in keyof T as undefined extends T[K] ? K : never]?: ExactWire<Exclude<T[K], undefined>>;
+        }
+      : T;
 export type QueryBudget = ExactWire<QueryBudgetWire> & {
   readonly maxRows: number;
   readonly maxBytes: number;
@@ -65,7 +71,9 @@ export interface ReadContext {
     readonly principalKey: string;
     readonly resolver: import('../evaluation/types.js').CohortResolver;
     readonly resultStore: import('../results/types.js').ResultStore;
-    readonly resolveResult: (ref: import('@aeliqo/core').ResultRef) => import('../results/types.js').ResultHandle | undefined;
+    readonly resolveResult: (
+      ref: import('@aeliqo/core').ResultRef,
+    ) => import('../results/types.js').ResultHandle | undefined;
   };
 }
 
@@ -190,7 +198,9 @@ export interface HttpDataPaths {
 export interface DataHttpServerOptions {
   readonly service: DataService;
   readonly paths?: Partial<HttpDataPaths>;
-  readonly authenticate?: (request: Request) => Promise<Outcome<{readonly principal?: unknown}>> | Outcome<{readonly principal?: unknown}>;
+  readonly authenticate?: (
+    request: Request,
+  ) => Promise<Outcome<{ readonly principal?: unknown }>> | Outcome<{ readonly principal?: unknown }>;
   readonly allowedOrigin?: string;
   readonly maxRequestBytes?: number;
   readonly maxRequestMilliseconds?: number;
@@ -211,4 +221,4 @@ export interface CapabilityGap extends UnsupportedCapability {
   readonly diagnostic: Diagnostic;
 }
 
-export type {Catalog, Diagnostic, MeaningBundle, MeaningDefinition, Outcome, QuerySpec};
+export type { Catalog, Diagnostic, MeaningBundle, MeaningDefinition, Outcome, QuerySpec };

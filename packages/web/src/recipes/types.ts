@@ -8,8 +8,8 @@ import type {
   Task,
   VersionRef,
 } from '@aeliqo/core';
-import type {AeliqoViewDefinition} from '../region/types.js';
-import type {AeliqoInputBindings} from '../region/input-registry.js';
+import type { AeliqoViewDefinition } from '../region/types.js';
+import type { AeliqoInputBindings } from '../region/input-registry.js';
 
 export interface RecipeContext {
   readonly intent: Intent;

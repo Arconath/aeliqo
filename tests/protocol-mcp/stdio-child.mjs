@@ -1,4 +1,4 @@
-import {createMcpStdioServer} from '../../packages/agent/dist/mcp/index.js';
+import { createMcpStdioServer } from '../../packages/agent/dist/mcp/index.js';
 
 const endpoint = (era) => ({
   transport: 'mcp',
@@ -7,13 +7,15 @@ const endpoint = (era) => ({
   async discover() {
     return {
       ok: true,
-      value: [{
-        name: 'summary',
-        description: 'Return a bounded summary.',
-        capability: {id: 'summary', revision: '1'},
-        operation: 'catalog.read',
-        inputSchema: {type: 'object', properties: {query: {type: 'string'}}, additionalProperties: false},
-      }],
+      value: [
+        {
+          name: 'summary',
+          description: 'Return a bounded summary.',
+          capability: { id: 'summary', revision: '1' },
+          operation: 'catalog.read',
+          inputSchema: { type: 'object', properties: { query: { type: 'string' } }, additionalProperties: false },
+        },
+      ],
     };
   },
   async invoke(name, input, options) {
@@ -24,13 +26,13 @@ const endpoint = (era) => ({
         requestId: options.requestId,
         targetRegionId: 'region',
         goalEpoch: 'goal',
-        capability: {id: 'summary', revision: '1'},
+        capability: { id: 'summary', revision: '1' },
         operation: 'catalog.read',
         transport: 'mcp',
         state: 'data-ready',
         status: 'data-ready',
         stage: 'data-ready',
-        value: {name, query: input?.query ?? null, era},
+        value: { name, query: input?.query ?? null, era },
         diagnostics: [],
       },
     };
@@ -39,8 +41,9 @@ const endpoint = (era) => ({
 });
 
 createMcpStdioServer({
-  createEndpoint: context => endpoint(context.era),
+  createEndpoint: (context) => endpoint(context.era),
   name: 'aeliqo-stdio-fixture',
   version: '0.1.0',
-  maxBufferSize: process.env.AELIQO_MCP_MAX_BUFFER === undefined ? undefined : Number(process.env.AELIQO_MCP_MAX_BUFFER),
+  maxBufferSize:
+    process.env.AELIQO_MCP_MAX_BUFFER === undefined ? undefined : Number(process.env.AELIQO_MCP_MAX_BUFFER),
 });

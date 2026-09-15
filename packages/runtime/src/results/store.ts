@@ -1,9 +1,5 @@
-import {parseContract, scalarIdentity, validateScalar, WIRE_LIMITS} from '@aeliqo/core';
-import type {
-  Diagnostic,
-  Result,
-  ResultRef,
-} from '@aeliqo/core';
+import { parseContract, scalarIdentity, validateScalar, WIRE_LIMITS } from '@aeliqo/core';
+import type { Diagnostic, Result, ResultRef } from '@aeliqo/core';
 import type {
   ResultBatch,
   ResultBeginInput,
@@ -22,8 +18,8 @@ import type {
 } from './types.js';
 
 type Outcome<T> =
-  | {readonly ok: true; readonly value: T}
-  | {readonly ok: false; readonly diagnostics: readonly [Diagnostic, ...Diagnostic[]]};
+  | { readonly ok: true; readonly value: T }
+  | { readonly ok: false; readonly diagnostics: readonly [Diagnostic, ...Diagnostic[]] };
 
 type ResultRow = ResultBatch['rows'][number];
 type ResultCell = ResultRow[string];
@@ -33,11 +29,11 @@ const DEFAULT_MAX_BYTES = WIRE_LIMITS.bytes;
 const DEFAULT_TTL_MS = 5 * 60_000;
 
 function makeDiagnostic(code: string, message: string): Diagnostic {
-  return {code, message, retryable: false};
+  return { code, message, retryable: false };
 }
 
 function failure<T>(code: string, message: string): Outcome<T> {
-  return {ok: false, diagnostics: [makeDiagnostic(code, message)]};
+  return { ok: false, diagnostics: [makeDiagnostic(code, message)] };
 }
 
 function frozen<T>(value: T): T {
@@ -53,8 +49,9 @@ function frozen<T>(value: T): T {
 /** Parse first, then recursively freeze so callers cannot mutate store state. */
 function parseAndFreezeEvent(input: unknown): Outcome<ResultEvent> {
   const parsed = parseContract('result-event', input);
-  if (!parsed.ok) return failure('data.result-event-shape', 'The result event does not match the canonical bounded contract.');
-  return {ok: true, value: frozen(parsed.value)};
+  if (!parsed.ok)
+    return failure('data.result-event-shape', 'The result event does not match the canonical bounded contract.');
+  return { ok: true, value: frozen(parsed.value) };
 }
 
 function canonical(value: unknown): string {
@@ -66,7 +63,10 @@ function canonical(value: unknown): string {
   }
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
   const object = value as Record<string, unknown>;
-  return `{${Object.keys(object).sort().map((key) => `${JSON.stringify(key)}:${canonical(object[key])}`).join(',')}}`;
+  return `{${Object.keys(object)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${canonical(object[key])}`)
+    .join(',')}}`;
 }
 
 function byteLength(value: unknown): number {
@@ -75,13 +75,28 @@ function byteLength(value: unknown): number {
 }
 
 function validKeyPart(value: unknown, name: string): asserts value is string {
-  if (typeof value !== 'string' || value.length === 0 || value.length > WIRE_LIMITS.id || /[\s\u0000-\u001f\u007f]/u.test(value))
+  if (
+    typeof value !== 'string' ||
+    value.length === 0 ||
+    value.length > WIRE_LIMITS.id ||
+    /[\s\u0000-\u001f\u007f]/u.test(value)
+  )
     throw new TypeError(`${name} must be a bounded identifier.`);
 }
 
 function validateBeginInput(input: ResultBeginInput): void {
   if (input === null || typeof input !== 'object') throw new TypeError('A result begin input is required.');
-  const required = ['principalKey', 'scopeDigest', 'queryDigest', 'catalogRevision', 'functionRegistryDigest', 'sourceRevision', 'outputId', 'taskId', 'requestId'];
+  const required = [
+    'principalKey',
+    'scopeDigest',
+    'queryDigest',
+    'catalogRevision',
+    'functionRegistryDigest',
+    'sourceRevision',
+    'outputId',
+    'taskId',
+    'requestId',
+  ];
   const allowed = new Set([...required, 'policyRevision', 'populationDigest']);
   const properties = Object.getOwnPropertyDescriptors(input);
   for (const name of required) if (!Object.hasOwn(properties, name)) throw new TypeError(`${name} is required.`);
@@ -95,7 +110,12 @@ function validateBeginInput(input: ResultBeginInput): void {
       continue;
     }
     if (name === 'principalKey') {
-      if (typeof value !== 'string' || value.length === 0 || value.length > WIRE_LIMITS.id * 4 || /[\u0000-\u001f\u007f]/u.test(value))
+      if (
+        typeof value !== 'string' ||
+        value.length === 0 ||
+        value.length > WIRE_LIMITS.id * 4 ||
+        /[\u0000-\u001f\u007f]/u.test(value)
+      )
         throw new TypeError('principalKey must be a bounded host-owned cache partition key.');
       continue;
     }
@@ -119,13 +139,19 @@ function slotKey(input: ResultCacheKey): string {
 }
 
 function sameRef(left: ResultRef, right: ResultRef): boolean {
-  return left.id === right.id && left.revision === right.revision && left.outputId === right.outputId
-    && left.queryDigest === right.queryDigest && left.scopeDigest === right.scopeDigest;
+  return (
+    left.id === right.id &&
+    left.revision === right.revision &&
+    left.outputId === right.outputId &&
+    left.queryDigest === right.queryDigest &&
+    left.scopeDigest === right.scopeDigest
+  );
 }
 
 function sameRefParts(ref: ResultRef, input: ResultCacheKey): boolean {
-  return ref.outputId === input.outputId && ref.queryDigest === input.queryDigest
-    && ref.scopeDigest === input.scopeDigest;
+  return (
+    ref.outputId === input.outputId && ref.queryDigest === input.queryDigest && ref.scopeDigest === input.scopeDigest
+  );
 }
 
 function statusForError(code: string): ResultStatus {
@@ -140,7 +166,9 @@ function preserveOnFailure(status: ResultStatus): boolean {
   return status !== 'denied' && status !== 'cancelled';
 }
 
-function isKnownCoverage(value: Result['coverage']): value is Exclude<Result['coverage'], {readonly kind: 'unknown'}> {
+function isKnownCoverage(
+  value: Result['coverage'],
+): value is Exclude<Result['coverage'], { readonly kind: 'unknown' }> {
   return value.kind !== 'unknown';
 }
 
@@ -187,38 +215,45 @@ function sourceIterator(source: AsyncIterable<unknown> | AsyncIterator<unknown>)
       next: () => Promise.resolve(iterator.next()),
     };
     if (typeof iterator.return === 'function') adapted.return = () => Promise.resolve(iterator.return!());
-    if (typeof iterator.throw === 'function') adapted.throw = (error?: unknown) => Promise.resolve(iterator.throw!(error));
+    if (typeof iterator.throw === 'function')
+      adapted.throw = (error?: unknown) => Promise.resolve(iterator.throw!(error));
     return adapted;
   }
   return source as AsyncIterator<unknown>;
 }
 
-function raceAbort<T>(pending: Promise<T>, signals: readonly (AbortSignal | undefined)[]): Promise<{readonly aborted: true} | {readonly aborted: false; readonly value: T}> {
+function raceAbort<T>(
+  pending: Promise<T>,
+  signals: readonly (AbortSignal | undefined)[],
+): Promise<{ readonly aborted: true } | { readonly aborted: false; readonly value: T }> {
   const activeSignals = signals.filter((signal): signal is AbortSignal => signal !== undefined);
-  if (activeSignals.length === 0) return pending.then((value) => ({aborted: false, value} as const));
-  if (activeSignals.some((signal) => signal.aborted)) return Promise.resolve({aborted: true} as const);
+  if (activeSignals.length === 0) return pending.then((value) => ({ aborted: false, value }) as const);
+  if (activeSignals.some((signal) => signal.aborted)) return Promise.resolve({ aborted: true } as const);
   return new Promise((resolve) => {
     let settled = false;
     const onAbort = () => {
       if (settled) return;
       settled = true;
       for (const signal of activeSignals) signal.removeEventListener('abort', onAbort);
-      resolve({aborted: true});
+      resolve({ aborted: true });
     };
-    for (const signal of activeSignals) signal.addEventListener('abort', onAbort, {once: true});
-    pending.then((value) => {
-      if (settled) return;
-      settled = true;
-      for (const signal of activeSignals) signal.removeEventListener('abort', onAbort);
-      resolve({aborted: false, value});
-    }, () => {
-      if (settled) return;
-      settled = true;
-      for (const signal of activeSignals) signal.removeEventListener('abort', onAbort);
-      // Rejections are returned through a fulfilled tagged value so a late
-      // source rejection is never left as an unhandled promise.
-      resolve({aborted: false, value: undefined as T});
-    });
+    for (const signal of activeSignals) signal.addEventListener('abort', onAbort, { once: true });
+    pending.then(
+      (value) => {
+        if (settled) return;
+        settled = true;
+        for (const signal of activeSignals) signal.removeEventListener('abort', onAbort);
+        resolve({ aborted: false, value });
+      },
+      () => {
+        if (settled) return;
+        settled = true;
+        for (const signal of activeSignals) signal.removeEventListener('abort', onAbort);
+        // Rejections are returned through a fulfilled tagged value so a late
+        // source rejection is never left as an unhandled promise.
+        resolve({ aborted: false, value: undefined as T });
+      },
+    );
   });
 }
 
@@ -244,8 +279,8 @@ class HandleController implements ResultHandle {
     this.key = Object.freeze({
       principalKey: input.principalKey,
       scopeDigest: input.scopeDigest,
-      ...(input.policyRevision === undefined ? {} : {policyRevision: input.policyRevision}),
-      ...(input.populationDigest === undefined ? {} : {populationDigest: input.populationDigest}),
+      ...(input.policyRevision === undefined ? {} : { policyRevision: input.policyRevision }),
+      ...(input.populationDigest === undefined ? {} : { populationDigest: input.populationDigest }),
       queryDigest: input.queryDigest,
       catalogRevision: input.catalogRevision,
       functionRegistryDigest: input.functionRegistryDigest,
@@ -264,45 +299,72 @@ class HandleController implements ResultHandle {
 
   private emptyState(status: ResultStatus): MutableState {
     return {
-      status, descriptor: undefined, batches: [], loadedRows: 0, diagnostics: [], lastEvent: undefined, nextSequence: 0,
-      seenIdentity: new Set<string>(), progress: new Map<string, number>(), terminal: false, bytes: 0,
+      status,
+      descriptor: undefined,
+      batches: [],
+      loadedRows: 0,
+      diagnostics: [],
+      lastEvent: undefined,
+      nextSequence: 0,
+      seenIdentity: new Set<string>(),
+      progress: new Map<string, number>(),
+      terminal: false,
+      bytes: 0,
     };
   }
 
-  get active(): boolean { return this.subscriptions.size > 0; }
-  get pinned(): boolean { return this.ownerRetained || this.leaseObjects.size > 0 || this.active; }
-  get touchedAt(): number { return this.lastTouched; }
+  get active(): boolean {
+    return this.subscriptions.size > 0;
+  }
+  get pinned(): boolean {
+    return this.ownerRetained || this.leaseObjects.size > 0 || this.active;
+  }
+  get touchedAt(): number {
+    return this.lastTouched;
+  }
   get retainedBytes(): number {
     return this.state.bytes + (this.carry?.bytes ?? 0);
   }
 
-  private touch(): void { this.lastTouched = this.store.now(); }
+  private touch(): void {
+    this.lastTouched = this.store.now();
+  }
 
   snapshot(): ResultSnapshot {
     this.touch();
     const descriptor = this.showingCarry && this.carry !== undefined ? this.carry.descriptor : this.state.descriptor;
     const batches = this.showingCarry && this.carry !== undefined ? this.carry.batches : this.state.batches;
     const loadedRows = this.showingCarry && this.carry !== undefined ? this.carry.loadedRows : this.state.loadedRows;
-    const lastEvent = this.showingCarry && this.carry !== undefined && this.state.lastEvent === undefined
-      ? this.carry.lastEvent : this.state.lastEvent;
-    const {principalKey: _principalKey, ...pins} = this.key;
+    const lastEvent =
+      this.showingCarry && this.carry !== undefined && this.state.lastEvent === undefined
+        ? this.carry.lastEvent
+        : this.state.lastEvent;
+    const { principalKey: _principalKey, ...pins } = this.key;
     return frozen({
       status: this.state.status,
       generation: this.generation,
       key: pins as ResultPins,
-      ...(descriptor === undefined ? {} : {descriptor}),
+      ...(descriptor === undefined ? {} : { descriptor }),
       batches,
       loadedRows,
       diagnostics: this.state.diagnostics,
-      ...(lastEvent === undefined ? {} : {lastEvent}),
+      ...(lastEvent === undefined ? {} : { lastEvent }),
     });
   }
 
   retain(): ResultLease {
-    if (this.disposed || this.revoked) return {released: true, release() { /* already unavailable */ }};
+    if (this.disposed || this.revoked)
+      return {
+        released: true,
+        release() {
+          /* already unavailable */
+        },
+      };
     let released = false;
     const lease: ResultLease = {
-      get released() { return released; },
+      get released() {
+        return released;
+      },
       release: () => {
         if (released) return;
         released = true;
@@ -319,7 +381,10 @@ class HandleController implements ResultHandle {
     this.touch();
   }
 
-  subscribe(source: AsyncIterable<unknown> | AsyncIterator<unknown>, options: {readonly signal?: AbortSignal} = {}): ResultSubscription {
+  subscribe(
+    source: AsyncIterable<unknown> | AsyncIterator<unknown>,
+    options: { readonly signal?: AbortSignal } = {},
+  ): ResultSubscription {
     const subscription = new ResultSubscriptionImpl(this, sourceIterator(source), options.signal);
     if (this.disposed || this.revoked || this.superseded || this.state.terminal) {
       subscription.closeWithoutPull();
@@ -367,7 +432,9 @@ class HandleController implements ResultHandle {
     this.carry = undefined;
     this.showingCarry = false;
     this.state = this.emptyState('denied');
-    this.state.diagnostics = Object.freeze([makeDiagnostic('data.authorization-revoked', 'Authorization for this result has been revoked.')]);
+    this.state.diagnostics = Object.freeze([
+      makeDiagnostic('data.authorization-revoked', 'Authorization for this result has been revoked.'),
+    ]);
     for (const subscription of [...this.subscriptions]) subscription.closeWithoutPull();
     this.subscriptions.clear();
     for (const lease of [...this.leaseObjects]) lease.release();
@@ -381,13 +448,16 @@ class HandleController implements ResultHandle {
   }
 
   private restoreCarry(status: ResultStatus, diagnostic?: Diagnostic, event?: ResultEvent): void {
-    const current: CarryData | undefined = this.state.descriptor === undefined ? undefined : {
-      descriptor: this.state.descriptor,
-      batches: this.state.batches,
-      loadedRows: this.state.loadedRows,
-      ...(this.state.lastEvent === undefined ? {} : {lastEvent: this.state.lastEvent}),
-      bytes: this.state.bytes,
-    };
+    const current: CarryData | undefined =
+      this.state.descriptor === undefined
+        ? undefined
+        : {
+            descriptor: this.state.descriptor,
+            batches: this.state.batches,
+            loadedRows: this.state.loadedRows,
+            ...(this.state.lastEvent === undefined ? {} : { lastEvent: this.state.lastEvent }),
+            bytes: this.state.bytes,
+          };
     const retained = this.carry ?? current;
     if (retained !== undefined && preserveOnFailure(status)) {
       if (this.carry !== undefined) this.state = this.emptyState(status);
@@ -413,42 +483,61 @@ class HandleController implements ResultHandle {
   private invalid(code: string, message: string): Outcome<ResultEvent> {
     const diag = makeDiagnostic(code, message);
     this.restoreCarry('failed', diag);
-    return {ok: false, diagnostics: [diag]};
+    return { ok: false, diagnostics: [diag] };
   }
 
   private validateDescriptor(descriptor: Result): Outcome<void> {
-    if (descriptor.taskId !== this.key.taskId) return failure('data.result-task', 'The result descriptor belongs to another task.');
-    if (!sameRefParts(descriptor.ref, this.key)) return failure('data.result-scope', 'The result descriptor does not match the authorized result pins.');
+    if (descriptor.taskId !== this.key.taskId)
+      return failure('data.result-task', 'The result descriptor belongs to another task.');
+    if (!sameRefParts(descriptor.ref, this.key))
+      return failure('data.result-scope', 'The result descriptor does not match the authorized result pins.');
     if (this.populationDigest !== undefined) {
       if (!isKnownCoverage(descriptor.coverage) || descriptor.coverage.populationDigest !== this.populationDigest)
         return failure('data.result-population', 'The result descriptor does not match the accepted population.');
     }
     const fields = new Map<string, Result['fields'][number]>();
     for (const field of descriptor.fields) {
-      if (fields.has(field.id)) return failure('data.result-schema', 'The result descriptor contains duplicate field identities.');
+      if (fields.has(field.id))
+        return failure('data.result-schema', 'The result descriptor contains duplicate field identities.');
       fields.set(field.id, field);
     }
     const checkRefs = (refs: readonly string[], label: string): Outcome<void> => {
       const unique = new Set(refs);
-      if (unique.size !== refs.length) return failure('data.result-schema', `The result descriptor contains duplicate ${label} identities.`);
-      for (const ref of refs) if (!fields.has(ref)) return failure('data.result-schema', `The result ${label} is not present in the projected fields.`);
-      return {ok: true, value: undefined};
+      if (unique.size !== refs.length)
+        return failure('data.result-schema', `The result descriptor contains duplicate ${label} identities.`);
+      for (const ref of refs)
+        if (!fields.has(ref))
+          return failure('data.result-schema', `The result ${label} is not present in the projected fields.`);
+      return { ok: true, value: undefined };
     };
     const identity = checkRefs(descriptor.identity, 'identity');
     if (!identity.ok) return identity;
     const grain = checkRefs(descriptor.rowGrain, 'row grain');
     if (!grain.ok) return grain;
-    if (descriptor.counts.loaded > WIRE_LIMITS.array) return failure('data.result-budget', 'The result loaded count exceeds the bounded result limit.');
+    if (descriptor.counts.loaded > WIRE_LIMITS.array)
+      return failure('data.result-budget', 'The result loaded count exceeds the bounded result limit.');
     const count = descriptor.counts.population;
     if (count.kind === 'exact' && count.value < descriptor.counts.loaded)
       return failure('data.result-count', 'The loaded count cannot exceed its exact population count.');
     if (isKnownCoverage(descriptor.coverage)) {
       if (count.kind !== 'unknown' && count.populationDigest !== descriptor.coverage.populationDigest)
-        return failure('data.result-population', 'The result population count and coverage refer to different populations.');
+        return failure(
+          'data.result-population',
+          'The result population count and coverage refer to different populations.',
+        );
     }
-    if (descriptor.coverage.kind !== 'unknown' && descriptor.coverage.kind !== 'complete' && descriptor.coverage.kind !== 'partial' && descriptor.coverage.kind !== 'sample')
+    if (
+      descriptor.coverage.kind !== 'unknown' &&
+      descriptor.coverage.kind !== 'complete' &&
+      descriptor.coverage.kind !== 'partial' &&
+      descriptor.coverage.kind !== 'sample'
+    )
       return failure('data.result-coverage', 'The result descriptor has an invalid coverage state.');
-    if (descriptor.consistency.kind === 'snapshot' && descriptor.consistency.snapshotId !== this.key.sourceRevision && !Object.values(descriptor.consistency.sourceRevisions).includes(this.key.sourceRevision))
+    if (
+      descriptor.consistency.kind === 'snapshot' &&
+      descriptor.consistency.snapshotId !== this.key.sourceRevision &&
+      !Object.values(descriptor.consistency.sourceRevisions).includes(this.key.sourceRevision)
+    )
       return failure('data.result-consistency', 'The result snapshot does not include the pinned source revision.');
     if (descriptor.evidence.kind === 'computed' && descriptor.evidence.queryDigest !== this.key.queryDigest)
       return failure('data.result-evidence', 'Computed evidence belongs to a different query.');
@@ -459,23 +548,29 @@ class HandleController implements ResultHandle {
     }
     if (descriptor.lineage.some((edge) => edge.inputs.some((ref) => ref.scopeDigest !== this.key.scopeDigest)))
       return failure('data.result-lineage', 'Result lineage belongs to another authorization scope.');
-    return {ok: true, value: undefined};
+    return { ok: true, value: undefined };
   }
 
   private validateRow(row: Record<string, unknown>): Outcome<Record<string, ResultCell>> {
     const descriptor = this.state.descriptor;
     if (descriptor === undefined) return failure('data.result-order', 'A result batch arrived before its descriptor.');
     const fields = new Map(descriptor.fields.map((field) => [field.id, field] as const));
-    for (const key of Object.keys(row)) if (!fields.has(key)) return failure('data.result-schema', `The result batch contains an unknown field ${key}.`);
+    for (const key of Object.keys(row))
+      if (!fields.has(key)) return failure('data.result-schema', `The result batch contains an unknown field ${key}.`);
     const normalized: Record<string, ResultCell> = {};
     for (const field of descriptor.fields) {
       const value = row[field.id];
       if (value === undefined) {
-        if (!field.type.nullable) return failure('data.result-schema', `The result batch is missing non-nullable field ${field.id}.`);
+        if (!field.type.nullable)
+          return failure('data.result-schema', `The result batch is missing non-nullable field ${field.id}.`);
         continue;
       }
       const checked = validateScalar(value, field.type);
-      if (!checked.ok) return failure('data.result-value', `The result value for ${field.id} does not match its declared semantic type.`);
+      if (!checked.ok)
+        return failure(
+          'data.result-value',
+          `The result value for ${field.id} does not match its declared semantic type.`,
+        );
       normalized[field.id] = checked.value;
     }
     for (const identity of descriptor.identity) {
@@ -487,10 +582,10 @@ class HandleController implements ResultHandle {
       // The caller checks duplicate tuples after all fields have been visited.
       normalized[`\u0000identity:${identity}`] = key.value;
     }
-    return {ok: true, value: normalized};
+    return { ok: true, value: normalized };
   }
 
-  private ingestDescriptor(event: Extract<ResultEvent, {readonly kind: 'descriptor'}>): Outcome<ResultEvent> {
+  private ingestDescriptor(event: Extract<ResultEvent, { readonly kind: 'descriptor' }>): Outcome<ResultEvent> {
     // A descriptor starts a replacement snapshot. A failed replacement falls
     // back to the previous authorized snapshot rather than exposing partial data.
     const priorCarry = this.carry;
@@ -500,22 +595,28 @@ class HandleController implements ResultHandle {
     const checked = this.validateDescriptor(event.descriptor);
     if (!checked.ok) {
       this.restoreCarry('failed', checked.diagnostics[0]);
-      return {ok: false, diagnostics: checked.diagnostics};
+      return { ok: false, diagnostics: checked.diagnostics };
     }
     this.state.descriptor = event.descriptor;
     this.state.bytes = byteLength(event.descriptor);
     if (this.store.totalBytes() > this.store.maxBytes) {
       if (this.carry === undefined) this.state.descriptor = undefined;
-      this.restoreCarry('failed', makeDiagnostic('data.result-budget', 'The result descriptor exceeds the bounded store byte budget.'));
+      this.restoreCarry(
+        'failed',
+        makeDiagnostic('data.result-budget', 'The result descriptor exceeds the bounded store byte budget.'),
+      );
       return failure('data.result-budget', 'The result descriptor exceeds the bounded store byte budget.');
     }
-    return {ok: true, value: event};
+    return { ok: true, value: event };
   }
 
   private ingestBatch(event: ResultBatch): Outcome<ResultEvent> {
-    if (this.state.descriptor === undefined) return this.invalid('data.result-order', 'A result batch arrived before its descriptor.');
-    if (!sameRef(this.state.descriptor.ref, event.result)) return this.invalid('data.result-lineage', 'The result batch belongs to another result handle.');
-    if (event.sequence !== this.state.nextSequence) return this.invalid('data.result-sequence', 'Result batch sequences must be consecutive and start at zero.');
+    if (this.state.descriptor === undefined)
+      return this.invalid('data.result-order', 'A result batch arrived before its descriptor.');
+    if (!sameRef(this.state.descriptor.ref, event.result))
+      return this.invalid('data.result-lineage', 'The result batch belongs to another result handle.');
+    if (event.sequence !== this.state.nextSequence)
+      return this.invalid('data.result-sequence', 'Result batch sequences must be consecutive and start at zero.');
     if (this.state.loadedRows + event.rows.length > this.state.descriptor.counts.loaded)
       return this.invalid('data.result-count', 'Result batches contain more rows than the descriptor loaded count.');
     const identityKeys = new Set<string>();
@@ -524,15 +625,18 @@ class HandleController implements ResultHandle {
       const checked = this.validateRow(row as Record<string, unknown>);
       if (!checked.ok) return this.invalid(checked.diagnostics[0]!.code, checked.diagnostics[0]!.message);
       const rowValue = checked.value;
-      const identity = JSON.stringify(this.state.descriptor.identity.map((field) => rowValue[`\u0000identity:${field}`]));
+      const identity = JSON.stringify(
+        this.state.descriptor.identity.map((field) => rowValue[`\u0000identity:${field}`]),
+      );
       if (this.state.descriptor.identity.length > 0) {
-        if (identityKeys.has(identity) || this.state.seenIdentity.has(identity)) return this.invalid('data.result-identity', 'Result batches contain duplicate identity tuples.');
+        if (identityKeys.has(identity) || this.state.seenIdentity.has(identity))
+          return this.invalid('data.result-identity', 'Result batches contain duplicate identity tuples.');
         identityKeys.add(identity);
       }
       for (const key of Object.keys(rowValue)) if (key.startsWith('\u0000identity:')) delete rowValue[key];
       rows.push(rowValue);
     }
-    const normalized = frozen({...event, rows: frozen(rows)}) as ResultBatch;
+    const normalized = frozen({ ...event, rows: frozen(rows) }) as ResultBatch;
     const bytes = byteLength(normalized);
     if (this.state.bytes + bytes > this.store.maxBytes || this.store.totalBytes() + bytes > this.store.maxBytes)
       return this.invalid('data.result-budget', 'Result batches exceed the bounded store byte budget.');
@@ -542,42 +646,72 @@ class HandleController implements ResultHandle {
     this.state.batches = Object.freeze([...this.state.batches, normalized]);
     this.state.bytes += bytes;
     this.state.status = 'partial';
-    return {ok: true, value: normalized};
+    return { ok: true, value: normalized };
   }
 
-  private ingestProgress(event: Extract<ResultEvent, {readonly kind: 'progress'}>): Outcome<ResultEvent> {
-    if (this.state.descriptor === undefined) return this.invalid('data.result-order', 'A result progress event arrived before its descriptor.');
-    if (!sameRef(this.state.descriptor.ref, event.result)) return this.invalid('data.result-lineage', 'The result progress belongs to another result handle.');
+  private ingestProgress(event: Extract<ResultEvent, { readonly kind: 'progress' }>): Outcome<ResultEvent> {
+    if (this.state.descriptor === undefined)
+      return this.invalid('data.result-order', 'A result progress event arrived before its descriptor.');
+    if (!sameRef(this.state.descriptor.ref, event.result))
+      return this.invalid('data.result-lineage', 'The result progress belongs to another result handle.');
     const prior = this.state.progress.get(event.unit) ?? 0;
     if (event.completed < prior || (event.total !== undefined && event.completed > event.total))
       return this.invalid('data.result-progress', 'Result progress is not monotonic.');
     const population = this.state.descriptor.counts.population;
     if (event.unit === 'rows' && event.completed > this.state.descriptor.counts.loaded)
       return this.invalid('data.result-count', 'Result row progress exceeds the descriptor loaded count.');
-    if (event.unit === 'rows' && event.total !== undefined && population.kind !== 'unknown' && event.total > population.value)
+    if (
+      event.unit === 'rows' &&
+      event.total !== undefined &&
+      population.kind !== 'unknown' &&
+      event.total > population.value
+    )
       return this.invalid('data.result-count', 'Result row progress exceeds the declared population count.');
     this.state.progress.set(event.unit, event.completed);
-    return {ok: true, value: event};
+    return { ok: true, value: event };
   }
 
-  private ingestComplete(event: Extract<ResultEvent, {readonly kind: 'complete'}>): Outcome<ResultEvent> {
-    if (this.state.descriptor === undefined) return this.invalid('data.result-order', 'A result completion arrived before its descriptor.');
-    if (!sameRef(this.state.descriptor.ref, event.result)) return this.invalid('data.result-lineage', 'The result completion belongs to another result handle.');
+  private ingestComplete(event: Extract<ResultEvent, { readonly kind: 'complete' }>): Outcome<ResultEvent> {
+    if (this.state.descriptor === undefined)
+      return this.invalid('data.result-order', 'A result completion arrived before its descriptor.');
+    if (!sameRef(this.state.descriptor.ref, event.result))
+      return this.invalid('data.result-lineage', 'The result completion belongs to another result handle.');
     if (this.state.loadedRows !== this.state.descriptor.counts.loaded)
       return this.invalid('data.result-count', 'Result completion does not match the descriptor loaded count.');
     const initialCoverage = this.state.descriptor.coverage;
-    if (initialCoverage.kind !== 'unknown' && event.finalCoverage.kind !== 'unknown' && initialCoverage.populationDigest !== event.finalCoverage.populationDigest)
+    if (
+      initialCoverage.kind !== 'unknown' &&
+      event.finalCoverage.kind !== 'unknown' &&
+      initialCoverage.populationDigest !== event.finalCoverage.populationDigest
+    )
       return this.invalid('data.result-population', 'Completion cannot change the descriptor population.');
-    if (initialCoverage.kind !== 'unknown' && initialCoverage.kind !== 'complete' && event.finalCoverage.kind === 'complete')
-      return this.invalid('data.result-coverage', 'A partial or sampled result cannot be promoted to complete by its terminal event.');
-    if (this.populationDigest !== undefined && (event.finalCoverage.kind === 'unknown' || event.finalCoverage.populationDigest !== this.populationDigest))
+    if (
+      initialCoverage.kind !== 'unknown' &&
+      initialCoverage.kind !== 'complete' &&
+      event.finalCoverage.kind === 'complete'
+    )
+      return this.invalid(
+        'data.result-coverage',
+        'A partial or sampled result cannot be promoted to complete by its terminal event.',
+      );
+    if (
+      this.populationDigest !== undefined &&
+      (event.finalCoverage.kind === 'unknown' || event.finalCoverage.populationDigest !== this.populationDigest)
+    )
       return this.invalid('data.result-population', 'The result completion does not match the accepted population.');
     const count = this.state.descriptor.counts.population;
-    if (event.finalCoverage.kind !== 'unknown' && count.kind !== 'unknown' && count.populationDigest !== event.finalCoverage.populationDigest)
-      return this.invalid('data.result-population', 'The result completion population differs from its count population.');
+    if (
+      event.finalCoverage.kind !== 'unknown' &&
+      count.kind !== 'unknown' &&
+      count.populationDigest !== event.finalCoverage.populationDigest
+    )
+      return this.invalid(
+        'data.result-population',
+        'The result completion population differs from its count population.',
+      );
     if (event.finalCoverage.kind === 'complete' && count.kind === 'exact' && count.value !== this.state.loadedRows)
       return this.invalid('data.result-count', 'Complete coverage must contain the exact population row count.');
-    const finalDescriptor = frozen({...this.state.descriptor, coverage: event.finalCoverage});
+    const finalDescriptor = frozen({ ...this.state.descriptor, coverage: event.finalCoverage });
     const descriptorDelta = byteLength(finalDescriptor) - byteLength(this.state.descriptor);
     if (this.store.totalBytes() + descriptorDelta - (this.carry?.bytes ?? 0) > this.store.maxBytes)
       return this.invalid('data.result-budget', 'Final coverage exceeds the bounded store byte budget.');
@@ -587,12 +721,13 @@ class HandleController implements ResultHandle {
     this.state.lastEvent = event;
     this.state.terminal = true;
     this.state.status = event.finalCoverage.kind === 'complete' ? 'ready' : 'partial';
-    return {ok: true, value: event};
+    return { ok: true, value: event };
   }
 
   ingest(raw: unknown): Outcome<ResultEvent> {
     if (!this.current()) return failure('data.stale-result', 'A stale result generation cannot commit events.');
-    if (this.state.terminal) return failure('data.result-terminal', 'A result stream continued after its terminal event.');
+    if (this.state.terminal)
+      return failure('data.result-terminal', 'A result stream continued after its terminal event.');
     this.touch();
     const parsed = parseAndFreezeEvent(raw);
     if (!parsed.ok) {
@@ -612,7 +747,7 @@ class HandleController implements ResultHandle {
         const status = statusForError(event.error.code);
         this.state.lastEvent = event;
         this.restoreCarry(status, event.error, event);
-        outcome = {ok: true, value: event};
+        outcome = { ok: true, value: event };
       }
     }
     if (outcome.ok) this.state.lastEvent = outcome.value;
@@ -621,12 +756,18 @@ class HandleController implements ResultHandle {
 
   truncated(): void {
     if (this.state.terminal || this.disposed || this.revoked || this.superseded) return;
-    this.restoreCarry('failed', makeDiagnostic('data.result-truncated', 'The result source ended without a terminal event.'));
+    this.restoreCarry(
+      'failed',
+      makeDiagnostic('data.result-truncated', 'The result source ended without a terminal event.'),
+    );
   }
 
   streamFailure(): void {
     if (this.state.terminal || this.disposed || this.revoked || this.superseded) return;
-    this.restoreCarry('failed', makeDiagnostic('data.stream-network', 'The result source failed before producing a terminal event.'));
+    this.restoreCarry(
+      'failed',
+      makeDiagnostic('data.stream-network', 'The result source failed before producing a terminal event.'),
+    );
   }
 
   cancel(): void {
@@ -634,10 +775,16 @@ class HandleController implements ResultHandle {
     this.restoreCarry('cancelled', makeDiagnostic('data.aborted', 'The result subscription was cancelled.'));
   }
 
-  subscriptionClosed(subscription: ResultSubscriptionImpl): void { this.removeSubscription(subscription); }
+  subscriptionClosed(subscription: ResultSubscriptionImpl): void {
+    this.removeSubscription(subscription);
+  }
 
-  isTerminal(): boolean { return this.state.terminal || this.disposed || this.revoked || this.superseded; }
-  isSuperseded(): boolean { return this.superseded; }
+  isTerminal(): boolean {
+    return this.state.terminal || this.disposed || this.revoked || this.superseded;
+  }
+  isSuperseded(): boolean {
+    return this.superseded;
+  }
 }
 
 class ResultSubscriptionImpl implements ResultSubscription {
@@ -655,15 +802,19 @@ class ResultSubscriptionImpl implements ResultSubscription {
     this.signal = signal;
   }
 
-  private readonly onAbort = (): void => { this.cancel(); };
+  private readonly onAbort = (): void => {
+    this.cancel();
+  };
 
   listenForAbort(): void {
     if (this.closed) return;
-    this.signal?.addEventListener('abort', this.onAbort, {once: true});
+    this.signal?.addEventListener('abort', this.onAbort, { once: true });
     if (this.signal?.aborted) this.cancel();
   }
 
-  [Symbol.asyncIterator](): AsyncIterableIterator<ResultUpdate> { return this; }
+  [Symbol.asyncIterator](): AsyncIterableIterator<ResultUpdate> {
+    return this;
+  }
 
   private finish(): void {
     if (this.closed) return;
@@ -673,11 +824,15 @@ class ResultSubscriptionImpl implements ResultSubscription {
     try {
       const cleanup = this.iterator.return?.();
       if (cleanup !== undefined) void Promise.resolve(cleanup).catch(() => {});
-    } catch { /* cleanup is deliberately nonblocking */ }
+    } catch {
+      /* cleanup is deliberately nonblocking */
+    }
     this.controller.subscriptionClosed(this);
   }
 
-  closeWithoutPull(): void { this.finish(); }
+  closeWithoutPull(): void {
+    this.finish();
+  }
 
   closeAsSuperseded(): void {
     this.closed = true;
@@ -686,7 +841,9 @@ class ResultSubscriptionImpl implements ResultSubscription {
     try {
       const cleanup = this.iterator.return?.();
       if (cleanup !== undefined) void Promise.resolve(cleanup).catch(() => {});
-    } catch { /* cleanup is deliberately nonblocking */ }
+    } catch {
+      /* cleanup is deliberately nonblocking */
+    }
     this.controller.subscriptionClosed(this);
   }
 
@@ -697,13 +854,13 @@ class ResultSubscriptionImpl implements ResultSubscription {
   }
 
   private terminalUpdate(): IteratorResult<ResultUpdate> {
-    if (this.finalUpdateReturned) return {done: true, value: undefined};
+    if (this.finalUpdateReturned) return { done: true, value: undefined };
     this.finalUpdateReturned = true;
-    return {done: false, value: {snapshot: this.controller.snapshot()}};
+    return { done: false, value: { snapshot: this.controller.snapshot() } };
   }
 
   private async pull(): Promise<IteratorResult<ResultUpdate>> {
-    if (this.closed) return {done: true, value: undefined};
+    if (this.closed) return { done: true, value: undefined };
     if (this.signal?.aborted) {
       this.cancel();
       return this.terminalUpdate();
@@ -713,19 +870,20 @@ class ResultSubscriptionImpl implements ResultSubscription {
       return this.terminalUpdate();
     }
     let pending: Promise<IteratorResult<unknown>>;
-    try { pending = Promise.resolve(this.iterator.next()); }
-    catch {
+    try {
+      pending = Promise.resolve(this.iterator.next());
+    } catch {
       this.controller.streamFailure();
       this.finish();
       return this.terminalUpdate();
     }
     const raced = await raceAbort(pending, [this.signal, this.localAbort.signal]);
     if (raced.aborted) {
-      if (this.closed) return this.signal?.aborted ? this.terminalUpdate() : {done: true, value: undefined};
+      if (this.closed) return this.signal?.aborted ? this.terminalUpdate() : { done: true, value: undefined };
       this.cancel();
       return this.terminalUpdate();
     }
-    if (this.closed) return {done: true, value: undefined};
+    if (this.closed) return { done: true, value: undefined };
     const result = raced.value;
     if (result === undefined) {
       this.controller.streamFailure();
@@ -742,21 +900,23 @@ class ResultSubscriptionImpl implements ResultSubscription {
       this.finish();
       return this.terminalUpdate();
     }
-    const update: ResultUpdate = {snapshot: this.controller.snapshot(), event: event.value};
+    const update: ResultUpdate = { snapshot: this.controller.snapshot(), event: event.value };
     if (this.controller.isTerminal()) this.finish();
-    return {done: false, value: update};
+    return { done: false, value: update };
   }
 
   next(): Promise<IteratorResult<ResultUpdate>> {
     if (this.pending !== undefined) return this.pending;
     const pending = this.pull();
-    this.pending = pending.finally(() => { this.pending = undefined; });
+    this.pending = pending.finally(() => {
+      this.pending = undefined;
+    });
     return this.pending;
   }
 
   return(): Promise<IteratorResult<ResultUpdate>> {
     this.cancel();
-    return Promise.resolve({done: true, value: undefined});
+    return Promise.resolve({ done: true, value: undefined });
   }
 
   throw(error?: unknown): Promise<IteratorResult<ResultUpdate>> {
@@ -780,12 +940,19 @@ class ResultStoreImpl implements ResultStore, InternalStore {
     this.maxBytes = options.maxBytes ?? DEFAULT_MAX_BYTES;
     this.ttlMs = options.ttlMs ?? DEFAULT_TTL_MS;
     this.now = options.now ?? (() => Date.now());
-    if (!Number.isSafeInteger(this.maxEntries) || this.maxEntries < 1 || this.maxEntries > 10_000) throw new TypeError('maxEntries must be a bounded positive safe integer.');
-    if (!Number.isSafeInteger(this.maxBytes) || this.maxBytes < 1 || this.maxBytes > WIRE_LIMITS.bytes) throw new TypeError('maxBytes must be a bounded positive safe integer.');
-    if (!Number.isSafeInteger(this.ttlMs) || this.ttlMs < 1 || this.ttlMs > 86_400_000) throw new TypeError('ttlMs must be a bounded positive duration.');
+    if (!Number.isSafeInteger(this.maxEntries) || this.maxEntries < 1 || this.maxEntries > 10_000)
+      throw new TypeError('maxEntries must be a bounded positive safe integer.');
+    if (!Number.isSafeInteger(this.maxBytes) || this.maxBytes < 1 || this.maxBytes > WIRE_LIMITS.bytes)
+      throw new TypeError('maxBytes must be a bounded positive safe integer.');
+    if (!Number.isSafeInteger(this.ttlMs) || this.ttlMs < 1 || this.ttlMs > 86_400_000)
+      throw new TypeError('ttlMs must be a bounded positive duration.');
   }
 
-  totalBytes(): number { let total = 0; for (const handle of this.handles) total += handle.retainedBytes; return total; }
+  totalBytes(): number {
+    let total = 0;
+    for (const handle of this.handles) total += handle.retainedBytes;
+    return total;
+  }
 
   remove(handle: HandleController): void {
     this.handles.delete(handle);
@@ -803,8 +970,11 @@ class ResultStoreImpl implements ResultStore, InternalStore {
   private evict(): void {
     this.expire();
     while (this.handles.size >= this.maxEntries) {
-      const candidate = [...this.handles].filter((handle) => !handle.pinned).sort((left, right) => left.touchedAt - right.touchedAt)[0];
-      if (candidate === undefined) throw new RangeError('The result store is at capacity with live owners, leases or subscriptions.');
+      const candidate = [...this.handles]
+        .filter((handle) => !handle.pinned)
+        .sort((left, right) => left.touchedAt - right.touchedAt)[0];
+      if (candidate === undefined)
+        throw new RangeError('The result store is at capacity with live owners, leases or subscriptions.');
       candidate.dispose();
     }
   }
@@ -816,15 +986,21 @@ class ResultStoreImpl implements ResultStore, InternalStore {
     const key = slotKey(input);
     const previous = this.slots.get(key);
     const carrySnapshot = previous === undefined ? undefined : previous.snapshot();
-    const carry = carrySnapshot?.descriptor === undefined ? undefined : {
-      descriptor: carrySnapshot.descriptor,
-      batches: carrySnapshot.batches,
-      loadedRows: carrySnapshot.loadedRows,
-      ...(carrySnapshot.lastEvent === undefined ? {} : {lastEvent: carrySnapshot.lastEvent}),
-      bytes: byteLength(carrySnapshot.descriptor) + carrySnapshot.batches.reduce((sum, batch) => sum + byteLength(batch), 0),
-    } satisfies CarryData;
+    const carry =
+      carrySnapshot?.descriptor === undefined
+        ? undefined
+        : ({
+            descriptor: carrySnapshot.descriptor,
+            batches: carrySnapshot.batches,
+            loadedRows: carrySnapshot.loadedRows,
+            ...(carrySnapshot.lastEvent === undefined ? {} : { lastEvent: carrySnapshot.lastEvent }),
+            bytes:
+              byteLength(carrySnapshot.descriptor) +
+              carrySnapshot.batches.reduce((sum, batch) => sum + byteLength(batch), 0),
+          } satisfies CarryData);
     this.evict();
-    if (this.totalBytes() + (carry?.bytes ?? 0) > this.maxBytes) throw new RangeError('The result refresh exceeds the bounded store byte budget.');
+    if (this.totalBytes() + (carry?.bytes ?? 0) > this.maxBytes)
+      throw new RangeError('The result refresh exceeds the bounded store byte budget.');
     const handle = new HandleController(this, input, ++this.generation, carry);
     this.handles.add(handle);
     this.slots.set(key, handle);
@@ -834,7 +1010,7 @@ class ResultStoreImpl implements ResultStore, InternalStore {
 
   get(input: ResultCacheKey): ResultHandle | undefined {
     if (this.disposed) return undefined;
-    validateBeginInput({...input, requestId: 'lookup'});
+    validateBeginInput({ ...input, requestId: 'lookup' });
     this.expire();
     const handle = this.slots.get(slotKey(input));
     return handle === undefined ? undefined : handle;
@@ -842,7 +1018,8 @@ class ResultStoreImpl implements ResultStore, InternalStore {
 
   revoke(request: ResultRevokeRequest): void {
     if (this.disposed) return;
-    if (typeof request.principalKey !== 'string' || request.principalKey.length === 0) throw new TypeError('principalKey is required for result revocation.');
+    if (typeof request.principalKey !== 'string' || request.principalKey.length === 0)
+      throw new TypeError('principalKey is required for result revocation.');
     for (const handle of [...this.handles]) {
       if (handle.key.principalKey !== request.principalKey) continue;
       if (request.scopeDigest !== undefined && handle.key.scopeDigest !== request.scopeDigest) continue;
@@ -864,8 +1041,4 @@ export function createResultStore(options: ResultStoreOptions = {}): ResultStore
   return new ResultStoreImpl(options);
 }
 
-export {
-  DEFAULT_MAX_BYTES,
-  DEFAULT_MAX_ENTRIES,
-  DEFAULT_TTL_MS,
-};
+export { DEFAULT_MAX_BYTES, DEFAULT_MAX_ENTRIES, DEFAULT_TTL_MS };

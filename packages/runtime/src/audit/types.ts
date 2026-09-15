@@ -1,4 +1,4 @@
-import type {Outcome} from '@aeliqo/core';
+import type { Outcome } from '@aeliqo/core';
 
 export type AuditPlanPhase = 'validate' | 'query' | 'present';
 export type AuditOperation = 'read' | 'evaluate' | 'present' | 'meaning' | 'action' | 'model-egress';
@@ -6,7 +6,13 @@ export type AuditSourceTransport = 'local' | 'http';
 export type AuditCache = 'catalog' | 'result' | 'presentation' | 'meaning';
 export type AuditRenderer = 'component' | 'plot' | 'compound';
 export type AuditResource = 'rows' | 'bytes' | 'nodes' | 'regions' | 'results';
-export type CapabilityAuditCode = 'policy.denied' | 'renderer.unsupported' | 'runtime.invalid' | 'runtime.stale' | 'runtime.failed' | 'action.ambiguous';
+export type CapabilityAuditCode =
+  | 'policy.denied'
+  | 'renderer.unsupported'
+  | 'runtime.invalid'
+  | 'runtime.stale'
+  | 'runtime.failed'
+  | 'action.ambiguous';
 export type SourceAuditCode = 'source.denied' | 'source.timeout' | 'source.unavailable' | 'source.invalid';
 export type AuditCode = CapabilityAuditCode | SourceAuditCode | 'host.cancelled';
 
@@ -21,9 +27,9 @@ export type LocalAuditEvent =
       readonly kind: 'capability';
       readonly operation: AuditOperation;
     } & (
-      | {readonly status: 'accepted'}
-      | {readonly status: 'rejected'; readonly code: CapabilityAuditCode}
-      | {readonly status: 'cancelled'; readonly code?: 'host.cancelled'}
+      | { readonly status: 'accepted' }
+      | { readonly status: 'rejected'; readonly code: CapabilityAuditCode }
+      | { readonly status: 'cancelled'; readonly code?: 'host.cancelled' }
     ))
   | {
       readonly kind: 'cancellation';
@@ -52,15 +58,17 @@ export type LocalAuditEvent =
       readonly resource: AuditResource;
       readonly count: number;
     } & (
-      | {readonly status: 'within-budget'; readonly limit?: number}
-      | {readonly status: 'exhausted'; readonly limit: number}
+      | { readonly status: 'within-budget'; readonly limit?: number }
+      | { readonly status: 'exhausted'; readonly limit: number }
     ));
 
-export type LocalAuditRecord = Readonly<LocalAuditEvent & {
-  readonly version: '1';
-  readonly sequence: number;
-  readonly at: number;
-}>;
+export type LocalAuditRecord = Readonly<
+  LocalAuditEvent & {
+    readonly version: '1';
+    readonly sequence: number;
+    readonly at: number;
+  }
+>;
 
 export interface LocalAuditExport {
   readonly version: '1';

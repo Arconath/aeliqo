@@ -1,5 +1,15 @@
 import type * as z from 'zod';
-import type {Catalog, Diagnostic, Intent, MeaningDefinition, Outcome, Scalar, SemanticType, Task, VersionRef} from '../contracts/types.js';
+import type {
+  Catalog,
+  Diagnostic,
+  Intent,
+  MeaningDefinition,
+  Outcome,
+  Scalar,
+  SemanticType,
+  Task,
+  VersionRef,
+} from '../contracts/types.js';
 
 export const STANDARD_INTENTS = ['browse', 'detail', 'create', 'edit', 'compare', 'analyze'] as const;
 export type StandardIntentKind = (typeof STANDARD_INTENTS)[number];
@@ -32,7 +42,7 @@ interface ResourceInputBase<Schema extends z.ZodObject> {
   readonly fields?: Readonly<Record<string, ResourceFieldMetadata>>;
   readonly intents?: readonly StandardIntentKind[];
   readonly presentation: ResourcePresentationDefaults;
-  readonly forms?: {readonly create?: ResourceFormBinding; readonly edit?: ResourceFormBinding};
+  readonly forms?: { readonly create?: ResourceFormBinding; readonly edit?: ResourceFormBinding };
 }
 
 export interface GeneratedResourceInput<Schema extends z.ZodObject> extends ResourceInputBase<Schema> {
@@ -68,7 +78,7 @@ export interface ResourceDefinition<Schema extends z.ZodObject = z.ZodObject> {
   readonly fieldMetadata: Readonly<Record<string, ResourceFieldMetadata>>;
   readonly intents: readonly StandardIntentKind[];
   readonly presentation: ResourcePresentationDefaults;
-  readonly forms?: {readonly create?: ResourceFormBinding; readonly edit?: ResourceFormBinding};
+  readonly forms?: { readonly create?: ResourceFormBinding; readonly edit?: ResourceFormBinding };
   parseRecord(input: unknown): Outcome<z.output<Schema>>;
 }
 

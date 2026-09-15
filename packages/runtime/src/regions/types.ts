@@ -1,6 +1,6 @@
-import type {CommitPreconditions, Diagnostic, ResultRef, Task} from '@aeliqo/core';
-import type {ResultHandle} from '../results/types.js';
-import type {PresentationPlan, RegionContent, RegionStatus} from '../tasks/types.js';
+import type { CommitPreconditions, Diagnostic, ResultRef, Task } from '@aeliqo/core';
+import type { ResultHandle } from '../results/types.js';
+import type { PresentationPlan, RegionContent, RegionStatus } from '../tasks/types.js';
 
 /** The semantic pins in a proposal, plus the runtime materialization revision. */
 export interface RegionReadSet extends CommitPreconditions {
@@ -57,8 +57,9 @@ export interface RegionRestoreInput {
   readonly signal: AbortSignal;
 }
 
-export type RestoreRegion = (input: RegionRestoreInput) =>
-  RegionOutcome<RegionRestoreMaterialization> | Promise<RegionOutcome<RegionRestoreMaterialization>>;
+export type RestoreRegion = (
+  input: RegionRestoreInput,
+) => RegionOutcome<RegionRestoreMaterialization> | Promise<RegionOutcome<RegionRestoreMaterialization>>;
 
 export type RegionFailureCode =
   | 'runtime.region-invalid'
@@ -70,11 +71,13 @@ export type RegionFailureCode =
   | 'runtime.region-budget'
   | 'runtime.region-queue';
 
-export interface RegionFailure extends Diagnostic { readonly code: RegionFailureCode | string; }
+export interface RegionFailure extends Diagnostic {
+  readonly code: RegionFailureCode | string;
+}
 
 export type RegionOutcome<T> =
-  | {readonly ok: true; readonly value: T}
-  | {readonly ok: false; readonly diagnostics: readonly [RegionFailure, ...RegionFailure[]]};
+  | { readonly ok: true; readonly value: T }
+  | { readonly ok: false; readonly diagnostics: readonly [RegionFailure, ...RegionFailure[]] };
 
 export interface RegionSnapshot {
   readonly id: string;
@@ -130,8 +133,9 @@ export interface RegionCommitAuthorizationInput {
   readonly signal: AbortSignal;
 }
 
-export type AuthorizeRegionCommit = (input: RegionCommitAuthorizationInput) =>
-  RegionOutcome<void> | Promise<RegionOutcome<void>>;
+export type AuthorizeRegionCommit = (
+  input: RegionCommitAuthorizationInput,
+) => RegionOutcome<void> | Promise<RegionOutcome<void>>;
 
 export interface RegionStoreOptions {
   readonly readAuthority: ReadAuthority;
@@ -180,4 +184,4 @@ export interface RegionStore {
   dispose(): void;
 }
 
-export type {PresentationPlan, RegionContent, RegionStatus, Task};
+export type { PresentationPlan, RegionContent, RegionStatus, Task };

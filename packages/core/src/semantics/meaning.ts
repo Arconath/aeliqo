@@ -1,12 +1,19 @@
 import * as z from 'zod/mini';
-import {inspectWire} from '../contracts/ingress.js';
-import {meaningSchema} from '../contracts/schemas.js';
-import type {MeaningDefinition, Outcome, VersionRef} from '../contracts/types.js';
-import {checkExpression} from '../expressions/check.js';
-import {createCatalogIndex, versionKey} from './catalog.js';
-import {isRecord, prependOutcomePath, semanticFailure} from './errors.js';
-import {sameStringSet, validateSemanticType} from './type-utils.js';
-import type {CatalogIndex, MeaningActivationPolicy, MeaningActivationReceipt, MeaningBundle, MeaningBundleContext, SemanticPolicy} from './types.js';
+import { inspectWire } from '../contracts/ingress.js';
+import { meaningSchema } from '../contracts/schemas.js';
+import type { MeaningDefinition, Outcome, VersionRef } from '../contracts/types.js';
+import { checkExpression } from '../expressions/check.js';
+import { createCatalogIndex, versionKey } from './catalog.js';
+import { isRecord, prependOutcomePath, semanticFailure } from './errors.js';
+import { sameStringSet, validateSemanticType } from './type-utils.js';
+import type {
+  CatalogIndex,
+  MeaningActivationPolicy,
+  MeaningActivationReceipt,
+  MeaningBundle,
+  MeaningBundleContext,
+  SemanticPolicy,
+} from './types.js';
 
 export interface MeaningValidationContext extends MeaningBundleContext {
   readonly index?: CatalogIndex;
@@ -34,22 +41,67 @@ export function authorizeMeaningActivation(
   policy: MeaningActivationPolicy,
 ): Outcome<MeaningActivationReceipt> {
   if (!isRecord(meaning) || typeof meaning.id !== 'string' || typeof meaning.revision !== 'string')
-    return semanticFailure('semantic.activation-meaning', 'Activation requires a canonical meaning definition.', ['meaning']);
+    return semanticFailure('semantic.activation-meaning', 'Activation requires a canonical meaning definition.', [
+      'meaning',
+    ]);
   if (!isRecord(policy) || typeof policy.policyRevision !== 'string' || !Array.isArray(policy.allowlistedDefinitions))
-    return semanticFailure('semantic.activation-policy', 'Activation requires a canonical host policy with exact definitions.', ['policy']);
+    return semanticFailure(
+      'semantic.activation-policy',
+      'Activation requires a canonical host policy with exact definitions.',
+      ['policy'],
+    );
   if (policy.policyRevision.length === 0)
-    return semanticFailure('semantic.activation-policy', 'Activation policy must pin a nonempty revision.', ['policyRevision']);
+    return semanticFailure('semantic.activation-policy', 'Activation policy must pin a nonempty revision.', [
+      'policyRevision',
+    ]);
   if (meaning.lifecycle !== 'active')
-    return semanticFailure('semantic.activation-lifecycle', 'Only active meanings may be considered for activation.', ['lifecycle']);
+    return semanticFailure('semantic.activation-lifecycle', 'Only active meanings may be considered for activation.', [
+      'lifecycle',
+    ]);
   const identity = versionKey(meaning);
-  const canonical = policy.allowlistedDefinitions.find((candidate) => isRecord(candidate) && typeof candidate.id === 'string' && typeof candidate.revision === 'string' && versionKey(candidate as VersionRef) === identity);
+  const canonical = policy.allowlistedDefinitions.find(
+    (candidate) =>
+      isRecord(candidate) &&
+      typeof candidate.id === 'string' &&
+      typeof candidate.revision === 'string' &&
+      versionKey(candidate as VersionRef) === identity,
+  );
   if (canonical === undefined || stableJSON(canonical) !== stableJSON(meaning))
-    return semanticFailure('semantic.activation-denied', 'The exact canonical meaning contents are not allowlisted by host policy.', ['id', 'revision']);
-  if (policy.allowlistedRefs !== undefined && (!Array.isArray(policy.allowlistedRefs) || !policy.allowlistedRefs.some((ref) => isRecord(ref) && typeof ref.id === 'string' && typeof ref.revision === 'string' && versionKey(ref as VersionRef) === identity)))
-    return semanticFailure('semantic.activation-denied', 'The immutable meaning reference is not allowlisted by host policy.', ['id', 'revision']);
+    return semanticFailure(
+      'semantic.activation-denied',
+      'The exact canonical meaning contents are not allowlisted by host policy.',
+      ['id', 'revision'],
+    );
+  if (
+    policy.allowlistedRefs !== undefined &&
+    (!Array.isArray(policy.allowlistedRefs) ||
+      !policy.allowlistedRefs.some(
+        (ref) =>
+          isRecord(ref) &&
+          typeof ref.id === 'string' &&
+          typeof ref.revision === 'string' &&
+          versionKey(ref as VersionRef) === identity,
+      ))
+  )
+    return semanticFailure(
+      'semantic.activation-denied',
+      'The immutable meaning reference is not allowlisted by host policy.',
+      ['id', 'revision'],
+    );
   if (policy.minAuthority !== undefined && authorityRank[meaning.authority] < authorityRank[policy.minAuthority])
-    return semanticFailure('semantic.activation-authority', `Activation policy requires ${policy.minAuthority} authority.`, ['authority']);
-  return {ok: true, value: {state: 'authorized', meaning: {id: meaning.id, revision: meaning.revision}, policyRevision: policy.policyRevision}};
+    return semanticFailure(
+      'semantic.activation-authority',
+      `Activation policy requires ${policy.minAuthority} authority.`,
+      ['authority'],
+    );
+  return {
+    ok: true,
+    value: {
+      state: 'authorized',
+      meaning: { id: meaning.id, revision: meaning.revision },
+      policyRevision: policy.policyRevision,
+    },
+  };
 }
 
 export function validateMeaning(input: unknown, context: MeaningValidationContext): Outcome<MeaningDefinition> {
@@ -58,7 +110,11 @@ export function validateMeaning(input: unknown, context: MeaningValidationContex
   const parsed = z.safeParse(meaningSchema, inspected.value);
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
-    return semanticFailure('semantic.shape', 'Meaning does not match the canonical meaning contract.', issue?.path.filter((part): part is string | number => typeof part !== 'symbol'));
+    return semanticFailure(
+      'semantic.shape',
+      'Meaning does not match the canonical meaning contract.',
+      issue?.path.filter((part): part is string | number => typeof part !== 'symbol'),
+    );
   }
   return validateMeaningValue(parsed.data as MeaningDefinition, context);
 }
@@ -69,16 +125,30 @@ function validateMeaningValue(
   options: MeaningValidationOptions = {},
 ): Outcome<MeaningDefinition> {
   if (context.registry.digest !== context.catalog.functionRegistryDigest)
-    return semanticFailure('semantic.stale-registry', 'The supplied function registry does not match the catalog registry pin.', ['functionRegistryDigest']);
-  const indexOutcome = context.index === undefined ? createCatalogIndex(context.catalog) : {ok: true as const, value: context.index};
+    return semanticFailure(
+      'semantic.stale-registry',
+      'The supplied function registry does not match the catalog registry pin.',
+      ['functionRegistryDigest'],
+    );
+  const indexOutcome =
+    context.index === undefined ? createCatalogIndex(context.catalog) : { ok: true as const, value: context.index };
   if (!indexOutcome.ok) return indexOutcome;
   const index = indexOutcome.value;
-  if (index.catalog.revision !== context.catalog.revision || index.catalog.functionRegistryDigest !== context.catalog.functionRegistryDigest)
-    return semanticFailure('semantic.stale-catalog-index', 'The supplied catalog index belongs to a different catalog revision or function registry pin.', ['catalog']);
+  if (
+    index.catalog.revision !== context.catalog.revision ||
+    index.catalog.functionRegistryDigest !== context.catalog.functionRegistryDigest
+  )
+    return semanticFailure(
+      'semantic.stale-catalog-index',
+      'The supplied catalog index belongs to a different catalog revision or function registry pin.',
+      ['catalog'],
+    );
   const definitions = context.definitions ?? [];
 
   if (meaning.functionRegistryDigest !== context.registry.digest)
-    return semanticFailure('semantic.stale-registry', 'Meaning pins a different function registry digest.', ['functionRegistryDigest']);
+    return semanticFailure('semantic.stale-registry', 'Meaning pins a different function registry digest.', [
+      'functionRegistryDigest',
+    ]);
   const outputType = validateSemanticType(meaning.output, ['output']);
   if (!outputType.ok) return outputType;
   const policyResult = validatePolicy(meaning, context.policy);
@@ -96,34 +166,58 @@ function validateMeaningValue(
       const identity = versionKey(candidate);
       const prior = indexed.get(identity);
       if (prior !== undefined && stableJSON(prior) !== stableJSON(candidate))
-        return semanticFailure('semantic.definition-conflict', `Meaning ${candidate.id}@${candidate.revision} conflicts with an existing definition.`, ['definitions']);
+        return semanticFailure(
+          'semantic.definition-conflict',
+          `Meaning ${candidate.id}@${candidate.revision} conflicts with an existing definition.`,
+          ['definitions'],
+        );
       if (prior === undefined) indexed.set(identity, candidate);
     }
     available = indexed;
   }
   const existing = available.get(versionKey(meaning));
   if (existing !== undefined && stableJSON(existing) !== stableJSON(meaning))
-    return semanticFailure('semantic.definition-conflict', `Meaning ${meaning.id}@${meaning.revision} conflicts with an existing definition.`, ['id', 'revision']);
+    return semanticFailure(
+      'semantic.definition-conflict',
+      `Meaning ${meaning.id}@${meaning.revision} conflicts with an existing definition.`,
+      ['id', 'revision'],
+    );
 
   for (let indexOfDependency = 0; indexOfDependency < meaning.dependencies.length; indexOfDependency += 1) {
     const dependency = meaning.dependencies[indexOfDependency]!;
     const dependencyMeaning = available.get(versionKey(dependency));
     if (dependencyMeaning === undefined)
-      return semanticFailure('semantic.unknown-dependency', `Meaning dependency ${versionKey(dependency)} is not available.`, ['dependencies', indexOfDependency]);
+      return semanticFailure(
+        'semantic.unknown-dependency',
+        `Meaning dependency ${versionKey(dependency)} is not available.`,
+        ['dependencies', indexOfDependency],
+      );
     if (dependencyMeaning.functionRegistryDigest !== context.registry.digest)
-      return semanticFailure('semantic.stale-registry', `Meaning dependency ${dependencyMeaning.id}@${dependencyMeaning.revision} pins a different function registry digest.`, ['dependencies', indexOfDependency]);
+      return semanticFailure(
+        'semantic.stale-registry',
+        `Meaning dependency ${dependencyMeaning.id}@${dependencyMeaning.revision} pins a different function registry digest.`,
+        ['dependencies', indexOfDependency],
+      );
   }
 
   if (!options.skipDependencyClosure) {
-    const closure = validateDependencyClosure([{meaning, path: []}], available, context);
+    const closure = validateDependencyClosure([{ meaning, path: [] }], available, context);
     if (!closure.ok) return closure;
   }
 
   if (meaning.implementation.kind === 'host-capability') {
     if (context.policy?.allowHostCapabilities === false)
-      return semanticFailure('semantic.host-capability-denied', 'Host-backed meanings are not allowed by this policy.', ['implementation', 'capability']);
+      return semanticFailure(
+        'semantic.host-capability-denied',
+        'Host-backed meanings are not allowed by this policy.',
+        ['implementation', 'capability'],
+      );
     if (index.resolveCapability(meaning.implementation.capability) === undefined)
-      return semanticFailure('semantic.unknown-capability', `Capability ${versionKey(meaning.implementation.capability)} is not declared.`, ['implementation', 'capability']);
+      return semanticFailure(
+        'semantic.unknown-capability',
+        `Capability ${versionKey(meaning.implementation.capability)} is not declared.`,
+        ['implementation', 'capability'],
+      );
   } else {
     const expressionDependencies = collectDefinitionRefs(meaning.implementation.expression);
     const expressionDefinitions = expressionDependencies.length === 0 ? [] : definitions;
@@ -132,49 +226,90 @@ function validateMeaningValue(
       index,
       registry: context.registry,
       definitions: expressionDefinitions,
-      ...(context.entityId === undefined ? {} : {entityId: context.entityId}),
+      ...(context.entityId === undefined ? {} : { entityId: context.entityId }),
       expectedType: meaning.output,
     });
     if (!checked.ok) return checked;
     for (const dependency of expressionDependencies) {
       if (!meaning.dependencies.some((candidate) => versionKey(candidate) === versionKey(dependency)))
-        return semanticFailure('semantic.unlisted-dependency', `Expression references ${versionKey(dependency)} without listing it as a dependency.`, ['implementation', 'expression']);
+        return semanticFailure(
+          'semantic.unlisted-dependency',
+          `Expression references ${versionKey(dependency)} without listing it as a dependency.`,
+          ['implementation', 'expression'],
+        );
     }
     const operation = checked.value.operation;
     if (operation === 'ratio-of-sums' && meaning.aggregation !== 'ratio-of-sums')
-      return semanticFailure('semantic.aggregation-mismatch', 'A ratio-of-sums expression must declare ratio-of-sums aggregation.', ['aggregation']);
+      return semanticFailure(
+        'semantic.aggregation-mismatch',
+        'A ratio-of-sums expression must declare ratio-of-sums aggregation.',
+        ['aggregation'],
+      );
     if (operation === 'mean-of-rates' && meaning.aggregation !== 'non-additive')
-      return semanticFailure('semantic.aggregation-mismatch', 'Mean-of-rates must declare non-additive aggregation.', ['aggregation']);
+      return semanticFailure('semantic.aggregation-mismatch', 'Mean-of-rates must declare non-additive aggregation.', [
+        'aggregation',
+      ]);
     if (meaning.aggregation === 'ratio-of-sums' && operation !== 'ratio-of-sums')
-      return semanticFailure('semantic.aggregation-mismatch', 'Ratio-of-sums aggregation requires a ratio-of-sums function identity.', ['implementation', 'expression']);
+      return semanticFailure(
+        'semantic.aggregation-mismatch',
+        'Ratio-of-sums aggregation requires a ratio-of-sums function identity.',
+        ['implementation', 'expression'],
+      );
   }
 
   if (new Set(meaning.aggregationDimensions).size !== meaning.aggregationDimensions.length)
-    return semanticFailure('semantic.aggregation-grain', 'Aggregation dimensions must be unique.', ['aggregationDimensions']);
+    return semanticFailure('semantic.aggregation-grain', 'Aggregation dimensions must be unique.', [
+      'aggregationDimensions',
+    ]);
   if (meaning.aggregationDimensions.length > 0) {
     const grain = meaning.output.grain ?? [];
-    if (!sameStringSet(meaning.aggregationDimensions, meaning.aggregationDimensions.filter((dimension) => grain.includes(dimension))))
-      return semanticFailure('semantic.aggregation-grain', 'Aggregation dimensions must be declared output grain dimensions.', ['aggregationDimensions']);
+    if (
+      !sameStringSet(
+        meaning.aggregationDimensions,
+        meaning.aggregationDimensions.filter((dimension) => grain.includes(dimension)),
+      )
+    )
+      return semanticFailure(
+        'semantic.aggregation-grain',
+        'Aggregation dimensions must be declared output grain dimensions.',
+        ['aggregationDimensions'],
+      );
   }
-  return {ok: true, value: meaning};
+  return { ok: true, value: meaning };
 }
 
 export function validateMeaningBundle(input: unknown, context: MeaningBundleContext): Outcome<MeaningBundle> {
   const inspectedBundle = inspectWire(input);
   if (!inspectedBundle.ok) return inspectedBundle;
-  if (!isRecord(inspectedBundle.value)) return semanticFailure('semantic.bundle-shape', 'Meaning bundle must be a plain object.');
+  if (!isRecord(inspectedBundle.value))
+    return semanticFailure('semantic.bundle-shape', 'Meaning bundle must be a plain object.');
   const bundle = inspectedBundle.value;
   if (typeof bundle.catalogRevision !== 'string' || bundle.catalogRevision.length === 0)
-    return semanticFailure('semantic.bundle-catalog', 'Meaning bundle must pin a catalog revision.', ['catalogRevision']);
+    return semanticFailure('semantic.bundle-catalog', 'Meaning bundle must pin a catalog revision.', [
+      'catalogRevision',
+    ]);
   if (typeof bundle.functionRegistryDigest !== 'string' || bundle.functionRegistryDigest.length === 0)
-    return semanticFailure('semantic.bundle-registry', 'Meaning bundle must pin a function registry digest.', ['functionRegistryDigest']);
-  if (!Array.isArray(bundle.meanings)) return semanticFailure('semantic.bundle-meanings', 'Meaning bundle meanings must be an array.', ['meanings']);
+    return semanticFailure('semantic.bundle-registry', 'Meaning bundle must pin a function registry digest.', [
+      'functionRegistryDigest',
+    ]);
+  if (!Array.isArray(bundle.meanings))
+    return semanticFailure('semantic.bundle-meanings', 'Meaning bundle meanings must be an array.', ['meanings']);
   if (bundle.catalogRevision !== context.catalog.revision)
-    return semanticFailure('semantic.stale-catalog', 'Meaning bundle was authored against a different catalog revision.', ['catalogRevision']);
+    return semanticFailure(
+      'semantic.stale-catalog',
+      'Meaning bundle was authored against a different catalog revision.',
+      ['catalogRevision'],
+    );
   if (bundle.functionRegistryDigest !== context.registry.digest)
-    return semanticFailure('semantic.stale-registry', 'Meaning bundle pins a different function registry digest.', ['functionRegistryDigest']);
+    return semanticFailure('semantic.stale-registry', 'Meaning bundle pins a different function registry digest.', [
+      'functionRegistryDigest',
+    ]);
   if (context.registry.digest !== context.catalog.functionRegistryDigest)
-    return semanticFailure('semantic.stale-registry', 'The supplied function registry does not match the catalog registry pin.', ['functionRegistryDigest']);
+    return semanticFailure(
+      'semantic.stale-registry',
+      'The supplied function registry does not match the catalog registry pin.',
+      ['functionRegistryDigest'],
+    );
   const indexOutcome = createCatalogIndex(context.catalog);
   if (!indexOutcome.ok) return indexOutcome;
   const inheritedMeanings = new Map<string, MeaningDefinition>();
@@ -182,7 +317,11 @@ export function validateMeaningBundle(input: unknown, context: MeaningBundleCont
     const identity = versionKey(candidate);
     const prior = inheritedMeanings.get(identity);
     if (prior !== undefined && stableJSON(prior) !== stableJSON(candidate))
-      return semanticFailure('semantic.definition-conflict', `Meaning ${candidate.id}@${candidate.revision} conflicts with an inherited definition.`, ['meanings']);
+      return semanticFailure(
+        'semantic.definition-conflict',
+        `Meaning ${candidate.id}@${candidate.revision} conflicts with an inherited definition.`,
+        ['meanings'],
+      );
     if (prior === undefined) inheritedMeanings.set(identity, candidate);
   }
   // Index the full bundle before semantic validation so dependency checks are
@@ -193,13 +332,21 @@ export function validateMeaningBundle(input: unknown, context: MeaningBundleCont
     const parsed = z.safeParse(meaningSchema, bundle.meanings[index]);
     if (!parsed.success) {
       const issue = parsed.error.issues[0];
-      return semanticFailure('semantic.shape', 'Meaning does not match the canonical meaning contract.', ['meanings', index, ...(issue?.path.filter((part): part is string | number => typeof part !== 'symbol') ?? [])]);
+      return semanticFailure('semantic.shape', 'Meaning does not match the canonical meaning contract.', [
+        'meanings',
+        index,
+        ...(issue?.path.filter((part): part is string | number => typeof part !== 'symbol') ?? []),
+      ]);
     }
     const candidate = parsed.data as MeaningDefinition;
     const identity = versionKey(candidate);
     const prior = suppliedByIdentity.get(identity);
     if (prior !== undefined && stableJSON(prior) !== stableJSON(candidate))
-      return semanticFailure('semantic.definition-conflict', `Meaning ${candidate.id}@${candidate.revision} has conflicting bundle contents.`, ['meanings', index]);
+      return semanticFailure(
+        'semantic.definition-conflict',
+        `Meaning ${candidate.id}@${candidate.revision} has conflicting bundle contents.`,
+        ['meanings', index],
+      );
     if (prior === undefined) suppliedByIdentity.set(identity, candidate);
     suppliedMeanings.push(candidate);
   }
@@ -209,25 +356,42 @@ export function validateMeaningBundle(input: unknown, context: MeaningBundleCont
     const identity = versionKey(candidate);
     const prior = allDefinitions.get(identity);
     if (prior !== undefined && stableJSON(prior) !== stableJSON(candidate))
-      return semanticFailure('semantic.definition-conflict', `Meaning ${candidate.id}@${candidate.revision} conflicts with an inherited definition.`, ['meanings', index]);
+      return semanticFailure(
+        'semantic.definition-conflict',
+        `Meaning ${candidate.id}@${candidate.revision} conflicts with an inherited definition.`,
+        ['meanings', index],
+      );
     if (prior === undefined) allDefinitions.set(identity, candidate);
   }
   const bundleMeanings: MeaningDefinition[] = [];
   const seen = new Map<string, MeaningDefinition>();
   for (let index = 0; index < suppliedMeanings.length; index += 1) {
-    const validated = validateMeaningValue(suppliedMeanings[index]!, {
-      ...context,
-      index: indexOutcome.value,
-      definitions: [...(context.definitions ?? []), ...suppliedMeanings],
-    }, {availableDefinitions: allDefinitions, skipDependencyClosure: true});
+    const validated = validateMeaningValue(
+      suppliedMeanings[index]!,
+      {
+        ...context,
+        index: indexOutcome.value,
+        definitions: [...(context.definitions ?? []), ...suppliedMeanings],
+      },
+      { availableDefinitions: allDefinitions, skipDependencyClosure: true },
+    );
     if (!validated.ok) return prependOutcomePath(['meanings', index], validated);
     const identity = versionKey(validated.value);
-    const inherited = [...(context.definitions ?? []), ...context.catalog.meanings].find((candidate) => versionKey(candidate) === identity);
+    const inherited = [...(context.definitions ?? []), ...context.catalog.meanings].find(
+      (candidate) => versionKey(candidate) === identity,
+    );
     if (inherited !== undefined && stableJSON(inherited) !== stableJSON(validated.value))
-      return semanticFailure('semantic.definition-conflict', `Meaning ${validated.value.id}@${validated.value.revision} conflicts with an existing definition.`, ['meanings', index]);
+      return semanticFailure(
+        'semantic.definition-conflict',
+        `Meaning ${validated.value.id}@${validated.value.revision} conflicts with an existing definition.`,
+        ['meanings', index],
+      );
     const prior = seen.get(identity);
     if (prior !== undefined && stableJSON(prior) !== stableJSON(validated.value))
-      return semanticFailure('semantic.definition-conflict', `Meaning ${identity} has conflicting contents.`, ['meanings', index]);
+      return semanticFailure('semantic.definition-conflict', `Meaning ${identity} has conflicting contents.`, [
+        'meanings',
+        index,
+      ]);
     if (prior === undefined) {
       seen.set(identity, validated.value);
       bundleMeanings.push(validated.value);
@@ -235,14 +399,22 @@ export function validateMeaningBundle(input: unknown, context: MeaningBundleCont
   }
 
   const byIdentity = new Map<string, MeaningDefinition>();
-  for (const meaning of [...(context.definitions ?? []), ...context.catalog.meanings, ...bundleMeanings]) byIdentity.set(versionKey(meaning), meaning);
+  for (const meaning of [...(context.definitions ?? []), ...context.catalog.meanings, ...bundleMeanings])
+    byIdentity.set(versionKey(meaning), meaning);
   const closure = validateDependencyClosure(
-    bundleMeanings.map((meaning, index) => ({meaning, path: ['meanings', index] as const})),
+    bundleMeanings.map((meaning, index) => ({ meaning, path: ['meanings', index] as const })),
     byIdentity,
-    {...context, definitions: [...byIdentity.values()]},
+    { ...context, definitions: [...byIdentity.values()] },
   );
   if (!closure.ok) return closure;
-  return {ok: true, value: {catalogRevision: bundle.catalogRevision, functionRegistryDigest: bundle.functionRegistryDigest, meanings: bundleMeanings}};
+  return {
+    ok: true,
+    value: {
+      catalogRevision: bundle.catalogRevision,
+      functionRegistryDigest: bundle.functionRegistryDigest,
+      meanings: bundleMeanings,
+    },
+  };
 }
 
 interface ClosureRoot {
@@ -274,7 +446,11 @@ function validateDependencyClosure(
     const prior = available.get(identity);
     if (prior === undefined) available.set(identity, root.meaning);
     else if (stableJSON(prior) !== stableJSON(root.meaning))
-      return semanticFailure('semantic.definition-conflict', `Meaning ${identity} conflicts with an existing definition.`, root.path);
+      return semanticFailure(
+        'semantic.definition-conflict',
+        `Meaning ${identity} conflicts with an existing definition.`,
+        root.path,
+      );
   }
   const definitions = [...available.values()];
   const visiting = new Set<string>();
@@ -282,7 +458,7 @@ function validateDependencyClosure(
   const stack: ClosureFrame[] = [];
 
   const push = (meaning: MeaningDefinition, path: PathNode | undefined) => {
-    stack.push({meaning, path, nextDependency: 0, entered: false});
+    stack.push({ meaning, path, nextDependency: 0, entered: false });
   };
 
   for (const root of roots) {
@@ -298,12 +474,20 @@ function validateDependencyClosure(
           continue;
         }
         if (visiting.has(identity))
-          return semanticFailure('semantic.cycle', `Meaning dependency cycle includes ${identity}.`, materializePath(frame.path));
+          return semanticFailure(
+            'semantic.cycle',
+            `Meaning dependency cycle includes ${identity}.`,
+            materializePath(frame.path),
+          );
         visiting.add(identity);
-        const validated = validateMeaningValue(frame.meaning, {
-          ...context,
-          definitions,
-        }, {availableDefinitions: available, skipDependencyClosure: true});
+        const validated = validateMeaningValue(
+          frame.meaning,
+          {
+            ...context,
+            definitions,
+          },
+          { availableDefinitions: available, skipDependencyClosure: true },
+        );
         if (!validated.ok) return prependOutcomePath(materializePath(frame.path), validated);
         frame.meaning = validated.value;
         frame.entered = true;
@@ -323,27 +507,39 @@ function validateDependencyClosure(
       const child = available.get(dependencyIdentity);
       const childPath = appendPath(frame.path, 'dependencies', dependencyIndex);
       if (child === undefined)
-        return semanticFailure('semantic.unknown-dependency', `Meaning dependency ${dependencyIdentity} is not available.`, materializePath(childPath));
+        return semanticFailure(
+          'semantic.unknown-dependency',
+          `Meaning dependency ${dependencyIdentity} is not available.`,
+          materializePath(childPath),
+        );
       if (child.functionRegistryDigest !== context.registry.digest)
-        return semanticFailure('semantic.stale-registry', `Meaning dependency ${child.id}@${child.revision} pins a different function registry digest.`, materializePath(childPath));
+        return semanticFailure(
+          'semantic.stale-registry',
+          `Meaning dependency ${child.id}@${child.revision} pins a different function registry digest.`,
+          materializePath(childPath),
+        );
       if (visiting.has(dependencyIdentity))
-        return semanticFailure('semantic.cycle', `Meaning dependency cycle includes ${dependencyIdentity}.`, materializePath(childPath));
+        return semanticFailure(
+          'semantic.cycle',
+          `Meaning dependency cycle includes ${dependencyIdentity}.`,
+          materializePath(childPath),
+        );
       if (visited.has(dependencyIdentity)) continue;
       push(child, childPath);
     }
   }
-  return {ok: true, value: undefined};
+  return { ok: true, value: undefined };
 }
 
 function pathFromArray(path: readonly (string | number)[]): PathNode | undefined {
   let result: PathNode | undefined;
-  for (const segment of path) result = {parent: result, segment};
+  for (const segment of path) result = { parent: result, segment };
   return result;
 }
 
 function appendPath(path: PathNode | undefined, ...segments: readonly (string | number)[]): PathNode | undefined {
   let result = path;
-  for (const segment of segments) result = {parent: result, segment};
+  for (const segment of segments) result = { parent: result, segment };
   return result;
 }
 
@@ -356,10 +552,20 @@ function materializePath(path: PathNode | undefined): readonly (string | number)
 
 function validatePolicy(meaning: MeaningDefinition, policy: SemanticPolicy | undefined): Outcome<void> {
   if (policy?.allowedScopes !== undefined && !policy.allowedScopes.includes(meaning.scope))
-    return semanticFailure('semantic.scope', `Meaning scope ${meaning.scope} is not permitted by this policy.`, ['scope']);
-  if (meaning.lifecycle === 'active' && policy?.minAuthorityForActive !== undefined && authorityRank[meaning.authority] < authorityRank[policy.minAuthorityForActive])
-    return semanticFailure('semantic.authority', `Active meaning requires ${policy.minAuthorityForActive} authority under this policy.`, ['authority']);
-  return {ok: true, value: undefined};
+    return semanticFailure('semantic.scope', `Meaning scope ${meaning.scope} is not permitted by this policy.`, [
+      'scope',
+    ]);
+  if (
+    meaning.lifecycle === 'active' &&
+    policy?.minAuthorityForActive !== undefined &&
+    authorityRank[meaning.authority] < authorityRank[policy.minAuthorityForActive]
+  )
+    return semanticFailure(
+      'semantic.authority',
+      `Active meaning requires ${policy.minAuthorityForActive} authority under this policy.`,
+      ['authority'],
+    );
+  return { ok: true, value: undefined };
 }
 
 function collectDefinitionRefs(expression: import('../contracts/types.js').Expression): readonly VersionRef[] {
@@ -368,7 +574,8 @@ function collectDefinitionRefs(expression: import('../contracts/types.js').Expre
   while (stack.length > 0) {
     const node = stack.pop()!;
     if (node.kind === 'definition') refs.push(node.ref);
-    if (node.kind === 'call') for (let index = node.arguments.length - 1; index >= 0; index -= 1) stack.push(node.arguments[index]!);
+    if (node.kind === 'call')
+      for (let index = node.arguments.length - 1; index >= 0; index -= 1) stack.push(node.arguments[index]!);
   }
   return refs;
 }
@@ -377,5 +584,8 @@ function stableJSON(value: unknown): string {
   if (value === null || typeof value !== 'object') return JSON.stringify(value) ?? '';
   if (Array.isArray(value)) return `[${value.map(stableJSON).join(',')}]`;
   const object = value as Record<string, unknown>;
-  return `{${Object.keys(object).sort().map((key) => `${JSON.stringify(key)}:${stableJSON(object[key])}`).join(',')}}`;
+  return `{${Object.keys(object)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${stableJSON(object[key])}`)
+    .join(',')}}`;
 }

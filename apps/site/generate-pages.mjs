@@ -1,8 +1,8 @@
 import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { buildPublicPages } from '../../scripts/docs/build-public-docs.mjs';
-import {DOC_NAVIGATION, LEGACY_DOC_REDIRECTS, docsArtifactPath} from '../../docs/public-site/routes.mjs';
-import {RELEASE_VERSION} from '../../scripts/release/metadata.mjs';
+import { DOC_NAVIGATION, LEGACY_DOC_REDIRECTS, docsArtifactPath } from '../../docs/public-site/routes.mjs';
+import { RELEASE_VERSION } from '../../scripts/release/metadata.mjs';
 
 const root = dirname(new URL(import.meta.url).pathname);
 const webRoot = resolve(root, '../web');
@@ -79,7 +79,9 @@ export async function generatePages() {
   const footerStart = home.lastIndexOf('<footer');
   const scriptStart = home.indexOf('<script type="module"');
   if (headerStart < 0 || mainStart <= headerStart || footerStart < 0 || scriptStart <= footerStart)
-    throw new Error('The landing shell must expose a skip link, main content, footer, and module script in that order.');
+    throw new Error(
+      'The landing shell must expose a skip link, main content, footer, and module script in that order.',
+    );
   const baseHeader = home.slice(headerStart, mainStart).replace(' aria-current="page"', '');
   const footer = home.slice(footerStart, scriptStart);
   const docs = (await buildPublicPages()).map((page) => ({ ...page, surface: 'docs' }));
@@ -105,7 +107,8 @@ export async function generatePages() {
   });
   const inputs = [join(generatedRoot, 'index.html')];
   for (const page of all) {
-    const artifactPath = page.surface === 'docs' && page.path !== '/playground/' ? docsArtifactPath(page.path) : page.path;
+    const artifactPath =
+      page.surface === 'docs' && page.path !== '/playground/' ? docsArtifactPath(page.path) : page.path;
     const target = join(generatedRoot, artifactPath, 'index.html');
     await mkdir(dirname(target), { recursive: true });
     const isDocs = page.surface === 'docs' && page.path !== '/playground/';
@@ -120,11 +123,18 @@ export async function generatePages() {
     const docsNavigation = isDocs ? docsSidebar(groups, docsPages, page.path) : '';
     const toc = isDocs ? docsToc(enhanced.headings) : '';
     const docsHeader = baseHeader
-      .replace('<a href="https://docs.aeliqo.com/">Docs</a>', `<a href="/"${isDocs ? ' aria-current="page"' : ''}>Docs</a>`)
-      .replace('<a href="https://docs.aeliqo.com/playground/">Playground</a>', `<a href="/playground/"${page.path === '/playground/' ? ' aria-current="page"' : ''}>Playground</a>`);
-    const header = isDocs || page.path === '/playground/'
-      ? docsHeader
-      : baseHeader.replace('<a class="brand" href="/"', '<a class="brand" href="/" aria-current="page"');
+      .replace(
+        '<a href="https://docs.aeliqo.com/">Docs</a>',
+        `<a href="/"${isDocs ? ' aria-current="page"' : ''}>Docs</a>`,
+      )
+      .replace(
+        '<a href="https://docs.aeliqo.com/playground/">Playground</a>',
+        `<a href="/playground/"${page.path === '/playground/' ? ' aria-current="page"' : ''}>Playground</a>`,
+      );
+    const header =
+      isDocs || page.path === '/playground/'
+        ? docsHeader
+        : baseHeader.replace('<a class="brand" href="/"', '<a class="brand" href="/" aria-current="page"');
     const layout = isDocs ? 'docs-layout' : page.path === '/playground/' ? 'playground-layout' : 'content-layout';
     const bodyAttrs = [page.component ? `data-component="${page.component}"` : '', isDocs ? 'data-docs="true"' : '']
       .filter(Boolean)
@@ -139,18 +149,27 @@ export async function generatePages() {
   }
   await writeFile(
     join(generatedPublic, 'search-index.json'),
-    JSON.stringify(docs.map(({ path, title, description, body }) => ({ path, title, description, content: plainText(body) }))),
+    JSON.stringify(
+      docs.map(({ path, title, description, body }) => ({ path, title, description, content: plainText(body) })),
+    ),
   );
-  await writeFile(join(generatedPublic, 'route-map.json'), JSON.stringify({
-    legacyDocs: {...LEGACY_DOC_REDIRECTS, '/docs': '/'},
-    canonicalDocs: all.filter((page) => page.surface === 'docs').map((page) => page.path),
-  }));
-  const docsUrls = all
-    .filter((page) => page.surface === 'docs')
-    .map((page) => `https://docs.aeliqo.com${page.path}`);
+  await writeFile(
+    join(generatedPublic, 'route-map.json'),
+    JSON.stringify({
+      legacyDocs: { ...LEGACY_DOC_REDIRECTS, '/docs': '/' },
+      canonicalDocs: all.filter((page) => page.surface === 'docs').map((page) => page.path),
+    }),
+  );
+  const docsUrls = all.filter((page) => page.surface === 'docs').map((page) => `https://docs.aeliqo.com${page.path}`);
   await writeFile(join(generatedPublic, 'sitemap-main.xml'), sitemap(['https://aeliqo.com/']));
   await writeFile(join(generatedPublic, 'sitemap-docs.xml'), sitemap(docsUrls));
-  await writeFile(join(generatedPublic, 'robots-main.txt'), 'User-agent: *\nAllow: /\nSitemap: https://aeliqo.com/sitemap.xml\n');
-  await writeFile(join(generatedPublic, 'robots-docs.txt'), 'User-agent: *\nAllow: /\nSitemap: https://docs.aeliqo.com/sitemap.xml\n');
+  await writeFile(
+    join(generatedPublic, 'robots-main.txt'),
+    'User-agent: *\nAllow: /\nSitemap: https://aeliqo.com/sitemap.xml\n',
+  );
+  await writeFile(
+    join(generatedPublic, 'robots-docs.txt'),
+    'User-agent: *\nAllow: /\nSitemap: https://docs.aeliqo.com/sitemap.xml\n',
+  );
   return inputs;
 }

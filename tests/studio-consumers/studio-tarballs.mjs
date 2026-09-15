@@ -1,4 +1,4 @@
-import {RELEASE_VERSION} from "../../scripts/release/metadata.mjs";
+import { RELEASE_VERSION } from '../../scripts/release/metadata.mjs';
 /**
  * Exercise the local Studio authoring API from installed release tarballs.
  *
@@ -6,15 +6,15 @@ import {RELEASE_VERSION} from "../../scripts/release/metadata.mjs";
  * imports, the Studio app and model/agent packages cannot make this proof pass.
  */
 import assert from 'node:assert/strict';
-import {createHash} from 'node:crypto';
-import {mkdir, mkdtemp, readFile, writeFile} from 'node:fs/promises';
-import {tmpdir, platform, release, arch} from 'node:os';
-import {join, resolve} from 'node:path';
-import {spawnSync} from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { tmpdir, platform, release, arch } from 'node:os';
+import { join, resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
 
 const root = resolve(import.meta.dirname, '../..');
 const output = join(root, 'artifacts', 'studio-consumers');
-await mkdir(output, {recursive: true});
+await mkdir(output, { recursive: true });
 const runDirectory = await mkdtemp(join(output, 'run-'));
 const consumer = await mkdtemp(join(tmpdir(), 'aeliqo-studio-consumer-'));
 
@@ -71,7 +71,8 @@ for (const name of packageNames) {
   assert(entries.includes('package/README.md'), `${name} tarball has no README`);
   assert(!entries.some((entry) => entry.startsWith('package/src/')), `${name} tarball leaked source`);
   assert(!entries.some((entry) => entry.startsWith('package/node_modules/')), `${name} tarball contains node_modules`);
-  for (const entry of entries) assert(entry.startsWith('package/') && !entry.split('/').includes('..'), `Unsafe archive path: ${entry}`);
+  for (const entry of entries)
+    assert(entry.startsWith('package/') && !entry.split('/').includes('..'), `Unsafe archive path: ${entry}`);
   artifacts.push({
     name: packed.name,
     version: packed.version,
@@ -83,12 +84,20 @@ for (const name of packageNames) {
   });
 }
 
-await writeFile(join(consumer, 'package.json'), JSON.stringify({private: true, type: 'module'}) + '\n');
-run([
-  'npm', 'install', '--ignore-scripts', '--no-audit', '--no-fund', '--save-exact',
-  ...artifacts.map((artifact) => artifact.path),
-  'typescript@7.0.2',
-], consumer);
+await writeFile(join(consumer, 'package.json'), JSON.stringify({ private: true, type: 'module' }) + '\n');
+run(
+  [
+    'npm',
+    'install',
+    '--ignore-scripts',
+    '--no-audit',
+    '--no-fund',
+    '--save-exact',
+    ...artifacts.map((artifact) => artifact.path),
+    'typescript@7.0.2',
+  ],
+  consumer,
+);
 
 const lockBytes = await readFile(join(consumer, 'package-lock.json'));
 const lock = JSON.parse(lockBytes);
@@ -96,7 +105,11 @@ for (const artifact of artifacts) {
   const location = `node_modules/${artifact.name}`;
   assert.equal(lock.packages[location]?.version, artifact.version);
   assert.equal(lock.packages[location]?.integrity, artifact.integrity);
-  assert.deepEqual(Object.keys(lock.packages).filter((key) => key.endsWith(location)), [location], `Duplicate ${artifact.name}`);
+  assert.deepEqual(
+    Object.keys(lock.packages).filter((key) => key.endsWith(location)),
+    [location],
+    `Duplicate ${artifact.name}`,
+  );
   for (const entry of artifact.entries) {
     if (entry.endsWith('/')) continue;
     const installed = await readFile(join(consumer, location, entry.slice('package/'.length)));
@@ -108,15 +121,21 @@ assert.equal(lock.packages['node_modules/@aeliqo/runtime']?.dependencies?.['@ael
 assert.equal(lock.packages['node_modules/@aeliqo/devtools']?.dependencies?.['@aeliqo/core'], RELEASE_VERSION);
 assert.equal(lock.packages['node_modules/@aeliqo/devtools']?.dependencies?.['@aeliqo/runtime'], RELEASE_VERSION);
 assert.equal(lock.packages['node_modules/typescript']?.version, '7.0.2');
-assert.deepEqual(Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/')).sort(), [
-  'node_modules/@aeliqo/core',
-  'node_modules/@aeliqo/devtools',
-  'node_modules/@aeliqo/runtime',
-]);
-assert(!Object.keys(lock.packages).some((key) => /(?:studio|agent|openai)/iu.test(key)), 'Consumer pulled Studio or model packages');
+assert.deepEqual(
+  Object.keys(lock.packages)
+    .filter((key) => key.startsWith('node_modules/@aeliqo/'))
+    .sort(),
+  ['node_modules/@aeliqo/core', 'node_modules/@aeliqo/devtools', 'node_modules/@aeliqo/runtime'],
+);
+assert(
+  !Object.keys(lock.packages).some((key) => /(?:studio|agent|openai)/iu.test(key)),
+  'Consumer pulled Studio or model packages',
+);
 await writeFile(join(runDirectory, 'consumer-package-lock.json'), lockBytes);
 
-await writeFile(join(consumer, 'probe.mjs'), `
+await writeFile(
+  join(consumer, 'probe.mjs'),
+  `
 import assert from 'node:assert/strict';
 import {join} from 'node:path';
 import {writeFile} from 'node:fs/promises';
@@ -183,27 +202,54 @@ check(code.ok, 'export standalone code');
 check(!code.value.includes('import ') && !code.value.includes('@aeliqo/studio') && !code.value.includes('@aeliqo/agent') && !code.value.includes('model'), 'Studio code export has an unexpected runtime/model dependency');
 await writeFile(join(process.cwd(), 'exported-studio.ts'), code.value);
 console.log(JSON.stringify({documentRevision: current.revision, profileRevisions: current.profiles.map((profile) => profile.experience.revision), codeBytes: code.value.length}));
-`);
+`,
+);
 const probeOutput = run(['node', 'probe.mjs'], consumer).trim();
 const probe = JSON.parse(probeOutput.split('\n').at(-1));
 assert.deepEqual(probe.profileRevisions, ['1', '2']);
 assert(probe.codeBytes > 0);
-run([
-  join(consumer, 'node_modules', '.bin', 'tsc'), '--strict', '--target', 'ES2022', '--module', 'NodeNext',
-  '--moduleResolution', 'NodeNext', '--skipLibCheck', '--noEmit', 'exported-studio.ts',
-], consumer);
+run(
+  [
+    join(consumer, 'node_modules', '.bin', 'tsc'),
+    '--strict',
+    '--target',
+    'ES2022',
+    '--module',
+    'NodeNext',
+    '--moduleResolution',
+    'NodeNext',
+    '--skipLibCheck',
+    '--noEmit',
+    'exported-studio.ts',
+  ],
+  consumer,
+);
 
 const after = sourceDigest();
 assert.equal(after, before, 'Source changed during Studio consumer proof');
-await writeFile(join(runDirectory, 'report.json'), JSON.stringify({
-  sourceDigest: before,
-  sourceChangedDuringRun: before !== after,
-  passed: true,
-  scope: `Installed @aeliqo/core, @aeliqo/runtime and @aeliqo/devtools ${RELEASE_VERSION} tarballs; Studio document/session JSON roundtrip; standalone exportCode TypeScript compilation; immutable code-owned meaning/Experience revisions; personal Experience revision retention and activation without Studio app, agent or model packages.`,
-  artifacts: artifacts.map(({entries, ...artifact}) => ({...artifact, entries})),
-  consumerDirectory: consumer,
-  consumerLock: {path: join(runDirectory, 'consumer-package-lock.json'), sha256: hash(lockBytes)},
-  probe,
-  environment: {node: process.version, npm: run(['npm', '--version'], consumer).trim(), typescript: '7.0.2', os: platform(), release: release(), arch: arch()},
-}, null, 2) + '\n');
+await writeFile(
+  join(runDirectory, 'report.json'),
+  JSON.stringify(
+    {
+      sourceDigest: before,
+      sourceChangedDuringRun: before !== after,
+      passed: true,
+      scope: `Installed @aeliqo/core, @aeliqo/runtime and @aeliqo/devtools ${RELEASE_VERSION} tarballs; Studio document/session JSON roundtrip; standalone exportCode TypeScript compilation; immutable code-owned meaning/Experience revisions; personal Experience revision retention and activation without Studio app, agent or model packages.`,
+      artifacts: artifacts.map(({ entries, ...artifact }) => ({ ...artifact, entries })),
+      consumerDirectory: consumer,
+      consumerLock: { path: join(runDirectory, 'consumer-package-lock.json'), sha256: hash(lockBytes) },
+      probe,
+      environment: {
+        node: process.version,
+        npm: run(['npm', '--version'], consumer).trim(),
+        typescript: '7.0.2',
+        os: platform(),
+        release: release(),
+        arch: arch(),
+      },
+    },
+    null,
+    2,
+  ) + '\n',
+);
 console.log(`Installed Studio consumer proof passed. Evidence: ${join(runDirectory, 'report.json')}`);

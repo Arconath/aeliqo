@@ -1,6 +1,6 @@
-export {createCatalogIndex} from './catalog.js';
-export {authorizeMeaningActivation, validateMeaning, validateMeaningBundle} from './meaning.js';
-export type {MeaningValidationContext} from './meaning.js';
+export { createCatalogIndex } from './catalog.js';
+export { authorizeMeaningActivation, validateMeaning, validateMeaningBundle } from './meaning.js';
+export type { MeaningValidationContext } from './meaning.js';
 export type {
   AggregationKind,
   CatalogEntity,

@@ -29,7 +29,7 @@ import {
 
 const failure = <T>(code: string, message: string): RegionOutcome<T> => ({
   ok: false,
-  diagnostics: [{code, message, retryable: false}],
+  diagnostics: [{ code, message, retryable: false }],
 });
 
 type AdaptationContextFields = Omit<PresentationContext, 'task' | 'current' | 'incumbent' | 'environment'>;
@@ -54,10 +54,12 @@ export interface PresentationAdaptationReadInput {
 
 export type PresentationAdaptationContextSource =
   | PresentationAdaptationContext
-  | ((input: PresentationAdaptationReadInput) =>
-    | PresentationAdaptationContext
-    | RegionOutcome<PresentationAdaptationContext>
-    | Promise<PresentationAdaptationContext | RegionOutcome<PresentationAdaptationContext>>);
+  | ((
+      input: PresentationAdaptationReadInput,
+    ) =>
+      | PresentationAdaptationContext
+      | RegionOutcome<PresentationAdaptationContext>
+      | Promise<PresentationAdaptationContext | RegionOutcome<PresentationAdaptationContext>>);
 
 export interface PresentationAdaptationOptions {
   readonly region: RegionHandle;
@@ -85,11 +87,7 @@ export interface PresentationAdaptationOptions {
   readonly maxPendingRequests?: number;
 }
 
-export type PresentationAdaptationStatus =
-  | 'committed'
-  | 'unchanged'
-  | 'deferred'
-  | 'cancelled';
+export type PresentationAdaptationStatus = 'committed' | 'unchanged' | 'deferred' | 'cancelled';
 
 export interface PresentationAdaptationResult {
   readonly status: PresentationAdaptationStatus;
@@ -132,7 +130,10 @@ function canonical(value: unknown): string {
   if (value === null || typeof value !== 'object') return JSON.stringify(value);
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
   const object = value as Record<string, unknown>;
-  return `{${Object.keys(object).sort().map((key) => `${JSON.stringify(key)}:${canonical(object[key])}`).join(',')}}`;
+  return `{${Object.keys(object)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${canonical(object[key])}`)
+    .join(',')}}`;
 }
 
 function samePlan(left: PresentationPlan | undefined, right: PresentationPlan | undefined): boolean {
@@ -141,33 +142,50 @@ function samePlan(left: PresentationPlan | undefined, right: PresentationPlan | 
   // publication metadata. Compare every user-visible semantic member so an
   // unchanged candidate does not churn the region, while changes to variants,
   // configuration, links, coverage or enabled operations still publish.
-  return canonical({
-    rootId: left.rootId,
-    nodes: left.nodes,
-    links: left.links,
-    coverage: left.coverage,
-  }) === canonical({
-    rootId: right.rootId,
-    nodes: right.nodes,
-    links: right.links,
-    coverage: right.coverage,
-  });
+  return (
+    canonical({
+      rootId: left.rootId,
+      nodes: left.nodes,
+      links: left.links,
+      coverage: left.coverage,
+    }) ===
+    canonical({
+      rootId: right.rootId,
+      nodes: right.nodes,
+      links: right.links,
+      coverage: right.coverage,
+    })
+  );
 }
 
 function validNonnegativeInteger(value: number | undefined): value is number {
   return value !== undefined && Number.isSafeInteger(value) && value >= 0;
 }
 
-function readMeasurement(environment: PresentationEnvironment, key: 'inlineSize' | 'blockSize' | 'textScale'): number | undefined {
+function readMeasurement(
+  environment: PresentationEnvironment,
+  key: 'inlineSize' | 'blockSize' | 'textScale',
+): number | undefined {
   const measurement = environment[key];
   return measurement.state === 'known' && Number.isFinite(measurement.value) ? measurement.value : undefined;
 }
 
-function environmentRequiresRefresh(previous: PresentationEnvironment | undefined, next: PresentationEnvironment, threshold: number): boolean {
+function environmentRequiresRefresh(
+  previous: PresentationEnvironment | undefined,
+  next: PresentationEnvironment,
+  threshold: number,
+): boolean {
   if (previous === undefined) return true;
-  if (previous.locale !== next.locale || previous.direction !== next.direction || previous.pointer !== next.pointer ||
-      previous.hover !== next.hover || previous.keyboard !== next.keyboard || previous.reducedMotion !== next.reducedMotion ||
-      previous.forcedColors !== next.forcedColors) return true;
+  if (
+    previous.locale !== next.locale ||
+    previous.direction !== next.direction ||
+    previous.pointer !== next.pointer ||
+    previous.hover !== next.hover ||
+    previous.keyboard !== next.keyboard ||
+    previous.reducedMotion !== next.reducedMotion ||
+    previous.forcedColors !== next.forcedColors
+  )
+    return true;
   for (const key of ['inlineSize', 'blockSize', 'textScale'] as const) {
     const before = readMeasurement(previous, key);
     const after = readMeasurement(next, key);
@@ -183,40 +201,49 @@ function environmentRequiresRefresh(previous: PresentationEnvironment | undefine
 function snapshotReadSet(snapshot: RegionSnapshot): RegionOutcome<RegionReadSet> {
   if (snapshot.status !== 'active' || snapshot.state === undefined || snapshot.readSet === undefined)
     return failure('runtime.presentation-disposed', 'The region has no active task and read set.');
-  return {ok: true, value: snapshot.readSet};
+  return { ok: true, value: snapshot.readSet };
 }
 
 function semanticReadSet(readSet: RegionReadSet): CommitPreconditions {
-  const {dataRevision: _dataRevision, ...pins} = readSet;
+  const { dataRevision: _dataRevision, ...pins } = readSet;
   return pins;
 }
 
 function sameSnapshot(left: RegionSnapshot, right: RegionSnapshot): boolean {
-  return left.status === right.status && left.taskRevision === right.taskRevision &&
-    left.regionRevision === right.regionRevision && left.dataRevision === right.dataRevision;
+  return (
+    left.status === right.status &&
+    left.taskRevision === right.taskRevision &&
+    left.regionRevision === right.regionRevision &&
+    left.dataRevision === right.dataRevision
+  );
 }
 
 function normalizeContextOutcome(value: unknown): RegionOutcome<PresentationAdaptationContext> {
-  if (value !== null && typeof value === 'object' && !Array.isArray(value) &&
-      Object.hasOwn(value as object, 'ok')) {
-    const outcome = value as {readonly ok?: unknown; readonly value?: unknown; readonly diagnostics?: unknown};
+  if (value !== null && typeof value === 'object' && !Array.isArray(value) && Object.hasOwn(value as object, 'ok')) {
+    const outcome = value as { readonly ok?: unknown; readonly value?: unknown; readonly diagnostics?: unknown };
     if (outcome.ok === true) return normalizeContextOutcome(outcome.value);
     if (outcome.ok === false && Array.isArray(outcome.diagnostics) && outcome.diagnostics.length > 0)
-      return {ok: false, diagnostics: outcome.diagnostics as unknown as readonly [RegionFailure, ...RegionFailure[]]};
+      return { ok: false, diagnostics: outcome.diagnostics as unknown as readonly [RegionFailure, ...RegionFailure[]] };
     return failure('runtime.presentation-context', 'The host context callback returned an invalid outcome.');
   }
   if (value === null || typeof value !== 'object' || Array.isArray(value))
     return failure('runtime.presentation-context', 'The host context is not a bounded object.');
   const context = value as Record<string, unknown>;
   if (context.experience === undefined || context.results === undefined)
-    return failure('runtime.presentation-context', 'Adaptation context requires an Experience and authorized result descriptors.');
+    return failure(
+      'runtime.presentation-context',
+      'Adaptation context requires an Experience and authorized result descriptors.',
+    );
   if (!Array.isArray(context.results) || !Array.isArray(context.rendererCapabilities))
-    return failure('runtime.presentation-context', 'Adaptation context requires result descriptors and renderer capabilities.');
+    return failure(
+      'runtime.presentation-context',
+      'Adaptation context requires result descriptors and renderer capabilities.',
+    );
   // A caller may conveniently pass a full PresentationContext. Strip its
   // snapshot-owned pins instead of trusting them; contextFor() below derives
   // these fields from the RegionSnapshot for this exact request.
-  const {task: _task, current: _current, incumbent: _incumbent, ...host} = context;
-  return {ok: true, value: host as unknown as PresentationAdaptationContext};
+  const { task: _task, current: _current, incumbent: _incumbent, ...host } = context;
+  return { ok: true, value: host as unknown as PresentationAdaptationContext };
 }
 
 async function readSource(input: ContextInput): Promise<RegionOutcome<PresentationAdaptationContext>> {
@@ -235,18 +262,28 @@ async function readSource(input: ContextInput): Promise<RegionOutcome<Presentati
         input.input.signal.removeEventListener('abort', onAbort);
         resolve(outcome);
       };
-      const onAbort = (): void => finish(failure('runtime.presentation-cancelled', 'The adaptation context refresh was cancelled.'));
-      input.input.signal.addEventListener('abort', onAbort, {once: true});
-      if (input.input.signal.aborted) { onAbort(); return; }
-      Promise.resolve(raw).then((value) => finish(normalizeContextOutcome(value)), () => finish(failure('runtime.presentation-context', 'The host context callback failed.')));
+      const onAbort = (): void =>
+        finish(failure('runtime.presentation-cancelled', 'The adaptation context refresh was cancelled.'));
+      input.input.signal.addEventListener('abort', onAbort, { once: true });
+      if (input.input.signal.aborted) {
+        onAbort();
+        return;
+      }
+      Promise.resolve(raw).then(
+        (value) => finish(normalizeContextOutcome(value)),
+        () => finish(failure('runtime.presentation-context', 'The host context callback failed.')),
+      );
     });
   } catch {
     return failure('runtime.presentation-context', 'The host context callback failed.');
   }
 }
 
-function failureFromCore<T>(outcome: {readonly ok: false; readonly diagnostics: readonly unknown[]}): RegionOutcome<T> {
-  return {ok: false, diagnostics: outcome.diagnostics as readonly [RegionFailure, ...RegionFailure[]]};
+function failureFromCore<T>(outcome: {
+  readonly ok: false;
+  readonly diagnostics: readonly unknown[];
+}): RegionOutcome<T> {
+  return { ok: false, diagnostics: outcome.diagnostics as readonly [RegionFailure, ...RegionFailure[]] };
 }
 
 function contextFor(
@@ -258,32 +295,36 @@ function contextFor(
   const readSet = snapshotReadSet(snapshot);
   if (!readSet.ok) return readSet;
   if (snapshot.state === undefined) return failure('runtime.presentation-disposed', 'The region has no current task.');
-  return {ok: true, value: {
-    ...base,
-    task: snapshot.state.task,
-    current: semanticReadSet(readSet.value),
-    environment,
-    ...(snapshot.state.presentation === undefined ? {} : {incumbent: snapshot.state.presentation}),
-    explicitTransition: explicit,
-  }};
+  return {
+    ok: true,
+    value: {
+      ...base,
+      task: snapshot.state.task,
+      current: semanticReadSet(readSet.value),
+      environment,
+      ...(snapshot.state.presentation === undefined ? {} : { incumbent: snapshot.state.presentation }),
+      explicitTransition: explicit,
+    },
+  };
 }
 
-function resultForPlan(
-  validated: ValidatedPresentation,
-  plan: PresentationPlan,
-): ValidatedPresentation {
+function resultForPlan(validated: ValidatedPresentation, plan: PresentationPlan): ValidatedPresentation {
   // RegionStore rewrites only task and plan read-set revisions during commit.
   // Keep the validated semantic graph while adopting the exact committed plan.
-  return Object.freeze({...validated, plan});
+  return Object.freeze({ ...validated, plan });
 }
 
 function readTransitionBlocked(callback: (() => boolean) | undefined): boolean {
   if (callback === undefined) return false;
-  try { return callback() === true; } catch { return true; }
+  try {
+    return callback() === true;
+  } catch {
+    return true;
+  }
 }
 
-function makeRequestId(counter: number): {readonly id: string; readonly revision: string} {
-  return {id: `adapt.${counter.toString(36)}`, revision: '1'};
+function makeRequestId(counter: number): { readonly id: string; readonly revision: string } {
+  return { id: `adapt.${counter.toString(36)}`, revision: '1' };
 }
 
 /**
@@ -291,17 +332,34 @@ function makeRequestId(counter: number): {readonly id: string; readonly revision
  * request is a local compose/validate pass followed by a RegionHandle
  * transaction, and newer measurements cancel/coalesce older work.
  */
-export function createPresentationAdaptationController(options: PresentationAdaptationOptions): PresentationAdaptationController {
-  if (options === null || typeof options !== 'object' || options.region === undefined || options.registry === undefined ||
-      options.baseContext === undefined || options.renderer === undefined)
+export function createPresentationAdaptationController(
+  options: PresentationAdaptationOptions,
+): PresentationAdaptationController {
+  if (
+    options === null ||
+    typeof options !== 'object' ||
+    options.region === undefined ||
+    options.registry === undefined ||
+    options.baseContext === undefined ||
+    options.renderer === undefined
+  )
     throw new TypeError('A region, presentation registry, context and renderer are required.');
   const now = options.now ?? (() => Date.now());
   const schedule = options.schedule ?? ((callback: () => void, delay: number) => setTimeout(callback, delay));
-  const cancelSchedule = options.cancelSchedule ?? ((handle: unknown) => { if (handle !== undefined) clearTimeout(handle as ReturnType<typeof setTimeout>); });
+  const cancelSchedule =
+    options.cancelSchedule ??
+    ((handle: unknown) => {
+      if (handle !== undefined) clearTimeout(handle as ReturnType<typeof setTimeout>);
+    });
   const dwellMs = options.dwellMs ?? 120;
   const hysteresisPx = options.hysteresisPx ?? 8;
   const maxPending = options.maxPendingRequests ?? 64;
-  if (!validNonnegativeInteger(dwellMs) || !validNonnegativeInteger(hysteresisPx) || !validNonnegativeInteger(maxPending) || maxPending < 1)
+  if (
+    !validNonnegativeInteger(dwellMs) ||
+    !validNonnegativeInteger(hysteresisPx) ||
+    !validNonnegativeInteger(maxPending) ||
+    maxPending < 1
+  )
     throw new TypeError('Adaptation budgets must be nonnegative safe integers.');
 
   let disposed = false;
@@ -344,14 +402,24 @@ export function createPresentationAdaptationController(options: PresentationAdap
   const cancelScheduled = (): void => {
     scheduleEpoch++;
     if (!scheduledActive) return;
-    if (scheduled !== undefined) { try { cancelSchedule(scheduled); } catch { /* best effort */ } }
+    if (scheduled !== undefined) {
+      try {
+        cancelSchedule(scheduled);
+      } catch {
+        /* best effort */
+      }
+    }
     scheduled = undefined;
     scheduledActive = false;
   };
 
   const observe = (update: RegionUpdate): void => {
     if (update.kind === 'revoke' || update.kind === 'dispose') {
-      try { options.renderer.clear(update.reason); } catch { /* renderer clear is best effort after authorization loss */ }
+      try {
+        options.renderer.clear(update.reason);
+      } catch {
+        /* renderer clear is best effort after authorization loss */
+      }
       closedByRegion = true;
       cancelScheduled();
       pending = undefined;
@@ -367,7 +435,11 @@ export function createPresentationAdaptationController(options: PresentationAdap
   const observer = options.region.observe(observe);
   if (observer.closed) {
     closedByRegion = true;
-    try { options.renderer.clear("The region was already closed."); } catch { /* clearing remains the renderer owner responsibility */ }
+    try {
+      options.renderer.clear('The region was already closed.');
+    } catch {
+      /* clearing remains the renderer owner responsibility */
+    }
   }
 
   const run = async (request: PendingRequest): Promise<RegionOutcome<PresentationAdaptationResult>> => {
@@ -381,98 +453,191 @@ export function createPresentationAdaptationController(options: PresentationAdap
     if (!request.options.force && !environmentRequiresRefresh(lastEnvironment, request.environment, hysteresisPx)) {
       // Keep the baseline at the last successfully applied environment so
       // successive small resize deltas can accumulate.
-      return {ok: true, value: {status: 'deferred', snapshot: before, reason: 'hysteresis'}};
+      return { ok: true, value: { status: 'deferred', snapshot: before, reason: 'hysteresis' } };
     }
     const currentReadSet = snapshotReadSet(before);
     if (!currentReadSet.ok) return currentReadSet;
-    const contextInput: PresentationAdaptationReadInput = {region: options.region, snapshot: before, environment: request.environment, signal};
+    const contextInput: PresentationAdaptationReadInput = {
+      region: options.region,
+      snapshot: before,
+      environment: request.environment,
+      signal,
+    };
     const source = options.readContext ?? options.baseContext;
-    const refreshed = await readSource({source, input: contextInput});
+    const refreshed = await readSource({ source, input: contextInput });
     if (signal.aborted) return failure('runtime.presentation-cancelled', 'The adaptation was cancelled.');
     if (!refreshed.ok) return refreshed;
     const beforeRefresh = options.region.snapshot();
-    if (!sameSnapshot(before, beforeRefresh)) return failure('runtime.presentation-stale', 'The region changed while its adaptation context was refreshed.');
+    if (!sameSnapshot(before, beforeRefresh))
+      return failure('runtime.presentation-stale', 'The region changed while its adaptation context was refreshed.');
     const explicit = request.options.explicit ?? refreshed.value.explicitTransition === true;
     const context = contextFor(before, refreshed.value, request.environment, explicit);
     if (!context.ok) return context;
     if (readTransitionBlocked(options.transitionBlocked)) {
-      return {ok: true, value: {status: 'deferred', snapshot: before, reason: 'transition-blocked'}};
+      return { ok: true, value: { status: 'deferred', snapshot: before, reason: 'transition-blocked' } };
     }
     if (context.value.transitionBlocked === true) {
-      return {ok: true, value: {status: 'deferred', snapshot: before, reason: 'transition-blocked'}};
+      return { ok: true, value: { status: 'deferred', snapshot: before, reason: 'transition-blocked' } };
     }
-    if (before.state.presentation !== undefined && refreshed.value.experience.transitionPolicy === 'explicit-only' && !explicit) {
+    if (
+      before.state.presentation !== undefined &&
+      refreshed.value.experience.transitionPolicy === 'explicit-only' &&
+      !explicit
+    ) {
       // The compiler may otherwise return the incumbent as a valid fallback.
       // Defer before composition so a blocked measurement remains retryable.
-      return {ok: true, value: {status: 'deferred', snapshot: before, reason: 'transition-blocked'}};
+      return { ok: true, value: { status: 'deferred', snapshot: before, reason: 'transition-blocked' } };
     }
     const requestIdentity = makeRequestId(++requestCounter);
-    const composed = composePresentation({id: requestIdentity.id, revision: requestIdentity.revision, preconditions: semanticReadSet(currentReadSet.value), context: context.value, ...(refreshed.value.candidates === undefined ? {} : {candidates: refreshed.value.candidates})}, options.registry);
+    const composed = composePresentation(
+      {
+        id: requestIdentity.id,
+        revision: requestIdentity.revision,
+        preconditions: semanticReadSet(currentReadSet.value),
+        context: context.value,
+        ...(refreshed.value.candidates === undefined ? {} : { candidates: refreshed.value.candidates }),
+      },
+      options.registry,
+    );
     if (!composed.ok) return failureFromCore(composed);
     if (signal.aborted) return failure('runtime.presentation-cancelled', 'The adaptation was cancelled.');
     const candidate = composed.value.presentation;
-    if (candidate === undefined) return failure('runtime.presentation-conflict', 'No feasible presentation was found for the measured environment.');
+    if (candidate === undefined)
+      return failure(
+        'runtime.presentation-conflict',
+        'No feasible presentation was found for the measured environment.',
+      );
     const incumbent = before.state.presentation;
     if (samePlan(candidate.plan, incumbent)) {
-      return {ok: true, value: {status: 'unchanged', snapshot: before, composition: composed.value}};
+      return { ok: true, value: { status: 'unchanged', snapshot: before, composition: composed.value } };
     }
     // A committed plan carries the transfer that produced it. Validate it as
     // an incumbent source graph, where historical transfer instructions are
     // metadata for the prior transition rather than candidate state.
-    const previousValidated = incumbent === undefined ? undefined : validatePresentationPlan({...incumbent, stateTransfer: []}, context.value, options.registry);
+    const previousValidated =
+      incumbent === undefined
+        ? undefined
+        : validatePresentationPlan({ ...incumbent, stateTransfer: [] }, context.value, options.registry);
     if (previousValidated !== undefined && !previousValidated.ok) return failureFromCore(previousValidated);
     const interaction = projectInteractionState(previousValidated?.value, candidate, before.state.interaction);
     if (!interaction.ok) return interaction;
     let currentNavigation: PresentationNavigationState | undefined;
-    try { currentNavigation = options.readNavigation?.(); }
-    catch { return failure('runtime.presentation-navigation', 'The host navigation state could not be read.'); }
+    try {
+      currentNavigation = options.readNavigation?.();
+    } catch {
+      return failure('runtime.presentation-navigation', 'The host navigation state could not be read.');
+    }
     const navigation = projectNavigationState(previousValidated?.value, candidate, currentNavigation);
     if (!navigation.ok) return navigation;
-    const nextProjection: PresentationProjectionState = Object.freeze({presentation: candidate,
-      ...(interaction.value === undefined ? {} : {interaction: interaction.value}),
-      ...(navigation.value === undefined ? {} : {navigation: navigation.value})});
+    const nextProjection: PresentationProjectionState = Object.freeze({
+      presentation: candidate,
+      ...(interaction.value === undefined ? {} : { interaction: interaction.value }),
+      ...(navigation.value === undefined ? {} : { navigation: navigation.value }),
+    });
     const previousNavigation = currentNavigation;
-    const projectionInput: PresentationProjectionInput = {next: nextProjection, signal,
-      ...(previousValidated?.value === undefined ? {} : {previous: {presentation: previousValidated.value,
-        ...(before.state.interaction === undefined ? {} : {interaction: before.state.interaction}),
-        ...(previousNavigation === undefined ? {} : {navigation: previousNavigation})}})};
-    const staged = await options.region.stage({requestId: requestIdentity.id, expected: currentReadSet.value,
-      state: {task: before.state.task, presentation: candidate.plan, ...(interaction.value === undefined ? {} : {interaction: interaction.value})},
+    const projectionInput: PresentationProjectionInput = {
+      next: nextProjection,
+      signal,
+      ...(previousValidated?.value === undefined
+        ? {}
+        : {
+            previous: {
+              presentation: previousValidated.value,
+              ...(before.state.interaction === undefined ? {} : { interaction: before.state.interaction }),
+              ...(previousNavigation === undefined ? {} : { navigation: previousNavigation }),
+            },
+          }),
+    };
+    const staged = await options.region.stage({
+      requestId: requestIdentity.id,
+      expected: currentReadSet.value,
+      state: {
+        task: before.state.task,
+        presentation: candidate.plan,
+        ...(interaction.value === undefined ? {} : { interaction: interaction.value }),
+      },
     });
     if (!staged.ok) return staged;
-    const discard = (): void => { try { options.region.discard(staged.value); } catch { /* an already-consumed token is harmless */ } };
-    if (signal.aborted) { discard(); return failure('runtime.presentation-cancelled', 'The adaptation was cancelled.'); }
-    let prepared: RegionOutcome<import('./renderer.js').PreparedPresentationProjection>;
-    try { prepared = options.renderer.prepare(projectionInput); }
-    catch { discard(); return failure('runtime.presentation-renderer', 'The renderer could not prepare the presentation projection.'); }
-    if (!prepared.ok) { discard(); return prepared; }
-    const rollback = (): void => { try { prepared.value.rollback(); } catch { /* renderer revoke/clear remains the last recovery boundary */ } };
-    const recheck = (prospective?: RegionSnapshot): RegionOutcome<void> => {
-      if (signal.aborted) return failure('runtime.presentation-cancelled', 'The adaptation was cancelled before publication.');
-      if (readTransitionBlocked(options.transitionBlocked)) return failure('runtime.presentation-transition-blocked', 'The presentation transition is blocked by an active interaction.');
-      const current = options.region.snapshot();
-      if (!sameSnapshot(before, current)) return failure('runtime.presentation-stale', 'The region changed before the presentation could be committed.');
-      const finalPlan = prospective?.state?.presentation;
-      if (finalPlan === undefined) return failure('runtime.presentation-stale', 'The region did not provide the prospective presentation revisions.');
-      const finalPresentation = resultForPlan(candidate, finalPlan);
-      const finalProjection: PresentationProjectionState = Object.freeze({...nextProjection, presentation: finalPresentation});
-      let applied: RegionOutcome<void>;
-      try { applied = prepared.value.apply(finalProjection); }
-      catch { rollback(); return failure('runtime.presentation-renderer', 'The renderer could not apply the prepared projection.'); }
-      if (!applied.ok) { rollback(); return applied; }
-      return {ok: true, value: undefined};
+    const discard = (): void => {
+      try {
+        options.region.discard(staged.value);
+      } catch {
+        /* an already-consumed token is harmless */
+      }
     };
-    const committed = await options.region.commit(staged.value, {signal, recheck});
-    if (!committed.ok) { rollback(); return committed; }
+    if (signal.aborted) {
+      discard();
+      return failure('runtime.presentation-cancelled', 'The adaptation was cancelled.');
+    }
+    let prepared: RegionOutcome<import('./renderer.js').PreparedPresentationProjection>;
+    try {
+      prepared = options.renderer.prepare(projectionInput);
+    } catch {
+      discard();
+      return failure('runtime.presentation-renderer', 'The renderer could not prepare the presentation projection.');
+    }
+    if (!prepared.ok) {
+      discard();
+      return prepared;
+    }
+    const rollback = (): void => {
+      try {
+        prepared.value.rollback();
+      } catch {
+        /* renderer revoke/clear remains the last recovery boundary */
+      }
+    };
+    const recheck = (prospective?: RegionSnapshot): RegionOutcome<void> => {
+      if (signal.aborted)
+        return failure('runtime.presentation-cancelled', 'The adaptation was cancelled before publication.');
+      if (readTransitionBlocked(options.transitionBlocked))
+        return failure(
+          'runtime.presentation-transition-blocked',
+          'The presentation transition is blocked by an active interaction.',
+        );
+      const current = options.region.snapshot();
+      if (!sameSnapshot(before, current))
+        return failure('runtime.presentation-stale', 'The region changed before the presentation could be committed.');
+      const finalPlan = prospective?.state?.presentation;
+      if (finalPlan === undefined)
+        return failure(
+          'runtime.presentation-stale',
+          'The region did not provide the prospective presentation revisions.',
+        );
+      const finalPresentation = resultForPlan(candidate, finalPlan);
+      const finalProjection: PresentationProjectionState = Object.freeze({
+        ...nextProjection,
+        presentation: finalPresentation,
+      });
+      let applied: RegionOutcome<void>;
+      try {
+        applied = prepared.value.apply(finalProjection);
+      } catch {
+        rollback();
+        return failure('runtime.presentation-renderer', 'The renderer could not apply the prepared projection.');
+      }
+      if (!applied.ok) {
+        rollback();
+        return applied;
+      }
+      return { ok: true, value: undefined };
+    };
+    const committed = await options.region.commit(staged.value, { signal, recheck });
+    if (!committed.ok) {
+      rollback();
+      return committed;
+    }
     lastEnvironment = request.environment;
     lastCommitAt = safeNow();
     // Adopt the exact committed plan metadata for renderer callbacks that keep
     // a projection snapshot. The semantic graph is unchanged by RegionStore's
     // revision rewrite, so this update is informational and cannot fail.
     const committedPlan = committed.value.state?.presentation;
-    const result: PresentationComposition = Object.freeze({...composed.value,
-      presentation: committedPlan === undefined ? candidate : resultForPlan(candidate, committedPlan)});
-    return {ok: true, value: {status: 'committed', snapshot: committed.value, composition: result}};
+    const result: PresentationComposition = Object.freeze({
+      ...composed.value,
+      presentation: committedPlan === undefined ? candidate : resultForPlan(candidate, committedPlan),
+    });
+    return { ok: true, value: { status: 'committed', snapshot: committed.value, composition: result } };
   };
 
   function scheduleStart(delay: number): void {
@@ -512,28 +677,40 @@ export function createPresentationAdaptationController(options: PresentationAdap
   ): Promise<RegionOutcome<PresentationAdaptationResult>> {
     runningWaiters = waitersAtStart;
     let task: Promise<RegionOutcome<PresentationAdaptationResult>>;
-    try { task = run(request); }
-    catch { task = Promise.resolve(failure('runtime.presentation-context', 'The adaptation failed before it could settle.')); }
-    running = task.then((outcome) => {
-      settleRunning(outcome);
-      return outcome;
-    }, () => {
-      const outcome = failure<PresentationAdaptationResult>('runtime.presentation-context', 'The adaptation failed before publication.');
-      settleRunning(outcome);
-      return outcome;
-    }).finally(() => {
-      running = undefined;
-      if (pending !== undefined && !disposed) {
-        const dwell = lastCommitAt === undefined ? 0 : Math.max(0, dwellMs - (safeNow() - lastCommitAt));
-        scheduleStart(dwell);
-      }
-    });
+    try {
+      task = run(request);
+    } catch {
+      task = Promise.resolve(failure('runtime.presentation-context', 'The adaptation failed before it could settle.'));
+    }
+    running = task
+      .then(
+        (outcome) => {
+          settleRunning(outcome);
+          return outcome;
+        },
+        () => {
+          const outcome = failure<PresentationAdaptationResult>(
+            'runtime.presentation-context',
+            'The adaptation failed before publication.',
+          );
+          settleRunning(outcome);
+          return outcome;
+        },
+      )
+      .finally(() => {
+        running = undefined;
+        if (pending !== undefined && !disposed) {
+          const dwell = lastCommitAt === undefined ? 0 : Math.max(0, dwellMs - (safeNow() - lastCommitAt));
+          scheduleStart(dwell);
+        }
+      });
     return running;
   }
 
   const execute = (): Promise<RegionOutcome<PresentationAdaptationResult>> => {
     if (running !== undefined) return running;
-    if (pending === undefined) return Promise.resolve(failure('runtime.presentation-queue', 'No adaptation request is queued.'));
+    if (pending === undefined)
+      return Promise.resolve(failure('runtime.presentation-queue', 'No adaptation request is queued.'));
     cancelScheduled();
     const request = pending;
     pending = undefined;
@@ -542,12 +719,17 @@ export function createPresentationAdaptationController(options: PresentationAdap
     return startRunning(request, waitersAtStart);
   };
 
-  const queue = (environment: PresentationEnvironment, requestOptions: PresentationAdaptationRequestOptions = {}): Promise<RegionOutcome<PresentationAdaptationResult>> => {
-    if (disposed || closedByRegion) return Promise.resolve(failure('runtime.presentation-disposed', 'The adaptation controller is disposed.'));
-    if (waiters.length >= maxPending) return Promise.resolve(failure('runtime.presentation-budget', 'The adaptation request queue is full.'));
+  const queue = (
+    environment: PresentationEnvironment,
+    requestOptions: PresentationAdaptationRequestOptions = {},
+  ): Promise<RegionOutcome<PresentationAdaptationResult>> => {
+    if (disposed || closedByRegion)
+      return Promise.resolve(failure('runtime.presentation-disposed', 'The adaptation controller is disposed.'));
+    if (waiters.length >= maxPending)
+      return Promise.resolve(failure('runtime.presentation-budget', 'The adaptation request queue is full.'));
     activeController?.abort();
     return new Promise((resolve) => {
-      pending = {environment, options: requestOptions, resolve};
+      pending = { environment, options: requestOptions, resolve };
       waiters.push(resolve);
       if (running !== undefined) return;
       const delay = lastCommitAt === undefined ? 0 : Math.max(0, dwellMs - (safeNow() - lastCommitAt));
@@ -558,11 +740,14 @@ export function createPresentationAdaptationController(options: PresentationAdap
   return {
     request: queue,
     flush: () => {
-      if (disposed || closedByRegion) return Promise.resolve(failure('runtime.presentation-disposed', 'The adaptation controller is disposed.'));
+      if (disposed || closedByRegion)
+        return Promise.resolve(failure('runtime.presentation-disposed', 'The adaptation controller is disposed.'));
       if (running !== undefined) return running;
       return execute();
     },
-    get pending() { return !disposed && !closedByRegion && (pending !== undefined || running !== undefined); },
+    get pending() {
+      return !disposed && !closedByRegion && (pending !== undefined || running !== undefined);
+    },
     dispose: () => {
       if (disposed) return;
       disposed = true;
@@ -576,4 +761,9 @@ export function createPresentationAdaptationController(options: PresentationAdap
   };
 }
 
-export type {PresentationNavigationState, PresentationProjectionInput, PresentationProjectionState, PresentationRenderer};
+export type {
+  PresentationNavigationState,
+  PresentationProjectionInput,
+  PresentationProjectionState,
+  PresentationRenderer,
+};

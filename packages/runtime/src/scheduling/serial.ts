@@ -16,12 +16,21 @@ export function createSerialQueue(maxPending = 64): SerialQueue {
     if (pending >= maxPending) return Promise.reject(new Error('The region command queue is full.'));
     pending++;
     const run = tail.then(command, command);
-    tail = run.then(() => undefined, () => undefined);
-    return run.finally(() => { pending--; });
+    tail = run.then(
+      () => undefined,
+      () => undefined,
+    );
+    return run.finally(() => {
+      pending--;
+    });
   };
   return {
     enqueue,
-    close: () => { closed = true; },
-    get pending() { return pending; },
+    close: () => {
+      closed = true;
+    },
+    get pending() {
+      return pending;
+    },
   };
 }

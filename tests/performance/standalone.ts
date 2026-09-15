@@ -1,9 +1,9 @@
-import {AeliqoInputElement} from "@aeliqo/web/input";
-import {AeliqoTableElement} from "@aeliqo/web/table";
+import { AeliqoInputElement } from '@aeliqo/web/input';
+import { AeliqoTableElement } from '@aeliqo/web/table';
 
 export const STANDALONE_ROW_COUNT = 100;
 
-type StandaloneRow = {readonly id: string; readonly label: string; readonly value: number};
+type StandaloneRow = { readonly id: string; readonly label: string; readonly value: number };
 
 type NavigationObservation = {
   readonly name: string;
@@ -28,7 +28,7 @@ type ResourceObservation = {
   readonly decodedBodySize: number | null;
 };
 
-type PaintObservation = {readonly name: string; readonly startTime: number | null; readonly duration: number | null};
+type PaintObservation = { readonly name: string; readonly startTime: number | null; readonly duration: number | null };
 
 type TimingObservation = {
   readonly navigation: NavigationObservation | null;
@@ -42,7 +42,7 @@ type StandaloneObservation = {
     readonly userAgent: string;
     readonly platform: string;
     readonly language: string;
-    readonly viewport: {readonly width: number; readonly height: number};
+    readonly viewport: { readonly width: number; readonly height: number };
     readonly devicePixelRatio: number;
     readonly hardwareConcurrency: number | null;
   };
@@ -79,14 +79,14 @@ declare global {
   }
 }
 
-const fixture = document.querySelector<HTMLElement>("#fixture");
-if (fixture === null) throw new Error("Standalone fixture root is missing.");
+const fixture = document.querySelector<HTMLElement>('#fixture');
+if (fixture === null) throw new Error('Standalone fixture root is missing.');
 
-if (!customElements.get("aeliqo-input")) customElements.define("aeliqo-input", AeliqoInputElement);
-if (!customElements.get("aeliqo-table")) customElements.define("aeliqo-table", AeliqoTableElement);
+if (!customElements.get('aeliqo-input')) customElements.define('aeliqo-input', AeliqoInputElement);
+if (!customElements.get('aeliqo-table')) customElements.define('aeliqo-table', AeliqoTableElement);
 
 function makeRows(): readonly StandaloneRow[] {
-  return Array.from({length: STANDALONE_ROW_COUNT}, (_, index) => ({
+  return Array.from({ length: STANDALONE_ROW_COUNT }, (_, index) => ({
     id: `row-${index + 1}`,
     label: `Row ${index + 1}`,
     value: index,
@@ -94,11 +94,11 @@ function makeRows(): readonly StandaloneRow[] {
 }
 
 function finiteOrNull(value: unknown): number | null {
-  return typeof value === "number" && Number.isFinite(value) ? value : null;
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 function navigationObservation(): NavigationObservation | null {
-  const entry = performance.getEntriesByType("navigation").at(-1) as PerformanceNavigationTiming | undefined;
+  const entry = performance.getEntriesByType('navigation').at(-1) as PerformanceNavigationTiming | undefined;
   if (entry === undefined) return null;
   return {
     name: entry.name,
@@ -115,7 +115,7 @@ function navigationObservation(): NavigationObservation | null {
 }
 
 function resourceObservations(): readonly ResourceObservation[] {
-  return performance.getEntriesByType("resource").map((entry) => {
+  return performance.getEntriesByType('resource').map((entry) => {
     const resource = entry as PerformanceResourceTiming;
     return {
       name: resource.name,
@@ -130,7 +130,7 @@ function resourceObservations(): readonly ResourceObservation[] {
 }
 
 function paintObservations(): readonly PaintObservation[] {
-  return performance.getEntriesByType("paint").map((entry) => ({
+  return performance.getEntriesByType('paint').map((entry) => ({
     name: entry.name,
     startTime: finiteOrNull(entry.startTime),
     duration: finiteOrNull(entry.duration),
@@ -138,12 +138,12 @@ function paintObservations(): readonly PaintObservation[] {
 }
 
 function isJavascript(resource: ResourceObservation): boolean {
-  return resource.initiatorType === "script" || /\.js(?:[?#]|$)/u.test(resource.name);
+  return resource.initiatorType === 'script' || /\.js(?:[?#]|$)/u.test(resource.name);
 }
 
 function timingObservation(): TimingObservation {
   const resources = resourceObservations();
-  const readyMark = performance.getEntriesByName("aeliqo-standalone-fixture-ready").at(-1);
+  const readyMark = performance.getEntriesByName('aeliqo-standalone-fixture-ready').at(-1);
   return {
     navigation: navigationObservation(),
     resources,
@@ -153,8 +153,8 @@ function timingObservation(): TimingObservation {
 }
 
 function collect(): StandaloneObservation {
-  const input = document.querySelector("aeliqo-input") as AeliqoInputElement | null;
-  const table = document.querySelector("aeliqo-table") as AeliqoTableElement | null;
+  const input = document.querySelector('aeliqo-input') as AeliqoInputElement | null;
+  const table = document.querySelector('aeliqo-table') as AeliqoTableElement | null;
   const resources = resourceObservations();
   const javascript = resources.filter(isJavascript);
   const sum = (values: readonly (number | null)[]): number | null => {
@@ -162,20 +162,23 @@ function collect(): StandaloneObservation {
     return values.reduce<number>((total, value) => total + (value ?? 0), 0);
   };
   const unavailable = (values: readonly ResourceObservation[]) =>
-    values.filter((resource) => resource.transferSize === null || resource.encodedBodySize === null || resource.decodedBodySize === null).length;
+    values.filter(
+      (resource) =>
+        resource.transferSize === null || resource.encodedBodySize === null || resource.decodedBodySize === null,
+    ).length;
   return {
     environment: {
       userAgent: navigator.userAgent,
       platform: navigator.platform,
       language: navigator.language,
-      viewport: {width: globalThis.innerWidth, height: globalThis.innerHeight},
+      viewport: { width: globalThis.innerWidth, height: globalThis.innerHeight },
       devicePixelRatio: globalThis.devicePixelRatio,
       hardwareConcurrency: navigator.hardwareConcurrency ?? null,
     },
     fixture: {
       rowCount: table?.rows.length ?? 0,
-      renderedRows: table?.shadowRoot?.querySelectorAll("tbody tr").length ?? 0,
-      controlValue: input?.shadowRoot?.querySelector<HTMLInputElement>("input")?.value ?? "",
+      renderedRows: table?.shadowRoot?.querySelectorAll('tbody tr').length ?? 0,
+      controlValue: input?.shadowRoot?.querySelector<HTMLInputElement>('input')?.value ?? '',
       inputPresent: input !== null,
       tablePresent: table !== null,
     },
@@ -189,30 +192,34 @@ function collect(): StandaloneObservation {
       javascriptDecodedBytes: sum(javascript.map((resource) => resource.decodedBodySize)),
       resourceCount: resources.length,
       javascriptResourceCount: javascript.length,
-      cachedResourceCount: resources.filter((resource) => resource.transferSize === 0 && resource.encodedBodySize !== null && resource.encodedBodySize > 0).length,
-      cachedJavascriptResourceCount: javascript.filter((resource) => resource.transferSize === 0 && resource.encodedBodySize !== null && resource.encodedBodySize > 0).length,
+      cachedResourceCount: resources.filter(
+        (resource) => resource.transferSize === 0 && resource.encodedBodySize !== null && resource.encodedBodySize > 0,
+      ).length,
+      cachedJavascriptResourceCount: javascript.filter(
+        (resource) => resource.transferSize === 0 && resource.encodedBodySize !== null && resource.encodedBodySize > 0,
+      ).length,
       resourceTimingUnavailableCount: unavailable(resources),
       javascriptResourceTimingUnavailableCount: unavailable(javascript),
     },
   };
 }
 
-const input = document.createElement("aeliqo-input") as AeliqoInputElement;
-input.label = "Standalone value";
-input.value = "ready";
+const input = document.createElement('aeliqo-input') as AeliqoInputElement;
+input.label = 'Standalone value';
+input.value = 'ready';
 
-const table = document.createElement("aeliqo-table") as AeliqoTableElement;
-table.caption = "Standalone records";
+const table = document.createElement('aeliqo-table') as AeliqoTableElement;
+table.caption = 'Standalone records';
 table.columns = [
-  {key: "id", label: "ID"},
-  {key: "label", label: "Label"},
-  {key: "value", label: "Value"},
+  { key: 'id', label: 'ID' },
+  { key: 'label', label: 'Label' },
+  { key: 'value', label: 'Value' },
 ];
-table.identity = ["id"];
+table.identity = ['id'];
 table.rows = makeRows();
 
 fixture.replaceChildren(input, table);
 
 await Promise.all([input.updateComplete, table.updateComplete]);
-performance.mark("aeliqo-standalone-fixture-ready");
-window.aeliqoStandalone = {ready: true, collect};
+performance.mark('aeliqo-standalone-fixture-ready');
+window.aeliqoStandalone = { ready: true, collect };

@@ -1,4 +1,4 @@
-import type {PresentationEnvironment} from '@aeliqo/core';
+import type { PresentationEnvironment } from '@aeliqo/core';
 import {
   createCallbackPresentationRenderer,
   createPresentationAdaptationController,
@@ -11,11 +11,11 @@ import {
   type PresentationNavigationState,
   type PresentationRenderer as RuntimePresentationRenderer,
 } from '@aeliqo/runtime/presentation';
-import type {AeliqoRegionElement} from './aeliqo-region.js';
-import type {RegionHandle, RegionOutcome} from '@aeliqo/runtime/regions';
+import type { AeliqoRegionElement } from './aeliqo-region.js';
+import type { RegionHandle, RegionOutcome } from '@aeliqo/runtime/regions';
 
-const KNOWN = (value: number): {readonly state: 'known'; readonly value: number} => ({state: 'known', value});
-const UNKNOWN = {state: 'unknown'} as const;
+const KNOWN = (value: number): { readonly state: 'known'; readonly value: number } => ({ state: 'known', value });
+const UNKNOWN = { state: 'unknown' } as const;
 
 export interface AeliqoEnvironmentMeasurementOptions {
   readonly locale?: string;
@@ -27,12 +27,21 @@ export interface AeliqoEnvironmentMeasurementOptions {
 }
 
 function boundedLocale(value: unknown): string {
-  if (typeof value !== 'string' || value.length === 0 || value.length > 64 || /[\u0000-\u001f\u007f]/u.test(value)) return 'en-US';
-  try { return new Intl.Locale(value).toString(); } catch { return 'en-US'; }
+  if (typeof value !== 'string' || value.length === 0 || value.length > 64 || /[\u0000-\u001f\u007f]/u.test(value))
+    return 'en-US';
+  try {
+    return new Intl.Locale(value).toString();
+  } catch {
+    return 'en-US';
+  }
 }
 
 function media(target: Window | undefined, query: string): boolean | undefined {
-  try { return target?.matchMedia(query).matches; } catch { return undefined; }
+  try {
+    return target?.matchMedia(query).matches;
+  } catch {
+    return undefined;
+  }
 }
 
 /**
@@ -52,28 +61,55 @@ export function measureAeliqoRegionEnvironment(
   let locale = boundedLocale(options.locale ?? ownerDocument?.documentElement.lang ?? windowObject?.navigator.language);
   try {
     const rect = element?.getBoundingClientRect();
-    const style = element === undefined || windowObject === undefined ? undefined : windowObject.getComputedStyle(element);
+    const style =
+      element === undefined || windowObject === undefined ? undefined : windowObject.getComputedStyle(element);
     const verticalWriting = style?.writingMode !== undefined && /^(vertical|sideways)/u.test(style.writingMode);
-    if (rect !== undefined && Number.isFinite(verticalWriting ? rect.height : rect.width) && (verticalWriting ? rect.height : rect.width) >= 0)
+    if (
+      rect !== undefined &&
+      Number.isFinite(verticalWriting ? rect.height : rect.width) &&
+      (verticalWriting ? rect.height : rect.width) >= 0
+    )
       inlineSize = KNOWN(verticalWriting ? rect.height : rect.width);
-    if (rect !== undefined && Number.isFinite(verticalWriting ? rect.width : rect.height) && (verticalWriting ? rect.width : rect.height) >= 0)
+    if (
+      rect !== undefined &&
+      Number.isFinite(verticalWriting ? rect.width : rect.height) &&
+      (verticalWriting ? rect.width : rect.height) >= 0
+    )
       blockSize = KNOWN(verticalWriting ? rect.width : rect.height);
     if (style !== undefined) {
-      if (options.direction === undefined && (style.direction === 'ltr' || style.direction === 'rtl')) direction = style.direction;
+      if (options.direction === undefined && (style.direction === 'ltr' || style.direction === 'rtl'))
+        direction = style.direction;
       const fontSize = Number.parseFloat(style.fontSize);
-      if (options.textScale === undefined && Number.isFinite(fontSize) && fontSize > 0) textScale = KNOWN(fontSize / 16);
+      if (options.textScale === undefined && Number.isFinite(fontSize) && fontSize > 0)
+        textScale = KNOWN(fontSize / 16);
     }
-    if (options.textScale !== undefined && Number.isFinite(options.textScale) && options.textScale > 0) textScale = KNOWN(options.textScale);
-    if (ownerDocument?.documentElement.lang !== undefined && options.locale === undefined) locale = boundedLocale(ownerDocument.documentElement.lang || locale);
-  } catch { /* unknown measurement is safe and explicit */ }
+    if (options.textScale !== undefined && Number.isFinite(options.textScale) && options.textScale > 0)
+      textScale = KNOWN(options.textScale);
+    if (ownerDocument?.documentElement.lang !== undefined && options.locale === undefined)
+      locale = boundedLocale(ownerDocument.documentElement.lang || locale);
+  } catch {
+    /* unknown measurement is safe and explicit */
+  }
   const primaryFine = media(windowObject, '(pointer: fine)');
   const primaryCoarse = media(windowObject, '(pointer: coarse)');
   const anyFine = media(windowObject, '(any-pointer: fine)');
   const anyCoarse = media(windowObject, '(any-pointer: coarse)');
-  const pointer: PresentationEnvironment['pointer'] = options.pointer ??
-    (anyFine === true && anyCoarse === true ? 'mixed' : primaryFine === true ? 'fine' : primaryCoarse === true ? 'coarse' : 'unknown');
-  const hover: PresentationEnvironment['hover'] = options.hover ??
-    (media(windowObject, '(hover: hover)') === true ? 'available' : media(windowObject, '(hover: none)') === true ? 'unavailable' : 'unknown');
+  const pointer: PresentationEnvironment['pointer'] =
+    options.pointer ??
+    (anyFine === true && anyCoarse === true
+      ? 'mixed'
+      : primaryFine === true
+        ? 'fine'
+        : primaryCoarse === true
+          ? 'coarse'
+          : 'unknown');
+  const hover: PresentationEnvironment['hover'] =
+    options.hover ??
+    (media(windowObject, '(hover: hover)') === true
+      ? 'available'
+      : media(windowObject, '(hover: none)') === true
+        ? 'unavailable'
+        : 'unknown');
   const reducedMotion = media(windowObject, '(prefers-reduced-motion: reduce)') === true;
   const forcedColors = media(windowObject, '(forced-colors: active)') === true;
   return {
@@ -125,11 +161,19 @@ function editableTarget(value: Element | undefined): boolean {
   if (value === undefined) return false;
   const tag = value.localName;
   if (tag === 'input' || tag === 'textarea' || tag === 'select') {
-    return !value.hasAttribute('disabled') && !value.hasAttribute('readonly') && value.getAttribute('aria-readonly') !== 'true';
+    return (
+      !value.hasAttribute('disabled') &&
+      !value.hasAttribute('readonly') &&
+      value.getAttribute('aria-readonly') !== 'true'
+    );
   }
   const contentEditable = value.getAttribute('contenteditable');
   if (contentEditable !== null && contentEditable !== 'false') return true;
-  return value.getAttribute('role') === 'textbox' || value.getAttribute('role') === 'combobox' || value.getAttribute('role') === 'spinbutton';
+  return (
+    value.getAttribute('role') === 'textbox' ||
+    value.getAttribute('role') === 'combobox' ||
+    value.getAttribute('role') === 'spinbutton'
+  );
 }
 
 function deepestActive(root: Document | Element): Element | undefined {
@@ -147,8 +191,8 @@ function composedContains(container: Element, value: Element): boolean {
   while (current !== null) {
     if (current === container) return true;
     const root: Node = current.getRootNode();
-    const host: unknown = (root as {readonly host?: unknown}).host;
-    current = host !== undefined && host !== null ? host as Node : current.parentNode;
+    const host: unknown = (root as { readonly host?: unknown }).host;
+    current = host !== undefined && host !== null ? (host as Node) : current.parentNode;
   }
   return false;
 }
@@ -162,10 +206,15 @@ function hasFocusedEditable(element: AeliqoRegionElement): boolean {
 }
 
 function elementRenderer(element: AeliqoRegionElement): RuntimePresentationRenderer {
-  let previous: {readonly presentation: AeliqoRegionElement['presentation']; readonly interaction: AeliqoRegionElement['interaction']} | undefined;
+  let previous:
+    | {
+        readonly presentation: AeliqoRegionElement['presentation'];
+        readonly interaction: AeliqoRegionElement['interaction'];
+      }
+    | undefined;
   return createCallbackPresentationRenderer({
     apply: (next) => {
-      previous = {presentation: element.presentation, interaction: element.interaction};
+      previous = { presentation: element.presentation, interaction: element.interaction };
       element.presentation = next.presentation;
       element.interaction = next.interaction;
       element.requestUpdate?.();
@@ -198,9 +247,14 @@ export function createAeliqoRegionAdaptation(options: AeliqoRegionAdaptationOpti
   let disposed = false;
   let wasBlocked = false;
   const hostTransitionBlocked = (): boolean => {
-    try { return transitionBlocked?.() === true; } catch { return true; }
+    try {
+      return transitionBlocked?.() === true;
+    } catch {
+      return true;
+    }
   };
-  const isBlocked = (): boolean => focusedEditable || compositionActive || activePointers.size > 0 || hostTransitionBlocked();
+  const isBlocked = (): boolean =>
+    focusedEditable || compositionActive || activePointers.size > 0 || hostTransitionBlocked();
   const syncBlocked = (): void => {
     focusedEditable = hasFocusedEditable(options.element);
     const blocked = isBlocked();
@@ -227,9 +281,17 @@ export function createAeliqoRegionAdaptation(options: AeliqoRegionAdaptationOpti
     documentObject?.addEventListener('pointercancel', pointerEnd, true);
     syncBlocked();
   };
-  const onFocus = (): void => { queueMicrotask(syncBlocked); };
-  const onCompositionStart = (): void => { compositionActive = true; syncBlocked(); };
-  const onCompositionEnd = (): void => { compositionActive = false; syncBlocked(); };
+  const onFocus = (): void => {
+    queueMicrotask(syncBlocked);
+  };
+  const onCompositionStart = (): void => {
+    compositionActive = true;
+    syncBlocked();
+  };
+  const onCompositionEnd = (): void => {
+    compositionActive = false;
+    syncBlocked();
+  };
   const onWindowBlur = (): void => {
     activePointers.clear();
     const documentObject = options.element.ownerDocument;
@@ -251,41 +313,53 @@ export function createAeliqoRegionAdaptation(options: AeliqoRegionAdaptationOpti
   windowObject?.addEventListener('blur', onWindowBlur, true);
   documentObject?.addEventListener('visibilitychange', onVisibilityChange, true);
   syncBlocked();
-  const readContext = options.readContext === undefined && transitionBlocked === undefined
-    ? undefined
-    : ((input: PresentationAdaptationReadInput) => {
-      const source = options.readContext ?? options.baseContext;
-      const addGuard = (value: unknown): unknown => {
-        if (value !== null && typeof value === 'object' && !Array.isArray(value) && Object.hasOwn(value as object, 'ok')) {
-          const outcome = value as {readonly ok?: unknown; readonly value?: unknown};
-          if (outcome.ok === true) return {ok: true, value: addGuard(outcome.value)};
-          return value;
-        }
-        if (value === null || typeof value !== 'object' || Array.isArray(value)) return value;
-        return {...value as Record<string, unknown>, ...(hostTransitionBlocked() ? {transitionBlocked: true} : {})};
-      };
-      if (typeof source !== 'function') return addGuard(source) as PresentationAdaptationContextSource;
-      const raw = source(input);
-      return raw !== null && typeof raw === 'object' && typeof (raw as PromiseLike<unknown>).then === 'function'
-        ? Promise.resolve(raw).then(addGuard)
-        : addGuard(raw);
-    }) as PresentationAdaptationContextSource;
+  const readContext =
+    options.readContext === undefined && transitionBlocked === undefined
+      ? undefined
+      : (((input: PresentationAdaptationReadInput) => {
+          const source = options.readContext ?? options.baseContext;
+          const addGuard = (value: unknown): unknown => {
+            if (
+              value !== null &&
+              typeof value === 'object' &&
+              !Array.isArray(value) &&
+              Object.hasOwn(value as object, 'ok')
+            ) {
+              const outcome = value as { readonly ok?: unknown; readonly value?: unknown };
+              if (outcome.ok === true) return { ok: true, value: addGuard(outcome.value) };
+              return value;
+            }
+            if (value === null || typeof value !== 'object' || Array.isArray(value)) return value;
+            return {
+              ...(value as Record<string, unknown>),
+              ...(hostTransitionBlocked() ? { transitionBlocked: true } : {}),
+            };
+          };
+          if (typeof source !== 'function') return addGuard(source) as PresentationAdaptationContextSource;
+          const raw = source(input);
+          return raw !== null && typeof raw === 'object' && typeof (raw as PromiseLike<unknown>).then === 'function'
+            ? Promise.resolve(raw).then(addGuard)
+            : addGuard(raw);
+        }) as PresentationAdaptationContextSource);
   const controller = createPresentationAdaptationController({
     region: options.region,
     registry: options.registry,
     baseContext: options.baseContext,
-    ...(readContext === undefined ? {} : {readContext}),
+    ...(readContext === undefined ? {} : { readContext }),
     renderer,
     transitionBlocked: isBlocked,
-    ...(options.readNavigation === undefined ? {} : {readNavigation: options.readNavigation}),
-    ...(options.now === undefined ? {} : {now: options.now}),
-    ...(options.schedule === undefined ? {} : {schedule: options.schedule}),
-    ...(options.cancelSchedule === undefined ? {} : {cancelSchedule: options.cancelSchedule}),
-    ...(options.dwellMs === undefined ? {} : {dwellMs: options.dwellMs}),
-    ...(options.hysteresisPx === undefined ? {} : {hysteresisPx: options.hysteresisPx}),
-    ...(options.maxPendingRequests === undefined ? {} : {maxPendingRequests: options.maxPendingRequests}),
+    ...(options.readNavigation === undefined ? {} : { readNavigation: options.readNavigation }),
+    ...(options.now === undefined ? {} : { now: options.now }),
+    ...(options.schedule === undefined ? {} : { schedule: options.schedule }),
+    ...(options.cancelSchedule === undefined ? {} : { cancelSchedule: options.cancelSchedule }),
+    ...(options.dwellMs === undefined ? {} : { dwellMs: options.dwellMs }),
+    ...(options.hysteresisPx === undefined ? {} : { hysteresisPx: options.hysteresisPx }),
+    ...(options.maxPendingRequests === undefined ? {} : { maxPendingRequests: options.maxPendingRequests }),
   });
-  const request = (environment = measure(), requestOptions = options.requestOptions): Promise<RegionOutcome<PresentationAdaptationResult>> => {
+  const request = (
+    environment = measure(),
+    requestOptions = options.requestOptions,
+  ): Promise<RegionOutcome<PresentationAdaptationResult>> => {
     // A programmatic focus can occur without a bubbling focus event reaching
     // this host. Refresh the conservative default guard at request time.
     focusedEditable = hasFocusedEditable(options.element);
@@ -296,7 +370,7 @@ export function createAeliqoRegionAdaptation(options: AeliqoRegionAdaptationOpti
     if (currentlyBlocked) needsRetry = true;
     else needsRetry = false;
     const result = controller.request(environment, requestOptions);
-    void result.then(outcome => {
+    void result.then((outcome) => {
       if (!outcome.ok && isBlocked()) needsRetry = true;
     });
     return result;
@@ -304,14 +378,16 @@ export function createAeliqoRegionAdaptation(options: AeliqoRegionAdaptationOpti
   retryAfterInteraction = (): void => {
     if (disposed || !needsRetry || latestEnvironment === undefined || isBlocked()) return;
     needsRetry = false;
-    const requestOptions = {...latestRequestOptions, force: true};
+    const requestOptions = { ...latestRequestOptions, force: true };
     const retry = request(latestEnvironment, requestOptions);
     void controller.flush();
     void retry;
   };
   let observer: ResizeObserver | undefined;
   if (options.autoObserve !== false && typeof ResizeObserver !== 'undefined') {
-    observer = new ResizeObserver(() => { void request(); });
+    observer = new ResizeObserver(() => {
+      void request();
+    });
     observer.observe(options.element);
   }
   return {
@@ -336,4 +412,4 @@ export function createAeliqoRegionAdaptation(options: AeliqoRegionAdaptationOpti
   };
 }
 
-export type {PresentationAdaptationResult, PresentationAdaptationStatus};
+export type { PresentationAdaptationResult, PresentationAdaptationStatus };

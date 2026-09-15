@@ -1,8 +1,14 @@
-import {describe, expect, it} from 'vitest';
-import type {Outcome, Scalar, VersionRef} from '../../packages/core/src/index.js';
-import {createActionPort, ActionRegistry, type ActionDescriptor, type ActionPayload, type TrustedActionContext} from '../../packages/runtime/src/actions/index.js';
+import { describe, expect, it } from 'vitest';
+import type { Outcome, Scalar, VersionRef } from '../../packages/core/src/index.js';
+import {
+  createActionPort,
+  ActionRegistry,
+  type ActionDescriptor,
+  type ActionPayload,
+  type TrustedActionContext,
+} from '../../packages/runtime/src/actions/index.js';
 
-const ok = <T>(value: T): Outcome<T> => ({ok: true, value});
+const ok = <T>(value: T): Outcome<T> => ({ ok: true, value });
 
 function authority(principalKey: string): TrustedActionContext {
   return {
@@ -20,25 +26,26 @@ function authority(principalKey: string): TrustedActionContext {
 
 function registerReplayAction(registry: ActionRegistry, dispatches: string[]): ActionDescriptor {
   const descriptor: ActionDescriptor = {
-    ref: {id: 'security-write', revision: '1'},
-    input: {id: 'security-write-input', revision: '1'},
-    output: {id: 'security-write-output', revision: '1'},
+    ref: { id: 'security-write', revision: '1' },
+    input: { id: 'security-write-input', revision: '1' },
+    output: { id: 'security-write-output', revision: '1' },
     sideEffect: 'domain-write',
     confirmation: 'none',
     idempotency: 'required',
     entityRevision: 'none',
   };
   const scalarPayload = (value: unknown): Outcome<ActionPayload> => {
-    if (value === null || typeof value !== 'object' || Array.isArray(value)) return {ok: false, diagnostics: [{code: 'test.invalid', message: 'invalid', retryable: false}]};
+    if (value === null || typeof value !== 'object' || Array.isArray(value))
+      return { ok: false, diagnostics: [{ code: 'test.invalid', message: 'invalid', retryable: false }] };
     return ok(value as Readonly<Record<string, Scalar>>);
   };
   const registered = registry.register({
     descriptor,
-    inputSchema: {ref: descriptor.input, parse: scalarPayload},
-    outputSchema: {ref: descriptor.output, parse: scalarPayload},
-    dispatch: ({context}) => {
+    inputSchema: { ref: descriptor.input, parse: scalarPayload },
+    outputSchema: { ref: descriptor.output, parse: scalarPayload },
+    dispatch: ({ context }) => {
       dispatches.push(context.principalKey);
-      return {state: 'completed', output: {principal: context.principalKey}};
+      return { state: 'completed', output: { principal: context.principalKey } };
     },
   });
   expect(registered.ok).toBe(true);
@@ -51,27 +58,36 @@ describe('action replay isolation', () => {
     const registry = new ActionRegistry();
     const descriptor = registerReplayAction(registry, dispatches);
     let current = authority('alice');
-    const port = createActionPort({registry, host: {readContext: () => ok(current)}});
+    const port = createActionPort({ registry, host: { readContext: () => ok(current) } });
 
-    const firstPreview = await port.preview({requestId: 'alice-proposal', action: descriptor.ref, input: {amount: 10}, idempotencyKey: 'shared-write'});
+    const firstPreview = await port.preview({
+      requestId: 'alice-proposal',
+      action: descriptor.ref,
+      input: { amount: 10 },
+      idempotencyKey: 'shared-write',
+    });
     expect(firstPreview.ok).toBe(true);
     if (!firstPreview.ok) return;
     const firstReceipt = await port.confirm(firstPreview.value);
     expect(firstReceipt.ok).toBe(true);
     if (!firstReceipt.ok) return;
     const firstExecution = await port.execute(firstReceipt.value);
-    expect(firstExecution).toMatchObject({ok: true, value: {state: 'executed', output: {principal: 'alice'}}});
+    expect(firstExecution).toMatchObject({ ok: true, value: { state: 'executed', output: { principal: 'alice' } } });
 
     current = authority('bob');
-    const secondPreview = await port.preview({requestId: 'bob-proposal', action: descriptor.ref, input: {amount: 10}, idempotencyKey: 'shared-write'});
+    const secondPreview = await port.preview({
+      requestId: 'bob-proposal',
+      action: descriptor.ref,
+      input: { amount: 10 },
+      idempotencyKey: 'shared-write',
+    });
     expect(secondPreview.ok).toBe(true);
     if (!secondPreview.ok) return;
     const secondReceipt = await port.confirm(secondPreview.value);
     expect(secondReceipt.ok).toBe(true);
     if (!secondReceipt.ok) return;
     const secondExecution = await port.execute(secondReceipt.value);
-    expect(secondExecution).toMatchObject({ok: true, value: {state: 'executed', output: {principal: 'bob'}}});
+    expect(secondExecution).toMatchObject({ ok: true, value: { state: 'executed', output: { principal: 'bob' } } });
     expect(dispatches).toEqual(['alice', 'bob']);
   });
 });
-

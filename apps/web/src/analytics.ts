@@ -1,10 +1,10 @@
-import {isPublicAeliqoSite} from './telemetry.js';
+import { isPublicAeliqoSite } from './telemetry.js';
 
 const consentKey = 'aeliqo:analytics-consent:v1';
 const consentEvent = 'aeliqo:analytics-consent';
 const measurementIdPattern = /^G-[A-Z0-9]{6,}$/;
 
-type AnalyticsConfig = Readonly<{enabled: true; measurementId: string}>;
+type AnalyticsConfig = Readonly<{ enabled: true; measurementId: string }>;
 
 declare global {
   interface Window {
@@ -16,8 +16,13 @@ declare global {
 export function parseAnalyticsConfig(input: unknown): AnalyticsConfig | undefined {
   if (input === null || typeof input !== 'object' || Array.isArray(input)) return undefined;
   const value = input as Readonly<Record<string, unknown>>;
-  if (value.enabled !== true || typeof value.measurementId !== 'string' || !measurementIdPattern.test(value.measurementId)) return undefined;
-  return {enabled: true, measurementId: value.measurementId};
+  if (
+    value.enabled !== true ||
+    typeof value.measurementId !== 'string' ||
+    !measurementIdPattern.test(value.measurementId)
+  )
+    return undefined;
+  return { enabled: true, measurementId: value.measurementId };
 }
 
 function consent(browser: Window): 'granted' | 'denied' | undefined {
@@ -42,7 +47,11 @@ export function setAnalyticsConsent(granted: boolean, browser: Window = window):
   browser.dispatchEvent(new Event(consentEvent));
 }
 
-export function startGoogleAnalytics(config: AnalyticsConfig, browser: Window = window, documentRef: Document = document): boolean {
+export function startGoogleAnalytics(
+  config: AnalyticsConfig,
+  browser: Window = window,
+  documentRef: Document = document,
+): boolean {
   if (!isPublicAeliqoSite(browser.location) || consent(browser) !== 'granted') return false;
   if (documentRef.querySelector(`script[data-aeliqo-ga="${config.measurementId}"]`)) return true;
   const script = documentRef.createElement('script');
@@ -56,33 +65,62 @@ export function startGoogleAnalytics(config: AnalyticsConfig, browser: Window = 
     browser.gtag('js', new Date());
     const pageLocation = `${browser.location.origin}${browser.location.pathname}`;
     browser.gtag('config', config.measurementId, {
-      send_page_view: false, allow_google_signals: false, allow_ad_personalization_signals: false,
-      anonymize_ip: true, client_storage: 'none',
+      send_page_view: false,
+      allow_google_signals: false,
+      allow_ad_personalization_signals: false,
+      anonymize_ip: true,
+      client_storage: 'none',
     });
-    browser.gtag('event', 'page_view', {page_location: pageLocation, page_path: browser.location.pathname});
+    browser.gtag('event', 'page_view', { page_location: pageLocation, page_path: browser.location.pathname });
   };
   documentRef.head.append(script);
   return true;
 }
 
-export function prepareGoogleAnalytics(config: AnalyticsConfig, browser: Window = window, documentRef: Document = document): boolean {
+export function prepareGoogleAnalytics(
+  config: AnalyticsConfig,
+  browser: Window = window,
+  documentRef: Document = document,
+): boolean {
   if (!isPublicAeliqoSite(browser.location)) return false;
   const dialog = consentDialog(documentRef);
   const current = consent(browser);
   if (current === undefined && dialog !== undefined) {
     dialog.hidden = false;
-    documentRef.querySelector<HTMLButtonElement>('#analytics-decline')?.addEventListener('click', () => { setAnalyticsConsent(false, browser); dialog.hidden = true; }, {once: true});
-    documentRef.querySelector<HTMLButtonElement>('#analytics-allow')?.addEventListener('click', () => { setAnalyticsConsent(true, browser); dialog.hidden = true; startGoogleAnalytics(config, browser, documentRef); }, {once: true});
+    documentRef.querySelector<HTMLButtonElement>('#analytics-decline')?.addEventListener(
+      'click',
+      () => {
+        setAnalyticsConsent(false, browser);
+        dialog.hidden = true;
+      },
+      { once: true },
+    );
+    documentRef.querySelector<HTMLButtonElement>('#analytics-allow')?.addEventListener(
+      'click',
+      () => {
+        setAnalyticsConsent(true, browser);
+        dialog.hidden = true;
+        startGoogleAnalytics(config, browser, documentRef);
+      },
+      { once: true },
+    );
     return true;
   }
   if (dialog !== undefined) dialog.hidden = true;
   return current === 'granted' ? startGoogleAnalytics(config, browser, documentRef) : false;
 }
 
-export async function prepareDeploymentAnalytics(browser: Window = window, documentRef: Document = document): Promise<boolean> {
+export async function prepareDeploymentAnalytics(
+  browser: Window = window,
+  documentRef: Document = document,
+): Promise<boolean> {
   if (!isPublicAeliqoSite(browser.location)) return false;
   try {
-    const response = await browser.fetch('/google-analytics.json', {credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store'});
+    const response = await browser.fetch('/google-analytics.json', {
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+      cache: 'no-store',
+    });
     const config = response.ok ? parseAnalyticsConfig(await response.json()) : undefined;
     return config === undefined ? false : prepareGoogleAnalytics(config, browser, documentRef);
   } catch {

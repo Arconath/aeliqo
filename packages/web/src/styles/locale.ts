@@ -1,4 +1,4 @@
-export type AeliqoDirection = "ltr" | "rtl";
+export type AeliqoDirection = 'ltr' | 'rtl';
 
 export interface AeliqoLocaleContext {
   readonly locale: string;
@@ -10,19 +10,19 @@ export interface AeliqoLocaleOptions {
   readonly direction?: AeliqoDirection;
 }
 
-type AeliqoTextInfo = {readonly direction?: string};
+type AeliqoTextInfo = { readonly direction?: string };
 type AeliqoLocaleWithTextInfo = Intl.Locale & {
   readonly getTextInfo?: () => AeliqoTextInfo;
 };
 
 function canonicalizeLocale(locale: string): AeliqoLocaleWithTextInfo {
-  if (typeof locale !== "string") {
-    throw new TypeError("Aeliqo locale must be a BCP 47 language tag.");
+  if (typeof locale !== 'string') {
+    throw new TypeError('Aeliqo locale must be a BCP 47 language tag.');
   }
 
   const candidate = locale.trim();
   if (candidate.length === 0) {
-    throw new RangeError("Aeliqo locale must be a non-empty BCP 47 language tag.");
+    throw new RangeError('Aeliqo locale must be a non-empty BCP 47 language tag.');
   }
 
   try {
@@ -34,7 +34,7 @@ function canonicalizeLocale(locale: string): AeliqoLocaleWithTextInfo {
 }
 
 function validateDirection(direction: AeliqoDirection): AeliqoDirection {
-  if (direction !== "ltr" && direction !== "rtl") {
+  if (direction !== 'ltr' && direction !== 'rtl') {
     throw new RangeError(`Invalid Aeliqo text direction: ${String(direction)}`);
   }
   return direction;
@@ -42,51 +42,37 @@ function validateDirection(direction: AeliqoDirection): AeliqoDirection {
 
 function inferDirection(locale: AeliqoLocaleWithTextInfo): AeliqoDirection {
   const getTextInfo = locale.getTextInfo;
-  if (typeof getTextInfo !== "function") {
-    throw new RangeError(
-      "The platform cannot infer locale direction; provide options.direction explicitly.",
-    );
+  if (typeof getTextInfo !== 'function') {
+    throw new RangeError('The platform cannot infer locale direction; provide options.direction explicitly.');
   }
 
   let textInfo: AeliqoTextInfo;
   try {
     textInfo = getTextInfo.call(locale);
   } catch {
-    throw new RangeError(
-      "The platform could not infer locale direction; provide options.direction explicitly.",
-    );
+    throw new RangeError('The platform could not infer locale direction; provide options.direction explicitly.');
   }
 
   const direction = textInfo.direction;
-  if (direction === "ltr" || direction === "rtl") return direction;
-  throw new RangeError(
-    "The platform returned no usable locale direction; provide options.direction explicitly.",
-  );
+  if (direction === 'ltr' || direction === 'rtl') return direction;
+  throw new RangeError('The platform returned no usable locale direction; provide options.direction explicitly.');
 }
 
 /**
  * Resolve direction from an explicit host choice or the platform's BCP 47 text
  * metadata. The function deliberately does not guess from a short language list.
  */
-export function resolveAeliqoDirection(
-  locale: string,
-  direction?: AeliqoDirection,
-): AeliqoDirection {
+export function resolveAeliqoDirection(locale: string, direction?: AeliqoDirection): AeliqoDirection {
   const canonicalLocale = canonicalizeLocale(locale);
   if (direction !== undefined) return validateDirection(direction);
   return inferDirection(canonicalLocale);
 }
 
 /** Create immutable, canonical locale metadata for a component or application scope. */
-export function createAeliqoLocaleContext(
-  locale = "en-US",
-  options: AeliqoLocaleOptions = {},
-): AeliqoLocaleContext {
+export function createAeliqoLocaleContext(locale = 'en-US', options: AeliqoLocaleOptions = {}): AeliqoLocaleContext {
   const canonicalLocale = canonicalizeLocale(locale);
   const resolvedDirection =
-    options.direction === undefined
-      ? inferDirection(canonicalLocale)
-      : validateDirection(options.direction);
+    options.direction === undefined ? inferDirection(canonicalLocale) : validateDirection(options.direction);
   return Object.freeze({
     locale: canonicalLocale.toString(),
     direction: resolvedDirection,
@@ -98,5 +84,5 @@ export function aeliqoLocaleAttributes(context: AeliqoLocaleContext): Readonly<{
   lang: string;
   dir: AeliqoDirection;
 }> {
-  return {lang: context.locale, dir: context.direction};
+  return { lang: context.locale, dir: context.direction };
 }

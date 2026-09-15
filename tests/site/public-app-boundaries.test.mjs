@@ -1,19 +1,22 @@
 import assert from 'node:assert/strict';
-import {access, readFile} from 'node:fs/promises';
-import {resolve} from 'node:path';
+import { access, readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import test from 'node:test';
 
 const root = resolve(import.meta.dirname, '../..');
 
 test('the three public applications assemble the complete static route set', async () => {
-  const {generatePages, generatedRoot} = await import('../../apps/site/generate-pages.mjs');
+  const { generatePages, generatedRoot } = await import('../../apps/site/generate-pages.mjs');
   const inputs = await generatePages();
-  const relativeInputs = inputs.map(path => path.slice(generatedRoot.length));
+  const relativeInputs = inputs.map((path) => path.slice(generatedRoot.length));
 
   assert.ok(relativeInputs.includes('/index.html'), 'web owns the public root');
   assert.ok(relativeInputs.includes('/docs/index.html'), 'docs owns the documentation root');
   assert.ok(relativeInputs.includes('/playground/index.html'), 'playground owns its route');
-  assert.ok(relativeInputs.includes('/docs/components/data.table/index.html'), 'generated component docs remain complete');
+  assert.ok(
+    relativeInputs.includes('/docs/components/data.table/index.html'),
+    'generated component docs remain complete',
+  );
   assert.equal(relativeInputs.length, 96);
 
   await access(resolve(root, 'apps/web/index.html'));

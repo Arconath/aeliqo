@@ -1,26 +1,25 @@
-import {css, html, nothing} from "lit";
-import {AeliqoFieldElement, aeliqoInputStyles} from "./base.js";
-import {AeliqoInputChangeEvent} from "./events.js";
-import type {AeliqoOption} from "./options.js";
-import {validOptions} from "./options.js";
+import { css, html, nothing } from 'lit';
+import { AeliqoFieldElement, aeliqoInputStyles } from './base.js';
+import { AeliqoInputChangeEvent } from './events.js';
+import type { AeliqoOption } from './options.js';
+import { validOptions } from './options.js';
 
 /** Bounded native select; empty and unknown values stay distinguishable. */
 export class AeliqoSelectElement extends AeliqoFieldElement<string> {
   static readonly properties = {
     ...AeliqoFieldElement.properties,
-    options: {attribute: false},
-    value: {type: String, reflect: true},
-    defaultValue: {attribute: "default-value", type: String},
-    emptyLabel: {attribute: "empty-label", type: String},
-    unknownLabel: {attribute: "unknown-label", type: String},
+    options: { attribute: false },
+    value: { type: String, reflect: true },
+    defaultValue: { attribute: 'default-value', type: String },
+    emptyLabel: { attribute: 'empty-label', type: String },
+    unknownLabel: { attribute: 'unknown-label', type: String },
   };
 
-
   options: readonly AeliqoOption[] = [];
-  value = "";
-  defaultValue = "";
-  emptyLabel = "Select an option";
-  unknownLabel = "Unknown option";
+  value = '';
+  defaultValue = '';
+  emptyLabel = 'Select an option';
+  unknownLabel = 'Unknown option';
 
   override connectedCallback(): void {
     if (this.value.length === 0 && this.defaultValue.length > 0) this.value = this.defaultValue;
@@ -50,9 +49,9 @@ export class AeliqoSelectElement extends AeliqoFieldElement<string> {
           .value=${this.value}
           ?disabled=${this.fieldDisabled}
           ?required=${this.required}
-          aria-readonly=${this.readOnly ? "true" : nothing}
+          aria-readonly=${this.readOnly ? 'true' : nothing}
           autocomplete=${this.autocomplete || nothing}
-          aria-invalid=${this.error || (!known && this.value) ? "true" : nothing}
+          aria-invalid=${this.error || (!known && this.value) ? 'true' : nothing}
           aria-describedby=${describedBy || nothing}
           @change=${this.handleChange}
         >
@@ -77,15 +76,15 @@ export class AeliqoSelectElement extends AeliqoFieldElement<string> {
       return;
     }
     this.value = select.value;
-    this.dispatchEvent(new AeliqoInputChangeEvent({source: "user", value: this.value}));
+    this.dispatchEvent(new AeliqoInputChangeEvent({ source: 'user', value: this.value }));
     void this.validateProposed(this.value);
     this.syncNative();
   };
 
   private native(): HTMLSelectElement | undefined {
     const root = this.renderRoot;
-    if (root === undefined || typeof root.querySelector !== "function") return undefined;
-    return root.querySelector<HTMLSelectElement>("select[part=input]") ?? undefined;
+    if (root === undefined || typeof root.querySelector !== 'function') return undefined;
+    return root.querySelector<HTMLSelectElement>('select[part=input]') ?? undefined;
   }
 
   private syncNative(): void {
@@ -95,11 +94,17 @@ export class AeliqoSelectElement extends AeliqoFieldElement<string> {
     const option = valid ? this.options.find((candidate) => candidate.value === this.value) : undefined;
     const unknown = this.value.length > 0 && option === undefined;
     this.setFormValue(this.fieldDisabled ? null : this.value);
-    if (this.internals !== undefined && !this.fieldDisabled && unknown) this.internals.setValidity({customError: true}, "Choose a supported option.", native);
+    if (this.internals !== undefined && !this.fieldDisabled && unknown)
+      this.internals.setValidity({ customError: true }, 'Choose a supported option.', native);
     else this.updateValidity(native, this.value.length === 0);
   }
 
-  static readonly styles = [...aeliqoInputStyles, css`
-    select { appearance: auto; }
-  `];
+  static readonly styles = [
+    ...aeliqoInputStyles,
+    css`
+      select {
+        appearance: auto;
+      }
+    `,
+  ];
 }

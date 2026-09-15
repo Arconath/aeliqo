@@ -1,33 +1,46 @@
 import * as z from 'zod/mini';
-import {inspectWire} from './ingress.js';
-import {commitPreconditionsSchema, resultRefSchema} from './schemas.js';
-import {WIRE_LIMITS} from './limits.js';
-import type {CommitPreconditions, Outcome, ResultRef} from './types.js';
+import { inspectWire } from './ingress.js';
+import { commitPreconditionsSchema, resultRefSchema } from './schemas.js';
+import { WIRE_LIMITS } from './limits.js';
+import type { CommitPreconditions, Outcome, ResultRef } from './types.js';
 
-const scalarPins = ['scopeDigest', 'policyRevision', 'taskRevision', 'regionRevision',
-  'catalogRevision', 'experienceRevision', 'functionRegistryDigest'] as const;
+const scalarPins = [
+  'scopeDigest',
+  'policyRevision',
+  'taskRevision',
+  'regionRevision',
+  'catalogRevision',
+  'experienceRevision',
+  'functionRegistryDigest',
+] as const;
 const requiredRefsSchema = z.array(resultRefSchema).check(z.maxLength(WIRE_LIMITS.array));
-const refKey = (ref: ResultRef): string => JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
-const failure = (code: string, message: string): Outcome<never> => ({ok: false,
-  diagnostics: [{code, message, retryable: false}]});
+const refKey = (ref: ResultRef): string =>
+  JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
+const failure = (code: string, message: string): Outcome<never> => ({
+  ok: false,
+  diagnostics: [{ code, message, retryable: false }],
+});
 
 function parsePins(input: unknown): Outcome<CommitPreconditions> {
   const wire = inspectWire(input);
   if (!wire.ok) return wire;
   const parsed = z.safeParse(commitPreconditionsSchema, wire.value);
-  if (!parsed.success) return failure('commit.invalid-read-set', 'The commit read set does not match its bounded canonical schema.');
+  if (!parsed.success)
+    return failure('commit.invalid-read-set', 'The commit read set does not match its bounded canonical schema.');
   const pins = parsed.data;
   const keys = new Set<string>();
   for (const ref of pins.results) {
     const key = refKey(ref);
-    if (keys.has(key)) return failure('commit.duplicate-result', 'The commit read set contains a duplicate result reference.');
+    if (keys.has(key))
+      return failure('commit.duplicate-result', 'The commit read set contains a duplicate result reference.');
     keys.add(key);
     if (ref.scopeDigest !== pins.scopeDigest)
       return failure('commit.result-scope', 'A result reference belongs to a different authorization scope.');
   }
-  return {ok: true, value: Object.freeze({...pins,
-    results: Object.freeze(pins.results.map(ref => Object.freeze(ref))),
-  })};
+  return {
+    ok: true,
+    value: Object.freeze({ ...pins, results: Object.freeze(pins.results.map((ref) => Object.freeze(ref))) }),
+  };
 }
 
 /**
@@ -47,14 +60,17 @@ export function validateParsedCommitReadSet(
   const reads = new Set(expected.results.map(refKey));
   for (const ref of requiredResults) {
     if (ref.scopeDigest !== expected.scopeDigest || !reads.has(refKey(ref)))
-      return failure('commit.missing-dependency', 'The read set omits a required result dependency or its authorized scope.');
+      return failure(
+        'commit.missing-dependency',
+        'The read set omits a required result dependency or its authorized scope.',
+      );
   }
   const available = new Set(current.results.map(refKey));
   for (const ref of expected.results) {
     if (!available.has(refKey(ref)))
       return failure('commit.stale', 'A referenced result is no longer available at the staged revision and scope.');
   }
-  return {ok: true, value: expected};
+  return { ok: true, value: expected };
 }
 
 /**
@@ -76,6 +92,7 @@ export function validateCommitReadSet(
   const requiredWire = inspectWire(requiredResults);
   if (!requiredWire.ok) return requiredWire;
   const required = z.safeParse(requiredRefsSchema, requiredWire.value);
-  if (!required.success) return failure('commit.invalid-dependencies', 'The required result dependencies are not valid bounded references.');
+  if (!required.success)
+    return failure('commit.invalid-dependencies', 'The required result dependencies are not valid bounded references.');
   return validateParsedCommitReadSet(expected.value, current.value, required.data);
 }

@@ -1,15 +1,25 @@
-import type {Diagnostic, Outcome} from '@aeliqo/core';
-import type {AgentJsonValue} from '../capabilities/types.js';
-import type {AgentModelToolEndpoint, AgentToolTransport} from '../protocol/types.js';
-import type {ActionReceipt} from '@aeliqo/runtime/actions';
-import type {AeliqoRuntime, RuntimeRenderInput, RuntimeRenderReceipt, RuntimeResourceContext} from '@aeliqo/runtime/app';
+import type { Diagnostic, Outcome } from '@aeliqo/core';
+import type { AgentJsonValue } from '../capabilities/types.js';
+import type { AgentModelToolEndpoint, AgentToolTransport } from '../protocol/types.js';
+import type { ActionReceipt } from '@aeliqo/runtime/actions';
+import type {
+  AeliqoRuntime,
+  RuntimeRenderInput,
+  RuntimeRenderReceipt,
+  RuntimeResourceContext,
+} from '@aeliqo/runtime/app';
 
 export interface AppRenderPort {
-  render(input: RuntimeRenderInput): Promise<RuntimeRenderReceipt | {
-    readonly status: 'renderer-ready' | 'unsupported' | 'failed' | 'cancelled' | 'needs-input'; readonly requestId: string; readonly regionId: string;
-    readonly runtime: Extract<RuntimeRenderReceipt, {readonly status: 'committed'}>;
-    readonly diagnostics: readonly Diagnostic[];
-  }>;
+  render(input: RuntimeRenderInput): Promise<
+    | RuntimeRenderReceipt
+    | {
+        readonly status: 'renderer-ready' | 'unsupported' | 'failed' | 'cancelled' | 'needs-input';
+        readonly requestId: string;
+        readonly regionId: string;
+        readonly runtime: Extract<RuntimeRenderReceipt, { readonly status: 'committed' }>;
+        readonly diagnostics: readonly Diagnostic[];
+      }
+  >;
 }
 
 export interface AppContextPort {
@@ -34,7 +44,7 @@ export interface AppToolEndpointOptions {
 
 export interface AeliqoAppToolEndpoint extends AgentModelToolEndpoint {
   /** Trusted host UI path. This method is not advertised as an agent tool. */
-  confirmAction(previewId: string, options?: {readonly signal?: AbortSignal}): Promise<Outcome<ActionReceipt>>;
+  confirmAction(previewId: string, options?: { readonly signal?: AbortSignal }): Promise<Outcome<ActionReceipt>>;
 }
 
 export interface AppToolResult {

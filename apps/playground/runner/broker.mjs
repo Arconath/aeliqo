@@ -1,9 +1,10 @@
-import {randomUUID} from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 
-const failure = (code, message) => ({ok: false, diagnostics: [{code, message, retryable: false}]});
+const failure = (code, message) => ({ ok: false, diagnostics: [{ code, message, retryable: false }] });
 
 function boundedOutcome(value) {
-  if (value === null || typeof value !== 'object' || Array.isArray(value) || typeof value.ok !== 'boolean') return undefined;
+  if (value === null || typeof value !== 'object' || Array.isArray(value) || typeof value.ok !== 'boolean')
+    return undefined;
   const encoded = JSON.stringify(value);
   return encoded.length <= 65_536 ? value : undefined;
 }
@@ -17,13 +18,17 @@ export class BrowserSessionBroker {
   #onClose;
   #attachment;
 
-  constructor({expiresAt, maxPending = 2}) {
+  constructor({ expiresAt, maxPending = 2 }) {
     this.#expiresAt = expiresAt;
     this.#maxPending = maxPending;
   }
 
-  get expiresAt() { return this.#expiresAt; }
-  get connected() { return this.#send !== undefined && Date.now() < this.#expiresAt; }
+  get expiresAt() {
+    return this.#expiresAt;
+  }
+  get connected() {
+    return this.#send !== undefined && Date.now() < this.#expiresAt;
+  }
 
   attach(send, onClose) {
     if (Date.now() >= this.#expiresAt) return undefined;
@@ -40,7 +45,8 @@ export class BrowserSessionBroker {
     this.#attachment = undefined;
     this.#send = undefined;
     this.#onClose = undefined;
-    for (const entry of this.#pending.values()) entry.resolve(failure('playground.local-disconnected', 'The browser Region disconnected.'));
+    for (const entry of this.#pending.values())
+      entry.resolve(failure('playground.local-disconnected', 'The browser Region disconnected.'));
     this.#pending.clear();
   }
 
@@ -56,9 +62,14 @@ export class BrowserSessionBroker {
   }
 
   async call(call, signal) {
-    if (!this.connected || this.#send === undefined) return failure('playground.local-disconnected', 'Open the local playground and connect its browser Region first.');
+    if (!this.connected || this.#send === undefined)
+      return failure(
+        'playground.local-disconnected',
+        'Open the local playground and connect its browser Region first.',
+      );
     if (signal?.aborted) return failure('playground.local-cancelled', 'The local tool call was cancelled.');
-    if (this.#pending.size >= this.#maxPending) return failure('playground.local-busy', 'The paired Region already has the maximum number of pending calls.');
+    if (this.#pending.size >= this.#maxPending)
+      return failure('playground.local-busy', 'The paired Region already has the maximum number of pending calls.');
     const id = randomUUID();
     return new Promise((resolve) => {
       const cancel = () => {
@@ -66,15 +77,16 @@ export class BrowserSessionBroker {
         if (entry === undefined) return;
         this.#pending.delete(id);
         clearTimeout(entry.timeout);
-        this.#send?.('cancel', {id});
+        this.#send?.('cancel', { id });
         resolve(failure('playground.local-cancelled', 'The local tool call was cancelled.'));
       };
       const timeout = setTimeout(cancel, 15_000);
       const cleanup = () => signal?.removeEventListener('abort', cancel);
-      this.#pending.set(id, {resolve, timeout, cleanup});
-      signal?.addEventListener('abort', cancel, {once: true});
-      try { this.#send('call', {id, ...call}); }
-      catch {
+      this.#pending.set(id, { resolve, timeout, cleanup });
+      signal?.addEventListener('abort', cancel, { once: true });
+      try {
+        this.#send('call', { id, ...call });
+      } catch {
         this.#pending.delete(id);
         clearTimeout(timeout);
         cleanup();
@@ -84,14 +96,14 @@ export class BrowserSessionBroker {
   }
 
   endpoint(transport) {
-    const call = (operation, payload = {}, signal) => this.call({transport, operation, ...payload}, signal);
+    const call = (operation, payload = {}, signal) => this.call({ transport, operation, ...payload }, signal);
     return Object.freeze({
       transport,
       targetRegionId: 'playground-main',
       goalEpoch: 'local-playground',
       discover: (options = {}) => call('discover', {}, options.signal),
-      invoke: (name, input, options) => call('invoke', {name, input, requestId: options.requestId}, options.signal),
-      ...(transport === 'byok' ? {authorizeModel: (options = {}) => call('authorize', {}, options.signal)} : {}),
+      invoke: (name, input, options) => call('invoke', { name, input, requestId: options.requestId }, options.signal),
+      ...(transport === 'byok' ? { authorizeModel: (options = {}) => call('authorize', {}, options.signal) } : {}),
       close() {},
     });
   }

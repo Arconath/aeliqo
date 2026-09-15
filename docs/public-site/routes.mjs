@@ -1,4 +1,5 @@
-const route = (id, path, group, sourcePath) => Object.freeze({id, path, group, ...(sourcePath === undefined ? {} : {sourcePath})});
+const route = (id, path, group, sourcePath) =>
+  Object.freeze({ id, path, group, ...(sourcePath === undefined ? {} : { sourcePath }) });
 
 export const DOC_ROUTES = Object.freeze([
   route('home', '/', 'Start', '/docs/'),
@@ -61,7 +62,9 @@ export const DOC_ROUTES = Object.freeze([
   route('support', '/legal/support/', 'About'),
 ]);
 
-const bySource = new Map(DOC_ROUTES.filter((item) => item.sourcePath !== undefined).map((item) => [item.sourcePath, item]));
+const bySource = new Map(
+  DOC_ROUTES.filter((item) => item.sourcePath !== undefined).map((item) => [item.sourcePath, item]),
+);
 const byPath = new Map(DOC_ROUTES.map((item) => [item.path, item]));
 
 export function routeById(id) {
@@ -101,7 +104,22 @@ export function canonicalizeDocsMarkup(markup) {
 
 const navigation = [
   ['Start', ['home', 'what-is', 'quickstart', 'existing-app', 'standalone', 'frameworks']],
-  ['Build', ['resources', 'data', 'local-data', 'http-data', 'permissions', 'actions', 'forms', 'navigation', 'responsive', 'adaptive-region', 'custom-views']],
+  [
+    'Build',
+    [
+      'resources',
+      'data',
+      'local-data',
+      'http-data',
+      'permissions',
+      'actions',
+      'forms',
+      'navigation',
+      'responsive',
+      'adaptive-region',
+      'custom-views',
+    ],
+  ],
   ['Connect agents', ['agents', 'agents-quickstart', 'mcp', 'webmcp', 'byok', 'agent-recovery']],
   ['Understand', ['concepts', 'intent', 'semantics', 'state-ownership', 'safety']],
   ['Components & recipes', ['components']],
@@ -110,12 +128,15 @@ const navigation = [
   ['Examples', ['examples', 'people-example', 'products-example', 'support-example', 'knowledge-example']],
 ];
 
-export const DOC_NAVIGATION = Object.freeze(navigation.map(([label, ids]) => Object.freeze([
-  label,
-  Object.freeze(ids.map((id) => routeById(id).path)),
-])));
+export const DOC_NAVIGATION = Object.freeze(
+  navigation.map(([label, ids]) => Object.freeze([label, Object.freeze(ids.map((id) => routeById(id).path))])),
+);
 
-export const LEGACY_DOC_REDIRECTS = Object.freeze(Object.fromEntries(
-  DOC_ROUTES.filter((item) => item.sourcePath !== undefined && item.sourcePath !== item.path)
-    .map((item) => [item.sourcePath, item.path]),
-));
+export const LEGACY_DOC_REDIRECTS = Object.freeze(
+  Object.fromEntries(
+    DOC_ROUTES.filter((item) => item.sourcePath !== undefined && item.sourcePath !== item.path).map((item) => [
+      item.sourcePath,
+      item.path,
+    ]),
+  ),
+);

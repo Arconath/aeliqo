@@ -1,4 +1,4 @@
-import {RELEASE_VERSION} from "../../scripts/release/metadata.mjs";
+import { RELEASE_VERSION } from '../../scripts/release/metadata.mjs';
 /**
  * Build and consume the actual @aeliqo/core and @aeliqo/runtime packages
  * outside the workspace.
@@ -9,31 +9,20 @@ import {RELEASE_VERSION} from "../../scripts/release/metadata.mjs";
  * every source adapter, the full query planner, or universal browser support.
  */
 import assert from 'node:assert/strict';
-import {createHash} from 'node:crypto';
-import {createServer} from 'node:http';
-import {spawnSync} from 'node:child_process';
-import {gzipSync} from 'node:zlib';
-import {chromium} from '@playwright/test';
-import {
-  access,
-  mkdir,
-  mkdtemp,
-  readFile,
-  readdir,
-  lstat,
-  realpath,
-  rmdir,
-  unlink,
-  writeFile,
-} from 'node:fs/promises';
-import {tmpdir, platform, release, arch} from 'node:os';
-import {extname, join, relative, resolve} from 'node:path';
+import { createHash } from 'node:crypto';
+import { createServer } from 'node:http';
+import { spawnSync } from 'node:child_process';
+import { gzipSync } from 'node:zlib';
+import { chromium } from '@playwright/test';
+import { access, mkdir, mkdtemp, readFile, readdir, lstat, realpath, rmdir, unlink, writeFile } from 'node:fs/promises';
+import { tmpdir, platform, release, arch } from 'node:os';
+import { extname, join, relative, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '../..');
 const coreDirectory = join(root, 'packages', 'core');
 const runtimeDirectory = join(root, 'packages', 'runtime');
 const outputDirectory = join(root, 'artifacts', 'runtime-consumers');
-await mkdir(outputDirectory, {recursive: true});
+await mkdir(outputDirectory, { recursive: true });
 const runDirectory = await mkdtemp(join(outputDirectory, 'run-'));
 const consumerDirectory = await mkdtemp(join(tmpdir(), 'aeliqo-runtime-consumer-'));
 
@@ -50,8 +39,7 @@ function run(argv, cwd, encoding = 'utf8', env = process.env) {
   return result.stdout;
 }
 
-const hash = (bytes, algorithm = 'sha256', encoding = 'hex') =>
-  createHash(algorithm).update(bytes).digest(encoding);
+const hash = (bytes, algorithm = 'sha256', encoding = 'hex') => createHash(algorithm).update(bytes).digest(encoding);
 
 async function fileExists(path) {
   try {
@@ -66,7 +54,7 @@ async function fileExists(path) {
 async function sortedFiles(directory, excluded = new Set()) {
   const result = [];
   async function visit(current) {
-    const entries = await readdir(current, {withFileTypes: true});
+    const entries = await readdir(current, { withFileTypes: true });
     for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
       if (excluded.has(entry.name)) continue;
       const path = join(current, entry.name);
@@ -85,7 +73,10 @@ async function sourceDigest(directory) {
   const files = await sortedFiles(actual, new Set(['node_modules', 'dist', 'schemas']));
   const digest = createHash('sha256');
   for (const path of files) {
-    digest.update(relative(actual, path).split('\\').join('/')).update('\0').update(await readFile(path));
+    digest
+      .update(relative(actual, path).split('\\').join('/'))
+      .update('\0')
+      .update(await readFile(path));
   }
   return digest.digest('hex');
 }
@@ -178,15 +169,24 @@ assert.deepEqual(Object.keys(packedRuntimeManifest.dependencies ?? {}), ['@aeliq
 assert.equal(packedRuntimeManifest.dependencies['@aeliqo/core'], RELEASE_VERSION);
 for (const manifest of [packedCoreManifest, packedRuntimeManifest]) {
   for (const field of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
-    assert(!JSON.stringify(manifest[field] ?? {}).includes('workspace:'), `Workspace alias in ${manifest.name} ${field}`);
+    assert(
+      !JSON.stringify(manifest[field] ?? {}).includes('workspace:'),
+      `Workspace alias in ${manifest.name} ${field}`,
+    );
   }
 }
 
 const coreEntries = run(['tar', '-tzf', coreTarball], root).trim().split('\n');
 const runtimeEntries = run(['tar', '-tzf', runtimeTarball], root).trim().split('\n');
-for (const [name, entries] of [['@aeliqo/core', coreEntries], ['@aeliqo/runtime', runtimeEntries]]) {
+for (const [name, entries] of [
+  ['@aeliqo/core', coreEntries],
+  ['@aeliqo/runtime', runtimeEntries],
+]) {
   for (const entry of entries) {
-    assert(entry.startsWith('package/') && !entry.split('/').includes('..'), `Unexpected ${name} archive path: ${entry}`);
+    assert(
+      entry.startsWith('package/') && !entry.split('/').includes('..'),
+      `Unexpected ${name} archive path: ${entry}`,
+    );
   }
   assert(entries.includes('package/LICENSE'), `${name} archive is missing LICENSE`);
   assert(entries.includes('package/README.md'), `${name} archive is missing README.md`);
@@ -198,11 +198,23 @@ assert(runtimeEntries.includes('package/dist/data/index.d.ts'), 'Runtime data de
 assert(runtimeEntries.includes('package/dist/audit/index.js'), 'Runtime audit dist entry is absent from tarball');
 assert(runtimeEntries.includes('package/dist/audit/index.d.ts'), 'Runtime audit declarations are absent from tarball');
 
-await writeFile(join(consumerDirectory, 'package.json'), JSON.stringify({private: true, type: 'module'}));
-run([
-  'npm', 'install', '--ignore-scripts', '--no-audit', '--no-fund', '--save-exact',
-  coreTarball, runtimeTarball, 'typescript@7.0.2', 'vite@8.2.2', '@playwright/test@1.63.0',
-], consumerDirectory);
+await writeFile(join(consumerDirectory, 'package.json'), JSON.stringify({ private: true, type: 'module' }));
+run(
+  [
+    'npm',
+    'install',
+    '--ignore-scripts',
+    '--no-audit',
+    '--no-fund',
+    '--save-exact',
+    coreTarball,
+    runtimeTarball,
+    'typescript@7.0.2',
+    'vite@8.2.2',
+    '@playwright/test@1.63.0',
+  ],
+  consumerDirectory,
+);
 const lockBytes = await readFile(join(consumerDirectory, 'package-lock.json'));
 const lock = JSON.parse(lockBytes);
 for (const artifact of artifacts) {
@@ -232,33 +244,46 @@ for (const artifact of artifacts) {
     const stat = await lstat(installedPath);
     assert(stat.isFile(), `Installed package entry is not a regular file: ${artifact.name}/${entry}`);
     const packedEntry = run(['tar', '-xOf', artifact.path, entry], root, null);
-    assert.equal(hash(await readFile(installedPath)), hash(packedEntry), `Installed bytes differ: ${artifact.name}/${entry}`);
+    assert.equal(
+      hash(await readFile(installedPath)),
+      hash(packedEntry),
+      `Installed bytes differ: ${artifact.name}/${entry}`,
+    );
   }
 }
 await writeFile(join(runDirectory, 'consumer-package-lock.json'), lockBytes);
 
 const fields = [
-  {id: 'id', label: 'ID', type: {value: 'text', nullable: false}, role: 'identity'},
-  {id: 'name', label: 'Name', type: {value: 'text', nullable: false}, role: 'attribute'},
-  {id: 'amount', label: 'Amount', type: {value: 'decimal', nullable: false}, role: 'measure'},
-  {id: 'active', label: 'Active', type: {value: 'boolean', nullable: true}, role: 'attribute'},
+  { id: 'id', label: 'ID', type: { value: 'text', nullable: false }, role: 'identity' },
+  { id: 'name', label: 'Name', type: { value: 'text', nullable: false }, role: 'attribute' },
+  { id: 'amount', label: 'Amount', type: { value: 'decimal', nullable: false }, role: 'measure' },
+  { id: 'active', label: 'Active', type: { value: 'boolean', nullable: true }, role: 'attribute' },
 ];
 const catalog = {
-  version: '1', revision: 'catalog-1', functionRegistryDigest: 'core-standard-1',
-  entities: [{id: 'employees', label: 'Employees', identity: ['id'], rowGrain: ['id'], fields}],
-  relationships: [], meanings: [], capabilities: [],
+  version: '1',
+  revision: 'catalog-1',
+  functionRegistryDigest: 'core-standard-1',
+  entities: [{ id: 'employees', label: 'Employees', identity: ['id'], rowGrain: ['id'], fields }],
+  relationships: [],
+  meanings: [],
+  capabilities: [],
 };
 const rows = [
-  {id: 'e-1', name: '😀', amount: {decimal: '10.00'}, active: true},
-  {id: 'e-2', name: '𐀀', amount: {decimal: '20.00'}, active: null},
-  {id: 'e-3', name: 'a', amount: {decimal: '10.0'}, active: false},
+  { id: 'e-1', name: '😀', amount: { decimal: '10.00' }, active: true },
+  { id: 'e-2', name: '𐀀', amount: { decimal: '20.00' }, active: null },
+  { id: 'e-3', name: 'a', amount: { decimal: '10.0' }, active: false },
 ];
-const budget = {maxRows: 10, maxBytes: 100_000, maxMessages: 8, maxMilliseconds: 10_000, maxColumns: 4};
+const budget = { maxRows: 10, maxBytes: 100_000, maxMessages: 8, maxMilliseconds: 10_000, maxColumns: 4 };
 const query = {
-  entity: 'employees', fields: ['id', 'name', 'amount', 'active'], measures: [], relations: [], groupBy: [],
-  population: {kind: 'all-authorized'}, order: [{field: 'name', direction: 'asc', nulls: 'last'}],
+  entity: 'employees',
+  fields: ['id', 'name', 'amount', 'active'],
+  measures: [],
+  relations: [],
+  groupBy: [],
+  population: { kind: 'all-authorized' },
+  order: [{ field: 'name', direction: 'asc', nulls: 'last' }],
 };
-const fixture = {catalog, rows, budget, query};
+const fixture = { catalog, rows, budget, query };
 const fixtureSource = JSON.stringify(fixture);
 
 // The same installed SDK exercise runs in Node and a bundled browser consumer.
@@ -574,7 +599,9 @@ function exerciseAudit() {
 }
 `;
 
-await writeFile(join(consumerDirectory, 'consumer-types.ts'), `
+await writeFile(
+  join(consumerDirectory, 'consumer-types.ts'),
+  `
 import {createDataHttpHandler, createHttpDataService, createLocalDataService, parseBudget, parseResultEvent} from '@aeliqo/runtime/data';
 import type {DataHttpHandler, DataRecord, DataService, LocalSnapshot, QueryBudget, ReadContext, ResultEvent} from '@aeliqo/runtime/data';
 import type {Catalog, QuerySpec} from '@aeliqo/core';
@@ -639,48 +666,68 @@ const invalidBudget: QueryBudget = {...budget, maxRows: '10'};
 void [catalog, query, budget, snapshot, context, local, handler, http, parsedBudget, parsedEvent, record, invalidRecord, invalidBudget];
 const typedEvent: ResultEvent | undefined = undefined;
 void typedEvent;
-`);
-await writeFile(join(consumerDirectory, 'tsconfig.json'), JSON.stringify({
-  compilerOptions: {
-    target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext', strict: true,
-    exactOptionalPropertyTypes: true, noUncheckedIndexedAccess: true, noEmit: true, skipLibCheck: false,
-  },
-  files: ['consumer-types.ts'],
-}));
+`,
+);
+await writeFile(
+  join(consumerDirectory, 'tsconfig.json'),
+  JSON.stringify({
+    compilerOptions: {
+      target: 'ES2022',
+      module: 'NodeNext',
+      moduleResolution: 'NodeNext',
+      strict: true,
+      exactOptionalPropertyTypes: true,
+      noUncheckedIndexedAccess: true,
+      noEmit: true,
+      skipLibCheck: false,
+    },
+    files: ['consumer-types.ts'],
+  }),
+);
 run([join(consumerDirectory, 'node_modules/.bin/tsc'), '--project', 'tsconfig.json'], consumerDirectory);
 
-await writeFile(join(consumerDirectory, 'audit-io-blocker.cjs'), [
-  "const {syncBuiltinESMExports} = require('node:module');",
-  "const state = {attempts: []}; globalThis.__aeliqoAuditIo = state;",
-  "const blocked = label => () => { state.attempts.push(label); const error = new Error('I/O is forbidden in the local audit proof'); error.code = 'AELIQO_AUDIT_IO_BLOCKED'; throw error; };",
-  "globalThis.fetch = blocked('fetch');",
-  "for (const name of ['node:http', 'node:https']) { const value = require(name); value.request = blocked(name + '.request'); value.get = blocked(name + '.get'); }",
-  "const net = require('node:net'); net.connect = blocked('node:net.connect'); net.createConnection = blocked('node:net.createConnection'); net.Socket.prototype.connect = blocked('node:net.Socket.connect');",
-  "const dns = require('node:dns'); dns.lookup = blocked('node:dns.lookup'); dns.resolve = blocked('node:dns.resolve');",
-  "syncBuiltinESMExports();",
-].join('\n') + '\n');
-await writeFile(join(consumerDirectory, 'audit-offline.mjs'), [
-  "const auditModule = await import('@aeliqo/runtime/audit');",
-  "const {createRequire, syncBuiltinESMExports} = await import('node:module'); const require = createRequire(import.meta.url);",
-  "const state = globalThis.__aeliqoAuditIo; const blocked = label => () => { state.attempts.push(label); const error = new Error('I/O is forbidden in the local audit proof'); error.code = 'AELIQO_AUDIT_IO_BLOCKED'; throw error; };",
-  "const fsMutable = require('node:fs'); for (const name of ['readFile', 'readFileSync', 'writeFile', 'writeFileSync', 'appendFile', 'appendFileSync', 'open', 'openSync', 'createReadStream', 'createWriteStream']) fsMutable[name] = blocked('node:fs.' + name); const fsp = require('node:fs/promises'); for (const name of ['readFile', 'writeFile', 'appendFile', 'open']) fsp[name] = blocked('node:fs/promises.' + name); syncBuiltinESMExports();",
-  "const audit = auditModule.createLocalAuditExporter({maxEvents: 2, maxBytes: 1024, now: () => 1});",
-  "const recorded = audit.record({kind: 'source', transport: 'local', status: 'error', code: 'source.invalid'}); const exported = audit.exportSnapshot(); audit.dispose();",
-  "const auditIoAttempts = [...state.attempts];",
-  "if (!recorded.ok || !exported.ok || exported.value.records.length !== 1 || auditIoAttempts.length !== 0) throw new Error('installed audit did not execute offline');",
-  "const [http, fs] = await Promise.all([import('node:http'), import('node:fs')]);",
-  "const probes = [['fetch', () => fetch('https://example.invalid')], ['node:http.get', () => http.get('http://example.invalid')], ['node:fs.readFileSync', () => fs.readFileSync('/not-read')]];",
-  "for (const [label, probe] of probes) { try { probe(); throw new Error('I/O blocker probe unexpectedly succeeded: ' + label); } catch (error) { if (error?.code !== 'AELIQO_AUDIT_IO_BLOCKED') throw error; } }",
-  "process.stdout.write(JSON.stringify({auditExecuted:true,auditIoAttempts,blockerProbeAttempts:state.attempts.slice(auditIoAttempts.length)}));",
-].join('\n') + '\n');
-const auditOfflineProof = JSON.parse(run([process.execPath, '--require', './audit-io-blocker.cjs', 'audit-offline.mjs'], consumerDirectory));
+await writeFile(
+  join(consumerDirectory, 'audit-io-blocker.cjs'),
+  [
+    "const {syncBuiltinESMExports} = require('node:module');",
+    'const state = {attempts: []}; globalThis.__aeliqoAuditIo = state;',
+    "const blocked = label => () => { state.attempts.push(label); const error = new Error('I/O is forbidden in the local audit proof'); error.code = 'AELIQO_AUDIT_IO_BLOCKED'; throw error; };",
+    "globalThis.fetch = blocked('fetch');",
+    "for (const name of ['node:http', 'node:https']) { const value = require(name); value.request = blocked(name + '.request'); value.get = blocked(name + '.get'); }",
+    "const net = require('node:net'); net.connect = blocked('node:net.connect'); net.createConnection = blocked('node:net.createConnection'); net.Socket.prototype.connect = blocked('node:net.Socket.connect');",
+    "const dns = require('node:dns'); dns.lookup = blocked('node:dns.lookup'); dns.resolve = blocked('node:dns.resolve');",
+    'syncBuiltinESMExports();',
+  ].join('\n') + '\n',
+);
+await writeFile(
+  join(consumerDirectory, 'audit-offline.mjs'),
+  [
+    "const auditModule = await import('@aeliqo/runtime/audit');",
+    "const {createRequire, syncBuiltinESMExports} = await import('node:module'); const require = createRequire(import.meta.url);",
+    "const state = globalThis.__aeliqoAuditIo; const blocked = label => () => { state.attempts.push(label); const error = new Error('I/O is forbidden in the local audit proof'); error.code = 'AELIQO_AUDIT_IO_BLOCKED'; throw error; };",
+    "const fsMutable = require('node:fs'); for (const name of ['readFile', 'readFileSync', 'writeFile', 'writeFileSync', 'appendFile', 'appendFileSync', 'open', 'openSync', 'createReadStream', 'createWriteStream']) fsMutable[name] = blocked('node:fs.' + name); const fsp = require('node:fs/promises'); for (const name of ['readFile', 'writeFile', 'appendFile', 'open']) fsp[name] = blocked('node:fs/promises.' + name); syncBuiltinESMExports();",
+    'const audit = auditModule.createLocalAuditExporter({maxEvents: 2, maxBytes: 1024, now: () => 1});',
+    "const recorded = audit.record({kind: 'source', transport: 'local', status: 'error', code: 'source.invalid'}); const exported = audit.exportSnapshot(); audit.dispose();",
+    'const auditIoAttempts = [...state.attempts];',
+    "if (!recorded.ok || !exported.ok || exported.value.records.length !== 1 || auditIoAttempts.length !== 0) throw new Error('installed audit did not execute offline');",
+    "const [http, fs] = await Promise.all([import('node:http'), import('node:fs')]);",
+    "const probes = [['fetch', () => fetch('https://example.invalid')], ['node:http.get', () => http.get('http://example.invalid')], ['node:fs.readFileSync', () => fs.readFileSync('/not-read')]];",
+    "for (const [label, probe] of probes) { try { probe(); throw new Error('I/O blocker probe unexpectedly succeeded: ' + label); } catch (error) { if (error?.code !== 'AELIQO_AUDIT_IO_BLOCKED') throw error; } }",
+    'process.stdout.write(JSON.stringify({auditExecuted:true,auditIoAttempts,blockerProbeAttempts:state.attempts.slice(auditIoAttempts.length)}));',
+  ].join('\n') + '\n',
+);
+const auditOfflineProof = JSON.parse(
+  run([process.execPath, '--require', './audit-io-blocker.cjs', 'audit-offline.mjs'], consumerDirectory),
+);
 assert.deepEqual(auditOfflineProof, {
   auditExecuted: true,
   auditIoAttempts: [],
   blockerProbeAttempts: ['fetch', 'node:http.get', 'node:fs.readFileSync'],
 });
 
-await writeFile(join(consumerDirectory, 'consumer.mjs'), `
+await writeFile(
+  join(consumerDirectory, 'consumer.mjs'),
+  `
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
 import {lstat, readFile, readdir, writeFile} from 'node:fs/promises';
@@ -995,7 +1042,8 @@ globalThis.__aeliqoBrowserData = {local,network,transportFlows,regions,actions,i
 } finally {
   await new Promise(resolve => server.close(resolve));
 }
-`);
+`,
+);
 const consumerOutput = run([process.execPath, 'consumer.mjs'], consumerDirectory);
 
 const sourceDigestAfter = {
@@ -1006,8 +1054,18 @@ assert.deepEqual(sourceDigestAfter, sourceDigestBefore, 'Package source changed 
 const report = {
   passed: true,
   scope: `@aeliqo/core and @aeliqo/runtime ${RELEASE_VERSION} installed tarballs; strict declarations; local/HTTP ADC roundtrip; authorization and stale-plan checks; region commits, result leases, fresh-query restore and bounded redacted local audit export in Node and Chromium.`,
-  artifacts: artifacts.map(({name, version, path, sha256, integrity}) => ({name, version, path, sha256, integrity})),
-  consumer: {directory: consumerDirectory, lockPath: join(runDirectory, 'consumer-package-lock.json'), lockSha256: hash(lockBytes)},
+  artifacts: artifacts.map(({ name, version, path, sha256, integrity }) => ({
+    name,
+    version,
+    path,
+    sha256,
+    integrity,
+  })),
+  consumer: {
+    directory: consumerDirectory,
+    lockPath: join(runDirectory, 'consumer-package-lock.json'),
+    lockSha256: hash(lockBytes),
+  },
   sourceDigestBefore,
   sourceDigestAfter,
   consumerOutput: consumerOutput.trim(),
@@ -1018,7 +1076,9 @@ const report = {
     typescript: '7.0.2',
     vite: '8.2.2',
     playwright: JSON.parse(await readFile(join(root, 'node_modules/@playwright/test/package.json'), 'utf8')).version,
-    os: platform(), release: release(), arch: arch(),
+    os: platform(),
+    release: release(),
+    arch: arch(),
   },
 };
 await writeFile(join(runDirectory, 'report.json'), JSON.stringify(report, null, 2) + '\n');

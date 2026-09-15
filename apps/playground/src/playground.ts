@@ -1,11 +1,11 @@
-import type {Intent} from '@aeliqo/core';
-import type {AeliqoAppActionEvent, WebRenderReceipt} from '@aeliqo/web/app';
-import {syncComponentTheme} from '/src/site.js';
-import {checkConnection, sendLocalPrompt} from './connection-controller.js';
-import {evidenceFor, type InspectorSection, type PlaygroundEvidence} from './inspect.js';
-import {connectLocalHost, type LocalHostConnection} from './local-host.js';
-import {PLAYGROUND_SCENARIOS, type PlaygroundScenario, type ScenarioId} from './scenarios.js';
-import {createPlaygroundSession, type PlaygroundSession} from './session.js';
+import type { Intent } from '@aeliqo/core';
+import type { AeliqoAppActionEvent, WebRenderReceipt } from '@aeliqo/web/app';
+import { syncComponentTheme } from '/src/site.js';
+import { checkConnection, sendLocalPrompt } from './connection-controller.js';
+import { evidenceFor, type InspectorSection, type PlaygroundEvidence } from './inspect.js';
+import { connectLocalHost, type LocalHostConnection } from './local-host.js';
+import { PLAYGROUND_SCENARIOS, type PlaygroundScenario, type ScenarioId } from './scenarios.js';
+import { createPlaygroundSession, type PlaygroundSession } from './session.js';
 
 type Mode = 'guided' | 'manual' | 'connected';
 
@@ -52,14 +52,18 @@ let activeRequest: AbortController | undefined;
 let session: PlaygroundSession;
 let last: PlaygroundEvidence = {};
 let inspectorSection: InspectorSection = 'intent';
-let pendingAction: Extract<AeliqoAppActionEvent, {readonly state: 'preview'}> | undefined;
+let pendingAction: Extract<AeliqoAppActionEvent, { readonly state: 'preview' }> | undefined;
 let actionReturnFocus: HTMLElement | undefined;
 let connection: 'none' | 'local' | 'webmcp' = 'none';
 let modelCallCount = 0;
 let localHost: LocalHostConnection | undefined;
 
 function stringify(value: unknown): string {
-  try { return JSON.stringify(value, null, 2); } catch { return '{"error":"Value could not be serialized."}'; }
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return '{"error":"Value could not be serialized."}';
+  }
 }
 
 function setError(message?: string): void {
@@ -99,8 +103,12 @@ function actionEvent(event: AeliqoAppActionEvent): void {
     actionConfirm.disabled = false;
     actionConfirm.removeAttribute('aria-busy');
     actionStatus.textContent = 'Waiting for your confirmation.';
-    actionContent.textContent = stringify({action: event.preview.action, sideEffect: event.preview.sideEffect,
-      confirmation: event.preview.confirmation, input: event.preview.input});
+    actionContent.textContent = stringify({
+      action: event.preview.action,
+      sideEffect: event.preview.sideEffect,
+      confirmation: event.preview.confirmation,
+      input: event.preview.input,
+    });
     actionDialog.showModal();
     return;
   }
@@ -117,7 +125,10 @@ function actionEvent(event: AeliqoAppActionEvent): void {
   pendingAction = undefined;
   actionConfirm.disabled = true;
   actionConfirm.removeAttribute('aria-busy');
-  actionStatus.textContent = event.execution.state === 'executed' ? 'Action completed.' : 'The remote result is uncertain; reconcile before retrying.';
+  actionStatus.textContent =
+    event.execution.state === 'executed'
+      ? 'Action completed.'
+      : 'The remote result is uncertain; reconcile before retrying.';
   status.textContent = actionStatus.textContent;
   receiptState.textContent = event.execution.state;
   if (event.execution.state === 'executed') {
@@ -166,22 +177,30 @@ function renderScenario(): void {
     const button = document.createElement('button');
     button.type = 'button';
     button.dataset.step = step.id;
-    const strong = document.createElement('strong'); strong.textContent = step.label;
-    const description = document.createElement('span'); description.textContent = step.description;
+    const strong = document.createElement('strong');
+    strong.textContent = step.label;
+    const description = document.createElement('span');
+    description.textContent = step.description;
     button.append(strong, description);
     button.addEventListener('click', () => void runIntent(step.intent(), button));
     stepsHost.append(button);
-    const option = document.createElement('option'); option.value = step.id; option.textContent = step.label; manualStep.append(option);
+    const option = document.createElement('option');
+    option.value = step.id;
+    option.textContent = step.label;
+    manualStep.append(option);
   }
 }
 
 function selectedView(receipt: WebRenderReceipt): string {
   if (!('presentation' in receipt)) return receipt.status;
-  return receipt.presentation.nodes.find((node) => node.node.id === receipt.presentation.plan.rootId)?.manifest.id ?? receipt.status;
+  return (
+    receipt.presentation.nodes.find((node) => node.node.id === receipt.presentation.plan.rootId)?.manifest.id ??
+    receipt.status
+  );
 }
 
 async function applyReceipt(intent: Intent, receipt: WebRenderReceipt): Promise<void> {
-  last = {intent, receipt};
+  last = { intent, receipt };
   receiptState.textContent = receipt.status;
   viewBadge.textContent = selectedView(receipt);
   if (receipt.status === 'renderer-ready') {
@@ -221,7 +240,8 @@ async function runIntent(intent: Intent, trigger?: HTMLButtonElement): Promise<v
 
 function setMode(next: Mode): void {
   mode = next;
-  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]')) button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]'))
+    button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
   guidedPanel.hidden = mode !== 'guided';
   manualPanel.hidden = mode !== 'manual';
   connectedPanel.hidden = mode !== 'connected';
@@ -233,25 +253,39 @@ function modeFrom(value: string | undefined): Mode | undefined {
 }
 
 function inspectorFrom(value: string | undefined): InspectorSection | undefined {
-  return value === 'intent' || value === 'task' || value === 'result' || value === 'presentation' || value === 'diagnostics' ? value : undefined;
+  return value === 'intent' ||
+    value === 'task' ||
+    value === 'result' ||
+    value === 'presentation' ||
+    value === 'diagnostics'
+    ? value
+    : undefined;
 }
 
 for (const item of PLAYGROUND_SCENARIOS) {
-  const option = document.createElement('option'); option.value = item.id; option.textContent = item.label; scenarioSelect.append(option);
+  const option = document.createElement('option');
+  option.value = item.id;
+  option.textContent = item.label;
+  scenarioSelect.append(option);
 }
 scenarioSelect.value = scenario.id;
-scenarioSelect.addEventListener('change', () => { scenario = currentScenario(scenarioSelect.value); renderScenario(); void runIntent(scenario.steps[0]!.intent()); });
-for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]')) button.addEventListener('click', () => {
-  const next = modeFrom(button.dataset.mode);
-  if (next !== undefined) setMode(next);
+scenarioSelect.addEventListener('change', () => {
+  scenario = currentScenario(scenarioSelect.value);
+  renderScenario();
+  void runIntent(scenario.steps[0]!.intent());
 });
+for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]'))
+  button.addEventListener('click', () => {
+    const next = modeFrom(button.dataset.mode);
+    if (next !== undefined) setMode(next);
+  });
 required<HTMLButtonElement>('#pg-run-manual').addEventListener('click', () => {
   const step = scenario.steps.find((candidate) => candidate.id === manualStep.value) ?? scenario.steps[0]!;
   void runIntent(step.intent());
 });
 required<HTMLButtonElement>('#pg-reset').addEventListener('click', () => resetSession());
 required<HTMLButtonElement>('#pg-export').addEventListener('click', async () => {
-  const [{projectFiles}, {zipProject}] = await Promise.all([import('./project-template.js'), import('./zip.js')]);
+  const [{ projectFiles }, { zipProject }] = await Promise.all([import('./project-template.js'), import('./zip.js')]);
   const blob = zipProject(projectFiles(scenario.id, __AELIQO_RELEASE_VERSION__));
   const href = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -261,16 +295,25 @@ required<HTMLButtonElement>('#pg-export').addEventListener('click', async () => 
   window.setTimeout(() => URL.revokeObjectURL(href), 0);
   status.textContent = `Exported the installable ${scenario.label} project with synthetic data and no credentials.`;
 });
-required<HTMLButtonElement>('#pg-inspect').addEventListener('click', () => { renderInspector(); inspector.showModal(); });
-required<HTMLButtonElement>('#pg-inspector-close').addEventListener('click', () => inspector.close());
-for (const button of document.querySelectorAll<HTMLButtonElement>('[data-inspector]')) button.addEventListener('click', () => {
-  const next = inspectorFrom(button.dataset.inspector);
-  if (next === undefined) return;
-  inspectorSection = next;
-  for (const candidate of document.querySelectorAll<HTMLButtonElement>('[data-inspector]')) candidate.setAttribute('aria-pressed', String(candidate === button));
+required<HTMLButtonElement>('#pg-inspect').addEventListener('click', () => {
   renderInspector();
+  inspector.showModal();
 });
-actionCancel.addEventListener('click', () => { pendingAction?.cancel(); pendingAction = undefined; closeActionDialog(); });
+required<HTMLButtonElement>('#pg-inspector-close').addEventListener('click', () => inspector.close());
+for (const button of document.querySelectorAll<HTMLButtonElement>('[data-inspector]'))
+  button.addEventListener('click', () => {
+    const next = inspectorFrom(button.dataset.inspector);
+    if (next === undefined) return;
+    inspectorSection = next;
+    for (const candidate of document.querySelectorAll<HTMLButtonElement>('[data-inspector]'))
+      candidate.setAttribute('aria-pressed', String(candidate === button));
+    renderInspector();
+  });
+actionCancel.addEventListener('click', () => {
+  pendingAction?.cancel();
+  pendingAction = undefined;
+  closeActionDialog();
+});
 actionConfirm.addEventListener('click', async () => {
   const action = pendingAction;
   if (action === undefined) return;
@@ -291,7 +334,12 @@ actionConfirm.addEventListener('click', async () => {
     setError(actionStatus.textContent);
   }
 });
-actionDialog.addEventListener('cancel', (event) => { event.preventDefault(); pendingAction?.cancel(); pendingAction = undefined; closeActionDialog(); });
+actionDialog.addEventListener('cancel', (event) => {
+  event.preventDefault();
+  pendingAction?.cancel();
+  pendingAction = undefined;
+  closeActionDialog();
+});
 
 required<HTMLButtonElement>('#pg-connect').addEventListener('click', async () => {
   localHost?.close();
@@ -350,13 +398,17 @@ send.addEventListener('click', async () => {
     const receipt = await sendLocalPrompt(value, controller.signal);
     modelCallCount += receipt.modelRequests;
     modelCalls.textContent = String(modelCallCount);
-    connectionStatus.textContent = receipt.stop === 'renderer-ready'
-      ? `The local agent completed ${receipt.toolCalls} validated tool call${receipt.toolCalls === 1 ? '' : 's'}.`
-      : receipt.stop === 'no-commit' && receipt.message !== undefined
-        ? `No validated UI change was made. Agent draft: ${receipt.message}`
-      : `The local agent stopped as ${receipt.stop}; no unsupported claim is shown as success.`;
-  } catch { connectionStatus.textContent = 'The local agent request failed. No UI change was committed.'; }
-  finally { send.disabled = connection !== 'local'; }
+    connectionStatus.textContent =
+      receipt.stop === 'renderer-ready'
+        ? `The local agent completed ${receipt.toolCalls} validated tool call${receipt.toolCalls === 1 ? '' : 's'}.`
+        : receipt.stop === 'no-commit' && receipt.message !== undefined
+          ? `No validated UI change was made. Agent draft: ${receipt.message}`
+          : `The local agent stopped as ${receipt.stop}; no unsupported claim is shown as success.`;
+  } catch {
+    connectionStatus.textContent = 'The local agent request failed. No UI change was committed.';
+  } finally {
+    send.disabled = connection !== 'local';
+  }
 });
 
 resetSession();
@@ -364,6 +416,14 @@ renderScenario();
 for (const control of bootControls) control.disabled = false;
 appRoot.removeAttribute('aria-busy');
 void runIntent(scenario.steps[0]!.intent());
-window.addEventListener('pagehide', () => { activeRequest?.abort(); localHost?.close(); session.dispose(); }, {once: true});
+window.addEventListener(
+  'pagehide',
+  () => {
+    activeRequest?.abort();
+    localHost?.close();
+    session.dispose();
+  },
+  { once: true },
+);
 
-export type {ScenarioId};
+export type { ScenarioId };

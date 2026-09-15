@@ -1,5 +1,5 @@
-import {defineConfig} from 'vitest/config';
-import {resolve} from 'node:path';
+import { defineConfig } from 'vitest/config';
+import { resolve } from 'node:path';
 
 export default defineConfig({
   resolve: {
@@ -9,5 +9,5 @@ export default defineConfig({
       '@aeliqo/runtime': resolve('packages/runtime/dist'),
     },
   },
-  test: {environment: 'node', include: ['tests/studio/**/*.test.ts']},
+  test: { environment: 'node', include: ['tests/studio/**/*.test.ts'] },
 });

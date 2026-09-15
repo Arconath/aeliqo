@@ -1,8 +1,8 @@
-import {parseWireValue, WIRE_LIMITS} from '@aeliqo/core';
-import type {AgentJsonValue} from '../capabilities/types.js';
-import type {ToolModelContinuation} from './types.js';
+import { parseWireValue, WIRE_LIMITS } from '@aeliqo/core';
+import type { AgentJsonValue } from '../capabilities/types.js';
+import type { ToolModelContinuation } from './types.js';
 
-const states = new WeakMap<object, {readonly protocol: string; readonly value: AgentJsonValue}>();
+const states = new WeakMap<object, { readonly protocol: string; readonly value: AgentJsonValue }>();
 
 export function createToolModelContinuation(protocol: string, value: unknown): ToolModelContinuation {
   if (!/^[A-Za-z0-9._-]{1,128}$/u.test(protocol)) throw new Error('The model continuation protocol is invalid.');
@@ -10,8 +10,8 @@ export function createToolModelContinuation(protocol: string, value: unknown): T
   if (!checked.ok) throw new Error('The model continuation is not a bounded wire value.');
   const bytes = new TextEncoder().encode(JSON.stringify(checked.value)).byteLength;
   if (bytes > WIRE_LIMITS.bytes) throw new Error('The model continuation exceeds its byte limit.');
-  const handle = Object.freeze({kind: 'opaque-model-continuation', bytes}) as ToolModelContinuation;
-  states.set(handle, {protocol, value: checked.value as AgentJsonValue});
+  const handle = Object.freeze({ kind: 'opaque-model-continuation', bytes }) as ToolModelContinuation;
+  states.set(handle, { protocol, value: checked.value as AgentJsonValue });
   return handle;
 }
 
@@ -21,6 +21,7 @@ export function isToolModelContinuation(value: unknown): value is ToolModelConti
 
 export function readToolModelContinuation(continuation: ToolModelContinuation, protocol: string): AgentJsonValue {
   const state = states.get(continuation);
-  if (state === undefined || state.protocol !== protocol) throw new Error('The model continuation does not belong to this protocol.');
+  if (state === undefined || state.protocol !== protocol)
+    throw new Error('The model continuation does not belong to this protocol.');
   return state.value;
 }

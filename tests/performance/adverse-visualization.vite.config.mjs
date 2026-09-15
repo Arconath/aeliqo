@@ -1,7 +1,7 @@
-import {defineConfig} from "vite";
-import {resolve} from "node:path";
+import { defineConfig } from 'vite';
+import { resolve } from 'node:path';
 
-const repositoryRoot = resolve(import.meta.dirname, "../..");
+const repositoryRoot = resolve(import.meta.dirname, '../..');
 
 /**
  * Serves the adverse visualization fixture from the built @aeliqo/web and
@@ -10,14 +10,14 @@ const repositoryRoot = resolve(import.meta.dirname, "../..");
  */
 export default defineConfig({
   root: repositoryRoot,
-  base: "/",
+  base: '/',
   build: {
-    outDir: resolve(repositoryRoot, "artifacts/performance-adverse-visualization-dist"),
+    outDir: resolve(repositoryRoot, 'artifacts/performance-adverse-visualization-dist'),
     emptyOutDir: true,
     sourcemap: false,
     rollupOptions: {
-      input: resolve(repositoryRoot, "tests/performance/adverse-visualization.html"),
+      input: resolve(repositoryRoot, 'tests/performance/adverse-visualization.html'),
     },
   },
-  preview: {host: "127.0.0.1"},
+  preview: { host: '127.0.0.1' },
 });

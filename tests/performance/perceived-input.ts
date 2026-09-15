@@ -1,8 +1,8 @@
-import {AeliqoInputElement} from "@aeliqo/web/input";
-import {AeliqoTableElement} from "@aeliqo/web/table";
-import type {AeliqoTableColumn, AeliqoTableRow} from "@aeliqo/web";
+import { AeliqoInputElement } from '@aeliqo/web/input';
+import { AeliqoTableElement } from '@aeliqo/web/table';
+import type { AeliqoTableColumn, AeliqoTableRow } from '@aeliqo/web';
 
-type TimingStatus = "observed" | "missing-or-threshold-censored";
+type TimingStatus = 'observed' | 'missing-or-threshold-censored';
 
 type RawEventTiming = {
   readonly entryType: string;
@@ -67,9 +67,9 @@ type PerceivedInputApi = {
     readonly eventTimingObserverAvailable: boolean;
     readonly eventTimingThresholdMs: number;
   };
-  readonly armCalibrationHandler: () => {readonly handlerMs: number};
-  readonly beginInteraction: () => {readonly sequence: number; readonly queryBefore: string};
-  readonly resetFixture: () => {readonly revision: number};
+  readonly armCalibrationHandler: () => { readonly handlerMs: number };
+  readonly beginInteraction: () => { readonly sequence: number; readonly queryBefore: string };
+  readonly resetFixture: () => { readonly revision: number };
   readonly completeInteraction: () => InteractionCapture;
   readonly eventTimingEntryCount: () => number;
   readonly visibleRevision: () => number;
@@ -82,22 +82,23 @@ declare global {
   }
 }
 
-const input = document.querySelector<AeliqoInputElement>("#query");
-const table = document.querySelector<AeliqoTableElement>("#records");
-const visibleResult = document.querySelector<HTMLOutputElement>("#visible-result");
-if (input === null || table === null || visibleResult === null) throw new Error("Perceived input fixture is incomplete.");
+const input = document.querySelector<AeliqoInputElement>('#query');
+const table = document.querySelector<AeliqoTableElement>('#records');
+const visibleResult = document.querySelector<HTMLOutputElement>('#visible-result');
+if (input === null || table === null || visibleResult === null)
+  throw new Error('Perceived input fixture is incomplete.');
 
-if (!customElements.get("aeliqo-input")) customElements.define("aeliqo-input", AeliqoInputElement);
-if (!customElements.get("aeliqo-table")) customElements.define("aeliqo-table", AeliqoTableElement);
+if (!customElements.get('aeliqo-input')) customElements.define('aeliqo-input', AeliqoInputElement);
+if (!customElements.get('aeliqo-table')) customElements.define('aeliqo-table', AeliqoTableElement);
 
 const columns: readonly AeliqoTableColumn[] = [
-  {key: "id", label: "ID"},
-  {key: "label", label: "Label"},
-  {key: "value", label: "Value", align: "end"},
+  { key: 'id', label: 'ID' },
+  { key: 'label', label: 'Label' },
+  { key: 'value', label: 'Value', align: 'end' },
 ];
 
 function makeRows(): readonly AeliqoTableRow[] {
-  return Array.from({length: 100}, (_, index) => ({
+  return Array.from({ length: 100 }, (_, index) => ({
     id: `row-${index + 1}`,
     label: `Local row ${index + 1}`,
     value: index + 1,
@@ -114,7 +115,7 @@ const calibrationHandlerMs = 60;
 let calibrationArmed = false;
 
 function finiteOrNull(value: unknown): number | null {
-  return typeof value === "number" && Number.isFinite(value) ? value : null;
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 function eventTimestamp(value: unknown): number | null {
@@ -156,7 +157,7 @@ function rawEventTiming(entry: PerformanceEntry): RawEventTiming {
 
 function collectEventTimingEntries(): readonly RawEventTiming[] {
   const entries = [...eventTimingEntries];
-  for (const type of ["event", "first-input"] as const) {
+  for (const type of ['event', 'first-input'] as const) {
     try {
       for (const entry of performance.getEntriesByType(type)) entries.push(rawEventTiming(entry));
     } catch {
@@ -178,26 +179,42 @@ function eventTimingForInteraction(state: InteractionState): {
   readonly interactionId: number | null;
   readonly entries: readonly RawEventTiming[];
 } {
-  const timestamps = [state.keydownEventTimestampMs, state.keyupEventTimestampMs].filter((value): value is number => value !== null);
-  const matching = collectEventTimingEntries().filter((entry) =>
-    (entry.name === "keydown" || entry.name === "keyup") && entry.startTime !== null && timestamps.some((timestamp) => entry.startTime === timestamp),
+  const timestamps = [state.keydownEventTimestampMs, state.keyupEventTimestampMs].filter(
+    (value): value is number => value !== null,
   );
-  const interactionIds = new Set(matching.map((entry) => entry.interactionId).filter((value): value is number => value !== null && value > 0));
-  const candidates = interactionIds.size === 0
-    ? matching
-    : collectEventTimingEntries().filter((entry) =>
-      (entry.name === "keydown" || entry.name === "keyup") && entry.interactionId !== null && interactionIds.has(entry.interactionId),
-    );
+  const matching = collectEventTimingEntries().filter(
+    (entry) =>
+      (entry.name === 'keydown' || entry.name === 'keyup') &&
+      entry.startTime !== null &&
+      timestamps.some((timestamp) => entry.startTime === timestamp),
+  );
+  const interactionIds = new Set(
+    matching.map((entry) => entry.interactionId).filter((value): value is number => value !== null && value > 0),
+  );
+  const candidates =
+    interactionIds.size === 0
+      ? matching
+      : collectEventTimingEntries().filter(
+          (entry) =>
+            (entry.name === 'keydown' || entry.name === 'keyup') &&
+            entry.interactionId !== null &&
+            interactionIds.has(entry.interactionId),
+        );
   const interactionId = [...interactionIds][0] ?? null;
-  return {status: candidates.length === 0 ? "missing-or-threshold-censored" : "observed", observationThresholdMs: eventTimingThresholdMs, interactionId, entries: candidates};
+  return {
+    status: candidates.length === 0 ? 'missing-or-threshold-censored' : 'observed',
+    observationThresholdMs: eventTimingThresholdMs,
+    interactionId,
+    entries: candidates,
+  };
 }
 
 function visibleRowCount(): number {
-  return table!.shadowRoot?.querySelectorAll("tbody tr").length ?? 0;
+  return table!.shadowRoot?.querySelectorAll('tbody tr').length ?? 0;
 }
 
 function visibleText(): string {
-  return table!.shadowRoot?.querySelector("tbody")?.textContent?.replace(/\s+/gu, " ").trim() ?? "";
+  return table!.shadowRoot?.querySelector('tbody')?.textContent?.replace(/\s+/gu, ' ').trim() ?? '';
 }
 
 function recordVisibleUpdate(state: InteractionState): void {
@@ -208,7 +225,9 @@ function recordVisibleUpdate(state: InteractionState): void {
     delayMs: state.keydownEventTimestampMs === null ? null : atMs - state.keydownEventTimestampMs,
     revision,
     rowCount: visibleRowCount(),
-    rowIds: [...(table!.shadowRoot?.querySelectorAll("tbody tr td:first-child") ?? [])].map((cell) => cell.textContent?.trim() ?? ""),
+    rowIds: [...(table!.shadowRoot?.querySelectorAll('tbody tr td:first-child') ?? [])].map(
+      (cell) => cell.textContent?.trim() ?? '',
+    ),
     text: visibleText(),
   };
 }
@@ -219,7 +238,7 @@ const outputObserver = new MutationObserver(() => {
   state.outputMutationAtMs ??= performance.now();
   recordVisibleUpdate(state);
 });
-outputObserver.observe(visibleResult, {subtree: true, childList: true, characterData: true, attributes: true});
+outputObserver.observe(visibleResult, { subtree: true, childList: true, characterData: true, attributes: true });
 
 const tableObserver = new MutationObserver(() => {
   const state = activeInteraction;
@@ -227,13 +246,14 @@ const tableObserver = new MutationObserver(() => {
   state.tableMutationAtMs ??= performance.now();
   recordVisibleUpdate(state);
 });
-if (table.shadowRoot !== null) tableObserver.observe(table.shadowRoot, {subtree: true, childList: true, characterData: true, attributes: true});
+if (table.shadowRoot !== null)
+  tableObserver.observe(table.shadowRoot, { subtree: true, childList: true, characterData: true, attributes: true });
 
-input.addEventListener("keydown", (event) => {
-  if (!event.isTrusted || event.key.length === 0 || event.key === "Tab") return;
+input.addEventListener('keydown', (event) => {
+  if (!event.isTrusted || event.key.length === 0 || event.key === 'Tab') return;
   const runCalibration = calibrationArmed;
   calibrationArmed = false;
-  const queryBefore = input!.shadowRoot?.querySelector<HTMLInputElement>("[part=input]")?.value ?? input!.value;
+  const queryBefore = input!.shadowRoot?.querySelector<HTMLInputElement>('[part=input]')?.value ?? input!.value;
   activeInteraction = {
     sequence: sequence + 1,
     key: event.key,
@@ -250,59 +270,62 @@ input.addEventListener("keydown", (event) => {
   if (runCalibration) runCalibrationHandler();
 });
 
-input.addEventListener("keyup", (event) => {
+input.addEventListener('keyup', (event) => {
   const state = activeInteraction;
-  if (state !== undefined && event.isTrusted && event.key === state.key) state.keyupEventTimestampMs = eventTimestamp(event.timeStamp);
+  if (state !== undefined && event.isTrusted && event.key === state.key)
+    state.keyupEventTimestampMs = eventTimestamp(event.timeStamp);
 });
 
-input.addEventListener("aeliqo-input-change", (event) => {
+input.addEventListener('aeliqo-input-change', (event) => {
   const state = activeInteraction;
   if (state === undefined) return;
-  const detail = (event as CustomEvent<{readonly value?: unknown}>).detail;
-  const query = typeof detail?.value === "string" ? detail.value : "";
+  const detail = (event as CustomEvent<{ readonly value?: unknown }>).detail;
+  const query = typeof detail?.value === 'string' ? detail.value : '';
   const normalized = query.toLocaleLowerCase();
-  const rows = allRows.filter((row) => `${String(row.id)} ${String(row.label)} ${String(row.value)}`.toLocaleLowerCase().includes(normalized));
+  const rows = allRows.filter((row) =>
+    `${String(row.id)} ${String(row.label)} ${String(row.value)}`.toLocaleLowerCase().includes(normalized),
+  );
   state.queryAfter = query;
   input.value = query;
   table.rows = rows;
-  visibleResult.textContent = `${rows.length} matching rows for ${query.length === 0 ? "all records" : `“${query}”`}`;
+  visibleResult.textContent = `${rows.length} matching rows for ${query.length === 0 ? 'all records' : `“${query}”`}`;
   revision += 1;
   visibleResult.dataset.visibleRevision = String(revision);
 });
 
-table.caption = "Local records";
+table.caption = 'Local records';
 table.columns = columns;
-table.identity = ["id"];
+table.identity = ['id'];
 table.rows = allRows;
-input.label = "Filter local rows";
-input.description = "Type a character to update the visible row summary.";
-input.value = "";
+input.label = 'Filter local rows';
+input.description = 'Type a character to update the visible row summary.';
+input.value = '';
 
-function resetFixture(): {readonly revision: number} {
+function resetFixture(): { readonly revision: number } {
   activeInteraction = undefined;
   calibrationArmed = false;
-  input!.value = "";
+  input!.value = '';
   table!.rows = allRows;
-  visibleResult!.textContent = "100 matching rows for all records";
+  visibleResult!.textContent = '100 matching rows for all records';
   revision += 1;
   visibleResult!.dataset.visibleRevision = String(revision);
-  return {revision};
+  return { revision };
 }
 
-function armCalibrationHandler(): {readonly handlerMs: number} {
+function armCalibrationHandler(): { readonly handlerMs: number } {
   calibrationArmed = true;
-  return {handlerMs: calibrationHandlerMs};
+  return { handlerMs: calibrationHandlerMs };
 }
 
-function beginInteraction(): {readonly sequence: number; readonly queryBefore: string} {
+function beginInteraction(): { readonly sequence: number; readonly queryBefore: string } {
   activeInteraction = undefined;
-  const queryBefore = input!.shadowRoot?.querySelector<HTMLInputElement>("[part=input]")?.value ?? input!.value;
-  return {sequence: sequence + 1, queryBefore};
+  const queryBefore = input!.shadowRoot?.querySelector<HTMLInputElement>('[part=input]')?.value ?? input!.value;
+  return { sequence: sequence + 1, queryBefore };
 }
 
 function completeInteraction(): InteractionCapture {
   const state = activeInteraction;
-  if (state === undefined) throw new Error("No trusted keyboard interaction is active.");
+  if (state === undefined) throw new Error('No trusted keyboard interaction is active.');
   sequence = state.sequence;
   const capture: InteractionCapture = {
     sequence: state.sequence,
@@ -321,14 +344,18 @@ function completeInteraction(): InteractionCapture {
 }
 
 let observerAvailable = false;
-if (typeof PerformanceObserver !== "undefined") {
-  const supported = PerformanceObserver.supportedEntryTypes?.includes("event") ?? false;
+if (typeof PerformanceObserver !== 'undefined') {
+  const supported = PerformanceObserver.supportedEntryTypes?.includes('event') ?? false;
   if (supported) {
     try {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) eventTimingEntries.push(rawEventTiming(entry));
       });
-      observer.observe({type: "event", buffered: true, durationThreshold: eventTimingThresholdMs} as PerformanceObserverInit & {durationThreshold: number});
+      observer.observe({
+        type: 'event',
+        buffered: true,
+        durationThreshold: eventTimingThresholdMs,
+      } as PerformanceObserverInit & { durationThreshold: number });
       observerAvailable = true;
     } catch {
       observerAvailable = false;
@@ -338,7 +365,14 @@ if (typeof PerformanceObserver !== "undefined") {
 
 window.aeliqoPerceivedInput = {
   ready: true,
-  fixture: {rowCount: allRows.length, directInput: true, tableRows: table.rows.length, retainedModuleGraphPath: "/retained-modules.json", eventTimingObserverAvailable: observerAvailable, eventTimingThresholdMs},
+  fixture: {
+    rowCount: allRows.length,
+    directInput: true,
+    tableRows: table.rows.length,
+    retainedModuleGraphPath: '/retained-modules.json',
+    eventTimingObserverAvailable: observerAvailable,
+    eventTimingThresholdMs,
+  },
   armCalibrationHandler,
   beginInteraction,
   resetFixture,

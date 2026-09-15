@@ -52,7 +52,7 @@ describe('JSON text key uniqueness', () => {
   it('allows repeated keys in separate objects and punctuation inside strings', () => {
     const value = structuredClone(catalog) as AnyRecord;
     value.entities[0].label = 'A \\"quoted\\" label: { } [ ]';
-    value.entities.push({...value.entities[0], id: 'another-entity'});
+    value.entities.push({ ...value.entities[0], id: 'another-entity' });
     expect(parseCatalog(JSON.stringify(value)).ok).toBe(true);
   });
 });
@@ -62,16 +62,16 @@ const clone = <T>(value: T): T => structuredClone(value);
 describe('entity-qualified field references', () => {
   it('preserves explicit entity identity through wire serialization', () => {
     for (const entity of ['employees', 'departments']) {
-      const parsed = parseContract('expression', {kind:'field', ref:'name', entity});
+      const parsed = parseContract('expression', { kind: 'field', ref: 'name', entity });
       expect(parsed.ok).toBe(true);
       if (parsed.ok) {
         const wire = serializeContract('expression', parsed.value);
         expect(wire.ok).toBe(true);
-        if (wire.ok) expect(JSON.parse(wire.value)).toEqual({kind:'field',ref:'name',entity});
+        if (wire.ok) expect(JSON.parse(wire.value)).toEqual({ kind: 'field', ref: 'name', entity });
       }
     }
-    expect(parseContract('expression',{kind:'field',ref:'employees.name'}).ok).toBe(true);
-    expect(parseContract('expression',{kind:'field',ref:'name',entity:3}).ok).toBe(false);
+    expect(parseContract('expression', { kind: 'field', ref: 'employees.name' }).ok).toBe(true);
+    expect(parseContract('expression', { kind: 'field', ref: 'name', entity: 3 }).ok).toBe(false);
   });
 });
 
@@ -377,12 +377,7 @@ describe('bounded and hostile ingress', () => {
   });
 
   it('rejects non-JSON values at ingress', () => {
-    const values = [
-      BigInt(1),
-      Symbol('not-json'),
-      () => 'not-json',
-      undefined,
-    ];
+    const values = [BigInt(1), Symbol('not-json'), () => 'not-json', undefined];
     for (const value of values) {
       const invalid = clone(expression) as AnyRecord;
       invalid.value = value;
@@ -396,8 +391,14 @@ describe('bounded and hostile ingress', () => {
     expect(firstDiagnostic(deep).code).toBe('wire.depth');
     const boundedArrayLength = WIRE_LIMITS.array - 1;
     const groups = Math.ceil(WIRE_LIMITS.nodes / boundedArrayLength);
-    const wide = {...interaction, payload: {kind: 'extension', schema: {id: 'test', revision: '1'},
-      value: Array.from({length: groups}, () => Array(boundedArrayLength).fill(null))}};
+    const wide = {
+      ...interaction,
+      payload: {
+        kind: 'extension',
+        schema: { id: 'test', revision: '1' },
+        value: Array.from({ length: groups }, () => Array(boundedArrayLength).fill(null)),
+      },
+    };
     const outcome = parse('interaction', wide);
     expectRejected(outcome);
     expect(firstDiagnostic(outcome).code).toBe('wire.nodes');

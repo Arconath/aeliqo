@@ -1,5 +1,5 @@
-import React, {createContext, useContext, type PropsWithChildren} from 'react';
-import type {AeliqoApp} from '@aeliqo/web/app';
+import React, { createContext, useContext, type PropsWithChildren } from 'react';
+import type { AeliqoApp } from '@aeliqo/web/app';
 
 const AeliqoAppContext = createContext<AeliqoApp | undefined>(undefined);
 
@@ -8,7 +8,7 @@ export interface AeliqoProviderProps extends PropsWithChildren {
 }
 
 /** Shares one application-owned Aeliqo instance. The provider never disposes an instance it did not create. */
-export function AeliqoProvider({app, children}: AeliqoProviderProps): React.JSX.Element {
+export function AeliqoProvider({ app, children }: AeliqoProviderProps): React.JSX.Element {
   return <AeliqoAppContext.Provider value={app}>{children}</AeliqoAppContext.Provider>;
 }
 

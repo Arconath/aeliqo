@@ -1,13 +1,17 @@
-import {definePage, next, note} from './shared.mjs';
+import { definePage, next, note } from './shared.mjs';
 
 export const secondaryPages = [
   definePage('about', {
     title: 'About Aeliqo',
-    description: 'An open-source framework for adaptive, application-controlled interfaces with optional agent communication.',
+    description:
+      'An open-source framework for adaptive, application-controlled interfaces with optional agent communication.',
     body: `<p class="lead">Aeliqo connects application-owned meaning and authority to registered UI. It exists to make adaptive, agent-connected products easier to build without giving a model control of code or permissions.</p>
 <h2>Open-source boundary</h2><p>Core contracts, runtime, web components, React bindings, agent adapters, and developer tooling use the repository license. The framework works without a hosted account, inference relay, or license server.</p>
 <h2>Product boundary</h2><p>Your application remains responsible for authentication, server authorization, source access, routes, business actions, provider policy, and operations. Aeliqo is infrastructure inside that product—not the product’s backend.</p>
-${next([{href: '/', title: 'Documentation', description: 'Understand the 0.3 application path.'}, {href: 'https://github.com/Arconath/aeliqo', title: 'Source', description: 'Review implementation and contribute.'}])}`,
+${next([
+  { href: '/', title: 'Documentation', description: 'Understand the 0.3 application path.' },
+  { href: 'https://github.com/Arconath/aeliqo', title: 'Source', description: 'Review implementation and contribute.' },
+])}`,
   }),
   definePage('license', {
     title: 'License',

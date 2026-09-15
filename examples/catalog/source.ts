@@ -11,7 +11,7 @@ export interface CatalogSourceOptions {
   readonly mount: string;
 }
 
-export function catalogSource({imports, setup = "", mount}: CatalogSourceOptions): string {
+export function catalogSource({ imports, setup = '', mount }: CatalogSourceOptions): string {
   return `${imports.trim()}
 
 ${setup.trim()}
@@ -52,4 +52,4 @@ const root = createCatalogRoot(host);
 `;
 }
 
-export {catalogMountSource, CATALOG_MOUNT_SOURCES} from "./source-snippets.js";
+export { catalogMountSource, CATALOG_MOUNT_SOURCES } from './source-snippets.js';

@@ -1,5 +1,5 @@
-export {createActionPort} from './boundary.js';
-export {ActionRegistry, createActionRegistry} from './registry.js';
+export { createActionPort } from './boundary.js';
+export { ActionRegistry, createActionRegistry } from './registry.js';
 export type {
   ActionBoundaryOptions,
   ActionConfirmationRequest,

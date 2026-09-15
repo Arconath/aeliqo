@@ -65,9 +65,7 @@ export interface AgentContextRequest {
 }
 
 export interface AgentHost {
-  readonly readContext: (
-    input: AgentContextRequest,
-  ) => Outcome<AgentHostContext> | Promise<Outcome<AgentHostContext>>;
+  readonly readContext: (input: AgentContextRequest) => Outcome<AgentHostContext> | Promise<Outcome<AgentHostContext>>;
 }
 
 export interface AgentBindOptions {
@@ -78,15 +76,9 @@ export interface AgentBindOptions {
 
 export interface AgentBinder {
   /** Parses and semantically binds a proposal without executing any effect. */
-  readonly bind: (
-    input: unknown,
-    options?: AgentBindOptions,
-  ) => Promise<Outcome<AgentBindingOutcome>>;
+  readonly bind: (input: unknown, options?: AgentBindOptions) => Promise<Outcome<AgentBindingOutcome>>;
   /** Runtime-derived identity for loop progress accounting; never supplied by a model. */
-  readonly fingerprint: (
-    input: unknown,
-    options?: AgentBindOptions,
-  ) => Promise<Outcome<string>>;
+  readonly fingerprint: (input: unknown, options?: AgentBindOptions) => Promise<Outcome<string>>;
 }
 
 export interface AgentBinderOptions {
@@ -100,10 +92,13 @@ export interface BoundTaskValidation {
   readonly proposal: AgentTaskProposal;
   readonly task: Task;
   readonly planner?: QueryPlanner;
-  readonly plans: readonly {readonly outputId: string; readonly canonical: string; readonly planKey: string}[];
+  readonly plans: readonly { readonly outputId: string; readonly canonical: string; readonly planKey: string }[];
   readonly requiredResults: readonly ResultRef[];
 }
 
-export type AgentBindingFailureState = Extract<AgentBindingOutcome, {readonly state: 'unsupported' | 'denied' | 'invalid' | 'stale'}>['state'];
+export type AgentBindingFailureState = Extract<
+  AgentBindingOutcome,
+  { readonly state: 'unsupported' | 'denied' | 'invalid' | 'stale' }
+>['state'];
 
 export type AgentBindingDiagnostic = Diagnostic;

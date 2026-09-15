@@ -1,4 +1,4 @@
-import type {ProjectFile} from './project-template.js';
+import type { ProjectFile } from './project-template.js';
 
 const encoder = new TextEncoder();
 const crcTable = new Uint32Array(256);
@@ -14,15 +14,18 @@ function crc32(bytes: Uint8Array): number {
   return (value ^ 0xffffffff) >>> 0;
 }
 
-function header(size: number): {readonly bytes: Uint8Array; readonly view: DataView} {
+function header(size: number): { readonly bytes: Uint8Array; readonly view: DataView } {
   const bytes = new Uint8Array(size);
-  return {bytes, view: new DataView(bytes.buffer)};
+  return { bytes, view: new DataView(bytes.buffer) };
 }
 
 function append(parts: readonly Uint8Array[]): Uint8Array {
   const output = new Uint8Array(parts.reduce((total, part) => total + part.byteLength, 0));
   let offset = 0;
-  for (const part of parts) { output.set(part, offset); offset += part.byteLength; }
+  for (const part of parts) {
+    output.set(part, offset);
+    offset += part.byteLength;
+  }
   return output;
 }
 
@@ -31,7 +34,8 @@ export function zipProject(files: readonly ProjectFile[]): Blob {
   const central: Uint8Array[] = [];
   let offset = 0;
   for (const file of files) {
-    if (file.path.startsWith('/') || file.path.split('/').includes('..')) throw new TypeError('Project file paths must remain relative.');
+    if (file.path.startsWith('/') || file.path.split('/').includes('..'))
+      throw new TypeError('Project file paths must remain relative.');
     const name = encoder.encode(file.path);
     const content = encoder.encode(file.content);
     const checksum = crc32(content);
@@ -68,5 +72,5 @@ export function zipProject(files: readonly ProjectFile[]): Blob {
   const archive = append([...local, centralBytes, end.bytes]);
   const bytes = new ArrayBuffer(archive.byteLength);
   new Uint8Array(bytes).set(archive);
-  return new Blob([bytes], {type: 'application/zip'});
+  return new Blob([bytes], { type: 'application/zip' });
 }

@@ -1,10 +1,24 @@
-import {test} from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import {environmentSnapshot, percentile, firstSubsequent, makeRows, semanticFields, mediumPlan, runMediumPlanner, runTargetedReducer} from './workloads.mjs';
+import {
+  environmentSnapshot,
+  percentile,
+  firstSubsequent,
+  makeRows,
+  semanticFields,
+  mediumPlan,
+  runMediumPlanner,
+  runTargetedReducer,
+} from './workloads.mjs';
 
 test('Node with a global navigator is still recorded as Node', () => {
   assert.equal(typeof navigator, 'object');
-  assert.deepEqual(environmentSnapshot(), {runtime: 'node', node: process.version, platform: process.platform, arch: process.arch});
+  assert.deepEqual(environmentSnapshot(), {
+    runtime: 'node',
+    node: process.version,
+    platform: process.platform,
+    arch: process.arch,
+  });
 });
 
 test('nearest-rank p95 uses the tail, not a missing-index zero fallback', () => {
@@ -17,9 +31,12 @@ test('missing or invalid percentile configuration cannot pass a budget', () => {
 });
 test('measurements retain operation results and predetermined sample counts', async () => {
   let call = 0;
-  const result = await firstSubsequent('unit sequence', async () => ({call: ++call}), {firstCount: 2, subsequentCount: 3});
-  assert.deepEqual(result.results.first, [{call: 1}, {call: 2}]);
-  assert.deepEqual(result.results.subsequent, [{call: 3}, {call: 4}, {call: 5}]);
+  const result = await firstSubsequent('unit sequence', async () => ({ call: ++call }), {
+    firstCount: 2,
+    subsequentCount: 3,
+  });
+  assert.deepEqual(result.results.first, [{ call: 1 }, { call: 2 }]);
+  assert.deepEqual(result.results.subsequent, [{ call: 3 }, { call: 4 }, { call: 5 }]);
   assert.equal(result.first.count, 2);
   assert.equal(result.subsequent.count, 3);
 });
@@ -29,27 +46,35 @@ test('medium records contain every declared semantic field', () => {
 });
 
 test('the planner workload exercises 64 distinct complete candidates', () => {
-  const {candidates} = mediumPlan();
+  const { candidates } = mediumPlan();
   assert.equal(candidates.length, 64);
-  assert.equal(new Set(candidates.map(candidate => JSON.stringify(candidate.plan))).size, 64);
+  assert.equal(new Set(candidates.map((candidate) => JSON.stringify(candidate.plan))).size, 64);
   for (const candidate of candidates) assert.equal(candidate.plan.nodes.length, 31);
 });
 
 test('functional planner and reducer never sample the performance clock or report timings', async () => {
   const original = globalThis.performance;
-  globalThis.performance = {now() {
-    const caller = new Error().stack?.split('\n')[2] ?? '';
-    assert.equal(caller.includes('/tests/performance/workloads.mjs'), false, 'Workload timing is forbidden in functional mode');
-    return original.now();
-  }};
+  globalThis.performance = {
+    now() {
+      const caller = new Error().stack?.split('\n')[2] ?? '';
+      assert.equal(
+        caller.includes('/tests/performance/workloads.mjs'),
+        false,
+        'Workload timing is forbidden in functional mode',
+      );
+      return original.now();
+    },
+  };
   try {
-    const planner = runMediumPlanner({timed: false});
-    const reducer = await runTargetedReducer(2, {timed: false});
+    const planner = runMediumPlanner({ timed: false });
+    const reducer = await runTargetedReducer(2, { timed: false });
     assert.equal(planner.nodes, 31);
     assert.equal(reducer.successful, 2);
     assert.equal(reducer.unrelatedRoutes, 0);
     for (const result of [planner, reducer]) {
       for (const key of ['durationMs', 'rawMs', 'p50Ms', 'p95Ms']) assert.equal(key in result, false);
     }
-  } finally {globalThis.performance = original;}
+  } finally {
+    globalThis.performance = original;
+  }
 });

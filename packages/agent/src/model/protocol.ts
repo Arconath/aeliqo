@@ -1,7 +1,8 @@
-import type {ToolModelRequest, ToolModelResponse} from './types.js';
+import type { ToolModelRequest, ToolModelResponse } from './types.js';
 
 /** Features implemented by a wire adapter, not a statement about vendor trust. */
-export type ToolModelCapability = 'tool-calls' | 'usage' | 'request-cancellation' | 'input-token-estimate' | 'request-retry';
+export type ToolModelCapability =
+  'tool-calls' | 'usage' | 'request-cancellation' | 'input-token-estimate' | 'request-retry';
 
 export interface ToolModelAdapterRequest {
   readonly request: ToolModelRequest;

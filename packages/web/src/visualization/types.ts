@@ -1,7 +1,10 @@
-import type {ResultRef, Scalar, VisualizationBindingContext, VisualizationSpec} from '@aeliqo/core';
-import type {PlotDataset} from '../plot/composition.js';
+import type { ResultRef, Scalar, VisualizationBindingContext, VisualizationSpec } from '@aeliqo/core';
+import type { PlotDataset } from '../plot/composition.js';
 export type VisualizationDataset = PlotDataset;
-export interface VisualizationRow {readonly identity: string; readonly values: Readonly<Record<string, Scalar>>}
+export interface VisualizationRow {
+  readonly identity: string;
+  readonly values: Readonly<Record<string, Scalar>>;
+}
 /** Shared direct-input shape. Context and payloads are supplied by the authorized host. */
 export interface VisualizationInputs {
   readonly visualization: VisualizationSpec | undefined;
@@ -12,5 +15,9 @@ export interface VisualizationInputs {
   readonly height: number;
   readonly maxMarks: number;
 }
-export interface AeliqoVisualizationSelectionDetail {readonly source: 'user'; readonly identity: string; readonly result: ResultRef}
+export interface AeliqoVisualizationSelectionDetail {
+  readonly source: 'user';
+  readonly identity: string;
+  readonly result: ResultRef;
+}
 export type AeliqoVisualizationSelectionEvent = CustomEvent<AeliqoVisualizationSelectionDetail>;

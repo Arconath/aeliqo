@@ -1,7 +1,7 @@
-export {readResultStream, DataStreamError} from './stream.js';
-export type {ResultStreamLimits, ResultStreamContext} from './stream.js';
-export {createLocalDataService, DEFAULT_BUDGET, DEFAULT_SOURCE_LIMITS} from './local.js';
-export {createDataHttpHandler, createHttpDataService, DEFAULT_PATHS} from './http.js';
+export { readResultStream, DataStreamError } from './stream.js';
+export type { ResultStreamLimits, ResultStreamContext } from './stream.js';
+export { createLocalDataService, DEFAULT_BUDGET, DEFAULT_SOURCE_LIMITS } from './local.js';
+export { createDataHttpHandler, createHttpDataService, DEFAULT_PATHS } from './http.js';
 export {
   ADC_SCHEMAS,
   parseAcceptedQuery,

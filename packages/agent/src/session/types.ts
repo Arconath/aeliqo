@@ -1,4 +1,4 @@
-import type {AgentLoopBudget, AgentStopReason, Diagnostic, Outcome, ResultRef} from '@aeliqo/core';
+import type { AgentLoopBudget, AgentStopReason, Diagnostic, Outcome, ResultRef } from '@aeliqo/core';
 import type {
   AgentCapabilityReceipt,
   AgentCapabilityRequest,
@@ -20,7 +20,7 @@ export interface AgentSessionAttempt {
 
 export interface AgentSessionRepairRequest {
   readonly turn: number;
-  readonly previous: readonly Omit<AgentSessionAttempt, "receipt">[];
+  readonly previous: readonly Omit<AgentSessionAttempt, 'receipt'>[];
   readonly diagnostics: readonly Diagnostic[];
   readonly signal: AbortSignal;
 }

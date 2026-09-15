@@ -1,11 +1,5 @@
-import type {
-  AgentBindingOutcome,
-  AgentLoopBudget,
-  AgentStopReason,
-  Diagnostic,
-  Outcome,
-} from '@aeliqo/core';
-import type {AgentBinder} from './binder-types.js';
+import type { AgentBindingOutcome, AgentLoopBudget, AgentStopReason, Diagnostic, Outcome } from '@aeliqo/core';
+import type { AgentBinder } from './binder-types.js';
 
 export type AgentAttemptProgress = 'new' | 'gap-closed' | 'scope-changed' | 'none';
 

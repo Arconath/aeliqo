@@ -1,4 +1,4 @@
-export {createAeliqoRuntime} from './runtime.js';
+export { createAeliqoRuntime } from './runtime.js';
 export type {
   AeliqoAuthority,
   AeliqoRuntime,

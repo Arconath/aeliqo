@@ -1,7 +1,7 @@
-import {useCallback, useSyncExternalStore} from 'react';
-import type {RuntimeRegionState} from '@aeliqo/runtime/app';
-import type {WebRenderReceipt} from '@aeliqo/web/app';
-import {useAeliqoApp} from './context.js';
+import { useCallback, useSyncExternalStore } from 'react';
+import type { RuntimeRegionState } from '@aeliqo/runtime/app';
+import type { WebRenderReceipt } from '@aeliqo/web/app';
+import { useAeliqoApp } from './context.js';
 
 const EMPTY_STATE: RuntimeRegionState | undefined = undefined;
 
@@ -14,7 +14,13 @@ export function useAeliqoRegionState(regionId: string): RuntimeRegionState | und
   );
 }
 
-export function useAeliqoRender(regionId: string): (intent: unknown, options?: {readonly signal?: AbortSignal}) => Promise<WebRenderReceipt> {
+export function useAeliqoRender(
+  regionId: string,
+): (intent: unknown, options?: { readonly signal?: AbortSignal }) => Promise<WebRenderReceipt> {
   const app = useAeliqoApp();
-  return useCallback((intent, options = {}) => app.render({regionId, intent, ...(options.signal === undefined ? {} : {signal: options.signal})}), [app, regionId]);
+  return useCallback(
+    (intent, options = {}) =>
+      app.render({ regionId, intent, ...(options.signal === undefined ? {} : { signal: options.signal }) }),
+    [app, regionId],
+  );
 }

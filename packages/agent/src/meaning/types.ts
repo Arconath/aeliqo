@@ -48,7 +48,11 @@ export interface AgentMeaningAuthoring<C extends Catalog = Catalog> {
   /** AI proposals are checked by the same builder and preserve AI origin. */
   readonly propose: (input: MeaningProposalInput) => Outcome<MeaningDraft>;
   /** Code-owned meanings can only yield a proposed diff/new revision. */
-  readonly proposeDiff: (base: MeaningDraft | MeaningDefinition, meaning: MeaningDefinition, options?: {readonly assumptions?: readonly string[]}) => Outcome<MeaningDiff>;
+  readonly proposeDiff: (
+    base: MeaningDraft | MeaningDefinition,
+    meaning: MeaningDefinition,
+    options?: { readonly assumptions?: readonly string[] },
+  ) => Outcome<MeaningDiff>;
   /** Optional pure local evaluator shared with manual previews. */
   readonly evaluator?: MeaningEvaluator;
 }
@@ -63,4 +67,16 @@ export interface MeaningActivationCapabilityOptions {
   readonly ref?: VersionRef;
 }
 
-export type {Catalog, FunctionRegistry, MeaningDefinition, MeaningDraft, MeaningEvaluator, MeaningRegistry, MeaningScope, MeaningSource, Outcome, SemanticPolicy, VersionRef};
+export type {
+  Catalog,
+  FunctionRegistry,
+  MeaningDefinition,
+  MeaningDraft,
+  MeaningEvaluator,
+  MeaningRegistry,
+  MeaningScope,
+  MeaningSource,
+  Outcome,
+  SemanticPolicy,
+  VersionRef,
+};

@@ -1,5 +1,21 @@
-import type {CommitPreconditions, InteractionLink, PresentationPlan, PresentationContext, PresentationRegistry, ResultRef, Scalar, VersionRef} from "@aeliqo/core";
-import type {AeliqoDataColumn, AeliqoDataRecord, AeliqoDataScope, AeliqoDataStatus, AeliqoFieldOption, AeliqoFilterPredicate} from "../data/types.js";
+import type {
+  CommitPreconditions,
+  InteractionLink,
+  PresentationPlan,
+  PresentationContext,
+  PresentationRegistry,
+  ResultRef,
+  Scalar,
+  VersionRef,
+} from '@aeliqo/core';
+import type {
+  AeliqoDataColumn,
+  AeliqoDataRecord,
+  AeliqoDataScope,
+  AeliqoDataStatus,
+  AeliqoFieldOption,
+  AeliqoFilterPredicate,
+} from '../data/types.js';
 
 export type AeliqoCompoundStatus = AeliqoDataStatus;
 
@@ -34,7 +50,7 @@ export interface AeliqoCompoundRecipeInput extends AeliqoCompoundRecipeOptions {
   /** Exact task need IDs and operation refs; omission cannot satisfy a required need. */
   readonly coverage?: PresentationPlan['coverage'];
   readonly stateTransfer?: PresentationPlan['stateTransfer'];
-  readonly validation: {readonly context: PresentationContext; readonly registry: PresentationRegistry};
+  readonly validation: { readonly context: PresentationContext; readonly registry: PresentationRegistry };
 }
 
 export type AeliqoExplorerRecipeInput = AeliqoCompoundRecipeInput;
@@ -103,14 +119,14 @@ export interface AeliqoQualityState {
 }
 
 export interface AeliqoComparisonSetDetail {
-  readonly source: "user";
+  readonly source: 'user';
   readonly entity: string;
   readonly keys: readonly string[];
   readonly result?: ResultRef;
   readonly scope?: AeliqoDataScope;
 }
 export interface AeliqoBreakdownGroupDetail {
-  readonly source: "user";
+  readonly source: 'user';
   readonly entity: string;
   readonly key: string;
   readonly result?: ResultRef;
@@ -118,7 +134,7 @@ export interface AeliqoBreakdownGroupDetail {
 }
 
 export interface AeliqoRecordEditorSaveDetail {
-  readonly source: "user";
+  readonly source: 'user';
   readonly entity: string;
   readonly key: string;
   readonly entityRevision: string;
@@ -127,7 +143,7 @@ export interface AeliqoRecordEditorSaveDetail {
   readonly action?: VersionRef;
 }
 export interface AeliqoRecordEditorCancelDetail {
-  readonly source: "user";
+  readonly source: 'user';
   readonly entity: string;
   readonly key: string;
   readonly entityRevision: string;
@@ -144,17 +160,24 @@ export interface AeliqoFormFlowStep {
   readonly fieldNames?: readonly string[];
 }
 export interface AeliqoFormFlowStepDetail {
-  readonly source: "user";
+  readonly source: 'user';
   readonly from: string;
   readonly to: string;
-  readonly direction: "next" | "back";
+  readonly direction: 'next' | 'back';
   readonly draft: Readonly<Record<string, AeliqoFormDraftValue>>;
 }
 export interface AeliqoFormFlowCommitDetail {
-  readonly source: "user";
+  readonly source: 'user';
   readonly step: string;
   readonly draft: Readonly<Record<string, AeliqoFormDraftValue>>;
 }
 
 export type AeliqoCompoundInteractionLink = InteractionLink;
-export type {AeliqoDataColumn, AeliqoDataRecord, AeliqoDataScope, AeliqoDataStatus, AeliqoFieldOption, AeliqoFilterPredicate};
+export type {
+  AeliqoDataColumn,
+  AeliqoDataRecord,
+  AeliqoDataScope,
+  AeliqoDataStatus,
+  AeliqoFieldOption,
+  AeliqoFilterPredicate,
+};
