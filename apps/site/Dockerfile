@@ -7,7 +7,7 @@ FROM node:24.20.0-alpine@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de6
 WORKDIR /workspace
 RUN corepack enable && corepack prepare pnpm@11.24.0 --activate
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json release-metadata.json ./
 COPY packages ./packages
 COPY apps ./apps
 COPY catalog ./catalog
