@@ -4,3 +4,4 @@
 **/test-results
 **/.generated
 **/coverage
+examples/next-platform/next-env.d.ts
