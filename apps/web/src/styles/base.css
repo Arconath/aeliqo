@@ -10,49 +10,49 @@
     sans-serif;
   font-synthesis: none;
   line-height: 1.5;
-  --bg: #fafafa;
-  --surface: #f4f4f5;
-  --surface-raised: #fff;
-  --surface-strong: #18181b;
-  --text: #18181b;
-  --muted: #68686f;
-  --faint: #5f5f66;
-  --line: #e5e5e7;
-  --line-strong: #d1d1d5;
-  --accent: #5b5bd6;
-  --accent-hover: #4949bd;
-  --accent-soft: #eeeeff;
-  --on-accent: #fff;
-  --danger: #b42318;
-  --success: #178153;
-  --shell-max: 88rem;
-  --shell-pad: clamp(1rem, 3.2vw, 3rem);
-  --radius-sm: 0.45rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --control-height: 2.5rem;
-  --shadow-sm: 0 1px 2px rgb(24 24 27 / 0.05), 0 8px 24px rgb(24 24 27 / 0.05);
-  --shadow-lg: 0 24px 80px rgb(24 24 27 / 0.12);
+  --bg: #f7f8fc;
+  --surface: #eef1f7;
+  --surface-raised: #ffffff;
+  --surface-strong: #151a2b;
+  --text: #171b2e;
+  --muted: #5f687e;
+  --faint: #5d6880;
+  --line: #e1e5ef;
+  --line-strong: #cdd4e2;
+  --accent: #4b55c9;
+  --accent-hover: #3d47b0;
+  --accent-soft: #eef0ff;
+  --on-accent: #ffffff;
+  --danger: #b83b4a;
+  --success: #0f7456;
+  --shell-max: 90rem;
+  --shell-pad: clamp(1.15rem, 4vw, 4.5rem);
+  --radius-sm: 0.55rem;
+  --radius-md: 0.8rem;
+  --radius-lg: 1.2rem;
+  --control-height: 2.65rem;
+  --shadow-sm: 0 1px 2px rgb(21 26 43 / 0.04), 0 10px 30px rgb(21 26 43 / 0.06);
+  --shadow-lg: 0 28px 90px rgb(21 26 43 / 0.14);
 }
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #101012;
-  --surface: #18181b;
-  --surface-raised: #202024;
-  --surface-strong: #fafafa;
-  --text: #f4f4f5;
-  --muted: #a1a1aa;
-  --faint: #b4b4bc;
-  --line: #2f2f35;
-  --line-strong: #45454d;
-  --accent: #9292ff;
-  --accent-hover: #a7a7ff;
-  --accent-soft: #292947;
-  --on-accent: #101012;
-  --danger: #ff9b91;
-  --success: #6ee7b7;
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.2), 0 8px 24px rgb(0 0 0 / 0.14);
-  --shadow-lg: 0 24px 80px rgb(0 0 0 / 0.35);
+  --bg: #0c1020;
+  --surface: #12192c;
+  --surface-raised: #172139;
+  --surface-strong: #f7f8fc;
+  --text: #f3f5ff;
+  --muted: #a7b0c7;
+  --faint: #77829d;
+  --line: #26324d;
+  --line-strong: #354361;
+  --accent: #9ca7ff;
+  --accent-hover: #bac1ff;
+  --accent-soft: #20294c;
+  --on-accent: #0c1020;
+  --danger: #ff9ea9;
+  --success: #63d3ad;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.2), 0 14px 40px rgb(0 0 0 / 0.18);
+  --shadow-lg: 0 30px 100px rgb(0 0 0 / 0.45);
 }
 * {
   box-sizing: border-box;
@@ -66,8 +66,10 @@ body {
   min-width: 320px;
   margin: 0;
   color: var(--text);
-  background: var(--bg);
-  letter-spacing: -0.01em;
+  background:
+    radial-gradient(circle at 75% -20%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 34rem),
+    var(--bg);
+  letter-spacing: -0.012em;
 }
 img {
   max-width: 100%;
@@ -140,26 +142,26 @@ summary:focus-visible {
 .topbar {
   position: relative;
   z-index: 20;
-  min-height: 4rem;
+  min-height: 4.75rem;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 2rem;
-  border-bottom: 1px solid var(--line);
+  gap: 2.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
 }
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.55rem;
   color: var(--text);
-  font-size: 1.18rem;
-  font-weight: 760;
-  letter-spacing: -0.04em;
+  font-size: 1.02rem;
+  font-weight: 780;
+  letter-spacing: -0.035em;
   text-decoration: none;
 }
 .brand img {
-  width: 1.8rem;
-  height: 1.8rem;
+  width: 2rem;
+  height: 2rem;
   object-fit: contain;
 }
 .primary-nav,
@@ -170,13 +172,13 @@ footer nav {
 }
 .primary-nav {
   justify-content: flex-end;
-  gap: 1.6rem;
+  gap: 0.3rem;
 }
 .primary-nav a,
 footer a {
   color: var(--muted);
-  font-size: 0.875rem;
-  font-weight: 580;
+  font-size: 0.82rem;
+  font-weight: 620;
   text-decoration: none;
 }
 .primary-nav a:hover,
@@ -185,12 +187,21 @@ footer a:hover {
   color: var(--text);
 }
 .nav-github {
-  margin-inline-start: 0.25rem;
-  padding-inline-start: 1.5rem;
+  margin-inline-start: 0.45rem;
+  padding-inline-start: 1rem;
   border-inline-start: 1px solid var(--line);
 }
+.primary-nav a:not(.nav-github) {
+  padding: 0.5rem 0.7rem;
+  border-radius: 0.55rem;
+}
+.primary-nav a:not(.nav-github):hover,
+.primary-nav a[aria-current='page'] {
+  color: var(--text);
+  background: var(--surface);
+}
 .utilities {
-  gap: 0.5rem;
+  gap: 0.7rem;
   color: var(--muted);
   font-size: 0.78rem;
 }
@@ -200,7 +211,7 @@ footer a:hover {
   gap: 0.4rem;
 }
 .theme-label select {
-  min-width: 4.8rem;
+  min-width: 5.2rem;
   font-size: 0.78rem;
 }
 .nav-toggle {
@@ -223,17 +234,17 @@ h3 {
 }
 h1 {
   margin: 0;
-  font-size: clamp(3rem, 6vw, 5.6rem);
-  font-weight: 720;
-  letter-spacing: -0.067em;
-  line-height: 0.95;
+  font-size: clamp(3rem, 5.4vw, 5rem);
+  font-weight: 730;
+  letter-spacing: -0.072em;
+  line-height: 0.98;
 }
 h2 {
   margin: 0;
-  font-size: clamp(2.2rem, 4.5vw, 4.5rem);
-  font-weight: 690;
-  letter-spacing: -0.055em;
-  line-height: 1;
+  font-size: clamp(2rem, 3.8vw, 3.8rem);
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  line-height: 1.02;
 }
 h3 {
   letter-spacing: -0.025em;
@@ -244,10 +255,10 @@ a.primary {
   min-height: var(--control-height);
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 0.8rem;
   border: 1px solid var(--accent);
-  border-radius: var(--radius-sm);
-  padding: 0.65rem 1rem;
+  border-radius: 0.65rem;
+  padding: 0.65rem 1.05rem;
   color: var(--on-accent);
   background: var(--accent);
   font-weight: 680;
@@ -264,7 +275,7 @@ a.primary:hover {
   min-height: var(--control-height);
   align-items: center;
   border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
+  border-radius: 0.65rem;
   padding: 0.65rem 1rem;
   background: var(--surface-raised);
   font-weight: 650;
@@ -277,6 +288,26 @@ a.primary:hover {
   color: var(--accent);
   font-weight: 650;
   text-decoration: none;
+}
+.primary,
+.secondary-action,
+.text-action,
+button,
+select,
+input,
+textarea {
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+.primary:hover:not(:disabled),
+a.primary:hover,
+.secondary-action:hover,
+.text-action:hover {
+  transform: translateY(-1px);
 }
 .caption {
   color: var(--muted);
@@ -412,10 +443,14 @@ footer nav {
 }
 @media (forced-colors: active) {
   .primary,
-  a.primary {
-    border-color: ButtonText;
-    color: ButtonText;
-    background: ButtonFace;
+  a.primary,
+  .primary:visited,
+  a.primary:visited {
+    border-color: CanvasText !important;
+    color: CanvasText !important;
+    background: Canvas !important;
+    -webkit-text-fill-color: CanvasText;
+    forced-color-adjust: auto;
   }
   :focus-visible {
     outline-color: Highlight;

@@ -1,35 +1,46 @@
 .hero {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 0.82fr) minmax(32rem, 1.18fr);
+  grid-template-columns: minmax(0, 0.88fr) minmax(32rem, 1.12fr);
   align-items: center;
-  gap: clamp(3rem, 6vw, 6.5rem);
-  padding-block: clamp(4.5rem, 9vw, 8.5rem);
+  gap: clamp(3.5rem, 7vw, 8rem);
+  padding-block: clamp(5rem, 10vw, 9.5rem) clamp(4.5rem, 8vw, 7.5rem);
 }
 .hero-copy {
   min-width: 0;
 }
 .hero-status {
-  margin-bottom: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 1.35rem;
+}
+.hero-status::before {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--success);
+  content: '';
 }
 .hero h1 {
-  max-width: 10.5ch;
+  max-width: 11ch;
 }
 .hero h1 em {
   color: var(--accent);
   font-style: normal;
 }
 .lead {
-  max-width: 40rem;
-  margin: 1.8rem 0 0;
+  max-width: 38rem;
+  margin: 1.55rem 0 0;
   color: var(--muted);
-  font-size: clamp(1.05rem, 1.4vw, 1.2rem);
-  line-height: 1.65;
+  font-size: clamp(1rem, 1.25vw, 1.14rem);
+  line-height: 1.7;
 }
 .actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.65rem;
-  margin: 2rem 0 1.25rem;
+  margin: 2rem 0 1.1rem;
 }
 .install-command {
   display: flex;
@@ -37,7 +48,7 @@
   align-items: center;
   gap: 0.7rem;
   border: 0;
-  padding: 0.35rem 0;
+  padding: 0.45rem 0;
   color: var(--muted);
   background: transparent;
   font-size: 0.76rem;
@@ -56,21 +67,50 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.hero-proof {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: 38rem;
+  margin: 2.25rem 0 0;
+  padding: 1.15rem 0 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+.hero-proof li {
+  display: grid;
+  gap: 0.15rem;
+  padding-inline-end: 0.8rem;
+}
+.hero-proof li + li {
+  padding-inline-start: 0.9rem;
+  border-inline-start: 1px solid var(--line);
+}
+.hero-proof strong {
+  color: var(--text);
+  font-size: 1.25rem;
+  font-weight: 740;
+  letter-spacing: -0.04em;
+}
+.hero-proof span {
+  color: var(--muted);
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
 .product-window {
   min-width: 0;
   overflow: hidden;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 82%, transparent);
+  border-radius: 1.35rem;
   background: var(--surface-raised);
   box-shadow: var(--shadow-lg);
 }
 .product-window > header {
   display: flex;
-  min-height: 3.25rem;
+  min-height: 3.5rem;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding-inline: 1rem;
+  padding-inline: 1.15rem;
   border-bottom: 1px solid var(--line);
   font-size: 0.75rem;
 }
@@ -82,10 +122,10 @@
 }
 .product-mark {
   display: grid;
-  width: 1.6rem;
-  height: 1.6rem;
+  width: 1.75rem;
+  height: 1.75rem;
   place-items: center;
-  border-radius: 0.35rem;
+  border-radius: 0.55rem;
   color: var(--on-accent);
   background: var(--accent);
   font-weight: 760;
@@ -103,13 +143,13 @@
 .product-body {
   display: grid;
   grid-template-columns: 7.5rem minmax(0, 1fr);
-  min-height: 28rem;
+  min-height: 31rem;
 }
 .product-body > nav {
   display: grid;
   align-content: start;
   gap: 0.15rem;
-  padding: 1.1rem 0.65rem;
+  padding: 1.4rem 0.7rem;
   border-inline-end: 1px solid var(--line);
   color: var(--muted);
   font-size: 0.7rem;
@@ -126,15 +166,15 @@
 }
 .product-canvas {
   min-width: 0;
-  padding: 1.2rem;
-  background: color-mix(in srgb, var(--surface) 45%, var(--surface-raised));
+  padding: 1.35rem;
+  background: color-mix(in srgb, var(--surface) 62%, var(--surface-raised));
 }
 .product-query {
-  padding: 0.9rem 1rem;
+  padding: 1rem 1.05rem;
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--surface-raised);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 8px 22px rgb(21 26 43 / 0.06);
 }
 .product-query span {
   color: var(--accent);
@@ -145,8 +185,8 @@
 }
 .product-query p {
   margin: 0.35rem 0;
-  font-size: 0.9rem;
-  font-weight: 650;
+  font-size: 0.94rem;
+  font-weight: 680;
 }
 .product-query code {
   display: block;
@@ -161,7 +201,7 @@
   align-items: end;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1.5rem 0 0.75rem;
+  padding: 1.65rem 0 0.85rem;
 }
 .product-heading > div {
   display: grid;
@@ -171,7 +211,7 @@
   font-size: 0.66rem;
 }
 .product-heading strong {
-  font-size: 1.05rem;
+  font-size: 1.12rem;
 }
 .product-heading > b {
   color: var(--muted);
@@ -181,7 +221,7 @@
 .product-table {
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: var(--radius-md);
+  border-radius: 0.9rem;
   background: var(--surface-raised);
   font-size: 0.68rem;
 }
@@ -189,7 +229,7 @@
   display: grid;
   grid-template-columns: 1fr 1.2fr 0.75fr;
   gap: 0.7rem;
-  padding: 0.75rem;
+  padding: 0.85rem;
   border-bottom: 1px solid var(--line);
 }
 .product-table [role='row']:last-child {
@@ -221,14 +261,14 @@
 }
 .ownership-strip {
   border-block: 1px solid var(--line);
-  background: var(--surface-raised);
+  background: color-mix(in srgb, var(--surface-raised) 82%, var(--surface));
 }
 .ownership-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  gap: 1.25rem;
-  padding-block: 1.5rem;
+  gap: 1.5rem;
+  padding-block: 1.35rem;
 }
 .ownership-row > span {
   color: var(--line-strong);
@@ -246,9 +286,23 @@
   font-size: 0.7rem;
 }
 .demonstration {
-  padding-block: clamp(5rem, 9vw, 8rem);
+  position: relative;
+  padding-block: clamp(5.5rem, 10vw, 9rem);
   color: #f4f4f5;
-  background: #18181b;
+  background: #11172a;
+}
+.demonstration::before {
+  position: absolute;
+  inset: 0;
+  opacity: 0.3;
+  background-image: linear-gradient(rgb(156 167 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(156 167 255 / 0.05) 1px, transparent 1px);
+  background-size: 3rem 3rem;
+  content: '';
+  pointer-events: none;
+}
+.demonstration > .shell {
+  position: relative;
 }
 .demonstration .eyebrow,
 .demonstration .caption,
@@ -262,7 +316,7 @@
   gap: clamp(2rem, 6vw, 6rem);
 }
 .demo-heading h2 {
-  max-width: 12ch;
+  max-width: 13ch;
   color: #fafafa;
 }
 .demo-lead {
@@ -303,7 +357,7 @@
   margin-top: 1rem;
   padding: clamp(0.8rem, 2vw, 1.5rem);
   border: 1px solid #3f3f46;
-  border-radius: var(--radius-lg);
+  border-radius: 1rem;
   color: var(--text);
   background: var(--surface-raised);
 }
@@ -368,7 +422,7 @@
   font-size: 0.78rem;
 }
 .use-cases {
-  padding-block: clamp(5rem, 9vw, 9rem);
+  padding-block: clamp(5.5rem, 10vw, 9.5rem);
 }
 .section-intro {
   display: grid;
@@ -382,7 +436,7 @@
   margin-bottom: -1rem;
 }
 .section-intro h2 {
-  max-width: 11ch;
+  max-width: 12ch;
 }
 .section-intro > p:last-child {
   margin: 0;
@@ -397,7 +451,7 @@
   grid-template-columns: 3rem minmax(8rem, 0.7fr) minmax(0, 1.4fr) auto;
   align-items: center;
   gap: 1.5rem;
-  padding-block: 1.6rem;
+  padding-block: 1.45rem;
   border-bottom: 1px solid var(--line);
   text-decoration: none;
 }
@@ -407,7 +461,7 @@
   font-size: 0.68rem;
 }
 .use-case-list strong {
-  font-size: 1.35rem;
+  font-size: 1.2rem;
   letter-spacing: -0.03em;
 }
 .use-case-list p {
@@ -423,7 +477,7 @@
   display: grid;
   grid-template-columns: minmax(16rem, 0.58fr) minmax(0, 1fr);
   gap: clamp(3rem, 8vw, 8rem);
-  padding-block: clamp(5rem, 9vw, 9rem);
+  padding-block: clamp(5.5rem, 10vw, 9.5rem);
   border-top: 1px solid var(--line);
 }
 .approach-intro {
@@ -446,7 +500,7 @@
   display: grid;
   grid-template-columns: 2.5rem minmax(0, 1fr);
   gap: 1.5rem;
-  padding-block: 2rem;
+  padding-block: 2.2rem;
   border-bottom: 1px solid var(--line);
 }
 .approach-list article > span {
@@ -471,7 +525,7 @@
 }
 .boundary-section {
   border-block: 1px solid var(--line);
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 75%, var(--bg));
 }
 .boundary-grid {
   display: grid;
@@ -504,7 +558,7 @@
 .closing {
   display: grid;
   justify-items: center;
-  padding-block: clamp(5rem, 10vw, 10rem);
+  padding-block: clamp(5.5rem, 11vw, 11rem);
   text-align: center;
 }
 .closing h2 {
@@ -544,6 +598,20 @@
   .product-body {
     grid-template-columns: 1fr;
     min-height: 0;
+  }
+  .hero-proof {
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+  }
+  .hero-proof li,
+  .hero-proof li + li {
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    align-items: baseline;
+    padding: 0;
+    border: 0;
+  }
+  .hero-proof strong {
+    grid-row: 1;
   }
   .product-body > nav {
     display: none;

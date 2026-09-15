@@ -1,62 +1,72 @@
 .docs-layout {
   display: grid;
-  grid-template-columns: minmax(13rem, 15rem) minmax(0, 1fr) minmax(10rem, 12rem);
+  grid-template-columns: minmax(13.5rem, 15.5rem) minmax(0, 54rem) minmax(10rem, 12rem);
   grid-template-areas: 'sidebar reading toc';
   align-items: start;
-  gap: clamp(2rem, 4vw, 4rem);
-  max-width: 96rem;
-  padding-block: 2rem 6rem;
+  gap: clamp(2.5rem, 4.5vw, 4.5rem);
+  max-width: 98rem;
+  padding-block: 2.75rem 8rem;
 }
 .docs-sidebar {
   grid-area: sidebar;
   position: sticky;
-  top: 1rem;
+  top: 1.25rem;
   align-self: start;
   min-width: 0;
   max-height: calc(100vh - 2rem);
-  padding-inline-end: 1.25rem;
+  padding-inline-end: 1.4rem;
   overflow: auto;
   border-inline-end: 1px solid var(--line);
-  font-size: 0.83rem;
+  font-size: 0.78rem;
   scrollbar-width: thin;
 }
 .docs-sidebar-brand {
   display: grid;
-  gap: 0.05rem;
-  margin-bottom: 1rem;
+  gap: 0.15rem;
+  margin-bottom: 1.15rem;
+  padding-bottom: 1.15rem;
+  border-bottom: 1px solid var(--line);
   color: var(--text);
   text-decoration: none;
 }
 .docs-sidebar-brand span {
   color: var(--accent);
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 740;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 .docs-sidebar-brand strong {
-  font-size: 1.05rem;
+  font-size: 1.12rem;
   letter-spacing: -0.02em;
+}
+.docs-sidebar-brand::after {
+  max-width: 15rem;
+  margin-top: 0.35rem;
+  color: var(--muted);
+  content: 'Build interfaces from meaning, intent, and registered views.';
+  font-size: 0.7rem;
+  line-height: 1.45;
 }
 .docs-sidebar nav {
   display: grid;
-  gap: 1.15rem;
+  gap: 1.05rem;
   margin-top: 1.25rem;
 }
 .docs-nav-group {
   display: grid;
-  gap: 0.08rem;
+  gap: 0.12rem;
 }
 .docs-nav-group > strong {
-  margin: 0 0 0.3rem 0.55rem;
-  color: var(--faint);
+  margin: 0 0 0.32rem 0.55rem;
+  color: var(--accent);
   font-size: 0.62rem;
   letter-spacing: 0.09em;
   text-transform: uppercase;
 }
 .docs-sidebar nav a {
-  padding: 0.4rem 0.55rem;
-  border-radius: 0.35rem;
+  padding: 0.42rem 0.6rem;
+  border-radius: 0.55rem;
   color: var(--muted);
   line-height: 1.35;
   text-decoration: none;
@@ -67,7 +77,7 @@
 }
 .docs-sidebar nav a[aria-current='page'] {
   color: var(--text);
-  background: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent-soft) 82%, transparent);
   font-weight: 650;
 }
 .docs-sidebar-github {
@@ -90,10 +100,10 @@
   grid-template-columns: 1fr auto;
   align-items: center;
   gap: 0.08rem 0.45rem;
-  padding: 0.65rem 0.7rem;
+  padding: 0.7rem 0.75rem;
   border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--surface-raised);
+  border-radius: 0.7rem;
+  background: color-mix(in srgb, var(--surface-raised) 86%, var(--surface));
 }
 .docs-version span {
   grid-row: 1/3;
@@ -116,7 +126,7 @@
 }
 .docs-search-tools {
   display: grid;
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.75rem;
 }
 .docs-search-tools > * {
   grid-area: 1/1;
@@ -143,6 +153,7 @@
   align-items: center;
   justify-content: space-between;
   color: var(--muted);
+  border-color: var(--line);
   text-align: start;
 }
 .search-trigger kbd {
@@ -156,7 +167,7 @@
 .docs-toc {
   grid-area: toc;
   position: sticky;
-  top: 1.25rem;
+  top: 6.5rem;
   align-self: start;
   min-width: 0;
   max-height: calc(100vh - 2.5rem);
@@ -191,12 +202,12 @@
 .reading {
   grid-area: reading;
   min-width: 0;
-  max-width: 52rem;
-  padding-bottom: 2rem;
+  max-width: 54rem;
+  padding-bottom: 2.5rem;
 }
 .doc-header {
-  margin-bottom: 2.5rem;
-  padding-bottom: 2rem;
+  margin-bottom: 2.75rem;
+  padding-bottom: 2.15rem;
   border-bottom: 1px solid var(--line);
 }
 .doc-header .eyebrow {
@@ -206,15 +217,15 @@
   max-width: 20ch;
   margin: 0 0 1.1rem;
   overflow-wrap: anywhere;
-  font-size: clamp(2.3rem, 4.2vw, 3.8rem);
-  line-height: 1;
+  font-size: clamp(2.65rem, 4.2vw, 4rem);
+  line-height: 1.02;
 }
 .doc-dek,
 .reading .lead {
   max-width: 44rem;
   color: var(--muted);
-  font-size: clamp(1.02rem, 1.5vw, 1.15rem);
-  line-height: 1.65;
+  font-size: clamp(1.02rem, 1.35vw, 1.16rem);
+  line-height: 1.7;
 }
 .doc-dek {
   margin: 0;
@@ -225,10 +236,10 @@
 }
 .reading h2 {
   position: relative;
-  margin: 3.5rem 0 1rem;
-  padding-top: 1.1rem;
+  margin: 4rem 0 1.15rem;
+  padding-top: 1.3rem;
   border-top: 1px solid var(--line);
-  font-size: clamp(1.45rem, 2.4vw, 2rem);
+  font-size: clamp(1.5rem, 2.35vw, 2.15rem);
   line-height: 1.15;
   letter-spacing: -0.035em;
   scroll-margin-top: 1rem;
@@ -254,7 +265,7 @@
 .reading p,
 .reading li {
   color: var(--muted);
-  line-height: 1.7;
+  line-height: 1.75;
 }
 .reading li {
   margin-bottom: 0.45rem;
@@ -274,14 +285,18 @@
 }
 .content-layout {
   max-width: 62rem;
-  padding-block: clamp(3.5rem, 8vw, 7rem);
+  padding-block: clamp(4rem, 8vw, 7rem);
 }
 .docs-landing-hero {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(10rem, 0.62fr);
   align-items: start;
-  gap: 2.5rem;
-  margin-bottom: 2.5rem;
+  gap: 2.75rem;
+  margin: -0.25rem 0 2.75rem;
+  padding: 1.35rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent-soft) 50%, var(--surface-raised)), var(--surface-raised));
 }
 .docs-landing-actions {
   display: flex;
@@ -300,14 +315,14 @@
 .docs-facts {
   display: grid;
   margin: 0;
-  border-block: 1px solid var(--line);
+  border-block: 1px solid color-mix(in srgb, var(--line-strong) 70%, transparent);
 }
 .docs-facts div {
   display: grid;
   grid-template-columns: 2.75rem 1fr;
   align-items: center;
   gap: 0.7rem;
-  padding: 0.75rem 0;
+  padding: 0.82rem 0;
   border-bottom: 1px solid var(--line);
 }
 .docs-facts div:last-child {
@@ -330,16 +345,16 @@
 .component-contract-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 .doc-paths a,
 .decision-grid article,
 .ownership-grid article,
 .component-contract-grid section {
   min-width: 0;
-  padding: 1.1rem;
+  padding: 1.25rem;
   border: 1px solid var(--line);
-  border-radius: var(--radius-md);
+  border-radius: 0.9rem;
   background: var(--surface-raised);
 }
 .doc-paths a {
@@ -351,7 +366,8 @@
 }
 .doc-paths a:hover {
   border-color: var(--line-strong);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 12px 28px rgb(21 26 43 / 0.08);
+  transform: translateY(-2px);
 }
 .doc-paths h3 {
   margin-top: 0.55rem;
@@ -380,11 +396,11 @@
 }
 .doc-callout {
   margin-block: 1.5rem;
-  padding: 1rem 1.1rem;
+  padding: 1.05rem 1.2rem;
   border: 1px solid var(--line);
   border-inline-start: 3px solid var(--accent);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--surface) 78%, var(--surface-raised));
 }
 .doc-callout[data-tone='warning'] {
   border-inline-start-color: #c77800;
@@ -401,7 +417,7 @@
   overflow: hidden;
   margin-block: 1.5rem 2.5rem;
   border: 1px solid var(--line);
-  border-radius: var(--radius-md);
+  border-radius: 0.9rem;
   background: var(--surface-raised);
 }
 .docs-proof > header {
@@ -466,7 +482,7 @@
   margin: 1.5rem 0;
   overflow: hidden;
   border: 1px solid #323238;
-  border-radius: var(--radius-md);
+  border-radius: 0.9rem;
   background: #18181b;
 }
 .doc-code figcaption {
@@ -490,7 +506,7 @@
 .concept-flow {
   display: grid;
   padding: 0;
-  border-block: 1px solid var(--line);
+  border-block: 1px solid var(--line-strong);
   list-style: none;
 }
 .doc-steps li,
@@ -499,7 +515,7 @@
   grid-template-columns: 2.25rem minmax(0, 1fr);
   gap: 0.9rem;
   margin: 0;
-  padding: 1rem 0;
+  padding: 1.1rem 0;
   border-bottom: 1px solid var(--line);
 }
 .doc-steps li:last-child,
@@ -560,10 +576,10 @@
 }
 .doc-checklist {
   margin-block: 1.5rem;
-  padding: 1.1rem 1.25rem;
+  padding: 1.2rem 1.3rem;
   border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  background: var(--surface-raised);
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--surface-raised) 82%, var(--surface));
 }
 .doc-checklist ul {
   margin: 0;
@@ -630,8 +646,8 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.7rem;
-  margin-top: 4rem;
-  padding-top: 1.5rem;
+  margin-top: 5rem;
+  padding-top: 1.75rem;
   border-top: 1px solid var(--line);
 }
 .doc-next > p {
@@ -646,9 +662,9 @@
 .doc-next a {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  padding: 0.9rem;
+  padding: 1rem 1.05rem;
   border: 1px solid var(--line);
-  border-radius: var(--radius-md);
+  border-radius: 0.8rem;
   color: var(--text);
   text-decoration: none;
 }
@@ -818,10 +834,49 @@
   border-radius: var(--radius-md);
   background: var(--surface-raised);
 }
+.docs-steps-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 0 0.85rem;
+  color: var(--faint);
+  font-size: 0.68rem;
+  font-weight: 740;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.docs-steps-label::before {
+  width: 1.5rem;
+  height: 1px;
+  background: var(--accent);
+  content: '';
+}
+.docs-inline-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-block: 1.5rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
+  background: var(--surface-raised);
+}
+.docs-inline-cta p {
+  margin: 0;
+  font-size: 0.86rem;
+}
+.docs-inline-cta a {
+  flex: 0 0 auto;
+  font-size: 0.8rem;
+  font-weight: 680;
+  text-decoration: none;
+}
 @media (max-width: 1120px) {
   .docs-layout {
     grid-template-columns: minmax(13rem, 15rem) minmax(0, 1fr);
     grid-template-areas: 'sidebar reading';
+    gap: 2.5rem;
   }
   .docs-toc {
     display: none;
@@ -836,7 +891,7 @@
   .docs-sidebar {
     position: static;
     max-height: none;
-    padding: 0.75rem 1rem;
+    padding: 0.9rem 1rem;
     overflow: visible;
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
@@ -886,6 +941,13 @@
   .docs-proof-grid {
     grid-template-columns: 1fr;
   }
+  .docs-landing-hero {
+    padding: 1rem;
+  }
+  .docs-inline-cta {
+    align-items: flex-start;
+    flex-direction: column;
+  }
   .boundary-diagram > span,
   .docs-proof-grid > span {
     justify-self: center;
@@ -897,6 +959,10 @@
     grid-template-columns: 1fr;
   }
   .reading h1 {
-    font-size: clamp(2.15rem, 10vw, 3rem);
+    font-size: clamp(2.25rem, 10vw, 3.2rem);
+  }
+  .doc-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.65rem;
   }
 }
