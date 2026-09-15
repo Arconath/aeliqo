@@ -307,7 +307,7 @@ test('enabled analytics consent is announced in flow before documentation', asyn
   await expect(consent.getByRole('button', { name: 'Allow analytics', exact: true })).toBeVisible();
   const consentBox = await consent.boundingBox();
   const headingBox = await page
-    .getByRole('heading', { level: 1, name: 'Build adaptive UI without generated HTML', exact: true })
+    .getByRole('heading', { level: 1, name: 'Build your first adaptive interface', exact: true })
     .boundingBox();
   expect(consentBox).not.toBeNull();
   expect(headingBox).not.toBeNull();

@@ -3,16 +3,16 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Aeliqo — app-controlled adaptive UI</title>
+    <title>Aeliqo — adaptive UI, controlled by your application</title>
     <meta
       name="description"
-      content="Build adaptive web interfaces from registered resources, intents, and views. Aeliqo works with application code or optional AI agents without generating arbitrary HTML."
+      content="Turn validated intent into adaptive, registered web UI. Aeliqo works from application code or any compatible agent without generating arbitrary HTML."
     />
     <link rel="canonical" href="https://aeliqo.com/" />
-    <meta property="og:title" content="Aeliqo — app-controlled adaptive UI" />
+    <meta property="og:title" content="Aeliqo — adaptive UI, controlled by your application" />
     <meta
       property="og:description"
-      content="Build adaptive web interfaces from registered resources, intents, and views—without generated HTML."
+      content="Turn validated intent into adaptive, registered web UI—without handing your interface to AI."
     />
     <meta property="og:url" content="https://aeliqo.com/" />
     <meta property="og:type" content="website" />
@@ -65,59 +65,72 @@
     <main id="main" tabindex="-1">
       <section class="shell hero">
         <div class="hero-copy">
-          <p class="eyebrow hero-status">
-            <span class="status-pulse" aria-hidden="true"></span>OPEN SOURCE · APP-CONTROLLED ADAPTIVE UI
-          </p>
-          <h1>Interfaces that adapt to intent. <em>No generated HTML.</em></h1>
+          <p class="eyebrow hero-status">ADAPTIVE UI FRAMEWORK · OPEN SOURCE</p>
+          <h1>Adaptive UI, <em>without handing your interface to AI.</em></h1>
           <p class="lead">
-            Register your resources, permissions, actions, and views once. Aeliqo turns a bounded intent into the right
-            interface for the task and container—whether the intent comes from application code, MCP, WebMCP, or BYOK.
+            Define resources, permissions, actions, and views once. Aeliqo turns a validated intent—from your app or any
+            compatible agent—into the right registered interface for the task and container.
           </p>
           <div class="actions">
-            <a class="primary" href="https://docs.aeliqo.com/playground/">Try the playground <span aria-hidden="true">↗</span></a>
-            <a class="text-action" href="https://docs.aeliqo.com/start/">Start building <span aria-hidden="true">→</span></a>
+            <a class="primary" href="https://docs.aeliqo.com/playground/"
+              >Try the playground <span aria-hidden="true">→</span></a
+            >
+            <a class="secondary-action" href="https://docs.aeliqo.com/start/">Read the quickstart</a>
           </div>
-          <ul class="hero-proof" aria-label="Framework highlights">
-            <li><strong>Registered views</strong><span>AI cannot install or invent UI</span></li>
-            <li><strong>Runtime evidence</strong><span>scope, revision, and exact results</span></li>
-            <li><strong>Works without AI</strong><span>the same intent API from application code</span></li>
-          </ul>
+          <div class="install-command" aria-label="Install Aeliqo packages">
+            <span aria-hidden="true">$</span><code>pnpm add @aeliqo/core @aeliqo/runtime @aeliqo/web</code>
+          </div>
         </div>
 
-        <aside class="product-window" aria-label="Illustrative Aeliqo adaptive interface preview">
+        <aside class="product-window" aria-label="Illustrative Aeliqo adaptive interface">
           <header>
-            <div class="window-dots" aria-hidden="true"><i></i><i></i><i></i></div>
-            <span>People</span><strong>Registered UI</strong>
+            <div><span class="product-mark" aria-hidden="true">A</span><strong>People workspace</strong></div>
+            <span class="runtime-state"><i aria-hidden="true"></i> Runtime ready</span>
           </header>
-          <div class="product-query">
-            <span>Intent</span>
-            <p>Browse engineering people</p>
-          </div>
-          <div class="product-result">
-            <div class="result-summary">
-              <span>Adaptive result</span><strong>2 people</strong><small><b>Exact</b> authorized rows</small>
+          <div class="product-body">
+            <nav aria-label="Illustrative workspace navigation">
+              <span>Workspace</span><b>People</b><span>Products</span><span>Support</span><span>Knowledge</span>
+            </nav>
+            <div class="product-canvas">
+              <div class="product-query">
+                <span>Validated intent</span>
+                <p>Show engineering people</p>
+                <code>browse · people · team = Engineering</code>
+              </div>
+              <div class="product-heading">
+                <div><span>People</span><strong>Engineering team</strong></div>
+                <b>2 results</b>
+              </div>
+              <div class="product-table" role="table" aria-label="Two synthetic engineering people">
+                <div role="row">
+                  <span role="columnheader">Name</span><span role="columnheader">Role</span
+                  ><span role="columnheader">Location</span>
+                </div>
+                <div role="row">
+                  <strong role="cell">Sam Rivera</strong><span role="cell">Frontend engineer</span
+                  ><span role="cell">Lisbon</span>
+                </div>
+                <div role="row">
+                  <strong role="cell">Iman Putra</strong><span role="cell">Platform engineer</span
+                  ><span role="cell">Bandung</span>
+                </div>
+              </div>
+              <footer>
+                <span><i aria-hidden="true"></i> Exact result</span><span>table → cards at 560px</span
+                ><span>model calls 0</span>
+              </footer>
             </div>
-            <div
-              class="mini-chart"
-              role="img"
-              aria-label="Illustrative list of two synthetic people"
-            >
-              <div><span>Sam Rivera</span><i style="--value: 84%"></i><b>Lisbon</b></div>
-              <div><span>Iman Putra</span><i style="--value: 64%"></i><b>Bandung</b></div>
-            </div>
           </div>
-          <footer>
-            <span>Scope · permitted people</span><span>View · table/cards</span><span>Model calls · 0</span>
-          </footer>
         </aside>
       </section>
 
-      <section class="proof-strip" aria-label="Aeliqo framework facts">
-        <div class="shell proof-grid">
-          <div><strong>Resource</strong><span>meaning, identity, fields</span></div>
-          <div><strong>Intent</strong><span>bounded request, not executable code</span></div>
-          <div><strong>Result</strong><span>authorized rows with evidence</span></div>
-          <div><strong>Recipe</strong><span>registered adaptive presentation</span></div>
+      <section class="ownership-strip" aria-label="Aeliqo responsibility model">
+        <div class="shell ownership-row">
+          <p><strong>Your app defines</strong><span>Meaning, data, authority, actions, views</span></p>
+          <span aria-hidden="true">→</span>
+          <p><strong>Aeliqo executes</strong><span>Validate, evaluate, adapt, render, preserve state</span></p>
+          <span aria-hidden="true">→</span>
+          <p><strong>An agent may propose</strong><span>Bounded intent through MCP, WebMCP, or BYOK</span></p>
         </div>
       </section>
 
@@ -125,11 +138,11 @@
         <div class="shell">
           <div class="demo-heading">
             <div>
-              <p class="eyebrow">REAL RUNTIME · SYNTHETIC DATA</p>
-              <h2 id="demo-title">One intent. The right registered view.</h2>
+              <p class="eyebrow">TRY THE ACTUAL RUNTIME</p>
+              <h2 id="demo-title">The interface changes. The contract does not.</h2>
               <p class="demo-lead">
-                Change the request below. Aeliqo validates it, evaluates local data, and renders a table or cards based
-                on this container. No model call is involved.
+                Filter the data below. Aeliqo validates the intent, evaluates permitted records, and selects a table or
+                cards for the container. This demo uses no model call.
               </p>
             </div>
             <div class="demo-controls">
@@ -146,9 +159,7 @@
               <button id="demo-manual" type="button">Show all people</button>
             </div>
           </div>
-          <p class="caption demo-caption">
-            Synthetic people · Public app facade · Deterministic adaptation · No model call
-          </p>
+          <p class="caption demo-caption">Synthetic data · Public API · Deterministic adaptation · Zero model calls</p>
           <div class="demo-stage">
             <ol class="demo-flow" aria-label="Local proof flow">
               <li class="demo-flow-step" data-flow-step="records" aria-current="step"><span>01</span>Records</li>
@@ -159,12 +170,7 @@
               <li class="demo-flow-arrow" aria-hidden="true">→</li>
               <li class="demo-flow-step" data-flow-step="view"><span>04</span>2D view</li>
             </ol>
-            <div
-              id="home-demo"
-              role="region"
-              aria-label="Synthetic people adaptive result"
-              tabindex="0"
-            >
+            <div id="home-demo" role="region" aria-label="Synthetic people adaptive result" tabindex="0">
               <noscript
                 ><p>
                   Enable JavaScript to filter the interactive component. The documentation remains readable without it.
@@ -178,6 +184,39 @@
               <button id="copy-demo" type="button">Copy source</button><span id="copy-status" role="status"></span>
             </details>
           </div>
+        </div>
+      </section>
+
+      <section class="shell use-cases" aria-labelledby="use-cases-title">
+        <div class="section-intro">
+          <p class="eyebrow">NOT JUST DASHBOARDS</p>
+          <h2 id="use-cases-title">One UI contract. Different products.</h2>
+          <p>
+            Resources can be operational data, commerce, support work, or content. Recipes adapt to the job—not to a
+            dashboard template.
+          </p>
+        </div>
+        <div class="use-case-list">
+          <a href="https://docs.aeliqo.com/examples/people/"
+            ><span>01</span><strong>People</strong>
+            <p>Browse, filter, inspect, and analyze workforce data.</p>
+            <b>Table ↔ cards</b></a
+          >
+          <a href="https://docs.aeliqo.com/examples/products/"
+            ><span>02</span><strong>Products</strong>
+            <p>Explore a catalog, compare items, and open validated forms.</p>
+            <b>Grid ↔ detail</b></a
+          >
+          <a href="https://docs.aeliqo.com/examples/support/"
+            ><span>03</span><strong>Support</strong>
+            <p>Search tickets, edit state, and confirm business actions.</p>
+            <b>Queue ↔ editor</b></a
+          >
+          <a href="https://docs.aeliqo.com/examples/knowledge/"
+            ><span>04</span><strong>Knowledge</strong>
+            <p>Search content and move into focused reading layouts.</p>
+            <b>Results ↔ article</b></a
+          >
         </div>
       </section>
 
@@ -200,7 +239,9 @@
             <span>02</span>
             <div>
               <h3>Aeliqo executes.</h3>
-              <p>Compile the intent, enforce authority, evaluate data, select a compatible recipe, and preserve state.</p>
+              <p>
+                Compile the intent, enforce authority, evaluate data, select a compatible recipe, and preserve state.
+              </p>
               <a href="https://docs.aeliqo.com/concepts/">Understand the pipeline <span aria-hidden="true">→</span></a>
             </div>
           </article>
@@ -208,7 +249,9 @@
             <span>03</span>
             <div>
               <h3>Agent proposes.</h3>
-              <p>MCP, WebMCP, or BYOK may submit the same bounded intent. The agent never supplies HTML or permission.</p>
+              <p>
+                MCP, WebMCP, or BYOK may submit the same bounded intent. The agent never supplies HTML or permission.
+              </p>
               <a href="https://docs.aeliqo.com/agents/">Connect an agent <span aria-hidden="true">→</span></a>
             </div>
           </article>
@@ -239,10 +282,11 @@
       </section>
 
       <section class="shell closing">
-        <p class="eyebrow">BUILD FROM EVIDENCE</p>
-        <h2>Build the app once.<br />Let every valid intent find its view.</h2>
+        <p class="eyebrow">START WITH ONE REGION</p>
+        <h2>Give intent a safe path to interface.</h2>
         <div class="closing-actions">
-          <a class="primary" href="https://docs.aeliqo.com/playground/">Try the playground <span aria-hidden="true">↗</span></a
+          <a class="primary" href="https://docs.aeliqo.com/playground/"
+            >Try the playground <span aria-hidden="true">↗</span></a
           ><a class="text-action" href="https://github.com/Arconath/aeliqo"
             >Explore the source <span aria-hidden="true">↗</span></a
           >
@@ -255,8 +299,10 @@
         ><img src="/aeliqo.png" width="36" height="36" alt="" /><span>Aeliqo · Apache-2.0</span></a
       >
       <nav aria-label="Footer">
-        <a href="https://docs.aeliqo.com/about/">About</a><a href="https://docs.aeliqo.com/legal/license/">License</a><a href="https://docs.aeliqo.com/legal/privacy/">Privacy</a
-        ><a href="https://docs.aeliqo.com/legal/security/">Security</a><a href="https://docs.aeliqo.com/legal/support/">Support</a>
+        <a href="https://docs.aeliqo.com/about/">About</a><a href="https://docs.aeliqo.com/legal/license/">License</a
+        ><a href="https://docs.aeliqo.com/legal/privacy/">Privacy</a
+        ><a href="https://docs.aeliqo.com/legal/security/">Security</a
+        ><a href="https://docs.aeliqo.com/legal/support/">Support</a>
       </nav>
     </footer>
     <script type="module" src="/src/site.ts"></script>
