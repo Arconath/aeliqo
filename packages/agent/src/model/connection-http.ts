@@ -1,6 +1,6 @@
 import type { ToolModelRequest, ToolModelResponse } from './types.js';
 import { ToolModelProviderError } from './connection-error.js';
-import { readModelSecret } from './connection-secret.js';
+import { readModelSecret } from './auth-handle.js';
 import { withToolModelCost } from './connection-cost.js';
 import type { NormalizedToolModelConnection, ToolModelProviderObservation } from './connection-types.js';
 

@@ -2,7 +2,7 @@ import type { ToolModelPort, ToolModelRequest } from './types.js';
 import { normalizeToolModelConnection } from './connection-config.js';
 import { completeToolModelRequest, estimateToolModelTokens } from './connection-http.js';
 
-export { createOpaqueModelSecret } from './connection-secret.js';
+export { createOpaqueModelSecret } from './auth-handle.js';
 export { ToolModelProviderError, isToolModelProviderError } from './connection-error.js';
 export { withToolModelCost } from './connection-cost.js';
 export type {

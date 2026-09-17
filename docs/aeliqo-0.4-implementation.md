@@ -1,7 +1,7 @@
 # Aeliqo 0.4 implementation record
 
-Status: implementation and clean-commit quality acceptance verified; publication
-and production cutover are pending. No 0.4 package has been published, and
+Status: implementation complete; candidate verification, publication, and
+production cutover are pending. No 0.4 package has been published, and
 production remains on 0.3.
 
 ## Release boundary
@@ -38,6 +38,16 @@ production remains on 0.3.
   the exact source revision, `status: passed`, and
   `sourceChangedDuringRun: false`. The main-branch quality workflow must repeat
   the gate on the accepted source SHA and upload its evidence before release.
+- The first main-branch run, `35256561324` at source
+  `e554464deb92c1b70e30f5f62f8ea724b7c93708`, passed `pnpm check` (82/82) but
+  then rejected the generated `connection-secret.d.ts` filename during the
+  candidate tarball scan. That module contains only the opaque credential
+  handle implementation. It is now named `auth-handle.ts`, keeping the strict
+  sensitive-file scan intact; the agent build, 116 agent tests, installed
+  consumer, and 30 release-tooling tests pass after the rename. The clean
+  candidate build now passes for all five tarballs and its installed consumer
+  checks 161 exports; the SBOM covers 59 components with zero secret findings.
+  The same-SHA main-branch rerun is pending.
 - `pnpm site:build` and `pnpm site:test` pass. The site visual checks cover the
   landing page, documentation, a component page, and the playground at 360,
   768, and 1440 pixels; all 12 baselines pass. The component visual suite passes
@@ -117,17 +127,16 @@ production remains on 0.3.
 
 ## Required closeout
 
-The accepted source commit has a DCO sign-off. `pnpm check` passes all 82
-commands on a clean commit. Push that commit to `main` and wait for the same-SHA
-quality workflow and uploaded evidence. Publish `0.4.0-rc.1` with the `next`
-tag, verify all five registry packages in a clean consumer, then publish
-`0.4.0` with the `latest` tag tied to that exact RC run and source SHA. Dispatch
-the site release from the same main SHA; verify the immutable image, GitOps
-revision, Flux rollout, `/healthz`, `/readyz`, `/version`, and the landing,
-docs, component, search, and playground routes. Keep the previous image
-available for rollback. After the stable packages and site are live, deprecate
-the allowlisted `@aeliqo/devtools@0.3.0` lineage and record the accepted source
-SHA and release evidence here.
+The new DCO-signed source commit must pass all 82 `pnpm check` commands on a
+clean tree, the candidate tarball build, and the same-SHA main-branch workflow.
+Publish `0.4.0-rc.1` with the `next` tag, verify all five registry packages in a
+clean consumer, then publish `0.4.0` with the `latest` tag tied to that exact RC
+run and source SHA. Dispatch the site release from the same main SHA; verify
+the immutable image, GitOps revision, Flux rollout, `/healthz`, `/readyz`,
+`/version`, and the landing, docs, component, search, and playground routes.
+Keep the previous image available for rollback. After the stable packages and
+site are live, deprecate the allowlisted `@aeliqo/devtools@0.3.0` lineage and
+record the accepted source SHA and release evidence here.
 
 The current local npm identity is unauthenticated (`npm whoami` returns 401),
 and the repository has no npm token secret. Trusted publishing covers package

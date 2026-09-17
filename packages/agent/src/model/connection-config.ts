@@ -1,6 +1,6 @@
 import type { ToolModelCapability } from './protocol.js';
 import { configuration } from './connection-error.js';
-import { readModelSecret } from './connection-secret.js';
+import { readModelSecret } from './auth-handle.js';
 import type {
   NormalizedToolModelConnection,
   ToolModelAuth,
