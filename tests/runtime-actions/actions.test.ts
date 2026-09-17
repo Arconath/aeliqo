@@ -9,6 +9,7 @@ import type {
   ActionRegistration,
   ActionSchema,
   ActionSideEffect,
+  IssueActionConfirmation,
   TrustedActionContext,
 } from '../../packages/runtime/src/actions/types.js';
 import { WIRE_LIMITS } from '../../packages/core/src/index.js';
@@ -107,11 +108,7 @@ function makePort(
   options: {
     readonly registry?: ActionRegistry;
     readonly current?: TrustedActionContext;
-    readonly confirm?: (
-      input: Parameters<
-        NonNullable<import('../../packages/runtime/src/actions/types.js').ActionHost['issueConfirmation']>
-      >[0],
-    ) => Outcome<void> | Promise<Outcome<void>>;
+    readonly confirm?: IssueActionConfirmation;
   } = {},
 ) {
   const registry = options.registry ?? new ActionRegistry();

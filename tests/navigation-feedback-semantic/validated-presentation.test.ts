@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createPresentationRegistry, validatePresentationPlan } from '../../packages/core/src/index.js';
+import { createPresentationRegistry, validatePresentationPlan } from '../../packages/core/src/presentation/index.js';
 import {
   AELIQO_NAVIGATION_FEEDBACK_REFS,
   createNavigationFeedbackPresentationManifests,

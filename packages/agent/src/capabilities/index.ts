@@ -1,11 +1,7 @@
 export { capabilityRefKey, createAgentCapabilityRegistry, sameCapabilityRef } from './registry.js';
 export { createAgentCapabilityDispatcher, dispatchAgentCapability, capabilityCanonical } from './dispatcher.js';
 export { createAgentCompositionRegistry, validateAgentComposition } from './composition.js';
-export { createTaskBindingCapability, createTaskCapability } from './task.js';
-export { createAgentCapabilityRegistry as createCapabilityRegistry } from './registry.js';
-export { createAgentCapabilityDispatcher as createCapabilityDispatcher } from './dispatcher.js';
-export { validateAgentComposition as validateCompositionProposal } from './composition.js';
-export { createTaskBindingCapability as createTaskBinderCapability } from './task.js';
+export { createTaskBindingCapability } from './task.js';
 export type {
   AgentCapabilityAuthority,
   AgentCapabilityContext,

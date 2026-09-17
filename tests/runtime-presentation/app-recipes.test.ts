@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-  defineResource,
-  validatePresentationPlan,
-  type Intent,
-  type PresentationEnvironment,
-  type Result,
-  type Task,
-} from '../../packages/core/src/index.js';
+import { defineResource, type Intent, type Result, type Task } from '../../packages/core/src/index.js';
+import { validatePresentationPlan, type PresentationEnvironment } from '../../packages/core/src/presentation/index.js';
 import { html } from 'lit';
 import * as z from 'zod';
 import { defineView, standardDataRecipe, standardFormRecipe } from '../../packages/web/src/recipes/index.js';

@@ -3,9 +3,14 @@ import { RELEASE_VERSION } from '../../scripts/release/metadata.mjs';
  * Build and consume the data family from real package tarballs.
  *
  * The consumer lives outside the pnpm workspace. It installs the packed
- * @aeliqo/core, @aeliqo/web and @aeliqo/react artifacts, checks every data
- * entry point and declaration surface, then exercises data SSR and the
- * browser-owned decimal, delta, filter and virtual-grid behavior.
+ * @aeliqo/core,
+  @aeliqo/web and @aeliqo/react artifacts,
+  checks every data
+ * entry point and declaration surface,
+  then exercises data SSR and the
+ * browser-owned decimal,
+  delta,
+  filter and virtual-grid behavior.
  */
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
@@ -96,18 +101,34 @@ import {gzipSync} from 'node:zlib';
 import {writeFile} from 'node:fs/promises';
 const measured = [];
 for (const entry of ${JSON.stringify(entries)}) {
-  await writeFile('measure-entry.js', 'export * from "@aeliqo/web/' + entry + '";');
-  for (const excludeLit of [false, true]) {
-    const result = await build({configFile: false, logLevel: 'silent', build: {write: false, minify: true,
-      lib: {entry: 'measure-entry.js', formats: ['es']},
-      rollupOptions: {external: excludeLit ? id => /^(lit|lit-html|lit-element|@lit\\/)/.test(id) : undefined}}});
+  await writeFile('measure-entry.js',
+  'export * from "@aeliqo/web/' + entry + '";');
+  for (const excludeLit of [false,
+  true]) {
+    const result = await build({configFile: false,
+  logLevel: 'silent',
+  build: {write: false,
+  minify: true,
+  lib: {entry: 'measure-entry.js',
+  formats: ['es']},
+  rollupOptions: {external: excludeLit ? id => /^(lit|lit-html|lit-element|@lit\\/)/.test(id) : undefined}}});
     const chunks = (Array.isArray(result) ? result : [result]).flatMap(item => item.output).filter(item => item.type === 'chunk');
-    measured.push({entry, excludeLit, bytes: chunks.reduce((n, item) => n + Buffer.byteLength(item.code), 0),
-      gzipBytes: chunks.reduce((n, item) => n + gzipSync(item.code).length, 0),
-      modules: chunks.flatMap(item => Object.entries(item.modules).filter(([, module]) => module.renderedLength > 0).map(([id]) => id))});
+    measured.push({entry,
+  excludeLit,
+  bytes: chunks.reduce((n,
+  item) => n + Buffer.byteLength(item.code),
+  0),
+  gzipBytes: chunks.reduce((n,
+  item) => n + gzipSync(item.code).length,
+  0),
+  modules: chunks.flatMap(item => Object.entries(item.modules).filter(([,
+  module]) => module.renderedLength > 0).map(([id]) => id))});
   }
 }
-await writeFile('bundle-measurements.json', JSON.stringify(measured, null, 2));
+await writeFile('bundle-measurements.json',
+  JSON.stringify(measured,
+  null,
+  2));
 `,
   );
   run(['node', 'measure-bundles.mjs'], consumer);
@@ -129,7 +150,9 @@ await writeFile('bundle-measurements.json', JSON.stringify(measured, null, 2));
       !item.modules.some((module) =>
         /@aeliqo\/(agent|runtime)|\/dist\/(region|plot|visualization|studio|presentation)\//.test(module),
       ),
-      `${item.entry} pulled a planner, runtime, chart or agent`,
+      `${item.entry} pulled a planner,
+  runtime,
+  chart or agent`,
     );
     for (const module of item.modules.filter((module) => module.includes('@aeliqo/')))
       assert(
@@ -148,7 +171,7 @@ await writeFile('bundle-measurements.json', JSON.stringify(measured, null, 2));
 const sourceDigest = () => run(['node', 'scripts/source-digest.mjs'], root).trim();
 assert.match(process.version, /^v24\./, `Node 24 is required; received ${process.version}`);
 const before = sourceDigest();
-const packageNames = ['core', 'web', 'react'];
+const packageNames = ['core', 'runtime', 'web', 'react'];
 const artifacts = [];
 for (const name of packageNames) {
   const directory = join(root, 'packages', name);
@@ -245,7 +268,9 @@ for (const artifact of artifacts) {
   }
 }
 assert.equal(lock.packages['node_modules/@aeliqo/web'].dependencies['@aeliqo/core'], RELEASE_VERSION);
+assert.equal(lock.packages['node_modules/@aeliqo/runtime'].dependencies['@aeliqo/core'], RELEASE_VERSION);
 assert.equal(lock.packages['node_modules/@aeliqo/react'].dependencies['@aeliqo/web'], RELEASE_VERSION);
+assert.equal(lock.packages['node_modules/@aeliqo/react'].peerDependencies['@aeliqo/runtime'], RELEASE_VERSION);
 assert.deepEqual(
   Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/web/node_modules/')),
   [],
@@ -268,6 +293,7 @@ const webSubpaths = [
   'filter-builder',
   'table',
   'register',
+  'region',
   'server',
 ];
 const webSpecifiers = ['@aeliqo/web', ...webSubpaths.map((path) => `@aeliqo/web/${path}`)];
@@ -283,7 +309,9 @@ const resolved = {};
 for (const spec of specs) {
   const url = await import.meta.resolve(spec);
   const path = await realpath(fileURLToPath(url));
-  if (!path.startsWith(${JSON.stringify(join(consumerReal, 'node_modules'))} + '/')) throw new Error(spec + ' escaped installed node_modules: ' + path);
+  if (!path.startsWith(${JSON.stringify(
+    join(consumerReal, 'node_modules'),
+  )} + '/')) throw new Error(spec + ' escaped installed node_modules: ' + path);
   await import(spec);
   resolved[spec] = path;
 }
@@ -301,64 +329,144 @@ await writeFile(
   join(consumer, 'consumer.tsx'),
   `
 import React from 'react';
-import {createAeliqoPresentationRegistry} from '@aeliqo/web';
-import type {AeliqoDataBinding, AeliqoPresentationRegistryOptions} from '@aeliqo/web';
-import type {Result, ResultRef} from '@aeliqo/core';
-import {AeliqoMetric, AeliqoDelta, AeliqoKeyValue, AeliqoDetail, AeliqoRecordList, AeliqoCardCollection, AeliqoSelectionSummary, AeliqoFilterBuilder, AeliqoTable} from '@aeliqo/react/data';
-import {AeliqoTable as MainTable} from '@aeliqo/react';
+import {createAeliqoPresentationRegistry} from '@aeliqo/web/region';
+import type {AeliqoDataBinding,
+  AeliqoPresentationRegistryOptions} from '@aeliqo/web/region';
+import type {Result,
+  ResultRef,
+} from '@aeliqo/core';
+import {
+  AeliqoMetric,
+  AeliqoDelta,
+  AeliqoKeyValue,
+  AeliqoDetail,
+  AeliqoRecordList,
+  AeliqoCardCollection,
+  AeliqoSelectionSummary,
+  AeliqoFilterBuilder,
+  AeliqoTable} from '@aeliqo/react/data';
 import {AeliqoMetricElement} from '@aeliqo/web/metric';
-import {AeliqoDeltaElement, calculateAeliqoDelta} from '@aeliqo/web/delta';
+import {AeliqoDeltaElement,
+  calculateAeliqoDelta} from '@aeliqo/web/delta';
 import {AeliqoKeyValueElement} from '@aeliqo/web/key-value';
 import {AeliqoDetailElement} from '@aeliqo/web/detail';
 import {AeliqoRecordListElement} from '@aeliqo/web/record-list';
 import {AeliqoCardCollectionElement} from '@aeliqo/web/card-collection';
 import {AeliqoSelectionSummaryElement} from '@aeliqo/web/selection-summary';
 import {AeliqoFilterBuilderElement} from '@aeliqo/web/filter-builder';
-import {AeliqoTableElement, AELIQO_TABLE_MAX_VIRTUAL_ROWS} from '@aeliqo/web/data';
-import type {AeliqoDataScope, AeliqoFilterChangeDetail, AeliqoTableRow, AeliqoTableWindowDetail} from '@aeliqo/web/data';
+import {AeliqoTableElement,
+  AELIQO_TABLE_MAX_VIRTUAL_ROWS} from '@aeliqo/web/data';
+import type {AeliqoDataScope,
+  AeliqoFilterChangeDetail,
+  AeliqoTableRow,
+  AeliqoTableWindowDetail} from '@aeliqo/web/data';
 
 const rows = [
-  {id: 'a', name: 'Ada', amount: {decimal: '100000000000000000.01'}},
-  {id: 'b', name: 'Lin', amount: {decimal: '2.50'}},
-] as const satisfies readonly AeliqoTableRow[];
-const semanticRef = {id: 'semantic-result', revision: '1', outputId: 'people', queryDigest: 'query-1', scopeDigest: 'scope-1'} as const satisfies ResultRef;
+  {id: 'a',
+  name: 'Ada',
+  amount: {decimal: '100000000000000000.01'}},
+  {id: 'b',
+  name: 'Lin',
+  amount: {decimal: '2.50'}},
+  ] as const satisfies readonly AeliqoTableRow[];
+const semanticRef = {id: 'semantic-result',
+  revision: '1',
+  outputId: 'people',
+  queryDigest: 'query-1',
+  scopeDigest: 'scope-1'} as const satisfies ResultRef;
 const semanticResult: Result = {
-  version: '1', ref: semanticRef, taskId: 'consumer-task',
+  version: '1',
+  ref: semanticRef,
+  taskId: 'consumer-task',
   fields: [
-    {id: 'id', label: 'ID', type: {value: 'text', nullable: false}, role: 'identity'},
-    {id: 'amount', label: 'Amount', type: {value: 'decimal', nullable: false, unit: {dimension: 'currency', symbol: 'USD'}}, role: 'measure'},
+    {id: 'id',
+  label: 'ID',
+  type: {value: 'text',
+  nullable: false},
+  role: 'identity'},
+  {id: 'amount',
+  label: 'Amount',
+  type: {value: 'decimal',
+  nullable: false,
+  unit: {dimension: 'currency',
+  symbol: 'USD'}},
+  role: 'measure'},
   ],
-  identity: ['id'], rowGrain: ['id'],
-  counts: {loaded: 1, population: {kind: 'exact', value: 1, populationDigest: 'population-1'}},
-  precision: {kind: 'exact'}, coverage: {kind: 'complete', populationDigest: 'population-1'},
-  consistency: {kind: 'snapshot', snapshotId: 'snapshot-1', sourceRevisions: {source: '1'}},
-  evidence: {kind: 'observed', source: {id: 'source', revision: '1'}},
-  filters: [], warnings: [], lineage: [],
-};
-const semanticBinding: AeliqoDataBinding = {result: semanticResult, rows: [{id: 'a', amount: {decimal: '12.50'}}]};
-const semanticOptions = {data: [semanticBinding], resolveEntity: (value: Result) => value.ref.outputId === 'people' ? 'person' : undefined} satisfies AeliqoPresentationRegistryOptions;
+  identity: ['id'],
+  rowGrain: ['id'],
+  counts: {loaded: 1,
+  population: {kind: 'exact',
+  value: 1,
+  populationDigest: 'population-1'}},
+  precision: {kind: 'exact'},
+  coverage: {kind: 'complete',
+  populationDigest: 'population-1'},
+  consistency: {kind: 'snapshot',
+  snapshotId: 'snapshot-1',
+  sourceRevisions: {source: '1'}},
+  evidence: {kind: 'observed',
+  source: {id: 'source',
+  revision: '1'}},
+  filters: [],
+  warnings: [],
+  lineage: [],
+  };
+const semanticBinding: AeliqoDataBinding = {result: semanticResult,
+  rows: [{id: 'a',
+  amount: {decimal: '12.50'}}]};
+const semanticOptions = {data: [semanticBinding],
+  resolveEntity: (value: Result) => value.ref.outputId === 'people' ? 'person' : undefined} satisfies AeliqoPresentationRegistryOptions;
 const semanticRegistry = createAeliqoPresentationRegistry(semanticOptions);
 if (!semanticRegistry.ok) throw new Error(semanticRegistry.diagnostics[0]?.message ?? 'semantic registry failed');
 void semanticRegistry.value;
-const columns = [{key: 'id', label: 'ID'}, {key: 'name', label: 'Name'}, {key: 'amount', label: 'Amount'}] as const;
-const scope: AeliqoDataScope = {loaded: 2, filteredTotal: 2, kind: 'filtered'};
-const delta = calculateAeliqoDelta({decimal: '0.0001'}, {decimal: '0'}, 'percentage-point');
+const columns = [{key: 'id',
+  label: 'ID'},
+  {key: 'name',
+  label: 'Name'},
+  {key: 'amount',
+  label: 'Amount'}] as const;
+const scope: AeliqoDataScope = {loaded: 2,
+  filteredTotal: 2,
+  kind: 'filtered'};
+const delta = calculateAeliqoDelta({decimal: '0.0001'},
+  {decimal: '0'},
+  'percentage-point');
 if (delta.status !== 'ready') throw new Error('delta unexpectedly unavailable');
-const dataElements: readonly [typeof AeliqoMetricElement, typeof AeliqoDeltaElement, typeof AeliqoKeyValueElement, typeof AeliqoDetailElement, typeof AeliqoRecordListElement, typeof AeliqoCardCollectionElement, typeof AeliqoSelectionSummaryElement, typeof AeliqoFilterBuilderElement, typeof AeliqoTableElement] = [AeliqoMetricElement, AeliqoDeltaElement, AeliqoKeyValueElement, AeliqoDetailElement, AeliqoRecordListElement, AeliqoCardCollectionElement, AeliqoSelectionSummaryElement, AeliqoFilterBuilderElement, AeliqoTableElement];
+const dataElements: readonly [typeof AeliqoMetricElement,
+  typeof AeliqoDeltaElement,
+  typeof AeliqoKeyValueElement,
+  typeof AeliqoDetailElement,
+  typeof AeliqoRecordListElement,
+  typeof AeliqoCardCollectionElement,
+  typeof AeliqoSelectionSummaryElement,
+  typeof AeliqoFilterBuilderElement,
+  typeof AeliqoTableElement] = [AeliqoMetricElement,
+  AeliqoDeltaElement,
+  AeliqoKeyValueElement,
+  AeliqoDetailElement,
+  AeliqoRecordListElement,
+  AeliqoCardCollectionElement,
+  AeliqoSelectionSummaryElement,
+  AeliqoFilterBuilderElement,
+  AeliqoTableElement];
 void dataElements;
-const handleWindow = (event: CustomEvent<AeliqoTableWindowDetail>) => { const start: number = event.detail.start; const reason: 'keyboard' = event.detail.reason; void [start, reason]; };
+const handleWindow = (event: CustomEvent<AeliqoTableWindowDetail>) => { const start: number = event.detail.start; const reason: 'keyboard' = event.detail.reason; void [start,
+  reason]; };
 const handleFilter = (event: CustomEvent<AeliqoFilterChangeDetail>) => { const applied: true = event.detail.applied; void applied; };
 const app = <>
   <AeliqoMetric label='Revenue' value={rows[0].amount} unit='USD' scope={scope} />
   <AeliqoDelta label='Rate' current={{decimal: '0.0001'}} baseline={{decimal: '0'}} mode='percentage-point' />
-  <AeliqoKeyValue items={[{key: 'owner', label: 'Owner', value: 'Ada'}]} />
+  <AeliqoKeyValue items={[{key: 'owner',
+  label: 'Owner',
+  value: 'Ada'}]} />
   <AeliqoDetail fields={columns} identity={['id']} record={rows[0]} />
   <AeliqoRecordList columns={columns} rows={rows} identity={['id']} onSelectionChange={event => { const keys: readonly string[] = event.detail.keys; void keys; }} onLoadMore={() => undefined} />
   <AeliqoCardCollection columns={columns} rows={rows} identity={['id']} onSelectionChange={event => { const mode: 'clear' | 'ids' = event.detail.mode; void mode; }} onLoadMore={() => undefined} />
   <AeliqoSelectionSummary entity='person' selectedKeys={['string:1:a']} onClear={event => { const mode: 'clear' | 'ids' = event.detail.mode; void mode; }} />
-  <AeliqoFilterBuilder fields={[{id: 'name', label: 'Name', type: 'text'}]} onFilterChange={handleFilter} />
+  <AeliqoFilterBuilder fields={[{id: 'name',
+  label: 'Name',
+  type: 'text'}]} onFilterChange={handleFilter} />
   <AeliqoTable columns={columns} rows={rows} identity={['id']} mode='grid' virtualized virtualCount={1} overscan={0} onSelectionChange={event => { const mode: 'clear' | 'ids' = event.detail.mode; void mode; }} onSortChange={event => { const field: string | undefined = event.detail.sort?.field; void field; }} onPageChange={event => { const page: number = event.detail.page; void page; }} onWindowChange={handleWindow} />
-  <MainTable columns={columns} rows={rows} identity={['id']} />
 </>;
 void app;
 const element = new AeliqoTableElement(); element.columns = columns; element.rows = rows; element.identity = ['id']; element.virtualized = true; element.virtualCount = AELIQO_TABLE_MAX_VIRTUAL_ROWS;
@@ -399,8 +507,8 @@ import {createElement} from 'react';
 import {renderToString} from 'react-dom/server';
 import {html} from 'lit';
 import {renderAeliqo} from '@aeliqo/web/server';
-import {createAeliqoPresentationRegistry} from '@aeliqo/web';
-import {validatePresentationPlan} from '@aeliqo/core';
+import {createAeliqoPresentationRegistry} from '@aeliqo/web/region';
+import { validatePresentationPlan } from '@aeliqo/core/presentation';
 import {AeliqoMetricElement, AeliqoDeltaElement, AeliqoKeyValueElement, AeliqoDetailElement, AeliqoRecordListElement, AeliqoCardCollectionElement, AeliqoSelectionSummaryElement, AeliqoFilterBuilderElement, AeliqoTableElement} from '@aeliqo/web/data';
 import {AeliqoTable, AeliqoDelta} from '@aeliqo/react/data';
 assert.equal(typeof globalThis.window, 'undefined');

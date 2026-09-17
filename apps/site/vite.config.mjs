@@ -15,9 +15,9 @@ export default defineConfig(async () => {
     resolve: {
       dedupe: ['@aeliqo/agent', '@aeliqo/core', '@aeliqo/runtime', '@aeliqo/web'],
       alias: {
-        '/src': resolve(root, '../web/src'),
-        '/docs-src': resolve(root, '../docs/src'),
-        '/playground-src': resolve(root, '../playground/src'),
+        '/src': resolve(root, 'src'),
+        '/docs-src': resolve(root, 'src'),
+        '/playground-src': resolve(root, 'src/playground'),
         '@aeliqo/catalog-examples': resolve(root, '../../examples/catalog/index.ts'),
       },
     },

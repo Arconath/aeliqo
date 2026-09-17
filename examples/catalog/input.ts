@@ -15,7 +15,7 @@ import {
   AeliqoTextAreaElement,
   AeliqoTextFieldElement,
   type AeliqoOption,
-} from '@aeliqo/web';
+} from '@aeliqo/web/inputs';
 import { cleanupCatalogRoot, createCatalogElement, createCatalogRoot } from './fixture.js';
 import { catalogMountSource, catalogSource } from './source.js';
 import type { CatalogExampleDefinition, CatalogExampleId, CatalogExampleMetadata } from './types.js';
@@ -36,9 +36,8 @@ const sourceImports = `import {
   AeliqoSwitchElement,
   AeliqoTextAreaElement,
   AeliqoTextFieldElement,
-  registerAeliqoElements,
   type AeliqoOption,
-} from "@aeliqo/web";`;
+} from "@aeliqo/web/inputs";`;
 
 const sourceSetup = `const options: readonly AeliqoOption[] = [
   {value: "ada", label: "Ada Lovelace", description: "Research"},
@@ -228,7 +227,7 @@ const mount = (id: CatalogExampleId, fn: (root: HTMLElement) => void): CatalogEx
 
 export const inputExamples: readonly CatalogExampleDefinition[] = [
   mount('text-field', (root) => {
-    const element = createCatalogElement<AeliqoTextFieldElement>('aeliqo-text-field', root);
+    const element = createCatalogElement<AeliqoTextFieldElement>('aeliqo-text-field', root, AeliqoTextFieldElement);
     element.label = 'Display name';
     element.name = 'displayName';
     element.value = 'Ada Lovelace';
@@ -236,7 +235,7 @@ export const inputExamples: readonly CatalogExampleDefinition[] = [
     element.autocomplete = 'name';
   }),
   mount('text-area', (root) => {
-    const element = createCatalogElement<AeliqoTextAreaElement>('aeliqo-text-area', root);
+    const element = createCatalogElement<AeliqoTextAreaElement>('aeliqo-text-area', root, AeliqoTextAreaElement);
     element.label = 'Notes';
     element.name = 'notes';
     element.defaultValue = 'Draft notes';
@@ -244,7 +243,11 @@ export const inputExamples: readonly CatalogExampleDefinition[] = [
     element.spellcheck = true;
   }),
   mount('number-field', (root) => {
-    const element = createCatalogElement<AeliqoNumberFieldElement>('aeliqo-number-field', root);
+    const element = createCatalogElement<AeliqoNumberFieldElement>(
+      'aeliqo-number-field',
+      root,
+      AeliqoNumberFieldElement,
+    );
     element.label = 'Amount';
     element.name = 'amount';
     element.locale = 'en-US';
@@ -254,14 +257,14 @@ export const inputExamples: readonly CatalogExampleDefinition[] = [
     element.min = '0';
   }),
   mount('checkbox', (root) => {
-    const element = createCatalogElement<AeliqoCheckboxElement>('aeliqo-checkbox', root);
+    const element = createCatalogElement<AeliqoCheckboxElement>('aeliqo-checkbox', root, AeliqoCheckboxElement);
     element.label = 'Include archived records';
     element.name = 'includeArchived';
     element.value = 'yes';
     element.checked = false;
   }),
   mount('radio-group', (root) => {
-    const element = createCatalogElement<AeliqoRadioGroupElement>('aeliqo-radio-group', root);
+    const element = createCatalogElement<AeliqoRadioGroupElement>('aeliqo-radio-group', root, AeliqoRadioGroupElement);
     element.label = 'Report owner';
     element.name = 'owner';
     element.options = options;
@@ -269,13 +272,13 @@ export const inputExamples: readonly CatalogExampleDefinition[] = [
     element.orientation = 'vertical';
   }),
   mount('switch', (root) => {
-    const element = createCatalogElement<AeliqoSwitchElement>('aeliqo-switch', root);
+    const element = createCatalogElement<AeliqoSwitchElement>('aeliqo-switch', root, AeliqoSwitchElement);
     element.label = 'Live updates';
     element.name = 'live';
     element.checked = true;
   }),
   mount('select', (root) => {
-    const element = createCatalogElement<AeliqoSelectElement>('aeliqo-select', root);
+    const element = createCatalogElement<AeliqoSelectElement>('aeliqo-select', root, AeliqoSelectElement);
     element.label = 'Team';
     element.name = 'team';
     element.options = [
@@ -286,7 +289,7 @@ export const inputExamples: readonly CatalogExampleDefinition[] = [
     element.emptyLabel = 'Choose a team';
   }),
   mount('combobox', (root) => {
-    const element = createCatalogElement<AeliqoComboboxElement>('aeliqo-combobox', root);
+    const element = createCatalogElement<AeliqoComboboxElement>('aeliqo-combobox', root, AeliqoComboboxElement);
     element.label = 'Person';
     element.name = 'person';
     element.options = options;
@@ -296,7 +299,7 @@ export const inputExamples: readonly CatalogExampleDefinition[] = [
     element.minQueryLength = 1;
   }),
   mount('date-field', (root) => {
-    const element = createCatalogElement<AeliqoDateFieldElement>('aeliqo-date-field', root);
+    const element = createCatalogElement<AeliqoDateFieldElement>('aeliqo-date-field', root, AeliqoDateFieldElement);
     element.label = 'Report date';
     element.name = 'reportDate';
     element.value = '2026-09-09';
@@ -305,7 +308,7 @@ export const inputExamples: readonly CatalogExampleDefinition[] = [
     element.calendar = 'gregory';
   }),
   mount('date-range', (root) => {
-    const element = createCatalogElement<AeliqoDateRangeElement>('aeliqo-date-range', root);
+    const element = createCatalogElement<AeliqoDateRangeElement>('aeliqo-date-range', root, AeliqoDateRangeElement);
     element.label = 'Reporting period';
     element.name = 'period';
     element.start = '2026-09-01';
@@ -314,7 +317,7 @@ export const inputExamples: readonly CatalogExampleDefinition[] = [
     element.timezone = 'calendar';
   }),
   mount('slider', (root) => {
-    const element = createCatalogElement<AeliqoSliderElement>('aeliqo-slider', root);
+    const element = createCatalogElement<AeliqoSliderElement>('aeliqo-slider', root, AeliqoSliderElement);
     element.label = 'Confidence';
     element.name = 'confidence';
     element.min = 0;
@@ -324,7 +327,11 @@ export const inputExamples: readonly CatalogExampleDefinition[] = [
     element.unit = '%';
   }),
   mount('search-field', (root) => {
-    const element = createCatalogElement<AeliqoSearchFieldElement>('aeliqo-search-field', root);
+    const element = createCatalogElement<AeliqoSearchFieldElement>(
+      'aeliqo-search-field',
+      root,
+      AeliqoSearchFieldElement,
+    );
     element.label = 'Search reports';
     element.name = 'query';
     element.value = 'retention';
@@ -333,7 +340,7 @@ export const inputExamples: readonly CatalogExampleDefinition[] = [
     element.placeholder = 'Search by name';
   }),
   mount('file-input', (root) => {
-    const element = createCatalogElement<AeliqoFileInputElement>('aeliqo-file-input', root);
+    const element = createCatalogElement<AeliqoFileInputElement>('aeliqo-file-input', root, AeliqoFileInputElement);
     element.label = 'Evidence file';
     element.name = 'evidence';
     element.accept = '.csv,text/csv';
@@ -342,7 +349,7 @@ export const inputExamples: readonly CatalogExampleDefinition[] = [
     element.maxBytes = 2_000_000;
   }),
   mount('field-group', (root) => {
-    const group = createCatalogElement<AeliqoFieldGroupElement>('aeliqo-field-group', root);
+    const group = createCatalogElement<AeliqoFieldGroupElement>('aeliqo-field-group', root, AeliqoFieldGroupElement);
     group.legend = 'Profile details';
     group.description = 'All fields are validated together.';
     const field = document.createElement('aeliqo-text-field') as AeliqoTextFieldElement;
@@ -351,7 +358,7 @@ export const inputExamples: readonly CatalogExampleDefinition[] = [
     group.append(field);
   }),
   mount('form', (root) => {
-    const form = createCatalogElement<AeliqoFormElement>('aeliqo-form', root);
+    const form = createCatalogElement<AeliqoFormElement>('aeliqo-form', root, AeliqoFormElement);
     form.label = 'Report filters';
     const field = document.createElement('aeliqo-text-field') as AeliqoTextFieldElement;
     field.label = 'Required filter';

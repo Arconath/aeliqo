@@ -1,7 +1,7 @@
 import type { ResultRef } from '@aeliqo/core';
 
 /** Exact decimal values stay structured so tables never round them through IEEE-754. */
-export interface AeliqoDecimalCell {
+interface AeliqoDecimalCell {
   readonly decimal: string;
 }
 
@@ -17,7 +17,6 @@ export interface AeliqoTableColumn {
 export type AeliqoTableRow = Readonly<Record<string, TableCell>>;
 
 /** A stable identity is derived from these fields, never from a rendered row index. */
-export type AeliqoIdentityFields = readonly string[];
 
 export type AeliqoTableSelectionMode = 'none' | 'single' | 'multiple';
 
@@ -43,9 +42,4 @@ export interface AeliqoChartSeries {
   readonly label: string;
   readonly unit?: string;
   readonly points: readonly AeliqoChartPoint[];
-}
-
-export interface AeliqoInputChangeDetail {
-  readonly value: string;
-  readonly source: 'user';
 }

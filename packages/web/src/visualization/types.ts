@@ -1,4 +1,5 @@
-import type { ResultRef, Scalar, VisualizationBindingContext, VisualizationSpec } from '@aeliqo/core';
+import type { ResultRef, Scalar, VisualizationSpec } from '@aeliqo/core';
+import type { VisualizationBindingContext } from '@aeliqo/core/visualization';
 import type { PlotDataset } from '../plot/composition.js';
 export type VisualizationDataset = PlotDataset;
 export interface VisualizationRow {

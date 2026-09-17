@@ -1,6 +1,6 @@
 {
   "name": "@aeliqo/web",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Arconath/aeliqo.git",
@@ -33,13 +33,13 @@
       "types": "./dist/register.d.ts",
       "import": "./dist/register.js"
     },
+    "./events": {
+      "types": "./dist/events.d.ts",
+      "import": "./dist/events.js"
+    },
     "./server": {
       "types": "./dist/server.d.ts",
       "import": "./dist/server.js"
-    },
-    "./input": {
-      "types": "./dist/elements/aeliqo-input.d.ts",
-      "import": "./dist/elements/aeliqo-input.js"
     },
     "./table": {
       "types": "./dist/elements/aeliqo-table.d.ts",
@@ -293,6 +293,54 @@
       "types": "./dist/visualization/index.d.ts",
       "import": "./dist/visualization/index.js"
     },
+    "./trend": {
+      "types": "./dist/visualization/cartesian/trend.d.ts",
+      "import": "./dist/visualization/cartesian/trend.js"
+    },
+    "./bar": {
+      "types": "./dist/visualization/cartesian/bar.d.ts",
+      "import": "./dist/visualization/cartesian/bar.js"
+    },
+    "./area": {
+      "types": "./dist/visualization/cartesian/area.d.ts",
+      "import": "./dist/visualization/cartesian/area.js"
+    },
+    "./scatter": {
+      "types": "./dist/visualization/cartesian/scatter.d.ts",
+      "import": "./dist/visualization/cartesian/scatter.js"
+    },
+    "./histogram": {
+      "types": "./dist/visualization/cartesian/histogram.d.ts",
+      "import": "./dist/visualization/cartesian/histogram.js"
+    },
+    "./heatmap": {
+      "types": "./dist/visualization/cartesian/heatmap.d.ts",
+      "import": "./dist/visualization/cartesian/heatmap.js"
+    },
+    "./matrix": {
+      "types": "./dist/visualization/temporal/index.d.ts",
+      "import": "./dist/visualization/temporal/index.js"
+    },
+    "./timeline": {
+      "types": "./dist/visualization/temporal/index.d.ts",
+      "import": "./dist/visualization/temporal/index.js"
+    },
+    "./calendar-grid": {
+      "types": "./dist/visualization/temporal/index.d.ts",
+      "import": "./dist/visualization/temporal/index.js"
+    },
+    "./tree": {
+      "types": "./dist/visualization/hierarchy/index.d.ts",
+      "import": "./dist/visualization/hierarchy/index.js"
+    },
+    "./treemap": {
+      "types": "./dist/visualization/hierarchy/index.d.ts",
+      "import": "./dist/visualization/hierarchy/index.js"
+    },
+    "./relationship": {
+      "types": "./dist/visualization/hierarchy/index.d.ts",
+      "import": "./dist/visualization/hierarchy/index.js"
+    },
     "./visualization/temporal": {
       "types": "./dist/visualization/temporal/index.d.ts",
       "import": "./dist/visualization/temporal/index.js"
@@ -358,7 +406,6 @@
   "dependencies": {
     "@aeliqo/core": "workspace:*",
     "@lit-labs/ssr": "4.1.0",
-    "@lit-labs/ssr-client": "1.1.8",
     "d3-scale": "4.0.2",
     "d3-shape": "3.2.0",
     "lit": "3.3.3"
@@ -369,7 +416,7 @@
     "@aeliqo/runtime": "workspace:*"
   },
   "peerDependencies": {
-    "@aeliqo/runtime": "0.3.0"
+    "@aeliqo/runtime": "0.4.0"
   },
   "peerDependenciesMeta": {
     "@aeliqo/runtime": {

@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { createQueryFunctionRegistry } from '@aeliqo/core';
+import { createQueryFunctionRegistry } from '@aeliqo/core/expressions';
 
 const registered = createQueryFunctionRegistry({ version: '2' });
 if (!registered.ok) throw new Error('Reference function registry is unavailable.');
@@ -84,8 +84,7 @@ export function commerceFixture() {
 }
 
 /** Copies raw source records only. All policy arithmetic executes in the SDK. */
-export function hrFixture(removeObservation) {
-  const raw = JSON.parse(readFileSync(new URL('../../fixtures/hr/raw.json', import.meta.url), 'utf8'));
+function hrMeanings() {
   const status = field('observations', 'status');
   const absent = choose(isNull(status), zero, choose(equal(status, literal('absent', 'text')), one, zero));
   const unknown = choose(isNull(status), one, zero);
@@ -97,12 +96,15 @@ export function hrFixture(removeObservation) {
     call('core.divide.null', absentCount, requiredCount),
     literal(null, 'float'),
   );
-  const meanings = [
+  return [
     meaning('absence.absent', absentCount, 'integer', { dimensions: ['employee_id', 'date'] }),
     meaning('absence.expected', requiredCount, 'integer', { dimensions: ['employee_id', 'date'], nullable: false }),
     meaning('absence.unknown', unknownCount, 'integer', { dimensions: ['employee_id', 'date'] }),
     meaning('absence.rate', rate, 'float', { aggregation: 'non-additive' }),
   ];
+}
+
+function hrRelationships() {
   const keys = [
     { sourceField: 'employee_id', targetField: 'employee_id' },
     { sourceField: 'date', targetField: 'date' },
@@ -117,8 +119,11 @@ export function hrFixture(removeObservation) {
     optional: true,
     joinPolicy: 'validated',
   });
-  const relationships = [relation('schedule-observation', 'observations'), relation('schedule-leave', 'leave')];
-  const catalog = {
+  return [relation('schedule-observation', 'observations'), relation('schedule-leave', 'leave')];
+}
+
+function hrCatalog(meanings, relationships) {
+  return {
     version: '1',
     revision: 'hr-reference-1',
     functionRegistryDigest: registry.digest,
@@ -155,7 +160,10 @@ export function hrFixture(removeObservation) {
     meanings,
     capabilities: [],
   };
-  const records = {
+}
+
+function hrRecords(raw, removeObservation) {
+  return {
     schedules: raw.schedules,
     leave: raw.leave,
     observations:
@@ -165,7 +173,10 @@ export function hrFixture(removeObservation) {
             (row) => row.employee_id !== removeObservation.employee_id || row.date !== removeObservation.date,
           ),
   };
-  const query = {
+}
+
+function hrQuery(raw, meanings, relationships) {
+  return {
     entity: 'schedules',
     fields: ['employee_id'],
     measures: meanings.map((item) => ref(item.id)),
@@ -189,15 +200,23 @@ export function hrFixture(removeObservation) {
     },
     order: [{ field: 'employee_id', direction: 'asc', nulls: 'last' }],
   };
+}
+
+function hrSourceRevision(removeObservation) {
+  if (removeObservation === undefined) return 'synthetic-hr-1';
+  return `synthetic-hr-${removeObservation.employee_id}-${removeObservation.date}`;
+}
+
+export function hrFixture(removeObservation) {
+  const raw = JSON.parse(readFileSync(new URL('../../fixtures/hr/raw.json', import.meta.url), 'utf8'));
+  const meanings = hrMeanings();
+  const relationships = hrRelationships();
   return {
     snapshot: {
-      catalog,
-      records,
-      sourceRevision:
-        removeObservation === undefined
-          ? 'synthetic-hr-1'
-          : `synthetic-hr-${removeObservation.employee_id}-${removeObservation.date}`,
+      catalog: hrCatalog(meanings, relationships),
+      records: hrRecords(raw, removeObservation),
+      sourceRevision: hrSourceRevision(removeObservation),
     },
-    query,
+    query: hrQuery(raw, meanings, relationships),
   };
 }

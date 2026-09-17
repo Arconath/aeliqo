@@ -3,9 +3,15 @@ import { RELEASE_VERSION } from '../../scripts/release/metadata.mjs';
  * Build and consume the complete input family from real package tarballs.
  *
  * The consumer is deliberately outside the pnpm workspace. It verifies the
- * published web and React entry points, strict declarations, Lit SSR, and a
- * real Chromium flow covering native form state, defaults/reset, IME input,
- * controlled event echoing, file metadata and the form boundary.
+ * published web and React entry points,
+  strict declarations,
+  Lit SSR,
+  and a
+ * real Chromium flow covering native form state,
+  defaults/reset,
+  IME input,
+  * controlled event echoing,
+  file metadata and the form boundary.
  */
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
@@ -73,7 +79,7 @@ async function clearCompiledOutput(directory) {
 
 const sourceDigest = () => run(['node', 'scripts/source-digest.mjs'], root).trim();
 const before = sourceDigest();
-const packageNames = ['core', 'web', 'react'];
+const packageNames = ['core', 'runtime', 'web', 'react'];
 const artifacts = [];
 for (const name of packageNames) {
   const directory = join(root, 'packages', name);
@@ -170,7 +176,9 @@ for (const artifact of artifacts) {
   }
 }
 assert.equal(lock.packages['node_modules/@aeliqo/web'].dependencies['@aeliqo/core'], RELEASE_VERSION);
+assert.equal(lock.packages['node_modules/@aeliqo/runtime'].dependencies['@aeliqo/core'], RELEASE_VERSION);
 assert.equal(lock.packages['node_modules/@aeliqo/react'].dependencies['@aeliqo/web'], RELEASE_VERSION);
+assert.equal(lock.packages['node_modules/@aeliqo/react'].peerDependencies['@aeliqo/runtime'], RELEASE_VERSION);
 assert.deepEqual(
   Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/web/node_modules/')),
   [],
@@ -215,11 +223,17 @@ const rows = [
   { id: 'c', x: 3, y: { decimal: '9007199254740993.003' } },
 ];
 const spec = { version: '1', root: { kind: 'facet', field: 'id', scales: 'shared-compatible', child: unit } };
-const dataSource = `const result=${JSON.stringify(result)},unit=${JSON.stringify(unit)},rows=${JSON.stringify(rows)},spec=${JSON.stringify(spec)};\n`;
+const dataSource = `const result=${JSON.stringify(result)},
+  unit=${JSON.stringify(unit)},
+  rows=${JSON.stringify(rows)},
+  spec=${JSON.stringify(spec)};\n`;
 await writeFile(
   join(consumer, 'consumer.tsx'),
   `import React from 'react';
-import type {PlotSpec,PlotUnit,Result} from '@aeliqo/core';
+import type {PlotSpec,
+  PlotUnit,
+  Result,
+} from '@aeliqo/core';
 import {AeliqoPlotElement,compilePlotComposition,type PlotDataset} from '@aeliqo/web/plot';
 import {AeliqoPlot} from '@aeliqo/react/plot';
 const result:Result=${JSON.stringify(result)};

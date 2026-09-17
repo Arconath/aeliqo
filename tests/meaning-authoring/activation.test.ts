@@ -1,5 +1,6 @@
 import { expect, it } from 'vitest';
-import { createStandardFunctionRegistry, type Catalog, type MeaningDefinition, type Outcome } from '@aeliqo/core';
+import { type Catalog, type MeaningDefinition, type Outcome } from '@aeliqo/core';
+import { createStandardFunctionRegistry } from '@aeliqo/core/expressions';
 import {
   createMeaningAuthoring,
   createMeaningRegistry,

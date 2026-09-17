@@ -4,11 +4,11 @@ The public website at [docs.aeliqo.com](https://docs.aeliqo.com/) is the primary
 
 ## Start integrating
 
-- [Framework integration](framework-integration.md): vanilla JavaScript, React, Vue, SSR, hydration, and package boundaries.
+- [Package guides](packages/README.md): canonical usage, root APIs, and subpaths for the five published packages.
+- [Framework integration](framework-integration.md): Vanilla, React, Vue, SSR, hydration, and package boundaries.
 - [Meaning authoring](meaning-authoring.md): define, register, review, and activate versioned business meaning.
 - [Presentation adaptation](presentation-adaptation.md): bind Results to responsive presentations without changing their claim.
-- [Historical migration into 0.1.0](migration-0.1.0.md): archived guidance for the previous public package line.
-- [Support boundary](public/0.1.0-support-boundary.md): supported runtimes, browsers, and package compatibility.
+- [Migration from 0.3 to 0.4](site/pages/migration-0.3.md): update package imports, component names, and MCP requests for the breaking release.
 
 ## Components and composition
 
@@ -29,15 +29,36 @@ The public website at [docs.aeliqo.com](https://docs.aeliqo.com/) is the primary
 - [MCP integration](agent-protocols/mcp.md)
 - [Bring your own model](agent-protocols/byok.md)
 - [WebMCP boundary](agent-protocols/webmcp.md)
-- [Local Studio](studio.md)
 - [Basic monitoring](basic-monitoring.md)
+
+## Design and verification
+
+- [Public-site and component visual contract](design/visual-contract.md)
+- [Token ownership and component theming](design/owned-baseline.md)
+- [Synthetic HR oracle fixture](fixtures/hr.md)
+- [Deterministic public API scenarios](fixtures/scenarios.md)
+- [Independent query oracle](testing/query-oracle.md)
+- [End-to-end scenarios](testing/scenarios.md)
+- [Security package boundary test](testing/security.md)
+- [Internal test helpers](testing/testkit.md)
+- [Component review captures](testing/visual-review.md)
 
 Agent documentation describes the optional `@aeliqo/agent` product package. It is unrelated to repository automation or contributor tooling.
 
 ## Architecture decisions
 
-The [ADR directory](adr/) records stable choices such as the four public contracts, one data-service boundary, the shared web implementation, task-preserving presentations, and replayable presentation plans.
+The [architecture decision index](adr/README.md) records stable choices, including the 0.4 site, package, and component tooling decisions in [ADR 011](adr/011-aeliqo-0.4-product-boundaries.md).
 
 ## Public documentation source
 
-Authored website pages live in [`public-site/pages/`](public-site/pages/) and are routed by the single [`public-site/routes.mjs`](public-site/routes.mjs) manifest. Component reference pages are generated from the built package declarations, the public component catalog, and executable examples. Release artifacts are generated under the ignored `artifacts/public-docs` directory and must not be committed.
+Authored public pages and component guidance live in [`site/`](site/). The route manifest and package declarations supply navigation and generated API facts; component prose stays in the Markdown source. Release artifacts are generated under the ignored `artifacts/public-docs` directory and must not be committed.
+
+The [site source and verification guide](site/README.md) covers the single
+public application, authored content, local build, and production image checks.
+
+## Repository examples
+
+- [Vanilla, React, and Vue hosts](examples/platform.md)
+- [Next.js SSR and hydration](examples/next-platform.md)
+- [HR runtime vertical slice](examples/vertical-slice.md)
+- [Synthetic HTTP reference host](examples/reference-host.md)

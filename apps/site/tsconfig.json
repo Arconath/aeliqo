@@ -13,9 +13,9 @@
     "skipLibCheck": false,
     "types": ["node", "vite/client"],
     "paths": {
-      "/src/*": ["../web/src/*"],
-      "/docs-src/*": ["../docs/src/*"],
-      "/playground-src/*": ["../playground/src/*"],
+      "/src/*": ["./src/*"],
+      "/docs-src/*": ["./src/*"],
+      "/playground-src/*": ["./src/playground/*"],
       "@aeliqo/catalog-examples": ["../../examples/catalog/index.ts"],
       "@aeliqo/agent/webmcp": ["./node_modules/@aeliqo/agent/dist/webmcp/index.d.ts"],
       "@aeliqo/agent/protocol": ["./node_modules/@aeliqo/agent/dist/protocol/index.d.ts"],
@@ -38,6 +38,6 @@
       "@aeliqo/web/visualization": ["./node_modules/@aeliqo/web/dist/visualization/index.d.ts"]
     }
   },
-  "include": ["../web/src/**/*.ts", "../docs/src/**/*.ts", "../playground/src/**/*.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist", "artifacts"]
 }

@@ -45,9 +45,8 @@ export const DOC_ROUTES = Object.freeze([
   route('ship', '/ship/', 'Ship', '/docs/production/'),
   route('ssr', '/ship/ssr/', 'Ship'),
   route('browser-support', '/ship/browser-support/', 'Ship'),
-  route('migration', '/ship/migration-0.1/', 'Ship'),
+  route('migration', '/ship/migration-0.3/', 'Ship'),
   route('release-notes', '/ship/release-notes/', 'Ship'),
-  route('archive-0.1', '/0.1/', 'Archive'),
 
   route('examples', '/examples/', 'Examples'),
   route('people-example', '/examples/people/', 'Examples'),
@@ -65,7 +64,6 @@ export const DOC_ROUTES = Object.freeze([
 const bySource = new Map(
   DOC_ROUTES.filter((item) => item.sourcePath !== undefined).map((item) => [item.sourcePath, item]),
 );
-const byPath = new Map(DOC_ROUTES.map((item) => [item.path, item]));
 
 export function routeById(id) {
   const value = DOC_ROUTES.find((item) => item.id === id);
@@ -81,13 +79,6 @@ export function canonicalDocsPath(path) {
   return path;
 }
 
-export function sourceDocsPath(path) {
-  const exact = byPath.get(path);
-  if (exact?.sourcePath !== undefined) return exact.sourcePath;
-  if (path.startsWith('/components/')) return `/docs/components/${path.slice('/components/'.length)}`;
-  return undefined;
-}
-
 export function docsArtifactPath(path) {
   if (path === '/') return '/docs/';
   if (!path.startsWith('/')) throw new TypeError('A documentation path must be absolute.');
@@ -95,7 +86,28 @@ export function docsArtifactPath(path) {
 }
 
 export function canonicalizeDocsMarkup(markup) {
-  return markup.replaceAll(/href="(\/docs\/[^"#?]*)([?#][^"]*)?"/gu, (_match, source, suffix = '') => {
+  const languageNames = {
+    bash: 'Shell',
+    css: 'CSS',
+    html: 'HTML',
+    js: 'JavaScript',
+    json: 'JSON',
+    mjs: 'JavaScript',
+    sh: 'Shell',
+    ts: 'TypeScript',
+    tsx: 'React TypeScript',
+    yaml: 'YAML',
+  };
+  const accessibleCode = markup.replaceAll(
+    /<pre><code(?: class="([^"]+)")?>([\s\S]*?)<\/code><\/pre>/gu,
+    (_match, className = '', content = '') => {
+      const language = className.match(/^language-(.+)$/u)?.[1];
+      const label = language ? `${languageNames[language] ?? language} example` : 'Code example';
+      const codeClass = className ? ` class="${className}"` : '';
+      return `<figure class="doc-code"><figcaption>${label}</figcaption><pre tabindex="0"><code${codeClass}>${content}</code></pre></figure>`;
+    },
+  );
+  return accessibleCode.replaceAll(/href="(\/docs\/[^"#?]*)([?#][^"]*)?"/gu, (_match, source, suffix = '') => {
     const canonical = canonicalDocsPath(source);
     if (canonical === undefined) throw new Error(`Documentation content links to an unmapped route: ${source}`);
     return `href="${canonical}${suffix}"`;
@@ -132,11 +144,15 @@ export const DOC_NAVIGATION = Object.freeze(
   navigation.map(([label, ids]) => Object.freeze([label, Object.freeze(ids.map((id) => routeById(id).path))])),
 );
 
-export const LEGACY_DOC_REDIRECTS = Object.freeze(
-  Object.fromEntries(
+export const LEGACY_DOC_REDIRECTS = Object.freeze({
+  ...Object.fromEntries(
     DOC_ROUTES.filter((item) => item.sourcePath !== undefined && item.sourcePath !== item.path).map((item) => [
       item.sourcePath,
       item.path,
     ]),
   ),
-);
+  '/0.1/': '/ship/migration-0.3/',
+  '/ship/migration-0.1/': '/ship/migration-0.3/',
+  '/docs/0.1/': '/ship/migration-0.3/',
+  '/docs/ship/migration-0.1/': '/ship/migration-0.3/',
+});

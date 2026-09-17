@@ -91,42 +91,59 @@ export class AeliqoPopoverElement extends AeliqoFoundationElement {
     const epoch = ++this.focusEpoch;
     this.stopOutside?.();
     this.stopOutside = undefined;
-    if (this.open) {
-      this.returnFocus ??= activeElement(this);
-      if (this.closeOnOutside) this.stopOutside = listenOutside(this, () => this.close());
-      const surface = this.renderRoot.querySelector<HTMLElement>("[part='popover']");
-      if (this.modal && surface instanceof HTMLDialogElement && !surface.open) {
-        if (typeof surface.showModal === 'function') surface.showModal();
-        else if (typeof surface.show === 'function') surface.show();
-        else surface.setAttribute('open', '');
-      }
-      const pending = this.pendingFocus;
-      this.pendingFocus = undefined;
-      const focusIfNeeded = (restorePending: boolean): void => {
-        if (epoch !== this.focusEpoch || !this.open || surface === null || !surface.isConnected) return;
-        const focusables = focusableElements(surface);
-        const current = focusables.find((candidate) => candidate.matches(':focus'));
-        if (restorePending && pending?.isConnected && focusables.includes(pending)) {
-          pending.focus();
-          return;
-        }
-        if (current === undefined) focusFirst(surface);
-      };
-      // Preserve a focused slotted control during a mode switch synchronously.
-      // The queued fallback only fills an empty focus surface and cannot steal a
-      // focus that the consumer moved after opening.
-      if (this.modal || pending?.isConnected) focusIfNeeded(true);
-      if (this.modal && surface !== null) nextFrame(() => focusIfNeeded(false));
-    } else {
-      this.pendingFocus = undefined;
-      const surface = this.renderRoot.querySelector<HTMLDialogElement>("dialog[part='popover']");
-      if (surface?.open) {
-        if (typeof surface.close === 'function') surface.close();
-        else surface.removeAttribute('open');
-      }
-      restoreFocus(this.returnFocus);
-      this.returnFocus = undefined;
+    if (!this.open) {
+      this.closePopover();
+      return;
     }
+    this.openPopover(epoch);
+  }
+
+  private openPopover(epoch: number): void {
+    this.returnFocus ??= activeElement(this);
+    if (this.closeOnOutside) this.stopOutside = listenOutside(this, () => this.close());
+    const surface = this.renderRoot.querySelector<HTMLElement>("[part='popover']");
+    this.showModalPopover(surface);
+    const pending = this.pendingFocus;
+    this.pendingFocus = undefined;
+    // Preserve a focused slotted control during a mode switch synchronously.
+    // The queued fallback only fills an empty focus surface and cannot steal a
+    // focus that the consumer moved after opening.
+    if (this.modal || pending?.isConnected) this.focusIfNeeded(surface, epoch, pending, true);
+    if (this.modal && surface !== null) nextFrame(() => this.focusIfNeeded(surface, epoch, pending, false));
+  }
+
+  private showModalPopover(surface: HTMLElement | null): void {
+    if (!this.modal || !(surface instanceof HTMLDialogElement) || surface.open) return;
+    if (typeof surface.showModal === 'function') surface.showModal();
+    else if (typeof surface.show === 'function') surface.show();
+    else surface.setAttribute('open', '');
+  }
+
+  private focusIfNeeded(
+    surface: HTMLElement | null,
+    epoch: number,
+    pending: HTMLElement | undefined,
+    restorePending: boolean,
+  ): void {
+    if (epoch !== this.focusEpoch || !this.open || surface === null || !surface.isConnected) return;
+    const focusables = focusableElements(surface);
+    const current = focusables.find((candidate) => candidate.matches(':focus'));
+    if (restorePending && pending?.isConnected && focusables.includes(pending)) {
+      pending.focus();
+      return;
+    }
+    if (current === undefined) focusFirst(surface);
+  }
+
+  private closePopover(): void {
+    this.pendingFocus = undefined;
+    const surface = this.renderRoot.querySelector<HTMLDialogElement>("dialog[part='popover']");
+    if (surface?.open) {
+      if (typeof surface.close === 'function') surface.close();
+      else surface.removeAttribute('open');
+    }
+    restoreFocus(this.returnFocus);
+    this.returnFocus = undefined;
   }
 
   disconnectedCallback(): void {
@@ -145,17 +162,22 @@ export class AeliqoPopoverElement extends AeliqoFoundationElement {
     if (!this.modal || event.key !== 'Tab') return;
     const surface = this.renderRoot.querySelector<HTMLElement>("[part='popover']");
     if (surface === null) return;
+    this.trapTabFocus(event, surface);
+  }
+
+  private trapTabFocus(event: KeyboardEvent, surface: HTMLElement): void {
     const focusables = focusableElements(surface);
     const first = focusables[0];
     const last = focusables.at(-1);
-    const eventTarget =
-      event.target instanceof HTMLElement && focusables.includes(event.target) ? event.target : undefined;
-    const active = eventTarget ?? activeElement(this);
     if (first === undefined || last === undefined) return;
+    const target = event.target;
+    const active = target instanceof HTMLElement && focusables.includes(target) ? target : activeElement(this);
     if (event.shiftKey && active === first) {
       event.preventDefault();
       last.focus();
-    } else if (!event.shiftKey && active === last) {
+      return;
+    }
+    if (!event.shiftKey && active === last) {
       event.preventDefault();
       first.focus();
     }

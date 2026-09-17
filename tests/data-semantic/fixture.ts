@@ -1,11 +1,5 @@
-import type {
-  PresentationContext,
-  PresentationPlan,
-  PresentationValues,
-  Result,
-  ResultRef,
-  VersionRef,
-} from '../../packages/core/src/index.js';
+import type { PresentationPlan, Result, ResultRef, VersionRef } from '../../packages/core/src/contracts/index.js';
+import type { PresentationContext, PresentationValues } from '../../packages/core/src/presentation/index.js';
 import {
   AELIQO_CONFIG_SCHEMAS,
   AELIQO_PRESENTATION_REFS,

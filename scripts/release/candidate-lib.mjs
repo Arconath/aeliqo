@@ -40,35 +40,51 @@ export function publicPackageName(shortName) {
   return `@aeliqo/${shortName}`;
 }
 
-export function assertPublicManifest(
-  manifest,
-  expectedName,
-  expectedVersion = RELEASE_VERSION,
-  { allowWorkspace = false } = {},
-) {
+function assertManifestDependency(expectedName, expectedVersion, allowWorkspace, field, dependency, version) {
+  const isPublicDependency = PUBLIC_PACKAGE_NAMES.includes(dependency);
+  if (isPublicDependency && version !== expectedVersion && !(allowWorkspace && version === 'workspace:*'))
+    throw new Error(`${expectedName} has non-exact internal ${field} dependency ${dependency}@${version}`);
+  if (!allowWorkspace && typeof version === 'string' && version.startsWith('workspace:'))
+    throw new Error(`${expectedName} retains workspace protocol in ${field}: ${dependency}@${version}`);
+}
+
+function assertManifestDependencies(manifest, expectedName, expectedVersion, allowWorkspace) {
+  for (const field of ['dependencies', 'optionalDependencies', 'peerDependencies']) {
+    for (const [dependency, version] of Object.entries(manifest[field] ?? {})) {
+      assertManifestDependency(expectedName, expectedVersion, allowWorkspace, field, dependency, version);
+    }
+  }
+}
+
+function assertManifestIdentity(manifest, expectedName, expectedVersion) {
   if (manifest?.name !== expectedName)
     throw new Error(`Expected ${expectedName}, received ${manifest?.name ?? 'no package name'}`);
   if (manifest.version !== expectedVersion)
     throw new Error(`${expectedName} must be version ${expectedVersion}; found ${manifest.version ?? 'none'}`);
   if (manifest.private === true) throw new Error(`${expectedName} must be public`);
   if (manifest.license !== 'Apache-2.0') throw new Error(`${expectedName} must declare Apache-2.0`);
+}
+
+function assertManifestExports(manifest, expectedName) {
   if (!manifest.exports || typeof manifest.exports !== 'object')
     throw new Error(`${expectedName} must declare exports`);
+}
 
-  for (const field of ['dependencies', 'optionalDependencies', 'peerDependencies']) {
-    for (const [dependency, version] of Object.entries(manifest[field] ?? {})) {
-      if (
-        PUBLIC_PACKAGE_NAMES.includes(dependency) &&
-        version !== expectedVersion &&
-        !(allowWorkspace && version === 'workspace:*')
-      ) {
-        throw new Error(`${expectedName} has non-exact internal ${field} dependency ${dependency}@${version}`);
-      }
-      if (!allowWorkspace && typeof version === 'string' && version.startsWith('workspace:')) {
-        throw new Error(`${expectedName} retains workspace protocol in ${field}: ${dependency}@${version}`);
-      }
-    }
-  }
+export function assertPublicManifest(
+  manifest,
+  expectedName,
+  expectedVersion = RELEASE_VERSION,
+  { allowWorkspace = false } = {},
+) {
+  assertManifestIdentity(manifest, expectedName, expectedVersion);
+  assertManifestExports(manifest, expectedName);
+  assertManifestDependencies(manifest, expectedName, expectedVersion, allowWorkspace);
+}
+
+function manifestDependencies(item) {
+  return ['dependencies', 'optionalDependencies', 'peerDependencies'].flatMap((field) =>
+    Object.keys(item.manifest[field] ?? []),
+  );
 }
 
 export function assertPublishOrder(packages) {
@@ -77,35 +93,43 @@ export function assertPublishOrder(packages) {
     throw new Error('Publish set must contain each public package exactly once');
   }
   for (const [index, item] of packages.entries()) {
-    for (const field of ['dependencies', 'optionalDependencies', 'peerDependencies']) {
-      for (const dependency of Object.keys(item.manifest[field] ?? {})) {
-        const dependencyIndex = positions.get(dependency);
-        if (dependencyIndex !== undefined && dependencyIndex >= index) {
-          throw new Error(`${item.name} must be published after internal ${field} dependency ${dependency}`);
-        }
-      }
+    for (const dependency of manifestDependencies(item)) {
+      const dependencyIndex = positions.get(dependency);
+      if (dependencyIndex !== undefined && dependencyIndex >= index)
+        throw new Error(`${item.name} must be published after internal dependency ${dependency}`);
     }
+  }
+}
+
+function assertRequiredFiles(files, packageName) {
+  for (const required of REQUIRED_FILES) {
+    if (!files.includes(required)) throw new Error(`${packageName} is missing required packed file ${required}`);
+  }
+  if (!files.some((path) => path.startsWith('package/dist/')))
+    throw new Error(`${packageName} has no compiled dist files`);
+}
+
+function assertAllowedFiles(files, packageName) {
+  for (const path of files) {
+    const relative = path.slice('package/'.length);
+    const allowed = REQUIRED_FILES.has(path) || ALLOWED_PREFIXES.some((prefix) => path.startsWith(prefix));
+    if (!allowed) throw new Error(`${packageName} has non-allowlisted packed file ${path}`);
+    if (SENSITIVE_NAME.test(relative)) throw new Error(`${packageName} has sensitive-looking packed file ${path}`);
   }
 }
 
 export function assertTarballPaths(paths, packageName) {
   if (!Array.isArray(paths) || paths.length === 0) throw new Error(`${packageName} tarball is empty`);
   const files = paths.filter((path) => !path.endsWith('/'));
+  assertSafeTarballPaths(paths, packageName);
+  assertRequiredFiles(files, packageName);
+  assertAllowedFiles(files, packageName);
+}
+
+function assertSafeTarballPaths(paths, packageName) {
   for (const path of paths) {
-    if (!path.startsWith('package/') || path.includes('..') || path.includes('\\')) {
+    if (!path.startsWith('package/') || path.includes('..') || path.includes('\\'))
       throw new Error(`${packageName} has unsafe tarball path ${path}`);
-    }
-  }
-  for (const required of REQUIRED_FILES) {
-    if (!files.includes(required)) throw new Error(`${packageName} is missing required packed file ${required}`);
-  }
-  if (!files.some((path) => path.startsWith('package/dist/')))
-    throw new Error(`${packageName} has no compiled dist files`);
-  for (const path of files) {
-    const relative = path.slice('package/'.length);
-    const allowed = REQUIRED_FILES.has(path) || ALLOWED_PREFIXES.some((prefix) => path.startsWith(prefix));
-    if (!allowed) throw new Error(`${packageName} has non-allowlisted packed file ${path}`);
-    if (SENSITIVE_NAME.test(relative)) throw new Error(`${packageName} has sensitive-looking packed file ${path}`);
   }
 }
 
@@ -124,20 +148,26 @@ export function exportSpecifiers(manifest, paths) {
       specifiers.add(key === '.' ? manifest.name : `${manifest.name}${key.slice(1)}`);
       continue;
     }
-    for (const target of exportTargets(value)) {
-      if (!target.includes('*')) continue;
-      const packed = `package/${target.slice(2)}`;
-      const marker = packed.indexOf('*');
-      const prefix = packed.slice(0, marker);
-      const suffix = packed.slice(marker + 1);
-      for (const file of files) {
-        if (!file.startsWith(prefix) || !file.endsWith(suffix)) continue;
-        const wildcard = file.slice(prefix.length, file.length - suffix.length || undefined);
-        specifiers.add(`${manifest.name}${key.slice(1).replace('*', wildcard)}`);
-      }
-    }
+    addPatternSpecifiers(specifiers, manifest.name, key, exportTargets(value), files);
   }
   return [...specifiers].sort();
+}
+
+function addPatternSpecifiers(specifiers, packageName, key, targets, files) {
+  for (const target of targets) {
+    if (!target.includes('*')) continue;
+    const packed = `package/${target.slice(2)}`;
+    const marker = packed.indexOf('*');
+    addMatchingSpecifiers(specifiers, packageName, key, packed.slice(0, marker), packed.slice(marker + 1), files);
+  }
+}
+
+function addMatchingSpecifiers(specifiers, packageName, key, prefix, suffix, files) {
+  for (const file of files) {
+    if (!file.startsWith(prefix) || !file.endsWith(suffix)) continue;
+    const wildcard = file.slice(prefix.length, file.length - suffix.length || undefined);
+    specifiers.add(`${packageName}${key.slice(1).replace('*', wildcard)}`);
+  }
 }
 
 export function assertExportTargets(manifest, paths, packageName) {
@@ -181,7 +211,7 @@ export function packagePurl(name, version) {
   return `pkg:npm/${path}@${encodeURIComponent(version)}`;
 }
 
-export function integrityToCycloneDxHash(integrity) {
+function integrityToCycloneDxHash(integrity) {
   const match = /^(sha256|sha512)-([A-Za-z0-9+/=]+)$/.exec(integrity ?? '');
   if (!match) throw new Error(`Unsupported package integrity ${integrity ?? 'none'}`);
   return {
@@ -223,48 +253,9 @@ function lockedPackageIdentity(value, label) {
 export function npmOverridesFromPnpmLock(lockText, { ignoredPackages = [] } = {}) {
   const ignored = new Set(ignoredPackages);
   const overrides = new Map();
-  let inSnapshots = false;
-  let current;
-  let inDependencies = false;
+  const state = { inSnapshots: false, current: undefined, inDependencies: false };
   for (const line of lockText.split(/\r?\n/)) {
-    if (line === 'snapshots:') {
-      inSnapshots = true;
-      continue;
-    }
-    if (!inSnapshots) continue;
-    const key = /^  (?:'([^']+)'|([^:\s]+)):\s*(?:\{\})?\s*$/.exec(line);
-    if (key) {
-      const identity = lockedPackageIdentity(key[1] ?? key[2], 'locked parent');
-      current = `${identity.name}@${identity.version}`;
-      inDependencies = false;
-      continue;
-    }
-    if (/^    (?:dependencies|optionalDependencies):\s*$/.test(line)) {
-      inDependencies = true;
-      continue;
-    }
-    if (/^    \S/.test(line)) {
-      inDependencies = false;
-      continue;
-    }
-    if (!inDependencies || !current) continue;
-    const child = /^      (?:'([^']+)'|([^:\s]+)):\s+(.+?)\s*$/.exec(line);
-    if (!child) continue;
-    const name = child[1] ?? child[2];
-    if (ignored.has(name)) continue;
-    const value = child[3];
-    const peerSuffix = value.indexOf('(');
-    const version = peerSuffix === -1 ? value : value.slice(0, peerSuffix);
-    if (!/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(version)) {
-      throw new Error(`Unsupported locked child ${name}@${value}`);
-    }
-    const dependencies = overrides.get(current) ?? new Map();
-    const previous = dependencies.get(name);
-    if (previous && previous !== version) {
-      throw new Error(`Conflicting locked child ${current}>${name}: ${previous} and ${version}`);
-    }
-    dependencies.set(name, version);
-    overrides.set(current, dependencies);
+    collectSnapshotDependency(line, state, ignored, overrides);
   }
   return Object.fromEntries(
     [...overrides]
@@ -274,6 +265,54 @@ export function npmOverridesFromPnpmLock(lockText, { ignoredPackages = [] } = {}
         Object.fromEntries([...dependencies].sort(([a], [b]) => a.localeCompare(b))),
       ]),
   );
+}
+
+function snapshotParent(line) {
+  const key = /^  (?:'([^']+)'|([^:\s]+)):\s*(?:\{\})?\s*$/.exec(line);
+  if (!key) return undefined;
+  const identity = lockedPackageIdentity(key[1] ?? key[2], 'locked parent');
+  return `${identity.name}@${identity.version}`;
+}
+
+function collectSnapshotDependency(line, state, ignored, overrides) {
+  if (line === 'snapshots:') {
+    state.inSnapshots = true;
+    return;
+  }
+  if (!state.inSnapshots) return;
+  const parent = snapshotParent(line);
+  if (parent !== undefined) {
+    state.current = parent;
+    state.inDependencies = false;
+    return;
+  }
+  if (/^    (?:dependencies|optionalDependencies):\s*$/.test(line)) {
+    state.inDependencies = true;
+    return;
+  }
+  if (/^    \S/.test(line)) {
+    state.inDependencies = false;
+    return;
+  }
+  if (!state.inDependencies || !state.current) return;
+  const child = /^      (?:'([^']+)'|([^:\s]+)):\s+(.+?)\s*$/.exec(line);
+  if (child) addSnapshotDependency(state.current, child, ignored, overrides);
+}
+
+function addSnapshotDependency(parent, child, ignored, overrides) {
+  const name = child[1] ?? child[2];
+  if (ignored.has(name)) return;
+  const value = child[3];
+  const peerSuffix = value.indexOf('(');
+  const version = peerSuffix === -1 ? value : value.slice(0, peerSuffix);
+  if (!/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(version))
+    throw new Error(`Unsupported locked child ${name}@${value}`);
+  const dependencies = overrides.get(parent) ?? new Map();
+  const previous = dependencies.get(name);
+  if (previous && previous !== version)
+    throw new Error(`Conflicting locked child ${parent}>${name}: ${previous} and ${version}`);
+  dependencies.set(name, version);
+  overrides.set(parent, dependencies);
 }
 
 export function cyclonedxSbom({

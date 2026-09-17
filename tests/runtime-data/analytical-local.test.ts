@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-  createStandardFunctionRegistry,
-  type Catalog,
-  type MeaningDefinition,
-  type QuerySpec,
-} from '../../packages/core/src/index.js';
+import { type Catalog, type MeaningDefinition, type QuerySpec } from '../../packages/core/src/index.js';
+import { createStandardFunctionRegistry } from '../../packages/core/src/expressions/index.js';
 import {
   createLocalDataService,
   type DataRecord,
@@ -103,7 +99,7 @@ describe('local analytical ADC adapter', () => {
       version: '1',
       requestId: 'group-plan',
       catalogRevision: catalog.revision,
-      target: { outputId: 'events-output' },
+      target: { taskId: 'group-plan', outputId: 'events-output' },
       query: query({
         fields: ['department'],
         groupBy: ['department'],
@@ -141,7 +137,7 @@ describe('local analytical ADC adapter', () => {
       version: '1',
       requestId: 'page-plan',
       catalogRevision: catalog.revision,
-      target: { outputId: 'events-output' },
+      target: { taskId: 'page-plan', outputId: 'events-output' },
       query: query({ page: { size: 1 } }),
       budget,
     });
@@ -161,7 +157,7 @@ describe('local analytical ADC adapter', () => {
       version: '1',
       requestId: 'page-plan-2',
       catalogRevision: catalog.revision,
-      target: { outputId: 'events-output' },
+      target: { taskId: 'page-plan-2', outputId: 'events-output' },
       query: query({ page: { size: 1, cursor: complete.cursor } }),
       budget,
     });
@@ -186,7 +182,7 @@ describe('local analytical ADC adapter', () => {
       version: '1',
       requestId: 'filter-grant-plan',
       catalogRevision: catalog.revision,
-      target: { outputId: 'events-output' },
+      target: { taskId: 'filter-grant-plan', outputId: 'events-output' },
       query: query({ where: { op: 'compare', field: 'amount', comparison: 'gt', value: { decimal: '1' } } }),
       budget,
     });
@@ -210,7 +206,7 @@ describe('local analytical ADC adapter', () => {
       version: '1',
       requestId: 'grant-plan',
       catalogRevision: catalog.revision,
-      target: { outputId: 'events-output' },
+      target: { taskId: 'grant-plan', outputId: 'events-output' },
       query: query(),
       budget,
     });
@@ -292,7 +288,7 @@ describe('local analytical ADC adapter', () => {
       version: '1',
       requestId: 'semi-plan',
       catalogRevision: relationCatalog.revision,
-      target: { outputId: 'customers-output' },
+      target: { taskId: 'semi-plan', outputId: 'customers-output' },
       query: {
         entity: 'customers',
         fields: ['id'],

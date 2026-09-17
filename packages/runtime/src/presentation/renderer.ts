@@ -1,11 +1,6 @@
-import type {
-  InteractionPort,
-  InteractionState,
-  Outcome,
-  Scalar,
-  ValidatedPresentation,
-  VersionRef,
-} from '@aeliqo/core';
+import type { InteractionState, Outcome, Scalar, VersionRef } from '@aeliqo/core';
+import type { InteractionPort } from '@aeliqo/core/interaction';
+import type { ValidatedPresentation } from '@aeliqo/core/presentation';
 import type { RegionContent, RegionOutcome } from '../regions/types.js';
 
 const failure = <T>(code: string, message: string): RegionOutcome<T> => ({

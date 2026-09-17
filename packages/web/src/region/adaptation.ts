@@ -1,4 +1,4 @@
-import type { PresentationEnvironment } from '@aeliqo/core';
+import type { PresentationEnvironment } from '@aeliqo/core/presentation';
 import {
   createCallbackPresentationRenderer,
   createPresentationAdaptationController,
@@ -44,6 +44,111 @@ function media(target: Window | undefined, query: string): boolean | undefined {
   }
 }
 
+function regionWindow(element: Element | undefined): Window | undefined {
+  const ownerWindow = element?.ownerDocument?.defaultView;
+  if (ownerWindow !== null && ownerWindow !== undefined) return ownerWindow;
+  return typeof window === 'undefined' ? undefined : window;
+}
+
+function sizeValue(value: number | undefined): PresentationEnvironment['inlineSize'] {
+  if (value === undefined) return UNKNOWN;
+  if (!Number.isFinite(value)) return UNKNOWN;
+  if (value < 0) return UNKNOWN;
+  return KNOWN(value);
+}
+
+function isVerticalWriting(style: CSSStyleDeclaration | undefined): boolean {
+  const writingMode = style?.writingMode;
+  return writingMode !== undefined && /^(vertical|sideways)/u.test(writingMode);
+}
+
+function rectSizes(
+  rect: DOMRect | undefined,
+  vertical: boolean,
+): Pick<PresentationEnvironment, 'inlineSize' | 'blockSize'> {
+  if (rect === undefined) return { inlineSize: UNKNOWN, blockSize: UNKNOWN };
+  if (vertical) return { inlineSize: sizeValue(rect.height), blockSize: sizeValue(rect.width) };
+  return { inlineSize: sizeValue(rect.width), blockSize: sizeValue(rect.height) };
+}
+
+function directionValue(
+  style: CSSStyleDeclaration | undefined,
+  option: PresentationEnvironment['direction'] | undefined,
+): PresentationEnvironment['direction'] {
+  if (option !== undefined) return option;
+  if (style?.direction === 'ltr' || style?.direction === 'rtl') return style.direction;
+  return 'ltr';
+}
+
+function textScaleValue(
+  style: CSSStyleDeclaration | undefined,
+  option: number | undefined,
+): PresentationEnvironment['textScale'] {
+  if (option !== undefined && Number.isFinite(option) && option > 0) return KNOWN(option);
+  if (option !== undefined || style === undefined) return UNKNOWN;
+  const fontSize = Number.parseFloat(style.fontSize);
+  if (!Number.isFinite(fontSize) || fontSize <= 0) return UNKNOWN;
+  return KNOWN(fontSize / 16);
+}
+
+function localeValue(
+  element: Element | undefined,
+  windowObject: Window | undefined,
+  options: AeliqoEnvironmentMeasurementOptions,
+): string {
+  if (options.locale !== undefined) return boundedLocale(options.locale);
+  const language = element?.ownerDocument?.documentElement.lang;
+  if (language !== undefined) return boundedLocale(language || 'en-US');
+  return boundedLocale(windowObject?.navigator.language);
+}
+
+function measureSizes(
+  element: Element | undefined,
+  windowObject: Window | undefined,
+  options: AeliqoEnvironmentMeasurementOptions,
+): Pick<PresentationEnvironment, 'inlineSize' | 'blockSize' | 'textScale' | 'direction' | 'locale'> {
+  let sizes: Pick<PresentationEnvironment, 'inlineSize' | 'blockSize'> = {
+    inlineSize: UNKNOWN,
+    blockSize: UNKNOWN,
+  };
+  let textScale: PresentationEnvironment['textScale'] = textScaleValue(undefined, options.textScale);
+  let direction = directionValue(undefined, options.direction);
+  try {
+    const rect = element?.getBoundingClientRect();
+    const style =
+      element === undefined || windowObject === undefined ? undefined : windowObject.getComputedStyle(element);
+    sizes = rectSizes(rect, isVerticalWriting(style));
+    direction = directionValue(style, options.direction);
+    if (options.textScale === undefined) textScale = textScaleValue(style, undefined);
+  } catch {
+    // Unknown measurements remain explicit.
+  }
+  const locale = localeValue(element, windowObject, options);
+  return { ...sizes, textScale, direction, locale };
+}
+
+function pointerFor(
+  windowObject: Window | undefined,
+  option: NonNullable<PresentationEnvironment['pointer']> | undefined,
+): NonNullable<PresentationEnvironment['pointer']> {
+  if (option !== undefined) return option;
+  if (media(windowObject, '(any-pointer: fine)') === true && media(windowObject, '(any-pointer: coarse)') === true)
+    return 'mixed';
+  if (media(windowObject, '(pointer: fine)') === true) return 'fine';
+  if (media(windowObject, '(pointer: coarse)') === true) return 'coarse';
+  return 'unknown';
+}
+
+function hoverFor(
+  windowObject: Window | undefined,
+  option: NonNullable<PresentationEnvironment['hover']> | undefined,
+): NonNullable<PresentationEnvironment['hover']> {
+  if (option !== undefined) return option;
+  if (media(windowObject, '(hover: hover)') === true) return 'available';
+  if (media(windowObject, '(hover: none)') === true) return 'unavailable';
+  return 'unknown';
+}
+
 /**
  * Read only platform facts. The helper never infers that a coarse pointer has
  * no keyboard, and returns unknown sizes when no browser measurement exists.
@@ -52,75 +157,15 @@ export function measureAeliqoRegionEnvironment(
   element: Element | undefined,
   options: AeliqoEnvironmentMeasurementOptions = {},
 ): PresentationEnvironment {
-  const ownerDocument = element?.ownerDocument;
-  const windowObject = ownerDocument?.defaultView ?? (typeof window === 'undefined' ? undefined : window);
-  let inlineSize: PresentationEnvironment['inlineSize'] = UNKNOWN;
-  let blockSize: PresentationEnvironment['blockSize'] = UNKNOWN;
-  let textScale: PresentationEnvironment['textScale'] = UNKNOWN;
-  let direction: PresentationEnvironment['direction'] = options.direction ?? 'ltr';
-  let locale = boundedLocale(options.locale ?? ownerDocument?.documentElement.lang ?? windowObject?.navigator.language);
-  try {
-    const rect = element?.getBoundingClientRect();
-    const style =
-      element === undefined || windowObject === undefined ? undefined : windowObject.getComputedStyle(element);
-    const verticalWriting = style?.writingMode !== undefined && /^(vertical|sideways)/u.test(style.writingMode);
-    if (
-      rect !== undefined &&
-      Number.isFinite(verticalWriting ? rect.height : rect.width) &&
-      (verticalWriting ? rect.height : rect.width) >= 0
-    )
-      inlineSize = KNOWN(verticalWriting ? rect.height : rect.width);
-    if (
-      rect !== undefined &&
-      Number.isFinite(verticalWriting ? rect.width : rect.height) &&
-      (verticalWriting ? rect.width : rect.height) >= 0
-    )
-      blockSize = KNOWN(verticalWriting ? rect.width : rect.height);
-    if (style !== undefined) {
-      if (options.direction === undefined && (style.direction === 'ltr' || style.direction === 'rtl'))
-        direction = style.direction;
-      const fontSize = Number.parseFloat(style.fontSize);
-      if (options.textScale === undefined && Number.isFinite(fontSize) && fontSize > 0)
-        textScale = KNOWN(fontSize / 16);
-    }
-    if (options.textScale !== undefined && Number.isFinite(options.textScale) && options.textScale > 0)
-      textScale = KNOWN(options.textScale);
-    if (ownerDocument?.documentElement.lang !== undefined && options.locale === undefined)
-      locale = boundedLocale(ownerDocument.documentElement.lang || locale);
-  } catch {
-    /* unknown measurement is safe and explicit */
-  }
-  const primaryFine = media(windowObject, '(pointer: fine)');
-  const primaryCoarse = media(windowObject, '(pointer: coarse)');
-  const anyFine = media(windowObject, '(any-pointer: fine)');
-  const anyCoarse = media(windowObject, '(any-pointer: coarse)');
-  const pointer: PresentationEnvironment['pointer'] =
-    options.pointer ??
-    (anyFine === true && anyCoarse === true
-      ? 'mixed'
-      : primaryFine === true
-        ? 'fine'
-        : primaryCoarse === true
-          ? 'coarse'
-          : 'unknown');
-  const hover: PresentationEnvironment['hover'] =
-    options.hover ??
-    (media(windowObject, '(hover: hover)') === true
-      ? 'available'
-      : media(windowObject, '(hover: none)') === true
-        ? 'unavailable'
-        : 'unknown');
+  const windowObject = regionWindow(element);
+  const sizes = measureSizes(element, windowObject, options);
   const reducedMotion = media(windowObject, '(prefers-reduced-motion: reduce)') === true;
   const forcedColors = media(windowObject, '(forced-colors: active)') === true;
   return {
-    inlineSize,
-    blockSize,
-    textScale,
-    pointer,
-    hover,
+    ...sizes,
+    pointer: pointerFor(windowObject, options.pointer),
+    hover: hoverFor(windowObject, options.hover),
     keyboard: options.keyboard ?? 'unknown',
-    locale,
-    direction,
     reducedMotion,
     forcedColors,
   };
@@ -233,121 +278,153 @@ function elementRenderer(element: AeliqoRegionElement): RuntimePresentationRende
   });
 }
 
-/** Bind a measured region element to the runtime adaptation transaction. */
-export function createAeliqoRegionAdaptation(options: AeliqoRegionAdaptationOptions): AeliqoRegionAdaptation {
-  const measure = options.measure ?? (() => measureAeliqoRegionEnvironment(options.element));
-  const renderer = options.renderer ?? elementRenderer(options.element);
-  const transitionBlocked = options.transitionBlocked;
-  let compositionActive = false;
-  let focusedEditable = false;
-  const activePointers = new Set<number>();
-  let latestEnvironment: PresentationEnvironment | undefined;
-  let latestRequestOptions: PresentationAdaptationRequestOptions | undefined;
-  let needsRetry = false;
-  let disposed = false;
-  let wasBlocked = false;
-  const hostTransitionBlocked = (): boolean => {
+class RegionInteractionGuard {
+  private compositionActive = false;
+  private focusedEditable = false;
+  private wasBlocked = false;
+  private readonly activePointers = new Set<number>();
+  private readonly documentObject: Document | undefined;
+  private readonly windowObject: Window | null | undefined;
+
+  constructor(
+    private readonly element: AeliqoRegionElement,
+    private readonly transitionBlocked: (() => boolean) | undefined,
+    private readonly onUnblocked: () => void,
+  ) {
+    this.documentObject = element.ownerDocument;
+    this.windowObject = this.documentObject?.defaultView;
+    this.attachListeners();
+    this.sync();
+  }
+
+  isBlocked = (): boolean =>
+    this.focusedEditable || this.compositionActive || this.activePointers.size > 0 || this.hostTransitionBlocked();
+
+  hostTransitionBlocked = (): boolean => {
     try {
-      return transitionBlocked?.() === true;
+      return this.transitionBlocked?.() === true;
     } catch {
       return true;
     }
   };
-  const isBlocked = (): boolean =>
-    focusedEditable || compositionActive || activePointers.size > 0 || hostTransitionBlocked();
-  const syncBlocked = (): void => {
-    focusedEditable = hasFocusedEditable(options.element);
-    const blocked = isBlocked();
-    if (wasBlocked && !blocked && needsRetry) retryAfterInteraction();
-    wasBlocked = blocked;
+
+  refresh = (): void => {
+    this.focusedEditable = hasFocusedEditable(this.element);
   };
-  let retryAfterInteraction: () => void = () => {};
-  const pointerEnd = (event: Event): void => {
+
+  dispose = (): void => {
+    this.element.removeEventListener('focusin', this.onFocus, true);
+    this.element.removeEventListener('focusout', this.onFocus, true);
+    this.element.removeEventListener('compositionstart', this.onCompositionStart, true);
+    this.element.removeEventListener('compositionend', this.onCompositionEnd, true);
+    this.element.removeEventListener('pointerdown', this.onPointerStart, true);
+    this.windowObject?.removeEventListener('blur', this.onWindowBlur, true);
+    this.documentObject?.removeEventListener('pointerup', this.onPointerEnd, true);
+    this.documentObject?.removeEventListener('pointercancel', this.onPointerEnd, true);
+    this.documentObject?.removeEventListener('visibilitychange', this.onVisibilityChange, true);
+    this.activePointers.clear();
+  };
+
+  private readonly onFocus = (): void => {
+    queueMicrotask(this.sync);
+  };
+
+  private readonly onCompositionStart = (): void => {
+    this.compositionActive = true;
+    this.sync();
+  };
+
+  private readonly onCompositionEnd = (): void => {
+    this.compositionActive = false;
+    this.sync();
+  };
+
+  private readonly onPointerStart = (event: Event): void => {
     const pointerId = (event as PointerEvent).pointerId;
-    if (Number.isSafeInteger(pointerId)) activePointers.delete(pointerId);
-    else activePointers.clear();
-    if (activePointers.size === 0) {
-      const documentObject = options.element.ownerDocument;
-      documentObject?.removeEventListener('pointerup', pointerEnd, true);
-      documentObject?.removeEventListener('pointercancel', pointerEnd, true);
-    }
-    syncBlocked();
+    if (this.activePointers.size < 16) this.activePointers.add(Number.isSafeInteger(pointerId) ? pointerId : -1);
+    this.documentObject?.addEventListener('pointerup', this.onPointerEnd, true);
+    this.documentObject?.addEventListener('pointercancel', this.onPointerEnd, true);
+    this.sync();
   };
-  const pointerStart = (event: Event): void => {
+
+  private readonly onPointerEnd = (event: Event): void => {
     const pointerId = (event as PointerEvent).pointerId;
-    if (activePointers.size < 16) activePointers.add(Number.isSafeInteger(pointerId) ? pointerId : -1);
-    const documentObject = options.element.ownerDocument;
-    documentObject?.addEventListener('pointerup', pointerEnd, true);
-    documentObject?.addEventListener('pointercancel', pointerEnd, true);
-    syncBlocked();
+    if (Number.isSafeInteger(pointerId)) this.activePointers.delete(pointerId);
+    else this.activePointers.clear();
+    if (this.activePointers.size === 0) this.removePointerListeners();
+    this.sync();
   };
-  const onFocus = (): void => {
-    queueMicrotask(syncBlocked);
+
+  private readonly onWindowBlur = (): void => {
+    this.activePointers.clear();
+    this.removePointerListeners();
+    this.sync();
   };
-  const onCompositionStart = (): void => {
-    compositionActive = true;
-    syncBlocked();
+
+  private readonly onVisibilityChange = (): void => {
+    if (this.documentObject?.visibilityState === 'hidden') this.onWindowBlur();
   };
-  const onCompositionEnd = (): void => {
-    compositionActive = false;
-    syncBlocked();
+
+  private readonly sync = (): void => {
+    this.refresh();
+    const blocked = this.isBlocked();
+    if (this.wasBlocked && !blocked) this.onUnblocked();
+    this.wasBlocked = blocked;
   };
-  const onWindowBlur = (): void => {
-    activePointers.clear();
-    const documentObject = options.element.ownerDocument;
-    documentObject?.removeEventListener('pointerup', pointerEnd, true);
-    documentObject?.removeEventListener('pointercancel', pointerEnd, true);
-    syncBlocked();
-  };
-  const onVisibilityChange = (): void => {
-    if (documentObject?.visibilityState !== 'hidden') return;
-    onWindowBlur();
-  };
-  const windowObject = options.element.ownerDocument?.defaultView;
-  const documentObject = options.element.ownerDocument;
-  options.element.addEventListener('focusin', onFocus, true);
-  options.element.addEventListener('focusout', onFocus, true);
-  options.element.addEventListener('compositionstart', onCompositionStart, true);
-  options.element.addEventListener('compositionend', onCompositionEnd, true);
-  options.element.addEventListener('pointerdown', pointerStart, true);
-  windowObject?.addEventListener('blur', onWindowBlur, true);
-  documentObject?.addEventListener('visibilitychange', onVisibilityChange, true);
-  syncBlocked();
-  const readContext =
-    options.readContext === undefined && transitionBlocked === undefined
-      ? undefined
-      : (((input: PresentationAdaptationReadInput) => {
-          const source = options.readContext ?? options.baseContext;
-          const addGuard = (value: unknown): unknown => {
-            if (
-              value !== null &&
-              typeof value === 'object' &&
-              !Array.isArray(value) &&
-              Object.hasOwn(value as object, 'ok')
-            ) {
-              const outcome = value as { readonly ok?: unknown; readonly value?: unknown };
-              if (outcome.ok === true) return { ok: true, value: addGuard(outcome.value) };
-              return value;
-            }
-            if (value === null || typeof value !== 'object' || Array.isArray(value)) return value;
-            return {
-              ...(value as Record<string, unknown>),
-              ...(hostTransitionBlocked() ? { transitionBlocked: true } : {}),
-            };
-          };
-          if (typeof source !== 'function') return addGuard(source) as PresentationAdaptationContextSource;
-          const raw = source(input);
-          return raw !== null && typeof raw === 'object' && typeof (raw as PromiseLike<unknown>).then === 'function'
-            ? Promise.resolve(raw).then(addGuard)
-            : addGuard(raw);
-        }) as PresentationAdaptationContextSource);
-  const controller = createPresentationAdaptationController({
+
+  private attachListeners(): void {
+    this.element.addEventListener('focusin', this.onFocus, true);
+    this.element.addEventListener('focusout', this.onFocus, true);
+    this.element.addEventListener('compositionstart', this.onCompositionStart, true);
+    this.element.addEventListener('compositionend', this.onCompositionEnd, true);
+    this.element.addEventListener('pointerdown', this.onPointerStart, true);
+    this.windowObject?.addEventListener('blur', this.onWindowBlur, true);
+    this.documentObject?.addEventListener('visibilitychange', this.onVisibilityChange, true);
+  }
+
+  private removePointerListeners(): void {
+    this.documentObject?.removeEventListener('pointerup', this.onPointerEnd, true);
+    this.documentObject?.removeEventListener('pointercancel', this.onPointerEnd, true);
+  }
+}
+
+function addTransitionGuard(value: unknown, isBlocked: () => boolean): unknown {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return value;
+  if (Object.hasOwn(value, 'ok')) {
+    const outcome = value as { readonly ok?: unknown; readonly value?: unknown };
+    if (outcome.ok === true) return { ok: true, value: addTransitionGuard(outcome.value, isBlocked) };
+    return value;
+  }
+  return { ...(value as Record<string, unknown>), ...(isBlocked() ? { transitionBlocked: true } : {}) };
+}
+
+function createGuardedReadContext(
+  options: AeliqoRegionAdaptationOptions,
+  isHostBlocked: () => boolean,
+): PresentationAdaptationContextSource | undefined {
+  if (options.readContext === undefined && options.transitionBlocked === undefined) return undefined;
+  const source = options.readContext ?? options.baseContext;
+  return ((input: PresentationAdaptationReadInput): unknown => {
+    const raw = typeof source === 'function' ? source(input) : source;
+    if (raw !== null && typeof raw === 'object' && typeof (raw as PromiseLike<unknown>).then === 'function')
+      return Promise.resolve(raw).then((value) => addTransitionGuard(value, isHostBlocked));
+    return addTransitionGuard(raw, isHostBlocked) as PresentationAdaptationContextSource;
+  }) as PresentationAdaptationContextSource;
+}
+
+function createAdaptationController(
+  options: AeliqoRegionAdaptationOptions,
+  renderer: RuntimePresentationRenderer,
+  guard: RegionInteractionGuard,
+  readContext: PresentationAdaptationContextSource | undefined,
+): PresentationAdaptationController {
+  return createPresentationAdaptationController({
     region: options.region,
     registry: options.registry,
     baseContext: options.baseContext,
     ...(readContext === undefined ? {} : { readContext }),
     renderer,
-    transitionBlocked: isBlocked,
+    transitionBlocked: guard.isBlocked,
     ...(options.readNavigation === undefined ? {} : { readNavigation: options.readNavigation }),
     ...(options.now === undefined ? {} : { now: options.now }),
     ...(options.schedule === undefined ? {} : { schedule: options.schedule }),
@@ -356,27 +433,42 @@ export function createAeliqoRegionAdaptation(options: AeliqoRegionAdaptationOpti
     ...(options.hysteresisPx === undefined ? {} : { hysteresisPx: options.hysteresisPx }),
     ...(options.maxPendingRequests === undefined ? {} : { maxPendingRequests: options.maxPendingRequests }),
   });
+}
+
+/** Bind a measured region element to the runtime adaptation transaction. */
+export function createAeliqoRegionAdaptation(options: AeliqoRegionAdaptationOptions): AeliqoRegionAdaptation {
+  const measure = options.measure ?? (() => measureAeliqoRegionEnvironment(options.element));
+  const renderer = options.renderer ?? elementRenderer(options.element);
+  let latestEnvironment: PresentationEnvironment | undefined;
+  let latestRequestOptions: PresentationAdaptationRequestOptions | undefined;
+  let needsRetry = false;
+  let disposed = false;
+  let retryAfterInteraction: () => void = () => {};
+  const guard = new RegionInteractionGuard(options.element, options.transitionBlocked, () => {
+    if (needsRetry) retryAfterInteraction();
+  });
+  const readContext = createGuardedReadContext(options, guard.hostTransitionBlocked);
+  const controller = createAdaptationController(options, renderer, guard, readContext);
   const request = (
     environment = measure(),
     requestOptions = options.requestOptions,
   ): Promise<RegionOutcome<PresentationAdaptationResult>> => {
     // A programmatic focus can occur without a bubbling focus event reaching
     // this host. Refresh the conservative default guard at request time.
-    focusedEditable = hasFocusedEditable(options.element);
-    const currentlyBlocked = isBlocked();
-    wasBlocked = currentlyBlocked;
+    guard.refresh();
+    const currentlyBlocked = guard.isBlocked();
     latestEnvironment = environment;
     latestRequestOptions = requestOptions;
     if (currentlyBlocked) needsRetry = true;
     else needsRetry = false;
     const result = controller.request(environment, requestOptions);
     void result.then((outcome) => {
-      if (!outcome.ok && isBlocked()) needsRetry = true;
+      if (!outcome.ok && guard.isBlocked()) needsRetry = true;
     });
     return result;
   };
   retryAfterInteraction = (): void => {
-    if (disposed || !needsRetry || latestEnvironment === undefined || isBlocked()) return;
+    if (disposed || !needsRetry || latestEnvironment === undefined || guard.isBlocked()) return;
     needsRetry = false;
     const requestOptions = { ...latestRequestOptions, force: true };
     const retry = request(latestEnvironment, requestOptions);
@@ -397,16 +489,7 @@ export function createAeliqoRegionAdaptation(options: AeliqoRegionAdaptationOpti
     disconnect: () => {
       disposed = true;
       observer?.disconnect();
-      options.element.removeEventListener('focusin', onFocus, true);
-      options.element.removeEventListener('focusout', onFocus, true);
-      options.element.removeEventListener('compositionstart', onCompositionStart, true);
-      options.element.removeEventListener('compositionend', onCompositionEnd, true);
-      options.element.removeEventListener('pointerdown', pointerStart, true);
-      windowObject?.removeEventListener('blur', onWindowBlur, true);
-      documentObject?.removeEventListener('pointerup', pointerEnd, true);
-      documentObject?.removeEventListener('pointercancel', pointerEnd, true);
-      activePointers.clear();
-      documentObject?.removeEventListener('visibilitychange', onVisibilityChange, true);
+      guard.dispose();
       controller.dispose();
     },
   };

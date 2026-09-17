@@ -81,7 +81,16 @@ test('comparison and breakdown use shared bounded tables and host evaluated valu
   const breakdown = page.locator('#breakdown');
   await expect(breakdown.locator('aeliqo-table')).toHaveCount(1);
   await expect(breakdown.locator('aeliqo-table')).toContainText('25%');
-  await expect(breakdown.locator('aeliqo-table')).toContainText('Not available');
+  await expect
+    .poll(() =>
+      breakdown.locator('aeliqo-table').evaluate((element) =>
+        (element as any).rows.map((row: Record<string, unknown>) => ({
+          group: row.group,
+          metric: row.metric,
+        })),
+      ),
+    )
+    .toEqual([{ group: 'North', metric: '25%' }]);
   await breakdown.locator('aeliqo-table input[type=radio]').first().check();
   await expect
     .poll(() =>

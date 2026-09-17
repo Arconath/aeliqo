@@ -4,7 +4,7 @@ import {
   createQueryFunctionRegistry,
   queryFunctionSignatures,
 } from '../../packages/core/src/expressions/registry.js';
-import { createQueryPlanner } from '../../packages/core/src/query/planner.js';
+import { createQueryPlanner } from '../../packages/core/src/query/index.js';
 import type { Catalog, QuerySpec } from '../../packages/core/src/contracts/types.js';
 import type { RelationalQuery, QuerySource } from '../../packages/core/src/query/types.js';
 

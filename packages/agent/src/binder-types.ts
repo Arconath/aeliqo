@@ -1,17 +1,7 @@
-import type {
-  AgentBindingOutcome,
-  AgentTaskProposal,
-  CommitPreconditions,
-  Diagnostic,
-  FunctionRegistry,
-  OperationGrant,
-  Outcome,
-  QueryLimits,
-  QueryPlanner,
-  Catalog,
-  ResultRef,
-  Task,
-} from '@aeliqo/core';
+import type { AgentBindingOutcome, OperationGrant } from '@aeliqo/core/agent';
+import type { CommitPreconditions, Outcome, Catalog } from '@aeliqo/core';
+import type { FunctionRegistry } from '@aeliqo/core/expressions';
+import type { QueryLimits } from '@aeliqo/core/query';
 
 /**
  * A host-owned decision which explains a material semantic gap.  Decisions
@@ -58,13 +48,13 @@ export interface AgentHostContext {
   readonly decisions?: readonly AgentBindingDecision[];
 }
 
-export interface AgentContextRequest {
+interface AgentContextRequest {
   readonly requestId: string;
   readonly targetRegionId: string;
   readonly signal: AbortSignal;
 }
 
-export interface AgentHost {
+interface AgentHost {
   readonly readContext: (input: AgentContextRequest) => Outcome<AgentHostContext> | Promise<Outcome<AgentHostContext>>;
 }
 
@@ -86,19 +76,3 @@ export interface AgentBinderOptions {
   readonly queryLimits?: Partial<QueryLimits>;
   readonly maxPending?: number;
 }
-
-/** Internal result kept private to the public binding outcome. */
-export interface BoundTaskValidation {
-  readonly proposal: AgentTaskProposal;
-  readonly task: Task;
-  readonly planner?: QueryPlanner;
-  readonly plans: readonly { readonly outputId: string; readonly canonical: string; readonly planKey: string }[];
-  readonly requiredResults: readonly ResultRef[];
-}
-
-export type AgentBindingFailureState = Extract<
-  AgentBindingOutcome,
-  { readonly state: 'unsupported' | 'denied' | 'invalid' | 'stale' }
->['state'];
-
-export type AgentBindingDiagnostic = Diagnostic;

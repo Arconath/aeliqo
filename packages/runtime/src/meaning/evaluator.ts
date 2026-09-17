@@ -1,18 +1,7 @@
-import {
-  parseWireValue,
-  createQueryPlanner,
-  validateMeaning,
-  type Catalog,
-  type FunctionRegistry,
-  type MeaningDefinition,
-  type Outcome,
-  type QueryLimits,
-  type QueryResult,
-  type QuerySource,
-  type QuerySpec,
-  type SemanticPolicy,
-  type VersionRef,
-} from '@aeliqo/core';
+import { parseWireValue, type MeaningDefinition, type Outcome, type QuerySpec, type VersionRef } from '@aeliqo/core';
+import { createQueryPlanner } from '@aeliqo/core/query';
+import type { QueryLimits, QueryResult, QuerySource } from '@aeliqo/core/query';
+import { validateMeaning } from '@aeliqo/core/semantics';
 import type { MeaningEvaluationInput, MeaningEvaluator, MeaningEvaluatorOptions } from './types.js';
 import { freezeMeaningValue, snapshotMeaningAuthoringOptions } from './authoring.js';
 
@@ -89,6 +78,66 @@ function queryForMeaning(input: MeaningEvaluationInput, meaning: MeaningDefiniti
   };
 }
 
+function normalizeLimits(value: unknown): Outcome<Partial<QueryLimits> | undefined> {
+  if (value === undefined) return { ok: true, value: undefined };
+  const inspected = parseWireValue(value);
+  if (!inspected.ok) return inspected;
+  if (!isRecord(inspected.value))
+    return failure('runtime.meaning-evaluator', 'Meaning evaluator limits must be a bounded object.', ['limits']);
+  return { ok: true, value: freezeMeaningValue(inspected.value) as Partial<QueryLimits> };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function createPlanner(
+  options: MeaningEvaluatorOptions,
+  limits: Partial<QueryLimits> | undefined,
+): ReturnType<typeof createQueryPlanner> {
+  return createQueryPlanner({
+    catalog: options.catalog,
+    registry: options.registry,
+    ...(options.definitions === undefined ? {} : { definitions: options.definitions }),
+    ...(limits === undefined ? {} : { limits }),
+  });
+}
+
+function sourceIsBounded(source: QuerySource): boolean {
+  return (
+    source !== null &&
+    typeof source === 'object' &&
+    source.relations !== undefined &&
+    typeof source.relations === 'object'
+  );
+}
+
+function evaluateQuery(
+  input: MeaningEvaluationInput,
+  query: QuerySpec,
+  meaning: MeaningDefinition,
+  snapshot: MeaningEvaluatorOptions,
+  limits: Partial<QueryLimits> | undefined,
+  source: QuerySource,
+): Outcome<QueryResult> {
+  const definitions = [...(snapshot.definitions ?? [])];
+  if (!definitions.some((candidate) => sameRef(candidate, meaning))) definitions.push(meaning);
+  const planner = createQueryPlanner({
+    catalog: snapshot.catalog,
+    registry: snapshot.registry,
+    definitions,
+    ...(limits === undefined ? {} : { limits }),
+  });
+  if (!planner.ok) return planner;
+  const plan = planner.value.plan(query);
+  if (!plan.ok) return plan;
+  return planner.value.evaluate(plan.value, source, {
+    cancellation: { aborted: input.signal?.aborted === true },
+    ...(input.scopeDigest === undefined ? {} : { scopeDigest: input.scopeDigest }),
+    ...(input.policyRevision === undefined ? {} : { policyRevision: input.policyRevision }),
+  });
+}
+
 function sourceContext(
   input: MeaningEvaluationInput,
   source: QuerySource,
@@ -115,18 +164,12 @@ function sourceContext(
  * manual, Studio or AI-assisted previews alike.
  */
 export function createMeaningEvaluator(options: MeaningEvaluatorOptions): Outcome<MeaningEvaluator> {
-  if (options === null || typeof options !== 'object' || Array.isArray(options))
-    return failure('runtime.meaning-evaluator', 'Meaning evaluator options are required.');
+  if (!isRecord(options)) return failure('runtime.meaning-evaluator', 'Meaning evaluator options are required.');
   const context = snapshotMeaningAuthoringOptions(options);
   if (!context.ok) return context;
-  let limits: Partial<QueryLimits> | undefined;
-  if (options.limits !== undefined) {
-    const inspected = parseWireValue(options.limits);
-    if (!inspected.ok) return inspected;
-    if (inspected.value === null || typeof inspected.value !== 'object' || Array.isArray(inspected.value))
-      return failure('runtime.meaning-evaluator', 'Meaning evaluator limits must be a bounded object.', ['limits']);
-    limits = freezeMeaningValue(inspected.value) as Partial<QueryLimits>;
-  }
+  const parsedLimits = normalizeLimits(options.limits);
+  if (!parsedLimits.ok) return parsedLimits;
+  const limits = parsedLimits.value;
   const snapshot: MeaningEvaluatorOptions = {
     catalog: context.value.catalog,
     registry: context.value.registry,
@@ -134,50 +177,21 @@ export function createMeaningEvaluator(options: MeaningEvaluatorOptions): Outcom
     ...(context.value.policy === undefined ? {} : { policy: context.value.policy }),
     ...(limits === undefined ? {} : { limits }),
   };
-  const planner = createQueryPlanner({
-    catalog: snapshot.catalog,
-    registry: snapshot.registry,
-    ...(snapshot.definitions === undefined ? {} : { definitions: snapshot.definitions }),
-    ...(limits === undefined ? {} : { limits }),
-  });
+  const planner = createPlanner(snapshot, limits);
   if (!planner.ok) return planner;
 
   const evaluate = (input: MeaningEvaluationInput): Outcome<QueryResult> => {
-    if (input === null || typeof input !== 'object' || Array.isArray(input))
-      return failure('runtime.meaning-evaluation', 'Meaning evaluation input is required.');
+    if (!isRecord(input)) return failure('runtime.meaning-evaluation', 'Meaning evaluation input is required.');
     const meaning = resolveMeaning(input.meaning, snapshot);
     if (!meaning.ok) return meaning;
     const source = input.source;
-    if (source === null || typeof source !== 'object' || !source.relations || typeof source.relations !== 'object')
+    if (!sourceIsBounded(source))
       return failure('runtime.meaning-source', 'Meaning evaluation requires a bounded query source.', ['source']);
     const context = sourceContext(input, source);
     if (!context.ok) return context;
     const query = queryForMeaning(input, meaning.value);
-    // A direct draft is allowed for preview even when it has not yet been
-    // inserted into the host catalog. Include it in this immutable planner
-    // snapshot so manual, Studio and AI previews use one lowering path.
-    const definitions = [...(snapshot.definitions ?? [])];
-    if (!definitions.some((candidate) => sameRef(candidate, meaning.value))) definitions.push(meaning.value);
-    const evaluationPlanner = createQueryPlanner({
-      catalog: snapshot.catalog,
-      registry: snapshot.registry,
-      definitions,
-      ...(limits === undefined ? {} : { limits }),
-    });
-    if (!evaluationPlanner.ok) return evaluationPlanner;
-    const plan = evaluationPlanner.value.plan(query);
-    if (!plan.ok) return plan;
-    // Core intentionally accepts plain data for cancellation. Check the host
-    // signal before evaluation and expose its current snapshot to the pure
-    // evaluator; no asynchronous effect is hidden in this adapter.
-    const cancellation = { aborted: input.signal?.aborted === true };
-    return evaluationPlanner.value.evaluate(plan.value, source, {
-      cancellation,
-      ...(input.scopeDigest === undefined ? {} : { scopeDigest: input.scopeDigest }),
-      ...(input.policyRevision === undefined ? {} : { policyRevision: input.policyRevision }),
-    });
+    // Core accepts plain data for cancellation; no asynchronous effect is hidden in this adapter.
+    return evaluateQuery(input, query, meaning.value, snapshot, limits, source);
   };
   return { ok: true, value: Object.freeze({ evaluate }) };
 }
-
-export type { Catalog, FunctionRegistry, MeaningDefinition, Outcome, QueryResult, QuerySource, SemanticPolicy };

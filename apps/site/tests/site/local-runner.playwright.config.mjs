@@ -13,7 +13,7 @@ export default defineConfig({
   use: { baseURL: `http://127.0.0.1:${port}`, browserName: 'chromium', trace: 'retain-on-failure' },
   metadata: { token },
   webServer: {
-    command: `AELIQO_PLAYGROUND_PORT=${port} AELIQO_MCP_TOKEN=${token} pnpm --dir ../../../playground start`,
+    command: `AELIQO_PLAYGROUND_PORT=${port} AELIQO_MCP_TOKEN=${token} pnpm start`,
     url: `http://127.0.0.1:${port}/playground/`,
     reuseExistingServer: false,
     timeout: 30_000,

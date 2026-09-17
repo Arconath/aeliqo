@@ -1,9 +1,6 @@
 import { expect, it } from 'vitest';
-import {
-  createStandardFunctionRegistry,
-  type Catalog,
-  type MeaningDefinition,
-} from '../../../packages/core/dist/index.js';
+import { type Catalog, type MeaningDefinition } from '../../../packages/core/dist/index.js';
+import { createStandardFunctionRegistry } from '../../../packages/core/dist/expressions/index.js';
 import { createLocalDataService } from '../../../packages/runtime/dist/data/index.js';
 import { createResultStore } from '../../../packages/runtime/dist/results/index.js';
 import { createNarrativeVerifier } from '../../../packages/agent/dist/narrative.js';

@@ -1,5 +1,5 @@
 import rawText from '../../../fixtures/hr/raw.json?raw';
-import { createQueryFunctionRegistry } from '@aeliqo/core';
+import { createQueryFunctionRegistry } from '@aeliqo/core/expressions';
 import type {
   Catalog,
   Expression,
@@ -262,7 +262,7 @@ export const trendQuery = (): QuerySpec => ({
     { field: 'employee_id', direction: 'asc', nulls: 'last' },
   ],
 });
-export const detailQuery = (): QuerySpec => ({
+const detailQuery = (): QuerySpec => ({
   entity: 'observations',
   fields: ['id', 'employee_id', 'date', 'status'],
   measures: [],

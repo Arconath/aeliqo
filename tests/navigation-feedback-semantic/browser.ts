@@ -13,7 +13,7 @@ import { AeliqoPaginationElement } from '../../packages/web/src/navigation/pagin
 import { AeliqoTabsElement } from '../../packages/web/src/navigation/tabs.js';
 import { AeliqoTreeNavElement } from '../../packages/web/src/navigation/tree-nav.js';
 import { AeliqoRegionElement } from '../../packages/web/src/region/aeliqo-region.js';
-import { createPresentationRegistry, validatePresentationPlan } from '../../packages/core/src/index.js';
+import { createPresentationRegistry, validatePresentationPlan } from '../../packages/core/src/presentation/index.js';
 import type { AeliqoSemanticInteractionRequest } from '../../packages/web/src/region/types.js';
 import {
   navigationFeedbackPresentationContext,

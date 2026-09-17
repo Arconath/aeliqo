@@ -26,7 +26,10 @@ it('keeps generated component metadata inside the selected class lineage', async
   expect(table.bounds).toContain('The source-defined `AELIQO_TABLE_MAX_VIRTUAL_ROWS` limit is 100.');
   expect(table.bounds.join(' ')).toContain('`virtualCount` (default 40)');
 
-  expect(formFlow.sourceFiles).toEqual(['packages/web/src/compound/base.ts', 'packages/web/src/compound/elements.ts']);
+  expect(formFlow.sourceFiles).toEqual([
+    'packages/web/src/compound/base.ts',
+    'packages/web/src/compound/elements-inputs.ts',
+  ]);
   expect(formFlow.sizing).toEqual(['flex-wrap']);
   expect(formFlow.bounds.join(' ')).not.toContain('MAX_COMPARISON');
   expect(comparison.bounds).toEqual([

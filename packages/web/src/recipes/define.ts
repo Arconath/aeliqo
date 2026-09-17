@@ -1,4 +1,4 @@
-import { createPresentationRegistry } from '@aeliqo/core';
+import { createPresentationRegistry } from '@aeliqo/core/presentation';
 import type { RecipeDefinition, RecipeInput, ViewInput } from './types.js';
 import type { AeliqoViewDefinition } from '../region/types.js';
 

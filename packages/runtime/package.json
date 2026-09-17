@@ -1,6 +1,6 @@
 {
   "name": "@aeliqo/runtime",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Arconath/aeliqo.git",
@@ -19,6 +19,10 @@
     "NOTICE"
   ],
   "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
     "./app": {
       "types": "./dist/app/index.d.ts",
       "import": "./dist/app/index.js"

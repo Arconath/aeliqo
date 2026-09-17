@@ -16,6 +16,31 @@ export type AeliqoPlotSelectionEvent = CustomEvent<AeliqoPlotSelectionDetail>;
 
 /** Direct plot surface: no runtime, query evaluator or model instance is constructed. */
 const tickText = (text: string): string => (text.length > 10 ? `${text.slice(0, 4)}…${text.slice(-4)}` : text);
+const plotInputProperties = ['spec', 'results', 'datasets', 'unit', 'result', 'rows', 'width', 'height', 'maxMarks'];
+
+function plotInputsChanged(changed: ReadonlyMap<string, unknown>): boolean {
+  return plotInputProperties.some((key) => changed.has(key));
+}
+
+function scopeDescription(result: Result): string {
+  switch (result.coverage.kind) {
+    case 'complete':
+      return 'Complete result';
+    case 'sample':
+      return `Sample: ${result.coverage.method}`;
+    case 'partial':
+      return `Partial result: ${result.coverage.reason}`;
+    case 'unknown':
+      return `Scope unknown: ${result.coverage.reason}`;
+    default:
+      return assertCoverageNever(result.coverage);
+  }
+}
+
+function assertCoverageNever(coverage: never): never {
+  throw new Error(`Unsupported result coverage: ${String(coverage)}`);
+}
+
 export class AeliqoPlotElement extends AeliqoFoundationElement {
   static readonly properties = {
     spec: { attribute: false },
@@ -133,51 +158,57 @@ export class AeliqoPlotElement extends AeliqoFoundationElement {
   private canvasGeometries: PlotGeometry[] = [];
   private compiled: Outcome<PlotGeometry> | undefined;
   protected override willUpdate(changed: Map<string, unknown>): void {
-    if (
-      ['spec', 'results', 'datasets', 'unit', 'result', 'rows', 'width', 'height', 'maxMarks'].some((k) =>
-        changed.has(k),
-      )
-    ) {
-      this.composition = this.spec
-        ? compilePlotComposition(this.spec, this.results, this.datasets, {
-            width: this.width,
-            height: this.height,
-            maxRows: 10_000,
-            maxMarks: this.maxMarks,
-          })
-        : undefined;
-      this.compiled =
-        !this.spec && this.unit && this.result
-          ? compilePlotUnit(this.unit, this.result, this.rows, {
-              width: this.width,
-              height: this.height,
-              maxRows: 10_000,
-              maxMarks: this.maxMarks,
-            })
-          : undefined;
-      const count = this.compiled?.ok ? this.compiled.value.rows.length : 0;
-      this.page = Math.min(this.page, Math.max(0, Math.ceil(count / 25) - 1));
-      const geometries: PlotGeometry[] = [];
-      const visit = (node: CompiledPlotNode): void => {
-        if (node.kind === 'unit') geometries.push(node.geometry);
-        else if (node.kind === 'facet') node.children.forEach((c) => visit(c.node));
-        else node.children.forEach(visit);
-      };
-      if (this.composition?.ok) visit(this.composition.value.root);
-      else if (this.compiled?.ok) geometries.push(this.compiled.value);
-      const scope = JSON.stringify([...new Set(geometries.map((g) => this.refKey(g.result.ref)))].sort());
-      if (
-        (this.selectionScope !== '' && this.selectionScope !== scope && !this.selectedResult) ||
-        !geometries.some(
-          (g) =>
-            (!this.selectedResult || this.refKey(this.selectedResult) === this.refKey(g.result.ref)) &&
-            g.rows.some((r) => r.identity === this.selectedIdentity),
-        )
-      )
-        this.selectedIdentity = '';
-      this.singleResult = new Set(geometries.map((g) => this.refKey(g.result.ref))).size === 1;
-      this.selectionScope = scope;
+    if (!plotInputsChanged(changed)) return;
+    this.compileInput();
+    this.clampPage();
+    this.updateSelectionScope(this.collectGeometries());
+  }
+
+  private compileInput(): void {
+    const options = { width: this.width, height: this.height, maxRows: 10_000, maxMarks: this.maxMarks };
+    this.composition = this.spec ? compilePlotComposition(this.spec, this.results, this.datasets, options) : undefined;
+    this.compiled =
+      this.unit && this.result && !this.spec ? compilePlotUnit(this.unit, this.result, this.rows, options) : undefined;
+  }
+
+  private clampPage(): void {
+    const count = this.compiled?.ok ? this.compiled.value.rows.length : 0;
+    this.page = Math.min(this.page, Math.max(0, Math.ceil(count / 25) - 1));
+  }
+
+  private collectGeometries(): PlotGeometry[] {
+    const geometries: PlotGeometry[] = [];
+    if (this.composition?.ok) this.collectNodeGeometries(this.composition.value.root, geometries);
+    else if (this.compiled?.ok) geometries.push(this.compiled.value);
+    return geometries;
+  }
+
+  private collectNodeGeometries(node: CompiledPlotNode, geometries: PlotGeometry[]): void {
+    if (node.kind === 'unit') {
+      geometries.push(node.geometry);
+      return;
     }
+    if (node.kind === 'facet') {
+      node.children.forEach((child) => this.collectNodeGeometries(child.node, geometries));
+      return;
+    }
+    node.children.forEach((child) => this.collectNodeGeometries(child, geometries));
+  }
+
+  private updateSelectionScope(geometries: readonly PlotGeometry[]): void {
+    const scope = JSON.stringify([...new Set(geometries.map((geometry) => this.refKey(geometry.result.ref)))].sort());
+    const scopeChanged = this.selectionScope !== '' && this.selectionScope !== scope && !this.selectedResult;
+    if (scopeChanged || !this.selectionExists(geometries)) this.selectedIdentity = '';
+    this.singleResult = new Set(geometries.map((geometry) => this.refKey(geometry.result.ref))).size === 1;
+    this.selectionScope = scope;
+  }
+
+  private selectionExists(geometries: readonly PlotGeometry[]): boolean {
+    return geometries.some((geometry) => {
+      const resultMatches =
+        !this.selectedResult || this.refKey(this.selectedResult) === this.refKey(geometry.result.ref);
+      return resultMatches && geometry.rows.some((row) => row.identity === this.selectedIdentity);
+    });
   }
   protected override updated(): void {
     if (this.renderer !== 'canvas') return;
@@ -246,127 +277,154 @@ export class AeliqoPlotElement extends AeliqoFoundationElement {
     data = true,
     displayedIdentities?: readonly string[],
   ) {
-    const identities = displayedIdentities ? new Set(displayedIdentities) : undefined;
-    const displayed = identities ? g.rows.filter((r) => identities.has(r.identity)) : g.rows;
-    const axes = g.axes;
+    const displayed = this.displayedRows(g, displayedIdentities);
     const page = Math.min(this.page, Math.max(0, Math.ceil(displayed.length / 25) - 1));
     const pageRows = displayed.slice(page * 25, page * 25 + 25);
-    if (graphic && axes && this.renderer === 'canvas') this.canvasGeometries.push(g);
-    const coverage = g.result.coverage;
-    const precision = g.result.precision;
-    const valueLabel = precision.kind === 'exact' ? 'Exact loaded values' : 'Loaded approximate values';
-    const scope =
-      coverage.kind === 'complete'
-        ? 'Complete result'
-        : coverage.kind === 'sample'
-          ? `Sample: ${coverage.method}`
-          : coverage.kind === 'partial'
-            ? `Partial result: ${coverage.reason}`
-            : `Scope unknown: ${coverage.reason}`;
+    if (graphic && g.axes && this.renderer === 'canvas') this.canvasGeometries.push(g);
+    const scope = scopeDescription(g.result);
+    const valueLabel = g.result.precision.kind === 'exact' ? 'Exact loaded values' : 'Loaded approximate values';
     return html`<figure part="figure">
-      ${
-        data
-          ? html`<figcaption>${label}</figcaption>
-              <p part="scope">
-                ${scope}. ${g.rows.length} loaded
-                rows.${displayed.length !== g.rows.length ? ` ${displayed.length} rows in this display partition.` : ''}
-              </p>
-              ${g.result.period ? html`<p>${g.result.period.interpretation} (${g.result.period.timezone})</p>` : nothing}
-              ${g.result.filters.length ? html`<p>Filtered result (${g.result.filters.length} applied conditions).</p>` : nothing}
-              ${precision.kind === 'approximate' ? html`<p>Approximate values: ${precision.method}. ${precision.uncertainty.kind === 'unquantified' ? precision.uncertainty.reason : precision.uncertainty.interpretation}</p>` : nothing} `
-          : nothing
-      }
-      ${graphic && axes && [...axes.x.ticks, ...axes.y.ticks].some((t) => t.label.length > 10) ? html`<p>Axis labels are shortened. Exact values are listed below.</p>` : nothing}
+      ${data ? this.renderMetadata(g, label, scope, displayed.length) : nothing} ${this.renderAxisNotice(g, graphic)}
       ${g.state === 'data-only' ? html`<p role="status">${g.reason}</p>` : nothing}
-      ${
-        graphic && axes
-          ? html`<div part="viewport" style=${`width:${g.width}px;height:${g.height}px`}>
-              ${this.renderer === 'canvas' ? html`<canvas part="canvas" aria-hidden="true"></canvas>` : nothing}
-              <svg
-                viewBox=${`0 0 ${g.width} ${g.height}`}
-                width=${g.width}
-                height=${g.height}
-                role="img"
-                aria-label=${`${label}. ${scope}. Values and selection are available in the data table below.`}
-              >
-                ${this.renderer === 'svg' ? svgPlotMarks(g) : nothing}
-                <path d=${`M64,24V${g.height - 48}H${g.width - 24}`} fill="none" stroke="currentColor"></path>
-                ${axes.x.ticks.map((t) => svg`<text x=${t.position} y=${g.height - 30} text-anchor="middle" aria-label=${t.label}>${tickText(t.label)}</text>`)}
-                ${axes.y.ticks.map((t) => svg`<text x="58" y=${t.position} text-anchor="end" aria-label=${t.label}>${tickText(t.label)}</text>`)}
-                <text x=${g.width / 2} y=${g.height - 8} text-anchor="middle">${axes.xLabel}</text>
-                <text x="64" y="14">${axes.yLabel}</text>
-              </svg>
-            </div>`
-          : nothing
-      }
-      ${
-        data
-          ? html`${
-                g.legend.some((l) => l.label)
-                  ? html`<ul aria-label="Series">
-                      ${g.legend.map((l) => html`<li><span aria-hidden="true" style=${`color:${seriesColor(g, l.id)}`}>${seriesSymbol(g, l.id)}</span> ${l.label}</li>`)}
-                    </ul>`
-                  : nothing
-              }
-              <div part="data">
-                <table>
-                  <caption>
-                    ${label}: ${valueLabel}
-                  </caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">Select</th>
-                      ${g.result.fields.map((f) => html`<th scope="col">${f.label}${f.type.unit ? ` (${f.type.unit.symbol})` : ''}</th>`)}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${pageRows.map(
-                      (row) =>
-                        html`<tr>
-                          <td>
-                            <button
-                              type="button"
-                              aria-pressed=${this.selectedIdentity === row.identity && (this.selectedResult ? this.refKey(this.selectedResult) === this.refKey(g.result.ref) : this.singleResult) ? 'true' : 'false'}
-                              aria-label=${`Select ${g.result.identity.map((k) => exactLabel(row.values[k]!)).join(', ')}`}
-                              @click=${() => this.select(row.identity, g.result)}
-                            >
-                              Select
-                            </button>
-                          </td>
-                          ${g.result.fields.map((f) => html`<td>${exactLabel(row.values[f.id]!)}</td>`)}
-                        </tr>`,
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              ${
-                displayed.length > 25
-                  ? html`<nav aria-label="Plot data pages">
-                      <button
-                        type="button"
-                        ?disabled=${page === 0}
-                        @click=${() => {
-                          this.page = page - 1;
-                        }}
-                      >
-                        Previous</button
-                      ><span
-                        >Rows ${page * 25 + 1}–${Math.min((page + 1) * 25, displayed.length)} of ${displayed.length}
-                        displayed</span
-                      ><button
-                        type="button"
-                        ?disabled=${(page + 1) * 25 >= displayed.length}
-                        @click=${() => {
-                          this.page = page + 1;
-                        }}
-                      >
-                        Next
-                      </button>
-                    </nav>`
-                  : nothing
-              } `
-          : nothing
-      }
+      ${graphic ? this.renderGraphic(g, label, scope) : nothing}
+      ${data ? this.renderData(g, label, valueLabel, displayed, pageRows, page) : nothing}
     </figure>`;
+  }
+
+  private displayedRows(
+    g: PlotGeometry,
+    displayedIdentities?: readonly string[],
+  ): readonly PlotGeometry['rows'][number][] {
+    if (displayedIdentities === undefined) return g.rows;
+    const identities = new Set(displayedIdentities);
+    return g.rows.filter((row) => identities.has(row.identity));
+  }
+
+  private renderMetadata(g: PlotGeometry, label: string, scope: string, displayedCount: number): unknown {
+    const precision = g.result.precision;
+    return html`<figcaption>${label}</figcaption>
+      <p part="scope">
+        ${scope}. ${g.rows.length} loaded
+        rows.${displayedCount !== g.rows.length ? ` ${displayedCount} rows in this display partition.` : ''}
+      </p>
+      ${g.result.period ? html`<p>${g.result.period.interpretation} (${g.result.period.timezone})</p>` : nothing}
+      ${g.result.filters.length ? html`<p>Filtered result (${g.result.filters.length} applied conditions).</p>` : nothing}
+      ${precision.kind === 'approximate' ? this.renderApproximation(precision) : nothing}`;
+  }
+
+  private renderApproximation(precision: Extract<Result['precision'], { kind: 'approximate' }>): unknown {
+    let uncertainty: string;
+    if (precision.uncertainty.kind === 'unquantified') uncertainty = precision.uncertainty.reason;
+    else uncertainty = precision.uncertainty.interpretation;
+    return html`<p>Approximate values: ${precision.method}. ${uncertainty}</p>`;
+  }
+
+  private renderAxisNotice(g: PlotGeometry, graphic: boolean): unknown {
+    if (!graphic || g.axes === undefined) return nothing;
+    const hasLongLabel = [...g.axes.x.ticks, ...g.axes.y.ticks].some((tick) => tick.label.length > 10);
+    return hasLongLabel ? html`<p>Axis labels are shortened. Exact values are listed below.</p>` : nothing;
+  }
+
+  private renderGraphic(g: PlotGeometry, label: string, scope: string): unknown {
+    const axes = g.axes;
+    if (axes === undefined) return nothing;
+    const axisLeft = g.axisLeft ?? 64;
+    return html`<div part="viewport" style=${`width:${g.width}px;height:${g.height}px`}>
+      ${this.renderer === 'canvas' ? html`<canvas part="canvas" aria-hidden="true"></canvas>` : nothing}
+      <svg
+        viewBox=${`0 0 ${g.width} ${g.height}`}
+        width=${g.width}
+        height=${g.height}
+        role="img"
+        aria-label=${`${label}. ${scope}. Values and selection are available in the data table below.`}
+      >
+        ${this.renderer === 'svg' ? svgPlotMarks(g) : nothing}
+        <path d=${`M${axisLeft},24V${g.height - 48}H${g.width - 24}`} fill="none" stroke="currentColor"></path>
+        ${axes.x.ticks.map((tick) => svg`<text x=${tick.position} y=${g.height - 30} text-anchor="middle" aria-label=${tick.label}>${tickText(tick.label)}</text>`)}
+        ${axes.y.ticks.map((tick) => svg`<text x=${axisLeft - 6} y=${tick.position} text-anchor="end" aria-label=${tick.label}>${tickText(tick.label)}</text>`)}
+        <text x=${g.width / 2} y=${g.height - 8} text-anchor="middle">${axes.xLabel}</text>
+        <text x=${axisLeft} y="14">${axes.yLabel}</text>
+      </svg>
+    </div>`;
+  }
+
+  private renderData(
+    g: PlotGeometry,
+    label: string,
+    valueLabel: string,
+    displayed: readonly PlotGeometry['rows'][number][],
+    pageRows: readonly PlotGeometry['rows'][number][],
+    page: number,
+  ): unknown {
+    return html`${this.renderLegend(g)}${this.renderTable(g, label, valueLabel, pageRows)}${this.renderPager(displayed.length, page)}`;
+  }
+
+  private renderLegend(g: PlotGeometry): unknown {
+    if (!g.legend.some((entry) => entry.label)) return nothing;
+    return html`<ul aria-label="Series">
+      ${g.legend.map((entry) => html`<li><span aria-hidden="true" style=${`color:${seriesColor(g, entry.id)}`}>${seriesSymbol(g, entry.id)}</span> ${entry.label}</li>`)}
+    </ul>`;
+  }
+
+  private renderTable(
+    g: PlotGeometry,
+    label: string,
+    valueLabel: string,
+    rows: readonly PlotGeometry['rows'][number][],
+  ): unknown {
+    return html`<div part="data">
+      <table>
+        <caption>
+          ${label}: ${valueLabel}
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Select</th>
+            ${g.result.fields.map((field) => html`<th scope="col">${field.label}${field.type.unit ? ` (${field.type.unit.symbol})` : ''}</th>`)}
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map((row) => this.renderTableRow(g, row))}
+        </tbody>
+      </table>
+    </div>`;
+  }
+
+  private renderTableRow(g: PlotGeometry, row: PlotGeometry['rows'][number]): unknown {
+    const identityLabel = g.result.identity.map((key) => exactLabel(row.values[key]!)).join(', ');
+    return html`<tr>
+      <td>
+        <button
+          type="button"
+          aria-pressed=${this.selectionPressed(row.identity, g.result) ? 'true' : 'false'}
+          aria-label=${`Select ${identityLabel}`}
+          @click=${() => this.select(row.identity, g.result)}
+        >
+          Select
+        </button>
+      </td>
+      ${g.result.fields.map((field) => html`<td>${exactLabel(row.values[field.id]!)}</td>`)}
+    </tr>`;
+  }
+
+  private selectionPressed(identity: string, result: Result): boolean {
+    if (this.selectedIdentity !== identity) return false;
+    if (this.selectedResult !== undefined) return this.refKey(this.selectedResult) === this.refKey(result.ref);
+    return this.singleResult;
+  }
+
+  private renderPager(displayedCount: number, page: number): unknown {
+    if (displayedCount <= 25) return nothing;
+    return html`<nav aria-label="Plot data pages">
+      <button type="button" ?disabled=${page === 0} @click=${() => this.movePage(page - 1)}>Previous</button>
+      <span>Rows ${page * 25 + 1}–${Math.min((page + 1) * 25, displayedCount)} of ${displayedCount} displayed</span>
+      <button type="button" ?disabled=${(page + 1) * 25 >= displayedCount} @click=${() => this.movePage(page + 1)}>
+        Next
+      </button>
+    </nav>`;
+  }
+
+  private movePage(page: number): void {
+    this.page = page;
   }
 }

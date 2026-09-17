@@ -19,7 +19,6 @@ if (
   throw new Error('Release metadata has an invalid public package order.');
 
 export const RELEASE_VERSION = metadata.version;
-export const RELEASE_LINE = metadata.line;
 export const PUBLIC_PACKAGES = Object.freeze([...metadata.publicPackages]);
 export const PUBLIC_PACKAGE_NAMES = Object.freeze(PUBLIC_PACKAGES.map((name) => `@aeliqo/${name}`));
 

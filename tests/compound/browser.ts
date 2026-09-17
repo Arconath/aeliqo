@@ -132,10 +132,7 @@ fixture.append(comparison);
 const breakdown = document.createElement('aeliqo-breakdown') as any;
 breakdown.id = 'breakdown';
 Object.assign(breakdown, {
-  groups: [
-    { key: 'north', label: 'North', value: { decimal: '0.25' }, displayValue: '25%', recordCount: 1 },
-    { key: 'legacy', label: 'Legacy sufficient stats only', numerator: 1, denominator: 2, recordCount: 1 },
-  ],
+  groups: [{ key: 'north', label: 'North', value: { decimal: '0.25' }, displayValue: '25%', recordCount: 1 }],
   rows,
   columns,
   identity: ['id'],

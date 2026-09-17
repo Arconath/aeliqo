@@ -250,7 +250,8 @@ assert.equal(nodeReport.trendRows, 60);
 await writeFile(
   join(consumer, 'browser-entry.ts'),
   `
-import {registerAeliqoElements, type AeliqoRegionElement} from '@aeliqo/web';
+import {registerAeliqoElements} from '@aeliqo/web/register';
+import type {AeliqoRegionElement} from '@aeliqo/web/region';
 import {createHrViewSession} from './examples/vertical-slice/src/view-session.js';
 declare global { interface Window { hrFixture?: Awaited<ReturnType<typeof createHrViewSession>>; } }
 registerAeliqoElements();

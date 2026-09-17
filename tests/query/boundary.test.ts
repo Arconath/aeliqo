@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { createQueryFunctionRegistry, type Catalog, type Outcome } from '../../packages/core/src/index.js';
-import { createQueryPlanner } from '../../packages/core/src/query/planner.js';
+import { createQueryFunctionRegistry } from '../../packages/core/src/expressions/index.js';
+import type { Catalog, Outcome } from '../../packages/core/src/contracts/types.js';
+import { createQueryPlanner } from '../../packages/core/src/query/index.js';
 import type { LogicalPlan, QuerySource, RelationalQuery } from '../../packages/core/src/query/types.js';
 const unwrap = <T>(outcome: Outcome<T>): T => {
   if (!outcome.ok) throw new Error(JSON.stringify(outcome.diagnostics));

@@ -57,6 +57,45 @@ function timeoutError(timeoutMs: number): Error {
   return error;
 }
 
+function nextBeforeDeadline(
+  iterator: AsyncIterator<ResultEvent>,
+  signal: AbortSignal | undefined,
+  timeoutMs: number,
+  remaining: number,
+): Promise<IteratorResult<ResultEvent>> {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const finish = (callback: () => void): void => {
+      if (settled) return;
+      settled = true;
+      if (timer !== undefined) clearTimeout(timer);
+      signal?.removeEventListener('abort', onAbort);
+      callback();
+    };
+    const onAbort = (): void => finish(() => reject(abortError(signal?.reason)));
+    if (signal !== undefined) {
+      signal.addEventListener('abort', onAbort, { once: true });
+      if (signal.aborted) {
+        onAbort();
+        return;
+      }
+    }
+    timer = setTimeout(() => finish(() => reject(timeoutError(timeoutMs))), remaining);
+    let pending: Promise<IteratorResult<ResultEvent>>;
+    try {
+      pending = Promise.resolve(iterator.next());
+    } catch (error) {
+      finish(() => reject(error));
+      return;
+    }
+    pending.then(
+      (value) => finish(() => resolve(value)),
+      (error: unknown) => finish(() => reject(error)),
+    );
+  });
+}
+
 /**
  * Collects a runtime result stream under explicit event, row and time bounds.
  * On cancellation, timeout or overflow the iterator is asked to close before
@@ -106,37 +145,7 @@ export async function collectResultEvents(
       if (signal?.aborted) throw abortError(signal.reason);
       const remaining = deadline - monotonicNow();
       if (remaining < 0) throw timeoutError(timeoutMs);
-      const next = await new Promise<IteratorResult<ResultEvent>>((resolve, reject) => {
-        let settled = false;
-        let timer: ReturnType<typeof setTimeout> | undefined;
-        const finish = (callback: () => void): void => {
-          if (settled) return;
-          settled = true;
-          if (timer !== undefined) clearTimeout(timer);
-          signal?.removeEventListener('abort', onAbort);
-          callback();
-        };
-        const onAbort = (): void => finish(() => reject(abortError(signal?.reason)));
-        if (signal !== undefined) {
-          signal.addEventListener('abort', onAbort, { once: true });
-          if (signal.aborted) {
-            onAbort();
-            return;
-          }
-        }
-        timer = setTimeout(() => finish(() => reject(timeoutError(timeoutMs))), remaining);
-        let pending: Promise<IteratorResult<ResultEvent>>;
-        try {
-          pending = Promise.resolve(iterator.next());
-        } catch (error) {
-          finish(() => reject(error));
-          return;
-        }
-        pending.then(
-          (value) => finish(() => resolve(value)),
-          (error: unknown) => finish(() => reject(error)),
-        );
-      });
+      const next = await nextBeforeDeadline(iterator, signal, timeoutMs, remaining);
       if (next.done) {
         exhausted = true;
         return collected;

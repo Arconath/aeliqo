@@ -1,7 +1,5 @@
-export { createAgentMeaningAuthoring, createMeaningProposalAuthoring } from './authoring.js';
+export { createAgentMeaningAuthoring } from './authoring.js';
 export {
-  createAgentMeaningActivationCapability,
-  createAgentMeaningProposalCapability,
   createMeaningActivationCapability,
   createMeaningProposalCapability,
   parseMeaningActivationInput,

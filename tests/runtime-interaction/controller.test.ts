@@ -20,7 +20,7 @@ import {
   type LocalSnapshot,
   type QueryBudget,
 } from '../../packages/runtime/src/data/index.js';
-import { createStandardFunctionRegistry } from '../../packages/core/src/index.js';
+import { createStandardFunctionRegistry } from '../../packages/core/src/expressions/index.js';
 import type { Catalog, QuerySpec, ResultRef, Task } from '../../packages/core/src/index.js';
 
 const budget: QueryBudget = {
@@ -81,7 +81,7 @@ async function localResult(): Promise<{ readonly handle: ResultHandle; readonly 
   const planned = await service.plan({
     version: '1',
     requestId: 'interaction-query',
-    target: { outputId: 'rows' },
+    target: { taskId: 'interaction-query', outputId: 'rows' },
     catalogRevision: catalog.revision,
     query: query(),
     budget,
@@ -194,7 +194,7 @@ async function temporalResult(
   const planned = await service.plan({
     version: '1',
     requestId: 'interaction-temporal-query',
-    target: { outputId: 'rows' },
+    target: { taskId: 'interaction-temporal-query', outputId: 'rows' },
     catalogRevision: temporalCatalog.revision,
     query: querySpec,
     budget,

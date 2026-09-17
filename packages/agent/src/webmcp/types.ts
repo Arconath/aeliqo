@@ -1,5 +1,4 @@
 import type { Outcome } from '@aeliqo/core';
-import type { AgentCapabilityReceipt } from '../capabilities/types.js';
 import type { AgentToolDefinition, AgentToolEndpoint, AgentToolInputSchema } from '../protocol/types.js';
 
 /** The execution context supplied by the native WebMCP host. */
@@ -39,13 +38,22 @@ export interface WebMcpDetection {
   readonly reason?: string;
 }
 
+export interface WebMcpDetectionOptions {
+  /** Explicit host document. The agent package never reads an ambient DOM global. */
+  readonly document?: unknown;
+  /** Set by the host integration after it supplies the corresponding context. */
+  readonly evidence?: 'native' | 'simulated';
+}
+
 export interface WebMcpAdapterOptions {
   /** The host-owned endpoint; its transport must be `webmcp`. */
   readonly endpoint: AgentToolEndpoint;
-  /** Explicit modelContext injection is for tests or an app-owned host and is simulated evidence. */
+  /** Explicit modelContext injection comes from a browser or app-owned host. */
   readonly modelContext?: WebMcpModelContext;
-  /** Explicit document injection is also simulated evidence. Omit it to inspect the real global document. */
+  /** Explicit host document injection; the adapter never reads a global document. */
   readonly document?: unknown;
+  /** Evidence supplied by the host integration. Context injection defaults to simulated. */
+  readonly evidence?: 'native' | 'simulated';
 }
 
 export interface WebMcpRegisterOptions {
@@ -66,5 +74,3 @@ export interface WebMcpAdapter {
   readonly register: (options?: WebMcpRegisterOptions) => Promise<Outcome<readonly WebMcpRegistration[]>>;
   readonly close: () => void;
 }
-
-export type { AgentToolDefinition, AgentToolEndpoint, AgentToolInputSchema, AgentCapabilityReceipt };

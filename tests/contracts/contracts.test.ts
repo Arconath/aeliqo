@@ -8,7 +8,11 @@ import {
   parseCatalog,
   parseContract,
   parseExperience,
+  parseInteraction,
+  parsePresentationPlan,
+  parseQuery,
   parseResult,
+  parseResultEvent,
   parseTask,
   serializeContract,
 } from '../../packages/core/src/index.js';
@@ -199,6 +203,10 @@ describe('canonical contract wire fixtures', () => {
       ['task', parseTask, task],
       ['result', parseResult, result],
       ['experience', parseExperience, experience],
+      ['query', parseQuery, query],
+      ['interaction', parseInteraction, interaction],
+      ['presentation-plan', parsePresentationPlan, presentationPlan],
+      ['result-event', parseResultEvent, resultEvents.error],
     ];
     for (const [kind, alias, fixture] of aliases) {
       const generic = parse(kind, fixture);

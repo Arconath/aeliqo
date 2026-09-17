@@ -6,6 +6,7 @@ test('the public playground uses the app facade in guided and manual modes', asy
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/playground/');
+  await expect(page.locator('#pg-boot')).toBeHidden();
   await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
   await expect(page.locator('aeliqo-table')).toContainText('Ada Chen');
   await page.getByRole('button', { name: 'Manual controls' }).click();
@@ -98,19 +99,37 @@ test('playground exports the selected scenario as an installable credential-free
   await expect(page.locator('#pg-status')).toContainText('installable Knowledge project');
 });
 
-test('home, deep docs, search, theme and narrow playground remain navigable', async ({ page }) => {
+test('home, deep docs, search, and narrow playground remain navigable', async ({ page }) => {
   const errors: string[] = [];
+  const resizeObserverErrors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
+  await page.exposeFunction('__aeliqoRecordResizeObserverError', (message: string) => {
+    resizeObserverErrors.push(message);
+  });
+  await page.addInitScript(() => {
+    window.addEventListener('error', (event) => {
+      if (!event.message.startsWith('ResizeObserver loop')) return;
+      void (
+        window as unknown as Window & {
+          __aeliqoRecordResizeObserverError(message: string): void;
+        }
+      ).__aeliqoRecordResizeObserverError(event.message);
+    });
+  });
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/');
+  await expect(page.locator('#demo-status')).toContainText('4 of 4');
+  await page.screenshot({ path: 'artifacts/site-browser/home-desktop.png', fullPage: true });
   await page.keyboard.press('Tab');
   await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.locator('main')).toBeFocused();
   await page.locator('#team').selectOption('Engineering');
   await expect(page.locator('#demo-status')).toContainText('2 of 4');
-  await page.locator('#theme').selectOption('dark');
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.screenshot({ path: 'artifacts/site-browser/home-mobile.png', fullPage: true });
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/concepts/');
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(page.getByRole('heading', { name: 'Watch the contract become a view.', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Search docs' }).click();
   await page.getByRole('searchbox').fill('nonsensezzzzz');
@@ -129,6 +148,8 @@ test('home, deep docs, search, theme and narrow playground remain navigable', as
   await expect(page.getByRole('button', { name: 'Inspect', exact: true })).toBeFocused();
   await page.screenshot({ path: 'artifacts/site-browser/playground-mobile.png', fullPage: true });
   expect(errors).toEqual([]);
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  expect(resizeObserverErrors).toEqual([]);
 });
 
 test('home proof uses the public adaptive facade and remains legible on narrow forced-color surfaces', async ({
@@ -142,7 +163,7 @@ test('home proof uses the public adaptive facade and remains legible on narrow f
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await expect((await new AxeBuilder({ page }).include('main').analyze()).violations).toEqual([]);
   await page.locator('#team').selectOption('Engineering');
-  await page.getByRole('button', { name: 'Render this intent', exact: true }).click();
+  await page.getByRole('button', { name: 'Apply filter', exact: true }).click();
   await expect(page.locator('#demo-status')).toContainText('2 of 4 synthetic people in an exact Result');
   await expect(records).toContainText('Sam Rivera');
   await expect(records).not.toContainText('Ada Chen');
@@ -172,7 +193,8 @@ test('every catalog route mounts its actual component and content remains readab
     await page.goto(`/components/${component.id}/`);
     const id = component.id.slice(component.id.indexOf('.') + 1);
     await expect(page.locator(`[data-component-preview] aeliqo-${id}`).first()).toBeAttached();
-    await expect(page.locator('[data-component-preview]')).toContainText('Expected result');
+    await expect(page.getByText(/Expected result:/)).toBeVisible();
+    await expect(page.locator(`[data-example-code="${id}"]`)).toContainText('registerAeliqoElements');
   }
   expect(errors).toEqual([]);
   const context = await browser.newContext({ javaScriptEnabled: false });

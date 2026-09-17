@@ -1,5 +1,5 @@
-import { parseContract, parseWireValue, WIRE_LIMITS } from '@aeliqo/core';
-import type { Diagnostic } from '@aeliqo/core';
+import { parseTask, parseWireValue, WIRE_LIMITS } from '@aeliqo/core';
+import type { Contract, Diagnostic } from '@aeliqo/core';
 import type { RegionDocument, RegionDocumentInput, RegionPersistence } from './types.js';
 import type { RegionHistoryEntry, RegionOutcome, RegionReadSet, RegionSnapshot } from '../regions/types.js';
 
@@ -52,9 +52,45 @@ function validId(value: unknown): value is string {
   );
 }
 
+function recordValue(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function hasOnlyKeys(record: Record<string, unknown>, allowed: readonly string[]): boolean {
+  return Object.keys(record).every((key) => allowed.includes(key));
+}
+
+function validReadSetRevisions(record: Record<string, unknown>, fields: readonly string[]): boolean {
+  return fields
+    .filter((field) => field !== 'results' && field !== 'dataRevision')
+    .every((field) => validId(record[field]));
+}
+
+function validReadSetResult(value: unknown, scopeDigest: unknown): value is Record<string, unknown> {
+  if (!recordValue(value)) return false;
+  const fields = ['id', 'revision', 'outputId', 'queryDigest', 'scopeDigest'];
+  return (
+    Object.keys(value).length === fields.length &&
+    fields.every((field) => validId(value[field])) &&
+    value.scopeDigest === scopeDigest
+  );
+}
+
+function validReadSetResults(value: unknown, scopeDigest: unknown): boolean {
+  if (!Array.isArray(value) || value.length > WIRE_LIMITS.array) return false;
+  const refs = new Set<string>();
+  for (const ref of value) {
+    if (!validReadSetResult(ref, scopeDigest)) return false;
+    const key = canonical(ref);
+    if (refs.has(key)) return false;
+    refs.add(key);
+  }
+  return true;
+}
+
 function validReadSet(value: unknown): value is RegionReadSet {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
-  const record = value as Record<string, unknown>;
+  if (!recordValue(value)) return false;
+  const record = value;
   const fields = [
     'scopeDigest',
     'policyRevision',
@@ -66,12 +102,8 @@ function validReadSet(value: unknown): value is RegionReadSet {
     'results',
     'dataRevision',
   ];
-  if (Object.keys(record).some((key) => !fields.includes(key)) || fields.some((field) => !Object.hasOwn(record, field)))
-    return false;
-  if (
-    fields.filter((field) => field !== 'results' && field !== 'dataRevision').some((field) => !validId(record[field]))
-  )
-    return false;
+  if (!hasOnlyKeys(record, fields) || !fields.every((field) => Object.hasOwn(record, field))) return false;
+  if (!validReadSetRevisions(record, fields)) return false;
   if (
     !Number.isSafeInteger(record.dataRevision) ||
     (record.dataRevision as number) < 0 ||
@@ -79,13 +111,37 @@ function validReadSet(value: unknown): value is RegionReadSet {
     record.results.length > WIRE_LIMITS.array
   )
     return false;
+  return validReadSetResults(record.results, record.scopeDigest);
+}
+
+const HISTORY_FIELDS = [
+  'kind',
+  'taskRevision',
+  'regionRevision',
+  'dataRevision',
+  'stateDigest',
+  'changedResults',
+  'requestId',
+  'reason',
+  'at',
+] as const;
+
+function validChangedResult(value: unknown, scopeDigest: string): value is Record<string, unknown> {
+  if (!recordValue(value)) return false;
+  const fields = ['id', 'revision', 'outputId', 'queryDigest', 'scopeDigest'];
+  return (
+    Object.keys(value).length === fields.length &&
+    fields.every((field) => validId(value[field])) &&
+    value.scopeDigest === scopeDigest
+  );
+}
+
+function validChangedResults(value: unknown, scopeDigest: string): boolean {
+  if (value === undefined) return true;
+  if (!Array.isArray(value) || value.length > WIRE_LIMITS.array) return false;
   const refs = new Set<string>();
-  for (const ref of record.results) {
-    if (ref === null || typeof ref !== 'object' || Array.isArray(ref)) return false;
-    const candidate = ref as Record<string, unknown>;
-    const names = ['id', 'revision', 'outputId', 'queryDigest', 'scopeDigest'];
-    if (Object.keys(candidate).length !== names.length || names.some((name) => !validId(candidate[name]))) return false;
-    if (candidate.scopeDigest !== record.scopeDigest) return false;
+  for (const ref of value) {
+    if (!validChangedResult(ref, scopeDigest)) return false;
     const key = canonical(ref);
     if (refs.has(key)) return false;
     refs.add(key);
@@ -93,68 +149,54 @@ function validReadSet(value: unknown): value is RegionReadSet {
   return true;
 }
 
+function validHistoryIdentity(record: Record<string, unknown>): boolean {
+  return (
+    ['commit', 'data', 'revoke'].includes(String(record.kind)) &&
+    validId(record.taskRevision) &&
+    validId(record.regionRevision)
+  );
+}
+
+function validHistoryClock(record: Record<string, unknown>): boolean {
+  return (
+    Number.isSafeInteger(record.dataRevision) &&
+    (record.dataRevision as number) >= 0 &&
+    Number.isSafeInteger(record.at) &&
+    (record.at as number) >= 0
+  );
+}
+
+function validHistoryMetadata(record: Record<string, unknown>): boolean {
+  const digestValid = record.stateDigest === undefined || validId(record.stateDigest);
+  const requestValid = record.requestId === undefined || validId(record.requestId);
+  const reasonValid =
+    record.reason === undefined ||
+    (typeof record.reason === 'string' && record.reason.length > 0 && record.reason.length <= WIRE_LIMITS.text);
+  return digestValid && requestValid && reasonValid;
+}
+
+function validHistoryEntry(entry: unknown, scopeDigest: string): boolean {
+  if (!recordValue(entry)) return false;
+  return (
+    hasOnlyKeys(entry, HISTORY_FIELDS) &&
+    validHistoryIdentity(entry) &&
+    validHistoryClock(entry) &&
+    validHistoryMetadata(entry) &&
+    validChangedResults(entry.changedResults, scopeDigest)
+  );
+}
+
 function validHistory(value: unknown, scopeDigest: string): value is readonly RegionHistoryEntry[] {
-  if (!Array.isArray(value) || value.length > WIRE_LIMITS.array) return false;
-  return value.every((entry) => {
-    if (entry === null || typeof entry !== 'object' || Array.isArray(entry)) return false;
-    const record = entry as Record<string, unknown>;
-    const allowed = [
-      'kind',
-      'taskRevision',
-      'regionRevision',
-      'dataRevision',
-      'stateDigest',
-      'changedResults',
-      'requestId',
-      'reason',
-      'at',
-    ];
-    if (Object.keys(record).some((key) => !allowed.includes(key))) return false;
-    if (
-      !['commit', 'data', 'revoke'].includes(String(record.kind)) ||
-      !validId(record.taskRevision) ||
-      !validId(record.regionRevision)
-    )
-      return false;
-    if (
-      !Number.isSafeInteger(record.dataRevision) ||
-      (record.dataRevision as number) < 0 ||
-      !Number.isSafeInteger(record.at) ||
-      (record.at as number) < 0
-    )
-      return false;
-    if (record.stateDigest !== undefined && !validId(record.stateDigest)) return false;
-    if (record.requestId !== undefined && !validId(record.requestId)) return false;
-    if (
-      record.reason !== undefined &&
-      (typeof record.reason !== 'string' || record.reason.length === 0 || record.reason.length > WIRE_LIMITS.text)
-    )
-      return false;
-    if (record.changedResults !== undefined) {
-      if (!Array.isArray(record.changedResults) || record.changedResults.length > WIRE_LIMITS.array) return false;
-      const refs = new Set<string>();
-      for (const ref of record.changedResults) {
-        if (ref === null || typeof ref !== 'object' || Array.isArray(ref)) return false;
-        const candidate = ref as Record<string, unknown>;
-        if (
-          Object.keys(candidate).length !== 5 ||
-          ['id', 'revision', 'outputId', 'queryDigest', 'scopeDigest'].some((name) => !validId(candidate[name]))
-        )
-          return false;
-        if (candidate.scopeDigest !== scopeDigest) return false;
-        const key = canonical(ref);
-        if (refs.has(key)) return false;
-        refs.add(key);
-      }
-    }
-    return true;
-  });
+  return (
+    Array.isArray(value) &&
+    value.length <= WIRE_LIMITS.array &&
+    value.every((entry) => validHistoryEntry(entry, scopeDigest))
+  );
 }
 
 function validateDocument(input: unknown): RegionOutcome<RegionDocument> {
-  if (input === null || typeof input !== 'object' || Array.isArray(input))
-    return failure('runtime.region-invalid', 'The persisted region document must be an object.');
-  const value = input as Record<string, unknown>;
+  if (!recordValue(input)) return failure('runtime.region-invalid', 'The persisted region document must be an object.');
+  const value = input;
   const allowed = [
     'version',
     'id',
@@ -166,28 +208,22 @@ function validateDocument(input: unknown): RegionOutcome<RegionDocument> {
     'stateDigest',
     'history',
   ];
-  if (Object.keys(value).some((key) => !allowed.includes(key)))
+  if (!hasOnlyKeys(value, allowed))
     return failure('runtime.region-invalid', 'The persisted region document contains an unknown property.');
-  if (
-    value.version !== VERSION ||
-    !validId(value.id) ||
-    !validId(value.taskRevision) ||
-    !validId(value.regionRevision) ||
-    !validId(value.stateDigest)
-  )
+  if (!validDocumentIdentity(value))
     return failure('runtime.region-invalid', 'The persisted region document has an unsupported identity or version.');
-  if (!Number.isSafeInteger(value.dataRevision) || (value.dataRevision as number) < 0 || !validReadSet(value.readSet))
+  if (!validDocumentReadSet(value))
     return failure('runtime.region-invalid', 'The persisted region revisions or read set are invalid.');
   const readSet = value.readSet as RegionReadSet;
-  if (value.dataRevision !== readSet.dataRevision || !validHistory(value.history, readSet.scopeDigest))
+  if (!validDocumentHistory(value, readSet))
     return failure('runtime.region-invalid', 'The persisted data revision or history is invalid.');
-  const task = parseContract('task', value.task);
-  if (!task.ok || task.value.regionId !== value.id || task.value.revision !== value.taskRevision)
+  const task = persistedTask(value);
+  if (task === undefined)
     return failure('runtime.region-invalid', 'The persisted Task does not belong to the region revision.');
   const document: RegionDocument = frozen({
     version: VERSION,
     id: value.id as string,
-    task: task.value,
+    task,
     taskRevision: value.taskRevision as string,
     regionRevision: value.regionRevision as string,
     dataRevision: value.dataRevision as number,
@@ -196,6 +232,30 @@ function validateDocument(input: unknown): RegionOutcome<RegionDocument> {
     history: value.history as readonly RegionHistoryEntry[],
   });
   return { ok: true, value: document };
+}
+
+function validDocumentIdentity(value: Record<string, unknown>): boolean {
+  return (
+    value.version === VERSION &&
+    validId(value.id) &&
+    validId(value.taskRevision) &&
+    validId(value.regionRevision) &&
+    validId(value.stateDigest)
+  );
+}
+
+function validDocumentReadSet(value: Record<string, unknown>): boolean {
+  return Number.isSafeInteger(value.dataRevision) && (value.dataRevision as number) >= 0 && validReadSet(value.readSet);
+}
+
+function validDocumentHistory(value: Record<string, unknown>, readSet: RegionReadSet): boolean {
+  return value.dataRevision === readSet.dataRevision && validHistory(value.history, readSet.scopeDigest);
+}
+
+function persistedTask(value: Record<string, unknown>): Contract<'task'> | undefined {
+  const task = parseTask(value.task);
+  if (!task.ok || task.value.regionId !== value.id || task.value.revision !== value.taskRevision) return undefined;
+  return task.value;
 }
 
 export function exportRegionDocument(

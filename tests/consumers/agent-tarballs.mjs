@@ -1,6 +1,7 @@
 import { RELEASE_VERSION } from '../../scripts/release/metadata.mjs';
 /**
- * Build, install and execute the agent boundary from actual package tarballs
+ * Build,
+  install and execute the agent boundary from actual package tarballs
  * outside the pnpm workspace. This is a bounded consumer proof for the
  * installed core/runtime/agent graph; it does not certify every adapter or host.
  */
@@ -93,6 +94,7 @@ run(
     'vite@8.2.2',
     '@playwright/test@1.63.0',
     '@types/node@24.13.3',
+    'zod@4.5.4',
   ],
   consumer,
 );
@@ -121,6 +123,7 @@ for (const [name, version] of Object.entries({
   vite: '8.2.2',
   '@playwright/test': '1.63.0',
   '@types/node': '24.13.3',
+  zod: '4.5.4',
 })) {
   assert.equal(lock.packages[`node_modules/${name}`].version, version);
   assert.match(lock.packages[`node_modules/${name}`].integrity, /^sha512-/);
@@ -146,84 +149,199 @@ const compositionFixture = {
   environment: fixture.environment,
 };
 const probe = `
-import {createNarrativeVerifier, createAgentBinder, containAgentProposal,createAgentCapabilityRegistry,createAgentCapabilityDispatcher,createTaskBindingCapability,createAgentSession,createAgentCompositionRegistry,validateAgentComposition} from '@aeliqo/agent';
-import {createStandardFunctionRegistry,validatePresentationPlan} from '@aeliqo/core';
-import {createLocalDataService} from '@aeliqo/runtime/data';
-import {createResultStore} from '@aeliqo/runtime/results';
+import { createAppToolEndpoint } from '@aeliqo/agent';
+import {
+  createAgentCapabilityDispatcher,
+  createAgentCapabilityRegistry,
+  createAgentCompositionRegistry,
+  validateAgentComposition,
+} from '@aeliqo/agent/capabilities';
+import { createAgentSession } from '@aeliqo/agent/session';
+import { defineResource, parseWireValue } from '@aeliqo/core';
+import { createQueryFunctionRegistry } from '@aeliqo/core/expressions';
+import { validatePresentationPlan } from '@aeliqo/core/presentation';
+import { createAeliqoRuntime } from '@aeliqo/runtime/app';
+import { createLocalDataService } from '@aeliqo/runtime/data';
+import { z } from 'zod';
+
 export async function probe() {
- const check = (value, message) => {if (!value) throw Error(message);};
- const ref={id:'result',revision:'1',outputId:'rows',queryDigest:'query',scopeDigest:'scope'};
- const type={value:'decimal',nullable:false};
- const descriptor={version:'1',ref,taskId:'task',fields:[{id:'id',label:'ID',type:{value:'text',nullable:false},role:'identity'},{id:'value',label:'Value',type,role:'measure'}],identity:['id'],rowGrain:['id'],counts:{loaded:1,population:{kind:'exact',value:1,populationDigest:'population'}},precision:{kind:'exact'},coverage:{kind:'complete',populationDigest:'population'},consistency:{kind:'snapshot',snapshotId:'snapshot',sourceRevisions:{source:'1'}},evidence:{kind:'observed',source:{id:'source',revision:'1'}},filters:[],warnings:[],lineage:[]};
- const store=createResultStore();
- const handle=store.begin({principalKey:'principal',scopeDigest:'scope',policyRevision:'policy',catalogRevision:'catalog',functionRegistryDigest:'functions',queryDigest:'query',sourceRevision:'1',outputId:'rows',taskId:'task',requestId:'request',populationDigest:'population'});
- async function* events(){yield {kind:'descriptor',descriptor};yield {kind:'batch',result:ref,sequence:0,rows:[{id:'a',value:{decimal:'9007199254740993.01'}}]};yield {kind:'complete',result:ref,finalCoverage:descriptor.coverage};}
- for await(const _ of handle.subscribe(events())){}
- const verifier=createNarrativeVerifier({readContext:()=>({ok:true,value:{principalKey:'principal',scopeDigest:'scope',policyRevision:'policy',catalogRevision:'catalog',functionRegistryDigest:'functions',grants:['result.inspect'],resolveResult:()=>handle}})});
- const claim={version:'1',id:'claim',kind:'value',cell:{result:ref,field:'value',identity:{id:'a'},type,populationDigest:'population',filters:[]},value:{decimal:'9007199254740993.01'}};
- const valid=verifier.verify(claim);check(valid.ok&&valid.value.state==='verified','exact evidence');
- const wrong=verifier.verify({...claim,value:{decimal:'9007199254740993.02'}});check(wrong.ok&&wrong.value.state==='unverified','false value');
- const prose=verifier.verify({version:'1',id:'prose',kind:'inference',text:'Therefore causation.',references:[ref]});check(prose.ok&&prose.value.state==='unverified','prose');
- store.revoke({principalKey:'principal'});check(!verifier.verify(claim).ok&&handle.snapshot().batches.length===0,'revocation');
- store.dispose();
- const registry=createStandardFunctionRegistry();check(registry.ok,'registry');
- const definition={id:'total',revision:'7',label:'Total',explanation:'Sum',output:{value:'decimal',nullable:true},implementation:{kind:'expression',expression:{kind:'call',function:{id:'core.aggregate.sum',revision:'1'},arguments:[{kind:'field',ref:'value'}]}},dependencies:[],functionRegistryDigest:registry.value.digest,origin:'system',lifecycle:'active',scope:'workspace',authority:'approved',aggregation:'additive',aggregationDimensions:[],missingPolicy:'exclude-pair'};
- const catalog={version:'1',revision:'catalog',functionRegistryDigest:registry.value.digest,entities:[{id:'rows',label:'Rows',identity:['id'],rowGrain:['id'],fields:descriptor.fields}],relationships:[],meanings:[definition],capabilities:[]};
- const data=createLocalDataService({snapshot:{catalog,sourceRevision:'source',records:{rows:[{id:'a',value:{decimal:'9007199254740993.01'}}]}}});
- const planned=await data.plan({version:'1',requestId:'plan',catalogRevision:'catalog',target:{taskId:'task',outputId:'total'},query:{entity:'rows',fields:['id'],groupBy:['id'],measures:[{id:'total',revision:'7'}],relations:[],population:{kind:'all-authorized'},order:[]},budget:{maxRows:100,maxBytes:500000,maxMessages:8,maxMilliseconds:10000,maxColumns:20}});check(planned.ok,'analytical plan');
- const accepted=planned.value;const computedStore=createResultStore();const computedHandle=computedStore.begin({requestId:'result',principalKey:'principal',scopeDigest:accepted.scopeDigest,...(accepted.policyRevision===undefined?{}:{policyRevision:accepted.policyRevision}),catalogRevision:accepted.catalogRevision,functionRegistryDigest:accepted.functionRegistryDigest,sourceRevision:accepted.sourceRevision,queryDigest:accepted.queryDigest,outputId:'total',taskId:'task',populationDigest:accepted.populationDigest});
- for await(const _ of computedHandle.subscribe(data.execute(accepted))){}
- const computed=computedHandle.snapshot().descriptor;check(computed,'computed descriptor');const field=computed.fields.find(field=>field.id==='total');check(field.derivation?.revision==='7','metric version preserved');
- const computedVerifier=createNarrativeVerifier({readContext:()=>({ok:true,value:{principalKey:'principal',scopeDigest:accepted.scopeDigest,...(accepted.policyRevision===undefined?{}:{policyRevision:accepted.policyRevision}),catalogRevision:accepted.catalogRevision,functionRegistryDigest:accepted.functionRegistryDigest,grants:['result.inspect'],resolveResult:()=>computedHandle}})});
- const computedClaim={...claim,cell:{result:computed.ref,field:'total',identity:{id:'a'},type:field.type,definition:field.derivation,populationDigest:computed.coverage.populationDigest,filters:computed.filters}};
- const checkedComputed=computedVerifier.verify(computedClaim);check(checkedComputed.ok&&checkedComputed.value.state==='verified','computed grounding');
- const {definition:omitted,...unversioned}=computedClaim.cell;check(!computedVerifier.verify({...computedClaim,cell:unversioned}).ok,'omitted metric version rejected');const current={scopeDigest:accepted.scopeDigest,policyRevision:accepted.policyRevision??'policy',taskRevision:'1',regionRevision:'1',catalogRevision:catalog.revision,experienceRevision:'experience',functionRegistryDigest:registry.value.digest,results:[]};
- const task={version:'1',id:'task',revision:'1',regionId:'region',catalogRevision:catalog.revision,functionRegistryDigest:registry.value.digest,goal:'Show approved totals',kind:'data',outputs:[{id:'total',kind:'query',query:accepted.query,dependsOn:[],delivery:'eager'}],needs:[],assumptions:[]};
- const proposal={requestId:'proposal',targetRegionId:'region',effect:'read',preconditions:current,value:task};
- const binder=createAgentBinder({host:{readContext:()=>({ok:true,value:{principalKey:'principal',regionId:'region',goalEpoch:'goal',current,catalog,functionRegistry:registry.value,grants:['task.propose','catalog.read']}})}});
- let repairs=0;const repaired=await containAgentProposal({requestId:'loop',targetRegionId:'region',goalEpoch:'goal',budget:{maxTurns:3,maxRepairs:1,maxMilliseconds:1000,maxProposalBytes:65536},initial:{...proposal,actor:'model'},propose:()=>{repairs++;return proposal;},binder});check(repaired.ok&&repaired.value.stop==='complete'&&repairs===1,'real guarded repair');
- const capability=createTaskBindingCapability({binder});const capabilities=createAgentCapabilityRegistry([capability]);check(capabilities.ok,'capability registry');
- const dispatcher=createAgentCapabilityDispatcher({registry:capabilities.value,host:{readContext:()=>({ok:true,value:{principalKey:'principal',regionId:'region',goalEpoch:'goal',current,grants:['task.propose']}})}});
- const capRequest={version:'1',requestId:'cap',targetRegionId:'region',goalEpoch:'goal',capability:capability.ref,operation:'task.propose',input:proposal};
- const direct=await dispatcher.direct.invoke(capRequest);const manual=await dispatcher.manual.invoke(capRequest);check(direct.ok&&direct.value.state==='bound'&&manual.ok&&JSON.stringify(direct.value.value)===JSON.stringify(manual.value.value),'installed manual/direct binder parity');
- const external=await dispatcher.mcp.invoke({...capRequest,transport:'manual'});check(external.ok&&external.value.state==='denied'&&external.value.value===undefined,'independent external output egress');
- const session=createAgentSession({dispatcher,transport:'mcp'});const sessionResult=await session.run({request:{...capRequest,transport:'manual'},budget:{maxTurns:2,maxRepairs:1,maxMilliseconds:1000,maxProposalBytes:65536}});check(sessionResult.ok&&sessionResult.value.stop==='denied'&&sessionResult.value.transport==='mcp','trusted session transport');session.dispose();check(session.inspect().status==='closed'&&session.inspect().receipt===undefined,'closed session clears retained receipts');
- const fx=${JSON.stringify(compositionFixture)};const read={id:'data.read',revision:'1'};
- const view={ref:{id:'data.table',revision:'1'},configSchema:{id:'data.table.config',revision:'1'},roles:['table'],operations:[read],result:'required',children:{min:0,max:0},visibility:'leaf',extension:false,resolveConfig:(values,result)=>Object.keys(values).length===0&&result?{ok:true,value:{values:{},fields:result.fields.map(field=>field.id),ports:[]}}:{ok:false,diagnostics:[{code:'config.invalid',message:'Invalid config.',retryable:false}]}};
- const viewRegistry=createAgentCompositionRegistry([view]);check(viewRegistry.ok,'canonical view registry');
- const viewContext={task:{...fx.task,needs:[{id:'browse',operation:read,fields:['employee.id'],outputId:'rows',required:true}]},experience:{...fx.experience,mode:'composable',allowedRepresentations:['data.table']},results:[fx.result],current:fx.plan.preconditions,environment:fx.environment,rendererCapabilities:[view.ref]};const viewPlan={...fx.plan,coverage:[{needId:'browse',nodeIds:['table-1'],operations:[read]}]};
- const agentView=validateAgentComposition(viewPlan,viewRegistry.value,viewContext);const manualView=validatePresentationPlan(viewPlan,viewContext,viewRegistry.value);check(agentView.ok&&manualView.ok&&JSON.stringify(agentView.value.plan)===JSON.stringify(manualView.value.plan),'canonical composition parity');check(!validateAgentComposition({...viewPlan,coverage:[]},viewRegistry.value,viewContext).ok,'agent cannot omit required coverage');check(!validateAgentComposition(viewPlan,viewRegistry.value,{...viewContext,results:[]}).ok,'agent cannot invent authorized descriptor');
- const denied=await binder.bind({...proposal,effect:'business-write'});check(denied.ok&&denied.value.state==='unsupported','business write not bound');
- computedStore.dispose();
- return {canonicalCompositionParity:true,capabilityParity:true,trustedSessionTransport:true,externalEgress:true,guardedRepair:true,exact:true,falseValueRejected:true,proseUnverified:true,revokedCleared:true,computedMetricVersion:true};
+  const check = (value, message) => {
+    if (!value) throw Error(message);
+  };
+  const people = defineResource({
+    id: 'people',
+    label: 'People',
+    description: 'People directory',
+    revision: '1',
+    identity: ['id'],
+    schema: z.object({ id: z.string(), name: z.string(), team: z.enum(['Platform', 'Research']) }),
+    fields: { team: { role: 'dimension' } },
+    presentation: { allowedViews: ['table', 'cards'] },
+  });
+  const functions = createQueryFunctionRegistry({ version: '2' });
+  check(functions.ok, 'query registry');
+  const data = createLocalDataService({
+    snapshot: {
+      catalog: people.catalog,
+      sourceRevision: 'people-1',
+      records: { people: [{ id: 'p-1', name: 'Ada', team: 'Platform' }] },
+    },
+    functionRegistry: functions.value,
+    authorize: () => ({ ok: true, value: { scopeDigest: 'scope-1', policyRevision: 'policy-1' } }),
+  });
+  const runtime = createAeliqoRuntime({
+    resources: [{ resource: people, data }],
+    authority: {
+      read: () => ({
+        ok: true,
+        value: {
+          principalKey: 'person-1',
+          scopeDigest: 'scope-1',
+          policyRevision: 'policy-1',
+          experienceRevision: 'experience-1',
+          grants: ['catalog.read', 'task.evaluate', 'result.inspect', 'experience.commit', 'action.propose'],
+          readContext: { principal: 'person-1' },
+        },
+      }),
+    },
+  });
+  const mounted = runtime.mount({ regionId: 'main', resourceId: 'people' });
+  check(mounted.ok, 'runtime mount');
+  const endpoint = createAppToolEndpoint({
+    runtime,
+    regionId: 'main',
+    goalEpoch: 'goal-app',
+    transport: 'manual',
+    expiresAt: Date.now() + 60_000,
+  });
+  check(endpoint.ok, 'app endpoint');
+  const tools = await endpoint.value.discover();
+  check(
+    tools.ok && tools.value.map((tool) => tool.name).join(',') === 'aeliqo_context,aeliqo_render,aeliqo_act',
+    'bounded app tool discovery',
+  );
+  const context = await endpoint.value.invoke('aeliqo_context', {}, { requestId: 'context' });
+  check(context.ok && context.value.state === 'accepted', 'context capability');
+  check(context.value.value.activeResource === 'people', 'paired resource context');
+  check(!JSON.stringify(context).includes('principalKey'), 'private authority stays out of context');
+  endpoint.value.close();
+  runtime.dispose();
+
+  const inspected = {
+    ref: { id: 'result.inspect', revision: '1' },
+    operation: 'result.inspect',
+    label: 'Inspect results',
+    parse: (input) => parseWireValue(input),
+    invoke: () => ({ state: 'data-ready', value: { rows: [{ id: 'private-row' }] } }),
+  };
+  const registry = createAgentCapabilityRegistry([inspected]);
+  check(registry.ok, 'capability registry');
+  const dispatcher = createAgentCapabilityDispatcher({
+    registry: registry.value,
+    host: {
+      readContext: () => ({
+        ok: true,
+        value: { principalKey: 'person-1', regionId: 'main', goalEpoch: 'goal-cap', grants: ['result.inspect'] },
+      }),
+    },
+  });
+  const request = {
+    version: '1',
+    requestId: 'direct',
+    targetRegionId: 'main',
+    goalEpoch: 'goal-cap',
+    capability: inspected.ref,
+    operation: 'result.inspect',
+    input: {},
+  };
+  const direct = await dispatcher.direct.invoke(request);
+  const manual = await dispatcher.manual.invoke({ ...request, requestId: 'manual' });
+  check(direct.ok && direct.value.state === 'data-ready', 'direct capability dispatch');
+  check(manual.ok && manual.value.state === 'data-ready', 'manual capability dispatch');
+  check(JSON.stringify(direct.value.value) === JSON.stringify(manual.value.value), 'direct/manual parity');
+  const external = await dispatcher.mcp.invoke({ ...request, requestId: 'mcp', transport: 'direct' });
+  check(
+    external.ok && external.value.state === 'denied' && external.value.value === undefined,
+    'model egress is denied without host grant',
+  );
+  const session = createAgentSession({ dispatcher, transport: 'mcp' });
+  const sessionResult = await session.run({
+    request: { ...request, requestId: 'session', transport: 'manual' },
+    budget: { maxTurns: 2, maxRepairs: 1, maxMilliseconds: 1_000, maxProposalBytes: 4_096 },
+  });
+  check(
+    sessionResult.ok && sessionResult.value.stop === 'denied' && sessionResult.value.transport === 'mcp',
+    'trusted session transport overrides request metadata',
+  );
+  check(sessionResult.ok && sessionResult.value.last?.value === undefined, 'denied session output is cleared');
+  session.dispose();
+  check(session.inspect().status === 'closed', 'session closes cleanly');
+
+  const fx=${JSON.stringify(compositionFixture)};
+  const read={id:'data.read',revision:'1'};
+  const view={ref:{id:'data.table',revision:'1'},
+    configSchema:{id:'data.table.config',revision:'1'},
+    roles:['table'],operations:[read],result:'required',children:{min:0,max:0},
+    visibility:'leaf',extension:false,
+    resolveConfig:(values,result)=>Object.keys(values).length===0&&result
+      ?{ok:true,value:{values:{},fields:result.fields.map(field=>field.id),ports:[]}}
+      :{ok:false,diagnostics:[{code:'config.invalid',message:'Invalid config.',retryable:false}]}};
+  const viewRegistry=createAgentCompositionRegistry([view]);
+  check(viewRegistry.ok,'canonical view registry');
+  const viewContext={task:{...fx.task,needs:[{id:'browse',operation:read,fields:['employee.id'],outputId:'rows',required:true}]},
+    experience:{...fx.experience,mode:'composable',allowedRepresentations:['data.table']},
+    results:[fx.result],current:fx.plan.preconditions,environment:fx.environment,rendererCapabilities:[view.ref]};
+  const viewPlan={...fx.plan,coverage:[{needId:'browse',nodeIds:['table-1'],operations:[read]}]};
+  const agentView=validateAgentComposition(viewPlan,viewRegistry.value,viewContext);
+  const manualView=validatePresentationPlan(viewPlan,viewContext,viewRegistry.value);
+  check(agentView.ok&&manualView.ok&&JSON.stringify(agentView.value.plan)===JSON.stringify(manualView.value.plan),
+    'canonical composition parity');
+  check(!validateAgentComposition({...viewPlan,coverage:[]},viewRegistry.value,viewContext).ok,
+    'agent cannot omit required coverage');
+  check(!validateAgentComposition(viewPlan,viewRegistry.value,{...viewContext,results:[]}).ok,
+    'agent cannot invent authorized descriptor');
+  return {appEndpoint:true,capabilityParity:true,trustedSessionTransport:true,externalEgress:true,
+    canonicalCompositionParity:true};
 }
 `;
 await writeFile(join(consumer, 'probe.mjs'), probe);
 await writeFile(
   join(consumer, 'node.mjs'),
   `import {probe} from './probe.mjs'; import {realpath} from 'node:fs/promises'; import {fileURLToPath} from 'node:url';
-for(const specifier of ['@aeliqo/core','@aeliqo/runtime/results','@aeliqo/agent']){const path=await realpath(fileURLToPath(import.meta.resolve(specifier)));if(!path.startsWith(${JSON.stringify(consumerReal)}+'/node_modules/'))throw Error('Non-installed resolution');}
+for(const specifier of ['@aeliqo/core',
+  '@aeliqo/core/agent',
+  '@aeliqo/core/expressions',
+  '@aeliqo/core/presentation',
+  '@aeliqo/runtime/app',
+  '@aeliqo/runtime/data',
+  '@aeliqo/runtime/results',
+  '@aeliqo/agent',
+  '@aeliqo/agent/capabilities',
+  '@aeliqo/agent/session',
+  '@aeliqo/agent/model']){const path=await realpath(fileURLToPath(import.meta.resolve(specifier)));if(!path.startsWith(${JSON.stringify(consumerReal)}+'/node_modules/'))throw Error('Non-installed resolution');}
 console.log(JSON.stringify(await probe()));
 `,
 );
 const nodeReport = JSON.parse(run(['node', '--disallow-code-generation-from-strings', 'node.mjs'], consumer).trim());
 await writeFile(
   join(consumer, 'consumer.ts'),
-  `import {createNarrativeVerifier, createAgentBinder, containAgentProposal, type AgentHost, type AgentBindingDecision, type AgentContainmentReceipt, type NarrativeAuthority, type NarrativeReceipt,createAgentSession,type AgentCapabilityDispatcher,createAgentCompositionRegistry,validateAgentComposition} from '@aeliqo/agent';
-import type {OperationGrant, NarrativeClaim} from '@aeliqo/core';
-declare const authority: NarrativeAuthority; declare const claim: NarrativeClaim;
-const checked=createNarrativeVerifier({readContext:()=>({ok:true,value:authority})}).verify(claim);
-if(checked.ok){const receipt:NarrativeReceipt=checked.value;void receipt;}
+  `import { createAppToolEndpoint } from '@aeliqo/agent';
+import { createAgentCapabilityRegistry, type AgentCapabilityDispatcher } from '@aeliqo/agent/capabilities';
+import { createAgentSession } from '@aeliqo/agent/session';
+import type { OperationGrant } from '@aeliqo/core/agent';
+import type { AeliqoRuntime } from '@aeliqo/runtime/app';
+declare const runtime: AeliqoRuntime;
+const endpoint = createAppToolEndpoint({ runtime, regionId: 'main', goalEpoch: 'goal', transport: 'manual', expiresAt: Date.now() + 60_000 });
+void endpoint;
 // @ts-expect-error Model quality does not create an act grant.
 const invalid:OperationGrant='act';void invalid;
-declare const host:AgentHost;
-const binder=createAgentBinder({host});
-const result=await containAgentProposal({requestId:'request',targetRegionId:'region',goalEpoch:'goal',budget:{maxTurns:2,maxRepairs:1,maxMilliseconds:1000,maxProposalBytes:4096},propose:()=>({untrusted:true}),binder});
-if(result.ok){const receipt:AgentContainmentReceipt=result.value;void receipt;}
-declare const dispatcher:AgentCapabilityDispatcher;const session=createAgentSession({dispatcher,transport:'mcp'});void session;
+declare const dispatcher: AgentCapabilityDispatcher;
+const session = createAgentSession({ dispatcher, transport: 'mcp' });
+void session;
+const emptyRegistry = createAgentCapabilityRegistry([]);
+void emptyRegistry;
 // @ts-expect-error Trust cannot be selected by an arbitrary transport label.
 createAgentSession({dispatcher,transport:'trusted-ai'});
-const decision:AgentBindingDecision={state:'needs-meaning',scope:'diagnostic',goalEpoch:'goal-1',diagnosticCode:'query.meaning',concept:'Total',authoringRoutes:['manual']};void decision;
 `,
 );
 await writeFile(
@@ -249,7 +367,7 @@ await writeFile(
 );
 await writeFile(
   join(consumer, 'browser.mjs'),
-  `import {createOpaqueModelSecret} from '@aeliqo/agent/model';import {probe} from './probe.mjs';let browserCredentialCreationBlocked=false;try{createOpaqueModelSecret('synthetic-browser-value');}catch{browserCredentialCreationBlocked=true;}window.agentReport={...await probe(),browserCredentialCreationBlocked};document.querySelector('#status').textContent='Passed';`,
+  `import {createOpaqueModelSecret} from '@aeliqo/agent/model';import {probe} from './probe.mjs';let trustedEnvironmentRequired=false;try{createOpaqueModelSecret('synthetic-browser-value');}catch{trustedEnvironmentRequired=true;}window.agentReport={...await probe(),trustedEnvironmentRequired};document.querySelector('#status').textContent='Passed';`,
 );
 await writeFile(join(consumer, 'vite.config.mjs'), `export default {build:{target:'es2022'}};`);
 const browserSecretSentinel = 'synthetic-browser-bundle-secret-sentinel';
@@ -290,8 +408,8 @@ try {
   await page.goto('http://127.0.0.1:' + server.address().port);
   await page.waitForFunction(() => document.querySelector('#status')?.textContent === 'Passed');
   browserReport = await page.evaluate(() => window.agentReport);
-  const { browserCredentialCreationBlocked, ...sharedBrowserReport } = browserReport;
-  assert.equal(browserCredentialCreationBlocked, true);
+  const { trustedEnvironmentRequired, ...sharedBrowserReport } = browserReport;
+  assert.equal(trustedEnvironmentRequired, true);
   assert.deepEqual(sharedBrowserReport, nodeReport);
   assert.deepEqual(errors, []);
 } finally {
@@ -306,7 +424,7 @@ await writeFile(
       sourceDigest: before,
       passed: true,
       scope:
-        'Installed core/runtime/agent shared capability/manual binding, trusted session transport, external egress rejection, bounded repair and narrative verification; strict declarations, Node without code generation, Chromium, exact decimals, actual local analytical metric versions, false claims, unverified prose and real revoked handles.',
+        'Installed core/runtime/agent app endpoint, capability dispatch and composition subpaths; direct/manual parity, trusted session transport, model egress rejection, strict declarations, Node without code generation, and Chromium browser bundling.',
       artifacts: packages.map(({ bytes, ...item }) => item),
       consumerDirectory: consumer,
       node: nodeReport,
@@ -317,4 +435,4 @@ await writeFile(
     2,
   ) + '\n',
 );
-console.log('Installed agent narrative verification passed. Evidence: ' + join(runDirectory, 'report.json'));
+console.log('Installed agent public API consumer passed. Evidence: ' + join(runDirectory, 'report.json'));

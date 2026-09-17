@@ -19,14 +19,14 @@ export class AeliqoSearchFieldElement extends AeliqoTextFieldElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
-    this.addEventListener('aeliqo-input', this.handleProposal as EventListener);
+    this.addEventListener('aeliqo-input-change', this.handleProposal as EventListener);
     this.addEventListener('compositionstart', this.handleSearchCompositionStart as EventListener);
     this.addEventListener('compositionend', this.handleSearchCompositionEnd as EventListener);
     this.addEventListener('keydown', this.handleSearchKeyDown as EventListener);
   }
 
   override disconnectedCallback(): void {
-    this.removeEventListener('aeliqo-input', this.handleProposal as EventListener);
+    this.removeEventListener('aeliqo-input-change', this.handleProposal as EventListener);
     this.removeEventListener('compositionstart', this.handleSearchCompositionStart as EventListener);
     this.removeEventListener('compositionend', this.handleSearchCompositionEnd as EventListener);
     this.removeEventListener('keydown', this.handleSearchKeyDown as EventListener);

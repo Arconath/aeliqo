@@ -1,9 +1,18 @@
 import type { Catalog, Expression, MeaningDefinition, Outcome, SemanticType, VersionRef } from '../contracts/types.js';
+import { versionRefKey } from '../contracts/stable.js';
 import { createCatalogIndex } from '../semantics/catalog.js';
 import { prependOutcomePath, semanticFailure } from '../semantics/errors.js';
 import { validateMeaning, validateMeaningBundle } from '../semantics/meaning.js';
-import type { MeaningBundle, MeaningBundleContext, MeaningScope, ZeroDenominatorPolicy } from '../semantics/types.js';
+import type {
+  CatalogIndex,
+  MeaningBundle,
+  MeaningBundleContext,
+  MeaningScope,
+  SemanticPolicy,
+  ZeroDenominatorPolicy,
+} from '../semantics/types.js';
 import { checkExpression } from './check.js';
+import { collectDefinitionRefs } from './check-reference.js';
 import { createFunctionRegistry } from './registry.js';
 import type { ExpressionInput, FunctionRegistry, TypedExpression } from './types.js';
 
@@ -54,36 +63,26 @@ export interface TypedAuthoring<C extends Catalog> {
   bundle(meanings: readonly MeaningDefinition[]): Outcome<MeaningBundle>;
 }
 
-export function createTypedAuthoring<const C extends Catalog>(
-  options: AuthoringOptions<C>,
-): Outcome<TypedAuthoring<C>> {
-  const indexOutcome = createCatalogIndex(options.catalog);
-  if (!indexOutcome.ok) return indexOutcome;
-  const index = indexOutcome.value;
-  if (options.registry.digest !== index.catalog.functionRegistryDigest)
-    return semanticFailure(
-      'semantic.stale-registry',
-      'The supplied function registry does not match the catalog registry pin.',
-      ['functionRegistryDigest'],
-    );
-  const registryOutcome = createFunctionRegistry({
-    digest: options.registry.digest,
-    signatures: options.registry.signatures,
-  });
-  if (!registryOutcome.ok) return registryOutcome;
-  const registry = registryOutcome.value;
-  const catalog = snapshotValue(index.catalog) as C;
-  const definitions = snapshotDefinitions(options.definitions ?? []);
-  const policy = options.policy === undefined ? undefined : snapshotValue(options.policy);
-  const context = (entityId?: string) => ({
-    catalog,
-    index,
-    registry,
-    definitions,
-    ...(entityId === undefined ? {} : { entityId }),
-  });
+interface AuthoringSession<C extends Catalog> {
+  readonly catalog: C;
+  readonly index: CatalogIndex;
+  readonly registry: FunctionRegistry;
+  readonly definitions: readonly MeaningDefinition[];
+  readonly policy?: SemanticPolicy;
+}
 
-  const field = <E extends EntityId<C>>(entityId: E, fieldId: FieldId<C, E>): Outcome<TypedExpression> => {
+function expressionContext<C extends Catalog>(session: AuthoringSession<C>, entityId?: string) {
+  return {
+    catalog: session.catalog,
+    index: session.index,
+    registry: session.registry,
+    definitions: session.definitions,
+    ...(entityId === undefined ? {} : { entityId }),
+  };
+}
+
+function createField<C extends Catalog>(index: CatalogIndex): TypedAuthoring<C>['field'] {
+  return <E extends EntityId<C>>(entityId: E, fieldId: FieldId<C, E>): Outcome<TypedExpression> => {
     const resolved = index.resolveField(entityId, fieldId);
     if (!resolved.ok) return resolved;
     const expression: Expression = { kind: 'field', ref: fieldId, entity: entityId };
@@ -92,11 +91,10 @@ export function createTypedAuthoring<const C extends Catalog>(
       value: { expression, type: resolved.value.type, context: 'row', entityId: resolved.value.entityId },
     };
   };
+}
 
-  const literal = (value: unknown, type: SemanticType): Outcome<TypedExpression> =>
-    checkExpression({ kind: 'literal', value, type }, context());
-
-  const call = (ref: VersionRef, args: readonly ExpressionInput[]): Outcome<TypedExpression> => {
+function createCall<C extends Catalog>(session: AuthoringSession<C>): TypedAuthoring<C>['call'] {
+  return (ref, args) => {
     const unwrapped = unwrapAll(args);
     if (!unwrapped.ok) return unwrapped;
     const entityIds = [
@@ -117,11 +115,13 @@ export function createTypedAuthoring<const C extends Catalog>(
       function: ref,
       arguments: unwrapped.value.map((argument) => argument.expression),
     };
-    const entityId = entityIds[0] ?? inferEntity(expression, index);
-    return checkExpression(expression, context(entityId));
+    const entityId = entityIds[0] ?? inferEntity(expression, session.index);
+    return checkExpression(expression, expressionContext(session, entityId));
   };
+}
 
-  const ratioOfSums = (input: RatioOfSumsInput): Outcome<TypedExpression> => {
+function createRatioOfSums<C extends Catalog>(call: TypedAuthoring<C>['call']): TypedAuthoring<C>['ratioOfSums'] {
+  return (input) => {
     const numerator = unwrap(input.numerator);
     if (!numerator.ok) return numerator;
     const denominator = unwrap(input.denominator);
@@ -131,33 +131,29 @@ export function createTypedAuthoring<const C extends Catalog>(
       denominator.value,
     ]);
   };
+}
 
-  const meanOfRates = (input: MeanOfRatesInput): Outcome<TypedExpression> => {
+function createMeanOfRates<C extends Catalog>(call: TypedAuthoring<C>['call']): TypedAuthoring<C>['meanOfRates'] {
+  return (input) => {
     const rates = unwrapAll(input.rates);
     if (!rates.ok) return rates;
     const result = call({ id: 'core.mean-of-rates', revision: '1' }, rates.value);
     if (!result.ok) return result;
     return { ok: true, value: { ...result.value, aggregation: 'non-additive' } };
   };
+}
 
-  const defineMetric = (input: DefineMetricInput): Outcome<MeaningDefinition> => {
+function createDefineMetric<C extends Catalog>(session: AuthoringSession<C>): TypedAuthoring<C>['defineMetric'] {
+  return (input) => {
     const expression = unwrap(input.expression);
     if (!expression.ok) return expression;
     const inferredAggregation = input.aggregation ?? expression.value.aggregation ?? 'none';
-    if (
-      input.aggregation !== undefined &&
-      expression.value.aggregation !== undefined &&
-      input.aggregation !== expression.value.aggregation
-    )
+    if (aggregationMismatch(input, expression.value.aggregation))
       return semanticFailure(
         'semantic.aggregation-mismatch',
         'Declared aggregation does not match the expression operation.',
         ['aggregation'],
       );
-    const dependencies = uniqueRefs([
-      ...(input.dependencies ?? []),
-      ...collectDefinitionRefs(expression.value.expression),
-    ]);
     const meaning: MeaningDefinition = {
       id: input.id,
       revision: input.revision ?? '1',
@@ -165,8 +161,8 @@ export function createTypedAuthoring<const C extends Catalog>(
       explanation: input.description,
       output: expression.value.type,
       implementation: { kind: 'expression', expression: expression.value.expression },
-      dependencies,
-      functionRegistryDigest: options.registry.digest,
+      dependencies: uniqueRefs([...(input.dependencies ?? []), ...collectDefinitionRefs(expression.value.expression)]),
+      functionRegistryDigest: session.registry.digest,
       origin: 'manual',
       lifecycle: 'draft',
       scope: input.scope ?? 'session',
@@ -176,23 +172,85 @@ export function createTypedAuthoring<const C extends Catalog>(
       missingPolicy: input.missingPolicy ?? 'propagate',
     };
     return validateMeaning(meaning, {
-      catalog,
-      registry,
-      index,
-      definitions,
-      ...(policy === undefined ? {} : { policy }),
+      catalog: session.catalog,
+      registry: session.registry,
+      index: session.index,
+      definitions: session.definitions,
+      ...(session.policy === undefined ? {} : { policy: session.policy }),
     });
   };
+}
 
-  const bundle = (meanings: readonly MeaningDefinition[]): Outcome<MeaningBundle> =>
+function aggregationMismatch(
+  input: DefineMetricInput,
+  inferred: MeaningDefinition['aggregation'] | undefined,
+): boolean {
+  return input.aggregation !== undefined && inferred !== undefined && input.aggregation !== inferred;
+}
+
+function createBundle<C extends Catalog>(session: AuthoringSession<C>): TypedAuthoring<C>['bundle'] {
+  return (meanings) =>
     validateMeaningBundle(
-      { catalogRevision: catalog.revision, functionRegistryDigest: registry.digest, meanings },
-      { catalog, registry, definitions, ...(policy === undefined ? {} : { policy }) },
+      {
+        catalogRevision: session.catalog.revision,
+        functionRegistryDigest: session.registry.digest,
+        meanings,
+      },
+      {
+        catalog: session.catalog,
+        registry: session.registry,
+        definitions: session.definitions,
+        ...(session.policy === undefined ? {} : { policy: session.policy }),
+      },
     );
+}
 
+function createAuthoringMethods<C extends Catalog>(
+  session: AuthoringSession<C>,
+): Omit<TypedAuthoring<C>, 'catalog' | 'registry'> {
+  const call = createCall(session);
+  return {
+    field: createField(session.index),
+    literal: (value, type) => checkExpression({ kind: 'literal', value, type }, expressionContext(session)),
+    call,
+    ratioOfSums: createRatioOfSums(call),
+    meanOfRates: createMeanOfRates(call),
+    defineMetric: createDefineMetric(session),
+    bundle: createBundle(session),
+  };
+}
+
+export function createTypedAuthoring<const C extends Catalog>(
+  options: AuthoringOptions<C>,
+): Outcome<TypedAuthoring<C>> {
+  const indexOutcome = createCatalogIndex(options.catalog);
+  if (!indexOutcome.ok) return indexOutcome;
+  const index = indexOutcome.value;
+  if (options.registry.digest !== index.catalog.functionRegistryDigest)
+    return semanticFailure(
+      'semantic.stale-registry',
+      'The supplied function registry does not match the catalog registry pin.',
+      ['functionRegistryDigest'],
+    );
+  const registryOutcome = createFunctionRegistry({
+    digest: options.registry.digest,
+    signatures: options.registry.signatures,
+  });
+  if (!registryOutcome.ok) return registryOutcome;
+  const session: AuthoringSession<C> = {
+    catalog: snapshotValue(index.catalog) as C,
+    index,
+    registry: registryOutcome.value,
+    definitions: snapshotDefinitions(options.definitions ?? []),
+    ...(options.policy === undefined ? {} : { policy: snapshotValue(options.policy) }),
+  };
   return {
     ok: true,
-    value: Object.freeze({ catalog, registry, field, literal, call, ratioOfSums, meanOfRates, defineMetric, bundle }),
+    value: Object.freeze({
+      catalog: session.catalog,
+      registry: session.registry,
+      ...createAuthoringMethods(session),
+    }),
   };
 }
 
@@ -246,24 +304,11 @@ function inferEntity(
   return undefined;
 }
 
-function collectDefinitionRefs(expression: Expression): readonly VersionRef[] {
-  const refs: VersionRef[] = [];
-  const stack = [expression];
-  while (stack.length > 0) {
-    const node = stack.pop()!;
-    if (node.kind === 'definition') refs.push(node.ref);
-    if (node.kind === 'call')
-      for (let position = node.arguments.length - 1; position >= 0; position -= 1)
-        stack.push(node.arguments[position]!);
-  }
-  return refs;
-}
-
 function uniqueRefs(refs: readonly VersionRef[]): readonly VersionRef[] {
   const seen = new Set<string>();
   const result: VersionRef[] = [];
   for (const ref of refs) {
-    const identity = JSON.stringify([ref.id, ref.revision]);
+    const identity = versionRefKey(ref);
     if (!seen.has(identity)) {
       seen.add(identity);
       result.push(ref);

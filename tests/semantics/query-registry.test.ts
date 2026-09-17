@@ -1,5 +1,8 @@
 import { expect, it } from 'vitest';
-import { createQueryFunctionRegistry, createStandardFunctionRegistry } from '../../packages/core/src/index.js';
+import {
+  createQueryFunctionRegistry,
+  createStandardFunctionRegistry,
+} from '../../packages/core/src/expressions/index.js';
 it('adds explicit versioned window functions under a distinct registry digest', () => {
   const previous = createStandardFunctionRegistry();
   const next = createQueryFunctionRegistry();

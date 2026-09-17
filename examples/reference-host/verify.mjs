@@ -18,7 +18,7 @@ async function evaluate(service, fixture, query = fixture.query) {
       version: '1',
       requestId: 'reference-query',
       catalogRevision: fixture.snapshot.catalog.revision,
-      target: { outputId: 'reference-output' },
+      target: { taskId: 'reference-query', outputId: 'reference-output' },
       query,
       budget,
     }),

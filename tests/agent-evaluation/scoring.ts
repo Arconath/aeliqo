@@ -1,5 +1,5 @@
 import type { EvaluatedOutput } from './host.js';
-export interface ExpectedQuality {
+interface ExpectedQuality {
   readonly identity: readonly string[];
   readonly populationCount: number;
   readonly precision: 'exact';

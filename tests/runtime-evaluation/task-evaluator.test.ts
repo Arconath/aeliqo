@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-  createStandardFunctionRegistry,
-  type Catalog,
-  type QuerySpec,
-  type ResultRef,
-  type Task,
-} from '../../packages/core/src/index.js';
+import { type Catalog, type QuerySpec, type ResultRef, type Task } from '../../packages/core/src/index.js';
+import { createStandardFunctionRegistry } from '../../packages/core/src/expressions/index.js';
 import {
   createDataHttpHandler,
   createHttpDataService,
@@ -105,7 +100,7 @@ async function materializeSeed(
     version: '1',
     requestId: `seed-plan-${input.outputId}`,
     catalogRevision: catalog.revision,
-    target: { outputId: input.outputId },
+    target: { taskId: `seed-plan-${input.outputId}`, outputId: input.outputId },
     query: input.query,
     budget,
   });
@@ -703,7 +698,7 @@ describe('runtime named-output and cohort evaluation', () => {
       version: '1' as const,
       requestId: 'direct-fixed',
       catalogRevision: catalog.revision,
-      target: { outputId: 'trend' },
+      target: { taskId: 'direct-fixed', outputId: 'trend' },
       query: fixedQuery,
       budget,
     };

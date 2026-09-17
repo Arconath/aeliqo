@@ -15,10 +15,12 @@ const pageHtml = `<!doctype html>
 <title>Aeliqo native WebMCP probe</title>
 <p id="status">Running native WebMCP probe…</p>
 <script type="importmap">
-{"imports":{"@aeliqo/core":"/packages/core/dist/index.js","zod/mini":"/node_modules/.pnpm/node_modules/zod/mini/index.js"}}
+{"imports":{"@aeliqo/core":"/packages/core/dist/index.js",
+  "zod/mini":"/node_modules/.pnpm/node_modules/zod/mini/index.js"}}
 </script>
 <script type="module">
-import {parseWireValue} from '@aeliqo/core';
+import {parseWireValue,
+} from '@aeliqo/core';
 import {createAgentCapabilityRegistry} from '/packages/agent/dist/capabilities/registry.js';
 import {createAgentToolEndpoint} from '/packages/agent/dist/protocol/index.js';
 import {createWebMcpAdapter, detectWebMcp} from '/packages/agent/dist/webmcp/index.js';
@@ -120,8 +122,8 @@ import {createWebMcpAdapter, detectWebMcp} from '/packages/agent/dist/webmcp/ind
       });
       if (!endpointResult.ok) throw new Error('The browser could not create the paired tool endpoint.');
       const endpoint = endpointResult.value;
-      adapter = createWebMcpAdapter({endpoint});
-      const detection = detectWebMcp();
+      adapter = createWebMcpAdapter({endpoint, document, evidence: 'native'});
+      const detection = detectWebMcp({ document, evidence: 'native' });
       result.modelContextPresent = detection.supported;
       result.adapterEvidence = adapter.evidence;
       result.adapterSupported = adapter.supported;

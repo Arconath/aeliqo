@@ -6,8 +6,8 @@ import { PUBLIC_PACKAGE_NAMES, PUBLIC_PACKAGES, RELEASE_VERSION } from '../../sc
 
 const root = resolve(import.meta.dirname, '../..');
 
-test('release metadata owns the six public source manifest versions', async () => {
-  assert.equal(PUBLIC_PACKAGES.length, 6);
+test('release metadata owns the five public source manifest versions', async () => {
+  assert.equal(PUBLIC_PACKAGES.length, 5);
   assert.deepEqual(
     PUBLIC_PACKAGE_NAMES,
     PUBLIC_PACKAGES.map((name) => `@aeliqo/${name}`),

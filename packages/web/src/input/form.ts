@@ -74,29 +74,43 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
     const form = this.nativeForm();
     if (form === undefined) return undefined;
     const data = new FormData(form);
+    this.appendSlottedNativeValues(data);
+    this.appendSlottedFieldValues(data);
+    return data;
+  }
+
+  private appendSlottedNativeValues(data: FormData): void {
     for (const control of this.slottedNativeControls()) {
-      if (this.isEffectivelyDisabled(control) || control.form !== null || !control.name) continue;
-      if (
-        control instanceof HTMLInputElement &&
-        (control.type === 'checkbox' || control.type === 'radio') &&
-        !control.checked
-      )
-        continue;
-      if (
-        control instanceof HTMLButtonElement ||
-        (control instanceof HTMLInputElement &&
-          (control.type === 'submit' ||
-            control.type === 'reset' ||
-            control.type === 'button' ||
-            control.type === 'image'))
-      )
-        continue;
+      if (!this.isSuccessfulNativeControl(control)) continue;
       this.appendNativeControlValue(data, control);
     }
+  }
+
+  private isSuccessfulNativeControl(
+    control: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLButtonElement,
+  ): boolean {
+    if (this.isEffectivelyDisabled(control) || control.form !== null || !control.name) return false;
+    if (control instanceof HTMLInputElement && !this.isCheckedInput(control)) return false;
+    return !this.isSubmitOnlyControl(control);
+  }
+
+  private isCheckedInput(control: HTMLInputElement): boolean {
+    if (control.type !== 'checkbox' && control.type !== 'radio') return true;
+    return control.checked;
+  }
+
+  private isSubmitOnlyControl(
+    control: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLButtonElement,
+  ): boolean {
+    if (control instanceof HTMLButtonElement) return true;
+    if (!(control instanceof HTMLInputElement)) return false;
+    return ['submit', 'reset', 'button', 'image'].includes(control.type);
+  }
+
+  private appendSlottedFieldValues(data: FormData): void {
     for (const control of this.slottedFields()) {
       if (this.isEffectivelyDisabled(control)) continue;
-      const name =
-        control.getAttribute('name') || ('name' in control && typeof control.name === 'string' ? control.name : '');
+      const name = this.fieldName(control);
       const value = control.formValue;
       if (!name || value === null || value === undefined) continue;
       if (value instanceof FormData) {
@@ -105,7 +119,11 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
         data.append(name, value);
       }
     }
-    return data;
+  }
+
+  private fieldName(control: HTMLElement & { readonly formValue: string | File | FormData | null }): string {
+    const name = 'name' in control && typeof control.name === 'string' ? control.name : '';
+    return control.getAttribute('name') || name;
   }
 
   protected override render() {
@@ -169,21 +187,29 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
 
   private readonly handleSlottedKeyDown = (event: Event): void => {
     const key = event as KeyboardEvent;
-    const owned = this.ownsEvent(event);
-    if (key.key !== 'Enter' || key.repeat || key.isComposing || key.defaultPrevented || !owned) return;
+    if (!this.isSlottedEnter(key)) return;
     const native = this.nativeControlFromEvent(event);
-    if (native !== undefined && native.form !== null) return;
-    if (this.eventFormOwner(event) !== null) return;
-    if (native instanceof HTMLTextAreaElement || native instanceof HTMLSelectElement) return;
-    if (
-      native instanceof HTMLButtonElement ||
-      (native instanceof HTMLInputElement &&
-        ['checkbox', 'radio', 'range', 'file', 'submit', 'reset', 'button', 'image'].includes(native.type))
-    )
-      return;
+    if (this.nativeControlOwnsEnter(native) || this.eventFormOwner(event) !== null) return;
     event.preventDefault();
     this.submitSlotted(this.defaultSlottedSubmitter());
   };
+
+  private isSlottedEnter(event: KeyboardEvent): boolean {
+    return (
+      event.key === 'Enter' && !event.repeat && !event.isComposing && !event.defaultPrevented && this.ownsEvent(event)
+    );
+  }
+
+  private nativeControlOwnsEnter(
+    native: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLButtonElement | undefined,
+  ): boolean {
+    if (native === undefined) return false;
+    if (native.form !== null || native instanceof HTMLTextAreaElement || native instanceof HTMLSelectElement)
+      return true;
+    if (native instanceof HTMLButtonElement) return true;
+    if (!(native instanceof HTMLInputElement)) return false;
+    return ['checkbox', 'radio', 'range', 'file', 'submit', 'reset', 'button', 'image'].includes(native.type);
+  }
 
   private submitSlotted(submitter: HTMLElement | null): void {
     const form = this.nativeForm();
@@ -224,34 +250,54 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
   };
 
   private collectErrors(form: HTMLFormElement): string[] {
+    const messages = [
+      ...this.formControlErrors(form),
+      ...this.unownedNativeControlErrors(),
+      ...this.slottedFieldErrors(),
+    ];
+    return messages.slice(0, 20);
+  }
+
+  private formControlErrors(form: HTMLFormElement): string[] {
     const messages: string[] = [];
     for (const control of Array.from(form.elements)) {
       if (!('checkValidity' in control) || typeof control.checkValidity !== 'function') continue;
-      if (!control.checkValidity()) {
-        const label = control.getAttribute('aria-label') || control.getAttribute('name') || control.id || 'Field';
-        const message =
-          'validationMessage' in control && typeof control.validationMessage === 'string'
-            ? control.validationMessage
-            : '';
-        messages.push(`${label}: ${message || 'Enter a valid value.'}`);
-      }
+      if (!control.checkValidity()) messages.push(this.formControlError(control));
     }
+    return messages;
+  }
+
+  private formControlError(control: Element & { readonly validationMessage?: string }): string {
+    const label = control.getAttribute('aria-label') || control.getAttribute('name') || control.id || 'Field';
+    return `${label}: ${control.validationMessage || 'Enter a valid value.'}`;
+  }
+
+  private unownedNativeControlErrors(): string[] {
+    const messages: string[] = [];
     for (const control of this.slottedNativeControls()) {
       if (!this.isEffectivelyDisabled(control) && control.form === null && !control.checkValidity())
         messages.push(this.nativeControlError(control));
     }
+    return messages;
+  }
+
+  private slottedFieldErrors(): string[] {
+    const messages: string[] = [];
     for (const control of this.slottedFields()) {
-      if (!this.isEffectivelyDisabled(control) && !control.checkValidity()) {
-        const label =
-          control.getAttribute('aria-label') ||
-          ('label' in control && typeof control.label === 'string' ? control.label : '') ||
-          control.getAttribute('name') ||
-          control.id ||
-          'Field';
-        messages.push(`${label}: ${control.validationMessage || 'Enter a valid value.'}`);
-      }
+      if (this.isEffectivelyDisabled(control) || control.checkValidity()) continue;
+      messages.push(`${this.fieldLabel(control)}: ${control.validationMessage || 'Enter a valid value.'}`);
     }
-    return messages.slice(0, 20);
+    return messages;
+  }
+
+  private fieldLabel(control: HTMLElement & { readonly label?: string }): string {
+    return (
+      control.getAttribute('aria-label') ||
+      (typeof control.label === 'string' ? control.label : '') ||
+      control.getAttribute('name') ||
+      control.id ||
+      'Field'
+    );
   }
 
   private slottedFields(): Array<
@@ -329,27 +375,38 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
   }
 
   private resetSlottedNativeControls(): void {
-    for (const control of this.slottedNativeControls()) {
-      if (control instanceof HTMLInputElement) {
-        if (control.type === 'checkbox' || control.type === 'radio') {
-          control.checked = control.defaultChecked;
-          control.indeterminate = false;
-        } else if (
-          control.type !== 'button' &&
-          control.type !== 'submit' &&
-          control.type !== 'reset' &&
-          control.type !== 'image'
-        )
-          control.value = control.defaultValue;
-      } else if (control instanceof HTMLTextAreaElement) {
-        control.value = control.defaultValue;
-      } else if (control instanceof HTMLSelectElement) {
-        const options = Array.from(control.options);
-        const hasDefault = options.some((option) => option.defaultSelected);
-        for (const option of options) option.selected = option.defaultSelected;
-        if (!hasDefault && options[0] !== undefined) options[0].selected = true;
-      }
+    for (const control of this.slottedNativeControls()) this.resetNativeControl(control);
+  }
+
+  private resetNativeControl(
+    control: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLButtonElement,
+  ): void {
+    if (control instanceof HTMLInputElement) {
+      this.resetNativeInput(control);
+      return;
     }
+    if (control instanceof HTMLTextAreaElement) {
+      control.value = control.defaultValue;
+      return;
+    }
+    if (control instanceof HTMLSelectElement) this.resetNativeSelect(control);
+  }
+
+  private resetNativeInput(control: HTMLInputElement): void {
+    if (control.type === 'checkbox' || control.type === 'radio') {
+      control.checked = control.defaultChecked;
+      control.indeterminate = false;
+      return;
+    }
+    if (['button', 'submit', 'reset', 'image'].includes(control.type)) return;
+    control.value = control.defaultValue;
+  }
+
+  private resetNativeSelect(control: HTMLSelectElement): void {
+    const options = Array.from(control.options);
+    const hasDefault = options.some((option) => option.defaultSelected);
+    for (const option of options) option.selected = option.defaultSelected;
+    if (!hasDefault && options[0] !== undefined) options[0].selected = true;
   }
 
   private appendNativeControlValue(

@@ -3,12 +3,11 @@
 ## Shipped as Apache-2.0 source
 
 Aeliqo's core contracts, evaluator, runtime, HTTP and local data paths, complete
-component catalog, React bindings, agent and protocol plumbing, local Studio and
-DevTools, security and accessibility behavior, and internal testkit source are
-Apache-2.0. The six public packages are `@aeliqo/core`,
-`@aeliqo/runtime`, `@aeliqo/web`, `@aeliqo/react`,
-`@aeliqo/agent`, and `@aeliqo/devtools`. The testkit stays a private
-workspace so its release-only helpers are not mistaken for a seventh public API.
+component catalog, React bindings, agent and protocol plumbing, security and
+accessibility behavior, and internal testkit source are Apache-2.0. The five
+public packages are `@aeliqo/core`, `@aeliqo/runtime`, `@aeliqo/web`,
+`@aeliqo/react`, and `@aeliqo/agent`. The testkit stays a private workspace so
+its release-only helpers are not mistaken for another public API.
 
 These capabilities run without a license server, account callback, hosted
 control plane, paid row limit, or mandatory model call. Applications may use
@@ -37,7 +36,7 @@ and support/SLA. It would consume the same public contracts and live in a
 separate service and license boundary.
 
 No hosted commercial service, price, SLA, customer demand, recurring revenue,
-or product-market fit is claimed for 0.1.0. Those are hypotheses to validate in
+or product-market fit is claimed for 0.4.0. Those are hypotheses to validate in
 paid pilots. Any future pricing should separate inference, storage, egress, and
 support costs; BYOK must not be charged again as bundled inference, and ordinary
 rendering must not be metered.
@@ -45,7 +44,5 @@ rendering must not be metered.
 ## Release evidence
 
 Source builds and clean tarball consumers demonstrate offline framework use.
-Registry publication, website deployment, and commercial availability are
-independent states and must be reported separately. See the
-[0.1.0 support boundary](../public/0.1.0-support-boundary.md) and
-[release migration](../migration-0.1.0.md).
+Registry publication and website deployment must be verified against the same
+release revision. See the [0.3 to 0.4 migration guide](../site/pages/migration-0.3.md).

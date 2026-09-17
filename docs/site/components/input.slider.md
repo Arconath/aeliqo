@@ -1,0 +1,75 @@
+---
+component: 'input.slider'
+title: 'Slider'
+family: 'input'
+contract: 'Bounded quantity with keyboard and text alternative; steps and units are declared.'
+---
+
+## Minimal example
+
+{{aeliqo:minimal-example}}
+
+## Import and live example
+
+{{aeliqo:example}}
+
+## Purpose
+
+Bounded quantity with keyboard and text alternative; steps and units are declared.
+
+## When to use it
+
+{{aeliqo:fixture}}
+
+## When to use a different component
+
+Use NumberField when an exact value matters or people need to type digits. Slider suits a bounded continuous choice.
+
+## Properties and defaults
+
+{{aeliqo:properties}}
+
+## Events
+
+{{aeliqo:events}}
+
+## States and failure handling
+
+Relevant states:
+
+{{aeliqo:states}}
+
+{{aeliqo:outcome}}
+
+## Keyboard, focus, and accessibility
+
+Keyboard behavior:
+
+{{aeliqo:keyboard}}
+
+Exposed semantics:
+
+{{aeliqo:semantics}}
+
+## Responsive behavior
+
+Give the track its own row in narrow forms. Keep its numeric label and unit visible as the viewport shrinks.
+
+## Style hooks
+
+{{aeliqo:style-hooks}}
+
+{{aeliqo:performance}}
+
+## Related components
+
+- [NumberField](/components/input.number-field/)
+- [Form](/components/input.form/)
+
+## Generated TypeScript declaration
+
+{{aeliqo:declaration}}
+
+## Version
+
+Aeliqo 0.4.0.

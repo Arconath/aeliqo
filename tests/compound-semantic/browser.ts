@@ -1,4 +1,4 @@
-import { validatePresentationPlan } from '../../packages/core/src/index.js';
+import { validatePresentationPlan } from '../../packages/core/src/presentation/index.js';
 import { registerAeliqoElements } from '../../packages/web/src/index.js';
 import { explorerPresentationRecipe } from '../../packages/web/src/compound/recipes.js';
 import type { AeliqoRegionElement } from '../../packages/web/src/region/aeliqo-region.js';

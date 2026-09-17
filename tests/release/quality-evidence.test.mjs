@@ -10,7 +10,7 @@ const execute = promisify(execFile);
 const root = resolve(import.meta.dirname, '../..');
 const script = resolve(root, 'scripts/release/verify-quality-evidence.mjs');
 const revision = 'a'.repeat(40);
-const kinds = ['typecheck', 'unit', 'browser', 'packages', 'lint', 'security', 'boundaries'];
+const kinds = ['typecheck', 'unit', 'browser', 'packages', 'performance', 'lint', 'security', 'boundaries'];
 
 function evidence(overrides = {}) {
   return {
@@ -32,7 +32,7 @@ test('release accepts only passing same-source quality evidence', async () => {
       cwd: root,
       env: { ...process.env, GITHUB_SHA: revision, AELIQO_CI_EVIDENCE_PATH: path },
     });
-    assert.match(result.stdout, /"commands":7/u);
+    assert.match(result.stdout, /"commands":8/u);
 
     await writeFile(path, JSON.stringify(evidence({ sourceRevision: 'c'.repeat(40) })));
     await assert.rejects(
@@ -41,6 +41,18 @@ test('release accepts only passing same-source quality evidence', async () => {
         env: { ...process.env, GITHUB_SHA: revision, AELIQO_CI_EVIDENCE_PATH: path },
       }),
       /exact release source revision/u,
+    );
+
+    await writeFile(
+      path,
+      JSON.stringify(evidence({ results: evidence().results.filter(({ kind }) => kind !== 'performance') })),
+    );
+    await assert.rejects(
+      execute(process.execPath, [script], {
+        cwd: root,
+        env: { ...process.env, GITHUB_SHA: revision, AELIQO_CI_EVIDENCE_PATH: path },
+      }),
+      /missing the performance boundary/u,
     );
   } finally {
     await rm(directory, { recursive: true, force: true });

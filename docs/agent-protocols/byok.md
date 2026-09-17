@@ -62,8 +62,11 @@ function-call/output correlation on every turn. Other providers implement the
 normalized port rather than replacing the semantic executor.
 
 The default agent, protocol and model entries do not import a provider SDK.
-The OpenAI entry rejects browser execution. API keys belong to the host-created
-SDK client and are never placed in tool arguments, returned receipts or logs.
+API keys belong to the host-created SDK client and are never placed in tool
+arguments, returned receipts or logs. The OpenAI port requires
+`environment: 'trusted-server'`; set it only in the server-owned model
+composition root. The agent package does not inspect `window` or other DOM
+globals to infer where it is running.
 
 The official SDK HTTP exchange is tested against a local protocol fixture.
 Synthetic model tests cover containment, permissions, cancellation and budgets.
@@ -75,12 +78,15 @@ A credentialed held-out evaluation still requires explicit budget authorization.
 `@aeliqo/agent/model/responses` supplies
 `createOpenAICompatibleResponsesToolModel` for a trusted server that owns an
 OpenAI-compatible Responses endpoint. It is deliberately provider-agnostic:
-applications configure the HTTPS base endpoint, explicit model ID, opaque
-credential reference, credential resolver, and request policy independently. The
+applications configure `environment: 'trusted-server'`, the HTTPS base
+endpoint, explicit model ID, opaque credential reference, credential resolver,
+and request policy independently. The
 transport never selects a provider or model from credential contents, a reference
 format, or an endpoint hostname.
 
-The resolver receives the opaque reference and an abort signal, and returns a
+Create opaque secrets with `createOpaqueModelSecret(secret, 'trusted-server')`
+only on the trusted server. The resolver receives the opaque reference and an
+abort signal, and returns a
 credential only within the server request. Credentials, authorization headers,
 endpoint URLs, and provider response bodies are never placed in a model receipt or
 transport error. The request policy requires `maxRetries: 0`, explicit timeout and

@@ -1,4 +1,5 @@
 import * as z from 'zod/mini';
+import { stableJson, versionRefKey } from '../contracts/stable.js';
 import { inspectWire } from '../contracts/ingress.js';
 import { WIRE_LIMITS } from '../contracts/limits.js';
 import { idSchema, interactionLinkSchema, semanticTypeSchema, versionRefSchema } from '../contracts/schemas.js';
@@ -73,8 +74,8 @@ const failure = (code: string, message: string): Outcome<never> => ({
 });
 const endpointKey = (endpoint: { readonly node: string; readonly port: string }): string =>
   JSON.stringify([endpoint.node, endpoint.port]);
-const versionKey = (ref: { readonly id: string; readonly revision: string }): string =>
-  JSON.stringify([ref.id, ref.revision]);
+const versionKey = versionRefKey;
+type ValidationFailure = Outcome<never> | undefined;
 
 function freeze<T>(value: T): T {
   if (value !== null && typeof value === 'object') {
@@ -82,15 +83,6 @@ function freeze<T>(value: T): T {
     Object.freeze(value);
   }
   return value;
-}
-
-function canonical(value: unknown): string {
-  if (value === null || typeof value !== 'object') return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
-  return `{${Object.keys(value)
-    .sort()
-    .map((key) => `${JSON.stringify(key)}:${canonical((value as Record<string, unknown>)[key])}`)
-    .join(',')}}`;
 }
 
 function shapeOf(port: InteractionPortShape): InteractionPortShape {
@@ -113,6 +105,173 @@ function validShape(shape: InteractionPortShape): boolean {
   if (shape.payload === 'selection' && (shape.entity === undefined || !shape.identity?.length)) return false;
   if (shape.payload === 'extension' ? shape.extension === undefined : shape.extension !== undefined) return false;
   return true;
+}
+
+function indexPorts(nodes: InteractionGraphInput['nodes']): Outcome<Map<string, InteractionPort>> {
+  const ports = new Map<string, InteractionPort>();
+  const nodeIds = new Set<string>();
+  for (const node of nodes) {
+    if (nodeIds.has(node.id))
+      return failure('interaction.duplicate-node', 'Interaction node identities must be unique.');
+    nodeIds.add(node.id);
+    for (const port of node.ports) {
+      const key = endpointKey({ node: node.id, port: port.id });
+      if (ports.has(key))
+        return failure('interaction.duplicate-port', 'A node cannot register the same interaction port twice.');
+      if (!validShape(port))
+        return failure(
+          'interaction.invalid-port',
+          'A port requires consistent identity, grain and registered extension semantics.',
+        );
+      ports.set(key, port);
+      if (ports.size > INTERACTION_GRAPH_LIMITS.totalPorts)
+        return failure('interaction.graph-budget', 'The graph exceeds its total registered port limit.');
+    }
+  }
+  return { ok: true, value: ports };
+}
+
+function indexMappings(
+  manifests: readonly InteractionMappingManifest[],
+): Outcome<Map<string, InteractionMappingManifest>> {
+  const mappings = new Map<string, InteractionMappingManifest>();
+  for (const mapping of manifests) {
+    const key = versionKey(mapping.ref);
+    if (mappings.has(key))
+      return failure('interaction.duplicate-mapping', 'A mapping version can be registered only once.');
+    if (!validShape(mapping.source) || !validShape(mapping.target))
+      return failure('interaction.invalid-mapping', 'Registered mappings require valid source and target semantics.');
+    if (mapping.kind === 'identity' && stableJson(shapeOf(mapping.source)) !== stableJson(shapeOf(mapping.target)))
+      return failure(
+        'interaction.invalid-identity',
+        'An identity mapping cannot change payload, entity, identity, grain, unit or temporal semantics.',
+      );
+    mappings.set(key, mapping);
+  }
+  return { ok: true, value: mappings };
+}
+
+interface LinkState {
+  readonly links: Set<string>;
+  readonly usedMappings: Set<string>;
+  readonly directed: InteractionLink[];
+  readonly parents: Map<string, string>;
+  find(key: string): string;
+}
+
+function createLinkState(ports: ReadonlyMap<string, InteractionPort>): LinkState {
+  const parents = new Map([...ports.keys()].map((key) => [key, key]));
+  const find = (key: string): string => {
+    let root = key;
+    while (parents.get(root) !== root) root = parents.get(root)!;
+    while (key !== root) {
+      const next = parents.get(key)!;
+      parents.set(key, root);
+      key = next;
+    }
+    return root;
+  };
+  return { links: new Set(), usedMappings: new Set(), directed: [], parents, find };
+}
+
+function matchLinkPorts(
+  link: InteractionLink,
+  ports: ReadonlyMap<string, InteractionPort>,
+  mappings: ReadonlyMap<string, InteractionMappingManifest>,
+): Outcome<{
+  readonly source: InteractionPort;
+  readonly target: InteractionPort;
+  readonly mapping: InteractionMappingManifest;
+}> {
+  const source = ports.get(endpointKey(link.source));
+  const target = ports.get(endpointKey(link.target));
+  const mapping = mappings.get(versionKey(link.mapping));
+  if (source === undefined || target === undefined)
+    return failure('interaction.missing-port', 'Every interaction endpoint must name a registered node port.');
+  if (source.direction === 'input' || target.direction === 'output')
+    return failure('interaction.port-direction', 'A link must connect an emitting port to a receiving port.');
+  if (mapping === undefined)
+    return failure('interaction.unknown-mapping', 'The requested mapping version is not registered.');
+  if (
+    stableJson(shapeOf(source)) !== stableJson(shapeOf(mapping.source)) ||
+    stableJson(shapeOf(target)) !== stableJson(shapeOf(mapping.target))
+  )
+    return failure(
+      'interaction.port-mismatch',
+      'The mapping does not match the declared payload, identity, grain, unit or temporal semantics of both ports.',
+    );
+  return { ok: true, value: { source, target, mapping } };
+}
+
+function validateIdentityEquivalence(
+  link: InteractionLink,
+  source: InteractionPort,
+  target: InteractionPort,
+  mapping: InteractionMappingManifest,
+  state: LinkState,
+): ValidationFailure {
+  if (
+    mapping.kind !== 'identity' ||
+    source.payload !== 'selection' ||
+    source.direction !== 'inout' ||
+    target.direction !== 'inout'
+  )
+    return failure(
+      'interaction.nonconvergent',
+      'Selection equivalence requires identity mappings and bidirectional selection ports.',
+    );
+  state.parents.set(state.find(endpointKey(link.target)), state.find(endpointKey(link.source)));
+  return undefined;
+}
+
+function validateLink(
+  link: InteractionLink,
+  ports: ReadonlyMap<string, InteractionPort>,
+  mappings: ReadonlyMap<string, InteractionMappingManifest>,
+  state: LinkState,
+): ValidationFailure {
+  if (state.links.has(link.id))
+    return failure('interaction.duplicate-link', 'Interaction link identities must be unique.');
+  state.links.add(link.id);
+  const matched = matchLinkPorts(link, ports, mappings);
+  if (!matched.ok) return matched;
+  state.usedMappings.add(versionKey(link.mapping));
+  if (link.propagation === 'identity-equivalence')
+    return validateIdentityEquivalence(link, matched.value.source, matched.value.target, matched.value.mapping, state);
+  state.directed.push(link);
+  return undefined;
+}
+
+function validateDirectedGraph(state: LinkState, ports: ReadonlyMap<string, InteractionPort>): ValidationFailure {
+  const roots = new Set([...ports.keys()].map(state.find));
+  const indegree = new Map([...roots].map((root) => [root, 0]));
+  const successors = new Map<string, Set<string>>();
+  for (const link of state.directed) {
+    const source = state.find(endpointKey(link.source));
+    const target = state.find(endpointKey(link.target));
+    if (source === target)
+      return failure(
+        'interaction.feedback',
+        'Directed feedback within a selection equivalence class is not supported.',
+      );
+    const next = successors.get(source) ?? new Set<string>();
+    if (!next.has(target)) {
+      next.add(target);
+      indegree.set(target, indegree.get(target)! + 1);
+    }
+    successors.set(source, next);
+  }
+  const ready = [...indegree].filter(([, count]) => count === 0).map(([key]) => key);
+  for (let index = 0; index < ready.length; index += 1) {
+    for (const target of successors.get(ready[index]!) ?? []) {
+      const remaining = indegree.get(target)! - 1;
+      indegree.set(target, remaining);
+      if (remaining === 0) ready.push(target);
+    }
+  }
+  if (ready.length !== roots.size)
+    return failure('interaction.feedback', 'Directed interaction mappings cannot form a feedback cycle.');
+  return undefined;
 }
 
 /**
@@ -140,124 +299,23 @@ export function validateInteractionGraph(
       'interaction.invalid-graph',
       'The interaction graph or registered mapping manifests are invalid or exceed their limits.',
     );
-  // inspectWire rejected present undefined properties before the schema pass.
   const graph = parsed.data as InteractionGraphInput;
-  const ports = new Map<string, InteractionPort>();
-  const nodeIds = new Set<string>();
-  for (const node of graph.nodes) {
-    if (nodeIds.has(node.id))
-      return failure('interaction.duplicate-node', 'Interaction node identities must be unique.');
-    nodeIds.add(node.id);
-    for (const port of node.ports) {
-      const key = endpointKey({ node: node.id, port: port.id });
-      if (ports.has(key))
-        return failure('interaction.duplicate-port', 'A node cannot register the same interaction port twice.');
-      if (!validShape(port))
-        return failure(
-          'interaction.invalid-port',
-          'A port requires consistent identity, grain and registered extension semantics.',
-        );
-      ports.set(key, port);
-      if (ports.size > INTERACTION_GRAPH_LIMITS.totalPorts)
-        return failure('interaction.graph-budget', 'The graph exceeds its total registered port limit.');
-    }
-  }
-  const mappings = new Map<string, InteractionMappingManifest>();
-  for (const mapping of registry.data as readonly InteractionMappingManifest[]) {
-    const key = versionKey(mapping.ref);
-    if (mappings.has(key))
-      return failure('interaction.duplicate-mapping', 'A mapping version can be registered only once.');
-    if (!validShape(mapping.source) || !validShape(mapping.target))
-      return failure('interaction.invalid-mapping', 'Registered mappings require valid source and target semantics.');
-    if (mapping.kind === 'identity' && canonical(shapeOf(mapping.source)) !== canonical(shapeOf(mapping.target)))
-      return failure(
-        'interaction.invalid-identity',
-        'An identity mapping cannot change payload, entity, identity, grain, unit or temporal semantics.',
-      );
-    mappings.set(key, mapping);
-  }
-  const parents = new Map([...ports.keys()].map((key) => [key, key]));
-  const find = (key: string): string => {
-    let root = key;
-    while (parents.get(root) !== root) root = parents.get(root)!;
-    while (key !== root) {
-      const next = parents.get(key)!;
-      parents.set(key, root);
-      key = next;
-    }
-    return root;
-  };
-  const usedMappings = new Set<string>();
-  const links = new Set<string>();
-  const directed: InteractionLink[] = [];
+  const ports = indexPorts(graph.nodes);
+  if (!ports.ok) return ports;
+  const mappings = indexMappings(registry.data as readonly InteractionMappingManifest[]);
+  if (!mappings.ok) return mappings;
+  const state = createLinkState(ports.value);
   for (const link of graph.links) {
-    if (links.has(link.id)) return failure('interaction.duplicate-link', 'Interaction link identities must be unique.');
-    links.add(link.id);
-    const source = ports.get(endpointKey(link.source));
-    const target = ports.get(endpointKey(link.target));
-    const mapping = mappings.get(versionKey(link.mapping));
-    if (source === undefined || target === undefined)
-      return failure('interaction.missing-port', 'Every interaction endpoint must name a registered node port.');
-    if (source.direction === 'input' || target.direction === 'output')
-      return failure('interaction.port-direction', 'A link must connect an emitting port to a receiving port.');
-    if (mapping === undefined)
-      return failure('interaction.unknown-mapping', 'The requested mapping version is not registered.');
-    if (
-      canonical(shapeOf(source)) !== canonical(shapeOf(mapping.source)) ||
-      canonical(shapeOf(target)) !== canonical(shapeOf(mapping.target))
-    )
-      return failure(
-        'interaction.port-mismatch',
-        'The mapping does not match the declared payload, identity, grain, unit or temporal semantics of both ports.',
-      );
-    usedMappings.add(versionKey(link.mapping));
-    if (link.propagation === 'identity-equivalence') {
-      if (
-        mapping.kind !== 'identity' ||
-        source.payload !== 'selection' ||
-        source.direction !== 'inout' ||
-        target.direction !== 'inout'
-      )
-        return failure(
-          'interaction.nonconvergent',
-          'Selection equivalence requires identity mappings and bidirectional selection ports.',
-        );
-      parents.set(find(endpointKey(link.target)), find(endpointKey(link.source)));
-    } else directed.push(link);
+    const validationFailure = validateLink(link, ports.value, mappings.value, state);
+    if (validationFailure !== undefined) return validationFailure;
   }
-  const roots = new Set([...ports.keys()].map(find));
-  const indegree = new Map([...roots].map((root) => [root, 0]));
-  const successors = new Map<string, Set<string>>();
-  for (const link of directed) {
-    const source = find(endpointKey(link.source));
-    const target = find(endpointKey(link.target));
-    if (source === target)
-      return failure(
-        'interaction.feedback',
-        'Directed feedback within a selection equivalence class is not supported.',
-      );
-    const next = successors.get(source) ?? new Set<string>();
-    if (!next.has(target)) {
-      next.add(target);
-      indegree.set(target, indegree.get(target)! + 1);
-    }
-    successors.set(source, next);
-  }
-  const ready = [...indegree].filter(([, count]) => count === 0).map(([key]) => key);
-  for (let index = 0; index < ready.length; index++) {
-    for (const target of successors.get(ready[index]!) ?? []) {
-      const remaining = indegree.get(target)! - 1;
-      indegree.set(target, remaining);
-      if (remaining === 0) ready.push(target);
-    }
-  }
-  if (ready.length !== roots.size)
-    return failure('interaction.feedback', 'Directed interaction mappings cannot form a feedback cycle.');
+  const validationFailure = validateDirectedGraph(state, ports.value);
+  if (validationFailure !== undefined) return validationFailure;
   return {
     ok: true,
     value: freeze({
       ...graph,
-      mappings: [...mappings].filter(([key]) => usedMappings.has(key)).map(([, mapping]) => mapping),
+      mappings: [...mappings.value].filter(([key]) => state.usedMappings.has(key)).map(([, mapping]) => mapping),
     }),
   };
 }

@@ -1,12 +1,10 @@
-import { validatePresentationPlan } from '../../packages/core/src/index.js';
-import {
-  AeliqoRegionElement,
-  createAeliqoPresentationRegistry,
-  registerAeliqoElements,
-} from '../../packages/web/src/index.js';
+import { validatePresentationPlan } from '../../packages/core/src/presentation/index.js';
+import { AeliqoRegionElement, createAeliqoPresentationRegistry } from '../../packages/web/src/region/index.js';
+import { registerAeliqoElements } from '../../packages/web/src/register.js';
 import type { AeliqoPresentationRegistryOptions } from '../../packages/web/src/region/registry.js';
 import type { AeliqoRegionResult, AeliqoSemanticInteractionRequest } from '../../packages/web/src/region/types.js';
-import type { PresentationContext, PresentationPlan } from '../../packages/core/src/index.js';
+import type { PresentationPlan } from '../../packages/core/src/contracts/index.js';
+import type { PresentationContext } from '../../packages/core/src/presentation/index.js';
 import {
   regionResults,
   temporalRef,

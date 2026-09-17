@@ -1,6 +1,6 @@
 {
-  "name": "@aeliqo/site-assembly",
-  "version": "0.3.0",
+  "name": "@aeliqo/site",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.24.0",
@@ -10,26 +10,31 @@
   },
   "scripts": {
     "dev": "pnpm --workspace-root build:platform && pnpm --workspace-root build:agent && vite --host 127.0.0.1",
+    "start": "node --env-file-if-exists=.env.local runner/server.mjs",
+    "mcp:stdio": "node runner/mcp-stdio.mjs",
     "typecheck": "tsc -p tsconfig.json && tsc -p tests/site/tsconfig.json",
     "build": "pnpm --workspace-root build:platform && pnpm --workspace-root build:agent && tsc -p tsconfig.json && vite build",
     "test": "pnpm test:unit",
-    "test:unit": "node --test ../playground/runner/broker.test.mjs && vitest run --config tests/site/vitest.config.mjs && pnpm typecheck",
+    "test:unit": "node --test runner/broker.test.mjs && vitest run --config tests/site/vitest.config.mjs && pnpm typecheck",
     "test:browser": "pnpm build && playwright test --config tests/site/playwright.config.mjs",
     "test:local-runner": "playwright test --config tests/site/local-runner.playwright.config.mjs",
     "test:docs": "pnpm build && playwright test --config tests/site/docs-navigation.playwright.config.mjs",
     "test:responsive": "pnpm build && playwright test --config tests/site/playground-responsive.playwright.config.mjs",
     "test:document-layout": "pnpm build && playwright test --config tests/site/document-layout.playwright.config.mjs",
+    "test:visual-baseline": "playwright test --config tests/site/visual-baseline.playwright.config.mjs",
     "test:performance": "pnpm build && playwright test --config tests/performance/site-page.playwright.config.mjs",
     "test:server": "go test ./deploy/server.go ./deploy/server_test.go",
     "test:provenance": "python3 -m unittest discover -s tests/ci -p 'test_*.py' -v",
     "test:boundary": "pnpm test:provenance",
-    "check": "pnpm test:unit && pnpm build && playwright test --config tests/site/playwright.config.mjs && pnpm test:local-runner && playwright test --config tests/site/docs-navigation.playwright.config.mjs && playwright test --config tests/site/playground-responsive.playwright.config.mjs && playwright test --config tests/site/document-layout.playwright.config.mjs && pnpm test:server && pnpm test:provenance"
+    "check": "pnpm test:unit && pnpm build && playwright test --config tests/site/playwright.config.mjs && pnpm test:local-runner && playwright test --config tests/site/docs-navigation.playwright.config.mjs && playwright test --config tests/site/playground-responsive.playwright.config.mjs && playwright test --config tests/site/document-layout.playwright.config.mjs && pnpm test:server && pnpm test:provenance && pnpm test:visual-baseline"
   },
   "dependencies": {
     "@aeliqo/agent": "workspace:*",
     "@aeliqo/core": "workspace:*",
     "@aeliqo/runtime": "workspace:*",
-    "@aeliqo/web": "workspace:*"
+    "@aeliqo/web": "workspace:*",
+    "lit": "3.3.3",
+    "zod": "4.5.4"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

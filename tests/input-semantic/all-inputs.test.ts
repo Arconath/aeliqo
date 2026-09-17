@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { html } from 'lit';
-import { validatePresentationPlan, type SemanticType } from '../../packages/core/src/index.js';
+import { type SemanticType } from '../../packages/core/src/index.js';
+import { validatePresentationPlan } from '../../packages/core/src/presentation/index.js';
 import { createAeliqoPresentationRegistry } from '../../packages/web/src/region/registry.js';
 import { AELIQO_INPUT_REFS } from '../../packages/web/src/input/manifest.js';
 import type { AeliqoInputBinding } from '../../packages/web/src/region/input-registry.js';

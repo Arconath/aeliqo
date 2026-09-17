@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validatePresentationPlan } from '../../packages/core/src/index.js';
+import { validatePresentationPlan } from '../../packages/core/src/presentation/index.js';
 import { createAeliqoPresentationRegistry } from '../../packages/web/src/region/registry.js';
 import { bindings, fixture, validatedFixture } from './semantic-fixture.js';
 

@@ -13,6 +13,11 @@
     "noEmit": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "typeRoots": ["./node_modules/@types", "../../node_modules/@types"],
+    "paths": {
+      "react-dom": ["./node_modules/@types/react-dom/index.d.ts"],
+      "react-dom/*": ["./node_modules/@types/react-dom/*"]
+    },
     "jsx": "react-jsx",
     "esModuleInterop": true,
     "resolveJsonModule": true,

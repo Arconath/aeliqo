@@ -12,7 +12,7 @@ import {
   AeliqoStackElement,
   AeliqoSurfaceElement,
   AeliqoTextElement,
-} from '@aeliqo/web';
+} from '@aeliqo/web/foundation';
 import { appendSlottedText, cleanupCatalogRoot, createCatalogElement, createCatalogRoot } from './fixture.js';
 import { catalogMountSource, catalogSource } from './source.js';
 import type { CatalogExampleDefinition, CatalogExampleId, CatalogExampleMetadata } from './types.js';
@@ -31,8 +31,7 @@ const sourceImports = `import {
   AeliqoStackElement,
   AeliqoSurfaceElement,
   AeliqoTextElement,
-  registerAeliqoElements,
-} from "@aeliqo/web";`;
+} from "@aeliqo/web/foundation";`;
 
 type MetadataNotes = Pick<
   CatalogExampleMetadata,
@@ -195,57 +194,57 @@ const mount = (id: CatalogExampleId, fn: (root: HTMLElement) => void): CatalogEx
 
 export const foundationExamples: readonly CatalogExampleDefinition[] = [
   mount('button', (root) => {
-    const element = createCatalogElement<AeliqoButtonElement>('aeliqo-button', root);
+    const element = createCatalogElement<AeliqoButtonElement>('aeliqo-button', root, AeliqoButtonElement);
     element.label = 'Save report';
     element.variant = 'solid';
     element.type = 'button';
   }),
   mount('icon-button', (root) => {
-    const element = createCatalogElement<AeliqoIconButtonElement>('aeliqo-icon-button', root);
+    const element = createCatalogElement<AeliqoIconButtonElement>('aeliqo-icon-button', root, AeliqoIconButtonElement);
     element.label = 'Open details';
     appendSlottedText(element, 'icon', '⋯');
   }),
   mount('link', (root) => {
-    const element = createCatalogElement<AeliqoLinkElement>('aeliqo-link', root);
+    const element = createCatalogElement<AeliqoLinkElement>('aeliqo-link', root, AeliqoLinkElement);
     element.label = 'View report';
     element.href = '/reports/weekly';
     element.target = '_self';
   }),
   mount('text', (root) => {
-    const element = createCatalogElement<AeliqoTextElement>('aeliqo-text', root);
+    const element = createCatalogElement<AeliqoTextElement>('aeliqo-text', root, AeliqoTextElement);
     element.text = 'A plain, trusted text value.';
     element.as = 'p';
   }),
   mount('heading', (root) => {
-    const element = createCatalogElement<AeliqoHeadingElement>('aeliqo-heading', root);
+    const element = createCatalogElement<AeliqoHeadingElement>('aeliqo-heading', root, AeliqoHeadingElement);
     element.level = 2;
     element.size = 'heading';
     element.text = 'Weekly report';
   }),
   mount('badge', (root) => {
-    const element = createCatalogElement<AeliqoBadgeElement>('aeliqo-badge', root);
+    const element = createCatalogElement<AeliqoBadgeElement>('aeliqo-badge', root, AeliqoBadgeElement);
     element.text = 'Ready';
     element.tone = 'success';
   }),
   mount('avatar', (root) => {
-    const element = createCatalogElement<AeliqoAvatarElement>('aeliqo-avatar', root);
+    const element = createCatalogElement<AeliqoAvatarElement>('aeliqo-avatar', root, AeliqoAvatarElement);
     element.name = 'Ada Lovelace';
     element.alt = 'Ada Lovelace';
     element.size = 'medium';
   }),
   mount('separator', (root) => {
-    const element = createCatalogElement<AeliqoSeparatorElement>('aeliqo-separator', root);
+    const element = createCatalogElement<AeliqoSeparatorElement>('aeliqo-separator', root, AeliqoSeparatorElement);
     element.orientation = 'horizontal';
   }),
   mount('surface', (root) => {
-    const element = createCatalogElement<AeliqoSurfaceElement>('aeliqo-surface', root);
+    const element = createCatalogElement<AeliqoSurfaceElement>('aeliqo-surface', root, AeliqoSurfaceElement);
     element.as = 'section';
     element.tone = 'surface';
     element.label = 'Report panel';
     element.textContent = 'Bounded surface content';
   }),
   mount('stack', (root) => {
-    const element = createCatalogElement<AeliqoStackElement>('aeliqo-stack', root);
+    const element = createCatalogElement<AeliqoStackElement>('aeliqo-stack', root, AeliqoStackElement);
     element.direction = 'row';
     element.gap = 12;
     element.align = 'center';
@@ -256,7 +255,7 @@ export const foundationExamples: readonly CatalogExampleDefinition[] = [
     }
   }),
   mount('grid', (root) => {
-    const element = createCatalogElement<AeliqoGridElement>('aeliqo-grid', root);
+    const element = createCatalogElement<AeliqoGridElement>('aeliqo-grid', root, AeliqoGridElement);
     element.columns = 2;
     element.gap = 16;
     element.minItem = 'small';
@@ -267,7 +266,7 @@ export const foundationExamples: readonly CatalogExampleDefinition[] = [
     }
   }),
   mount('split-pane', (root) => {
-    const element = createCatalogElement<AeliqoSplitPaneElement>('aeliqo-split-pane', root);
+    const element = createCatalogElement<AeliqoSplitPaneElement>('aeliqo-split-pane', root, AeliqoSplitPaneElement);
     element.defaultPosition = 42;
     element.min = 20;
     element.max = 80;
@@ -277,7 +276,7 @@ export const foundationExamples: readonly CatalogExampleDefinition[] = [
     appendSlottedText(element, 'end', 'Secondary panel');
   }),
   mount('scroll-area', (root) => {
-    const element = createCatalogElement<AeliqoScrollAreaElement>('aeliqo-scroll-area', root);
+    const element = createCatalogElement<AeliqoScrollAreaElement>('aeliqo-scroll-area', root, AeliqoScrollAreaElement);
     element.axis = 'y';
     element.label = 'Report rows';
     element.tabIndex = 0;

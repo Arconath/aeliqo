@@ -1,0 +1,160 @@
+<header class="pg-intro" aria-labelledby="playground-title">
+  <div>
+    <p class="pg-kicker">Public runtime · synthetic data</p>
+    <h1 id="playground-title">Turn a task into a real interface.</h1>
+    <p class="pg-intro-dek">A small, honest tour of the Aeliqo contract.</p>
+  </div>
+  <div class="pg-intro-copy">
+    <p>Start on the left: choose a scenario, pick a task, and watch the live canvas adapt. Guided and manual modes need no AI.</p>
+    <ol class="pg-intro-flow" aria-label="Playground flow"><li><b>1</b><span>Choose a scenario</span></li><li><b>2</b><span>Send a typed intent</span></li><li><b>3</b><span>Inspect the result</span></li></ol>
+  </div>
+</header>
+
+<section class="pg-app" aria-label="Aeliqo playground" aria-busy="true">
+  <div id="pg-boot" class="pg-boot" role="status" aria-live="polite">
+    <span class="pg-boot-mark" aria-hidden="true">A</span>
+    <div>
+      <p class="pg-kicker">Local runtime</p>
+      <h2>Preparing your workspace</h2>
+      <p>Loading synthetic data and the first view. This demo makes no model calls.</p>
+    </div>
+  </div>
+  <header class="pg-toolbar">
+    <div class="pg-toolbar-brand" aria-hidden="true"><span>A</span><strong>Aeliqo / Playground</strong></div>
+    <label
+      ><span>Scenario</span
+      ><select id="pg-scenario" data-playground-boot-control disabled></select
+    ></label>
+    <fieldset class="pg-mode" aria-label="Playground mode">
+      <legend>Mode</legend>
+      <button type="button" data-mode="guided" data-playground-boot-control disabled aria-pressed="true">Guided</button>
+      <button type="button" data-mode="manual" data-playground-boot-control disabled aria-pressed="false">
+        Manual controls
+      </button>
+      <button type="button" data-mode="connected" data-playground-boot-control disabled aria-pressed="false">
+        Connected agent
+      </button>
+    </fieldset>
+    <div class="pg-connection" aria-live="polite">
+      <span id="pg-connection-dot"></span><strong id="pg-connection-label">No agent · manual runtime</strong>
+    </div>
+    <div class="pg-toolbar-actions">
+      <button type="button" id="pg-export" data-playground-boot-control disabled aria-label="Export project">
+        Export</button
+      ><button type="button" id="pg-inspect" data-playground-boot-control disabled aria-haspopup="dialog">
+        Inspect</button
+      ><button type="button" id="pg-reset" data-playground-boot-control disabled aria-label="Reset playground">
+        Reset
+      </button>
+    </div>
+  </header>
+
+  <div class="pg-workspace">
+    <aside class="pg-request" aria-labelledby="pg-request-title">
+      <div>
+        <p class="pg-kicker" id="pg-mode-label">Guided demo</p>
+        <h2 id="pg-request-title">Build a view</h2>
+        <p id="pg-scenario-description"></p>
+      </div>
+      <section id="pg-guided" aria-labelledby="pg-guided-title">
+        <h3 id="pg-guided-title">Pick a task</h3>
+        <div id="pg-steps" class="pg-steps"></div>
+        <p class="pg-note">
+          Each task sends a deterministic intent fixture. Nothing is guessed from free text in this mode.
+        </p>
+      </section>
+      <section id="pg-manual" hidden aria-labelledby="pg-manual-title">
+        <h3 id="pg-manual-title">Try without an agent</h3>
+        <label>Action<select id="pg-manual-step" data-playground-boot-control disabled></select></label>
+        <button type="button" class="primary" id="pg-run-manual" data-playground-boot-control disabled>
+          Apply intent
+        </button>
+        <p class="pg-note">The same runtime works from application code, with no AI connection.</p>
+      </section>
+      <section id="pg-connected" hidden aria-labelledby="pg-connected-title">
+        <h3 id="pg-connected-title">Connect a local agent</h3>
+        <p>MCP, WebMCP, and BYOK are communication routes into the same bounded tools. Keys stay in your local process.</p>
+        <ol class="pg-connect-steps">
+          <li>Run the local playground host.</li>
+          <li>Connect your agent or local BYOK provider.</li>
+          <li>Ask from the agent; the approved intent appears here.</li>
+        </ol>
+        <label
+          >Connection<select id="pg-connection-kind" data-playground-boot-control disabled>
+            <option value="detect">Detect local host</option>
+            <option value="webmcp">WebMCP (experimental)</option>
+          </select></label
+        >
+        <button type="button" id="pg-connect" data-playground-boot-control disabled>Check connection</button>
+        <label class="pg-composer"
+          >Local BYOK prompt<textarea
+            id="pg-prompt"
+            rows="3"
+            placeholder="Available after a local host is connected"
+            disabled
+          ></textarea>
+        </label>
+        <button type="button" class="primary" id="pg-send" disabled>Send to local agent</button>
+        <p id="pg-connect-status" class="pg-note" role="status">
+          No local host detected. Guided and manual modes remain available.
+        </p>
+      </section>
+    </aside>
+
+    <div class="pg-result" aria-labelledby="pg-result-title">
+      <header class="pg-result-header">
+        <div>
+          <p class="pg-kicker">Live canvas</p>
+          <h2 id="pg-result-title">Your interface appears here</h2>
+        </div>
+        <span id="pg-view-badge">Waiting for intent</span>
+      </header>
+      <p id="pg-status" class="pg-status" role="status" aria-live="polite">
+        Choose a task to render the first view.
+      </p>
+      <div id="pg-error" class="pg-error" role="alert" hidden></div>
+      <div id="pg-region" class="pg-region" aria-label="Rendered Aeliqo interface"></div>
+      <footer class="pg-evidence">
+        <span><small>Data</small>Synthetic · local</span
+        ><span><small>Model calls</small><strong id="pg-model-calls">0</strong></span
+        ><span><small>Runtime receipt</small><strong id="pg-receipt-state">None</strong></span>
+      </footer>
+    </div>
+  </div>
+</section>
+
+<dialog id="pg-inspector" class="pg-inspector" aria-labelledby="pg-inspector-title">
+  <header>
+    <div>
+      <p class="pg-kicker">Runtime evidence</p>
+      <h2 id="pg-inspector-title">Inspector</h2>
+    </div>
+    <button type="button" id="pg-inspector-close" aria-label="Close inspector">Close</button>
+  </header>
+  <nav aria-label="Inspector section">
+    <button type="button" data-inspector="intent" aria-pressed="true">Intent</button
+    ><button type="button" data-inspector="task" aria-pressed="false">Task</button
+    ><button type="button" data-inspector="result" aria-pressed="false">Result</button
+    ><button type="button" data-inspector="presentation" aria-pressed="false">View policy</button
+    ><button type="button" data-inspector="diagnostics" aria-pressed="false">Diagnostics</button>
+  </nav>
+  <p id="pg-inspector-summary">Nothing has run yet.</p>
+  <pre id="pg-inspector-content" tabindex="0">{}</pre>
+</dialog>
+
+<dialog id="pg-action" class="pg-action" aria-labelledby="pg-action-title">
+  <h2 id="pg-action-title">Review action</h2>
+  <p>The runtime validated this proposal. Confirming is still your decision.</p>
+  <pre id="pg-action-content" tabindex="0"></pre>
+  <div>
+    <button type="button" id="pg-action-cancel">Cancel</button
+    ><button type="button" class="primary" id="pg-action-confirm">Confirm action</button>
+  </div>
+  <p id="pg-action-status" role="status"></p>
+</dialog>
+
+<noscript
+  ><p class="shell">
+    The playground needs JavaScript to run its local synthetic runtime. <a href="/">Read the documentation</a>.
+  </p></noscript
+>

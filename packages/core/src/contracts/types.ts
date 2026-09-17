@@ -3,7 +3,6 @@ import type { PlotSpec } from './plot/index.js';
 import type * as z from 'zod/mini';
 import type {
   commitPreconditionsSchema,
-  contractSchemas,
   diagnosticSchema,
   expressionSchema,
   fieldSchema,
@@ -16,6 +15,7 @@ import type {
   valueSchema,
   versionRefSchema,
 } from './schemas.js';
+import type { contractSchemas } from './schemas-registry.js';
 /** JSON optional members may be absent; present `undefined` is not wire data. */
 export type ReadonlyJsonValue =
   null | boolean | number | string | readonly ReadonlyJsonValue[] | { readonly [key: string]: ReadonlyJsonValue };

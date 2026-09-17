@@ -351,7 +351,7 @@ export const AELIQO_INPUT_MANIFESTS: readonly AeliqoInputManifest[] = [
     'aeliqo-search-field',
     'input',
     ['field', 'label', 'input', 'description', 'error'],
-    ['aeliqo-input', 'aeliqo-search', 'aeliqo-validation'],
+    ['aeliqo-input-change', 'aeliqo-search', 'aeliqo-validation'],
     withCommon(['value', 'defaultValue', 'queryOnInput', 'debounceMs']),
     (input) =>
       validate(

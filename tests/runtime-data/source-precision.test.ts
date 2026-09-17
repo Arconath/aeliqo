@@ -46,7 +46,7 @@ async function resultRows(records: readonly DataRecord[], where?: QuerySpec['whe
   const planned = await service.plan({
     version: '1',
     requestId: 'request-1',
-    target: { outputId: 'events' },
+    target: { taskId: 'request-1', outputId: 'events' },
     catalogRevision: 'catalog-1',
     query,
     budget,

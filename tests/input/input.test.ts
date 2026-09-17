@@ -21,7 +21,6 @@ import { AeliqoSliderElement } from '../../packages/web/src/input/slider.js';
 import { AeliqoSwitchElement } from '../../packages/web/src/input/switch.js';
 import { AeliqoTextAreaElement } from '../../packages/web/src/input/text-area.js';
 import { AeliqoTextFieldElement } from '../../packages/web/src/input/text-field.js';
-import { AeliqoInputElement } from '../../packages/web/src/elements/aeliqo-input.js';
 import { dateOnly, formatLocalizedDecimal, parseLocalizedDecimal } from '../../packages/web/src/input/locale.js';
 
 describe('input primitive manifests', () => {
@@ -62,7 +61,6 @@ describe('input primitive manifests', () => {
       AeliqoFieldGroupElement,
       AeliqoFormElement,
     ]).toHaveLength(15);
-    expect(AeliqoInputElement).not.toBe(AeliqoTextFieldElement);
     expect(globalThis.window).toBeUndefined();
     expect(globalThis.document).toBeUndefined();
   });

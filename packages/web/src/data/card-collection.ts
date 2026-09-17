@@ -63,7 +63,7 @@ export class AeliqoCardCollectionElement extends LitElement {
         }
         ${scope ? html`<p part="scope">${scope}</p>` : nothing}
         ${this.hasMore ? html`<button part="load-more" type="button" ?disabled=${this.loadingMore} aria-busy=${this.loadingMore ? 'true' : nothing} @click=${this.loadMore}>${this.loadingMore ? 'Loading…' : this.loadLabel}</button>` : nothing}
-        ${status === 'loading' || status === 'empty' || status === 'partial' || status === 'stale' || status === 'error' || status === 'unavailable' ? statusTemplate(status, this.message) : nothing}
+        ${status === 'ready' ? nothing : statusTemplate(status, this.message)}
       </section>
     `;
   }

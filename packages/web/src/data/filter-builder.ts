@@ -1,288 +1,27 @@
 import { css, html, LitElement, nothing } from 'lit';
 import { aeliqoThemeStyles } from '../styles/theme.js';
 import { AELIQO_WEB_VERSION } from '../version.js';
-import { validateScalar } from '@aeliqo/core';
-import type { AeliqoDataStatus, AeliqoFieldOption, AeliqoFilterPredicate, AeliqoFilterValue } from './types.js';
+import type { AeliqoDataStatus, AeliqoFieldOption, AeliqoFilterPredicate } from './types.js';
 import { AeliqoFilterChangeEvent } from './events.js';
-import { dataStyles, dataValueText, statusTemplate } from './shared.js';
+import { dataStyles, statusTemplate } from './shared.js';
+import type { AeliqoFilterClause, AeliqoFilterOperator } from './filter-builder-types.js';
+import type { AeliqoFilterLogical, PredicateProjection } from './filter-builder-internal-types.js';
+import { MAX_PREDICATE_NODES } from './filter-builder-limits.js';
+import {
+  buildAeliqoPredicate,
+  clausesSourceSignature,
+  combineAeliqoPredicates,
+  predicateSourceSignature,
+  predicateText,
+  projectPredicate,
+  validateAeliqoPredicate,
+} from './filter-builder-logic.js';
 
-export type AeliqoFilterOperator = 'eq' | 'ne' | 'lt' | 'lte' | 'gt' | 'gte' | 'is-null' | 'not-null' | 'in';
+export type { AeliqoFilterClause, AeliqoFilterOperator } from './filter-builder-types.js';
+export { buildAeliqoPredicate, combineAeliqoPredicates, validateAeliqoPredicate } from './filter-builder-logic.js';
 
-export interface AeliqoFilterClause {
-  readonly field: string;
-  readonly operator: AeliqoFilterOperator;
-  readonly value?: string;
-}
-
-export function combineAeliqoPredicates(
-  predicate: AeliqoFilterPredicate | undefined,
-  inherited: AeliqoFilterPredicate | undefined,
-): AeliqoFilterPredicate | undefined {
-  if (predicate === undefined) return inherited;
-  if (inherited === undefined) return predicate;
-  return { op: 'and', predicates: [inherited, predicate] };
-}
-
-type AeliqoFilterLogical = 'and' | 'or';
-
-const MAX_PREDICATE_DEPTH = 32;
-const MAX_PREDICATE_NODES = 128;
-// A manual compound predicate consumes one node for its logical parent.
+const DRAFT_SOURCE_PROPERTIES = ['predicate', 'clauses', 'logical', 'entity', 'fields'] as const;
 const MAX_MANUAL_CLAUSES = MAX_PREDICATE_NODES - 1;
-
-interface PredicateTraversal {
-  nodes: number;
-}
-
-interface PredicateProjection {
-  readonly clauses: readonly AeliqoFilterClause[];
-  readonly logical: AeliqoFilterLogical;
-  readonly unsupported?: AeliqoFilterPredicate;
-}
-
-export function validateAeliqoPredicate(
-  predicate: AeliqoFilterPredicate | undefined,
-): { readonly ok: true } | { readonly ok: false; readonly message: string } {
-  if (predicate === undefined) return { ok: false, message: 'Choose a field and value before applying the filter.' };
-  if (predicate.op === 'and' || predicate.op === 'or') {
-    return predicate.predicates.length === 0
-      ? { ok: false, message: 'Add at least one filter condition.' }
-      : { ok: true };
-  }
-  if (predicate.op === 'not') return validateAeliqoPredicate(predicate.predicate);
-  if (predicate.op === 'in' && predicate.values.length === 0)
-    return { ok: false, message: 'Provide at least one value.' };
-  return { ok: true };
-}
-
-function fieldSemanticType(field: AeliqoFieldOption | undefined) {
-  if (field?.semanticType !== undefined) return field.semanticType;
-  if (field?.type === undefined) return undefined;
-  return { value: field.type, nullable: field.nullable ?? true } as const;
-}
-
-function parseValue(raw: string, field: AeliqoFieldOption | undefined): AeliqoFilterValue | undefined {
-  const semanticType = fieldSemanticType(field);
-  if (semanticType === undefined) return undefined;
-  const value = semanticType.value === 'text' ? raw : raw.trim();
-  if (semanticType.value !== 'text' && value.length === 0) return undefined;
-  let candidate: unknown = value;
-  if (semanticType.value === 'boolean') {
-    if (value.toLowerCase() === 'true') return true;
-    if (value.toLowerCase() === 'false') return false;
-    return undefined;
-  }
-  if (semanticType.value === 'integer') {
-    const parsed = Number(value);
-    candidate = Number.isSafeInteger(parsed) ? parsed : undefined;
-  }
-  if (semanticType.value === 'float') {
-    const parsed = Number(value);
-    candidate = Number.isFinite(parsed) ? parsed : undefined;
-  }
-  if (semanticType.value === 'decimal') {
-    candidate = { decimal: value };
-  }
-  if (candidate === undefined) return undefined;
-  const checked = validateScalar(candidate, semanticType);
-  return checked.ok ? checked.value : undefined;
-}
-
-type MembershipJsonValue = string | boolean | number | null;
-
-function membershipJsonValue(value: AeliqoFilterValue): MembershipJsonValue | undefined {
-  if (value === null || typeof value === 'string' || typeof value === 'boolean') return value;
-  if (typeof value === 'number') return Number.isFinite(value) ? value : undefined;
-  if (typeof value !== 'object' || Array.isArray(value)) return undefined;
-  const checked = validateScalar(value, { value: 'decimal', nullable: false });
-  if (!checked.ok || checked.value === null || typeof checked.value !== 'object' || Array.isArray(checked.value))
-    return undefined;
-  return typeof checked.value.decimal === 'string' ? checked.value.decimal : undefined;
-}
-
-function membershipJsonText(values: readonly AeliqoFilterValue[]): string | undefined {
-  const serialized = values.map((value) => membershipJsonValue(value));
-  if (serialized.some((value) => value === undefined)) return undefined;
-  return JSON.stringify(serialized);
-}
-
-function predicateEntityMatches(predicate: AeliqoFilterPredicate, entity: string): boolean {
-  const candidate = (predicate as AeliqoFilterPredicate & { readonly entity?: unknown }).entity;
-  return candidate === undefined || candidate === entity;
-}
-
-function clauseFromPredicate(
-  predicate: AeliqoFilterPredicate | undefined,
-  entity: string,
-): AeliqoFilterClause | undefined {
-  if (predicate?.op === 'compare') {
-    if (predicate.value === null || predicate.value === undefined) return undefined;
-    if (!predicateEntityMatches(predicate, entity)) return undefined;
-    return { field: predicate.field, operator: predicate.comparison, value: dataValueText(predicate.value, '') };
-  }
-  if (predicate?.op === 'is-null') {
-    if (!predicateEntityMatches(predicate, entity)) return undefined;
-    return { field: predicate.field, operator: predicate.negate ? 'not-null' : 'is-null' };
-  }
-  if (predicate?.op === 'in') {
-    if (!predicateEntityMatches(predicate, entity)) return undefined;
-    const value = Array.isArray(predicate.values) ? membershipJsonText(predicate.values) : undefined;
-    return value === undefined ? undefined : { field: predicate.field, operator: 'in', value };
-  }
-  if (predicate?.op === 'not' && predicate.predicate.op === 'is-null') {
-    if (!predicateEntityMatches(predicate, entity) || !predicateEntityMatches(predicate.predicate, entity))
-      return undefined;
-    return { field: predicate.predicate.field, operator: predicate.predicate.negate ? 'is-null' : 'not-null' };
-  }
-  return undefined;
-}
-
-function unsupportedProjection(
-  predicate: AeliqoFilterPredicate,
-  logical: AeliqoFilterLogical = 'and',
-): PredicateProjection {
-  return { clauses: [], logical, unsupported: predicate };
-}
-
-function projectPredicate(
-  predicate: AeliqoFilterPredicate | undefined,
-  depth = 0,
-  traversal: PredicateTraversal = { nodes: 0 },
-  entity = '',
-): PredicateProjection {
-  try {
-    if (predicate === undefined) return { clauses: [], logical: 'and' };
-    if (depth > MAX_PREDICATE_DEPTH || traversal.nodes >= MAX_PREDICATE_NODES) return unsupportedProjection(predicate);
-    traversal.nodes += 1;
-    if (!predicateEntityMatches(predicate, entity)) return unsupportedProjection(predicate);
-    const clause = clauseFromPredicate(predicate, entity);
-    if (clause !== undefined) return { clauses: [clause], logical: 'and' };
-    if (predicate.op !== 'and' && predicate.op !== 'or') return { clauses: [], logical: 'and', unsupported: predicate };
-    const predicates = predicate.predicates;
-    if (!Array.isArray(predicates) || predicates.length === 0) return unsupportedProjection(predicate, predicate.op);
-    const clauses: AeliqoFilterClause[] = [];
-    for (let index = 0; index < predicates.length; index += 1) {
-      if (traversal.nodes >= MAX_PREDICATE_NODES) return unsupportedProjection(predicate, predicate.op);
-      const child = predicates[index];
-      if (child === undefined) return unsupportedProjection(predicate, predicate.op);
-      const projection = projectPredicate(child, depth + 1, traversal, entity);
-      if (
-        projection.unsupported !== undefined ||
-        (projection.clauses.length > 1 && projection.logical !== predicate.op)
-      ) {
-        return unsupportedProjection(predicate, predicate.op);
-      }
-      clauses.push(...projection.clauses);
-    }
-    return clauses.length === 0 ? unsupportedProjection(predicate, predicate.op) : { clauses, logical: predicate.op };
-  } catch {
-    return predicate === undefined ? { clauses: [], logical: 'and' } : unsupportedProjection(predicate);
-  }
-}
-
-function predicateText(
-  predicate: AeliqoFilterPredicate,
-  depth = 0,
-  traversal: PredicateTraversal = { nodes: 0 },
-  parentLogical = false,
-): string {
-  try {
-    if (depth > MAX_PREDICATE_DEPTH || traversal.nodes >= MAX_PREDICATE_NODES) return 'Unsupported filter condition';
-    traversal.nodes += 1;
-    if (predicate.op === 'compare') {
-      if (predicate.value === null || predicate.value === undefined) return 'Unsupported filter condition';
-      return `${predicate.field} ${predicate.comparison} ${dataValueText(predicate.value, '')}`;
-    }
-    if (predicate.op === 'is-null') return `${predicate.field} ${predicate.negate ? 'is not empty' : 'is empty'}`;
-    if (predicate.op === 'in') {
-      const value = Array.isArray(predicate.values) ? membershipJsonText(predicate.values) : undefined;
-      return value === undefined ? 'Unsupported filter condition' : `${predicate.field} is one of ${value}`;
-    }
-    if (predicate.op === 'not') return `NOT (${predicateText(predicate.predicate, depth + 1, traversal)})`;
-    if (predicate.op !== 'and' && predicate.op !== 'or') return 'Unsupported filter condition';
-    const predicates = predicate.predicates;
-    if (!Array.isArray(predicates) || predicates.length === 0) return 'Unsupported filter condition';
-    const joiner = predicate.op === 'and' ? ' AND ' : ' OR ';
-    const children: string[] = [];
-    for (let index = 0; index < predicates.length; index += 1) {
-      if (traversal.nodes >= MAX_PREDICATE_NODES) return 'Unsupported filter condition';
-      const child = predicates[index];
-      if (child === undefined) return 'Unsupported filter condition';
-      children.push(predicateText(child, depth + 1, traversal, true));
-    }
-    const text = children.join(joiner);
-    return parentLogical ? `(${text})` : text;
-  } catch {
-    return 'Unsupported filter condition';
-  }
-}
-
-function predicateSourceSignature(
-  predicate: AeliqoFilterPredicate,
-  projection: PredicateProjection,
-  entity: string,
-): string {
-  if (projection.unsupported !== undefined) return `unsupported:${predicateText(predicate)}`;
-  const logical = projection.clauses.length > 1 ? projection.logical : 'and';
-  return JSON.stringify({ entity, logical, clauses: projection.clauses });
-}
-
-function clausesSourceSignature(clauses: readonly AeliqoFilterClause[], logical: AeliqoFilterLogical): string {
-  return JSON.stringify({ logical: clauses.length > 1 ? logical : 'and', clauses });
-}
-
-function parseMembershipValue(raw: unknown, field: AeliqoFieldOption | undefined): AeliqoFilterValue | undefined {
-  const semanticType = fieldSemanticType(field);
-  if (semanticType === undefined) return undefined;
-  if (typeof raw === 'string') return parseValue(raw, field);
-  if (raw === null || typeof raw === 'boolean' || typeof raw === 'number') {
-    const checked = validateScalar(raw, semanticType);
-    return checked.ok ? checked.value : undefined;
-  }
-  if (semanticType.value !== 'decimal' || typeof raw !== 'object' || Array.isArray(raw)) return undefined;
-  const checked = validateScalar(raw, semanticType);
-  return checked.ok ? checked.value : undefined;
-}
-
-function parseMembershipValues(raw: string, field: AeliqoFieldOption | undefined): AeliqoFilterValue[] | undefined {
-  const source = raw.trim();
-  if (source.length === 0) return undefined;
-  let rawValues: readonly unknown[];
-  if (source.startsWith('[')) {
-    try {
-      const parsed: unknown = JSON.parse(source);
-      if (!Array.isArray(parsed)) return undefined;
-      rawValues = parsed;
-    } catch {
-      return undefined;
-    }
-  } else {
-    rawValues = source.split(',');
-  }
-  const values = rawValues.map((value) => parseMembershipValue(value, field));
-  return values.some((value) => value === undefined) ? undefined : (values as AeliqoFilterValue[]);
-}
-
-/** Convert one author-controlled draft clause into the canonical predicate
- * vocabulary. Invalid values return undefined rather than being coerced. */
-export function buildAeliqoPredicate(
-  clause: AeliqoFilterClause,
-  field: AeliqoFieldOption | undefined,
-  entity = '',
-): AeliqoFilterPredicate | undefined {
-  if (clause.field.length === 0 || field === undefined || field.id !== clause.field) return undefined;
-  const base = entity.length === 0 ? {} : { entity };
-  if (clause.operator === 'is-null' || clause.operator === 'not-null')
-    return { op: 'is-null', field: clause.field, ...base, negate: clause.operator === 'not-null' };
-  if (clause.operator === 'in') {
-    const values = parseMembershipValues(clause.value ?? '', field);
-    if (values === undefined) return undefined;
-    return { op: 'in', field: clause.field, ...base, values };
-  }
-  const value = parseValue(clause.value ?? '', field);
-  if (value === undefined) return undefined;
-  return { op: 'compare', field: clause.field, ...base, comparison: clause.operator, value };
-}
 
 /** Builds a typed predicate locally and only emits it on an explicit Apply.
  * Typing, composition and IME input never execute a query. */
@@ -323,75 +62,122 @@ export class AeliqoFilterBuilderElement extends LitElement {
   private validationMessage = '';
 
   protected override willUpdate(changed: Map<string, unknown>): void {
-    if (
-      changed.has('predicate') ||
-      changed.has('clauses') ||
-      changed.has('logical') ||
-      changed.has('entity') ||
-      changed.has('fields') ||
-      !this.draftInitialized
-    ) {
-      const projection: PredicateProjection =
-        this.predicate !== undefined
-          ? projectPredicate(this.predicate, 0, { nodes: 0 }, this.entity)
-          : { clauses: this.clauses.map((clause) => ({ ...clause })), logical: this.logical === 'or' ? 'or' : 'and' };
-      const signature =
-        this.predicate !== undefined
-          ? predicateSourceSignature(this.predicate, projection, this.entity)
-          : clausesSourceSignature(projection.clauses, projection.logical);
-      this.unsupportedPredicate = projection.unsupported;
-      if (!this.draftInitialized || signature !== this.draftSourceSignature) {
-        this.clauseDrafts = projection.clauses.map((clause) => ({ ...clause }));
-        this.logicalMode = projection.logical;
-        this.draftInteracted = false;
-      }
-      // A compound can provide its fields after the first child update. Seed a
-      // usable draft once the options arrive, while preserving a draft that
-      // the author has already edited or composed manually.
-      if (
-        this.clauseDrafts.length === 0 &&
-        this.fields.length > 0 &&
-        this.unsupportedPredicate === undefined &&
-        !this.draftInteracted
-      ) {
-        this.clauseDrafts = [{ field: this.fields[0]!.id, operator: 'eq', value: '' }];
-      }
-      this.draftSourceSignature = signature;
-      this.draftInitialized = true;
-    }
+    if (!this.shouldProjectDraft(changed)) return;
+    const projection = this.currentProjection();
+    const signature = this.currentProjectionSignature(projection);
+    this.unsupportedPredicate = projection.unsupported;
+    if (!this.draftInitialized || signature !== this.draftSourceSignature) this.replaceDraft(projection);
+    this.seedDraftWhenFieldsArrive();
+    this.draftSourceSignature = signature;
+    this.draftInitialized = true;
   }
 
   protected override render() {
-    const disabled = this.status === 'loading' || this.status === 'error' || this.status === 'unavailable';
-    const applyDisabled = disabled || this.unsupportedPredicate !== undefined;
+    const disabled = this.isUnavailable();
     return html`
       <form part="builder" @submit=${this.handleSubmit}>
         <fieldset ?disabled=${disabled}>
           <legend>Filter</legend>
           <div part="scope">${this.scopeLabel}</div>
-          <div part="clauses">
-            ${this.clauseDrafts.map((clause, index) => this.renderClause(clause, index))}
-            ${
-              this.clauseDrafts.length > 1
-                ? html`<label part="logical-label"
-                    >Match
-                    <select part="logical" .value=${this.logicalMode} @change=${this.handleLogicalChange}>
-                      <option value="and">All conditions</option>
-                      <option value="or">Any condition</option>
-                    </select>
-                  </label>`
-                : nothing
-            }
-          </div>
-          ${this.unsupportedPredicate === undefined ? html`<button part="add-condition" type="button" ?disabled=${disabled || this.fields.length === 0 || this.clauseDrafts.length >= MAX_MANUAL_CLAUSES} @click=${this.handleAddCondition}>Add condition</button>` : nothing}
-          ${this.unsupportedPredicate === undefined ? nothing : html`<div part="unsupported-predicate" role="status">This filter contains a nested condition that is read-only: ${predicateText(this.unsupportedPredicate)}</div>`}
-          ${this.inherited === undefined ? nothing : html`<div part="inherited-predicate" role="status">Inherited filter (read-only): ${predicateText(this.inherited)}</div>`}
-          <button part="apply" type="submit" ?disabled=${applyDisabled}>${this.applyLabel}</button>
-          ${this.validationMessage ? html`<p part="validation" role="alert">${this.validationMessage}</p>` : nothing}
+          ${this.renderClauses()} ${this.renderAddCondition(disabled)} ${this.renderUnsupportedPredicate()}
+          ${this.renderInheritedPredicate()} ${this.renderApplyButton(disabled)} ${this.renderValidationMessage()}
         </fieldset>
       </form>
-      ${this.status === 'partial' || this.status === 'stale' ? statusTemplate(this.status, this.message) : nothing}
+      ${this.renderStatus()}
     `;
+  }
+
+  private shouldProjectDraft(changed: Map<string, unknown>): boolean {
+    return DRAFT_SOURCE_PROPERTIES.some((property) => changed.has(property)) || !this.draftInitialized;
+  }
+
+  private currentProjection(): PredicateProjection {
+    if (this.predicate !== undefined) return projectPredicate(this.predicate, 0, { nodes: 0 }, this.entity);
+    return {
+      clauses: this.clauses.map((clause) => ({ ...clause })),
+      logical: this.logical === 'or' ? 'or' : 'and',
+    };
+  }
+
+  private currentProjectionSignature(projection: PredicateProjection): string {
+    if (this.predicate !== undefined) return predicateSourceSignature(this.predicate, projection, this.entity);
+    return clausesSourceSignature(projection.clauses, projection.logical);
+  }
+
+  private replaceDraft(projection: PredicateProjection): void {
+    this.clauseDrafts = projection.clauses.map((clause) => ({ ...clause }));
+    this.logicalMode = projection.logical;
+    this.draftInteracted = false;
+  }
+
+  private seedDraftWhenFieldsArrive(): void {
+    if (this.clauseDrafts.length > 0 || this.fields.length === 0) return;
+    if (this.unsupportedPredicate !== undefined || this.draftInteracted) return;
+    this.clauseDrafts = [{ field: this.fields[0]!.id, operator: 'eq', value: '' }];
+  }
+
+  private isUnavailable(): boolean {
+    return this.status === 'loading' || this.status === 'error' || this.status === 'unavailable';
+  }
+
+  private renderClauses() {
+    return html`<div part="clauses">
+      ${this.clauseDrafts.map((clause, index) => this.renderClause(clause, index))} ${this.renderLogicalControl()}
+    </div>`;
+  }
+
+  private renderLogicalControl() {
+    if (this.clauseDrafts.length <= 1) return nothing;
+    return html`<label part="logical-label"
+      >Match
+      <select part="logical" .value=${this.logicalMode} @change=${this.handleLogicalChange}>
+        <option value="and">All conditions</option>
+        <option value="or">Any condition</option>
+      </select>
+    </label>`;
+  }
+
+  private renderAddCondition(disabled: boolean) {
+    if (this.unsupportedPredicate !== undefined) return nothing;
+    const atLimit = this.clauseDrafts.length >= MAX_MANUAL_CLAUSES;
+    return html`<button
+      part="add-condition"
+      type="button"
+      ?disabled=${disabled || this.fields.length === 0 || atLimit}
+      @click=${this.handleAddCondition}
+    >
+      Add condition
+    </button>`;
+  }
+
+  private renderUnsupportedPredicate() {
+    if (this.unsupportedPredicate === undefined) return nothing;
+    return html`<div part="unsupported-predicate" role="status">
+      This filter contains a nested condition that is read-only: ${predicateText(this.unsupportedPredicate)}
+    </div>`;
+  }
+
+  private renderInheritedPredicate() {
+    if (this.inherited === undefined) return nothing;
+    return html`<div part="inherited-predicate" role="status">
+      Inherited filter (read-only): ${predicateText(this.inherited)}
+    </div>`;
+  }
+
+  private renderApplyButton(disabled: boolean) {
+    return html`<button part="apply" type="submit" ?disabled=${disabled || this.unsupportedPredicate !== undefined}>
+      ${this.applyLabel}
+    </button>`;
+  }
+
+  private renderValidationMessage() {
+    if (this.validationMessage.length === 0) return nothing;
+    return html`<p part="validation" role="alert">${this.validationMessage}</p>`;
+  }
+
+  private renderStatus() {
+    if (this.status !== 'partial' && this.status !== 'stale') return nothing;
+    return statusTemplate(this.status, this.message);
   }
 
   private renderClause(clause: AeliqoFilterClause, index: number) {

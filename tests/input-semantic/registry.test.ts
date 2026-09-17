@@ -5,13 +5,9 @@ import {
   type AeliqoInputBindings,
   type AeliqoInputDraftBinding,
 } from '../../packages/web/src/region/input-registry.js';
-import {
-  validatePresentationPlan,
-  type PresentationContext,
-  type PresentationPlan,
-  type Result,
-  type SemanticType,
-} from '../../packages/core/src/index.js';
+import type { PresentationPlan, Result, SemanticType } from '../../packages/core/src/contracts/index.js';
+import type { PresentationContext } from '../../packages/core/src/presentation/index.js';
+import { validatePresentationPlan } from '../../packages/core/src/presentation/index.js';
 import { freezePresentation } from '../../packages/core/src/presentation/registry.js';
 import { createAeliqoPresentationRegistry } from '../../packages/web/src/region/registry.js';
 import { environment, experience, presentationPlan, presentationTask, result } from '../contracts/fixtures.js';

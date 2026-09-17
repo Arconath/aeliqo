@@ -1,0 +1,16 @@
+---
+id: "what-is"
+path: "/start/what-is-aeliqo/"
+section: "Start"
+title: "What is Aeliqo?"
+description: "A framework that compiles bounded application intent into registered UI, with evidence and authority checked at every boundary."
+---
+
+<p class="lead">Aeliqo is the runtime between product intent and rendering. Your application stays in charge of meaning, data, authority, and business actions. Aeliqo turns that contract into a safe interface that can adapt without a model call.</p>
+<div class="docs-proof"><header><div><span class="product-mark" aria-hidden="true">A</span><strong>The short version</strong></div><span>same contract · different view</span></header><div class="docs-proof-grid"><div><small>Developer registers</small><strong>People + meaning + permission</strong><p>What the resource is and what this user may see or change.</p></div><span aria-hidden="true">→</span><div><small>Aeliqo returns</small><strong>Table on wide · cards on narrow</strong><p>The same Result, identity, selection, and state—presented for the container.</p></div></div></div>
+<h2>Why it exists</h2><p>Without Aeliqo, every screen wires query state, responsive alternatives, empty/error states, cancellation, stale-result protection, accessibility behavior, and agent tooling independently. Aeliqo centralizes those mechanics while leaving product meaning and authority in the application.</p>
+<h2>Who owns what</h2><div class="ownership-grid"><article><span>Developer owns</span><ul><li>Resource meaning and identity</li><li>Data adapters and server authorization</li><li>Allowed actions, routes, and custom views</li><li>Product-specific policy and copy</li></ul></article><article><span>Aeliqo owns</span><ul><li>Intent validation and Task compilation</li><li>Bounded evaluation and Result evidence</li><li>Recipe selection and responsive adaptation</li><li>Region lifecycle, cancellation, and receipts</li></ul></article><article><span>Agent may do</span><ul><li>Discover allowed capabilities</li><li>Propose a validated intent</li><li>Request preview or execution of a registered action</li><li>Explain outcomes returned by the runtime</li></ul></article></div>
+<h2>It works without AI</h2><p>Call <code>app.render({intent})</code> from a button, route, filter form, command palette, test, or server-driven workflow. An agent uses the same intent envelope and cannot bypass the compiler or authority checks.</p>
+<div class="docs-inline-cta"><p><strong>Think of an agent as a requester.</strong> It can ask for a view; it never becomes your renderer or authorization server.</p><a href="/agents/">Connect an agent →</a></div>
+<h2>It is for more than dashboards</h2><p>Browse people as table or cards, compare products, edit support tickets, search knowledge content, render forms, and connect host navigation. Analytics is one recipe family—not the framework’s identity.</p>
+<nav class="doc-next" aria-label="Continue reading"><p>Continue reading</p><a href="/concepts/"><span>System concepts</span><small>Understand Catalog, Intent, Task, Result, Recipe, and Region.</small><b aria-hidden="true">→</b></a><a href="/start/"><span>Build it</span><small>See the complete code and visible result.</small><b aria-hidden="true">→</b></a></nav>

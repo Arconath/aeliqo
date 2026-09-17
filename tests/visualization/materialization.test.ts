@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { bindVisualizationSpec } from '../../packages/core/src/index.js';
+import { bindVisualizationSpec } from '../../packages/core/src/contracts/visualization/index.js';
 import type { Result } from '../../packages/core/src/index.js';
 import { compilePlotUnit } from '../../packages/web/src/plot/geometry.js';
 import { materializeVisualizationRows } from '../../packages/web/src/visualization/materialization.js';

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { InteractionPayload, PresentationValues, ValidatedPresentation } from '../../packages/core/src/index.js';
+import type { InteractionPayload } from '../../packages/core/src/contracts/index.js';
+import type { PresentationValues, ValidatedPresentation } from '../../packages/core/src/presentation/index.js';
 import { renderNavigationFeedbackNode } from '../../packages/web/src/region/navigation-feedback-renderer.js';
 
 type Node = ValidatedPresentation['nodes'][number];

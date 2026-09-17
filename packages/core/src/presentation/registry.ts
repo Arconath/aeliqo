@@ -3,6 +3,8 @@ import { inspectWire } from '../contracts/ingress.js';
 import { idSchema, versionRefSchema } from '../contracts/schemas.js';
 import { WIRE_LIMITS } from '../contracts/limits.js';
 import type { Outcome } from '../contracts/types.js';
+import { versionRefKey as versionKey } from '../contracts/stable.js';
+export { versionRefKey as versionKey } from '../contracts/stable.js';
 import { validateInteractionGraph, interactionMappingManifestSchema } from '../interaction/graph.js';
 import type { InteractionMappingManifest } from '../interaction/graph.js';
 import type {
@@ -16,10 +18,8 @@ export const presentationFailure = (code: string, message: string): Outcome<neve
   ok: false,
   diagnostics: [{ code: `presentation.${code}`, message, retryable: false }],
 });
-export const versionKey = (ref: { readonly id: string; readonly revision: string }): string =>
-  JSON.stringify([ref.id, ref.revision]);
 /** Pattern IDs are allowlisted by ID in Experience, so revisions cannot be ambiguous. */
-export const PRESENTATION_PATTERN_LIMIT = 64;
+const PRESENTATION_PATTERN_LIMIT = 64;
 export const isThenable = (value: unknown): value is { then: (...args: readonly unknown[]) => unknown } => {
   if (value === null || (typeof value !== 'object' && typeof value !== 'function')) return false;
   try {
@@ -50,6 +50,7 @@ export function freezePresentationContainer<T>(value: T): T {
   ownedFrozenGraphs.add(value);
   return value;
 }
+
 const bound = z.int().check(z.minimum(0), z.maximum(WIRE_LIMITS.presentationNodes));
 const manifestSchema = z.strictObject({
   ref: versionRefSchema,
@@ -61,7 +62,7 @@ const manifestSchema = z.strictObject({
   visibility: z.enum(['simultaneous', 'exclusive', 'leaf']),
   extension: z.boolean(),
 });
-export const stateMappingSchema = z.strictObject({
+const stateMappingSchema = z.strictObject({
   ref: versionRefSchema,
   from: versionRefSchema,
   to: versionRefSchema,
@@ -71,6 +72,193 @@ export const stateMappingSchema = z.strictObject({
 });
 const patternSchema = z.strictObject({ ref: versionRefSchema });
 
+function validateManifestCallbacks(manifest: PresentationManifest): Outcome<never> | undefined {
+  const { resolveConfig, suggestConfig, assess } = manifest;
+  if (
+    typeof resolveConfig === 'function' &&
+    (suggestConfig === undefined || typeof suggestConfig === 'function') &&
+    (assess === undefined || typeof assess === 'function')
+  )
+    return undefined;
+  return presentationFailure('registry', 'Representation configuration handlers must be registered local functions.');
+}
+
+function validateManifestShape(metadata: Omit<PresentationManifest, 'resolveConfig' | 'suggestConfig' | 'assess'>) {
+  const wire = inspectWire(metadata);
+  if (!wire.ok) return wire;
+  const parsed = z.safeParse(manifestSchema, wire.value);
+  if (!parsed.success)
+    return presentationFailure('registry', 'Representation metadata does not match the bounded registry contract.');
+  return { ok: true as const, value: parsed.data };
+}
+
+function validateManifestIdentity(
+  manifest: z.infer<typeof manifestSchema>,
+  seen: ReadonlySet<string>,
+): Outcome<never> | undefined {
+  if (
+    !seen.has(versionKey(manifest.ref)) &&
+    new Set(manifest.roles).size === manifest.roles.length &&
+    new Set(manifest.operations.map(versionKey)).size === manifest.operations.length &&
+    manifest.children.min <= manifest.children.max &&
+    (manifest.visibility !== 'leaf' || manifest.children.max === 0)
+  )
+    return undefined;
+  return presentationFailure(
+    'registry',
+    'Representation identities, operations, roles or child bounds are inconsistent.',
+  );
+}
+
+function registerManifest(manifest: PresentationManifest, seen: Set<string>): Outcome<PresentationManifest> {
+  const callbacks = validateManifestCallbacks(manifest);
+  if (callbacks !== undefined) return callbacks;
+  const { resolveConfig, suggestConfig, assess, ...metadata } = manifest;
+  const parsed = validateManifestShape(metadata);
+  if (!parsed.ok) return parsed;
+  const consistent = validateManifestIdentity(parsed.value, seen);
+  if (consistent !== undefined) return consistent;
+  seen.add(versionKey(parsed.value.ref));
+  return {
+    ok: true,
+    value: freezePresentation({
+      ...parsed.value,
+      resolveConfig,
+      ...(suggestConfig === undefined ? {} : { suggestConfig }),
+      ...(assess === undefined ? {} : { assess }),
+    }),
+  };
+}
+
+function registerManifests(input: readonly PresentationManifest[]): Outcome<PresentationManifest[]> {
+  const manifests: PresentationManifest[] = [];
+  const seen = new Set<string>();
+  try {
+    for (const manifest of input) {
+      const registered = registerManifest(manifest, seen);
+      if (!registered.ok) return registered;
+      manifests.push(registered.value);
+    }
+  } catch {
+    return presentationFailure('registry', 'Representation registration failed.');
+  }
+  return { ok: true, value: manifests };
+}
+
+function registerPattern(pattern: PresentationPatternManifest, ids: Set<string>): Outcome<PresentationPatternManifest> {
+  const { expand, matches, ...metadata } = pattern;
+  if (typeof expand !== 'function' || typeof matches !== 'function')
+    return presentationFailure('registry', 'Pattern expanders and matchers must be registered local functions.');
+  const wire = inspectWire(metadata);
+  if (!wire.ok) return wire;
+  const parsed = z.safeParse(patternSchema, wire.value);
+  if (!parsed.success || ids.has(parsed.data.ref.id))
+    return presentationFailure('registry', 'Pattern references must be valid and unique by ID.');
+  ids.add(parsed.data.ref.id);
+  return { ok: true, value: freezePresentation({ ...parsed.data, expand, matches }) };
+}
+
+function registerPatterns(patterns: readonly PresentationPatternManifest[]): Outcome<PresentationPatternManifest[]> {
+  const owned: PresentationPatternManifest[] = [];
+  const ids = new Set<string>();
+  try {
+    for (const pattern of patterns) {
+      const registered = registerPattern(pattern, ids);
+      if (!registered.ok) return registered;
+      owned.push(registered.value);
+    }
+  } catch {
+    return presentationFailure('registry', 'Pattern registration failed.');
+  }
+  return { ok: true, value: owned };
+}
+
+function invalidStateMapping(
+  mapping: z.infer<typeof stateMappingSchema>,
+  seen: ReadonlySet<string>,
+  manifests: ReadonlyMap<string, PresentationManifest>,
+): boolean {
+  if (mapping.ref.id === 'aeliqo.state.identity') return true;
+  const from = manifests.get(versionKey(mapping.from));
+  const to = manifests.get(versionKey(mapping.to));
+  return (
+    !seen.has(versionKey(mapping.from)) ||
+    !seen.has(versionKey(mapping.to)) ||
+    from === undefined ||
+    to === undefined ||
+    !from.roles.includes(mapping.fromRole) ||
+    !to.roles.includes(mapping.toRole)
+  );
+}
+
+function registerStateMappings(
+  stateMappings: readonly PresentationStateMappingManifest[],
+  seen: ReadonlySet<string>,
+  manifests: readonly PresentationManifest[],
+): Outcome<readonly PresentationStateMappingManifest[]> {
+  const wire = inspectWire(stateMappings);
+  if (!wire.ok) return wire;
+  const parsed = z.safeParse(z.array(stateMappingSchema).check(z.maxLength(128)), wire.value);
+  if (!parsed.success)
+    return presentationFailure('registry', 'State mappings must be unique registered representation/role pairs.');
+  const uniqueRefs = new Set(parsed.data.map((mapping) => versionKey(mapping.ref)));
+  const byVersion = new Map(manifests.map((manifest) => [versionKey(manifest.ref), manifest]));
+  const invalid = parsed.data.some(
+    (mapping) => uniqueRefs.size !== parsed.data.length || invalidStateMapping(mapping, seen, byVersion),
+  );
+  if (invalid)
+    return presentationFailure('registry', 'State mappings must be unique registered representation/role pairs.');
+  return { ok: true, value: parsed.data };
+}
+
+function registerMappings(mappings: readonly InteractionMappingManifest[]) {
+  const wire = inspectWire(mappings);
+  if (!wire.ok) return wire;
+  const parsed = z.safeParse(z.array(interactionMappingManifestSchema), wire.value);
+  if (!parsed.success) return presentationFailure('registry', 'The registered mappings are malformed.');
+  const mappingValues = parsed.data as unknown as readonly InteractionMappingManifest[];
+  const graph = validateInteractionGraph({ nodes: [], links: [] }, mappingValues);
+  if (!graph.ok) return graph;
+  return { ok: true as const, value: mappingValues };
+}
+
+function validateRegistryInput(
+  manifests: readonly PresentationManifest[],
+  patterns: readonly PresentationPatternManifest[],
+): Outcome<void> {
+  if (!Array.isArray(manifests) || manifests.length === 0 || manifests.length > WIRE_LIMITS.presentationNodes)
+    return presentationFailure('registry', 'A bounded nonempty representation registry is required.');
+  if (!Array.isArray(patterns) || patterns.length > PRESENTATION_PATTERN_LIMIT)
+    return presentationFailure('registry', 'A bounded pattern registry is required.');
+  return { ok: true, value: undefined };
+}
+
+function registerRegistryParts(
+  input: readonly PresentationManifest[],
+  mappings: readonly InteractionMappingManifest[],
+  patterns: readonly PresentationPatternManifest[],
+  stateMappings: readonly PresentationStateMappingManifest[],
+): Outcome<PresentationRegistry> {
+  const manifestResult = registerManifests(input);
+  if (!manifestResult.ok) return manifestResult;
+  const patternResult = registerPatterns(patterns);
+  if (!patternResult.ok) return patternResult;
+  const seen = new Set(manifestResult.value.map((manifest) => versionKey(manifest.ref)));
+  const stateResult = registerStateMappings(stateMappings, seen, manifestResult.value);
+  if (!stateResult.ok) return stateResult;
+  const mappingResult = registerMappings(mappings);
+  if (!mappingResult.ok) return mappingResult;
+  return {
+    ok: true,
+    value: freezePresentation({
+      manifests: manifestResult.value,
+      mappings: mappingResult.value,
+      patterns: patternResult.value,
+      stateMappings: stateResult.value,
+    }),
+  };
+}
+
 /** Registry installation is trusted local code, not a serializable proposal operation. */
 export function createPresentationRegistry(
   input: readonly PresentationManifest[],
@@ -78,102 +266,7 @@ export function createPresentationRegistry(
   patterns: readonly PresentationPatternManifest[] = [],
   stateMappings: readonly PresentationStateMappingManifest[] = [],
 ): Outcome<PresentationRegistry> {
-  if (!Array.isArray(input) || input.length === 0 || input.length > WIRE_LIMITS.presentationNodes)
-    return presentationFailure('registry', 'A bounded nonempty representation registry is required.');
-  if (!Array.isArray(patterns) || patterns.length > PRESENTATION_PATTERN_LIMIT)
-    return presentationFailure('registry', 'A bounded pattern registry is required.');
-  const manifests: PresentationManifest[] = [];
-  const seen = new Set<string>();
-  try {
-    for (const manifest of input) {
-      const { resolveConfig, suggestConfig, assess, ...metadata } = manifest;
-      if (
-        typeof resolveConfig !== 'function' ||
-        (suggestConfig !== undefined && typeof suggestConfig !== 'function') ||
-        (assess !== undefined && typeof assess !== 'function')
-      )
-        return presentationFailure(
-          'registry',
-          'Representation configuration handlers must be registered local functions.',
-        );
-      const wire = inspectWire(metadata);
-      if (!wire.ok) return wire;
-      const parsed = z.safeParse(manifestSchema, wire.value);
-      if (!parsed.success)
-        return presentationFailure('registry', 'Representation metadata does not match the bounded registry contract.');
-      const m = parsed.data;
-      if (
-        seen.has(versionKey(m.ref)) ||
-        new Set(m.roles).size !== m.roles.length ||
-        new Set(m.operations.map(versionKey)).size !== m.operations.length ||
-        m.children.min > m.children.max ||
-        (m.visibility === 'leaf' && m.children.max !== 0)
-      )
-        return presentationFailure(
-          'registry',
-          'Representation identities, operations, roles or child bounds are inconsistent.',
-        );
-      seen.add(versionKey(m.ref));
-      manifests.push(
-        freezePresentation({
-          ...m,
-          resolveConfig,
-          ...(suggestConfig === undefined ? {} : { suggestConfig }),
-          ...(assess === undefined ? {} : { assess }),
-        }),
-      );
-    }
-  } catch {
-    return presentationFailure('registry', 'Representation registration failed.');
-  }
-  const ownedPatterns: PresentationPatternManifest[] = [];
-  const patternIds = new Set<string>();
-  try {
-    for (const pattern of patterns) {
-      const { expand, matches, ...metadata } = pattern;
-      if (typeof expand !== 'function' || typeof matches !== 'function')
-        return presentationFailure('registry', 'Pattern expanders and matchers must be registered local functions.');
-      const wire = inspectWire(metadata);
-      if (!wire.ok) return wire;
-      const parsed = z.safeParse(patternSchema, wire.value);
-      if (!parsed.success || patternIds.has(parsed.data.ref.id))
-        return presentationFailure('registry', 'Pattern references must be valid and unique by ID.');
-      patternIds.add(parsed.data.ref.id);
-      ownedPatterns.push(freezePresentation({ ...parsed.data, expand, matches }));
-    }
-  } catch {
-    return presentationFailure('registry', 'Pattern registration failed.');
-  }
-  const stateWire = inspectWire(stateMappings);
-  if (!stateWire.ok) return stateWire;
-  const stateParsed = z.safeParse(z.array(stateMappingSchema).check(z.maxLength(128)), stateWire.value);
-  if (
-    !stateParsed.success ||
-    new Set(stateParsed.data.map((m) => versionKey(m.ref))).size !== stateParsed.data.length ||
-    stateParsed.data.some(
-      (m) =>
-        m.ref.id === 'aeliqo.state.identity' ||
-        !seen.has(versionKey(m.from)) ||
-        !seen.has(versionKey(m.to)) ||
-        !manifests.find((n) => versionKey(n.ref) === versionKey(m.from))!.roles.includes(m.fromRole) ||
-        !manifests.find((n) => versionKey(n.ref) === versionKey(m.to))!.roles.includes(m.toRole),
-    )
-  )
-    return presentationFailure('registry', 'State mappings must be unique registered representation/role pairs.');
-  const mappingWire = inspectWire(mappings);
-  if (!mappingWire.ok) return mappingWire;
-  const ownedMappings = z.safeParse(z.array(interactionMappingManifestSchema), mappingWire.value);
-  if (!ownedMappings.success) return presentationFailure('registry', 'The registered mappings are malformed.');
-  const mappingValues = ownedMappings.data as unknown as readonly InteractionMappingManifest[];
-  const graph = validateInteractionGraph({ nodes: [], links: [] }, mappingValues);
-  if (!graph.ok) return graph;
-  return {
-    ok: true,
-    value: freezePresentation({
-      manifests,
-      mappings: mappingValues,
-      patterns: ownedPatterns,
-      stateMappings: stateParsed.data,
-    }),
-  };
+  const valid = validateRegistryInput(input, patterns);
+  if (!valid.ok) return valid;
+  return registerRegistryParts(input, mappings, patterns, stateMappings);
 }

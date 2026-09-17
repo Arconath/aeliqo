@@ -1,6 +1,7 @@
 import './csp-bootstrap.js';
 import { createApp, h, ref, type App, type VNode } from 'vue';
-import { AeliqoInputEvent, registerAeliqoElements } from '@aeliqo/web';
+import { registerAeliqoElements } from '@aeliqo/web';
+import { AeliqoInputChangeEvent } from '@aeliqo/web/inputs';
 
 registerAeliqoElements();
 
@@ -8,7 +9,7 @@ const VueFixture = {
   setup(): () => VNode {
     const value = ref('Vue');
     const onInput = (event: Event): void => {
-      if (event instanceof AeliqoInputEvent) {
+      if (event instanceof AeliqoInputChangeEvent) {
         value.value = event.detail.value;
       }
     };
@@ -18,11 +19,11 @@ const VueFixture = {
         h('h1', 'Vue platform fixture'),
         h('p', { id: 'vue-value', role: 'status' }, value.value),
         h('form', { id: 'vue-form' }, [
-          h('aeliqo-input', {
+          h('aeliqo-text-field', {
             label: 'Vue name',
             value: value.value,
             name: 'person',
-            'onAeliqo-input': onInput,
+            'onAeliqo-input-change': onInput,
           }),
           h('button', { type: 'submit' }, 'Submit'),
         ]),

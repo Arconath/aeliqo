@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { createQueryFunctionRegistry, defineResource } from '@aeliqo/core';
+import { defineResource } from '@aeliqo/core';
+import { createQueryFunctionRegistry } from '@aeliqo/core/expressions';
 import { AeliqoProvider, AeliqoRegion } from '@aeliqo/react/app';
 import { createLocalDataService } from '@aeliqo/runtime/data';
 import type { AeliqoApp } from '@aeliqo/web/app';

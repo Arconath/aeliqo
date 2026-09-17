@@ -5,13 +5,13 @@ import { tmpdir } from 'node:os';
 import { basename, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
-import { pages as authoredPages } from '../../docs/public-site/pages/index.mjs';
 import {
   DOC_ROUTES,
   canonicalDocsPath,
   canonicalizeDocsMarkup,
   docsArtifactPath,
 } from '../../docs/public-site/routes.mjs';
+import { componentPage, parseAuthoredPage, parseComponentDocument } from './component-documents.mjs';
 import { componentApi, loadComponentSources } from './component-api.mjs';
 import {
   PUBLIC_DOCS_MANIFEST_SCHEMA,
@@ -43,10 +43,6 @@ function escape(value) {
     .replaceAll('"', '&quot;');
 }
 
-function inlineCode(value) {
-  return escape(value).replace(/`([^`]+)`/gu, '<code>$1</code>');
-}
-
 const sourceMarker = /<aeliqo-source data-label="([^"]+)" data-path="([^"]+)"><\/aeliqo-source>/gu;
 const projectMarker = /<aeliqo-project data-scenario="([^"]+)"><\/aeliqo-project>/gu;
 
@@ -70,7 +66,7 @@ async function hydrateSourceMarkup(markup) {
 }
 
 async function loadProjectTemplates() {
-  const moduleUrl = pathToFileURL(resolve(root, 'apps/playground/src/project-template.ts')).href;
+  const moduleUrl = pathToFileURL(resolve(root, 'apps/site/src/playground/project-template.ts')).href;
   const script = `import(${JSON.stringify(moduleUrl)}).then(({projectFiles})=>process.stdout.write(JSON.stringify(Object.fromEntries(['people','products','support','knowledge'].map(id=>[id,projectFiles(id,${JSON.stringify(RELEASE_VERSION)})])))))`;
   const { stdout } = await command(process.execPath, [
     '--experimental-strip-types',
@@ -99,11 +95,6 @@ function hydrateProjectMarkup(markup, projects) {
   });
 }
 
-const listItems = (values, empty = 'None recorded in the inspected source.') =>
-  values.length
-    ? values.map((value) => `<li><code>${escape(value)}</code></li>`).join('')
-    : `<li>${escape(empty)}</li>`;
-
 async function filesAt(path, predicate = () => true) {
   const result = [];
   for (const item of await readdir(path, { withFileTypes: true })) {
@@ -126,7 +117,7 @@ function classDeclaration(text, name) {
   throw new Error(`Unclosed declaration ${name}`);
 }
 
-async function loadCanonicalExamples() {
+export async function loadCanonicalExamples() {
   const moduleUrl = pathToFileURL(resolve(root, 'examples/catalog/index.ts')).href;
   const script = `import(${JSON.stringify(moduleUrl)}).then(({catalogExamples})=>process.stdout.write(JSON.stringify(catalogExamples)))`;
   const loaderDirectory = await mkdtemp(join(tmpdir(), 'aeliqo-catalog-loader-'));
@@ -164,45 +155,16 @@ async function loadCanonicalExamples() {
   }
 }
 
-function exampleMarkup(metadata) {
-  const list = (value) => value.map((item) => escape(item)).join(', ');
-  return `<div class="component-adoption" data-component-preview="${escape(metadata.family)}.${escape(metadata.id)}" data-preview-family="${escape(metadata.family)}" data-preview-id="${escape(metadata.id)}"><div class="component-preview" data-preview-mount data-preview-family="${escape(metadata.family)}" data-preview-id="${escape(metadata.id)}"><div class="component-section-heading"><span>Live example</span><h2>Preview</h2></div><p class="component-preview-status" data-preview-status>Interactive preview requires JavaScript.</p></div><details class="component-example"><summary><span>Implementation</span>Code and required setup</summary><pre tabindex="0"><code data-example-code="${escape(metadata.id)}">${escape(metadata.source)}</code></pre><button type="button" data-copy-example="${escape(metadata.id)}" disabled>Copy example</button><p class="component-copy-status" data-copy-status role="status"></p></details><div class="component-contract-grid"><section><h2>Input fixture</h2><p>${escape(metadata.fixture)}</p></section><section><h2>Expected result</h2><p>${escape(metadata.expectedOutcome)}</p></section><section><h2>Properties and host ownership</h2><p>${list(metadata.props)}. ${escape(metadata.propsNotes)}</p></section><section><h2>States</h2><p>${list(metadata.states)}</p></section><section><h2>Keyboard behavior</h2><p>${list(metadata.keyboard)}</p></section><section><h2>Events</h2><p>${list(metadata.events)}</p></section></div></div>`;
-}
-
-function componentDetails(component, example, metadata) {
-  const initialized = metadata.properties
-    .filter((property) => property.default !== 'undefined')
-    .map((property) => property.name);
-  const sizing = metadata.sizing.length
-    ? `Selected class-lineage styles declare ${metadata.sizing.map((name) => `<code>${escape(name)}</code>`).join(', ')}. Conditional selectors and media queries determine their values.`
-    : 'No sizing property was found in the selected class lineage; size is inherited or host-defined.';
-  const bounds = metadata.bounds.length
-    ? metadata.bounds.map((value) => `<li>${inlineCode(value)}</li>`).join('')
-    : '<li>No explicit source bound was found in the selected class lineage. Measure the composed workload in your environment.</li>';
-  return `<section class="component-details" aria-labelledby="component-purpose"><h2 id="component-purpose">Purpose</h2><p>${escape(example.description)} ${escape(component.contract)}</p><h2>Do / don't</h2><ul><li><strong>Do:</strong> use the declared properties, explicit fixture, and host-owned event boundary shown below.</li><li><strong>Don't:</strong> treat the component as an authorization boundary, data source, or substitute for missing semantic evidence.</li></ul><h2>Dependencies</h2><p>These entries are imports referenced by the selected component class or its class lineage; they are not inferred from package installation.</p><ul>${listItems(metadata.dependencies)}</ul><p>Inspected repository source files: ${metadata.sourceFiles.map((file) => `<code>${escape(file)}</code>`).join(', ') || 'not available'}.</p><h2>Controlled and uncontrolled use</h2><p>Public properties with source-declared construction initializers: ${initialized.length ? initialized.map((name) => `<code>${escape(name)}</code>`).join(', ') : 'none'}. These initial values do not establish a controlled or uncontrolled contract. Treat the component’s documented events and behavior tests as authoritative.</p><h2>Semantic elements and accessibility hooks</h2><p>These native elements and attributes are present in the selected class-lineage render source; the example and browser checks remain the authoritative behavior evidence.</p><ul>${listItems(metadata.semantics)}</ul><h2>Sizing and adaptation</h2><p>${sizing} Browser behavior remains authoritative.</p><h2>Performance boundary</h2><ul>${bounds}</ul><h2>Changelog</h2><p><code>${escape(metadata.version)}</code> is the version marker declared by the component source. No compatibility with historical npm APIs is implied.</p></section>`;
-}
-
-function componentPage(component, example, metadata, api) {
-  const properties = metadata.properties
-    .map(
-      (property) =>
-        `<tr><th scope="row"><code>${escape(property.name)}</code></th><td><code>${escape(property.type)}</code></td><td><code>${escape(property.default)}</code></td></tr>`,
-    )
-    .join('');
-  return {
-    id: component.id,
-    path: `/components/${component.id}/`,
-    title: component.name,
-    section: `Components / ${component.family}`,
-    description: component.contract,
-    component: component.id,
-    body: `<div class="component-meta"><span><small>Family</small>${escape(component.family)}</span><span><small>Surfaces</small>${component.surfaces.map((surface) => escape(surface)).join(' · ')}</span><span><small>License</small>${escape(component.license)}</span></div>${exampleMarkup(example)}${componentDetails(component, example, metadata)}<h2>Properties and defaults</h2><p>Inherited public fields are included. Defaults come from the same source revision that builds this component. For unions and imported types, use the generated declaration below.</p><div class="api-table doc-table"><table><thead><tr><th>Property</th><th>Declared type</th><th>Initial value</th></tr></thead><tbody>${properties}</tbody></table></div><h2>Public parts and theme tokens</h2><p>Statically named shadow parts in the component and its base classes: ${metadata.parts.length ? metadata.parts.map((part) => `<code>${escape(part)}</code>`).join(', ') : 'none declared in this class chain'}. Child components expose their own parts.</p><details><summary>Referenced theme tokens</summary><p>${metadata.tokens.length ? metadata.tokens.map((token) => `<code>${escape(token)}</code>`).join(', ') : 'Uses the shared Aeliqo theme; no additional token references in this class chain.'}</p></details><h2 id="public-api-heading">Public API</h2><p>This declaration is generated from the active package source. Pass structured values as JavaScript properties; use an attribute only where the component metadata declares one.</p><div class="code-scroll" role="region" aria-labelledby="public-api-heading"><pre tabindex="0"><code>${escape(api)}</code></pre></div><h2>Integrate and verify</h2><div class="doc-checklist"><ul><li>Use the exact package version shown by this documentation build.</li><li>Exercise the ready state and every documented loading, empty, partial, stale, or error state your host can produce.</li><li>Verify keyboard, zoom, reflow, forced colors, and assistive technology in the final application composition.</li><li>Handle events in host code and recheck authority before any business effect.</li></ul></div><p><a href="/ship/">Review the complete production checklist →</a></p>`,
-  };
+async function loadAuthoredPages() {
+  const pageFiles = await filesAt(resolve(root, 'docs/site/pages'), (path) => path.endsWith('.md'));
+  return Promise.all(
+    pageFiles.map(async (path) => parseAuthoredPage(await readFile(path, 'utf8'), relative(root, path))),
+  );
 }
 
 async function packageVersions(targetVersion) {
   const result = {};
-  for (const name of ['agent', 'core', 'devtools', 'react', 'runtime', 'web']) {
+  for (const name of ['agent', 'core', 'react', 'runtime', 'web']) {
     const value = JSON.parse(await readFile(resolve(root, `packages/${name}/package.json`), 'utf8'));
     if (value.version !== RELEASE_VERSION)
       throw new Error(
@@ -213,7 +175,7 @@ async function packageVersions(targetVersion) {
   return Object.fromEntries(Object.entries(result).sort(([left], [right]) => left.localeCompare(right)));
 }
 
-export async function buildPublicPages() {
+function assertAuthoredPageParity(authoredPages) {
   const generatedRouteIds = new Set(['components', 'search']);
   const expectedPageIds = DOC_ROUTES.filter((route) => !generatedRouteIds.has(route.id))
     .map((route) => route.id)
@@ -221,9 +183,36 @@ export async function buildPublicPages() {
   const authoredPageIds = authoredPages.map((page) => page.id).sort();
   if (JSON.stringify(authoredPageIds) !== JSON.stringify(expectedPageIds))
     throw new Error('Authored documentation pages and the canonical route manifest are out of sync.');
+}
+
+async function loadPublicComponents() {
   const components = JSON.parse(await readFile(resolve(root, 'catalog/components.json'), 'utf8')).components;
   if (!Array.isArray(components) || components.length !== 71)
     throw new Error('The public catalog must contain exactly 71 components.');
+  return components;
+}
+
+async function assertComponentExports(components) {
+  const webManifest = JSON.parse(await readFile(resolve(root, 'packages/web/package.json'), 'utf8'));
+  const missingComponentExports = components.filter((component) => {
+    const subpath = component.id.slice(component.id.indexOf('.') + 1);
+    return !Object.hasOwn(webManifest.exports, `./${subpath}`);
+  });
+  if (missingComponentExports.length)
+    throw new Error(
+      `Component documentation references missing public imports: ${missingComponentExports.map(({ id }) => id).join(', ')}`,
+    );
+}
+
+async function assertComponentDocumentParity(components) {
+  const componentDocuments = await filesAt(resolve(root, 'docs/site/components'), (path) => path.endsWith('.md'));
+  const expectedComponentDocuments = components.map((component) => `${component.id}.md`).sort();
+  const actualComponentDocuments = componentDocuments.map((path) => basename(path)).sort();
+  if (JSON.stringify(actualComponentDocuments) !== JSON.stringify(expectedComponentDocuments))
+    throw new Error('Each catalog component must have exactly one authored Markdown page.');
+}
+
+async function loadComponentGenerationData() {
   const declarations = await Promise.all(
     (await filesAt(resolve(root, 'packages/web/dist'), (path) => path.endsWith('.d.ts'))).map(async (path) => ({
       path,
@@ -232,10 +221,14 @@ export async function buildPublicPages() {
   );
   const componentSources = await loadComponentSources(resolve(root, 'packages/web/src'));
   const canonicalExamples = await loadCanonicalExamples();
-  const projectTemplates = await loadProjectTemplates();
   const canonicalById = new Map(canonicalExamples.map((example) => [`${example.family}.${example.id}`, example]));
   if (canonicalById.size !== 71)
     throw new Error('The runnable example catalog must contain exactly 71 unique entries.');
+  const projectTemplates = await loadProjectTemplates();
+  return { declarations, componentSources, canonicalById, projectTemplates };
+}
+
+async function buildAuthoredPageEntries(authoredPages, projectTemplates) {
   const pages = [];
   for (const page of authoredPages) {
     const path = canonicalDocsPath(page.path);
@@ -247,7 +240,11 @@ export async function buildPublicPages() {
       body: hydrateProjectMarkup(await hydrateSourceMarkup(markup), projectTemplates),
     });
   }
-  pages.push({
+  return pages;
+}
+
+function componentCatalogPage(components) {
+  return {
     id: 'components',
     path: '/components/',
     title: 'Component catalog',
@@ -264,7 +261,11 @@ export async function buildPublicPages() {
             .join('')}</ul>`,
       )
       .join('')}`,
-  });
+  };
+}
+
+async function buildComponentPages(components, { declarations, componentSources, canonicalById }) {
+  const pages = [];
   for (const component of components) {
     const className = `Aeliqo${component.name}Element`;
     const api = declarations.map((source) => classDeclaration(source.text, className)).find(Boolean);
@@ -273,17 +274,35 @@ export async function buildPublicPages() {
     if (!metadata.properties.length) throw new Error(`Missing component source ${className}`);
     const example = canonicalById.get(component.id);
     if (example === undefined) throw new Error(`Missing canonical catalog example ${component.id}`);
-    pages.push(componentPage(component, example, metadata, api));
+    const document = await readFile(resolve(root, 'docs/site/components', `${component.id}.md`), 'utf8');
+    const authoredContent = parseComponentDocument(document, component);
+    pages.push(componentPage(component, example, metadata, api, authoredContent));
   }
-  const searchable = pages;
-  pages.push({
+  return pages;
+}
+
+function searchPage(searchable) {
+  return {
     id: 'search',
     path: '/search/',
     title: 'Search documentation',
     section: 'Documentation',
     description: 'Search Aeliqo documentation by title, heading, body, API, or diagnostic.',
     body: `<p class="lead">Search is progressively enhanced when JavaScript is available and indexes page body plus headings. Without it, this page remains a browsable list of documentation routes.</p><form class="docs-search-fallback" action="/search/" method="get"><label for="docs-search-fallback-query">Search documentation</label><input id="docs-search-fallback-query" name="q" type="text" inputmode="search" placeholder="API, diagnostic, concept, or integration"><button type="submit">Search</button></form><p class="caption">With JavaScript disabled, use your browser’s Find command on this route list.</p><nav aria-label="Documentation search fallback"><ul class="search-fallback-links">${searchable.map((page) => `<li><a href="${page.path}">${escape(page.title)}</a><span>${escape(page.description)}</span></li>`).join('')}</ul></nav>`,
-  });
+  };
+}
+
+export async function buildPublicPages() {
+  const authoredPages = await loadAuthoredPages();
+  assertAuthoredPageParity(authoredPages);
+  const components = await loadPublicComponents();
+  await assertComponentExports(components);
+  await assertComponentDocumentParity(components);
+  const generationData = await loadComponentGenerationData();
+  const pages = await buildAuthoredPageEntries(authoredPages, generationData.projectTemplates);
+  pages.push(componentCatalogPage(components));
+  pages.push(...(await buildComponentPages(components, generationData)));
+  pages.push(searchPage(pages));
   return pages;
 }
 
@@ -295,20 +314,22 @@ async function sourceInputs() {
     'scripts/docs/component-api.mjs',
     'scripts/docs/public-docs-contract.mjs',
     'scripts/release/source-state.mjs',
-    'apps/playground/src/project-template.ts',
+    'apps/site/src/playground/project-template.ts',
   ];
-  for (const path of await filesAt(resolve(root, 'docs/public-site/pages'), (path) => path.endsWith('.mjs')))
-    paths.push(relative(root, path));
-  for (const directory of ['examples/quickstart', 'examples/migration-0.1']) {
+  for (const directory of ['docs/site/pages', 'docs/site/components']) {
+    for (const path of await filesAt(resolve(root, directory), (path) => path.endsWith('.md')))
+      paths.push(relative(root, path));
+  }
+  for (const directory of ['examples/quickstart']) {
     for (const path of await filesAt(resolve(root, directory), (path) => /\.(?:json|ts)$/u.test(path)))
       paths.push(relative(root, path));
   }
+  for (const name of ['agent', 'core', 'react', 'runtime', 'web']) paths.push(`docs/packages/${name}.md`);
   for (const directory of ['examples/catalog', 'packages/web/src', 'packages/web/dist']) {
     for (const path of await filesAt(resolve(root, directory), (path) => /\.(?:json|ts)$/u.test(path)))
       paths.push(relative(root, path));
   }
-  for (const name of ['agent', 'core', 'devtools', 'react', 'runtime', 'web'])
-    paths.push(`packages/${name}/package.json`);
+  for (const name of ['agent', 'core', 'react', 'runtime', 'web']) paths.push(`packages/${name}/package.json`);
   const unique = [...new Set(paths)].sort();
   return Promise.all(
     unique.map(async (path) => {

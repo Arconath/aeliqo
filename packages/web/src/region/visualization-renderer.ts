@@ -1,13 +1,13 @@
+import { bindVisualizationSpec, type BoundVisualization } from '@aeliqo/core/visualization';
 import {
-  bindVisualizationSpec,
   parseVisualizationSpec,
   parseWireValue,
   type InteractionPayload,
   type InteractionState,
   type Result,
   type ResultRef,
-  type ValidatedPresentation,
 } from '@aeliqo/core';
+import type { ValidatedPresentation } from '@aeliqo/core/presentation';
 import { html, nothing, type TemplateResult } from 'lit';
 import { materializeVisualizationRows } from '../visualization/materialization.js';
 import type { VisualizationSpec } from '@aeliqo/core';
@@ -18,6 +18,21 @@ import type {
 } from './visualization-registry.js';
 
 type CoreNode = ValidatedPresentation['nodes'][number];
+type VisualizationView = VisualizationSpec['view'];
+
+interface VisualizationElementProps {
+  readonly visualization: VisualizationSpec;
+  readonly context: AeliqoVisualizationBinding['context'];
+  readonly datasets: AeliqoVisualizationBinding['datasets'];
+  readonly label: string;
+  readonly selected: string | undefined;
+  readonly selectionEnabled: boolean;
+}
+
+type VisualizationElementRenderer = (
+  props: VisualizationElementProps,
+  onSelect: (event: Event) => void,
+) => TemplateResult;
 
 function refKey(ref: ResultRef): string {
   return JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
@@ -59,25 +74,34 @@ function resultRef(value: unknown): ResultRef | undefined {
   return candidate as ResultRef;
 }
 
-function selectionDetail(event: Event): { readonly identity: string; readonly result: ResultRef } | undefined {
-  let detail: unknown;
+function eventRecord(event: Event): Record<string, unknown> | undefined {
   try {
     if (typeof CustomEvent === 'undefined' || !(event instanceof CustomEvent)) return undefined;
-    detail = event.detail;
+    const parsed = parseWireValue(event.detail);
+    if (!parsed.ok || parsed.value === null || typeof parsed.value !== 'object' || Array.isArray(parsed.value))
+      return undefined;
+    return parsed.value as Record<string, unknown>;
   } catch {
     return undefined;
   }
-  const parsed = parseWireValue(detail);
-  if (!parsed.ok || parsed.value === null || typeof parsed.value !== 'object' || Array.isArray(parsed.value))
-    return undefined;
-  const candidate = parsed.value as Record<string, unknown>;
+}
+
+function isUserSelection(
+  candidate: Record<string, unknown>,
+): candidate is Record<string, unknown> & { readonly identity: string } {
   if (
     Object.keys(candidate).length !== 3 ||
     candidate.source !== 'user' ||
     typeof candidate.identity !== 'string' ||
     candidate.identity.length === 0
   )
-    return undefined;
+    return false;
+  return true;
+}
+
+function selectionDetail(event: Event): { readonly identity: string; readonly result: ResultRef } | undefined {
+  const candidate = eventRecord(event);
+  if (candidate === undefined || !isUserSelection(candidate)) return undefined;
   const ref = resultRef(candidate.result);
   return ref === undefined ? undefined : { identity: candidate.identity, result: ref };
 }
@@ -105,6 +129,165 @@ function selectedIdentity(
   }
 }
 
+const VISUALIZATION_ELEMENT_RENDERERS: Record<VisualizationSpec['view'], VisualizationElementRenderer> = {
+  trend: (props, onSelect) =>
+    html`<aeliqo-trend
+      .visualization=${props.visualization}
+      .context=${props.context}
+      .datasets=${props.datasets}
+      .label=${props.label}
+      .width=${640}
+      .height=${360}
+      .maxMarks=${20_000}
+      .selectedIdentity=${props.selected ?? ''}
+      .selectionEnabled=${props.selectionEnabled}
+      @aeliqo-visualization-select=${onSelect}
+    ></aeliqo-trend>`,
+  bar: (props, onSelect) =>
+    html`<aeliqo-bar
+      .visualization=${props.visualization}
+      .context=${props.context}
+      .datasets=${props.datasets}
+      .label=${props.label}
+      .width=${640}
+      .height=${360}
+      .maxMarks=${20_000}
+      .selectedIdentity=${props.selected ?? ''}
+      .selectionEnabled=${props.selectionEnabled}
+      @aeliqo-visualization-select=${onSelect}
+    ></aeliqo-bar>`,
+  area: (props, onSelect) =>
+    html`<aeliqo-area
+      .visualization=${props.visualization}
+      .context=${props.context}
+      .datasets=${props.datasets}
+      .label=${props.label}
+      .width=${640}
+      .height=${360}
+      .maxMarks=${20_000}
+      .selectedIdentity=${props.selected ?? ''}
+      .selectionEnabled=${props.selectionEnabled}
+      @aeliqo-visualization-select=${onSelect}
+    ></aeliqo-area>`,
+  scatter: (props, onSelect) =>
+    html`<aeliqo-scatter
+      .visualization=${props.visualization}
+      .context=${props.context}
+      .datasets=${props.datasets}
+      .label=${props.label}
+      .width=${640}
+      .height=${360}
+      .maxMarks=${20_000}
+      .selectedIdentity=${props.selected ?? ''}
+      .selectionEnabled=${props.selectionEnabled}
+      @aeliqo-visualization-select=${onSelect}
+    ></aeliqo-scatter>`,
+  histogram: (props, onSelect) =>
+    html`<aeliqo-histogram
+      .visualization=${props.visualization}
+      .context=${props.context}
+      .datasets=${props.datasets}
+      .label=${props.label}
+      .width=${640}
+      .height=${360}
+      .maxMarks=${20_000}
+      .selectedIdentity=${props.selected ?? ''}
+      .selectionEnabled=${props.selectionEnabled}
+      @aeliqo-visualization-select=${onSelect}
+    ></aeliqo-histogram>`,
+  heatmap: (props, onSelect) =>
+    html`<aeliqo-heatmap
+      .visualization=${props.visualization}
+      .context=${props.context}
+      .datasets=${props.datasets}
+      .label=${props.label}
+      .width=${640}
+      .height=${360}
+      .maxMarks=${20_000}
+      .selectedIdentity=${props.selected ?? ''}
+      .selectionEnabled=${props.selectionEnabled}
+      @aeliqo-visualization-select=${onSelect}
+    ></aeliqo-heatmap>`,
+  matrix: (props, onSelect) =>
+    html`<aeliqo-matrix
+      .visualization=${props.visualization}
+      .context=${props.context}
+      .datasets=${props.datasets}
+      .label=${props.label}
+      .width=${640}
+      .height=${360}
+      .maxMarks=${20_000}
+      .selectedIdentity=${props.selected ?? ''}
+      .selectionEnabled=${props.selectionEnabled}
+      @aeliqo-visualization-select=${onSelect}
+    ></aeliqo-matrix>`,
+  timeline: (props, onSelect) =>
+    html`<aeliqo-timeline
+      .visualization=${props.visualization}
+      .context=${props.context}
+      .datasets=${props.datasets}
+      .label=${props.label}
+      .width=${640}
+      .height=${360}
+      .maxMarks=${20_000}
+      .selectedIdentity=${props.selected ?? ''}
+      .selectionEnabled=${props.selectionEnabled}
+      @aeliqo-visualization-select=${onSelect}
+    ></aeliqo-timeline>`,
+  'calendar-grid': (props, onSelect) =>
+    html`<aeliqo-calendar-grid
+      .visualization=${props.visualization}
+      .context=${props.context}
+      .datasets=${props.datasets}
+      .label=${props.label}
+      .width=${640}
+      .height=${360}
+      .maxMarks=${20_000}
+      .selectedIdentity=${props.selected ?? ''}
+      .selectionEnabled=${props.selectionEnabled}
+      @aeliqo-visualization-select=${onSelect}
+    ></aeliqo-calendar-grid>`,
+  tree: (props, onSelect) =>
+    html`<aeliqo-tree
+      .visualization=${props.visualization}
+      .context=${props.context}
+      .datasets=${props.datasets}
+      .label=${props.label}
+      .width=${640}
+      .height=${360}
+      .maxMarks=${20_000}
+      .selectedIdentity=${props.selected ?? ''}
+      .selectionEnabled=${props.selectionEnabled}
+      @aeliqo-visualization-select=${onSelect}
+    ></aeliqo-tree>`,
+  treemap: (props, onSelect) =>
+    html`<aeliqo-treemap
+      .visualization=${props.visualization}
+      .context=${props.context}
+      .datasets=${props.datasets}
+      .label=${props.label}
+      .width=${640}
+      .height=${360}
+      .maxMarks=${20_000}
+      .selectedIdentity=${props.selected ?? ''}
+      .selectionEnabled=${props.selectionEnabled}
+      @aeliqo-visualization-select=${onSelect}
+    ></aeliqo-treemap>`,
+  relationship: (props, onSelect) =>
+    html`<aeliqo-relationship
+      .visualization=${props.visualization}
+      .context=${props.context}
+      .datasets=${props.datasets}
+      .label=${props.label}
+      .width=${640}
+      .height=${360}
+      .maxMarks=${20_000}
+      .selectedIdentity=${props.selected ?? ''}
+      .selectionEnabled=${props.selectionEnabled}
+      @aeliqo-visualization-select=${onSelect}
+    ></aeliqo-relationship>`,
+};
+
 function renderElement(
   spec: VisualizationSpec,
   binding: AeliqoVisualizationBinding,
@@ -113,176 +296,15 @@ function renderElement(
   selectionEnabled: boolean,
   onSelect: (event: Event) => void,
 ): TemplateResult {
-  const props = {
+  const props: VisualizationElementProps = {
     visualization: spec,
     context: binding.context,
     datasets: binding.datasets,
     label,
-    width: 640,
-    height: 360,
-    'max-marks': 20_000,
-    ...(selected === undefined ? {} : { 'selected-identity': selected }),
+    selected,
+    selectionEnabled,
   };
-  // Lit SSR needs literal tag names so that its element registry can attach
-  // the correct custom-element renderer. Every branch remains typed input.
-  switch (spec.view) {
-    case 'trend':
-      return html`<aeliqo-trend
-        .visualization=${props.visualization}
-        .context=${props.context}
-        .datasets=${props.datasets}
-        .label=${props.label}
-        .width=${props.width}
-        .height=${props.height}
-        .maxMarks=${props['max-marks']}
-        .selectedIdentity=${selected ?? ''}
-        .selectionEnabled=${selectionEnabled}
-        @aeliqo-visualization-select=${onSelect}
-      ></aeliqo-trend>`;
-    case 'bar':
-      return html`<aeliqo-bar
-        .visualization=${props.visualization}
-        .context=${props.context}
-        .datasets=${props.datasets}
-        .label=${props.label}
-        .width=${props.width}
-        .height=${props.height}
-        .maxMarks=${props['max-marks']}
-        .selectedIdentity=${selected ?? ''}
-        .selectionEnabled=${selectionEnabled}
-        @aeliqo-visualization-select=${onSelect}
-      ></aeliqo-bar>`;
-    case 'area':
-      return html`<aeliqo-area
-        .visualization=${props.visualization}
-        .context=${props.context}
-        .datasets=${props.datasets}
-        .label=${props.label}
-        .width=${props.width}
-        .height=${props.height}
-        .maxMarks=${props['max-marks']}
-        .selectedIdentity=${selected ?? ''}
-        .selectionEnabled=${selectionEnabled}
-        @aeliqo-visualization-select=${onSelect}
-      ></aeliqo-area>`;
-    case 'scatter':
-      return html`<aeliqo-scatter
-        .visualization=${props.visualization}
-        .context=${props.context}
-        .datasets=${props.datasets}
-        .label=${props.label}
-        .width=${props.width}
-        .height=${props.height}
-        .maxMarks=${props['max-marks']}
-        .selectedIdentity=${selected ?? ''}
-        .selectionEnabled=${selectionEnabled}
-        @aeliqo-visualization-select=${onSelect}
-      ></aeliqo-scatter>`;
-    case 'histogram':
-      return html`<aeliqo-histogram
-        .visualization=${props.visualization}
-        .context=${props.context}
-        .datasets=${props.datasets}
-        .label=${props.label}
-        .width=${props.width}
-        .height=${props.height}
-        .maxMarks=${props['max-marks']}
-        .selectedIdentity=${selected ?? ''}
-        .selectionEnabled=${selectionEnabled}
-        @aeliqo-visualization-select=${onSelect}
-      ></aeliqo-histogram>`;
-    case 'heatmap':
-      return html`<aeliqo-heatmap
-        .visualization=${props.visualization}
-        .context=${props.context}
-        .datasets=${props.datasets}
-        .label=${props.label}
-        .width=${props.width}
-        .height=${props.height}
-        .maxMarks=${props['max-marks']}
-        .selectedIdentity=${selected ?? ''}
-        .selectionEnabled=${selectionEnabled}
-        @aeliqo-visualization-select=${onSelect}
-      ></aeliqo-heatmap>`;
-    case 'matrix':
-      return html`<aeliqo-matrix
-        .visualization=${props.visualization}
-        .context=${props.context}
-        .datasets=${props.datasets}
-        .label=${props.label}
-        .width=${props.width}
-        .height=${props.height}
-        .maxMarks=${props['max-marks']}
-        .selectedIdentity=${selected ?? ''}
-        .selectionEnabled=${selectionEnabled}
-        @aeliqo-visualization-select=${onSelect}
-      ></aeliqo-matrix>`;
-    case 'timeline':
-      return html`<aeliqo-timeline
-        .visualization=${props.visualization}
-        .context=${props.context}
-        .datasets=${props.datasets}
-        .label=${props.label}
-        .width=${props.width}
-        .height=${props.height}
-        .maxMarks=${props['max-marks']}
-        .selectedIdentity=${selected ?? ''}
-        .selectionEnabled=${selectionEnabled}
-        @aeliqo-visualization-select=${onSelect}
-      ></aeliqo-timeline>`;
-    case 'calendar-grid':
-      return html`<aeliqo-calendar-grid
-        .visualization=${props.visualization}
-        .context=${props.context}
-        .datasets=${props.datasets}
-        .label=${props.label}
-        .width=${props.width}
-        .height=${props.height}
-        .maxMarks=${props['max-marks']}
-        .selectedIdentity=${selected ?? ''}
-        .selectionEnabled=${selectionEnabled}
-        @aeliqo-visualization-select=${onSelect}
-      ></aeliqo-calendar-grid>`;
-    case 'tree':
-      return html`<aeliqo-tree
-        .visualization=${props.visualization}
-        .context=${props.context}
-        .datasets=${props.datasets}
-        .label=${props.label}
-        .width=${props.width}
-        .height=${props.height}
-        .maxMarks=${props['max-marks']}
-        .selectedIdentity=${selected ?? ''}
-        .selectionEnabled=${selectionEnabled}
-        @aeliqo-visualization-select=${onSelect}
-      ></aeliqo-tree>`;
-    case 'treemap':
-      return html`<aeliqo-treemap
-        .visualization=${props.visualization}
-        .context=${props.context}
-        .datasets=${props.datasets}
-        .label=${props.label}
-        .width=${props.width}
-        .height=${props.height}
-        .maxMarks=${props['max-marks']}
-        .selectedIdentity=${selected ?? ''}
-        .selectionEnabled=${selectionEnabled}
-        @aeliqo-visualization-select=${onSelect}
-      ></aeliqo-treemap>`;
-    case 'relationship':
-      return html`<aeliqo-relationship
-        .visualization=${props.visualization}
-        .context=${props.context}
-        .datasets=${props.datasets}
-        .label=${props.label}
-        .width=${props.width}
-        .height=${props.height}
-        .maxMarks=${props['max-marks']}
-        .selectedIdentity=${selected ?? ''}
-        .selectionEnabled=${selectionEnabled}
-        @aeliqo-visualization-select=${onSelect}
-      ></aeliqo-relationship>`;
-  }
+  return VISUALIZATION_ELEMENT_RENDERERS[spec.view](props, onSelect);
 }
 
 function declaredSelection(node: CoreNode): boolean {
@@ -299,6 +321,142 @@ function declaredSelection(node: CoreNode): boolean {
   );
 }
 
+const VISUALIZATION_VIEW_NAMES: Readonly<Record<string, true>> = {
+  trend: true,
+  bar: true,
+  area: true,
+  scatter: true,
+  histogram: true,
+  heatmap: true,
+  matrix: true,
+  timeline: true,
+  'calendar-grid': true,
+  tree: true,
+  treemap: true,
+  relationship: true,
+};
+
+function visualizationView(node: CoreNode): VisualizationView | undefined {
+  const prefix = 'visualization.';
+  if (!node.manifest.id.startsWith(prefix)) return undefined;
+  const view = node.manifest.id.slice(prefix.length);
+  return Object.hasOwn(VISUALIZATION_VIEW_NAMES, view) ? (view as VisualizationView) : undefined;
+}
+
+function trustedBindingMatches(
+  result: Result,
+  current: AeliqoVisualizationBinding,
+  authorized: ReadonlyMap<string, AeliqoVisualizationBinding> | undefined,
+): boolean {
+  const trusted = authorized?.get(refKey(result.ref));
+  if (trusted !== undefined && canonical(trusted) !== canonical(current)) return false;
+  return sameResult(current.result, result);
+}
+
+function validateBoundVisualization(
+  node: CoreNode,
+  result: Result,
+  current: AeliqoVisualizationBinding,
+  view: VisualizationView,
+): { readonly spec: VisualizationSpec; readonly bound: BoundVisualization } | undefined {
+  const parsed = parseVisualizationSpec(node.config.values.visualization);
+  if (!parsed.ok || parsed.value.view !== view) return undefined;
+  const bound = bindVisualizationSpec(parsed.value, current.context);
+  if (!bound.ok || bound.value.results.length !== 1) return undefined;
+  if (!bound.value.results.some((candidate) => sameResult(candidate, result))) return undefined;
+  const rows = materializeVisualizationRows(bound.value, result.ref, current.datasets);
+  if (!rows.ok) return undefined;
+  return { spec: parsed.value, bound: bound.value };
+}
+
+function trustedEntity(
+  resolver: AeliqoVisualizationRegistryOptions['resolveEntity'],
+  result: Result,
+): string | undefined {
+  if (resolver === undefined) return undefined;
+  try {
+    return resolver(result);
+  } catch {
+    return undefined;
+  }
+}
+
+function expectedSelectionPort(result: Result, owner: string | undefined): readonly unknown[] {
+  if (owner === undefined) return [];
+  return [
+    {
+      id: 'selection',
+      direction: 'inout',
+      payload: 'selection',
+      entity: owner,
+      identity: [...result.identity],
+      grain: [...result.rowGrain],
+    },
+  ];
+}
+
+function expectedFields(spec: VisualizationSpec, result: Result): readonly string[] {
+  if (spec.view === 'matrix') return [...spec.columns];
+  return result.fields.map((field) => field.id);
+}
+
+function expectedOperations(owner: string | undefined): readonly unknown[] {
+  if (owner === undefined) return [{ id: 'data.read', revision: '1' }];
+  return [
+    { id: 'data.read', revision: '1' },
+    { id: 'interaction.selection', revision: '1' },
+  ];
+}
+
+function configMatches(node: CoreNode, spec: VisualizationSpec, result: Result, owner: string | undefined): boolean {
+  return (
+    canonical(node.config.values) === canonical({ visualization: spec }) &&
+    canonical(node.config.fields) === canonical(expectedFields(spec, result)) &&
+    canonical(node.config.ports) === canonical(expectedSelectionPort(result, owner)) &&
+    canonical(node.config.operations) === canonical(expectedOperations(owner))
+  );
+}
+
+function dispatchSelection(
+  node: CoreNode,
+  current: AeliqoVisualizationBinding,
+  bound: BoundVisualization,
+  detail: { readonly identity: string; readonly result: ResultRef },
+  callback: NonNullable<AeliqoVisualizationPresentationRenderContext['onSemanticInteraction']>,
+): void {
+  if (node.result === undefined || !sameRef(detail.result, node.result.ref)) return;
+  const rows = materializeVisualizationRows(bound, node.result.ref, current.datasets);
+  if (!rows.ok || !rows.value.some((row) => row.identity === detail.identity)) return;
+  const port = node.config.ports.find((candidate) => candidate.id === 'selection' && candidate.payload === 'selection');
+  if (port?.entity === undefined) return;
+  const payload: InteractionPayload = {
+    kind: 'selection',
+    selection: { mode: 'ids', entity: port.entity, keys: [detail.identity], result: node.result.ref },
+  };
+  try {
+    callback(node.node.id, port.id, payload);
+  } catch {
+    // Host callback failures do not change the authorization decision.
+  }
+}
+
+function selectionHandler(
+  node: CoreNode,
+  current: AeliqoVisualizationBinding,
+  bound: BoundVisualization,
+  context: AeliqoVisualizationPresentationRenderContext,
+): (event: Event) => void {
+  return (event) => {
+    const callback = context.onSemanticInteraction;
+    if (!declaredSelection(node) || typeof callback !== 'function') {
+      event.preventDefault();
+      return;
+    }
+    const detail = selectionDetail(event);
+    if (detail !== undefined) dispatchSelection(node, current, bound, detail, callback);
+  };
+}
+
 function renderWith(
   node: CoreNode,
   current: AeliqoVisualizationBinding,
@@ -306,114 +464,22 @@ function renderWith(
   options: AeliqoVisualizationRegistryOptions,
   authorized?: ReadonlyMap<string, AeliqoVisualizationBinding>,
 ): TemplateResult | typeof nothing {
-  if (node.result === undefined) return nothing;
+  const result = node.result;
+  if (result === undefined) return nothing;
   const inspectedCurrent = parseWireValue(current);
   if (!inspectedCurrent.ok) return nothing;
-  const view = node.manifest.id.startsWith('visualization.')
-    ? (node.manifest.id.slice('visualization.'.length) as VisualizationSpec['view'])
-    : undefined;
-  if (
-    view === undefined ||
-    !Object.hasOwn(
-      {
-        trend: true,
-        bar: true,
-        area: true,
-        scatter: true,
-        histogram: true,
-        heatmap: true,
-        matrix: true,
-        timeline: true,
-        'calendar-grid': true,
-        tree: true,
-        treemap: true,
-        relationship: true,
-      },
-      view,
-    )
-  )
-    return nothing;
-  const trusted = authorized?.get(refKey(node.result.ref));
-  if (trusted !== undefined && canonical(trusted) !== canonical(current)) return nothing;
-  if (!sameResult(current.result, node.result)) return nothing;
-  const parsed = parseVisualizationSpec(node.config.values.visualization);
-  if (!parsed.ok || parsed.value.view !== view) return nothing;
-  const bound = bindVisualizationSpec(parsed.value, current.context);
-  if (
-    !bound.ok ||
-    bound.value.results.length !== 1 ||
-    !bound.value.results.some((result) => sameResult(result, node.result!))
-  )
-    return nothing;
-  for (const result of bound.value.results)
-    if (!materializeVisualizationRows(bound.value, result.ref, current.datasets).ok) return nothing;
-  const owner =
-    options.resolveEntity === undefined
-      ? undefined
-      : (() => {
-          try {
-            return options.resolveEntity(node.result!);
-          } catch {
-            return undefined;
-          }
-        })();
-  const expectedPort =
-    owner === undefined
-      ? []
-      : [
-          {
-            id: 'selection',
-            direction: 'inout',
-            payload: 'selection',
-            entity: owner,
-            identity: [...node.result.identity],
-            grain: [...node.result.rowGrain],
-          },
-        ];
-  const expectedFields =
-    parsed.value.view === 'matrix' ? [...parsed.value.columns] : node.result.fields.map((field) => field.id);
-  const expectedOperations =
-    owner === undefined
-      ? [{ id: 'data.read', revision: '1' }]
-      : [
-          { id: 'data.read', revision: '1' },
-          { id: 'interaction.selection', revision: '1' },
-        ];
-  if (
-    canonical(node.config.values) !== canonical({ visualization: parsed.value }) ||
-    canonical(node.config.fields) !== canonical(expectedFields) ||
-    canonical(node.config.ports) !== canonical(expectedPort) ||
-    canonical(node.config.operations) !== canonical(expectedOperations)
-  )
-    return nothing;
+  const view = visualizationView(node);
+  if (view === undefined || !trustedBindingMatches(result, current, authorized)) return nothing;
+  const validated = validateBoundVisualization(node, result, current, view);
+  if (validated === undefined) return nothing;
+  const owner = trustedEntity(options.resolveEntity, result);
+  if (!configMatches(node, validated.spec, result, owner)) return nothing;
   const selectionEnabled = declaredSelection(node);
   const selected = selectionEnabled
-    ? selectedIdentity(context.interaction, node.node.id, node.result.ref, owner)
+    ? selectedIdentity(context.interaction, node.node.id, result.ref, owner)
     : undefined;
-  const handler = (event: Event): void => {
-    if (!declaredSelection(node) || typeof context.onSemanticInteraction !== 'function') {
-      event.preventDefault();
-      return;
-    }
-    const detail = selectionDetail(event);
-    if (detail === undefined || !sameRef(detail.result, node.result!.ref)) return;
-    const rows = materializeVisualizationRows(bound.value, node.result!.ref, current.datasets);
-    if (!rows.ok || !rows.value.some((row) => row.identity === detail.identity)) return;
-    const port = node.config.ports.find(
-      (candidate) => candidate.id === 'selection' && candidate.payload === 'selection',
-    );
-    if (port === undefined || port.entity === undefined) return;
-    const payload: InteractionPayload = {
-      kind: 'selection',
-      selection: { mode: 'ids', entity: port.entity, keys: [detail.identity], result: node.result!.ref },
-    };
-    try {
-      context.onSemanticInteraction(node.node.id, port.id, payload);
-    } catch {
-      /* host callback failures do not alter authorization */
-    }
-  };
-  return renderElement(parsed.value, current, `Data visualization: ${view}`, selected, selectionEnabled, handler);
+  const handler = selectionHandler(node, current, validated.bound, context);
+  return renderElement(validated.spec, current, `Data visualization: ${view}`, selected, selectionEnabled, handler);
 }
 
 export function renderAeliqoVisualizationPresentationNode(

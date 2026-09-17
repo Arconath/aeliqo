@@ -32,6 +32,8 @@ test('container adaptation switches browse to cards but preserves comparisons', 
   await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
   await expect(page.locator('aeliqo-card-collection')).toBeVisible();
   await expect(page.locator('aeliqo-table')).toHaveCount(0);
+  await expect(page.locator('#pg-view-badge')).toHaveText('data.card-collection');
+  await expect(page.locator('#pg-status')).toContainText('data.card-collection renderer');
   await openScenario(page, 'products');
   await expect(page.locator('aeliqo-card-collection')).toContainText('Field notebook');
   await page.getByRole('button', { name: 'Compare products' }).click();
@@ -43,6 +45,8 @@ test('container adaptation switches browse to cards but preserves comparisons', 
 });
 
 test('schema-derived create form requires explicit confirmation before writing', async ({ page }) => {
+  const pageErrors: string[] = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
   await page.goto('/playground/');
   await openScenario(page, 'products');
   await page.getByRole('button', { name: 'Create product' }).click();
@@ -66,6 +70,7 @@ test('schema-derived create form requires explicit confirmation before writing',
   await expect(page.locator('#pg-status')).toHaveText('Action completed.');
   await expect(page.locator('#pg-receipt-state')).toHaveText('executed');
   await expect(page.getByRole('button', { name: 'Create Products' })).toBeFocused();
+  expect(pageErrors).toEqual([]);
 });
 
 test('edit form loads trusted current state and keeps the draft after cancellation', async ({ page }) => {

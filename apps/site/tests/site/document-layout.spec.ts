@@ -67,7 +67,8 @@ async function assertNoScriptRoute(page: Page, component: (typeof COMPONENT_ROUT
   await expect(page.locator('[data-component-preview] [data-preview-mount]')).toContainText(
     'Interactive preview requires JavaScript.',
   );
-  await expect(page.locator('[data-component-preview]')).toContainText('Expected result');
+  await expect(page.getByText(/Expected result:/)).toBeVisible();
+  await expect(page.locator('[data-preview-mount]')).toContainText('Interactive preview requires JavaScript.');
   await expect(page.locator(`[data-example-code='${component.id}']`)).toContainText('import');
   await expect(page.locator(`[data-copy-example='${component.id}']`)).toBeDisabled();
   return boxes(page);
@@ -182,7 +183,7 @@ test('all component documentation routes preserve static content and hydration l
       await page.goto(component.route, { waitUntil: 'domcontentloaded' });
       await expect(page.getByRole('heading', { level: 1, name: component.name, exact: true })).toBeVisible();
       await expect(page.locator(`[data-component-preview] aeliqo-${component.id}`)).toBeAttached();
-      await expect(page.locator('[data-component-preview]')).toContainText('Expected result');
+      await expect(page.getByText(/Expected result:/)).toBeVisible();
       await expect(page.locator(`[data-copy-example='${component.id}']`)).toBeEnabled();
       await page.evaluate(async (tagName) => {
         await customElements.whenDefined(tagName);
@@ -245,7 +246,7 @@ test('all component documentation routes preserve static content and hydration l
         routes: evidence,
         layoutShiftBudget: HYDRATION_LAYOUT_SHIFT_BUDGET,
         claims: [
-          'All 71 generated component routes were checked with JavaScript disabled for readable fallback content, disabled search/copy controls, and expected-result content under the data-component-preview contract.',
+          'All 71 component routes were checked with JavaScript disabled for readable fallback content, disabled search/copy controls, and authored expected-result content beside the executable preview.',
           'Every route compares no-JavaScript and hydrated sentinel boxes for x, y, width, and height, including the preview shell, properties heading, and API table; the comparison is independent of PerformanceObserver entries.',
           'The browser PerformanceObserver records layout-shift entries during each controlled JavaScript hydration navigation, retaining source selectors and summing all entries without recent input against a 0.1 per-route observation budget; this is not a p75 field CLS claim.',
           'The data.table route grants clipboard permissions and verifies successful copy status plus clipboard contents.',

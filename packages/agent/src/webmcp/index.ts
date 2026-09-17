@@ -3,6 +3,7 @@ export type {
   WebMcpAdapter,
   WebMcpAdapterOptions,
   WebMcpDetection,
+  WebMcpDetectionOptions,
   WebMcpEvidence,
   WebMcpExecutionOptions,
   WebMcpModelContext,

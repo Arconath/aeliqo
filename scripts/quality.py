@@ -18,7 +18,16 @@ ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "quality" / "commands.json"
 REPORT = ROOT / "artifacts" / "product-ci" / "ci.json"
 LOGS = ROOT / "artifacts" / "product-ci" / "logs"
-REQUIRED_KINDS = {"typecheck", "unit", "browser", "packages", "lint", "security", "boundaries"}
+REQUIRED_KINDS = {
+    "typecheck",
+    "unit",
+    "browser",
+    "packages",
+    "performance",
+    "lint",
+    "security",
+    "boundaries",
+}
 
 
 def git(*arguments: str) -> str:

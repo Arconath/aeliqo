@@ -402,7 +402,7 @@ export async function runEvaluation(args: readonly string[]): Promise<number> {
             const port = createOpenAICompatibleToolModel({
               baseURL: model.baseURL,
               model: model.model,
-              secret: createOpaqueModelSecret(secret),
+              secret: createOpaqueModelSecret(secret, 'trusted-server'),
               auth: model.auth,
               capabilities: model.capabilities,
               policy: { allowExternalEgress: true, allowedOrigins: [new URL(model.baseURL).origin] },

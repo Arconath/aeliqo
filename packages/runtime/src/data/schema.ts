@@ -7,7 +7,13 @@ import {
   resultEventSchema,
   revisionSchema,
 } from '@aeliqo/core/schema';
-import { parseCatalog, parseContract, parseWireValue, WIRE_LIMITS } from '@aeliqo/core';
+import {
+  parseCatalog,
+  parseQuery,
+  parseResultEvent as parseCoreResultEvent,
+  parseWireValue,
+  WIRE_LIMITS,
+} from '@aeliqo/core';
 import type {
   CatalogRequest,
   CatalogPage,
@@ -34,7 +40,7 @@ const catalogTargetSchema = z.discriminatedUnion('kind', [
   strictObject({ kind: z.literal('catalog') }),
   strictObject({ kind: z.literal('entity'), entity: idSchema }),
 ]);
-const planTargetSchema = strictObject({ outputId: idSchema, taskId: z.optional(idSchema) });
+const planTargetSchema = strictObject({ taskId: idSchema, outputId: idSchema });
 const catalogRequestSchema = strictObject({
   version: z.literal('1'),
   requestId: idSchema,
@@ -131,7 +137,7 @@ function parseSchema<S extends z.ZodMiniType>(schema: S, input: unknown, name: s
 }
 
 function parseNestedQuery(input: unknown, path: readonly (string | number)[]): Outcome<QuerySpec> {
-  const parsed = parseContract('query', input);
+  const parsed = parseQuery(input);
   if (!parsed.ok) {
     const first = parsed.diagnostics[0];
     return failure(first?.code ?? 'data.query.shape', 'The query does not match the bounded query contract.', [
@@ -184,13 +190,7 @@ export function parsePlanRequest(input: unknown): Outcome<PlanRequest> {
   const parsed = parseSchema(planRequestSchema, input, 'plan-request');
   if (!parsed.ok) return parsed;
   const query = parseNestedQuery(parsed.value.query, ['query']);
-  return query.ok
-    ? { ok: true, value: { ...parsed.value, target: exactPlanTarget(parsed.value.target), query: query.value } }
-    : query;
-}
-
-function exactPlanTarget(target: PlanTargetWire): PlanRequest['target'] {
-  return { outputId: target.outputId, ...(target.taskId === undefined ? {} : { taskId: target.taskId }) };
+  return query.ok ? { ok: true, value: { ...parsed.value, query: query.value } } : query;
 }
 
 export function parseAcceptedQuery(input: unknown): Outcome<AcceptedQuery> {
@@ -210,7 +210,6 @@ export function parseAcceptedQuery(input: unknown): Outcome<AcceptedQuery> {
     ok: true,
     value: {
       ...required,
-      target: exactPlanTarget(required.target),
       query: query.value,
       ...(policyRevision === undefined ? {} : { policyRevision }),
     },
@@ -227,7 +226,6 @@ export function parsePlanAcceptance(input: unknown): Outcome<PlanAcceptance> {
     ok: true,
     value: {
       ...required,
-      target: exactPlanTarget(required.target),
       query: query.value,
       ...(policyRevision === undefined ? {} : { policyRevision }),
     },
@@ -252,7 +250,7 @@ export function parseDataError(input: unknown): Outcome<DataErrorPayload> {
 }
 
 export function parseResultEvent(input: unknown): Outcome<ResultEvent> {
-  const parsed = parseContract('result-event', input);
+  const parsed = parseCoreResultEvent(input);
   return parsed.ok
     ? parsed
     : failure('data.result-event.shape', 'The result event does not match the bounded result-event contract.');

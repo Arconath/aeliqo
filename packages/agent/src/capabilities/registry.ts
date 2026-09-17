@@ -4,7 +4,6 @@ import {
   WIRE_LIMITS,
   type Diagnostic,
   type Outcome,
-  type OperationGrant,
   type VersionRef,
 } from '@aeliqo/core';
 import type { AgentCapabilityLimits, AgentCapabilityManifest, AgentCapabilityRegistry } from './types.js';
@@ -43,30 +42,48 @@ function validLimits(input: AgentCapabilityLimits | undefined): boolean {
   );
 }
 
+function validManifestShape(manifest: unknown): manifest is AgentCapabilityManifest {
+  return manifest !== null && typeof manifest === 'object';
+}
+
+function validManifestLabels<TInput, TOutput>(manifest: AgentCapabilityManifest<TInput, TOutput>): boolean {
+  return validLabel(manifest.label) && (manifest.description === undefined || validLabel(manifest.description));
+}
+
+function validManifestHandlers<TInput, TOutput>(manifest: AgentCapabilityManifest<TInput, TOutput>): boolean {
+  return validLimits(manifest.limits) && typeof manifest.parse === 'function' && typeof manifest.invoke === 'function';
+}
+
+function boundedManifestMetadata<TInput, TOutput>(
+  manifest: AgentCapabilityManifest<TInput, TOutput>,
+  operation: string,
+): boolean {
+  const metadata = {
+    ref: manifest.ref,
+    operation,
+    label: manifest.label,
+    ...(manifest.description === undefined ? {} : { description: manifest.description }),
+    ...(manifest.limits === undefined ? {} : { limits: manifest.limits }),
+  };
+  return parseWireValue(metadata).ok;
+}
+
 function validManifest<TInput, TOutput>(manifest: AgentCapabilityManifest<TInput, TOutput>): Outcome<void> {
   try {
-    if (manifest === null || typeof manifest !== 'object')
+    if (!validManifestShape(manifest))
       return failure('agent.capability.registry', 'A capability manifest must be an object.');
     if (!validId(manifest.ref?.id) || !validId(manifest.ref?.revision))
       return failure('agent.capability.registry', 'A capability reference is malformed.', ['ref']);
     const operation = parseContract('operation-grant', JSON.stringify(manifest.operation));
     if (!operation.ok)
       return failure('agent.capability.registry', 'A capability operation is not a registered grant.', ['operation']);
-    if (!validLabel(manifest.label) || (manifest.description !== undefined && !validLabel(manifest.description)))
+    if (!validManifestLabels(manifest))
       return failure('agent.capability.registry', 'Capability labels and descriptions must be bounded text.');
-    if (!validLimits(manifest.limits) || typeof manifest.parse !== 'function' || typeof manifest.invoke !== 'function')
+    if (!validManifestHandlers(manifest))
       return failure('agent.capability.registry', 'A capability manifest has invalid bounds or handlers.');
     // Metadata is trusted registration data, but it must still be plain wire
     // data when the manifest is exposed to protocol adapters.
-    const metadata = {
-      ref: manifest.ref,
-      operation: operation.value,
-      label: manifest.label,
-      ...(manifest.description === undefined ? {} : { description: manifest.description }),
-      ...(manifest.limits === undefined ? {} : { limits: manifest.limits }),
-    };
-    const wire = parseWireValue(metadata);
-    if (!wire.ok)
+    if (!boundedManifestMetadata(manifest, operation.value))
       return failure('agent.capability.registry', 'Capability registration metadata is not bounded wire data.');
     return { ok: true, value: undefined };
   } catch {
@@ -122,4 +139,3 @@ export function sameCapabilityRef(left: VersionRef, right: VersionRef): boolean 
 }
 
 export type CapabilityRegistrationDiagnostic = Diagnostic;
-export type { OperationGrant };

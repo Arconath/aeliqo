@@ -1,11 +1,5 @@
-import {
-  parseContract,
-  type AgentBindingOutcome,
-  type AgentTaskProposal,
-  type Outcome,
-  type Task,
-  type VersionRef,
-} from '@aeliqo/core';
+import { parseContract, type Outcome, type Task, type VersionRef } from '@aeliqo/core';
+import type { AgentBindingOutcome, AgentTaskProposal } from '@aeliqo/core/agent';
 import type { AgentBinder } from '../binder-types.js';
 import type { AgentCapabilityContext, AgentCapabilityHandlerResult, AgentCapabilityManifest } from './types.js';
 
@@ -60,5 +54,3 @@ export function createTaskBindingCapability(options: {
     },
   });
 }
-
-export const createTaskCapability = createTaskBindingCapability;

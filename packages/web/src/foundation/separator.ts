@@ -16,10 +16,11 @@ export class AeliqoSeparatorElement extends AeliqoFoundationElement {
   protected override render() {
     const vertical = this.orientation === 'vertical';
     if (!vertical && !this.decorative) return html`<hr part="separator" aria-orientation="horizontal" />`;
+    const orientation = vertical ? 'vertical' : 'horizontal';
     return html`<div
       part="separator"
       role=${this.decorative ? nothing : 'separator'}
-      aria-orientation=${this.decorative ? nothing : vertical ? 'vertical' : 'horizontal'}
+      aria-orientation=${this.decorative ? nothing : orientation}
     ></div>`;
   }
 

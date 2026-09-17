@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-  createStandardFunctionRegistry,
-  type Catalog,
-  type MeaningDefinition,
-  type QuerySpec,
-} from '../../packages/core/src/index.js';
+import { type Catalog, type MeaningDefinition, type QuerySpec } from '../../packages/core/src/index.js';
+import { createStandardFunctionRegistry } from '../../packages/core/src/expressions/index.js';
 import {
   createLocalDataService,
   createDataHttpHandler,
@@ -155,7 +151,7 @@ describe('in-process ADC data service', () => {
       version: '1',
       requestId: 'plan-1',
       catalogRevision: 'catalog-1',
-      target: { outputId: 'employees-output' },
+      target: { taskId: 'plan-1', outputId: 'employees-output' },
       query: query(),
       budget,
     });
@@ -167,7 +163,7 @@ describe('in-process ADC data service', () => {
       version: '1',
       requestId: 'plan-2',
       catalogRevision: 'catalog-1',
-      target: { outputId: 'employees-output' },
+      target: { taskId: 'plan-2', outputId: 'employees-output' },
       query: query({ measures: [{ id: 'metric.total', revision: '1' }] }),
       budget,
     });
@@ -179,7 +175,7 @@ describe('in-process ADC data service', () => {
       version: '1',
       requestId: 'plan-relations',
       catalogRevision: 'catalog-1',
-      target: { outputId: 'employees-output' },
+      target: { taskId: 'plan-relations', outputId: 'employees-output' },
       query: query({ relationUsage: [{ relation: { id: 'employees.orders', revision: '1' }, kind: 'semi' }] }),
       budget,
     });
@@ -188,7 +184,7 @@ describe('in-process ADC data service', () => {
       version: '1',
       requestId: 'plan-windows',
       catalogRevision: 'catalog-1',
-      target: { outputId: 'employees-output' },
+      target: { taskId: 'plan-windows', outputId: 'employees-output' },
       query: query({
         windows: [
           {
@@ -224,7 +220,7 @@ describe('in-process ADC data service', () => {
         version: '1',
         requestId: 'plan-alice',
         catalogRevision: 'catalog-1',
-        target: { outputId: 'employees-output' },
+        target: { taskId: 'plan-alice', outputId: 'employees-output' },
         query: query(),
         budget,
       },
@@ -245,7 +241,7 @@ describe('in-process ADC data service', () => {
         version: '1',
         requestId: 'plan-bob',
         catalogRevision: 'catalog-1',
-        target: { outputId: 'employees-output' },
+        target: { taskId: 'plan-bob', outputId: 'employees-output' },
         query: query(),
         budget,
       },
@@ -266,7 +262,7 @@ describe('in-process ADC data service', () => {
       version: '1',
       requestId: 'plan-rows',
       catalogRevision: 'catalog-1',
-      target: { outputId: 'employees-output' },
+      target: { taskId: 'plan-rows', outputId: 'employees-output' },
       query: query({
         where: { op: 'compare', field: 'amount', comparison: 'eq', value: { decimal: '10.00' } },
         order: [{ field: 'name', direction: 'asc', nulls: 'last' }],
@@ -307,7 +303,7 @@ describe('in-process ADC data service', () => {
       version: '1',
       requestId: 'plan-source',
       catalogRevision: 'catalog-1',
-      target: { outputId: 'employees-output' },
+      target: { taskId: 'plan-source', outputId: 'employees-output' },
       query: query(),
       budget,
     });
@@ -390,7 +386,7 @@ describe('in-process ADC data service', () => {
       version: '1',
       requestId: 'plan-expire',
       catalogRevision: 'catalog-1',
-      target: { outputId: 'employees-output' },
+      target: { taskId: 'plan-expire', outputId: 'employees-output' },
       query: query({ page: { size: 1 } }),
       budget,
     });
@@ -406,7 +402,7 @@ describe('in-process ADC data service', () => {
       version: '1',
       requestId: 'plan-page-1',
       catalogRevision: 'catalog-1',
-      target: { outputId: 'employees-output' },
+      target: { taskId: 'plan-page-1', outputId: 'employees-output' },
       query: query({ page: { size: 1 } }),
       budget,
     });
@@ -421,7 +417,7 @@ describe('in-process ADC data service', () => {
       version: '1',
       requestId: 'plan-page-2',
       catalogRevision: 'catalog-1',
-      target: { outputId: 'employees-output' },
+      target: { taskId: 'plan-page-2', outputId: 'employees-output' },
       query: query({ page: { size: 1, cursor: complete.cursor } }),
       budget,
     });
@@ -446,7 +442,7 @@ describe('in-process ADC data service', () => {
       version: '1',
       requestId: 'plan-timeout',
       catalogRevision: 'catalog-1',
-      target: { outputId: 'employees-output' },
+      target: { taskId: 'plan-timeout', outputId: 'employees-output' },
       query: query(),
       budget: tinyBudget,
     });

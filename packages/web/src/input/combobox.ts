@@ -86,12 +86,8 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
     const options = this.safeOptions();
     const filtered = this.filteredOptions(options);
     const describedBy = this.describedByIds();
-    const listId = 'options';
     const selected = options.find((option) => option.value === this.value);
-    const activeDescendant =
-      this.open && this.activeIndex >= 0 && filtered[this.activeIndex] !== undefined
-        ? `option-${this.activeIndex}`
-        : nothing;
+    const activeDescendant = this.activeOptionId(filtered);
     return html`
       <div part="field">
         <label part="label" for="control"><span class="label-text">${this.label}</span></label>
@@ -108,10 +104,10 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
             ?disabled=${this.fieldDisabled}
             ?readonly=${this.readOnly}
             aria-expanded=${this.open ? 'true' : 'false'}
-            aria-controls=${this.open ? listId : nothing}
+            aria-controls=${this.open ? 'options' : nothing}
             aria-autocomplete="list"
             aria-activedescendant=${activeDescendant}
-            aria-invalid=${this.error || (this.value.length > 0 && selected === undefined) ? 'true' : nothing}
+            aria-invalid=${this.isInvalidSelection(selected) ? 'true' : nothing}
             aria-describedby=${describedBy || nothing}
             @input=${this.handleInput}
             @keydown=${this.handleKeyDown}
@@ -120,35 +116,45 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
             @compositionstart=${this.handleCompositionStart}
             @compositionend=${this.handleCompositionEnd}
           />
-          ${
-            this.open
-              ? html`
-                  <ul id=${listId} part="listbox" role="listbox">
-                    ${filtered.map(
-                      (option, index) => html`
-                        <li
-                          id=${`option-${index}`}
-                          part="option"
-                          role="option"
-                          aria-selected=${option.value === this.value ? 'true' : 'false'}
-                          aria-disabled=${option.disabled === true ? 'true' : nothing}
-                          class=${index === this.activeIndex ? 'active' : ''}
-                          @mousedown=${(event: MouseEvent) => event.preventDefault()}
-                          @click=${() => this.choose(option)}
-                        >
-                          <span>${option.label}</span>
-                          ${option.description ? html`<small>${option.description}</small>` : nothing}
-                        </li>
-                      `,
-                    )}
-                  </ul>
-                  ${filtered.length === 0 && !this.loading ? html`<span part="status">No options</span>` : nothing}
-                `
-              : nothing
-          }
+          ${this.renderOptionList(filtered)}
         </div>
       </div>
     `;
+  }
+
+  private activeOptionId(options: readonly AeliqoOption[]): string | typeof nothing {
+    if (!this.open || this.activeIndex < 0 || options[this.activeIndex] === undefined) return nothing;
+    return `option-${this.activeIndex}`;
+  }
+
+  private isInvalidSelection(selected: AeliqoOption | undefined): boolean {
+    return this.error.length > 0 || (this.value.length > 0 && selected === undefined);
+  }
+
+  private renderOptionList(options: readonly AeliqoOption[]) {
+    if (!this.open) return nothing;
+    return html`
+      <ul id="options" part="listbox" role="listbox">
+        ${options.map((option, index) => this.renderOption(option, index))}
+      </ul>
+      ${options.length === 0 && !this.loading ? html`<span part="status">No options</span>` : nothing}
+    `;
+  }
+
+  private renderOption(option: AeliqoOption, index: number) {
+    return html`<li
+      id=${`option-${index}`}
+      part="option"
+      role="option"
+      aria-selected=${option.value === this.value ? 'true' : 'false'}
+      aria-disabled=${option.disabled === true ? 'true' : nothing}
+      class=${index === this.activeIndex ? 'active' : ''}
+      @mousedown=${(event: MouseEvent) => event.preventDefault()}
+      @click=${() => this.choose(option)}
+    >
+      <span>${option.label}</span>
+      ${option.description ? html`<small>${option.description}</small>` : nothing}
+    </li>`;
   }
 
   override focus(options?: FocusOptions): void {
@@ -213,20 +219,30 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
     if (this.fieldDisabled || this.readOnly || event.isComposing || this.composing) return;
     const options = this.filteredOptions(this.safeOptions());
+    if (this.handleArrowKey(event, options)) return;
+    if (this.handleEscapeKey(event)) return;
+    this.handleEnterKey(event, options);
+  };
+
+  private handleArrowKey(event: KeyboardEvent, options: readonly AeliqoOption[]): boolean {
     if (event.key === 'ArrowDown') {
       event.preventDefault();
       this.open = true;
       this.activeIndex = this.nextEnabledIndex(options, this.activeIndex, 1);
       this.requestUpdate();
-      return;
+      return true;
     }
     if (event.key === 'ArrowUp') {
       event.preventDefault();
       this.open = true;
       this.activeIndex = this.nextEnabledIndex(options, this.activeIndex, -1);
       this.requestUpdate();
-      return;
+      return true;
     }
+    return false;
+  }
+
+  private handleEscapeKey(event: KeyboardEvent): boolean {
     if (event.key === 'Escape') {
       if (this.open) {
         event.preventDefault();
@@ -234,8 +250,12 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
         this.activeIndex = -1;
         this.requestUpdate();
       }
-      return;
+      return true;
     }
+    return false;
+  }
+
+  private handleEnterKey(event: KeyboardEvent, options: readonly AeliqoOption[]): void {
     if (event.key === 'Enter' && this.open && this.activeIndex >= 0) {
       const option = options[this.activeIndex];
       if (option !== undefined) {
@@ -243,7 +263,7 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
         this.choose(option);
       }
     }
-  };
+  }
 
   private choose(option: AeliqoOption): void {
     if (option.disabled === true || this.fieldDisabled || this.readOnly) return;
@@ -348,12 +368,18 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
 
   private nextEnabledIndex(options: readonly AeliqoOption[], current: number, direction: 1 | -1): number {
     if (options.length === 0) return -1;
-    const start = current < 0 ? (direction === 1 ? -1 : 0) : current;
+    const start = this.navigationStart(current, direction);
     for (let offset = 1; offset <= options.length; offset += 1) {
       const index = (start + direction * offset + options.length * 2) % options.length;
       if (options[index]?.disabled !== true) return index;
     }
     return -1;
+  }
+
+  private navigationStart(current: number, direction: 1 | -1): number {
+    if (current >= 0) return current;
+    if (direction === 1) return -1;
+    return 0;
   }
 
   private native(): HTMLInputElement | undefined {

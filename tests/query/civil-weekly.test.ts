@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { createQueryFunctionRegistry, createQueryPlanner } from '../../packages/core/src/index.js';
-import type { Catalog, QuerySpec, QuerySource, SemanticType } from '../../packages/core/src/index.js';
+import { createQueryFunctionRegistry } from '../../packages/core/src/expressions/index.js';
+import { createQueryPlanner } from '../../packages/core/src/query/index.js';
+import type { Catalog, QuerySpec, SemanticType } from '../../packages/core/src/contracts/types.js';
+import type { QuerySource } from '../../packages/core/src/query/types.js';
 
 function fixture(timezone = 'Asia/Jakarta', value: SemanticType['value'] = 'date') {
   const registry = createQueryFunctionRegistry({ version: '2' });

@@ -5,7 +5,7 @@ test('keyed region children retain focus and controlled draft state across reord
   await expect
     .poll(() => page.evaluate(() => (window as typeof window & { aeliqoReady?: boolean }).aeliqoReady))
     .toBe(true);
-  const filter = page.locator('aeliqo-input[data-aeliqo-node-id="filter-a"]');
+  const filter = page.locator('aeliqo-text-field[data-aeliqo-node-id="filter-a"]');
   await filter.evaluate(async (element) => {
     const input = element as HTMLElement & { value: string; updateComplete: Promise<unknown> };
     input.value = 'draft';
@@ -22,7 +22,7 @@ test('keyed region children retain focus and controlled draft state across reord
   const focus = await page.evaluate(() => {
     const region = document.querySelector('aeliqo-region') as HTMLElement;
     const child = region.shadowRoot?.querySelector(
-      'aeliqo-input[data-aeliqo-node-id="filter-a"]',
+      'aeliqo-text-field[data-aeliqo-node-id="filter-a"]',
     ) as HTMLElement | null;
     return (
       document.activeElement === region &&
@@ -125,10 +125,10 @@ test('region emits trusted table selection, clears explicitly, and keeps long fo
     const region = document.querySelector('aeliqo-region') as HTMLElement & { updateComplete: Promise<unknown> };
     app.mountFilters();
     await region.updateComplete;
-    const filter = region.shadowRoot?.querySelector('aeliqo-input[data-aeliqo-node-id="filter-a"]');
+    const filter = region.shadowRoot?.querySelector('aeliqo-text-field[data-aeliqo-node-id="filter-a"]');
     if (filter === null || filter === undefined) throw new Error('filter did not mount');
     for (const detail of [undefined, { value: 'forged', source: 'program' }, { value: 42, source: 'user' }]) {
-      filter.dispatchEvent(new CustomEvent('aeliqo-input', { bubbles: true, composed: true, detail }));
+      filter.dispatchEvent(new CustomEvent('aeliqo-input-change', { bubbles: true, composed: true, detail }));
     }
     await region.updateComplete;
   });
@@ -188,4 +188,28 @@ test('region emits trusted table selection, clears explicitly, and keeps long fo
   await subChart.locator('details summary').click();
   await expect(subChart.locator('tbody tr')).toHaveCount(2);
   await expect(subChart.locator('svg [part="point"]')).toHaveCount(2);
+});
+
+test('unmount during resize adaptation prevents a detached Region from restoring presentation', async ({ page }) => {
+  await page.goto('/tests/vertical-slice/web/app-lifecycle.html');
+  const result = await page.evaluate(async () => {
+    const start = (
+      window as typeof window & {
+        startResizeUnmount?: () => Promise<{
+          unmountResult: boolean;
+          detached: boolean;
+          presentationCleared: boolean;
+          resultsCleared: boolean;
+        }>;
+      }
+    ).startResizeUnmount;
+    if (start === undefined) throw new Error('resize lifecycle fixture did not mount');
+    return start();
+  });
+  expect(result).toEqual({
+    unmountResult: true,
+    detached: true,
+    presentationCleared: true,
+    resultsCleared: true,
+  });
 });

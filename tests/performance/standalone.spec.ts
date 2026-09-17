@@ -303,7 +303,7 @@ test('captures standalone production fixture cold and warm browser observations'
     sourceCommit: process.env.AELIQO_SOURCE_COMMIT ?? 'unknown',
     mode: extended ? 'extended-observation' : 'functional-smoke',
     environment: cold[0]?.observation.environment ?? warm.warmup.environment,
-    fixture: { rowCount: 100, controlValue: 'ready', entrypoint: '@aeliqo/web/input + @aeliqo/web/table' },
+    fixture: { rowCount: 100, controlValue: 'ready', entrypoint: '@aeliqo/web/inputs + @aeliqo/web/table' },
     moduleGraph,
     cold: {
       label: 'cold-cache-disabled-fresh-context',

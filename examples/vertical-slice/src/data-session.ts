@@ -19,7 +19,7 @@ import { catalog, functionRegistry, snapshot, sourceLimits } from './hr.js';
 export const principalKey = 'synthetic-hr-reader';
 export const scopeDigest = 'synthetic-hr-scope';
 export const policyRevision = 'synthetic-hr-policy-1';
-export const budget: QueryBudget = {
+const budget: QueryBudget = {
   maxRows: 1_000,
   maxBytes: 500_000,
   maxMessages: 32,
@@ -29,16 +29,14 @@ export const budget: QueryBudget = {
 export const refKey = (ref: ResultRef): string =>
   JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
 
-/** Application-owned fixture host. No HR-specific execution lives in the SDK. */
-export function createHrDataSession(transport: 'local' | 'http' = 'local') {
-  let permitted = true;
-  let queryCount = 0;
+function createTrackedResultStore() {
   const underlyingStore = createResultStore({ maxEntries: 32, maxBytes: 2_000_000 });
   const tracked = new Set<ResultHandle>();
   const prune = () => {
-    for (const handle of tracked) if (['disposed', 'denied'].includes(handle.snapshot().status)) tracked.delete(handle);
+    for (const handle of tracked) {
+      if (['disposed', 'denied'].includes(handle.snapshot().status)) tracked.delete(handle);
+    }
   };
-  // The application registers its actual store handles, including intermediate named outputs.
   const resultStore: ResultStore = {
     begin(input) {
       const handle = underlyingStore.begin(input);
@@ -63,6 +61,15 @@ export function createHrDataSession(transport: 'local' | 'http' = 'local') {
       return descriptor !== undefined && refKey(descriptor.ref) === refKey(ref);
     });
   };
+  return { resultStore, resolveResult };
+}
+
+function createDataServices(
+  transport: 'local' | 'http',
+  isPermitted: () => boolean,
+  resultStore: ResultStore,
+  resolveResult: (ref: ResultRef) => ResultHandle | undefined,
+) {
   const cohortResolver = createResultCohortResolver();
   const local = createLocalDataService({
     snapshot: snapshot(),
@@ -71,7 +78,7 @@ export function createHrDataSession(transport: 'local' | 'http' = 'local') {
     cohortResolver,
     cohortContext: () => ({ resultStore, resolveResult }),
     authorize: ({ context }) =>
-      permitted && context.principal === principalKey
+      isPermitted() && context.principal === principalKey
         ? { ok: true, value: { scopeDigest, policyRevision } }
         : {
             ok: false,
@@ -83,11 +90,10 @@ export function createHrDataSession(transport: 'local' | 'http' = 'local') {
   const handler = createDataHttpHandler({
     service: local,
     authenticate: () =>
-      permitted
+      isPermitted()
         ? { ok: true, value: { principal: principalKey } }
         : { ok: false, diagnostics: [{ code: 'data.denied', message: 'Fixture access revoked.', retryable: false }] },
   });
-  // This in-process Fetch handler exercises the same serialized HTTP path without a second fixture engine.
   const selected =
     transport === 'local'
       ? local
@@ -95,6 +101,7 @@ export function createHrDataSession(transport: 'local' | 'http' = 'local') {
           baseUrl: 'https://fixture.invalid',
           fetch: async (input, init) => handler(new Request(input, init)),
         });
+  let queryCount = 0;
   const data: DataService = {
     describe: (request, context) => selected.describe(request, context),
     plan(request, context) {
@@ -103,13 +110,30 @@ export function createHrDataSession(transport: 'local' | 'http' = 'local') {
     },
     execute: (request, context) => selected.execute(request, context),
   };
-  const context = (): TrustedEvaluationContext => ({
+  return {
+    local,
+    data,
+    cohortResolver,
+    get queryCount() {
+      return queryCount;
+    },
+  };
+}
+
+function createTrustedContext(
+  data: DataService,
+  resultStore: ResultStore,
+  resolveResult: (ref: ResultRef) => ResultHandle | undefined,
+  cohortResolver: ReturnType<typeof createResultCohortResolver>,
+  isPermitted: () => boolean,
+): TrustedEvaluationContext {
+  return {
     principalKey,
     scopeDigest,
     policyRevision,
     catalogRevision: catalog.revision,
     functionRegistryDigest: functionRegistry.digest,
-    grants: permitted ? ['task.evaluate', 'result.inspect'] : [],
+    grants: isPermitted() ? ['task.evaluate', 'result.inspect'] : [],
     catalog,
     data,
     resultStore,
@@ -118,7 +142,17 @@ export function createHrDataSession(transport: 'local' | 'http' = 'local') {
     resolveResult,
     now: () => Date.now(),
     budget,
-  });
+  };
+}
+
+/** Application-owned fixture host. No HR-specific execution lives in the SDK. */
+export function createHrDataSession(transport: 'local' | 'http' = 'local') {
+  let permitted = true;
+  const { resultStore, resolveResult } = createTrackedResultStore();
+  const services = createDataServices(transport, () => permitted, resultStore, resolveResult);
+  const context = () =>
+    createTrustedContext(services.data, resultStore, resolveResult, services.cohortResolver, () => permitted);
+  const { local, cohortResolver } = services;
   const evaluator = createTaskEvaluator({ host: { readContext: () => ({ ok: true, value: context() }) } });
   return {
     resultStore,
@@ -126,7 +160,7 @@ export function createHrDataSession(transport: 'local' | 'http' = 'local') {
     context,
     cohortResolver,
     get queryCount() {
-      return queryCount;
+      return services.queryCount;
     },
     get permitted() {
       return permitted;
@@ -153,4 +187,3 @@ export function createHrDataSession(transport: 'local' | 'http' = 'local') {
     },
   };
 }
-export type HrDataSession = ReturnType<typeof createHrDataSession>;

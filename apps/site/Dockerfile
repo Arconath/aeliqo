@@ -12,6 +12,7 @@ COPY packages ./packages
 COPY apps ./apps
 COPY catalog ./catalog
 COPY docs/public-site ./docs/public-site
+COPY docs/site ./docs/site
 COPY examples ./examples
 COPY scripts ./scripts
 

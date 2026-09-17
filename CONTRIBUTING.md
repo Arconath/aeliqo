@@ -1,45 +1,8 @@
 # Contributing to Aeliqo
 
-Thank you for helping improve Aeliqo. Contributions should keep the framework usable through direct components, preserve application ownership of data and business actions, and avoid duplicating behavior across framework wrappers.
+Thanks for helping improve Aeliqo. Read [AGENTS.md](AGENTS.md) for the repository map, code and documentation conventions, testing matrix, and release process before opening a pull request.
 
-## Set up the workspace
-
-Use Node.js `24.20.0` and pnpm `11.24.0`.
-
-```sh
-corepack enable
-corepack prepare pnpm@11.24.0 --activate
-pnpm install --frozen-lockfile
-```
-
-Create a focused branch and keep unrelated cleanup out of the same pull request.
-
-## Make a change
-
-- Add or update tests for behavior that can regress.
-- Keep public package versions aligned.
-- Use narrow package entry points in examples.
-- Preserve keyboard, focus, reflow, forced-colors, and screen-reader behavior for UI changes.
-- Keep identity and authorization in the integrating application; proposals and browser payloads do not grant authority.
-- Document public API changes and add migration guidance when compatibility changes.
-- Do not include secrets, customer data, generated build output, or local tool configuration.
-
-Run the smallest relevant checks while developing. Before opening a substantial pull request, run the full source quality suite:
-
-```sh
-pnpm typecheck
-pnpm lint
-pnpm check
-```
-
-Website, documentation, or playground changes also require:
-
-```sh
-pnpm test:docs-artifact
-pnpm site:test
-```
-
-Inspect changed interfaces at desktop and narrow widths in both light and dark themes. Automated accessibility checks support this review but do not replace keyboard and assistive-technology judgment.
+Keep a contribution focused, include tests for behavior that can regress, and update the relevant documentation when a public API changes. Do not include secrets, customer records, generated build output, or local tool configuration.
 
 ## Commit sign-off
 

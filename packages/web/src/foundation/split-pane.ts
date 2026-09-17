@@ -4,6 +4,27 @@ import { AeliqoSplitChangeEvent } from './events.js';
 
 export type AeliqoSplitOrientation = 'horizontal' | 'vertical';
 
+function keyboardPosition(
+  key: string,
+  orientation: AeliqoSplitOrientation,
+  rtl: boolean,
+  position: number,
+  step: number,
+  minimum: number,
+  maximum: number,
+): number | undefined {
+  if (key === 'Home') return minimum;
+  if (key === 'End') return maximum;
+  if (orientation === 'horizontal') {
+    if (key === 'ArrowLeft') return position - (rtl ? -step : step);
+    if (key === 'ArrowRight') return position + (rtl ? -step : step);
+    return undefined;
+  }
+  if (key === 'ArrowUp') return position - step;
+  if (key === 'ArrowDown') return position + step;
+  return undefined;
+}
+
 /** Resizable two-pane layout with a typed, controlled position proposal. */
 export class AeliqoSplitPaneElement extends AeliqoFoundationElement {
   static readonly properties = {
@@ -126,15 +147,8 @@ export class AeliqoSplitPaneElement extends AeliqoFoundationElement {
     const orientation = this.orientation === 'vertical' ? 'vertical' : 'horizontal';
     const rtl = orientation === 'horizontal' && getComputedStyle(this).direction === 'rtl';
     const step = Number.isFinite(this.step) && this.step > 0 ? this.step : 5;
-    let next: number | undefined;
-    if (event.key === 'Home') next = this.positionBounds().minimum;
-    else if (event.key === 'End') next = this.positionBounds().maximum;
-    else if (event.key === 'ArrowLeft' && orientation === 'horizontal')
-      next = this.effectivePosition() - (rtl ? -step : step);
-    else if (event.key === 'ArrowRight' && orientation === 'horizontal')
-      next = this.effectivePosition() + (rtl ? -step : step);
-    else if (event.key === 'ArrowUp' && orientation === 'vertical') next = this.effectivePosition() - step;
-    else if (event.key === 'ArrowDown' && orientation === 'vertical') next = this.effectivePosition() + step;
+    const { minimum, maximum } = this.positionBounds();
+    const next = keyboardPosition(event.key, orientation, rtl, this.effectivePosition(), step, minimum, maximum);
     if (next === undefined) return;
     event.preventDefault();
     this.commitPosition(next);

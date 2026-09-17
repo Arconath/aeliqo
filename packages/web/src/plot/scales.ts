@@ -7,33 +7,49 @@ export interface PlotTick {
   readonly value: Scalar;
   readonly label: string;
 }
+
 export interface PlotScale {
   readonly at: (value: Scalar) => number | undefined;
   readonly ticks: readonly PlotTick[];
 }
+
 export function exactLabel(value: Scalar): string {
-  return value === null ? 'Missing' : typeof value === 'object' ? value.decimal : String(value);
+  if (value === null) return 'Missing';
+  if (typeof value === 'object') return value.decimal;
+  return String(value);
 }
+
 interface Exact {
-  coefficient: bigint;
-  scale: number;
+  readonly coefficient: bigint;
+  readonly scale: number;
 }
+
 function numericExact(value: Scalar, type: SemanticType): Exact {
-  if (type.value === 'date') return { coefficient: BigInt(Date.parse(`${value}T00:00:00Z`)), scale: 0 };
-  if (type.value === 'instant') {
-    if (typeof value !== 'string') throw Error('Invalid instant');
-    const parts = scalarInstantParts(value);
-    if (parts === undefined) throw Error('Invalid instant');
-    const { milliseconds, fraction } = parts;
-    const scale = Math.max(3, fraction.length);
-    return {
-      coefficient: BigInt(milliseconds) * 10n ** BigInt(scale - 3) + BigInt(fraction.padEnd(scale, '0') || '0'),
-      scale,
-    };
-  }
+  if (type.value === 'date') return dateExact(value);
+  if (type.value === 'instant') return instantExact(value);
+  return decimalExact(value);
+}
+
+function dateExact(value: Scalar): Exact {
+  return { coefficient: BigInt(Date.parse(`${value}T00:00:00Z`)), scale: 0 };
+}
+
+function instantExact(value: Scalar): Exact {
+  if (typeof value !== 'string') throw Error('Invalid instant');
+  const parts = scalarInstantParts(value);
+  if (parts === undefined) throw Error('Invalid instant');
+  const { milliseconds, fraction } = parts;
+  const scale = Math.max(3, fraction.length);
+  return {
+    coefficient: BigInt(milliseconds) * 10n ** BigInt(scale - 3) + BigInt(fraction.padEnd(scale, '0') || '0'),
+    scale,
+  };
+}
+
+function decimalExact(value: Scalar): Exact {
   const raw = typeof value === 'object' && value !== null ? value.decimal : String(value);
   const match = /^(-?)(\d+)(?:\.(\d+))?(?:e([+-]?\d+))?$/iu.exec(raw);
-  if (!match) throw Error('Invalid number');
+  if (match === null) throw Error('Invalid number');
   const exponent = Number(match[4] ?? 0);
   const fraction = match[3] ?? '';
   let coefficient = BigInt(`${match[1]}${match[2]}${fraction}`);
@@ -44,6 +60,147 @@ function numericExact(value: Scalar, type: SemanticType): Exact {
   }
   return { coefficient, scale };
 }
+
+function collectValues(input: readonly Scalar[], type: SemanticType): Scalar[] {
+  const values: Scalar[] = [];
+  const identities = new Set<string>();
+  for (const value of input) {
+    if (value === null) continue;
+    if (!validateScalar(value, type).ok) throw Error('Invalid scale value');
+    const identity = scalarIdentity(value, type);
+    if (!identity.ok) throw Error('Invalid scale identity');
+    if (identities.has(identity.value)) continue;
+    identities.add(identity.value);
+    values.push(value);
+  }
+  return values;
+}
+
+function identityOf(value: Scalar, type: SemanticType): string {
+  const identity = scalarIdentity(value, type);
+  if (!identity.ok) throw Error('Invalid scale identity');
+  return identity.value;
+}
+
+function ordinalScale(
+  values: readonly Scalar[],
+  type: SemanticType,
+  range: readonly [number, number],
+): PlotScale['at'] {
+  const scale = scalePoint<string>()
+    .domain(values.map((value) => identityOf(value, type)))
+    .range([...range])
+    .padding(0.5);
+  return (value) => {
+    if (value === null) return undefined;
+    return scale(identityOf(value, type));
+  };
+}
+
+interface NumericDomain {
+  readonly integers: readonly bigint[];
+  readonly toInteger: (value: Scalar) => bigint;
+}
+
+function exactIntegers(values: readonly Scalar[], type: SemanticType, includeZero: boolean): NumericDomain {
+  const exact = values.map((value) => numericExact(value, type));
+  if (includeZero) exact.push({ coefficient: 0n, scale: 0 });
+  const decimalPlaces = Math.max(0, ...exact.map((value) => value.scale));
+  const integers = exact.map((value) => value.coefficient * 10n ** BigInt(decimalPlaces - value.scale));
+  return {
+    integers,
+    toInteger: (value) => {
+      const part = numericExact(value, type);
+      return part.coefficient * 10n ** BigInt(decimalPlaces - part.scale);
+    },
+  };
+}
+
+function sortedValues(values: Scalar[], type: SemanticType): Scalar[] {
+  values.sort((left, right) => {
+    const order = compareScalars(left, right, type);
+    if (!order.ok || order.value === null) throw Error('Unordered scale');
+    return order.value;
+  });
+  return values;
+}
+
+function numericScale(
+  values: Scalar[],
+  encoding: PlotEncoding,
+  type: SemanticType,
+  range: readonly [number, number],
+): PlotScale['at'] {
+  sortedValues(values, type);
+  const domain = exactIntegers(values, type, encoding.zero === true);
+  const [minimum, maximum] = integerExtent(domain.integers);
+  if (encoding.scale === 'log') return logarithmicScale(minimum, maximum, domain.integers, domain.toInteger, range);
+  return linearScale(minimum, maximum, domain.toInteger, range);
+}
+
+function integerExtent(values: readonly bigint[]): readonly [bigint, bigint] {
+  let minimum = values[0] ?? 0n;
+  let maximum = minimum;
+  for (const value of values) {
+    if (value < minimum) minimum = value;
+    if (value > maximum) maximum = value;
+  }
+  return [minimum, maximum];
+}
+
+function logarithmicPosition(value: bigint): number {
+  const digits = value.toString();
+  return Math.log10(Number(digits.slice(0, 16))) + digits.length - Math.min(16, digits.length);
+}
+
+function logarithmicScale(
+  minimum: bigint,
+  maximum: bigint,
+  integers: readonly bigint[],
+  toInteger: (value: Scalar) => bigint,
+  range: readonly [number, number],
+): PlotScale['at'] {
+  if (integers.some((value) => value <= 0n)) throw Error('Log scales require positive observations');
+  const low = logarithmicPosition(minimum || 1n);
+  const high = logarithmicPosition(maximum || 1n);
+  if (minimum !== maximum && low === high) throw Error('Log scale precision cannot distinguish the observations');
+  const scale = scaleLog()
+    .domain([1, 10])
+    .range([...range]);
+  return (value) => {
+    if (value === null) return undefined;
+    const integer = toInteger(value);
+    if (integer <= 0n) throw Error('Log scales require positive observations');
+    const ratio = high === low ? 0.5 : (logarithmicPosition(integer) - low) / (high - low);
+    return scale(10 ** ratio);
+  };
+}
+
+function linearScale(
+  minimum: bigint,
+  maximum: bigint,
+  toInteger: (value: Scalar) => bigint,
+  range: readonly [number, number],
+): PlotScale['at'] {
+  const span = maximum - minimum;
+  const scale = scaleLinear()
+    .domain([0, 1])
+    .range([...range]);
+  return (value) => {
+    if (value === null) return undefined;
+    const integer = toInteger(value);
+    const ratio = span === 0n ? 0.5 : Number(((integer - minimum) * 1_000_000_000_000n) / span) / 1_000_000_000_000;
+    return scale(ratio);
+  };
+}
+
+function tickValues(values: readonly Scalar[]): Scalar[] {
+  return values.filter(
+    (_, index) =>
+      values.length <= 6 || index === 0 || index === values.length - 1 || index % Math.ceil(values.length / 5) === 0,
+  );
+}
+
 /** Offset exact values before floating geometry conversion, preserving small differences on large baselines. */
 export function makePlotScale(
   encoding: PlotEncoding,
@@ -51,81 +208,9 @@ export function makePlotScale(
   input: readonly Scalar[],
   range: readonly [number, number],
 ): PlotScale {
-  const values: Scalar[] = [];
-  const identities = new Set<string>();
-  for (const value of input) {
-    if (value === null) continue;
-    if (!validateScalar(value, type).ok) throw Error('Invalid scale value');
-    const id = scalarIdentity(value, type);
-    if (!id.ok) throw Error('Invalid scale identity');
-    if (!identities.has(id.value)) {
-      identities.add(id.value);
-      values.push(value);
-    }
-  }
-  const identify = (v: Scalar): string => {
-    const x = scalarIdentity(v, type);
-    if (!x.ok) throw Error('Invalid scale identity');
-    return x.value;
-  };
-  let at: (value: Scalar) => number | undefined;
-  if (encoding.scale === 'ordinal') {
-    const scale = scalePoint<string>()
-      .domain(values.map(identify))
-      .range([...range])
-      .padding(0.5);
-    at = (v) => (v === null ? undefined : scale(identify(v)));
-  } else {
-    values.sort((a, b) => {
-      const c = compareScalars(a, b, type);
-      if (!c.ok || c.value === null) throw Error('Unordered scale');
-      return c.value;
-    });
-    const exact = values.map((v) => numericExact(v, type));
-    if (encoding.zero) exact.push({ coefficient: 0n, scale: 0 });
-    const places = Math.max(0, ...exact.map((v) => v.scale));
-    const integer = (v: Exact) => v.coefficient * 10n ** BigInt(places - v.scale);
-    const ints = exact.map(integer);
-    let min = ints[0] ?? 0n,
-      max = min;
-    for (const i of ints) {
-      if (i < min) min = i;
-      if (i > max) max = i;
-    }
-    if (encoding.scale === 'log') {
-      if (ints.some((i) => i <= 0n)) throw Error('Log scales require positive observations');
-      // Logarithms consume bounded ratios, not underflowing/overflowing raw decimals.
-      const logInt = (v: bigint) => {
-        const s = v.toString();
-        return Math.log10(Number(s.slice(0, 16))) + s.length - Math.min(16, s.length);
-      };
-      const low = logInt(min || 1n),
-        high = logInt(max || 1n);
-      if (min !== max && low === high) throw Error('Log scale precision cannot distinguish the observations');
-      const scale = scaleLog()
-        .domain([1, 10])
-        .range([...range]);
-      at = (v) => {
-        if (v === null) return undefined;
-        const x = integer(numericExact(v, type));
-        if (x <= 0n) throw Error('Log scales require positive observations');
-        return scale(10 ** (high === low ? 0.5 : (logInt(x) - low) / (high - low)));
-      };
-    } else {
-      const span = max - min;
-      const scale = scaleLinear()
-        .domain([0, 1])
-        .range([...range]);
-      at = (v) => {
-        if (v === null) return undefined;
-        const x = integer(numericExact(v, type));
-        const ratio = span === 0n ? 0.5 : Number(((x - min) * 1_000_000_000_000n) / span) / 1_000_000_000_000;
-        return scale(ratio);
-      };
-    }
-  }
-  const samples = values.filter(
-    (_, i) => values.length <= 6 || i === 0 || i === values.length - 1 || i % Math.ceil(values.length / 5) === 0,
-  );
-  return { at, ticks: samples.map((value) => ({ position: at(value)!, value, label: exactLabel(value) })) };
+  const values = collectValues(input, type);
+  const at =
+    encoding.scale === 'ordinal' ? ordinalScale(values, type, range) : numericScale(values, encoding, type, range);
+  const ticks = tickValues(values).map((value) => ({ position: at(value)!, value, label: exactLabel(value) }));
+  return { at, ticks };
 }

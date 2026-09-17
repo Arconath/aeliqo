@@ -5,7 +5,7 @@
  * and the input scope so a result cannot be mistaken for a whole-page or
  * backend capacity claim.
  */
-import { composePresentation } from '@aeliqo/core';
+import { composePresentation } from '@aeliqo/core/presentation';
 import {
   createAeliqoPresentationRegistry,
   AELIQO_CONFIG_SCHEMAS,
@@ -20,13 +20,12 @@ export const SMALL_ROW_COUNT = 100;
 export const MEDIUM_ROW_COUNT = 10_000;
 export const MEDIUM_VIEW_COUNT = 30;
 export const MEDIUM_FIELD_COUNT = 100;
-export const MEDIUM_CANDIDATE_COUNT = 64;
-export const LARGE_POPULATION_COUNT = 1_000_000;
+const MEDIUM_CANDIDATE_COUNT = 64;
 export const LARGE_TRANSFERRED_ROW_COUNT = 100;
 
 const now = () => (globalThis.performance?.now ? globalThis.performance.now() : Date.now());
-export const FIRST_SAMPLE_COUNT = 10;
-export const SUBSEQUENT_SAMPLE_COUNT = 30;
+const FIRST_SAMPLE_COUNT = 10;
+const SUBSEQUENT_SAMPLE_COUNT = 30;
 
 export function percentile(values, percentileValue) {
   if (!Number.isFinite(percentileValue) || percentileValue <= 0 || percentileValue > 1)
@@ -38,7 +37,7 @@ export function percentile(values, percentileValue) {
   return sorted[index] ?? 0;
 }
 
-export function summary(values) {
+function summary(values) {
   return {
     count: values.length,
     minMs: values.length === 0 ? 0 : Math.min(...values),
@@ -104,7 +103,7 @@ export function semanticFields(count = MEDIUM_FIELD_COUNT) {
   });
 }
 
-export function mediumResult() {
+function mediumResult() {
   const ref = {
     id: 'performance-medium-result',
     revision: '1',
@@ -134,7 +133,7 @@ export function mediumResult() {
   };
 }
 
-export function mediumContext() {
+function mediumContext() {
   const result = mediumResult();
   const needs = Array.from({ length: MEDIUM_VIEW_COUNT }, (_, index) => ({
     id: `view-${String(index + 1).padStart(2, '0')}`,

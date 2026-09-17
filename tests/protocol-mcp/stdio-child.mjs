@@ -1,6 +1,6 @@
 import { createMcpStdioServer } from '../../packages/agent/dist/mcp/index.js';
 
-const endpoint = (era) => ({
+const endpoint = () => ({
   transport: 'mcp',
   targetRegionId: 'region',
   goalEpoch: 'goal',
@@ -32,7 +32,7 @@ const endpoint = (era) => ({
         state: 'data-ready',
         status: 'data-ready',
         stage: 'data-ready',
-        value: { name, query: input?.query ?? null, era },
+        value: { name, query: input?.query ?? null },
         diagnostics: [],
       },
     };
@@ -41,7 +41,7 @@ const endpoint = (era) => ({
 });
 
 createMcpStdioServer({
-  createEndpoint: (context) => endpoint(context.era),
+  createEndpoint: () => endpoint(),
   name: 'aeliqo-stdio-fixture',
   version: '0.0.0-test',
   maxBufferSize:

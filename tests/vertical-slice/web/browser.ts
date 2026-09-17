@@ -2,7 +2,9 @@ import { registerAeliqoElements } from '../../../packages/web/src/register.js';
 import type { AeliqoRegionElement } from '../../../packages/web/src/region/aeliqo-region.js';
 import type { AeliqoRegionResult } from '../../../packages/web/src/region/types.js';
 import type { AeliqoTableColumn } from '../../../packages/web/src/types.js';
-import type { InteractionPort, Result, ResultRef, ValidatedPresentation } from '../../../packages/core/src/index.js';
+import type { Result, ResultRef } from '../../../packages/core/src/index.js';
+import type { InteractionPort } from '../../../packages/core/src/interaction/index.js';
+import type { ValidatedPresentation } from '../../../packages/core/src/presentation/index.js';
 
 registerAeliqoElements();
 

@@ -10,8 +10,8 @@ const MAX_RESOURCE_ENTRIES = 2_048;
 
 const ROUTES = [
   { id: 'home', path: '/' },
-  { id: 'component-docs', path: '/docs/components/data.table/' },
-  { id: 'playground', path: '/playground/' },
+  { id: 'component-docs', path: '/components/data.table/', host: 'docs.localhost' },
+  { id: 'playground', path: '/playground/', host: 'docs.localhost' },
 ] as const;
 
 type RouteId = (typeof ROUTES)[number]['id'];
@@ -579,7 +579,9 @@ async function waitForObserverDelivery(page: Page): Promise<void> {
 
 async function assertRouteReady(page: Page, route: (typeof ROUTES)[number]): Promise<RouteReadiness> {
   if (route.id === 'home') {
-    await expect(page.getByRole('heading', { name: 'Interfaces that adapt to intent', exact: false })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Your app sets the rules. Aeliqo adapts the view.', exact: true }),
+    ).toBeVisible();
     await expect(page.locator('#home-demo aeliqo-region')).toBeVisible();
     await expect(page.locator('#demo-status')).toContainText('4 of 4');
     return {
@@ -590,15 +592,18 @@ async function assertRouteReady(page: Page, route: (typeof ROUTES)[number]): Pro
   if (route.id === 'component-docs') {
     await expect(page.getByRole('heading', { name: 'Table', exact: true })).toBeVisible();
     await expect(page.locator('[data-component-preview] aeliqo-table')).toBeAttached();
-    await expect(page.locator('[data-component-preview]')).toContainText('Expected result');
+    await expect(page.getByText(/Expected result:/)).toBeVisible();
     return {
       visible: 'Table heading + real table preview',
       functional: 'component documentation exposes expected-result content',
     };
   }
-  await expect(page.locator('#play-status')).toContainText('4 result rows');
-  await expect(page.locator('aeliqo-region aeliqo-table')).toBeVisible();
-  return { visible: 'playground result status + evaluated table', functional: 'local evaluator reports 4 result rows' };
+  await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
+  await expect(page.locator('#pg-region aeliqo-table')).toBeVisible();
+  return {
+    visible: 'playground runtime receipt + rendered table',
+    functional: 'guided task renders through the public app facade',
+  };
 }
 
 async function routeEnvironment(page: Page): Promise<SiteSample['environment']> {
@@ -615,11 +620,13 @@ async function routeEnvironment(page: Page): Promise<SiteSample['environment']> 
 async function navigateAndCollect(
   page: Page,
   route: (typeof ROUTES)[number],
+  url: string,
   index: number,
   condition: SiteSample['condition'],
   network: NetworkRecorder,
 ): Promise<SiteSample> {
-  const response = await page.goto(route.path, { waitUntil: 'load' });
+  const response = await page.goto(url, { waitUntil: 'load' });
+  await expect(page).toHaveURL(url);
   const readiness = await assertRouteReady(page, route);
   await waitForObserverDelivery(page);
   const performance = await collectPerformance(page);
@@ -646,6 +653,8 @@ async function withContext(
   cold: boolean,
 ): Promise<SiteSample[]> {
   const samples: SiteSample[] = [];
+  const url = new URL(route.path, baseURL);
+  if ('host' in route) url.hostname = route.host;
   if (cold) {
     for (let index = 0; index < sampleCount; index += 1) {
       const context = await browser.newContext({ baseURL });
@@ -661,6 +670,7 @@ async function withContext(
           await navigateAndCollect(
             page,
             route,
+            url.href,
             index + 1,
             {
               cache: 'disabled',
@@ -686,12 +696,14 @@ async function withContext(
     await client.send('Network.enable');
     await client.send('Network.setCacheDisabled', { cacheDisabled: false });
     await context.addInitScript(PERFORMANCE_INIT_SCRIPT);
-    await page.goto(route.path, { waitUntil: 'load' });
+    await page.goto(url.href, { waitUntil: 'load' });
+    await expect(page).toHaveURL(url.href);
     await assertRouteReady(page, route);
     for (let index = 0; index < sampleCount; index += 1) {
       network.reset();
       await page.evaluate(() => window.performance.clearResourceTimings());
       const response = await page.reload({ waitUntil: 'load' });
+      await expect(page).toHaveURL(url.href);
       const readiness = await assertRouteReady(page, route);
       await waitForObserverDelivery(page);
       const performance = await collectPerformance(page);

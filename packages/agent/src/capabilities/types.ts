@@ -1,12 +1,5 @@
-import type {
-  AgentBindingOutcome,
-  CommitPreconditions,
-  Diagnostic,
-  OperationGrant,
-  Outcome,
-  ResultRef,
-  VersionRef,
-} from '@aeliqo/core';
+import type { AgentBindingOutcome, OperationGrant } from '@aeliqo/core/agent';
+import type { CommitPreconditions, Diagnostic, Outcome, ResultRef, VersionRef } from '@aeliqo/core';
 
 /** Local public alias because @aeliqo/core intentionally keeps the wire value
  * helper internal to its contract barrel. */

@@ -3,7 +3,14 @@ import { parseCatalog } from '../contracts/parse.js';
 import type { Catalog, Diagnostic, Outcome, SemanticType } from '../contracts/types.js';
 import { createCatalogIndex } from '../semantics/catalog.js';
 import { STANDARD_INTENTS, ResourceDefinitionError } from './types.js';
-import type { ResourceDefinition, ResourceFieldMetadata, ResourceInput } from './types.js';
+import type {
+  GeneratedResourceInput,
+  ResourceDefinition,
+  ResourceFieldMetadata,
+  ResourceInput,
+  ResourcePresentationDefaults,
+  StandardIntentKind,
+} from './types.js';
 
 type Path = readonly (string | number)[];
 type ZodRuntimeSchema = z.ZodType & {
@@ -62,25 +69,7 @@ function inferType(schema: z.ZodType, path: Path): Outcome<SemanticType> {
     };
   }
   const runtime = unwrapped.schema;
-  let value: SemanticType['value'] | undefined;
-  if (runtime.type === 'string')
-    value = runtime.format === 'date' ? 'date' : runtime.format === 'datetime' ? 'instant' : 'text';
-  else if (runtime.type === 'boolean') value = 'boolean';
-  else if (runtime.type === 'number') value = runtime.isInt === true ? 'integer' : 'float';
-  else if (runtime.type === 'enum') value = 'text';
-  else if (runtime.type === 'literal') {
-    const literal = runtime.values?.values().next().value;
-    value =
-      typeof literal === 'boolean'
-        ? 'boolean'
-        : typeof literal === 'number'
-          ? Number.isInteger(literal)
-            ? 'integer'
-            : 'float'
-          : typeof literal === 'string'
-            ? 'text'
-            : undefined;
-  }
+  const value = typeFromSchema(runtime);
   if (value === undefined) {
     return {
       ok: false,
@@ -91,13 +80,34 @@ function inferType(schema: z.ZodType, path: Path): Outcome<SemanticType> {
       ],
     };
   }
-  const temporal =
-    value === 'date'
-      ? { calendar: 'gregorian', timezone: 'UTC', grain: 'day' }
-      : value === 'instant'
-        ? { calendar: 'gregorian', timezone: 'UTC' }
-        : undefined;
+  const temporal = temporalFor(value);
   return { ok: true, value: { value, nullable: unwrapped.nullable, ...(temporal === undefined ? {} : { temporal }) } };
+}
+
+function literalType(value: unknown): SemanticType['value'] | undefined {
+  if (typeof value === 'boolean') return 'boolean';
+  if (typeof value === 'string') return 'text';
+  if (typeof value !== 'number') return undefined;
+  return Number.isInteger(value) ? 'integer' : 'float';
+}
+
+function typeFromSchema(runtime: ZodRuntimeSchema): SemanticType['value'] | undefined {
+  if (runtime.type === 'string') {
+    if (runtime.format === 'date') return 'date';
+    if (runtime.format === 'datetime') return 'instant';
+    return 'text';
+  }
+  if (runtime.type === 'boolean') return 'boolean';
+  if (runtime.type === 'number') return runtime.isInt === true ? 'integer' : 'float';
+  if (runtime.type === 'enum') return 'text';
+  if (runtime.type !== 'literal') return undefined;
+  return literalType(runtime.values?.values().next().value);
+}
+
+function temporalFor(value: SemanticType['value']): SemanticType['temporal'] | undefined {
+  if (value === 'date') return { calendar: 'gregorian', timezone: 'UTC', grain: 'day' };
+  if (value === 'instant') return { calendar: 'gregorian', timezone: 'UTC' };
+  return undefined;
 }
 
 function inferredValues(schema: z.ZodType): readonly (string | number | boolean)[] | undefined {
@@ -125,14 +135,7 @@ function fieldValues(
   const inspected: (string | number | boolean)[] = [];
   for (let index = 0; index < values.length; index += 1) {
     const value: unknown = values[index];
-    const scalar =
-      typeof value === 'string' || typeof value === 'boolean' || (typeof value === 'number' && Number.isFinite(value));
-    if (
-      !scalar ||
-      (typeof value === 'string' && (value.length === 0 || value.length > 160)) ||
-      inspected.some((candidate) => Object.is(candidate, value)) ||
-      !schema.safeParse(value).success
-    )
+    if (!validFieldValue(value, inspected, schema))
       return {
         ok: false,
         diagnostics: [
@@ -147,26 +150,66 @@ function fieldValues(
   return { ok: true, value: Object.freeze(inspected) };
 }
 
-function generatedCatalog<Schema extends z.ZodObject>(input: ResourceInput<Schema>): Outcome<Catalog> {
-  if ('catalog' in input && input.catalog !== undefined) return parseCatalog(input.catalog);
-  const fields: Catalog['entities'][number]['fields'][number][] = [];
-  const diagnostics: Diagnostic[] = [];
-  for (const [id, schema] of Object.entries(input.schema.shape)) {
-    const metadata = input.fields?.[id];
-    const inferred = inferType(schema, ['schema', id]);
-    if (!inferred.ok && metadata?.type === undefined) {
-      diagnostics.push(...inferred.diagnostics);
-      continue;
-    }
-    fields.push({
+function validFieldValue(
+  value: unknown,
+  prior: readonly (string | number | boolean)[],
+  schema: z.ZodType,
+): value is string | number | boolean {
+  const scalar =
+    typeof value === 'string' || typeof value === 'boolean' || (typeof value === 'number' && Number.isFinite(value));
+  if (!scalar) return false;
+  if (typeof value === 'string' && (value.length === 0 || value.length > 160)) return false;
+  if (prior.some((candidate) => Object.is(candidate, value))) return false;
+  return schema.safeParse(value).success;
+}
+
+function generatedField<Schema extends z.ZodObject>(
+  input: GeneratedResourceInput<Schema>,
+  id: string,
+  schema: z.ZodType,
+): Outcome<Catalog['entities'][number]['fields'][number] | undefined> {
+  const metadata = input.fields?.[id];
+  const inferred = inferType(schema, ['schema', id]);
+  if (!inferred.ok && metadata?.type === undefined) return inferred;
+  return {
+    ok: true,
+    value: {
       id,
       label: metadata?.label ?? id,
       role: input.identity.includes(id) ? 'identity' : (metadata?.role ?? 'attribute'),
-      type: metadata?.type ?? (inferred.ok ? inferred.value : { value: 'text', nullable: false }),
-    });
+      type: generatedFieldType(metadata?.type, inferred),
+    },
+  };
+}
+
+function generatedFieldType(explicit: SemanticType | undefined, inferred: Outcome<SemanticType>): SemanticType {
+  if (explicit !== undefined) return explicit;
+  if (inferred.ok) return inferred.value;
+  return { value: 'text', nullable: false };
+}
+
+function generatedFields<Schema extends z.ZodObject>(
+  input: GeneratedResourceInput<Schema>,
+): {
+  readonly fields: Catalog['entities'][number]['fields'][number][];
+  readonly diagnostics: Diagnostic[];
+} {
+  const fields: Catalog['entities'][number]['fields'][number][] = [];
+  const diagnostics: Diagnostic[] = [];
+  for (const [id, schema] of Object.entries(input.schema.shape)) {
+    const field = generatedField(input, id, schema);
+    if (!field.ok) diagnostics.push(...field.diagnostics);
+    else if (field.value !== undefined) fields.push(field.value);
   }
-  const firstDiagnostic = diagnostics[0];
-  if (firstDiagnostic !== undefined) return { ok: false, diagnostics: [firstDiagnostic, ...diagnostics.slice(1)] };
+  return { fields, diagnostics };
+}
+
+function generatedCatalog<Schema extends z.ZodObject>(input: ResourceInput<Schema>): Outcome<Catalog> {
+  if ('catalog' in input && input.catalog !== undefined) return parseCatalog(input.catalog);
+  const generated = generatedFields(input);
+  const firstDiagnostic = generated.diagnostics[0];
+  if (firstDiagnostic !== undefined)
+    return { ok: false, diagnostics: [firstDiagnostic, ...generated.diagnostics.slice(1)] };
   const catalog: Catalog = {
     version: '1',
     revision: input.revision,
@@ -177,7 +220,7 @@ function generatedCatalog<Schema extends z.ZodObject>(input: ResourceInput<Schem
         label: input.label,
         identity: input.identity,
         rowGrain: input.rowGrain ?? input.identity,
-        fields,
+        fields: generated.fields,
       },
     ],
     relationships: [],
@@ -187,9 +230,7 @@ function generatedCatalog<Schema extends z.ZodObject>(input: ResourceInput<Schem
   return parseCatalog(catalog);
 }
 
-function inspectResource<Schema extends z.ZodObject>(
-  input: ResourceInput<Schema>,
-): Outcome<ResourceDefinition<Schema>> {
+function validateResourceMetadata<Schema extends z.ZodObject>(input: ResourceInput<Schema>): Outcome<void> {
   if (!validIdentifier(input.id))
     return {
       ok: false,
@@ -210,6 +251,17 @@ function inspectResource<Schema extends z.ZodObject>(
         ],
       };
   }
+  return { ok: true, value: undefined };
+}
+
+interface ResourceCatalogBinding {
+  readonly catalog: Catalog;
+  readonly entity: Catalog['entities'][number];
+}
+
+function resolveCatalogBinding<Schema extends z.ZodObject>(
+  input: ResourceInput<Schema>,
+): Outcome<ResourceCatalogBinding> {
   const catalogOutcome = generatedCatalog(input);
   if (!catalogOutcome.ok) return catalogOutcome;
   const indexed = createCatalogIndex(catalogOutcome.value);
@@ -221,7 +273,14 @@ function inspectResource<Schema extends z.ZodObject>(
       ok: false,
       diagnostics: [diagnostic('resource.entity', `Catalog entity ${entityId} is not declared.`, ['entity'])],
     };
-  const schemaFields = new Set(shapeKeys);
+  return { ok: true, value: { catalog: catalogOutcome.value, entity } };
+}
+
+function validateSchemaCatalogFields<Schema extends z.ZodObject>(
+  input: ResourceInput<Schema>,
+  entity: Catalog['entities'][number],
+): Outcome<void> {
+  const schemaFields = new Set(Object.keys(input.schema.shape));
   for (const field of entity.fields) {
     if (!schemaFields.has(field.id))
       return {
@@ -246,6 +305,12 @@ function inspectResource<Schema extends z.ZodObject>(
         ],
       };
   }
+  return { ok: true, value: undefined };
+}
+
+function validateResourceIntents<Schema extends z.ZodObject>(
+  input: ResourceInput<Schema>,
+): Outcome<readonly StandardIntentKind[]> {
   const defaultIntents = STANDARD_INTENTS.filter(
     (intent) => (intent !== 'create' && intent !== 'edit') || input.forms?.[intent] !== undefined,
   );
@@ -266,6 +331,12 @@ function inspectResource<Schema extends z.ZodObject>(
         ],
       };
   }
+  return { ok: true, value: intents };
+}
+
+function validateResourcePresentation<Schema extends z.ZodObject>(
+  input: ResourceInput<Schema>,
+): Outcome<ResourcePresentationDefaults> {
   const allowedViews = Object.freeze([...input.presentation.allowedViews]);
   if (
     allowedViews.length === 0 ||
@@ -294,53 +365,94 @@ function inspectResource<Schema extends z.ZodObject>(
         ],
       };
   }
-  const mutableFieldMetadata: Record<string, ResourceFieldMetadata> = {};
-  for (const [key, schema] of Object.entries(input.schema.shape)) {
-    const metadata = input.fields?.[key];
-    const values = fieldValues(schema, metadata, ['fields', key, 'values']);
-    if (!values.ok) return values;
-    mutableFieldMetadata[key] = Object.freeze({
-      ...metadata,
-      ...(values.value === undefined ? {} : { values: values.value }),
-    });
-  }
-  const fieldMetadata: Readonly<Record<string, ResourceFieldMetadata>> = Object.freeze(mutableFieldMetadata);
-  const definition: ResourceDefinition<Schema> = {
-    id: input.id,
-    label: input.label,
-    ...(input.description === undefined ? {} : { description: input.description }),
-    schema: input.schema,
-    catalog: catalogOutcome.value,
-    entity,
-    fieldMetadata,
-    intents,
-    presentation: Object.freeze({
+  return {
+    ok: true,
+    value: Object.freeze({
       allowedViews,
       ...(input.presentation.preferred === undefined
         ? {}
         : { preferred: Object.freeze({ ...input.presentation.preferred }) }),
     }),
-    ...(input.forms === undefined ? {} : { forms: Object.freeze({ ...input.forms }) }),
-    parseRecord(value) {
-      const parsed = input.schema.safeParse(value);
-      if (parsed.success) return { ok: true, value: parsed.data };
-      const issues = parsed.error.issues.slice(0, 16).map((issue) =>
-        diagnostic(
-          `resource.record.${issue.code}`,
-          issue.message,
-          issue.path.filter((part): part is string | number => typeof part !== 'symbol'),
-        ),
-      );
-      const firstIssue = issues[0];
-      return firstIssue === undefined
-        ? {
-            ok: false,
-            diagnostics: [diagnostic('resource.record.invalid', 'The record does not match its runtime schema.', [])],
-          }
-        : { ok: false, diagnostics: [firstIssue, ...issues.slice(1)] };
-    },
   };
-  return { ok: true, value: Object.freeze(definition) };
+}
+
+function createFieldMetadata<Schema extends z.ZodObject>(
+  input: ResourceInput<Schema>,
+): Outcome<Readonly<Record<string, ResourceFieldMetadata>>> {
+  const mutable: Record<string, ResourceFieldMetadata> = {};
+  for (const [key, schema] of Object.entries(input.schema.shape)) {
+    const values = fieldValues(schema, input.fields?.[key], ['fields', key, 'values']);
+    if (!values.ok) return values;
+    mutable[key] = Object.freeze({
+      ...input.fields?.[key],
+      ...(values.value === undefined ? {} : { values: values.value }),
+    });
+  }
+  return { ok: true, value: Object.freeze(mutable) };
+}
+
+function createRecordParser<Schema extends z.ZodObject>(schema: Schema): ResourceDefinition<Schema>['parseRecord'] {
+  return (value) => {
+    const parsed = schema.safeParse(value);
+    if (parsed.success) return { ok: true, value: parsed.data };
+    const issues = parsed.error.issues.slice(0, 16).map((issue) =>
+      diagnostic(
+        `resource.record.${issue.code}`,
+        issue.message,
+        issue.path.filter((part): part is string | number => typeof part !== 'symbol'),
+      ),
+    );
+    const firstIssue = issues[0];
+    if (firstIssue !== undefined) return { ok: false, diagnostics: [firstIssue, ...issues.slice(1)] };
+    return {
+      ok: false,
+      diagnostics: [diagnostic('resource.record.invalid', 'The record does not match its runtime schema.', [])],
+    };
+  };
+}
+
+function buildResourceDefinition<Schema extends z.ZodObject>(
+  input: ResourceInput<Schema>,
+  binding: ResourceCatalogBinding,
+  intents: readonly StandardIntentKind[],
+  presentation: ResourcePresentationDefaults,
+  fieldMetadata: Readonly<Record<string, ResourceFieldMetadata>>,
+): ResourceDefinition<Schema> {
+  const definition: ResourceDefinition<Schema> = {
+    id: input.id,
+    label: input.label,
+    ...(input.description === undefined ? {} : { description: input.description }),
+    schema: input.schema,
+    catalog: binding.catalog,
+    entity: binding.entity,
+    fieldMetadata,
+    intents,
+    presentation,
+    ...(input.forms === undefined ? {} : { forms: Object.freeze({ ...input.forms }) }),
+    parseRecord: createRecordParser(input.schema),
+  };
+  return Object.freeze(definition);
+}
+
+function inspectResource<Schema extends z.ZodObject>(
+  input: ResourceInput<Schema>,
+): Outcome<ResourceDefinition<Schema>> {
+  const metadata = validateResourceMetadata(input);
+  if (!metadata.ok) return metadata;
+  const binding = resolveCatalogBinding(input);
+  if (!binding.ok) return binding;
+  const fields = validateSchemaCatalogFields(input, binding.value.entity);
+  if (!fields.ok) return fields;
+  const intents = validateResourceIntents(input);
+  if (!intents.ok) return intents;
+  const presentation = validateResourcePresentation(input);
+  if (!presentation.ok) return presentation;
+  const fieldMetadata = createFieldMetadata(input);
+  if (!fieldMetadata.ok) return fieldMetadata;
+  return {
+    ok: true,
+    value: buildResourceDefinition(input, binding.value, intents.value, presentation.value, fieldMetadata.value),
+  };
 }
 
 /** Define trusted application metadata once. Runtime records still cross parseRecord before use. */

@@ -2,31 +2,22 @@ import type {
   Contract,
   Diagnostic,
   InteractionDraft as CoreInteractionDraft,
-  InteractionGraph as CoreInteractionGraph,
-  InteractionGraphInput,
   InteractionLink,
-  InteractionMappingManifest,
-  InteractionNode,
   InteractionPayload as CoreInteractionPayload,
-  InteractionPort,
-  InteractionPortShape,
   InteractionState as CoreInteractionState,
   ResultRef,
-  RetainedInteractionPayload,
-  Scalar,
   VersionRef,
 } from '@aeliqo/core';
+import type {
+  InteractionGraph as CoreInteractionGraph,
+  InteractionMappingManifest,
+  InteractionPort,
+  InteractionPortShape,
+} from '@aeliqo/core/interaction';
 import type { RegionContent, RegionHandle, RegionSnapshot } from '../regions/types.js';
 import type { ResultHandle } from '../results/types.js';
 
-export type {
-  InteractionGraphInput,
-  InteractionLink,
-  InteractionMappingManifest,
-  InteractionNode,
-  InteractionPort,
-  InteractionPortShape,
-};
+export type { InteractionLink, InteractionMappingManifest, InteractionPort, InteractionPortShape };
 
 /** The canonical wire event is deliberately untrusted and carries no actor or grant. */
 export type InteractionEvent = Contract<'interaction'>;
@@ -42,7 +33,7 @@ export type InteractionRoute = { readonly nodeId: string; readonly portId: strin
 /** A trusted graph registration; wire presentation plans cannot create this registry. */
 export type InteractionGraphDefinition = CoreInteractionGraph;
 
-export type InteractionFailureCode =
+type InteractionFailureCode =
   | 'runtime.interaction-invalid'
   | 'runtime.interaction-stale'
   | 'runtime.interaction-denied'
@@ -60,7 +51,7 @@ export type InteractionOutcome<T> =
   | { readonly ok: true; readonly value: T }
   | { readonly ok: false; readonly diagnostics: readonly [InteractionFailure, ...InteractionFailure[]] };
 
-export type InteractionGrant =
+type InteractionGrant =
   'result.inspect' | 'experience.commit' | 'navigation.propose' | 'draft.edit' | 'action.propose' | (string & {});
 
 export interface InteractionActor {
@@ -226,5 +217,3 @@ export interface InteractionController {
   revoke(reason?: string): boolean;
   dispose(): void;
 }
-
-export type { RetainedInteractionPayload, Scalar };

@@ -1,9 +1,6 @@
-import {
-  validatePresentationPlan,
-  type PresentationContext,
-  type PresentationPlan,
-  type PresentationValues,
-} from '../../packages/core/src/index.js';
+import { validatePresentationPlan } from '../../packages/core/src/presentation/index.js';
+import type { PresentationPlan } from '../../packages/core/src/contracts/index.js';
+import type { PresentationContext, PresentationValues } from '../../packages/core/src/presentation/index.js';
 import { createAeliqoPresentationRegistry } from '../../packages/web/src/region/registry.js';
 import { AELIQO_FOUNDATION_MANIFESTS } from '../../packages/web/src/foundation/manifest.js';
 import type { AeliqoFoundationBindings } from '../../packages/web/src/region/foundation-registry.js';

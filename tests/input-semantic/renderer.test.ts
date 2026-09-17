@@ -11,7 +11,7 @@ import {
   type AeliqoInputBindings,
 } from '../../packages/web/src/region/input-registry.js';
 import { resolveInputInteraction } from '../../packages/web/src/region/input-renderer.js';
-import type { PresentationManifest } from '../../packages/core/src/index.js';
+import type { PresentationManifest } from '../../packages/core/src/presentation/index.js';
 
 type InputNode = Parameters<typeof resolveInputInteraction>[0];
 const node = (

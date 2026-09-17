@@ -342,6 +342,9 @@ test('package workflow serializes publication and binds quality plus approved RC
   assert.match(workflow, /aeliqo-quality-evidence-\$GITHUB_SHA/);
   assert.match(workflow, /artifacts\/quality-evidence\/artifacts\/product-ci\/ci\.json/);
   assert.match(workflow, /scripts\/release\/verify-quality-evidence\.mjs/);
+  assert.match(workflow, /PUBLIC_PACKAGE_NAMES/);
+  assert.match(workflow, /JSON\.stringify\(packageNames\) !== JSON\.stringify\(PUBLIC_PACKAGE_NAMES\)/);
+  assert.doesNotMatch(workflow, /candidate\.packages\.length !== 6/);
   assert.doesNotMatch(workflow, /AELIQO_CI_EVIDENCE_PATH=artifacts\/quality-evidence\/harness\/evidence\/ci\.json/);
   assert.match(workflow, /verify-approved-rc\.mjs/);
   assert.match(workflow, /\[ "\$RC_SOURCE_SHA" = "\$SOURCE_SHA" \]/);

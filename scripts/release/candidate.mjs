@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/** Build, inspect, scan, type-check, and consume the six exact public package tarballs. */
+/** Build, inspect, scan, type-check, and consume the five exact public package tarballs. */
 import { spawnSync } from 'node:child_process';
 import { access, cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -13,18 +13,14 @@ import {
   assertTarballPaths,
   candidateManifest,
   cyclonedxSbom,
-  exportSpecifiers,
-  npmOverridesFromPnpmLock,
-  packagePurl,
-  pnpmLockIntegrities,
   publicPackageName,
   readJson,
-  removeDirectoryOnFailure,
   sha256,
   sha512Integrity,
 } from './candidate-lib.mjs';
 import { RELEASE_SOURCE_STATUS_ARGS, assertReleaseSourceClean } from './source-state.mjs';
 import { isReleaseVersion } from './metadata.mjs';
+import { externalConsumer } from './candidate-consumer.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
 const arguments_ = process.argv.slice(2);
@@ -223,7 +219,14 @@ async function buildAndPack(stagingRoot) {
 
     const stage = join(stagingRoot, shortName);
     await mkdir(stage, { recursive: true });
-    for (const path of source.files ?? []) await cp(join(directory, path), join(stage, path), { recursive: true });
+    for (const path of source.files ?? []) {
+      if (path === 'README.md') {
+        const guide = await readFile(join(root, 'docs/packages', `${shortName}.md`));
+        await writeFile(join(stage, path), guide);
+        continue;
+      }
+      await cp(join(directory, path), join(stage, path), { recursive: true });
+    }
     await writeFile(join(stage, 'package.json'), JSON.stringify(stagedManifest(source), null, 2) + '\n');
     command('pnpm', ['pack', '--pack-destination', output], { cwd: stage });
 
@@ -256,251 +259,6 @@ async function buildAndPack(stagingRoot) {
   return packages;
 }
 
-async function peerInstallSpecs(packages) {
-  const peers = new Map();
-  for (const item of packages) {
-    for (const name of Object.keys(item.manifest.peerDependencies ?? {})) {
-      if (PUBLIC_PACKAGE_NAMES.includes(name)) continue;
-      const installed = await readJson(join(item.directory, 'node_modules', name, 'package.json'));
-      const previous = peers.get(name);
-      if (previous && previous !== installed.version)
-        throw new Error(`Conflicting locked peer versions for ${name}: ${previous} and ${installed.version}`);
-      peers.set(name, installed.version);
-    }
-  }
-  return [...peers]
-    .sort(([left], [right]) => left.localeCompare(right))
-    .map(([name, requested]) => `${name}@${requested}`);
-}
-async function typeCheckInstalledExports(consumer, packages) {
-  const specifiers = packages.flatMap((item) => exportSpecifiers(item.manifest, item.paths));
-  const imports = specifiers.map((specifier, index) =>
-    specifier.endsWith('.json')
-      ? `import Export${index} from ${JSON.stringify(specifier)} with { type: "json" }; export type ExportCheck${index} = typeof Export${index};`
-      : `import * as Export${index} from ${JSON.stringify(specifier)}; export type ExportCheck${index} = typeof Export${index};`,
-  );
-  await writeFile(join(consumer, 'exports.ts'), imports.join('\n') + '\n');
-  await writeFile(
-    join(consumer, 'tsconfig.json'),
-    JSON.stringify(
-      {
-        compilerOptions: {
-          target: 'ES2022',
-          module: 'NodeNext',
-          moduleResolution: 'NodeNext',
-          strict: true,
-          noEmit: true,
-          skipLibCheck: false,
-          resolveJsonModule: true,
-          lib: ['ES2022', 'DOM', 'DOM.Iterable'],
-          types: ['node', 'react', 'react-dom'],
-        },
-        include: ['exports.ts'],
-      },
-      null,
-      2,
-    ) + '\n',
-  );
-  command(join(consumer, 'node_modules/.bin/tsc'), ['--project', 'tsconfig.json'], { cwd: consumer });
-  return imports.length;
-}
-async function externalConsumerInDirectory(consumer, packages, workspaceLockText) {
-  const overrides = npmOverridesFromPnpmLock(workspaceLockText, { ignoredPackages: PUBLIC_PACKAGE_NAMES });
-  await writeFile(
-    join(consumer, 'package.json'),
-    JSON.stringify({ private: true, type: 'module', overrides }, null, 2) + '\n',
-  );
-  const tools = ['typescript@7.0.2', '@types/node@24.13.3', '@types/react@19.2.18', '@types/react-dom@19.2.7'];
-  command(
-    'npm',
-    [
-      'install',
-      '--ignore-scripts',
-      '--no-audit',
-      '--no-fund',
-      '--save-exact',
-      ...packages.map((item) => item.path),
-      ...(await peerInstallSpecs(packages)),
-      ...tools,
-    ],
-    { cwd: consumer },
-  );
-  const lock = await readJson(join(consumer, 'package-lock.json'));
-  for (const item of packages) {
-    const installed = lock.packages[`node_modules/${item.name}`];
-    if (!installed || installed.version !== version || installed.integrity !== item.integrity)
-      throw new Error(`Consumer did not install exact ${item.name} tarball`);
-  }
-  // npm installs with scripts disabled. Validate every installed external byte
-  // against the pnpm lock before executing TypeScript or any package export.
-  const graph = sbomGraph(lock, workspaceLockText, packages);
-  const exportCount = await typeCheckInstalledExports(consumer, packages);
-  const installedExportSpecifiers = packages.flatMap((item) => exportSpecifiers(item.manifest, item.paths));
-  await writeFile(
-    join(consumer, 'network-blocker.cjs'),
-    [
-      "const {syncBuiltinESMExports} = require('node:module');",
-      'const state = {attempts: []}; globalThis.__aeliqoOfflineNetwork = state;',
-      "const blocked = label => () => { state.attempts.push(label); const error = new Error('network access is forbidden in the offline release consumer'); error.code = 'AELIQO_OFFLINE_NETWORK_BLOCKED'; throw error; };",
-      "globalThis.fetch = blocked('fetch');",
-      "for (const name of ['node:http', 'node:https']) { const value = require(name); value.request = blocked(`${name.slice(5)}.request`); value.get = blocked(`${name.slice(5)}.get`); }",
-      "const net = require('node:net'); net.connect = blocked('net.connect'); net.createConnection = blocked('net.createConnection'); net.Socket.prototype.connect = blocked('net.Socket.connect');",
-      "const dns = require('node:dns'); dns.lookup = blocked('dns.lookup'); dns.resolve = blocked('dns.resolve');",
-      'syncBuiltinESMExports();',
-    ].join('\n') + '\n',
-  );
-  await cp(join(root, 'examples/quickstart.mjs'), join(consumer, 'quickstart.mjs'));
-  const quickstart = command(
-    'node',
-    ['--disallow-code-generation-from-strings', '--require', './network-blocker.cjs', 'quickstart.mjs'],
-    { cwd: consumer },
-  );
-  if (quickstart !== '{"ok":true,"revision":"catalog-1","entities":["employees"]}')
-    throw new Error('Packed quickstart returned an invalid result');
-  await writeFile(
-    join(consumer, 'consumer.mjs'),
-    [
-      `const installedExportSpecifiers = ${JSON.stringify(installedExportSpecifiers)};`,
-      "const installedExports = await Promise.all(installedExportSpecifiers.map(specifier => specifier.endsWith('.json') ? import(specifier, {with: {type: 'json'}}) : import(specifier)));",
-      "import {parseContract} from '@aeliqo/core';",
-      'const modules = await Promise.all([',
-      "  import('@aeliqo/runtime/evaluation'), import('@aeliqo/runtime/audit'), import('@aeliqo/web/server'),",
-      "  import('@aeliqo/agent/protocol'), import('@aeliqo/devtools'), import('@aeliqo/react/ssr'),",
-      ']);',
-      "const boundedRejection = parseContract('catalog', '{}');",
-      'const audit = modules[1].createLocalAuditExporter({maxEvents: 2, maxBytes: 1024, now: () => 1});',
-      "const auditRecord = audit.record({kind: 'source', transport: 'local', status: 'error', code: 'source.invalid'}); const auditExport = audit.exportSnapshot(); audit.dispose();",
-      'const stateBeforeProbes = globalThis.__aeliqoOfflineNetwork;',
-      "if (installedExports.length !== installedExportSpecifiers.length || installedExports.some(module => module === null || typeof module !== 'object') || boundedRejection.ok || modules.length !== 6 || !auditRecord.ok || !auditExport.ok || auditExport.value.records.length !== 1 || !stateBeforeProbes || stateBeforeProbes.attempts.length !== 0) throw new Error('installed package runtime smoke failed');",
-      "const [http, https, net, dns] = await Promise.all([import('node:http'), import('node:https'), import('node:net'), import('node:dns')]);",
-      "const probes = [['fetch', () => fetch('https://example.invalid')], ['http.request', () => http.request('http://example.invalid')], ['http.get', () => http.get('http://example.invalid')], ['https.request', () => https.request('https://example.invalid')], ['https.get', () => https.get('https://example.invalid')], ['net.connect', () => net.connect(9, 'example.invalid')], ['net.createConnection', () => net.createConnection(9, 'example.invalid')], ['net.Socket.connect', () => new net.Socket().connect(9, 'example.invalid')], ['dns.lookup', () => dns.lookup('example.invalid', () => {})], ['dns.resolve', () => dns.resolve('example.invalid', () => {})]];",
-      "for (const [label, probe] of probes) { try { probe(); throw new Error(`network probe unexpectedly succeeded: ${label}`); } catch (error) { if (error?.code !== 'AELIQO_OFFLINE_NETWORK_BLOCKED') throw error; } }",
-      "const state = globalThis.__aeliqoOfflineNetwork; if (!state || JSON.stringify(state.attempts) !== JSON.stringify(probes.map(([label]) => label))) throw new Error('network blocker did not observe every exact probe');",
-      'process.stdout.write(JSON.stringify({networkDenied: true, deniedMethods: state.attempts, packageModulesLoaded: 7, publicExportsLoaded: installedExports.length, coreParserExecuted: true, auditNetworkAttempts: 0, auditExecuted: true}));',
-    ].join('\n') + '\n',
-  );
-  const runtime = JSON.parse(
-    command('node', ['--disallow-code-generation-from-strings', '--require', './network-blocker.cjs', 'consumer.mjs'], {
-      cwd: consumer,
-    }),
-  );
-  const deniedMethods = [
-    'fetch',
-    'http.request',
-    'http.get',
-    'https.request',
-    'https.get',
-    'net.connect',
-    'net.createConnection',
-    'net.Socket.connect',
-    'dns.lookup',
-    'dns.resolve',
-  ];
-  if (
-    runtime.networkDenied !== true ||
-    runtime.packageModulesLoaded !== 7 ||
-    runtime.publicExportsLoaded !== exportCount ||
-    runtime.coreParserExecuted !== true ||
-    runtime.auditExecuted !== true ||
-    runtime.auditNetworkAttempts !== 0 ||
-    JSON.stringify(runtime.deniedMethods) !== JSON.stringify(deniedMethods)
-  )
-    throw new Error('Offline consumer returned an invalid report');
-  return {
-    consumer,
-    lock,
-    lockSha256: sha256(await readFile(join(consumer, 'package-lock.json'))),
-    packages: packages.map((item) => item.name),
-    exportCount,
-    quickstart,
-    runtime,
-    graph,
-    overrideParents: Object.keys(overrides).length,
-  };
-}
-
-async function externalConsumer(packages, workspaceLockText) {
-  const consumer = await mkdtemp(join(tmpdir(), 'aeliqo-release-consumer-'));
-  return removeDirectoryOnFailure(consumer, () => externalConsumerInDirectory(consumer, packages, workspaceLockText));
-}
-
-function packageNameFromLockPath(path) {
-  const tail = path.slice(path.lastIndexOf('node_modules/') + 'node_modules/'.length);
-  const parts = tail.split('/');
-  return parts[0].startsWith('@') ? `${parts[0]}/${parts[1]}` : parts[0];
-}
-function resolveLockedDependency(packages, fromPath, dependency) {
-  let current = fromPath;
-  while (true) {
-    const nested = `${current}/node_modules/${dependency}`;
-    if (packages[nested]) return nested;
-    const index = current.lastIndexOf('/node_modules/');
-    if (index === -1) break;
-    current = current.slice(0, index);
-  }
-  const rootPath = `node_modules/${dependency}`;
-  return packages[rootPath] ? rootPath : undefined;
-}
-function sbomGraph(consumerLock, workspaceLockText, packages) {
-  const entries = consumerLock.packages;
-  const workspace = pnpmLockIntegrities(workspaceLockText);
-  const refByPath = new Map();
-  const externalByPath = new Map();
-  for (const [path, entry] of Object.entries(entries)) {
-    if (!path.includes('node_modules/') || !entry.version) continue;
-    const name = packageNameFromLockPath(path);
-    const ref = packagePurl(name, entry.version);
-    refByPath.set(path, ref);
-    if (PUBLIC_PACKAGE_NAMES.includes(name)) continue;
-    if (!entry.integrity) throw new Error(`Installed external package ${name}@${entry.version} has no integrity`);
-    const locked = workspace.get(`${name}@${entry.version}`);
-    if (locked !== entry.integrity) throw new Error(`Installed ${name}@${entry.version} differs from the pnpm lock`);
-    if (!entry.license) throw new Error(`Installed external package ${name}@${entry.version} has no license metadata`);
-    externalByPath.set(path, {
-      ref,
-      name,
-      version: entry.version,
-      integrity: entry.integrity,
-      license: String(entry.license),
-    });
-  }
-  const edges = new Map();
-  for (const [path, entry] of Object.entries(entries)) {
-    const ref = refByPath.get(path);
-    if (!ref) continue;
-    const childPaths = [];
-    for (const dependency of Object.keys({
-      ...entry.dependencies,
-      ...entry.optionalDependencies,
-      ...entry.peerDependencies,
-    })) {
-      const dependencyPath = resolveLockedDependency(entries, path, dependency);
-      if (dependencyPath && refByPath.has(dependencyPath)) childPaths.push(dependencyPath);
-    }
-    edges.set(path, { ref, childPaths });
-  }
-  const reachable = new Set();
-  const queue = packages.map((item) => `node_modules/${item.name}`);
-  while (queue.length) {
-    const path = queue.shift();
-    if (!path || reachable.has(path)) continue;
-    reachable.add(path);
-    for (const child of edges.get(path)?.childPaths ?? []) queue.push(child);
-  }
-  const externalComponents = [...externalByPath]
-    .filter(([path]) => reachable.has(path))
-    .map(([, component]) => component);
-  const dependencies = [...reachable]
-    .map((path) => ({
-      ref: refByPath.get(path),
-      dependsOn: (edges.get(path)?.childPaths ?? [])
-        .filter((child) => reachable.has(child))
-        .map((child) => refByPath.get(child)),
-    }))
-    .filter((item) => item.ref);
-  return { externalComponents, dependencies };
-}
-
 verifyToolchainAndSource();
 await prepareOutput();
 await clearGeneratedPackageOutputs();
@@ -525,7 +283,7 @@ try {
     );
 
   const workspaceLockText = await readFile(join(root, 'pnpm-lock.yaml'), 'utf8');
-  const consumer = await externalConsumer(packages, workspaceLockText);
+  const consumer = await externalConsumer(packages, workspaceLockText, version);
   consumerDirectory = consumer.consumer;
   const manifest = candidateManifest({ sourceRevision, packages, version });
   const sbom = cyclonedxSbom({ sourceRevision, packages, ...consumer.graph, version });

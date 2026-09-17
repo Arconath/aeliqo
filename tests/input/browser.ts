@@ -16,10 +16,8 @@ import {
   AeliqoTextFieldElement,
   type AeliqoOption,
 } from '../../packages/web/src/input/index.js';
-import { AeliqoInputElement } from '../../packages/web/src/elements/aeliqo-input.js';
 
 const registrations: readonly [string, CustomElementConstructor][] = [
-  ['aeliqo-input', AeliqoInputElement],
   ['aeliqo-text-field', AeliqoTextFieldElement],
   ['aeliqo-text-area', AeliqoTextAreaElement],
   ['aeliqo-number-field', AeliqoNumberFieldElement],

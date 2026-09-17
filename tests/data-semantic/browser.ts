@@ -1,9 +1,6 @@
-import { createPresentationRegistry, validatePresentationPlan } from '../../packages/core/src/index.js';
-import {
-  AeliqoRegionElement,
-  createAeliqoPresentationRegistry,
-  registerAeliqoElements,
-} from '../../packages/web/src/index.js';
+import { createPresentationRegistry, validatePresentationPlan } from '../../packages/core/src/presentation/index.js';
+import { AeliqoRegionElement, createAeliqoPresentationRegistry } from '../../packages/web/src/region/index.js';
+import { registerAeliqoElements } from '../../packages/web/src/register.js';
 import type {
   AeliqoRegionDataRequest,
   AeliqoRegionResult,

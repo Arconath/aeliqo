@@ -85,7 +85,3 @@ export interface TypedExpression {
 }
 
 export type ExpressionInput = TypedExpression | Outcome<TypedExpression>;
-
-export function isTypedExpression(input: ExpressionInput): input is TypedExpression {
-  return typeof input === 'object' && input !== null && 'expression' in input && 'type' in input;
-}

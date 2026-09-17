@@ -1,8 +1,10 @@
 import { expect, it } from 'vitest';
-import { createStandardFunctionRegistry, type Catalog, type Task } from '../../../packages/core/dist/index.js';
+import { createStandardFunctionRegistry } from '../../../packages/core/dist/expressions/index.js';
+import type { Catalog, Task } from '../../../packages/core/dist/index.js';
 import { createResultStore } from '../../../packages/runtime/dist/results/index.js';
 import { createRegionStore, type RegionAuthority } from '../../../packages/runtime/dist/regions/index.js';
-import { createAgentBinder, containAgentProposal } from '../../../packages/agent/dist/index.js';
+import { createAgentBinder } from '../../../packages/agent/dist/binder.js';
+import { containAgentProposal } from '../../../packages/agent/dist/loop.js';
 
 async function setup() {
   const registry = createStandardFunctionRegistry();

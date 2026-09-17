@@ -97,7 +97,7 @@ jobs:
           pnpm exec playwright install --with-deps chromium firefox webkit
       - name: Run required functional, security, browser, and package checks
         run: pnpm check
-      - name: Build and consume the six exact package candidates
+      - name: Build and consume the five exact package candidates
         run: |
           pnpm test:release-tooling
           node scripts/release/candidate.mjs
@@ -141,6 +141,7 @@ jobs:
           name: aeliqo-quality-evidence-${{ env.SOURCE_SHA }}
           path: |
             artifacts/product-ci
+            artifacts/performance-bundles
             artifacts/visual-catalog
             artifacts/release-candidate
             apps/site/artifacts

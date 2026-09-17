@@ -1,4 +1,4 @@
-import { AeliqoInputElement } from '@aeliqo/web/input';
+import { AeliqoTextFieldElement } from '@aeliqo/web/inputs';
 import { AeliqoTableElement } from '@aeliqo/web/table';
 
 export const STANDALONE_ROW_COUNT = 100;
@@ -82,7 +82,7 @@ declare global {
 const fixture = document.querySelector<HTMLElement>('#fixture');
 if (fixture === null) throw new Error('Standalone fixture root is missing.');
 
-if (!customElements.get('aeliqo-input')) customElements.define('aeliqo-input', AeliqoInputElement);
+if (!customElements.get('aeliqo-text-field')) customElements.define('aeliqo-text-field', AeliqoTextFieldElement);
 if (!customElements.get('aeliqo-table')) customElements.define('aeliqo-table', AeliqoTableElement);
 
 function makeRows(): readonly StandaloneRow[] {
@@ -153,7 +153,7 @@ function timingObservation(): TimingObservation {
 }
 
 function collect(): StandaloneObservation {
-  const input = document.querySelector('aeliqo-input') as AeliqoInputElement | null;
+  const input = document.querySelector('aeliqo-text-field') as AeliqoTextFieldElement | null;
   const table = document.querySelector('aeliqo-table') as AeliqoTableElement | null;
   const resources = resourceObservations();
   const javascript = resources.filter(isJavascript);
@@ -204,7 +204,7 @@ function collect(): StandaloneObservation {
   };
 }
 
-const input = document.createElement('aeliqo-input') as AeliqoInputElement;
+const input = document.createElement('aeliqo-text-field') as AeliqoTextFieldElement;
 input.label = 'Standalone value';
 input.value = 'ready';
 

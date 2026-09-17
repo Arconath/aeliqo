@@ -29,7 +29,7 @@ for (const result of evidence.results) {
   }
   kinds.add(result.kind);
 }
-for (const kind of ['typecheck', 'unit', 'browser', 'packages', 'lint', 'security', 'boundaries']) {
+for (const kind of ['typecheck', 'unit', 'browser', 'packages', 'performance', 'lint', 'security', 'boundaries']) {
   if (!kinds.has(kind)) throw new Error(`Quality evidence is missing the ${kind} boundary`);
 }
 

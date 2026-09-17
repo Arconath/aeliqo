@@ -1,12 +1,13 @@
-/** Verify that only the six public Aeliqo packages expose a packed NOTICE. */
+/** Verify the five published packages carry the canonical legal files. */
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { PUBLIC_PACKAGES } from '../../scripts/release/candidate-lib.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
-const publicPackages = ['core', 'runtime', 'web', 'react', 'agent', 'devtools'];
+const publicPackages = PUBLIC_PACKAGES;
 const workspacePackages = [...publicPackages, 'testkit'];
 
 function run(argv, cwd) {
@@ -37,7 +38,7 @@ try {
       .split('\n');
     assert(entries.includes('package/NOTICE'), `@aeliqo/${name} tarball is missing NOTICE`);
     assert(entries.includes('package/LICENSE'), `@aeliqo/${name} tarball is missing LICENSE`);
-    assert(entries.includes('package/README.md'), `@aeliqo/${name} tarball is missing README`);
+    assert(await readFile(join(root, 'docs/packages', `${name}.md`)), `@aeliqo/${name} has no canonical package guide`);
   }
   console.log(JSON.stringify({ passed: true, publicPackages, internalWorkspace: '@aeliqo/testkit' }, null, 2));
 } finally {

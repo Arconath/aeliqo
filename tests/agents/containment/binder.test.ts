@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
-  createQueryFunctionRegistry,
   type Catalog,
   type CommitPreconditions,
   type MeaningDefinition,
   type QuerySpec,
   type Task,
 } from '../../../packages/core/src/index.js';
+import { createQueryFunctionRegistry } from '../../../packages/core/src/expressions/index.js';
 import { createAgentBinder } from '../../../packages/agent/src/binder.js';
 import { containAgentProposal } from '../../../packages/agent/src/loop.js';
 import type { AgentHostContext } from '../../../packages/agent/src/binder-types.js';

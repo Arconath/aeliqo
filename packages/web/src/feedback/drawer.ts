@@ -98,37 +98,57 @@ export class AeliqoDrawerElement extends AeliqoFoundationElement {
     const epoch = ++this.focusEpoch;
     const dialog = this.renderRoot.querySelector<HTMLDialogElement>('dialog');
     if (this.mode === 'modal' && dialog !== null) {
-      if (this.open) {
-        this.returnFocus ??= activeElement(this);
-        if (!dialog.open) {
-          if (typeof dialog.showModal === 'function') dialog.showModal();
-          else dialog.setAttribute('open', '');
-        }
-        const target = this.pendingFocus;
-        this.pendingFocus = undefined;
-        const focusIfNeeded = (restoreTarget: boolean): void => {
-          if (epoch !== this.focusEpoch || !this.open || !dialog.isConnected) return;
-          const focusables = focusableElements(dialog);
-          const current = focusables.find((candidate) => candidate.matches(':focus'));
-          if (restoreTarget && target?.isConnected && focusables.includes(target)) {
-            target.focus();
-            return;
-          }
-          if (current === undefined) focusFirst(dialog);
-        };
-        focusIfNeeded(true);
-        nextFrame(() => focusIfNeeded(false));
-      } else {
-        if (dialog.open && typeof dialog.close === 'function') dialog.close();
-        else dialog.removeAttribute('open');
-        restoreFocus(this.returnFocus);
-        this.returnFocus = undefined;
-      }
-    } else if (this.mode === 'inline' && this.open) {
-      const target = this.pendingFocus;
-      this.pendingFocus = undefined;
-      if (target?.isConnected) target.focus();
+      this.syncModalDialog(dialog, epoch);
+      return;
     }
+    if (this.mode === 'inline' && this.open) this.focusInlineTarget();
+  }
+
+  private syncModalDialog(dialog: HTMLDialogElement, epoch: number): void {
+    if (!this.open) {
+      this.closeModalDialog(dialog);
+      return;
+    }
+    this.returnFocus ??= activeElement(this);
+    if (!dialog.open) this.showModalDialog(dialog);
+    const target = this.pendingFocus;
+    this.pendingFocus = undefined;
+    this.focusIfNeeded(dialog, epoch, target, true);
+    nextFrame(() => this.focusIfNeeded(dialog, epoch, target, false));
+  }
+
+  private showModalDialog(dialog: HTMLDialogElement): void {
+    if (typeof dialog.showModal === 'function') dialog.showModal();
+    else dialog.setAttribute('open', '');
+  }
+
+  private focusIfNeeded(
+    dialog: HTMLDialogElement,
+    epoch: number,
+    target: HTMLElement | undefined,
+    restoreTarget: boolean,
+  ): void {
+    if (epoch !== this.focusEpoch || !this.open || !dialog.isConnected) return;
+    const focusables = focusableElements(dialog);
+    const current = focusables.find((candidate) => candidate.matches(':focus'));
+    if (restoreTarget && target?.isConnected && focusables.includes(target)) {
+      target.focus();
+      return;
+    }
+    if (current === undefined) focusFirst(dialog);
+  }
+
+  private closeModalDialog(dialog: HTMLDialogElement): void {
+    if (dialog.open && typeof dialog.close === 'function') dialog.close();
+    else dialog.removeAttribute('open');
+    restoreFocus(this.returnFocus);
+    this.returnFocus = undefined;
+  }
+
+  private focusInlineTarget(): void {
+    const target = this.pendingFocus;
+    this.pendingFocus = undefined;
+    if (target?.isConnected) target.focus();
   }
 
   private close(): void {

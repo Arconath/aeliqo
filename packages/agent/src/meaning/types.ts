@@ -1,12 +1,5 @@
-import type {
-  Catalog,
-  FunctionRegistry,
-  MeaningDefinition,
-  MeaningScope,
-  Outcome,
-  SemanticPolicy,
-  VersionRef,
-} from '@aeliqo/core';
+import type { Catalog, MeaningDefinition, Outcome, VersionRef } from '@aeliqo/core';
+import type { MeaningScope } from '@aeliqo/core/semantics';
 import type {
   MeaningAuthoring,
   MeaningAuthoringOptions,
@@ -15,7 +8,6 @@ import type {
   MeaningDraft,
   MeaningEvaluator,
   MeaningEvaluatorOptions,
-  MeaningSource,
   MeaningRegistry,
 } from '@aeliqo/runtime/meaning';
 
@@ -66,17 +58,3 @@ export interface MeaningActivationCapabilityOptions {
   readonly registry: MeaningRegistry;
   readonly ref?: VersionRef;
 }
-
-export type {
-  Catalog,
-  FunctionRegistry,
-  MeaningDefinition,
-  MeaningDraft,
-  MeaningEvaluator,
-  MeaningRegistry,
-  MeaningScope,
-  MeaningSource,
-  Outcome,
-  SemanticPolicy,
-  VersionRef,
-};

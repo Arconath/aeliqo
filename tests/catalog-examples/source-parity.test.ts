@@ -69,7 +69,8 @@ function tokens(source: string): string[] {
         }
         end += 1;
       }
-      result.push(source.slice(index, end));
+      const literal = source.slice(index + 1, end - 1);
+      result.push(quote === '`' ? source.slice(index, end) : JSON.stringify(literal));
       index = end;
       continue;
     }
@@ -120,9 +121,7 @@ function tokens(source: string): string[] {
     withoutAnnotations.push(result[index]!);
   }
   return withoutAnnotations.filter(
-    (token, index, values) =>
-      token !== ',' ||
-      (![values[index + 1], values[index + 2]].includes(']') && ![values[index + 1], values[index + 2]].includes('}')),
+    (token, index, values) => token !== ',' || ![values[index + 1]].some((next) => [']', '}', ')'].includes(next!)),
   );
 }
 
@@ -149,6 +148,14 @@ function withoutOuterGrouping(source: string): string {
     }
   }
   return value.slice(1, -1).trim();
+}
+
+/** The preview supplies a class constructor for lazy per-component registration. */
+function withoutPreviewConstructor(source: string): string {
+  return source.replace(
+    /createCatalogElement<([A-Za-z_$][\w$]*)>\(\s*(['"][^'"]*['"])\s*,\s*root\s*,\s*\1\s*,?\s*\)/gs,
+    (_match, type: string, tag: string) => `createCatalogElement<${type}>(${tag}, root)`,
+  );
 }
 
 function extractAuthoredMounts(root: string): Map<string, string> {
@@ -192,13 +199,13 @@ function extractAuthoredMounts(root: string): Map<string, string> {
 }
 
 describe('catalog source parity', () => {
-  it('keeps every preserved snippet lexically identical to its authored mount callback', () => {
+  it('keeps every preserved snippet aligned with its authored mount callback', () => {
     const root = resolve(import.meta.dirname, '../..');
     const authored = extractAuthoredMounts(root);
     expect([...authored.keys()].sort()).toEqual([...CATALOG_EXAMPLE_IDS].sort());
     expect(Object.keys(CATALOG_MOUNT_SOURCES).sort()).toEqual([...CATALOG_EXAMPLE_IDS].sort());
     for (const id of CATALOG_EXAMPLE_IDS) {
-      const authoredTokens = tokens(authored.get(id)!);
+      const authoredTokens = tokens(withoutPreviewConstructor(authored.get(id)!));
       const preservedTokens = tokens(withoutOuterGrouping(CATALOG_MOUNT_SOURCES[id]));
       expect(preservedTokens, `source drift for ${id}`).toEqual(authoredTokens);
     }

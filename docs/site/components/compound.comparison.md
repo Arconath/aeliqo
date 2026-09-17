@@ -1,0 +1,75 @@
+---
+component: 'compound.comparison'
+title: 'Comparison'
+family: 'compound'
+contract: 'A stable compare-set with compatible metrics and simultaneous comparison affordances.'
+---
+
+## Minimal example
+
+{{aeliqo:minimal-example}}
+
+## Import and live example
+
+{{aeliqo:example}}
+
+## Purpose
+
+A stable compare-set with compatible metrics and simultaneous comparison affordances.
+
+## When to use it
+
+{{aeliqo:fixture}}
+
+## When to use a different component
+
+Use Breakdown to compare groups rather than selected entities. Use Table when people need to inspect the underlying records.
+
+## Properties and defaults
+
+{{aeliqo:properties}}
+
+## Events
+
+{{aeliqo:events}}
+
+## States and failure handling
+
+Relevant states:
+
+{{aeliqo:states}}
+
+{{aeliqo:outcome}}
+
+## Keyboard, focus, and accessibility
+
+Keyboard behavior:
+
+{{aeliqo:keyboard}}
+
+Exposed semantics:
+
+{{aeliqo:semantics}}
+
+## Responsive behavior
+
+Keep every compared entity and metric in view. Stack comparison rows or allow a local scroll area instead of dropping values.
+
+## Style hooks
+
+{{aeliqo:style-hooks}}
+
+{{aeliqo:performance}}
+
+## Related components
+
+- [Breakdown](/components/compound.breakdown/)
+- [Table](/components/data.table/)
+
+## Generated TypeScript declaration
+
+{{aeliqo:declaration}}
+
+## Version
+
+Aeliqo 0.4.0.

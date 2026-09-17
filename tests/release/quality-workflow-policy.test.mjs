@@ -6,6 +6,7 @@ import test from 'node:test';
 const workflowPath = new URL('../../.github/workflows/quality.yml', import.meta.url);
 const workflow = await readFile(workflowPath, 'utf8');
 const releaseWorkflow = await readFile(new URL('../../.github/workflows/release-publish.yml', import.meta.url), 'utf8');
+const qualityCommands = JSON.parse(await readFile(new URL('../../quality/commands.json', import.meta.url), 'utf8'));
 const policyName = 'Enforce owner-dispatched main or exact candidate source';
 
 function policyScript() {
@@ -83,8 +84,13 @@ test('quality dispatch retains the workflow trust and release boundaries', () =>
   assert.doesNotMatch(workflow, /secrets\./);
   assert.match(workflow, /run: pnpm check/);
   assert.match(workflow, /artifacts\/product-ci/);
-  assert.doesNotMatch(workflow, /artifacts\/performance-/);
-  assert.doesNotMatch(workflow, /test:performance/);
+  assert.match(workflow, /artifacts\/performance-bundles/);
+  assert.ok(
+    qualityCommands.commands.some(
+      ({ kind, argv }) => kind === 'performance' && argv.join(' ') === 'pnpm test:performance:bundles',
+    ),
+    'release quality must run the deterministic installed-tarball bundle budget gate',
+  );
   assert.match(releaseWorkflow, /github\.ref == 'refs\/heads\/main'/);
   assert.match(releaseWorkflow, /head_sha == \$sha/);
   assert.match(releaseWorkflow, /head_branch == "main"/);

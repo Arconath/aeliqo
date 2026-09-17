@@ -1,7 +1,6 @@
 import type {
   Diagnostic,
   Intent,
-  IntentCompilerRegistry,
   Outcome,
   PresentationPlan,
   ResourceDefinition,
@@ -10,6 +9,7 @@ import type {
   Task,
   VersionRef,
 } from '@aeliqo/core';
+import type { IntentCompilerRegistry } from '@aeliqo/core/app';
 import type { ActionPort } from '../actions/types.js';
 import type { DataService, QueryBudget, ReadContext } from '../data/types.js';
 import type { MaterializedTaskOutput } from '../evaluation/types.js';

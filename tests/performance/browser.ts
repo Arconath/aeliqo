@@ -1,4 +1,4 @@
-import { AeliqoInputElement } from '@aeliqo/web/input';
+import { AeliqoTextFieldElement } from '@aeliqo/web/inputs';
 import { AeliqoTableElement } from '@aeliqo/web/table';
 import {
   LARGE_TRANSFERRED_ROW_COUNT,
@@ -34,7 +34,7 @@ const root: HTMLElement =
     throw new Error('Performance fixture root is missing.');
   })();
 
-if (!customElements.get('aeliqo-input')) customElements.define('aeliqo-input', AeliqoInputElement);
+if (!customElements.get('aeliqo-text-field')) customElements.define('aeliqo-text-field', AeliqoTextFieldElement);
 if (!customElements.get('aeliqo-table')) customElements.define('aeliqo-table', AeliqoTableElement);
 
 type TestTable = AeliqoTableElement & { readonly updateComplete: Promise<unknown> };
@@ -61,7 +61,7 @@ function table(rows: readonly Record<string, string | number>[], virtualized = f
   return element;
 }
 
-async function settle(element: TestTable | AeliqoInputElement): Promise<void> {
+async function settle(element: TestTable | AeliqoTextFieldElement): Promise<void> {
   await element.updateComplete;
 }
 
@@ -72,7 +72,7 @@ async function smallOnce(): Promise<{
 }> {
   resetFixture();
   const rows = makeRows(SMALL_ROW_COUNT);
-  const control = document.createElement('aeliqo-input') as AeliqoInputElement;
+  const control = document.createElement('aeliqo-text-field') as AeliqoTextFieldElement;
   control.label = 'Standalone value';
   control.value = 'ready';
   const dataTable = table(rows);
@@ -216,7 +216,7 @@ async function mountDispose(measure = false): Promise<unknown> {
   };
   try {
     for (let cycle = 0; cycle < 100; cycle += 1) {
-      const field = document.createElement('aeliqo-input') as AeliqoInputElement;
+      const field = document.createElement('aeliqo-text-field') as AeliqoTextFieldElement;
       field.label = `Cycle ${cycle + 1}`;
       field.value = String(cycle);
       root.append(field);

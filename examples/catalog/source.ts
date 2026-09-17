@@ -12,7 +12,8 @@ export interface CatalogSourceOptions {
 }
 
 export function catalogSource({ imports, setup = '', mount }: CatalogSourceOptions): string {
-  return `${imports.trim()}
+  return `import {registerAeliqoElements} from "@aeliqo/web";
+${imports.trim()}
 
 ${setup.trim()}
 

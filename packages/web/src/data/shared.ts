@@ -14,16 +14,20 @@ export function stableDataValueKey(value: AeliqoDataValue | undefined): string |
   if (value === null) return 'null:';
   if (typeof value === 'string') return `string:${value.length}:${value}`;
   if (typeof value === 'boolean') return `boolean:${value ? 'true' : 'false'}`;
-  if (typeof value === 'number') return Number.isFinite(value) ? `number:${String(value)}` : undefined;
-  if (
-    typeof value !== 'object' ||
-    Array.isArray(value) ||
-    Object.keys(value).length !== 1 ||
-    typeof value.decimal !== 'string'
-  )
-    return undefined;
+  if (typeof value === 'number') return finiteNumberKey(value);
+  return decimalValueKey(value);
+}
+
+function finiteNumberKey(value: number): string | undefined {
+  return Number.isFinite(value) ? `number:${String(value)}` : undefined;
+}
+
+function decimalValueKey(value: AeliqoDataValue): string | undefined {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return undefined;
+  if (Object.keys(value).length !== 1 || typeof value.decimal !== 'string') return undefined;
   const identity = scalarIdentity(value, { value: 'decimal', nullable: false });
-  return identity.ok ? `decimal:${identity.value}` : undefined;
+  if (!identity.ok) return undefined;
+  return `decimal:${identity.value}`;
 }
 
 export function stableDataRecordKey(record: AeliqoDataRecord, identity: readonly string[]): string | undefined {
@@ -116,12 +120,3 @@ export const dataStyles = css`
     }
   }
 `;
-
-export function safeNumber(value: unknown): number | undefined {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return undefined;
-  return value;
-}
-
-export function clampInteger(value: number, minimum: number, maximum: number): number {
-  return Math.min(maximum, Math.max(minimum, Math.trunc(value)));
-}

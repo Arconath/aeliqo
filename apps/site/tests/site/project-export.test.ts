@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { projectFiles } from '../../../playground/src/project-template.js';
-import { zipProject } from '../../../playground/src/zip.js';
+import { projectFiles } from '../../src/playground/project-template.js';
+import { zipProject } from '../../src/playground/zip.js';
 
 const releaseVersion = (
   JSON.parse(readFileSync(new URL('../../../../release-metadata.json', import.meta.url), 'utf8')) as { version: string }

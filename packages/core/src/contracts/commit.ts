@@ -3,6 +3,7 @@ import { inspectWire } from './ingress.js';
 import { commitPreconditionsSchema, resultRefSchema } from './schemas.js';
 import { WIRE_LIMITS } from './limits.js';
 import type { CommitPreconditions, Outcome, ResultRef } from './types.js';
+import { resultRefKey } from './stable.js';
 
 const scalarPins = [
   'scopeDigest',
@@ -14,8 +15,6 @@ const scalarPins = [
   'functionRegistryDigest',
 ] as const;
 const requiredRefsSchema = z.array(resultRefSchema).check(z.maxLength(WIRE_LIMITS.array));
-const refKey = (ref: ResultRef): string =>
-  JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
 const failure = (code: string, message: string): Outcome<never> => ({
   ok: false,
   diagnostics: [{ code, message, retryable: false }],
@@ -30,7 +29,7 @@ function parsePins(input: unknown): Outcome<CommitPreconditions> {
   const pins = parsed.data;
   const keys = new Set<string>();
   for (const ref of pins.results) {
-    const key = refKey(ref);
+    const key = resultRefKey(ref);
     if (keys.has(key))
       return failure('commit.duplicate-result', 'The commit read set contains a duplicate result reference.');
     keys.add(key);
@@ -57,17 +56,17 @@ export function validateParsedCommitReadSet(
     if (expected[pin] !== current[pin])
       return failure('commit.stale', 'A version or authorization pin changed after this update was staged.');
   }
-  const reads = new Set(expected.results.map(refKey));
+  const reads = new Set(expected.results.map(resultRefKey));
   for (const ref of requiredResults) {
-    if (ref.scopeDigest !== expected.scopeDigest || !reads.has(refKey(ref)))
+    if (ref.scopeDigest !== expected.scopeDigest || !reads.has(resultRefKey(ref)))
       return failure(
         'commit.missing-dependency',
         'The read set omits a required result dependency or its authorized scope.',
       );
   }
-  const available = new Set(current.results.map(refKey));
+  const available = new Set(current.results.map(resultRefKey));
   for (const ref of expected.results) {
-    if (!available.has(refKey(ref)))
+    if (!available.has(resultRefKey(ref)))
       return failure('commit.stale', 'A referenced result is no longer available at the staged revision and scope.');
   }
   return { ok: true, value: expected };

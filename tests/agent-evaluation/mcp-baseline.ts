@@ -5,7 +5,7 @@ import { join, resolve } from 'node:path';
 import { Client } from '@modelcontextprotocol/client';
 import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
 import { parseResult, parseWireValue, type Outcome, type Task } from '@aeliqo/core';
-import { AELIQO_MCP_MODERN_REVISION, createMcpClientEndpoint } from '../../packages/agent/src/mcp/index.js';
+import { AELIQO_MCP_PROTOCOL_REVISION, createMcpClientEndpoint } from '../../packages/agent/src/mcp/index.js';
 import type { EvaluatedOutput, EvaluationFixture } from './host.js';
 import type { DataRecord, DataValue } from '../../packages/runtime/src/data/index.js';
 
@@ -75,10 +75,7 @@ export async function runExplicitMcp(fixture: EvaluationFixture, task: Task) {
     goalEpoch: fixture.goalEpoch,
     budget: fixture.budget,
   };
-  const client = new Client(
-    { name: 'aeliqo-evaluation-client', version: '0.0.0-test' },
-    { versionNegotiation: { mode: { pin: AELIQO_MCP_MODERN_REVISION } } },
-  );
+  const client = new Client({ name: 'aeliqo-evaluation-client', version: '0.0.0-test' });
   const transport = new StdioClientTransport({
     command: process.execPath,
     args: [resolve(import.meta.dirname, 'mcp-baseline-child.mjs'), fixturePath],
@@ -149,7 +146,7 @@ export async function runExplicitMcp(fixture: EvaluationFixture, task: Task) {
     result,
     observation: {
       transport: 'official-sdk-stdio',
-      protocolPin: AELIQO_MCP_MODERN_REVISION,
+      protocolPin: AELIQO_MCP_PROTOCOL_REVISION,
       server: server ?? null,
       node: process.version,
       discoveredTools,

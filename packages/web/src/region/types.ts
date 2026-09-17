@@ -1,12 +1,7 @@
 import type { AeliqoDataHostRequest } from './data-renderer.js';
-import type {
-  InteractionPayload,
-  PresentationManifest,
-  ResultRef,
-  ValidatedPresentation,
-  VersionRef,
-  VisualizationBindingContext,
-} from '@aeliqo/core';
+import type { InteractionPayload, ResultRef, VersionRef } from '@aeliqo/core';
+import type { VisualizationBindingContext } from '@aeliqo/core/visualization';
+import type { PresentationManifest, ValidatedPresentation } from '@aeliqo/core/presentation';
 import type { TemplateResult } from 'lit';
 import type { nothing } from 'lit';
 import type { AeliqoTableColumn, AeliqoTableRow } from '../types.js';

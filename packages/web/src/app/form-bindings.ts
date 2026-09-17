@@ -8,6 +8,7 @@ import {
   type ResourceDefinition,
   type Scalar,
   type Task,
+  type VersionRef,
 } from '@aeliqo/core';
 import { AELIQO_INPUT_REFS, type AeliqoInputRef } from '../input/manifest.js';
 import type { AeliqoInputBinding, AeliqoInputBindings } from '../region/input-registry.js';
@@ -42,10 +43,16 @@ function defaultConfig(ref: AeliqoInputRef, value: Scalar | undefined): Record<s
   if (value === undefined || value === null) return {};
   if (ref.id === AELIQO_INPUT_REFS.checkbox.id) return typeof value === 'boolean' ? { defaultChecked: value } : {};
   if (ref.id === AELIQO_INPUT_REFS.numberField.id) {
-    const text = typeof value === 'object' ? value.decimal : typeof value === 'number' ? String(value) : undefined;
+    const text = numberDefaultValue(value);
     return text === undefined ? {} : { defaultValue: text };
   }
   return typeof value === 'string' ? { defaultValue: value } : {};
+}
+
+function numberDefaultValue(value: Scalar): string | undefined {
+  if (value !== null && typeof value === 'object') return value.decimal;
+  if (typeof value === 'number') return String(value);
+  return undefined;
 }
 
 function checkedValues(
@@ -77,68 +84,97 @@ export function createFormBindings(
 ): Outcome<AeliqoInputBindings> {
   if ((intent.kind !== 'create' && intent.kind !== 'edit') || task.kind !== 'form')
     return failure('web.form-state.intent', 'Form bindings require a compiled create or edit Task.');
-  if (
-    state.entityRevision.length === 0 ||
-    state.entityRevision.length > 160 ||
-    /[\s\u0000-\u001f\u007f]/u.test(state.entityRevision)
-  )
+  if (!validEntityRevision(state.entityRevision))
     return failure('web.form-state.revision', 'Form state requires a bounded entity revision.');
   const values = checkedValues(resource, state);
   if (!values.ok) return values;
-  const editable = resource.entity.fields.filter(
-    (field) =>
-      resource.fieldMetadata[field.id]?.hidden !== true &&
-      (intent.kind !== 'edit' || !resource.entity.identity.includes(field.id)),
-  );
-  if (editable.length > 31)
+  const editable = editableFields(resource, intent, values.value);
+  if (!editable.ok) return editable;
+  const key = task.entityKey ?? `new-${task.id}`;
+  const inputs = editable.value.map((field) => fieldBinding(resource, field, key, state, values.value));
+  const form = formBinding(resource, intent, task.action, values.value);
+  return {
+    ok: true,
+    value: Object.freeze({ revision: `form-${task.revision}`.slice(0, 160), inputs: Object.freeze([form, ...inputs]) }),
+  };
+}
+
+function validEntityRevision(revision: string): boolean {
+  return revision.length > 0 && revision.length <= 160 && !/[\s\u0000-\u001f\u007f]/u.test(revision);
+}
+
+function editableFields(
+  resource: ResourceDefinition,
+  intent: Intent,
+  values: Readonly<Record<string, Scalar>>,
+): Outcome<readonly ResourceDefinition['entity']['fields'][number][]> {
+  const fields = resource.entity.fields.filter((field) => isEditableField(resource, intent, field.id));
+  if (fields.length > 31)
     return failure(
       'web.form-state.fields',
       'The standard form recipe supports at most 31 visible fields; group or customize this form.',
     );
-  if (intent.kind === 'edit') {
-    const missing = editable.find((field) => !Object.hasOwn(values.value, field.id));
-    if (missing !== undefined)
-      return failure('web.form-state.missing', `Edit form state is missing current value for ${missing.id}.`);
-  }
-  const key = task.entityKey ?? `new-${task.id}`;
-  const inputs: AeliqoInputBinding[] = editable.map((field) => {
-    const metadata = resource.fieldMetadata[field.id];
-    const ref = fieldRef(field.type.value);
-    const unit =
-      ref.id === AELIQO_INPUT_REFS.numberField.id && field.type.unit !== undefined
-        ? { unit: field.type.unit.symbol }
-        : {};
-    return {
-      id: `field-${field.id}`,
-      ref,
-      config: Object.freeze({
-        label: field.label,
-        ...(metadata?.description === undefined ? {} : { description: metadata.description }),
-        required: !field.type.nullable,
-        name: field.id,
-        ...unit,
-        ...defaultConfig(ref, values.value[field.id]),
-      }),
-      draft: {
-        entity: resource.entity.id,
-        key,
-        field: field.id,
-        entityRevision: state.entityRevision,
-        type: field.type,
-      },
-    };
-  });
-  const form: AeliqoInputBinding = {
+  const missing = intent.kind === 'edit' ? fields.find((field) => !Object.hasOwn(values, field.id)) : undefined;
+  if (missing !== undefined)
+    return failure('web.form-state.missing', `Edit form state is missing current value for ${missing.id}.`);
+  return { ok: true, value: fields };
+}
+
+function isEditableField(resource: ResourceDefinition, intent: Intent, fieldId: string): boolean {
+  if (resource.fieldMetadata[fieldId]?.hidden === true) return false;
+  if (intent.kind === 'edit' && resource.entity.identity.includes(fieldId)) return false;
+  return true;
+}
+
+function fieldBinding(
+  resource: ResourceDefinition,
+  field: ResourceDefinition['entity']['fields'][number],
+  key: string,
+  state: AeliqoFormState,
+  values: Readonly<Record<string, Scalar>>,
+): AeliqoInputBinding {
+  const metadata = resource.fieldMetadata[field.id];
+  const ref = fieldRef(field.type.value);
+  const unit = numberUnit(ref, field.type.unit?.symbol);
+  return {
+    id: `field-${field.id}`,
+    ref,
+    config: Object.freeze({
+      label: field.label,
+      ...(metadata?.description === undefined ? {} : { description: metadata.description }),
+      required: !field.type.nullable,
+      name: field.id,
+      ...unit,
+      ...defaultConfig(ref, values[field.id]),
+    }),
+    draft: {
+      entity: resource.entity.id,
+      key,
+      field: field.id,
+      entityRevision: state.entityRevision,
+      type: field.type,
+    },
+  };
+}
+
+function numberUnit(ref: AeliqoInputRef, symbol: string | undefined): Record<string, string> {
+  if (ref.id !== AELIQO_INPUT_REFS.numberField.id || symbol === undefined) return {};
+  return { unit: symbol };
+}
+
+function formBinding(
+  resource: ResourceDefinition,
+  intent: Intent,
+  action: VersionRef,
+  values: Readonly<Record<string, Scalar>>,
+): AeliqoInputBinding {
+  const creating = intent.kind === 'create';
+  const label = creating ? `Create ${resource.label}` : `Edit ${resource.label}`;
+  const submitLabel = creating ? `Create ${resource.label}` : `Save ${resource.label}`;
+  return {
     id: 'form',
     ref: AELIQO_INPUT_REFS.form,
-    config: {
-      label: intent.kind === 'create' ? `Create ${resource.label}` : `Edit ${resource.label}`,
-      submitLabel: intent.kind === 'create' ? `Create ${resource.label}` : `Save ${resource.label}`,
-    },
-    action: { action: task.action, input: values.value },
-  };
-  return {
-    ok: true,
-    value: Object.freeze({ revision: `form-${task.revision}`.slice(0, 160), inputs: Object.freeze([form, ...inputs]) }),
+    config: { label, submitLabel },
+    action: { action, input: values },
   };
 }

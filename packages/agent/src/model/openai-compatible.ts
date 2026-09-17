@@ -52,12 +52,7 @@ function inputMessage(message: ToolModelRequest['messages'][number]): Record<str
     message.continuation === undefined
       ? undefined
       : readToolModelContinuation(message.continuation, OPENAI_COMPATIBLE_CHAT_PROTOCOL);
-  const reasoningContent =
-    continuation === undefined
-      ? undefined
-      : object(continuation) && boundedText(continuation.reasoningContent)
-        ? continuation.reasoningContent
-        : malformed('reasoning continuation');
+  const reasoningContent = continuationText(continuation);
   return {
     role: 'assistant',
     ...(message.text === undefined ? { content: null } : { content: message.text }),
@@ -72,6 +67,12 @@ function inputMessage(message: ToolModelRequest['messages'][number]): Record<str
           })),
         }),
   };
+}
+
+function continuationText(continuation: unknown): string | undefined {
+  if (continuation === undefined) return undefined;
+  if (!object(continuation) || !boundedText(continuation.reasoningContent)) return malformed('reasoning continuation');
+  return continuation.reasoningContent;
 }
 
 function functionTool(tool: ToolModelRequest['tools'][number]): Record<string, unknown> {
@@ -119,55 +120,71 @@ function tokenEstimate(value: unknown, maximum: number): number {
   }
 }
 
+interface TokenCount {
+  readonly value: number;
+  readonly source: 'provider' | 'estimated';
+}
+
+function usageCount(
+  usage: Record<string, unknown> | undefined,
+  key: string,
+  maximum: number,
+  fallback: number,
+): TokenCount {
+  const value = usage?.[key];
+  if (validInteger(value, maximum)) return { value, source: 'provider' };
+  return { value: fallback, source: 'estimated' };
+}
+
+function nestedUsageCount(
+  usage: Record<string, unknown> | undefined,
+  parentKey: string,
+  childKey: string,
+  maximum: number,
+): number | undefined {
+  const parent = usage?.[parentKey];
+  if (!object(parent)) return undefined;
+  const value = parent[childKey];
+  return validInteger(value, maximum) ? value : undefined;
+}
+
 function providerUsage(
   raw: unknown,
   context: ToolModelResponseContext,
   text: string | undefined,
   calls: readonly ToolModelCall[],
 ): ToolModelUsage {
-  const usage = object(raw) ? raw : undefined;
-  const inputTokens =
-    usage !== undefined && validInteger(usage.prompt_tokens, 1_000_000)
-      ? usage.prompt_tokens
-      : context.estimatedInputTokens;
-  const outputTokens =
-    usage !== undefined && validInteger(usage.completion_tokens, 100_000)
-      ? usage.completion_tokens
-      : tokenEstimate({ text: text ?? null, calls }, 100_000);
-  const cachedInputTokens =
-    usage !== undefined &&
-    object(usage.prompt_tokens_details) &&
-    validInteger(usage.prompt_tokens_details.cached_tokens, inputTokens)
-      ? usage.prompt_tokens_details.cached_tokens
-      : undefined;
-  const reasoningOutputTokens =
-    usage !== undefined &&
-    object(usage.completion_tokens_details) &&
-    validInteger(usage.completion_tokens_details.reasoning_tokens, outputTokens)
-      ? usage.completion_tokens_details.reasoning_tokens
-      : undefined;
-  const totalTokens =
-    usage !== undefined && validInteger(usage.total_tokens, 1_100_000)
-      ? usage.total_tokens
-      : inputTokens + outputTokens;
+  const provider = object(raw) ? raw : undefined;
+  const input = usageCount(provider, 'prompt_tokens', 1_000_000, context.estimatedInputTokens);
+  const output = usageCount(
+    provider,
+    'completion_tokens',
+    100_000,
+    tokenEstimate({ text: text ?? null, calls }, 100_000),
+  );
+  const cachedInputTokens = nestedUsageCount(provider, 'prompt_tokens_details', 'cached_tokens', input.value);
+  const reasoningOutputTokens = nestedUsageCount(
+    provider,
+    'completion_tokens_details',
+    'reasoning_tokens',
+    output.value,
+  );
+  const total = usageCount(provider, 'total_tokens', 1_100_000, input.value + output.value);
   return Object.freeze({
-    inputTokens,
-    outputTokens,
-    totalTokens,
-    inputTokenSource:
-      usage !== undefined && validInteger(usage.prompt_tokens, 1_000_000)
-        ? ('provider' as const)
-        : ('estimated' as const),
-    outputTokenSource:
-      usage !== undefined && validInteger(usage.completion_tokens, 100_000)
-        ? ('provider' as const)
-        : ('estimated' as const),
+    inputTokens: input.value,
+    outputTokens: output.value,
+    totalTokens: total.value,
+    inputTokenSource: input.source,
+    outputTokenSource: output.source,
     ...(cachedInputTokens === undefined ? {} : { cachedInputTokens }),
     ...(reasoningOutputTokens === undefined ? {} : { reasoningOutputTokens }),
   });
 }
 
-function decodeResponse(input: unknown, context: ToolModelResponseContext): ToolModelResponse {
+function responseMessage(input: unknown): {
+  readonly envelope: Record<string, unknown>;
+  readonly message: Record<string, unknown>;
+} {
   if (
     !object(input) ||
     !Array.isArray(input.choices) ||
@@ -177,49 +194,60 @@ function decodeResponse(input: unknown, context: ToolModelResponseContext): Tool
     return malformed('choices');
   const choice = input.choices[0];
   if (!object(choice) || !object(choice.message)) return malformed('message');
-  const message = choice.message;
-  const text =
-    message.content === null || message.content === undefined || message.content === ''
-      ? undefined
-      : boundedText(message.content)
-        ? message.content
-        : malformed('content');
+  return { envelope: input, message: choice.message };
+}
+
+function contentText(message: Record<string, unknown>): string | undefined {
+  const content = message.content;
+  if (content === null || content === undefined || content === '') return undefined;
+  if (boundedText(content)) return content;
+  return malformed('content');
+}
+
+function parseToolCall(item: unknown): ToolModelCall {
   if (
-    message.tool_calls !== undefined &&
-    (!Array.isArray(message.tool_calls) || message.tool_calls.length > MAX_TOOL_CALLS)
+    !object(item) ||
+    item.type !== 'function' ||
+    !boundedText(item.id, MAX_ID_LENGTH) ||
+    !object(item.function) ||
+    !boundedText(item.function.name, MAX_ID_LENGTH) ||
+    typeof item.function.arguments !== 'string' ||
+    new TextEncoder().encode(item.function.arguments).byteLength > WIRE_LIMITS.bytes
   )
-    return malformed('tool calls');
-  const calls: ToolModelCall[] = [];
-  for (const item of message.tool_calls ?? []) {
-    if (
-      !object(item) ||
-      item.type !== 'function' ||
-      !boundedText(item.id, MAX_ID_LENGTH) ||
-      !object(item.function) ||
-      !boundedText(item.function.name, MAX_ID_LENGTH) ||
-      typeof item.function.arguments !== 'string' ||
-      new TextEncoder().encode(item.function.arguments).byteLength > WIRE_LIMITS.bytes
-    )
-      return malformed('tool call');
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(item.function.arguments);
-    } catch {
-      return malformed('tool arguments');
-    }
-    const checked = parseWireValue(parsed);
-    if (!checked.ok) return malformed('tool arguments');
-    calls.push({ id: item.id, name: item.function.name, input: checked.value as AgentJsonValue });
+    return malformed('tool call');
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(item.function.arguments);
+  } catch {
+    return malformed('tool arguments');
   }
-  const usage = providerUsage(input.usage, context, text, calls);
-  const providerModel = boundedText(input.model, MAX_ID_LENGTH) ? input.model : undefined;
-  const responseId = boundedText(input.id, MAX_ID_LENGTH) ? input.id : undefined;
-  const reasoning =
-    message.reasoning_content === null || message.reasoning_content === undefined || message.reasoning_content === ''
-      ? undefined
-      : boundedText(message.reasoning_content)
-        ? message.reasoning_content
-        : malformed('reasoning content');
+  const checked = parseWireValue(parsed);
+  if (!checked.ok) return malformed('tool arguments');
+  return { id: item.id, name: item.function.name, input: checked.value as AgentJsonValue };
+}
+
+function responseCalls(message: Record<string, unknown>): readonly ToolModelCall[] {
+  const raw = message.tool_calls;
+  if (raw === undefined) return Object.freeze([]);
+  if (!Array.isArray(raw) || raw.length > MAX_TOOL_CALLS) return malformed('tool calls');
+  return Object.freeze(raw.map(parseToolCall));
+}
+
+function reasoningText(message: Record<string, unknown>): string | undefined {
+  const reasoning = message.reasoning_content;
+  if (reasoning === null || reasoning === undefined || reasoning === '') return undefined;
+  if (boundedText(reasoning)) return reasoning;
+  return malformed('reasoning content');
+}
+
+function decodeResponse(input: unknown, context: ToolModelResponseContext): ToolModelResponse {
+  const { envelope, message } = responseMessage(input);
+  const text = contentText(message);
+  const calls = responseCalls(message);
+  const usage = providerUsage(envelope.usage, context, text, calls);
+  const providerModel = boundedText(envelope.model, MAX_ID_LENGTH) ? envelope.model : undefined;
+  const responseId = boundedText(envelope.id, MAX_ID_LENGTH) ? envelope.id : undefined;
+  const reasoning = reasoningText(message);
   const continuation =
     reasoning === undefined
       ? undefined

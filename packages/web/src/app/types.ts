@@ -1,13 +1,5 @@
-import type {
-  Diagnostic,
-  Intent,
-  Outcome,
-  PresentationEnvironment,
-  ReadonlyJsonValue,
-  ResourceDefinition,
-  Task,
-  ValidatedPresentation,
-} from '@aeliqo/core';
+import type { Diagnostic, Intent, Outcome, ReadonlyJsonValue, ResourceDefinition, Task } from '@aeliqo/core';
+import type { PresentationEnvironment, ValidatedPresentation } from '@aeliqo/core/presentation';
 import type {
   AeliqoRuntime,
   AeliqoRuntimeOptions,

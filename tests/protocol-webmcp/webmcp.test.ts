@@ -72,7 +72,7 @@ function modelContext(tools: WebMcpTool[] = [], signals: AbortSignal[] = []): We
 describe('WebMCP adapter', () => {
   it('feature-detects document.modelContext and does not shim an absent host', async () => {
     const host = endpoint();
-    const detection = detectWebMcp({});
+    const detection = detectWebMcp({ document: {} });
     expect(detection).toMatchObject({ evidence: 'simulated', supported: false });
 
     const adapter = createWebMcpAdapter({ endpoint: host, document: {} });
@@ -217,13 +217,27 @@ describe('WebMCP adapter', () => {
     });
   });
 
-  it('keeps native evidence detection separate from explicit simulated injection', () => {
+  it('requires explicit host detection and preserves native evidence through injection', () => {
     const context = modelContext();
     const previous = Object.getOwnPropertyDescriptor(globalThis, 'document');
     Object.defineProperty(globalThis, 'document', { configurable: true, value: { modelContext: context } });
     try {
-      expect(detectWebMcp()).toMatchObject({ evidence: 'native', supported: true });
-      expect(detectWebMcp({ modelContext: context })).toMatchObject({ evidence: 'simulated', supported: true });
+      expect(detectWebMcp()).toMatchObject({ evidence: 'unavailable', supported: false });
+      expect(detectWebMcp({ document: { modelContext: context } })).toMatchObject({
+        evidence: 'simulated',
+        supported: true,
+      });
+      expect(detectWebMcp({ document: { modelContext: context }, evidence: 'native' })).toMatchObject({
+        evidence: 'native',
+        supported: true,
+      });
+      const adapter = createWebMcpAdapter({
+        endpoint: endpoint(),
+        document: { modelContext: context },
+        evidence: 'native',
+      });
+      expect(adapter).toMatchObject({ evidence: 'native', supported: true });
+      adapter.close();
     } finally {
       if (previous === undefined) delete (globalThis as { document?: unknown }).document;
       else Object.defineProperty(globalThis, 'document', previous);

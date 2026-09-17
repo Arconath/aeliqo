@@ -17,7 +17,7 @@ import {
   type AeliqoTablePageEvent,
   type AeliqoTableWindowEvent,
 } from '@aeliqo/web/data';
-import type { AeliqoTableSelectionEvent } from '@aeliqo/web';
+import type { AeliqoTableSelectionEvent } from '@aeliqo/web/events';
 export const AeliqoMetric = createComponent({
   react: React,
   tagName: 'aeliqo-metric',

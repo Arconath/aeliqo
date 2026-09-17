@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { html } from 'lit';
-import { validatePresentationPlan } from '../../packages/core/dist/index.js';
+import { validatePresentationPlan } from '../../packages/core/dist/presentation/index.js';
 import { createAeliqoPresentationRegistry } from '../../packages/web/dist/region/registry.js';
 import { renderAeliqo } from '../../packages/web/dist/server.js';
 import { regionResults, visualizationContext, visualizationPlan, visualizationRegistryOptions } from './fixtures.mjs';

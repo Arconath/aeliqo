@@ -1,0 +1,225 @@
+import {
+  createPresentationRegistry,
+  type PresentationEnvironment,
+  type PresentationRegistry,
+} from '@aeliqo/core/presentation';
+import type { Diagnostic, Experience, Result, CommitPreconditions } from '@aeliqo/core';
+import type {
+  AeliqoRuntime,
+  RuntimeCommittedReceipt,
+  RuntimeRegionState,
+  RuntimeUnsubscribe,
+} from '@aeliqo/runtime/app';
+import type { AeliqoRegionElement } from '../region/aeliqo-region.js';
+import { createAeliqoPresentationRegistry } from '../region/registry.js';
+import type { AeliqoInputBindings } from '../region/input-registry.js';
+import type { AeliqoRegionResult, AeliqoViewDefinition } from '../region/types.js';
+import type { RecipeDefinition } from '../recipes/types.js';
+import { STANDARD_STATE_MAPPINGS } from '../recipes/standard.js';
+import type { AeliqoAppOptions, WebRenderReceipt } from './types.js';
+
+export interface WebRegion {
+  readonly id: string;
+  readonly resourceId: string;
+  readonly target: HTMLElement;
+  readonly element: AeliqoRegionElement;
+  resize?: ResizeObserver;
+  resizeFrame?: number;
+  sequence: number;
+  category: 'wide' | 'narrow' | 'unknown';
+  composing: boolean;
+  pendingAdapt: boolean;
+  actionPending: boolean;
+  actionSequence: number;
+  actionAttempt?: string;
+  actionAbort?: AbortController;
+  cancelAction?: () => boolean;
+  runtimeSubscription?: RuntimeUnsubscribe;
+  readonly values: Map<string, WebRegionValue>;
+  readonly drafts: Map<string, WebRegionDraft>;
+  last?: {
+    readonly receipt: RuntimeCommittedReceipt;
+    readonly results: readonly AeliqoRegionResult[];
+    readonly descriptors: readonly Result[];
+    readonly inputs?: AeliqoInputBindings;
+  };
+}
+
+type WebRegionValue = {
+  readonly nodeId: string;
+  readonly portId: string;
+  readonly payload: Extract<
+    import('@aeliqo/core').InteractionPayload,
+    { readonly kind: 'selection' | 'filter' | 'range' | 'group' | 'page' }
+  >;
+};
+type WebRegionDraft = Extract<import('@aeliqo/core').InteractionPayload, { readonly kind: 'draft' }>;
+
+export interface WebAppContext {
+  readonly options: AeliqoAppOptions;
+  readonly runtime: AeliqoRuntime;
+  readonly resources: ReadonlyMap<string, import('@aeliqo/core').ResourceDefinition>;
+  readonly recipes: readonly RecipeDefinition[];
+  readonly views: readonly AeliqoViewDefinition[];
+  readonly regions: Map<string, WebRegion>;
+  readonly stateListeners: Map<string, Set<(state: RuntimeRegionState) => void>>;
+  disposed: boolean;
+}
+
+export function diagnostic(code: string, message: string): Diagnostic {
+  return { code, message, retryable: false };
+}
+
+export function failedAfterRuntime(
+  status: 'unsupported' | 'failed' | 'cancelled' | 'needs-input',
+  runtime: RuntimeCommittedReceipt,
+  requestId: string,
+  diagnostics: readonly [Diagnostic, ...Diagnostic[]],
+): WebRenderReceipt {
+  return { status, regionId: runtime.regionId, requestId, runtime, diagnostics };
+}
+
+export function withoutDataRevision(
+  readSet: NonNullable<RuntimeCommittedReceipt['region']['readSet']>,
+): CommitPreconditions {
+  const { dataRevision: _dataRevision, ...pins } = readSet;
+  return pins;
+}
+
+function refKey(ref: Result['ref']): string {
+  return JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
+}
+
+export function materialize(
+  receipt: RuntimeCommittedReceipt,
+): { readonly results: readonly AeliqoRegionResult[]; readonly descriptors: readonly Result[] } | undefined {
+  const results: AeliqoRegionResult[] = [];
+  const descriptors: Result[] = [];
+  for (const output of receipt.outputs) {
+    const snapshot = output.handle.snapshot();
+    if (snapshot.descriptor === undefined || (snapshot.status !== 'ready' && snapshot.status !== 'partial'))
+      return undefined;
+    descriptors.push(snapshot.descriptor);
+    results.push({
+      ref: snapshot.descriptor.ref,
+      rows: snapshot.batches.flatMap((batch) => batch.rows),
+      columns: snapshot.descriptor.fields.map((field) => ({ key: field.id, label: field.label })),
+    });
+  }
+  return { results: Object.freeze(results), descriptors: Object.freeze(descriptors) };
+}
+
+function measuredSize(value: number): PresentationEnvironment['inlineSize'] {
+  if (value <= 0) return { state: 'unknown' };
+  return { state: 'known', value };
+}
+
+function mediaMatches(view: Window | null, query: string): boolean {
+  return view?.matchMedia(query).matches === true;
+}
+
+function targetLocale(region: WebRegion, view: Window | null): string {
+  return region.target.lang || region.target.ownerDocument.documentElement.lang || view?.navigator.language || 'en-US';
+}
+
+export function environmentFor(region: WebRegion): PresentationEnvironment {
+  const view = region.target.ownerDocument.defaultView;
+  const bounds = region.target.getBoundingClientRect();
+  const direction = view?.getComputedStyle(region.target).direction === 'rtl' ? 'rtl' : 'ltr';
+  return {
+    inlineSize: measuredSize(bounds.width),
+    blockSize: measuredSize(bounds.height),
+    textScale: { state: 'unknown' },
+    pointer: mediaMatches(view, '(pointer: coarse)') ? 'coarse' : 'unknown',
+    hover: mediaMatches(view, '(hover: hover)') ? 'available' : 'unknown',
+    keyboard: 'unknown',
+    locale: targetLocale(region, view),
+    direction,
+    reducedMotion: mediaMatches(view, '(prefers-reduced-motion: reduce)'),
+    forcedColors: mediaMatches(view, '(forced-colors: active)'),
+  };
+}
+
+export function category(width: number, previous: WebRegion['category']): WebRegion['category'] {
+  if (!(width > 0)) return 'unknown';
+  if (previous === 'wide') return width < 616 ? 'narrow' : 'wide';
+  if (previous === 'narrow') return width > 664 ? 'wide' : 'narrow';
+  return width < 640 ? 'narrow' : 'wide';
+}
+
+function deepActive(document: Document): Element | null {
+  let active: Element | null = document.activeElement;
+  while (active?.shadowRoot?.activeElement !== null && active?.shadowRoot?.activeElement !== undefined)
+    active = active.shadowRoot.activeElement;
+  return active;
+}
+
+function composedContains(container: Element, node: Element): boolean {
+  let current: Node | null = node;
+  while (current !== null) {
+    if (current === container) return true;
+    const root: Node = current.getRootNode();
+    const host: Node | undefined = root !== current ? shadowHost(root) : undefined;
+    const parent: Node | null = current.parentNode;
+    current = host ?? parent;
+  }
+  return false;
+}
+
+function shadowHost(root: Node): Node | undefined {
+  if (!('host' in root)) return undefined;
+  const host: unknown = root.host;
+  return host !== null && typeof host === 'object' ? (host as Node) : undefined;
+}
+
+export function interactionLocked(region: WebRegion): boolean {
+  if (region.composing) return true;
+  const active = deepActive(region.target.ownerDocument);
+  if (active === null || !composedContains(region.element, active)) return false;
+  return active.matches('input, textarea, select, [contenteditable="true"], [data-aeliqo-dirty="true"]');
+}
+
+export function registryFor(
+  results: readonly AeliqoRegionResult[],
+  descriptors: readonly Result[],
+  views: readonly AeliqoViewDefinition[],
+  resourceId: string,
+  inputs?: AeliqoInputBindings,
+): PresentationRegistry | undefined {
+  const byRef = new Map(descriptors.map((descriptor) => [refKey(descriptor.ref), descriptor]));
+  const base = createAeliqoPresentationRegistry({
+    ...(inputs === undefined ? {} : { inputs }),
+    data: results.flatMap((binding) => {
+      const result = byRef.get(refKey(binding.ref));
+      return result === undefined
+        ? []
+        : [{ result, rows: binding.rows, ...(binding.columns === undefined ? {} : { columns: binding.columns }) }];
+    }),
+    resolveEntity: () => resourceId,
+  });
+  if (!base.ok) return undefined;
+  const combined = createPresentationRegistry(
+    [...base.value.manifests, ...views.map((view) => view.manifest)],
+    base.value.mappings,
+    base.value.patterns,
+    [...(base.value.stateMappings ?? []), ...STANDARD_STATE_MAPPINGS],
+  );
+  return combined.ok ? combined.value : undefined;
+}
+
+export function experience(registry: PresentationRegistry, revision: string): Experience {
+  return {
+    version: '1',
+    id: 'aeliqo.web.app',
+    revision,
+    mode: 'adaptive',
+    agentAllowed: true,
+    allowedRepresentations: registry.manifests.map((manifest) => manifest.ref.id),
+    allowedPatterns: [],
+    composition: { allowWithoutPreset: true, maxNodes: 32, maxExpansions: 64 },
+    requiredOperations: [],
+    tokenProfile: { id: 'tokens.default', revision: '1' },
+    extensionAllowlist: registry.manifests.filter((manifest) => manifest.extension).map((manifest) => manifest.ref),
+    transitionPolicy: 'stable',
+  };
+}

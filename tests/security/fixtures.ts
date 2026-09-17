@@ -1,10 +1,5 @@
-import {
-  createStandardFunctionRegistry,
-  type Catalog,
-  type QuerySpec,
-  type Result,
-  type ResultRef,
-} from '../../packages/core/src/index.js';
+import { type Catalog, type QuerySpec, type Result, type ResultRef } from '../../packages/core/src/index.js';
+import { createStandardFunctionRegistry } from '../../packages/core/src/expressions/index.js';
 import type { DataRecord, LocalSnapshot, QueryBudget } from '../../packages/runtime/src/data/index.js';
 import { collectResultEvents } from '../../packages/testkit/src/index.js';
 

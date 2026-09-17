@@ -1,11 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import {
-  bindPlotSpec,
-  parsePlotSpec,
-  serializeContract,
-  type PlotSpec,
-  type Result,
-} from '../../packages/core/src/index.js';
+import { parsePlotSpec, serializeContract, type PlotSpec, type Result } from '../../packages/core/src/index.js';
+import { bindPlotSpec } from '../../packages/core/src/contracts/plot/index.js';
 import { result, ref } from './fixtures.js';
 const data: Result = {
   ...result,

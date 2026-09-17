@@ -1,22 +1,27 @@
 import * as z from 'zod/mini';
-import { contractSchemas } from './schemas.js';
+import { contractSchemas } from './schemas-registry.js';
 import { CONTRACT_VERSION, WIRE_LIMITS } from './limits.js';
 import type { ContractKind } from './types.js';
 
 const cache = new Map<ContractKind, Readonly<Record<string, unknown>>>();
 
+function addObjectBounds(record: Record<string, unknown>): void {
+  record.maxProperties ??= WIRE_LIMITS.properties;
+  const keyBounds = { maxLength: WIRE_LIMITS.id, not: { const: '__proto__' } };
+  record.propertyNames = record.propertyNames === undefined ? keyBounds : { allOf: [record.propertyNames, keyBounds] };
+}
+
+function addTypeBounds(record: Record<string, unknown>): void {
+  if (record.type === 'object') addObjectBounds(record);
+  if (record.type === 'array') record.maxItems ??= WIRE_LIMITS.array;
+  if (record.type === 'string') record.maxLength ??= WIRE_LIMITS.text;
+}
+
 function addBounds(value: unknown): void {
   if (value === null || typeof value !== 'object') return;
   const record = value as Record<string, unknown>;
   if (Array.isArray(record.prefixItems) && record.prefixItems.length === 0) delete record.prefixItems;
-  if (record.type === 'object') {
-    record.maxProperties ??= WIRE_LIMITS.properties;
-    const keyBounds = { maxLength: WIRE_LIMITS.id, not: { const: '__proto__' } };
-    record.propertyNames =
-      record.propertyNames === undefined ? keyBounds : { allOf: [record.propertyNames, keyBounds] };
-  }
-  if (record.type === 'array') record.maxItems ??= WIRE_LIMITS.array;
-  if (record.type === 'string') record.maxLength ??= WIRE_LIMITS.text;
+  addTypeBounds(record);
   for (const child of Object.values(record)) addBounds(child);
 }
 

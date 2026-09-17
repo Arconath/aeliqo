@@ -1,17 +1,14 @@
 import {
   WIRE_LIMITS,
-  createTypedAuthoring,
-  createFunctionRegistry,
   parseWireValue,
-  validateMeaning,
   type Catalog,
-  type DefineMetricInput,
-  type FunctionRegistry,
   type MeaningDefinition,
   type Outcome,
-  type TypedAuthoring,
   type VersionRef,
 } from '@aeliqo/core';
+import { createTypedAuthoring, createFunctionRegistry } from '@aeliqo/core/expressions';
+import type { DefineMetricInput, FunctionRegistry, TypedAuthoring } from '@aeliqo/core/expressions';
+import { validateMeaning } from '@aeliqo/core/semantics';
 import type {
   MeaningAuthoring,
   MeaningAuthoringOptions,
@@ -95,6 +92,41 @@ function snapshotRegistry(input: FunctionRegistry): Outcome<FunctionRegistry> {
   return { ok: true, value: Object.freeze(snapshot) };
 }
 
+type OptionalAuthoringInputs = Readonly<Record<string, unknown>>;
+
+function snapshotOptionalInputs(options: MeaningAuthoringOptions<Catalog>): Outcome<OptionalAuthoringInputs> {
+  const source: readonly (readonly [string, unknown])[] = [
+    ['definitions', options.definitions],
+    ['policy', options.policy],
+    ['source', options.source],
+    ['assumptions', options.assumptions],
+  ];
+  const snapshot: Record<string, unknown> = {};
+  for (const [key, value] of source) {
+    if (value === undefined) continue;
+    const copied = snapshotWireValue(value);
+    if (!copied.ok) return copied;
+    snapshot[key] = copied.value;
+  }
+  return { ok: true, value: snapshot };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function validateOptionalInputs(values: OptionalAuthoringInputs): Outcome<void> {
+  if (values.definitions !== undefined && !Array.isArray(values.definitions))
+    return failure('runtime.meaning-definitions', 'Meaning definitions must be an array.', ['definitions']);
+  if (values.policy !== undefined && !isRecord(values.policy))
+    return failure('runtime.meaning-policy', 'Meaning policy must be a plain object.', ['policy']);
+  if (values.source !== undefined && !isRecord(values.source))
+    return failure('runtime.meaning-source', 'Meaning source must be a plain object.', ['source']);
+  if (values.assumptions !== undefined && !Array.isArray(values.assumptions))
+    return failure('runtime.meaning-assumptions', 'Meaning assumptions must be an array.', ['assumptions']);
+  return { ok: true, value: undefined };
+}
+
 /**
  * Normalize the mutable host inputs once at the authoring boundary. This is
  * intentionally kept out of the public meaning barrel; the runtime registry
@@ -103,40 +135,17 @@ function snapshotRegistry(input: FunctionRegistry): Outcome<FunctionRegistry> {
 export function snapshotMeaningAuthoringOptions<const C extends Catalog>(
   options: MeaningAuthoringOptions<C>,
 ): Outcome<MeaningAuthoringOptions<C>> {
-  if (options === null || typeof options !== 'object' || Array.isArray(options))
-    return failure('runtime.meaning-authoring', 'Meaning authoring options are required.');
+  if (!isRecord(options)) return failure('runtime.meaning-authoring', 'Meaning authoring options are required.');
   const registry = snapshotRegistry(options.registry);
   if (!registry.ok) return registry;
-  const definitions = options.definitions === undefined ? undefined : snapshotWireValue(options.definitions);
-  if (definitions !== undefined && !definitions.ok) return definitions;
-  const policy = options.policy === undefined ? undefined : snapshotWireValue(options.policy);
-  if (policy !== undefined && !policy.ok) return policy;
-  const source = options.source === undefined ? undefined : snapshotWireValue(options.source);
-  if (source !== undefined && !source.ok) return source;
-  const assumptions = options.assumptions === undefined ? undefined : snapshotWireValue(options.assumptions);
-  if (assumptions !== undefined && !assumptions.ok) return assumptions;
-  if (definitions !== undefined && !Array.isArray(definitions.value))
-    return failure('runtime.meaning-definitions', 'Meaning definitions must be an array.', ['definitions']);
-  if (
-    policy !== undefined &&
-    (policy.value === null || typeof policy.value !== 'object' || Array.isArray(policy.value))
-  )
-    return failure('runtime.meaning-policy', 'Meaning policy must be a plain object.', ['policy']);
-  if (
-    source !== undefined &&
-    (source.value === null || typeof source.value !== 'object' || Array.isArray(source.value))
-  )
-    return failure('runtime.meaning-source', 'Meaning source must be a plain object.', ['source']);
-  if (assumptions !== undefined && !Array.isArray(assumptions.value))
-    return failure('runtime.meaning-assumptions', 'Meaning assumptions must be an array.', ['assumptions']);
-
+  const optional = snapshotOptionalInputs(options);
+  if (!optional.ok) return optional;
+  const valid = validateOptionalInputs(optional.value);
+  if (!valid.ok) return valid;
   const candidate = {
     catalog: options.catalog,
     registry: registry.value,
-    ...(definitions === undefined ? {} : { definitions: definitions.value }),
-    ...(policy === undefined ? {} : { policy: policy.value }),
-    ...(source === undefined ? {} : { source: source.value }),
-    ...(assumptions === undefined ? {} : { assumptions: assumptions.value }),
+    ...optional.value,
   } as MeaningAuthoringOptions<C>;
   let typed: Outcome<TypedAuthoring<C>>;
   try {
@@ -173,22 +182,38 @@ function validRef(value: unknown): value is VersionRef {
   );
 }
 
+function defaultSource(meaning: MeaningDefinition): MeaningSource {
+  if (meaning.origin === 'ai-assisted') return { surface: 'ai-assisted', ownership: meaning.scope };
+  return { surface: 'code', ownership: 'code', readOnly: true };
+}
+
+function sourceSurfaceValid(value: MeaningSource): boolean {
+  return value.surface === 'code' || value.surface === 'ai-assisted';
+}
+
+function sourceOwnershipValid(value: MeaningSource): boolean {
+  return ['code', 'session', 'personal', 'workspace', 'organization'].includes(value.ownership);
+}
+
+function sourceOriginValid(value: MeaningSource, meaning: MeaningDefinition): boolean {
+  return value.surface !== 'ai-assisted' || meaning.origin === 'ai-assisted';
+}
+
+function sourceOwnerValid(value: MeaningSource): boolean {
+  return value.ownerId === undefined || validText(value.ownerId, WIRE_LIMITS.id);
+}
+
 function normalizeSource(source: MeaningSource | undefined, meaning: MeaningDefinition): Outcome<MeaningSource> {
-  const value =
-    source === undefined
-      ? meaning.origin === 'ai-assisted'
-        ? { surface: 'ai-assisted' as const, ownership: meaning.scope }
-        : { surface: 'code' as const, ownership: 'code' as const, readOnly: true }
-      : source;
+  const value = source ?? defaultSource(meaning);
   if (value === null || typeof value !== 'object' || Array.isArray(value))
     return failure('runtime.meaning-source', 'Meaning source must be a bounded object.', ['source']);
-  if (value.surface !== 'code' && value.surface !== 'studio' && value.surface !== 'ai-assisted')
+  if (!sourceSurfaceValid(value))
     return failure('runtime.meaning-source', 'Meaning source surface is unsupported.', ['source', 'surface']);
-  if (!['code', 'session', 'personal', 'workspace', 'organization'].includes(value.ownership))
+  if (!sourceOwnershipValid(value))
     return failure('runtime.meaning-source', 'Meaning ownership is unsupported.', ['source', 'ownership']);
-  if (value.surface === 'ai-assisted' && meaning.origin !== 'ai-assisted')
+  if (!sourceOriginValid(value, meaning))
     return failure('runtime.meaning-origin', 'AI-assisted source must preserve ai-assisted origin.', ['origin']);
-  if (value.ownerId !== undefined && !validText(value.ownerId, WIRE_LIMITS.id))
+  if (!sourceOwnerValid(value))
     return failure('runtime.meaning-source', 'Meaning owner identity is not bounded.', ['source', 'ownerId']);
   return {
     ok: true,
@@ -283,6 +308,144 @@ function changedFields(left: MeaningDefinition, right: MeaningDefinition): reado
   );
 }
 
+type DraftOptions = {
+  readonly source?: MeaningSource;
+  readonly assumptions?: readonly string[];
+  readonly base?: VersionRef;
+};
+
+type EditOptions = { readonly source?: MeaningSource; readonly assumptions?: readonly string[] };
+
+function metricInput(input: MeaningDefinitionInput): DefineMetricInput {
+  return {
+    id: input.id,
+    ...(input.revision === undefined ? {} : { revision: input.revision }),
+    label: input.label,
+    description: input.description,
+    expression: input.expression,
+    ...(input.aggregation === undefined ? {} : { aggregation: input.aggregation }),
+    ...(input.aggregationDimensions === undefined ? {} : { aggregationDimensions: input.aggregationDimensions }),
+    ...(input.missingPolicy === undefined ? {} : { missingPolicy: input.missingPolicy }),
+    ...(input.scope === undefined ? {} : { scope: input.scope }),
+    ...(input.dependencies === undefined ? {} : { dependencies: input.dependencies }),
+  };
+}
+
+function createDefinitionBuilder<C extends Catalog>(
+  typed: TypedAuthoring<C>,
+  options: MeaningAuthoringOptions<C>,
+): (input: MeaningDefinitionInput) => Outcome<MeaningDraft> {
+  return (input) => {
+    const base = typed.defineMetric(metricInput(input));
+    if (!base.ok) return base;
+    const meaning: MeaningDefinition = {
+      ...base.value,
+      ...(input.origin === undefined ? {} : { origin: input.origin }),
+      ...(input.lifecycle === undefined ? {} : { lifecycle: input.lifecycle }),
+      ...(input.authority === undefined ? {} : { authority: input.authority }),
+      ...(input.scope === undefined ? {} : { scope: input.scope }),
+    };
+    return makeDraft(meaning, options, input.assumptions === undefined ? {} : { assumptions: input.assumptions });
+  };
+}
+
+function createDraftBuilder<C extends Catalog>(options: MeaningAuthoringOptions<C>) {
+  return (meaning: MeaningDefinition, draftOptions: DraftOptions = {}): Outcome<MeaningDraft> =>
+    makeDraft(meaning, options, draftOptions);
+}
+
+function createEditor<C extends Catalog>(options: MeaningAuthoringOptions<C>) {
+  return (base: MeaningDraft | MeaningDefinition, meaning: MeaningDefinition, editOptions: EditOptions = {}) => {
+    if (!validMeaningBase(base))
+      return failure<MeaningDraft>('runtime.meaning-base', 'Meaning edit requires a canonical base definition.', [
+        'base',
+      ]);
+    const previous = meaningFromBase(base);
+    if (previous.source?.ownership === 'code' && canonicalMeaning(previous.meaning) !== canonicalMeaning(meaning))
+      return failure<MeaningDraft>(
+        'runtime.meaning-read-only',
+        'Code-owned meanings are read-only; submit a proposed diff or a new reviewed revision.',
+        ['meaning'],
+      );
+    return makeDraft(meaning, options, {
+      ...((editOptions.source ?? previous.source) === undefined
+        ? {}
+        : { source: editOptions.source ?? previous.source }),
+      ...((editOptions.assumptions ?? previous.assumptions) === undefined
+        ? {}
+        : { assumptions: editOptions.assumptions ?? previous.assumptions }),
+      base: { id: previous.meaning.id, revision: previous.meaning.revision },
+    });
+  };
+}
+
+function sourceForDiff(supplied: MeaningSource | undefined, previous: ReturnType<typeof meaningFromBase>) {
+  if (supplied !== undefined) return supplied;
+  if (previous.source?.ownership === 'code') return { surface: 'code', ownership: 'code', readOnly: true } as const;
+  return previous.source;
+}
+
+function diffDraftOptions(options: EditOptions, previous: ReturnType<typeof meaningFromBase>): DraftOptions {
+  const source = sourceForDiff(options.source, previous);
+  const assumptions = options.assumptions ?? previous.assumptions;
+  return {
+    ...(source === undefined ? {} : { source }),
+    ...(assumptions === undefined ? {} : { assumptions }),
+    base: { id: previous.meaning.id, revision: previous.meaning.revision },
+  };
+}
+
+function priorDraft(
+  base: MeaningDraft | MeaningDefinition,
+  previous: ReturnType<typeof meaningFromBase>,
+  options: MeaningAuthoringOptions<Catalog>,
+): MeaningDraft | undefined {
+  if ('meaning' in base && 'source' in base) return base;
+  const draftOptions = {
+    ...(previous.source === undefined ? {} : { source: previous.source }),
+    ...(previous.assumptions === undefined ? {} : { assumptions: previous.assumptions }),
+  };
+  const result = makeDraft(previous.meaning, options, draftOptions);
+  return result.ok ? result.value : undefined;
+}
+
+function definitionsEqual(left: MeaningDefinition, right: MeaningDefinition): boolean {
+  return meaningRefKey(left) === meaningRefKey(right) && canonicalMeaning(left) === canonicalMeaning(right);
+}
+
+function createDiffProposer<C extends Catalog>(options: MeaningAuthoringOptions<C>) {
+  return (
+    base: MeaningDraft | MeaningDefinition,
+    meaning: MeaningDefinition,
+    diffOptions: EditOptions = {},
+  ): Outcome<MeaningDiff> => {
+    if (!validMeaningBase(base))
+      return failure('runtime.meaning-base', 'Meaning diff requires a canonical base definition.', ['base']);
+    const previous = meaningFromBase(base);
+    const candidate = makeDraft(meaning, options, diffDraftOptions(diffOptions, previous));
+    if (!candidate.ok) return candidate;
+    if (definitionsEqual(previous.meaning, candidate.value.meaning))
+      return failure(
+        'runtime.meaning-no-change',
+        'The proposed meaning diff does not change its canonical definition.',
+        ['meaning'],
+      );
+    const baseValue = priorDraft(base, previous, options);
+    if (baseValue === undefined)
+      return failure('runtime.meaning-diff', 'The base meaning could not be normalized for diffing.', ['meaning']);
+    return {
+      ok: true,
+      value: freezeMeaningValue({
+        version: '1' as const,
+        state: 'proposed-diff' as const,
+        base: baseValue,
+        candidate: candidate.value,
+        changed: changedFields(previous.meaning, candidate.value.meaning),
+      }),
+    };
+  };
+}
+
 /**
  * Shared manual authoring surface. It delegates expression construction and all
  * type/grain/dependency checks to core's canonical typed authoring helper.
@@ -295,125 +458,10 @@ export function createMeaningAuthoring<const C extends Catalog>(
   const typed = createTypedAuthoring(snapshot.value);
   if (!typed.ok) return typed;
   const value: TypedAuthoring<C> = typed.value;
-  const defineMeaning = (input: MeaningDefinitionInput): Outcome<MeaningDraft> => {
-    const expressionInput: DefineMetricInput = {
-      id: input.id,
-      ...(input.revision === undefined ? {} : { revision: input.revision }),
-      label: input.label,
-      description: input.description,
-      expression: input.expression,
-      ...(input.aggregation === undefined ? {} : { aggregation: input.aggregation }),
-      ...(input.aggregationDimensions === undefined ? {} : { aggregationDimensions: input.aggregationDimensions }),
-      ...(input.missingPolicy === undefined ? {} : { missingPolicy: input.missingPolicy }),
-      ...(input.scope === undefined ? {} : { scope: input.scope }),
-      ...(input.dependencies === undefined ? {} : { dependencies: input.dependencies }),
-    };
-    const base = value.defineMetric(expressionInput);
-    if (!base.ok) return base;
-    const meaning: MeaningDefinition = {
-      ...base.value,
-      ...(input.origin === undefined ? {} : { origin: input.origin }),
-      ...(input.lifecycle === undefined ? {} : { lifecycle: input.lifecycle }),
-      ...(input.authority === undefined ? {} : { authority: input.authority }),
-      ...(input.scope === undefined ? {} : { scope: input.scope }),
-    };
-    return makeDraft(
-      meaning,
-      snapshot.value,
-      input.assumptions === undefined ? {} : { assumptions: input.assumptions },
-    );
-  };
-  const draft = (
-    meaning: MeaningDefinition,
-    draftOptions: {
-      readonly source?: MeaningSource;
-      readonly assumptions?: readonly string[];
-      readonly base?: VersionRef;
-    } = {},
-  ): Outcome<MeaningDraft> => makeDraft(meaning, snapshot.value, draftOptions);
-  const edit = (
-    base: MeaningDraft | MeaningDefinition,
-    meaning: MeaningDefinition,
-    editOptions: { readonly source?: MeaningSource; readonly assumptions?: readonly string[] } = {},
-  ): Outcome<MeaningDraft> => {
-    if (!validMeaningBase(base))
-      return failure('runtime.meaning-base', 'Meaning edit requires a canonical base definition.', ['base']);
-    const previous = meaningFromBase(base);
-    const source = editOptions.source ?? previous.source;
-    if (previous.source?.ownership === 'code' && canonicalMeaning(previous.meaning) !== canonicalMeaning(meaning))
-      return failure(
-        'runtime.meaning-read-only',
-        'Code-owned meanings are read-only; submit a proposed diff or a new reviewed revision.',
-        ['meaning'],
-      );
-    const draftOptions = {
-      ...(source === undefined ? {} : { source }),
-      ...(editOptions.assumptions === undefined && previous.assumptions === undefined
-        ? {}
-        : { assumptions: editOptions.assumptions ?? previous.assumptions }),
-      base: { id: previous.meaning.id, revision: previous.meaning.revision },
-    };
-    return makeDraft(meaning, snapshot.value, draftOptions);
-  };
-  const proposeDiff = (
-    base: MeaningDraft | MeaningDefinition,
-    meaning: MeaningDefinition,
-    diffOptions: { readonly source?: MeaningSource; readonly assumptions?: readonly string[] } = {},
-  ): Outcome<MeaningDiff> => {
-    if (!validMeaningBase(base))
-      return failure('runtime.meaning-base', 'Meaning diff requires a canonical base definition.', ['base']);
-    const previous = meaningFromBase(base);
-    const candidateOptions = {
-      ...((diffOptions.source ??
-        (previous.source?.ownership === 'code'
-          ? { surface: 'studio', ownership: 'code', readOnly: true }
-          : previous.source)) === undefined
-        ? {}
-        : {
-            source:
-              diffOptions.source ??
-              (previous.source?.ownership === 'code'
-                ? { surface: 'studio', ownership: 'code', readOnly: true }
-                : previous.source),
-          }),
-      ...(diffOptions.assumptions === undefined && previous.assumptions === undefined
-        ? {}
-        : { assumptions: diffOptions.assumptions ?? previous.assumptions }),
-      base: { id: previous.meaning.id, revision: previous.meaning.revision },
-    };
-    const candidate = makeDraft(meaning, snapshot.value, candidateOptions);
-    if (!candidate.ok) return candidate;
-    if (
-      meaningRefKey(previous.meaning) === meaningRefKey(candidate.value.meaning) &&
-      canonicalMeaning(previous.meaning) === canonicalMeaning(candidate.value.meaning)
-    )
-      return failure(
-        'runtime.meaning-no-change',
-        'The proposed meaning diff does not change its canonical definition.',
-        ['meaning'],
-      );
-    const priorOptions = {
-      ...(previous.source === undefined ? {} : { source: previous.source }),
-      ...(previous.assumptions === undefined ? {} : { assumptions: previous.assumptions }),
-    };
-    const priorResult =
-      'meaning' in base && 'source' in base
-        ? { ok: true as const, value: base }
-        : makeDraft(previous.meaning, snapshot.value, priorOptions);
-    const priorDraft = priorResult.ok ? priorResult.value : undefined;
-    if (priorDraft === undefined)
-      return failure('runtime.meaning-diff', 'The base meaning could not be normalized for diffing.', ['meaning']);
-    return {
-      ok: true,
-      value: freezeMeaningValue({
-        version: '1' as const,
-        state: 'proposed-diff' as const,
-        base: priorDraft,
-        candidate: candidate.value,
-        changed: changedFields(previous.meaning, candidate.value.meaning),
-      }),
-    };
-  };
+  const defineMeaning = createDefinitionBuilder(value, snapshot.value);
+  const draft = createDraftBuilder(snapshot.value);
+  const edit = createEditor(snapshot.value);
+  const proposeDiff = createDiffProposer(snapshot.value);
   return { ok: true, value: Object.freeze({ ...value, defineMeaning, draft, edit, proposeDiff }) };
 }
 

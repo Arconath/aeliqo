@@ -2,14 +2,17 @@ import { RELEASE_VERSION } from '../../scripts/release/metadata.mjs';
 /**
  * Build and consume the public meaning authoring APIs from actual package
  * tarballs outside the workspace. This proves a typed developer quickstart,
- * manual/AI evaluator parity, immutable registration, host-owned activation,
- * stale/revoked handling, and a browser import through the installed graph.
+  * manual/AI evaluator parity,
+  immutable registration,
+  host-owned activation,
+  * stale/revoked handling,
+  and a browser import through the installed graph.
  */
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { createServer } from 'node:http';
-import { access, mkdir, mkdtemp, readFile, readdir, lstat, realpath, writeFile } from 'node:fs/promises';
+import { access, cp, mkdir, mkdtemp, readFile, readdir, lstat, realpath, writeFile } from 'node:fs/promises';
 import { tmpdir, platform, release, arch } from 'node:os';
 import { extname, join, resolve } from 'node:path';
 import { chromium } from '@playwright/test';
@@ -33,6 +36,24 @@ const hash = (bytes, algorithm = 'sha256', encoding = 'hex') => createHash(algor
 const sourceDigest = () => run(['node', 'scripts/source-digest.mjs'], root).trim();
 const before = sourceDigest();
 
+async function stagePackage(directory, manifest, name) {
+  const stage = join(runDirectory, 'staged-packages', name);
+  await mkdir(stage, { recursive: true });
+  for (const path of manifest.files ?? []) {
+    const sourcePath = path === 'README.md' ? join(root, 'docs/packages', `${name}.md`) : join(directory, path);
+    await cp(sourcePath, join(stage, path), { recursive: true });
+  }
+  const stagedManifest = structuredClone(manifest);
+  delete stagedManifest.devDependencies;
+  for (const field of ['dependencies', 'optionalDependencies', 'peerDependencies']) {
+    for (const dependency of Object.keys(stagedManifest[field] ?? {})) {
+      if (dependency.startsWith('@aeliqo/')) stagedManifest[field][dependency] = RELEASE_VERSION;
+    }
+  }
+  await writeFile(join(stage, 'package.json'), JSON.stringify(stagedManifest, null, 2) + '\n');
+  return stage;
+}
+
 const packageNames = ['core', 'runtime', 'agent'];
 for (const name of packageNames) {
   const directory = join(root, 'packages', name);
@@ -49,7 +70,8 @@ for (const name of packageNames) {
   const directory = join(root, 'packages', name);
   const manifest = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
   const tarball = join(runDirectory, `aeliqo-${name}-${RELEASE_VERSION}.tgz`);
-  run(['pnpm', 'pack', '--out', tarball], directory);
+  const stage = await stagePackage(directory, manifest, name);
+  run(['pnpm', 'pack', '--out', tarball], stage);
   const bytes = await readFile(tarball);
   const packed = JSON.parse(run(['tar', '-xOf', tarball, 'package/package.json'], root));
   assert.equal(packed.name, manifest.name);
@@ -131,119 +153,269 @@ assert.deepEqual(
 await writeFile(join(runDirectory, 'consumer-package-lock.json'), lockBytes);
 
 const sharedSource = `
-import {createStandardFunctionRegistry} from '@aeliqo/core';
-import {createMeaningAuthoring, createMeaningEvaluator, createMeaningRegistry} from '@aeliqo/runtime/meaning';
-import {createAgentMeaningAuthoring, createMeaningProposalCapability, createMeaningActivationCapability, createAgentCapabilityRegistry, createAgentCapabilityDispatcher} from '@aeliqo/agent';
+import {createStandardFunctionRegistry} from '@aeliqo/core/expressions';
+import {
+  createMeaningAuthoring,
+  createMeaningEvaluator,
+  createMeaningRegistry} from '@aeliqo/runtime/meaning';
+import {createAgentMeaningAuthoring,
+  createMeaningProposalCapability,
+  createMeaningActivationCapability} from '@aeliqo/agent/meaning';
+import {createAgentCapabilityRegistry,
+  createAgentCapabilityDispatcher} from '@aeliqo/agent/capabilities';
 
-const check = (condition, message) => { if (!condition) throw new Error(message); };
+const check = (condition,
+  message) => { if (!condition) throw new Error(message); };
 const registryResult = createStandardFunctionRegistry('meaning-consumer-functions');
-check(registryResult.ok, 'standard registry');
+check(registryResult.ok,
+  'standard registry');
 const registry = registryResult.value;
 const fields = [
-  {id: 'id', label: 'ID', role: 'identity', type: {value: 'text', nullable: false}},
-  {id: 'amount', label: 'Amount', role: 'measure', type: {value: 'integer', nullable: false}},
-];
-const catalog = {version: '1', revision: 'meaning-consumer-catalog', functionRegistryDigest: registry.digest,
-  entities: [{id: 'orders', label: 'Orders', identity: ['id'], rowGrain: ['id'], fields}], relationships: [], meanings: [], capabilities: []};
-const source = {revision: 'meaning-consumer-source', catalogRevision: catalog.revision, scopeDigest: 'scope-1', policyRevision: 'policy-1',
-  relations: {orders: {entity: 'orders', complete: true, rows: [{id: 'o-1', amount: 2}, {id: 'o-2', amount: 3}]}}};
+  {id: 'id',
+  label: 'ID',
+  role: 'identity',
+  type: {value: 'text',
+  nullable: false}},
+  {id: 'amount',
+  label: 'Amount',
+  role: 'measure',
+  type: {value: 'integer',
+  nullable: false}},
+  ];
+const catalog = {version: '1',
+  revision: 'meaning-consumer-catalog',
+  functionRegistryDigest: registry.digest,
+  entities: [{id: 'orders',
+  label: 'Orders',
+  identity: ['id'],
+  rowGrain: ['id'],
+  fields}],
+  relationships: [],
+  meanings: [],
+  capabilities: []};
+const source = {revision: 'meaning-consumer-source',
+  catalogRevision: catalog.revision,
+  scopeDigest: 'scope-1',
+  policyRevision: 'policy-1',
+  relations: {orders: {entity: 'orders',
+  complete: true,
+  rows: [{id: 'o-1',
+  amount: 2},
+  {id: 'o-2',
+  amount: 3}]}}};
 
 function makeManual() {
-  const authoring = createMeaningAuthoring({catalog, registry});
-  check(authoring.ok, 'manual authoring');
-  const field = authoring.value.field('orders', 'amount');
-  check(field.ok, 'catalog field reuse');
-  const expression = authoring.value.call({id: 'core.aggregate.sum', revision: '1'}, [field]);
-  check(expression.ok, 'typed aggregate');
-  const draft = authoring.value.defineMeaning({id: 'orders.total', label: 'Order total', description: 'Sum of order amounts', expression});
-  check(draft.ok, 'manual definition');
-  return {authoring: authoring.value, expression, draft: draft.value};
+  const authoring = createMeaningAuthoring({catalog,
+  registry});
+  check(authoring.ok,
+  'manual authoring');
+  const field = authoring.value.field('orders',
+  'amount');
+  check(field.ok,
+  'catalog field reuse');
+  const expression = authoring.value.call({id: 'core.aggregate.sum',
+  revision: '1'},
+  [field]);
+  check(expression.ok,
+  'typed aggregate');
+  const draft = authoring.value.defineMeaning({id: 'orders.total',
+  label: 'Order total',
+  description: 'Sum of order amounts',
+  expression});
+  check(draft.ok,
+  'manual definition');
+  return {authoring: authoring.value,
+  expression,
+  draft: draft.value};
 }
 
 export async function runMeaningProbe() {
   const manual = makeManual();
-  const aiAuthoring = createAgentMeaningAuthoring({catalog, registry});
-  check(aiAuthoring.ok, 'AI authoring');
-  const aiDraft = aiAuthoring.value.defineMeaning({id: 'orders.total', label: 'Order total', description: 'Sum of order amounts', expression: manual.expression});
-  check(aiDraft.ok, 'AI definition');
-  check(aiDraft.value.meaning.origin === 'ai-assisted', 'AI origin preserved');
-  check(aiDraft.value.meaning.lifecycle === 'draft' && aiDraft.value.meaning.authority === 'hypothesis', 'AI low-risk labels preserved');
-  check(aiDraft.value.source.ownership === 'session', 'AI session scope preserved');
+  const aiAuthoring = createAgentMeaningAuthoring({catalog,
+  registry});
+  check(aiAuthoring.ok,
+  'AI authoring');
+  const aiDraft = aiAuthoring.value.defineMeaning({id: 'orders.total',
+  label: 'Order total',
+  description: 'Sum of order amounts',
+  expression: manual.expression});
+  check(aiDraft.ok,
+  'AI definition');
+  check(aiDraft.value.meaning.origin === 'ai-assisted',
+  'AI origin preserved');
+  check(aiDraft.value.meaning.lifecycle === 'draft' && aiDraft.value.meaning.authority === 'hypothesis',
+  'AI low-risk labels preserved');
+  check(aiDraft.value.source.ownership === 'session',
+  'AI session scope preserved');
 
-  const evaluator = createMeaningEvaluator({catalog, registry});
-  check(evaluator.ok, 'meaning evaluator');
-  const manualResult = evaluator.value.evaluate({meaning: manual.draft.meaning, entity: 'orders', source, scopeDigest: 'scope-1', policyRevision: 'policy-1'});
-  const aiResult = evaluator.value.evaluate({meaning: aiDraft.value.meaning, entity: 'orders', source, scopeDigest: 'scope-1', policyRevision: 'policy-1'});
-  check(manualResult.ok && aiResult.ok, 'manual and AI evaluate');
-  check(JSON.stringify(manualResult.value.rows) === JSON.stringify(aiResult.value.rows), 'manual/AI evaluator parity');
-  check(JSON.stringify(manualResult.value.rows) === JSON.stringify([{'orders.total': 5}]), 'expected local aggregate');
+  const evaluator = createMeaningEvaluator({catalog,
+  registry});
+  check(evaluator.ok,
+  'meaning evaluator');
+  const manualResult = evaluator.value.evaluate({meaning: manual.draft.meaning,
+  entity: 'orders',
+  source,
+  scopeDigest: 'scope-1',
+  policyRevision: 'policy-1'});
+  const aiResult = evaluator.value.evaluate({meaning: aiDraft.value.meaning,
+  entity: 'orders',
+  source,
+  scopeDigest: 'scope-1',
+  policyRevision: 'policy-1'});
+  check(manualResult.ok && aiResult.ok,
+  'manual and AI evaluate');
+  check(JSON.stringify(manualResult.value.rows) === JSON.stringify(aiResult.value.rows),
+  'manual/AI evaluator parity');
+  check(JSON.stringify(manualResult.value.rows) === JSON.stringify([{'orders.total': 5}]),
+  'expected local aggregate');
 
-  const invalidField = manual.authoring.field('orders', 'missing');
-  check(!invalidField.ok, 'invalid catalog field rejected');
+  const invalidField = manual.authoring.field('orders',
+  'missing');
+  check(!invalidField.ok,
+  'invalid catalog field rejected');
   const aiProposalCapability = createMeaningProposalCapability({authoring: aiAuthoring.value});
-  const proposal = aiProposalCapability.invoke({meaning: aiDraft.value.meaning, assumptions: ['Rows are complete.']}, {
-    requestId: 'proposal', targetRegionId: 'region', goalEpoch: 'goal', transport: 'direct', signal: new AbortController().signal,
-    authority: {principalKey: 'principal', regionId: 'region', goalEpoch: 'goal', grants: ['meaning.propose']},
+  const proposal = aiProposalCapability.invoke({meaning: aiDraft.value.meaning,
+  assumptions: ['Rows are complete.']},
+  {
+    requestId: 'proposal',
+  targetRegionId: 'region',
+  goalEpoch: 'goal',
+  transport: 'direct',
+  signal: new AbortController().signal,
+  authority: {principalKey: 'principal',
+  regionId: 'region',
+  goalEpoch: 'goal',
+  grants: ['meaning.propose']},
   });
-  check(proposal.state === 'accepted', 'public AI proposal capability');
+  check(proposal.state === 'accepted',
+  'public AI proposal capability');
 
-  const activeMeaning = {...manual.draft.meaning, lifecycle: 'active', authority: 'reviewed', scope: 'workspace'};
-  const activeDraft = manual.authoring.draft(activeMeaning, {source: {surface: 'code', ownership: 'code', readOnly: true}});
-  check(activeDraft.ok, 'active code draft');
+  const activeMeaning = {...manual.draft.meaning,
+  lifecycle: 'active',
+  authority: 'reviewed',
+  scope: 'workspace'};
+  const activeDraft = manual.authoring.draft(activeMeaning,
+  {source: {surface: 'code',
+  ownership: 'code',
+  readOnly: true}});
+  check(activeDraft.ok,
+  'active code draft');
   let contextReads = 0;
   const activationContext = (scopeDigest = 'scope-activation') => ({
-    principalKey: 'principal', scopeDigest, policyRevision: 'policy-activation', catalogRevision: catalog.revision,
-    functionRegistryDigest: registry.digest, grants: ['meaning.activate'], allowedScopes: ['workspace'],
-    policy: {policyRevision: 'policy-activation', allowlistedDefinitions: [activeMeaning], allowlistedRefs: [{id: activeMeaning.id, revision: activeMeaning.revision}], minAuthority: 'reviewed'},
+    principalKey: 'principal',
+  scopeDigest,
+  policyRevision: 'policy-activation',
+  catalogRevision: catalog.revision,
+  functionRegistryDigest: registry.digest,
+  grants: ['meaning.activate'],
+  allowedScopes: ['workspace'],
+  policy: {policyRevision: 'policy-activation',
+  allowlistedDefinitions: [activeMeaning],
+  allowlistedRefs: [{id: activeMeaning.id,
+  revision: activeMeaning.revision}],
+  minAuthority: 'reviewed'},
   });
-  const meaningRegistryResult = createMeaningRegistry({catalog, registry, activationHost: {
-    readContext: () => { contextReads += 1; return {ok: true, value: activationContext()}; },
+  const meaningRegistryResult = createMeaningRegistry({catalog,
+  registry,
+  activationHost: {
+    readContext: () => { contextReads += 1; return {ok: true,
+  value: activationContext()}; },
   }});
-  check(meaningRegistryResult.ok, 'meaning registry');
+  check(meaningRegistryResult.ok,
+  'meaning registry');
   const meaningRegistry = meaningRegistryResult.value;
   const firstRegistration = meaningRegistry.register({draft: activeDraft.value});
-  check(firstRegistration.ok && !firstRegistration.value.idempotent, 'first immutable registration');
+  check(firstRegistration.ok && !firstRegistration.value.idempotent,
+  'first immutable registration');
   const idempotent = meaningRegistry.register({draft: activeDraft.value});
-  check(idempotent.ok && idempotent.value.idempotent, 'identical registration idempotent');
-  const conflictDraft = manual.authoring.draft({...activeMeaning, label: 'Conflicting total'}, {source: {surface: 'code', ownership: 'code', readOnly: true}});
-  check(conflictDraft.ok, 'conflict fixture');
-  check(!meaningRegistry.register({draft: conflictDraft.value}).ok, 'same ID/revision conflict rejected');
+  check(idempotent.ok && idempotent.value.idempotent,
+  'identical registration idempotent');
+  const conflictDraft = manual.authoring.draft({...activeMeaning,
+  label: 'Conflicting total'},
+  {source: {surface: 'code',
+  ownership: 'code',
+  readOnly: true}});
+  check(conflictDraft.ok,
+  'conflict fixture');
+  check(!meaningRegistry.register({draft: conflictDraft.value}).ok,
+  'same ID/revision conflict rejected');
 
   const activationCapability = createMeaningActivationCapability({registry: meaningRegistry});
   const activationRegistry = createAgentCapabilityRegistry([activationCapability]);
-  check(activationRegistry.ok, 'activation capability registry');
-  const dispatcher = createAgentCapabilityDispatcher({registry: activationRegistry.value, host: {
-    readContext: () => ({ok: true, value: {principalKey: 'principal', regionId: 'region', goalEpoch: 'goal', grants: ['meaning.activate']}}),
+  check(activationRegistry.ok,
+  'activation capability registry');
+  const dispatcher = createAgentCapabilityDispatcher({registry: activationRegistry.value,
+  host: {
+    readContext: () => ({ok: true,
+  value: {principalKey: 'principal',
+  regionId: 'region',
+  goalEpoch: 'goal',
+  grants: ['meaning.activate']}}),
   }});
-  const activationRequest = {version: '1', requestId: 'activation', targetRegionId: 'region', goalEpoch: 'goal', capability: activationCapability.ref,
-    operation: 'meaning.activate', input: {id: activeMeaning.id, revision: activeMeaning.revision}};
+  const activationRequest = {version: '1',
+  requestId: 'activation',
+  targetRegionId: 'region',
+  goalEpoch: 'goal',
+  capability: activationCapability.ref,
+  operation: 'meaning.activate',
+  input: {id: activeMeaning.id,
+  revision: activeMeaning.revision}};
   const authorized = await dispatcher.direct.invoke(activationRequest);
-  check(authorized.ok && authorized.value.state === 'accepted', 'host grant and exact allowlist activation');
-  check(contextReads === 2, 'activation performs before/after host reads');
-  check(meaningRegistry.list({activeOnly: true}).length === 1, 'activated entry visible');
-  const deniedDispatcher = createAgentCapabilityDispatcher({registry: activationRegistry.value, host: {
-    readContext: () => ({ok: true, value: {principalKey: 'principal', regionId: 'region', goalEpoch: 'goal', grants: []}}),
+  check(authorized.ok && authorized.value.state === 'accepted',
+  'host grant and exact allowlist activation');
+  check(contextReads === 2,
+  'activation performs before/after host reads');
+  check(meaningRegistry.list({activeOnly: true}).length === 1,
+  'activated entry visible');
+  const deniedDispatcher = createAgentCapabilityDispatcher({registry: activationRegistry.value,
+  host: {
+    readContext: () => ({ok: true,
+  value: {principalKey: 'principal',
+  regionId: 'region',
+  goalEpoch: 'goal',
+  grants: []}}),
   }});
-  const denied = await deniedDispatcher.direct.invoke({...activationRequest, requestId: 'activation-denied'});
-  check(denied.ok && denied.value.state === 'denied', 'independent activation grant enforced');
+  const denied = await deniedDispatcher.direct.invoke({...activationRequest,
+  requestId: 'activation-denied'});
+  check(denied.ok && denied.value.state === 'denied',
+  'independent activation grant enforced');
 
   let staleReads = 0;
-  const staleRegistryResult = createMeaningRegistry({catalog, registry, activationHost: {
-    readContext: () => { staleReads += 1; return {ok: true, value: activationContext(staleReads === 1 ? 'scope-before' : 'scope-after')}; },
+  const staleRegistryResult = createMeaningRegistry({catalog,
+  registry,
+  activationHost: {
+    readContext: () => { staleReads += 1; return {ok: true,
+  value: activationContext(staleReads === 1 ? 'scope-before' : 'scope-after')}; },
   }});
-  check(staleRegistryResult.ok, 'stale registry');
+  check(staleRegistryResult.ok,
+  'stale registry');
   const staleRegistry = staleRegistryResult.value;
-  check(staleRegistry.register({draft: activeDraft.value}).ok, 'stale registration');
-  const stale = await staleRegistry.activate({id: activeMeaning.id, revision: activeMeaning.revision});
-  check(!stale.ok && stale.diagnostics[0].code === 'runtime.meaning-stale', 'mutated activation context rejected as stale');
-  const revoked = meaningRegistry.revoke({id: activeMeaning.id, revision: activeMeaning.revision});
-  check(revoked.ok && meaningRegistry.list({activeOnly: true}).length === 0, 'revocation clears active meaning');
-  const afterRevoke = await meaningRegistry.activate({id: activeMeaning.id, revision: activeMeaning.revision});
-  check(!afterRevoke.ok && afterRevoke.diagnostics[0].code === 'runtime.meaning-revoked', 'revoked meaning cannot reactivate');
+  check(staleRegistry.register({draft: activeDraft.value}).ok,
+  'stale registration');
+  const stale = await staleRegistry.activate({id: activeMeaning.id,
+  revision: activeMeaning.revision});
+  check(!stale.ok && stale.diagnostics[0].code === 'runtime.meaning-stale',
+  'mutated activation context rejected as stale');
+  const revoked = meaningRegistry.revoke({id: activeMeaning.id,
+  revision: activeMeaning.revision});
+  check(revoked.ok && meaningRegistry.list({activeOnly: true}).length === 0,
+  'revocation clears active meaning');
+  const afterRevoke = await meaningRegistry.activate({id: activeMeaning.id,
+  revision: activeMeaning.revision});
+  check(!afterRevoke.ok && afterRevoke.diagnostics[0].code === 'runtime.meaning-revoked',
+  'revoked meaning cannot reactivate');
 
-  return {manualRows: manualResult.value.rows, aiRows: aiResult.value.rows, manualAiParity: true, invalidFieldRejected: true,
-    proposalAccepted: true, registrationIdempotent: true, versionConflictRejected: true, activationReads: contextReads,
-    deniedWithoutGrant: true, staleRejected: true, revokedAndCleared: true};
+  return {manualRows: manualResult.value.rows,
+  aiRows: aiResult.value.rows,
+  manualAiParity: true,
+  invalidFieldRejected: true,
+  proposalAccepted: true,
+  registrationIdempotent: true,
+  versionConflictRejected: true,
+  activationReads: contextReads,
+  deniedWithoutGrant: true,
+  staleRejected: true,
+  revokedAndCleared: true};
 }
 `;
 
@@ -254,7 +426,10 @@ await writeFile(
 import {realpath} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {runMeaningProbe} from './shared.mjs';
-for (const specifier of ['@aeliqo/core', '@aeliqo/runtime/meaning', '@aeliqo/agent']) {
+for (const specifier of ['@aeliqo/core',
+  '@aeliqo/runtime/meaning',
+  '@aeliqo/agent/meaning',
+  '@aeliqo/agent/capabilities']) {
   const resolved = await realpath(fileURLToPath(import.meta.resolve(specifier)));
   if (!resolved.includes('/node_modules/')) throw new Error('Resolved outside installed node_modules: ' + specifier + ' -> ' + resolved);
 }
@@ -265,8 +440,11 @@ await writeFile(
   join(consumerDirectory, 'consumer.ts'),
   `
 import {createMeaningAuthoring} from '@aeliqo/runtime/meaning';
-import {createAgentMeaningAuthoring} from '@aeliqo/agent';
-import {createStandardFunctionRegistry, type Catalog} from '@aeliqo/core';
+import {createAgentMeaningAuthoring} from '@aeliqo/agent/meaning';
+import {
+  type Catalog,
+} from '@aeliqo/core';
+import { createStandardFunctionRegistry } from '@aeliqo/core/expressions';
 const registry=createStandardFunctionRegistry('meaning-consumer-functions');
 if(!registry.ok) throw new Error('registry');
 const catalog={version:'1',revision:'typed-catalog',functionRegistryDigest:registry.value.digest,entities:[{id:'orders',label:'Orders',identity:['id'],rowGrain:['id'],fields:[{id:'id',label:'ID',role:'identity',type:{value:'text',nullable:false}},{id:'amount',label:'Amount',role:'measure',type:{value:'integer',nullable:false}}]}],relationships:[],meanings:[],capabilities:[]} as const satisfies Catalog;

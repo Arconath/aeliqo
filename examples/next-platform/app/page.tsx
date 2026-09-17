@@ -6,7 +6,7 @@ import { AdaptivePeople } from './adaptive-people';
 export const dynamic = 'force-dynamic';
 export default async function Page() {
   const markup = await renderAeliqo(
-    html`<form><aeliqo-input label="Next person" name="person" value="Ada"></aeliqo-input></form>`,
+    html`<form><aeliqo-text-field label="Next person" name="person" value="Ada"></aeliqo-text-field></form>`,
   );
   return (
     <main>

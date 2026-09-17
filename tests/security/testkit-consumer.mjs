@@ -1,11 +1,17 @@
 import { RELEASE_VERSION } from '../../scripts/release/metadata.mjs';
 /**
- * Build, pack, install and exercise the internal @aeliqo/testkit boundary.
+ * Build,
+  pack,
+  install and exercise the internal @aeliqo/testkit boundary.
  *
- * The consumer is created in the operating-system temporary directory, outside
+ * The consumer is created in the operating-system temporary directory,
+  outside
  * this pnpm workspace. It installs only exact local tarballs and npm packages,
- * so workspace links cannot satisfy an import. The report records the source
- * commit, candidate digest, package-lock hash, tarball hashes and environment.
+  * so workspace links cannot satisfy an import. The report records the source
+ * commit,
+  candidate digest,
+  package-lock hash,
+  tarball hashes and environment.
  */
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
@@ -137,7 +143,11 @@ for (const [directoryName, fileName] of artifactDefinitions) {
     );
   }
   assert(entries.includes('package/LICENSE'), `${manifest.name} tarball has no LICENSE`);
-  assert(entries.includes('package/README.md'), `${manifest.name} tarball has no README.md`);
+  if (manifest.private) {
+    assert(!entries.includes('package/README.md'), `${manifest.name} tarball duplicates internal documentation`);
+  } else {
+    assert(entries.includes('package/README.md'), `${manifest.name} tarball has no README.md`);
+  }
   assert(!entries.some((entry) => entry.startsWith('package/src/')), `${manifest.name} source leaked into tarball`);
   const packedLicense = await new Promise((resolve, reject) => {
     const child = spawnSync('tar', ['-xOf', path, 'package/LICENSE'], { encoding: 'buffer' });
@@ -220,7 +230,9 @@ await writeFile(join(runDirectory, 'consumer-package-lock.json'), lockBytes);
 await writeFile(
   join(consumerDirectory, 'consumer.ts'),
   `
-import {CONTRACT_VERSION, type ResultRef} from '@aeliqo/core';
+import {CONTRACT_VERSION,
+  type ResultRef,
+} from '@aeliqo/core';
 import {createResultStore, type ResultEvent, type ResultBeginInput} from '@aeliqo/runtime/results';
 import {assertDeniedSnapshot, collectResultEvents, rowsFromResultSnapshot} from '@aeliqo/testkit';
 const ref: ResultRef = {id: 'consumer-result', revision: 'source-1', outputId: 'rows', queryDigest: 'query-1', scopeDigest: 'scope-1'};

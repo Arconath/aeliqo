@@ -53,7 +53,7 @@ test('the local runner pairs one browser Region with the three real MCP tools', 
   const stdio = await connectMcpStdioClient({
     server: {
       command: process.execPath,
-      args: [fileURLToPath(new URL('../../../playground/runner/mcp-stdio.mjs', import.meta.url))],
+      args: [fileURLToPath(new URL('../../runner/mcp-stdio.mjs', import.meta.url))],
       env: { ...process.env, AELIQO_LOCAL_URL: baseURL, AELIQO_MCP_TOKEN: token },
       stderr: 'pipe',
     },

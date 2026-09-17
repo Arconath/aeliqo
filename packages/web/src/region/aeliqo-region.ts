@@ -1,182 +1,54 @@
 import { renderAeliqoVisualizationPresentationNode } from './visualization-renderer.js';
 import { AELIQO_VISUALIZATION_REFS } from './visualization-registry.js';
 import { renderAeliqoDataPresentationNode } from './data-presentation.js';
-import { AELIQO_DATA_REFS, validateAeliqoDataBinding } from './data-registry.js';
+import { AELIQO_DATA_REFS } from './data-registry.js';
 import type { AeliqoRegionDataRequestHandler } from './types.js';
+import {
+  decimalText,
+  filterPort,
+  filterPredicates,
+  configColumns as tableConfigColumns,
+  fieldLabel as getFieldLabel,
+  filterValue as getFilterValue,
+  inputChangeDetail,
+  numericValue,
+  record,
+  refKey,
+  resultColumns,
+  resultFor,
+  replacementForFocusedElement,
+  selectionKeys as getSelectionKeys,
+  tableSelectionDetail,
+  tableDisplayState,
+  tableSelectionMode,
+  temporalLabel,
+  temporalTime,
+  text,
+  trendSummary,
+  valuesOf,
+} from './element-helpers.js';
 import { renderNavigationFeedbackNode } from './navigation-feedback-renderer.js';
 import { renderInputNode } from './input-renderer.js';
 import { renderFoundationNode } from './foundation-renderer.js';
-import type { InteractionPayload, InteractionState, Result, ResultRef, ValidatedPresentation } from '@aeliqo/core';
+import type { InteractionPayload, InteractionState } from '@aeliqo/core';
+import type { ValidatedPresentation } from '@aeliqo/core/presentation';
 import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
 import type { PropertyValues } from 'lit';
 import { AELIQO_WEB_VERSION } from '../version.js';
 import { aeliqoThemeStyles } from '../styles/theme.js';
-import { dataStatusMessage, materializedDataStatus, scopeText } from '../data/shared.js';
+import { scopeText } from '../data/shared.js';
 import '../elements/aeliqo-table.js';
 import '../elements/aeliqo-chart.js';
-import '../elements/aeliqo-input.js';
 import { stableTableRowKey } from '../elements/aeliqo-table.js';
-import type { AeliqoChartSeries, AeliqoTableColumn, AeliqoTableRow } from '../types.js';
-import type { AeliqoInputChangeDetail, AeliqoTableSelectionDetail } from '../types.js';
+import type { AeliqoChartSeries, AeliqoTableRow } from '../types.js';
+import type { AeliqoTableSelectionDetail } from '../types.js';
 import type {
   AeliqoRegionResult,
   AeliqoSemanticInteractionHandler,
   AeliqoSemanticInteractionRequest,
   AeliqoViewDefinition,
 } from './types.js';
-
-function refKey(ref: ResultRef): string {
-  return JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
-}
-
-function record(value: unknown): Record<string, unknown> | undefined {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : undefined;
-}
-
-function text(value: unknown, fallback = ''): string {
-  return typeof value === 'string' ? value : fallback;
-}
-
-function resultRef(value: unknown): value is ResultRef {
-  try {
-    const candidate = record(value);
-    return (
-      candidate !== undefined &&
-      typeof candidate.id === 'string' &&
-      typeof candidate.revision === 'string' &&
-      typeof candidate.outputId === 'string' &&
-      typeof candidate.queryDigest === 'string' &&
-      typeof candidate.scopeDigest === 'string'
-    );
-  } catch {
-    return false;
-  }
-}
-
-function customDetail(event: Event): unknown {
-  try {
-    return typeof CustomEvent !== 'undefined' && event instanceof CustomEvent ? event.detail : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-function tableSelectionDetail(event: Event): AeliqoTableSelectionDetail | undefined {
-  try {
-    const candidate = record(customDetail(event));
-    if (
-      candidate === undefined ||
-      (candidate.mode !== 'clear' && candidate.mode !== 'ids') ||
-      typeof candidate.entity !== 'string' ||
-      !Array.isArray(candidate.keys) ||
-      candidate.keys.some((key) => typeof key !== 'string')
-    )
-      return undefined;
-    const keys = candidate.keys as string[];
-    if (candidate.mode === 'clear' && keys.length !== 0) return undefined;
-    if (candidate.mode === 'ids' && keys.length === 0) return undefined;
-    if (candidate.result !== undefined && !resultRef(candidate.result)) return undefined;
-    return {
-      mode: candidate.mode,
-      entity: candidate.entity,
-      keys,
-      ...(candidate.result === undefined ? {} : { result: candidate.result }),
-    };
-  } catch {
-    return undefined;
-  }
-}
-
-function inputChangeDetail(event: Event): AeliqoInputChangeDetail | undefined {
-  try {
-    const candidate = record(customDetail(event));
-    if (candidate === undefined || candidate.source !== 'user' || typeof candidate.value !== 'string') return undefined;
-    return { source: 'user', value: candidate.value };
-  } catch {
-    return undefined;
-  }
-}
-
-function temporalTime(value: unknown): number | undefined {
-  if (typeof value === 'number') return Number.isFinite(value) ? value : undefined;
-  if (typeof value !== 'string' || value.length === 0) return undefined;
-  const parsed = Date.parse(value);
-  return Number.isFinite(parsed) ? parsed : undefined;
-}
-
-function temporalLabel(value: unknown): string {
-  if (typeof value === 'string' && temporalTime(value) !== undefined) return value;
-  if (typeof value === 'number' && Number.isFinite(value)) return new Date(value).toISOString();
-  return 'Invalid date';
-}
-
-function numericValue(value: unknown): number | null {
-  if (value === null || value === undefined) return null;
-  if (typeof value === 'number') return Number.isFinite(value) ? value : Number.NaN;
-  const decimal = record(value);
-  if (decimal !== undefined && Object.keys(decimal).length === 1 && typeof decimal.decimal === 'string') {
-    const parsed = Number(decimal.decimal);
-    return Number.isFinite(parsed) ? parsed : Number.NaN;
-  }
-  return Number.NaN;
-}
-
-function decimalText(value: unknown): string | undefined {
-  const decimal = record(value);
-  return decimal !== undefined && Object.keys(decimal).length === 1 && typeof decimal.decimal === 'string'
-    ? decimal.decimal
-    : undefined;
-}
-
-function resultFor(
-  node: { readonly result: Result | undefined },
-  results: readonly AeliqoRegionResult[],
-): AeliqoRegionResult | undefined {
-  try {
-    if (node.result === undefined || !Array.isArray(results)) return undefined;
-    const matches = results.filter((candidate) => refKey(candidate.ref) === refKey(node.result!.ref));
-    if (matches.length !== 1) return undefined;
-    const current = matches[0]!;
-    const checked = validateAeliqoDataBinding({
-      result: node.result,
-      rows: current.rows,
-      ...(current.columns === undefined ? {} : { columns: current.columns }),
-      ...(current.scope === undefined ? {} : { scope: current.scope }),
-    });
-    if (!checked.ok) return undefined;
-    const rows = checked.value.rows.map((source) => {
-      const row: Record<string, AeliqoTableRow[string]> = {};
-      for (const [field, value] of Object.entries(source)) if (value !== undefined) row[field] = value;
-      return row;
-    });
-    return {
-      ref: checked.value.result.ref,
-      rows,
-      columns: checked.value.columns,
-      scope: checked.value.scope,
-      ...(current.visualizationContext === undefined ? {} : { visualizationContext: current.visualizationContext }),
-    };
-  } catch {
-    return undefined;
-  }
-}
-
-function resultColumns(
-  node: { readonly result: Result | undefined },
-  bound: AeliqoRegionResult | undefined,
-): readonly AeliqoTableColumn[] {
-  if (bound?.columns !== undefined) return bound.columns;
-  return node.result?.fields.map((field) => ({ key: field.id, label: field.label })) ?? [];
-}
-
-function valuesOf(node: {
-  readonly config: { readonly values: Readonly<Record<string, unknown>> };
-}): Record<string, unknown> {
-  return node.config.values as Record<string, unknown>;
-}
 
 /**
  * One controlled renderer for a validated presentation. It consumes only
@@ -235,35 +107,25 @@ export class AeliqoRegionElement extends LitElement {
     const nodeId = this.focusedNodeId;
     this.focusedElement = undefined;
     this.focusedNodeId = undefined;
-    const restore = (): void => {
-      if (!this.isConnected) return;
-      if (focusedElement?.isConnected) {
-        focusedElement.focus();
-        return;
-      }
-      const target = [...(this.shadowRoot?.querySelectorAll<HTMLElement>('[data-aeliqo-node-id]') ?? [])].find(
-        (candidate) => candidate.dataset.aeliqoNodeId === nodeId,
-      );
-      if (target === undefined) return;
-      const sameTag =
-        focusedElement === undefined
-          ? []
-          : [...(target.shadowRoot?.querySelectorAll<HTMLElement>(focusedElement.tagName) ?? [])];
-      const attributes = ['id', 'aria-label', 'name', 'part'];
-      const replacement =
-        sameTag.find((candidate) =>
-          attributes.some((attribute) => {
-            const value = focusedElement?.getAttribute(attribute);
-            return value !== null && value !== undefined && value === candidate.getAttribute(attribute);
-          }),
-        ) ?? (sameTag.length === 1 ? sameTag[0] : undefined);
-      (replacement ?? target).focus();
-    };
+    const restore = (): void => this.restoreFocus(nodeId, focusedElement);
     restore();
     // A child renderer can replace the previously focused control in the
     // microtask after this element updates. Retry once so focus follows the
     // stable node identity through that child update as well.
     queueMicrotask(restore);
+  }
+
+  private restoreFocus(nodeId: string, focusedElement: HTMLElement | undefined): void {
+    if (!this.isConnected) return;
+    if (focusedElement?.isConnected) {
+      focusedElement.focus();
+      return;
+    }
+    const target = [...(this.shadowRoot?.querySelectorAll<HTMLElement>('[data-aeliqo-node-id]') ?? [])].find(
+      (candidate) => candidate.dataset.aeliqoNodeId === nodeId,
+    );
+    if (target === undefined) return;
+    (replacementForFocusedElement(target, focusedElement) ?? target).focus();
   }
 
   protected override render(): TemplateResult | typeof nothing {
@@ -314,29 +176,28 @@ export class AeliqoRegionElement extends LitElement {
       case 'control.filter':
         return this.renderFilter(resolved, values);
       default:
-        return (
-          renderFoundationNode(
-            resolved,
-            (childId) => this.renderNode(childId, nodes),
-            (node, portId, payload) => this.emitFoundation(node, portId, payload),
-          ) ??
-          renderInputNode(
-            resolved,
-            (childId) => this.renderNode(childId, nodes),
-            (node, portId, payload) => this.emitFoundation(node, portId, payload),
-            this.presentation?.environment.locale,
-          ) ??
-          renderNavigationFeedbackNode(
-            resolved,
-            (childId) => this.renderNode(childId, nodes),
-            (node, portId, payload) => this.emitFoundation(node, portId, payload),
-          ) ??
-          this.renderData(resolved) ??
-          this.renderVisualization(resolved) ??
-          this.renderCustom(resolved, children) ??
-          html`<div part="unsupported">Unsupported registered representation.</div>`
-        );
+        return this.renderRegisteredNode(resolved, nodes, children);
     }
+  }
+
+  private renderRegisteredNode(
+    resolved: ValidatedPresentation['nodes'][number],
+    nodes: ReadonlyMap<string, ValidatedPresentation['nodes'][number]>,
+    children: () => TemplateResult,
+  ): TemplateResult | typeof nothing {
+    const child = (childId: string): TemplateResult | typeof nothing => this.renderNode(childId, nodes);
+    const emit = (node: ValidatedPresentation['nodes'][number], portId: string, payload: InteractionPayload): void =>
+      this.emitFoundation(node, portId, payload);
+    const unsupported = html`<div part="unsupported">Unsupported registered representation.</div>`;
+    return (
+      renderFoundationNode(resolved, child, emit) ??
+      renderInputNode(resolved, child, emit, this.presentation?.environment.locale) ??
+      renderNavigationFeedbackNode(resolved, child, emit) ??
+      this.renderData(resolved) ??
+      this.renderVisualization(resolved) ??
+      this.renderCustom(resolved, children) ??
+      unsupported
+    );
   }
 
   private renderCustom(
@@ -427,28 +288,29 @@ export class AeliqoRegionElement extends LitElement {
     values: Record<string, unknown>,
   ): TemplateResult {
     const bound = resultFor(resolved, this.results);
-    const columns = this.configColumns(values, resultColumns(resolved, bound));
-    const selection = values.selection === 'single' || values.selection === 'multiple' ? values.selection : 'none';
+    const columns = tableConfigColumns(values, resultColumns(resolved, bound));
+    const selection = tableSelectionMode(values.selection);
     const nodeId = resolved.node.id;
-    const selectedKeys = this.selectionKeys(nodeId);
+    const selectedKeys = getSelectionKeys(nodeId, this.interaction);
     const result = resolved.result?.ref;
     const selectionPort = resolved.config.ports.find((candidate) => candidate.payload === 'selection');
     const entity = selectionPort?.entity ?? 'row';
+    const display = tableDisplayState(resolved, bound);
     return html`<aeliqo-table
       data-aeliqo-node-id=${nodeId}
       data-aeliqo-theme="inherit"
       .columns=${columns}
       .rows=${bound?.rows ?? []}
       .caption=${text(values.caption)}
-      .emptyLabel=${bound === undefined ? 'Data unavailable.' : 'No rows to display.'}
+      .emptyLabel=${display.emptyLabel}
       .entity=${entity}
       .identity=${resolved.result?.identity ?? []}
       .selection=${selection}
       .selectedKeys=${selectedKeys}
       .result=${result}
       .scope=${bound?.scope}
-      .status=${bound === undefined || resolved.result === undefined ? 'unavailable' : materializedDataStatus(resolved.result)}
-      .message=${bound === undefined ? 'Data unavailable.' : ''}
+      .status=${display.status}
+      .message=${display.message}
       @aeliqo-table-selection=${(event: Event) => this.handleTableSelection(event, resolved)}
     ></aeliqo-table>`;
   }
@@ -522,7 +384,7 @@ export class AeliqoRegionElement extends LitElement {
       data-aeliqo-node-id=${resolved.node.id}
       data-aeliqo-theme="inherit"
       .title=${text(values.title, 'Trend')}
-      .summary=${bound === undefined ? 'Data unavailable.' : resolved.result === undefined ? '' : (dataStatusMessage(materializedDataStatus(resolved.result)) ?? '')}
+      .summary=${trendSummary(bound, resolved.result)}
       .scope=${scopeText(bound?.scope) ?? ''}
       .series=${series}
       .points=${series[0]?.points ?? []}
@@ -534,53 +396,15 @@ export class AeliqoRegionElement extends LitElement {
     values: Record<string, unknown>,
   ): TemplateResult {
     const field = text(values.field);
-    const current = this.filterValue(resolved.node.id, field);
-    return html`<aeliqo-input
+    const current = getFilterValue(resolved.node.id, field, this.interaction);
+    return html`<aeliqo-text-field
       data-aeliqo-node-id=${resolved.node.id}
       data-aeliqo-theme="inherit"
-      .label=${this.fieldLabel(resolved, field)}
-      .hint=${text(values.placeholder)}
+      .label=${getFieldLabel(resolved, field)}
+      .description=${text(values.placeholder)}
       .value=${current}
-      @aeliqo-input=${(event: Event) => this.handleFilter(event, resolved, values)}
-    ></aeliqo-input>`;
-  }
-
-  private fieldLabel(resolved: ValidatedPresentation['nodes'][number], field: string): string {
-    return resolved.result?.fields.find((candidate) => candidate.id === field)?.label ?? field;
-  }
-
-  private configColumns(
-    values: Record<string, unknown>,
-    fallback: readonly AeliqoTableColumn[],
-  ): readonly AeliqoTableColumn[] {
-    if (!Array.isArray(values.columns)) return fallback;
-    return values.columns.flatMap((value) => {
-      const candidate = record(value);
-      if (candidate === undefined) return [];
-      const key = text(candidate.key);
-      const label = text(candidate.label, key);
-      return key.length === 0 ? [] : [{ key, label }];
-    });
-  }
-
-  private selectionKeys(nodeId: string): readonly string[] {
-    const entry = this.interaction?.values.find(
-      (candidate) => candidate.nodeId === nodeId && candidate.payload.kind === 'selection',
-    );
-    if (entry?.payload.kind !== 'selection' || entry.payload.selection.mode !== 'ids') return [];
-    return entry.payload.selection.keys;
-  }
-
-  private filterValue(nodeId: string, field: string): string {
-    const entry = this.interaction?.values.find(
-      (candidate) => candidate.nodeId === nodeId && candidate.payload.kind === 'filter',
-    );
-    if (entry?.payload.kind !== 'filter') return '';
-    const predicate = entry.payload.predicates.find(
-      (candidate) => candidate.op === 'compare' && candidate.field === field && candidate.comparison === 'eq',
-    );
-    if (predicate?.op !== 'compare') return '';
-    return typeof predicate.value === 'string' ? predicate.value : '';
+      @aeliqo-input-change=${(event: Event) => this.handleFilter(event, resolved, values)}
+    ></aeliqo-text-field>`;
   }
 
   private handleTableSelection(event: Event, resolved: ValidatedPresentation['nodes'][number]): void {
@@ -589,47 +413,57 @@ export class AeliqoRegionElement extends LitElement {
       if (detail === undefined) return;
       const port = resolved.config.ports.find((candidate) => candidate.payload === 'selection');
       if (port === undefined) return;
-      if (detail.mode === 'clear') {
-        if (detail.entity !== port.entity) return;
-        this.emit({
-          nodeId: resolved.node.id,
-          portId: port.id,
-          payload: { kind: 'selection', selection: { mode: 'clear' } },
-        });
-        return;
-      }
-      if (
-        detail.entity !== port.entity ||
-        detail.result === undefined ||
-        resolved.result === undefined ||
-        refKey(detail.result) !== refKey(resolved.result.ref) ||
-        detail.keys.length === 0
-      )
-        return;
-      const bound = resultFor(resolved, this.results);
-      if (bound === undefined) return;
-      const allowed = new Set(
-        bound.rows
-          .map((row) => stableTableRowKey(row, port.identity ?? []))
-          .filter((key): key is string => key !== undefined),
-      );
-      if (new Set(detail.keys).size !== detail.keys.length || detail.keys.some((key) => !allowed.has(key))) return;
-      this.emit({
-        nodeId: resolved.node.id,
-        portId: port.id,
-        payload: {
-          kind: 'selection',
-          selection: {
-            mode: 'ids',
-            entity: detail.entity,
-            keys: [...detail.keys] as [string, ...string[]],
-            result: detail.result,
-          },
-        },
-      });
+      const request = this.tableSelectionRequest(detail, resolved, port);
+      if (request !== undefined) this.emit(request);
     } catch {
       // Custom events are an untrusted boundary; malformed details are ignored.
     }
+  }
+
+  private tableSelectionRequest(
+    detail: AeliqoTableSelectionDetail,
+    resolved: ValidatedPresentation['nodes'][number],
+    port: ValidatedPresentation['nodes'][number]['config']['ports'][number],
+  ): AeliqoSemanticInteractionRequest | undefined {
+    if (detail.mode === 'clear') {
+      if (detail.entity !== port.entity) return undefined;
+      return {
+        nodeId: resolved.node.id,
+        portId: port.id,
+        payload: { kind: 'selection', selection: { mode: 'clear' } },
+      };
+    }
+    if (detail.result === undefined || !this.selectionMatchesResult(detail, resolved, port)) return undefined;
+    return {
+      nodeId: resolved.node.id,
+      portId: port.id,
+      payload: {
+        kind: 'selection',
+        selection: {
+          mode: 'ids',
+          entity: detail.entity,
+          keys: [...detail.keys] as [string, ...string[]],
+          result: detail.result,
+        },
+      },
+    };
+  }
+
+  private selectionMatchesResult(
+    detail: AeliqoTableSelectionDetail,
+    resolved: ValidatedPresentation['nodes'][number],
+    port: ValidatedPresentation['nodes'][number]['config']['ports'][number],
+  ): boolean {
+    if (detail.entity !== port.entity || detail.result === undefined || resolved.result === undefined) return false;
+    if (refKey(detail.result) !== refKey(resolved.result.ref) || detail.keys.length === 0) return false;
+    const bound = resultFor(resolved, this.results);
+    if (bound === undefined) return false;
+    const allowed = new Set(
+      bound.rows
+        .map((row) => stableTableRowKey(row, port.identity ?? []))
+        .filter((key): key is string => key !== undefined),
+    );
+    return detail.keys.length === new Set(detail.keys).size && detail.keys.every((key) => allowed.has(key));
   }
 
   private handleFilter(
@@ -642,30 +476,11 @@ export class AeliqoRegionElement extends LitElement {
       if (detail === undefined) return;
       const field = text(values.field);
       const outputId = text(values.outputId);
-      if (
-        field.length === 0 ||
-        outputId.length === 0 ||
-        resolved.result === undefined ||
-        outputId !== resolved.result.ref.outputId ||
-        resolved.result.fields.find((candidate) => candidate.id === field)?.type.value !== 'text' ||
-        resolved.config.ports.find((candidate) => candidate.payload === 'filter') === undefined
-      )
-        return;
-      const predicate =
-        detail.value.length === 0
-          ? []
-          : [
-              {
-                op: 'compare' as const,
-                field,
-                ...(values.entity === undefined ? {} : { entity: text(values.entity) }),
-                comparison: 'eq' as const,
-                value: detail.value,
-              },
-            ];
+      const port = filterPort(resolved, field, outputId);
+      if (port === undefined) return;
+      const predicate = filterPredicates(values, field, detail.value);
       const payload: InteractionPayload = { kind: 'filter', predicates: predicate, outputId };
-      const port = resolved.config.ports.find((candidate) => candidate.payload === 'filter');
-      if (port !== undefined) this.emit({ nodeId: resolved.node.id, portId: port.id, payload });
+      this.emit({ nodeId: resolved.node.id, portId: port.id, payload });
     } catch {
       // Custom events are an untrusted boundary; malformed details are ignored.
     }

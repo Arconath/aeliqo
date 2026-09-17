@@ -1,5 +1,6 @@
 import { parseWireValue } from '@aeliqo/core';
-import type { InteractionPayload, ValidatedPresentation } from '@aeliqo/core';
+import type { InteractionPayload } from '@aeliqo/core';
+import type { ValidatedPresentation } from '@aeliqo/core/presentation';
 import { html, nothing, type TemplateResult } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
 
@@ -7,6 +8,13 @@ type Node = ValidatedPresentation['nodes'][number];
 type ChildRenderer = (nodeId: string) => unknown;
 type Emit = (node: Node, portId: string, payload: InteractionPayload) => void;
 type Values = Record<string, unknown>;
+interface RenderContext {
+  readonly node: Node;
+  readonly child: ChildRenderer;
+  readonly emit: Emit;
+  readonly values: Values;
+  readonly id: string;
+}
 const PAGE_OPERATION = { id: 'navigation.page', revision: '1' } as const;
 
 function record(value: unknown): Values | undefined {
@@ -165,45 +173,48 @@ function emitTreeNavigation(node: Node, event: Event, emit: Emit): void {
   }
 }
 
+function cursorFor(values: Values, page: unknown): Values | undefined {
+  if (!Array.isArray(values.cursors)) return undefined;
+  return values.cursors.map(record).find((candidate) => candidate?.page === page);
+}
+
+function pageEnabled(values: Values, direction: 'next' | 'previous', page: number): boolean {
+  if (values.pending === true) return false;
+  const directionEnabled = direction === 'next' ? values.hasNext === true : values.hasPrevious === true;
+  if (!directionEnabled || page < 1) return false;
+  return typeof values.pageCount !== 'number' || page <= values.pageCount;
+}
+
+function pageStep(values: Values, detail: Values, direction: 'next' | 'previous'): number | undefined {
+  const page = detail.page;
+  const previousPage = detail.previousPage;
+  if (!Number.isSafeInteger(page) || !Number.isSafeInteger(previousPage) || !Number.isSafeInteger(values.page))
+    return undefined;
+  if (previousPage !== values.page) return undefined;
+  const expected = direction === 'next' ? Number(previousPage) + 1 : Number(previousPage) - 1;
+  return page === expected ? Number(page) : undefined;
+}
+
+function pagePayload(
+  values: Values,
+  detail: Values,
+): Extract<InteractionPayload, { readonly kind: 'page' }> | undefined {
+  const direction = detail.direction;
+  if (direction !== 'next' && direction !== 'previous') return undefined;
+  const page = pageStep(values, detail, direction);
+  if (page === undefined || !pageEnabled(values, direction, page)) return undefined;
+  const cursor = cursorFor(values, page);
+  if (typeof cursor?.cursor !== 'string') return undefined;
+  if (typeof values.outputId !== 'string' || typeof values.queryDigest !== 'string') return undefined;
+  return { kind: 'page', outputId: values.outputId, cursor: cursor.cursor, queryDigest: values.queryDigest };
+}
+
 function emitPage(node: Node, event: Event, emit: Emit): void {
   const detail = ownedEvent(event, 'aeliqo-page-change', ['page', 'previousPage', 'direction', 'source']);
-  const page = detail?.page;
-  const values = valuesOf(node);
-  const previousPage = detail?.previousPage;
-  const direction = detail?.direction;
-  const cursors = Array.isArray(values.cursors)
-    ? values.cursors.map(record).filter((cursor): cursor is Values => cursor !== undefined)
-    : [];
-  const cursor = cursors.find((candidate) => candidate.page === page);
-  const currentPage = values.page;
-  const validDirection = direction === 'next' || direction === 'previous';
-  const validStep = direction === 'next' ? page === Number(previousPage) + 1 : page === Number(previousPage) - 1;
-  const enabled =
-    values.pending !== true &&
-    (direction === 'next' ? values.hasNext === true : values.hasPrevious === true) &&
-    Number(page) >= 1 &&
-    (typeof values.pageCount !== 'number' || Number(page) <= values.pageCount);
-  if (
-    !Number.isSafeInteger(page) ||
-    !Number.isSafeInteger(previousPage) ||
-    !Number.isSafeInteger(currentPage) ||
-    previousPage !== currentPage ||
-    !validDirection ||
-    !validStep ||
-    !enabled ||
-    cursor === undefined ||
-    typeof cursor.cursor !== 'string' ||
-    typeof values.outputId !== 'string' ||
-    typeof values.queryDigest !== 'string' ||
-    !declared(node, 'page', 'page', PAGE_OPERATION)
-  )
-    return;
-  emit(node, 'page', {
-    kind: 'page',
-    outputId: values.outputId,
-    cursor: cursor.cursor,
-    queryDigest: values.queryDigest,
-  });
+  if (detail === undefined) return;
+  const payload = pagePayload(valuesOf(node), detail);
+  if (payload === undefined || !declared(node, 'page', 'page', PAGE_OPERATION)) return;
+  emit(node, 'page', payload);
 }
 
 function children(node: Node, child: ChildRenderer): unknown {
@@ -234,13 +245,8 @@ function tabChildren(node: Node, child: ChildRenderer): unknown {
  * component. This function contains event adaptation only; focus, dismissal,
  * keyboard behavior and overlay state remain in the component implementation.
  */
-export function renderNavigationFeedbackNode(
-  node: Node,
-  child: ChildRenderer,
-  emit: Emit,
-): TemplateResult | typeof nothing | undefined {
-  const values = valuesOf(node);
-  const id = node.node.id;
+function navigationNode(context: RenderContext): TemplateResult | undefined {
+  const { node, child, emit, values, id } = context;
   switch (node.manifest.id) {
     case 'navigation.breadcrumb':
       return html`<aeliqo-breadcrumb
@@ -292,6 +298,14 @@ export function renderNavigationFeedbackNode(
         .label=${text(values.label)}
         @aeliqo-tree-nav-select=${(event: Event) => emitTreeNavigation(node, event, emit)}
       ></aeliqo-tree-nav>`;
+    default:
+      return undefined;
+  }
+}
+
+function overlayFeedbackNode(context: RenderContext): TemplateResult | undefined {
+  const { node, child, values, id } = context;
+  switch (node.manifest.id) {
     case 'feedback.tooltip':
       return html`<aeliqo-tooltip
         data-aeliqo-node-id=${id}
@@ -331,6 +345,14 @@ export function renderNavigationFeedbackNode(
         .side=${text(values.side, 'end')}
         >${children(node, child)}</aeliqo-drawer
       >`;
+    default:
+      return undefined;
+  }
+}
+
+function messageFeedbackNode(context: RenderContext): TemplateResult | undefined {
+  const { node, emit, values, id } = context;
+  switch (node.manifest.id) {
     case 'feedback.toast':
       return html`<aeliqo-toast
         data-aeliqo-node-id=${id}
@@ -385,4 +407,11 @@ export function renderNavigationFeedbackNode(
   }
 }
 
-export const renderNavigationFeedback = renderNavigationFeedbackNode;
+export function renderNavigationFeedbackNode(
+  node: Node,
+  child: ChildRenderer,
+  emit: Emit,
+): TemplateResult | typeof nothing | undefined {
+  const context = { node, child, emit, values: valuesOf(node), id: node.node.id };
+  return navigationNode(context) ?? overlayFeedbackNode(context) ?? messageFeedbackNode(context);
+}

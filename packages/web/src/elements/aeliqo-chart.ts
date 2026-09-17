@@ -1,5 +1,5 @@
-import { aeliqoThemeStyles } from '../styles/theme.js';
-import { css, html, LitElement, nothing, svg } from 'lit';
+import { aeliqoChartStyles } from './aeliqo-chart-styles.js';
+import { html, LitElement, nothing, svg } from 'lit';
 import { scalarIdentity } from '@aeliqo/core';
 import type { AeliqoChartPoint, AeliqoChartSeries } from '../types.js';
 import { AELIQO_WEB_VERSION } from '../version.js';
@@ -74,6 +74,12 @@ function occurrenceKey(baseKey: string, occurrence: number): string {
   return `${baseKey}#${occurrence}`;
 }
 
+function compareDate(left: string, right: string): number {
+  if (left < right) return -1;
+  if (left > right) return 1;
+  return 0;
+}
+
 /** Return one bounded, ordered x domain shared by every rendered series. */
 export function buildAeliqoChartDomain(series: readonly AeliqoChartSeries[]): readonly AeliqoChartDomainPoint[] {
   const explicitX = hasExplicitX(series);
@@ -107,10 +113,7 @@ export function buildAeliqoChartDomain(series: readonly AeliqoChartSeries[]): re
     output.length > 0 && output.every((entry) => typeof entry.x === 'string' && dateIdentity(entry.x) !== undefined);
   if (numeric) output.sort((left, right) => (left.x as number) - (right.x as number));
   else if (temporal) output.sort((left, right) => compareTemporal(left.x as string, right.x as string));
-  else if (dates)
-    output.sort((left, right) =>
-      (left.x as string) < (right.x as string) ? -1 : (left.x as string) > (right.x as string) ? 1 : 0,
-    );
+  else if (dates) output.sort((left, right) => compareDate(left.x as string, right.x as string));
   return output;
 }
 
@@ -122,7 +125,7 @@ function compareTemporal(left: string, right: string): number {
     const length = Math.max(a.fraction.length, b.fraction.length);
     const af = a.fraction.padEnd(length, '0');
     const bf = b.fraction.padEnd(length, '0');
-    return af < bf ? -1 : af > bf ? 1 : 0;
+    return compareDate(af, bf);
   }
   const aTime = temporalX(left);
   const bTime = temporalX(right);
@@ -160,40 +163,41 @@ export function alignAeliqoChartSeries(series: readonly AeliqoChartSeries[]): re
   });
 }
 
-function xCoordinates(domain: readonly AeliqoChartDomainPoint[]): readonly number[] {
-  if (domain.length === 0) return [];
-  const numeric = domain.map((entry) =>
-    typeof entry.x === 'number' && Number.isFinite(entry.x) ? entry.x : undefined,
+function numericCoordinates(domain: readonly AeliqoChartDomainPoint[]): number[] | undefined {
+  const values = domain.map((entry) => (typeof entry.x === 'number' && Number.isFinite(entry.x) ? entry.x : undefined));
+  return values.every((value) => value !== undefined) ? (values as number[]) : undefined;
+}
+
+function instantCoordinates(domain: readonly AeliqoChartDomainPoint[]): number[] | undefined {
+  const instants = domain.map((entry) => (typeof entry.x === 'string' ? instantParts(entry.x) : undefined));
+  if (instants.some((value) => value === undefined)) return undefined;
+  const values = instants as NonNullable<(typeof instants)[number]>[];
+  const base = values[0]?.milliseconds;
+  if (base === undefined) return undefined;
+  const coordinates = values.map(
+    (value) => value.milliseconds - base + (value.fraction.length > 0 ? Number(`0.${value.fraction}`) * 1000 : 0),
   );
-  const parsedInstants = domain.map((entry) => (typeof entry.x === 'string' ? instantParts(entry.x) : undefined));
-  const temporal = parsedInstants.every((value) => value !== undefined)
-    ? (parsedInstants as NonNullable<(typeof parsedInstants)[number]>[])
-    : undefined;
-  const parsedDates = domain.map((entry) =>
-    typeof entry.x === 'string' && dateIdentity(entry.x) !== undefined ? temporalX(entry.x) : undefined,
-  );
-  const dateValues = parsedDates.every((value) => value !== undefined) ? (parsedDates as number[]) : undefined;
-  const temporalBase = temporal?.[0]?.milliseconds;
-  const temporalValues =
-    temporal !== undefined && temporalBase !== undefined
-      ? temporal.map(
-          (value) =>
-            value.milliseconds - temporalBase + (value.fraction.length > 0 ? Number(`0.${value.fraction}`) * 1000 : 0),
-        )
-      : undefined;
-  const usableTemporalValues =
-    temporalValues !== undefined && temporalValues.every(Number.isFinite) ? temporalValues : undefined;
-  const values = numeric.every((value) => value !== undefined)
-    ? (numeric as number[])
-    : usableTemporalValues !== undefined
-      ? usableTemporalValues
-      : dateValues !== undefined
-        ? dateValues
-        : undefined;
-  if (values === undefined) {
-    const step = domain.length === 1 ? 0 : PLOT_WIDTH / (domain.length - 1);
-    return domain.map((_, index) => PLOT_LEFT + step * index);
-  }
+  return coordinates.every(Number.isFinite) ? coordinates : undefined;
+}
+
+function dateCoordinates(domain: readonly AeliqoChartDomainPoint[]): number[] | undefined {
+  const values = domain.map((entry) => {
+    if (typeof entry.x !== 'string' || dateIdentity(entry.x) === undefined) return undefined;
+    return temporalX(entry.x);
+  });
+  return values.every((value) => value !== undefined) ? (values as number[]) : undefined;
+}
+
+function coordinateValues(domain: readonly AeliqoChartDomainPoint[]): number[] | undefined {
+  return numericCoordinates(domain) ?? instantCoordinates(domain) ?? dateCoordinates(domain);
+}
+
+function centeredCoordinates(length: number): readonly number[] {
+  const step = length === 1 ? 0 : PLOT_WIDTH / (length - 1);
+  return Array.from({ length }, (_, index) => PLOT_LEFT + step * index);
+}
+
+function scaledCoordinates(values: readonly number[]): readonly number[] {
   let min = values[0]!;
   let max = values[0]!;
   for (const value of values) {
@@ -205,9 +209,16 @@ function xCoordinates(domain: readonly AeliqoChartDomainPoint[]): readonly numbe
   const span = max / scale - scaledMin;
   if (span === 0) {
     const center = PLOT_LEFT + PLOT_WIDTH / 2;
-    return domain.map(() => center);
+    return values.map(() => center);
   }
   return values.map((value) => PLOT_LEFT + ((value / scale - scaledMin) / span) * PLOT_WIDTH);
+}
+
+function xCoordinates(domain: readonly AeliqoChartDomainPoint[]): readonly number[] {
+  if (domain.length === 0) return [];
+  const values = coordinateValues(domain);
+  if (values === undefined) return centeredCoordinates(domain.length);
+  return scaledCoordinates(values);
 }
 
 /** Pure bounded geometry used by the SVG renderer and its verification tests. */
@@ -282,67 +293,79 @@ export class AeliqoChartElement extends LitElement {
     );
     const hasGaps = aligned.some((item) => item.points.some((point) => point.value === null));
     const geometry = hasInvalidPoints ? { segments: [], circles: [] } : this.getGeometry(aligned);
-    const invalidMessage = 'Chart unavailable: values must be finite.';
-    const accessibleName = [
-      this.title,
-      this.summary,
-      this.scope ? `Scope: ${this.scope}.` : '',
-      series.length > 0 ? `Series: ${series.map((item) => item.label).join(', ')}.` : '',
-      hasInvalidPoints ? invalidMessage : '',
-      hasGaps ? 'Missing values are shown as gaps.' : '',
-    ]
-      .filter((part) => part.length > 0)
-      .join(' ');
+    const accessibleName = this.accessibleName(series, hasInvalidPoints, hasGaps);
 
     return html`
       <figure part="figure">
-        <figcaption>
-          <strong>${this.title}</strong>
-          ${this.summary ? html`<span part="summary">${this.summary}</span>` : nothing}
-          ${this.unit ? html`<span part="unit">Unit: ${this.unit}</span>` : nothing}
-          ${this.scope ? html`<span part="scope">Scope: ${this.scope}</span>` : nothing}
-        </figcaption>
-        ${this.renderPlot(geometry, accessibleName)}
-        ${hasInvalidPoints ? html`<p part="error" role="status">${invalidMessage}</p>` : nothing}
-        ${hasGaps && !hasInvalidPoints ? html`<p part="gap" role="status">Missing values are shown as gaps.</p>` : nothing}
-        ${
-          series.length > 0
-            ? html` <ul part="legend" aria-label="Series">
-                ${series.map(
-                  (item, index) =>
-                    html`<li>
-                      <span part="legend-marker" class=${this.seriesClasses(index)} aria-hidden="true"></span>
-                      <span part="legend-label">${item.label}${item.unit ? ` (${item.unit})` : nothing}</span>
-                    </li>`,
-                )}
-              </ul>`
-            : nothing
-        }
-        <details part="data">
-          <summary>View data table</summary>
-          <table>
-            <caption>
-              ${this.title}${this.unit ? ` (${this.unit})` : ''}
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Label</th>
-                ${series.map((item) => html`<th scope="col">${item.label}${item.unit ? ` (${item.unit})` : nothing}</th>`)}
-              </tr>
-            </thead>
-            <tbody>
-              ${this.tableLabels(aligned).map(
-                (label, index) =>
-                  html`<tr>
-                    <th scope="row">${label}</th>
-                    ${aligned.map((item) => html`<td>${this.formatValue(item.points[index]?.value, item.points[index]?.displayValue)}</td>`)}
-                  </tr>`,
-              )}
-            </tbody>
-          </table>
-        </details>
+        ${this.renderCaption()} ${this.renderPlot(geometry, accessibleName)}
+        ${this.renderFeedback(hasInvalidPoints, hasGaps)} ${this.renderLegend(series)}
+        ${this.renderDataTable(series, aligned)}
       </figure>
     `;
+  }
+
+  private accessibleName(series: readonly AeliqoChartSeries[], hasInvalidPoints: boolean, hasGaps: boolean): string {
+    const parts = [this.title, this.summary];
+    if (this.scope) parts.push(`Scope: ${this.scope}.`);
+    if (series.length > 0) parts.push(`Series: ${series.map((item) => item.label).join(', ')}.`);
+    if (hasInvalidPoints) parts.push('Chart unavailable: values must be finite.');
+    if (hasGaps) parts.push('Missing values are shown as gaps.');
+    return parts.filter((part) => part.length > 0).join(' ');
+  }
+
+  private renderCaption() {
+    return html`<figcaption>
+      <strong>${this.title}</strong>
+      ${this.summary ? html`<span part="summary">${this.summary}</span>` : nothing}
+      ${this.unit ? html`<span part="unit">Unit: ${this.unit}</span>` : nothing}
+      ${this.scope ? html`<span part="scope">Scope: ${this.scope}</span>` : nothing}
+    </figcaption>`;
+  }
+
+  private renderFeedback(hasInvalidPoints: boolean, hasGaps: boolean) {
+    return html`
+      ${hasInvalidPoints ? html`<p part="error" role="status">Chart unavailable: values must be finite.</p>` : nothing}
+      ${hasGaps && !hasInvalidPoints ? html`<p part="gap" role="status">Missing values are shown as gaps.</p>` : nothing}
+    `;
+  }
+
+  private renderLegend(series: readonly AeliqoChartSeries[]) {
+    if (series.length === 0) return nothing;
+    return html`<ul part="legend" aria-label="Series">
+      ${series.map(
+        (item, index) =>
+          html`<li>
+            <span part="legend-marker" class=${this.seriesClasses(index)} aria-hidden="true"></span>
+            <span part="legend-label">${item.label}${item.unit ? ` (${item.unit})` : nothing}</span>
+          </li>`,
+      )}
+    </ul>`;
+  }
+
+  private renderDataTable(series: readonly AeliqoChartSeries[], aligned: readonly AeliqoChartSeries[]) {
+    return html`<details part="data">
+      <summary>View data table</summary>
+      <table>
+        <caption>
+          ${this.title}${this.unit ? ` (${this.unit})` : ''}
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Label</th>
+            ${series.map((item) => html`<th scope="col">${item.label}${item.unit ? ` (${item.unit})` : nothing}</th>`)}
+          </tr>
+        </thead>
+        <tbody>
+          ${this.tableLabels(aligned).map(
+            (label, index) =>
+              html`<tr>
+                <th scope="row">${label}</th>
+                ${aligned.map((item) => html`<td>${this.formatValue(item.points[index]?.value, item.points[index]?.displayValue)}</td>`)}
+              </tr>`,
+          )}
+        </tbody>
+      </table>
+    </details>`;
   }
 
   private resolvedSeries(): readonly AeliqoChartSeries[] {
@@ -394,175 +417,5 @@ export class AeliqoChartElement extends LitElement {
     return `series-${index} color-${index % 4} style-${style}`;
   }
 
-  static readonly styles = [
-    aeliqoThemeStyles,
-    css`
-      :host {
-        color: var(--aeliqo-chart-color, var(--aeliqo-color-text, #18202a));
-        display: block;
-        max-inline-size: 100%;
-      }
-
-      figure {
-        margin: 0;
-      }
-
-      figcaption {
-        display: grid;
-        gap: var(--aeliqo-space-4, 0.25rem);
-        margin-block-end: var(--aeliqo-space-12, 0.75rem);
-      }
-
-      [part='summary'],
-      [part='unit'],
-      [part='scope'],
-      [part='error'],
-      [part='gap'] {
-        color: var(--aeliqo-chart-muted, var(--aeliqo-color-muted, #495464));
-        font-size: 0.9em;
-      }
-
-      svg {
-        background: var(--aeliqo-chart-background, var(--aeliqo-color-canvas, #fff));
-        block-size: 12rem;
-        border: var(--aeliqo-control-border-width, 1px) solid
-          var(--aeliqo-chart-border, var(--aeliqo-color-border, #c9d0d8));
-        inline-size: 100%;
-        min-block-size: 8rem;
-      }
-
-      line {
-        stroke: var(--aeliqo-chart-rule, var(--aeliqo-color-border, #8d98a5));
-        stroke-width: 1;
-      }
-
-      [part='line'] {
-        fill: none;
-        stroke: var(--aeliqo-chart-line, var(--aeliqo-visualization-series1, #0b63ce));
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        stroke-width: 3;
-      }
-
-      [part='line'].color-1 {
-        stroke: var(--aeliqo-visualization-series2, #7c3aed);
-      }
-      [part='line'].color-2 {
-        stroke: var(--aeliqo-visualization-series3, #0f766e);
-      }
-      [part='line'].color-3 {
-        stroke: var(--aeliqo-visualization-series4, #b45309);
-      }
-
-      [part='line'].style-1,
-      [part='point'].style-1,
-      [part='legend-marker'].style-1 {
-        stroke-dasharray: 8 4;
-      }
-      [part='line'].style-2,
-      [part='point'].style-2,
-      [part='legend-marker'].style-2 {
-        stroke-dasharray: 2 4;
-      }
-      [part='line'].style-3,
-      [part='point'].style-3,
-      [part='legend-marker'].style-3 {
-        stroke-dasharray: 12 3 2 3;
-      }
-      [part='line'].style-4,
-      [part='point'].style-4,
-      [part='legend-marker'].style-4 {
-        stroke-dasharray: 1 4;
-      }
-
-      [part='point'] {
-        fill: var(--aeliqo-chart-point, var(--aeliqo-color-canvas, #fff));
-        stroke: var(--aeliqo-chart-line, var(--aeliqo-visualization-series1, #0b63ce));
-        stroke-width: 2;
-      }
-
-      [part='point'].color-1 {
-        stroke: var(--aeliqo-visualization-series2, #7c3aed);
-      }
-      [part='point'].color-2 {
-        stroke: var(--aeliqo-visualization-series3, #0f766e);
-      }
-      [part='point'].color-3 {
-        stroke: var(--aeliqo-visualization-series4, #b45309);
-      }
-
-      [part='legend-marker'].color-1 {
-        border-block-start-color: var(--aeliqo-visualization-series2, #7c3aed);
-      }
-      [part='legend-marker'].color-2 {
-        border-block-start-color: var(--aeliqo-visualization-series3, #0f766e);
-      }
-      [part='legend-marker'].color-3 {
-        border-block-start-color: var(--aeliqo-visualization-series4, #b45309);
-      }
-
-      [part='legend'] {
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--aeliqo-space-8, 0.5rem) var(--aeliqo-space-16, 1rem);
-        list-style: none;
-        margin: var(--aeliqo-space-8, 0.5rem) 0 0;
-        padding: 0;
-      }
-
-      [part='legend'] li {
-        align-items: center;
-        display: inline-flex;
-        gap: var(--aeliqo-space-4, 0.25rem);
-      }
-
-      [part='legend-marker'] {
-        border-block-start: 0.2rem solid var(--aeliqo-chart-line, var(--aeliqo-visualization-series1, #0b63ce));
-        display: inline-block;
-        inline-size: 1.25rem;
-      }
-
-      [part='legend-marker'].style-1 {
-        border-block-start-style: dashed;
-      }
-      [part='legend-marker'].style-2 {
-        border-block-start-style: dotted;
-      }
-      [part='legend-marker'].style-3 {
-        border-block-start-style: double;
-      }
-      [part='legend-marker'].style-4 {
-        border-block-start-style: dashed;
-        border-block-start-width: 0.1rem;
-      }
-
-      [part='legend-label'] {
-        font-size: 0.9em;
-      }
-
-      details {
-        margin-block-start: var(--aeliqo-space-12, 0.75rem);
-      }
-
-      details:focus-within {
-        outline: var(--aeliqo-focus-width, 0.1875rem) solid
-          var(--aeliqo-chart-focus, var(--aeliqo-color-focus, #0b63ce));
-        outline-offset: var(--aeliqo-focus-offset, 0.1875rem);
-      }
-
-      table {
-        border-collapse: collapse;
-        margin-block-start: var(--aeliqo-space-8, 0.5rem);
-        min-inline-size: min(100%, 20rem);
-      }
-
-      th,
-      td {
-        border-block-end: var(--aeliqo-control-border-width, 1px) solid
-          var(--aeliqo-chart-rule, var(--aeliqo-color-border, #c9d0d8));
-        padding: var(--aeliqo-space-4, 0.25rem) var(--aeliqo-space-8, 0.5rem);
-        text-align: start;
-      }
-    `,
-  ];
+  static readonly styles = aeliqoChartStyles;
 }

@@ -1,13 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import {
-  parseContract,
-  serializeContract,
-  compareScalars,
-  WIRE_LIMITS,
-  type NarrativeClaim,
-  type OperationGrant,
-} from '../../packages/core/src/index.js';
+import { parseContract, serializeContract, compareScalars, WIRE_LIMITS } from '../../packages/core/src/index.js';
+import type { NarrativeClaim, OperationGrant } from '../../packages/core/src/contracts/agent/index.js';
 import { ref, taskProposal } from './fixtures.js';
 
 const grants: readonly OperationGrant[] = [

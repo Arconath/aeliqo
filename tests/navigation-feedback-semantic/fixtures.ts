@@ -1,4 +1,5 @@
-import type { PresentationContext, PresentationPlan } from '../../packages/core/src/index.js';
+import type { PresentationPlan } from '../../packages/core/src/contracts/index.js';
+import type { PresentationContext } from '../../packages/core/src/presentation/index.js';
 import {
   AELIQO_NAVIGATION_FEEDBACK_CONFIG_SCHEMAS,
   AELIQO_NAVIGATION_FEEDBACK_REFS,

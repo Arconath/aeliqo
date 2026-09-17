@@ -1,4 +1,5 @@
-import { createStandardFunctionRegistry, type Task } from '@aeliqo/core';
+import { createStandardFunctionRegistry } from '@aeliqo/core/expressions';
+import type { Task } from '@aeliqo/core';
 import type { EvaluationFixture } from './host.js';
 const registry = createStandardFunctionRegistry();
 if (!registry.ok) throw Error('registry');

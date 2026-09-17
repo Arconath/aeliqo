@@ -4,7 +4,8 @@ import {
   createPresentationRegistry,
   validatePresentationPlan,
 } from '../../packages/core/src/presentation/index.js';
-import { canonicalJSON, parseContract } from '../../packages/core/src/contracts/parse.js';
+import { canonicalJSON } from '../../packages/core/src/contracts/parse.js';
+import { parseContract } from '../../packages/core/src/contracts/parse-generic.js';
 import {
   preparePresentationContext,
   preparePresentationValidationCache,

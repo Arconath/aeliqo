@@ -1,14 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { nothing } from 'lit';
-import {
-  type Result,
-  type PresentationContext,
-  type PresentationPlan,
-  type PresentationValues,
-  type ResultRef,
-  validatePresentationPlan,
-  createPresentationRegistry,
-} from '../../packages/core/src/index.js';
+import type { PresentationPlan, Result, ResultRef } from '../../packages/core/src/contracts/index.js';
+import type { PresentationContext, PresentationValues } from '../../packages/core/src/presentation/index.js';
+import { validatePresentationPlan, createPresentationRegistry } from '../../packages/core/src/presentation/index.js';
 import { AELIQO_DATA_REFS, type AeliqoDataBinding } from '../../packages/web/src/region/data-registry.js';
 import {
   AELIQO_DATA_PRESENTATION_OPERATIONS,

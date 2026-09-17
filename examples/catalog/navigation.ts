@@ -8,7 +8,7 @@ import {
   type AeliqoMenuItem,
   type AeliqoTabItem,
   type AeliqoTreeNavNode,
-} from '@aeliqo/web';
+} from '@aeliqo/web/navigation';
 import { cleanupCatalogRoot, createCatalogElement, createCatalogRoot } from './fixture.js';
 import { catalogMountSource, catalogSource } from './source.js';
 import type { CatalogExampleDefinition, CatalogExampleId, CatalogExampleMetadata } from './types.js';
@@ -19,12 +19,11 @@ const sourceImports = `import {
   AeliqoPaginationElement,
   AeliqoTabsElement,
   AeliqoTreeNavElement,
-  registerAeliqoElements,
   type AeliqoBreadcrumbItem,
   type AeliqoMenuItem,
   type AeliqoTabItem,
   type AeliqoTreeNavNode,
-} from "@aeliqo/web";`;
+} from "@aeliqo/web/navigation";`;
 
 const sourceSetup = `const tabs: readonly AeliqoTabItem[] = [
   {id: "overview", label: "Overview", content: "Overview content"},
@@ -153,18 +152,18 @@ const treeNodes: readonly AeliqoTreeNavNode[] = [
 
 export const navigationExamples: readonly CatalogExampleDefinition[] = [
   mount('tabs', (root) => {
-    const element = createCatalogElement<AeliqoTabsElement>('aeliqo-tabs', root);
+    const element = createCatalogElement<AeliqoTabsElement>('aeliqo-tabs', root, AeliqoTabsElement);
     element.items = tabs;
     element.value = 'overview';
     element.activation = 'manual';
   }),
   mount('breadcrumb', (root) => {
-    const element = createCatalogElement<AeliqoBreadcrumbElement>('aeliqo-breadcrumb', root);
+    const element = createCatalogElement<AeliqoBreadcrumbElement>('aeliqo-breadcrumb', root, AeliqoBreadcrumbElement);
     element.items = breadcrumb;
     element.label = 'Report path';
   }),
   mount('pagination', (root) => {
-    const element = createCatalogElement<AeliqoPaginationElement>('aeliqo-pagination', root);
+    const element = createCatalogElement<AeliqoPaginationElement>('aeliqo-pagination', root, AeliqoPaginationElement);
     element.page = 2;
     element.pageCount = 4;
     element.hasPrevious = true;
@@ -172,13 +171,13 @@ export const navigationExamples: readonly CatalogExampleDefinition[] = [
     element.label = 'Report pages';
   }),
   mount('menu', (root) => {
-    const element = createCatalogElement<AeliqoMenuElement>('aeliqo-menu', root);
+    const element = createCatalogElement<AeliqoMenuElement>('aeliqo-menu', root, AeliqoMenuElement);
     element.items = menuItems;
     element.label = 'Report actions';
     element.open = true;
   }),
   mount('tree-nav', (root) => {
-    const element = createCatalogElement<AeliqoTreeNavElement>('aeliqo-tree-nav', root);
+    const element = createCatalogElement<AeliqoTreeNavElement>('aeliqo-tree-nav', root, AeliqoTreeNavElement);
     element.nodes = treeNodes;
     element.expandedIds = ['reports'];
     element.selectedId = 'weekly';

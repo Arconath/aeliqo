@@ -1,6 +1,5 @@
 import { css, html, noChange, nothing } from 'lit';
 import type { PropertyValues } from 'lit';
-import { AeliqoInputEvent } from '../events.js';
 import { AeliqoInputChangeEvent, AeliqoInputCommitEvent } from './events.js';
 import { AeliqoFieldElement, aeliqoInputStyles } from './base.js';
 
@@ -18,6 +17,13 @@ const BLOCKING_INPUT_TYPES = new Set([
   'datetime-local',
   'number',
 ]);
+
+type FormSubmitter = HTMLButtonElement | HTMLInputElement | null | undefined;
+
+function isQueryRoot(root: Node): root is Document | DocumentFragment {
+  if (typeof Document === 'undefined' || typeof DocumentFragment === 'undefined') return false;
+  return root instanceof Document || root instanceof DocumentFragment;
+}
 
 export type AeliqoTextFieldInputType =
   | 'text'
@@ -62,7 +68,6 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
 
   protected abstract readonly multiline: boolean;
 
-  /** Legacy `<aeliqo-input>` keeps the original host-controlled contract. */
   protected get isControlled(): boolean {
     return false;
   }
@@ -99,22 +104,23 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
     if (changed.has('validator')) this.invalidateValidation(false);
     if (changed.has('value')) this.invalidateStaleValidation(this.value, false);
     const existing = this.nativeControl();
-    if (
-      existing !== undefined &&
-      !this.hasUpdated &&
-      this.hydratedDraft === undefined &&
-      existing.value !== this.value
-    ) {
-      this.hydratedDraft = existing.value;
-      this.value = existing.value;
-    }
+    this.captureHydratedValue(existing);
     if (!changed.has('value')) return;
-    const control = existing;
-    if (control !== undefined && this.shadowRoot?.activeElement === control) {
-      const start = control.selectionStart;
-      const end = control.selectionEnd;
-      if (start !== null && end !== null) this.pendingSelection = { start, end };
-    }
+    this.captureSelection(existing);
+  }
+
+  private captureHydratedValue(existing: HTMLInputElement | HTMLTextAreaElement | undefined): void {
+    if (existing === undefined || this.hasUpdated || this.hydratedDraft !== undefined || existing.value === this.value)
+      return;
+    this.hydratedDraft = existing.value;
+    this.value = existing.value;
+  }
+
+  private captureSelection(existing: HTMLInputElement | HTMLTextAreaElement | undefined): void {
+    if (existing === undefined || this.shadowRoot?.activeElement !== existing) return;
+    const start = existing.selectionStart;
+    const end = existing.selectionEnd;
+    if (start !== null && end !== null) this.pendingSelection = { start, end };
   }
 
   protected override updated(changed: PropertyValues<this>): void {
@@ -143,81 +149,71 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
   protected override render() {
     const describedBy = this.describedByIds();
     const type = this.safeInputType();
-    const shared = {
-      part: 'input',
-      id: 'control',
-      name: '',
-      placeholder: this.placeholder || nothing,
-      autocomplete: this.autocomplete || nothing,
-      inputmode: this.inputMode || nothing,
-      maxlength: this.maxLength >= 0 ? this.maxLength : nothing,
-      minlength: this.minLength >= 0 ? this.minLength : nothing,
-      pattern: this.pattern || nothing,
-      spellcheck: this.spellcheck ? 'true' : 'false',
-      required: this.required,
-      disabled: this.fieldDisabled,
-      readonly: this.readOnly,
-      'aria-readonly': this.readOnly ? 'true' : nothing,
-      'aria-invalid': this.error ? 'true' : nothing,
-      'aria-describedby': describedBy || nothing,
-    } as const;
     return html`
       <div part="field">
         <label part="label" for="control"><span class="label-text">${this.label}</span></label>
-        ${
-          this.multiline
-            ? html`<textarea
-                part=${shared.part}
-                id=${shared.id}
-                name=${shared.name}
-                placeholder=${shared.placeholder}
-                autocomplete=${shared.autocomplete}
-                inputmode=${shared.inputmode}
-                maxlength=${shared.maxlength}
-                minlength=${shared.minlength}
-                spellcheck=${shared.spellcheck}
-                rows=${this.rows > 0 ? this.rows : 4}
-                ?required=${shared.required}
-                ?disabled=${shared.disabled}
-                ?readonly=${shared.readonly}
-                aria-readonly=${shared['aria-readonly']}
-                aria-invalid=${shared['aria-invalid']}
-                aria-describedby=${shared['aria-describedby']}
-                .value=${this.composing ? noChange : this.value}
-                @input=${this.handleInput}
-                @change=${this.handleCommit}
-                @compositionstart=${this.handleCompositionStart}
-                @compositionend=${this.handleCompositionEnd}
-              ></textarea>`
-            : html`<input
-                part=${shared.part}
-                id=${shared.id}
-                type=${type}
-                name=${shared.name}
-                placeholder=${shared.placeholder}
-                autocomplete=${shared.autocomplete}
-                inputmode=${shared.inputmode}
-                maxlength=${shared.maxlength}
-                minlength=${shared.minlength}
-                pattern=${shared.pattern}
-                spellcheck=${shared.spellcheck}
-                ?required=${shared.required}
-                ?disabled=${shared.disabled}
-                ?readonly=${shared.readonly}
-                aria-readonly=${shared['aria-readonly']}
-                aria-invalid=${shared['aria-invalid']}
-                aria-describedby=${shared['aria-describedby']}
-                .value=${this.composing ? noChange : this.value}
-                @input=${this.handleInput}
-                @change=${this.handleCommit}
-                @keydown=${this.handleKeyDown}
-                @compositionstart=${this.handleCompositionStart}
-                @compositionend=${this.handleCompositionEnd}
-              />`
-        }
-        ${this.renderMessages()}
+        ${this.renderControl(describedBy, type)} ${this.renderMessages()}
       </div>
     `;
+  }
+
+  private renderControl(describedBy: string, type: AeliqoTextFieldInputType) {
+    if (this.multiline) return this.renderTextarea(describedBy);
+    return this.renderInput(describedBy, type);
+  }
+
+  private renderTextarea(describedBy: string) {
+    return html`<textarea
+      part="input"
+      id="control"
+      name=""
+      placeholder=${this.placeholder || nothing}
+      autocomplete=${this.autocomplete || nothing}
+      inputmode=${this.inputMode || nothing}
+      maxlength=${this.maxLength >= 0 ? this.maxLength : nothing}
+      minlength=${this.minLength >= 0 ? this.minLength : nothing}
+      spellcheck=${this.spellcheck ? 'true' : 'false'}
+      rows=${this.rows > 0 ? this.rows : 4}
+      ?required=${this.required}
+      ?disabled=${this.fieldDisabled}
+      ?readonly=${this.readOnly}
+      aria-readonly=${this.readOnly ? 'true' : nothing}
+      aria-invalid=${this.error ? 'true' : nothing}
+      aria-describedby=${describedBy || nothing}
+      .value=${this.composing ? noChange : this.value}
+      @input=${this.handleInput}
+      @change=${this.handleCommit}
+      @compositionstart=${this.handleCompositionStart}
+      @compositionend=${this.handleCompositionEnd}
+    ></textarea>`;
+  }
+
+  private renderInput(describedBy: string, type: AeliqoTextFieldInputType) {
+    return html`<input
+      part="input"
+      id="control"
+      type=${type}
+      name=""
+      placeholder=${this.placeholder || nothing}
+      autocomplete=${this.autocomplete || nothing}
+      inputmode=${this.inputMode || nothing}
+      maxlength=${this.maxLength >= 0 ? this.maxLength : nothing}
+      minlength=${this.minLength >= 0 ? this.minLength : nothing}
+      pattern=${this.pattern || nothing}
+      spellcheck=${this.spellcheck ? 'true' : 'false'}
+      ?required=${this.required}
+      ?disabled=${this.fieldDisabled}
+      ?readonly=${this.readOnly}
+      aria-readonly=${this.readOnly ? 'true' : nothing}
+      aria-invalid=${this.error ? 'true' : nothing}
+      aria-describedby=${describedBy || nothing}
+      .value=${this.composing ? noChange : this.value}
+      @input=${this.handleInput}
+      @change=${this.handleCommit}
+      @keydown=${this.handleKeyDown}
+      @compositionstart=${this.handleCompositionStart}
+      @compositionend=${this.handleCompositionEnd}
+    />`;
   }
 
   override focus(options?: FocusOptions): void {
@@ -275,9 +271,6 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
   };
 
   private dispatchProposal(value: string): void {
-    // Keep the original event for `<aeliqo-input>` consumers while exposing
-    // the shared typed event used by the input family.
-    this.dispatchEvent(new AeliqoInputEvent({ value, source: 'user' }));
     this.dispatchEvent(new AeliqoInputChangeEvent({ source: 'user', value }));
   }
 
@@ -314,22 +307,24 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
     }, 0);
   };
 
-  private defaultSubmitter(form: HTMLFormElement): HTMLButtonElement | HTMLInputElement | null | undefined {
+  private defaultSubmitter(form: HTMLFormElement): FormSubmitter {
     const root = form.getRootNode();
-    if (
-      typeof Document === 'undefined' ||
-      typeof DocumentFragment === 'undefined' ||
-      (!(root instanceof Document) && !(root instanceof DocumentFragment))
-    )
-      return undefined;
+    if (!isQueryRoot(root)) return undefined;
     for (const control of root.querySelectorAll<HTMLButtonElement | HTMLInputElement>('button, input')) {
-      if (control.form !== form) continue;
-      if (control instanceof HTMLButtonElement && control.type === 'submit')
-        return control.matches(':disabled') ? null : control;
-      if (control instanceof HTMLInputElement && (control.type === 'submit' || control.type === 'image'))
-        return control.matches(':disabled') ? null : control;
+      const submitter = this.submitterFor(control, form);
+      if (submitter !== undefined) return submitter;
     }
     return undefined;
+  }
+
+  private submitterFor(control: HTMLButtonElement | HTMLInputElement, form: HTMLFormElement): FormSubmitter {
+    if (control.form !== form || !this.isSubmitter(control)) return undefined;
+    return control.matches(':disabled') ? null : control;
+  }
+
+  private isSubmitter(control: HTMLButtonElement | HTMLInputElement): boolean {
+    if (control instanceof HTMLButtonElement) return control.type === 'submit';
+    return control.type === 'submit' || control.type === 'image';
   }
 
   private hasSingleBlockingField(form: HTMLFormElement): boolean {

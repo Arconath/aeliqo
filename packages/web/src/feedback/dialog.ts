@@ -92,42 +92,63 @@ export class AeliqoDialogElement extends AeliqoFoundationElement {
     const epoch = ++this.focusEpoch;
     const dialog = this.renderRoot.querySelector<HTMLDialogElement>('dialog');
     if (dialog === null) return;
-    if (this.open) {
-      this.returnFocus ??= activeElement(this);
-      if (!dialog.open) {
-        if (this.modal && typeof dialog.showModal === 'function') dialog.showModal();
-        else if (typeof dialog.show === 'function') dialog.show();
-        else dialog.setAttribute('open', '');
-        this.shownModal = this.modal;
-      } else if (this.shownModal !== undefined && this.shownModal !== this.modal) {
-        if (dialog.open && typeof dialog.close === 'function') dialog.close();
-        this.shownModal = undefined;
-        if (this.modal && typeof dialog.showModal === 'function') dialog.showModal();
-        else if (typeof dialog.show === 'function') dialog.show();
-        else dialog.setAttribute('open', '');
-        this.shownModal = this.modal;
-      }
-      const target = this.pendingFocus;
-      this.pendingFocus = undefined;
-      const focusIfNeeded = (restoreTarget: boolean): void => {
-        if (epoch !== this.focusEpoch || !this.open || !dialog.isConnected) return;
-        const focusables = focusableElements(dialog);
-        const current = focusables.find((candidate) => candidate.matches(':focus'));
-        if (restoreTarget && target?.isConnected && focusables.includes(target)) {
-          target.focus();
-          return;
-        }
-        if (current === undefined) focusFirst(dialog);
-      };
-      focusIfNeeded(true);
-      nextFrame(() => focusIfNeeded(false));
-    } else {
-      if (dialog.open && typeof dialog.close === 'function') dialog.close();
-      else dialog.removeAttribute('open');
-      this.shownModal = undefined;
-      restoreFocus(this.returnFocus);
-      this.returnFocus = undefined;
+    if (!this.open) {
+      this.closeDialog(dialog);
+      return;
     }
+    this.openDialog(dialog, epoch);
+  }
+
+  private openDialog(dialog: HTMLDialogElement, epoch: number): void {
+    this.returnFocus ??= activeElement(this);
+    this.syncDialogMode(dialog);
+    const target = this.pendingFocus;
+    this.pendingFocus = undefined;
+    this.focusIfNeeded(dialog, epoch, target, true);
+    nextFrame(() => this.focusIfNeeded(dialog, epoch, target, false));
+  }
+
+  private syncDialogMode(dialog: HTMLDialogElement): void {
+    if (!dialog.open) {
+      this.showDialog(dialog);
+      this.shownModal = this.modal;
+      return;
+    }
+    if (this.shownModal === undefined || this.shownModal === this.modal) return;
+    if (typeof dialog.close === 'function') dialog.close();
+    this.shownModal = undefined;
+    this.showDialog(dialog);
+    this.shownModal = this.modal;
+  }
+
+  private showDialog(dialog: HTMLDialogElement): void {
+    if (this.modal && typeof dialog.showModal === 'function') dialog.showModal();
+    else if (typeof dialog.show === 'function') dialog.show();
+    else dialog.setAttribute('open', '');
+  }
+
+  private focusIfNeeded(
+    dialog: HTMLDialogElement,
+    epoch: number,
+    target: HTMLElement | undefined,
+    restoreTarget: boolean,
+  ): void {
+    if (epoch !== this.focusEpoch || !this.open || !dialog.isConnected) return;
+    const focusables = focusableElements(dialog);
+    const current = focusables.find((candidate) => candidate.matches(':focus'));
+    if (restoreTarget && target?.isConnected && focusables.includes(target)) {
+      target.focus();
+      return;
+    }
+    if (current === undefined) focusFirst(dialog);
+  }
+
+  private closeDialog(dialog: HTMLDialogElement): void {
+    if (dialog.open && typeof dialog.close === 'function') dialog.close();
+    else dialog.removeAttribute('open');
+    this.shownModal = undefined;
+    restoreFocus(this.returnFocus);
+    this.returnFocus = undefined;
   }
 
   private close(): void {
@@ -145,17 +166,22 @@ export class AeliqoDialogElement extends AeliqoFoundationElement {
     if (!this.modal || event.key !== 'Tab') return;
     const dialog = this.renderRoot.querySelector<HTMLDialogElement>('dialog');
     if (dialog === null) return;
+    this.trapTabFocus(event, dialog);
+  }
+
+  private trapTabFocus(event: KeyboardEvent, dialog: HTMLDialogElement): void {
     const focusables = focusableElements(dialog);
     const first = focusables[0];
     const last = focusables.at(-1);
-    const eventTarget =
-      event.target instanceof HTMLElement && focusables.includes(event.target) ? event.target : undefined;
-    const active = eventTarget ?? activeElement(this);
     if (first === undefined || last === undefined) return;
+    const target = event.target;
+    const active = target instanceof HTMLElement && focusables.includes(target) ? target : activeElement(this);
     if (event.shiftKey && active === first) {
       event.preventDefault();
       last.focus();
-    } else if (!event.shiftKey && active === last) {
+      return;
+    }
+    if (!event.shiftKey && active === last) {
       event.preventDefault();
       first.focus();
     }

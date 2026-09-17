@@ -1,16 +1,7 @@
-import type {
-  Catalog,
-  Contract,
-  Diagnostic,
-  MeaningActivationPolicy,
-  MeaningActivationReceipt,
-  MeaningBundle,
-  MeaningDefinition,
-  Outcome,
-  QuerySpec,
-  FunctionRegistry,
-  QueryLimits,
-} from '@aeliqo/core';
+import type { Catalog, Contract, Diagnostic, MeaningDefinition, Outcome, QuerySpec } from '@aeliqo/core';
+import type { MeaningActivationPolicy, MeaningActivationReceipt, MeaningBundle } from '@aeliqo/core/semantics';
+import type { FunctionRegistry } from '@aeliqo/core/expressions';
+import type { QueryLimits } from '@aeliqo/core/query';
 import type {
   AcceptedQueryWire,
   CatalogPageWire,
@@ -220,5 +211,3 @@ export interface UnsupportedCapability {
 export interface CapabilityGap extends UnsupportedCapability {
   readonly diagnostic: Diagnostic;
 }
-
-export type { Catalog, Diagnostic, MeaningBundle, MeaningDefinition, Outcome, QuerySpec };

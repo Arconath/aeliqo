@@ -16,6 +16,68 @@ interface FlatNode {
 }
 const MAX_TREE_NODES = 512;
 
+type RawTreeNode = {
+  readonly id?: unknown;
+  readonly label?: unknown;
+  readonly children?: unknown;
+  readonly disabled?: unknown;
+};
+
+type TreeFrame = { readonly nodes: readonly unknown[]; index: number; readonly owner?: object };
+
+function rawTreeNode(value: unknown): RawTreeNode | undefined {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return undefined;
+  return value as RawTreeNode;
+}
+
+function nodeIdentityError(node: RawTreeNode, seenIds: Set<string>): string | undefined {
+  if (typeof node.id !== 'string' || node.id.length === 0 || node.id.length > 160)
+    return 'Tree node identities must be non-empty strings of at most 160 characters.';
+  if (seenIds.has(node.id)) return 'Tree node identities must be unique.';
+  return undefined;
+}
+
+function nodePropertiesError(node: RawTreeNode): string | undefined {
+  if (typeof node.label !== 'string') return 'Tree node labels must be strings.';
+  if (node.disabled !== undefined && typeof node.disabled !== 'boolean')
+    return 'Tree node disabled state must be boolean.';
+  if (node.children !== undefined && !Array.isArray(node.children)) return 'Tree node children must be arrays.';
+  return undefined;
+}
+
+function nodeValidationError(value: unknown, seenIds: Set<string>, ancestors: Set<object>): string | undefined {
+  const node = rawTreeNode(value);
+  if (node === undefined) return 'The navigation tree contains an invalid node.';
+  if (ancestors.has(node)) return 'The navigation tree contains a cycle.';
+  return nodeIdentityError(node, seenIds) ?? nodePropertiesError(node);
+}
+
+function closeTreeFrame(frame: TreeFrame, ancestors: Set<object>): void {
+  if (frame.owner !== undefined) ancestors.delete(frame.owner);
+}
+
+function focusIndexForKey(key: string, index: number, lastIndex: number): number | undefined {
+  switch (key) {
+    case 'ArrowDown':
+      return Math.min(lastIndex, index + 1);
+    case 'ArrowUp':
+      return Math.max(0, index - 1);
+    case 'Home':
+      return 0;
+    case 'End':
+      return lastIndex;
+    default:
+      return undefined;
+  }
+}
+
+function focusTargetId(visible: readonly FlatNode[], selectedId: string, focusedId: string): string {
+  const visibleIds = new Set(visible.map((flat) => flat.node.id));
+  if (visibleIds.has(selectedId)) return selectedId;
+  if (visibleIds.has(focusedId)) return focusedId;
+  return visible[0]?.node.id ?? '';
+}
+
 export class AeliqoTreeNavElement extends AeliqoFoundationElement {
   static readonly properties = {
     nodes: { attribute: false },
@@ -96,40 +158,25 @@ export class AeliqoTreeNavElement extends AeliqoFoundationElement {
       if (!Array.isArray(this.nodes)) return 'The navigation tree data is invalid.';
       const seenIds = new Set<string>();
       const ancestors = new Set<object>();
-      const stack: { readonly nodes: readonly unknown[]; index: number; readonly owner?: object }[] = [
-        { nodes: this.nodes as readonly unknown[], index: 0 },
-      ];
+      const stack: TreeFrame[] = [{ nodes: this.nodes as readonly unknown[], index: 0 }];
       let count = 0;
       while (stack.length > 0) {
         const frame = stack[stack.length - 1]!;
         if (frame.index >= frame.nodes.length) {
-          if (frame.owner !== undefined) ancestors.delete(frame.owner);
+          closeTreeFrame(frame, ancestors);
           stack.pop();
           continue;
         }
         const value = frame.nodes[frame.index++];
         if (++count > MAX_TREE_NODES) return `The navigation tree exceeds ${MAX_TREE_NODES} nodes.`;
-        if (value === null || typeof value !== 'object' || Array.isArray(value))
-          return 'The navigation tree contains an invalid node.';
-        if (ancestors.has(value)) return 'The navigation tree contains a cycle.';
-        const node = value as {
-          readonly id?: unknown;
-          readonly label?: unknown;
-          readonly children?: unknown;
-          readonly disabled?: unknown;
-        };
-        if (typeof node.id !== 'string' || node.id.length === 0 || node.id.length > 160)
-          return 'Tree node identities must be non-empty strings of at most 160 characters.';
-        if (seenIds.has(node.id)) return 'Tree node identities must be unique.';
-        seenIds.add(node.id);
-        if (typeof node.label !== 'string') return 'Tree node labels must be strings.';
-        if (node.disabled !== undefined && typeof node.disabled !== 'boolean')
-          return 'Tree node disabled state must be boolean.';
-        ancestors.add(value);
-        if (node.children !== undefined) {
-          if (!Array.isArray(node.children)) return 'Tree node children must be arrays.';
-          stack.push({ nodes: node.children, index: 0, owner: value });
-        } else ancestors.delete(value);
+        const error = nodeValidationError(value, seenIds, ancestors);
+        if (error !== undefined) return error;
+        const node = value as RawTreeNode;
+        const id = node.id as string;
+        seenIds.add(id);
+        if (node.children === undefined) continue;
+        ancestors.add(value as object);
+        stack.push({ nodes: node.children as readonly unknown[], index: 0, owner: value as object });
       }
     } catch {
       return 'The navigation tree data is invalid.';
@@ -177,39 +224,55 @@ export class AeliqoTreeNavElement extends AeliqoFoundationElement {
   private keydown(event: KeyboardEvent, flat: FlatNode, index: number): void {
     if (event.target instanceof HTMLButtonElement) return;
     const node = flat.node;
-    const hasChildren = Boolean(node.children?.length);
-    const visible = this.flatVisible();
-    if (event.key === 'ArrowRight') {
-      event.preventDefault();
-      if (hasChildren && !this.isExpanded(node.id)) this.toggle(node);
-      else if (hasChildren) {
-        this.focusedId = node.children![0]!.id;
-        this.renderRoot.querySelector<HTMLElement>(`[data-tree-id="${CSS.escape(node.children![0]!.id)}"]`)?.focus();
-      }
-    } else if (event.key === 'ArrowLeft') {
-      event.preventDefault();
-      if (hasChildren && this.isExpanded(node.id)) this.toggle(node);
-      else if (flat.parentId) {
-        this.focusedId = flat.parentId;
-        this.renderRoot.querySelector<HTMLElement>(`[data-tree-id="${CSS.escape(flat.parentId)}"]`)?.focus();
-      }
-    } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Home' || event.key === 'End') {
-      event.preventDefault();
-      const next =
-        event.key === 'ArrowDown'
-          ? Math.min(visible.length - 1, index + 1)
-          : event.key === 'ArrowUp'
-            ? Math.max(0, index - 1)
-            : event.key === 'Home'
-              ? 0
-              : visible.length - 1;
-      this.focusedId = visible[next]!.node.id;
-      this.renderRoot.querySelector<HTMLElement>(`[data-tree-id="${CSS.escape(visible[next]!.node.id)}"]`)?.focus();
-    } else if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      this.select(node);
+    if (event.key === 'ArrowRight') return this.handleArrowRight(event, node);
+    if (event.key === 'ArrowLeft') return this.handleArrowLeft(event, flat.parentId, node);
+    if (this.isVerticalNavigationKey(event.key)) {
+      const next = focusIndexForKey(event.key, index, this.flatVisible().length - 1);
+      if (next !== undefined) this.focusVisibleIndex(event, next);
+      return;
     }
+    if (event.key === 'Enter' || event.key === ' ') this.selectFromKeyboard(event, node);
   }
+
+  private isVerticalNavigationKey(key: string): boolean {
+    return key === 'ArrowDown' || key === 'ArrowUp' || key === 'Home' || key === 'End';
+  }
+
+  private handleArrowRight(event: KeyboardEvent, node: AeliqoTreeNavNode): void {
+    event.preventDefault();
+    if (!node.children?.length) return;
+    if (!this.isExpanded(node.id)) return this.toggle(node);
+    this.focusTreeNode(node.children[0]!.id);
+  }
+
+  private handleArrowLeft(event: KeyboardEvent, parentId: string | undefined, node: AeliqoTreeNavNode): void {
+    event.preventDefault();
+    if (node.children?.length && this.isExpanded(node.id)) return this.toggle(node);
+    if (parentId !== undefined) this.focusTreeNode(parentId);
+  }
+
+  private focusVisibleIndex(event: KeyboardEvent, index: number): void {
+    event.preventDefault();
+    const visible = this.flatVisible();
+    const target = visible[index];
+    if (target !== undefined) this.focusTreeNode(target.node.id);
+  }
+
+  private selectFromKeyboard(event: KeyboardEvent, node: AeliqoTreeNavNode): void {
+    event.preventDefault();
+    this.select(node);
+  }
+
+  private focusTreeNode(id: string): void {
+    this.focusedId = id;
+    this.renderRoot.querySelector<HTMLElement>(`[data-tree-id="${CSS.escape(id)}"]`)?.focus();
+  }
+
+  private expandedAttribute(node: AeliqoTreeNavNode, hasChildren: boolean) {
+    if (!hasChildren) return nothing;
+    return this.isExpanded(node.id) ? 'true' : 'false';
+  }
+
   private renderNode(flat: FlatNode, focusId: string) {
     const node = flat.node;
     const hasChildren = Boolean(node.children?.length);
@@ -219,7 +282,7 @@ export class AeliqoTreeNavElement extends AeliqoFoundationElement {
       data-tree-id=${node.id}
       aria-level=${flat.level}
       aria-selected=${node.id === this.selectedId ? 'true' : 'false'}
-      aria-expanded=${hasChildren ? (this.isExpanded(node.id) ? 'true' : 'false') : nothing}
+      aria-expanded=${this.expandedAttribute(node, hasChildren)}
       aria-disabled=${node.disabled ? 'true' : nothing}
       tabindex=${node.id === focusId ? '0' : '-1'}
       style=${`padding-inline-start: calc(var(--aeliqo-space-8, 0.5rem) + ${(flat.level - 1) * 1.25}rem)`}
@@ -240,12 +303,7 @@ export class AeliqoTreeNavElement extends AeliqoFoundationElement {
   protected override render() {
     if (this.treeError) return html`<nav aria-label=${this.label}><p role="status">${this.treeError}</p></nav>`;
     const visible = this.flatVisible();
-    const visibleIds = new Set(visible.map((flat) => flat.node.id));
-    const focusId = visibleIds.has(this.selectedId)
-      ? this.selectedId
-      : visibleIds.has(this.focusedId)
-        ? this.focusedId
-        : (visible[0]?.node.id ?? '');
+    const focusId = focusTargetId(visible, this.selectedId, this.focusedId);
     return html`<nav aria-label=${this.label}>
       <ul part="tree" role="tree">
         ${visible.map((flat) => this.renderNode(flat, focusId))}

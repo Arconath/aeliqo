@@ -18,7 +18,7 @@ export const aeliqoNavigationStyles = css`
   }
 `;
 
-export const interactiveSelector = [
+const interactiveSelector = [
   'button:not([disabled])',
   '[href]',
   'input:not([disabled])',
@@ -35,23 +35,27 @@ type FocusTraversalState = {
 
 function elementState(element: HTMLElement, inherited: FocusTraversalState): FocusTraversalState {
   const style = typeof globalThis.getComputedStyle === 'function' ? globalThis.getComputedStyle(element) : undefined;
-  const hidden = Boolean(
-    inherited.hidden ||
-    element.hidden ||
-    element.getAttribute('aria-hidden') === 'true' ||
-    style?.display === 'none' ||
-    style?.visibility === 'hidden' ||
-    style?.visibility === 'collapse',
-  );
-  const disabled = Boolean(
-    inherited.disabled || element.matches(':disabled') || element.getAttribute('aria-disabled') === 'true',
-  );
-  const inert = Boolean(
-    inherited.inert ||
+  return {
+    hidden: inherited.hidden || elementIsHidden(element, style),
+    disabled: inherited.disabled || elementIsDisabled(element),
+    inert: inherited.inert || elementIsInert(element),
+  };
+}
+
+function elementIsHidden(element: HTMLElement, style: CSSStyleDeclaration | undefined): boolean {
+  if (element.hidden || element.getAttribute('aria-hidden') === 'true') return true;
+  return style?.display === 'none' || style?.visibility === 'hidden' || style?.visibility === 'collapse';
+}
+
+function elementIsDisabled(element: HTMLElement): boolean {
+  return element.matches(':disabled') || element.getAttribute('aria-disabled') === 'true';
+}
+
+function elementIsInert(element: HTMLElement): boolean {
+  return (
     element.hasAttribute('inert') ||
-    ('inert' in element && Boolean((element as HTMLElement & { inert?: boolean }).inert)),
+    ('inert' in element && Boolean((element as HTMLElement & { inert?: boolean }).inert))
   );
-  return { hidden, disabled, inert };
 }
 
 function hasNegativeTabIndex(element: HTMLElement): boolean {
@@ -124,32 +128,33 @@ export function focusFirst(root: ParentNode): HTMLElement | undefined {
   return target ?? undefined;
 }
 
-export function focusLast(root: ParentNode): HTMLElement | undefined {
-  const targets = focusableElements(root);
-  const target = targets.at(-1);
-  target?.focus();
-  return target ?? undefined;
-}
-
 function descendActive(element: HTMLElement): HTMLElement {
   const Element = globalThis.HTMLElement;
-  const Slot = globalThis.HTMLSlotElement;
   if (Element === undefined) return element;
-  if (Slot !== undefined && element instanceof Slot) {
-    for (const assigned of element.assignedElements({ flatten: true })) {
-      if (!(assigned instanceof Element)) continue;
-      if (assigned.matches(':focus')) return descendActive(assigned);
-      if (assigned.shadowRoot !== null) {
-        const nested = activeWithin(assigned.shadowRoot);
-        if (nested !== undefined) return nested;
-      }
-    }
-  }
+  const assigned = activeAssignedElement(element, Element);
+  if (assigned !== undefined) return assigned;
   if (element.shadowRoot !== null) {
     const nested = activeWithin(element.shadowRoot);
     if (nested !== undefined) return nested;
   }
   return element;
+}
+
+function activeAssignedElement(element: HTMLElement, Element: typeof HTMLElement): HTMLElement | undefined {
+  const Slot = globalThis.HTMLSlotElement;
+  if (Slot === undefined || !(element instanceof Slot)) return undefined;
+  for (const assigned of element.assignedElements({ flatten: true })) {
+    if (!(assigned instanceof Element)) continue;
+    const nested = activeAssignedChild(assigned);
+    if (nested !== undefined) return nested;
+  }
+  return undefined;
+}
+
+function activeAssignedChild(element: HTMLElement): HTMLElement | undefined {
+  if (element.matches(':focus')) return descendActive(element);
+  if (element.shadowRoot === null) return undefined;
+  return activeWithin(element.shadowRoot);
 }
 
 function activeWithin(root: Document | ShadowRoot): HTMLElement | undefined {
@@ -162,16 +167,24 @@ function activeWithin(root: Document | ShadowRoot): HTMLElement | undefined {
 export function activeElement(owner?: HTMLElement): HTMLElement | undefined {
   const Element = globalThis.HTMLElement;
   if (Element === undefined) return undefined;
-  const nested =
-    owner?.shadowRoot === null || owner?.shadowRoot === undefined ? undefined : activeWithin(owner.shadowRoot);
+  const nested = activeOwnerShadow(owner);
   if (nested !== undefined && nested !== owner) return nested;
   const documentElement = globalThis.document?.activeElement;
-  if (owner !== undefined) {
-    const focused = focusableElements(owner).find((candidate) => candidate.matches(':focus'));
-    if (focused !== undefined) return focused;
-    if (documentElement === owner) return owner;
-  }
+  const focused = activeOwnedElement(owner);
+  if (focused !== undefined) return focused;
   return documentElement instanceof Element ? documentElement : undefined;
+}
+
+function activeOwnerShadow(owner: HTMLElement | undefined): HTMLElement | undefined {
+  const root = owner?.shadowRoot;
+  return root === null || root === undefined ? undefined : activeWithin(root);
+}
+
+function activeOwnedElement(owner: HTMLElement | undefined): HTMLElement | undefined {
+  if (owner === undefined) return undefined;
+  const focused = focusableElements(owner).find((candidate) => candidate.matches(':focus'));
+  if (focused !== undefined) return focused;
+  return globalThis.document?.activeElement === owner ? owner : undefined;
 }
 
 export function restoreFocus(element: HTMLElement | undefined): void {

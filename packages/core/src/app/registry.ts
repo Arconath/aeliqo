@@ -1,9 +1,8 @@
 import type { Diagnostic, Outcome, VersionRef } from '../contracts/types.js';
+import { versionRefKey } from '../contracts/stable.js';
 import type { CustomIntentDefinition, IntentCompilerRegistry } from './types.js';
 
-function key(ref: VersionRef): string {
-  return JSON.stringify([ref.id, ref.revision]);
-}
+const key = versionRefKey;
 function validRef(ref: VersionRef): boolean {
   return (
     ref.id.includes('.') &&

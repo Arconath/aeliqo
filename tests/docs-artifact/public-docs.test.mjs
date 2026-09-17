@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { cp, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import test from 'node:test';
@@ -22,6 +22,17 @@ test('public docs artifact binds exact source, packages, API metadata, and runna
   assert.equal(new Set(artifact.pages.map((page) => page.id)).size, artifact.pages.length);
   assert.equal(artifact.pages.filter((page) => page.component !== undefined).length, 71);
   assert.ok(artifact.pages.every((page) => page.body.length > 0));
+  const componentPages = artifact.pages.filter((page) => page.component !== undefined);
+  assert.equal(componentPages.filter((page) => page.body.includes('component-minimal-example')).length, 71);
+  for (const page of componentPages) {
+    const subpath = page.component.slice(page.component.indexOf('.') + 1);
+    assert.match(
+      page.body,
+      new RegExp(`@aeliqo/web/${subpath}`, 'u'),
+      `Missing individual import for ${page.component}`,
+    );
+    assert.match(page.body, /registerAeliqoElements\(\)/u, `Missing registration example for ${page.component}`);
+  }
   assert.match(
     artifact.pages.find((page) => page.path === '/docs/components/foundation.button/').body,
     /export declare class AeliqoButtonElement/u,
@@ -37,10 +48,10 @@ test('public docs artifact binds exact source, packages, API metadata, and runna
     assert.match(page.body, /src\/main\.ts · compiled export source/u);
     assert.match(page.body, /createAeliqoApp/u);
   }
-  const migration = artifact.pages.find((page) => page.path === '/docs/ship/migration-0.1/');
+  const migration = artifact.pages.find((page) => page.path === '/docs/ship/migration-0.3/');
   assert.ok(migration, 'Missing migration page');
-  assert.match(migration.body, /examples\/migration-0\.1\/before\.ts/u);
-  assert.match(migration.body, /examples\/quickstart\/src\/app\.ts/u);
+  assert.match(migration.title, /Migrate from 0\.3 to 0\.4/u);
+  assert.match(migration.body, /@aeliqo\/core\/expressions/u);
   const sums = await readFile(resolve(root, `artifacts/public-docs/${RELEASE_VERSION}/SHA256SUMS`), 'utf8');
   assert.equal(
     sums,
@@ -53,6 +64,24 @@ test('public docs artifact binds exact source, packages, API metadata, and runna
   assert.ok(
     manifest.inputs.some((input) => input.path.startsWith('packages/web/dist/') && input.path.endsWith('.d.ts')),
   );
+  const componentSources = (await readdir(resolve(root, 'docs/site/components')))
+    .filter((file) => file.endsWith('.md'))
+    .sort();
+  assert.equal(componentSources.length, 71);
+  const componentInputPaths = manifest.inputs
+    .map((input) => input.path)
+    .filter((path) => path.startsWith('docs/site/components/'))
+    .sort();
+  assert.deepEqual(
+    componentInputPaths,
+    componentSources.map((file) => `docs/site/components/${file}`),
+  );
+  const inputsByPath = new Map(manifest.inputs.map((input) => [input.path, input]));
+  for (const file of componentSources) {
+    const path = `docs/site/components/${file}`;
+    const bytes = await readFile(resolve(root, path));
+    assert.deepEqual(inputsByPath.get(path), { path, sha256: sha256(bytes), bytes: bytes.byteLength });
+  }
 });
 
 test('an external consumer can accept the verified public artifact without private site source', async () => {

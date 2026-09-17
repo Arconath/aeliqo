@@ -1,7 +1,7 @@
 # Meaning authoring
 
 Meaning authoring has one canonical definition and evaluator path. Developer
-code, Studio adapters and AI assistance produce a typed `MeaningDefinition`
+code and optional AI assistance produce a typed `MeaningDefinition`
 validated against the application `Catalog` and versioned `FunctionRegistry`.
 Authoring a meaning does not choose a component or grant an effect.
 
@@ -11,9 +11,9 @@ The runtime builder reuses the existing catalog fields. It does not require a
 second schema or a model/provider call:
 
 ```ts
-import {createMeaningAuthoring, createMeaningRegistry} from '@aeliqo/runtime/meaning';
+import { createMeaningAuthoring, createMeaningRegistry } from '@aeliqo/runtime/meaning';
 
-const authoring = createMeaningAuthoring({catalog, registry});
+const authoring = createMeaningAuthoring({ catalog, registry });
 if (!authoring.ok) throw new Error(authoring.diagnostics[0].code);
 
 const amount = authoring.value.field('orders', 'amount');
@@ -22,16 +22,13 @@ const total = authoring.value.defineMeaning({
   id: 'orders.total',
   label: 'Order total',
   description: 'The sum of authorized order amounts',
-  expression: authoring.value.call(
-    {id: 'core.aggregate.sum', revision: '1'},
-    [amount],
-  ),
+  expression: authoring.value.call({ id: 'core.aggregate.sum', revision: '1' }, [amount]),
 });
 if (!total.ok) throw new Error(total.diagnostics[0].code);
 
-const meanings = createMeaningRegistry({catalog, registry});
+const meanings = createMeaningRegistry({ catalog, registry });
 if (!meanings.ok) throw new Error(meanings.diagnostics[0].code);
-meanings.value.register({draft: total.value});
+meanings.value.register({ draft: total.value });
 ```
 
 `field`, `call`, `defineMeaning`, and `bundle` all use the core expression and
@@ -46,9 +43,9 @@ The optional agent package only adapts bounded AI input into the same runtime
 builder. It has no model SDK and cannot activate a definition:
 
 ```ts
-import {createAgentMeaningAuthoring} from '@aeliqo/agent';
+import { createAgentMeaningAuthoring } from '@aeliqo/agent';
 
-const ai = createAgentMeaningAuthoring({catalog, registry});
+const ai = createAgentMeaningAuthoring({ catalog, registry });
 if (!ai.ok) throw new Error(ai.diagnostics[0].code);
 const proposal = ai.value.propose({
   meaning: candidateMeaning,
@@ -63,9 +60,10 @@ the scope policy explicitly, but proposal policy does not grant activation.
 `meaning.propose` and `meaning.activate` are separate registered capability
 operations; the dispatcher obtains their grants from trusted host context.
 
-Code-owned definitions are read-only to an editor. Studio or AI may call
-`proposeDiff` to produce a reviewable candidate/new revision, but no route
-silently overwrites the application bundle or shadows an immutable ID/revision.
+Code-owned definitions are read-only after registration. A review adapter or AI
+proposal workflow may call `proposeDiff` to produce a candidate revision, but
+no route silently overwrites the application bundle or shadows an immutable
+ID/revision.
 
 ## Local evaluation and activation
 

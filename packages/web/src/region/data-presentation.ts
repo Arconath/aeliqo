@@ -2,14 +2,16 @@ import {
   parseWireValue,
   type InteractionState,
   type Outcome,
-  type PresentationManifest,
-  type PresentationValues,
   type Result,
   type ResultRef,
-  type ResolvedPresentationConfig,
-  type ValidatedPresentation,
   type VersionRef,
 } from '@aeliqo/core';
+import type {
+  PresentationManifest,
+  PresentationValues,
+  ResolvedPresentationConfig,
+  ValidatedPresentation,
+} from '@aeliqo/core/presentation';
 import { nothing, type TemplateResult } from 'lit';
 import {
   AELIQO_DATA_CONFIG_SCHEMAS,
@@ -39,10 +41,6 @@ export const AELIQO_DATA_PRESENTATION_OPERATIONS = Object.freeze({
  */
 export type AeliqoAuthorizedDataBindings =
   readonly AeliqoDataBinding[] | ReadonlyMap<string, AeliqoDataBinding> | Readonly<Record<string, AeliqoDataBinding>>;
-
-export interface AeliqoDataPresentationOptions extends AeliqoDataRegistryOptions {
-  readonly bindings: AeliqoAuthorizedDataBindings;
-}
 
 export interface AeliqoDataPresentationRegistry {
   readonly manifests: readonly PresentationManifest[];
@@ -121,17 +119,18 @@ function freeze<T>(value: T): T {
   return value;
 }
 
+function bindingEntries(input: AeliqoAuthorizedDataBindings): readonly (readonly [string, AeliqoDataBinding])[] {
+  if (input instanceof Map) return [...input.entries()];
+  if (Array.isArray(input)) return input.map((binding) => [refKey(binding.result.ref), binding] as const);
+  return Object.entries(input);
+}
+
 function snapshotBindings(
   input: AeliqoAuthorizedDataBindings,
   options: AeliqoDataRegistryOptions,
 ): Outcome<ReadonlyMap<string, AeliqoValidatedBinding>> {
   try {
-    const entries: readonly (readonly [string, AeliqoDataBinding])[] =
-      input instanceof Map
-        ? [...input.entries()]
-        : Array.isArray(input)
-          ? input.map((binding) => [refKey(binding.result.ref), binding] as const)
-          : Object.entries(input);
+    const entries = bindingEntries(input);
     if (entries.length > 128) return fail('binding', 'The authorized data binding table is too large.');
     const map = new Map<string, AeliqoValidatedBinding>();
     for (const [key, binding] of entries) {
@@ -166,6 +165,21 @@ function dataComponent(ref: VersionRef): DataManifestComponent | 'table' | undef
   }) as DataManifestComponent | 'table' | undefined;
 }
 
+function shouldRead(component: DataManifestComponent | 'table', config: AeliqoDataResolvedNode['config']): boolean {
+  if (component === 'filterBuilder') return false;
+  if (component !== 'selectionSummary') return true;
+  return config.fields.length > 0 || config.ports.some((port) => port.payload === 'selection');
+}
+
+function supportsSelection(component: DataManifestComponent | 'table'): boolean {
+  return (
+    component === 'table' ||
+    component === 'recordList' ||
+    component === 'cardCollection' ||
+    component === 'selectionSummary'
+  );
+}
+
 function operationsFor(
   component: DataManifestComponent | 'table',
   config: AeliqoDataResolvedNode['config'],
@@ -174,24 +188,11 @@ function operationsFor(
   const add = (operation: VersionRef): void => {
     if (!operations.some((candidate) => versionKey(candidate) === versionKey(operation))) operations.push(operation);
   };
-  if (
-    component !== 'filterBuilder' &&
-    (component !== 'selectionSummary' ||
-      config.fields.length > 0 ||
-      config.ports.some((port) => port.payload === 'selection'))
-  )
-    add(AELIQO_DATA_PRESENTATION_OPERATIONS.read);
-  if (component === 'table') add(AELIQO_DATA_PRESENTATION_OPERATIONS.compare);
-  if (component === 'delta') add(AELIQO_DATA_PRESENTATION_OPERATIONS.compare);
+  if (shouldRead(component, config)) add(AELIQO_DATA_PRESENTATION_OPERATIONS.read);
+  if (component === 'table' || component === 'delta') add(AELIQO_DATA_PRESENTATION_OPERATIONS.compare);
   if (component === 'filterBuilder') add(AELIQO_DATA_PRESENTATION_OPERATIONS.filter);
-  if (
-    component === 'table' ||
-    component === 'recordList' ||
-    component === 'cardCollection' ||
-    component === 'selectionSummary'
-  ) {
-    if (config.ports.some((port) => port.payload === 'selection')) add(AELIQO_DATA_PRESENTATION_OPERATIONS.selection);
-  }
+  if (supportsSelection(component) && config.ports.some((port) => port.payload === 'selection'))
+    add(AELIQO_DATA_PRESENTATION_OPERATIONS.selection);
   return operations;
 }
 
@@ -304,6 +305,34 @@ export function createAeliqoDataPresentationRegistry(
   return { ok: true, value: freeze({ manifests, bindingFor, render }) };
 }
 
+function currentBinding(
+  current: AeliqoDataBinding,
+  expected: Result,
+  authorized: AeliqoValidatedBinding,
+  options: AeliqoDataRegistryOptions,
+): AeliqoValidatedBinding | undefined {
+  if (!sameRef(current.result.ref, expected.ref)) return undefined;
+  const checked = validateAeliqoDataBinding(current, options);
+  if (!checked.ok || !sameResult(checked.value.result, expected)) return undefined;
+  if (!sameRows(authorized, checked.value)) return undefined;
+  if (canonical(authorized.scope) !== canonical(checked.value.scope)) return undefined;
+  if (canonical(authorized.columns) !== canonical(checked.value.columns)) return undefined;
+  return checked.value;
+}
+
+function resolvedNodeMatches(
+  resolved: AeliqoDataResolvedNode,
+  node: CoreNode,
+  component: DataManifestComponent | 'table',
+): boolean {
+  return (
+    canonical(resolved.config.fields) === canonical(node.config.fields) &&
+    canonical(resolved.config.ports) === canonical(node.config.ports) &&
+    canonical(resolved.config.values) === canonical(node.config.values) &&
+    canonical(operationsFor(component, resolved.config)) === canonical(node.config.operations)
+  );
+}
+
 function renderAeliqoDataPresentationNodeWith(
   helper: ReturnType<typeof createAeliqoDataRegistry>,
   node: CoreNode,
@@ -316,24 +345,11 @@ function renderAeliqoDataPresentationNodeWith(
   if (component === undefined || node.result === undefined) return nothing;
   const authorizedBinding = authorized.get(refKey(node.result.ref));
   if (authorizedBinding === undefined) return nothing;
-  if (!sameRef(current.result.ref, node.result.ref)) return nothing;
-  const checked = validateAeliqoDataBinding(current, options);
-  if (!checked.ok || !sameResult(checked.value.result, node.result)) return nothing;
-  if (
-    !sameRows(authorizedBinding, checked.value) ||
-    canonical(authorizedBinding.scope) !== canonical(checked.value.scope) ||
-    canonical(authorizedBinding.columns) !== canonical(checked.value.columns)
-  )
-    return nothing;
-  const resolved = helper.resolve({ id: node.node.id, component, config: node.config.values }, checked.value);
+  const checked = currentBinding(current, node.result, authorizedBinding, options);
+  if (checked === undefined) return nothing;
+  const resolved = helper.resolve({ id: node.node.id, component, config: node.config.values }, checked);
   if (!resolved.ok || !sameRef(resolved.value.result.ref, node.result.ref)) return nothing;
-  if (
-    canonical(resolved.value.config.fields) !== canonical(node.config.fields) ||
-    canonical(resolved.value.config.ports) !== canonical(node.config.ports) ||
-    canonical(resolved.value.config.values) !== canonical(node.config.values) ||
-    canonical(operationsFor(component, resolved.value.config)) !== canonical(node.config.operations)
-  )
-    return nothing;
+  if (!resolvedNodeMatches(resolved.value, node, component)) return nothing;
   return renderAeliqoDataNode(resolved.value, context);
 }
 
@@ -363,7 +379,3 @@ export function renderAeliqoDataPresentationNode(
     context,
   );
 }
-
-/** Compatibility aliases for hosts that name the bridge after the shared data renderer. */
-export const renderDataPresentationNode = renderAeliqoDataPresentationNode;
-export const createDataPresentationManifests = createAeliqoDataPresentationManifests;

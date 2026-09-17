@@ -11,23 +11,28 @@ import type {
   AgentToolBinding,
   AgentToolDefinition,
   AgentToolEndpointOptions,
+  AgentToolTransport,
 } from './types.js';
 
 const failure = <T>(code: string, message: string): Outcome<T> => ({
   ok: false,
   diagnostics: [{ code, message, retryable: false }],
 });
+
 const id = (value: unknown): value is string =>
   typeof value === 'string' &&
   value.length > 0 &&
   value.length <= WIRE_LIMITS.id &&
   !/[\s\u0000-\u001f\u007f]/u.test(value);
+
 const bound = (value: number, ceiling: number): boolean => Number.isSafeInteger(value) && value > 0 && value <= ceiling;
+
 function freeze<T>(value: T): T {
   if (value === null || typeof value !== 'object') return value;
   if (Array.isArray(value)) return Object.freeze(value.map(freeze)) as T;
   return Object.freeze(Object.fromEntries(Object.entries(value).map(([key, child]) => [key, freeze(child)]))) as T;
 }
+
 function localSchemaReferences(value: unknown): boolean {
   if (value === null || typeof value !== 'object') return true;
   if (Array.isArray(value)) return value.every(localSchemaReferences);
@@ -37,24 +42,70 @@ function localSchemaReferences(value: unknown): boolean {
   );
 }
 
-/** One expiring, explicitly paired region uses the same capability dispatcher as manual calls. */
-export function createAgentToolEndpoint(input: AgentToolEndpointOptions): Outcome<AgentModelToolEndpoint> {
-  if (
-    !input ||
-    !['manual', 'mcp', 'webmcp', 'byok'].includes(input.transport) ||
-    !id(input.targetRegionId) ||
-    !id(input.goalEpoch) ||
-    !id(input.principalKey) ||
-    (input.scopeDigest !== undefined && !id(input.scopeDigest)) ||
-    !input.host ||
-    typeof input.host.readContext !== 'function' ||
-    !input.registry ||
-    typeof input.registry.get !== 'function'
-  )
-    return failure(
-      'agent.protocol.invalid',
-      'A tool endpoint requires a trusted principal and explicit region pairing.',
-    );
+interface EndpointLease {
+  readonly now: () => number;
+  readonly created: number;
+  readonly monotonicStart: number;
+  readonly leaseMilliseconds: number;
+}
+
+interface EndpointLimits {
+  readonly maxPending: number;
+  readonly maxMilliseconds: number;
+  readonly maxInputBytes: number;
+  readonly maxOutputBytes: number;
+}
+
+interface EndpointState extends EndpointLease, EndpointLimits {
+  readonly transport: AgentToolTransport;
+  readonly target: { readonly targetRegionId: string; readonly goalEpoch: string };
+  readonly principalKey: string;
+  readonly scopeDigest: string | undefined;
+  readonly expiresAt: number;
+  readonly sourceHost: AgentCapabilityHost['readContext'];
+  readonly registry: AgentToolEndpointOptions['registry'];
+  readonly tools: Map<string, AgentToolDefinition>;
+  readonly lifetime: AbortController;
+  pending: number;
+  sequence: number;
+}
+
+type EndpointBoundary<T> =
+  | { readonly kind: 'value'; readonly value: T }
+  | { readonly kind: 'deadline' }
+  | { readonly kind: 'aborted' }
+  | { readonly kind: 'failed' };
+
+function supportedTransport(value: unknown): value is AgentToolTransport {
+  return value === 'manual' || value === 'mcp' || value === 'webmcp' || value === 'byok';
+}
+
+function validPairing(input: AgentToolEndpointOptions): boolean {
+  return (
+    supportedTransport(input.transport) &&
+    id(input.targetRegionId) &&
+    id(input.goalEpoch) &&
+    id(input.principalKey) &&
+    (input.scopeDigest === undefined || id(input.scopeDigest))
+  );
+}
+
+function hasHostPorts(input: AgentToolEndpointOptions): boolean {
+  return (
+    input.host !== null &&
+    typeof input.host === 'object' &&
+    typeof input.host.readContext === 'function' &&
+    input.registry !== null &&
+    typeof input.registry === 'object' &&
+    typeof input.registry.get === 'function'
+  );
+}
+
+function validEndpointInput(input: AgentToolEndpointOptions): boolean {
+  return input !== null && typeof input === 'object' && validPairing(input) && hasHostPorts(input);
+}
+
+function readLease(input: AgentToolEndpointOptions): Outcome<EndpointLease> {
   const now = input.now ?? Date.now;
   let created: number;
   try {
@@ -69,128 +120,200 @@ export function createAgentToolEndpoint(input: AgentToolEndpointOptions): Outcom
     input.expiresAt - created > 86_400_000
   )
     return failure('agent.protocol.lease', 'A pairing must expire within one day.');
-  const monotonicStart = performance.now();
-  const leaseMilliseconds = input.expiresAt - created;
-  const maxPending = input.maxPending ?? 8,
-    maxMilliseconds = input.maxMilliseconds ?? 30_000;
-  const maxInputBytes = input.maxInputBytes ?? WIRE_LIMITS.bytes,
-    maxOutputBytes = input.maxOutputBytes ?? WIRE_LIMITS.bytes;
+  return {
+    ok: true,
+    value: {
+      now,
+      created,
+      monotonicStart: performance.now(),
+      leaseMilliseconds: input.expiresAt - created,
+    },
+  };
+}
+
+function endpointLimits(input: AgentToolEndpointOptions): Outcome<EndpointLimits> {
+  const limits = {
+    maxPending: input.maxPending ?? 8,
+    maxMilliseconds: input.maxMilliseconds ?? 30_000,
+    maxInputBytes: input.maxInputBytes ?? WIRE_LIMITS.bytes,
+    maxOutputBytes: input.maxOutputBytes ?? WIRE_LIMITS.bytes,
+  };
   if (
-    !bound(maxPending, 64) ||
-    !bound(maxMilliseconds, 300_000) ||
-    !bound(maxInputBytes, WIRE_LIMITS.bytes) ||
-    !bound(maxOutputBytes, WIRE_LIMITS.bytes)
+    !bound(limits.maxPending, 64) ||
+    !bound(limits.maxMilliseconds, 300_000) ||
+    !bound(limits.maxInputBytes, WIRE_LIMITS.bytes) ||
+    !bound(limits.maxOutputBytes, WIRE_LIMITS.bytes)
   )
     return failure('agent.protocol.budget', 'Tool endpoint limits are outside their bounds.');
+  return { ok: true, value: limits };
+}
+
+function validBindingIdentity(
+  value: unknown,
+  tools: ReadonlyMap<string, AgentToolDefinition>,
+): value is AgentToolBinding {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
+  const binding = value as unknown as AgentToolBinding;
+  return (
+    typeof binding.name === 'string' &&
+    /^[A-Za-z0-9_-]{1,64}$/u.test(binding.name) &&
+    !tools.has(binding.name) &&
+    id(binding.capability?.id) &&
+    id(binding.capability?.revision)
+  );
+}
+
+function validInputSchema(binding: AgentToolBinding): boolean {
+  const schema = binding.inputSchema;
+  if (schema === null || typeof schema !== 'object' || Array.isArray(schema) || schema.type !== 'object') return false;
+  if (!localSchemaReferences(schema)) return false;
+  return new TextEncoder().encode(JSON.stringify(schema)).byteLength <= 65_536;
+}
+
+function registerBinding(
+  raw: unknown,
+  registry: AgentToolEndpointOptions['registry'],
+  tools: Map<string, AgentToolDefinition>,
+): Outcome<void> {
+  if (!validBindingIdentity(raw, tools))
+    return failure('agent.protocol.tools', 'Tool names and capability references must be unique and bounded.');
+  const manifest = registry.get(raw.capability);
+  if (!manifest || manifest.operation !== raw.operation)
+    return failure('agent.protocol.tools', 'A tool must name an existing capability and its exact operation.');
+  if (!validInputSchema(raw))
+    return failure('agent.protocol.schema', 'A tool requires a bounded object schema with local references only.');
+  tools.set(raw.name, freeze({ ...raw, description: manifest.description ?? manifest.label }));
+  return { ok: true, value: undefined };
+}
+
+function registeredTools(input: AgentToolEndpointOptions): Outcome<Map<string, AgentToolDefinition>> {
   const inspected = parseWireValue(input.tools);
   if (!inspected.ok || !Array.isArray(inspected.value) || inspected.value.length > 64)
     return failure('agent.protocol.tools', 'Tool bindings must be a bounded array.');
   const tools = new Map<string, AgentToolDefinition>();
   for (const raw of inspected.value) {
-    const binding = raw as unknown as AgentToolBinding;
-    if (
-      !binding ||
-      typeof binding !== 'object' ||
-      typeof binding.name !== 'string' ||
-      !/^[A-Za-z0-9_-]{1,64}$/u.test(binding.name) ||
-      tools.has(binding.name) ||
-      !id(binding.capability?.id) ||
-      !id(binding.capability?.revision)
-    )
-      return failure('agent.protocol.tools', 'Tool names and capability references must be unique and bounded.');
-    const manifest = input.registry.get(binding.capability);
-    if (!manifest || manifest.operation !== binding.operation)
-      return failure('agent.protocol.tools', 'A tool must name an existing capability and its exact operation.');
-    if (
-      !binding.inputSchema ||
-      Array.isArray(binding.inputSchema) ||
-      binding.inputSchema.type !== 'object' ||
-      !localSchemaReferences(binding.inputSchema) ||
-      new TextEncoder().encode(JSON.stringify(binding.inputSchema)).byteLength > 65_536
-    )
-      return failure('agent.protocol.schema', 'A tool requires a bounded object schema with local references only.');
-    tools.set(binding.name, freeze({ ...binding, description: manifest.description ?? manifest.label }));
+    const added = registerBinding(raw, input.registry, tools);
+    if (!added.ok) return added;
   }
-  const target = Object.freeze({ targetRegionId: input.targetRegionId, goalEpoch: input.goalEpoch });
-  const transport = input.transport,
-    principalKey = input.principalKey,
-    scopeDigest = input.scopeDigest,
-    expiresAt = input.expiresAt;
-  const sourceHost = input.host.readContext.bind(input.host),
-    registry = input.registry;
-  const lifetime = new AbortController();
-  let pending = 0;
-  let sequence = 0;
-  const remaining = (): number => {
-    if (lifetime.signal.aborted) return 0;
-    try {
-      const value = now();
-      return Number.isFinite(value)
-        ? Math.max(
-            0,
-            Math.min(maxMilliseconds, expiresAt - value, leaseMilliseconds - (performance.now() - monotonicStart)),
-          )
-        : 0;
-    } catch {
-      return 0;
-    }
-  };
-  const host: AgentCapabilityHost = {
-    async readContext(request) {
-      if (remaining() === 0 || request.signal.aborted)
-        return failure('agent.protocol.stale', 'The tool pairing is closed or expired.');
-      const result = await sourceHost(request);
-      if (remaining() === 0 || request.signal.aborted)
-        return failure('agent.protocol.stale', 'The tool pairing changed while reading authority.');
-      if (!result || !result.ok)
-        return failure('agent.protocol.denied', 'The host did not authorize this tool pairing.');
-      const checked = normalizeAgentCapabilityAuthority(result.value, target);
-      if (!checked.ok) return checked;
-      if (
-        checked.value.principalKey !== principalKey ||
-        (scopeDigest !== undefined && checked.value.current?.scopeDigest !== scopeDigest)
-      )
-        return failure('agent.protocol.stale', 'The tool pairing no longer matches its authenticated scope.');
-      return checked;
+  return { ok: true, value: tools };
+}
+
+function createEndpointState(input: AgentToolEndpointOptions): Outcome<EndpointState> {
+  if (!validEndpointInput(input))
+    return failure(
+      'agent.protocol.invalid',
+      'A tool endpoint requires a trusted principal and explicit region pairing.',
+    );
+  const lease = readLease(input);
+  if (!lease.ok) return lease;
+  const limits = endpointLimits(input);
+  if (!limits.ok) return limits;
+  const tools = registeredTools(input);
+  if (!tools.ok) return tools;
+  return {
+    ok: true,
+    value: {
+      ...lease.value,
+      ...limits.value,
+      transport: input.transport,
+      target: Object.freeze({ targetRegionId: input.targetRegionId, goalEpoch: input.goalEpoch }),
+      principalKey: input.principalKey,
+      scopeDigest: input.scopeDigest,
+      expiresAt: input.expiresAt,
+      sourceHost: input.host.readContext.bind(input.host),
+      registry: input.registry,
+      tools: tools.value,
+      lifetime: new AbortController(),
+      pending: 0,
+      sequence: 0,
     },
   };
-  const dispatcher = createAgentCapabilityDispatcher({
-    host,
-    registry,
-    maxPending,
-    maxMilliseconds,
-    maxInputBytes,
-    maxOutputBytes,
+}
+
+function remaining(state: EndpointState): number {
+  if (state.lifetime.signal.aborted) return 0;
+  try {
+    const value = state.now();
+    if (!Number.isFinite(value)) return 0;
+    return Math.max(
+      0,
+      Math.min(
+        state.maxMilliseconds,
+        state.expiresAt - value,
+        state.leaseMilliseconds - (performance.now() - state.monotonicStart),
+      ),
+    );
+  } catch {
+    return 0;
+  }
+}
+
+async function readPairedContext(
+  state: EndpointState,
+  request: Parameters<AgentCapabilityHost['readContext']>[0],
+): Promise<Outcome<AgentCapabilityAuthority>> {
+  if (remaining(state) === 0 || request.signal.aborted)
+    return failure('agent.protocol.stale', 'The tool pairing is closed or expired.');
+  const result = await state.sourceHost(request);
+  if (remaining(state) === 0 || request.signal.aborted)
+    return failure('agent.protocol.stale', 'The tool pairing changed while reading authority.');
+  if (!result || !result.ok) return failure('agent.protocol.denied', 'The host did not authorize this tool pairing.');
+  const checked = normalizeAgentCapabilityAuthority(result.value, state.target);
+  if (!checked.ok) return checked;
+  if (
+    checked.value.principalKey !== state.principalKey ||
+    (state.scopeDigest !== undefined && checked.value.current?.scopeDigest !== state.scopeDigest)
+  )
+    return failure('agent.protocol.stale', 'The tool pairing no longer matches its authenticated scope.');
+  return checked;
+}
+
+function pairedHost(state: EndpointState): AgentCapabilityHost {
+  return { readContext: (request) => readPairedContext(state, request) };
+}
+
+function boundaryOutcome<T>(state: EndpointState, result: EndpointBoundary<Outcome<T>>): Outcome<T> {
+  if (result.kind === 'aborted') return failure('agent.protocol.cancelled', 'The tool request was cancelled.');
+  if (result.kind === 'deadline')
+    return failure('agent.protocol.time-budget', 'The tool request exceeded its time budget.');
+  if (result.kind === 'failed') return failure('agent.protocol.failed', 'The tool request failed safely.');
+  if (remaining(state) === 0) return failure('agent.protocol.stale', 'The tool pairing expired before delivery.');
+  return result.value;
+}
+
+async function within<T>(
+  state: EndpointState,
+  work: (signal: AbortSignal) => Promise<Outcome<T>>,
+  signal?: AbortSignal,
+): Promise<Outcome<T>> {
+  const milliseconds = remaining(state);
+  if (milliseconds === 0) return failure('agent.protocol.stale', 'The tool pairing is closed or expired.');
+  if (signal?.aborted) return failure('agent.protocol.cancelled', 'The tool request was cancelled.');
+  if (state.pending >= state.maxPending) return failure('agent.protocol.budget', 'The tool endpoint is at capacity.');
+  state.pending += 1;
+  try {
+    const parent = signal === undefined ? state.lifetime.signal : AbortSignal.any([signal, state.lifetime.signal]);
+    const result = await awaitAgentBoundary(work, parent, milliseconds);
+    return boundaryOutcome(state, result);
+  } finally {
+    state.pending -= 1;
+  }
+}
+
+async function authority(state: EndpointState, signal: AbortSignal): Promise<Outcome<AgentCapabilityAuthority>> {
+  state.sequence += 1;
+  return readPairedContext(state, {
+    ...state.target,
+    requestId: `tool-discovery-${state.sequence}`,
+    signal,
   });
-  const within = async <T>(
-    work: (signal: AbortSignal) => Promise<Outcome<T>>,
-    signal?: AbortSignal,
-  ): Promise<Outcome<T>> => {
-    const milliseconds = remaining();
-    if (milliseconds === 0) return failure('agent.protocol.stale', 'The tool pairing is closed or expired.');
-    if (signal?.aborted) return failure('agent.protocol.cancelled', 'The tool request was cancelled.');
-    if (pending >= maxPending) return failure('agent.protocol.budget', 'The tool endpoint is at capacity.');
-    pending += 1;
-    try {
-      const parent = signal === undefined ? lifetime.signal : AbortSignal.any([signal, lifetime.signal]);
-      const result = await awaitAgentBoundary(work, parent, milliseconds);
-      if (result.kind === 'aborted') return failure('agent.protocol.cancelled', 'The tool request was cancelled.');
-      if (result.kind === 'deadline')
-        return failure('agent.protocol.time-budget', 'The tool request exceeded its time budget.');
-      if (result.kind === 'failed') return failure('agent.protocol.failed', 'The tool request failed safely.');
-      if (remaining() === 0) return failure('agent.protocol.stale', 'The tool pairing expired before delivery.');
-      return result.value;
-    } finally {
-      pending -= 1;
-    }
-  };
-  const authority = async (signal: AbortSignal): Promise<Outcome<AgentCapabilityAuthority>> => {
-    sequence += 1;
-    return host.readContext({ ...target, requestId: `tool-discovery-${sequence}`, signal });
-  };
-  const authorizeModel = (options: { readonly signal?: AbortSignal } = {}): Promise<Outcome<AgentModelScope>> =>
-    within(async (signal) => {
-      const checked = await authority(signal);
+}
+
+async function authorizeModel(state: EndpointState, signal?: AbortSignal): Promise<Outcome<AgentModelScope>> {
+  return within(
+    state,
+    async (requestSignal) => {
+      const checked = await authority(state, requestSignal);
       if (!checked.ok) return checked;
       if (!checked.value.grants.includes('model.egress'))
         return failure('agent.protocol.egress', 'The host did not permit model egress.');
@@ -201,40 +324,92 @@ export function createAgentToolEndpoint(input: AgentToolEndpointOptions): Outcom
           ...(checked.value.current === undefined ? {} : { current: checked.value.current }),
         }),
       };
-    }, options?.signal);
-  const discover = (
-    options: { readonly signal?: AbortSignal } = {},
-  ): Promise<Outcome<readonly AgentToolDefinition[]>> =>
-    within(async (signal) => {
-      const checked = await authority(signal);
+    },
+    signal,
+  );
+}
+
+function availableTools(
+  state: EndpointState,
+  authority: AgentCapabilityAuthority,
+): Outcome<readonly AgentToolDefinition[]> {
+  const available = Object.freeze(
+    [...state.tools.values()].filter((tool) => authority.grants.includes(tool.operation)),
+  );
+  if (new TextEncoder().encode(JSON.stringify(available)).byteLength > state.maxOutputBytes)
+    return failure('agent.protocol.bytes', 'Tool discovery exceeds its output budget.');
+  return { ok: true, value: available };
+}
+
+async function discoverTools(
+  state: EndpointState,
+  signal?: AbortSignal,
+): Promise<Outcome<readonly AgentToolDefinition[]>> {
+  return within(
+    state,
+    async (requestSignal) => {
+      const checked = await authority(state, requestSignal);
       if (!checked.ok) return checked;
-      if (transport !== 'manual' && !checked.value.grants.includes('model.egress'))
+      if (state.transport !== 'manual' && !checked.value.grants.includes('model.egress'))
         return failure('agent.protocol.egress', 'The host did not permit external tool metadata.');
-      const available = Object.freeze(
-        [...tools.values()].filter((tool) => checked.value.grants.includes(tool.operation)),
-      );
-      if (new TextEncoder().encode(JSON.stringify(available)).byteLength > maxOutputBytes)
-        return failure('agent.protocol.bytes', 'Tool discovery exceeds its output budget.');
-      return { ok: true, value: available };
-    }, options?.signal);
-  const invoke: AgentModelToolEndpoint['invoke'] = (name, payload, options) =>
-    within(async (signal) => {
+      return availableTools(state, checked.value);
+    },
+    signal,
+  );
+}
+
+async function invokeTool(
+  state: EndpointState,
+  dispatcher: ReturnType<typeof createAgentCapabilityDispatcher>,
+  name: string,
+  payload: unknown,
+  options: Parameters<AgentModelToolEndpoint['invoke']>[2],
+): ReturnType<AgentModelToolEndpoint['invoke']> {
+  return within(
+    state,
+    async (signal) => {
       if (!options || !id(options.requestId))
         return failure('agent.protocol.invalid', 'A tool call requires a bounded request identity.');
-      const tool = tools.get(name);
-      if (!tool) return failure('agent.protocol.unsupported', 'The requested tool is not registered.');
+      const tool = state.tools.get(name);
+      if (tool === undefined) return failure('agent.protocol.unsupported', 'The requested tool is not registered.');
       const request: AgentCapabilityRequest = {
         version: '1',
         requestId: options.requestId,
-        ...target,
+        ...state.target,
         capability: tool.capability,
         operation: tool.operation,
         input: payload,
       };
-      return dispatcher.dispatch(request, { signal, transport });
-    }, options?.signal);
-  return {
-    ok: true,
-    value: Object.freeze({ transport, ...target, discover, invoke, authorizeModel, close: () => lifetime.abort() }),
+      return dispatcher.dispatch(request, { signal, transport: state.transport });
+    },
+    options?.signal,
+  );
+}
+
+function endpoint(state: EndpointState): AgentModelToolEndpoint {
+  const host = pairedHost(state);
+  const dispatcher = createAgentCapabilityDispatcher({
+    host,
+    registry: state.registry,
+    maxPending: state.maxPending,
+    maxMilliseconds: state.maxMilliseconds,
+    maxInputBytes: state.maxInputBytes,
+    maxOutputBytes: state.maxOutputBytes,
+  });
+  const value: AgentModelToolEndpoint = {
+    transport: state.transport,
+    ...state.target,
+    authorizeModel: (options = {}) => authorizeModel(state, options.signal),
+    discover: (options = {}) => discoverTools(state, options.signal),
+    invoke: (name, payload, options) => invokeTool(state, dispatcher, name, payload, options),
+    close: () => state.lifetime.abort(),
   };
+  return Object.freeze(value);
+}
+
+/** One expiring, explicitly paired region uses the same capability dispatcher as manual calls. */
+export function createAgentToolEndpoint(input: AgentToolEndpointOptions): Outcome<AgentModelToolEndpoint> {
+  const state = createEndpointState(input);
+  if (!state.ok) return state;
+  return { ok: true, value: endpoint(state.value) };
 }

@@ -1,13 +1,6 @@
 import { readFileSync } from 'node:fs';
-import {
-  createStandardFunctionRegistry,
-  parseTask,
-  parseWireValue,
-  type Catalog,
-  type Outcome,
-  type Result,
-  type Task,
-} from '@aeliqo/core';
+import { parseTask, parseWireValue, type Catalog, type Outcome, type Result, type Task } from '@aeliqo/core';
+import { createStandardFunctionRegistry } from '@aeliqo/core/expressions';
 import { createLocalDataService, type DataRecord, type QueryBudget } from '../../packages/runtime/src/data/index.js';
 import { createResultStore, type ResultHandle } from '../../packages/runtime/src/results/index.js';
 import {

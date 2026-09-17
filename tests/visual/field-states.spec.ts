@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import type { AeliqoFieldElement } from '@aeliqo/web';
+import type { AeliqoFieldElement } from '@aeliqo/web/inputs';
 
 const fields = [
   'text-field',

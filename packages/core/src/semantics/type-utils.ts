@@ -3,14 +3,9 @@ import { semanticTypeSchema } from '../contracts/schemas.js';
 import type { SemanticType } from '../contracts/types.js';
 import type { TypedExpression } from '../expressions/types.js';
 import { semanticFailure } from './errors.js';
-import type { AggregationKind } from './types.js';
 
 export function isNumericType(type: SemanticType): boolean {
   return type.value === 'integer' || type.value === 'float' || type.value === 'decimal';
-}
-
-export function isNullType(type: SemanticType): boolean {
-  return type.nullable;
 }
 
 export function grainOf(type: SemanticType): readonly string[] {
@@ -51,14 +46,6 @@ export function compatibleType(actual: SemanticType, expected: SemanticType): bo
   return sameStringSet(grainOf(actual), grainOf(expected));
 }
 
-export function cloneWithNullable(type: SemanticType, nullable: boolean): SemanticType {
-  return nullable === type.nullable ? type : { ...type, nullable };
-}
-
-export function cloneWithGrain(type: SemanticType, grain: readonly string[]): SemanticType {
-  return { ...type, grain };
-}
-
 export function numericOutput(
   args: readonly TypedExpression[],
   options: { readonly unit?: SemanticType['unit']; readonly forceFloat?: boolean } = {},
@@ -72,17 +59,16 @@ export function numericOutput(
   // Fractional operators explicitly request a float result. Ordinary decimal
   // arithmetic remains decimal; mixed decimal/float input is rejected by the
   // expression checker before this helper is called.
-  const value = options.forceFloat ? 'float' : hasDecimal ? 'decimal' : hasFloat ? 'float' : 'integer';
+  let value: SemanticType['value'];
+  if (options.forceFloat || hasFloat) value = 'float';
+  else if (hasDecimal) value = 'decimal';
+  else value = 'integer';
   return {
     value,
     nullable,
     grain,
     ...(options.unit === undefined ? {} : { unit: options.unit }),
   };
-}
-
-export function outputAggregation(kind: AggregationKind): AggregationKind {
-  return kind;
 }
 
 export function validateSemanticType(type: SemanticType, path: readonly (string | number)[] = []) {

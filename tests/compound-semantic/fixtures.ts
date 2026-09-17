@@ -1,14 +1,16 @@
 import type {
-  PresentationContext,
-  PresentationNode,
   PresentationPlan,
-  PresentationValues,
   Result,
   ResultRef,
   Task,
   VersionRef,
   VisualizationSpec,
-} from '../../packages/core/src/index.js';
+} from '../../packages/core/src/contracts/index.js';
+import type {
+  PresentationContext,
+  PresentationNode,
+  PresentationValues,
+} from '../../packages/core/src/presentation/index.js';
 import {
   AELIQO_CONFIG_SCHEMAS,
   AELIQO_OPERATION_REFS,

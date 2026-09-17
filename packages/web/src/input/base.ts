@@ -10,6 +10,26 @@ export type AeliqoValidator<T> = (
   signal: AbortSignal,
 ) => AeliqoValidationResult | Promise<AeliqoValidationResult>;
 
+function nativeValidityFlags(validity: ValidityState): ValidityStateFlags {
+  const flags: ValidityStateFlags = {};
+  if (validity.badInput) flags.badInput = true;
+  if (validity.patternMismatch) flags.patternMismatch = true;
+  if (validity.rangeOverflow) flags.rangeOverflow = true;
+  if (validity.rangeUnderflow) flags.rangeUnderflow = true;
+  if (validity.stepMismatch) flags.stepMismatch = true;
+  if (validity.tooLong) flags.tooLong = true;
+  if (validity.tooShort) flags.tooShort = true;
+  if (validity.typeMismatch) flags.typeMismatch = true;
+  if (validity.valueMissing) flags.valueMissing = true;
+  return flags;
+}
+
+function nativeValidityMessage(anchor: HTMLElement | undefined): string {
+  if (anchor !== undefined && 'validationMessage' in anchor && typeof anchor.validationMessage === 'string')
+    return anchor.validationMessage;
+  return 'Enter a valid value.';
+}
+
 export const aeliqoInputStyles = [
   ...aeliqoFoundationThemeStyles,
   css`
@@ -96,7 +116,6 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
   static readonly properties = {
     label: { type: String },
     description: { type: String },
-    hint: { type: String },
     error: { type: String },
     required: { type: Boolean, reflect: true },
     disabled: { type: Boolean, reflect: true },
@@ -110,8 +129,6 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
 
   label = '';
   description = '';
-  /** Legacy alias retained for the original `<aeliqo-input>` API. */
-  hint = '';
   error = '';
   required = false;
   disabled = false;
@@ -143,7 +160,7 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
   }
 
   get effectiveDescription(): string {
-    return this.description || this.hint;
+    return this.description;
   }
 
   get fieldDisabled(): boolean {
@@ -242,29 +259,19 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
       this.internals.setValidity({ customError: true }, this.error, anchor);
       return;
     }
+    this.setNativeValidity(anchor);
+  }
+
+  private setNativeValidity(anchor: HTMLElement | undefined): void {
+    if (this.internals === undefined) return;
     const nativeValidity =
       anchor !== undefined && 'validity' in anchor ? (anchor as HTMLInputElement).validity : undefined;
-    if (nativeValidity !== undefined && !nativeValidity.valid) {
-      const flags: ValidityStateFlags = {};
-      if (nativeValidity.badInput) flags.badInput = true;
-      if (nativeValidity.patternMismatch) flags.patternMismatch = true;
-      if (nativeValidity.rangeOverflow) flags.rangeOverflow = true;
-      if (nativeValidity.rangeUnderflow) flags.rangeUnderflow = true;
-      if (nativeValidity.stepMismatch) flags.stepMismatch = true;
-      if (nativeValidity.tooLong) flags.tooLong = true;
-      if (nativeValidity.tooShort) flags.tooShort = true;
-      if (nativeValidity.typeMismatch) flags.typeMismatch = true;
-      if (nativeValidity.valueMissing) flags.valueMissing = true;
-      const message =
-        anchor !== undefined &&
-        'validationMessage' in anchor &&
-        typeof (anchor as HTMLInputElement).validationMessage === 'string'
-          ? (anchor as HTMLInputElement).validationMessage
-          : 'Enter a valid value.';
-      this.internals.setValidity(flags, message || 'Enter a valid value.', anchor);
+    if (nativeValidity === undefined || nativeValidity.valid) {
+      this.internals.setValidity({});
       return;
     }
-    this.internals.setValidity({});
+    const message = nativeValidityMessage(anchor) || 'Enter a valid value.';
+    this.internals.setValidity(nativeValidityFlags(nativeValidity), message, anchor);
   }
 
   protected describedByIds(): string {
@@ -310,29 +317,44 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
     this.requestUpdate();
     try {
       const result = await validator(value, controller.signal);
-      if (controller.signal.aborted || sequence !== this.validationSequence || !this.isConnected) return;
-      if (!this.isCurrentValidationValue(value)) {
-        this.invalidateValidation();
-        return;
-      }
-      const normalized = this.normalizeValidationResult(result);
-      this.validationState = normalized.valid ? 'valid' : 'invalid';
-      this.setValidatorError(normalized.message);
-      this.hasValidationValue = false;
-      this.dispatchValidation(this.validationState, this.error);
-      this.requestUpdate();
+      this.completeValidation(value, sequence, controller, result);
     } catch {
-      if (controller.signal.aborted || sequence !== this.validationSequence || !this.isConnected) return;
-      if (!this.isCurrentValidationValue(value)) {
-        this.invalidateValidation();
-        return;
-      }
-      this.validationState = 'invalid';
-      this.setValidatorError('Validation failed.');
-      this.hasValidationValue = false;
-      this.dispatchValidation('invalid', this.error);
-      this.requestUpdate();
+      this.failValidation(value, sequence, controller);
     }
+  }
+
+  private completeValidation(
+    value: T,
+    sequence: number,
+    controller: AbortController,
+    result: AeliqoValidationResult,
+  ): void {
+    if (!this.isActiveValidation(sequence, controller) || !this.acceptCurrentValidationValue(value)) return;
+    const normalized = this.normalizeValidationResult(result);
+    this.validationState = normalized.valid ? 'valid' : 'invalid';
+    this.setValidatorError(normalized.message);
+    this.hasValidationValue = false;
+    this.dispatchValidation(this.validationState, this.error);
+    this.requestUpdate();
+  }
+
+  private failValidation(value: T, sequence: number, controller: AbortController): void {
+    if (!this.isActiveValidation(sequence, controller) || !this.acceptCurrentValidationValue(value)) return;
+    this.validationState = 'invalid';
+    this.setValidatorError('Validation failed.');
+    this.hasValidationValue = false;
+    this.dispatchValidation('invalid', this.error);
+    this.requestUpdate();
+  }
+
+  private isActiveValidation(sequence: number, controller: AbortController): boolean {
+    return !controller.signal.aborted && sequence === this.validationSequence && this.isConnected;
+  }
+
+  private acceptCurrentValidationValue(value: T): boolean {
+    if (this.isCurrentValidationValue(value)) return true;
+    this.invalidateValidation();
+    return false;
   }
 
   /** Cancel a result that no longer describes the current host value. */

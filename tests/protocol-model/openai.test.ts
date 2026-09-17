@@ -72,7 +72,7 @@ async function localProvider(
       apiKey: 'synthetic-local-test-key',
       baseURL: `http://127.0.0.1:${(server.address() as AddressInfo).port}/v1`,
     });
-    await test(createOpenAIToolModel({ client, model: 'fixture-model' }), bodies);
+    await test(createOpenAIToolModel({ client, environment: 'trusted-server', model: 'fixture-model' }), bodies);
   } finally {
     server.closeAllConnections();
     await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));

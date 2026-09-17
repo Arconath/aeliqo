@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { createQueryFunctionRegistry, defineResource, type PresentationPlan } from '../../packages/core/src/index.js';
+import { defineResource, type PresentationPlan } from '../../packages/core/src/index.js';
+import { createQueryFunctionRegistry } from '../../packages/core/src/expressions/index.js';
 import { createAeliqoRuntime } from '../../packages/runtime/src/app/index.js';
 import { createLocalDataService } from '../../packages/runtime/src/data/index.js';
 import type { DataService } from '../../packages/runtime/src/data/index.js';

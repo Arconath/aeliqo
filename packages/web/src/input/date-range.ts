@@ -168,18 +168,32 @@ export class AeliqoDateRangeElement extends AeliqoFieldElement<AeliqoDateRangeVa
     const start = dateOnly(this.start);
     const end = dateOnly(this.end);
     const missing = this.required && (start === undefined || end === undefined);
+    this.syncFormValue(valid, start, end, missing);
+    this.syncAriaInvalid(valid, missing);
+    this.syncValidity(valid, missing);
+  }
+
+  private syncFormValue(valid: boolean, start: string | undefined, end: string | undefined, missing: boolean): void {
     if (this.fieldDisabled || !valid || missing) {
       this.internals?.setFormValue(null);
-    } else if (this.name && start !== undefined && end !== undefined) {
-      const data = new FormData();
-      data.append(`${this.name}[start]`, start);
-      data.append(`${this.name}[end]`, end);
-      this.internals?.setFormValue(data);
-    } else {
-      this.internals?.setFormValue(null);
+      return;
     }
+    if (!this.name || start === undefined || end === undefined) {
+      this.internals?.setFormValue(null);
+      return;
+    }
+    const data = new FormData();
+    data.append(`${this.name}[start]`, start);
+    data.append(`${this.name}[end]`, end);
+    this.internals?.setFormValue(data);
+  }
+
+  private syncAriaInvalid(valid: boolean, missing: boolean): void {
     if ((!this.error && valid && !missing) || this.fieldDisabled) this.removeAttribute('aria-invalid');
     else this.setAttribute('aria-invalid', 'true');
+  }
+
+  private syncValidity(valid: boolean, missing: boolean): void {
     const anchor = this.nativeStart();
     if (this.internals !== undefined && !this.fieldDisabled && !valid)
       this.internals.setValidity(

@@ -1,4 +1,5 @@
-import { createQueryFunctionRegistry, defineResource } from '@aeliqo/core';
+import { createQueryFunctionRegistry } from '@aeliqo/core/expressions';
+import { defineResource } from '@aeliqo/core';
 import { createLocalDataService, type DataRecord } from '@aeliqo/runtime/data';
 import { createAeliqoApp } from '@aeliqo/web/app';
 import { z } from 'zod';

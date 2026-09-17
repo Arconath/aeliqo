@@ -1,13 +1,5 @@
-import type {
-  Diagnostic,
-  Outcome,
-  PresentationPlan,
-  PresentationStateMappingManifest,
-  PresentationValues,
-  ReadonlyJsonValue,
-  Result,
-  VersionRef,
-} from '@aeliqo/core';
+import type { Diagnostic, Outcome, PresentationPlan, ReadonlyJsonValue, Result, VersionRef } from '@aeliqo/core';
+import type { PresentationStateMappingManifest, PresentationValues } from '@aeliqo/core/presentation';
 import { AELIQO_CONFIG_SCHEMAS, AELIQO_OPERATION_REFS, AELIQO_PRESENTATION_REFS } from '../region/registry.js';
 import { AELIQO_DATA_CONFIG_SCHEMAS, AELIQO_DATA_REFS } from '../region/data-registry.js';
 import { AELIQO_INPUT_REFS } from '../input/manifest.js';
@@ -129,46 +121,64 @@ function valuesFor(view: ViewChoice, context: RecipeContext): PresentationValues
   if (sameRef(view.ref, aliases.list!.ref)) return { columns, selection: 'none' };
   return {};
 }
-function selectedView(context: RecipeContext): {
+type SelectedView = {
   readonly ref: VersionRef;
   readonly schema: VersionRef;
   readonly role: string;
   readonly values: PresentationValues;
-} {
+};
+
+function preferredView(context: RecipeContext, preferred: string): SelectedView | undefined {
+  const known = aliases[preferred] ?? Object.values(aliases).find((candidate) => candidate.ref.id === preferred);
+  const operation = context.task.needs[0]?.operation;
+  if (known !== undefined && operation !== undefined && supportsOperation(known.operations, operation)) {
+    const values = valuesFor(known, context);
+    if (values !== undefined) return { ...known, values };
+  }
+  return custom(context, preferred);
+}
+
+function viewWithValues(view: ViewChoice, context: RecipeContext): SelectedView {
+  return { ...view, values: valuesFor(view, context) ?? {} };
+}
+
+function analyzeView(context: RecipeContext, result: Result): SelectedView {
+  const values = trendConfig(result);
+  if (values !== undefined) return { ...aliases.trend!, values };
+  return viewWithValues(aliases.table!, context);
+}
+
+function browseView(context: RecipeContext, result: Result): SelectedView {
+  const inlineSize = context.environment.inlineSize;
+  const narrow = inlineSize.state === 'known' && inlineSize.value < 640;
+  if (!narrow) return viewWithValues(aliases.table!, context);
+  const cards = aliases.cards!;
+  const values = valuesFor(cards, context) ?? {};
+  const headingKey = result.fields.find((field) => field.role === 'attribute' && field.type.value === 'text')?.id;
+  return { ...cards, values: { ...values, ...(headingKey === undefined ? {} : { headingKey }) } };
+}
+
+function viewForIntent(context: RecipeContext, result: Result): SelectedView {
+  switch (context.intent.kind) {
+    case 'detail':
+      return viewWithValues(aliases.detail!, context);
+    case 'compare':
+      return viewWithValues(aliases.table!, context);
+    case 'analyze':
+      return analyzeView(context, result);
+    default:
+      return browseView(context, result);
+  }
+}
+
+function selectedView(context: RecipeContext): SelectedView {
   if (context.result === undefined) throw new TypeError('A standard data recipe requires one Result descriptor.');
   const preferred = context.task.viewPreference?.representation;
-  const operation = context.task.needs[0]?.operation;
   if (preferred !== undefined) {
-    const known = aliases[preferred] ?? Object.values(aliases).find((candidate) => candidate.ref.id === preferred);
-    const values = known === undefined ? undefined : valuesFor(known, context);
-    if (
-      known !== undefined &&
-      values !== undefined &&
-      operation !== undefined &&
-      supportsOperation(known.operations, operation)
-    )
-      return { ...known, values };
-    const extension = custom(context, preferred);
-    if (extension !== undefined) return extension;
+    const choice = preferredView(context, preferred);
+    if (choice !== undefined) return choice;
   }
-  if (context.intent.kind === 'detail') return { ...aliases.detail!, values: valuesFor(aliases.detail!, context)! };
-  if (context.intent.kind === 'compare') return { ...aliases.table!, values: valuesFor(aliases.table!, context)! };
-  if (context.intent.kind === 'analyze') {
-    const values = trendConfig(context.result);
-    if (values !== undefined) return { ...aliases.trend!, values };
-    return { ...aliases.table!, values: valuesFor(aliases.table!, context)! };
-  }
-  const narrow = context.environment.inlineSize.state === 'known' && context.environment.inlineSize.value < 640;
-  if (narrow) {
-    const headingKey = context.result.fields.find(
-      (field) => field.role === 'attribute' && field.type.value === 'text',
-    )?.id;
-    return {
-      ...aliases.cards!,
-      values: { ...valuesFor(aliases.cards!, context)!, ...(headingKey === undefined ? {} : { headingKey }) },
-    };
-  }
-  return { ...aliases.table!, values: valuesFor(aliases.table!, context)! };
+  return viewForIntent(context, context.result);
 }
 function build(context: RecipeContext): Outcome<PresentationPlan> {
   if (context.task.kind !== 'data' || context.result === undefined)

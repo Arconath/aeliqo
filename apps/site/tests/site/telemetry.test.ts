@@ -6,13 +6,8 @@ import {
   prepareGoogleAnalytics,
   setAnalyticsConsent,
   startGoogleAnalytics,
-} from '../../../web/src/analytics.js';
-import {
-  isPublicAeliqoSite,
-  parseMonitoringConfig,
-  startBasicTelemetry,
-  webVitalData,
-} from '../../../web/src/telemetry.js';
+} from '../../src/analytics.js';
+import { isPublicAeliqoSite, parseMonitoringConfig, startBasicTelemetry, webVitalData } from '../../src/telemetry.js';
 
 function storage() {
   const values = new Map<string, string>();
@@ -49,10 +44,10 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe('public telemetry boundary', () => {
   it('ships both deployment controls disabled', () => {
-    expect(JSON.parse(readFileSync(resolve(process.cwd(), '../web/public/browser-monitoring.json'), 'utf8'))).toEqual({
+    expect(JSON.parse(readFileSync(resolve(process.cwd(), 'public/browser-monitoring.json'), 'utf8'))).toEqual({
       enabled: false,
     });
-    expect(JSON.parse(readFileSync(resolve(process.cwd(), '../web/public/google-analytics.json'), 'utf8'))).toEqual({
+    expect(JSON.parse(readFileSync(resolve(process.cwd(), 'public/google-analytics.json'), 'utf8'))).toEqual({
       enabled: false,
     });
   });

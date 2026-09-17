@@ -12,13 +12,24 @@ const bad = (): Outcome<never> => ({
     },
   ],
 });
-const ordered = (left: number | bigint | string, right: typeof left): -1 | 0 | 1 =>
-  left < right ? -1 : left > right ? 1 : 0;
+const ordered = (left: number | bigint | string, right: typeof left): -1 | 0 | 1 => {
+  if (left < right) return -1;
+  if (left > right) return 1;
+  return 0;
+};
 
 function validDate(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/u.test(value)) return false;
   const milliseconds = Date.parse(`${value}T00:00:00Z`);
   return Number.isFinite(milliseconds) && new Date(milliseconds).toISOString().slice(0, 10) === value;
+}
+
+function validInstantClock(parts: RegExpExecArray): boolean {
+  return Number(parts[2]) <= 23 && Number(parts[3]) <= 59 && Number(parts[4]) <= 59;
+}
+
+function validInstantOffset(parts: RegExpExecArray): boolean {
+  return parts[7] === undefined || (Number(parts[7]) <= 23 && Number(parts[8]) <= 59);
 }
 
 /** Retain all fractional digits; parsing the full instant would truncate precision. */
@@ -28,8 +39,7 @@ export function scalarInstantParts(
   if (typeof value !== 'string' || value.length > WIRE_LIMITS.text) return undefined;
   const parts = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(Z|[+-](\d{2}):(\d{2}))$/u.exec(value);
   if (!parts || !validDate(parts[1]!)) return undefined;
-  if (Number(parts[2]) > 23 || Number(parts[3]) > 59 || Number(parts[4]) > 59) return undefined;
-  if (parts[7] !== undefined && (Number(parts[7]) > 23 || Number(parts[8]) > 59)) return undefined;
+  if (!validInstantClock(parts) || !validInstantOffset(parts)) return undefined;
   const milliseconds = Date.parse(`${parts[1]}T${parts[2]}:${parts[3]}:${parts[4]}${parts[6]}`);
   if (!Number.isSafeInteger(milliseconds)) return undefined;
   return { milliseconds, fraction: (parts[5] ?? '').replace(/0+$/u, '') };
@@ -49,35 +59,69 @@ function decimalText(value: unknown): string | undefined {
 /** Clone decimal objects; do not retain caller-owned mutable objects or invoke accessors. */
 export function validateScalar(value: unknown, type: SemanticType): Outcome<Scalar> {
   try {
-    if (
-      type === null ||
-      typeof type !== 'object' ||
-      typeof type.nullable !== 'boolean' ||
-      !['text', 'boolean', 'integer', 'float', 'decimal', 'date', 'instant'].includes(type.value)
-    )
-      return bad();
+    if (!validScalarType(type)) return bad();
     if (value === null) return type.nullable ? { ok: true, value: null } : bad();
-    switch (type.value) {
-      case 'text':
-        return typeof value === 'string' && value.length <= WIRE_LIMITS.text ? { ok: true, value } : bad();
-      case 'boolean':
-        return typeof value === 'boolean' ? { ok: true, value } : bad();
-      case 'integer':
-        return typeof value === 'number' && Number.isSafeInteger(value) ? { ok: true, value } : bad();
-      case 'float':
-        return typeof value === 'number' && Number.isFinite(value) ? { ok: true, value } : bad();
-      case 'decimal': {
-        const text = decimalText(value);
-        return text === undefined ? bad() : { ok: true, value: Object.freeze({ decimal: text }) };
-      }
-      case 'date':
-        return typeof value === 'string' && validDate(value) ? { ok: true, value } : bad();
-      case 'instant':
-        return typeof value === 'string' && scalarInstantParts(value) !== undefined ? { ok: true, value } : bad();
-    }
+    return validateNonNullScalar(value, type);
   } catch {
     return bad();
   }
+}
+
+function validScalarType(type: SemanticType): boolean {
+  return (
+    type !== null &&
+    typeof type === 'object' &&
+    typeof type.nullable === 'boolean' &&
+    ['text', 'boolean', 'integer', 'float', 'decimal', 'date', 'instant'].includes(type.value)
+  );
+}
+
+function validateNonNullScalar(value: unknown, type: SemanticType): Outcome<Scalar> {
+  switch (type.value) {
+    case 'text':
+      return validateText(value);
+    case 'boolean':
+      return validateBoolean(value);
+    case 'integer':
+      return validateInteger(value);
+    case 'float':
+      return validateFloat(value);
+    case 'decimal':
+      return validateDecimal(value);
+    case 'date':
+      return validateDate(value);
+    case 'instant':
+      return validateInstant(value);
+  }
+}
+
+function validateText(value: unknown): Outcome<Scalar> {
+  return typeof value === 'string' && value.length <= WIRE_LIMITS.text ? { ok: true, value } : bad();
+}
+
+function validateBoolean(value: unknown): Outcome<Scalar> {
+  return typeof value === 'boolean' ? { ok: true, value } : bad();
+}
+
+function validateInteger(value: unknown): Outcome<Scalar> {
+  return typeof value === 'number' && Number.isSafeInteger(value) ? { ok: true, value } : bad();
+}
+
+function validateFloat(value: unknown): Outcome<Scalar> {
+  return typeof value === 'number' && Number.isFinite(value) ? { ok: true, value } : bad();
+}
+
+function validateDecimal(value: unknown): Outcome<Scalar> {
+  const text = decimalText(value);
+  return text === undefined ? bad() : { ok: true, value: Object.freeze({ decimal: text }) };
+}
+
+function validateDate(value: unknown): Outcome<Scalar> {
+  return typeof value === 'string' && validDate(value) ? { ok: true, value } : bad();
+}
+
+function validateInstant(value: unknown): Outcome<Scalar> {
+  return typeof value === 'string' && scalarInstantParts(value) !== undefined ? { ok: true, value } : bad();
 }
 
 function decimalParts(value: string): { coefficient: bigint; scale: number } {

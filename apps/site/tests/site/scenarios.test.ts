@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { compileIntent, parseIntent } from '@aeliqo/core';
-import { PLAYGROUND_INTENTS, PLAYGROUND_RESOURCES, PLAYGROUND_SCENARIOS } from '../../../playground/src/scenarios.js';
+import { PLAYGROUND_INTENTS, PLAYGROUND_RESOURCES, PLAYGROUND_SCENARIOS } from '../../src/playground/scenarios.js';
 
 describe('0.3 playground scenarios', () => {
   it('covers four application categories with valid manual intent fixtures', () => {

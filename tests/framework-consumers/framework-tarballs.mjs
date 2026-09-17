@@ -8,7 +8,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { createServer } from 'node:http';
-import { access, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { access, cp, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir, platform, release, arch } from 'node:os';
 import { extname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -48,6 +48,24 @@ async function fileExists(path) {
   }
 }
 
+async function stagePackage(directory, manifest, name) {
+  const stage = join(runDirectory, 'staged-packages', name);
+  await mkdir(stage, { recursive: true });
+  for (const path of manifest.files ?? []) {
+    const source = path === 'README.md' ? join(root, 'docs/packages', `${name}.md`) : join(directory, path);
+    await cp(source, join(stage, path), { recursive: true });
+  }
+  const stagedManifest = structuredClone(manifest);
+  delete stagedManifest.devDependencies;
+  for (const field of ['dependencies', 'optionalDependencies', 'peerDependencies']) {
+    for (const dependency of Object.keys(stagedManifest[field] ?? {})) {
+      if (dependency.startsWith('@aeliqo/')) stagedManifest[field][dependency] = RELEASE_VERSION;
+    }
+  }
+  await writeFile(join(stage, 'package.json'), JSON.stringify(stagedManifest, null, 2) + '\n');
+  return stage;
+}
+
 const packageNames = ['core', 'runtime', 'web', 'react'];
 const artifacts = [];
 for (const name of packageNames) {
@@ -59,7 +77,8 @@ for (const name of packageNames) {
   assert.notEqual(manifest.private, true);
   run(['pnpm', 'build'], directory);
   const tarball = join(runDirectory, `aeliqo-${name}-${RELEASE_VERSION}.tgz`);
-  run(['pnpm', 'pack', '--out', tarball], directory);
+  const stage = await stagePackage(directory, manifest, name);
+  run(['pnpm', 'pack', '--out', tarball], stage);
   const bytes = await readFile(tarball);
   const packed = JSON.parse(run(['tar', '-xOf', tarball, 'package/package.json'], root));
   assert.deepEqual(packed.exports, manifest.exports, `${name} exports changed while packing`);
@@ -140,6 +159,7 @@ for (const artifact of artifacts) {
 assert.equal(lock.packages['node_modules/@aeliqo/runtime']?.dependencies?.['@aeliqo/core'], RELEASE_VERSION);
 assert.equal(lock.packages['node_modules/@aeliqo/web']?.dependencies?.['@aeliqo/core'], RELEASE_VERSION);
 assert.equal(lock.packages['node_modules/@aeliqo/react']?.dependencies?.['@aeliqo/web'], RELEASE_VERSION);
+assert.equal(lock.packages['node_modules/@aeliqo/react']?.peerDependencies?.['@aeliqo/runtime'], RELEASE_VERSION);
 assert.deepEqual(
   Object.keys(lock.packages)
     .filter((key) => key.startsWith('node_modules/@aeliqo/'))
@@ -228,22 +248,29 @@ const wrappers = [
 ];
 assert.equal(wrappers.length, 71);
 
-const wrapperImport = wrappers.join(', ');
+const wrapperFamilies = ['foundation', 'inputs', 'navigation', 'feedback', 'data', 'plot', 'visualization', 'compound'];
+const wrapperImports = wrapperFamilies
+  .map((family) => `import * as ${family} from "@aeliqo/react/${family}";`)
+  .join('\n');
+const wrapperGroups = wrapperFamilies.join(', ');
 await writeFile(
   join(consumer, 'framework-types.tsx'),
   `
-import {${wrapperImport}} from "@aeliqo/react";
-import type {AeliqoInputChangeDetail, AeliqoTableColumn, AeliqoTableRow} from "@aeliqo/web";
-import {AeliqoInput} from "@aeliqo/react";
+${wrapperImports}
+import type {AeliqoTableColumn, AeliqoTableRow} from "@aeliqo/web/data";
+import type {AeliqoInputChangeDetail as InputChangeDetail} from "@aeliqo/web/inputs";
+import {AeliqoTextField} from "@aeliqo/react/inputs";
+import {AeliqoTable} from "@aeliqo/react/data";
 
-const wrappers = {${wrappers.join(', ')}};
-for (const [name, component] of Object.entries(wrappers)) {
-  if (typeof component !== "function") throw new Error(name + " is not a component wrapper");
+const wrapperNames = ${JSON.stringify(wrappers)};
+const groups: readonly Record<string, unknown>[] = [${wrapperGroups}];
+for (const name of wrapperNames) {
+  if (!groups.some((group) => typeof group[name] === "function")) throw new Error(name + " is not exported by its family");
 }
 const columns: readonly AeliqoTableColumn[] = [{key: "name", label: "Name"}];
 const rows: readonly AeliqoTableRow[] = [{name: "Ada"}];
-const detail: AeliqoInputChangeDetail = {value: "Ada", source: "user"};
-const input = <AeliqoInput label="Person" value={detail.value} onAeliqoInput={(event) => { const value: string = event.detail.value; void value; }} />;
+const detail: InputChangeDetail<string> = {value: "Ada", source: "user"};
+const input = <AeliqoTextField label="Person" value={detail.value} onValueChange={(event) => { const value: string = event.detail.value; void value; }} />;
 const table = <AeliqoTable caption="People" columns={columns} rows={rows} />;
 void [input, table];
 `,
@@ -252,12 +279,14 @@ void [input, table];
 await writeFile(
   join(consumer, 'framework-vanilla.ts'),
   `
-import {AeliqoInputEvent, registerAeliqoElements, type AeliqoInputElement, type AeliqoTableElement} from "@aeliqo/web";
+import {registerAeliqoElements} from "@aeliqo/web";
+import {AeliqoInputChangeEvent, type AeliqoTextFieldElement} from "@aeliqo/web/inputs";
+import type {AeliqoTableElement} from "@aeliqo/web/data";
 registerAeliqoElements();
-const input = document.createElement("aeliqo-input") as AeliqoInputElement;
+const input = document.createElement("aeliqo-text-field") as AeliqoTextFieldElement;
 const table = document.createElement("aeliqo-table") as AeliqoTableElement;
-input.addEventListener("aeliqo-input", (event) => {
-  if (!(event instanceof AeliqoInputEvent)) throw new Error("Unexpected input event");
+input.addEventListener("aeliqo-input-change", (event) => {
+  if (!(event instanceof AeliqoInputChangeEvent)) throw new Error("Unexpected input event");
   const next: string = event.detail.value;
   input.value = next;
 });
@@ -271,10 +300,11 @@ await writeFile(
   join(consumer, 'framework-vue.ts'),
   `
 import {createApp, h, ref, type VNode} from "vue";
-import {registerAeliqoElements, AeliqoInputEvent} from "@aeliqo/web";
+import {registerAeliqoElements} from "@aeliqo/web";
+import {AeliqoInputChangeEvent} from "@aeliqo/web/inputs";
 registerAeliqoElements();
-const Fixture = {setup(): (() => VNode) { const value = ref("Vue"); return () => h("aeliqo-input", {
-  label: "Vue person", value: value.value, "onAeliqo-input": (event: Event) => { if (event instanceof AeliqoInputEvent) value.value = event.detail.value; },
+const Fixture = {setup(): (() => VNode) { const value = ref("Vue"); return () => h("aeliqo-text-field", {
+  label: "Vue person", value: value.value, "onAeliqo-input-change": (event: Event) => { if (event instanceof AeliqoInputChangeEvent) value.value = event.detail.value; },
 }); }};
 createApp(Fixture).mount(document.body);
 `,
@@ -283,7 +313,8 @@ createApp(Fixture).mount(document.body);
 await writeFile(
   join(consumer, 'adaptive-app.ts'),
   `
-import {createQueryFunctionRegistry, defineResource} from "@aeliqo/core";
+import {defineResource} from "@aeliqo/core";
+import {createQueryFunctionRegistry} from "@aeliqo/core/expressions";
 import {createLocalDataService} from "@aeliqo/runtime/data";
 import {createAeliqoApp, type AeliqoApp} from "@aeliqo/web/app";
 import {z} from "zod";
@@ -324,7 +355,8 @@ export function createPeopleApp(): AeliqoApp {
 );
 
 const catalogQuickstart = `
-import {createStandardFunctionRegistry, parseCatalog, type Catalog} from "@aeliqo/core";
+import {createStandardFunctionRegistry} from "@aeliqo/core/expressions";
+import {parseCatalog, type Catalog} from "@aeliqo/core";
 import {createMeaningAuthoring} from "@aeliqo/runtime/meaning";
 const registry = createStandardFunctionRegistry("framework-meaning-consumer");
 if (!registry.ok) throw new Error("function registry");
@@ -394,11 +426,12 @@ import assert from "node:assert/strict";
 import "@aeliqo/react/ssr";
 import {createElement} from "react";
 import {renderToString} from "react-dom/server";
-import {AeliqoInput, AeliqoTable} from "@aeliqo/react";
+import {AeliqoTextField} from "@aeliqo/react/inputs";
+import {AeliqoTable} from "@aeliqo/react/data";
 assert.equal(typeof globalThis.window, "undefined");
-const input = renderToString(createElement(AeliqoInput, {label: "SSR person", value: "Ada"}));
+const input = renderToString(createElement(AeliqoTextField, {label: "SSR person", value: "Ada"}));
 const table = renderToString(createElement(AeliqoTable, {caption: "SSR people", columns: [{key: "name", label: "Name"}], rows: [{name: "Ada"}]}));
-assert.match(input, /aeliqo-input/); assert.match(input, /SSR person/); assert.match(input, /shadowrootmode="open"/);
+assert.match(input, /aeliqo-text-field/); assert.match(input, /SSR person/); assert.match(input, /shadowrootmode="open"/);
 assert.match(table, /aeliqo-table/); assert.match(table, /SSR people/); assert.match(table, /Ada/);
 console.log(JSON.stringify({input: input.length, table: table.length, hasDeclarativeShadow: input.includes("shadowrootmode=\\\"open\\\"")}));
 `,
@@ -410,16 +443,20 @@ assert.equal(ssrReport.hasDeclarativeShadow, true);
 await writeFile(
   join(consumer, 'index.html'),
   `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Installed framework consumer</title><style>body{font-family:system-ui;margin:1rem}.framework-grid{display:grid;gap:1rem}.adaptive-region{container-type:inline-size;min-height:12rem}.adaptive-narrow{width:360px;max-width:100%}</style></head><body>
-<div class="framework-grid"><main id="vanilla"><h1>Vanilla</h1><p id="vanilla-status" role="status">Ready</p><aeliqo-input id="vanilla-input" label="Vanilla person" value="Vanilla"></aeliqo-input><aeliqo-table id="vanilla-table"></aeliqo-table><p id="vanilla-app-status" role="status">Mounting</p><div id="vanilla-region" class="adaptive-region"></div></main>
+<div class="framework-grid"><main id="vanilla"><h1>Vanilla</h1><p id="vanilla-status" role="status">Ready</p><aeliqo-text-field id="vanilla-input" label="Vanilla person" value="Vanilla"></aeliqo-text-field><aeliqo-table id="vanilla-table"></aeliqo-table><p id="vanilla-app-status" role="status">Mounting</p><div id="vanilla-region" class="adaptive-region"></div></main>
 <main id="react-root" class="adaptive-narrow"><h1>React</h1></main><main id="vue-root"><h1>Vue</h1></main></div><script type="module" src="/framework-app.tsx"></script></body></html>`,
 );
 await writeFile(
   join(consumer, 'framework-app.tsx'),
   `
-import {registerAeliqoElements, AeliqoInputEvent, type AeliqoTableElement} from "@aeliqo/web";
+import {registerAeliqoElements} from "@aeliqo/web";
+import {AeliqoInputChangeEvent} from "@aeliqo/web/inputs";
+import type {AeliqoTableElement} from "@aeliqo/web/data";
 import {createRoot} from "react-dom/client";
 import React, {useState} from "react";
-import {AeliqoInput, AeliqoTable, registerAeliqoReactElements} from "@aeliqo/react";
+import {AeliqoTextField} from "@aeliqo/react/inputs";
+import {AeliqoTable} from "@aeliqo/react/data";
+import {registerAeliqoReactElements} from "@aeliqo/react";
 import {AeliqoProvider, AeliqoRegion} from "@aeliqo/react/app";
 import {createApp, h, ref, type VNode} from "vue";
 import {browsePeople, createPeopleApp} from "./adaptive-app.js";
@@ -431,16 +468,16 @@ const vanillaRegion = document.querySelector<HTMLElement>("#vanilla-region");
 const vanillaAppStatus = document.querySelector("#vanilla-app-status");
 if (!(vanillaInput instanceof HTMLElement) || !vanillaTable || !vanillaStatus || !vanillaRegion || !vanillaAppStatus) throw new Error("Vanilla shell is incomplete");
 vanillaTable.caption = "Vanilla people"; vanillaTable.columns = [{key: "name", label: "Name"}]; vanillaTable.rows = [{name: "Ada"}];
-vanillaInput.addEventListener("aeliqo-input", (event) => { if (event instanceof AeliqoInputEvent) { vanillaInput.value = event.detail.value; vanillaStatus.textContent = event.detail.value; } });
+vanillaInput.addEventListener("aeliqo-input-change", (event) => { if (event instanceof AeliqoInputChangeEvent) { vanillaInput.value = event.detail.value; vanillaStatus.textContent = event.detail.value; } });
 const vanillaApp = createPeopleApp();
 const vanillaMounted = vanillaApp.mount({target: vanillaRegion, regionId: "vanilla-people", resourceId: "people"});
 if (!vanillaMounted.ok) throw new Error(vanillaMounted.diagnostics[0].message);
 vanillaAppStatus.textContent = (await vanillaApp.render({regionId: "vanilla-people", intent: browsePeople})).status;
 
 const reactApp = createPeopleApp();
-function ReactFixture(): React.JSX.Element { const [value, setValue] = useState("React"); return <AeliqoProvider app={reactApp}><p id="react-status" role="status">{value}</p><AeliqoInput id="react-input" label="React person" value={value} onAeliqoInput={(event) => setValue(event.detail.value)} /><AeliqoTable caption="React people" columns={[{key: "name", label: "Name"}]} rows={[{name: "Ada"}]} /><p id="react-app-status" role="status">Mounting</p><AeliqoRegion className="adaptive-region" regionId="react-people" resourceId="people" intent={browsePeople} onReceipt={(receipt) => { const status = document.querySelector("#react-app-status"); if (status) status.textContent = receipt.status; }} /></AeliqoProvider>; }
+function ReactFixture(): React.JSX.Element { const [value, setValue] = useState("React"); return <AeliqoProvider app={reactApp}><p id="react-status" role="status">{value}</p><AeliqoTextField id="react-input" label="React person" value={value} onValueChange={(event) => setValue(event.detail.value)} /><AeliqoTable caption="React people" columns={[{key: "name", label: "Name"}]} rows={[{name: "Ada"}]} /><p id="react-app-status" role="status">Mounting</p><AeliqoRegion className="adaptive-region" regionId="react-people" resourceId="people" intent={browsePeople} onReceipt={(receipt) => { const status = document.querySelector("#react-app-status"); if (status) status.textContent = receipt.status; }} /></AeliqoProvider>; }
 createRoot(document.querySelector("#react-root")!).render(<ReactFixture />);
-const VueFixture = {setup(): (() => VNode) { const value = ref("Vue"); return () => h("section", [h("p", {id: "vue-status", role: "status"}, value.value), h("aeliqo-input", {id: "vue-input", label: "Vue person", value: value.value, "onAeliqo-input": (event: Event) => { if (event instanceof AeliqoInputEvent) value.value = event.detail.value; }}), h("aeliqo-table", {caption: "Vue people", columns: [{key: "name", label: "Name"}], rows: [{name: "Ada"}]}), h("p", {id: "vue-app-status", role: "status"}, "Mounting"), h("div", {id: "vue-region", class: "adaptive-region"})]); }};
+const VueFixture = {setup(): (() => VNode) { const value = ref("Vue"); return () => h("section", [h("p", {id: "vue-status", role: "status"}, value.value), h("aeliqo-text-field", {id: "vue-input", label: "Vue person", value: value.value, "onAeliqo-input-change": (event: Event) => { if (event instanceof AeliqoInputChangeEvent) value.value = event.detail.value; }}), h("aeliqo-table", {caption: "Vue people", columns: [{key: "name", label: "Name"}], rows: [{name: "Ada"}]}), h("p", {id: "vue-app-status", role: "status"}, "Mounting"), h("div", {id: "vue-region", class: "adaptive-region"})]); }};
 createApp(VueFixture).mount(document.querySelector("#vue-root")!);
 const vueRegion = document.querySelector<HTMLElement>("#vue-region");
 const vueAppStatus = document.querySelector("#vue-app-status");

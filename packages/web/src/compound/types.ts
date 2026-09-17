@@ -2,12 +2,11 @@ import type {
   CommitPreconditions,
   InteractionLink,
   PresentationPlan,
-  PresentationContext,
-  PresentationRegistry,
   ResultRef,
   Scalar,
   VersionRef,
 } from '@aeliqo/core';
+import type { PresentationContext, PresentationRegistry } from '@aeliqo/core/presentation';
 import type {
   AeliqoDataColumn,
   AeliqoDataRecord,
@@ -69,10 +68,6 @@ export interface AeliqoBreakdownGroup {
   /** Optional host-formatted value. The compound never derives this text. */
   readonly displayValue?: string;
   readonly unit?: string;
-  /** @deprecated Retained as input provenance only; never evaluated by the web component. */
-  readonly numerator?: number;
-  /** @deprecated Retained as input provenance only; never evaluated by the web component. */
-  readonly denominator?: number;
   readonly recordCount?: number;
 }
 export type AeliqoBreakdownRecipeInput = AeliqoCompoundRecipeInput;

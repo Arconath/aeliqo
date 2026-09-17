@@ -1,4 +1,5 @@
-import { createPresentationRegistry, type PresentationPlan, type PresentationPatternManifest } from '@aeliqo/core';
+import { createPresentationRegistry, type PresentationPatternManifest } from '@aeliqo/core/presentation';
+import type { PresentationPlan } from '@aeliqo/core';
 import { createRegionStore } from '@aeliqo/runtime/regions';
 import { createAeliqoRegionAdaptation } from '@aeliqo/web/region/adaptation';
 import { createAeliqoPresentationRegistry } from '@aeliqo/web/region';

@@ -1,5 +1,4 @@
 import type { Diagnostic, Outcome } from '@aeliqo/core';
-import type { AgentJsonValue } from '../capabilities/types.js';
 import type { AgentModelToolEndpoint, AgentToolTransport } from '../protocol/types.js';
 import type { ActionReceipt } from '@aeliqo/runtime/actions';
 import type {
@@ -45,10 +44,4 @@ export interface AppToolEndpointOptions {
 export interface AeliqoAppToolEndpoint extends AgentModelToolEndpoint {
   /** Trusted host UI path. This method is not advertised as an agent tool. */
   confirmAction(previewId: string, options?: { readonly signal?: AbortSignal }): Promise<Outcome<ActionReceipt>>;
-}
-
-export interface AppToolResult {
-  readonly state: string;
-  readonly value?: AgentJsonValue;
-  readonly diagnostics?: readonly Diagnostic[];
 }

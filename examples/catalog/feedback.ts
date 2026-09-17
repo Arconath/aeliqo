@@ -8,7 +8,7 @@ import {
   AeliqoSkeletonElement,
   AeliqoToastElement,
   AeliqoTooltipElement,
-} from '@aeliqo/web';
+} from '@aeliqo/web/feedback';
 import { cleanupCatalogRoot, createCatalogElement, createCatalogRoot } from './fixture.js';
 import { catalogMountSource, catalogSource } from './source.js';
 import type { CatalogExampleDefinition, CatalogExampleId, CatalogExampleMetadata } from './types.js';
@@ -23,8 +23,7 @@ const sourceImports = `import {
   AeliqoSkeletonElement,
   AeliqoToastElement,
   AeliqoTooltipElement,
-  registerAeliqoElements,
-} from "@aeliqo/web";`;
+} from "@aeliqo/web/feedback";`;
 
 type MetadataNotes = Pick<
   CatalogExampleMetadata,
@@ -156,20 +155,20 @@ const mount = (id: CatalogExampleId, fn: (root: HTMLElement) => void): CatalogEx
 
 export const feedbackExamples: readonly CatalogExampleDefinition[] = [
   mount('tooltip', (root) => {
-    const element = createCatalogElement<AeliqoTooltipElement>('aeliqo-tooltip', root);
+    const element = createCatalogElement<AeliqoTooltipElement>('aeliqo-tooltip', root, AeliqoTooltipElement);
     element.label = 'More information';
     element.content = 'Values are scoped to the current report.';
     element.open = true;
   }),
   mount('popover', (root) => {
-    const element = createCatalogElement<AeliqoPopoverElement>('aeliqo-popover', root);
+    const element = createCatalogElement<AeliqoPopoverElement>('aeliqo-popover', root, AeliqoPopoverElement);
     element.label = 'Report details';
     element.content = 'The report includes the authorized current scope.';
     element.open = true;
     element.modal = false;
   }),
   mount('dialog', (root) => {
-    const element = createCatalogElement<AeliqoDialogElement>('aeliqo-dialog', root);
+    const element = createCatalogElement<AeliqoDialogElement>('aeliqo-dialog', root, AeliqoDialogElement);
     element.heading = 'Confirm archive';
     element.open = true;
     element.modal = true;
@@ -180,7 +179,7 @@ export const feedbackExamples: readonly CatalogExampleDefinition[] = [
     element.append(action);
   }),
   mount('drawer', (root) => {
-    const element = createCatalogElement<AeliqoDrawerElement>('aeliqo-drawer', root);
+    const element = createCatalogElement<AeliqoDrawerElement>('aeliqo-drawer', root, AeliqoDrawerElement);
     element.heading = 'Report details';
     element.mode = 'inline';
     element.side = 'end';
@@ -188,7 +187,7 @@ export const feedbackExamples: readonly CatalogExampleDefinition[] = [
     element.textContent = 'Inline detail content keeps the surrounding task visible.';
   }),
   mount('toast', (root) => {
-    const element = createCatalogElement<AeliqoToastElement>('aeliqo-toast', root);
+    const element = createCatalogElement<AeliqoToastElement>('aeliqo-toast', root, AeliqoToastElement);
     element.message = 'Report saved';
     element.tone = 'success';
     element.open = true;
@@ -196,7 +195,7 @@ export const feedbackExamples: readonly CatalogExampleDefinition[] = [
     element.dismissible = true;
   }),
   mount('alert', (root) => {
-    const element = createCatalogElement<AeliqoAlertElement>('aeliqo-alert', root);
+    const element = createCatalogElement<AeliqoAlertElement>('aeliqo-alert', root, AeliqoAlertElement);
     element.heading = 'Review scope';
     element.message = 'This page contains the first authorized result window.';
     element.tone = 'warning';
@@ -205,20 +204,20 @@ export const feedbackExamples: readonly CatalogExampleDefinition[] = [
     element.open = true;
   }),
   mount('progress', (root) => {
-    const element = createCatalogElement<AeliqoProgressElement>('aeliqo-progress', root);
+    const element = createCatalogElement<AeliqoProgressElement>('aeliqo-progress', root, AeliqoProgressElement);
     element.label = 'Loading report';
     element.value = 62;
     element.max = 100;
   }),
   mount('skeleton', (root) => {
-    const element = createCatalogElement<AeliqoSkeletonElement>('aeliqo-skeleton', root);
+    const element = createCatalogElement<AeliqoSkeletonElement>('aeliqo-skeleton', root, AeliqoSkeletonElement);
     element.label = 'Loading report rows';
     element.lines = 3;
     element.variant = 'text';
     element.animated = false;
   }),
   mount('empty-state', (root) => {
-    const element = createCatalogElement<AeliqoEmptyStateElement>('aeliqo-empty-state', root);
+    const element = createCatalogElement<AeliqoEmptyStateElement>('aeliqo-empty-state', root, AeliqoEmptyStateElement);
     element.kind = 'no-matches';
     element.heading = 'No matching reports';
     element.message = 'Try a broader team or date filter.';

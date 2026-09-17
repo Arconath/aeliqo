@@ -1,6 +1,6 @@
 {
   "name": "@aeliqo/agent",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Arconath/aeliqo.git",
@@ -26,6 +26,18 @@
     "./app": {
       "types": "./dist/app/index.d.ts",
       "import": "./dist/app/index.js"
+    },
+    "./capabilities": {
+      "types": "./dist/capabilities/index.d.ts",
+      "import": "./dist/capabilities/index.js"
+    },
+    "./session": {
+      "types": "./dist/session/index.d.ts",
+      "import": "./dist/session/index.js"
+    },
+    "./meaning": {
+      "types": "./dist/meaning/index.d.ts",
+      "import": "./dist/meaning/index.js"
     },
     "./protocol": {
       "types": "./dist/protocol/index.d.ts",
@@ -61,15 +73,11 @@
   },
   "peerDependencies": {
     "@modelcontextprotocol/server": "2.0.0",
-    "@modelcontextprotocol/node": "2.0.0",
     "openai": "7.10.0",
     "@modelcontextprotocol/client": "2.0.0"
   },
   "peerDependenciesMeta": {
     "@modelcontextprotocol/server": {
-      "optional": true
-    },
-    "@modelcontextprotocol/node": {
       "optional": true
     },
     "openai": {
@@ -81,7 +89,6 @@
   },
   "devDependencies": {
     "@modelcontextprotocol/server": "2.0.0",
-    "@modelcontextprotocol/node": "2.0.0",
     "openai": "7.10.0",
     "@modelcontextprotocol/client": "2.0.0"
   }

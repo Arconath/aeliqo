@@ -1,5 +1,5 @@
 import { registerAeliqoElements } from '../../packages/web/src/register.js';
-import { validatePresentationPlan } from '../../packages/core/src/index.js';
+import { validatePresentationPlan } from '../../packages/core/src/presentation/index.js';
 import { createAeliqoPresentationRegistry } from '../../packages/web/src/region/registry.js';
 import type { AeliqoRegionElement } from '../../packages/web/src/region/aeliqo-region.js';
 import type { AeliqoSemanticInteractionRequest } from '../../packages/web/src/region/types.js';

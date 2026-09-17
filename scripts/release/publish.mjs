@@ -53,6 +53,22 @@ function publishTarball(path) {
   if (result.error || result.status !== 0)
     throw new Error(`npm publish failed\n${result.stdout ?? ''}\n${result.stderr ?? ''}`);
 }
+
+async function waitForRegistryPublication(item, expectedVersion) {
+  let after;
+  let afterPackage;
+  for (let attempt = 0; attempt < 24; attempt += 1) {
+    if (attempt) await new Promise((resolvePromise) => setTimeout(resolvePromise, 5_000));
+    try {
+      after = await registryState(item);
+      afterPackage = await registryPackage(item);
+    } catch (error) {
+      if (attempt === 23) throw error;
+    }
+    if (after?.state === 'verified-existing' && afterPackage?.selected === expectedVersion) break;
+  }
+  return { after, afterPackage };
+}
 async function registryState(item) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 20_000);
@@ -155,18 +171,7 @@ for (const { item, tarball, before } of prepared) {
     publishTarball(tarball);
     action = 'published';
   }
-  let after;
-  let afterPackage;
-  for (let attempt = 0; attempt < 24; attempt += 1) {
-    if (attempt) await new Promise((resolvePromise) => setTimeout(resolvePromise, 5_000));
-    try {
-      after = await registryState(item);
-      afterPackage = await registryPackage(item);
-    } catch (error) {
-      if (attempt === 23) throw error;
-    }
-    if (after?.state === 'verified-existing' && afterPackage?.selected === candidate.version) break;
-  }
+  const { after, afterPackage } = await waitForRegistryPublication(item, candidate.version);
   if (after?.state !== 'verified-existing')
     throw new Error(`Registry did not expose verified ${item.name}@${candidate.version} after publication`);
   if (afterPackage?.selected !== candidate.version)

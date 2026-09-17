@@ -3,6 +3,16 @@ import { AeliqoFoundationElement, aeliqoFoundationThemeStyles } from './base.js'
 
 export type AeliqoTextAs = 'span' | 'p' | 'div' | 'small' | 'strong' | 'em' | 'label';
 
+const textRenderers = {
+  span: (content: unknown, className: string) => html`<span part="text" class=${className}>${content}</span>`,
+  p: (content: unknown, className: string) => html`<p part="text" class=${className}>${content}</p>`,
+  div: (content: unknown, className: string) => html`<div part="text" class=${className}>${content}</div>`,
+  small: (content: unknown, className: string) => html`<small part="text" class=${className}>${content}</small>`,
+  strong: (content: unknown, className: string) => html`<strong part="text" class=${className}>${content}</strong>`,
+  em: (content: unknown, className: string) => html`<em part="text" class=${className}>${content}</em>`,
+  label: (content: unknown, className: string) => html`<label part="text" class=${className}>${content}</label>`,
+} satisfies Record<AeliqoTextAs, (content: unknown, className: string) => ReturnType<typeof html>>;
+
 /** Plain text primitive. Text is interpolated as text, never as HTML. */
 export class AeliqoTextElement extends AeliqoFoundationElement {
   static readonly properties = {
@@ -17,22 +27,8 @@ export class AeliqoTextElement extends AeliqoFoundationElement {
 
   protected override render() {
     const content = html`<slot>${this.text}</slot>`;
-    switch (this.as) {
-      case 'p':
-        return html`<p part="text" class=${this.muted ? 'muted' : ''}>${content}</p>`;
-      case 'div':
-        return html`<div part="text" class=${this.muted ? 'muted' : ''}>${content}</div>`;
-      case 'small':
-        return html`<small part="text" class=${this.muted ? 'muted' : ''}>${content}</small>`;
-      case 'strong':
-        return html`<strong part="text" class=${this.muted ? 'muted' : ''}>${content}</strong>`;
-      case 'em':
-        return html`<em part="text" class=${this.muted ? 'muted' : ''}>${content}</em>`;
-      case 'label':
-        return html`<label part="text" class=${this.muted ? 'muted' : ''}>${content}</label>`;
-      default:
-        return html`<span part="text" class=${this.muted ? 'muted' : ''}>${content}</span>`;
-    }
+    const renderer = textRenderers[this.as] ?? textRenderers.span;
+    return renderer(content, this.muted ? 'muted' : '');
   }
 
   static readonly styles = [

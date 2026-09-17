@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { createQueryPlanner } from '../../packages/core/src/query/planner.js';
+import { createQueryPlanner } from '../../packages/core/src/query/index.js';
 import { createTypedAuthoring } from '../../packages/core/src/expressions/builder.js';
 import { createQueryFunctionRegistry } from '../../packages/core/src/expressions/registry.js';
 import type {

@@ -1,12 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { createStandardFunctionRegistry } from '../../packages/core/src/index.js';
-import type {
-  Catalog,
-  FunctionRegistry,
-  MeaningDefinition,
-  QuerySource,
-  SemanticPolicy,
-} from '../../packages/core/src/index.js';
+import { createStandardFunctionRegistry } from '../../packages/core/src/expressions/index.js';
+import type { Catalog, MeaningDefinition } from '../../packages/core/src/contracts/index.js';
+import type { FunctionRegistry } from '../../packages/core/src/expressions/index.js';
+import type { QuerySource } from '../../packages/core/src/query/types.js';
+import type { SemanticPolicy } from '../../packages/core/src/semantics/index.js';
 import { createMeaningAuthoring, createMeaningEvaluator } from '../../packages/runtime/src/meaning/index.js';
 import { createAgentMeaningAuthoring } from '../../packages/agent/src/meaning/index.js';
 
@@ -90,8 +87,8 @@ describe('meaning authoring option snapshots', () => {
     const registry = mutableRegistry();
     const definitions: MeaningDefinition[] = [];
     const policy: SemanticPolicy = { allowedScopes: ['session'] };
-    const sourceOption: { surface: 'studio'; ownership: MeaningDefinition['scope']; ownerId: string } = {
-      surface: 'studio',
+    const sourceOption: { surface: 'code'; ownership: MeaningDefinition['scope']; ownerId: string } = {
+      surface: 'code',
       ownership: 'session',
       ownerId: 'owner-1',
     };
@@ -122,7 +119,7 @@ describe('meaning authoring option snapshots', () => {
     const draft = authoring.value.draft(meaning);
     expect(draft.ok).toBe(true);
     if (!draft.ok) return;
-    expect(draft.value.source).toEqual({ surface: 'studio', ownership: 'session', ownerId: 'owner-1' });
+    expect(draft.value.source).toEqual({ surface: 'code', ownership: 'session', ownerId: 'owner-1' });
     expect(draft.value.assumptions).toEqual(['rows are complete']);
   });
 

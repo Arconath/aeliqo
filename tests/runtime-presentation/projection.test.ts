@@ -1,10 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import {
-  createPresentationRegistry,
-  validatePresentationPlan,
-  type PresentationManifest,
-  type InteractionState,
-} from '../../packages/core/src/index.js';
+import type { InteractionState } from '../../packages/core/src/contracts/index.js';
+import type { PresentationManifest } from '../../packages/core/src/presentation/index.js';
+import { createPresentationRegistry, validatePresentationPlan } from '../../packages/core/src/presentation/index.js';
 import { projectInteractionState, projectNavigationState } from '../../packages/runtime/src/presentation/renderer.js';
 import { presentationPlan, presentationTask, experience, environment, result, ref } from '../contracts/fixtures.js';
 const manifest: PresentationManifest = {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createQueryFunctionRegistry } from '../../packages/core/src/expressions/registry.js';
 import { evaluateLogicalPlan } from '../../packages/core/src/query/evaluator.js';
-import { createQueryPlanner } from '../../packages/core/src/query/planner.js';
+import { createQueryPlanner } from '../../packages/core/src/query/index.js';
 import type {
   Catalog,
   Expression,

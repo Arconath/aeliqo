@@ -1,11 +1,5 @@
-import type {
-  Result,
-  ResultRef,
-  Catalog,
-  VisualizationSpec,
-  VisualizationBindingContext,
-  Scalar,
-} from '../../packages/core/src/index.js';
+import type { Result, ResultRef, Catalog, VisualizationSpec, Scalar } from '../../packages/core/src/index.js';
+import type { VisualizationBindingContext } from '../../packages/core/src/contracts/visualization/index.js';
 export const ref: ResultRef = {
   id: 'hierarchy',
   revision: '1',

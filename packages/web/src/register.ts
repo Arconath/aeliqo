@@ -75,7 +75,6 @@ import {
   AeliqoScrollAreaElement,
 } from './foundation/index.js';
 import { AeliqoChartElement } from './elements/aeliqo-chart.js';
-import { AeliqoInputElement } from './elements/aeliqo-input.js';
 import { AeliqoTableElement } from './elements/aeliqo-table.js';
 import { AeliqoRegionElement } from './region/aeliqo-region.js';
 import { AELIQO_WEB_VERSION } from './version.js';
@@ -163,7 +162,6 @@ const REGISTRATIONS: readonly ElementRegistration[] = [
   { name: 'aeliqo-split-pane', constructor: AeliqoSplitPaneElement },
   { name: 'aeliqo-scroll-area', constructor: AeliqoScrollAreaElement },
 
-  { name: 'aeliqo-input', constructor: AeliqoInputElement },
   { name: 'aeliqo-table', constructor: AeliqoTableElement },
   { name: 'aeliqo-chart', constructor: AeliqoChartElement },
   { name: 'aeliqo-region', constructor: AeliqoRegionElement },

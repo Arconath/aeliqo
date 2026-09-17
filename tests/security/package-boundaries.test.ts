@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { existsSync, statSync } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { API, type Snapshot } from 'typescript/unstable/sync';
 import type { Node, SourceFile as TsSourceFile } from 'typescript/unstable/ast';
@@ -96,7 +96,7 @@ function resolveRelativeModule(fromFile: string, specifier: string): string | un
 }
 
 function sourcePathExists(path: string): boolean {
-  return existsSync(path);
+  return existsSync(path) && statSync(path).isFile();
 }
 
 function packageExportSource(name: PackageName, target: string): string {
@@ -308,9 +308,22 @@ describe('package boundary graph', () => {
     const { api, snapshot, files } = parseProjects();
     try {
       const allExports = (manifest.exports ?? {}) as Record<string, unknown>;
+      const compositionKeys = new Set([
+        './recipes',
+        './compound',
+        './explorer',
+        './comparison',
+        './breakdown',
+        './investigation',
+        './search-results',
+        './record-editor',
+        './form-flow',
+        './quality-panel',
+      ]);
       const directKeys = Object.keys(allExports).filter(
         (key) =>
           !['.', './app', './register', './server', './region', './region/adaptation'].includes(key) &&
+          !compositionKeys.has(key) &&
           !key.includes('*'),
       );
       expect(directKeys.length).toBeGreaterThan(40);
@@ -330,6 +343,7 @@ describe('package boundary graph', () => {
           external.filter(
             (name) => name.startsWith('@aeliqo/core/query') || name.startsWith('@aeliqo/core/presentation'),
           ),
+          `${key} must not depend on query planning or presentation composition`,
         ).toEqual([]);
       }
       const regionTarget = packageExportSource('web', flattenedExportTargets(allExports['./region'])[0]!);

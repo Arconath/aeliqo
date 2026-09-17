@@ -1,4 +1,4 @@
-import type { CommitPreconditions, Diagnostic, ResultRef, Task } from '@aeliqo/core';
+import type { CommitPreconditions, Diagnostic, ResultRef } from '@aeliqo/core';
 import type { ResultHandle } from '../results/types.js';
 import type { PresentationPlan, RegionContent, RegionStatus } from '../tasks/types.js';
 
@@ -184,4 +184,4 @@ export interface RegionStore {
   dispose(): void;
 }
 
-export type { PresentationPlan, RegionContent, RegionStatus, Task };
+export type { PresentationPlan, RegionContent, RegionStatus };

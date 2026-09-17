@@ -1,6 +1,6 @@
 /** Typed input events are user proposals; the host remains authoritative. */
 
-export type AeliqoInputSource = 'user';
+type AeliqoInputSource = 'user';
 
 type EventInitLike = {
   readonly bubbles?: boolean;

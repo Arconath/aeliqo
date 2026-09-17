@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { html } from 'lit';
-import { validatePresentationPlan } from '../../packages/core/src/index.js';
+import { validatePresentationPlan } from '../../packages/core/src/presentation/index.js';
 import { renderAeliqo } from '../../packages/web/src/server.js';
 import { createAeliqoPresentationRegistry } from '../../packages/web/src/region/registry.js';
 import {

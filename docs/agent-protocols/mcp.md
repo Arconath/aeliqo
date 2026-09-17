@@ -6,11 +6,9 @@ endpoint used by the direct, WebMCP and BYOK routes. It does not create a
 principal, decide grants, execute arbitrary code, or select the last connected
 browser tab.
 
-The adapter uses the official MCP TypeScript SDK 2.0.0. The modern revision is
-`2026-07-28`; clients opt into `versionNegotiation: { mode: 'auto' }` by
-default, or can pin that revision. A client may explicitly use the legacy
-compatibility handshake with `{ mode: 'legacy' }`. The server factory is shared
-by both eras so the tool set and handler semantics cannot drift.
+The adapter uses the official MCP TypeScript SDK 2.0.0 and pins clients to the
+supported protocol revision, `2026-07-28`. The adapter exposes one protocol
+contract so discovery, calls, and receipts follow the same request lifecycle.
 
 ## Local stdio
 
@@ -21,7 +19,7 @@ pairing, expiry, region, goal epoch, grants and dispatcher admission:
 import { createMcpStdioServer } from '@aeliqo/agent/mcp';
 
 createMcpStdioServer({
-  createEndpoint: ({ era }) => createPairedEndpoint({ era }),
+  createEndpoint: () => createPairedEndpoint(),
   name: 'my-aeliqo-server',
   version: '1.0.0',
   maxBufferSize: 10 * 1024 * 1024,
@@ -45,7 +43,6 @@ const endpoint = await connectMcpStdioClient({
   server: { command: 'my-aeliqo-server', args: [] },
   targetRegionId: 'region-1',
   goalEpoch: 'goal-7',
-  versionNegotiation: { mode: 'auto' },
 });
 
 const tools = await endpoint.discover();
@@ -83,8 +80,8 @@ const handler = createMcpHttpHandler({
   allowedOriginHostnames: ['app.example.com'],
   resourceServerUrl: new URL('https://mcp.example.com/mcp'),
   issuer: 'https://issuer.example',
-  createEndpoint: ({ authInfo, requestInfo, era }) =>
-    createAuthenticatedEndpoint({ authInfo, requestInfo, era }),
+  createEndpoint: ({ authInfo, requestInfo }) =>
+    createAuthenticatedEndpoint({ authInfo, requestInfo }),
 });
 
 export default handler;
@@ -110,7 +107,6 @@ const endpoint = await connectMcpHttpClient({
   authProvider: { token: () => applicationAccessToken() },
   targetRegionId: 'region-1',
   goalEpoch: 'goal-7',
-  versionNegotiation: { mode: 'auto' },
 });
 ```
 
@@ -136,8 +132,8 @@ The official SDK references are [the TypeScript SDK v2]
 and [MCP authorization]
 (https://modelcontextprotocol.io/specification/latest/basic/authorization).
 
-Adapter tests cover actual SDK stdio child processes, modern and legacy
-negotiation, Streamable HTTP, auth expiry/audience/issuer/origin rejection,
+Adapter tests cover actual SDK stdio child processes, the supported protocol
+revision, Streamable HTTP, auth expiry/audience/issuer/origin rejection,
 cancellation, malformed and oversized payloads, fresh endpoint construction,
 and absence of secrets in protocol output. Live external identity providers,
 tenant policy and paid-provider reasoning remain separate application evidence

@@ -1,4 +1,5 @@
-import { registerAeliqoElements, type AeliqoRegionElement } from '@aeliqo/web';
+import { registerAeliqoElements } from '@aeliqo/web';
+import type { AeliqoRegionElement } from '@aeliqo/web/region';
 import { aeliqoStandaloneThemeStyles } from '@aeliqo/web/styles';
 import { createHrViewSession, type HrViewSession } from './view-session.js';
 

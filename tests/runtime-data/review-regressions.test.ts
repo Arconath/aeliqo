@@ -1,10 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import {
-  createStandardFunctionRegistry,
-  type Catalog,
-  type MeaningDefinition,
-  type QuerySpec,
-} from '../../packages/core/src/index.js';
+import { type Catalog, type MeaningDefinition, type QuerySpec } from '../../packages/core/src/index.js';
+import { createStandardFunctionRegistry } from '../../packages/core/src/expressions/index.js';
 import {
   createLocalDataService,
   parseResultEvent,
@@ -122,7 +118,7 @@ describe('independent review regressions', () => {
       version: '1',
       requestId: 'warning-overflow-plan',
       catalogRevision: catalog.revision,
-      target: { outputId: 'facts-output' },
+      target: { taskId: 'warning-overflow-plan', outputId: 'facts-output' },
       query,
       budget,
     });
@@ -151,7 +147,7 @@ describe('independent review regressions', () => {
         version: '1',
         requestId: 'digest-race-plan',
         catalogRevision: catalog.revision,
-        target: { outputId: 'facts-output' },
+        target: { taskId: 'digest-race-plan', outputId: 'facts-output' },
         query: { ...query, measures: [], groupBy: [], fields: ['id'] },
         budget,
       });
@@ -172,7 +168,7 @@ describe('independent review regressions', () => {
       version: '1',
       requestId: 'execute-digest-race-plan',
       catalogRevision: catalog.revision,
-      target: { outputId: 'facts-output' },
+      target: { taskId: 'execute-digest-race-plan', outputId: 'facts-output' },
       query,
       budget,
     });

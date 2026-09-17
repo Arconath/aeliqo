@@ -1,6 +1,14 @@
+import {
+  cloneSignature,
+  queryFunctionSignatures,
+  queryFunctionSignaturesV2,
+  standardFunctionSignatures,
+} from './standard-signatures.js';
+export { queryFunctionSignatures, queryFunctionSignaturesV2, standardFunctionSignatures };
 import type { Outcome, SemanticType, VersionRef } from '../contracts/types.js';
 import { semanticFailure } from '../semantics/errors.js';
 import { validateSemanticType } from '../semantics/type-utils.js';
+import { versionRefKey as versionKey } from '../contracts/stable.js';
 import type {
   FunctionParameter,
   FunctionRegistry,
@@ -9,10 +17,15 @@ import type {
   TypeConstraint,
 } from './types.js';
 
-/** Version refs may themselves contain `@`; use a tuple encoding, not a delimiter. */
-export const versionKey = (ref: VersionRef): string => JSON.stringify([ref.id, ref.revision]);
+interface SignatureIdentity {
+  readonly signature: Record<string, unknown>;
+  readonly key: string;
+  readonly path: readonly (string | number)[];
+}
 
-export function createFunctionRegistry(input: FunctionRegistryInput): Outcome<FunctionRegistry> {
+type ValidationFailure = Outcome<never> | undefined;
+
+function validateRegistryInput(input: FunctionRegistryInput): ValidationFailure {
   if (typeof input.digest !== 'string' || input.digest.trim() === '')
     return semanticFailure('semantic.registry-digest', 'A function registry needs a nonempty immutable digest.', [
       'digest',
@@ -21,146 +34,251 @@ export function createFunctionRegistry(input: FunctionRegistryInput): Outcome<Fu
     return semanticFailure('semantic.registry-empty', 'A function registry needs at least one versioned signature.', [
       'signatures',
     ]);
+  return undefined;
+}
 
-  const seen = new Set<string>();
-  for (let index = 0; index < input.signatures.length; index += 1) {
-    const signature = input.signatures[index];
-    const path = ['signatures', index] as const;
-    if (!isRecord(signature))
-      return semanticFailure('semantic.registry-signature', 'Function signature must be an object.', path);
-    if (!validVersionRef(signature.ref))
-      return semanticFailure('semantic.registry-ref', 'Function signature must pin a nonempty ID and revision.', [
-        ...path,
-        'ref',
-      ]);
-    const key = versionKey(signature.ref);
-    if (seen.has(key))
-      return semanticFailure('semantic.registry-duplicate', `Function ${key} is declared more than once.`, [
-        ...path,
-        'ref',
-      ]);
-    seen.add(key);
-    if (
-      !Array.isArray(signature.contexts) ||
-      signature.contexts.length === 0 ||
-      !signature.contexts.every(isEvaluationContext)
-    )
-      return semanticFailure('semantic.registry-context', `Function ${key} must declare an evaluation context.`, [
-        ...path,
-        'contexts',
-      ]);
-    const cost = isRecord(signature.cost) ? signature.cost : undefined;
-    if (
-      cost === undefined ||
-      typeof cost.maxNodes !== 'number' ||
-      !Number.isSafeInteger(cost.maxNodes) ||
-      cost.maxNodes <= 0 ||
-      (cost.maxMilliseconds !== undefined &&
-        (typeof cost.maxMilliseconds !== 'number' ||
-          !Number.isFinite(cost.maxMilliseconds) ||
-          cost.maxMilliseconds <= 0))
-    )
-      return semanticFailure('semantic.registry-cost', `Function ${key} must declare a positive node budget.`, [
-        ...path,
-        'cost',
-        'maxNodes',
-      ]);
-    if (
-      !Array.isArray(signature.parameters) ||
-      !signature.parameters.every(validParameter) ||
-      (signature.variadic !== undefined && !validParameter(signature.variadic))
-    )
-      return semanticFailure('semantic.registry-parameter', `Function ${key} has invalid parameter declarations.`, [
-        ...path,
-        'parameters',
-      ]);
-    for (let parameterIndex = 0; parameterIndex < signature.parameters.length; parameterIndex += 1) {
-      if (!validConstraint(signature.parameters[parameterIndex]!.constraint, parameterIndex))
-        return semanticFailure('semantic.registry-parameter', `Function ${key} has an invalid parameter constraint.`, [
-          ...path,
-          'parameters',
-          parameterIndex,
-          'constraint',
-        ]);
-    }
-    if (
-      signature.variadic !== undefined &&
-      !validConstraint(signature.variadic.constraint, signature.parameters.length)
-    )
-      return semanticFailure('semantic.registry-parameter', `Function ${key} has an invalid variadic constraint.`, [
-        ...path,
-        'variadic',
-        'constraint',
-      ]);
-    let optionalSeen = false;
-    for (let parameterIndex = 0; parameterIndex < signature.parameters.length; parameterIndex += 1) {
-      const parameter = signature.parameters[parameterIndex]!;
-      if (parameter.optional === true) optionalSeen = true;
-      else if (optionalSeen)
-        return semanticFailure(
-          'semantic.registry-parameter',
-          `Function ${key} cannot place a required parameter after an optional parameter.`,
-          [...path, 'parameters', parameterIndex],
-        );
-    }
-    if (!validOutput(signature.output, signature.parameters.length))
-      return semanticFailure('semantic.registry-output', `Function ${key} has an invalid output declaration.`, [
-        ...path,
-        'output',
-      ]);
-    const aggregation = isRecord(signature.aggregation) ? signature.aggregation : undefined;
-    if (
-      aggregation === undefined ||
-      !isAggregationKind(aggregation.kind) ||
-      !Array.isArray(aggregation.dimensions) ||
-      !aggregation.dimensions.every((dimension: unknown) => typeof dimension === 'string' && dimension.length > 0)
-    )
+function identifySignature(value: unknown, index: number, seen: Set<string>): Outcome<SignatureIdentity> {
+  const path = ['signatures', index] as const;
+  if (!isRecord(value))
+    return semanticFailure('semantic.registry-signature', 'Function signature must be an object.', path);
+  const reference = value.ref;
+  if (!validVersionRef(reference))
+    return semanticFailure('semantic.registry-ref', 'Function signature must pin a nonempty ID and revision.', [
+      ...path,
+      'ref',
+    ]);
+  const key = versionKey(reference);
+  if (seen.has(key))
+    return semanticFailure('semantic.registry-duplicate', 'Function ' + key + ' is declared more than once.', [
+      ...path,
+      'ref',
+    ]);
+  seen.add(key);
+  return { ok: true, value: { signature: value, key, path } };
+}
+
+function validateContexts(
+  signature: Record<string, unknown>,
+  key: string,
+  path: readonly (string | number)[],
+): ValidationFailure {
+  const contexts = signature.contexts;
+  if (Array.isArray(contexts) && contexts.length > 0 && contexts.every(isEvaluationContext)) return undefined;
+  return semanticFailure('semantic.registry-context', 'Function ' + key + ' must declare an evaluation context.', [
+    ...path,
+    'contexts',
+  ]);
+}
+
+function validateCost(
+  signature: Record<string, unknown>,
+  key: string,
+  path: readonly (string | number)[],
+): ValidationFailure {
+  const cost = isRecord(signature.cost) ? signature.cost : undefined;
+  const validMaxNodes =
+    cost !== undefined && typeof cost.maxNodes === 'number' && Number.isSafeInteger(cost.maxNodes) && cost.maxNodes > 0;
+  const validMilliseconds =
+    cost?.maxMilliseconds === undefined ||
+    (typeof cost.maxMilliseconds === 'number' && Number.isFinite(cost.maxMilliseconds) && cost.maxMilliseconds > 0);
+  if (validMaxNodes && validMilliseconds) return undefined;
+  return semanticFailure('semantic.registry-cost', 'Function ' + key + ' must declare a positive node budget.', [
+    ...path,
+    'cost',
+    'maxNodes',
+  ]);
+}
+
+function validateParameterShape(
+  signature: Record<string, unknown>,
+  key: string,
+  path: readonly (string | number)[],
+): Outcome<readonly FunctionParameter[]> {
+  const parameters = signature.parameters;
+  if (
+    Array.isArray(parameters) &&
+    parameters.every(validParameter) &&
+    (signature.variadic === undefined || validParameter(signature.variadic))
+  )
+    return { ok: true, value: parameters };
+  return semanticFailure('semantic.registry-parameter', 'Function ' + key + ' has invalid parameter declarations.', [
+    ...path,
+    'parameters',
+  ]);
+}
+
+function validateParameterConstraints(
+  signature: Record<string, unknown>,
+  parameters: readonly FunctionParameter[],
+  key: string,
+  path: readonly (string | number)[],
+): ValidationFailure {
+  for (let index = 0; index < parameters.length; index += 1) {
+    if (validConstraint(parameters[index]!.constraint, index)) continue;
+    return semanticFailure('semantic.registry-parameter', 'Function ' + key + ' has an invalid parameter constraint.', [
+      ...path,
+      'parameters',
+      index,
+      'constraint',
+    ]);
+  }
+  const variadic = signature.variadic as FunctionParameter | undefined;
+  if (variadic === undefined || validConstraint(variadic.constraint, parameters.length)) return undefined;
+  return semanticFailure('semantic.registry-parameter', 'Function ' + key + ' has an invalid variadic constraint.', [
+    ...path,
+    'variadic',
+    'constraint',
+  ]);
+}
+
+function validateParameterOrder(
+  parameters: readonly FunctionParameter[],
+  key: string,
+  path: readonly (string | number)[],
+): ValidationFailure {
+  let optionalSeen = false;
+  for (let index = 0; index < parameters.length; index += 1) {
+    const parameter = parameters[index]!;
+    if (parameter.optional === true) optionalSeen = true;
+    else if (optionalSeen)
       return semanticFailure(
-        'semantic.registry-aggregation',
-        `Function ${key} has an invalid aggregation declaration.`,
-        [...path, 'aggregation'],
-      );
-    if (
-      !isFunctionOperation(signature.operation) ||
-      typeof signature.deterministic !== 'boolean' ||
-      !isNullPolicy(signature.nullPolicy) ||
-      !isNullResult(signature.nullResult) ||
-      !isUnitRule(signature.unitRule) ||
-      !isRealization(signature.realization)
-    )
-      return semanticFailure('semantic.registry-signature', `Function ${key} has invalid execution metadata.`, path);
-    if (signature.unitRule === 'explicit-output' && !outputHasExplicitUnit(signature.output))
-      return semanticFailure(
-        'semantic.registry-unit-rule',
-        `Function ${key} must declare an explicit output unit when using the explicit-output unit rule.`,
-        [...path, 'unitRule'],
-      );
-    if (
-      (signature.operation === 'divide' || signature.operation === 'ratio-of-sums') &&
-      signature.zeroDenominator === undefined
-    )
-      return semanticFailure(
-        'semantic.registry-zero-denominator',
-        `Division-like function ${key} must declare a zero-denominator policy.`,
-        [...path, 'zeroDenominator'],
-      );
-    if (signature.zeroDenominator !== undefined && !isZeroPolicy(signature.zeroDenominator))
-      return semanticFailure(
-        'semantic.registry-zero-denominator',
-        `Function ${key} has an invalid zero-denominator policy.`,
-        [...path, 'zeroDenominator'],
-      );
-    if (
-      signature.operation !== 'divide' &&
-      signature.operation !== 'ratio-of-sums' &&
-      signature.zeroDenominator !== undefined
-    )
-      return semanticFailure(
-        'semantic.registry-zero-denominator',
-        `Only division-like functions may declare zero-denominator policy.`,
-        [...path, 'zeroDenominator'],
+        'semantic.registry-parameter',
+        'Function ' + key + ' cannot place a required parameter after an optional parameter.',
+        [...path, 'parameters', index],
       );
   }
+  return undefined;
+}
+
+function validateParameters(
+  signature: Record<string, unknown>,
+  key: string,
+  path: readonly (string | number)[],
+): Outcome<readonly FunctionParameter[]> {
+  const shape = validateParameterShape(signature, key, path);
+  if (!shape.ok) return shape;
+  const constraints = validateParameterConstraints(signature, shape.value, key, path);
+  if (constraints !== undefined) return constraints;
+  const order = validateParameterOrder(shape.value, key, path);
+  if (order !== undefined) return order;
+  return shape;
+}
+
+function validateOutput(
+  signature: Record<string, unknown>,
+  key: string,
+  path: readonly (string | number)[],
+): ValidationFailure {
+  const parameters = signature.parameters as readonly FunctionParameter[];
+  if (validOutput(signature.output, parameters.length)) return undefined;
+  return semanticFailure('semantic.registry-output', 'Function ' + key + ' has an invalid output declaration.', [
+    ...path,
+    'output',
+  ]);
+}
+
+function validateAggregation(
+  signature: Record<string, unknown>,
+  key: string,
+  path: readonly (string | number)[],
+): ValidationFailure {
+  const aggregation = isRecord(signature.aggregation) ? signature.aggregation : undefined;
+  const validDimensions =
+    aggregation !== undefined &&
+    Array.isArray(aggregation.dimensions) &&
+    aggregation.dimensions.every((dimension: unknown) => typeof dimension === 'string' && dimension.length > 0);
+  if (aggregation !== undefined && isAggregationKind(aggregation.kind) && validDimensions) return undefined;
+  return semanticFailure(
+    'semantic.registry-aggregation',
+    'Function ' + key + ' has an invalid aggregation declaration.',
+    [...path, 'aggregation'],
+  );
+}
+
+function validateZeroPolicy(
+  signature: Record<string, unknown>,
+  key: string,
+  path: readonly (string | number)[],
+): ValidationFailure {
+  const operation = signature.operation;
+  if ((operation === 'divide' || operation === 'ratio-of-sums') && signature.zeroDenominator === undefined)
+    return semanticFailure(
+      'semantic.registry-zero-denominator',
+      'Division-like function ' + key + ' must declare a zero-denominator policy.',
+      [...path, 'zeroDenominator'],
+    );
+  if (signature.zeroDenominator !== undefined && !isZeroPolicy(signature.zeroDenominator))
+    return semanticFailure(
+      'semantic.registry-zero-denominator',
+      'Function ' + key + ' has an invalid zero-denominator policy.',
+      [...path, 'zeroDenominator'],
+    );
+  if (operation !== 'divide' && operation !== 'ratio-of-sums' && signature.zeroDenominator !== undefined)
+    return semanticFailure(
+      'semantic.registry-zero-denominator',
+      'Only division-like functions may declare zero-denominator policy.',
+      [...path, 'zeroDenominator'],
+    );
+  return undefined;
+}
+
+function validateExecutionMetadata(
+  signature: Record<string, unknown>,
+  key: string,
+  path: readonly (string | number)[],
+): ValidationFailure {
+  const metadataValid =
+    isFunctionOperation(signature.operation) &&
+    typeof signature.deterministic === 'boolean' &&
+    isNullPolicy(signature.nullPolicy) &&
+    isNullResult(signature.nullResult) &&
+    isUnitRule(signature.unitRule) &&
+    isRealization(signature.realization);
+  if (!metadataValid)
+    return semanticFailure('semantic.registry-signature', 'Function ' + key + ' has invalid execution metadata.', path);
+  if (
+    signature.unitRule === 'explicit-output' &&
+    !outputHasExplicitUnit(signature.output as FunctionSignature['output'])
+  )
+    return semanticFailure(
+      'semantic.registry-unit-rule',
+      'Function ' + key + ' must declare an explicit output unit when using the explicit-output unit rule.',
+      [...path, 'unitRule'],
+    );
+  return validateZeroPolicy(signature, key, path);
+}
+
+function validateFunctionSignature(value: unknown, index: number, seen: Set<string>): ValidationFailure {
+  const identity = identifySignature(value, index, seen);
+  if (!identity.ok) return identity;
+  const { signature, key, path } = identity.value;
+  const contexts = validateContexts(signature, key, path);
+  if (contexts !== undefined) return contexts;
+  const cost = validateCost(signature, key, path);
+  if (cost !== undefined) return cost;
+  const parameters = validateParameters(signature, key, path);
+  if (!parameters.ok) return parameters;
+  const output = validateOutput(signature, key, path);
+  if (output !== undefined) return output;
+  const aggregation = validateAggregation(signature, key, path);
+  if (aggregation !== undefined) return aggregation;
+  return validateExecutionMetadata(signature, key, path);
+}
+
+function validateSignatures(signatures: readonly FunctionSignature[]): Outcome<void> {
+  const seen = new Set<string>();
+  for (let index = 0; index < signatures.length; index += 1) {
+    const validation = validateFunctionSignature(signatures[index], index, seen);
+    if (validation !== undefined) return validation;
+  }
+  return { ok: true, value: undefined };
+}
+
+export function createFunctionRegistry(input: FunctionRegistryInput): Outcome<FunctionRegistry> {
+  const inputStatus = validateRegistryInput(input);
+  if (inputStatus !== undefined) return inputStatus;
+  const signatureStatus = validateSignatures(input.signatures);
+  if (!signatureStatus.ok) return signatureStatus;
 
   // Keep a private immutable snapshot. A digest is a host-supplied version
   // pin; it is not a cryptographic hash of mutable caller objects.
@@ -174,68 +292,6 @@ export function createFunctionRegistry(input: FunctionRegistryInput): Outcome<Fu
     },
   };
   return { ok: true, value: Object.freeze(registry) };
-}
-
-function cloneSignature(input: FunctionSignature): FunctionSignature {
-  const parameters = Object.freeze(
-    input.parameters.map((parameter) =>
-      Object.freeze({
-        ...parameter,
-        constraint: cloneConstraint(parameter.constraint),
-      }),
-    ),
-  );
-  const output = cloneOutput(input.output);
-  const variadic =
-    input.variadic === undefined
-      ? undefined
-      : Object.freeze({
-          ...input.variadic,
-          constraint: cloneConstraint(input.variadic.constraint),
-        });
-  const aggregation = Object.freeze({
-    kind: input.aggregation.kind,
-    dimensions: Object.freeze([...input.aggregation.dimensions]),
-  });
-  const cost = Object.freeze({ ...input.cost });
-  const contexts = Object.freeze([...input.contexts]);
-  return Object.freeze({
-    ...input,
-    ref: Object.freeze({ ...input.ref }),
-    parameters,
-    ...(variadic === undefined ? {} : { variadic }),
-    output,
-    ...(input.nullResult === undefined ? {} : { nullResult: input.nullResult }),
-    ...(input.unitRule === undefined ? {} : { unitRule: input.unitRule }),
-    contexts,
-    aggregation,
-    cost,
-  });
-}
-
-function cloneOutput(output: FunctionSignature['output']): FunctionSignature['output'] {
-  if ('value' in output) return cloneSemanticType(output);
-  if (output.kind === 'numeric') {
-    return Object.freeze({
-      ...output,
-      ...(output.unit === undefined ? {} : { unit: Object.freeze({ ...output.unit }) }),
-    });
-  }
-  return Object.freeze({ ...output });
-}
-
-function cloneConstraint(constraint: TypeConstraint): TypeConstraint {
-  if (constraint.kind === 'exact') return Object.freeze({ ...constraint, type: cloneSemanticType(constraint.type) });
-  return Object.freeze({ ...constraint });
-}
-
-function cloneSemanticType(type: SemanticType): SemanticType {
-  return Object.freeze({
-    ...type,
-    ...(type.unit === undefined ? {} : { unit: Object.freeze({ ...type.unit }) }),
-    ...(type.grain === undefined ? {} : { grain: Object.freeze([...type.grain]) }),
-    ...(type.temporal === undefined ? {} : { temporal: Object.freeze({ ...type.temporal }) }),
-  });
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -326,25 +382,31 @@ function validOutput(value: unknown, parameterCount: number): value is FunctionS
   return false;
 }
 
+function validAllowNull(constraint: Record<string, unknown>): boolean {
+  return constraint.allowNull === undefined || typeof constraint.allowNull === 'boolean';
+}
+
+function validPriorParameter(constraint: Record<string, unknown>, parameterIndex: number | undefined): boolean {
+  const argument = constraint.argument;
+  if (typeof argument !== 'number' || !Number.isSafeInteger(argument) || argument < 0) return false;
+  return parameterIndex === undefined || argument < parameterIndex;
+}
+
 function validConstraint(constraint: unknown, parameterIndex?: number): constraint is TypeConstraint {
   if (!isRecord(constraint)) return false;
-  if (
-    constraint.kind === 'any' ||
-    constraint.kind === 'numeric' ||
-    constraint.kind === 'boolean' ||
-    constraint.kind === 'text'
-  )
-    return constraint.allowNull === undefined || typeof constraint.allowNull === 'boolean';
-  if (constraint.kind === 'same-as') {
-    const argument = constraint.argument;
-    return (
-      typeof argument === 'number' &&
-      Number.isSafeInteger(argument) &&
-      argument >= 0 &&
-      (parameterIndex === undefined || argument < parameterIndex)
-    );
+  switch (constraint.kind) {
+    case 'any':
+    case 'numeric':
+    case 'boolean':
+    case 'text':
+      return validAllowNull(constraint);
+    case 'same-as':
+      return validPriorParameter(constraint, parameterIndex);
+    case 'exact':
+      return validateSemanticType(constraint.type as SemanticType).ok;
+    default:
+      return false;
   }
-  return constraint.kind === 'exact' && validateSemanticType(constraint.type as SemanticType).ok;
 }
 
 function validUnit(value: unknown): value is NonNullable<SemanticType['unit']> {
@@ -362,227 +424,9 @@ function outputHasExplicitUnit(output: FunctionSignature['output']): boolean {
   return 'value' in output ? output.unit !== undefined : output.kind === 'numeric' && output.unit !== undefined;
 }
 
-const countType = (nullable = false): SemanticType => ({ value: 'integer', nullable });
-const booleanType = (nullable = false): SemanticType => ({ value: 'boolean', nullable });
-
-const numeric: TypeConstraint = { kind: 'numeric' };
-const any: TypeConstraint = { kind: 'any' };
-const text: TypeConstraint = { kind: 'text' };
-
-function signature(
-  ref: VersionRef,
-  parameters: readonly FunctionParameter[],
-  output: FunctionSignature['output'],
-  operation: FunctionSignature['operation'],
-  aggregation: FunctionSignature['aggregation']['kind'] = 'none',
-  options: Partial<
-    Pick<FunctionSignature, 'nullPolicy' | 'contexts' | 'realization' | 'zeroDenominator' | 'nullResult' | 'unitRule'>
-  > = {},
-): FunctionSignature {
-  return {
-    ref,
-    parameters,
-    output,
-    contexts: options.contexts ?? ['row', 'group'],
-    nullPolicy: options.nullPolicy ?? 'propagate',
-    ...(options.nullResult === undefined ? {} : { nullResult: options.nullResult }),
-    ...(options.unitRule === undefined ? {} : { unitRule: options.unitRule }),
-    aggregation: { kind: aggregation, dimensions: [] },
-    operation,
-    deterministic: true,
-    cost: { maxNodes: 64 },
-    realization: options.realization ?? 'both',
-    ...(options.zeroDenominator === undefined ? {} : { zeroDenominator: options.zeroDenominator }),
-  };
-}
-
-/** Trusted, reviewed signatures for the small expression vocabulary used by builders. */
-export const standardFunctionSignatures: readonly FunctionSignature[] = [
-  signature(
-    { id: 'core.add', revision: '1' },
-    [{ constraint: numeric }, { constraint: numeric }],
-    { kind: 'numeric' },
-    'arithmetic',
-    'none',
-    { unitRule: 'same' },
-  ),
-  signature(
-    { id: 'core.subtract', revision: '1' },
-    [{ constraint: numeric }, { constraint: numeric }],
-    { kind: 'numeric' },
-    'arithmetic',
-    'none',
-    { unitRule: 'same' },
-  ),
-  signature(
-    { id: 'core.multiply', revision: '1' },
-    [{ constraint: numeric }, { constraint: numeric }],
-    { kind: 'numeric' },
-    'arithmetic',
-    'none',
-    { unitRule: 'scalar-multiply' },
-  ),
-  signature(
-    { id: 'core.divide.null', revision: '1' },
-    [{ constraint: numeric }, { constraint: numeric }],
-    { kind: 'numeric' },
-    'divide',
-    'none',
-    { zeroDenominator: 'null' },
-  ),
-  signature(
-    { id: 'core.divide.unknown', revision: '1' },
-    [{ constraint: numeric }, { constraint: numeric }],
-    { kind: 'numeric' },
-    'divide',
-    'none',
-    { zeroDenominator: 'unknown' },
-  ),
-  signature(
-    { id: 'core.divide.error', revision: '1' },
-    [{ constraint: numeric }, { constraint: numeric }],
-    { kind: 'numeric' },
-    'divide',
-    'none',
-    { nullPolicy: 'reject', zeroDenominator: 'error' },
-  ),
-  signature(
-    { id: 'core.ratio-of-sums', revision: '1' },
-    [{ constraint: numeric }, { constraint: numeric }],
-    { kind: 'numeric' },
-    'ratio-of-sums',
-    'ratio-of-sums',
-    { zeroDenominator: 'null' },
-  ),
-  signature(
-    { id: 'core.ratio-of-sums.null', revision: '1' },
-    [{ constraint: numeric }, { constraint: numeric }],
-    { kind: 'numeric' },
-    'ratio-of-sums',
-    'ratio-of-sums',
-    { zeroDenominator: 'null' },
-  ),
-  signature(
-    { id: 'core.ratio-of-sums.unknown', revision: '1' },
-    [{ constraint: numeric }, { constraint: numeric }],
-    { kind: 'numeric' },
-    'ratio-of-sums',
-    'ratio-of-sums',
-    { zeroDenominator: 'unknown' },
-  ),
-  signature(
-    { id: 'core.ratio-of-sums.error', revision: '1' },
-    [{ constraint: numeric }, { constraint: numeric }],
-    { kind: 'numeric' },
-    'ratio-of-sums',
-    'ratio-of-sums',
-    { nullPolicy: 'reject', zeroDenominator: 'error' },
-  ),
-  {
-    ...signature(
-      { id: 'core.mean-of-rates', revision: '1' },
-      [],
-      { kind: 'numeric', forceFloat: true },
-      'mean-of-rates',
-      'non-additive',
-      { contexts: ['group'] },
-    ),
-    variadic: { constraint: numeric },
-  },
-  signature(
-    { id: 'core.is-null', revision: '1' },
-    [{ constraint: any, optional: false }],
-    booleanType(false),
-    'comparison',
-    'none',
-    { nullResult: 'non-null' },
-  ),
-  signature(
-    { id: 'core.coalesce', revision: '1' },
-    [{ constraint: any }, { constraint: { kind: 'same-as', argument: 0 } }],
-    { kind: 'nullable-same-as', argument: 0 },
-    'coalesce',
-  ),
-  signature(
-    { id: 'core.aggregate.sum', revision: '1' },
-    [{ constraint: numeric }],
-    { kind: 'same-as', argument: 0 },
-    'aggregate',
-    'additive',
-    { contexts: ['row', 'group'] },
-  ),
-  signature(
-    { id: 'core.aggregate.count', revision: '1' },
-    [{ constraint: any }],
-    countType(false),
-    'aggregate',
-    'additive',
-    { contexts: ['row', 'group'], nullResult: 'non-null' },
-  ),
-  signature(
-    { id: 'core.aggregate.count-distinct', revision: '1' },
-    [{ constraint: any }],
-    countType(false),
-    'aggregate',
-    'non-additive',
-    { contexts: ['row', 'group'], nullResult: 'non-null' },
-  ),
-];
-
 export function createStandardFunctionRegistry(digest = 'core-standard-1'): Outcome<FunctionRegistry> {
   return createFunctionRegistry({ digest, signatures: standardFunctionSignatures });
 }
-
-/** Query registry revision adds bounded window functions without changing core-standard-1. */
-export const queryFunctionSignatures: readonly FunctionSignature[] = Object.freeze(
-  [
-    ...standardFunctionSignatures,
-    signature(
-      { id: 'core.window.sum', revision: '1' },
-      [{ constraint: numeric }],
-      { kind: 'same-as', argument: 0 },
-      'aggregate',
-      'additive',
-      { contexts: ['window'] },
-    ),
-    signature(
-      { id: 'core.window.lag', revision: '1' },
-      [{ constraint: any }],
-      { kind: 'nullable-same-as', argument: 0 },
-      'other',
-      'none',
-      { contexts: ['window'] },
-    ),
-    signature({ id: 'core.window.rank', revision: '1' }, [], countType(false), 'other', 'none', {
-      contexts: ['window'],
-      nullResult: 'non-null',
-    }),
-  ].map(cloneSignature),
-);
-
-export const queryFunctionSignaturesV2: readonly FunctionSignature[] = Object.freeze(
-  [
-    ...queryFunctionSignatures,
-    signature(
-      { id: 'core.equal', revision: '1' },
-      [{ constraint: any }, { constraint: any }],
-      booleanType(false),
-      'comparison',
-    ),
-    signature(
-      { id: 'core.text.includes-casefold', revision: '1' },
-      [{ constraint: text }, { constraint: text }],
-      booleanType(false),
-      'comparison',
-    ),
-    signature(
-      { id: 'core.if', revision: '1' },
-      [{ constraint: { kind: 'boolean' } }, { constraint: any }, { constraint: any }],
-      { kind: 'same-as', argument: 1 },
-      'conditional',
-    ),
-  ].map(cloneSignature),
-);
 
 export function createQueryFunctionRegistry(
   input: string | { readonly version: '2'; readonly digest?: string } = 'core-query-1',

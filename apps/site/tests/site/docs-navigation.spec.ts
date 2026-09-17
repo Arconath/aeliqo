@@ -34,13 +34,11 @@ test('documentation information architecture exposes distinct adoption routes', 
 
 test('documentation search keeps keyboard, query, no-result, and fallback paths', async ({ browser, page }) => {
   await page.goto('/concepts/');
-  await page.locator('#theme').selectOption('light');
   await expect(page.locator('.docs-search-tools .docs-search-fallback')).toBeHidden();
   await expect(page.locator('.search-trigger')).toBeVisible();
   await page.keyboard.press('Control+K');
   const searchDialog = page.locator('#docs-search-dialog');
   await expect(searchDialog.getByRole('dialog')).toBeVisible();
-  await expect(searchDialog).toHaveAttribute('data-aeliqo-theme', 'light');
   const field = page.locator('#docs-search-dialog input.docs-search-field');
   await field.fill('table');
   const rankedLinks = page.locator('#docs-search-dialog .search-results a');
@@ -76,22 +74,25 @@ test('documentation search keeps keyboard, query, no-result, and fallback paths'
   }
 });
 
-test('component pages expose source-backed adoption details', async ({ page }) => {
+test('component pages combine authored guidance with generated API facts and the executable example', async ({
+  page,
+}) => {
   await page.goto('/components/data.table/');
   for (const heading of [
+    'Import and live example',
     'Purpose',
-    "Do / don't",
-    'Dependencies',
-    'Controlled and uncontrolled use',
-    'Semantic elements and accessibility hooks',
-    'Sizing and adaptation',
-    'Performance boundary',
-    'Changelog',
-    'Input fixture',
-    'States',
-    'Keyboard behavior',
-    'Events',
+    'When to use it',
+    'When to use a different component',
     'Properties and defaults',
+    'Events',
+    'States and failure handling',
+    'Keyboard, focus, and accessibility',
+    'Responsive behavior',
+    'Style hooks',
+    'Performance limits',
+    'Related components',
+    'Generated TypeScript declaration',
+    'Version',
   ]) {
     await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
   }
@@ -100,25 +101,34 @@ test('component pages expose source-backed adoption details', async ({ page }) =
   expect(preview).not.toBeNull();
   expect(purpose).not.toBeNull();
   expect(preview!.y).toBeLessThan(purpose!.y);
-  await expect(
-    page.getByRole('heading', { name: 'Sizing and adaptation', exact: true }).locator('xpath=following-sibling::p[1]'),
-  ).toContainText('grid-template-columns');
-  await expect(page.locator('.component-details')).not.toContainText('${');
-  await expect(page.locator('.component-details')).not.toContainText('slice(0');
-  await expect(page.locator('.component-details')).toContainText('packages/web/src/elements/aeliqo-table.ts');
-  await expect(page.locator('.component-details')).toContainText(
-    'do not establish a controlled or uncontrolled contract',
-  );
+  await expect(page.getByText(/Expected result:/)).toBeVisible();
+  await expect(page.locator('.component-adoption')).not.toContainText('{{aeliqo:');
   await expect(page.locator('[data-example-code=table]')).toContainText('import');
+  await page.locator('.component-declaration summary').click();
+  await expect(page.locator('.component-declaration')).toContainText('AeliqoTableElement');
+  await expect(page.locator('.reading')).not.toContainText('not declared');
 
   await page.goto('/components/compound.form-flow/');
-  await expect(
-    page.getByRole('heading', { name: 'Performance boundary', exact: true }).locator('xpath=following-sibling::ul[1]'),
-  ).not.toContainText('MAX_COMPARISON');
+  await expect(page.getByRole('heading', { name: 'Performance limits', exact: true })).toHaveCount(0);
   await page.goto('/components/compound.comparison/');
-  await expect(
-    page.getByRole('heading', { name: 'Performance boundary', exact: true }).locator('xpath=following-sibling::ul[1]'),
-  ).toContainText('MAX_COMPARISON_KEYS');
+  await expect(page.getByRole('heading', { name: 'Performance limits', exact: true })).toBeVisible();
+  await expect(page.locator('.reading')).toContainText('MAX_COMPARISON_KEYS');
+});
+
+test('all 71 component previews load without page or console errors', async ({ page }) => {
+  test.setTimeout(180_000);
+  const pageErrors: string[] = [];
+  const consoleErrors: string[] = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') consoleErrors.push(message.text());
+  });
+  for (const route of COMPONENT_ROUTES) {
+    await page.goto(route);
+    await expect(page.locator('[data-preview-status]'), route).toHaveText('Interactive preview loaded.');
+  }
+  expect(pageErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
 });
 
 test('narrow documentation exposes compact navigation before the requested article', async ({ browser, page }) => {
@@ -167,7 +177,9 @@ test('all generated component routes fit 320px and 360px without page overflow',
         await hydratedPage.goto(route);
         await expect(hydratedPage.locator('.reading h1')).toBeVisible();
         await expect
-          .poll(() => hydratedPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
+          .poll(() => hydratedPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth), {
+            message: `component route must fit ${width}px: ${route}`,
+          })
           .toBe(true);
       }
     } finally {
@@ -236,7 +248,7 @@ test('scrollable code remains focusable and named across static, hydrated, and o
   await expect(apiPre).toHaveAttribute('tabindex', '0');
   await expect(apiPre).not.toHaveAttribute('aria-label');
   await expect(page.locator('.code-scroll')).toHaveAttribute('role', 'region');
-  await expect(page.locator('.code-scroll')).toHaveAttribute('aria-labelledby', 'public-api-heading');
+  await expect(page.locator('.code-scroll')).toHaveAttribute('aria-label', 'Table TypeScript declaration');
   const openedA11y = await new AxeBuilder({ page }).include('main').analyze();
   expect(openedA11y.violations).toEqual([]);
 });
@@ -278,7 +290,7 @@ test('homepage code disclosures remain focusable at 320px', async ({ page }) => 
 test('homepage adaptive result remains a named accessible section after evaluation', async ({ page }) => {
   await page.goto('/');
   await page.locator('#team').selectOption('Engineering');
-  await page.getByRole('button', { name: 'Render this intent', exact: true }).click();
+  await page.getByRole('button', { name: 'Apply filter', exact: true }).click();
   const result = page.getByRole('region', { name: 'Synthetic people adaptive result', exact: true });
   await expect(result).toBeVisible();
   await expect(result).toContainText('Sam Rivera');

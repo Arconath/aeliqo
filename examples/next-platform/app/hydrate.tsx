@@ -13,7 +13,7 @@ export function HydrateAeliqo() {
         return;
       if ('value' in event.target) event.target.value = detail.value;
     };
-    root?.addEventListener('aeliqo-input', accept);
+    root?.addEventListener('aeliqo-input-change', accept);
     async function hydrate() {
       await import('@lit-labs/ssr-client/lit-element-hydrate-support.js');
       const { registerAeliqoElements } = await import('@aeliqo/web');
@@ -24,7 +24,7 @@ export function HydrateAeliqo() {
     });
     return () => {
       disposed = true;
-      root?.removeEventListener('aeliqo-input', accept);
+      root?.removeEventListener('aeliqo-input-change', accept);
     };
   }, []);
   return null;

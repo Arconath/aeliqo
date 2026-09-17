@@ -2,9 +2,9 @@ import { css, LitElement } from 'lit';
 import { aeliqoThemeStyles } from '../styles/theme.js';
 import { AELIQO_WEB_VERSION } from '../version.js';
 
-export const AELIQO_FOUNDATION_VERSION = AELIQO_WEB_VERSION;
+const AELIQO_FOUNDATION_VERSION = AELIQO_WEB_VERSION;
 
-export const aeliqoFoundationFocusStyles = css`
+const aeliqoFoundationFocusStyles = css`
   :host {
     box-sizing: border-box;
   }

@@ -18,11 +18,8 @@ export type {
 } from './geometry.js';
 export {
   compileHierarchyVisualization,
-  compileRelationship,
   compileRelationshipGeometry,
-  compileTree,
   compileTreeGeometry,
-  compileTreemap,
   compileTreemapGeometry,
 } from './geometry.js';
 

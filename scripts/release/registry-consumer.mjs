@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/** Install and verify one exact six-package release directly from npm. */
+/** Install and verify one exact five-package release directly from npm. */
 import { spawnSync } from 'node:child_process';
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -43,20 +43,40 @@ async function packedPaths(directory, relative = '') {
   return paths;
 }
 
+function recordPeerVersion(peers, name, version) {
+  const previous = peers.get(name);
+  if (previous && previous !== version) throw new Error(`Conflicting locked peer versions for ${name}`);
+  peers.set(name, version);
+}
+
+async function collectPackagePeers(packageName, peers) {
+  const manifest = await readJson(join(root, 'packages', packageShortName(packageName), 'package.json'));
+  for (const peer of Object.keys(manifest.peerDependencies ?? {})) {
+    if (PUBLIC_PACKAGE_NAMES.includes(peer)) continue;
+    const installed = await readJson(
+      join(root, 'packages', packageShortName(packageName), 'node_modules', peer, 'package.json'),
+    );
+    recordPeerVersion(peers, peer, installed.version);
+  }
+}
+
+async function collectExternalPeerVersions() {
+  const peers = new Map();
+  for (const name of PUBLIC_PACKAGE_NAMES) await collectPackagePeers(name, peers);
+  return peers;
+}
+
+function assertRegistryMatchesCandidate(candidatePackages, registryPackages) {
+  for (const item of candidatePackages ?? []) {
+    const installed = registryPackages.find((entry) => entry.name === item.name);
+    if (installed?.integrity !== item.integrity)
+      throw new Error(`Registry integrity differs from approved candidate for ${item.name}`);
+  }
+}
+
 const consumer = await mkdtemp(join(tmpdir(), 'aeliqo-registry-consumer-'));
 try {
-  const peers = new Map();
-  for (const name of PUBLIC_PACKAGE_NAMES) {
-    const shortName = packageShortName(name);
-    const manifest = await readJson(join(root, 'packages', shortName, 'package.json'));
-    for (const peer of Object.keys(manifest.peerDependencies ?? {})) {
-      if (PUBLIC_PACKAGE_NAMES.includes(peer)) continue;
-      const installed = await readJson(join(root, 'packages', shortName, 'node_modules', peer, 'package.json'));
-      const previous = peers.get(peer);
-      if (previous && previous !== installed.version) throw new Error(`Conflicting locked peer versions for ${peer}`);
-      peers.set(peer, installed.version);
-    }
-  }
+  const peers = await collectExternalPeerVersions();
   const dependencies = Object.fromEntries(PUBLIC_PACKAGE_NAMES.map((name) => [name, version]));
   for (const [name, requested] of [...peers].sort(([left], [right]) => left.localeCompare(right)))
     dependencies[name] = requested;
@@ -123,7 +143,6 @@ try {
       "import '@aeliqo/runtime/evaluation';",
       "import '@aeliqo/web/server';",
       "import '@aeliqo/agent/protocol';",
-      "import '@aeliqo/devtools';",
       "import '@aeliqo/react/ssr';",
     ].join('\n') + '\n',
   );
@@ -148,10 +167,7 @@ try {
     ) {
       throw new Error('Expected candidate does not match the requested registry release');
     }
-    for (const item of candidate.packages ?? []) {
-      if (packages.find((entry) => entry.name === item.name)?.integrity !== item.integrity)
-        throw new Error(`Registry integrity differs from approved candidate for ${item.name}`);
-    }
+    assertRegistryMatchesCandidate(candidate.packages, packages);
     const audit = JSON.parse(
       command('npm', ['audit', 'signatures', '--json', '--include-attestations', '--registry', NPM_REGISTRY], consumer),
     );

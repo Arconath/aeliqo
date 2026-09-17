@@ -1,4 +1,10 @@
-import {createStandardFunctionRegistry, type Catalog, type Outcome, type QuerySpec} from '@aeliqo/core';
+import {
+  createStandardFunctionRegistry } from '@aeliqo/core/expressions';
+import type {
+  Catalog,
+  Outcome,
+  QuerySpec,
+} from '@aeliqo/core';
 import type {DataRecord, LocalSnapshot, QueryBudget, ReadGrant} from '@aeliqo/runtime/data';
 
 export function value<T>(result: Outcome<T>): T {

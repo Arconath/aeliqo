@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { bindVisualizationSpec, parseVisualizationSpec, serializeContract } from '../../packages/core/src/index.js';
+import { parseVisualizationSpec, serializeContract } from '../../packages/core/src/index.js';
+import { bindVisualizationSpec } from '../../packages/core/src/contracts/visualization/index.js';
 import type {
   Catalog,
   FieldDefinition,
@@ -155,6 +156,13 @@ const context = (spec: VisualizationSpec) => ({
     { result: descriptor.ref, relationship: { id: 'parent-edge', revision: '1' }, source: ['id'], target: ['parent'] },
   ],
 });
+
+function expectDiagnostic(outcome: ReturnType<typeof bindVisualizationSpec>, code: string, message: string): void {
+  expect(outcome).toEqual({
+    ok: false,
+    diagnostics: [{ code: `visualization.${code}`, message, retryable: false }],
+  });
+}
 
 describe('owned visualization family contracts', () => {
   for (const spec of fixtures)
@@ -368,5 +376,54 @@ describe('owned visualization family contracts', () => {
         { results: [descriptor] },
       ).ok,
     ).toBe(false);
+  });
+
+  it('preserves authorization and family diagnostic paths', () => {
+    const matrix = fixtures[6]!;
+    expectDiagnostic(
+      bindVisualizationSpec(matrix, { results: [descriptor, descriptor] }),
+      'results',
+      'An exact result reference is repeated.',
+    );
+    expectDiagnostic(
+      bindVisualizationSpec(matrix, { results: [{ ...descriptor, rowGrain: ['missing'] }] }),
+      'identity',
+      'Visualization rows require declared nonnullable stable identity and field-based grain.',
+    );
+    expectDiagnostic(
+      bindVisualizationSpec({ ...matrix, columns: ['category', 'category'] }, context(matrix)),
+      'matrix',
+      'Matrix columns must be unique.',
+    );
+
+    const histogram = fixtures[4]!;
+    expectDiagnostic(
+      bindVisualizationSpec(histogram, { ...context(histogram), histograms: [] }),
+      'histogram',
+      'The exact bin projection and count/density meaning must be declared once by the authorized host.',
+    );
+    const area = fixtures[2]!;
+    expectDiagnostic(
+      bindVisualizationSpec(area, { results: context(area).results }),
+      'additivity',
+      'Area magnitude requires an active authorized additive meaning pinned by the result field.',
+    );
+    const relationship = fixtures[9]!;
+    expectDiagnostic(
+      bindVisualizationSpec(relationship, { results: context(relationship).results }),
+      'relationship',
+      'Relationship view requires a declared versioned relation and stable endpoint identities.',
+    );
+    const missingCalendar = {
+      ...descriptor,
+      fields: descriptor.fields.map((field) =>
+        field.id === 'date' ? { ...field, type: { value: 'date' as const, nullable: false } } : field,
+      ),
+    };
+    expectDiagnostic(
+      bindVisualizationSpec(fixtures[10]!, { results: [missingCalendar] }),
+      'temporal',
+      'Dated views require a declared calendar and timezone for instants.',
+    );
   });
 });

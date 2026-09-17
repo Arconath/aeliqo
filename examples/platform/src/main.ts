@@ -1,16 +1,13 @@
 import './csp-bootstrap.js';
-import {
-  AeliqoChartElement,
-  AeliqoInputElement,
-  AeliqoInputEvent,
-  AeliqoTableElement,
-  registerAeliqoElements,
-} from '@aeliqo/web';
+import { registerAeliqoElements } from '@aeliqo/web';
+import { AeliqoInputChangeEvent, type AeliqoTextFieldElement } from '@aeliqo/web/inputs';
+import type { AeliqoTableElement } from '@aeliqo/web/data';
+import type { AeliqoChartElement } from '@aeliqo/web/chart';
 
 registerAeliqoElements();
 
 const form = document.querySelector<HTMLFormElement>('#standalone-form');
-const input = document.querySelector<AeliqoInputElement>('#standalone-form aeliqo-input');
+const input = document.querySelector<AeliqoTextFieldElement>('#standalone-form aeliqo-text-field');
 const table = document.querySelector<AeliqoTableElement>('#standalone-table');
 const chart = document.querySelector<AeliqoChartElement>('#standalone-chart');
 const status = document.querySelector<HTMLElement>('#standalone-status');
@@ -38,8 +35,8 @@ chart.points = [
   { label: 'Wed', value: 4 },
 ];
 
-input.addEventListener('aeliqo-input', (event: Event) => {
-  if (!(event instanceof AeliqoInputEvent)) {
+input.addEventListener('aeliqo-input-change', (event: Event) => {
+  if (!(event instanceof AeliqoInputChangeEvent)) {
     return;
   }
   input.value = event.detail.value;

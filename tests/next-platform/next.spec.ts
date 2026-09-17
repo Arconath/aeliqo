@@ -12,7 +12,7 @@ test('Next App Router serves real shadow content and hydrates a controlled form'
     if (message.type() === 'error') errors.push(message.text());
   });
   await page.goto('/');
-  await page.waitForFunction(() => customElements.get('aeliqo-input') !== undefined);
+  await page.waitForFunction(() => customElements.get('aeliqo-text-field') !== undefined);
   const input = page.getByLabel('Next person');
   await expect(input).toHaveValue('Ada');
   await input.fill('Lin');
@@ -24,7 +24,7 @@ test('Next App Router serves real shadow content and hydrates a controlled form'
       return new FormData(form).get('person');
     }),
   ).toBe('Lin');
-  await expect(page.locator('#aeliqo-server-proof aeliqo-input').locator('input')).toHaveCount(1);
+  await expect(page.locator('#aeliqo-server-proof aeliqo-text-field').locator('input')).toHaveCount(1);
   await expect(page.locator('#adaptive-people-status')).toHaveText('renderer-ready');
   await expect(page.locator('[data-aeliqo-react-region="next-people"] aeliqo-table')).toContainText('Ada Chen');
   expect(errors).toEqual([]);

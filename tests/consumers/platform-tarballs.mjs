@@ -51,7 +51,7 @@ async function clearCompiledOutput(directory) {
 }
 const sourceDigest = run(['node', 'scripts/source-digest.mjs'], root).trim();
 const artifacts = [];
-for (const name of ['core', 'web', 'react']) {
+for (const name of ['core', 'runtime', 'web', 'react']) {
   const directory = join(root, 'packages', name);
   const manifest = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
   assert.equal(manifest.name, `@aeliqo/${name}`);
@@ -76,6 +76,7 @@ for (const name of ['core', 'web', 'react']) {
   for (const field of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
     assert(!JSON.stringify(packed[field] ?? {}).includes('workspace:'), 'Unresolved workspace dependency');
   }
+  if (name === 'runtime') assert.equal(packed.dependencies['@aeliqo/core'], RELEASE_VERSION);
   if (name === 'web') assert.equal(packed.dependencies['@aeliqo/core'], RELEASE_VERSION);
   if (name === 'react') assert.equal(packed.dependencies['@aeliqo/web'], RELEASE_VERSION);
   artifacts.push({
@@ -137,18 +138,18 @@ await writeFile(join(runDirectory, 'consumer-package-lock.json'), lockBytes);
 await writeFile(
   join(consumer, 'consumer.tsx'),
   `
-import {AeliqoInputElement} from '@aeliqo/web/input';
+import {AeliqoTextFieldElement, type AeliqoInputChangeDetail} from '@aeliqo/web/inputs';
 import {AeliqoTableElement} from '@aeliqo/web/table';
 import {AeliqoChartElement} from '@aeliqo/web/chart';
-import {AeliqoInput, registerAeliqoReactElements} from '@aeliqo/react';
-import type {AeliqoInputChangeDetail} from '@aeliqo/web';
+import {AeliqoTextField} from '@aeliqo/react/inputs';
+import {registerAeliqoReactElements} from '@aeliqo/react';
 import {aeliqoThemeStyles, createAeliqoLocaleContext} from '@aeliqo/web/styles';
 const locale = createAeliqoLocaleContext('ar-EG', {direction: 'rtl'});
 const styleText: string = aeliqoThemeStyles.cssText;
 void [locale, styleText];
-const value: AeliqoInputChangeDetail = {value: 'Ada', source: 'user'};
-const input = <AeliqoInput label="Person" value="Ada" onAeliqoInput={event => {const text:string=event.detail.value;void text;}} />;
-void [AeliqoInputElement,AeliqoTableElement,AeliqoChartElement,registerAeliqoReactElements,value,input];
+const value: AeliqoInputChangeDetail<string> = {value: 'Ada', source: 'user'};
+const input = <AeliqoTextField label="Person" value="Ada" onValueChange={event => {const text:string=event.detail.value;void text;}} />;
+void [AeliqoTextFieldElement,AeliqoTableElement,AeliqoChartElement,registerAeliqoReactElements,value,input];
 `,
 );
 await writeFile(
@@ -176,17 +177,17 @@ await writeFile(
 import assert from 'node:assert/strict';
 import {createElement} from 'react';
 import {renderToString} from 'react-dom/server';
-import {AeliqoInput} from '@aeliqo/react';
-import {AeliqoInputElement} from '@aeliqo/web/input';
+import {AeliqoTextField} from '@aeliqo/react/inputs';
+import {AeliqoTextFieldElement} from '@aeliqo/web/inputs';
 assert.equal(typeof window, 'undefined');
 const styles = await import('@aeliqo/web/styles');
 assert.equal(styles.createAeliqoLocaleContext('ar-EG', {direction:'rtl'}).direction, 'rtl');
 assert.match(styles.aeliqoThemeStyles.cssText, /:host/);
-assert.equal(typeof AeliqoInputElement, 'function');
-const reactMarkup=renderToString(createElement(AeliqoInput,{label:'Person',value:'Ada'}));
-assert.match(reactMarkup, /aeliqo-input/);assert.match(reactMarkup,/label="Person"/);
+assert.equal(typeof AeliqoTextFieldElement, 'function');
+const reactMarkup=renderToString(createElement(AeliqoTextField,{label:'Person',value:'Ada'}));
+assert.match(reactMarkup, /aeliqo-text-field/);assert.match(reactMarkup,/label="Person"/);
 const {renderAeliqo}=await import('@aeliqo/web/server');const {html}=await import('lit');
-const markup=await renderAeliqo(html\`<aeliqo-input label="Installed person" value="Ada"></aeliqo-input>\`);
+const markup=await renderAeliqo(html\`<aeliqo-text-field label="Installed person" value="Ada"></aeliqo-text-field>\`);
 assert.match(markup,/shadowrootmode="open"/);assert.match(markup,/Installed person/);assert.match(markup,/<input/);
 console.log('Installed web/React types, Node import and Lit SSR content pass.');
 `,
@@ -199,11 +200,11 @@ await writeFile(
 await writeFile(
   join(consumer, 'browser.js'),
   `
-import {AeliqoInputElement} from '@aeliqo/web/input';
-customElements.define('installed-aeliqo-input',AeliqoInputElement);
-const form=document.createElement('form');const input=document.createElement('installed-aeliqo-input');
+import {AeliqoTextFieldElement} from '@aeliqo/web/inputs';
+customElements.define('installed-aeliqo-text-field',AeliqoTextFieldElement);
+const form=document.createElement('form');const input=document.createElement('installed-aeliqo-text-field');
 input.label='Installed person';input.value='Ada';input.name='person';
-input.addEventListener('aeliqo-input',event=>{input.value=event.detail.value;});
+input.addEventListener('aeliqo-input-change',event=>{input.value=event.detail.value;});
 form.append(input);document.body.append(form);
 `,
 );
@@ -218,10 +219,10 @@ export default {build:{minify:true},plugins:[{name:'record-modules',generateBund
 );
 run([join(consumer, 'node_modules/.bin/vite'), 'build'], consumer);
 const modules = JSON.parse(await readFile(join(consumer, 'dist/modules.json'), 'utf8'));
-// AeliqoInput delegates to the shared TextField; these are its exact required bases/events and release compatibility marker.
+// AeliqoTextField delegates to the shared TextField; these are its exact required bases/events and release compatibility marker.
 // Runtime, planner, agent, chart, and other component modules remain excluded.
 const allowed =
-  /(?:\/browser\.js$|\/index\.html$|vite\/modulepreload-polyfill|\/node_modules\/(?:lit(?:-html|-element)?\/|@lit\/reactive-element\/|@aeliqo\/web\/dist\/(?:version|elements\/aeliqo-input|events|input\/(?:events|base|text-control|text-field)|foundation\/base|styles\/(?:theme|tokens))\.js$))/;
+  /(?:\/browser\.js$|\/index\.html$|vite\/modulepreload-polyfill|\/node_modules\/(?:lit(?:-html|-element)?\/|@lit\/reactive-element\/|@aeliqo\/web\/dist\/(?:version|elements\/aeliqo-text-field|events|input\/(?:events|base|text-control|text-field)|foundation\/base|styles\/(?:theme|tokens))\.js$))/;
 assert.deepEqual(
   modules.filter((id) => !allowed.test(id)),
   [],
@@ -275,7 +276,9 @@ try {
   assert.equal(await input.inputValue(), 'Ada');
   await input.fill('Lin');
   assert.equal(await input.inputValue(), 'Lin');
-  await page.locator('installed-aeliqo-input').evaluate((element) => element.setAttribute('data-aeliqo-theme', 'dark'));
+  await page
+    .locator('installed-aeliqo-text-field')
+    .evaluate((element) => element.setAttribute('data-aeliqo-theme', 'dark'));
   assert.equal(await input.evaluate((element) => getComputedStyle(element).backgroundColor), 'rgb(15, 17, 23)');
   assert.equal(await input.inputValue(), 'Lin');
   assert.equal(await page.locator('form').evaluate((form) => new FormData(form).get('person')), 'Lin');

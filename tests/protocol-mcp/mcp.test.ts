@@ -4,23 +4,16 @@ import { once } from 'node:events';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it, afterEach } from 'vitest';
-import {
-  OAuthError,
-  OAuthErrorCode,
-  requireBearerAuth,
-} from '../../packages/agent/node_modules/@modelcontextprotocol/server';
-import {
-  toNodeHandler,
-  type NodeIncomingMessageLike,
-  type NodeServerResponseLike,
-} from '../../packages/agent/node_modules/@modelcontextprotocol/node';
-import { parseWireValue, type OperationGrant, type Outcome } from '../../packages/core/src/index.js';
+import { OAuthError, OAuthErrorCode, requireBearerAuth } from '@modelcontextprotocol/server';
+import { toNodeHandler, type NodeIncomingMessageLike, type NodeServerResponseLike } from '@modelcontextprotocol/node';
+import { parseWireValue, type Outcome } from '../../packages/core/src/index.js';
+import type { OperationGrant } from '../../packages/core/src/contracts/agent/index.js';
 import { createAgentCapabilityRegistry } from '../../packages/agent/src/capabilities/registry.js';
 import type { AgentCapabilityManifest, AgentCapabilityReceipt } from '../../packages/agent/src/capabilities/types.js';
 import { createAgentToolEndpoint } from '../../packages/agent/src/protocol/endpoint.js';
 import type { AgentToolEndpoint, AgentToolEndpointOptions } from '../../packages/agent/src/protocol/types.js';
 import {
-  AELIQO_MCP_MODERN_REVISION,
+  AELIQO_MCP_PROTOCOL_REVISION,
   connectMcpHttpClient,
   connectMcpStdioClient,
   createMcpHttpHandler,
@@ -139,13 +132,12 @@ async function startHttp(options: Parameters<typeof createMcpHttpHandler>[0]) {
 }
 
 describe('MCP adapter', () => {
-  it('uses the official stdio server and client with negotiated modern and legacy eras', async () => {
+  it('uses the supported MCP revision with the official stdio server and client', async () => {
     const child = fileURLToPath(new URL('./stdio-child.mjs', import.meta.url));
     const modern = await connectMcpStdioClient({
       server: { command: process.execPath, args: [child], stderr: 'pipe' },
       targetRegionId: 'region',
       goalEpoch: 'goal',
-      versionNegotiation: { mode: { pin: AELIQO_MCP_MODERN_REVISION } },
     });
     expect(await modern.discover()).toMatchObject({
       ok: true,
@@ -153,22 +145,9 @@ describe('MCP adapter', () => {
     });
     expect(await modern.invoke('summary', { query: 'stdio' }, { requestId: 'stdio-modern' })).toMatchObject({
       ok: true,
-      value: { requestId: 'stdio-modern', value: { query: 'stdio', era: 'modern' } },
+      value: { requestId: 'stdio-modern', value: { name: 'summary', query: 'stdio' } },
     });
     modern.close();
-
-    const legacy = await connectMcpStdioClient({
-      server: { command: process.execPath, args: [child], stderr: 'pipe' },
-      targetRegionId: 'region',
-      goalEpoch: 'goal',
-      versionNegotiation: { mode: 'legacy' },
-    });
-    expect(await legacy.discover()).toMatchObject({ ok: true, value: [{ name: 'summary' }] });
-    expect(await legacy.invoke('summary', {}, { requestId: 'stdio-legacy' })).toMatchObject({
-      ok: true,
-      value: { requestId: 'stdio-legacy', value: { era: 'legacy' } },
-    });
-    legacy.close();
   });
 
   it('serves authenticated HTTP with fresh discovery/call endpoint instances and no token in URLs', async () => {
@@ -196,7 +175,6 @@ describe('MCP adapter', () => {
         requests.push(request.clone());
         return fetch(request);
       },
-      versionNegotiation: { mode: 'auto' },
     });
     expect(await client.discover()).toMatchObject({ ok: true, value: [{ name: 'summary' }] });
     expect(await client.invoke('summary', { query: 'http' }, { requestId: 'http-call' })).toMatchObject({
@@ -212,9 +190,9 @@ describe('MCP adapter', () => {
     await fixture.handler.close();
   });
 
-  it('honors explicit modern and legacy negotiation through the HTTP client helper', async () => {
+  it('pins HTTP clients to the supported MCP protocol revision', async () => {
     const fixture = await startHttp({
-      createEndpoint: (context) => newEndpoint(() => ({ state: 'data-ready', value: { era: context.era } })),
+      createEndpoint: () => newEndpoint(() => ({ state: 'data-ready', value: { count: 2 } })),
       authenticate: authGate(),
       allowedHostnames: ['127.0.0.1'],
       allowedOriginHostnames: ['127.0.0.1'],
@@ -222,27 +200,21 @@ describe('MCP adapter', () => {
       issuer: 'https://issuer.example',
     });
     try {
-      for (const [mode, era] of [
-        [{ pin: AELIQO_MCP_MODERN_REVISION }, 'modern'],
-        ['legacy', 'legacy'],
-      ] as const) {
-        const client = await connectMcpHttpClient({
-          url: fixture.url,
-          targetRegionId: 'region',
-          goalEpoch: 'goal',
-          policy: insecureLoopbackPolicy,
-          authProvider: { token: async () => 'fixture-token' },
-          versionNegotiation: { mode },
+      const client = await connectMcpHttpClient({
+        url: fixture.url,
+        targetRegionId: 'region',
+        goalEpoch: 'goal',
+        policy: insecureLoopbackPolicy,
+        authProvider: { token: async () => 'fixture-token' },
+      });
+      try {
+        expect((await client.discover()).ok).toBe(true);
+        expect(await client.invoke('summary', {}, { requestId: 'http-supported' })).toMatchObject({
+          ok: true,
+          value: { value: { count: 2 } },
         });
-        try {
-          expect((await client.discover()).ok).toBe(true);
-          expect(await client.invoke('summary', {}, { requestId: `http-${era}` })).toMatchObject({
-            ok: true,
-            value: { value: { era } },
-          });
-        } finally {
-          client.close();
-        }
+      } finally {
+        client.close();
       }
     } finally {
       await fixture.handler.close();
@@ -578,6 +550,6 @@ describe('MCP adapter', () => {
 
   it('uses the current protocol revision in documentation', async () => {
     const documentation = await readFile(new URL('../../docs/agent-protocols/mcp.md', import.meta.url), 'utf8');
-    expect(documentation).toContain(AELIQO_MCP_MODERN_REVISION);
+    expect(documentation).toContain(AELIQO_MCP_PROTOCOL_REVISION);
   });
 });

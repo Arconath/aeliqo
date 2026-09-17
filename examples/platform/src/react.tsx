@@ -1,7 +1,9 @@
 import './csp-bootstrap.js';
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { AeliqoChart, AeliqoInput, AeliqoTable, registerAeliqoReactElements } from '@aeliqo/react';
+import { AeliqoTextField } from '@aeliqo/react/inputs';
+import { AeliqoTable } from '@aeliqo/react/data';
+import { registerAeliqoReactElements } from '@aeliqo/react';
 
 registerAeliqoReactElements();
 
@@ -14,11 +16,11 @@ function ReactFixture(): React.JSX.Element {
         {value}
       </p>
       <form id="react-form">
-        <AeliqoInput
+        <AeliqoTextField
           label="React name"
           value={value}
           name="person"
-          onAeliqoInput={(event) => setValue(event.detail.value)}
+          onValueChange={(event) => setValue(event.detail.value)}
         />
         <button type="submit">Submit</button>
       </form>
@@ -31,16 +33,6 @@ function ReactFixture(): React.JSX.Element {
         rows={[
           { name: 'Ada', role: 'Engineer' },
           { name: 'Grace', role: 'Researcher' },
-        ]}
-      />
-      <AeliqoChart
-        title="Weekly activity"
-        summary="A small, accessible trend example."
-        unit="events"
-        points={[
-          { label: 'Mon', value: 3 },
-          { label: 'Tue', value: 5 },
-          { label: 'Wed', value: 4 },
         ]}
       />
     </main>

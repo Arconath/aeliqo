@@ -10,6 +10,7 @@ import {
 } from '../../packages/agent/src/model/index.js';
 import type { ToolModelRequest } from '../../packages/agent/src/model/types.js';
 
+const createServerSecret = (value: string) => createOpaqueModelSecret(value, 'trusted-server');
 const servers: Server[] = [];
 
 afterEach(async () => {
@@ -107,7 +108,7 @@ describe('generic OpenAI-compatible model connection', () => {
     const port = createOpenAICompatibleToolModel({
       baseURL: fixture.baseURL,
       model: 'fixture-model',
-      secret: createOpaqueModelSecret(secret),
+      secret: createServerSecret(secret),
       capabilities: ['tool-calls', 'usage', 'request-cancellation'],
       headers: { 'x-fixture': 'protocol-test' },
       policy: { allowExternalEgress: true, allowInsecureHttp: true, allowedOrigins: [fixture.origin] },
@@ -187,7 +188,7 @@ describe('generic OpenAI-compatible model connection', () => {
     const port = createOpenAICompatibleToolModel({
       baseURL: fixture.baseURL,
       model: 'fixture-model',
-      secret: createOpaqueModelSecret('empty-content-secret'),
+      secret: createServerSecret('empty-content-secret'),
       capabilities: ['tool-calls', 'usage'],
       policy: { allowExternalEgress: true, allowInsecureHttp: true, allowedOrigins: [fixture.origin] },
     });
@@ -227,7 +228,7 @@ describe('generic OpenAI-compatible model connection', () => {
     const port = createOpenAICompatibleToolModel({
       baseURL: fixture.baseURL,
       model: 'fixture-model',
-      secret: createOpaqueModelSecret('continuation-secret'),
+      secret: createServerSecret('continuation-secret'),
       capabilities: ['tool-calls', 'usage'],
       policy: { allowExternalEgress: true, allowInsecureHttp: true, allowedOrigins: [fixture.origin] },
     });
@@ -258,7 +259,7 @@ describe('generic OpenAI-compatible model connection', () => {
     const port = createOpenAICompatibleToolModel({
       baseURL: fixture.baseURL,
       model: 'fixture-model',
-      secret: createOpaqueModelSecret('malformed-response-secret'),
+      secret: createServerSecret('malformed-response-secret'),
       capabilities: ['tool-calls'],
       policy: { allowExternalEgress: true, allowInsecureHttp: true, allowedOrigins: [fixture.origin] },
     });
@@ -279,7 +280,7 @@ describe('generic OpenAI-compatible model connection', () => {
     const port = createOpenAICompatibleToolModel({
       baseURL: fixture.baseURL,
       model: 'fixture-model',
-      secret: createOpaqueModelSecret('retry-secret'),
+      secret: createServerSecret('retry-secret'),
       capabilities: ['tool-calls', 'usage'],
       policy: { allowExternalEgress: true, allowInsecureHttp: true, allowedOrigins: [fixture.origin] },
       retry: { maxAttempts: 2, baseDelayMs: 0, maxDelayMs: 0 },
@@ -296,7 +297,7 @@ describe('generic OpenAI-compatible model connection', () => {
     const unauthorized = createOpenAICompatibleToolModel({
       baseURL: failing.baseURL,
       model: 'fixture-model',
-      secret: createOpaqueModelSecret('retry-secret'),
+      secret: createServerSecret('retry-secret'),
       capabilities: ['tool-calls'],
       policy: { allowExternalEgress: true, allowInsecureHttp: true, allowedOrigins: [failing.origin] },
     });
@@ -342,7 +343,7 @@ describe('generic OpenAI-compatible model connection', () => {
     const port = createOpenAICompatibleToolModel({
       baseURL: `${origin}/v1`,
       model: 'fixture-model',
-      secret: createOpaqueModelSecret('redirect-secret'),
+      secret: createServerSecret('redirect-secret'),
       capabilities: ['tool-calls'],
       policy: { allowExternalEgress: true, allowInsecureHttp: true, allowedOrigins: [origin] },
     });
@@ -357,7 +358,7 @@ describe('generic OpenAI-compatible model connection', () => {
       createOpenAICompatibleToolModel({
         baseURL: 'http://example.test/v1',
         model: 'fixture-model',
-        secret: createOpaqueModelSecret('secret'),
+        secret: createServerSecret('secret'),
         capabilities: ['tool-calls'],
         policy: { allowExternalEgress: false },
       }),
@@ -366,7 +367,7 @@ describe('generic OpenAI-compatible model connection', () => {
       createOpenAICompatibleToolModel({
         baseURL: 'https://example.test/v1?token=secret',
         model: 'fixture-model',
-        secret: createOpaqueModelSecret('secret'),
+        secret: createServerSecret('secret'),
         capabilities: ['tool-calls'],
         policy: { allowExternalEgress: true },
       }),
@@ -375,7 +376,7 @@ describe('generic OpenAI-compatible model connection', () => {
       createOpenAICompatibleToolModel({
         baseURL: 'https://example.test/v1',
         model: 'fixture-model',
-        secret: createOpaqueModelSecret('secret'),
+        secret: createServerSecret('secret'),
         capabilities: [] as const,
         policy: { allowExternalEgress: true },
       }),
@@ -389,7 +390,7 @@ describe('generic OpenAI-compatible model connection', () => {
     const port = createOpenAICompatibleToolModel({
       baseURL: 'https://model.example.test/v1',
       model: 'configured-model',
-      secret: createOpaqueModelSecret('header-only-secret'),
+      secret: createServerSecret('header-only-secret'),
       auth: { scheme: 'header', headerName: 'x-api-key' },
       capabilities: ['tool-calls', 'request-cancellation'],
       policy: { allowExternalEgress: true, allowedOrigins: ['https://model.example.test'] },
@@ -422,7 +423,7 @@ describe('generic OpenAI-compatible model connection', () => {
     const timeout = createOpenAICompatibleToolModel({
       baseURL: 'https://model.example.test/v1',
       model: 'configured-model',
-      secret: createOpaqueModelSecret('timeout-secret'),
+      secret: createServerSecret('timeout-secret'),
       capabilities: ['tool-calls', 'request-cancellation'],
       policy: { allowExternalEgress: true, allowedOrigins: ['https://model.example.test'] },
       timeoutMs: 1,
@@ -440,7 +441,7 @@ describe('generic OpenAI-compatible model connection', () => {
     const oversized = createOpenAICompatibleToolModel({
       baseURL: 'https://model.example.test/v1',
       model: 'configured-model',
-      secret: createOpaqueModelSecret('size-secret'),
+      secret: createServerSecret('size-secret'),
       capabilities: ['tool-calls'],
       policy: { allowExternalEgress: true, allowedOrigins: ['https://model.example.test'] },
       budget: { maxResponseBytes: 8 },
@@ -454,7 +455,7 @@ describe('generic OpenAI-compatible model connection', () => {
     const oversizedRequest = createOpenAICompatibleToolModel({
       baseURL: 'https://model.example.test/v1',
       model: 'configured-model',
-      secret: createOpaqueModelSecret('request-size-secret'),
+      secret: createServerSecret('request-size-secret'),
       capabilities: ['tool-calls'],
       policy: { allowExternalEgress: true, allowedOrigins: ['https://model.example.test'] },
       budget: { maxRequestBytes: 8 },

@@ -4,10 +4,10 @@ import {
   validateAgentComposition,
 } from '../../../packages/agent/src/capabilities/composition.js';
 import {
-  validatePresentationPlan,
   type PresentationManifest,
   type PresentationContext,
-} from '../../../packages/core/dist/index.js';
+  validatePresentationPlan,
+} from '../../../packages/core/dist/presentation/index.js';
 import { environment, experience, presentationPlan, presentationTask, result } from '../../contracts/fixtures.js';
 const read = { id: 'data.read', revision: '1' };
 const table: PresentationManifest = {

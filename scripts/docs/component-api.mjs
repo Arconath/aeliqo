@@ -1,6 +1,6 @@
 import * as ts from 'typescript/unstable/ast';
 import { API } from 'typescript/unstable/sync';
-import { join, relative, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 
 const SIZING_PROPERTIES = [
   'min-inline-size',
@@ -38,13 +38,19 @@ function templateText(template) {
   return result;
 }
 
-function classCss(node, source) {
+function cssFromNode(node, source) {
   const styles = [];
   visit(node, (current) => {
     if (ts.isTaggedTemplateExpression(current) && current.tag.getText(source) === 'css')
       styles.push(templateText(current.template));
   });
   return styles.join('\n');
+}
+
+function sourceForImport(program, source, specifier) {
+  if (!specifier.startsWith('.')) return undefined;
+  const path = resolve(dirname(source.fileName), specifier.replace(/\.js$/u, '.ts'));
+  return program.getSourceFile(path);
 }
 
 function importedNames(statement) {
@@ -56,6 +62,29 @@ function importedNames(statement) {
   if (bindings && ts.isNamespaceImport(bindings)) names.push(bindings.name.text);
   if (bindings && ts.isNamedImports(bindings)) for (const element of bindings.elements) names.push(element.name.text);
   return names;
+}
+
+function localStyleImports(node, source, program) {
+  const declaration = node.members.find(
+    (member) => ts.isPropertyDeclaration(member) && member.name.getText(source) === 'styles',
+  );
+  if (!declaration || !ts.isPropertyDeclaration(declaration) || !declaration.initializer) return [];
+  const names = new Set();
+  visit(declaration.initializer, (current) => {
+    if (ts.isIdentifier(current)) names.add(current.text);
+  });
+  return source.statements.flatMap((statement) => {
+    if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) return [];
+    if (!/(?:^|[-/])styles?\.js$/u.test(statement.moduleSpecifier.text)) return [];
+    if (!importedNames(statement).some((name) => names.has(name))) return [];
+    const imported = sourceForImport(program, source, statement.moduleSpecifier.text);
+    return imported === undefined ? [] : [imported];
+  });
+}
+
+function componentCss(node, source, program) {
+  const imported = localStyleImports(node, source, program);
+  return [cssFromNode(node, source), ...imported.map((item) => cssFromNode(item, item))].join('\n');
 }
 
 function sourceConstants(source) {
@@ -70,45 +99,124 @@ function sourceConstants(source) {
   return constants;
 }
 
-function numericValue(node, constants, seen = new Set()) {
-  if (ts.isNumericLiteral(node)) return Number(node.text.replaceAll('_', ''));
-  if (ts.isPrefixUnaryExpression(node)) {
-    const value = numericValue(node.operand, constants, seen);
-    if (value === undefined) return undefined;
-    if (node.operator === ts.SyntaxKind.MinusToken) return -value;
-    if (node.operator === ts.SyntaxKind.PlusToken) return value;
-    return undefined;
-  }
-  if (ts.isIdentifier(node)) {
-    if (seen.has(node.text)) return undefined;
-    const declaration = constants.get(node.text);
-    if (!declaration) return undefined;
-    return numericValue(declaration, constants, new Set([...seen, node.text]));
-  }
-  if (ts.isParenthesizedExpression(node)) return numericValue(node.expression, constants, seen);
-  if (ts.isBinaryExpression(node)) {
-    const left = numericValue(node.left, constants, seen);
-    const right = numericValue(node.right, constants, seen);
-    if (left === undefined || right === undefined) return undefined;
-    if (node.operatorToken.kind === ts.SyntaxKind.PlusToken) return left + right;
-    if (node.operatorToken.kind === ts.SyntaxKind.MinusToken) return left - right;
-    if (node.operatorToken.kind === ts.SyntaxKind.AsteriskToken) return left * right;
-    if (node.operatorToken.kind === ts.SyntaxKind.SlashToken && right !== 0) return left / right;
-  }
+function unaryNumericValue(node, constants, seen) {
+  const value = numericValue(node.operand, constants, seen);
+  if (value === undefined) return undefined;
+  if (node.operator === ts.SyntaxKind.MinusToken) return -value;
+  if (node.operator === ts.SyntaxKind.PlusToken) return value;
   return undefined;
 }
 
-function boundSentences(node, source) {
-  const result = [];
+function identifierNumericValue(node, constants, seen) {
+  if (seen.has(node.text)) return undefined;
+  const declaration = constants.get(node.text);
+  if (!declaration) return undefined;
+  return numericValue(declaration, constants, new Set([...seen, node.text]));
+}
+
+function binaryNumericValue(node, constants, seen) {
+  const left = numericValue(node.left, constants, seen);
+  const right = numericValue(node.right, constants, seen);
+  if (left === undefined || right === undefined) return undefined;
+  if (node.operatorToken.kind === ts.SyntaxKind.PlusToken) return left + right;
+  if (node.operatorToken.kind === ts.SyntaxKind.MinusToken) return left - right;
+  if (node.operatorToken.kind === ts.SyntaxKind.AsteriskToken) return left * right;
+  if (node.operatorToken.kind === ts.SyntaxKind.SlashToken && right !== 0) return left / right;
+  return undefined;
+}
+
+function numericValue(node, constants, seen = new Set()) {
+  if (ts.isNumericLiteral(node)) return Number(node.text.replaceAll('_', ''));
+  if (ts.isPrefixUnaryExpression(node)) return unaryNumericValue(node, constants, seen);
+  if (ts.isIdentifier(node)) return identifierNumericValue(node, constants, seen);
+  if (ts.isParenthesizedExpression(node)) return numericValue(node.expression, constants, seen);
+  if (ts.isBinaryExpression(node)) return binaryNumericValue(node, constants, seen);
+  return undefined;
+}
+
+function importedBoundConstants(source, program, text) {
+  return source.statements.flatMap((statement) => {
+    if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) return [];
+    if (!statement.importClause?.namedBindings || !ts.isNamedImports(statement.importClause.namedBindings)) return [];
+    const imported = sourceForImport(program, source, statement.moduleSpecifier.text);
+    if (!imported) return [];
+    const constants = sourceConstants(imported);
+    return statement.importClause.namedBindings.elements.flatMap((specifier) => {
+      const localName = specifier.name.text;
+      const name = specifier.propertyName?.text ?? localName;
+      const initializer = constants.get(name);
+      if (!BOUND_CONSTANT.test(name) || !identifierPattern(localName).test(text) || !initializer) return [];
+      return [{ name, initializer, constants }];
+    });
+  });
+}
+
+function describeBound({ name, initializer, constants }) {
+  const value = numericValue(initializer, constants);
+  if (value === undefined || !Number.isFinite(value)) return undefined;
+  return `The source-defined \`${name}\` limit is ${value.toLocaleString('en-US')}.`;
+}
+
+function boundSentences(node, source, program) {
   const text = node.getText(source);
   const constants = sourceConstants(source);
-  for (const [name, initializer] of constants) {
-    if (!BOUND_CONSTANT.test(name) || !identifierPattern(name).test(text)) continue;
-    const value = numericValue(initializer, constants);
-    if (value !== undefined && Number.isFinite(value))
-      result.push(`The source-defined \`${name}\` limit is ${value.toLocaleString('en-US')}.`);
+  const local = [...constants]
+    .filter(([name]) => BOUND_CONSTANT.test(name) && identifierPattern(name).test(text))
+    .map(([name, initializer]) => ({ name, initializer, constants }));
+  const imported = importedBoundConstants(source, program, text);
+  return [...local, ...imported].map(describeBound).filter(Boolean);
+}
+
+function reexportedModules(source, program) {
+  return source.statements.flatMap((statement) => {
+    if (
+      !ts.isExportDeclaration(statement) ||
+      !statement.moduleSpecifier ||
+      !ts.isStringLiteral(statement.moduleSpecifier)
+    )
+      return [];
+    if (!statement.exportClause || !ts.isNamedExports(statement.exportClause)) return [];
+    const imported = sourceForImport(program, source, statement.moduleSpecifier.text);
+    return imported === undefined ? [] : [{ imported, exports: statement.exportClause.elements }];
+  });
+}
+
+function exportedBound(specifier, constants) {
+  const name = specifier.propertyName?.text ?? specifier.name.text;
+  const initializer = constants.get(name);
+  if (!BOUND_CONSTANT.test(name) || !initializer) return undefined;
+  const value = numericValue(initializer, constants);
+  if (value === undefined || !Number.isFinite(value)) return undefined;
+  return `The source-defined \`${name}\` limit is ${value.toLocaleString('en-US')}.`;
+}
+
+function exportedBounds(source, program) {
+  return reexportedModules(source, program).flatMap(({ imported, exports }) => {
+    const constants = sourceConstants(imported);
+    return exports.map((specifier) => exportedBound(specifier, constants)).filter(Boolean);
+  });
+}
+
+function collectSourceClasses(classes, program, root, repositoryRoot) {
+  for (const path of program.getSourceFileNames()) {
+    if (!path.startsWith(root + '/') || path.endsWith('.d.ts')) continue;
+    const source = program.getSourceFile(path);
+    if (source) collectClassesFromSource(classes, source, repositoryRoot, program);
   }
-  return result;
+}
+
+function collectClassesFromSource(classes, source, repositoryRoot, program) {
+  const sourceBounds = exportedBounds(source, program);
+  for (const node of source.statements) {
+    if (!ts.isClassDeclaration(node) || !node.name) continue;
+    classes.set(node.name.text, {
+      node,
+      source,
+      repositoryRoot,
+      cssText: componentCss(node, source, program),
+      bounds: [...boundSentences(node, source, program), ...sourceBounds],
+    });
+  }
 }
 
 /** Load public component classes plus the repository root used for stable source paths. */
@@ -121,22 +229,14 @@ export async function loadComponentSources(root) {
     const snapshot = api.updateSnapshot({ openProjects: [config] });
     const project = snapshot.getProject(config);
     if (!project) throw Error('Component TypeScript project is unavailable.');
-    for (const path of project.program.getSourceFileNames()) {
-      if (!path.startsWith(root + '/') || path.endsWith('.d.ts')) continue;
-      const source = project.program.getSourceFile(path);
-      if (!source) continue;
-      for (const node of source.statements)
-        if (ts.isClassDeclaration(node) && node.name)
-          classes.set(node.name.text, { node, source, path, repositoryRoot });
-    }
+    collectSourceClasses(classes, project.program, root, repositoryRoot);
     return classes;
   } finally {
     api.close();
   }
 }
 
-/** Read declarations and conservative source metadata without executing component code. */
-export function componentApi(classes, name) {
+function classLineage(classes, name) {
   const lineage = [];
   let current = classes.get(name);
   const seen = new Set();
@@ -148,76 +248,111 @@ export function componentApi(classes, name) {
       ?.types[0]?.expression.getText(current.source);
     current = classes.get(parent);
   }
-  const properties = new Map();
-  const parts = new Set();
-  const tokens = new Set();
-  const dependencies = new Set();
-  const semantics = new Set();
-  const sizing = new Set();
-  const bounds = new Set();
-  const sourceFiles = new Set();
-  let version = 'not declared';
-  for (const { node, source, repositoryRoot } of lineage) {
-    sourceFiles.add(relative(repositoryRoot, source.fileName).replaceAll('\\', '/'));
-    const text = node.getText(source);
-    const cssText = classCss(node, source);
-    for (const statement of source.statements) {
-      if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) continue;
-      const names = importedNames(statement);
-      if (names.some((imported) => identifierPattern(imported).test(text)))
-        dependencies.add(statement.moduleSpecifier.text);
-    }
-    for (const member of node.members) {
-      if (
-        !ts.isPropertyDeclaration(member) ||
-        !member.name ||
-        member.modifiers?.some((modifier) =>
-          [ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ProtectedKeyword, ts.SyntaxKind.StaticKeyword].includes(
-            modifier.kind,
-          ),
-        )
-      )
-        continue;
-      const key = member.name.getText(source);
-      if (key.startsWith('#') || !/^[\w]+$/.test(key)) continue;
-      const initial = member.initializer?.getText(source) ?? 'undefined';
-      properties.set(key, {
-        name: key,
-        type: member.type?.getText(source) ?? 'inferred in public declaration',
-        default: initial.length > 120 ? 'See source initializer' : initial,
-      });
-    }
-    for (const match of text.matchAll(/\bpart="([a-z][a-z0-9 -]*)"/g))
-      for (const part of match[1].split(' ')) parts.add(part);
-    for (const match of cssText.matchAll(/var\((--aeliqo-[a-z0-9-]+)/g)) tokens.add(match[1]);
-    for (const match of text.matchAll(/\b(aria-[a-z-]+|role)\s*=/g)) semantics.add(match[1]);
-    for (const match of text.matchAll(
-      /<(button|input|select|textarea|form|a|table|caption|thead|tbody|tr|th|td|ul|ol|li|dl|dt|dd|section|header|nav|dialog|progress|output)\b/gi,
-    ))
-      semantics.add(match[1].toLowerCase());
-    const sizingPattern = new RegExp(`(?:^|[;{])\\s*(${SIZING_PROPERTIES.join('|')})\\s*:`, 'giu');
-    for (const match of cssText.matchAll(sizingPattern)) sizing.add(match[1].toLowerCase());
-    for (const sentence of boundSentences(node, source)) bounds.add(sentence);
-    const versionMatch = text.match(/static\s+readonly\s+aeliqoVersion\s*=\s*["']([^"']+)["']/);
-    if (versionMatch) version = versionMatch[1];
+  return lineage;
+}
+
+function createComponentMetadata() {
+  return {
+    properties: new Map(),
+    parts: new Set(),
+    tokens: new Set(),
+    dependencies: new Set(),
+    semantics: new Set(),
+    sizing: new Set(),
+    bounds: new Set(),
+    sourceFiles: new Set(),
+  };
+}
+
+function collectDependencies(metadata, source, text) {
+  for (const statement of source.statements) {
+    if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) continue;
+    const names = importedNames(statement);
+    if (names.some((imported) => identifierPattern(imported).test(text)))
+      metadata.dependencies.add(statement.moduleSpecifier.text);
   }
-  const workload = [...properties.values()]
+}
+
+function isPublicPropertyMember(member) {
+  if (!ts.isPropertyDeclaration(member) || !member.name) return false;
+  return !member.modifiers?.some((modifier) =>
+    [ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ProtectedKeyword, ts.SyntaxKind.StaticKeyword].includes(modifier.kind),
+  );
+}
+
+function collectProperties(metadata, node, source) {
+  for (const member of node.members) {
+    if (!isPublicPropertyMember(member)) continue;
+    const key = member.name.getText(source);
+    if (key.startsWith('#') || !/^[\w]+$/.test(key)) continue;
+    const initial = member.initializer?.getText(source) ?? 'undefined';
+    metadata.properties.set(key, {
+      name: key,
+      type: member.type?.getText(source) ?? 'inferred in public declaration',
+      default: initial.length > 120 ? 'See source initializer' : initial,
+    });
+  }
+}
+
+function collectTemplateFacts(metadata, text, cssText) {
+  for (const match of text.matchAll(/\bpart="([a-z][a-z0-9 -]*)"/g))
+    for (const part of match[1].split(' ')) metadata.parts.add(part);
+  for (const match of cssText.matchAll(/var\((--aeliqo-[a-z0-9-]+)/g)) metadata.tokens.add(match[1]);
+}
+
+function collectSemantics(metadata, text) {
+  for (const match of text.matchAll(/\b(aria-[a-z-]+|role)\s*=/g)) metadata.semantics.add(match[1]);
+  for (const match of text.matchAll(
+    /<(button|input|select|textarea|form|a|table|caption|thead|tbody|tr|th|td|ul|ol|li|dl|dt|dd|section|header|nav|dialog|progress|output)\b/gi,
+  ))
+    metadata.semantics.add(match[1].toLowerCase());
+}
+
+function collectSizing(metadata, cssText) {
+  const sizingPattern = new RegExp(`(?:^|[;{])\\s*(${SIZING_PROPERTIES.join('|')})\\s*:`, 'giu');
+  for (const match of cssText.matchAll(sizingPattern)) metadata.sizing.add(match[1].toLowerCase());
+}
+
+function collectClassMetadata(metadata, item) {
+  const { node, source, repositoryRoot, cssText } = item;
+  metadata.sourceFiles.add(relative(repositoryRoot, source.fileName).replaceAll('\\', '/'));
+  const text = node.getText(source);
+  collectDependencies(metadata, source, text);
+  collectProperties(metadata, node, source);
+  collectTemplateFacts(metadata, text, cssText);
+  collectSemantics(metadata, text);
+  collectSizing(metadata, cssText);
+  for (const sentence of item.bounds) metadata.bounds.add(sentence);
+}
+
+function addWorkloadBounds(metadata) {
+  const workload = [...metadata.properties.values()]
     .filter((property) => WORKLOAD_PROPERTY.test(property.name))
     .map((property) =>
       property.default === 'undefined'
         ? `\`${property.name}\``
         : `\`${property.name}\` (default ${compact(property.default)})`,
     );
-  if (workload.length) bounds.add(`Public workload controls: ${workload.join(', ')}.`);
+  if (workload.length) metadata.bounds.add(`Public workload controls: ${workload.join(', ')}.`);
+}
+
+function sortedComponentMetadata(metadata) {
   return {
-    properties: [...properties.values()],
-    parts: [...parts].sort(),
-    tokens: [...tokens].sort(),
-    dependencies: [...dependencies].sort(),
-    semantics: [...semantics].sort(),
-    sizing: [...sizing].sort(),
-    bounds: [...bounds].sort(),
-    sourceFiles: [...sourceFiles].sort(),
-    version,
+    properties: [...metadata.properties.values()],
+    parts: [...metadata.parts].sort(),
+    tokens: [...metadata.tokens].sort(),
+    dependencies: [...metadata.dependencies].sort(),
+    semantics: [...metadata.semantics].sort(),
+    sizing: [...metadata.sizing].sort(),
+    bounds: [...metadata.bounds].sort(),
+    sourceFiles: [...metadata.sourceFiles].sort(),
   };
+}
+
+/** Read declarations and conservative source metadata without executing component code. */
+export function componentApi(classes, name) {
+  const metadata = createComponentMetadata();
+  for (const item of classLineage(classes, name)) collectClassMetadata(metadata, item);
+  addWorkloadBounds(metadata);
+  return sortedComponentMetadata(metadata);
 }

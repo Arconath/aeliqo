@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createQueryFunctionRegistry } from '../../packages/core/src/expressions/registry.js';
-import { createQueryPlanner } from '../../packages/core/src/query/planner.js';
+import { createQueryPlanner } from '../../packages/core/src/query/index.js';
 import type { Catalog, Expression, Outcome } from '../../packages/core/src/contracts/types.js';
 import type { QueryResult, QuerySource, RelationalQuery } from '../../packages/core/src/query/types.js';
 

@@ -11,8 +11,9 @@ import {
   AeliqoTrendElement,
   AeliqoTreeElement,
   AeliqoTreemapElement,
-} from '@aeliqo/web';
-import type { VisualizationBindingContext, VisualizationSpec } from '@aeliqo/core';
+} from '@aeliqo/web/visualization';
+import type { VisualizationSpec } from '@aeliqo/core/visualization';
+import type { VisualizationBindingContext } from '@aeliqo/core/visualization';
 import type { VisualizationDataset } from '@aeliqo/web/visualization';
 import {
   catalogRef,
@@ -47,11 +48,16 @@ const sourceImports = `import {
   AeliqoTrendElement,
   AeliqoTreeElement,
   AeliqoTreemapElement,
-  registerAeliqoElements,
-} from "@aeliqo/web";
+  } from "@aeliqo/web/visualization";
 `;
 
-const sourceTypeImports = `import type {Catalog, PlotUnit, Result, ResultRef, Scalar, VisualizationBindingContext, VisualizationSpec} from "@aeliqo/core";
+const sourceTypeImports = `import type {Catalog,
+  PlotUnit,
+  Result,
+  ResultRef,
+  Scalar,
+} from "@aeliqo/core";
+import type {VisualizationBindingContext, VisualizationSpec} from "@aeliqo/core/visualization";
 import type {VisualizationDataset} from "@aeliqo/web/visualization";`;
 
 const sourceSetup = `${sourceTypeImports}
@@ -415,76 +421,86 @@ const histogramContext: VisualizationBindingContext = {
 export const visualizationExamples: readonly CatalogExampleDefinition[] = [
   mount('trend', (root) =>
     configure(
-      createCatalogElement<AeliqoTrendElement>('aeliqo-trend', root),
+      createCatalogElement<AeliqoTrendElement>('aeliqo-trend', root, AeliqoTrendElement),
       catalogVisualizationSpecs.trend,
       catalogVisualizationContext,
     ),
   ),
   mount('bar', (root) =>
     configure(
-      createCatalogElement<AeliqoBarElement>('aeliqo-bar', root),
+      createCatalogElement<AeliqoBarElement>('aeliqo-bar', root, AeliqoBarElement),
       catalogVisualizationSpecs.bar,
       catalogVisualizationContext,
     ),
   ),
   mount('area', (root) =>
     configure(
-      createCatalogElement<AeliqoAreaElement>('aeliqo-area', root),
+      createCatalogElement<AeliqoAreaElement>('aeliqo-area', root, AeliqoAreaElement),
       catalogVisualizationSpecs.area,
       catalogVisualizationContext,
     ),
   ),
   mount('scatter', (root) =>
     configure(
-      createCatalogElement<AeliqoScatterElement>('aeliqo-scatter', root),
+      createCatalogElement<AeliqoScatterElement>('aeliqo-scatter', root, AeliqoScatterElement),
       catalogVisualizationSpecs.scatter,
       catalogVisualizationContext,
     ),
   ),
   mount('histogram', (root) =>
-    configure(createCatalogElement<AeliqoHistogramElement>('aeliqo-histogram', root), histogramSpec, histogramContext),
+    configure(
+      createCatalogElement<AeliqoHistogramElement>('aeliqo-histogram', root, AeliqoHistogramElement),
+      histogramSpec,
+      histogramContext,
+    ),
   ),
   mount('heatmap', (root) =>
     configure(
-      createCatalogElement<AeliqoHeatmapElement>('aeliqo-heatmap', root),
+      createCatalogElement<AeliqoHeatmapElement>('aeliqo-heatmap', root, AeliqoHeatmapElement),
       catalogVisualizationSpecs.heatmap,
       catalogVisualizationContext,
     ),
   ),
   mount('matrix', (root) =>
     configure(
-      createCatalogElement<AeliqoMatrixElement>('aeliqo-matrix', root),
+      createCatalogElement<AeliqoMatrixElement>('aeliqo-matrix', root, AeliqoMatrixElement),
       catalogTemporalSpecs.matrix,
       catalogVisualizationContext,
     ),
   ),
   mount('timeline', (root) =>
     configure(
-      createCatalogElement<AeliqoTimelineElement>('aeliqo-timeline', root),
+      createCatalogElement<AeliqoTimelineElement>('aeliqo-timeline', root, AeliqoTimelineElement),
       catalogTemporalSpecs.timeline,
       catalogVisualizationContext,
     ),
   ),
   mount('calendar-grid', (root) =>
     configure(
-      createCatalogElement<AeliqoCalendarGridElement>('aeliqo-calendar-grid', root),
+      createCatalogElement<AeliqoCalendarGridElement>('aeliqo-calendar-grid', root, AeliqoCalendarGridElement),
       catalogTemporalSpecs['calendar-grid'],
       catalogVisualizationContext,
     ),
   ),
   mount('tree', (root) =>
-    configure(createCatalogElement<AeliqoTreeElement>('aeliqo-tree', root), hierarchySpec, hierarchyContext, [
-      hierarchyDataset,
-    ]),
+    configure(
+      createCatalogElement<AeliqoTreeElement>('aeliqo-tree', root, AeliqoTreeElement),
+      hierarchySpec,
+      hierarchyContext,
+      [hierarchyDataset],
+    ),
   ),
   mount('treemap', (root) =>
-    configure(createCatalogElement<AeliqoTreemapElement>('aeliqo-treemap', root), treemapSpec, hierarchyContext, [
-      hierarchyDataset,
-    ]),
+    configure(
+      createCatalogElement<AeliqoTreemapElement>('aeliqo-treemap', root, AeliqoTreemapElement),
+      treemapSpec,
+      hierarchyContext,
+      [hierarchyDataset],
+    ),
   ),
   mount('relationship', (root) =>
     configure(
-      createCatalogElement<AeliqoRelationshipElement>('aeliqo-relationship', root),
+      createCatalogElement<AeliqoRelationshipElement>('aeliqo-relationship', root, AeliqoRelationshipElement),
       relationshipSpec,
       relationshipContext,
       [relationshipDataset],

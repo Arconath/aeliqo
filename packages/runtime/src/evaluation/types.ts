@@ -1,4 +1,4 @@
-import type { Catalog, Diagnostic, Outcome, QuerySpec, Result, ResultRef, SemanticType, Task } from '@aeliqo/core';
+import type { Catalog, Diagnostic, Outcome, Result, ResultRef, SemanticType, Task } from '@aeliqo/core';
 import type { AcceptedQuery, DataService, DataValue, QueryBudget, ReadContext } from '../data/types.js';
 import type { ResultHandle, ResultStore } from '../results/types.js';
 
@@ -119,5 +119,3 @@ export interface TaskEvaluation {
 
 export type EvaluationFailure = Diagnostic & { readonly code: string };
 export type EvaluationOutcome<T> = Outcome<T>;
-
-export type { Catalog, DataService, DataValue, QuerySpec, Result, ResultRef, SemanticType, Task };

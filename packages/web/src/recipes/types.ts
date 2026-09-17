@@ -1,13 +1,5 @@
-import type {
-  CommitPreconditions,
-  Intent,
-  Outcome,
-  PresentationEnvironment,
-  PresentationPlan,
-  Result,
-  Task,
-  VersionRef,
-} from '@aeliqo/core';
+import type { CommitPreconditions, Intent, Outcome, PresentationPlan, Result, Task, VersionRef } from '@aeliqo/core';
+import type { PresentationEnvironment } from '@aeliqo/core/presentation';
 import type { AeliqoViewDefinition } from '../region/types.js';
 import type { AeliqoInputBindings } from '../region/input-registry.js';
 

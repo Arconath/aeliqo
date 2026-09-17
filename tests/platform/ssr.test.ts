@@ -9,7 +9,7 @@ describe('SSR boundary', () => {
 
     const output = await renderAeliqo(html`
       <main>
-        <aeliqo-input label="Name" value=${escapedValue} name="person"></aeliqo-input>
+        <aeliqo-text-field label="Name" value=${escapedValue} name="person"></aeliqo-text-field>
         <aeliqo-table
           caption="People"
           .columns=${[
@@ -30,7 +30,7 @@ describe('SSR boundary', () => {
       </main>
     `);
 
-    expect(output).toContain('<aeliqo-input');
+    expect(output).toContain('<aeliqo-text-field');
     expect(output).toContain('shadowrootmode="open"');
     expect(output).toContain('<table');
     expect(output).toContain('<svg');

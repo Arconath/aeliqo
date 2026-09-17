@@ -67,40 +67,44 @@ function assertSource(value, label) {
 
 function assertPackageVersions(value, docsVersion, label) {
   assertObject(value, label);
-  const names = [
-    '@aeliqo/agent',
-    '@aeliqo/core',
-    '@aeliqo/devtools',
-    '@aeliqo/react',
-    '@aeliqo/runtime',
-    '@aeliqo/web',
-  ];
+  const names = ['@aeliqo/agent', '@aeliqo/core', '@aeliqo/react', '@aeliqo/runtime', '@aeliqo/web'];
   assertExactKeys(value, names, label);
   for (const name of names) {
     if (value[name] !== docsVersion) throw new Error(`${label}.${name} must equal docsVersion ${docsVersion}`);
   }
 }
 
+function assertRequiredPageFields(page, index, required) {
+  for (const key of required) {
+    if (typeof page[key] !== 'string' || page[key] === '')
+      throw new Error(`artifact.pages[${index}].${key} must be a non-empty string`);
+  }
+}
+
+function assertAllowedPageFields(page, index, allowed) {
+  for (const key of Object.keys(page)) {
+    if (!allowed.has(key)) throw new Error(`artifact.pages[${index}] has unexpected field ${key}`);
+  }
+}
+
+function assertCanonicalPagePath(page, index) {
+  if (!page.path.startsWith('/') || !page.path.endsWith('/') || page.path.startsWith('//') || page.path.includes('..'))
+    throw new Error(`artifact.pages[${index}].path must be a canonical absolute route`);
+}
+
+function assertComponentPageId(page, index) {
+  if (page.component !== undefined && (typeof page.component !== 'string' || page.component === ''))
+    throw new Error(`artifact.pages[${index}].component must be a non-empty string`);
+}
+
 function assertPage(page, index) {
   assertObject(page, `artifact.pages[${index}]`);
   const required = ['body', 'description', 'id', 'path', 'section', 'title'];
   const allowed = new Set([...required, 'component']);
-  for (const key of required)
-    if (typeof page[key] !== 'string' || page[key] === '')
-      throw new Error(`artifact.pages[${index}].${key} must be a non-empty string`);
-  for (const key of Object.keys(page))
-    if (!allowed.has(key)) throw new Error(`artifact.pages[${index}] has unexpected field ${key}`);
-  if (
-    !page.path.startsWith('/') ||
-    !page.path.endsWith('/') ||
-    page.path.startsWith('//') ||
-    page.path.includes('..')
-  ) {
-    throw new Error(`artifact.pages[${index}].path must be a canonical absolute route`);
-  }
-  if (page.component !== undefined && (typeof page.component !== 'string' || page.component === '')) {
-    throw new Error(`artifact.pages[${index}].component must be a non-empty string`);
-  }
+  assertRequiredPageFields(page, index, required);
+  assertAllowedPageFields(page, index, allowed);
+  assertCanonicalPagePath(page, index);
+  assertComponentPageId(page, index);
 }
 
 export function assertPublicDocsArtifact(value) {
@@ -125,13 +129,7 @@ export function assertPublicDocsArtifact(value) {
   return artifact;
 }
 
-export function assertPublicDocsManifest(value) {
-  const manifest = assertObject(value, 'manifest');
-  assertExactKeys(
-    manifest,
-    ['artifact', 'catalogFiles', 'docsVersion', 'inputs', 'packageVersions', 'schema', 'source', 'sourceTree'],
-    'manifest',
-  );
+function assertManifestIdentity(manifest) {
   if (manifest.schema !== PUBLIC_DOCS_MANIFEST_SCHEMA)
     throw new Error(`manifest.schema must be ${PUBLIC_DOCS_MANIFEST_SCHEMA}`);
   assertVersion(manifest.docsVersion, 'manifest.docsVersion');
@@ -139,43 +137,72 @@ export function assertPublicDocsManifest(value) {
   assertPackageVersions(manifest.packageVersions, manifest.docsVersion, 'manifest.packageVersions');
   if (manifest.sourceTree !== 'clean' && manifest.sourceTree !== 'modified')
     throw new Error('manifest.sourceTree must be clean or modified');
-  assertObject(manifest.artifact, 'manifest.artifact');
-  assertExactKeys(manifest.artifact, ['bytes', 'file', 'sha256'], 'manifest.artifact');
-  assertSafeFileName(manifest.artifact.file, 'manifest.artifact.file');
-  assertSha256(manifest.artifact.sha256, 'manifest.artifact.sha256');
-  if (!Number.isSafeInteger(manifest.artifact.bytes) || manifest.artifact.bytes <= 0)
+}
+
+function assertManifestArtifact(artifact) {
+  assertObject(artifact, 'manifest.artifact');
+  assertExactKeys(artifact, ['bytes', 'file', 'sha256'], 'manifest.artifact');
+  assertSafeFileName(artifact.file, 'manifest.artifact.file');
+  assertSha256(artifact.sha256, 'manifest.artifact.sha256');
+  if (!Number.isSafeInteger(artifact.bytes) || artifact.bytes <= 0)
     throw new Error('manifest.artifact.bytes must be a positive integer');
-  if (!Array.isArray(manifest.catalogFiles) || manifest.catalogFiles.length === 0)
-    throw new Error('manifest.catalogFiles must be a non-empty array');
-  let previousCatalogPath = '';
-  for (const [index, file] of manifest.catalogFiles.entries()) {
-    assertObject(file, `manifest.catalogFiles[${index}]`);
-    assertExactKeys(file, ['bytes', 'path', 'sha256'], `manifest.catalogFiles[${index}]`);
-    assertSafeRelativePath(file.path, `manifest.catalogFiles[${index}].path`);
-    if (!file.path.startsWith('catalog-examples/') || !file.path.endsWith('.ts'))
-      throw new Error(`manifest.catalogFiles[${index}].path must be a catalog example TypeScript file`);
-    if (file.path <= previousCatalogPath) throw new Error('manifest.catalogFiles must be unique and sorted by path');
-    previousCatalogPath = file.path;
-    assertSha256(file.sha256, `manifest.catalogFiles[${index}].sha256`);
-    if (!Number.isSafeInteger(file.bytes) || file.bytes <= 0)
-      throw new Error(`manifest.catalogFiles[${index}].bytes must be a positive integer`);
-  }
-  if (!manifest.catalogFiles.some((file) => file.path === 'catalog-examples/index.ts'))
-    throw new Error('manifest.catalogFiles must contain catalog-examples/index.ts');
-  if (!Array.isArray(manifest.inputs) || manifest.inputs.length === 0)
-    throw new Error('manifest.inputs must be a non-empty array');
+}
+
+function assertCatalogFiles(files) {
+  if (!Array.isArray(files) || files.length === 0) throw new Error('manifest.catalogFiles must be a non-empty array');
   let previous = '';
-  for (const [index, input] of manifest.inputs.entries()) {
-    assertObject(input, `manifest.inputs[${index}]`);
-    assertExactKeys(input, ['bytes', 'path', 'sha256'], `manifest.inputs[${index}]`);
-    if (typeof input.path !== 'string' || input.path === '' || input.path.startsWith('/') || input.path.includes('..'))
-      throw new Error(`manifest.inputs[${index}].path must be repository-relative`);
+  for (const [index, file] of files.entries()) {
+    const label = `manifest.catalogFiles[${index}]`;
+    assertObject(file, label);
+    assertExactKeys(file, ['bytes', 'path', 'sha256'], label);
+    assertSafeRelativePath(file.path, `${label}.path`);
+    if (!file.path.startsWith('catalog-examples/') || !file.path.endsWith('.ts'))
+      throw new Error(`${label}.path must be a catalog example TypeScript file`);
+    if (file.path <= previous) throw new Error('manifest.catalogFiles must be unique and sorted by path');
+    previous = file.path;
+    assertSha256(file.sha256, `${label}.sha256`);
+    assertPositiveBytes(file.bytes, `${label}.bytes`);
+  }
+  if (!files.some((file) => file.path === 'catalog-examples/index.ts'))
+    throw new Error('manifest.catalogFiles must contain catalog-examples/index.ts');
+}
+
+function assertInputFiles(files) {
+  if (!Array.isArray(files) || files.length === 0) throw new Error('manifest.inputs must be a non-empty array');
+  let previous = '';
+  for (const [index, input] of files.entries()) {
+    const label = `manifest.inputs[${index}]`;
+    assertObject(input, label);
+    assertExactKeys(input, ['bytes', 'path', 'sha256'], label);
+    assertRepositoryRelativePath(input.path, label);
     if (input.path <= previous) throw new Error('manifest.inputs must be unique and sorted by path');
     previous = input.path;
-    assertSha256(input.sha256, `manifest.inputs[${index}].sha256`);
+    assertSha256(input.sha256, `${label}.sha256`);
     if (!Number.isSafeInteger(input.bytes) || input.bytes < 0)
-      throw new Error(`manifest.inputs[${index}].bytes must be a non-negative integer`);
+      throw new Error(`${label}.bytes must be a non-negative integer`);
   }
+}
+
+function assertPositiveBytes(value, label) {
+  if (!Number.isSafeInteger(value) || value <= 0) throw new Error(`${label} must be a positive integer`);
+}
+
+function assertRepositoryRelativePath(path, label) {
+  if (typeof path !== 'string' || path === '' || path.startsWith('/') || path.includes('..'))
+    throw new Error(`${label}.path must be repository-relative`);
+}
+
+export function assertPublicDocsManifest(value) {
+  const manifest = assertObject(value, 'manifest');
+  assertExactKeys(
+    manifest,
+    ['artifact', 'catalogFiles', 'docsVersion', 'inputs', 'packageVersions', 'schema', 'source', 'sourceTree'],
+    'manifest',
+  );
+  assertManifestIdentity(manifest);
+  assertManifestArtifact(manifest.artifact);
+  assertCatalogFiles(manifest.catalogFiles);
+  assertInputFiles(manifest.inputs);
   return manifest;
 }
 

@@ -1,4 +1,4 @@
-import { AeliqoInputElement } from '@aeliqo/web/input';
+import { AeliqoTextFieldElement } from '@aeliqo/web/inputs';
 import { AeliqoTableElement } from '@aeliqo/web/table';
 import type { AeliqoTableColumn, AeliqoTableRow } from '@aeliqo/web';
 
@@ -82,13 +82,13 @@ declare global {
   }
 }
 
-const input = document.querySelector<AeliqoInputElement>('#query');
+const input = document.querySelector<AeliqoTextFieldElement>('#query');
 const table = document.querySelector<AeliqoTableElement>('#records');
 const visibleResult = document.querySelector<HTMLOutputElement>('#visible-result');
 if (input === null || table === null || visibleResult === null)
   throw new Error('Perceived input fixture is incomplete.');
 
-if (!customElements.get('aeliqo-input')) customElements.define('aeliqo-input', AeliqoInputElement);
+if (!customElements.get('aeliqo-text-field')) customElements.define('aeliqo-text-field', AeliqoTextFieldElement);
 if (!customElements.get('aeliqo-table')) customElements.define('aeliqo-table', AeliqoTableElement);
 
 const columns: readonly AeliqoTableColumn[] = [

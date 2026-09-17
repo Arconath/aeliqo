@@ -809,6 +809,22 @@ it('allows an explicit renderer mapping to preserve state across different adapt
   expect(installed.ok).toBe(true);
   if (!installed.ok) return;
   expect(installed.value.stateMappings).toEqual([mapping]);
+  const adaptive: PresentationContext = {
+    ...context(),
+    incumbent: plan(),
+    experience: { ...context().experience, mode: 'adaptive', allowedRepresentations: ['data.table', 'data.cards'] },
+    rendererCapabilities: [table.ref, cards.ref, stack.ref],
+    stateMappingCapabilities: [mapping.ref],
+  };
+  const candidate: PresentationPlan = {
+    ...plan(),
+    nodes: [{ ...plan().nodes[0]!, role: 'cardCollection', representation: cards.ref }],
+    stateTransfer: [{ fromNode: 'table-1', toNode: 'table-1', mapping: mapping.ref }],
+  };
+  expect(checked(candidate, adaptive, installed.value).ok).toBe(true);
+  expect(
+    checked(candidate, { ...adaptive, experience: { ...adaptive.experience, mode: 'fixed' } }, installed.value),
+  ).toMatchObject({ ok: false, diagnostics: [{ code: 'presentation.transition' }] });
 });
 it('requires a registered archival owner before removing a composable view', () => {
   const archive = {

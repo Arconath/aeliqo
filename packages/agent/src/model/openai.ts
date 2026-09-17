@@ -2,11 +2,13 @@ import OpenAI from 'openai';
 import type { ResponseInputItem, FunctionTool } from 'openai/resources/responses/responses';
 import { parseWireValue } from '@aeliqo/core';
 import type { AgentJsonValue } from '../capabilities/types.js';
+import type { ModelExecutionEnvironment } from './connection-types.js';
 import type { ToolModelPort, ToolModelRequest } from './types.js';
 
 export interface OpenAIToolModelOptions {
   /** Application-created official SDK client. Credentials remain on its trusted server. */
   readonly client: OpenAI;
+  readonly environment: ModelExecutionEnvironment;
   readonly model: string;
 }
 const INSTRUCTIONS =
@@ -46,7 +48,8 @@ function project(request: ToolModelRequest, model: string) {
 
 /** Optional server-only reference. It performs no tool execution and never keeps provider conversation state. */
 export function createOpenAIToolModel(options: OpenAIToolModelOptions): ToolModelPort {
-  if (typeof window !== 'undefined') throw new Error('The OpenAI model port requires a trusted server.');
+  if (options?.environment !== 'trusted-server')
+    throw new Error('The OpenAI model port requires an explicitly trusted server environment.');
   if (
     !options ||
     !(options.client instanceof OpenAI) ||

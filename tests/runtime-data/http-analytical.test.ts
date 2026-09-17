@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-  createStandardFunctionRegistry,
-  type Catalog,
-  type MeaningDefinition,
-  type QuerySpec,
-} from '../../packages/core/src/index.js';
+import { type Catalog, type MeaningDefinition, type QuerySpec } from '../../packages/core/src/index.js';
+import { createStandardFunctionRegistry } from '../../packages/core/src/expressions/index.js';
 import {
   createLocalDataService,
   type DataRecord,
@@ -178,7 +174,7 @@ const requestFor = (query: QuerySpec, requestId = 'commerce-request-1') => ({
   version: '1' as const,
   requestId,
   catalogRevision: catalog.revision,
-  target: { outputId: 'orders-output' },
+  target: { taskId: requestId, outputId: 'orders-output' },
   query,
   budget,
 });

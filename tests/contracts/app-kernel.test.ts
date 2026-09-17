@@ -1,15 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import {
-  ResourceDefinitionError,
-  compileIntent,
-  createIntentCompilerRegistry,
-  createQueryFunctionRegistry,
-  createQueryPlanner,
-  defineResource,
-  parseIntent,
-  type Task,
-} from '../../packages/core/src/index.js';
+import { compileIntent, defineResource, parseIntent, type Task } from '../../packages/core/src/index.js';
+import { createIntentCompilerRegistry, ResourceDefinitionError } from '../../packages/core/src/app/index.js';
+import { createQueryFunctionRegistry } from '../../packages/core/src/expressions/index.js';
+import { createQueryPlanner } from '../../packages/core/src/query/index.js';
 
 const people = defineResource({
   id: 'people',

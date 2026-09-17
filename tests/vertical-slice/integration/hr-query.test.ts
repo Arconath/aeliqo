@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { createQueryPlanner, type QuerySpec, type QuerySource } from '../../../packages/core/dist/index.js';
+import { createQueryPlanner, type QuerySource, type QuerySpec } from '../../../packages/core/dist/query/index.js';
 import {
   catalog,
   functionRegistry,

@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { createAeliqoPresentationRegistry } from '../../packages/web/src/region/registry.js';
 import type { AeliqoPresentationRegistryOptions } from '../../packages/web/src/region/registry.js';
-import { validatePresentationPlan } from '../../packages/core/src/index.js';
-import type { PresentationContext, PresentationPlan, ValidatedPresentation } from '../../packages/core/src/index.js';
+import { validatePresentationPlan } from '../../packages/core/src/presentation/index.js';
+import type { PresentationPlan } from '../../packages/core/src/contracts/index.js';
+import type { PresentationContext, ValidatedPresentation } from '../../packages/core/src/presentation/index.js';
 import { visualizationContext, visualizationPlan, visualizationRegistryOptions } from './fixtures.mjs';
 
 function checked(readOnly = false): ValidatedPresentation {

@@ -15,20 +15,17 @@ checks.
 
 Install `@aeliqo/web`, register elements once at the application boundary, and
 set typed properties on the element. A normal DOM listener receives the typed
-`aeliqo-input` event; a native `FormData` submission remains available.
+`aeliqo-input-change` event; a native `FormData` submission remains available.
 
 ```ts
-import {
-  AeliqoInputEvent,
-  registerAeliqoElements,
-  type AeliqoInputElement,
-} from "@aeliqo/web";
+import { registerAeliqoElements } from '@aeliqo/web';
+import { AeliqoInputChangeEvent, type AeliqoTextFieldElement } from '@aeliqo/web/inputs';
 
 registerAeliqoElements();
-const input = document.querySelector<AeliqoInputElement>("aeliqo-input");
-if (!input) throw new Error("Input is missing");
-input.addEventListener("aeliqo-input", (event) => {
-  if (event instanceof AeliqoInputEvent) {
+const input = document.querySelector<AeliqoTextFieldElement>('aeliqo-text-field');
+if (!input) throw new Error('Input is missing');
+input.addEventListener('aeliqo-input-change', (event) => {
+  if (event instanceof AeliqoInputChangeEvent) {
     input.value = event.detail.value;
   }
 });
@@ -36,35 +33,27 @@ input.addEventListener("aeliqo-input", (event) => {
 
 ## React
 
-Import the root binding or a family subpath. Call
+Import wrappers from their family subpaths. Call
 `registerAeliqoReactElements()` once in the browser entry. React properties
 are controlled by the host and custom-element events become typed callback
 props.
 
 ```tsx
-import {useState} from "react";
-import {
-  AeliqoInput,
-  AeliqoTable,
-  registerAeliqoReactElements,
-} from "@aeliqo/react";
+import { useState } from 'react';
+import { AeliqoTextField } from '@aeliqo/react/inputs';
+import { AeliqoTable } from '@aeliqo/react/data';
+import { registerAeliqoReactElements } from '@aeliqo/react';
 
 registerAeliqoReactElements();
 
 export function PeopleForm() {
-  const [name, setName] = useState("Ada");
-  return <>
-    <AeliqoInput
-      label="Person"
-      value={name}
-      onAeliqoInput={(event) => setName(event.detail.value)}
-    />
-    <AeliqoTable
-      caption="People"
-      columns={[{key: "name", label: "Name"}]}
-      rows={[{name}]}
-    />
-  </>;
+  const [name, setName] = useState('Ada');
+  return (
+    <>
+      <AeliqoTextField label="Person" value={name} onValueChange={(event) => setName(event.detail.value)} />
+      <AeliqoTable caption="People" columns={[{ key: 'name', label: 'Name' }]} rows={[{ name }]} />
+    </>
+  );
 }
 ```
 
@@ -84,14 +73,12 @@ not read browser globals or enable SSR as a side effect.
 
 ```tsx
 // server entry
-import "@aeliqo/react/ssr";
-import {AeliqoInput} from "@aeliqo/react";
-import {renderToString} from "react-dom/server";
-import {createElement} from "react";
+import '@aeliqo/react/ssr';
+import { AeliqoTextField } from '@aeliqo/react/inputs';
+import { renderToString } from 'react-dom/server';
+import { createElement } from 'react';
 
-const html = renderToString(
-  createElement(AeliqoInput, {label: "Person", value: "Ada"}),
-);
+const html = renderToString(createElement(AeliqoTextField, { label: 'Person', value: 'Ada' }));
 ```
 
 The production-shaped App Router recipe is in
@@ -103,26 +90,28 @@ elements and retains the host-owned event/property boundary.
 
 Vue embeds the same registered custom element. Keep data in Vue state and pass
 element properties through `h` or a template. Use the event name in its DOM
-form (`onAeliqo-input` for `aeliqo-input`).
+form (`onAeliqo-input-change` for `aeliqo-input-change`).
 
 ```ts
-import {createApp, h, ref} from "vue";
-import {AeliqoInputEvent, registerAeliqoElements} from "@aeliqo/web";
+import { createApp, h, ref } from 'vue';
+import { registerAeliqoElements } from '@aeliqo/web';
+import { AeliqoInputChangeEvent } from '@aeliqo/web/inputs';
 
 registerAeliqoElements();
 const App = {
   setup() {
-    const value = ref("Vue");
-    return () => h("aeliqo-input", {
-      label: "Person",
-      value: value.value,
-      "onAeliqo-input": (event: Event) => {
-        if (event instanceof AeliqoInputEvent) value.value = event.detail.value;
-      },
-    });
+    const value = ref('Vue');
+    return () =>
+      h('aeliqo-text-field', {
+        label: 'Person',
+        value: value.value,
+        'onAeliqo-input-change': (event: Event) => {
+          if (event instanceof AeliqoInputChangeEvent) value.value = event.detail.value;
+        },
+      });
   },
 };
-createApp(App).mount(document.querySelector("#app")!);
+createApp(App).mount(document.querySelector('#app')!);
 ```
 
 ## Meaning authoring is independent of the UI
@@ -131,39 +120,49 @@ Developer-authored meanings use `@aeliqo/core` and
 `@aeliqo/runtime/meaning`. They reuse the application Catalog, preserve field
 identity and type information, and return the same typed expression/evaluator
 contracts used by other authoring surfaces. The path does not import a model,
-Studio, chart, layout, or framework package.
+chart, layout, or framework package.
 
 ```ts
-import {createStandardFunctionRegistry, type Catalog} from "@aeliqo/core";
-import {createMeaningAuthoring} from "@aeliqo/runtime/meaning";
+import { type Catalog } from '@aeliqo/core';
+import { createStandardFunctionRegistry } from '@aeliqo/core/expressions';
+import { createMeaningAuthoring } from '@aeliqo/runtime/meaning';
 
-const registry = createStandardFunctionRegistry("app-functions");
-if (!registry.ok) throw new Error("Cannot create function registry");
+const registry = createStandardFunctionRegistry('app-functions');
+if (!registry.ok) throw new Error('Cannot create function registry');
 const catalog = {
-  version: "1",
-  revision: "app-catalog",
+  version: '1',
+  revision: 'app-catalog',
   functionRegistryDigest: registry.value.digest,
-  entities: [{
-    id: "orders", label: "Orders", identity: ["id"], rowGrain: ["id"],
-    fields: [
-      {id: "id", label: "ID", role: "identity", type: {value: "text", nullable: false}},
-      {id: "amount", label: "Amount", role: "measure", type: {value: "integer", nullable: false}},
-    ],
-  }],
-  relationships: [], meanings: [], capabilities: [],
+  entities: [
+    {
+      id: 'orders',
+      label: 'Orders',
+      identity: ['id'],
+      rowGrain: ['id'],
+      fields: [
+        { id: 'id', label: 'ID', role: 'identity', type: { value: 'text', nullable: false } },
+        { id: 'amount', label: 'Amount', role: 'measure', type: { value: 'integer', nullable: false } },
+      ],
+    },
+  ],
+  relationships: [],
+  meanings: [],
+  capabilities: [],
 } as const satisfies Catalog;
 
-const authoring = createMeaningAuthoring({catalog, registry: registry.value});
-if (!authoring.ok) throw new Error("Catalog is invalid");
-const amount = authoring.value.field("orders", "amount");
-if (!amount.ok) throw new Error("Amount field is unavailable");
-const total = authoring.value.call({id: "core.aggregate.sum", revision: "1"}, [amount]);
-if (!total.ok) throw new Error("Meaning is invalid");
+const authoring = createMeaningAuthoring({ catalog, registry: registry.value });
+if (!authoring.ok) throw new Error('Catalog is invalid');
+const amount = authoring.value.field('orders', 'amount');
+if (!amount.ok) throw new Error('Amount field is unavailable');
+const total = authoring.value.call({ id: 'core.aggregate.sum', revision: '1' }, [amount]);
+if (!total.ok) throw new Error('Meaning is invalid');
 const definition = authoring.value.defineMeaning({
-  id: "orders.total", label: "Order total", description: "Sum of order amounts",
+  id: 'orders.total',
+  label: 'Order total',
+  description: 'Sum of order amounts',
   expression: total.value,
 });
-if (!definition.ok) throw new Error("Meaning definition is invalid");
+if (!definition.ok) throw new Error('Meaning definition is invalid');
 ```
 
 With a literal Catalog, the field helper also gives useful compile-time
@@ -171,7 +170,7 @@ feedback:
 
 ```ts
 // @ts-expect-error `missing` is not a field in the reused `orders` schema.
-authoring.value.field("orders", "missing");
+authoring.value.field('orders', 'missing');
 ```
 
 Meaning definitions contain semantic identity, units, grain, and dependencies;

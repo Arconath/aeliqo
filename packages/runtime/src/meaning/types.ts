@@ -1,33 +1,24 @@
+import type { Catalog, CommitPreconditions, MeaningDefinition, Outcome, VersionRef } from '@aeliqo/core';
 import type {
-  Catalog,
-  CommitPreconditions,
-  Diagnostic,
-  FunctionRegistry,
   MeaningActivationPolicy,
   MeaningActivationReceipt,
-  MeaningDefinition,
   MeaningBundle,
   MeaningScope,
-  Outcome,
-  QueryLimits,
-  QueryResult,
-  QuerySource,
   SemanticPolicy,
-  TypedExpression,
-  VersionRef,
-} from '@aeliqo/core';
-import type { DefineMetricInput, TypedAuthoring } from '@aeliqo/core';
+} from '@aeliqo/core/semantics';
+import type { DefineMetricInput, FunctionRegistry, TypedAuthoring } from '@aeliqo/core/expressions';
+import type { QueryLimits, QueryResult, QuerySource } from '@aeliqo/core/query';
 
 /** The trusted surface that produced a canonical definition. */
-export type MeaningAuthoringSurface = 'code' | 'studio' | 'ai-assisted';
+type MeaningAuthoringSurface = 'code' | 'ai-assisted';
 
 /** Repository ownership is separate from canonical origin and activation authority. */
-export type MeaningOwnership = 'code' | 'session' | 'personal' | 'workspace' | 'organization';
+type MeaningOwnership = 'code' | 'session' | 'personal' | 'workspace' | 'organization';
 
 export interface MeaningSource {
   readonly surface: MeaningAuthoringSurface;
   readonly ownership: MeaningOwnership;
-  /** Code owned entries are read-only to Studio and AI callers. */
+  /** Code-owned entries cannot be overwritten through AI or registry activation. */
   readonly readOnly?: boolean;
   /** Optional bounded repository/application identity for audit and diff routing. */
   readonly ownerId?: string;
@@ -205,19 +196,3 @@ export type MeaningAuthoringOutcome = Outcome<MeaningDraft>;
 export type MeaningDiffOutcome = Outcome<MeaningDiff>;
 export type MeaningActivationOutcome = Outcome<MeaningActivationReceipt>;
 export type MeaningRegistrationOutcome = Outcome<MeaningRegistrationReceipt>;
-export type {
-  Catalog,
-  Diagnostic,
-  FunctionRegistry,
-  MeaningActivationPolicy,
-  MeaningActivationReceipt,
-  MeaningBundle,
-  MeaningDefinition,
-  MeaningScope,
-  Outcome,
-  QueryResult,
-  QuerySource,
-  SemanticPolicy,
-  TypedExpression,
-  VersionRef,
-};

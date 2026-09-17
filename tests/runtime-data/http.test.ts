@@ -21,7 +21,7 @@ const planning = {
   version: '1',
   requestId: 'request-1',
   catalogRevision: catalog.revision,
-  target: { outputId: ref.outputId },
+  target: { taskId: 'request-1', outputId: ref.outputId },
   query,
   budget,
 } as const;

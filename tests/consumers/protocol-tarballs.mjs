@@ -1,6 +1,7 @@
 import { RELEASE_VERSION } from '../../scripts/release/metadata.mjs';
 /**
- * Build, install and execute the agent boundary from actual package tarballs
+ * Build,
+  install and execute the agent boundary from actual package tarballs
  * outside the pnpm workspace. This is a bounded consumer proof for the
  * installed core/runtime/agent graph; it does not certify every adapter or host.
  */
@@ -96,7 +97,6 @@ run(
     'openai@7.10.0',
     '@modelcontextprotocol/server@2.0.0',
     '@modelcontextprotocol/client@2.0.0',
-    '@modelcontextprotocol/node@2.0.0',
   ],
   consumer,
 );
@@ -142,8 +142,9 @@ assert.deepEqual(
 await writeFile(join(runDirectory, 'consumer-package-lock.json'), lockBytes);
 
 const probe = `
-import {parseWireValue} from '@aeliqo/core';
-import {createAgentCapabilityRegistry} from '@aeliqo/agent';
+import {parseWireValue,
+} from '@aeliqo/core';
+import {createAgentCapabilityRegistry} from '@aeliqo/agent/capabilities';
 import {createAgentToolEndpoint} from '@aeliqo/agent/protocol';
 import {runToolModel} from '@aeliqo/agent/model';
 import {createWebMcpAdapter} from '@aeliqo/agent/webmcp';

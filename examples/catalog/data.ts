@@ -11,7 +11,7 @@ import {
   type AeliqoKeyValueItem,
   type AeliqoTableColumn,
   type AeliqoTableRow,
-} from '@aeliqo/web';
+} from '@aeliqo/web/data';
 import {
   catalogColumns,
   catalogFields,
@@ -35,12 +35,13 @@ const sourceImports = `import {
   AeliqoRecordListElement,
   AeliqoSelectionSummaryElement,
   AeliqoTableElement,
-  registerAeliqoElements,
   type AeliqoKeyValueItem,
   type AeliqoTableColumn,
   type AeliqoTableRow,
-} from "@aeliqo/web";`;
-const sourceTypeImports = `import type {ResultRef, Scalar} from "@aeliqo/core";
+  } from "@aeliqo/web/data";`;
+const sourceTypeImports = `import type {ResultRef,
+  Scalar,
+} from "@aeliqo/core";
 import type {AeliqoDataColumn, AeliqoDataScope, AeliqoFieldOption} from "@aeliqo/web/data";`;
 
 const sourceSetup = `${sourceTypeImports}
@@ -262,7 +263,7 @@ const personKeys = ['string:3:ada', 'string:5:grace'] as const;
 
 export const dataExamples: readonly CatalogExampleDefinition[] = [
   mount('metric', (root) => {
-    const element = createCatalogElement<AeliqoMetricElement>('aeliqo-metric', root);
+    const element = createCatalogElement<AeliqoMetricElement>('aeliqo-metric', root, AeliqoMetricElement);
     element.label = 'Authorized people';
     element.value = catalogRows.length;
     element.unit = 'records';
@@ -270,7 +271,7 @@ export const dataExamples: readonly CatalogExampleDefinition[] = [
     element.description = 'Current filtered result';
   }),
   mount('delta', (root) => {
-    const element = createCatalogElement<AeliqoDeltaElement>('aeliqo-delta', root);
+    const element = createCatalogElement<AeliqoDeltaElement>('aeliqo-delta', root, AeliqoDeltaElement);
     element.label = 'Change from last week';
     element.current = 0.62;
     element.baseline = 0.5;
@@ -279,7 +280,7 @@ export const dataExamples: readonly CatalogExampleDefinition[] = [
     element.scope = catalogScope;
   }),
   mount('key-value', (root) => {
-    const element = createCatalogElement<AeliqoKeyValueElement>('aeliqo-key-value', root);
+    const element = createCatalogElement<AeliqoKeyValueElement>('aeliqo-key-value', root, AeliqoKeyValueElement);
     const items: readonly AeliqoKeyValueItem[] = [
       { key: 'owner', label: 'Owner', value: 'Ada Lovelace' },
       { key: 'scope', label: 'Scope', value: 'Authorized people', description: 'Current report scope' },
@@ -288,7 +289,7 @@ export const dataExamples: readonly CatalogExampleDefinition[] = [
     element.scope = catalogScope;
   }),
   mount('detail', (root) => {
-    const element = createCatalogElement<AeliqoDetailElement>('aeliqo-detail', root);
+    const element = createCatalogElement<AeliqoDetailElement>('aeliqo-detail', root, AeliqoDetailElement);
     element.title = 'Person detail';
     element.record = catalogRows[0];
     element.fields = catalogColumns;
@@ -297,7 +298,7 @@ export const dataExamples: readonly CatalogExampleDefinition[] = [
     element.scope = catalogScope;
   }),
   mount('record-list', (root) => {
-    const element = createCatalogElement<AeliqoRecordListElement>('aeliqo-record-list', root);
+    const element = createCatalogElement<AeliqoRecordListElement>('aeliqo-record-list', root, AeliqoRecordListElement);
     element.title = 'People';
     element.rows = catalogRows;
     element.columns = catalogColumns;
@@ -309,7 +310,11 @@ export const dataExamples: readonly CatalogExampleDefinition[] = [
     element.scope = catalogScope;
   }),
   mount('card-collection', (root) => {
-    const element = createCatalogElement<AeliqoCardCollectionElement>('aeliqo-card-collection', root);
+    const element = createCatalogElement<AeliqoCardCollectionElement>(
+      'aeliqo-card-collection',
+      root,
+      AeliqoCardCollectionElement,
+    );
     element.title = 'People cards';
     element.rows = catalogRows;
     element.columns = catalogColumns;
@@ -322,7 +327,7 @@ export const dataExamples: readonly CatalogExampleDefinition[] = [
     element.scope = catalogScope;
   }),
   mount('table', (root) => {
-    const element = createCatalogElement<AeliqoTableElement>('aeliqo-table', root);
+    const element = createCatalogElement<AeliqoTableElement>('aeliqo-table', root, AeliqoTableElement);
     element.caption = 'People';
     element.columns = tableColumns;
     element.rows = tableRows;
@@ -337,7 +342,11 @@ export const dataExamples: readonly CatalogExampleDefinition[] = [
     element.scope = catalogScope;
   }),
   mount('filter-builder', (root) => {
-    const element = createCatalogElement<AeliqoFilterBuilderElement>('aeliqo-filter-builder', root);
+    const element = createCatalogElement<AeliqoFilterBuilderElement>(
+      'aeliqo-filter-builder',
+      root,
+      AeliqoFilterBuilderElement,
+    );
     element.fields = catalogFields;
     element.entity = 'person';
     element.scopeLabel = 'Authorized people';
@@ -346,7 +355,11 @@ export const dataExamples: readonly CatalogExampleDefinition[] = [
     element.logical = 'and';
   }),
   mount('selection-summary', (root) => {
-    const element = createCatalogElement<AeliqoSelectionSummaryElement>('aeliqo-selection-summary', root);
+    const element = createCatalogElement<AeliqoSelectionSummaryElement>(
+      'aeliqo-selection-summary',
+      root,
+      AeliqoSelectionSummaryElement,
+    );
     element.label = 'People selected';
     element.entity = 'person';
     element.selectedKeys = [personKeys[0], personKeys[1]];

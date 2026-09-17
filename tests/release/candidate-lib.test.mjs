@@ -67,7 +67,6 @@ test('candidate manifest and CycloneDX use exact tarball identities', () => {
     '@aeliqo/runtime': { '@aeliqo/core': RELEASE_VERSION },
     '@aeliqo/web': { '@aeliqo/core': RELEASE_VERSION },
     '@aeliqo/agent': { '@aeliqo/core': RELEASE_VERSION, '@aeliqo/runtime': RELEASE_VERSION },
-    '@aeliqo/devtools': { '@aeliqo/core': RELEASE_VERSION, '@aeliqo/runtime': RELEASE_VERSION },
     '@aeliqo/react': { '@aeliqo/web': RELEASE_VERSION },
   };
   const packages = PUBLIC_PACKAGE_NAMES.map((name, index) => ({
@@ -95,9 +94,9 @@ test('candidate manifest and CycloneDX use exact tarball identities', () => {
     dependencies: [{ ref: packagePurl('@aeliqo/core', RELEASE_VERSION), dependsOn: [external.ref] }],
   });
   assert.equal(sbom.bomFormat, 'CycloneDX');
-  assert.equal(sbom.components.length, 7);
+  assert.equal(sbom.components.length, 6);
   assert.equal(sbom.components.find((item) => item.name === 'zod').hashes[0].alg, 'SHA-512');
-  assert.equal(packagePurl('@aeliqo/core', RELEASE_VERSION), 'pkg:npm/%40aeliqo/core@0.3.0');
+  assert.equal(packagePurl('@aeliqo/core', RELEASE_VERSION), 'pkg:npm/%40aeliqo/core@0.4.0');
   assert.equal(sha256(Buffer.from('x')), '2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881');
   assert.match(sha512Integrity(Buffer.from('x')), /^sha512-/);
 });

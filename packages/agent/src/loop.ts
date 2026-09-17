@@ -1,12 +1,5 @@
-import {
-  parseContract,
-  parseWireValue,
-  type AgentBindingOutcome,
-  type AgentLoopBudget,
-  type AgentStopReason,
-  type Diagnostic,
-  type Outcome,
-} from '@aeliqo/core';
+import { parseContract, parseWireValue, type Diagnostic, type Outcome } from '@aeliqo/core';
+import type { AgentBindingOutcome, AgentLoopBudget, AgentStopReason } from '@aeliqo/core/agent';
 import type {
   AgentAttempt,
   AgentAttemptProgress,
@@ -169,18 +162,26 @@ async function awaitBounded<T>(
   });
   if (parent !== undefined) {
     const onAbort = (): void => resolveAborted();
-    if (parent.aborted) {
-      resolveAborted();
-      return { kind: 'aborted' };
-    } else {
-      parent.addEventListener('abort', onAbort, { once: true });
-      removeParent = () => parent.removeEventListener('abort', onAbort);
-    }
+    if (registerParentAbort(parent, onAbort, resolveAborted)) return { kind: 'aborted' };
+    removeParent = () => parent.removeEventListener('abort', onAbort);
   }
   if (!controller.signal.aborted) {
     timer = setTimeout(resolveDeadline, Math.max(0, milliseconds));
   }
   const work = Promise.resolve().then(() => producer(controller.signal));
+  try {
+    return await raceBoundary(work, deadline, aborted, parent);
+  } finally {
+    releaseBoundary(controller, timer, removeParent);
+  }
+}
+
+async function raceBoundary<T>(
+  work: Promise<T>,
+  deadline: Promise<typeof DEADLINE>,
+  aborted: Promise<typeof ABORTED>,
+  parent: AbortSignal | undefined,
+): Promise<BoundedResult<T>> {
   try {
     const result = await Promise.race([work, deadline, aborted]);
     if (result === DEADLINE) return { kind: 'deadline' };
@@ -189,11 +190,26 @@ async function awaitBounded<T>(
   } catch {
     if (parent?.aborted) return { kind: 'aborted' };
     return { kind: 'failed' };
-  } finally {
-    controller.abort();
-    if (timer !== undefined) clearTimeout(timer);
-    removeParent?.();
   }
+}
+
+function releaseBoundary(
+  controller: AbortController,
+  timer: ReturnType<typeof setTimeout> | undefined,
+  removeParent: (() => void) | undefined,
+): void {
+  controller.abort();
+  if (timer !== undefined) clearTimeout(timer);
+  removeParent?.();
+}
+
+function registerParentAbort(parent: AbortSignal, onAbort: () => void, abort: () => void): boolean {
+  if (parent.aborted) {
+    abort();
+    return true;
+  }
+  parent.addEventListener('abort', onAbort, { once: true });
+  return false;
 }
 
 async function proposeWithBudget(
@@ -208,10 +224,282 @@ async function proposeWithBudget(
   return result.value;
 }
 
-function normalizeBudget(input: AgentLoopBudget): Outcome<AgentLoopBudget> {
+interface ContainmentBudget {
+  readonly maxTurns: number;
+  readonly maxRepairs: number;
+  readonly maxMilliseconds: number;
+  readonly maxProposalBytes: number;
+}
+
+function normalizeBudget(input: AgentLoopBudget): Outcome<ContainmentBudget> {
   const checked = parseContract('agent-loop-budget', input);
-  if (!checked.ok) return checked;
-  return checked;
+  if (!checked.ok) return { ok: false, diagnostics: checked.diagnostics };
+  return { ok: true, value: checked.value as unknown as ContainmentBudget };
+}
+
+interface ContainmentRun {
+  readonly input: AgentContainmentInput;
+  readonly budget: ContainmentBudget;
+  readonly now: () => number;
+  readonly start: number;
+  readonly attempts: AgentAttempt[];
+  candidate: unknown;
+  hasCandidate: boolean;
+  repairs: number;
+  previousFingerprint: string | undefined;
+  previousCanonical: string | undefined;
+  previousState: AgentBindingOutcome['state'] | undefined;
+  lastOutcome: AgentBindingOutcome | undefined;
+}
+
+function createRun(input: AgentContainmentInput, budget: ContainmentBudget): ContainmentRun {
+  return {
+    input,
+    budget,
+    now: input.now ?? Date.now,
+    start: safeNow(input.now ?? Date.now),
+    attempts: [],
+    candidate: input.initial,
+    hasCandidate: input.initial !== undefined,
+    repairs: 0,
+    previousFingerprint: undefined,
+    previousCanonical: undefined,
+    previousState: undefined,
+    lastOutcome: undefined,
+  };
+}
+
+function loopStop(run: ContainmentRun): AgentContainmentOutcome | undefined {
+  if (run.input.signal?.aborted) return receipt('cancelled', run.attempts, run.lastOutcome);
+  if (elapsed(run.start, run.now) >= run.budget.maxMilliseconds)
+    return receipt('time-budget', run.attempts, run.lastOutcome);
+  return undefined;
+}
+
+function proposalDiagnostics(run: ContainmentRun): readonly Diagnostic[] {
+  const state = run.lastOutcome?.state;
+  if (state === 'invalid' || state === 'stale' || state === 'unsupported' || state === 'denied')
+    return run.lastOutcome?.diagnostics ?? [];
+  return [];
+}
+
+function requestLimitStop(run: ContainmentRun): AgentContainmentOutcome | undefined {
+  if (run.attempts.length > 0 && run.repairs >= run.budget.maxRepairs)
+    return receipt('repair-budget', run.attempts, run.lastOutcome);
+  if (run.attempts.length >= run.budget.maxTurns) return receipt('turn-budget', run.attempts, run.lastOutcome);
+  return undefined;
+}
+
+function proposalStop(
+  run: ContainmentRun,
+  proposed: unknown | typeof DEADLINE | typeof ABORTED | typeof FAILED,
+): AgentContainmentOutcome | undefined {
+  if (proposed === DEADLINE) return receipt('time-budget', run.attempts, run.lastOutcome);
+  if (proposed === ABORTED || run.input.signal?.aborted) return receipt('cancelled', run.attempts, run.lastOutcome);
+  if (proposed === FAILED) return receipt('unavailable', run.attempts, run.lastOutcome);
+  return undefined;
+}
+
+async function requestCandidate(run: ContainmentRun): Promise<AgentContainmentOutcome | undefined> {
+  if (run.hasCandidate) return undefined;
+  const limitStop = requestLimitStop(run);
+  if (limitStop !== undefined) return limitStop;
+  const request: AgentRepairRequest = {
+    turn: run.attempts.length + 1,
+    previous: Object.freeze([...run.attempts]),
+    diagnostics: proposalDiagnostics(run),
+    signal: run.input.signal ?? new AbortController().signal,
+  };
+  let proposed: unknown | typeof DEADLINE | typeof ABORTED | typeof FAILED;
+  try {
+    proposed = await proposeWithBudget(
+      run.input.propose,
+      request,
+      run.budget.maxMilliseconds - elapsed(run.start, run.now),
+    );
+  } catch {
+    return receipt('unavailable', run.attempts, run.lastOutcome);
+  }
+  const stop = proposalStop(run, proposed);
+  if (stop !== undefined) return stop;
+  run.candidate = proposed;
+  run.hasCandidate = true;
+  if (run.attempts.length > 0) run.repairs += 1;
+  return undefined;
+}
+
+interface PreparedCandidate {
+  readonly fingerprint: string;
+  readonly canonical: string;
+  readonly proposalBytes: number;
+  readonly exceedsByteBudget: boolean;
+}
+
+type PreparationResult =
+  | { readonly kind: 'ready'; readonly value: PreparedCandidate }
+  | { readonly kind: 'stopped'; readonly value: AgentContainmentOutcome };
+
+async function prepareCandidate(run: ContainmentRun): Promise<PreparationResult> {
+  const measuredBytes = bytes(run.candidate);
+  const canonicalValue = candidateCanonical(run.candidate);
+  if (measuredBytes !== undefined && measuredBytes > run.budget.maxProposalBytes)
+    return {
+      kind: 'ready',
+      value: {
+        fingerprint: localFingerprint(run.candidate),
+        canonical: canonicalValue,
+        proposalBytes: measuredBytes,
+        exceedsByteBudget: true,
+      },
+    };
+  const result = await awaitBounded(
+    (signal) => run.input.binder.fingerprint(run.candidate, { signal, goalEpoch: run.input.goalEpoch }),
+    run.input.signal,
+    Math.max(0, run.budget.maxMilliseconds - elapsed(run.start, run.now)),
+  );
+  if (result.kind === 'deadline')
+    return { kind: 'stopped', value: receipt('time-budget', run.attempts, run.lastOutcome) };
+  if (result.kind === 'aborted' || run.input.signal?.aborted)
+    return { kind: 'stopped', value: receipt('cancelled', run.attempts, run.lastOutcome) };
+  if (result.kind === 'failed')
+    return { kind: 'stopped', value: receipt('unavailable', run.attempts, run.lastOutcome) };
+  return {
+    kind: 'ready',
+    value: {
+      fingerprint: result.value.ok ? result.value.value : localFingerprint(run.candidate),
+      canonical: canonicalValue,
+      proposalBytes: measuredBytes ?? 0,
+      exceedsByteBudget: false,
+    },
+  };
+}
+
+function stopForCandidateBudget(run: ContainmentRun, prepared: PreparedCandidate): AgentContainmentOutcome | undefined {
+  if (prepared.exceedsByteBudget) {
+    const outcome = stopOutcome('invalid', [
+      diagnostic('agent.byte-budget', 'The proposal exceeds the configured byte budget.'),
+    ]);
+    run.attempts.push({
+      turn: run.attempts.length + 1,
+      state: 'invalid',
+      fingerprint: prepared.fingerprint,
+      proposalBytes: prepared.proposalBytes,
+      progress: 'none',
+    });
+    return receipt('byte-budget', run.attempts, outcome);
+  }
+  if (
+    run.previousFingerprint !== undefined &&
+    run.previousFingerprint === prepared.fingerprint &&
+    run.previousCanonical === prepared.canonical
+  ) {
+    run.attempts.push({
+      turn: run.attempts.length + 1,
+      state: run.lastOutcome?.state ?? 'invalid',
+      fingerprint: prepared.fingerprint,
+      proposalBytes: prepared.proposalBytes,
+      progress: 'none',
+    });
+    return receipt('no-progress', run.attempts, run.lastOutcome);
+  }
+  return undefined;
+}
+
+function progressFor(
+  run: ContainmentRun,
+  state: AgentBindingOutcome['state'],
+  fingerprint: string,
+): AgentAttemptProgress {
+  if (run.previousFingerprint === undefined) return 'new';
+  if (run.previousState !== state || run.previousFingerprint !== fingerprint) return 'gap-closed';
+  return 'none';
+}
+
+function terminalBinding(
+  state: AgentBindingOutcome['state'],
+  outcome: AgentBindingOutcome | undefined,
+  attempts: readonly AgentAttempt[],
+): AgentContainmentOutcome | undefined {
+  if (outcome === undefined) return undefined;
+  switch (state) {
+    case 'bound':
+      return receipt('complete', attempts, outcome);
+    case 'needs-choice':
+      return receipt('needs-choice', attempts, outcome);
+    case 'needs-meaning':
+      return receipt('needs-meaning', attempts, outcome);
+    case 'unsupported':
+      return receipt('unsupported', attempts, outcome);
+    case 'denied':
+      return receipt('denied', attempts, outcome);
+    case 'stale':
+      return receipt('stale', attempts, outcome);
+    default:
+      return undefined;
+  }
+}
+
+function bindingBoundaryStop(
+  run: ContainmentRun,
+  result: BoundedResult<Outcome<AgentBindingOutcome>>,
+): AgentContainmentOutcome | undefined {
+  if (result.kind === 'deadline') return receipt('time-budget', run.attempts, run.lastOutcome);
+  if (result.kind === 'aborted' || run.input.signal?.aborted)
+    return receipt('cancelled', run.attempts, run.lastOutcome);
+  if (result.kind === 'failed') return receipt('unavailable', run.attempts, run.lastOutcome);
+  if (run.input.signal?.aborted) return receipt('cancelled', run.attempts, run.lastOutcome);
+  if (elapsed(run.start, run.now) >= run.budget.maxMilliseconds)
+    return receipt('time-budget', run.attempts, run.lastOutcome);
+  return undefined;
+}
+
+async function bindCandidate(
+  run: ContainmentRun,
+  prepared: PreparedCandidate,
+): Promise<AgentContainmentOutcome | undefined> {
+  const result = await awaitBounded(
+    (signal) =>
+      run.input.binder.bind(run.candidate, {
+        signal,
+        goalEpoch: run.input.goalEpoch,
+      }),
+    run.input.signal,
+    Math.max(0, run.budget.maxMilliseconds - elapsed(run.start, run.now)),
+  );
+  const stop = bindingBoundaryStop(run, result);
+  if (stop !== undefined) return stop;
+  if (result.kind !== 'value') return receipt('unavailable', run.attempts, run.lastOutcome);
+  const bound = result.value;
+  const outcome = bound.ok ? bound.value : stopOutcome('invalid', bound.diagnostics);
+  const state = bound.ok ? bound.value.state : 'invalid';
+  run.attempts.push({
+    turn: run.attempts.length + 1,
+    state,
+    fingerprint: prepared.fingerprint,
+    proposalBytes: prepared.proposalBytes,
+    progress: progressFor(run, state, prepared.fingerprint),
+  });
+  run.previousFingerprint = prepared.fingerprint;
+  run.previousCanonical = prepared.canonical;
+  run.previousState = state;
+  run.lastOutcome = outcome;
+  run.hasCandidate = false;
+  const terminal = terminalBinding(state, outcome, run.attempts);
+  if (terminal !== undefined) return terminal;
+  if (run.repairs >= run.budget.maxRepairs) return receipt('repair-budget', run.attempts, run.lastOutcome);
+  if (run.attempts.length >= run.budget.maxTurns) return receipt('turn-budget', run.attempts, run.lastOutcome);
+  return undefined;
+}
+
+function validContainmentInput(input: AgentContainmentInput): boolean {
+  return (
+    input !== null &&
+    typeof input === 'object' &&
+    typeof input.propose === 'function' &&
+    input.binder !== null &&
+    typeof input.binder.bind === 'function' &&
+    typeof input.binder.fingerprint === 'function'
+  );
 }
 
 /**
@@ -220,157 +508,22 @@ function normalizeBudget(input: AgentLoopBudget): Outcome<AgentLoopBudget> {
  * business effect.
  */
 export async function containAgentProposal(input: AgentContainmentInput): Promise<AgentContainmentOutcome> {
-  if (
-    input === null ||
-    typeof input !== 'object' ||
-    typeof input.propose !== 'function' ||
-    input.binder === null ||
-    typeof input.binder.bind !== 'function' ||
-    typeof input.binder.fingerprint !== 'function'
-  )
-    return failure('agent.invalid-input', 'The containment loop input is malformed.');
+  if (!validContainmentInput(input)) return failure('agent.invalid-input', 'The containment loop input is malformed.');
 
   const budget = normalizeBudget(input.budget);
   if (!budget.ok) return budget;
-  const now = input.now ?? Date.now;
-  const start = safeNow(now);
-  const attempts: AgentAttempt[] = [];
-  let candidate: unknown = input.initial;
-  let hasCandidate = input.initial !== undefined;
-  let repairs = 0;
-  let previousFingerprint: string | undefined;
-  let previousCanonical: string | undefined;
-  let previousState: AgentBindingOutcome['state'] | undefined;
-  let lastOutcome: AgentBindingOutcome | undefined;
-
-  while (true) {
-    if (input.signal?.aborted) return receipt('cancelled', attempts, lastOutcome);
-    if (elapsed(start, now) >= budget.value.maxMilliseconds) return receipt('time-budget', attempts, lastOutcome);
-    if (!hasCandidate) {
-      if (attempts.length > 0 && repairs >= budget.value.maxRepairs)
-        return receipt('repair-budget', attempts, lastOutcome);
-      if (attempts.length >= budget.value.maxTurns) return receipt('turn-budget', attempts, lastOutcome);
-      const request: AgentRepairRequest = {
-        turn: attempts.length + 1,
-        previous: Object.freeze([...attempts]),
-        diagnostics:
-          lastOutcome?.state === 'invalid' ||
-          lastOutcome?.state === 'stale' ||
-          lastOutcome?.state === 'unsupported' ||
-          lastOutcome?.state === 'denied'
-            ? lastOutcome.diagnostics
-            : [],
-        signal: input.signal ?? new AbortController().signal,
-      };
-      let proposed: unknown | typeof DEADLINE | typeof ABORTED;
-      try {
-        proposed = await proposeWithBudget(input.propose, request, budget.value.maxMilliseconds - elapsed(start, now));
-      } catch {
-        return receipt('unavailable', attempts, lastOutcome);
-      }
-      if (proposed === DEADLINE) return receipt('time-budget', attempts, lastOutcome);
-      if (proposed === ABORTED || input.signal?.aborted) return receipt('cancelled', attempts, lastOutcome);
-      if (proposed === FAILED) return receipt('unavailable', attempts, lastOutcome);
-      candidate = proposed;
-      hasCandidate = true;
-      if (attempts.length > 0) repairs++;
-    }
-
-    if (attempts.length >= budget.value.maxTurns) return receipt('turn-budget', attempts, lastOutcome);
-    const measuredBytes = bytes(candidate);
-    const proposalBytes = measuredBytes ?? 0;
-    const candidateKey = candidateCanonical(candidate);
-    let fingerprint: string;
-    if (measuredBytes !== undefined && measuredBytes > budget.value.maxProposalBytes) {
-      fingerprint = localFingerprint(candidate);
-    } else {
-      const remaining = Math.max(0, budget.value.maxMilliseconds - elapsed(start, now));
-      const fingerprintResult = await awaitBounded(
-        (signal) =>
-          input.binder.fingerprint(candidate, {
-            signal,
-            goalEpoch: input.goalEpoch,
-          }),
-        input.signal,
-        remaining,
-      );
-      if (fingerprintResult.kind === 'deadline') return receipt('time-budget', attempts, lastOutcome);
-      if (fingerprintResult.kind === 'aborted' || input.signal?.aborted)
-        return receipt('cancelled', attempts, lastOutcome);
-      if (fingerprintResult.kind === 'failed') return receipt('unavailable', attempts, lastOutcome);
-      fingerprint = fingerprintResult.value.ok ? fingerprintResult.value.value : localFingerprint(candidate);
-    }
-    if (measuredBytes !== undefined && measuredBytes > budget.value.maxProposalBytes) {
-      const outcome = stopOutcome('invalid', [
-        diagnostic('agent.byte-budget', 'The proposal exceeds the configured byte budget.'),
-      ]);
-      const attempt: AgentAttempt = {
-        turn: attempts.length + 1,
-        state: 'invalid',
-        fingerprint,
-        proposalBytes,
-        progress: 'none',
-      };
-      attempts.push(attempt);
-      return receipt('byte-budget', attempts, outcome);
-    }
-    if (
-      previousFingerprint !== undefined &&
-      previousFingerprint === fingerprint &&
-      previousCanonical === candidateKey
-    ) {
-      const outcome = lastOutcome;
-      const attempt: AgentAttempt = {
-        turn: attempts.length + 1,
-        state: outcome?.state ?? 'invalid',
-        fingerprint,
-        proposalBytes,
-        progress: 'none',
-      };
-      attempts.push(attempt);
-      return receipt('no-progress', attempts, outcome);
-    }
-    const remaining = Math.max(0, budget.value.maxMilliseconds - elapsed(start, now));
-    const boundResult = await awaitBounded(
-      (signal) =>
-        input.binder.bind(candidate, {
-          signal,
-          goalEpoch: input.goalEpoch,
-        }),
-      input.signal,
-      remaining,
-    );
-    if (boundResult.kind === 'deadline') return receipt('time-budget', attempts, lastOutcome);
-    if (boundResult.kind === 'aborted' || input.signal?.aborted) return receipt('cancelled', attempts, lastOutcome);
-    if (boundResult.kind === 'failed') return receipt('unavailable', attempts, lastOutcome);
-    const bound = boundResult.value;
-    if (input.signal?.aborted) return receipt('cancelled', attempts, lastOutcome);
-    if (elapsed(start, now) >= budget.value.maxMilliseconds) return receipt('time-budget', attempts, lastOutcome);
-    const outcome = bound.ok ? bound.value : stopOutcome('invalid', bound.diagnostics);
-    const state = bound.ok ? bound.value.state : 'invalid';
-    const progress: AgentAttemptProgress =
-      previousFingerprint === undefined
-        ? 'new'
-        : previousState !== state || previousFingerprint !== fingerprint
-          ? 'gap-closed'
-          : 'none';
-    attempts.push({ turn: attempts.length + 1, state, fingerprint, proposalBytes, progress });
-    previousFingerprint = fingerprint;
-    previousCanonical = candidateKey;
-    previousState = state;
-    lastOutcome = outcome;
-    hasCandidate = false;
-    if (bound.ok) {
-      if (bound.value.state === 'bound') return receipt('complete', attempts, bound.value);
-      if (bound.value.state === 'needs-choice') return receipt('needs-choice', attempts, bound.value);
-      if (bound.value.state === 'needs-meaning') return receipt('needs-meaning', attempts, bound.value);
-      if (bound.value.state === 'unsupported') return receipt('unsupported', attempts, bound.value);
-      if (bound.value.state === 'denied') return receipt('denied', attempts, bound.value);
-      if (bound.value.state === 'stale') return receipt('stale', attempts, bound.value);
-    }
-    if (repairs >= budget.value.maxRepairs) return receipt('repair-budget', attempts, lastOutcome);
-    if (attempts.length >= budget.value.maxTurns) return receipt('turn-budget', attempts, lastOutcome);
+  const run = createRun(input, budget.value);
+  for (;;) {
+    const stop = loopStop(run);
+    if (stop !== undefined) return stop;
+    const proposalStop = await requestCandidate(run);
+    if (proposalStop !== undefined) return proposalStop;
+    if (run.attempts.length >= run.budget.maxTurns) return receipt('turn-budget', run.attempts, run.lastOutcome);
+    const prepared = await prepareCandidate(run);
+    if (prepared.kind === 'stopped') return prepared.value;
+    const budgetStop = stopForCandidateBudget(run, prepared.value);
+    if (budgetStop !== undefined) return budgetStop;
+    const bindingStop = await bindCandidate(run, prepared.value);
+    if (bindingStop !== undefined) return bindingStop;
   }
 }
-
-export const runAgentContainment = containAgentProposal;

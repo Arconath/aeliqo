@@ -1,5 +1,7 @@
 import { RELEASE_VERSION } from '../../scripts/release/metadata.mjs';
-/** Installed visualization package, strict TypeScript, React SSR and Chromium proof. */
+/** Installed visualization package,
+  strict TypeScript,
+  React SSR and Chromium proof. */
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { createServer } from 'node:http';
@@ -66,7 +68,7 @@ async function clearCompiledOutput(directory) {
 
 const sourceDigest = () => run(['node', 'scripts/source-digest.mjs'], root).trim();
 const before = sourceDigest();
-const packageNames = ['core', 'web', 'react'];
+const packageNames = ['core', 'runtime', 'web', 'react'];
 const artifacts = [];
 for (const name of packageNames) {
   const directory = join(root, 'packages', name);
@@ -163,7 +165,9 @@ for (const artifact of artifacts) {
   }
 }
 assert.equal(lock.packages['node_modules/@aeliqo/web'].dependencies['@aeliqo/core'], RELEASE_VERSION);
+assert.equal(lock.packages['node_modules/@aeliqo/runtime'].dependencies['@aeliqo/core'], RELEASE_VERSION);
 assert.equal(lock.packages['node_modules/@aeliqo/react'].dependencies['@aeliqo/web'], RELEASE_VERSION);
+assert.equal(lock.packages['node_modules/@aeliqo/react'].peerDependencies['@aeliqo/runtime'], RELEASE_VERSION);
 assert.deepEqual(
   Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/web/node_modules/')),
   [],
@@ -223,11 +227,15 @@ const specs = [
   { version: '1', view: 'timeline', result: ref, start: 'date' },
   { version: '1', view: 'calendar-grid', result: ref, date: 'date', value: 'amount', label: 'id' },
 ];
-const dataSource = `const extraViews=${JSON.stringify(extraViews)};\nconst result=${JSON.stringify(result)},rows=${JSON.stringify(rows)},specs=${JSON.stringify(specs)};\n`;
+const dataSource = `const extraViews=${JSON.stringify(extraViews)};\nconst result=${JSON.stringify(result)},
+  rows=${JSON.stringify(rows)},
+  specs=${JSON.stringify(specs)};\n`;
 await writeFile(
   join(consumer, 'consumer.tsx'),
   `import React from 'react';
-import type {VisualizationSpec,Result} from '@aeliqo/core';
+import type {VisualizationSpec,
+  Result,
+} from '@aeliqo/core';
 import {AeliqoMatrixElement,AeliqoTimelineElement,AeliqoCalendarGridElement,type VisualizationInputs} from '@aeliqo/web/visualization';
 import {AeliqoMatrix,AeliqoTimeline,AeliqoCalendarGrid,${extraNames.map((name) => 'Aeliqo' + name).join(',')}} from '@aeliqo/react/visualization';
 const result:Result=${JSON.stringify(result)};

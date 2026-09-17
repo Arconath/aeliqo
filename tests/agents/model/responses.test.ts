@@ -36,6 +36,7 @@ function options(
     `fixture:${reference}`,
 ): OpenAICompatibleResponsesToolModelOptions {
   return {
+    environment: 'trusted-server',
     endpoint: { protocol: 'https', baseUrl: 'https://responses.fixture.test/v1' },
     model: 'fixture-model',
     credentialReference: 'release-fixture',
@@ -112,6 +113,12 @@ describe('OpenAI-compatible Responses ToolModelPort', () => {
 
   it('uses no retries and rejects non-HTTPS, credential-derived, and streaming configuration', () => {
     const fetcher = (async () => response({ input_tokens: 1 })) as typeof fetch;
+    expect(() =>
+      createOpenAICompatibleResponsesToolModel({
+        ...options(fetcher),
+        environment: 'client' as unknown as 'trusted-server',
+      }),
+    ).toThrow(ResponsesTransportError);
     expect(() =>
       createOpenAICompatibleResponsesToolModel({
         ...options(fetcher),

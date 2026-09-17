@@ -5,11 +5,9 @@ import {
   createAeliqoPresentationRegistry,
   createSelectionIdentityMapping,
 } from '../../../packages/web/src/region/index.js';
-import {
-  validatePresentationPlan,
-  type PresentationContext,
-  type PresentationPlan,
-} from '../../../packages/core/src/index.js';
+import type { PresentationPlan } from '../../../packages/core/src/contracts/index.js';
+import type { PresentationContext } from '../../../packages/core/src/presentation/index.js';
+import { validatePresentationPlan } from '../../../packages/core/src/presentation/index.js';
 import { stableTableRowKey } from '../../../packages/web/src/elements/aeliqo-table.js';
 import {
   alignAeliqoChartSeries,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { PresentationNode, PresentationValues } from '../../packages/core/src/index.js';
-import { createPresentationRegistry } from '../../packages/core/src/index.js';
+import type { PresentationNode, PresentationValues } from '../../packages/core/src/presentation/index.js';
+import { createPresentationRegistry } from '../../packages/core/src/presentation/index.js';
 import {
   AELIQO_NAVIGATION_FEEDBACK_OPERATION_REFS,
   AELIQO_NAVIGATION_FEEDBACK_CONFIG_SCHEMAS,

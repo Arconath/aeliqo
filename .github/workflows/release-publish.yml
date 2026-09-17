@@ -156,9 +156,11 @@ jobs:
           node scripts/release/candidate.mjs --version "$VERSION"
           node --input-type=module <<'NODE'
           import {readFile} from 'node:fs/promises';
+          import {PUBLIC_PACKAGE_NAMES} from './scripts/release/metadata.mjs';
           const candidate = JSON.parse(await readFile('artifacts/release-candidate/manifest.json', 'utf8'));
           if (candidate.sourceRevision !== process.env.GITHUB_SHA) throw new Error('Candidate source SHA differs from workflow SHA');
-          if (candidate.version !== process.env.VERSION || candidate.packages.length !== 6) throw new Error('Candidate has an unexpected release identity');
+          const packageNames = candidate.packages.map(({name}) => name);
+          if (candidate.version !== process.env.VERSION || JSON.stringify(packageNames) !== JSON.stringify(PUBLIC_PACKAGE_NAMES)) throw new Error('Candidate has an unexpected release identity');
           NODE
       - name: Publish in verified dependency order using trusted publishing
         env:

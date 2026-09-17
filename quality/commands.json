@@ -7,6 +7,11 @@
       "timeoutSeconds": 120
     },
     {
+      "kind": "packages",
+      "argv": ["pnpm", "test:package-notices"],
+      "timeoutSeconds": 600
+    },
+    {
       "kind": "unit",
       "argv": ["pnpm", "test:platform"],
       "timeoutSeconds": 120
@@ -119,6 +124,11 @@
     {
       "kind": "packages",
       "argv": ["pnpm", "test:runtime:consumers"],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "performance",
+      "argv": ["pnpm", "test:performance:bundles"],
       "timeoutSeconds": 300
     },
     {
@@ -363,27 +373,12 @@
     },
     {
       "kind": "packages",
-      "argv": ["pnpm", "test:migration:consumers"],
-      "timeoutSeconds": 600
-    },
-    {
-      "kind": "unit",
-      "argv": ["pnpm", "test:studio"],
-      "timeoutSeconds": 180
-    },
-    {
-      "kind": "browser",
-      "argv": ["pnpm", "test:studio:browser"],
-      "timeoutSeconds": 300
+      "argv": ["pnpm", "test:catalog-examples"],
+      "timeoutSeconds": 360
     },
     {
       "kind": "unit",
       "argv": ["pnpm", "test:docs-artifact"],
-      "timeoutSeconds": 300
-    },
-    {
-      "kind": "packages",
-      "argv": ["pnpm", "test:studio:consumers"],
       "timeoutSeconds": 300
     },
     {

@@ -2,7 +2,7 @@ import type { Diagnostic, Outcome } from '../contracts/types.js';
 
 export type SemanticPath = readonly (string | number)[];
 
-export function semanticDiagnostic(
+function semanticDiagnostic(
   code: string,
   message: string,
   path: SemanticPath = [],
@@ -21,12 +21,12 @@ export function semanticFailure<T>(
   return { ok: false, diagnostics: [semanticDiagnostic(code, message, path, remedies)] };
 }
 
-export function prependDiagnostic(path: SemanticPath, diagnostic: Diagnostic): Diagnostic {
+function prependDiagnostic(path: SemanticPath, diagnostic: Diagnostic): Diagnostic {
   const suffix = diagnostic.path ?? [];
   return { ...diagnostic, path: [...path, ...suffix] };
 }
 
-export function mapDiagnostics(
+function mapDiagnostics(
   diagnostics: readonly Diagnostic[],
   mapper: (diagnostic: Diagnostic) => Diagnostic,
 ): readonly [Diagnostic, ...Diagnostic[]] {

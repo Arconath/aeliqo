@@ -1,6 +1,6 @@
 {
   "name": "@aeliqo/react",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Arconath/aeliqo.git",
@@ -71,8 +71,12 @@
     "build": "tsc -p tsconfig.json"
   },
   "peerDependencies": {
+    "@aeliqo/runtime": "0.4.0",
     "react": ">=19.2.0 <20.0.0",
     "react-dom": ">=19.2.0 <20.0.0"
+  },
+  "devDependencies": {
+    "@aeliqo/runtime": "workspace:*"
   },
   "dependencies": {
     "@aeliqo/web": "workspace:*",

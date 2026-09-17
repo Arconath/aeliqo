@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { parseWireValue, type OperationGrant, type Outcome } from '../../../packages/core/src/index.js';
+import { parseWireValue, type Outcome } from '../../../packages/core/src/index.js';
+import type { OperationGrant } from '../../../packages/core/src/contracts/agent/index.js';
 import { createAgentCapabilityRegistry } from '../../../packages/agent/src/capabilities/registry.js';
 import type { AgentCapabilityManifest, AgentCapabilityState } from '../../../packages/agent/src/capabilities/types.js';
 import { createAgentToolEndpoint } from '../../../packages/agent/src/protocol/endpoint.js';

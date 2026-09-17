@@ -82,7 +82,7 @@ async function assertRegularTree(directory) {
 
 const before = sourceDigest();
 const packages = [];
-for (const name of ['core', 'web', 'react']) {
+for (const name of ['core', 'runtime', 'web', 'react']) {
   const directory = join(root, 'packages', name);
   const manifest = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
   assert.equal(manifest.name, `@aeliqo/${name}`);
@@ -187,7 +187,9 @@ for (const item of packages) {
   }
 }
 assert.equal(lock.packages['node_modules/@aeliqo/web'].dependencies['@aeliqo/core'], RELEASE_VERSION);
+assert.equal(lock.packages['node_modules/@aeliqo/runtime'].dependencies['@aeliqo/core'], RELEASE_VERSION);
 assert.equal(lock.packages['node_modules/@aeliqo/react'].dependencies['@aeliqo/web'], RELEASE_VERSION);
+assert.equal(lock.packages['node_modules/@aeliqo/react'].peerDependencies['@aeliqo/runtime'], RELEASE_VERSION);
 assert.deepEqual(
   Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/web/node_modules/')),
   [],
@@ -246,7 +248,8 @@ await writeFile(
   join(consumer, 'consumer.tsx'),
   `
 import React from "react";
-import {AeliqoTabs, AeliqoBreadcrumb, AeliqoPagination, AeliqoMenu, AeliqoTreeNav, AeliqoDialog, AeliqoDrawer, AeliqoPopover, AeliqoTooltip, AeliqoAlert, AeliqoToast, AeliqoProgress, AeliqoSkeleton, AeliqoEmptyState} from "@aeliqo/react";
+import {AeliqoTabs, AeliqoBreadcrumb, AeliqoPagination, AeliqoMenu, AeliqoTreeNav} from "@aeliqo/react/navigation";
+import {AeliqoDialog, AeliqoDrawer, AeliqoPopover, AeliqoTooltip, AeliqoAlert, AeliqoToast, AeliqoProgress, AeliqoSkeleton, AeliqoEmptyState} from "@aeliqo/react/feedback";
 import type {AeliqoTabItem, AeliqoBreadcrumbItem, AeliqoTreeNavNode} from "@aeliqo/web/navigation";
 import type {AeliqoEmptyStateKind} from "@aeliqo/web/empty-state";
 import {createAeliqoPresentationRegistry, type AeliqoNavigationFeedbackBindings} from "@aeliqo/web/region";
@@ -332,7 +335,8 @@ import {createElement} from "react";
 import {renderToString} from "react-dom/server";
 import {html} from "lit";
 import {renderAeliqo} from "@aeliqo/web/server";
-import {AeliqoTabs, AeliqoDialog, AeliqoAlert, AeliqoMenu} from "@aeliqo/react";
+import {AeliqoTabs, AeliqoMenu} from "@aeliqo/react/navigation";
+import {AeliqoDialog, AeliqoAlert} from "@aeliqo/react/feedback";
 assert.equal(typeof window, "undefined");
 const [first, second] = await Promise.all([
   renderAeliqo(html\`<aeliqo-tabs .items=\${[{id:"one",label:"One",content:"First request"}]}></aeliqo-tabs><aeliqo-dialog heading="Request one"></aeliqo-dialog>\`),

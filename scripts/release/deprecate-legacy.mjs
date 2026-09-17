@@ -16,7 +16,7 @@ const value = (flag) => {
   return index === -1 ? undefined : process.argv.slice(2)[index + 1];
 };
 const confirmation = process.env.AELIQO_CONFIRM_LEGACY_DEPRECATION;
-const expectedConfirmation = 'deprecate-obsolete-packages-after-v0.1.0';
+const expectedConfirmation = 'deprecate-devtools-after-v0.4.0';
 const candidatePath = resolve(value('--candidate') ?? 'artifacts/release-candidate/manifest.json');
 
 async function registryPackage(name, version, expectedIntegrity) {

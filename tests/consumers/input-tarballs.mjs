@@ -73,7 +73,7 @@ async function clearCompiledOutput(directory) {
 
 const sourceDigest = () => run(['node', 'scripts/source-digest.mjs'], root).trim();
 const before = sourceDigest();
-const packageNames = ['core', 'web', 'react'];
+const packageNames = ['core', 'runtime', 'web', 'react'];
 const artifacts = [];
 for (const name of packageNames) {
   const directory = join(root, 'packages', name);
@@ -170,7 +170,9 @@ for (const artifact of artifacts) {
   }
 }
 assert.equal(lock.packages['node_modules/@aeliqo/web'].dependencies['@aeliqo/core'], RELEASE_VERSION);
+assert.equal(lock.packages['node_modules/@aeliqo/runtime'].dependencies['@aeliqo/core'], RELEASE_VERSION);
 assert.equal(lock.packages['node_modules/@aeliqo/react'].dependencies['@aeliqo/web'], RELEASE_VERSION);
+assert.equal(lock.packages['node_modules/@aeliqo/react'].peerDependencies['@aeliqo/runtime'], RELEASE_VERSION);
 assert.deepEqual(
   Object.keys(lock.packages).filter((key) => key.startsWith('node_modules/@aeliqo/web/node_modules/')),
   [],
@@ -199,7 +201,7 @@ const webSubpaths = [
   'field-group',
   'form',
 ];
-const webSpecifiers = ['@aeliqo/web/input', '@aeliqo/web/server', ...webSubpaths.map((path) => `@aeliqo/web/${path}`)];
+const webSpecifiers = ['@aeliqo/web/server', ...webSubpaths.map((path) => `@aeliqo/web/${path}`)];
 const reactSpecifiers = ['@aeliqo/react', '@aeliqo/react/inputs'];
 const resolutionEntry = join(consumer, 'resolve-inputs.mjs');
 await writeFile(
@@ -231,7 +233,6 @@ await writeFile(
   `
 import React from 'react';
 import {AeliqoTextField, AeliqoTextArea, AeliqoNumberField, AeliqoCheckbox, AeliqoRadioGroup, AeliqoSwitch, AeliqoSelect, AeliqoCombobox, AeliqoDateField, AeliqoDateRange, AeliqoSlider, AeliqoSearchField, AeliqoFileInput, AeliqoFieldGroup, AeliqoForm} from '@aeliqo/react/inputs';
-import {AeliqoTextField as MainTextField, AeliqoTextArea as MainTextArea, AeliqoNumberField as MainNumberField, AeliqoCheckbox as MainCheckbox, AeliqoRadioGroup as MainRadioGroup, AeliqoSwitch as MainSwitch, AeliqoSelect as MainSelect, AeliqoCombobox as MainCombobox, AeliqoDateField as MainDateField, AeliqoDateRange as MainDateRange, AeliqoSlider as MainSlider, AeliqoSearchField as MainSearchField, AeliqoFileInput as MainFileInput, AeliqoFieldGroup as MainFieldGroup, AeliqoForm as MainForm} from '@aeliqo/react';
 import {AeliqoTextFieldElement, AeliqoTextAreaElement, AeliqoNumberFieldElement, AeliqoCheckboxElement, AeliqoRadioGroupElement, AeliqoSwitchElement, AeliqoSelectElement, AeliqoComboboxElement, AeliqoDateFieldElement, AeliqoDateRangeElement, AeliqoSliderElement, AeliqoSearchFieldElement, AeliqoFileInputElement, AeliqoFieldGroupElement, AeliqoFormElement} from '@aeliqo/web/inputs';
 import {AeliqoTextFieldElement as TextFieldByPath} from '@aeliqo/web/text-field';
 import type {AeliqoInputChangeDetail, AeliqoInputCommitDetail, AeliqoValidationDetail, AeliqoSearchDetail, AeliqoFileChangeDetail, AeliqoFormSubmitDetail, AeliqoDateRangeValue} from '@aeliqo/web/inputs';
@@ -258,7 +259,6 @@ const app = <>
   <AeliqoForm label='Form' onSubmit={event => { const submitter: string | undefined = event.detail.submitter; void submitter; }} onReset={event => { const type: string = event.type; void type; }} />
 </>;
 void app;
-void [MainTextField, MainTextArea, MainNumberField, MainCheckbox, MainRadioGroup, MainSwitch, MainSelect, MainCombobox, MainDateField, MainDateRange, MainSlider, MainSearchField, MainFileInput, MainFieldGroup, MainForm];
 void [AeliqoTextFieldElement, AeliqoTextAreaElement, AeliqoNumberFieldElement, AeliqoCheckboxElement, AeliqoRadioGroupElement, AeliqoSwitchElement, AeliqoSelectElement, AeliqoComboboxElement, AeliqoDateFieldElement, AeliqoDateRangeElement, AeliqoSliderElement, AeliqoSearchFieldElement, AeliqoFileInputElement, AeliqoFieldGroupElement, AeliqoFormElement, TextFieldByPath];
 const inputDetail: AeliqoInputChangeDetail<string> | AeliqoInputCommitDetail<string> = {source: 'user', value: 'typed'};
 const searchDetail: AeliqoSearchDetail = {source: 'user', query: 'typed'};

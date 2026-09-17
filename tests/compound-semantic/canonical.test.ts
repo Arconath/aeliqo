@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { html } from 'lit';
 import { renderAeliqo } from '../../packages/web/src/server.js';
-import { validatePresentationPlan, type PresentationPlan } from '../../packages/core/src/index.js';
+import { type PresentationPlan } from '../../packages/core/src/index.js';
+import { validatePresentationPlan } from '../../packages/core/src/presentation/index.js';
 import {
   comparisonPresentationRecipe,
   breakdownPresentationRecipe,

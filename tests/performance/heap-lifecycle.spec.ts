@@ -208,13 +208,13 @@ async function installLifecycleTracker(page: Page): Promise<void> {
     };
 
     const domCounters = (): DomCounters => {
-      const components = root.querySelectorAll('aeliqo-input, aeliqo-table');
+      const components = root.querySelectorAll('aeliqo-text-field, aeliqo-table');
       return {
         rootChildren: root.children.length,
         componentCount: components.length,
-        inputCount: root.querySelectorAll('aeliqo-input').length,
+        inputCount: root.querySelectorAll('aeliqo-text-field').length,
         tableCount: root.querySelectorAll('aeliqo-table').length,
-        documentComponentCount: document.querySelectorAll('aeliqo-input, aeliqo-table').length,
+        documentComponentCount: document.querySelectorAll('aeliqo-text-field, aeliqo-table').length,
       };
     };
 
@@ -230,7 +230,7 @@ async function installLifecycleTracker(page: Page): Promise<void> {
       let peakRenderedRows = 0;
       const disposalChecks: DomCounters[] = [];
       for (let cycle = 0; cycle < cycles; cycle += 1) {
-        const input = document.createElement('aeliqo-input') as HTMLElement & {
+        const input = document.createElement('aeliqo-text-field') as HTMLElement & {
           label: string;
           value: string;
           updateComplete: Promise<unknown>;
@@ -255,7 +255,10 @@ async function installLifecycleTracker(page: Page): Promise<void> {
         table.rows = rows(cycle + batch * cycles);
         root.replaceChildren(input, table);
         await Promise.all([input.updateComplete, table.updateComplete]);
-        peakComponentCount = Math.max(peakComponentCount, root.querySelectorAll('aeliqo-input, aeliqo-table').length);
+        peakComponentCount = Math.max(
+          peakComponentCount,
+          root.querySelectorAll('aeliqo-text-field, aeliqo-table').length,
+        );
         peakRenderedRows = Math.max(peakRenderedRows, table.shadowRoot?.querySelectorAll('tbody tr').length ?? 0);
         input.remove();
         table.remove();
@@ -383,7 +386,7 @@ test('captures bounded component lifecycle heap evidence', async ({ page, browse
       const root = document.querySelector<HTMLElement>('#fixture');
       return {
         rootChildren: root?.children.length ?? 0,
-        documentComponentCount: document.querySelectorAll('aeliqo-input, aeliqo-table').length,
+        documentComponentCount: document.querySelectorAll('aeliqo-text-field, aeliqo-table').length,
       };
     });
     const finalListeners = await page.evaluate(() => window.__aeliqoHeapLifecycle?.stop() ?? null);

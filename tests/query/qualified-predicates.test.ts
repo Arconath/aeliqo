@@ -1,12 +1,7 @@
 import { expect, it } from 'vitest';
-import {
-  createQueryFunctionRegistry,
-  createQueryPlanner,
-  parseContract,
-  type Catalog,
-  type Outcome,
-  type QuerySpec,
-} from '../../packages/core/src/index.js';
+import { parseContract, type Catalog, type Outcome, type QuerySpec } from '../../packages/core/src/index.js';
+import { createQueryFunctionRegistry } from '../../packages/core/src/expressions/index.js';
+import { createQueryPlanner } from '../../packages/core/src/query/index.js';
 const unwrap = <T>(value: Outcome<T>): T => {
   if (!value.ok) throw new Error(JSON.stringify(value.diagnostics));
   return value.value;

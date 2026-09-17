@@ -1,4 +1,5 @@
-import type { OperationGrant, Outcome, VersionRef } from '@aeliqo/core';
+import type { OperationGrant } from '@aeliqo/core/agent';
+import type { Outcome, VersionRef } from '@aeliqo/core';
 import type { AgentCapabilityReceipt, AgentJsonValue } from '../capabilities/types.js';
 
 /** Host-authored JSON Schema for the registered capability's input, not an authority grant. */

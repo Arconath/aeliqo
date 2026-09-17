@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { NarrativeClaim, ResultRef } from '../../packages/core/src/index.js';
-import { createNarrativeVerifier, type NarrativeAuthority } from '../../packages/agent/src/narrative.js';
+import type { NarrativeClaim } from '../../packages/core/src/contracts/agent/index.js';
+import type { ResultRef } from '../../packages/core/src/index.js';
+import { createNarrativeVerifier } from '../../packages/agent/src/narrative.js';
+import type { NarrativeAuthority } from '../../packages/agent/src/narrative/types.js';
 import { createResultStore } from '../../packages/runtime/src/results/index.js';
 import {
   createRegionStore,

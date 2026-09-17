@@ -1,15 +1,12 @@
 import {
   createPresentationRegistry,
   validatePresentationPlan,
-  type Diagnostic,
-  type Outcome,
   type PresentationContext,
   type PresentationManifest,
   type PresentationRegistry,
-  type ResultRef,
-  type VersionRef,
   type ValidatedPresentation,
-} from '@aeliqo/core';
+} from '@aeliqo/core/presentation';
+import type { Diagnostic, Outcome, ResultRef, VersionRef } from '@aeliqo/core';
 
 /** Agent proposals and manual authoring use the same canonical registry. */
 export type AgentRegisteredViewManifest = PresentationManifest;

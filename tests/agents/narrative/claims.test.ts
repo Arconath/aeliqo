@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { NarrativeClaim, Result } from '../../../packages/core/dist/index.js';
+import type { NarrativeClaim } from '../../../packages/core/dist/contracts/agent/index.js';
+import type { Result } from '../../../packages/core/dist/index.js';
 import { createResultStore } from '../../../packages/runtime/dist/results/index.js';
-import { createNarrativeVerifier, type NarrativeAuthority } from '../../../packages/agent/dist/narrative.js';
+import { createNarrativeVerifier } from '../../../packages/agent/dist/narrative.js';
+import type { NarrativeAuthority } from '../../../packages/agent/dist/narrative/types.js';
 
 const ref = { id: 'result', revision: 'source-1', outputId: 'rows', queryDigest: 'query', scopeDigest: 'scope' };
 const amountType = {

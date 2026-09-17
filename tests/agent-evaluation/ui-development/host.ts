@@ -1,5 +1,5 @@
+import { createStandardFunctionRegistry } from '@aeliqo/core/expressions';
 import {
-  createStandardFunctionRegistry,
   parseContract,
   parseTask,
   parseWireValue,
@@ -8,12 +8,11 @@ import {
   type Experience,
   type InteractionState,
   type Outcome,
-  type PresentationContext,
   type PresentationPlan,
   type Result,
   type Task,
-  type ValidatedPresentation,
 } from '@aeliqo/core';
+import type { PresentationContext, ValidatedPresentation } from '@aeliqo/core/presentation';
 import { createLocalDataService, type DataRecord, type LocalDataService, type QueryBudget } from '@aeliqo/runtime/data';
 import { createResultStore, type ResultHandle, type ResultStore } from '@aeliqo/runtime/results';
 import {
@@ -42,9 +41,10 @@ import {
   type AgentCapabilityHandlerResult,
   type AgentCapabilityHostContext,
   type AgentCapabilityManifest,
-} from '@aeliqo/agent';
+  type AgentCapabilityReceipt,
+  type AgentJsonValue,
+} from '@aeliqo/agent/capabilities';
 import { createAgentToolEndpoint, type AgentToolEndpoint, type AgentToolTransport } from '@aeliqo/agent/protocol';
-import type { AgentCapabilityReceipt, AgentJsonValue } from '@aeliqo/agent';
 import {
   AELIQO_CONFIG_SCHEMAS,
   AELIQO_PRESENTATION_REFS,
@@ -306,7 +306,7 @@ export interface UiDevelopmentHost {
 
 function presentationContext(
   snapshot: RegionSnapshot,
-  registry: import('@aeliqo/core').PresentationRegistry,
+  registry: import('@aeliqo/core/presentation').PresentationRegistry,
   candidateOutputs: readonly MaterializedTaskOutput[],
   currentOutputs: readonly MaterializedTaskOutput[],
 ): PresentationContext {
@@ -538,7 +538,7 @@ export function createUiDevelopmentHost(transport: AgentToolTransport = 'manual'
     return snapshot?.readSet === undefined ? undefined : pins(snapshot.readSet);
   };
 
-  const grants = (): readonly import('@aeliqo/core').OperationGrant[] =>
+  const grants = (): readonly import('@aeliqo/core/agent').OperationGrant[] =>
     revoked ? [] : ['catalog.read', 'task.evaluate', 'result.inspect', 'experience.propose', 'experience.commit'];
 
   const context = (): TrustedEvaluationContext => ({

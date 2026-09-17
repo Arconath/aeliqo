@@ -1,15 +1,14 @@
 import {
   AeliqoBreakdownElement,
   AeliqoComparisonElement,
-  AeliqoDateRangeElement,
   AeliqoExplorerElement,
   AeliqoFormFlowElement,
   AeliqoInvestigationElement,
   AeliqoQualityPanelElement,
   AeliqoRecordEditorElement,
   AeliqoSearchResultsElement,
-  AeliqoTextFieldElement,
-} from '@aeliqo/web';
+} from '@aeliqo/web/compound';
+import { AeliqoDateRangeElement, AeliqoTextFieldElement } from '@aeliqo/web/inputs';
 import {
   catalogColumns,
   catalogFields,
@@ -29,21 +28,21 @@ import { catalogMountSource, catalogSource } from './source.js';
 const sourceImports = `import {
   AeliqoBreakdownElement,
   AeliqoComparisonElement,
-  AeliqoDateRangeElement,
   AeliqoExplorerElement,
   AeliqoFormFlowElement,
   AeliqoInvestigationElement,
   AeliqoQualityPanelElement,
   AeliqoRecordEditorElement,
   AeliqoSearchResultsElement,
-  AeliqoTextFieldElement,
-  registerAeliqoElements,
-} from "@aeliqo/web";`;
-const sourceTypeImports = `import type {ResultRef, Scalar, VisualizationBindingContext, VisualizationSpec} from "@aeliqo/core";
+  } from "@aeliqo/web/compound";`;
+const sourceInputImports = `import {AeliqoDateRangeElement, AeliqoTextFieldElement} from "@aeliqo/web/inputs";`;
+const sourceTypeImports = `import type {ResultRef, Scalar} from "@aeliqo/core";
+import type {VisualizationBindingContext, VisualizationSpec} from "@aeliqo/core/visualization";
 import type {AeliqoDataColumn, AeliqoDataScope, AeliqoFieldOption} from "@aeliqo/web/data";
 import type {VisualizationDataset} from "@aeliqo/web/visualization";`;
 
-const sourceSetup = `${sourceTypeImports}
+const sourceSetup = `${sourceInputImports}
+${sourceTypeImports}
 
 const catalogRef: ResultRef = {
   id: "aeliqo-catalog-example",
@@ -260,7 +259,7 @@ const mount = (id: CatalogExampleId, fn: (root: HTMLElement) => void): CatalogEx
 
 export const compoundExamples: readonly CatalogExampleDefinition[] = [
   mount('explorer', (root) => {
-    const element = createCatalogElement<AeliqoExplorerElement>('aeliqo-explorer', root);
+    const element = createCatalogElement<AeliqoExplorerElement>('aeliqo-explorer', root, AeliqoExplorerElement);
     element.fields = catalogFields;
     element.rows = catalogRows;
     element.columns = catalogColumns;
@@ -274,7 +273,7 @@ export const compoundExamples: readonly CatalogExampleDefinition[] = [
     element.selection = 'single';
   }),
   mount('comparison', (root) => {
-    const element = createCatalogElement<AeliqoComparisonElement>('aeliqo-comparison', root);
+    const element = createCatalogElement<AeliqoComparisonElement>('aeliqo-comparison', root, AeliqoComparisonElement);
     element.compareSet = [
       { key: 'ada', label: 'Ada' },
       { key: 'grace', label: 'Grace' },
@@ -289,7 +288,7 @@ export const compoundExamples: readonly CatalogExampleDefinition[] = [
     element.scope = catalogScope;
   }),
   mount('breakdown', (root) => {
-    const element = createCatalogElement<AeliqoBreakdownElement>('aeliqo-breakdown', root);
+    const element = createCatalogElement<AeliqoBreakdownElement>('aeliqo-breakdown', root, AeliqoBreakdownElement);
     element.groups = [
       { key: 'research', label: 'Research', value: 264, unit: 'records', recordCount: 2 },
       { key: 'product', label: 'Product', value: 96, unit: 'records', recordCount: 1 },
@@ -302,7 +301,11 @@ export const compoundExamples: readonly CatalogExampleDefinition[] = [
     element.scope = catalogScope;
   }),
   mount('investigation', (root) => {
-    const element = createCatalogElement<AeliqoInvestigationElement>('aeliqo-investigation', root);
+    const element = createCatalogElement<AeliqoInvestigationElement>(
+      'aeliqo-investigation',
+      root,
+      AeliqoInvestigationElement,
+    );
     element.entity = 'person';
     element.result = catalogRef;
     element.scope = catalogScope;
@@ -314,7 +317,11 @@ export const compoundExamples: readonly CatalogExampleDefinition[] = [
     element.trendDatasets = [catalogVisualizationDataset];
   }),
   mount('search-results', (root) => {
-    const element = createCatalogElement<AeliqoSearchResultsElement>('aeliqo-search-results', root);
+    const element = createCatalogElement<AeliqoSearchResultsElement>(
+      'aeliqo-search-results',
+      root,
+      AeliqoSearchResultsElement,
+    );
     element.query = 'research';
     element.queryRevision = 'query-2';
     element.resultRevision = catalogRef.revision;
@@ -330,7 +337,11 @@ export const compoundExamples: readonly CatalogExampleDefinition[] = [
     element.detailFields = catalogColumns;
   }),
   mount('record-editor', (root) => {
-    const element = createCatalogElement<AeliqoRecordEditorElement>('aeliqo-record-editor', root);
+    const element = createCatalogElement<AeliqoRecordEditorElement>(
+      'aeliqo-record-editor',
+      root,
+      AeliqoRecordEditorElement,
+    );
     element.entity = 'person';
     element.entityKey = 'string:3:ada';
     element.entityRevision = 'person-revision-1';
@@ -346,7 +357,7 @@ export const compoundExamples: readonly CatalogExampleDefinition[] = [
     element.append(name, period);
   }),
   mount('form-flow', (root) => {
-    const element = createCatalogElement<AeliqoFormFlowElement>('aeliqo-form-flow', root);
+    const element = createCatalogElement<AeliqoFormFlowElement>('aeliqo-form-flow', root, AeliqoFormFlowElement);
     element.steps = [
       { id: 'identity', label: 'Identity', fieldNames: ['name'] },
       { id: 'review', label: 'Review', fieldNames: ['period'] },
@@ -366,7 +377,11 @@ export const compoundExamples: readonly CatalogExampleDefinition[] = [
     element.append(identity, review);
   }),
   mount('quality-panel', (root) => {
-    const element = createCatalogElement<AeliqoQualityPanelElement>('aeliqo-quality-panel', root);
+    const element = createCatalogElement<AeliqoQualityPanelElement>(
+      'aeliqo-quality-panel',
+      root,
+      AeliqoQualityPanelElement,
+    );
     element.source = 'People registry';
     element.freshness = '2026-09-09 09:00 UTC';
     element.completeness = '3 of 3 rows loaded';

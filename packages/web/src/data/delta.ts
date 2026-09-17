@@ -1,189 +1,11 @@
 import { css, html, LitElement, nothing } from 'lit';
 import { aeliqoThemeStyles } from '../styles/theme.js';
 import { AELIQO_WEB_VERSION } from '../version.js';
-import { validateScalar } from '@aeliqo/core';
-import type { AeliqoDataScope, AeliqoDataStatus, AeliqoDataValue, AeliqoDeltaResult } from './types.js';
+import type { AeliqoDataScope, AeliqoDataStatus, AeliqoDataValue } from './types.js';
 import { dataStyles, dataStatusMessage, scopeText, statusTemplate } from './shared.js';
+import { calculateAeliqoDelta, type AeliqoDeltaMode } from './delta-calculation.js';
 
-export type AeliqoDeltaMode = 'absolute' | 'relative' | 'percentage-point';
-
-function numeric(value: AeliqoDataValue | undefined): number | undefined {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'object' && value !== null && !Array.isArray(value) && typeof value.decimal === 'string') {
-    const parsed = Number(value.decimal);
-    return Number.isFinite(parsed) ? parsed : undefined;
-  }
-  return undefined;
-}
-
-function decimalInput(value: AeliqoDataValue | undefined): string | undefined {
-  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
-  if (typeof value === 'object' && value !== null && !Array.isArray(value) && typeof value.decimal === 'string')
-    return value.decimal;
-  return undefined;
-}
-
-interface DecimalRational {
-  readonly numerator: bigint;
-  readonly denominator: bigint;
-}
-
-function greatestCommonDivisor(left: bigint, right: bigint): bigint {
-  let a = left < 0n ? -left : left;
-  let b = right < 0n ? -right : right;
-  while (b !== 0n) {
-    const remainder = a % b;
-    a = b;
-    b = remainder;
-  }
-  return a === 0n ? 1n : a;
-}
-
-function rational(numerator: bigint, denominator: bigint): DecimalRational | undefined {
-  if (denominator === 0n) return undefined;
-  const sign = denominator < 0n ? -1n : 1n;
-  const divisor = greatestCommonDivisor(numerator, denominator);
-  return {
-    numerator: (numerator / divisor) * sign,
-    denominator: (denominator / divisor) * sign,
-  };
-}
-
-/** Parse ordinary and scientific decimal text without passing through IEEE-754. */
-function parseDecimal(value: string): DecimalRational | undefined {
-  const match = /^(-?)([0-9]+)(?:\.([0-9]+))?(?:e([+-]?\d+))?$/iu.exec(value);
-  if (match === null) return undefined;
-  const fraction = match[3] ?? '';
-  const exponent = Number(match[4] ?? 0);
-  if (!Number.isSafeInteger(exponent) || Math.abs(exponent) > 10000) return undefined;
-  let numerator = BigInt(`${match[1]}${match[2]}${fraction}`);
-  const scale = fraction.length - exponent;
-  let denominator = 1n;
-  if (scale > 0) denominator = 10n ** BigInt(scale);
-  else if (scale < 0) numerator *= 10n ** BigInt(-scale);
-  return rational(numerator, denominator);
-}
-
-/** Render only terminating rationals, so an exact result never hides rounding. */
-function finiteDecimal(value: DecimalRational): string | undefined {
-  if (value.numerator === 0n) return '0';
-  let denominator = value.denominator;
-  let twos = 0;
-  let fives = 0;
-  while (denominator % 2n === 0n) {
-    denominator /= 2n;
-    twos++;
-  }
-  while (denominator % 5n === 0n) {
-    denominator /= 5n;
-    fives++;
-  }
-  if (denominator !== 1n) return undefined;
-  const scale = Math.max(twos, fives);
-  const coefficient =
-    (value.numerator < 0n ? -value.numerator : value.numerator) *
-    2n ** BigInt(scale - twos) *
-    5n ** BigInt(scale - fives);
-  const digits = coefficient.toString();
-  const padded = digits.padStart(scale + 1, '0');
-  const whole = scale === 0 ? padded : padded.slice(0, -scale) || '0';
-  const fraction = scale === 0 ? '' : padded.slice(-scale).replace(/0+$/u, '');
-  return `${value.numerator < 0n ? '-' : ''}${whole}${fraction ? `.${fraction}` : ''}`;
-}
-
-function subtractDecimal(left: string, right: string): string | undefined {
-  const a = parseDecimal(left);
-  const b = parseDecimal(right);
-  if (a === undefined || b === undefined) return undefined;
-  return finiteDecimal(
-    rational(a.numerator * b.denominator - b.numerator * a.denominator, a.denominator * b.denominator)!,
-  );
-}
-
-function timesHundred(value: string): string | undefined {
-  const parsed = parseDecimal(value);
-  return parsed === undefined ? undefined : finiteDecimal(rational(parsed.numerator * 100n, parsed.denominator)!);
-}
-
-function divideDecimal(left: string, right: string): string | undefined {
-  const a = parseDecimal(left);
-  const b = parseDecimal(right);
-  if (a === undefined || b === undefined || b.numerator === 0n) return undefined;
-  return finiteDecimal(rational(a.numerator * b.denominator, a.denominator * b.numerator)!);
-}
-
-function signed(value: string): string {
-  return value.startsWith('-') || value === '0' ? value : `+${value}`;
-}
-
-function decimalText(value: number): string {
-  if (!Number.isFinite(value)) return '—';
-  if (Object.is(value, -0)) return '0';
-  return String(Number(value.toPrecision(15)));
-}
-
-/** Calculate a delta only when the two values are explicitly compatible. */
-export function calculateAeliqoDelta(
-  current: AeliqoDataValue | undefined,
-  baseline: AeliqoDataValue | undefined,
-  mode: AeliqoDeltaMode = 'absolute',
-  compatible = true,
-): AeliqoDeltaResult {
-  if (!compatible) return { status: 'unavailable', reason: 'incompatible' };
-  if (!['absolute', 'relative', 'percentage-point'].includes(mode)) return { status: 'unavailable', reason: 'invalid' };
-  for (const value of [current, baseline]) {
-    if (value !== null && typeof value === 'object' && !validateScalar(value, { value: 'decimal', nullable: false }).ok)
-      return { status: 'unavailable', reason: 'invalid' };
-  }
-  const currentText = decimalInput(current);
-  const baselineText = decimalInput(baseline);
-  const exactDifference =
-    currentText !== undefined && baselineText !== undefined ? subtractDecimal(currentText, baselineText) : undefined;
-  if (exactDifference !== undefined && (mode === 'absolute' || mode === 'percentage-point')) {
-    const exactValue: string | number =
-      typeof current === 'number' && typeof baseline === 'number' ? Number(exactDifference) : exactDifference;
-    if (typeof exactValue === 'number' && !Number.isFinite(exactValue))
-      return { status: 'unavailable', reason: 'invalid' };
-    if (mode === 'absolute') return { status: 'ready', value: exactValue, display: signed(exactDifference) };
-    const percentagePoints = timesHundred(exactDifference);
-    if (percentagePoints !== undefined)
-      return { status: 'ready', value: exactValue, display: `${signed(percentagePoints)} pp` };
-  }
-  if (mode === 'relative' && currentText !== undefined && baselineText !== undefined) {
-    const ratio = exactDifference === undefined ? undefined : divideDecimal(exactDifference, baselineText);
-    if (ratio === undefined && parseDecimal(baselineText)?.numerator === 0n)
-      return { status: 'unavailable', reason: 'zero-denominator' };
-    if (ratio !== undefined) {
-      const percentage = timesHundred(ratio);
-      if (percentage !== undefined) {
-        const exactValue: string | number =
-          typeof current === 'number' && typeof baseline === 'number' ? Number(ratio) : ratio;
-        if (typeof exactValue === 'number' && Number.isFinite(exactValue)) {
-          return { status: 'ready', value: exactValue, display: `${signed(percentage)}%` };
-        }
-        if (typeof exactValue === 'string')
-          return { status: 'ready', value: exactValue, display: `${signed(percentage)}%` };
-      }
-    }
-    if (typeof current === 'object' || typeof baseline === 'object')
-      return { status: 'unavailable', reason: 'invalid' };
-  }
-  const currentNumber = numeric(current);
-  const baselineNumber = numeric(baseline);
-  if (currentNumber === undefined) return { status: 'unavailable', reason: 'missing-current' };
-  if (baselineNumber === undefined) return { status: 'unavailable', reason: 'missing-baseline' };
-  if (mode === 'relative' && baselineNumber === 0) return { status: 'unavailable', reason: 'zero-denominator' };
-  const difference = currentNumber - baselineNumber;
-  const value = mode === 'relative' ? difference / baselineNumber : difference;
-  if (!Number.isFinite(value)) return { status: 'unavailable', reason: 'invalid' };
-  const displayValue =
-    mode === 'relative'
-      ? `${value > 0 ? '+' : ''}${(value * 100).toFixed(Math.abs(value) < 0.1 ? 1 : 0)}%`
-      : mode === 'percentage-point'
-        ? `${value > 0 ? '+' : ''}${(value * 100).toFixed(Math.abs(value) < 0.1 ? 1 : 0)} pp`
-        : `${value > 0 ? '+' : ''}${decimalText(value)}`;
-  return { status: 'ready', value, display: displayValue };
-}
+export { calculateAeliqoDelta, type AeliqoDeltaMode } from './delta-calculation.js';
 
 /** Displays a comparison supplied by the host. Percentage points and
  * relative percentage change use distinct modes and labels. */
@@ -212,38 +34,73 @@ export class AeliqoDeltaElement extends LitElement {
   message = '';
 
   protected override render() {
-    const canDisplay = this.status === 'ready' || this.status === 'partial' || this.status === 'stale';
+    const view = this.presentation();
+    const scope = scopeText(this.scope);
+    return html`
+      <dl part="delta" aria-describedby=${view.scopeDescription} data-mode=${view.mode} data-status=${view.status}>
+        <dt part="label">${this.label}</dt>
+        <dd part="value" class=${view.valueClass}>
+          <bdi part="number" dir=${view.direction}>${view.value}</bdi>${this.renderUnit(view)}
+        </dd>
+      </dl>
+      <div part="mode">${view.modeLabel}</div>
+      ${this.renderScope(scope)} ${this.renderStatus()}
+    `;
+  }
+
+  private presentation() {
+    const canDisplay = this.canDisplayStatus();
     const result = canDisplay
       ? calculateAeliqoDelta(this.current, this.baseline, this.validMode, this.compatible)
       : undefined;
-    const modeLabel =
-      this.validMode === 'relative'
-        ? 'relative change'
-        : this.validMode === 'percentage-point'
-          ? 'percentage-point change'
-          : 'absolute change';
     const unavailable = !canDisplay || result?.status !== 'ready';
-    const rendered = unavailable
-      ? (dataStatusMessage(!canDisplay ? this.status : 'unavailable', this.message) ?? 'Value unavailable.')
-      : (result.display ?? '—');
-    const scope = scopeText(this.scope);
-    return html`
-      <dl
-        part="delta"
-        aria-describedby=${scope ? 'scope' : nothing}
-        data-mode=${this.validMode}
-        data-status=${unavailable ? 'unavailable' : this.status}
-      >
-        <dt part="label">${this.label}</dt>
-        <dd part="value" class=${unavailable ? 'unavailable' : ''}>
-          <bdi part="number" dir=${unavailable ? 'auto' : 'ltr'}>${rendered}</bdi
-          >${this.unit && this.validMode === 'absolute' && !unavailable ? html`<span part="unit">${this.unit}</span>` : nothing}
-        </dd>
-      </dl>
-      <div part="mode">${modeLabel}</div>
-      ${scope ? html`<div id="scope" part="scope">${scope}</div>` : nothing}
-      ${this.status === 'loading' || this.status === 'partial' || this.status === 'stale' || this.status === 'empty' ? statusTemplate(this.status, this.message) : nothing}
-    `;
+    return {
+      mode: this.validMode,
+      modeLabel: this.modeLabel(),
+      value: this.renderedValue(canDisplay, result),
+      valueClass: unavailable ? 'unavailable' : '',
+      direction: unavailable ? 'auto' : 'ltr',
+      status: unavailable ? 'unavailable' : this.status,
+      scopeDescription: scopeText(this.scope) ? 'scope' : nothing,
+      unavailable,
+    };
+  }
+
+  private canDisplayStatus(): boolean {
+    return this.status === 'ready' || this.status === 'partial' || this.status === 'stale';
+  }
+
+  private renderedValue(canDisplay: boolean, result: ReturnType<typeof calculateAeliqoDelta> | undefined): string {
+    if (!canDisplay) return dataStatusMessage(this.status, this.message) ?? 'Value unavailable.';
+    if (result?.status !== 'ready') return dataStatusMessage('unavailable', this.message) ?? 'Value unavailable.';
+    return result.display ?? '—';
+  }
+
+  private modeLabel(): string {
+    switch (this.validMode) {
+      case 'relative':
+        return 'relative change';
+      case 'percentage-point':
+        return 'percentage-point change';
+      default:
+        return 'absolute change';
+    }
+  }
+
+  private renderUnit(view: ReturnType<AeliqoDeltaElement['presentation']>) {
+    if (this.unit.length === 0 || view.mode !== 'absolute' || view.unavailable) return nothing;
+    return html`<span part="unit">${this.unit}</span>`;
+  }
+
+  private renderScope(scope: string | undefined) {
+    if (scope === undefined || scope.length === 0) return nothing;
+    return html`<div id="scope" part="scope">${scope}</div>`;
+  }
+
+  private renderStatus() {
+    if (this.status !== 'loading' && this.status !== 'partial' && this.status !== 'stale' && this.status !== 'empty')
+      return nothing;
+    return statusTemplate(this.status, this.message);
   }
 
   private get validMode(): AeliqoDeltaMode {

@@ -1,21 +1,26 @@
 import {
   bindVisualizationSpec,
+  type BoundVisualization,
+  type VisualizationBindingContext,
+} from '@aeliqo/core/visualization';
+import {
   parseResult,
   parseVisualizationSpec,
   parseWireValue,
-  type InteractionPort,
   type InteractionState,
   type Outcome,
-  type PresentationManifest,
-  type PresentationValues,
   type Result,
   type ResultRef,
-  type ResolvedPresentationConfig,
-  type ValidatedPresentation,
   type VersionRef,
-  type VisualizationBindingContext,
   type VisualizationSpec,
 } from '@aeliqo/core';
+import type { InteractionPort } from '@aeliqo/core/interaction';
+import type {
+  PresentationManifest,
+  PresentationValues,
+  ResolvedPresentationConfig,
+  ValidatedPresentation,
+} from '@aeliqo/core/presentation';
 import { materializeVisualizationRows } from '../visualization/materialization.js';
 import type { VisualizationDataset } from '../visualization/types.js';
 import { renderAeliqoVisualizationPresentationNode } from './visualization-renderer.js';
@@ -56,7 +61,6 @@ export const AELIQO_VISUALIZATION_PRESENTATION_OPERATIONS = Object.freeze({
   read: { id: 'data.read', revision: '1' },
   selection: { id: 'interaction.selection', revision: '1' },
 } satisfies Record<'read' | 'selection', VersionRef>);
-export const AELIQO_VISUALIZATION_OPERATIONS = AELIQO_VISUALIZATION_PRESENTATION_OPERATIONS;
 
 export type AeliqoAuthorizedVisualizationBindings =
   | readonly AeliqoVisualizationBinding[]
@@ -163,6 +167,28 @@ function entriesFor(
   return Object.entries(input);
 }
 
+function datasetResultRef(value: unknown): Outcome<ResultRef> {
+  const parsed = parseWireValue(value);
+  if (!parsed.ok) return parsed;
+  if (parsed.value === null || typeof parsed.value !== 'object' || Array.isArray(parsed.value))
+    return fail('dataset', 'A visualization dataset result reference is malformed.');
+  const ref = parsed.value as ResultRef;
+  const values = [ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest];
+  if (Object.keys(ref).length !== 5 || values.some((item) => typeof item !== 'string' || item.length === 0))
+    return fail('dataset', 'A visualization dataset result reference is malformed.');
+  return { ok: true, value: ref };
+}
+
+function datasetReference(value: unknown): Outcome<ResultRef> {
+  if (value === null || typeof value !== 'object' || Array.isArray(value))
+    return fail('dataset', 'A visualization materialization must be an object.');
+  const item = value as Record<string, unknown>;
+  const hasUnsupportedKey = Object.keys(item).some((key) => key !== 'result' && key !== 'rows');
+  if (hasUnsupportedKey || item.result === undefined || item.rows === undefined)
+    return fail('dataset', 'A visualization materialization requires an exact result and rows.');
+  return datasetResultRef(item.result);
+}
+
 function parseDatasets(
   input: readonly VisualizationDataset[],
   maxDatasets: number,
@@ -173,32 +199,28 @@ function parseDatasets(
     return fail('datasets', 'Visualization materializations exceed the bounded host limit.');
   const seen = new Set<string>();
   for (const item of inspected.value) {
-    if (item === null || typeof item !== 'object' || Array.isArray(item))
-      return fail('dataset', 'A visualization materialization must be an object.');
-    const candidate = item as Record<string, unknown>;
-    if (
-      Object.keys(candidate).some((key) => key !== 'result' && key !== 'rows') ||
-      candidate.result === undefined ||
-      candidate.rows === undefined
-    )
-      return fail('dataset', 'A visualization materialization requires an exact result and rows.');
-    const parsed = parseWireValue(candidate.result);
-    if (!parsed.ok) return parsed;
-    if (parsed.value === null || typeof parsed.value !== 'object' || Array.isArray(parsed.value))
-      return fail('dataset', 'A visualization dataset result reference is malformed.');
-    const ref = parsed.value as ResultRef;
-    if (
-      Object.keys(ref).length !== 5 ||
-      [ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest].some(
-        (value) => typeof value !== 'string' || value.length === 0,
-      )
-    )
-      return fail('dataset', 'A visualization dataset result reference is malformed.');
-    const key = refKey(ref);
+    const ref = datasetReference(item);
+    if (!ref.ok) return ref;
+    const key = refKey(ref.value);
     if (seen.has(key)) return fail('dataset', 'A result may have only one visualization materialization.');
     seen.add(key);
   }
   return { ok: true, value: freeze(inspected.value as readonly VisualizationDataset[]) };
+}
+
+function contextResults(value: unknown): Outcome<readonly Result[]> {
+  if (!Array.isArray(value)) return fail('context', 'Visualization binding context has an unsupported shape.');
+  const results: Result[] = [];
+  const seen = new Set<string>();
+  for (const raw of value) {
+    const parsed = parseResult(raw);
+    if (!parsed.ok) return parsed;
+    const key = refKey(parsed.value.ref);
+    if (seen.has(key)) return fail('context', 'Visualization context repeats an exact ResultRef.');
+    seen.add(key);
+    results.push(parsed.value);
+  }
+  return { ok: true, value: results };
 }
 
 function snapshotContext(context: VisualizationBindingContext): Outcome<VisualizationBindingContext> {
@@ -207,26 +229,15 @@ function snapshotContext(context: VisualizationBindingContext): Outcome<Visualiz
   if (inspected.value === null || typeof inspected.value !== 'object' || Array.isArray(inspected.value))
     return fail('context', 'Visualization binding context must be a bounded object.');
   const candidate = inspected.value as Record<string, unknown>;
-  if (
-    Object.keys(candidate).some((key) => !['results', 'catalog', 'relationships', 'histograms'].includes(key)) ||
-    !Array.isArray(candidate.results)
-  )
+  if (Object.keys(candidate).some((key) => !['results', 'catalog', 'relationships', 'histograms'].includes(key)))
     return fail('context', 'Visualization binding context has an unsupported shape.');
-  const results: Result[] = [];
-  const seen = new Set<string>();
-  for (const raw of candidate.results) {
-    const parsed = parseResult(raw);
-    if (!parsed.ok) return parsed;
-    const key = refKey(parsed.value.ref);
-    if (seen.has(key)) return fail('context', 'Visualization context repeats an exact ResultRef.');
-    seen.add(key);
-    results.push(parsed.value);
-  }
+  const results = contextResults(candidate.results);
+  if (!results.ok) return results;
   // bindVisualizationSpec performs the catalog, histogram and relationship checks.
   return {
     ok: true,
     value: freeze({
-      results,
+      results: results.value,
       ...(candidate.catalog === undefined ? {} : { catalog: candidate.catalog }),
       ...(candidate.relationships === undefined ? {} : { relationships: candidate.relationships }),
       ...(candidate.histograms === undefined ? {} : { histograms: candidate.histograms }),
@@ -234,39 +245,60 @@ function snapshotContext(context: VisualizationBindingContext): Outcome<Visualiz
   };
 }
 
+function datasetLimit(options: AeliqoVisualizationRegistryOptions): Outcome<number> {
+  const limit = options.maxDatasets;
+  if (limit === undefined) return { ok: true, value: MAX_DATASETS };
+  if (!Number.isSafeInteger(limit) || limit < 1 || limit > MAX_DATASETS)
+    return fail('budget', 'maxDatasets must be a safe integer from 1 to 64.');
+  return { ok: true, value: limit };
+}
+
+function datasetsAuthorized(datasets: readonly VisualizationDataset[], context: VisualizationBindingContext): boolean {
+  const contextKeys = new Set(context.results.map((result) => refKey(result.ref)));
+  return datasets.every((dataset) => contextKeys.has(refKey(dataset.result)));
+}
+
+function snapshotEntry(
+  suppliedKey: string,
+  binding: AeliqoVisualizationBinding,
+  maxDatasets: number,
+): Outcome<readonly [string, AeliqoVisualizationBinding]> {
+  if (binding === null || typeof binding !== 'object')
+    return fail('binding', 'A visualization binding must be an object.');
+  const parsedResult = parseResult(binding.result);
+  if (!parsedResult.ok) return parsedResult;
+  const actualKey = refKey(parsedResult.value.ref);
+  if (suppliedKey !== actualKey)
+    return fail('binding', 'Authorized visualization bindings must use one exact ResultRef key.');
+  const context = snapshotContext(binding.context);
+  if (!context.ok) return context;
+  const containsResult = context.value.results.some((result) => sameResult(result, parsedResult.value));
+  if (!containsResult)
+    return fail('binding', 'The primary visualization Result must be present exactly in its authorized context.');
+  const datasets = parseDatasets(binding.datasets, maxDatasets);
+  if (!datasets.ok) return datasets;
+  if (!datasetsAuthorized(datasets.value, context.value))
+    return fail('dataset', 'A visualization materialization must name a Result authorized by its context.');
+  const snapshot = freeze({ result: parsedResult.value, context: context.value, datasets: datasets.value });
+  return { ok: true, value: [actualKey, snapshot] };
+}
+
 function snapshotBindings(
   input: AeliqoAuthorizedVisualizationBindings,
   options: AeliqoVisualizationRegistryOptions,
 ): Outcome<ReadonlyMap<string, AeliqoVisualizationBinding>> {
   try {
-    if (
-      options.maxDatasets !== undefined &&
-      (!Number.isSafeInteger(options.maxDatasets) || options.maxDatasets < 1 || options.maxDatasets > MAX_DATASETS)
-    )
-      return fail('budget', 'maxDatasets must be a safe integer from 1 to 64.');
+    const limit = datasetLimit(options);
+    if (!limit.ok) return limit;
     const entries = entriesFor(input);
     if (entries.length > 128) return fail('binding', 'The authorized visualization binding table is too large.');
     const map = new Map<string, AeliqoVisualizationBinding>();
     for (const [suppliedKey, binding] of entries) {
-      if (binding === null || typeof binding !== 'object')
-        return fail('binding', 'A visualization binding must be an object.');
-      const parsedResult = parseResult(binding.result);
-      if (!parsedResult.ok) return parsedResult;
-      const actualKey = refKey(parsedResult.value.ref);
-      if (suppliedKey !== actualKey || map.has(actualKey))
-        return fail('binding', 'Authorized visualization bindings must use one exact ResultRef key.');
-      const context = snapshotContext(binding.context);
-      if (!context.ok) return context;
-      if (!context.value.results.some((result) => sameResult(result, parsedResult.value)))
-        return fail('binding', 'The primary visualization Result must be present exactly in its authorized context.');
-      const datasets = parseDatasets(binding.datasets, options.maxDatasets ?? MAX_DATASETS);
-      if (!datasets.ok) return datasets;
-      const contextKeys = new Set(context.value.results.map((result) => refKey(result.ref)));
-      for (const dataset of datasets.value) {
-        if (!contextKeys.has(refKey(dataset.result)))
-          return fail('dataset', 'A visualization materialization must name a Result authorized by its context.');
-      }
-      map.set(actualKey, freeze({ result: parsedResult.value, context: context.value, datasets: datasets.value }));
+      const snapshot = snapshotEntry(suppliedKey, binding, limit.value);
+      if (!snapshot.ok) return snapshot;
+      const [key, value] = snapshot.value;
+      if (map.has(key)) return fail('binding', 'Authorized visualization bindings must use one exact ResultRef key.');
+      map.set(key, value);
     }
     return { ok: true, value: map };
   } catch {
@@ -274,14 +306,7 @@ function snapshotBindings(
   }
 }
 
-function configFor(
-  view: VisualizationView,
-  values: PresentationValues,
-  result: Result | undefined,
-  bindings: ReadonlyMap<string, AeliqoVisualizationBinding>,
-  options: AeliqoVisualizationRegistryOptions,
-): Outcome<ResolvedPresentationConfig> {
-  if (result === undefined) return fail('binding', 'A visualization representation requires an authorized Result.');
+function visualizationSpec(view: VisualizationView, values: PresentationValues): Outcome<VisualizationSpec> {
   const parsedValues = parseWireValue(values);
   if (!parsedValues.ok) return parsedValues;
   if (parsedValues.value === null || typeof parsedValues.value !== 'object' || Array.isArray(parsedValues.value))
@@ -293,10 +318,25 @@ function configFor(
   if (!spec.ok) return spec;
   if (spec.value.view !== view)
     return fail('view', `The ${view} manifest cannot resolve a ${spec.value.view} visualization.`);
+  return spec;
+}
+
+function resultBinding(
+  result: Result,
+  bindings: ReadonlyMap<string, AeliqoVisualizationBinding>,
+): Outcome<AeliqoVisualizationBinding> {
   const binding = bindings.get(refKey(result.ref));
   if (binding === undefined || !sameResult(binding.result, result))
     return fail('stale', 'The authorized visualization Result descriptor is stale or unavailable.');
-  const bound = bindVisualizationSpec(spec.value, binding.context);
+  return { ok: true, value: binding };
+}
+
+function boundVisualization(
+  spec: VisualizationSpec,
+  result: Result,
+  binding: AeliqoVisualizationBinding,
+): Outcome<BoundVisualization> {
+  const bound = bindVisualizationSpec(spec, binding.context);
   if (!bound.ok) return bound;
   if (bound.value.results.length !== 1)
     return fail(
@@ -309,18 +349,30 @@ function configFor(
     const rows = materializeVisualizationRows(bound.value, candidate.ref, binding.datasets);
     if (!rows.ok) return rows;
   }
-  const owner =
-    options.resolveEntity === undefined
-      ? undefined
-      : (() => {
-          try {
-            return options.resolveEntity(result);
-          } catch {
-            return undefined;
-          }
-        })();
-  if (options.resolveEntity !== undefined && (typeof owner !== 'string' || owner.length === 0))
+  return bound;
+}
+
+function trustedEntity(
+  resolver: AeliqoVisualizationRegistryOptions['resolveEntity'],
+  result: Result,
+): Outcome<string | undefined> {
+  if (resolver === undefined) return { ok: true, value: undefined };
+  let owner: string | undefined;
+  try {
+    owner = resolver(result);
+  } catch {
+    owner = undefined;
+  }
+  if (typeof owner !== 'string' || owner.length === 0)
     return fail('binding', 'Selectable visualization views require a trusted entity binding.');
+  return { ok: true, value: owner };
+}
+
+function resolvedConfig(
+  spec: VisualizationSpec,
+  result: Result,
+  owner: string | undefined,
+): ResolvedPresentationConfig {
   const ports: InteractionPort[] =
     owner === undefined
       ? []
@@ -334,18 +386,29 @@ function configFor(
             grain: [...result.rowGrain],
           },
         ];
-  return {
-    ok: true,
-    value: freeze({
-      values: { visualization: spec.value },
-      fields: spec.value.view === 'matrix' ? [...spec.value.columns] : result.fields.map((field) => field.id),
-      ports,
-      operations:
-        owner === undefined
-          ? [AELIQO_VISUALIZATION_PRESENTATION_OPERATIONS.read]
-          : [AELIQO_VISUALIZATION_PRESENTATION_OPERATIONS.read, AELIQO_VISUALIZATION_PRESENTATION_OPERATIONS.selection],
-    }),
-  };
+  const operations = [AELIQO_VISUALIZATION_PRESENTATION_OPERATIONS.read];
+  if (owner !== undefined) operations.push(AELIQO_VISUALIZATION_PRESENTATION_OPERATIONS.selection);
+  const fields = spec.view === 'matrix' ? [...spec.columns] : result.fields.map((field) => field.id);
+  return freeze({ values: { visualization: spec }, fields, ports, operations });
+}
+
+function configFor(
+  view: VisualizationView,
+  values: PresentationValues,
+  result: Result | undefined,
+  bindings: ReadonlyMap<string, AeliqoVisualizationBinding>,
+  options: AeliqoVisualizationRegistryOptions,
+): Outcome<ResolvedPresentationConfig> {
+  if (result === undefined) return fail('binding', 'A visualization representation requires an authorized Result.');
+  const spec = visualizationSpec(view, values);
+  if (!spec.ok) return spec;
+  const binding = resultBinding(result, bindings);
+  if (!binding.ok) return binding;
+  const bound = boundVisualization(spec.value, result, binding.value);
+  if (!bound.ok) return bound;
+  const owner = trustedEntity(options.resolveEntity, result);
+  if (!owner.ok) return owner;
+  return { ok: true, value: resolvedConfig(spec.value, result, owner.value) };
 }
 
 function buildManifest(
@@ -404,8 +467,3 @@ export function createAeliqoVisualizationPresentationRegistry(
     renderAeliqoVisualizationPresentationNode(node, binding, context, options, bindings.value);
   return { ok: true, value: freeze({ manifests, bindingFor, render }) };
 }
-
-export const createVisualizationPresentationManifests = createAeliqoVisualizationPresentationManifests;
-export const createVisualizationPresentationRegistry = createAeliqoVisualizationPresentationRegistry;
-export const createAeliqoVisualizationManifests = createAeliqoVisualizationPresentationManifests;
-export const createAeliqoVisualizationRegistry = createAeliqoVisualizationPresentationRegistry;

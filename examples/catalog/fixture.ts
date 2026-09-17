@@ -1,13 +1,5 @@
-import type {
-  Catalog,
-  MeaningDefinition,
-  PlotUnit,
-  Result,
-  ResultRef,
-  Scalar,
-  VisualizationBindingContext,
-  VisualizationSpec,
-} from '@aeliqo/core';
+import type { Catalog, MeaningDefinition, PlotUnit, Result, ResultRef, Scalar, VisualizationSpec } from '@aeliqo/core';
+import type { VisualizationBindingContext } from '@aeliqo/core/visualization';
 import type { VisualizationDataset } from '@aeliqo/web/visualization';
 import type { AeliqoDataColumn, AeliqoDataScope, AeliqoFieldOption } from '@aeliqo/web/data';
 
@@ -305,8 +297,22 @@ export const relationshipDataset: VisualizationDataset = { result: relationshipR
 export const hierarchyContext: VisualizationBindingContext = { results: [hierarchyResult], catalog };
 export const hierarchyDataset: VisualizationDataset = { result: hierarchyRef, rows: hierarchyRows };
 
-export function createCatalogElement<T extends HTMLElement>(tagName: string, container: HTMLElement): T {
-  const element = document.createElement(tagName) as T;
+export function createCatalogElement<T extends HTMLElement>(
+  tagName: string,
+  container: HTMLElement,
+  constructor: CustomElementConstructor & { readonly prototype: T },
+): T {
+  const registry = container.ownerDocument.defaultView?.customElements;
+  if (registry === undefined) throw new Error('A live custom element registry is required for catalog previews.');
+  const current = registry.get(tagName) as (CustomElementConstructor & { readonly aeliqoVersion?: string }) | undefined;
+  const next = constructor as CustomElementConstructor & { readonly aeliqoVersion?: string };
+  if (current === undefined) registry.define(tagName, constructor);
+  else if (
+    current !== constructor &&
+    (next.aeliqoVersion === undefined || current.aeliqoVersion !== next.aeliqoVersion)
+  )
+    throw new Error(`Cannot register ${tagName}: an incompatible custom element is already defined.`);
+  const element = container.ownerDocument.createElement(tagName) as T;
   container.append(element);
   return element;
 }

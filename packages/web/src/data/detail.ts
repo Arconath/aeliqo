@@ -59,7 +59,7 @@ export class AeliqoDetailElement extends LitElement {
             : nothing
         }
         ${scope ? html`<p part="scope">${scope}</p>` : nothing}
-        ${status === 'loading' || status === 'empty' || status === 'partial' || status === 'stale' || status === 'error' || status === 'unavailable' ? statusTemplate(status, this.message) : nothing}
+        ${status === 'ready' ? nothing : statusTemplate(status, this.message)}
       </section>
     `;
   }

@@ -10,24 +10,17 @@ import {
 test('legacy deprecation is exact, allowlisted, and points to the migration', () => {
   assert.deepEqual(
     LEGACY_LINEAGES.map((item) => `${item.name}@${item.version}`),
-    [
-      '@aeliqo/core@0.2.0',
-      '@aeliqo/react@0.2.0',
-      '@aeliqo/mcp@0.2.0',
-      '@aeliqo/byok@0.2.0',
-      '@aeliqo/webmcp-experimental@0.2.0',
-      '@aeliqo/sdk-core@0.1.0-rc.1',
-    ],
+    ['@aeliqo/devtools@0.3.0'],
   );
   for (const lineage of LEGACY_LINEAGES) {
-    assert.match(legacyDeprecationMessage(lineage), /incompatible with the supported 0\.1 package identity/);
+    assert.match(legacyDeprecationMessage(lineage), /removed in Aeliqo 0\.4/u);
     assert.match(legacyDeprecationMessage(lineage), new RegExp(MIGRATION_URL.replaceAll('.', '\\.')));
   }
   assert.throws(() => legacyDeprecationMessage({ ...LEGACY_LINEAGES[0] }), /not allowlisted/);
 });
 
 test('exact registry classification fails closed', () => {
-  assert.deepEqual(classifyExactPackage(404, {}, '@aeliqo/core', '0.1.0'), { state: 'absent' });
+  assert.deepEqual(classifyExactPackage(404, {}, '@aeliqo/devtools', '0.3.0'), { state: 'absent' });
   assert.deepEqual(classifyExactPackage(200, { name: '@aeliqo/core', version: '0.2.0' }, '@aeliqo/core', '0.2.0'), {
     state: 'visible',
     deprecated: null,

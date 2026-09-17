@@ -124,7 +124,7 @@ export type IssueActionConfirmation = <T extends ActionPayload = ActionPayload>(
   input: ActionConfirmationRequest<T>,
 ) => Outcome<void> | Promise<Outcome<void>>;
 
-export interface ActionHost {
+interface ActionHost {
   readonly readContext: (
     input: HostContextRequest,
   ) => Outcome<TrustedActionContext> | Promise<Outcome<TrustedActionContext>>;

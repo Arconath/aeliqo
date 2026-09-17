@@ -2,11 +2,11 @@ export { AeliqoRegionElement } from './aeliqo-region.js';
 export {
   AELIQO_CONFIG_SCHEMAS,
   AELIQO_OPERATION_REFS,
-  AELIQO_PRESENTATION_MANIFESTS,
   AELIQO_PRESENTATION_REFS,
   createAeliqoPresentationRegistry,
   createSelectionIdentityMapping,
 } from './registry.js';
+export { AELIQO_PRESENTATION_MANIFESTS } from './default-manifests.js';
 export type {
   AeliqoRegionResult,
   AeliqoRegionSnapshot,

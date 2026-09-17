@@ -54,7 +54,7 @@ const workloads = [
   },
   {
     id: 'input',
-    code: "import {AeliqoInputElement} from '@aeliqo/web/input'; customElements.define('perf-input',AeliqoInputElement);",
+    code: "import {AeliqoTextFieldElement} from '@aeliqo/web/inputs'; customElements.define('perf-input',AeliqoTextFieldElement);",
     budget: 15 * 1024,
     incremental: true,
     direct: true,
@@ -75,12 +75,13 @@ const workloads = [
   },
   {
     id: 'core-planner-validation',
-    code: "import {parseCatalog,parseTask,parseExperience,createQueryPlanner,validatePresentationPlan,composePresentation} from '@aeliqo/core'; globalThis.aeliqoPerformance={parseCatalog,parseTask,parseExperience,createQueryPlanner,validatePresentationPlan,composePresentation};",
+    code: "import {parseCatalog,parseTask,parseExperience} from '@aeliqo/core'; import {validatePresentationPlan,composePresentation} from '@aeliqo/core/presentation'; import {createQueryPlanner} from '@aeliqo/core/query'; globalThis.aeliqoPerformance={parseCatalog,parseTask,parseExperience,createQueryPlanner,validatePresentationPlan,composePresentation};",
     budget: 70 * 1024,
   },
+  // Plan validation has its own budget above; this row measures the mounted region and runtime data path.
   {
     id: 'region-table',
-    code: "import {AeliqoRegionElement,createAeliqoPresentationRegistry} from '@aeliqo/web/region'; import {createLocalDataService} from '@aeliqo/runtime/data'; import {createResultStore} from '@aeliqo/runtime/results'; import {parseTask,validatePresentationPlan,createStandardFunctionRegistry} from '@aeliqo/core'; import {AeliqoTableElement} from '@aeliqo/web/table'; import {createRegionStore} from '@aeliqo/runtime/regions'; import {createTaskEvaluator} from '@aeliqo/runtime/evaluation'; customElements.define('perf-region',AeliqoRegionElement); customElements.define('aeliqo-table',AeliqoTableElement); globalThis.aeliqoPerformance={createRegionStore,createTaskEvaluator,createLocalDataService,createResultStore,createAeliqoPresentationRegistry,parseTask,validatePresentationPlan,createStandardFunctionRegistry};",
+    code: "import {AeliqoRegionElement,createAeliqoPresentationRegistry} from '@aeliqo/web/region'; import {createLocalDataService} from '@aeliqo/runtime/data'; import {createResultStore} from '@aeliqo/runtime/results'; import {parseTask} from '@aeliqo/core'; import {createStandardFunctionRegistry} from '@aeliqo/core/expressions'; import {AeliqoTableElement} from '@aeliqo/web/table'; import {createRegionStore} from '@aeliqo/runtime/regions'; import {createTaskEvaluator} from '@aeliqo/runtime/evaluation'; customElements.define('perf-region',AeliqoRegionElement); customElements.define('aeliqo-table',AeliqoTableElement); globalThis.aeliqoPerformance={createRegionStore,createTaskEvaluator,createLocalDataService,createResultStore,createAeliqoPresentationRegistry,parseTask,createStandardFunctionRegistry};",
     budget: 160 * 1024,
   },
 ];
@@ -137,8 +138,6 @@ for (const workload of workloads) {
     const forbidden = modules.filter(
       (id) =>
         id.includes('@aeliqo/agent/') ||
-        id.includes('@aeliqo/devtools/') ||
-        id.includes('/apps/studio/') ||
         id.startsWith('node:') ||
         id.includes('__vite-browser-external') ||
         (workload.direct &&
