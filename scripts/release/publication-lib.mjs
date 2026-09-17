@@ -199,11 +199,23 @@ export function assertTrustedPublishingContext(environment, sourceRevision) {
   }
 }
 
+function releaseTagVersion(value) {
+  const match = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-rc\.([1-9]\d*))?$/u.exec(value ?? '');
+  if (!match) return undefined;
+  return {
+    base: match.slice(1, 4).map(BigInt),
+    rc: match[4] === undefined ? undefined : BigInt(match[4]),
+  };
+}
+
 function canAdvanceRc(tag, desiredVersion, currentVersion) {
   if (tag !== 'next') return false;
-  const desiredRc = releaseCandidateNumber(desiredVersion);
-  const currentRc = releaseCandidateNumber(currentVersion);
-  return desiredRc !== undefined && currentRc !== undefined && currentRc < desiredRc;
+  const desired = releaseTagVersion(desiredVersion);
+  const current = releaseTagVersion(currentVersion);
+  if (!desired || !current || desired.rc === undefined) return false;
+  const comparison = desired.base.findIndex((part, index) => part !== current.base[index]);
+  if (comparison >= 0) return desired.base[comparison] > current.base[comparison];
+  return current.rc !== undefined && current.rc < desired.rc;
 }
 
 function stableVersionParts(value) {

@@ -47,7 +47,17 @@ production remains on 0.3.
   consumer, and 30 release-tooling tests pass after the rename. The clean
   candidate build now passes for all five tarballs and its installed consumer
   checks 161 exports; the SBOM covers 59 components with zero secret findings.
-  The same-SHA main-branch rerun is pending.
+- The corrected main-branch run, `35266923405` at source
+  `e108daf18cf3a04748cc4f55d1536597f6646c94`, passed all 82 checks, candidate
+  package consumption, web/docs/playground/static-server verification, and
+  production-image smoke. Its uploaded evidence records an unchanged source
+  SHA and zero secret findings in all five tarballs. The RC workflow,
+  `35274859876`, then stopped before publishing because the `next` tag guard
+  compared only RC ordinals and rejected moving from `0.3.0-rc.1` to
+  `0.4.0-rc.1`. A registry preflight confirmed all five `0.4.0-rc.1` versions
+  remain available. The guard now compares the full numeric release base
+  before the RC ordinal, with tests for cross-line advancement and regressions;
+  a clean rerun is pending.
 - `pnpm site:build` and `pnpm site:test` pass. The site visual checks cover the
   landing page, documentation, a component page, and the playground at 360,
   768, and 1440 pixels; all 12 baselines pass. The component visual suite passes

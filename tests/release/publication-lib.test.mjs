@@ -191,6 +191,17 @@ test('trusted publishing and dist-tag movement fail closed', () => {
       versionAlreadyExists: false,
     }),
   );
+  for (const currentVersion of ['0.3.0-rc.1', '0.3.0']) {
+    assert.doesNotThrow(() =>
+      assertTagMayAdvance({
+        name: packages[0].name,
+        tag: 'next',
+        desiredVersion: rc2,
+        currentVersion,
+        versionAlreadyExists: false,
+      }),
+    );
+  }
   assert.throws(
     () =>
       assertTagMayAdvance({
@@ -198,6 +209,28 @@ test('trusted publishing and dist-tag movement fail closed', () => {
         tag: 'next',
         desiredVersion: rc2,
         currentVersion: rc3,
+        versionAlreadyExists: false,
+      }),
+    /Refusing to move/,
+  );
+  assert.throws(
+    () =>
+      assertTagMayAdvance({
+        name: packages[0].name,
+        tag: 'next',
+        desiredVersion: rc2,
+        currentVersion: '0.5.0-rc.1',
+        versionAlreadyExists: false,
+      }),
+    /Refusing to move/,
+  );
+  assert.throws(
+    () =>
+      assertTagMayAdvance({
+        name: packages[0].name,
+        tag: 'next',
+        desiredVersion: rc2,
+        currentVersion: RELEASE_VERSION,
         versionAlreadyExists: false,
       }),
     /Refusing to move/,
