@@ -1,15 +1,16 @@
 # Aeliqo 0.4 implementation record
 
-Status: Aeliqo 0.4.0 is published and deployed from
-`c07a3d3a31eda165822ddfc21b2b1c6af45bb6b6`. The only remaining closeout action
-is deprecating `@aeliqo/devtools@0.3.0`, which is waiting on npm account
+Status: Aeliqo 0.4.1 is published and deployed from
+`c7112872e5de98907d04ec6cae796d0d4890bc8a`. The five stable packages and the
+immutable site image are verified at that source revision. The only remaining
+closeout action is deprecating `@aeliqo/devtools@0.3.0` after npm account
 two-factor authentication; no package deprecation has been applied.
 
 ## Release boundary
 
 - Source branch: `codex/aeliqo-0.4`.
-- Release: breaking `0.4.0` with five public packages: `core`, `runtime`,
-  `web`, `react`, and `agent`.
+- Release: breaking `0.4.0` followed by patch `0.4.1`, with five public
+  packages: `core`, `runtime`, `web`, `react`, and `agent`.
 - Public product: one site application for the landing page, docs, component
   references, playground, and local runner. The site uses one fixed palette;
   component consumers retain token customization.
@@ -27,10 +28,10 @@ two-factor authentication; no package deprecation has been applied.
 | Complete the site, playground, and component documentation    | 71 authored pages, generated routes and previews, browser and visual checks                                   | Complete |
 | Refactor production modules and enforce quality limits        | Oxlint, Knip, typecheck, characterization, package tests, and cross-browser suites                            | Complete |
 | Verify the exact release candidate                            | `pnpm check` (82/82), release tooling, clean tarball consumers, docs artifact, site tests, and bundle budgets | Complete |
-| Publish and cut over                                          | Five `0.4.0` packages and one immutable site image from the accepted commit; smoke-test production            | Complete |
+| Publish and cut over                                          | Five `0.4.1` packages and one immutable site image from the accepted commit; verify production                | Complete |
 | Deprecate the obsolete devtools package                       | Deprecate only `@aeliqo/devtools@0.3.0` after stable cutover                                                  | Pending  |
 
-## Current observed evidence
+## 0.4.0 initial launch evidence (historical)
 
 - `release-metadata.json` declares version `0.4.0` and exactly the five
   intended public packages.
@@ -149,19 +150,57 @@ two-factor authentication; no package deprecation has been applied.
   Complete account authentication before applying the recorded deprecation
   message.
 
+## 0.4.1 patch release and production acceptance
+
+- Accepted source revision: `c7112872e5de98907d04ec6cae796d0d4890bc8a`.
+  The PR quality run `35342799366` and main quality run
+  `35347827121` passed; the main run's `ci.json` records 82 successful checks,
+  the exact source SHA, and `sourceChangedDuringRun: false`.
+- RC workflow `35353021612` published `0.4.1-rc.1` with the `next` tag.
+  Its successful publication record verifies all five package integrities;
+  the installed registry consumer loaded 161 exports and verified npm
+  provenance for every package against the accepted source SHA.
+- Stable workflow `35354951762` published `0.4.1` with the `latest` tag.
+  Its publication record verifies all five package integrities, and its
+  installed registry consumer again loaded 161 exports and verified all five
+  provenance statements. The registry reports `latest=0.4.1` for each package.
+- Production image workflow `35356676229` built
+  `ghcr.io/arconath/aeliqo-web@sha256:9b4ceacd92dc245a3b586823e06df6039b343ce7de4bd9275cb63cb64a898bc8`
+  from the same source and SDK version `0.4.1`. Registry-attached SLSA
+  provenance verified; the SBOM has two components and reports zero
+  vulnerabilities, and the Trivy HIGH/CRITICAL gate exited 0.
+- Promotion workflow `35356838964` completed Flux rollout and live health/version
+  checks. GitOps promotion commit `8e47af1a89330a9435225677c1065596f2c2232f`
+  passed validation run `35356923878`; acceptance record commit
+  `449100c1db8c460f09a5d482d8b1b27a82215dbc` passed validation run
+  `35357128007`. The release evidence records acceptance at
+  `2026-09-18T14:34:34Z`.
+- Live `/version` on both apex and `www` identifies site/SDK `0.4.1` at the
+  accepted source SHA. `/healthz`, `/readyz`, docs, search, the data-table page,
+  and the hosted playground returned HTTP 200. The playground's exact route
+  CSP restricts model connections to `self` and `https://api.deepseek.com`.
+- The direct predecessor image remains available for rollback at
+  `sha256:2d7cf7b34960b4529c761422f08e6f74034765cee9422dfc3e2fdad854a962c8`.
+  The earlier `0.3.0` image at
+  `sha256:084dd71f4115d2319859c43767f282fb4d73ec59bd2b524e1e2bf1d325d7072e`
+  also remains available.
+- `pnpm release:legacy:inspect` reports `@aeliqo/devtools@0.3.0` visible and
+  ready, with no blockers; all five `0.4.1` replacements are visible. The
+  intended deprecation is not yet applied: `npm whoami` returns `E401`, and
+  the npm account requires two-factor authentication.
+
 ## Closeout
 
 Implementation, verification, package publication, and production cutover are
 complete from the single accepted source revision. The remaining closeout action
 is the allowlisted `@aeliqo/devtools@0.3.0` deprecation after npm account
-two-factor authentication. The failed unauthenticated attempt did not change
-the package metadata.
+two-factor authentication. The unauthenticated check did not change package
+metadata.
 
 ## 0.4.1 Playground and component polish
 
-Status: implementation and local acceptance checks are complete for `0.4.1`.
-Production remains on `0.4.0` until the patch passes its clean-commit quality
-and source-bound release checks.
+Status: implementation, release checks, and production acceptance are complete
+for `0.4.1` from `c7112872e5de98907d04ec6cae796d0d4890bc8a`.
 
 The follow-up patch improves the component catalog and adds a hosted,
 user-owned model connection. The hosted flow calls the fixed DeepSeek API
@@ -182,11 +221,10 @@ The implementation milestones are:
 3. Verify all catalog examples and component accessibility, cross-browser
    rendering, responsive site routes, package and site checks, and the static
    image smoke. Use intercepted fake responses only; never test with a billing
-   key or make a real model request. Complete locally.
-4. Review the completed diff, obtain the required DCO attestation, then publish
-   the patch release and deploy an immutable image through the existing
-   source-bound workflows. Confirm live health, version, docs, search, and
-   Playground before closing the milestone. Pending release.
+   key or make a real model request. Complete.
+4. Review the completed diff, obtain the required DCO attestation, publish the
+   patch release, deploy its immutable image, and verify live acceptance.
+   Complete; see the 0.4.1 release and production acceptance record above.
 
 ### Local verification completed 2026-09-18
 
@@ -217,13 +255,12 @@ The implementation milestones are:
   of the complete route-specific `/playground/` Content Security Policy. Its
   `connect-src` permits only the fixed DeepSeek endpoint, with no analytics
   egress. The image was removed after the smoke test.
-- No real provider request or user key was used. The live site remains on
-  `0.4.0`; its `/playground/` response still has the old generic CSP. After
-  cutover, verify the route-specific CSP and provider connection endpoint in
-  addition to health, version, docs, search, and Playground routes.
+- No real provider request or user key was used. The live site is now
+  `0.4.1` at the accepted source SHA. The deployed playground route has the
+  exact tested CSP with `connect-src 'self' https://api.deepseek.com`; live
+  health, readiness, version, docs, search, component, and playground checks
+  passed after Flux rollout.
 
-Milestones 1–3 are complete locally. The source-bound clean-commit check,
-accepted patch commit, registry candidate and stable publication, immutable
-image deployment, and live acceptance remain pending. `pnpm check` must run on
-the clean DCO-signed commit. The user has already authorized deployment and
-specified that online users supply their own keys.
+All four implementation and release milestones are complete. The user
+authorized deployment and specified that online users supply their own keys.
+Only the devtools deprecation remains, pending npm two-factor authentication.
