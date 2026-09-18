@@ -68,14 +68,10 @@ export class AeliqoButtonElement extends AeliqoActionElement {
         white-space: normal;
       }
 
-      button:disabled {
-        cursor: not-allowed;
-        opacity: 0.62;
-      }
-
       button.variant-solid {
         background: var(--aeliqo-color-accent, #4338ca);
         color: var(--aeliqo-color-on-accent, #fff);
+        box-shadow: var(--aeliqo-elevation-raised, 0 0.25rem 0.75rem -0.5rem #0f172a33);
       }
 
       button.variant-outline {
@@ -94,8 +90,32 @@ export class AeliqoButtonElement extends AeliqoActionElement {
         color: var(--aeliqo-color-on-accent, #fff);
       }
 
-      button:not(:disabled):hover {
-        filter: brightness(0.96);
+      button.variant-solid:not(:disabled):hover {
+        background: color-mix(in srgb, var(--aeliqo-color-accent, #4338ca) 90%, var(--aeliqo-color-on-accent, #fff));
+      }
+
+      button.variant-outline:not(:disabled):hover,
+      button.variant-ghost:not(:disabled):hover {
+        background: var(
+          --_aeliqo-accent-subtle,
+          color-mix(in srgb, var(--aeliqo-color-accent, #4338ca) 8%, transparent)
+        );
+      }
+
+      button.variant-danger:not(:disabled):hover {
+        background: color-mix(in srgb, var(--aeliqo-color-danger, #b91c1c) 90%, var(--aeliqo-color-on-accent, #fff));
+      }
+
+      button:not(:disabled):active {
+        transform: translateY(1px);
+      }
+
+      button:disabled {
+        background: var(--aeliqo-color-surface, #f8fafc);
+        border-color: var(--_aeliqo-border-subtle, var(--aeliqo-color-border, #64748b));
+        box-shadow: none;
+        color: var(--aeliqo-color-muted, #4b5563);
+        cursor: not-allowed;
       }
 
       button.size-small {
@@ -135,7 +155,7 @@ export class AeliqoButtonElement extends AeliqoActionElement {
           border-color: ButtonText;
         }
         button:not(:disabled):hover {
-          filter: none;
+          background: ButtonFace;
         }
         button:disabled {
           color: GrayText;

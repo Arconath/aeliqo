@@ -5,10 +5,6 @@ family: 'input'
 contract: 'Explicit inclusive/exclusive boundaries, timezone/calendar policy and keyboard operation.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Stack start and end fields in a narrow form. Keep each label and the range bound
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

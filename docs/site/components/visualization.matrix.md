@@ -5,10 +5,6 @@ family: 'visualization'
 contract: 'Entity-feature comparison preserving row/column association and useful comparison at narrow width.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Temporal columns may need horizontal scrolling. Keep row identity visible and le
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

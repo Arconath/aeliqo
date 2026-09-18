@@ -5,10 +5,6 @@ family: 'data'
 contract: 'Repeated compact records; preserve reading order, headings and bounded loading.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Cards adapt to available width. Let field values wrap and keep each selection co
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

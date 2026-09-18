@@ -5,10 +5,6 @@ family: 'input'
 contract: 'Native submission semantics, draft validation, error summary and explicit host action; rerender never submits.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Stack fields and submit actions on narrow screens. Preserve DOM order and keep v
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

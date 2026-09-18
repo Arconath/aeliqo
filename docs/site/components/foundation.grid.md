@@ -5,10 +5,6 @@ family: 'foundation'
 contract: 'Arrange responsive regions without changing semantic/focus order.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ The item minimum controls how many columns fit. Check the smallest supported wid
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

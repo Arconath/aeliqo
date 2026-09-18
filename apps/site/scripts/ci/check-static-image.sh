@@ -45,6 +45,14 @@ printf '%s\n' "$headers" | grep -qi '^cache-control: no-cache, no-transform'
 printf '%s\n' "$headers" | grep -qi "^content-security-policy: default-src 'self'"
 printf '%s\n' "$headers" | grep -qi '^x-content-type-options: nosniff'
 
+playground_headers="$(curl --fail --silent --head --header 'Host: docs.aeliqo.com' "$base/playground/")"
+playground_csp="$(printf '%s\n' "$playground_headers" | tr -d '\r' | sed -n 's/^[Cc]ontent-Security-Policy: *//p')"
+expected_playground_csp="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'none'; img-src 'self' data:; font-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; script-src 'self'; connect-src 'self' https://api.deepseek.com"
+if [ "$playground_csp" != "$expected_playground_csp" ]; then
+	echo "hosted Playground CSP does not match the fixed-provider policy" >&2
+	exit 1
+fi
+
 curl --fail --silent "$base/" > "$temp_dir/index.html"
 assets="$(grep -Eo '/assets/[^"?[:space:]]+\.(js|css)' "$temp_dir/index.html" | sort -u)"
 test -n "$assets"

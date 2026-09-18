@@ -5,10 +5,6 @@ family: 'data'
 contract: 'Typed predicates, AND/OR/null handling, visible inherited scope and explicit query application.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Stack field, operator, and value controls when space is limited. Keep Apply reac
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

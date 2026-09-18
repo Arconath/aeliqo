@@ -23,14 +23,11 @@ test('public docs artifact binds exact source, packages, API metadata, and runna
   assert.equal(artifact.pages.filter((page) => page.component !== undefined).length, 71);
   assert.ok(artifact.pages.every((page) => page.body.length > 0));
   const componentPages = artifact.pages.filter((page) => page.component !== undefined);
-  assert.equal(componentPages.filter((page) => page.body.includes('component-minimal-example')).length, 71);
+  assert.equal(componentPages.filter((page) => page.body.includes('component-minimal-example')).length, 0);
   for (const page of componentPages) {
-    const subpath = page.component.slice(page.component.indexOf('.') + 1);
-    assert.match(
-      page.body,
-      new RegExp(`@aeliqo/web/${subpath}`, 'u'),
-      `Missing individual import for ${page.component}`,
-    );
+    assert.match(page.body, /data-component-preview=/u, `Missing live preview for ${page.component}`);
+    assert.match(page.body, /data-example-code=/u, `Missing complete source for ${page.component}`);
+    assert.match(page.body, /@aeliqo\/web\//u, `Missing public web package import for ${page.component}`);
     assert.match(page.body, /registerAeliqoElements\(\)/u, `Missing registration example for ${page.component}`);
   }
   assert.match(

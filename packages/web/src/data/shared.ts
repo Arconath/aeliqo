@@ -97,19 +97,40 @@ export const dataStyles = css`
     box-sizing: border-box;
   }
   [part='status'] {
-    margin: 0;
-    padding: var(--aeliqo-space-8, 0.5rem) 0;
+    background: var(--_aeliqo-info-subtle, var(--aeliqo-color-surface, #f8fafc));
+    border-inline-start: 0.1875rem solid var(--aeliqo-color-info, #1d4ed8);
+    border-radius: var(--aeliqo-radius-small, 0.375rem);
+    color: var(--aeliqo-color-info, #1d4ed8);
+    margin: var(--aeliqo-space-8, 0.5rem) 0 0;
+    padding: var(--aeliqo-space-8, 0.5rem) var(--aeliqo-space-12, 0.75rem);
+    overflow-wrap: anywhere;
   }
   [part='status'].error {
+    background: var(--_aeliqo-danger-subtle, var(--aeliqo-color-surface, #f8fafc));
+    border-inline-start-color: var(--aeliqo-color-danger, #b91c1c);
     color: var(--aeliqo-color-danger, #b91c1c);
   }
   [part='status'].partial,
   [part='status'].stale {
+    background: var(--_aeliqo-warning-subtle, var(--aeliqo-color-surface, #f8fafc));
+    border-inline-start-color: var(--aeliqo-color-warning, #854d0e);
     color: var(--aeliqo-color-warning, #854d0e);
   }
   :is(button, input, select, [part='number']):focus-visible {
     outline: var(--aeliqo-focus-width, 0.1875rem) solid var(--aeliqo-color-focus, #4338ca);
     outline-offset: var(--aeliqo-focus-offset, 0.125rem);
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--aeliqo-color-focus, #4338ca) 16%, transparent);
+  }
+  button:not(:disabled):hover {
+    background: var(--_aeliqo-accent-subtle, var(--aeliqo-color-surface, #f8fafc));
+    border-color: var(--aeliqo-color-accent, #4338ca);
+    color: var(--aeliqo-color-accent, #4338ca);
+  }
+  button:disabled {
+    background: var(--aeliqo-color-surface, #f8fafc);
+    border-color: var(--_aeliqo-border-subtle, var(--aeliqo-color-border, #64748b));
+    color: var(--aeliqo-color-muted, #4b5563);
+    cursor: not-allowed;
   }
   [part='scope'] {
     unicode-bidi: plaintext;

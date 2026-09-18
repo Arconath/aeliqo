@@ -5,10 +5,6 @@ family: 'foundation'
 contract: 'Preserve native scrolling, focus visibility, zoom and platform affordances.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Bound its height only when independent scrolling is needed. Keep enough visible 
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

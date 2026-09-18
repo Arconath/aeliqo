@@ -5,10 +5,6 @@ family: 'feedback'
 contract: 'Inline or modal detail according to an explicit mode; do not mix the two focus models.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Inline mode uses its host column; give it the full row when that column is too n
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

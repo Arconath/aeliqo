@@ -5,10 +5,6 @@ family: 'visualization'
 contract: 'Declared edges/cardinality only; deterministic bounded layout with accessible adjacency view.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ The graph viewport can scroll inside its host. Keep labels and keyboard targets 
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

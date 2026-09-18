@@ -5,10 +5,6 @@ family: 'data'
 contract: 'Explicit compatible baseline; zero denominator and percentage-point versus relative change distinguished.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Keep current and baseline context with the change. Stack the values at narrow wi
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

@@ -7,9 +7,9 @@ test('the local runner pairs one browser Region with the three real MCP tools', 
   await page.goto('/playground/');
   await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
   await page.getByRole('button', { name: 'Connected agent' }).click();
-  await page.getByRole('button', { name: 'Check connection' }).click();
+  await page.getByRole('button', { name: 'Check local connection' }).click();
   await expect(page.locator('#pg-connect-status')).toContainText('Local agent host connected');
-  await expect(page.getByRole('textbox', { name: 'Local BYOK prompt' })).toBeDisabled();
+  await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
 
   const token = testInfo.config.metadata.token;
   if (typeof token !== 'string' || token.length === 0) throw new Error('The local-runner test requires an MCP token.');

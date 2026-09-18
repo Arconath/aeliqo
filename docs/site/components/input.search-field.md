@@ -5,10 +5,6 @@ family: 'input'
 contract: 'Explicit/debounced query policy; composition input is not submitted mid-IME.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Let the query field use the available row width. Keep search policy and empty fe
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

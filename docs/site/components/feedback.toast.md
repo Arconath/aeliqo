@@ -5,10 +5,6 @@ family: 'feedback'
 contract: 'Bounded transient feedback; essential errors remain persistently available elsewhere.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Allow long messages to wrap within the available width. Place transient feedback
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

@@ -5,8 +5,15 @@
     <p class="pg-intro-dek">A small, honest tour of the Aeliqo contract.</p>
   </div>
   <div class="pg-intro-copy">
-    <p>Start on the left: choose a scenario, pick a task, and watch the live canvas adapt. Guided and manual modes need no AI.</p>
-    <ol class="pg-intro-flow" aria-label="Playground flow"><li><b>1</b><span>Choose a scenario</span></li><li><b>2</b><span>Send a typed intent</span></li><li><b>3</b><span>Inspect the result</span></li></ol>
+    <p>
+      Start on the left: choose a scenario, pick a task, and watch the live canvas adapt. Guided and manual modes need
+      no AI.
+    </p>
+    <ol class="pg-intro-flow" aria-label="Playground flow">
+      <li><b>1</b><span>Choose a scenario</span></li>
+      <li><b>2</b><span>Send a typed intent</span></li>
+      <li><b>3</b><span>Inspect the result</span></li>
+    </ol>
   </div>
 </header>
 
@@ -72,29 +79,74 @@
         <p class="pg-note">The same runtime works from application code, with no AI connection.</p>
       </section>
       <section id="pg-connected" hidden aria-labelledby="pg-connected-title">
-        <h3 id="pg-connected-title">Connect a local agent</h3>
-        <p>MCP, WebMCP, and BYOK are communication routes into the same bounded tools. Keys stay in your local process.</p>
-        <ol class="pg-connect-steps">
-          <li>Run the local playground host.</li>
-          <li>Connect your agent or local BYOK provider.</li>
-          <li>Ask from the agent; the approved intent appears here.</li>
-        </ol>
+        <h3 id="pg-connected-title">Connect an agent</h3>
+        <p>
+          MCP, WebMCP, and browser BYOK use the same validated Playground tools. Actions still require your
+          confirmation.
+        </p>
         <label
           >Connection<select id="pg-connection-kind" data-playground-boot-control disabled>
-            <option value="detect">Detect local host</option>
+            <option value="detect">Local Playground host</option>
             <option value="webmcp">WebMCP (experimental)</option>
+            <option value="deepseek">DeepSeek BYOK (direct from browser)</option>
           </select></label
         >
-        <button type="button" id="pg-connect" data-playground-boot-control disabled>Check connection</button>
+        <div id="pg-local-connection-controls">
+          <ol class="pg-connect-steps">
+            <li>Run the local playground host.</li>
+            <li>Connect your local agent or WebMCP client.</li>
+            <li>Ask from the agent; the approved intent appears here.</li>
+          </ol>
+          <button type="button" id="pg-connect" data-playground-boot-control disabled>Check local connection</button>
+        </div>
+        <section id="pg-deepseek-controls" class="pg-deepseek" hidden aria-labelledby="pg-deepseek-title">
+          <h4 id="pg-deepseek-title">Use your DeepSeek key</h4>
+          <p class="pg-note">
+            Your browser sends the prompt, selected synthetic scenario context, available tool definitions, and any
+            bounded synthetic metadata returned by tools directly to DeepSeek using <code>deepseek-flash</code>.
+            DeepSeek bills usage to your account. Aeliqo does not receive or proxy your key. The fixed endpoint is
+            <code>https://api.deepseek.com/chat/completions</code>; custom endpoints are not supported.
+          </p>
+          <label class="pg-composer"
+            >DeepSeek API key<input
+              id="pg-deepseek-key"
+              type="password"
+              autocomplete="off"
+              autocapitalize="off"
+              spellcheck="false"
+              maxlength="1024"
+              placeholder="Paste your DeepSeek API key"
+              data-playground-boot-control
+              disabled
+            />
+          </label>
+          <label class="pg-byok-consent">
+            <input id="pg-deepseek-consent" type="checkbox" data-playground-boot-control disabled />
+            <span>
+              I understand that this Playground prompt and its synthetic scenario context go directly to DeepSeek, and
+              that any charges are billed to my DeepSeek account. I consent to connect.
+            </span>
+          </label>
+          <div class="pg-byok-actions">
+            <button type="button" class="primary" id="pg-deepseek-connect" data-playground-boot-control disabled>
+              Connect directly to DeepSeek
+            </button>
+            <button type="button" id="pg-deepseek-disconnect" hidden>Disconnect and clear key</button>
+          </div>
+          <p class="pg-note">
+            The key is held only in this page's memory and is cleared on disconnect, reset, or page close.
+          </p>
+        </section>
         <label class="pg-composer"
-          >Local BYOK prompt<textarea
+          >Prompt<textarea
             id="pg-prompt"
             rows="3"
-            placeholder="Available after a local host is connected"
+            maxlength="1000"
+            placeholder="Available after a connection is ready"
             disabled
           ></textarea>
         </label>
-        <button type="button" class="primary" id="pg-send" disabled>Send to local agent</button>
+        <button type="button" class="primary" id="pg-send" disabled>Send prompt</button>
         <p id="pg-connect-status" class="pg-note" role="status">
           No local host detected. Guided and manual modes remain available.
         </p>
@@ -109,9 +161,7 @@
         </div>
         <span id="pg-view-badge">Waiting for intent</span>
       </header>
-      <p id="pg-status" class="pg-status" role="status" aria-live="polite">
-        Choose a task to render the first view.
-      </p>
+      <p id="pg-status" class="pg-status" role="status" aria-live="polite">Choose a task to render the first view.</p>
       <div id="pg-error" class="pg-error" role="alert" hidden></div>
       <div id="pg-region" class="pg-region" aria-label="Rendered Aeliqo interface"></div>
       <footer class="pg-evidence">

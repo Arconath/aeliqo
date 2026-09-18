@@ -5,10 +5,6 @@ family: 'navigation'
 contract: 'Reversible context path; approved routes and current-location semantics.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Allow long path segments to wrap. Keep the current location clear when the host 
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

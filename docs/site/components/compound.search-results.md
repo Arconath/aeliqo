@@ -5,10 +5,6 @@ family: 'compound'
 contract: 'Query state, collection, scoped result count and details with stale-result protection.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Keep query and revision state above results when detail moves below them. Show s
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

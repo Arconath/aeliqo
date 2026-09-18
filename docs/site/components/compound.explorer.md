@@ -5,10 +5,6 @@ family: 'compound'
 contract: 'Filter plus collection plus selected detail using shared parameter/selection state.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Stack filters, records, and detail in reading order on narrow hosts. Preserve th
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

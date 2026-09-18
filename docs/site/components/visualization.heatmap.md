@@ -5,10 +5,6 @@ family: 'visualization'
 contract: 'Two dimensions and one measure; accessible exact cell values and readable color key.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ The plot and its data view stay in a scrollable viewport. Preserve both dimensio
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

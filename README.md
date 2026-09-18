@@ -16,9 +16,9 @@ Install the packages used by a browser application:
 
 ```sh
 npm install --save-exact \
-  @aeliqo/core@0.4.0 \
-  @aeliqo/runtime@0.4.0 \
-  @aeliqo/web@0.4.0
+  @aeliqo/core@0.4.1 \
+  @aeliqo/runtime@0.4.1 \
+  @aeliqo/web@0.4.1
 ```
 
 The complete [quickstart](https://docs.aeliqo.com/start/) defines a resource,

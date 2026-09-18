@@ -5,10 +5,6 @@ family: 'data'
 contract: 'Scannable records with identity-based selection and reachable additional fields.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Keep rendered row counts bounded for long lists. Preserve stable identity and th
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

@@ -39,7 +39,12 @@ export const aeliqoTableStyles = [
       outline-offset: var(--aeliqo-focus-offset, 0.1875rem);
     }
     table {
-      border-collapse: collapse;
+      background: var(--aeliqo-color-canvas, #fff);
+      border: var(--aeliqo-control-border-width, 0.0625rem) solid
+        var(--_aeliqo-border-subtle, var(--aeliqo-table-rule, var(--aeliqo-color-border, #c9d0d8)));
+      border-collapse: separate;
+      border-radius: var(--aeliqo-radius-medium, 0.625rem);
+      border-spacing: 0;
       min-inline-size: 100%;
     }
     caption {
@@ -50,30 +55,43 @@ export const aeliqoTableStyles = [
     th,
     td {
       border-block-end: var(--aeliqo-control-border-width, 1px) solid
-        var(--aeliqo-table-rule, var(--aeliqo-color-border, #c9d0d8));
-      padding: var(--aeliqo-space-8, 0.5rem) var(--aeliqo-space-12, 0.75rem);
+        var(--aeliqo-table-rule, var(--_aeliqo-border-subtle, var(--aeliqo-color-border, #c9d0d8)));
+      padding: var(--aeliqo-space-12, 0.75rem) var(--aeliqo-space-16, 1rem);
       text-align: start;
       vertical-align: top;
     }
     th {
       background: var(--aeliqo-table-heading-background, var(--aeliqo-color-surface, #eef2f5));
       font-weight: var(--aeliqo-typography-font-weight-semibold, 600);
+      text-align: start;
+    }
+    tbody tr:not([data-selected]):hover td {
+      background: var(--_aeliqo-accent-subtle, var(--aeliqo-color-surface, #f8fafc));
     }
     th [part='sort'],
     [part='grid-row'] [part='sort'] {
       background: transparent;
       border: 0;
+      border-radius: var(--aeliqo-radius-small, 0.375rem);
       color: inherit;
       cursor: pointer;
       font: inherit;
       inline-size: 100%;
       min-block-size: var(--aeliqo-control-compact-target, 2rem);
-      padding: 0;
+      padding: 0 var(--aeliqo-space-4, 0.25rem);
       text-align: inherit;
+    }
+    th [part='sort']:hover,
+    [part='grid-row'] [part='sort']:hover {
+      background: var(--_aeliqo-accent-subtle, var(--aeliqo-color-surface, #f8fafc));
+      color: var(--aeliqo-color-accent, #4338ca);
     }
     tr[data-selected] td,
     [part='grid-row'][data-selected] {
-      background: color-mix(in srgb, var(--aeliqo-color-accent, #4338ca) 9%, transparent);
+      background: var(
+        --_aeliqo-accent-selected,
+        color-mix(in srgb, var(--aeliqo-color-accent, #4338ca) 9%, transparent)
+      );
     }
     [part='grid'] {
       min-inline-size: max-content;
@@ -81,6 +99,9 @@ export const aeliqoTableStyles = [
     [part='grid-row'] {
       align-items: stretch;
       display: grid;
+    }
+    [part='grid-row']:not([data-selected]):hover {
+      background: var(--_aeliqo-accent-subtle, var(--aeliqo-color-surface, #f8fafc));
     }
     [part='grid-head'] [part='grid-row'] {
       font-weight: var(--aeliqo-typography-font-weight-semibold, 600);
@@ -90,9 +111,9 @@ export const aeliqoTableStyles = [
     [part='grid-row'] [part='selection-cell'],
     [part='grid-head'] [part='grid-row'] > * {
       border-block-end: var(--aeliqo-control-border-width, 1px) solid
-        var(--aeliqo-table-rule, var(--aeliqo-color-border, #c9d0d8));
+        var(--aeliqo-table-rule, var(--_aeliqo-border-subtle, var(--aeliqo-color-border, #c9d0d8)));
       min-inline-size: 9rem;
-      padding: var(--aeliqo-space-8, 0.5rem) var(--aeliqo-space-12, 0.75rem);
+      padding: var(--aeliqo-space-12, 0.75rem) var(--aeliqo-space-16, 1rem);
     }
     [part='grid-head'] [part='grid-row'] > * {
       background: var(--aeliqo-table-heading-background, var(--aeliqo-color-surface, #eef2f5));
@@ -129,7 +150,8 @@ export const aeliqoTableStyles = [
     }
     [part='pagination'] button {
       background: var(--aeliqo-color-surface, #fff);
-      border: var(--aeliqo-control-border-width, 0.0625rem) solid var(--aeliqo-color-border, #94a3b8);
+      border: var(--aeliqo-control-border-width, 0.0625rem) solid
+        var(--_aeliqo-border-subtle, var(--aeliqo-color-border, #94a3b8));
       border-radius: var(--aeliqo-radius-small, 0.375rem);
       color: inherit;
       cursor: pointer;
@@ -137,7 +159,14 @@ export const aeliqoTableStyles = [
       min-block-size: var(--aeliqo-control-compact-target, 2rem);
       padding-inline: var(--aeliqo-space-8, 0.5rem);
     }
+    [part='pagination'] button:not(:disabled):hover {
+      background: var(--_aeliqo-accent-subtle, var(--aeliqo-color-surface, #f8fafc));
+      border-color: var(--aeliqo-color-accent, #4338ca);
+      color: var(--aeliqo-color-accent, #4338ca);
+    }
     [part='pagination'] button:disabled {
+      background: var(--aeliqo-color-surface, #f8fafc);
+      border-color: var(--_aeliqo-border-subtle, var(--aeliqo-color-border, #94a3b8));
       color: var(--aeliqo-color-muted, #64748b);
       cursor: not-allowed;
     }
@@ -146,6 +175,9 @@ export const aeliqoTableStyles = [
         overflow: visible;
       }
       :host([data-reflow='stack']) table {
+        border: 0;
+        box-shadow: inset 0 0 0 var(--aeliqo-control-border-width, 0.0625rem)
+          var(--_aeliqo-border-subtle, var(--aeliqo-table-rule, var(--aeliqo-color-border, #c9d0d8)));
         display: block;
         inline-size: 100%;
         min-inline-size: 0;
@@ -171,7 +203,7 @@ export const aeliqoTableStyles = [
       }
       :host([data-reflow='stack']) tr {
         border-block-end: var(--aeliqo-control-border-width, 1px) solid
-          var(--aeliqo-table-rule, var(--aeliqo-color-border, #c9d0d8));
+          var(--aeliqo-table-rule, var(--_aeliqo-border-subtle, var(--aeliqo-color-border, #c9d0d8)));
         display: block;
         padding-block: var(--aeliqo-space-4, 0.25rem);
       }

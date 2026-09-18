@@ -5,10 +5,6 @@ family: 'input'
 contract: 'Bounded quantity with keyboard and text alternative; steps and units are declared.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Give the track its own row in narrow forms. Keep its numeric label and unit visi
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

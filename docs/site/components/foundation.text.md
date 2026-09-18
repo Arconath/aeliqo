@@ -5,10 +5,6 @@ family: 'foundation'
 contract: 'Render trusted/plain text with locale and wrapping; no untrusted HTML interpolation.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Text follows its parent width. Allow long values to wrap and avoid fixed-height 
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

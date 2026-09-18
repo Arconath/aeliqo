@@ -1,8 +1,9 @@
 # Aeliqo 0.4 implementation record
 
-Status: implementation complete; candidate verification, publication, and
-production cutover are pending. No 0.4 package has been published, and
-production remains on 0.3.
+Status: Aeliqo 0.4.0 is published and deployed from
+`c07a3d3a31eda165822ddfc21b2b1c6af45bb6b6`. The only remaining closeout action
+is deprecating `@aeliqo/devtools@0.3.0`, which is waiting on npm account
+two-factor authentication; no package deprecation has been applied.
 
 ## Release boundary
 
@@ -20,13 +21,14 @@ production remains on 0.3.
 
 ## Milestones
 
-| Milestone                                                     | Evidence                                                                                                      | State       |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ----------- |
-| Consolidate the public workspace and remove obsolete surfaces | Workspace manifests, package exports, routes, and consumer tests                                              | Complete    |
-| Complete the site, playground, and component documentation    | 71 authored pages, generated routes and previews, browser and visual checks                                   | Complete    |
-| Refactor production modules and enforce quality limits        | Oxlint, Knip, typecheck, characterization, package tests, and cross-browser suites                            | Complete    |
-| Verify the exact release candidate                            | `pnpm check` (82/82), release tooling, clean tarball consumers, docs artifact, site tests, and bundle budgets | In progress |
-| Publish and cut over                                          | Five `0.4.0` packages and one immutable site image from the accepted commit; smoke-test production            | Pending     |
+| Milestone                                                     | Evidence                                                                                                      | State    |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | -------- |
+| Consolidate the public workspace and remove obsolete surfaces | Workspace manifests, package exports, routes, and consumer tests                                              | Complete |
+| Complete the site, playground, and component documentation    | 71 authored pages, generated routes and previews, browser and visual checks                                   | Complete |
+| Refactor production modules and enforce quality limits        | Oxlint, Knip, typecheck, characterization, package tests, and cross-browser suites                            | Complete |
+| Verify the exact release candidate                            | `pnpm check` (82/82), release tooling, clean tarball consumers, docs artifact, site tests, and bundle budgets | Complete |
+| Publish and cut over                                          | Five `0.4.0` packages and one immutable site image from the accepted commit; smoke-test production            | Complete |
+| Deprecate the obsolete devtools package                       | Deprecate only `@aeliqo/devtools@0.3.0` after stable cutover                                                  | Pending  |
 
 ## Current observed evidence
 
@@ -34,10 +36,12 @@ production remains on 0.3.
   intended public packages.
 - The component catalog and `docs/site/components/` currently contain the same
   71 IDs.
-- `pnpm check` has passed all 82 commands on a clean commit. Its report records
-  the exact source revision, `status: passed`, and
-  `sourceChangedDuringRun: false`. The main-branch quality workflow must repeat
-  the gate on the accepted source SHA and upload its evidence before release.
+- The accepted source revision is
+  `c07a3d3a31eda165822ddfc21b2b1c6af45bb6b6`. A clean-commit `pnpm check`
+  passed all 82 commands, and the main-branch quality run `35277635840` passed
+  on the same SHA. Its uploaded evidence records `status: passed`,
+  `sourceChangedDuringRun: false`, all five package identities, and zero secret
+  findings in source and packed artifacts.
 - The first main-branch run, `35256561324` at source
   `e554464deb92c1b70e30f5f62f8ea724b7c93708`, passed `pnpm check` (82/82) but
   then rejected the generated `connection-secret.d.ts` filename during the
@@ -54,10 +58,11 @@ production remains on 0.3.
   SHA and zero secret findings in all five tarballs. The RC workflow,
   `35274859876`, then stopped before publishing because the `next` tag guard
   compared only RC ordinals and rejected moving from `0.3.0-rc.1` to
-  `0.4.0-rc.1`. A registry preflight confirmed all five `0.4.0-rc.1` versions
-  remain available. The guard now compares the full numeric release base
-  before the RC ordinal, with tests for cross-line advancement and regressions;
-  a clean rerun is pending.
+  `0.4.0-rc.1`. The guard now compares the full numeric release base before the
+  RC ordinal, with tests for cross-line advancement and regressions. The final
+  RC workflow `35285582550` succeeded after npm registry propagation delays;
+  all five exact tarballs were installed, 161 exports loaded, and provenance
+  for each package was verified against the accepted SHA.
 - `pnpm site:build` and `pnpm site:test` pass. The site visual checks cover the
   landing page, documentation, a component page, and the playground at 360,
   768, and 1440 pixels; all 12 baselines pass. The component visual suite passes
@@ -113,41 +118,112 @@ production remains on 0.3.
 - A fresh dirty-tree image built after the resize and lifecycle fixes, tagged
   `aeliqo-site:dirty-preflight-20260917-stale-callback`, passed the static-image
   smoke for health, readiness, version, security headers, asset caching, 404
-  handling, and shutdown drain. The disposable image was removed. The
-  clean-commit, source-bound production image build, provenance/SBOM scan, and
-  production rollout remain pending. The `site-release.yml` workflow builds
-  the immutable image from main and starts GitOps promotion;
-  `production-promotion.yml` verifies Flux rollout and records live version
-  evidence.
+  handling, and shutdown drain. The disposable image was removed. The production
+  image and rollout are now verified below.
 - Vite reports a 649.92 kB raw / 167.83 kB gzip main application chunk;
-  the repository has no separate site chunk-size limit. The live 0.3 edge
-  serves its JavaScript with Brotli, but 0.4 edge transfer remains unverified
-  until release.
-- Read-only checks on 2026-09-17 of `aeliqo.com`, `www.aeliqo.com`, and
-  `docs.aeliqo.com` report production `0.3.0` at site and SDK revision
-  `285967a4d310a5e47f62592bb577aa9ca47ce097`; health, search, component, and
-  playground routes respond. The previous production image digest
-  `sha256:084dd71f4115d2319859c43767f282fb4d73ec59bd2b524e1e2bf1d325d7072e`
-  remains available from GHCR for rollback and is the digest pinned in current
-  GitOps main. The recorded production scan reports no HIGH or CRITICAL
-  vulnerabilities.
-- The production image now copies `docs/site/` into its build context, and the
-  release workflow checks candidate package names against the canonical
-  package list. No package has been published and production remains on 0.3.
+  the repository has no separate site chunk-size limit. This is a build-size
+  observation, not a runtime-performance budget.
+- The final stable publication run `35287340514` published and verified the
+  five `0.4.0` packages with the `latest` tag. Its clean registry consumer
+  loaded 161 exports, matched every candidate integrity, and verified npm
+  provenance for all five packages against the same source SHA. The approved
+  RC predecessor was also reinstalled and verified by that run.
+- The production image run `35287581917` published immutable digest
+  `sha256:2d7cf7b34960b4529c761422f08e6f74034765cee9422dfc3e2fdad854a962c8`
+  from the same source SHA and SDK `0.4.0`. Its registry-attached SLSA
+  provenance was verified; the SBOM reports two components and zero
+  vulnerabilities, and the Trivy HIGH/CRITICAL gate found none.
+- GitOps promotion run `35287680190` moved production to that digest and
+  completed Flux acceptance. Promotion commit `0740c2a856ee4d3fde871fb4e68eb64447b0ffb1`
+  was followed by acceptance-record commit
+  `c07a487b9a93da0327b7322b2f39f5c0e3efebf2`. The live `/version` response
+  reports SDK/site `0.4.0` at the accepted source SHA. `/healthz`, `/readyz`,
+  the landing page, docs, search, component page, and playground all returned
+  HTTP 200; `/docs/` and `/playground/` resolve to `docs.aeliqo.com`.
+- The previous production image remains recorded for rollback at digest
+  `sha256:084dd71f4115d2319859c43767f282fb4d73ec59bd2b524e1e2bf1d325d7072e`.
+- `pnpm release:legacy:inspect` reports the allowlisted
+  `@aeliqo/devtools@0.3.0` lineage as visible and ready, with no blockers. The
+  apply step has not changed npm metadata: local `npm whoami` returns `E401`,
+  and npm's package-settings flow is gated by account two-factor verification.
+  Complete account authentication before applying the recorded deprecation
+  message.
 
-## Required closeout
+## Closeout
 
-The new DCO-signed source commit must pass all 82 `pnpm check` commands on a
-clean tree, the candidate tarball build, and the same-SHA main-branch workflow.
-Publish `0.4.0-rc.1` with the `next` tag, verify all five registry packages in a
-clean consumer, then publish `0.4.0` with the `latest` tag tied to that exact RC
-run and source SHA. Dispatch the site release from the same main SHA; verify
-the immutable image, GitOps revision, Flux rollout, `/healthz`, `/readyz`,
-`/version`, and the landing, docs, component, search, and playground routes.
-Keep the previous image available for rollback. After the stable packages and
-site are live, deprecate the allowlisted `@aeliqo/devtools@0.3.0` lineage and
-record the accepted source SHA and release evidence here.
+Implementation, verification, package publication, and production cutover are
+complete from the single accepted source revision. The remaining closeout action
+is the allowlisted `@aeliqo/devtools@0.3.0` deprecation after npm account
+two-factor authentication. The failed unauthenticated attempt did not change
+the package metadata.
 
-The current local npm identity is unauthenticated (`npm whoami` returns 401),
-and the repository has no npm token secret. Trusted publishing covers package
-publication; legacy deprecation still needs npm authentication after cutover.
+## 0.4.1 Playground and component polish
+
+Status: implementation and local acceptance checks are complete for `0.4.1`.
+Production remains on `0.4.0` until the patch passes its clean-commit quality
+and source-bound release checks.
+
+The follow-up patch improves the component catalog and adds a hosted,
+user-owned model connection. The hosted flow calls the fixed DeepSeek API
+directly from the user's browser with the user's key. It does not proxy model
+traffic, use an Aeliqo credential, or add a model endpoint to the static site
+server. The page discloses provider data egress and user-billed usage before
+opt-in; the key stays in page memory and clears when the connection ends or the
+page unloads. The existing bounded tool loop, application-owned grants, and
+explicit write confirmation remain in place.
+
+The implementation milestones are:
+
+1. Refine shared component surfaces, typography, spacing, controls, and states
+   while preserving public APIs and the current light/indigo identity. Complete.
+2. Add the fixed-provider BYOK flow, exact-route Content Security Policy,
+   disclosure, credential clearing, bounded requests, and fake-provider browser
+   tests. Document the hosted and local flows separately. Complete.
+3. Verify all catalog examples and component accessibility, cross-browser
+   rendering, responsive site routes, package and site checks, and the static
+   image smoke. Use intercepted fake responses only; never test with a billing
+   key or make a real model request. Complete locally.
+4. Review the completed diff, obtain the required DCO attestation, then publish
+   the patch release and deploy an immutable image through the existing
+   source-bound workflows. Confirm live health, version, docs, search, and
+   Playground before closing the milestone. Pending release.
+
+### Local verification completed 2026-09-18
+
+- `pnpm site:test` passes unit and type checks, the production site build, 8
+  site browser tests, 6 fake-provider BYOK tests, 2 local-runner tests, 11
+  documentation navigation tests, 9 responsive tests, the document-layout
+  test, Go server tests, 8 provenance tests, and all 12 visual baselines at
+  360, 768, and 1440 pixels.
+- `pnpm test:visual` passes its full suite in Chromium, Firefox, and WebKit.
+  Each engine passes 142 catalog cases, 84 field states, 30 data states, 38
+  structural states, and the data, compound, and visualization interaction
+  cases. The suite exposed a transient filter-builder contrast issue and a
+  hover-state contrast conflict on the empty-state action; both are fixed and
+  verified in the full matrix.
+- `pnpm test:components:a11y` passes all 12 tests. `pnpm format:check` and
+  `pnpm lint` pass; lint includes 11 quality-policy tests, Oxlint, TypeScript
+  lint, Knip, and site verification. Knip exits successfully with configuration
+  hints.
+- `pnpm test:docs-artifact` verifies 121 public pages and all 71 components;
+  artifact SHA-256 is
+  `fe3fe44cdea0a9047d781af7d933e33961fa4f63192cc13b18f2600dd3151eff`.
+  `pnpm test:catalog-examples` passes all three catalog example groups.
+- `pnpm test:performance:bundles` passes all six budgets. Core planner is
+  62,847 bytes gzip against 71,680 bytes; region table is 159,060 bytes against
+  163,840 bytes.
+- A disposable local `0.4.1` site image passed
+  `apps/site/scripts/ci/check-static-image.sh`, including an exact comparison
+  of the complete route-specific `/playground/` Content Security Policy. Its
+  `connect-src` permits only the fixed DeepSeek endpoint, with no analytics
+  egress. The image was removed after the smoke test.
+- No real provider request or user key was used. The live site remains on
+  `0.4.0`; its `/playground/` response still has the old generic CSP. After
+  cutover, verify the route-specific CSP and provider connection endpoint in
+  addition to health, version, docs, search, and Playground routes.
+
+Milestones 1–3 are complete locally. The source-bound clean-commit check,
+accepted patch commit, registry candidate and stable publication, immutable
+image deployment, and live acceptance remain pending. `pnpm check` must run on
+the clean DCO-signed commit. The user has already authorized deployment and
+specified that online users supply their own keys.

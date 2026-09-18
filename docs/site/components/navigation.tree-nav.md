@@ -5,10 +5,6 @@ family: 'navigation'
 contract: 'Hierarchical navigation with stable node identities, expansion and keyboard semantics.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Allow long node labels to wrap inside the tree. Keep the selected item and expan
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

@@ -5,10 +5,6 @@ family: 'input'
 contract: 'Multiline editing preserves draft, selection and composition across unrelated updates.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Rows set the starting height. Keep the draft readable when the form narrows and 
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

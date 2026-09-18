@@ -5,10 +5,6 @@ family: 'input'
 contract: 'Group related controls with legend, descriptions and coordinated validation.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Allow child controls to stack under the legend. Keep the legend and description 
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

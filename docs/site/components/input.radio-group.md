@@ -5,10 +5,6 @@ family: 'input'
 contract: 'One selected option; native semantics or APG-equivalent keyboard behavior.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Vertical orientation suits narrow forms. Let long option labels wrap without cha
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

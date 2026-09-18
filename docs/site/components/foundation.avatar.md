@@ -5,10 +5,6 @@ family: 'foundation'
 contract: 'Display optional identity image; fallback initials and privacy-safe alt policy.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Avatar uses its selected size. Pair it with wrapping identity text when initials
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

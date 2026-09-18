@@ -15,9 +15,9 @@ description: "Define People, connect permitted local records, mount a Region, an
 
 ```sh
 npm install --save-exact \
-  @aeliqo/core@0.4.0 \
-  @aeliqo/runtime@0.4.0 \
-  @aeliqo/web@0.4.0
+  @aeliqo/core@0.4.1 \
+  @aeliqo/runtime@0.4.1 \
+  @aeliqo/web@0.4.1
 ```
 
 

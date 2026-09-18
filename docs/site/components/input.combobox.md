@@ -5,10 +5,6 @@ family: 'input'
 contract: 'Searchable choice with APG behavior; stale remote options cannot overwrite current input.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Keep the query draft and selected value distinct at narrow widths. Test long opt
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

@@ -5,10 +5,6 @@ family: 'data'
 contract: 'One validated value or aggregate with units, scope and unavailable state.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Let long labels and formatted values wrap instead of clipping. Keep the unit vis
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

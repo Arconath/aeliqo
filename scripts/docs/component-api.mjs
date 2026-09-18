@@ -53,6 +53,12 @@ function sourceForImport(program, source, specifier) {
   return program.getSourceFile(path);
 }
 
+function cachedSourceForImport(sources, source, specifier) {
+  if (!specifier.startsWith('.')) return undefined;
+  const path = resolve(dirname(source.fileName), specifier.replace(/\.js$/u, '.ts'));
+  return sources.get(path);
+}
+
 function importedNames(statement) {
   const names = [];
   const clause = statement.importClause;
@@ -197,21 +203,23 @@ function exportedBounds(source, program) {
   });
 }
 
-function collectSourceClasses(classes, program, root, repositoryRoot) {
+function collectSourceClasses(classes, program, root, repositoryRoot, sourceFiles) {
   for (const path of program.getSourceFileNames()) {
     if (!path.startsWith(root + '/') || path.endsWith('.d.ts')) continue;
-    const source = program.getSourceFile(path);
-    if (source) collectClassesFromSource(classes, source, repositoryRoot, program);
+    const source = sourceFiles.get(path);
+    if (source) collectClassesFromSource(classes, source, repositoryRoot, program, root, sourceFiles);
   }
 }
 
-function collectClassesFromSource(classes, source, repositoryRoot, program) {
+function collectClassesFromSource(classes, source, repositoryRoot, program, root, sourceFiles) {
   const sourceBounds = exportedBounds(source, program);
   for (const node of source.statements) {
     if (!ts.isClassDeclaration(node) || !node.name) continue;
     classes.set(node.name.text, {
       node,
       source,
+      sourceFiles,
+      sourceRoot: root,
       repositoryRoot,
       cssText: componentCss(node, source, program),
       bounds: [...boundSentences(node, source, program), ...sourceBounds],
@@ -229,7 +237,13 @@ export async function loadComponentSources(root) {
     const snapshot = api.updateSnapshot({ openProjects: [config] });
     const project = snapshot.getProject(config);
     if (!project) throw Error('Component TypeScript project is unavailable.');
-    collectSourceClasses(classes, project.program, root, repositoryRoot);
+    const sourceFiles = new Map(
+      project.program.getSourceFileNames().flatMap((path) => {
+        const source = project.program.getSourceFile(path);
+        return source === undefined ? [] : [[path, source]];
+      }),
+    );
+    collectSourceClasses(classes, project.program, root, repositoryRoot, sourceFiles);
     return classes;
   } finally {
     api.close();
@@ -280,6 +294,20 @@ function isPublicPropertyMember(member) {
   );
 }
 
+function publicPropertyType(member, source) {
+  if (member.type !== undefined) return member.type.getText(source);
+  const initializer = member.initializer;
+  if (initializer && (ts.isStringLiteral(initializer) || ts.isNoSubstitutionTemplateLiteral(initializer)))
+    return 'string';
+  if (initializer && ts.isNumericLiteral(initializer)) return 'number';
+  if (
+    initializer &&
+    (initializer.kind === ts.SyntaxKind.TrueKeyword || initializer.kind === ts.SyntaxKind.FalseKeyword)
+  )
+    return 'boolean';
+  return 'inferred from initializer';
+}
+
 function collectProperties(metadata, node, source) {
   for (const member of node.members) {
     if (!isPublicPropertyMember(member)) continue;
@@ -288,7 +316,7 @@ function collectProperties(metadata, node, source) {
     const initial = member.initializer?.getText(source) ?? 'undefined';
     metadata.properties.set(key, {
       name: key,
-      type: member.type?.getText(source) ?? 'inferred in public declaration',
+      type: publicPropertyType(member, source),
       default: initial.length > 120 ? 'See source initializer' : initial,
     });
   }
@@ -303,9 +331,80 @@ function collectTemplateFacts(metadata, text, cssText) {
 function collectSemantics(metadata, text) {
   for (const match of text.matchAll(/\b(aria-[a-z-]+|role)\s*=/g)) metadata.semantics.add(match[1]);
   for (const match of text.matchAll(
-    /<(button|input|select|textarea|form|a|table|caption|thead|tbody|tr|th|td|ul|ol|li|dl|dt|dd|section|header|nav|dialog|progress|output)\b/gi,
+    /<(button|input|select|textarea|form|a|figure|figcaption|svg|table|caption|thead|tbody|tr|th|td|ul|ol|li|dl|dt|dd|section|header|nav|dialog|progress|output)\b/gi,
   ))
     metadata.semantics.add(match[1].toLowerCase());
+}
+
+function functionDeclaration(source, name) {
+  for (const statement of source.statements) {
+    if (ts.isFunctionDeclaration(statement) && statement.name?.text === name) return statement;
+    if (!ts.isVariableStatement(statement)) continue;
+    for (const declaration of statement.declarationList.declarations) {
+      if (!ts.isIdentifier(declaration.name) || declaration.name.text !== name) continue;
+      if (
+        declaration.initializer &&
+        (ts.isArrowFunction(declaration.initializer) || ts.isFunctionExpression(declaration.initializer))
+      )
+        return declaration.initializer;
+    }
+  }
+  return undefined;
+}
+
+function importedFunction(source, name, sources, allowedRoot) {
+  for (const statement of source.statements) {
+    const resolved = importedFunctionFromStatement(source, statement, name, sources, allowedRoot);
+    if (resolved) return resolved;
+  }
+  return undefined;
+}
+
+function importedFunctionFromStatement(source, statement, name, sources, allowedRoot) {
+  if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) return undefined;
+  const bindings = statement.importClause?.namedBindings;
+  if (!bindings || !ts.isNamedImports(bindings)) return undefined;
+  const specifier = bindings.elements.find((element) => element.name.text === name);
+  if (!specifier) return undefined;
+  const imported = cachedSourceForImport(sources, source, statement.moduleSpecifier.text);
+  if (!imported || relative(allowedRoot, imported.fileName).startsWith('..')) return undefined;
+  const exportName = specifier.propertyName?.text ?? specifier.name.text;
+  const declaration = functionDeclaration(imported, exportName);
+  return declaration ? { source: imported, declaration } : undefined;
+}
+
+function calledFunctionNames(node) {
+  const names = new Set();
+  visit(node, (current) => {
+    if (ts.isCallExpression(current) && ts.isIdentifier(current.expression)) names.add(current.expression.text);
+  });
+  return names;
+}
+
+function reachableFunctionText(source, declaration, sources, allowedRoot, seen) {
+  const name = declaration.name?.getText(source) ?? declaration.getText(source).slice(0, 80);
+  const key = `${source.fileName}:${name}`;
+  if (seen.has(key)) return '';
+  seen.add(key);
+  const text = declaration.getText(source);
+  const dependencies = [...calledFunctionNames(declaration)].flatMap((called) => {
+    const local = functionDeclaration(source, called);
+    const imported = local ? undefined : importedFunction(source, called, sources, allowedRoot);
+    const next = local ? { source, declaration: local } : imported;
+    return next ? [reachableFunctionText(next.source, next.declaration, sources, allowedRoot, seen)] : [];
+  });
+  return [text, ...dependencies].join('\n');
+}
+
+function componentBehaviorText(item) {
+  const seen = new Set();
+  const helpers = [...calledFunctionNames(item.node)].flatMap((called) => {
+    const local = functionDeclaration(item.source, called);
+    const imported = local ? undefined : importedFunction(item.source, called, item.sourceFiles, item.sourceRoot);
+    const next = local ? { source: item.source, declaration: local } : imported;
+    return next ? [reachableFunctionText(next.source, next.declaration, item.sourceFiles, item.sourceRoot, seen)] : [];
+  });
+  return helpers.join('\n');
 }
 
 function collectSizing(metadata, cssText) {
@@ -317,10 +416,11 @@ function collectClassMetadata(metadata, item) {
   const { node, source, repositoryRoot, cssText } = item;
   metadata.sourceFiles.add(relative(repositoryRoot, source.fileName).replaceAll('\\', '/'));
   const text = node.getText(source);
+  const behaviorText = componentBehaviorText(item);
   collectDependencies(metadata, source, text);
   collectProperties(metadata, node, source);
-  collectTemplateFacts(metadata, text, cssText);
-  collectSemantics(metadata, text);
+  collectTemplateFacts(metadata, `${text}\n${behaviorText}`, cssText);
+  collectSemantics(metadata, `${text}\n${behaviorText}`);
   collectSizing(metadata, cssText);
   for (const sentence of item.bounds) metadata.bounds.add(sentence);
 }

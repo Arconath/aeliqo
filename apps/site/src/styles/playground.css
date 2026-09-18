@@ -295,6 +295,53 @@
   font-size: 0.76rem;
   line-height: 1.6;
 }
+.pg-deepseek {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 0.9rem;
+  background: var(--surface-raised);
+}
+.pg-deepseek h4 {
+  margin: 0;
+  color: var(--text);
+  font-size: var(--type-label);
+}
+.pg-deepseek p {
+  margin: 0;
+}
+.pg-deepseek code {
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 0.68rem;
+}
+.pg-byok-consent {
+  display: grid !important;
+  grid-template-columns: 1rem minmax(0, 1fr);
+  align-items: start;
+  gap: 0.65rem !important;
+  color: var(--text) !important;
+  font-size: var(--type-compact-readable) !important;
+  font-weight: var(--weight-regular) !important;
+  line-height: var(--line-body);
+}
+.pg-byok-consent input {
+  width: 1rem;
+  min-height: 1rem;
+  margin: 0.16rem 0 0;
+  padding: 0;
+  accent-color: var(--accent);
+}
+.pg-byok-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.pg-byok-actions button {
+  min-height: 2.5rem;
+}
+.pg-byok-actions button[hidden] {
+  display: none;
+}
 .pg-composer textarea {
   resize: vertical;
 }

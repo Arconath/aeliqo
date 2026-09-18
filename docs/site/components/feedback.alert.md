@@ -5,10 +5,6 @@ family: 'feedback'
 contract: 'Persistent status/error with severity semantics and actionable recovery.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Let the message and its actions wrap together. Keep dismissal available without 
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

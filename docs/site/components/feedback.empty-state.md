@@ -5,10 +5,6 @@ family: 'feedback'
 contract: 'Distinguish no records, no matches, forbidden data, loading and failure.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Keep the recovery action visible when the page narrows. Let the explanation wrap
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

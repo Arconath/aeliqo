@@ -1,6 +1,8 @@
 import type { Intent } from '@aeliqo/core';
-import type { AeliqoAppActionEvent, WebRenderReceipt } from '@aeliqo/web/app';
+import type { WebRenderReceipt } from '@aeliqo/web/app';
+import { createActionReviewController } from './action-review.js';
 import { checkConnection, sendLocalPrompt } from './connection-controller.js';
+import { createHostedDeepSeekControls } from './deepseek-controls.js';
 import { evidenceFor, type InspectorSection, type PlaygroundEvidence } from './inspect.js';
 import { connectLocalHost, type LocalHostConnection } from './local-host.js';
 import { PLAYGROUND_SCENARIOS, type PlaygroundScenario, type ScenarioId } from './scenarios.js';
@@ -47,6 +49,7 @@ const actionStatus = required<HTMLElement>('#pg-action-status');
 const actionCancel = required<HTMLButtonElement>('#pg-action-cancel');
 const actionConfirm = required<HTMLButtonElement>('#pg-action-confirm');
 const connectionKind = required<HTMLSelectElement>('#pg-connection-kind');
+const localConnectionControls = required<HTMLElement>('#pg-local-connection-controls');
 const connectionStatus = required<HTMLElement>('#pg-connect-status');
 const connectionLabel = required<HTMLElement>('#pg-connection-label');
 const connectionDot = required<HTMLElement>('#pg-connection-dot');
@@ -59,11 +62,10 @@ let activeRequest: AbortController | undefined;
 let session: PlaygroundSession;
 let last: PlaygroundEvidence = {};
 let inspectorSection: InspectorSection = 'intent';
-let pendingAction: Extract<AeliqoAppActionEvent, { readonly state: 'preview' }> | undefined;
-let actionReturnFocus: HTMLElement | undefined;
-let connection: 'none' | 'local' | 'webmcp' = 'none';
+let connection: 'none' | 'local' | 'webmcp' | 'deepseek' = 'none';
 let modelCallCount = 0;
 let localHost: LocalHostConnection | undefined;
+let localModelReady = false;
 
 function stringify(value: unknown): string {
   try {
@@ -78,93 +80,80 @@ function setError(message?: string): void {
   error.textContent = message ?? '';
 }
 
+const actionReview = createActionReviewController({
+  dialog: actionDialog,
+  content: actionContent,
+  cancelButton: actionCancel,
+  confirmButton: actionConfirm,
+  status: actionStatus,
+  pageStatus: status,
+  receiptState,
+  stringify,
+  setError,
+});
+
+function updateComposer(): void {
+  const ready = (connection === 'local' && localModelReady) || connection === 'deepseek';
+  prompt.disabled = !ready;
+  send.disabled = !ready;
+  send.textContent = connection === 'deepseek' ? 'Send directly to DeepSeek' : 'Send to local agent';
+  prompt.placeholder = ready ? 'Describe the interface you want' : 'Available after a connection is ready';
+}
+
+const hostedDeepSeek = createHostedDeepSeekControls({
+  connectionKind,
+  localControls: localConnectionControls,
+  controls: required<HTMLElement>('#pg-deepseek-controls'),
+  keyInput: required<HTMLInputElement>('#pg-deepseek-key'),
+  consent: required<HTMLInputElement>('#pg-deepseek-consent'),
+  connectButton: required<HTMLButtonElement>('#pg-deepseek-connect'),
+  disconnectButton: required<HTMLButtonElement>('#pg-deepseek-disconnect'),
+  status: connectionStatus,
+  prompt,
+  sendButton: send,
+  getSession: () => session,
+  getScenario: () => scenario,
+  showConnection,
+  updateComposer,
+  onConnected: () => {
+    connection = 'deepseek';
+  },
+  onDisconnected: () => {
+    if (connection === 'deepseek') connection = 'none';
+  },
+  recordModelRequests: (count) => {
+    modelCallCount += count;
+    modelCalls.textContent = String(modelCallCount);
+  },
+});
+
 function renderInspector(): void {
   const section = evidenceFor(last, inspectorSection);
   inspectorSummary.textContent = section.summary;
   inspectorContent.textContent = stringify(section.value);
 }
 
-function deepestActiveElement(): HTMLElement | undefined {
-  let active = document.activeElement;
-  while (active instanceof HTMLElement && active.shadowRoot?.activeElement instanceof HTMLElement) {
-    active = active.shadowRoot.activeElement;
-  }
-  return active instanceof HTMLElement ? active : undefined;
-}
-
-function closeActionDialog(): void {
-  actionDialog.close();
-  const target = actionReturnFocus;
-  actionReturnFocus = undefined;
-  window.setTimeout(() => {
-    if (!actionDialog.open && target?.isConnected === true) target.focus();
-  }, 0);
-}
-
-function actionEvent(event: AeliqoAppActionEvent): void {
-  if (event.state === 'preview') {
-    pendingAction = event;
-    actionReturnFocus = deepestActiveElement();
-    actionCancel.disabled = false;
-    actionCancel.textContent = 'Cancel';
-    actionConfirm.disabled = false;
-    actionConfirm.removeAttribute('aria-busy');
-    actionStatus.textContent = 'Waiting for your confirmation.';
-    actionContent.textContent = stringify({
-      action: event.preview.action,
-      sideEffect: event.preview.sideEffect,
-      confirmation: event.preview.confirmation,
-      input: event.preview.input,
-    });
-    actionDialog.showModal();
-    return;
-  }
-  if (event.state === 'failed') {
-    pendingAction = undefined;
-    actionCancel.disabled = false;
-    actionCancel.textContent = 'Close';
-    actionConfirm.disabled = true;
-    actionConfirm.removeAttribute('aria-busy');
-    actionStatus.textContent = event.diagnostics[0]?.message ?? 'The action failed.';
-    setError(actionStatus.textContent);
-    return;
-  }
-  pendingAction = undefined;
-  actionConfirm.disabled = true;
-  actionConfirm.removeAttribute('aria-busy');
-  actionStatus.textContent =
-    event.execution.state === 'executed'
-      ? 'Action completed.'
-      : 'The remote result is uncertain; reconcile before retrying.';
-  status.textContent = actionStatus.textContent;
-  receiptState.textContent = event.execution.state;
-  if (event.execution.state === 'executed') {
-    closeActionDialog();
-  } else {
-    actionCancel.disabled = false;
-    actionCancel.textContent = 'Close';
-  }
-}
-
 function resetSession(): void {
   activeRequest?.abort();
+  hostedDeepSeek.clear();
   localHost?.close();
   localHost = undefined;
   session?.dispose();
   regionHost.replaceChildren();
-  session = createPlaygroundSession(actionEvent, applyAgentReceipt);
+  session = createPlaygroundSession(actionReview.handle, applyAgentReceipt);
   last = {};
-  pendingAction = undefined;
-  actionReturnFocus = undefined;
+  actionReview.reset();
   connection = 'none';
+  localModelReady = false;
+  connectionKind.value = 'detect';
   modelCallCount = 0;
   modelCalls.textContent = '0';
   connectionLabel.textContent = 'No agent · manual runtime';
   connectionStatus.textContent = 'No local host detected. Guided and manual modes remain available.';
   connectionDot.dataset.state = 'unavailable';
+  hostedDeepSeek.update();
   prompt.value = '';
-  prompt.disabled = true;
-  send.disabled = true;
+  updateComposer();
   setError();
   status.textContent = 'Session reset. Choose a scenario step.';
   viewBadge.textContent = 'Waiting for intent';
@@ -274,24 +263,56 @@ function showConnection(label: string, state: string): void {
   connectionDot.dataset.state = state;
 }
 
+function changeConnectionKind(): void {
+  if (connectionKind.value !== 'deepseek') {
+    const hadHostedState = hostedDeepSeek.clear();
+    if (hadHostedState) {
+      if (connection === 'deepseek') connection = 'none';
+      showConnection('Disconnected from DeepSeek; the browser-held key was cleared.', 'unavailable');
+    }
+  }
+  if (connection === 'local' && connectionKind.value !== 'detect') {
+    localHost?.close();
+    localHost = undefined;
+    localModelReady = false;
+    connection = 'none';
+    showConnection('The local agent connection was closed.', 'unavailable');
+  }
+  if (connection === 'webmcp' && connectionKind.value !== 'webmcp') {
+    session.disconnectWebMcp();
+    connection = 'none';
+    showConnection('The WebMCP connection was closed.', 'unavailable');
+  }
+  hostedDeepSeek.update();
+  updateComposer();
+}
+
 async function registerWebMcpConnection(): Promise<void> {
   const registered = await session.connectWebMcp();
   if (registered.ok) {
     connection = 'webmcp';
+    localModelReady = false;
+    updateComposer();
     showConnection(`Native WebMCP registered ${registered.value.registrations} tools (experimental).`, 'connected');
     return;
   }
   connection = 'none';
+  localModelReady = false;
+  updateComposer();
   showConnection(registered.diagnostics[0]?.message ?? 'WebMCP registration failed safely.', 'unavailable');
 }
 
-async function pairDetectedLocalHost(result: ConnectionCheck): Promise<void> {
+async function pairDetectedLocalHost(result: Extract<ConnectionCheck, { readonly state: 'connected' }>): Promise<void> {
   try {
     localHost = await connectLocalHost(session);
     connection = 'local';
+    localModelReady = result.modelConfigured;
+    updateComposer();
     showConnection(result.label, 'connected');
   } catch (cause) {
     connection = 'none';
+    localModelReady = false;
+    updateComposer();
     const label = cause instanceof Error ? cause.message : 'The local host pairing failed safely.';
     showConnection(label, 'unavailable');
   }
@@ -307,6 +328,8 @@ async function applyConnectionCheck(kind: 'webmcp' | 'detect', result: Connectio
     return;
   }
   connection = 'none';
+  localModelReady = false;
+  updateComposer();
   showConnection(result.label, result.state);
 }
 
@@ -346,6 +369,7 @@ for (const item of PLAYGROUND_SCENARIOS) {
 }
 scenarioSelect.value = scenario.id;
 scenarioSelect.addEventListener('change', () => {
+  hostedDeepSeek.cancel();
   scenario = currentScenario(scenarioSelect.value);
   renderScenario();
   void runIntent(scenario.steps[0]!.intent());
@@ -385,65 +409,42 @@ for (const button of document.querySelectorAll<HTMLButtonElement>('[data-inspect
       candidate.setAttribute('aria-pressed', String(candidate === button));
     renderInspector();
   });
-actionCancel.addEventListener('click', () => {
-  pendingAction?.cancel();
-  pendingAction = undefined;
-  closeActionDialog();
-});
-actionConfirm.addEventListener('click', async () => {
-  const action = pendingAction;
-  if (action === undefined) return;
-  actionCancel.disabled = true;
-  actionConfirm.disabled = true;
-  actionConfirm.setAttribute('aria-busy', 'true');
-  actionStatus.textContent = 'Rechecking authority and executing…';
-  try {
-    await action.confirm();
-  } catch {
-    if (pendingAction !== action) return;
-    action.cancel();
-    pendingAction = undefined;
-    actionCancel.disabled = false;
-    actionCancel.textContent = 'Close';
-    actionConfirm.removeAttribute('aria-busy');
-    actionStatus.textContent = 'The action failed safely. Close this review and try again.';
-    setError(actionStatus.textContent);
-  }
-});
-actionDialog.addEventListener('cancel', (event) => {
-  event.preventDefault();
-  pendingAction?.cancel();
-  pendingAction = undefined;
-  closeActionDialog();
-});
-
 required<HTMLButtonElement>('#pg-connect').addEventListener('click', async () => {
+  if (connectionKind.value === 'deepseek') return;
   localHost?.close();
   localHost = undefined;
+  connection = 'none';
+  localModelReady = false;
+  updateComposer();
   connectionStatus.textContent = 'Checking capability…';
   const kind = connectionKind.value === 'webmcp' ? 'webmcp' : 'detect';
   const result = await checkConnection(kind);
   await applyConnectionCheck(kind, result);
-  const composerReady = connection === 'local' && result.state === 'connected' && result.modelConfigured;
-  prompt.disabled = !composerReady;
-  send.disabled = !composerReady;
 });
-send.addEventListener('click', () => void submitLocalPrompt());
+connectionKind.addEventListener('change', changeConnectionKind);
+send.addEventListener('click', () => {
+  if (connection === 'deepseek') void hostedDeepSeek.submit();
+  else void submitLocalPrompt();
+});
 
 resetSession();
 renderScenario();
 for (const control of bootControls) control.disabled = false;
+hostedDeepSeek.update();
 bootState.hidden = true;
 appRoot.removeAttribute('aria-busy');
 void runIntent(scenario.steps[0]!.intent());
-window.addEventListener(
-  'pagehide',
-  () => {
-    activeRequest?.abort();
-    localHost?.close();
-    session.dispose();
-  },
-  { once: true },
-);
+window.addEventListener('pagehide', () => {
+  activeRequest?.abort();
+  const clearedHostedConnection = hostedDeepSeek.clear();
+  localHost?.close();
+  localHost = undefined;
+  session.dispose();
+  connection = 'none';
+  localModelReady = false;
+  updateComposer();
+  if (clearedHostedConnection)
+    showConnection('Connection cleared when the page was left. Reconnect to continue.', 'unavailable');
+});
 
 export type { ScenarioId };

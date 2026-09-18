@@ -5,10 +5,6 @@ family: 'visualization'
 contract: 'Dated events/intervals with timezone semantics, explicit overlaps and chronological alternative.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ The temporal data view adapts at narrow widths. Preserve calendar meaning and ke
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

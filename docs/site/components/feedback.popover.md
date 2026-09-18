@@ -5,10 +5,6 @@ family: 'feedback'
 contract: 'Contextual nonmodal surface with explicit focus/dismiss behavior and viewport containment.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Keep the popover inside the viewport and its trigger visible. Choose Dialog if t
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

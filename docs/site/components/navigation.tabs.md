@@ -5,10 +5,6 @@ family: 'navigation'
 contract: 'Named panels with stable selection; automatic activation only when latency permits.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Keep each tab label distinct at narrow widths. Ensure the selected state and key
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

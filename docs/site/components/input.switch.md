@@ -5,10 +5,6 @@ family: 'input'
 contract: 'Binary setting with visible label; changing setting is not implicit business submission.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Keep explanatory copy outside the short switch label. Preserve the control targe
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

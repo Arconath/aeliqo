@@ -5,10 +5,6 @@ family: 'input'
 contract: 'Locale-aware editing separates display text from exact numeric value; do not silently round money.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Leave room for the localized value and unit. Check the editable draft at 200% te
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

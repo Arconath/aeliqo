@@ -47,6 +47,9 @@ export class AeliqoEmptyStateElement extends AeliqoFoundationElement {
         min-block-size: var(--aeliqo-control-min-target, 2.75rem);
         padding-inline: var(--aeliqo-space-12, 0.75rem);
       }
+      [part='action']:not(:disabled):hover {
+        background: color-mix(in srgb, var(--aeliqo-color-accent, #4338ca) 90%, var(--aeliqo-color-on-accent, #fff));
+      }
     `,
   ];
 

@@ -5,10 +5,6 @@ family: 'visualization'
 contract: 'Explicit hierarchy, cycle validation, stable expansion and equivalent text navigation.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ The hierarchy viewport can scroll inside its host. Bound marks and keep parent l
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

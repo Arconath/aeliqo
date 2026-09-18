@@ -64,6 +64,7 @@ export function mountPeopleExample(target: HTMLElement): HomePeopleExample {
   });
   const mounted = app.mount({ target, regionId: 'home-demo', resourceId: 'people' });
   if (!mounted.ok) throw new Error(mounted.diagnostics[0].message);
+  mounted.value.setAttribute('data-aeliqo-theme', 'light');
   let request = 0;
 
   return Object.freeze({

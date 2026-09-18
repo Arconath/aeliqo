@@ -5,10 +5,6 @@ family: 'foundation'
 contract: 'Trigger one explicit action; native button semantics; disabled and pending never double-submit.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Its target keeps the component minimum hit area. Give long action labels a full 
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

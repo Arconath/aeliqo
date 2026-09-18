@@ -5,10 +5,6 @@ family: 'compound'
 contract: 'Group a declared metric and inspect contributing records; recompute ratios from sufficient statistics.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Keep each group label beside its value and record count. Let groups wrap as the 
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.
