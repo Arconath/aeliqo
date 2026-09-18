@@ -156,3 +156,74 @@ complete from the single accepted source revision. The remaining closeout action
 is the allowlisted `@aeliqo/devtools@0.3.0` deprecation after npm account
 two-factor authentication. The failed unauthenticated attempt did not change
 the package metadata.
+
+## 0.4.1 Playground and component polish
+
+Status: implementation and local acceptance checks are complete for `0.4.1`.
+Production remains on `0.4.0` until the patch passes its clean-commit quality
+and source-bound release checks.
+
+The follow-up patch improves the component catalog and adds a hosted,
+user-owned model connection. The hosted flow calls the fixed DeepSeek API
+directly from the user's browser with the user's key. It does not proxy model
+traffic, use an Aeliqo credential, or add a model endpoint to the static site
+server. The page discloses provider data egress and user-billed usage before
+opt-in; the key stays in page memory and clears when the connection ends or the
+page unloads. The existing bounded tool loop, application-owned grants, and
+explicit write confirmation remain in place.
+
+The implementation milestones are:
+
+1. Refine shared component surfaces, typography, spacing, controls, and states
+   while preserving public APIs and the current light/indigo identity. Complete.
+2. Add the fixed-provider BYOK flow, exact-route Content Security Policy,
+   disclosure, credential clearing, bounded requests, and fake-provider browser
+   tests. Document the hosted and local flows separately. Complete.
+3. Verify all catalog examples and component accessibility, cross-browser
+   rendering, responsive site routes, package and site checks, and the static
+   image smoke. Use intercepted fake responses only; never test with a billing
+   key or make a real model request. Complete locally.
+4. Review the completed diff, obtain the required DCO attestation, then publish
+   the patch release and deploy an immutable image through the existing
+   source-bound workflows. Confirm live health, version, docs, search, and
+   Playground before closing the milestone. Pending release.
+
+### Local verification completed 2026-09-18
+
+- `pnpm site:test` passes unit and type checks, the production site build, 8
+  site browser tests, 6 fake-provider BYOK tests, 2 local-runner tests, 11
+  documentation navigation tests, 9 responsive tests, the document-layout
+  test, Go server tests, 8 provenance tests, and all 12 visual baselines at
+  360, 768, and 1440 pixels.
+- `pnpm test:visual` passes its full suite in Chromium, Firefox, and WebKit.
+  Each engine passes 142 catalog cases, 84 field states, 30 data states, 38
+  structural states, and the data, compound, and visualization interaction
+  cases. The suite exposed a transient filter-builder contrast issue and a
+  hover-state contrast conflict on the empty-state action; both are fixed and
+  verified in the full matrix.
+- `pnpm test:components:a11y` passes all 12 tests. `pnpm format:check` and
+  `pnpm lint` pass; lint includes 11 quality-policy tests, Oxlint, TypeScript
+  lint, Knip, and site verification. Knip exits successfully with configuration
+  hints.
+- `pnpm test:docs-artifact` verifies 121 public pages and all 71 components;
+  artifact SHA-256 is
+  `fe3fe44cdea0a9047d781af7d933e33961fa4f63192cc13b18f2600dd3151eff`.
+  `pnpm test:catalog-examples` passes all three catalog example groups.
+- `pnpm test:performance:bundles` passes all six budgets. Core planner is
+  62,847 bytes gzip against 71,680 bytes; region table is 159,060 bytes against
+  163,840 bytes.
+- A disposable local `0.4.1` site image passed
+  `apps/site/scripts/ci/check-static-image.sh`, including an exact comparison
+  of the complete route-specific `/playground/` Content Security Policy. Its
+  `connect-src` permits only the fixed DeepSeek endpoint, with no analytics
+  egress. The image was removed after the smoke test.
+- No real provider request or user key was used. The live site remains on
+  `0.4.0`; its `/playground/` response still has the old generic CSP. After
+  cutover, verify the route-specific CSP and provider connection endpoint in
+  addition to health, version, docs, search, and Playground routes.
+
+Milestones 1–3 are complete locally. The source-bound clean-commit check,
+accepted patch commit, registry candidate and stable publication, immutable
+image deployment, and live acceptance remain pending. `pnpm check` must run on
+the clean DCO-signed commit. The user has already authorized deployment and
+specified that online users supply their own keys.

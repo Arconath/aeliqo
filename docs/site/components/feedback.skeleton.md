@@ -5,10 +5,6 @@ family: 'feedback'
 contract: 'Stable reserved geometry with reduced motion and a named loading state.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Match the width of the content it replaces without forcing horizontal scroll. Re
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

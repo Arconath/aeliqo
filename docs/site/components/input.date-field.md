@@ -5,10 +5,6 @@ family: 'input'
 contract: 'Calendar date rather than timezone-shifted timestamp; typed entry and picker agree.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Leave enough width for the localized date at 200% text. Keep the label and decla
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

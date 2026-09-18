@@ -5,10 +5,6 @@ family: 'input'
 contract: 'Bounded enumerated choice with native-first semantics; empty and unknown value are distinct.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Give the field enough width to show its selected label. Keep options bounded so 
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

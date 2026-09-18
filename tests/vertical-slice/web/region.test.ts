@@ -278,7 +278,7 @@ describe('registered web region', () => {
     expect(buildAeliqoChartDomain(duplicate)).toHaveLength(2);
     expect(aligned[0]?.points.map((point) => point.value)).toEqual([1, 2]);
     expect(aligned[1]?.points.map((point) => point.value)).toEqual([3, null]);
-    expect(new Set(buildAeliqoChartGeometry(duplicate).circles.map((circle) => circle.x))).toEqual(new Set([164]));
+    expect(new Set(buildAeliqoChartGeometry(duplicate).circles.map((circle) => circle.x))).toEqual(new Set([340]));
 
     const temporal = [
       {
@@ -324,7 +324,7 @@ describe('registered web region', () => {
           },
         ]).circles.map((circle) => circle.x),
       ),
-    ).toEqual(new Set([164]));
+    ).toEqual(new Set([340]));
 
     const halfSecond = buildAeliqoChartGeometry([
       {
@@ -337,7 +337,7 @@ describe('registered web region', () => {
         ],
       },
     ]);
-    expect(halfSecond.circles.map((circle) => circle.x)).toEqual([24, 164, 304]);
+    expect(halfSecond.circles.map((circle) => circle.x)).toEqual([56, 340, 624]);
   });
 
   it('builds separate SVG segments for null gaps and keeps multiple series distinct', () => {
@@ -391,9 +391,9 @@ describe('registered web region', () => {
     expect(geometry.circles).toHaveLength(4);
     const actualX = geometry.circles.filter((circle) => circle.seriesIndex === 0).map((circle) => circle.x);
     const targetX = geometry.circles.filter((circle) => circle.seriesIndex === 1).map((circle) => circle.x);
-    expect(actualX[0]).toBe(24);
-    expect(actualX[1]).toBeCloseTo(210.66666666666666, 8);
-    expect(targetX[0]).toBeCloseTo(117.33333333333333, 8);
-    expect(targetX[1]).toBe(304);
+    expect(actualX[0]).toBe(56);
+    expect(actualX[1]).toBeCloseTo(434.6666666666667, 8);
+    expect(targetX[0]).toBeCloseTo(245.33333333333334, 8);
+    expect(targetX[1]).toBe(624);
   });
 });

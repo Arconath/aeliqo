@@ -5,10 +5,6 @@ family: 'input'
 contract: 'Native file selection; host owns upload and validation; no file bytes enter agent by default.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Keep file type and size limits in visible helper text. Let long file names wrap 
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

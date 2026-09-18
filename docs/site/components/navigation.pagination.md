@@ -5,10 +5,6 @@ family: 'navigation'
 contract: 'Stable cursor/page scope; loaded rows are not misrepresented as global selection.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Keep page controls large enough to operate. Use the host to reduce the number of
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

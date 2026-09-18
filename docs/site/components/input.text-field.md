@@ -5,10 +5,6 @@ family: 'input'
 contract: 'Label, description, validation, autocomplete and IME-safe controlled/uncontrolled value.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Keep the label, description, and error visible when the form narrows. Put the fi
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

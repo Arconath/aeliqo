@@ -5,10 +5,6 @@ family: 'compound'
 contract: 'Existing primitive form over a host-owned action with entity revision and explicit save/cancel.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Stack fields at narrow widths. Keep the entity identity and revision associated 
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

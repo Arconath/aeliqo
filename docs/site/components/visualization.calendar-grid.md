@@ -5,10 +5,6 @@ family: 'visualization'
 contract: 'Calendar-aligned 2D values/events; locale week boundaries and noncolor exact values.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ The calendar grid has a narrow-width data layout. Check dates and values at 360p
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

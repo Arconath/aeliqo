@@ -5,10 +5,6 @@ family: 'input'
 contract: 'Native checked/indeterminate state; group ownership and submitted value are explicit.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Let the label wrap beside the control without shrinking its target. Keep the tex
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

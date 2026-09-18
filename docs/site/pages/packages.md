@@ -37,4 +37,4 @@ code never imports the site.
 
 Install all five packages on the same exact release when an application uses
 them together. Wire contract version `"1"` is independent of npm version
-`0.4.0`. See the [migration guide](/ship/migration-0.3/) when moving from 0.3.
+`0.4.1`. See the [migration guide](/ship/migration-0.3/) when moving from 0.3.

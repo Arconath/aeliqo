@@ -5,10 +5,6 @@ family: 'visualization'
 contract: 'Nonnegative additive hierarchy; area meaning and tiny-node access preserved.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ The treemap viewport can scroll inside its host. Keep its accessible data view r
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

@@ -5,10 +5,6 @@ family: 'foundation'
 contract: 'Express visual or semantic separation without polluting keyboard order.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Choose horizontal orientation for stacked content and vertical orientation for i
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

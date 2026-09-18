@@ -23,12 +23,12 @@ test('connected-agent mode never fabricates MCP, WebMCP, or BYOK evidence', asyn
   page.on('request', (request) => requests.push(request.url()));
   await page.goto('/playground/');
   await page.getByRole('button', { name: 'Connected agent' }).click();
-  await page.getByRole('button', { name: 'Check connection' }).click();
+  await page.getByRole('button', { name: 'Check local connection' }).click();
   await expect(page.locator('#pg-connect-status')).not.toContainText('Checking capability');
-  await expect(page.getByRole('textbox', { name: 'Local BYOK prompt' })).toBeDisabled();
+  await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
   await expect(page.locator('#pg-model-calls')).toHaveText('0');
   await page.locator('#pg-connection-kind').selectOption('webmcp');
-  await page.getByRole('button', { name: 'Check connection' }).click();
+  await page.getByRole('button', { name: 'Check local connection' }).click();
   await expect(page.locator('#pg-connect-status')).toContainText(/WebMCP|browser/i);
   expect(requests.some((url) => url.includes('/api/aeliqo/session'))).toBe(true);
   expect(requests.every((url) => new URL(url).hostname === '127.0.0.1')).toBe(true);
@@ -53,7 +53,7 @@ test('native WebMCP registers exactly the standard tools and renders through the
   await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
   await page.getByRole('button', { name: 'Connected agent' }).click();
   await page.locator('#pg-connection-kind').selectOption('webmcp');
-  await page.getByRole('button', { name: 'Check connection' }).click();
+  await page.getByRole('button', { name: 'Check local connection' }).click();
   await expect(page.locator('#pg-connect-status')).toContainText('registered 3 tools');
   const result = await page.evaluate(async () => {
     const tools = (
@@ -78,7 +78,7 @@ test('native WebMCP registers exactly the standard tools and renders through the
   expect(result.render).toMatchObject({ ok: true, value: { state: 'renderer-ready' } });
   await expect(page.locator('#pg-region')).toContainText('Sam Rivera');
   await expect(page.locator('#pg-region')).not.toContainText('Ada Chen');
-  await expect(page.getByRole('textbox', { name: 'Local BYOK prompt' })).toBeDisabled();
+  await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
 });
 
 test('playground exports the selected scenario as an installable credential-free project archive', async ({ page }) => {

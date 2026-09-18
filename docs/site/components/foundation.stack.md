@@ -5,10 +5,6 @@ family: 'foundation'
 contract: 'Arrange children in logical reading order with tokenized spacing.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Choose wrap or a different direction at the host breakpoint. Child order remains
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

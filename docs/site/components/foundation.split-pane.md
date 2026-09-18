@@ -5,10 +5,6 @@ family: 'foundation'
 contract: 'Resize adjacent regions by pointer and keyboard while respecting minimum task requirements.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Set pane limits so each side stays useful. On phones, use vertical orientation i
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

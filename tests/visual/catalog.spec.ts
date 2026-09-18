@@ -44,6 +44,29 @@ for (const component of components.components)
       });
       await page.screenshot({ path: info.outputPath('review.png'), fullPage: true });
       expect(errors).toEqual([]);
+      if (id === 'trend' && variant === 'desktop-light') {
+        const axes = await page.locator('#fixture aeliqo-trend').evaluate((element) => {
+          const svg = element.shadowRoot!.querySelector<SVGSVGElement>('[part="viewport"] svg')!;
+          return {
+            x: [...svg.querySelectorAll<SVGTextElement>('.axis-x-tick')].map((tick) => ({
+              text: tick.textContent,
+              bounds: tick.getBoundingClientRect().toJSON(),
+              fill: getComputedStyle(tick).fill,
+            })),
+            y: [...svg.querySelectorAll<SVGTextElement>('.axis-y-tick')].map((tick) => ({
+              text: tick.textContent,
+              bounds: tick.getBoundingClientRect().toJSON(),
+              fill: getComputedStyle(tick).fill,
+            })),
+          };
+        });
+        expect(axes.x).not.toHaveLength(0);
+        expect(axes.y).not.toHaveLength(0);
+        await info.attach('trend-axis-inspection.json', {
+          body: JSON.stringify(axes, null, 2),
+          contentType: 'application/json',
+        });
+      }
       expect(
         axe.violations.map(({ id, impact, nodes }) => ({
           id,

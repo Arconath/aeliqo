@@ -160,6 +160,11 @@ export function createPlaygroundAgentConnections(options: AgentConnectionOptions
     connectAgent: (transport: Extract<AgentToolTransport, 'byok' | 'mcp'>, goalEpoch?: string) =>
       connectAgent(options, transport, goalEpoch),
     connectWebMcp: () => connectWebMcp(options),
+    disconnectWebMcp() {
+      options.state.webMcp?.close();
+      options.state.webMcp = undefined;
+      syncEgress(options.state);
+    },
     dispose() {
       options.state.webMcp?.close();
       options.state.webMcp = undefined;

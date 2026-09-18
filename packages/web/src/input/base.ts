@@ -43,7 +43,7 @@ export const aeliqoInputStyles = [
 
     [part='field'] {
       display: grid;
-      gap: var(--aeliqo-space-4, 0.25rem);
+      gap: var(--aeliqo-space-8, 0.5rem);
       min-inline-size: 0;
     }
 
@@ -58,7 +58,8 @@ export const aeliqoInputStyles = [
 
     [part='description'] {
       color: var(--aeliqo-input-description, var(--aeliqo-color-muted, #4b5563));
-      font-size: 0.9em;
+      font-size: var(--aeliqo-typography-font-size-caption, 0.75rem);
+      line-height: var(--aeliqo-typography-line-height-normal, 1.5);
     }
 
     [part='error'] {
@@ -74,13 +75,15 @@ export const aeliqoInputStyles = [
     :is(input, textarea, select, button, [role='combobox']):focus-visible {
       outline: var(--aeliqo-focus-width, 0.1875rem) solid var(--aeliqo-input-focus, var(--aeliqo-color-focus, #4338ca));
       outline-offset: var(--aeliqo-focus-offset, 0.125rem);
+      box-shadow: 0 0 0 0.25rem
+        color-mix(in srgb, var(--aeliqo-input-focus, var(--aeliqo-color-focus, #4338ca)) 16%, transparent);
     }
 
     :is(input, textarea, select) {
       background: var(--aeliqo-input-background, var(--aeliqo-color-canvas, #fff));
       border: var(--aeliqo-control-border-width, 0.0625rem) solid
-        var(--aeliqo-input-border, var(--aeliqo-color-border, #64748b));
-      border-radius: var(--aeliqo-radius-small, 0.375rem);
+        var(--aeliqo-input-border, var(--_aeliqo-border-subtle, var(--aeliqo-color-border, #64748b)));
+      border-radius: var(--aeliqo-radius-medium, 0.625rem);
       box-sizing: border-box;
       color: inherit;
       font: inherit;
@@ -90,15 +93,58 @@ export const aeliqoInputStyles = [
       padding: var(--aeliqo-space-8, 0.5rem) var(--aeliqo-control-inline-padding, 0.75rem);
     }
 
+    :is(input, textarea, select):not(:disabled):hover:not([aria-invalid='true']) {
+      border-color: color-mix(
+        in srgb,
+        var(--aeliqo-color-accent, #4338ca) 52%,
+        var(--_aeliqo-border-subtle, var(--aeliqo-color-border, #64748b))
+      );
+    }
+
+    :is(input[type='checkbox'], input[type='radio']) {
+      accent-color: var(--aeliqo-color-accent, #4338ca);
+      cursor: pointer;
+      min-block-size: 0;
+      padding: 0;
+    }
+
     :is(input, textarea, select):disabled {
       background: var(--aeliqo-color-surface, #f8fafc);
       color: var(--aeliqo-color-muted, #4b5563);
       cursor: not-allowed;
-      opacity: 0.72;
+      opacity: 1;
     }
 
     :is(input, textarea, select)[aria-invalid='true'] {
       border-color: var(--aeliqo-color-danger, #b91c1c);
+    }
+
+    :is(input, textarea, select)[aria-invalid='true']:focus-visible {
+      box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--aeliqo-color-danger, #b91c1c) 16%, transparent);
+      outline-color: var(--aeliqo-color-danger, #b91c1c);
+    }
+
+    input:focus-visible + .switch-track {
+      box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--aeliqo-color-focus, #4338ca) 16%, transparent);
+      outline: var(--aeliqo-focus-width, 0.1875rem) solid var(--aeliqo-color-focus, #4338ca);
+      outline-offset: var(--aeliqo-focus-offset, 0.125rem);
+    }
+
+    input:disabled + .switch-track {
+      opacity: 0.65;
+    }
+
+    input:checked:disabled + .switch-track {
+      background: color-mix(in srgb, var(--aeliqo-color-accent, #4338ca) 48%, var(--aeliqo-color-surface, #f8fafc));
+    }
+
+    input:disabled + .switch-track + .choice-text {
+      color: var(--aeliqo-color-muted, #4b5563);
+    }
+
+    :is(input, textarea)::placeholder {
+      color: var(--aeliqo-color-muted, #4b5563);
+      opacity: 0.78;
     }
 
     @media (forced-colors: active) {

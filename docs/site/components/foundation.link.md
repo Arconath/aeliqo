@@ -5,10 +5,6 @@ family: 'foundation'
 contract: 'Navigate to an application-approved destination; preserve browser open-in-new-tab behavior.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ The label follows inline text flow and can wrap. Avoid fixed-width wrappers that
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

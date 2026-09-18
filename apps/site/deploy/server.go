@@ -37,7 +37,8 @@ const (
 	// and data marks. Permit attributes without permitting inline style blocks
 	// or scripts. HTML responses use no-transform to opt out of intermediary
 	// rewriting; the CSP still blocks undeclared scripts if that is ignored.
-	securityPolicy = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; font-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; script-src 'self' https://www.googletagmanager.com; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com"
+	securityPolicy           = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; font-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; script-src 'self' https://www.googletagmanager.com; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com"
+	playgroundSecurityPolicy = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'none'; img-src 'self' data:; font-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; script-src 'self'; connect-src 'self' https://api.deepseek.com"
 )
 
 func main() {
@@ -136,7 +137,7 @@ type publicRoutes struct {
 func newHandlerWithReadiness(root, buildRevision string, ready *atomic.Bool) http.Handler {
 	routes := loadPublicRoutes(root)
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		setSecurityHeaders(response)
+		setSecurityHeaders(response, request)
 		if request.Method != http.MethodGet && request.Method != http.MethodHead {
 			response.Header().Set("Allow", "GET, HEAD")
 			response.Header().Set("Cache-Control", "no-store")
@@ -250,12 +251,20 @@ func redirect(response http.ResponseWriter, request *http.Request, target string
 	http.Redirect(response, request, target, http.StatusPermanentRedirect)
 }
 
-func setSecurityHeaders(response http.ResponseWriter) {
+func setSecurityHeaders(response http.ResponseWriter, request *http.Request) {
 	header := response.Header()
-	header.Set("Content-Security-Policy", securityPolicy)
+	policy := securityPolicy
+	if isHostedPlayground(request) {
+		policy = playgroundSecurityPolicy
+	}
+	header.Set("Content-Security-Policy", policy)
 	header.Set("Cross-Origin-Opener-Policy", "same-origin")
 	header.Set("Referrer-Policy", "strict-origin-when-cross-origin")
 	header.Set("X-Content-Type-Options", "nosniff")
+}
+
+func isHostedPlayground(request *http.Request) bool {
+	return request.URL.Path == "/playground/"
 }
 
 func writeJSON(response http.ResponseWriter, request *http.Request, status int, value any) {

@@ -303,6 +303,26 @@ func TestStaticRoutesApplySecurityAndCachePolicies(t *testing.T) {
 	}
 }
 
+func TestPlaygroundCspIsScopedToItsCanonicalDocsRoute(t *testing.T) {
+	handler := newHandler(fixtureSite(t), "test")
+	for _, testCase := range []struct {
+		target string
+		want   string
+	}{
+		{"https://docs.aeliqo.com/playground/", playgroundSecurityPolicy},
+		{"https://docs.localhost/playground/", playgroundSecurityPolicy},
+		{"http://10.0.0.1:8080/playground/", playgroundSecurityPolicy},
+		{"https://docs.aeliqo.com/", securityPolicy},
+		{"https://docs.aeliqo.com/components/data.table/", securityPolicy},
+		{"https://aeliqo.com/playground/", playgroundSecurityPolicy},
+	} {
+		response := request(t, handler, http.MethodGet, testCase.target)
+		if got := response.Header().Get("Content-Security-Policy"); got != testCase.want {
+			t.Fatalf("%s CSP=%q, want %q", testCase.target, got, testCase.want)
+		}
+	}
+}
+
 func TestStaticFilesCannotEscapeThroughSymlinks(t *testing.T) {
 	root := fixtureSite(t)
 	secret := filepath.Join(t.TempDir(), "secret.html")

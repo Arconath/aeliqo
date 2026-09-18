@@ -5,10 +5,6 @@ family: 'data'
 contract: 'Selected entity facts including missing fields; record identity persists across views.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Long field values wrap within the detail region. Keep record identity visible wh
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

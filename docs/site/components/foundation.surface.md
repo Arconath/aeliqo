@@ -5,10 +5,6 @@ family: 'foundation'
 contract: 'Provide consistent bounded chrome; never impose dashboard cards on every control.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Surface follows the width of its parent and adds no columns. Put layout breakpoi
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

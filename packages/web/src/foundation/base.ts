@@ -17,6 +17,7 @@ const aeliqoFoundationFocusStyles = css`
   :is(button, a, [role='separator']):focus-visible {
     outline: var(--aeliqo-focus-width, 0.1875rem) solid var(--aeliqo-color-focus, #4338ca);
     outline-offset: var(--aeliqo-focus-offset, 0.125rem);
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--aeliqo-color-focus, #4338ca) 16%, transparent);
   }
 `;
 

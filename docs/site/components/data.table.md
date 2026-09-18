@@ -5,10 +5,6 @@ family: 'data'
 contract: 'Native table first; separate interactive-grid mode; sorting, paging, selection, virtualization and precise values.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Use the table’s bounded page or virtualization controls with wide data. Keep a
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

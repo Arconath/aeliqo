@@ -36,6 +36,12 @@ const inheritedThemeDeclarations = Object.keys({ ...AELIQO_LIGHT_TOKENS, ...AELI
   .join('\n');
 
 const sharedRules = `
+  --_aeliqo-border-subtle: color-mix(in srgb, var(--aeliqo-color-border) 28%, var(--aeliqo-color-surface));
+  --_aeliqo-accent-subtle: color-mix(in srgb, var(--aeliqo-color-accent) 8%, var(--aeliqo-color-surface));
+  --_aeliqo-accent-selected: color-mix(in srgb, var(--aeliqo-color-accent) 14%, var(--aeliqo-color-surface));
+  --_aeliqo-danger-subtle: color-mix(in srgb, var(--aeliqo-color-danger) 8%, var(--aeliqo-color-surface));
+  --_aeliqo-warning-subtle: color-mix(in srgb, var(--aeliqo-color-warning) 9%, var(--aeliqo-color-surface));
+  --_aeliqo-info-subtle: color-mix(in srgb, var(--aeliqo-color-info) 8%, var(--aeliqo-color-surface));
   color: var(--aeliqo-color-text);
   background-color: var(--aeliqo-color-canvas);
   direction: inherit;
@@ -83,6 +89,21 @@ export const aeliqoThemeStyles: CSSResult = css`
 
   :host([dir='ltr']) {
     direction: ltr;
+  }
+
+  :host :where(button, input, select, textarea, [role='button'], [role='tab'], [role='menuitem']) {
+    transition-property: border-color, box-shadow, transform;
+    transition-duration: var(--aeliqo-motion-duration-fast, 120ms);
+    transition-timing-function: var(--aeliqo-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+  }
+
+  :host :where(dialog) {
+    border-color: var(--_aeliqo-border-subtle);
+  }
+
+  :host dialog [part='header'],
+  :host [part='inline'] [part='header'] {
+    border-block-end-color: var(--_aeliqo-border-subtle);
   }
 
   :host([data-aeliqo-text-scale='large']) {

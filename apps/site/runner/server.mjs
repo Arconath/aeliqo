@@ -156,7 +156,7 @@ async function runPrompt(prompt, broker, signal) {
     instructions:
       'Use aeliqo_context first. Choose the authorized resource whose label, fields, meanings, and views match the user request; the active resource is context, not a restriction. Call aeliqo_render only when the request can be satisfied faithfully with that metadata. If a requested field, meaning, action, or resource is absent or ambiguous, do not substitute unrelated data; explain briefly that no validated UI change can be made. Use analyze only with exact meaning IDs and revisions returned by context. When a trend view exists but no matching meaning is registered, use browse with the raw time and value fields plus preferredView trend; never invent a meaning. For a weekly time grain, explicitly set weekStartsOn to 1 (Monday); otherwise choose a day grain. Never invent HTML, code, permissions, endpoints, or data. Do not claim success without the renderer receipt.',
     policy: {
-      providerToolChoice: 'required',
+      // The host enforces this sequence, so the provider can keep tool_choice on auto.
       requiredOperationSequence: [{ operation: 'catalog.read', acceptedStates: ['accepted'] }],
     },
     endpoint: broker.endpoint('byok'),

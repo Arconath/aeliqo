@@ -5,10 +5,6 @@ family: 'navigation'
 contract: 'Action menu with focus return and keyboard behavior; no layout-generated business actions.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Keep the menu within the visible viewport and its commands keyboard reachable. A
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

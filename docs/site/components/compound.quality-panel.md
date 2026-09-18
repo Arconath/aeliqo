@@ -5,10 +5,6 @@ family: 'compound'
 contract: 'Source, freshness, completeness, provenance and unsupported claims displayed honestly.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Let provenance and unsupported claims wrap inside the panel. Keep freshness and 
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

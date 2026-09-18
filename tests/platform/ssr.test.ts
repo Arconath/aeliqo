@@ -62,6 +62,6 @@ describe('SSR boundary', () => {
 
     expect(output).not.toContain('NaN');
     expect(output).not.toContain('Infinity');
-    expect(output).toContain('points="24,146 304,14"');
+    expect(output).toContain('points="56,150 624,18"');
   });
 });

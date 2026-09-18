@@ -43,6 +43,18 @@ export const aeliqoChartStyles = [
       stroke-width: 1;
     }
 
+    line.gridline {
+      opacity: 0.45;
+      stroke-dasharray: 2 4;
+    }
+
+    text:is(.axis-x-tick, .axis-y-tick) {
+      fill: currentColor;
+      font:
+        8px system-ui,
+        sans-serif;
+    }
+
     [part='line'] {
       fill: none;
       stroke: var(--aeliqo-chart-line, var(--aeliqo-visualization-series1, #0b63ce));

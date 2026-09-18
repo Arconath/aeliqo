@@ -5,10 +5,6 @@ family: 'foundation'
 contract: 'Named compact action with minimum target area; icon alone is never its accessible name.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ The icon target keeps its minimum hit area. Separate adjacent actions so their t
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

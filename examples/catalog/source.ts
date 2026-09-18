@@ -37,6 +37,7 @@ function createCatalogRoot(container: HTMLElement): HTMLElement {
 
 function createCatalogElement<T extends HTMLElement>(tagName: string, container: HTMLElement): T {
   const element = document.createElement(tagName) as T;
+  element.setAttribute("data-aeliqo-theme", "light");
   container.append(element);
   return element;
 }

@@ -5,10 +5,6 @@ family: 'visualization'
 contract: 'Two quantitative axes, declared units, stable point selection and noncausal interpretation.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ The plot and its data view stay in a scrollable viewport. Set dimensions from th
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

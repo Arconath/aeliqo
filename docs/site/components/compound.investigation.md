@@ -5,10 +5,6 @@ family: 'compound'
 contract: 'Trend, baseline, event timeline and detail; associations never imply causes.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Stack baseline, evidence, and detail in reading order. Avoid separate horizontal
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

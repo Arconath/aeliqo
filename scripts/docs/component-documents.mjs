@@ -21,7 +21,6 @@ const COMPONENT_HEADINGS = [
   'Purpose',
   'When to use it',
   'When to use a different component',
-  'Minimal example',
   'Import and live example',
   'Properties and defaults',
   'Events',
@@ -35,7 +34,6 @@ const COMPONENT_HEADINGS = [
 ];
 
 const COMPONENT_DIRECTIVES = [
-  'minimal-example',
   'fixture',
   'example',
   'properties',
@@ -160,65 +158,8 @@ export function parseAuthoredPage(source, filePath) {
   return { ...metadata, body };
 }
 
-function isSourceLiteral(value) {
-  if (['true', 'false', 'null'].includes(value)) return true;
-  if (/^-?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+-]?\d+)?$/iu.test(value)) return true;
-  return (value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"));
-}
-
-function minimalExampleSource(component, example) {
-  const tagName = `aeliqo-${example.id}`;
-  const mountSource = example.source.slice(example.source.indexOf('const root = createCatalogRoot(host);'));
-  const construction = new RegExp(
-    `(?:const\\s+([A-Za-z_$][\\w$]*)\\s*=\\s*)?createCatalogElement<(Aeliqo[A-Za-z0-9]+Element)>\\(\\s*(['"])${tagName}\\3`,
-  ).exec(mountSource);
-  if (!construction || construction[2] === undefined)
-    throw new Error(`Runnable component constructor is missing for ${component.id}`);
-  const variable = construction[1];
-  const className = construction[2];
-  const assignments = variable
-    ? [...mountSource.matchAll(new RegExp(`\\b${variable}\\.([A-Za-z_$][\\w$]*)\\s*=\\s*([^;]+);`, 'gu'))]
-        .flatMap((match) => {
-          const property = match[1];
-          const value = match[2]?.trim();
-          if (!property || !value || ['open', 'disabled', 'pending', 'checked'].includes(property)) return [];
-          return isSourceLiteral(value) ? [`component.${property} = ${value};`] : [];
-        })
-        .slice(0, 4)
-    : [];
-  if (assignments.length === 0) assignments.push('component.label = "Catalog example";');
-  const requiresHostData = example.props.some((property) =>
-    ['rows', 'columns', 'fields', 'items', 'options', 'nodes', 'visualization', 'context', 'datasets'].includes(
-      property,
-    ),
-  );
-  let guidance;
-  if (component.family === 'visualization')
-    guidance = '// Bind a validated visualization, result context, and bounded datasets to render marks.';
-  else if (requiresHostData)
-    guidance = '// Supply the host-owned records, options, or fields required by this component.';
-  const subpath = component.id.slice(component.id.indexOf('.') + 1);
-  return [
-    'import { registerAeliqoElements } from "@aeliqo/web";',
-    `import { ${className} } from "@aeliqo/web/${subpath}";`,
-    '',
-    'registerAeliqoElements();',
-    '',
-    'const host = document.querySelector<HTMLElement>("#example");',
-    'if (!host) throw new Error("Add an element with id=example before mounting.");',
-    `const component = document.createElement("${tagName}") as ${className};`,
-    ...assignments,
-    ...(guidance ? [guidance] : []),
-    'host.append(component);',
-  ].join('\n');
-}
-
 function exampleMarkup(metadata) {
   return `<section class="component-adoption" data-component-preview="${escape(metadata.family)}.${escape(metadata.id)}"><div class="component-preview" data-preview-mount data-preview-family="${escape(metadata.family)}" data-preview-id="${escape(metadata.id)}"><p class="component-preview-status" data-preview-status>Interactive preview requires JavaScript.</p></div><details class="component-example"><summary>View the complete example source</summary><pre tabindex="0"><code data-example-code="${escape(metadata.id)}">${escape(metadata.source)}</code></pre><button type="button" data-copy-example="${escape(metadata.id)}" disabled>Copy example</button><p class="component-copy-status" data-copy-status role="status"></p></details></section>`;
-}
-
-function minimalExampleMarkup(component, example) {
-  return `<figure class="doc-code component-minimal-example"><figcaption>Browser · TypeScript</figcaption><pre tabindex="0"><code class="language-ts">${escape(minimalExampleSource(component, example))}</code></pre></figure>`;
 }
 
 function markdownList(values, emptyMessage) {
@@ -228,8 +169,7 @@ function markdownList(values, emptyMessage) {
 
 function propertiesTable(properties) {
   const rows = properties.map(({ name, type, default: initial }) => {
-    const initialValue = initial === 'undefined' ? 'No class field initializer' : initial;
-    return `<tr><th scope="row"><code>${escape(name)}</code></th><td><code>${escape(type)}</code></td><td><code>${escape(initialValue)}</code></td></tr>`;
+    return `<tr><th scope="row"><code>${escape(name)}</code></th><td><code>${escape(type)}</code></td><td><code>${escape(initial)}</code></td></tr>`;
   });
   return `<div class="api-table" role="region" aria-label="${properties.length} component properties"><table><caption>Properties and initial values</caption><thead><tr><th scope="col">Property</th><th scope="col">Declared type</th><th scope="col">Initial value</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
 }
@@ -265,17 +205,14 @@ function componentDocumentationBody(component, example, metadata, api, source) {
     );
   const performance = metadata.bounds.length ? `## Performance limits\n\n${markdownList(metadata.bounds, '')}\n\n` : '';
   const withPerformance = componentMarkdown.replace('{{aeliqo:performance}}', performance);
-  const minimalExampleToken = `AELIQO_MINIMAL_EXAMPLE_${component.id}_CONTENT`;
   const liveExampleToken = `AELIQO_LIVE_EXAMPLE_${component.id}_CONTENT`;
   const declarationToken = `AELIQO_TYPESCRIPT_DECLARATION_${component.id}_CONTENT`;
   const expanded = withPerformance
-    .replace('{{aeliqo:minimal-example}}', minimalExampleToken)
     .replace('{{aeliqo:example}}', liveExampleToken)
     .replace('{{aeliqo:declaration}}', declarationToken);
   if (/\{\{aeliqo:/u.test(expanded)) throw new Error(`Unresolved documentation directive in ${component.id}`);
   const rendered = String(marked.parse(expanded, { gfm: true, async: false }));
   const declaration = `<details class="component-declaration"><summary>View generated declaration</summary><div class="code-scroll" role="region" aria-label="${escape(component.name)} TypeScript declaration"><pre tabindex="0"><code>${escape(api)}</code></pre></div></details>`;
-  replacements.set(`<p>${minimalExampleToken}</p>`, minimalExampleMarkup(component, example));
   replacements.set(`<p>${liveExampleToken}</p>`, exampleMarkup(example));
   replacements.set(`<p>${declarationToken}</p>`, declaration);
   let html = rendered;

@@ -21,7 +21,7 @@ available, but new applications should use the five packages documented in the
 
 ## Update package entry points
 
-Keep all Aeliqo packages on exactly `0.4.0`. The root imports below are the
+Keep all Aeliqo packages on exactly `0.4.1`. The root imports below are the
 recommended path for common work:
 
 ```ts

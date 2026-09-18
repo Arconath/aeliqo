@@ -5,10 +5,6 @@ family: 'compound'
 contract: 'Task-based steps, draft persistence, validation and reversible navigation before commit.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Keep the step label, validation, draft, and navigation in DOM order. Let the flo
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

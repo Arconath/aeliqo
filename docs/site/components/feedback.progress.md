@@ -5,10 +5,6 @@ family: 'feedback'
 contract: 'Determinate or unknown progress honestly; no invented completion percentages.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ The bar follows its host width while the label remains readable. Do not use colo
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

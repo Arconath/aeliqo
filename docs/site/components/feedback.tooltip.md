@@ -5,10 +5,6 @@ family: 'feedback'
 contract: 'Supplemental nonessential information; works on focus, dismisses, not the sole label.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Keep essential instructions outside the tooltip. The trigger remains the layout 
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

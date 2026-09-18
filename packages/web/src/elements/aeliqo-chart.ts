@@ -4,11 +4,11 @@ import { scalarIdentity } from '@aeliqo/core';
 import type { AeliqoChartPoint, AeliqoChartSeries } from '../types.js';
 import { AELIQO_WEB_VERSION } from '../version.js';
 
-const CHART_WIDTH = 320;
+const CHART_WIDTH = 640;
 const CHART_HEIGHT = 180;
-const PLOT_LEFT = 24;
-const PLOT_TOP = 14;
-const PLOT_WIDTH = 280;
+const PLOT_LEFT = 56;
+const PLOT_TOP = 18;
+const PLOT_WIDTH = 568;
 const PLOT_HEIGHT = 132;
 
 export interface AeliqoChartGeometry {
@@ -221,6 +221,71 @@ function xCoordinates(domain: readonly AeliqoChartDomainPoint[]): readonly numbe
   return scaledCoordinates(values);
 }
 
+interface ChartXAxisTick {
+  readonly position: number;
+  readonly label: string;
+  readonly anchor: 'start' | 'middle' | 'end';
+}
+
+interface ChartYAxisTick {
+  readonly position: number;
+  readonly label: string;
+}
+
+function visibleTickIndexes(length: number): number[] {
+  if (length <= 3) return Array.from({ length }, (_, index) => index);
+  return [0, Math.floor((length - 1) / 2), length - 1];
+}
+
+function chartTickLabel(label: string): string {
+  return label.length <= 10 ? label : `${label.slice(0, 8)}…`;
+}
+
+function xAxisTicks(series: readonly AeliqoChartSeries[]): ChartXAxisTick[] {
+  const domain = buildAeliqoChartDomain(series);
+  const positions = xCoordinates(domain);
+  return visibleTickIndexes(domain.length).flatMap((index) => {
+    const point = domain[index];
+    const position = positions[index];
+    if (point === undefined || position === undefined) return [];
+    let anchor: ChartXAxisTick['anchor'] = 'middle';
+    if (index === 0) anchor = 'start';
+    else if (index === domain.length - 1) anchor = 'end';
+    return [{ position, label: chartTickLabel(point.label), anchor }];
+  });
+}
+
+function numericExtent(series: readonly AeliqoChartSeries[]): readonly [number, number] | undefined {
+  let minimum = Number.POSITIVE_INFINITY;
+  let maximum = Number.NEGATIVE_INFINITY;
+  for (const item of series) {
+    for (const point of item.points) {
+      if (point.value === null || !Number.isFinite(point.value)) continue;
+      minimum = Math.min(minimum, point.value);
+      maximum = Math.max(maximum, point.value);
+    }
+  }
+  return Number.isFinite(minimum) ? [minimum, maximum] : undefined;
+}
+
+function yAxisTicks(series: readonly AeliqoChartSeries[]): ChartYAxisTick[] {
+  const extent = numericExtent(series);
+  if (extent === undefined) return [];
+  const [minimum, maximum] = extent;
+  const values = minimum === maximum ? [minimum] : [minimum, minimum / 2 + maximum / 2, maximum];
+  const scale = Math.max(Math.abs(minimum), Math.abs(maximum), 1);
+  const scaledMinimum = minimum / scale;
+  const span = maximum / scale - scaledMinimum;
+  const format = new Intl.NumberFormat(undefined, { maximumSignificantDigits: 4, notation: 'compact' });
+  return values.map((value) => {
+    const fraction = span === 0 ? 0 : (value / scale - scaledMinimum) / span;
+    return {
+      position: PLOT_TOP + PLOT_HEIGHT - fraction * PLOT_HEIGHT,
+      label: format.format(value),
+    };
+  });
+}
+
 /** Pure bounded geometry used by the SVG renderer and its verification tests. */
 export function buildAeliqoChartGeometry(series: readonly AeliqoChartSeries[]): AeliqoChartGeometry {
   const aligned = alignAeliqoChartSeries(series);
@@ -297,7 +362,7 @@ export class AeliqoChartElement extends LitElement {
 
     return html`
       <figure part="figure">
-        ${this.renderCaption()} ${this.renderPlot(geometry, accessibleName)}
+        ${this.renderCaption()} ${this.renderPlot(geometry, accessibleName, series)}
         ${this.renderFeedback(hasInvalidPoints, hasGaps)} ${this.renderLegend(series)}
         ${this.renderDataTable(series, aligned)}
       </figure>
@@ -391,7 +456,9 @@ export class AeliqoChartElement extends LitElement {
     return buildAeliqoChartGeometry(series);
   }
 
-  private renderPlot(geometry: AeliqoChartGeometry, accessibleName: string) {
+  private renderPlot(geometry: AeliqoChartGeometry, accessibleName: string, series: readonly AeliqoChartSeries[]) {
+    const xTicks = xAxisTicks(series);
+    const yTicks = yAxisTicks(series);
     return svg`
       <svg
         part="plot"
@@ -402,12 +469,16 @@ export class AeliqoChartElement extends LitElement {
       >
         <title>Data chart</title>
         <desc>Use the data table below to explore the values.</desc>
-        <line vector-effect="non-scaling-stroke" x1=${PLOT_LEFT} y1=${PLOT_TOP + PLOT_HEIGHT} x2=${PLOT_LEFT + PLOT_WIDTH} y2=${PLOT_TOP + PLOT_HEIGHT}></line>
+        ${yTicks.map((tick) => svg`<line class="gridline" vector-effect="non-scaling-stroke" x1=${PLOT_LEFT} y1=${tick.position} x2=${PLOT_LEFT + PLOT_WIDTH} y2=${tick.position}></line>`)}
+        <line class="axis" vector-effect="non-scaling-stroke" x1=${PLOT_LEFT} y1=${PLOT_TOP} x2=${PLOT_LEFT} y2=${PLOT_TOP + PLOT_HEIGHT}></line>
+        <line class="axis" vector-effect="non-scaling-stroke" x1=${PLOT_LEFT} y1=${PLOT_TOP + PLOT_HEIGHT} x2=${PLOT_LEFT + PLOT_WIDTH} y2=${PLOT_TOP + PLOT_HEIGHT}></line>
         ${geometry.segments.map((segment) => svg`<polyline vector-effect="non-scaling-stroke" points=${segment.points} class=${this.seriesClasses(segment.seriesIndex)} part="line"></polyline>`)}
         ${geometry.circles.map(
           (circle) =>
             svg`<circle vector-effect="non-scaling-stroke" cx=${circle.x} cy=${circle.y} r="3" class=${this.seriesClasses(circle.seriesIndex)} part="point"></circle>`,
         )}
+        ${yTicks.map((tick) => svg`<text class="axis-y-tick" x=${PLOT_LEFT - 8} y=${tick.position + 3} text-anchor="end">${tick.label}</text>`)}
+        ${xTicks.map((tick) => svg`<text class="axis-x-tick" x=${tick.position} y=${PLOT_TOP + PLOT_HEIGHT + 18} text-anchor=${tick.anchor}>${tick.label}</text>`)}
       </svg>
     `;
   }

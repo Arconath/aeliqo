@@ -5,10 +5,6 @@ family: 'foundation'
 contract: 'Present a category/status with text as well as color.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Allow a row of badges to wrap when labels grow. Keep the status text visible; co
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

@@ -21,6 +21,7 @@ export interface PlaygroundSession {
     goalEpoch?: string,
   ): Promise<Outcome<AgentModelToolEndpoint>>;
   connectWebMcp(): Promise<Outcome<{ readonly registrations: number; readonly evidence: WebMcpEvidence }>>;
+  disconnectWebMcp(): void;
   dispose(): void;
 }
 
@@ -82,6 +83,7 @@ function createSessionRenderer(app: SessionApp) {
           regionId: REGION_ID,
           diagnostics: mounted.diagnostics,
         };
+      mounted.value.setAttribute('data-aeliqo-theme', 'light');
       mountedResource = intent.resource;
       mountedTarget = target;
     }
@@ -121,6 +123,7 @@ export function createPlaygroundSession(
     context: () => app.runtime.context(REGION_ID),
     connectAgent: connections.connectAgent,
     connectWebMcp: connections.connectWebMcp,
+    disconnectWebMcp: connections.disconnectWebMcp,
     dispose() {
       connections.dispose();
       app.dispose();

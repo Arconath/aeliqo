@@ -5,10 +5,6 @@ family: 'data'
 contract: 'Labeled facts with stable ordering, wrapping and semantic links.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Allow definition-list labels and values to wrap in reading order. Keep each labe
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

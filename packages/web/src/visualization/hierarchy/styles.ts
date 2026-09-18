@@ -38,8 +38,8 @@ export const aeliqoHierarchyStyles = [
       direction: ltr;
       overflow: auto;
       max-inline-size: 100%;
-      border: 1px solid var(--aeliqo-color-border, #cbd5e1);
-      border-radius: var(--aeliqo-radius-small, 0.375rem);
+      border: 1px solid var(--_aeliqo-border-subtle, var(--aeliqo-color-border, #cbd5e1));
+      border-radius: var(--aeliqo-radius-medium, 0.625rem);
     }
     svg {
       display: block;
@@ -80,11 +80,18 @@ export const aeliqoHierarchyStyles = [
     }
     button {
       background: var(--aeliqo-color-surface, #f8fafc);
-      border: var(--aeliqo-control-border-width, 0.0625rem) solid var(--aeliqo-color-border, #64748b);
+      border: var(--aeliqo-control-border-width, 0.0625rem) solid
+        var(--_aeliqo-border-subtle, var(--aeliqo-color-border, #64748b));
+      border-radius: var(--aeliqo-radius-small, 0.375rem);
       color: var(--aeliqo-color-text, #111827);
       font: inherit;
       min-block-size: 2.75rem;
       min-inline-size: 2.75rem;
+    }
+    button:not(:disabled):hover {
+      background: var(--_aeliqo-accent-subtle, var(--aeliqo-color-surface, #f8fafc));
+      border-color: var(--aeliqo-color-accent, #4338ca);
+      color: var(--aeliqo-color-accent, #4338ca);
     }
     table {
       border-collapse: collapse;
@@ -93,12 +100,22 @@ export const aeliqoHierarchyStyles = [
     th,
     td {
       text-align: start;
-      padding: 0.5rem;
-      border-block-end: 1px solid var(--aeliqo-color-border, #cbd5e1);
+      padding: var(--aeliqo-space-8, 0.5rem) var(--aeliqo-space-12, 0.75rem);
+      border-block-end: 1px solid var(--_aeliqo-border-subtle, var(--aeliqo-color-border, #cbd5e1));
       vertical-align: top;
     }
+    th {
+      background: var(--aeliqo-color-surface, #f8fafc);
+      font-weight: var(--aeliqo-typography-font-weight-semibold, 600);
+    }
+    tbody tr:not([aria-selected='true']):hover {
+      background: var(--_aeliqo-accent-subtle, var(--aeliqo-color-surface, #f8fafc));
+    }
     [aria-selected='true'] {
-      background: color-mix(in srgb, var(--aeliqo-color-accent, #4338ca) 12%, transparent);
+      background: var(
+        --_aeliqo-accent-selected,
+        color-mix(in srgb, var(--aeliqo-color-accent, #4338ca) 12%, transparent)
+      );
     }
     [part='scope'] {
       color: var(--aeliqo-color-muted, #4b5563);
@@ -131,7 +148,7 @@ export const aeliqoHierarchyStyles = [
         gap: 0.75rem;
       }
       tr {
-        border-block-end: 1px solid var(--aeliqo-color-border, #cbd5e1);
+        border-block-end: 1px solid var(--_aeliqo-border-subtle, var(--aeliqo-color-border, #cbd5e1));
         display: block;
         padding-block: 0.25rem;
       }

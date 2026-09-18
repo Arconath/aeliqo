@@ -5,10 +5,6 @@ family: 'feedback'
 contract: 'Native-first modal semantics, focus containment/return and escape policy.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Keep modal actions reachable within the viewport. Let long content scroll withou
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

@@ -5,10 +5,6 @@ family: 'compound'
 contract: 'A stable compare-set with compatible metrics and simultaneous comparison affordances.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Keep every compared entity and metric in view. Stack comparison rows or allow a 
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

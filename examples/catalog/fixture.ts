@@ -313,6 +313,7 @@ export function createCatalogElement<T extends HTMLElement>(
   )
     throw new Error(`Cannot register ${tagName}: an incompatible custom element is already defined.`);
   const element = container.ownerDocument.createElement(tagName) as T;
+  element.setAttribute('data-aeliqo-theme', 'light');
   container.append(element);
   return element;
 }

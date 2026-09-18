@@ -5,10 +5,6 @@ family: 'foundation'
 contract: 'Preserve logical document hierarchy independent of visual size.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Headings wrap with the reading column. Preserve their document order if the host
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

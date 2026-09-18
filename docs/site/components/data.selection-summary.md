@@ -5,10 +5,6 @@ family: 'data'
 contract: 'Disclose selected identities or server predicate scope; never imply unobserved global selection.'
 ---
 
-## Minimal example
-
-{{aeliqo:minimal-example}}
-
 ## Import and live example
 
 {{aeliqo:example}}
@@ -72,4 +68,4 @@ Let the count, scope, and clear action wrap together. Keep the scope associated 
 
 ## Version
 
-Aeliqo 0.4.0.
+Aeliqo 0.4.1.

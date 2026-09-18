@@ -44,6 +44,12 @@ Family exports include `foundation`, `inputs`, `navigation`, `feedback`, `data`,
 rendering live under `@aeliqo/web/region`; server rendering lives under
 `@aeliqo/web/server`.
 
+`<aeliqo-chart>` is the low-level series chart. It renders a responsive SVG
+with labeled axes and grid lines, plus a collapsible table with the exact
+values. Set `points` for one series or `series` for multiple series. The
+catalog visualizations such as `<aeliqo-trend>` provide semantic views for
+registered resources and meanings.
+
 ## Styling and browser behavior
 
 Components use the library's public design tokens and exposed shadow parts.
