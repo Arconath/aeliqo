@@ -11,7 +11,9 @@ contract: 'Trigger one explicit action; native button semantics; disabled and pe
 
 ## Purpose
 
-Trigger one explicit action; native button semantics; disabled and pending never double-submit.
+Trigger one explicit action with native button semantics. Set `pending` as soon as an asynchronous action is accepted
+and clear it only after the host reports an outcome. The component blocks immediate repeated activation, while the
+host-owned pending state protects the full request lifetime.
 
 ## When to use it
 
@@ -68,4 +70,4 @@ Its target keeps the component minimum hit area. Give long action labels a full 
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

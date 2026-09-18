@@ -68,4 +68,4 @@ Keep modal actions reachable within the viewport. Let long content scroll withou
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

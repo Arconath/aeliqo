@@ -68,4 +68,4 @@ Keep current and baseline context with the change. Stack the values at narrow wi
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

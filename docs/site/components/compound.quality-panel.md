@@ -68,4 +68,4 @@ Let provenance and unsupported claims wrap inside the panel. Keep freshness and 
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

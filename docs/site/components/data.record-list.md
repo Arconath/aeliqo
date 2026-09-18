@@ -68,4 +68,4 @@ Keep rendered row counts bounded for long lists. Preserve stable identity and th
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

@@ -68,4 +68,4 @@ Vertical orientation suits narrow forms. Let long option labels wrap without cha
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

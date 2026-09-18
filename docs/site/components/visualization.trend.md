@@ -68,4 +68,4 @@ The plot and its data view stay in a scrollable viewport. Set width and height f
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

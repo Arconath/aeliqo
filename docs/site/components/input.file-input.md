@@ -68,4 +68,4 @@ Keep file type and size limits in visible helper text. Let long file names wrap 
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

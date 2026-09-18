@@ -68,4 +68,4 @@ Keep explanatory copy outside the short switch label. Preserve the control targe
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

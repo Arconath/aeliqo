@@ -68,4 +68,4 @@ Keep essential instructions outside the tooltip. The trigger remains the layout 
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

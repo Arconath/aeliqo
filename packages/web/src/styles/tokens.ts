@@ -111,8 +111,8 @@ export const AELIQO_SHARED_TOKENS = {
   '--aeliqo-typography-font-family-mono':
     'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace',
   '--aeliqo-typography-font-size-caption': '0.75rem',
-  '--aeliqo-typography-font-size-body': '0.875rem',
-  '--aeliqo-typography-font-size-body-large': '1rem',
+  '--aeliqo-typography-font-size-body': '1rem',
+  '--aeliqo-typography-font-size-body-large': '1.125rem',
   '--aeliqo-typography-font-size-title': '1.25rem',
   '--aeliqo-typography-font-size-heading': '1.5rem',
   '--aeliqo-typography-font-size-display': '2rem',

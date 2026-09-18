@@ -1,7 +1,6 @@
-import { createIntentCompilerRegistry } from '@aeliqo/core/app';
-import { defineResource, type Intent, type Outcome, type Task } from '@aeliqo/core';
-import { defineRecipe, standardDataRecipe } from '@aeliqo/web/recipes';
+import { defineResource, type Intent } from '@aeliqo/core';
 import * as z from 'zod';
+import { HEADCOUNT_RECORDS, HEADCOUNT_RESOURCE } from './workforce-scenario.js';
 
 export type ScenarioId = 'people' | 'products' | 'support' | 'knowledge';
 
@@ -9,6 +8,7 @@ interface PlaygroundStep {
   readonly id: string;
   readonly label: string;
   readonly description: string;
+  readonly definition?: string;
   intent(): Intent;
 }
 
@@ -155,7 +155,14 @@ const articles = defineResource({
   presentation: { allowedViews: ['table', 'cards', 'detail', 'demo.knowledge-article'] },
 });
 
-export const PLAYGROUND_RESOURCES = Object.freeze({ people, absences, products, tickets, articles });
+export const PLAYGROUND_RESOURCES = Object.freeze({
+  people,
+  absences,
+  headcount: HEADCOUNT_RESOURCE,
+  products,
+  tickets,
+  articles,
+});
 
 export const PLAYGROUND_RECORDS = Object.freeze({
   people: [
@@ -170,6 +177,7 @@ export const PLAYGROUND_RECORDS = Object.freeze({
     { id: 'a-3', week: '2026-08-17', person: 'Ada Chen', absence_days: 2 },
     { id: 'a-4', week: '2026-08-24', person: 'Ada Chen', absence_days: 0 },
   ],
+  'workforce-headcount': HEADCOUNT_RECORDS,
   products: [
     { id: 'pr-1', name: 'Field notebook', category: 'Stationery', price: 12, stock: 18 },
     { id: 'pr-2', name: 'Graphite pencils', category: 'Stationery', price: 8.5, stock: 32 },
@@ -214,7 +222,7 @@ const scenarios: readonly PlaygroundScenario[] = [
   {
     id: 'people',
     label: 'People',
-    description: 'Browse records, inspect a person, and switch to a temporal trend.',
+    description: 'Browse employees, filter a team, inspect one person, and compare month end workforce headcount.',
     steps: [
       {
         id: 'people-browse',
@@ -252,17 +260,20 @@ const scenarios: readonly PlaygroundScenario[] = [
       },
       {
         id: 'people-trend',
-        label: 'Show trend',
-        description: 'Temporal and numeric semantics select an SVG trend view.',
+        label: 'Monthly headcount',
+        description: 'Month end employee counts are compared over time and are never added across months.',
+        definition:
+          'Month end headcount: employees active at the end of each month. Values are never summed across months.',
         intent: () =>
           intent({
             version: '1',
             id: 'people-trend',
-            kind: 'browse',
-            resource: 'absences',
-            fields: ['week', 'person', 'absence_days'],
+            kind: 'analyze',
+            resource: 'workforce-headcount',
+            measures: [{ id: 'month-end-headcount', revision: '1' }],
+            time: { field: 'month', grain: 'month', calendar: 'gregorian', timezone: 'UTC' },
             preferredView: 'trend',
-            sort: [{ field: 'week', direction: 'asc' }],
+            sort: [{ field: 'month', direction: 'asc' }],
           }),
       },
     ],
@@ -431,64 +442,5 @@ const scenarios: readonly PlaygroundScenario[] = [
 
 export const PLAYGROUND_SCENARIOS = Object.freeze(scenarios);
 
-const customIntent = createIntentCompilerRegistry([
-  {
-    ref: { id: 'demo.knowledge.by-topic', revision: '1' },
-    schema: z.object({ topic: z.string().min(1).max(80) }),
-    capabilities: ['data.read'],
-    compile(input: { readonly topic: string }, context): Outcome<Task> {
-      return {
-        ok: true,
-        value: {
-          version: '1',
-          id: `knowledge-${input.topic.toLocaleLowerCase()}`.slice(0, 160),
-          revision: context.taskRevision,
-          catalogRevision: context.resource.catalog.revision,
-          functionRegistryDigest: context.resource.catalog.functionRegistryDigest,
-          regionId: context.regionId,
-          kind: 'data',
-          goal: `Browse ${input.topic} knowledge`,
-          assumptions: [],
-          viewPreference: { representation: 'cards', strength: 'preferred' },
-          outputs: [
-            {
-              id: 'primary',
-              kind: 'query',
-              query: {
-                entity: context.resource.entity.id,
-                fields: ['id', 'title', 'topic', 'excerpt'],
-                measures: [],
-                relations: [],
-                groupBy: [],
-                population: { kind: 'all-authorized' },
-                where: { op: 'compare', field: 'topic', comparison: 'eq', value: input.topic },
-                order: [],
-              },
-              dependsOn: [],
-              delivery: 'eager',
-            },
-          ],
-          needs: [
-            {
-              id: 'custom',
-              operation: { id: 'data.read', revision: '1' },
-              outputId: 'primary',
-              fields: ['id', 'title', 'topic', 'excerpt'],
-              required: true,
-            },
-          ],
-        },
-      };
-    },
-  },
-]);
-if (!customIntent.ok) throw new Error(customIntent.diagnostics[0].message);
-export const PLAYGROUND_INTENTS = customIntent.value;
-
 export { knowledgeArticleView } from './scenario-view.js';
-
-export const customIntentRecipe = defineRecipe({
-  ref: { id: 'demo.recipe.custom-data', revision: '1' },
-  intents: ['custom'],
-  build: standardDataRecipe.build,
-});
+export { customIntentRecipe, PLAYGROUND_INTENTS } from './scenario-intents.js';

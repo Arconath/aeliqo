@@ -8,13 +8,12 @@ import { connectLocalHost, type LocalHostConnection } from './local-host.js';
 import { PLAYGROUND_SCENARIOS, type PlaygroundScenario, type ScenarioId } from './scenarios.js';
 import { createPlaygroundSession, type PlaygroundSession } from './session.js';
 
-type Mode = 'guided' | 'manual' | 'connected';
+type Mode = 'without-ai' | 'connected';
 type ConnectionCheck = Awaited<ReturnType<typeof checkConnection>>;
 type LocalPromptReceipt = Awaited<ReturnType<typeof sendLocalPrompt>>;
 const modeLabels: Readonly<Record<Mode, string>> = {
-  guided: 'Guided demo',
-  manual: 'Manual controls',
-  connected: 'Connected agent',
+  'without-ai': 'Without AI',
+  connected: 'Connect AI',
 };
 
 function required<T extends Element>(selector: string): T {
@@ -36,8 +35,10 @@ const manualPanel = required<HTMLElement>('#pg-manual');
 const connectedPanel = required<HTMLElement>('#pg-connected');
 const regionHost = required<HTMLElement>('#pg-region');
 const status = required<HTMLElement>('#pg-status');
+const resultDefinition = required<HTMLElement>('#pg-result-definition');
 const error = required<HTMLElement>('#pg-error');
 const viewBadge = required<HTMLElement>('#pg-view-badge');
+const resultTitle = required<HTMLElement>('#pg-result-title');
 const receiptState = required<HTMLElement>('#pg-receipt-state');
 const modelCalls = required<HTMLElement>('#pg-model-calls');
 const inspector = required<HTMLDialogElement>('#pg-inspector');
@@ -56,7 +57,7 @@ const connectionDot = required<HTMLElement>('#pg-connection-dot');
 const prompt = required<HTMLTextAreaElement>('#pg-prompt');
 const send = required<HTMLButtonElement>('#pg-send');
 
-let mode: Mode = 'guided';
+let mode: Mode = 'without-ai';
 let scenario: PlaygroundScenario = PLAYGROUND_SCENARIOS[0]!;
 let activeRequest: AbortController | undefined;
 let session: PlaygroundSession;
@@ -149,14 +150,17 @@ function resetSession(): void {
   modelCallCount = 0;
   modelCalls.textContent = '0';
   connectionLabel.textContent = 'No agent · manual runtime';
-  connectionStatus.textContent = 'No local host detected. Guided and manual modes remain available.';
-  connectionDot.dataset.state = 'unavailable';
+  connectionStatus.textContent = 'No local host detected. Without AI remains available.';
+  connectionDot.dataset.state = 'disconnected';
   hostedDeepSeek.update();
   prompt.value = '';
   updateComposer();
   setError();
   status.textContent = 'Session reset. Choose a scenario step.';
   viewBadge.textContent = 'Waiting for intent';
+  resultTitle.textContent = 'Employees';
+  resultDefinition.hidden = true;
+  resultDefinition.textContent = '';
   receiptState.textContent = 'None';
   renderInspector();
 }
@@ -199,8 +203,12 @@ async function applyReceipt(intent: Intent, receipt: WebRenderReceipt): Promise<
   last = { intent, receipt };
   receiptState.textContent = receipt.status;
   viewBadge.textContent = selectedView(receipt);
+  const activeStep = scenario.steps.find((step) => step.id === intent.id);
+  resultTitle.textContent = activeStep?.label ?? `${scenario.label} result`;
+  resultDefinition.textContent = activeStep?.definition ?? '';
+  resultDefinition.hidden = activeStep?.definition === undefined;
   if (receipt.status === 'renderer-ready') {
-    status.textContent = `${intent.kind} committed through the public runtime and ${viewBadge.textContent} renderer.`;
+    status.textContent = `${resultTitle.textContent} is ready from the validated ${intent.kind} intent.`;
   } else {
     const message = receipt.diagnostics[0]?.message ?? `The request ended as ${receipt.status}.`;
     status.textContent = message;
@@ -237,14 +245,14 @@ function setMode(next: Mode): void {
   mode = next;
   for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]'))
     button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
-  guidedPanel.hidden = mode !== 'guided';
-  manualPanel.hidden = mode !== 'manual';
+  guidedPanel.hidden = mode !== 'without-ai';
+  manualPanel.hidden = mode !== 'without-ai';
   connectedPanel.hidden = mode !== 'connected';
   modeLabel.textContent = modeLabels[mode];
 }
 
 function modeFrom(value: string | undefined): Mode | undefined {
-  return value === 'guided' || value === 'manual' || value === 'connected' ? value : undefined;
+  return value === 'without-ai' || value === 'connected' ? value : undefined;
 }
 
 function inspectorFrom(value: string | undefined): InspectorSection | undefined {
@@ -268,7 +276,7 @@ function changeConnectionKind(): void {
     const hadHostedState = hostedDeepSeek.clear();
     if (hadHostedState) {
       if (connection === 'deepseek') connection = 'none';
-      showConnection('Disconnected from DeepSeek; the browser-held key was cleared.', 'unavailable');
+      showConnection('Disconnected from DeepSeek; the browser-held key was cleared.', 'disconnected');
     }
   }
   if (connection === 'local' && connectionKind.value !== 'detect') {
@@ -276,12 +284,12 @@ function changeConnectionKind(): void {
     localHost = undefined;
     localModelReady = false;
     connection = 'none';
-    showConnection('The local agent connection was closed.', 'unavailable');
+    showConnection('The local agent connection was closed.', 'disconnected');
   }
   if (connection === 'webmcp' && connectionKind.value !== 'webmcp') {
     session.disconnectWebMcp();
     connection = 'none';
-    showConnection('The WebMCP connection was closed.', 'unavailable');
+    showConnection('The WebMCP connection was closed.', 'disconnected');
   }
   hostedDeepSeek.update();
   updateComposer();
@@ -444,7 +452,7 @@ window.addEventListener('pagehide', () => {
   localModelReady = false;
   updateComposer();
   if (clearedHostedConnection)
-    showConnection('Connection cleared when the page was left. Reconnect to continue.', 'unavailable');
+    showConnection('Connection cleared when the page was left. Reconnect to continue.', 'disconnected');
 });
 
 export type { ScenarioId };

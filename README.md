@@ -16,9 +16,9 @@ Install the packages used by a browser application:
 
 ```sh
 npm install --save-exact \
-  @aeliqo/core@0.4.1 \
-  @aeliqo/runtime@0.4.1 \
-  @aeliqo/web@0.4.1
+  @aeliqo/core@0.4.2 \
+  @aeliqo/runtime@0.4.2 \
+  @aeliqo/web@0.4.2
 ```
 
 The complete [quickstart](https://docs.aeliqo.com/start/) defines a resource,
@@ -49,8 +49,8 @@ transport adapters, and other advanced APIs use explicit package subpaths.
 | `@aeliqo/react`   | React provider, Region, hooks, and family wrappers                   |
 | `@aeliqo/agent`   | Bounded app tools and optional MCP, WebMCP, and model adapters       |
 
-The public component library supports host token customization. The public
-Aeliqo site uses one fixed visual style and has no light or dark mode selector.
+The public component library supports host token customization. The Aeliqo site
+uses the same canonical token source and provides system, light, and dark themes.
 
 ## Examples
 

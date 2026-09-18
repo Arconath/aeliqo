@@ -106,4 +106,21 @@ describe('direct DeepSeek request bounds', () => {
     expect(scheduled).toEqual([12_000]);
     expect(fetchMock.mock.calls[0]?.[1]?.signal?.aborted).toBe(true);
   });
+
+  it('rejects malformed provider JSON without exposing the response', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn<typeof fetch>().mockResolvedValue(
+        new Response('{"provider_secret":"unterminated"', {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }),
+      ),
+    );
+    const model = createBrowserDeepSeekModel('sk-test-only');
+
+    await expect(model.complete(modelRequest(), requestOptions)).rejects.toThrow(
+      'direct DeepSeek request failed or exceeded its time limit',
+    );
+  });
 });

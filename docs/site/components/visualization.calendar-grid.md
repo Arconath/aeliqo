@@ -68,4 +68,4 @@ The calendar grid has a narrow-width data layout. Check dates and values at 360p
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

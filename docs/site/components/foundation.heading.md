@@ -68,4 +68,4 @@ Headings wrap with the reading column. Preserve their document order if the host
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

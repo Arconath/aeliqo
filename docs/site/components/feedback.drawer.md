@@ -68,4 +68,4 @@ Inline mode uses its host column; give it the full row when that column is too n
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

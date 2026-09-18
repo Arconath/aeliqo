@@ -68,4 +68,4 @@ Long field values wrap within the detail region. Keep record identity visible wh
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

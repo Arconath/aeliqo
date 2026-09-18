@@ -68,4 +68,4 @@ The treemap viewport can scroll inside its host. Keep its accessible data view r
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

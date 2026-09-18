@@ -99,12 +99,12 @@ class HostedDeepSeekControlState implements HostedDeepSeekControls {
   async connect(): Promise<void> {
     if (this.options.connectionKind.value !== 'deepseek' || this.connecting || this.connection !== undefined) return;
     if (!this.options.consent.checked) {
-      this.options.showConnection('Review the disclosure and opt in before connecting.', 'unavailable');
+      this.options.showConnection('Review the disclosure and opt in before connecting.', 'disconnected');
       return;
     }
     const apiKey = this.options.keyInput.value.trim();
     if (!validKey(apiKey)) {
-      this.options.showConnection('Enter a valid DeepSeek API key to connect.', 'unavailable');
+      this.options.showConnection('Enter a valid DeepSeek API key to connect.', 'failed');
       return;
     }
 
@@ -114,7 +114,7 @@ class HostedDeepSeekControlState implements HostedDeepSeekControls {
     this.options.keyInput.disabled = true;
     this.options.consent.disabled = true;
     this.options.connectButton.disabled = true;
-    this.options.showConnection('Opening a direct browser connection to DeepSeek…', 'available');
+    this.options.showConnection('Opening a direct browser connection to DeepSeek…', 'connecting');
     try {
       const result = await connectHostedDeepSeek(this.options.getSession(), apiKey);
       if (currentAttempt !== this.attempt) {
@@ -124,19 +124,22 @@ class HostedDeepSeekControlState implements HostedDeepSeekControls {
       if ('error' in result) {
         this.options.keyInput.disabled = false;
         this.options.consent.disabled = false;
-        this.options.showConnection(result.error, 'unavailable');
+        this.options.showConnection(result.error, 'failed');
         return;
       }
       this.connection = result.connection;
       this.options.onConnected();
       this.options.connectButton.hidden = true;
       this.options.disconnectButton.hidden = false;
-      this.options.showConnection('Connected directly to DeepSeek. Your key is held in this page only.', 'connected');
+      this.options.showConnection(
+        'DeepSeek is configured. Provider verification starts with your first prompt; your key stays in this page.',
+        'configured',
+      );
     } catch {
       if (currentAttempt !== this.attempt) return;
       this.options.keyInput.disabled = false;
       this.options.consent.disabled = false;
-      this.options.showConnection('The Playground could not open the DeepSeek connection.', 'unavailable');
+      this.options.showConnection('The Playground could not open the DeepSeek connection.', 'failed');
     } finally {
       if (currentAttempt === this.attempt) {
         this.connecting = false;
@@ -151,7 +154,7 @@ class HostedDeepSeekControlState implements HostedDeepSeekControls {
     this.clear();
     this.options.onDisconnected();
     this.options.updateComposer();
-    this.options.showConnection('Disconnected from DeepSeek; the browser-held key was cleared.', 'unavailable');
+    this.options.showConnection('Disconnected from DeepSeek; the browser-held key was cleared.', 'disconnected');
   }
 
   async submit(): Promise<void> {
@@ -163,12 +166,24 @@ class HostedDeepSeekControlState implements HostedDeepSeekControls {
     try {
       const result = await target.run(value, this.options.getScenario());
       if (target !== this.connection) return;
-      if (result.ok) this.options.recordModelRequests(result.value.modelRequests);
+      if (result.ok && result.value.stop === 'cancelled') {
+        this.options.showConnection('DeepSeek is configured. The last request was cancelled.', 'configured');
+      } else if (result.ok && result.value.stop !== 'failed') {
+        this.options.recordModelRequests(result.value.modelRequests);
+        this.options.showConnection('DeepSeek verified by a provider response.', 'verified');
+      } else {
+        this.options.showConnection(
+          'DeepSeek returned an invalid or incomplete response; configuration is retained.',
+          'failed',
+        );
+      }
       this.options.status.textContent = promptStatus(result);
     } catch {
-      if (target === this.connection)
+      if (target === this.connection) {
+        this.options.showConnection('DeepSeek request failed; configuration is retained for a retry.', 'failed');
         this.options.status.textContent =
           'The direct DeepSeek request failed safely. No provider details were recorded.';
+      }
     } finally {
       if (target === this.connection) this.options.updateComposer();
     }

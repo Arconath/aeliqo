@@ -68,4 +68,4 @@ Keep the label, description, and error visible when the form narrows. Put the fi
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

@@ -68,4 +68,4 @@ Keep the recovery action visible when the page narrows. Let the explanation wrap
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

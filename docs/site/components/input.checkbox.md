@@ -68,4 +68,4 @@ Let the label wrap beside the control without shrinking its target. Keep the tex
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

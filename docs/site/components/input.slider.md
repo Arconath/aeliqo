@@ -68,4 +68,4 @@ Give the track its own row in narrow forms. Keep its numeric label and unit visi
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

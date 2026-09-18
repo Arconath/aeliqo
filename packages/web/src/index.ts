@@ -8,5 +8,11 @@ export {
   standardFormRecipe,
   standardOperationFor,
 } from './recipes/index.js';
-export type { RecipeContext, RecipeDefinition, RecipeInput, ViewInput } from './recipes/index.js';
+export type {
+  RecipeContext,
+  RecipeDefinition,
+  RecipeInput,
+  RecipePresentationPolicy,
+  ViewInput,
+} from './recipes/index.js';
 export { AELIQO_WEB_VERSION, registerAeliqoElements } from './register.js';

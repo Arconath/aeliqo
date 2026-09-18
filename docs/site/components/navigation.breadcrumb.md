@@ -68,4 +68,4 @@ Allow long path segments to wrap. Keep the current location clear when the host 
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

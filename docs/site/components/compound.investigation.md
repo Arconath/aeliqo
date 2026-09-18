@@ -68,4 +68,4 @@ Stack baseline, evidence, and detail in reading order. Avoid separate horizontal
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

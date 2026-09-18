@@ -50,7 +50,7 @@ const componentNotes: Record<string, Partial<MetadataNotes>> = {
     expectedOutcome: 'The bounded surface exposes a labelled dialog boundary and emits a close request when dismissed.',
   },
   dialog: {
-    fixture: 'One modal archive confirmation with a host-owned action in its content.',
+    fixture: 'One replayable modal archive confirmation with a host-owned trigger and action.',
     props: ['heading', 'open', 'modal', 'closeOnEscape'],
     propsNotes:
       'The host decides when to open and what the slotted action means; the dialog only owns focus and dismissal mechanics.',
@@ -170,13 +170,27 @@ export const feedbackExamples: readonly CatalogExampleDefinition[] = [
   mount('dialog', (root) => {
     const element = createCatalogElement<AeliqoDialogElement>('aeliqo-dialog', root, AeliqoDialogElement);
     element.heading = 'Confirm archive';
-    element.open = true;
+    element.open = false;
     element.modal = true;
     element.closeOnEscape = true;
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.textContent = 'Open confirmation';
+    trigger.addEventListener('click', () => {
+      element.open = true;
+    });
+    const close = async (): Promise<void> => {
+      element.open = false;
+      await element.updateComplete;
+      trigger.focus();
+    };
     const action = document.createElement('button');
     action.type = 'button';
     action.textContent = 'Archive report';
+    action.addEventListener('click', () => void close());
     element.append(action);
+    element.addEventListener('aeliqo-dialog-close', () => void close());
+    root.append(trigger);
   }),
   mount('drawer', (root) => {
     const element = createCatalogElement<AeliqoDrawerElement>('aeliqo-drawer', root, AeliqoDrawerElement);

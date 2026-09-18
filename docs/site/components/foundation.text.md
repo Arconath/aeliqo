@@ -68,4 +68,4 @@ Text follows its parent width. Allow long values to wrap and avoid fixed-height 
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

@@ -68,4 +68,4 @@ Keep page controls large enough to operate. Use the host to reduce the number of
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

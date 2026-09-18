@@ -131,6 +131,24 @@ test('all 71 component previews load without page or console errors', async ({ p
   expect(consoleErrors).toEqual([]);
 });
 
+test('dialog preview can close and reopen from its documented trigger', async ({ page }) => {
+  await page.goto('/components/feedback.dialog/');
+  await expect(page.locator('[data-preview-status]')).toHaveText('Interactive preview loaded.');
+  const trigger = page.getByRole('button', { name: 'Open confirmation' });
+  const dialog = page.getByRole('dialog', { name: 'Confirm archive' });
+  await expect(dialog).toBeHidden();
+  await trigger.click();
+  await expect(dialog).toBeVisible();
+  await page.getByRole('button', { name: 'Archive report' }).click();
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
+  await trigger.click();
+  await expect(dialog).toBeVisible();
+  await page.getByRole('button', { name: 'Close' }).click();
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
+});
+
 test('narrow documentation exposes compact navigation before the requested article', async ({ browser, page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto('/components/data.table/');

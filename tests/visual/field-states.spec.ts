@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import type { AeliqoFieldElement } from '@aeliqo/web/inputs';
+import { REVIEW_VARIANTS, reviewColorScheme, reviewViewport } from './review-variants.js';
 
 const fields = [
   'text-field',
@@ -18,22 +19,19 @@ const fields = [
   'file-input',
 ] as const;
 const states = ['disabled', 'invalid', 'pending'] as const;
-const variants = ['desktop-light', 'narrow-dark-rtl'] as const;
 // Review captures only. No pixel baseline is created or accepted by this suite.
 for (const id of fields)
   for (const state of [
     ...states,
     ...(['text-field', 'text-area', 'number-field'].includes(id) ? (['read-only'] as const) : []),
   ])
-    for (const variant of variants) {
+    for (const variant of REVIEW_VARIANTS) {
       test(`${id} ${state} ${variant}`, async ({ page }, info) => {
         const errors: string[] = [];
         page.on('pageerror', (error) => errors.push(error.message));
-        await page.setViewportSize(
-          variant === 'desktop-light' ? { width: 1280, height: 900 } : { width: 360, height: 800 },
-        );
+        await page.setViewportSize(reviewViewport(variant));
         await page.emulateMedia({
-          colorScheme: variant === 'desktop-light' ? 'light' : 'dark',
+          colorScheme: reviewColorScheme(variant),
           reducedMotion: 'reduce',
         });
         await page.goto(`/tests/visual/index.html?component=${id}&variant=${variant}`);

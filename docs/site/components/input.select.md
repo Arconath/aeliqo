@@ -68,4 +68,4 @@ Give the field enough width to show its selected label. Keep options bounded so 
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

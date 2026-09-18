@@ -3,16 +3,16 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Aeliqo — adaptive UI, controlled by your application</title>
+    <title>Aeliqo — adaptive interfaces, with or without AI</title>
     <meta
       name="description"
-      content="Turn validated intent into adaptive, registered web UI. Aeliqo works from application code or any compatible agent without generating arbitrary HTML."
+      content="Build adaptive, registered interfaces from application code or a compatible agent while your application keeps authority over data, actions, and views."
     />
     <link rel="canonical" href="https://aeliqo.com/" />
-    <meta property="og:title" content="Aeliqo — adaptive UI, controlled by your application" />
+    <meta property="og:title" content="Aeliqo — adaptive interfaces, with or without AI" />
     <meta
       property="og:description"
-      content="Turn validated intent into adaptive, registered web UI—without handing your interface to AI."
+      content="Register permitted data, actions, and views once. Aeliqo selects a fitting interface from structured intent."
     />
     <meta property="og:url" content="https://aeliqo.com/" />
     <meta property="og:type" content="website" />
@@ -30,6 +30,14 @@
         ><a class="nav-github" href="https://github.com/Arconath/aeliqo">GitHub <span aria-hidden="true">↗</span></a>
       </nav>
       <div class="utilities">
+        <label class="theme-control">
+          <span class="visually-hidden">Theme</span>
+          <select id="theme-select" aria-label="Theme">
+            <option value="system">System</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </label>
         <button class="nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
           <span class="nav-toggle-label">Menu</span><span aria-hidden="true">☰</span>
         </button>
@@ -40,16 +48,16 @@
       <section class="shell hero">
         <div class="hero-copy">
           <p class="eyebrow hero-status">OPEN-SOURCE TYPESCRIPT UI RUNTIME</p>
-          <h1>Your app sets the rules. <em>Aeliqo adapts the view.</em></h1>
+          <h1>Adaptive interfaces. <em>With or without AI.</em></h1>
           <p class="lead">
-            Register permitted data, actions, and views once. Aeliqo checks each typed intent and presents a fitting
-            registered view in the available space.
+            Your application registers data, actions, and views. Aeliqo validates each typed intent and selects a
+            fitting registered interface for the available space.
           </p>
           <div class="actions">
-            <a class="primary" href="https://docs.aeliqo.com/start/"
-              >Read the quickstart <span aria-hidden="true">→</span></a
+            <a class="primary" href="https://docs.aeliqo.com/playground/"
+              >Try the playground <span aria-hidden="true">→</span></a
             >
-            <a class="secondary-action" href="https://docs.aeliqo.com/components/">Browse components</a>
+            <a class="secondary-action" href="https://docs.aeliqo.com/start/">Build the React quickstart</a>
           </div>
           <div class="install-command" aria-label="Install Aeliqo packages">
             <span aria-hidden="true">$</span><code>pnpm add @aeliqo/core @aeliqo/runtime @aeliqo/web</code>

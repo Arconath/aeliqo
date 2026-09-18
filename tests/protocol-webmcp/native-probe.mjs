@@ -9,6 +9,7 @@ const TOOL_NAME = 'aeliqo_native_adapter_probe';
 const executablePath = process.env.WEBMCP_CHROME_PATH ?? chromium.executablePath();
 const measuredAt = new Date().toISOString();
 const repositoryRoot = resolve(process.cwd());
+const serverErrors = [];
 
 const pageHtml = `<!doctype html>
 <meta charset="utf-8">
@@ -16,7 +17,9 @@ const pageHtml = `<!doctype html>
 <p id="status">Running native WebMCP probe…</p>
 <script type="importmap">
 {"imports":{"@aeliqo/core":"/packages/core/dist/index.js",
-  "zod/mini":"/node_modules/.pnpm/node_modules/zod/mini/index.js"}}
+  "zod":"/node_modules/.pnpm/node_modules/zod/index.js",
+  "zod/mini":"/node_modules/.pnpm/node_modules/zod/mini/index.js",
+  "zod/":"/node_modules/.pnpm/node_modules/zod/"}}
 </script>
 <script type="module">
 import {parseWireValue,
@@ -43,6 +46,8 @@ import {createWebMcpAdapter, detectWebMcp} from '/packages/agent/dist/webmcp/ind
     discoveryOk: false,
     registered: false,
     invoked: false,
+    cancellationObserved: false,
+    cancelled: false,
     disposed: false,
     lateDenied: false,
     authorityReads: 0,
@@ -53,6 +58,16 @@ import {createWebMcpAdapter, detectWebMcp} from '/packages/agent/dist/webmcp/ind
   (async () => {
     let adapter;
     let nativeTool;
+    let registeredTool;
+    const executeNative = async (context, tool, input, options) => {
+      try {
+        return await context.executeTool(tool, input, options);
+      } catch (error) {
+        if (!errorText(error).message.includes('parse input arguments')) throw error;
+        result.usedLegacyStringInput = true;
+        return context.executeTool(tool, JSON.stringify(input), options);
+      }
+    };
     try {
       const context = document.modelContext;
       result.modelContextPresent = context !== undefined
@@ -66,7 +81,7 @@ import {createWebMcpAdapter, detectWebMcp} from '/packages/agent/dist/webmcp/ind
           const checked = parseWireValue(input);
           return checked.ok ? {ok: true, value: checked.value} : checked;
         },
-        invoke: (input, capabilityContext) => {
+        invoke: async (input, capabilityContext) => {
           result.endpointInvocations += 1;
           result.events.push({
             phase: 'dispatcher',
@@ -75,6 +90,17 @@ import {createWebMcpAdapter, detectWebMcp} from '/packages/agent/dist/webmcp/ind
             transport: capabilityContext.transport,
             region: capabilityContext.targetRegionId,
           });
+          if (input?.query === 'cancel') {
+            await new Promise((resolve) => {
+              const cancelled = () => {
+                result.cancellationObserved = true;
+                resolve();
+              };
+              if (capabilityContext.signal.aborted) cancelled();
+              else capabilityContext.signal.addEventListener('abort', cancelled, {once: true});
+            });
+            return {state: 'cancelled'};
+          }
           return {
             state: 'data-ready',
             value: {
@@ -122,8 +148,19 @@ import {createWebMcpAdapter, detectWebMcp} from '/packages/agent/dist/webmcp/ind
       });
       if (!endpointResult.ok) throw new Error('The browser could not create the paired tool endpoint.');
       const endpoint = endpointResult.value;
-      adapter = createWebMcpAdapter({endpoint, document, evidence: 'native'});
       const detection = detectWebMcp({ document, evidence: 'native' });
+      if (detection.supported) {
+        const adapterContext = {
+          registerTool: (tool, options) => {
+            registeredTool = tool;
+            return context.registerTool(tool, options);
+          },
+          getTools: () => context.getTools(),
+        };
+        adapter = createWebMcpAdapter({endpoint, modelContext: adapterContext, evidence: 'native'});
+      } else {
+        adapter = createWebMcpAdapter({endpoint, document, evidence: 'native'});
+      }
       result.modelContextPresent = detection.supported;
       result.adapterEvidence = adapter.evidence;
       result.adapterSupported = adapter.supported;
@@ -145,28 +182,43 @@ import {createWebMcpAdapter, detectWebMcp} from '/packages/agent/dist/webmcp/ind
       result.toolsBeforeDispose = summary(before);
       nativeTool = before.find((candidate) => candidate?.name === '${TOOL_NAME}');
       if (nativeTool === undefined) throw new Error('The adapter tool was absent from native getTools().');
-      const nativeInvokeResult = await context.executeTool(nativeTool, JSON.stringify({query: 'events'}));
+      const nativeInvokeResult = await executeNative(context, nativeTool, {query: 'events'});
       result.invokeResult = typeof nativeInvokeResult === 'string' ? JSON.parse(nativeInvokeResult) : nativeInvokeResult;
       result.invoked = result.invokeResult?.ok === true
         && result.invokeResult?.value?.state === 'data-ready'
         && result.invokeResult?.value?.value?.region === 'region-1'
         && result.invokeResult?.value?.value?.transport === 'webmcp';
+      const cancelController = new AbortController();
+      const pendingCancellation = executeNative(
+        context,
+        nativeTool,
+        {query: 'cancel'},
+        {signal: cancelController.signal},
+      );
+      setTimeout(() => cancelController.abort(), 25);
+      try {
+        const cancelled = await pendingCancellation;
+        result.cancelResult = typeof cancelled === 'string' ? JSON.parse(cancelled) : cancelled;
+        result.cancelled = result.cancelResult?.ok === false
+          && result.cancelResult?.diagnostics?.some((diagnostic) =>
+            diagnostic.code === 'agent.capability.cancelled'
+            || diagnostic.code === 'agent.webmcp.cancelled');
+      } catch (error) {
+        result.cancelError = errorText(error);
+        result.cancelled = error?.name === 'AbortError';
+      }
       adapter.close();
       await new Promise((resolve) => setTimeout(resolve, 25));
       const after = await context.getTools();
       result.toolsAfterDispose = summary(after);
       result.disposed = !after.some((candidate) => candidate?.name === '${TOOL_NAME}');
-      try {
-        result.lateInvokeResult = await context.executeTool(nativeTool, JSON.stringify({query: 'late'}));
-        result.lateDenied = result.lateInvokeResult?.ok === false
-          && result.lateInvokeResult?.diagnostics?.some((diagnostic) => diagnostic.code === 'agent.webmcp.closed');
-      } catch (error) {
-        result.lateInvokeError = errorText(error);
-        result.lateDenied = true;
-      }
+      result.lateInvokeResult = await registeredTool?.execute({query: 'late'});
+      result.lateDenied = result.lateInvokeResult?.ok === false
+        && result.lateInvokeResult?.diagnostics?.some((diagnostic) => diagnostic.code === 'agent.webmcp.closed');
       result.status = result.modelContextPresent && result.adapterEvidence === 'native'
         && result.adapterSupported && result.discoveryOk && result.registered && result.invoked
-        && result.disposed && result.lateDenied && result.endpointInvocations === 1
+        && result.cancellationObserved && result.cancelled && result.disposed && result.lateDenied
+        && result.endpointInvocations === 2
         ? 'pass' : 'blocked';
     } catch (error) {
       result.error = errorText(error);
@@ -221,7 +273,7 @@ async function runMode(mode, args, url) {
     observation.page = await page.evaluate(() => window.__nativeProbe);
     observation.pageErrors = pageErrors;
     observation.console = consoleMessages;
-    if (observation.page?.status === 'pass') {
+    if (observation.page?.status === 'pass' && pageErrors.length === 0) {
       observation.status = 'pass';
     }
   } catch (error) {
@@ -269,6 +321,7 @@ const server = createServer(async (request, response) => {
     response.setHeader('content-type', 'text/html; charset=utf-8');
     response.end(pageHtml);
   } catch (error) {
+    serverErrors.push({ path: request.url, code: error?.code, message: error?.message ?? String(error) });
     response.statusCode = error?.code === 'ENOENT' ? 404 : 500;
     response.end(error?.code === 'ENOENT' ? 'Not found' : 'Probe server error');
   }
@@ -296,6 +349,12 @@ const output = {
     localFlag: 'chrome://flags/#enable-webmcp-testing',
     commandLineEquivalent: FLAG,
   },
+  serverErrors,
   runs,
 };
 console.log(JSON.stringify(output, null, 2));
+if (
+  serverErrors.length > 0 ||
+  !runs.some((run) => run.mode === 'enable-webmcp-testing' && run.status === 'pass' && run.pageErrors?.length === 0)
+)
+  process.exitCode = 1;

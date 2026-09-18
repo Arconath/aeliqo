@@ -68,4 +68,4 @@ Stack fields and submit actions on narrow screens. Preserve DOM order and keep v
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

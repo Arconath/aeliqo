@@ -68,4 +68,4 @@ Choose wrap or a different direction at the host breakpoint. Child order remains
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

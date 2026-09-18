@@ -3,7 +3,7 @@ import {
   type PresentationEnvironment,
   type PresentationRegistry,
 } from '@aeliqo/core/presentation';
-import type { Diagnostic, Experience, Result, CommitPreconditions } from '@aeliqo/core';
+import type { Diagnostic, Experience, ResourceDefinition, Result, CommitPreconditions } from '@aeliqo/core';
 import type {
   AeliqoRuntime,
   RuntimeCommittedReceipt,
@@ -14,8 +14,8 @@ import type { AeliqoRegionElement } from '../region/aeliqo-region.js';
 import { createAeliqoPresentationRegistry } from '../region/registry.js';
 import type { AeliqoInputBindings } from '../region/input-registry.js';
 import type { AeliqoRegionResult, AeliqoViewDefinition } from '../region/types.js';
-import type { RecipeDefinition } from '../recipes/types.js';
-import { STANDARD_STATE_MAPPINGS } from '../recipes/standard.js';
+import type { RecipeDefinition, RecipePresentationPolicy } from '../recipes/types.js';
+import { canonicalViewId, STANDARD_STATE_MAPPINGS } from '../recipes/standard.js';
 import type { AeliqoAppOptions, WebRenderReceipt } from './types.js';
 
 export interface WebRegion {
@@ -207,19 +207,34 @@ export function registryFor(
   return combined.ok ? combined.value : undefined;
 }
 
-export function experience(registry: PresentationRegistry, revision: string): Experience {
+export function presentationPolicy(resource: ResourceDefinition): RecipePresentationPolicy {
+  return Object.freeze({
+    allowedRepresentations: Object.freeze(resource.presentation.allowedViews.map(canonicalViewId)),
+  });
+}
+
+export function experience(
+  registry: PresentationRegistry,
+  revision: string,
+  policy?: RecipePresentationPolicy,
+): Experience {
+  const permitted = new Set(policy?.allowedRepresentations ?? registry.manifests.map((manifest) => manifest.ref.id));
   return {
     version: '1',
     id: 'aeliqo.web.app',
     revision,
     mode: 'adaptive',
     agentAllowed: true,
-    allowedRepresentations: registry.manifests.map((manifest) => manifest.ref.id),
+    allowedRepresentations: registry.manifests
+      .map((manifest) => manifest.ref.id)
+      .filter((representation) => permitted.has(representation)),
     allowedPatterns: [],
     composition: { allowWithoutPreset: true, maxNodes: 32, maxExpansions: 64 },
     requiredOperations: [],
     tokenProfile: { id: 'tokens.default', revision: '1' },
-    extensionAllowlist: registry.manifests.filter((manifest) => manifest.extension).map((manifest) => manifest.ref),
+    extensionAllowlist: registry.manifests
+      .filter((manifest) => manifest.extension && permitted.has(manifest.ref.id))
+      .map((manifest) => manifest.ref),
     transitionPolicy: 'stable',
   };
 }

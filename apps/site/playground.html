@@ -6,12 +6,12 @@
   </div>
   <div class="pg-intro-copy">
     <p>
-      Start on the left: choose a scenario, pick a task, and watch the live canvas adapt. Guided and manual modes need
-      no AI.
+      Start with working employee data, then choose a structured task or connect your own agent. Every path uses the
+      same validated runtime.
     </p>
     <ol class="pg-intro-flow" aria-label="Playground flow">
       <li><b>1</b><span>Choose a scenario</span></li>
-      <li><b>2</b><span>Send a typed intent</span></li>
+      <li><b>2</b><span>Choose a typed intent</span></li>
       <li><b>3</b><span>Inspect the result</span></li>
     </ol>
   </div>
@@ -34,12 +34,11 @@
     ></label>
     <fieldset class="pg-mode" aria-label="Playground mode">
       <legend>Mode</legend>
-      <button type="button" data-mode="guided" data-playground-boot-control disabled aria-pressed="true">Guided</button>
-      <button type="button" data-mode="manual" data-playground-boot-control disabled aria-pressed="false">
-        Manual controls
+      <button type="button" data-mode="without-ai" data-playground-boot-control disabled aria-pressed="true">
+        Without AI
       </button>
       <button type="button" data-mode="connected" data-playground-boot-control disabled aria-pressed="false">
-        Connected agent
+        Connect AI
       </button>
     </fieldset>
     <div class="pg-connection" aria-live="polite">
@@ -59,7 +58,7 @@
   <div class="pg-workspace">
     <aside class="pg-request" aria-labelledby="pg-request-title">
       <div>
-        <p class="pg-kicker" id="pg-mode-label">Guided demo</p>
+        <p class="pg-kicker" id="pg-mode-label">Without AI</p>
         <h2 id="pg-request-title">Build a view</h2>
         <p id="pg-scenario-description"></p>
       </div>
@@ -70,14 +69,17 @@
           Each task sends a deterministic intent fixture. Nothing is guessed from free text in this mode.
         </p>
       </section>
-      <section id="pg-manual" hidden aria-labelledby="pg-manual-title">
-        <h3 id="pg-manual-title">Try without an agent</h3>
-        <label>Action<select id="pg-manual-step" data-playground-boot-control disabled></select></label>
-        <button type="button" class="primary" id="pg-run-manual" data-playground-boot-control disabled>
-          Apply intent
-        </button>
-        <p class="pg-note">The same runtime works from application code, with no AI connection.</p>
-      </section>
+      <details id="pg-manual" class="pg-structured">
+        <summary>Run a structured intent</summary>
+        <section aria-labelledby="pg-manual-title">
+          <h3 id="pg-manual-title">Application controlled input</h3>
+          <label>Action<select id="pg-manual-step" data-playground-boot-control disabled></select></label>
+          <button type="button" class="primary" id="pg-run-manual" data-playground-boot-control disabled>
+            Apply intent
+          </button>
+          <p class="pg-note">This sends the same typed intent from application code with no model connection.</p>
+        </section>
+      </details>
       <section id="pg-connected" hidden aria-labelledby="pg-connected-title">
         <h3 id="pg-connected-title">Connect an agent</h3>
         <p>
@@ -148,7 +150,7 @@
         </label>
         <button type="button" class="primary" id="pg-send" disabled>Send prompt</button>
         <p id="pg-connect-status" class="pg-note" role="status">
-          No local host detected. Guided and manual modes remain available.
+          No local host detected. Without AI remains available.
         </p>
       </section>
     </aside>
@@ -157,17 +159,18 @@
       <header class="pg-result-header">
         <div>
           <p class="pg-kicker">Live canvas</p>
-          <h2 id="pg-result-title">Your interface appears here</h2>
+          <h2 id="pg-result-title">Employees</h2>
         </div>
-        <span id="pg-view-badge">Waiting for intent</span>
+        <span id="pg-view-badge" class="visually-hidden">Waiting for intent</span>
       </header>
       <p id="pg-status" class="pg-status" role="status" aria-live="polite">Choose a task to render the first view.</p>
+      <p id="pg-result-definition" class="pg-result-definition" hidden></p>
       <div id="pg-error" class="pg-error" role="alert" hidden></div>
       <div id="pg-region" class="pg-region" aria-label="Rendered Aeliqo interface"></div>
       <footer class="pg-evidence">
         <span><small>Data</small>Synthetic · local</span
         ><span><small>Model calls</small><strong id="pg-model-calls">0</strong></span
-        ><span><small>Runtime receipt</small><strong id="pg-receipt-state">None</strong></span>
+        ><span hidden><small>Runtime receipt</small><strong id="pg-receipt-state">None</strong></span>
       </footer>
     </div>
   </div>

@@ -68,4 +68,4 @@ The bar follows its host width while the label remains readable. Do not use colo
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

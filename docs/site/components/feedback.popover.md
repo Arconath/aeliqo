@@ -68,4 +68,4 @@ Keep the popover inside the viewport and its trigger visible. Choose Dialog if t
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

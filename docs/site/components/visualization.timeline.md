@@ -68,4 +68,4 @@ The temporal data view adapts at narrow widths. Preserve calendar meaning and ke
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

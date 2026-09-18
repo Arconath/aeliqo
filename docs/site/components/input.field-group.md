@@ -68,4 +68,4 @@ Allow child controls to stack under the legend. Keep the legend and description 
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

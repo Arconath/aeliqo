@@ -68,4 +68,4 @@ Set pane limits so each side stays useful. On phones, use vertical orientation i
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

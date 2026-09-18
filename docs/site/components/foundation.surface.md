@@ -68,4 +68,4 @@ Surface follows the width of its parent and adds no columns. Put layout breakpoi
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

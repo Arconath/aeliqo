@@ -227,3 +227,93 @@ accepted patch commit, registry candidate and stable publication, immutable
 image deployment, and live acceptance remain pending. `pnpm check` must run on
 the clean DCO-signed commit. The user has already authorized deployment and
 specified that online users supply their own keys.
+
+## 0.4.2 Global launch readiness
+
+Status: implementation and local acceptance checks are complete on
+`codex/aeliqo-0.4` from `d4c68a3`. The clean, accepted candidate commit and
+source-bound release remain pending.
+
+The goal is a source-compatible patch that makes adaptive presentation obey
+resource view policy, binds trends to requested semantic measures, turns the
+People journey into the primary product proof, improves the component and
+Playground experience, and replaces skeletal public documentation with usable
+tutorial, guide, reference, and explanation content. The primary audience is
+React and TypeScript developers building data-rich business applications.
+
+Milestones and acceptance:
+
+1. Correctness: enforce resource views in recipe selection and final plan
+   validation; reject ambiguous trend metrics with a needs-input result. Verify
+   with application-level regression tests. Complete.
+2. Product experience: unify site/component tokens, repair chart geometry and
+   replayable dialog examples, and restructure the Playground around Without AI
+   and Connect AI journeys. Verify at 360, 768, and 1440 pixels. Complete.
+3. Product proof and documentation: add an explicit monthly headcount scenario,
+   improve the React-first learning path, document event payload/ownership and
+   provider states, and keep all 71 component pages source-backed. Complete.
+4. Integrations and community: separate simulated/native WebMCP evidence,
+   distinguish configured/verified BYOK states, and add repository issue and PR
+   templates plus a safe environment example. Complete.
+5. Acceptance: run the complete quality matrix, clean package consumers,
+   three-browser visual review, performance gates, static-image smoke, and an
+   independent review. Publication and production promotion require this exact
+   clean source revision. Local precommit gates and independent review are
+   complete; the clean-commit `pnpm check`, publication, and promotion remain
+   pending.
+
+### Local verification completed 2026-09-19
+
+- Presentation adaptation passes 35 unit and type checks, 2 browser checks, and
+  the clean tarball consumer. The regressions cover resource view policy at
+  recipe selection and final validation, preservation of the prior rendered
+  result after a rejected custom recipe, requested semantic trend fields, and
+  missing or ambiguous time and measure choices returning `needs-input`.
+- `pnpm site:test` passes 21 site units, the production build, 9 main browser
+  checks, 7 fake-provider BYOK checks, 2 local-runner checks, 12 documentation
+  navigation checks across all 71 component routes, 10 responsive Playground
+  checks, document layout, the Go server, 8 provenance checks, and all 24 light
+  and dark baselines at 360, 768, and 1440 pixels.
+- The full component visual matrix passes in Chromium, Firefox, and WebKit. Each
+  engine passes 213 catalog cases, 126 field states, 87 responsive data-state
+  cases plus 1 explicit unsupported-state record, 57 structure states, 21 data
+  interactions, 24 compound interactions, and 81 visualization interactions
+  across 360, 768, and 1440 pixels.
+  `pnpm test:components:a11y` passes all 12 checks.
+- The public documentation artifact verifies 121 pages and all 71 components
+  at version `0.4.2`; its SHA-256 is
+  `779de1ccd03bbfb46bd144b1c2224886c0cb3e0b9886f6bb5078bdcfbbabd2e4`.
+  All 3 catalog example groups pass.
+- Bundle performance passes all 6 budgets. The core planner is 62,847 bytes gzip
+  against 71,680 bytes; the region table is 159,053 bytes against 163,840 bytes.
+  Framework consumers, Next SSR and hydration, all 4 export-consumer scenarios,
+  30 release-tooling tests, and package notices also pass.
+- The native WebMCP probe passes in an isolated headed Chrome for Testing
+  153.0.8010.12 with `WebMCPTesting` enabled. It verifies registration,
+  discovery, invocation, cancellation, unregistration, and the exact
+  `agent.webmcp.closed` late-call diagnostic with no page or server errors. The
+  simulated protocol suite passes all 12 checks.
+- A disposable local `0.4.2` production image passes health, readiness, version,
+  security-header, immutable-asset, 404, Playground CSP, and graceful-shutdown
+  checks. The image was removed after verification.
+- Independent review found two medium-priority evidence gaps. Cancelled DeepSeek
+  requests could be labelled verified, and the native WebMCP probe accepted an
+  unrelated late-call exception. Both are fixed. The BYOK suite now proves that
+  scenario cancellation retains the configured state without recording provider
+  verification, and the native probe requires a structured closed-adapter
+  diagnostic and rejects page or server errors.
+- One bounded synthetic request through the browser DeepSeek adapter completed
+  successfully against the configured real provider on 2026-09-19. The key and
+  response text stayed out of source, artifacts, and logs. The 7 browser tests
+  continue to cover the full BYOK UI and tool loop with an intercepted provider,
+  including authentication failure and retry, timeout, malformed response,
+  cancellation, reset, sanitization, and recovery.
+- Formatting, lint, Knip, root and site type checks, and `git diff --check` pass.
+  `pnpm check` intentionally remains for the clean DCO-signed candidate because
+  the quality runner rejects a dirty checkout before running its 82 commands.
+
+Compatibility constraints: do not change serialized protocol contracts; new
+recipe policy input is optional for direct recipe consumers and always supplied
+by the web application facade. Keep all five packages, all component families,
+offline use, accessibility behavior, authorization hooks, BYOK, MCP, and
+experimental WebMCP in the Apache-2.0 boundary.

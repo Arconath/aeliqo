@@ -68,4 +68,4 @@ Keep each group label beside its value and record count. Let groups wrap as the 
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

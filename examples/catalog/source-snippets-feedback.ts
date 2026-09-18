@@ -17,13 +17,27 @@ export const FEEDBACK_MOUNT_SOURCES = {
   dialog: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoDialogElement>("aeliqo-dialog", root);
 		element.heading = "Confirm archive";
-		element.open = true;
+		element.open = false;
 		element.modal = true;
 		element.closeOnEscape = true;
+		const trigger = document.createElement("button");
+		trigger.type = "button";
+		trigger.textContent = "Open confirmation";
+		trigger.addEventListener("click", () => {
+			element.open = true;
+		});
+		const close = async (): Promise<void> => {
+			element.open = false;
+			await element.updateComplete;
+			trigger.focus();
+		};
 		const action = document.createElement("button");
 		action.type = "button";
 		action.textContent = "Archive report";
+		action.addEventListener("click", () => void close());
 		element.append(action);
+		element.addEventListener("aeliqo-dialog-close", () => void close());
+		root.append(trigger);
 	})`,
   drawer: String.raw`((root) => {
 		const element = createCatalogElement<AeliqoDrawerElement>("aeliqo-drawer", root);

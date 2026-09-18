@@ -1,8 +1,6 @@
 import { expect, test, type Locator, type Page, type TestInfo } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-
-const variants = ['desktop-light', 'narrow-dark-rtl'] as const;
-type Variant = (typeof variants)[number];
+import { REVIEW_VARIANTS, reviewColorScheme, reviewViewport, type ReviewVariant } from './review-variants.js';
 
 type ReviewEvent = { readonly type: string; readonly detail: Record<string, unknown> };
 type ReviewWindow = Window & {
@@ -14,17 +12,17 @@ type ReviewSession = {
   readonly errors: string[];
   readonly host: Locator;
   readonly id: string;
-  readonly variant: Variant;
+  readonly variant: ReviewVariant;
 };
 
-async function openCatalog(page: Page, id: string, variant: Variant): Promise<ReviewSession> {
+async function openCatalog(page: Page, id: string, variant: ReviewVariant): Promise<ReviewSession> {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await page.setViewportSize(variant === 'desktop-light' ? { width: 1280, height: 900 } : { width: 360, height: 800 });
-  await page.emulateMedia({ colorScheme: variant === 'desktop-light' ? 'light' : 'dark', reducedMotion: 'reduce' });
+  await page.setViewportSize(reviewViewport(variant));
+  await page.emulateMedia({ colorScheme: reviewColorScheme(variant), reducedMotion: 'reduce' });
   await page.goto(`/tests/visual/index.html?component=${id}&variant=${variant}`);
   await page.waitForFunction(() => Boolean((window as ReviewWindow).aeliqoReviewReady));
   const host = page.locator(`#fixture aeliqo-${id}`).first();
@@ -129,7 +127,7 @@ for (const id of ['record-list', 'card-collection', 'table']) {
   });
 }
 
-for (const variant of variants) {
+for (const variant of REVIEW_VARIANTS) {
   test.describe(variant, () => {
     test('record-list keyboard selection keeps a stable identity across reorder', async ({ page }, info) => {
       const session = await openCatalog(page, 'record-list', variant);

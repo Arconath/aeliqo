@@ -68,4 +68,4 @@ Let the message and its actions wrap together. Keep dismissal available without 
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

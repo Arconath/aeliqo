@@ -14,14 +14,16 @@ test('guided intents render real adaptive views without a model', async ({ page 
 
   await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
   await expect(page.locator('aeliqo-table')).toBeVisible();
-  await expect(page.locator('#pg-status')).toContainText('committed through the public runtime');
+  await expect(page.locator('#pg-status')).toContainText('validated browse intent');
   await expect(page.locator('#pg-model-calls')).toHaveText('0');
   await page.getByRole('button', { name: 'Engineering only' }).click();
   await expect(page.locator('aeliqo-table')).toContainText('Sam Rivera');
   await expect(page.locator('aeliqo-table')).not.toContainText('Ada Chen');
   await page.getByRole('button', { name: 'Browse people' }).click();
   await expect(page.locator('aeliqo-table')).toContainText('Ada Chen');
-  await page.getByRole('button', { name: 'Show trend' }).click();
+  await page.getByRole('button', { name: 'Monthly headcount' }).click();
+  await expect(page.locator('#pg-result-definition')).toContainText('employees active at the end of each month');
+  await expect(page.locator('#pg-result-definition')).toContainText('never summed across months');
   await expect(page.locator('aeliqo-chart')).toBeVisible();
   await expect(page.locator('aeliqo-chart svg')).toBeAttached();
   await expect(page.locator('aeliqo-chart svg text.axis-x-tick')).toHaveCount(3);
@@ -58,7 +60,7 @@ test('a constant series keeps its mark on the labeled y-axis tick', async ({ pag
 test('trend axis labels stay inside the chart on narrow screens', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 820 });
   await page.goto('/playground/');
-  await page.getByRole('button', { name: 'Show trend' }).click();
+  await page.getByRole('button', { name: 'Monthly headcount' }).click();
 
   const svg = page.locator('aeliqo-chart svg');
   await expect(svg).toBeVisible();
@@ -82,6 +84,33 @@ test('trend axis labels stay inside the chart on narrow screens', async ({ page 
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
+test('trend geometry follows its container without stretching labels', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 820 });
+  await page.goto('/playground/');
+  await page.getByRole('button', { name: 'Monthly headcount' }).click();
+  const svg = page.locator('aeliqo-chart svg');
+  await expect(svg).toBeVisible();
+
+  const narrow = await svg.evaluate((node) => {
+    const chart = node as SVGSVGElement;
+    const box = chart.getBoundingClientRect();
+    const matrix = chart.getScreenCTM();
+    return { clientWidth: box.width, logicalWidth: chart.viewBox.baseVal.width, xScale: matrix?.a, yScale: matrix?.d };
+  });
+  expect(Math.abs(narrow.logicalWidth - narrow.clientWidth)).toBeLessThan(4);
+  expect(Math.abs((narrow.xScale ?? 0) - (narrow.yScale ?? 0))).toBeLessThan(0.02);
+
+  await page.setViewportSize({ width: 1_280, height: 850 });
+  await expect
+    .poll(async () => svg.evaluate((node) => (node as SVGSVGElement).viewBox.baseVal.width))
+    .toBeGreaterThan(narrow.logicalWidth + 400);
+  const wideScale = await svg.evaluate((node) => {
+    const matrix = (node as SVGSVGElement).getScreenCTM();
+    return { x: matrix?.a, y: matrix?.d };
+  });
+  expect(Math.abs((wideScale.x ?? 0) - (wideScale.y ?? 0))).toBeLessThan(0.02);
+});
+
 test('container adaptation switches browse to cards but preserves comparisons', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 820 });
   await page.goto('/playground/');
@@ -89,7 +118,7 @@ test('container adaptation switches browse to cards but preserves comparisons', 
   await expect(page.locator('aeliqo-card-collection')).toBeVisible();
   await expect(page.locator('aeliqo-table')).toHaveCount(0);
   await expect(page.locator('#pg-view-badge')).toHaveText('data.card-collection');
-  await expect(page.locator('#pg-status')).toContainText('data.card-collection renderer');
+  await expect(page.locator('#pg-status')).toContainText('validated browse intent');
   await openScenario(page, 'products');
   await expect(page.locator('aeliqo-card-collection')).toContainText('Field notebook');
   await page.getByRole('button', { name: 'Compare products' }).click();
@@ -172,7 +201,7 @@ test('mobile controls, disconnected agent state, and accessibility remain honest
   page.on('request', (request) => requests.push(request.url()));
   await page.setViewportSize({ width: 320, height: 850 });
   await page.goto('/playground/');
-  await page.getByRole('button', { name: 'Connected agent' }).click();
+  await page.getByRole('button', { name: 'Connect AI' }).click();
   await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
   await page.getByRole('button', { name: 'Check local connection' }).click();
   await expect(page.locator('#pg-connect-status')).not.toContainText('Checking capability');

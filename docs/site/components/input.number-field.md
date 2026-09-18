@@ -68,4 +68,4 @@ Leave room for the localized value and unit. Check the editable draft at 200% te
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

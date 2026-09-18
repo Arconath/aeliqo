@@ -68,4 +68,4 @@ Let the count, scope, and clear action wrap together. Keep the scope associated 
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

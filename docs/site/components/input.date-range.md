@@ -68,4 +68,4 @@ Stack start and end fields in a narrow form. Keep each label and the range bound
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.
