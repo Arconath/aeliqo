@@ -263,6 +263,13 @@ function resolverFields(input: unknown): ResolverFields | undefined {
 function resolverIngress(input: PresentationResolverInput): ResolverIngress {
   const fields = resolverFields(input);
   if (fields === undefined) return { ok: false, decision: unsupported('presentation.input') };
+  const requestWire = inspectWire({
+    id: fields.id,
+    revision: fields.revision,
+    preconditions: fields.preconditions,
+    context: fields.context,
+  });
+  if (!requestWire.ok) return { ok: false, decision: unsupported('presentation.input') };
   const target = parseTarget(fields.target);
   if (target === undefined) return { ok: false, decision: unsupported('presentation.target') };
   if (target.state !== 'active') return { ok: false, decision: unsupported('presentation.target-inactive') };

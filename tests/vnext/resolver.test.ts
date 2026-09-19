@@ -180,6 +180,26 @@ describe('resolvePresentation', () => {
     expect(reads).toBe(0);
   });
 
+  it('rejects a nested accessor before presentation context evaluation', () => {
+    let reads = 0;
+    const ordinary = context() as PresentationResolverInput['context'] & {
+      experience: PresentationResolverInput['context']['experience'];
+    };
+    Object.defineProperty(ordinary, 'experience', {
+      enumerable: true,
+      get() {
+        reads++;
+        throw new Error('nested host getter executed');
+      },
+    });
+
+    expect(resolvePresentation(fixture({ context: ordinary }))).toMatchObject({
+      status: 'unsupported',
+      diagnostic: { code: 'presentation.input' },
+    });
+    expect(reads).toBe(0);
+  });
+
   it('applies eligibility before quality ranking', () => {
     const eligible = manifest(tableRef, 1);
     const ineligible = manifest(listRef, 100);
